@@ -1,0 +1,328 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using MattUtil;
+using System.IO;
+
+namespace CityWar
+{
+    public partial class Attack
+    {
+        #region fields and constructors
+        //changing requires rebalance of units
+        private const double DamMultPercent = .39;
+
+        //unit cost : death when killed
+        internal const double DeathDivide = 7;
+        //unit cost : death for disband
+        internal const double DisbandDivide = 5;
+        //unit cost : relic for wounding
+        internal const double RelicDivide = 6;//4
+        //unit cost : exp for wounding
+        internal const double ExpDivide = 4;
+
+        //percentage of unused attacks that adds to work
+        internal const double OverkillPercent = .5;
+
+        //only used during a battle
+        private bool used = false;
+
+        private readonly string name;
+        private Unit owner;
+        private int length, damage, divide;
+        public readonly EnumFlags<TargetType> target;
+
+        public Attack(EnumFlags<TargetType> target, int length, int damage, int divide)
+        {
+            this.target = target;
+            this.length = length;
+            this.damage = damage;
+            this.divide = divide;
+        }
+
+        internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int divide)
+        {
+            this.name = name;
+            this.target = target;
+            this.length = length;
+            this.damage = damage;
+            this.divide = divide;
+        }
+
+        //constructor for cloning an attack		
+        private Attack(string name, Unit owner, EnumFlags<TargetType> target, int length, int damage, int divide, bool used)
+        {
+            this.name = name;
+            this.owner = owner;
+            this.target = target;
+            this.length = length;
+            this.damage = damage;
+            this.divide = divide;
+            this.used = used;
+        }
+        #endregion //fields and constructors
+
+        #region public methods and properties
+
+        public Unit Owner
+        {
+            get
+            {
+                return owner;
+            }
+        }
+
+        public int ArmorPiercing
+        {
+            get
+            {
+                return divide;
+            }
+        }
+
+        public int Length
+        {
+            get
+            {
+                return length;
+            }
+        }
+
+        public bool Used
+        {
+            get
+            {
+                return used;
+            }
+            internal set
+            {
+                used = value;
+            }
+        }
+
+        public double Damage
+        {
+            get
+            {
+                return damage;
+            }
+        }
+
+        public bool CanAttack(Unit u)
+        {
+            if (Used || length < u.Length)
+                return false;
+
+            if (u.Type == UnitType.Immobile)
+                return true;
+
+            TargetType enemy;
+            if (u.Type == UnitType.Air)
+                enemy = TargetType.Air;
+            else if (u.Type == UnitType.Ground)
+                enemy = TargetType.Ground;
+            else if (u.Type == UnitType.Water)
+                enemy = TargetType.Water;
+            else if (u.Type == UnitType.Amphibious)
+                if (u.Tile.Terrain == Terrain.Water)
+                    enemy = TargetType.Water;
+                else
+                    enemy = TargetType.Ground;
+            else
+                throw new Exception();
+
+            return target.Contains(enemy);
+        }
+
+        public int GetMinDamage(Unit target)
+        {
+            int minDamage = (int)( damStatic - ( (double)target.Armor / divide ) );
+            return minDamage > 0 ? minDamage : 0;
+        }
+
+        public double GetAverageDamage(Unit enemy, out double killPct, out double avgRelic)
+        {
+            double averageDamage = DamageThrows(damage, divide, enemy.Armor, enemy.hits, out killPct, out avgRelic, true);
+            killPct *= 100;
+            avgRelic *= enemy.RandedCost / RelicDivide / enemy.maxHits;
+            return averageDamage;
+        }
+
+        public static double GetAverageDamage(double damage, double divide, double targetArmor, int targetHits)
+        {
+            double kill, relic;
+            return DamageThrows(damage, divide, targetArmor, targetHits, out kill, out relic, false);
+        }
+
+        public string GetTargetString()
+        {
+            string res = "";
+            foreach (TargetType t in target)
+                res += t.ToString()[0].ToString();
+            return res;
+        }
+
+        public static string GetString(string name, int damage, int divide, string targets, int length)
+        {
+            return string.Format(name + "({0}, {2}, {3}) - {1}", damage, targets, divide, length);
+        }
+
+        public override string ToString()
+        {
+            return GetString(name, damage, divide, GetTargetString(), length);
+        }
+        #endregion //public methods and properties
+
+        #region internal methods
+        internal int AttackUnit(Unit unit)
+        {
+            if (!CanAttack(unit))
+                return -1;
+            //throw new Exception();
+
+            Used = true;
+            owner.Length = Math.Min(owner.Length, length);
+
+            int hits = unit.Hits;
+            int armor = unit.Armor;
+            int damage = DoDamage(armor);
+            if (damage < 0)
+            {
+                damage = 0;
+            }
+            else if (damage > hits)
+            {
+                if (owner.Owner == Game.CurrentPlayer)
+                    owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * ( damage - hits ) / ( (double)damage * owner.Attacks.Length ));
+                damage = hits;
+            }
+
+            double relicValue = ( GetAverageDamage(damage, divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
+            if (relicValue > 0)
+                owner.Owner.AddRelic(unit.RandedCost * relicValue);
+            else
+                unit.Owner.AddRelic(unit.InverseCost * -relicValue);
+
+            unit.Wound(damage);
+
+            return damage;
+        }
+
+        internal Attack Clone()
+        {
+            return new Attack(name, owner, target.Clone(), length, damage, divide, used);
+        }
+
+        internal void SetOwner(Unit unit)
+        {
+            this.owner = unit;
+        }
+
+        internal void RandStats()
+        {
+            damage = Unit.RandStat(damage, true);
+        }
+        #endregion //internal methods
+
+        #region damage
+        private double damMult
+        {
+            get
+            {
+                return damage * DamMultPercent;
+            }
+        }
+        private double damStatic
+        {
+            get
+            {
+                return damage - damMult;
+            }
+        }
+
+        private int DoDamage(int armor)
+        {
+            return Game.Random.Round(damStatic - armor / (double)divide) + Game.Random.OEInt(damMult);
+        }
+
+        private static double DamageThrows(double damage, double divide, double targetArmor, int targetHits, out double killPct, out double avgRelic, bool doRelic)
+        {
+            killPct = 0;
+            avgRelic = 0;
+            double avgDamage = 0, total = 0;
+
+            double avgDmgForRelic = -1;
+            if (doRelic)
+                avgDmgForRelic = GetAverageDamage(damage, divide, targetArmor, targetHits);
+
+            double damMult = damage * DamMultPercent;
+            double damStatic = damage - damMult - targetArmor / divide;
+
+            int oeLimit = MattUtil.MTRandom.GetOEIntMax(damMult);
+
+            if (!doRelic && damStatic >= 0 && (int)Math.Ceiling(damStatic) + oeLimit <= targetHits)
+                return damage - targetArmor / divide;
+
+            int baseDmg = (int)Math.Floor(damStatic);
+            double roundChance = damStatic - baseDmg;
+            damMult /= ( damMult + 1 );
+            double oeChance = damMult;
+            for (int oe = 0 ; oe <= oeLimit ; ++oe)
+            {
+                for (int round = 0 ; round < 2 ; ++round)
+                {
+                    double chance = oeChance * ( round == 0 ? 1 - roundChance : roundChance );
+                    int totDamage = Math.Max(Math.Min(baseDmg + ( round == 0 ? 0 : 1 ) + oe, targetHits), 0);
+
+                    if (totDamage == targetHits)
+                        killPct += chance;
+                    if (doRelic)
+                        avgRelic += chance * Math.Max(avgDmgForRelic - totDamage, 0);
+                    avgDamage += chance * totDamage;
+
+                    total += chance;
+                }
+                oeChance *= damMult;
+            }
+
+            killPct /= total;
+            avgRelic /= total;
+            return avgDamage / total;
+        }
+        #endregion //damage
+
+        #region saving and loading
+        internal void SaveAttack(BinaryWriter bw)
+        {
+            //string 
+            bw.Write(name);
+
+            //int
+            bw.Write(length);
+            bw.Write(damage);
+            bw.Write(divide);
+            bw.Write(target.ToInt());
+        }
+
+        internal static Attack LoadAttack(BinaryReader br)
+        {
+            string name = br.ReadString();
+
+            int length = br.ReadInt32();
+            int damage = br.ReadInt32();
+            int divide = br.ReadInt32();
+            EnumFlags<TargetType> target = new EnumFlags<TargetType>(br.ReadInt32());
+
+            return new Attack(name, target, length, damage, divide);
+        }
+        #endregion //saving and loading
+    }
+
+    [Flags]
+    public enum TargetType
+    {
+        Ground = 0x1,
+        Water = 0x2,
+        Air = 0x4
+    }
+}

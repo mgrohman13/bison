@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CityWar", "CityWar\CityWar.csproj", "{996853C3-E035-4858-8DC2-4CA7A9DBA7D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Balance", "Balance\Balance.csproj", "{431E8284-6DD8-4374-879B-1D4A4D9D851C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CityWarWinApp", "CityWarWinApp\CityWarWinApp.csproj", "{DE30F4C7-8D78-4865-B8C1-62DCC1E49858}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{996853C3-E035-4858-8DC2-4CA7A9DBA7D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{996853C3-E035-4858-8DC2-4CA7A9DBA7D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{996853C3-E035-4858-8DC2-4CA7A9DBA7D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{996853C3-E035-4858-8DC2-4CA7A9DBA7D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{431E8284-6DD8-4374-879B-1D4A4D9D851C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{431E8284-6DD8-4374-879B-1D4A4D9D851C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{431E8284-6DD8-4374-879B-1D4A4D9D851C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{431E8284-6DD8-4374-879B-1D4A4D9D851C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE30F4C7-8D78-4865-B8C1-62DCC1E49858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE30F4C7-8D78-4865-B8C1-62DCC1E49858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE30F4C7-8D78-4865-B8C1-62DCC1E49858}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE30F4C7-8D78-4865-B8C1-62DCC1E49858}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TextTemplating) = postSolution
+		TextTemplating = 1
+	EndGlobalSection
+EndGlobal

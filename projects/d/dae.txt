@@ -1,0 +1,7 @@
+trim log text in label
+
+end turn move left waring only if any have move AND healed
+exit confirmation
+refactor everything (reorder members)
+show moved/unmoved units
+show battles

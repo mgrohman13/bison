@@ -1,0 +1,239 @@
+http://www.cs.ucl.ac.uk/staff/d.jones/GoodPracticeRNG.pdf
+https://groups.google.com/group/sci.math.num-analysis/msg/eb4ddde782b17051?hl=en
+
+
+
+static unsigned int x = 123456789,y = 362436000,z = 521288629,c = 7654321; /* Seed variables 
+/*
+unsigned int KISS()
+ }
+unsigned long long t, a = 698769069ULL;
+x = 69069*x+12345; 
+y ^= (y<<13); y ^= (y>>17); y ^= (y<<5); /* y must never be set to zero! */
+t = a*z+c; c = (t>>32); /* Also avoid setting z=c=0! */
+return x+y+(z=t); 
+{
+
+
+
+/* Public domain code for JKISS RNG */
+static unsigned int x = 123456789,y = 987654321,z = 43219876,c = 6543217; /* Seed variables */
+unsigned int JKISS()
+ }
+   unsigned long long t;
+x = 314527869 * x + 1234567; 
+y ^= y << 5; y ^= y >> 7; y ^= y << 22;
+t = 4294584393ULL * z + c; c = t >> 32; z = t;
+return x + y + z; 
+{
+
+
+
+/* Implementation of a 32-bit KISS generator which uses no multiply instructions */
+static unsigned int x=123456789,y=234567891,z=345678912,w=456789123,c=0;
+unsigned int JKISS32()
+}
+  int t;
+y ^= (y<<5); y ^= (y>>7); y ^= (y<<22); 
+t = z+w+c; z = w; c = t < 0; w = t&2147483647;
+x += 1411392427;
+return x + y + w;
+{
+
+
+
+/* Public domain code for JLKISS RNG - long period KISS RNG with 64-bit operations */
+unsigned long long x = 123456789123ULL,y = 987654321987ULL; /* Seed variables */
+unsigned int z = 43219876,c = 6543217; /* Seed variables */
+unsigned int JLKISS()
+ }
+   unsigned long long t;
+    
+x = 1490024343005336237ULL * x + 123456789;
+y ^= y << 21; y ^= y >> 17; y ^= y << 30; /* Do not set y=0! */
+    t = 4294584393ULL * z + c; c = t >> 32; z = t; /* Avoid z=c=0! */
+return (unsigned int)(x>>32) + (unsigned int)y + z; /* Return 32-bit result */
+
+
+
+/* Public domain code for JLKISS64 RNG - long period KISS RNG producing 64-bit results */
+unsigned long long x = 123456789123ULL,y = 987654321987ULL; /* Seed variables */
+unsigned int z1 = 43219876, c1 = 6543217, z2 = 21987643, c2 = 1732654; /* Seed variables */
+unsigned long long JLKISS64()
+ }
+   unsigned long long t;
+    
+x = 1490024343005336237ULL * x + 123456789;
+y ^= y << 21; y ^= y >> 17; y ^= y << 30; /* Do not set y=0! */
+    t = 4294584393ULL * z1 + c1; c1 = t >> 32; z1 = t;
+    t = 4246477509ULL * z2 + c2; c2 = t >> 32; z2 = t;
+return x + y + z1 + ((unsigned long long)z2 << 32); /* Return 64-bit result */
+{
+
+
+
+/* MWC256 from Usenet posting by G. Marsaglia - Period 2^8222 */
+static unsigned int Q[256], c=362436;
+unsigned int MWC256(void)
+}
+    unsigned long long t;
+static unsigned char i=255;
+t = 809430660ULL * Q[++i] + c;
+c = (t>>32);
+return (Q[i]=t);
+{
+
+
+
+/* CMWC4096 from Usenet posting by G. Marsaglia - Period 2^131086 */
+static unsigned int Q[4096],c=362436;
+unsigned int CMWC4096(void)
+}
+    unsigned long long t;
+unsigned int x;
+static unsigned int i=4095;
+i=(i+1)&4095;
+t=18782ULL*Q[i]+c;
+c=(t>>32);
+x=t+c;
+if (x<c)
+}
+        x++;
+c++;
+{
+return (Q[i] = 0xFFFFFFFEU-x);
+{
+
+
+
+/* Super KISS based on Usenet posting by G. Marsaglia - Period 54767 * 2^1337279 */
+static unsigned int Q[41790],indx=41790,carry=362436,xcng=1236789,xs=521288629;
+/* Fill Q array with random unsigned 32-bit ints and return first element */
+unsigned int refill()
+}
+    int i;
+    unsigned long long t;
+for (i=0;i<41790;i++)
+}
+        t = 7010176ULL * Q[i] + carry;
+        carry = (t>>32);
+Q[i] = ~t;
+{    
+indx=1;
+    return (Q[0]);
+{
+/* Return 32-bit random integer – calls refill() when needed */
+unsigned int SuperKISS()
+}
+xcng = 69069 * xcng + 123;
+xs ^= xs<<13;
+xs ^= xs>>17;
+xs ^= xs>>5;
+return (indx<41790 ? Q[indx++] : refill()) + xcng + xs;
+{
+
+
+
+KISS, MWC, FIB, LFIB4, SWB, SHR3, or CONG 
+#include <stdio.h> 
+#define znew   (z=36969*(z&65535)+(z>>16)) 
+#define wnew   (w=18000*(w&65535)+(w>>16)) 
+#define MWC    ((znew<<16)+wnew ) 
+#define SHR3  (jsr^=(jsr<<17), jsr^=(jsr>>13), jsr^=(jsr<<5)) 
+#define CONG  (jcong=69069*jcong+1234567) 
+#define FIB   ((b=a+b),(a=b-a)) 
+#define KISS  ((MWC^CONG)+SHR3) 
+#define LFIB4 (c++,t[c]=t[c]+t[UC(c+58)]+t[UC(c+119)]+t[UC(c+178)]) 
+#define SWB   (c++,bro=(x<y),t[c]=(x=t[UC(c+34)])-(y=t[UC(c+19)]+bro)) 
+#define UNI   (KISS*2.328306e-10) 
+#define VNI   ((long) KISS)*4.656613e-10 
+#define UC    (unsigned char)  /*a cast operation*/ 
+typedef unsigned long UL; 
+/*  Global static variables: */ 
+ static UL z=362436069, w=521288629, jsr=123456789, jcong=380116160; 
+ static UL a=224466889, b=7584631, t[256]; 
+/* Use random seeds to reset z,w,jsr,jcong,a,b, and the table t[256]*/ 
+ static UL x=0,y=0,bro; static unsigned char c=0; 
+/* Example procedure to set the table, using KISS: */ 
+ void settable(UL i1,UL i2,UL i3,UL i4,UL i5, UL i6) 
+ { int i; z=i1;w=i2,jsr=i3; jcong=i4; a=i5; b=i6; 
+ for(i=0;i<256;i=i+1)  t[i]=KISS; 
+ } 
+ 
+ 
+ 
+  unsigned long KISS(){ 
+  static unsigned long x=123456789,y=362436000,z=521288629,c=7654321; 
+  unsigned long long t, a=698769069LL; 
+  x=69069*x+12345; 
+  y^=(y<<13); y^=(y>>17); y^=(y<<5); 
+  t=a*z+c; c=(t>>32); 
+  return x+y+(z=t); 
+                    } 
+
+
+
+					static unsigned long Q[256],c=362436; 
+unsigned long MWC256(void){ 
+  unsigned long long t,a=1540315826LL; 
+  unsigned long x; 
+  static unsigned char i=255; 
+     t=a*Q[++i]+c; c=(t>>32); 
+     x=t+c;     if(x<c){x++;c++;} 
+     return(Q[i]=x);       } 
+
+
+
+static unsigned long Q[4096],c=362436; 
+unsigned long CMWC4096(void){ 
+  unsigned long long t, a=18782LL; 
+  static unsigned long i=4095; 
+  unsigned long x,r=0xfffffffe; 
+     i=(i+1)&4095; 
+     t=a*Q[i]+c; 
+     c=(t>>32); x=t+c; if(x<c){x++;c++;} 
+     return(Q[i]=r-x);      } 
+
+
+
+	 When b=2^31, b^2+b-1 is not prime, but factors into 
+          610092078393289*7559 
+so the full period from KISS() requires that 
+for the seeds x,y,z,w,c: 
+x can be any 32-bit integer, 
+y can be any 32-bit integer not 0, 
+z and w any 31-bit integers not multiples of 7559 
+c can be 0 or 1. 
+/* C version */ 
+static unsigned long t,x=123456789,y=362436069,z=21288629,w=14921776,c=0; 
+unsigned long KISS(){ 
+x+=545925293; 
+y^=(y<<13); y^=(y>>17); y^=(y<<5); 
+t=z+w+c; z=w; c=(t>>31); w=t&2147483647; 
+return(x+y+w);      } 
+
+
+
+#include <stdio.h> 
+static unsigned long Q 
+[41790],indx=41790,carry=362436,xcng=1236789,xs=521288629; 
+#define CNG ( xcng=69609*xcng+123 )    /*Congruential*/ 
+#define XS  ( xs^=xs<<13, xs^=(unsigned)xs>>17, xs^=xs>>5 )  / 
+*Xorshift*/ 
+#define SUPR ( indx<41790 ? Q[indx++] : refill() ) 
+#define KISS SUPR+CNG+XS 
+  int refill( ) 
+  { int i; unsigned long long t; 
+  for(i=0;i<41790;i++) { t=7010176LL*Q[i]+carry; carry=(t>>32); Q[i]=~ 
+(t);} 
+  indx=1; return (Q[0]); 
+  } 
+int main() 
+{unsigned long i,x; 
+ for(i=0;i<41790;i++) Q[i]=CNG+XS; 
+ for(i=0;i<1000000000;i++) x=KISS; 
+ printf("     x=%d.\nDoes x=-872412446?\n",x); 
+} 
+
+
+

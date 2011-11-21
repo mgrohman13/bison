@@ -1,0 +1,570 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using MattUtil;
+using System.IO;
+using System.IO.Compression;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+
+namespace GalWar
+{
+    [Serializable]
+    public class Game
+    {
+        #region static
+
+        public static readonly MTRandom Random;
+        static Game()
+        {
+            Random = new MTRandom();
+            Random.StartTick();
+        }
+
+        #endregion //static
+
+        #region fields and constructors
+
+        public readonly Graphs Graphs;
+
+        public readonly StoreProd StoreProd;
+        public readonly Soldiering Soldiering;
+
+        public readonly int Diameter;
+
+        internal readonly ShipNames ShipNames;
+
+        private readonly Tile[,] map;
+        private readonly List<Planet> planets;
+        private Player[] players;
+
+        private readonly List<Player> deadPlayers;
+        private readonly List<Result> winningPlayers;
+
+        private byte _currentPlayer;
+        private ushort _turn;
+        private readonly double _planetPct;
+
+        public Game(Player[] players, int radius, double planetPct)
+        {
+            int numPlayers = players.Length;
+            this.Diameter = radius * 2 - 1;
+
+            AssertException.Assert(players != null);
+            AssertException.Assert(numPlayers > 1);
+            AssertException.Assert(numPlayers * 78 < TotalTiles);
+            AssertException.Assert(radius < 70);
+            AssertException.Assert(planetPct >= 0);
+            AssertException.Assert(planetPct < 0.13);
+
+            this.StoreProd = new StoreProd();
+            this.Soldiering = new Soldiering();
+
+            //set up map hexagon
+            this.map = new Tile[Diameter, Diameter];
+            int nullTiles = Diameter - radius;
+            for (int y = 0 ; y < Diameter ; ++y)
+            {
+                for (int x = 0 ; x < Diameter ; ++x)
+                {
+                    int compX = x - ( radius % 2 == 0 && y % 2 == 0 ? 1 : 0 );
+                    if (compX >= nullTiles / 2 && compX < Diameter - ( nullTiles + 1 ) / 2)
+                        this.map[x, y] = new Tile(this, x, y);
+                }
+                if (y < Diameter / 2)
+                    --nullTiles;
+                else
+                    ++nullTiles;
+            }
+
+            int planets = Random.GaussianCappedInt(TotalTiles * planetPct, .21);
+            this._planetPct = Random.GaussianCapped(planetPct, .169f);
+            this.planets = new List<Planet>(planets + numPlayers);
+            //first create enough planets for homeworlds
+            while (this.planets.Count < numPlayers)
+                NewPlanet();
+            //each additional starting planet is just a chance of creating one
+            for (int i = 0 ; i < planets ; ++i)
+                NewPlanet();
+
+            int startPop = GetStartInt(Consts.StartPopulation);
+            double soldiers = GetStartDouble(startPop);
+            double startGold = GetStartDouble(Consts.StartGold * numPlayers / (double)this.planets.Count);
+            //set later based on colony ship costs
+            double startProd = -1;
+
+            List<int> research = new List<int>(4);
+            research.Add(GetStartInt(Consts.StartResearch * 1 / 4.0));
+            research.Add(GetStartInt(Consts.StartResearch * 2 / 4.0));
+            research.Add(GetStartInt(Consts.StartResearch * 3 / 4.0));
+            research.Add(GetStartInt(Consts.StartResearch * 4 / 4.0));
+            //ensure the List is in order despite randomness
+            research.Sort();
+
+            this.players = new Player[numPlayers];
+            int index = 0;
+            this.ShipNames = new ShipNames(numPlayers);
+            foreach (Player player in Random.Iterate<Player>(players))
+            {
+                Planet homeworld = GetHomeworld(startPop);
+                double gold = startGold / homeworld.Quality + index * Consts.GetMoveOrderGold(numPlayers);
+                int needProd;
+                this.players[index] = new Player(index, this, player, homeworld, startPop, soldiers, gold, research, out needProd);
+                //all players start with the highest colony ship design production
+                startProd = Math.Max(startProd, needProd);
+                ++index;
+            }
+            this.ShipNames.EndSetup();
+
+            startProd = GetStartDouble(startProd);
+            double addProduction = startProd / ( 1 - Consts.StoreProdLossPct );
+            double spendGold = addProduction * Consts.StoreProdLossPct / Consts.ProductionForGold;
+            for (this.currentPlayer = 0 ; this.currentPlayer < numPlayers ; ++this.currentPlayer)
+            {
+                Colony colony = CurrentPlayer.GetColonies()[0];
+                colony.AddProduction(addProduction);
+                CurrentPlayer.SpendGold(spendGold);
+                CurrentPlayer.IncomeTotal += startProd;
+            }
+
+            this.currentPlayer = byte.MaxValue;
+            this.turn = 0;
+
+            this.deadPlayers = new List<Player>(numPlayers);
+            this.winningPlayers = new List<Result>(numPlayers);
+
+            this.Graphs = new Graphs(this);
+        }
+
+        private int currentPlayer
+        {
+            get
+            {
+                return this._currentPlayer;
+            }
+            set
+            {
+                checked
+                {
+                    this._currentPlayer = (byte)value;
+                }
+            }
+        }
+        private int turn
+        {
+            get
+            {
+                return this._turn;
+            }
+            set
+            {
+                checked
+                {
+                    this._turn = (ushort)value;
+                }
+            }
+        }
+
+        private static int GetStartInt(double avg)
+        {
+            return Random.GaussianCappedInt(avg, Consts.StartRndm, Random.Round(avg * Consts.StartMinMult));
+        }
+
+        private static double GetStartDouble(double avg)
+        {
+            return Random.GaussianCapped(avg, Consts.StartRndm, avg * Consts.StartMinMult);
+        }
+
+        private Planet GetHomeworld(int startPop)
+        {
+            List<Planet> homeworlds;
+            int homeworldCount;
+
+            //we may need to add another valid homeworld
+            while (( homeworldCount = ( homeworlds = GetAvailableHomeworlds(startPop) ).Count ) == 0)
+            {
+                //we dont want to change the number of planets, so take one out first
+                Planet removePlanet;
+                do
+                {
+                    removePlanet = this.planets[Random.Next(this.planets.Count)];
+                } while (removePlanet.Colony != null);
+                this.RemovePlanet(removePlanet);
+
+                //try until we add a new one
+                while (NewPlanet() == null)
+                    ;
+            }
+
+            Planet homeworld;
+            if (homeworldCount == 1)
+                homeworld = homeworlds[0];
+            else
+                homeworld = homeworlds[Random.Next(homeworldCount)];
+
+            return homeworld;
+        }
+
+        private List<Planet> GetAvailableHomeworlds(int startPop)
+        {
+            //planets can only be used as homeworlds if they have enough quality to support the initial population
+            List<Planet> retVal = new List<Planet>(this.planets.Count);
+            foreach (Planet planet in this.planets)
+                if (planet.Quality > startPop && planet.Colony == null)
+                {
+                    foreach (Player player in this.players)
+                        if (player != null)
+                            foreach (Colony colony in player.GetColonies())
+                                if (Tile.GetDistance(planet.Tile, colony.Planet.Tile) <= Consts.HomeworldDistance)
+                                    goto next_planet;
+                    retVal.Add(planet);
+next_planet:
+                    ;
+                }
+            return retVal;
+        }
+
+        #endregion //fields and constructors
+
+        #region internal
+
+        public double ExpResearch
+        {
+            get
+            {
+                double expResearch = 0;
+                foreach (Player player in this.players)
+                    expResearch += player.LastResearched;
+                return expResearch / this.players.Length;
+            }
+        }
+
+        internal void RemovePlanet(Planet planet)
+        {
+            planet.Tile.SpaceObject = null;
+            this.planets.Remove(planet);
+        }
+
+        internal void KillPlayer(Player player)
+        {
+            RemovePlayer(player);
+            this.deadPlayers.Add(player);
+            //if one player wipes out the other in a 1 vs 1 situation, they still get a victory bonus
+            if (this.players.Length == 1)
+                this.winningPlayers.Add(new Result(this.players[0], true));
+        }
+
+        private void RemovePlayer(Player player)
+        {
+            Player[] newPlayers = new Player[this.players.Length - 1];
+            bool found = false;
+            for (int i = 0 ; i < this.players.Length ; ++i)
+            {
+                if (this.players[i] == player)
+                {
+                    found = true;
+                    if (this.currentPlayer > i)
+                        --this.currentPlayer;
+                    else if (this.currentPlayer == i)
+                        throw new Exception();
+                }
+                else
+                {
+                    //players farther back move up in the order
+                    newPlayers[i - ( found ? 1 : 0 )] = this.players[i];
+                }
+            }
+            this.players = newPlayers;
+        }
+
+        #endregion //internal
+
+        #region public
+
+        public int TotalTiles
+        {
+            get
+            {
+                int radius = ( Diameter + 1 ) / 2;
+                return 3 * radius * radius - 3 * radius + 1;
+            }
+        }
+
+        public Player CurrentPlayer
+        {
+            get
+            {
+                return this.players[this.currentPlayer];
+            }
+        }
+
+        public int Turn
+        {
+            get
+            {
+                return this.turn;
+            }
+        }
+
+        public void StartGame(IEventHandler handler)
+        {
+            this.Graphs.Increment(this);
+
+            handler = new HandlerWrapper(handler);
+
+            this.currentPlayer = 0;
+            this.turn = 1;
+
+            StartPlayerTurn(handler);
+        }
+
+        public Tile[,] GetMap()
+        {
+            return (Tile[,])this.map.Clone();
+        }
+
+        //research is given only as a percentage of the amount needed to win the game
+        public Dictionary<Player, double> GetResearch()
+        {
+            Player[] players = GetResearchOrder();
+            Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
+            foreach (Player player in players)
+                if (players.Length > 1)
+                    retVal.Add(player, player.Research / (double)players[1].Research * 100 / Consts.ResearchVictoryMult);
+                else
+                    retVal.Add(player, 100 / Consts.ResearchVictoryMult);
+            return retVal;
+        }
+
+        private Player[] GetResearchOrder()
+        {
+            Player[] players = (Player[])this.players.Clone();
+            Array.Sort<Player>(players, delegate(Player p1, Player p2)
+            {
+                //descending sort
+                return p2.Research - p1.Research;
+            });
+            return players;
+        }
+
+        public List<Player> GetPlayers()
+        {
+            List<Player> retVal = new List<Player>(this.players.Length);
+            retVal.AddRange(this.players);
+            return retVal;
+        }
+
+        public List<Planet> GetPlanets()
+        {
+            List<Planet> retVal = new List<Planet>(this.planets.Count);
+            retVal.AddRange(this.planets);
+            return retVal;
+        }
+
+        public void EndTurn(IEventHandler handler)
+        {
+            handler = new HandlerWrapper(handler);
+
+            CurrentPlayer.EndTurn(handler);
+
+            if (++this.currentPlayer >= this.players.Length)
+                NewRound();
+
+            StartPlayerTurn(handler);
+
+            AutoSave();
+        }
+
+        public void AutoSave()
+        {
+            const string folder = "auto";
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            SaveGame(folder + "/" + turn + ".gws");
+        }
+
+        private void NewRound()
+        {
+            this.Graphs.Increment(this);
+
+            //just so an exception is thrown if current player is mistakenly used
+            this.currentPlayer = byte.MaxValue;
+
+            CheckResearchVictory();
+            RandMoveOrder();
+            CreatePlanets();
+
+            ++this.turn;
+            this.currentPlayer = 0;
+        }
+
+        private void CheckResearchVictory()
+        {
+            Player[] researchOrder = GetResearchOrder();
+            //research victory happens when the top player exceeds a certain multiple of the second place player
+            if (researchOrder.Length > 1 && researchOrder[0].Research > researchOrder[1].Research * Consts.ResearchVictoryMult)
+            {
+                researchOrder[0].Destroy();
+                RemovePlayer(researchOrder[0]);
+                this.winningPlayers.Add(new Result(researchOrder[0], true));
+            }
+        }
+
+        private void RandMoveOrder()
+        {
+            Dictionary<Player, int> playerGold = MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
+            if (playerGold.Count > 0)
+            {
+                double moveOrderGold = Consts.GetMoveOrderGold(this.players.Length);
+                foreach (KeyValuePair<Player, int> pair in playerGold)
+                {
+                    //player cant move up any further
+                    double gold = moveOrderGold * pair.Value;
+                    pair.Key.AddGold(gold);
+                    pair.Key.IncomeTotal += gold;
+                }
+            }
+        }
+
+        private void CreatePlanets()
+        {
+            int planets = Game.Random.OEInt(Consts.PlanetCreationRate * this._planetPct * TotalTiles);
+            for (int i = 0 ; i < planets ; ++i)
+                NewPlanet();
+        }
+
+        private Planet NewPlanet()
+        {
+            Tile tile;
+            do
+            {
+                int x = Random.Next(Diameter), y = Random.Next(Diameter);
+                tile = this.map[x, y];
+                //planets cannot be right on the map edge so tile must have 6 neighbors
+            } while (tile == null || Tile.GetNeighbors(tile).Count < 6);
+
+            if (tile.SpaceObject == null)
+            {
+                int distance = int.MaxValue;
+                foreach (Planet planet in this.planets)
+                    distance = Math.Min(distance, Tile.GetDistance(tile.X, tile.Y, planet.Tile.X, planet.Tile.Y));
+
+                if (distance > Consts.PlanetDistance)
+                {
+                    Planet planet = new Planet(tile);
+                    this.planets.Add(planet);
+                    return planet;
+                }
+            }
+            //dont retry if it cant be placed because of occupied space or existing planet proximity
+            return null;
+        }
+
+        private void StartPlayerTurn(IEventHandler handler)
+        {
+            CurrentPlayer.StartTurn(handler);
+        }
+
+        public void SaveGame(string filePath)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                new BinaryFormatter().Serialize(memory, this);
+                using (Stream file = new FileStream(filePath, FileMode.Create))
+                using (Stream compress = new DeflateStream(file, CompressionMode.Compress))
+                    memory.WriteTo(compress);
+            }
+        }
+
+        public static Game LoadGame(string filePath)
+        {
+            using (Stream file = new FileStream(filePath, FileMode.Open))
+            using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
+            {
+                Game game = (Game)new BinaryFormatter().Deserialize(decompress);
+                //foreach (Player p in game.players)
+                //    foreach (ShipDesign s in p.GetShipDesigns())
+                //    {
+                //        double pct = s.Upkeep / ( s.Cost + s.Upkeep * s.upkeepPayoff );
+                //        double cost = ShipDesign.GetTotCost(s.Att, s.Def, s.HP, s.Speed, s.Trans, s.Colony, s.PlanetDamageMult, s.Research);
+                //        int upkeep = Math.Max(1, Random.Round(cost * pct));
+                //        cost -= upkeep * s.upkeepPayoff;
+
+                //        s.cost = Random.Round(cost);
+                //        s.Upkeep = upkeep;
+                //        while (s.cost < s.upkeepPayoff * Consts.MinCostMult && s.Upkeep > 1)
+                //        {
+                //            s.cost = Random.Round(s.cost + s.upkeepPayoff);
+                //            --s.Upkeep;
+                //        }
+                //    }
+                //foreach (Tile t in game.map) if (t != null)
+                //    {
+                //        t.x = t.X;
+                //        t.y = t.Y;
+                //    }
+                return game;
+            }
+        }
+
+        public List<Result> GetGameResult()
+        {
+            AssertException.Assert(this.players.Length == 1);
+
+            List<Result> result = new List<Result>(this.winningPlayers.Count + 1 + this.deadPlayers.Count);
+
+            bool foundCurrent = false;
+            foreach (Result victory in this.winningPlayers)
+            {
+                result.Add(victory);
+                //if one of the last two players gained a research victory, we will need to manually add the loser
+                foundCurrent = ( victory.Player == this.players[0] );
+            }
+
+            if (!foundCurrent)
+                result.Add(new Result(this.players[0], false));
+
+            for (int i = this.deadPlayers.Count ; --i > -1 ; )
+                result.Add(new Result(this.deadPlayers[i], false));
+
+            //add in the final point score
+            Result.Finalize(result);
+
+            return result;
+        }
+
+        #endregion //public
+
+        [Serializable]
+        public class Result
+        {
+            public readonly Player Player;
+            private int points;
+
+            public int Points
+            {
+                get
+                {
+                    return points;
+                }
+            }
+
+            internal Result(Player player, bool won)
+            {
+                this.Player = player;
+                //extra points are awarded for gaining a research victory as quickly as possible
+                this.points = ( won ? Random.Round(Consts.WinPointsMult
+                        * Math.Pow(player.Game.TotalTiles, Consts.WinPointsTilesPower) / (double)player.Game.Turn) : 0 );
+            }
+
+            internal static void Finalize(List<Result> results)
+            {
+                //adds in (x^2+x)/2 points, where x is the inverse index
+                int points = 0;
+                int add = -1;
+                for (int i = results.Count ; --i > -1 ; )
+                    results[i].points += ( points += ( ++add ) );
+            }
+        }
+    }
+}
