@@ -5,6 +5,7 @@ using System.IO;
 
 namespace CityWar
 {
+    [Serializable]
     public class City : Capturable
     {
         #region fields and constructors
@@ -20,14 +21,6 @@ namespace CityWar
 
             tile.Add(this);
             owner.Add(this);
-        }
-
-        //constructor for loading games
-        private City(Player owner, int group, int movement, int maxMove, string name, Tile tile, Abilities ability, List<string> units)
-            : base(group, movement, maxMove, name, tile, ability)
-        {
-            this.owner = owner;
-            this.units = units;
         }
 
         private void InitUnits(Tile tile)
@@ -186,34 +179,5 @@ namespace CityWar
             throw new Exception();
         }
         #endregion //overrides
-
-        #region saving and loading
-        internal override void SavePiece(BinaryWriter bw)
-        {
-            bw.Write("City");
-
-            SavePieceStuff(bw);
-
-            bw.Write(units.Count);
-            foreach (string s in units)
-                bw.Write(s);
-        }
-
-        internal static City LoadCity(BinaryReader br, Player owner)
-        {
-            int group, movement, maxMove;
-            string name;
-            Tile tile;
-            Abilities ability;
-            Piece.LoadPieceStuff(br, out group, out movement, out maxMove, out name, out tile, out ability);
-
-            int unitCount = br.ReadInt32();
-            List<string> units = new List<string>(unitCount);
-            for (int a = -1 ; ++a < unitCount ; )
-                units.Add(br.ReadString());
-
-            return new City(owner, group, movement, maxMove, name, tile, ability, units);
-        }
-        #endregion //saving and loading
     }
 }

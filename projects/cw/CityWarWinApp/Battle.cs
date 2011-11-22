@@ -231,7 +231,7 @@ namespace CityWarWinApp
                     {
                         if (Map.CheckAircraft(( (Attack)this.lbAttacks.SelectedItem ).Owner, 1))
                         {
-                            int damage = Game.AttackUnit(b, ( (Attack)this.lbAttacks.SelectedItem ), clicked);
+                            int damage = Map.game.AttackUnit(b, ( (Attack)this.lbAttacks.SelectedItem ), clicked);
                             if (damage > -1)
                                 if (usedAttacks.ContainsKey(selected))
                                     ++usedAttacks[selected];
@@ -325,7 +325,7 @@ namespace CityWarWinApp
 
         private void btnEnd_Click(object sender, EventArgs e)
         {
-            if (Game.EndBattle(b))
+            if (Map.game.EndBattle(b))
             {
                 useless.Clear();
 

@@ -6,6 +6,7 @@ using System.IO;
 
 namespace CityWar
 {
+    [Serializable]
     public partial class Attack
     {
         #region fields and constructors
@@ -25,6 +26,7 @@ namespace CityWar
         internal const double OverkillPercent = .5;
 
         //only used during a battle
+        [NonSerialized]
         private bool used = false;
 
         private readonly string name;
@@ -192,7 +194,7 @@ namespace CityWar
             }
             else if (damage > hits)
             {
-                if (owner.Owner == Game.CurrentPlayer)
+                if (owner.Owner == owner.Owner.Game.CurrentPlayer)
                     owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * ( damage - hits ) / ( (double)damage * owner.Attacks.Length ));
                 damage = hits;
             }
@@ -290,32 +292,6 @@ namespace CityWar
             return avgDamage / total;
         }
         #endregion //damage
-
-        #region saving and loading
-        internal void SaveAttack(BinaryWriter bw)
-        {
-            //string 
-            bw.Write(name);
-
-            //int
-            bw.Write(length);
-            bw.Write(damage);
-            bw.Write(divide);
-            bw.Write(target.ToInt());
-        }
-
-        internal static Attack LoadAttack(BinaryReader br)
-        {
-            string name = br.ReadString();
-
-            int length = br.ReadInt32();
-            int damage = br.ReadInt32();
-            int divide = br.ReadInt32();
-            EnumFlags<TargetType> target = new EnumFlags<TargetType>(br.ReadInt32());
-
-            return new Attack(name, target, length, damage, divide);
-        }
-        #endregion //saving and loading
     }
 
     [Flags]

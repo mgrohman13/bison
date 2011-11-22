@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CityWar
 {
-    public class Balance
+    public static class Balance
     {
         public const double AverageArmor = 5.0, AverageAP = 2.0, AverageDamage = 5.5,
             AverageDamageType = 2.0, AverageLength = 2.0, AverageMove = 2.1, MaxLength = 5;

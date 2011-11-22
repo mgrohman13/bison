@@ -480,31 +480,7 @@ next_planet:
         {
             using (Stream file = new FileStream(filePath, FileMode.Open))
             using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
-            {
-                Game game = (Game)new BinaryFormatter().Deserialize(decompress);
-                //foreach (Player p in game.players)
-                //    foreach (ShipDesign s in p.GetShipDesigns())
-                //    {
-                //        double pct = s.Upkeep / ( s.Cost + s.Upkeep * s.upkeepPayoff );
-                //        double cost = ShipDesign.GetTotCost(s.Att, s.Def, s.HP, s.Speed, s.Trans, s.Colony, s.PlanetDamageMult, s.Research);
-                //        int upkeep = Math.Max(1, Random.Round(cost * pct));
-                //        cost -= upkeep * s.upkeepPayoff;
-
-                //        s.cost = Random.Round(cost);
-                //        s.Upkeep = upkeep;
-                //        while (s.cost < s.upkeepPayoff * Consts.MinCostMult && s.Upkeep > 1)
-                //        {
-                //            s.cost = Random.Round(s.cost + s.upkeepPayoff);
-                //            --s.Upkeep;
-                //        }
-                //    }
-                //foreach (Tile t in game.map) if (t != null)
-                //    {
-                //        t.x = t.X;
-                //        t.y = t.Y;
-                //    }
-                return game;
-            }
+                return (Game)new BinaryFormatter().Deserialize(decompress);
         }
 
         public List<Result> GetGameResult()

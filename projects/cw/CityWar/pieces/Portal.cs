@@ -5,6 +5,7 @@ using System.IO;
 
 namespace CityWar
 {
+    [Serializable]
     public class Portal : Capturable
     {
         #region fields and constructors
@@ -38,21 +39,6 @@ namespace CityWar
 
             tile.Add(this);
             owner.Add(this);
-        }
-
-        //constructor for loading games
-        private Portal(Player owner, int group, int movement, int maxMove, string name, Tile tile, Abilities ability,
-            int portalCost, CostType portalType, string[] units, double[] have, double upkeep, int income)
-            : base(group, movement, maxMove, name, tile, ability)
-        {
-            this.owner = owner;
-            this.PortalCost = portalCost;
-            this.PortalType = portalType;
-            this.units = units;
-            this.have = have;
-            this.upkeep = upkeep;
-            this.income = income;
-            SetStartValues();
         }
         #endregion //fields and constructors
 
@@ -228,52 +214,5 @@ namespace CityWar
             return total * WorkPct;
         }
         #endregion //internal methods
-
-        #region saving and loading
-        internal override void SavePiece(BinaryWriter bw)
-        {
-            bw.Write("Portal");
-            SavePieceStuff(bw);
-
-            bw.Write(PortalCost);
-            bw.Write(income);
-            bw.Write(PortalType.ToString());
-
-            int length;
-            bw.Write(length = units.Length);
-            for (int i = 0 ; i < length ; ++i)
-            {
-                bw.Write(units[i]);
-                bw.Write(have[i]);
-            }
-
-            bw.Write(upkeep);
-        }
-
-        internal static Portal LoadPortal(BinaryReader br, Player owner)
-        {
-            int group, movement, maxMove;
-            string name;
-            Tile tile;
-            Abilities ability;
-            Piece.LoadPieceStuff(br, out group, out movement, out maxMove, out name, out tile, out ability);
-
-            int portalCost = br.ReadInt32(), income = br.ReadInt32();
-            CostType portalType = (CostType)Enum.Parse(typeof(CostType), br.ReadString());
-
-            int numUnits = br.ReadInt32();
-            string[] units = new string[numUnits];
-            double[] have = new double[numUnits];
-            for (int i = -1 ; ++i < numUnits ; )
-            {
-                units[i] = br.ReadString();
-                have[i] = br.ReadDouble();
-            }
-
-            double upkeep = br.ReadDouble();
-
-            return new Portal(owner, group, movement, maxMove, name, tile, ability, portalCost, portalType, units, have, upkeep, income);
-        }
-        #endregion //saving and loading
     }
 }

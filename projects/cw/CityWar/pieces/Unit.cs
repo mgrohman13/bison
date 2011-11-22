@@ -7,6 +7,7 @@ using System.IO;
 
 namespace CityWar
 {
+    [Serializable]
     public class Unit : Piece
     {
         #region fields and constructors
@@ -19,12 +20,15 @@ namespace CityWar
         internal readonly bool isThree;
         private readonly int cost, pplCost;
 
-        internal int Length = int.MaxValue;
-
         private int _hits, armor;
         private Attack[] attacks;
         private bool randed;
+
+        [NonSerialized]
         private double _randedCostMult = -1;
+
+        [NonSerialized]
+        internal int Length = int.MaxValue;
 
         private Unit(string race, string name, Tile tile, Player owner, int cost, int pplCost, CostType costType, Abilities abil,
            bool isThree, UnitType Type, int hits, int armor, int regen, int movement, Attack[] attacks, double _regenPct)
@@ -50,28 +54,6 @@ namespace CityWar
             CheckAttacks();
             foreach (Attack attack in this.attacks)
                 attack.SetOwner(this);
-        }
-
-        //constructor for loading games
-        private Unit(Player owner, string race, int group, int movement, int maxMove, string name, Tile tile, Abilities ability,
-            int cost, int regen, int maxHits, int hits, int armor, bool isThree,
-            bool randed, CostType costType, UnitType Type, Attack[] attacks, int pplCost, double _regenPct)
-            : base(group, movement, maxMove, name, tile, ability)
-        {
-            this.owner = owner;
-            this.Race = race;
-            this.cost = cost;
-            this.regen = regen;
-            this.maxHits = maxHits;
-            this.hits = hits;
-            this.armor = armor;
-            this.isThree = isThree;
-            this.randed = randed;
-            this.costType = costType;
-            this.Type = Type;
-            this.attacks = attacks;
-            this.pplCost = pplCost;
-            this._regenPct = _regenPct;
         }
         #endregion //fields and constructors
 
@@ -635,7 +617,7 @@ namespace CityWar
                     a.Used = false;
                     ++usedAttacks;
                 }
-            if (usedAttacks > 0 && Owner == Game.CurrentPlayer)
+            if (usedAttacks > 0 && Owner == this.Owner.Game                .CurrentPlayer)
             {
                 //only reduce movement if any attacks were used
                 --movement;
@@ -811,135 +793,6 @@ namespace CityWar
             return needed;
         }
         #endregion //moving
-
-        #region saving and loading
-        internal override void SavePiece(BinaryWriter bw)
-        {
-            bw.Write("Unit");
-
-            SavePieceStuff(bw);
-
-            //int
-            bw.Write(cost);
-            bw.Write(pplCost);
-            bw.Write(regen);
-            bw.Write(maxHits);
-            bw.Write(hits);
-            bw.Write(armor);
-
-            //double
-            bw.Write(regenPct);
-
-            //bool
-            bw.Write(isThree);
-            bw.Write(randed);
-
-            //string
-            bw.Write(Race);
-            bw.Write(costType.ToString());
-            bw.Write(Type.ToString());
-
-            //attack
-            bw.Write(attacks.Length);
-            foreach (Attack a in attacks)
-                a.SaveAttack(bw);
-        }
-
-        internal static Unit LoadUnit(BinaryReader br, Player owner)
-        {
-            int group, movement, maxMove;
-            string name;
-            Tile tile;
-            Abilities ability;
-            Piece.LoadPieceStuff(br, out group, out movement, out maxMove, out name, out tile, out ability);
-
-            int cost = br.ReadInt32(),
-                pplCost = br.ReadInt32(),
-                regen = br.ReadInt32(),
-                maxHits = br.ReadInt32(),
-                hits = br.ReadInt32(),
-                armor = br.ReadInt32();
-
-            double regenPct = br.ReadDouble();
-
-            bool isThree = br.ReadBoolean(),
-                randed = br.ReadBoolean();
-
-            string race = br.ReadString();
-
-            CostType costType;
-            switch (br.ReadString())
-            {
-            case "Air":
-                costType = CostType.Air;
-                break;
-
-            case "Death":
-                costType = CostType.Death;
-                break;
-
-            case "Earth":
-                costType = CostType.Earth;
-                break;
-
-            case "Nature":
-                costType = CostType.Nature;
-                break;
-
-            case "Production":
-                costType = CostType.Production;
-                break;
-
-            case "Water":
-                costType = CostType.Water;
-                break;
-
-            default:
-                throw new Exception();
-            }
-
-            UnitType Type;
-            switch (br.ReadString())
-            {
-            case "Ground":
-                Type = UnitType.Ground;
-                break;
-
-            case "Water":
-                Type = UnitType.Water;
-                break;
-
-            case "Air":
-                Type = UnitType.Air;
-                break;
-
-            case "Amphibious":
-                Type = UnitType.Amphibious;
-                break;
-
-            case "Immobile":
-                Type = UnitType.Immobile;
-                break;
-
-            default:
-                throw new Exception();
-            }
-
-            //attack
-            int attackCount = br.ReadInt32();
-            Attack[] attacks = new Attack[attackCount];
-            for (int a = -1 ; ++a < attackCount ; )
-                attacks[a] = Attack.LoadAttack(br);
-
-            Unit u = new Unit(owner, race, group, movement, maxMove, name, tile, ability, cost, regen, maxHits,
-                hits, armor, isThree, randed, costType, Type, attacks, pplCost, regenPct);
-
-            for (int a = -1 ; ++a < attackCount ; )
-                attacks[a].SetOwner(u);
-
-            return u;
-        }
-        #endregion //saving and loading
     }
 
     public enum CostType

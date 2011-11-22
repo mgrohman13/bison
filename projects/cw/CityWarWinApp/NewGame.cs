@@ -69,7 +69,7 @@ namespace CityWarWinApp
                 int i = -1;
                 foreach (Player player in players)
                     realPlayers[++i] = new CityWar.Player(player.Race == Player.Random ? (string)cbxRace.Items[CityWar.Game.Random.Next(cbxRace.Items.Count - 1) + 1] : player.Race, player.Color, player.Name);
-                CityWar.Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
+                Map.game = CityWar.Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
             }
             catch (ArgumentOutOfRangeException aoore)
             {
@@ -214,7 +214,10 @@ namespace CityWarWinApp
 
             public Color Color
             {
-                get { return color; }
+                get
+                {
+                    return color;
+                }
                 set
                 {
                     color = value;
@@ -223,7 +226,10 @@ namespace CityWarWinApp
             }
             public string Name
             {
-                get { return name; }
+                get
+                {
+                    return name;
+                }
                 set
                 {
                     name = value;
@@ -232,7 +238,10 @@ namespace CityWarWinApp
             }
             public string Race
             {
-                get { return race; }
+                get
+                {
+                    return race;
+                }
                 set
                 {
                     race = value;

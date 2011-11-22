@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 
 namespace CityWar
 {
+    [Serializable]
     public class Player
     {
         #region fields and constructors
@@ -16,10 +17,12 @@ namespace CityWar
         internal const double WorkMult = ( TradeDown + ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
         internal const double UpkeepMult = ( TradeUp - ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
 
+        private Game game;
+
         public readonly Color Color;
         public readonly string Name;
 
-        private static float zoom = 130;
+        private static float zoom = -1;
 
         public readonly string Race;
 
@@ -27,9 +30,11 @@ namespace CityWar
         private double healRound;
 
         private List<Piece> pieces = new List<Piece>();
+
+        [NonSerialized]
         private List<string> trades = new List<string>();
-        private Dictionary<string, Bitmap> pics = new Dictionary<string, Bitmap>(),
-            picsConst = new Dictionary<string, Bitmap>();
+        [NonSerialized]
+        private Dictionary<string, Bitmap> pics = new Dictionary<string, Bitmap>(), picsConst = new Dictionary<string, Bitmap>();
 
         public Player(string Race, Color color, string Name)
         {
@@ -39,32 +44,17 @@ namespace CityWar
             this.Name = Name;
             this.healRound = Game.Random.NextDouble();
         }
-
-        //constructor for loading games
-        private Player(string Race, Color color, string name, int air, int death,
-            int earth, int nature, int production, int water, int work,
-            int magic, int relic, int population, int upkeep, List<string> trades, double healRound)
-        {
-            this.Race = Race;
-            this.Color = color;
-            this.Name = name;
-            this.air = air;
-            this.death = death;
-            this.earth = earth;
-            this.nature = nature;
-            this.production = production;
-            this.water = water;
-            this.work = work;
-            this.magic = magic;
-            this.population = population;
-            this.relic = relic;
-            this.trades = trades;
-            this.upkeep = upkeep;
-            this.healRound = healRound;
-        }
         #endregion //fields and constructors
 
         #region public methods and properties
+        public Game Game
+        {
+            get
+            {
+                return game;
+            }
+        }
+
         public ReadOnlyCollection<Piece> GetPieces()
         {
             return pieces.AsReadOnly();
@@ -311,8 +301,10 @@ namespace CityWar
         #endregion //public methods and properties
 
         #region internal methods
-        internal void NewPlayer(bool city, string[] startUnits, double totalStartCost)
+        internal void NewPlayer(Game game, bool city, string[] startUnits, double totalStartCost)
         {
+            this.game = game;
+
             pieces.Clear();
             trades.Clear();
 
@@ -397,7 +389,7 @@ namespace CityWar
         {
             while (true)
             {
-                Tile t = Game.RandomTile();
+                Tile t = game.RandomTile();
                 if (t.Occupied())
                     continue;
 
@@ -482,9 +474,8 @@ namespace CityWar
             upkeep += Game.Random.Round(amount);
         }
 
-        internal static void SubtractCommonUpkeep()
+        internal static void SubtractCommonUpkeep(Player[] players)
         {
-            Player[] players = Game.GetPlayers();
             int min = int.MaxValue;
             foreach (Player p in players)
                 min = Math.Min(min, p.upkeep);
@@ -585,7 +576,7 @@ namespace CityWar
             if (pieces.Count > 0)
                 throw new Exception();
 
-            Game.DefeatPlayer(this);
+            game.DefeatPlayer(this);
 
             trades.Clear();
             picsConst.Clear();
@@ -837,12 +828,12 @@ namespace CityWar
             return new Bitmap(pic, Game.Random.Round(zoom * 5f / 6f),
                 Game.Random.Round(zoom * 5f / 6f));
         }
-        public static void ResetPics(float zoom)
+        internal static void ResetPics(Player[] players, float zoom)
         {
             if (Math.Abs(Player.zoom - zoom) > 1)
             {
                 Player.zoom = zoom;
-                foreach (Player p in Game.GetPlayers())
+                foreach (Player p in players)
                 {
                     foreach (Bitmap image in p.pics.Values)
                         image.Dispose();
@@ -891,7 +882,7 @@ namespace CityWar
         }
         private int Trade(bool up, int amt, string id)
         {
-            if (this != Game.CurrentPlayer || ( up && work < 1 ) || ( !up && amt < 1 ))
+            if (this != game.CurrentPlayer || ( up && work < 1 ) || ( !up && amt < 1 ))
                 return amt;
 
             if (up)
@@ -1324,91 +1315,5 @@ namespace CityWar
             return Game.Random.Round(amt - tradeAmt);
         }
         #endregion //removing pieces between turn rounds
-
-        #region saving and loading
-        internal void SavePlayer(BinaryWriter bw)
-        {
-            //color
-            bw.Write(Color.R);
-            bw.Write(Color.G);
-            bw.Write(Color.B);
-
-            //string
-            bw.Write(Name);
-            bw.Write(Race);
-
-            //int
-            bw.Write(air);
-            bw.Write(death);
-            bw.Write(earth);
-            bw.Write(nature);
-            bw.Write(production);
-            bw.Write(water);
-            bw.Write(work);
-            bw.Write(magic);
-            bw.Write(relic);
-            bw.Write(population);
-            bw.Write(upkeep);
-
-            //double 
-            bw.Write(healRound);
-
-            //ArrayList
-            bw.Write(trades.Count);
-            //string
-            foreach (string s in trades)
-                bw.Write(s);
-
-            //piece
-            bw.Write(pieces.Count);
-            foreach (Piece p in pieces)
-                p.SavePiece(bw);
-        }
-
-        internal static Player LoadPlayer(BinaryReader br)
-        {
-            //color
-            Color color = Color.FromArgb(br.ReadByte(), br.ReadByte(), br.ReadByte());
-
-            //string
-            string name = br.ReadString();
-            string race = br.ReadString();
-
-            //int
-            int air = br.ReadInt32(),
-                death = br.ReadInt32(),
-                earth = br.ReadInt32(),
-                nature = br.ReadInt32(),
-                production = br.ReadInt32(),
-                water = br.ReadInt32(),
-                work = br.ReadInt32(),
-                magic = br.ReadInt32(),
-                relic = br.ReadInt32(),
-                population = br.ReadInt32(),
-                upkeep = br.ReadInt32();
-
-            //double 
-            double healRound = br.ReadDouble();
-
-            //ArrayList
-            int tradeCount = br.ReadInt32();
-            List<string> trades = new List<string>(tradeCount);
-            //string
-            for (int a = -1 ; ++a < tradeCount ; )
-                trades.Add(br.ReadString());
-
-            Player p = new Player(race, color, name, air, death, earth, nature,
-                production, water, work, magic, relic, population, upkeep, trades, healRound);
-
-            int pieceCount = br.ReadInt32();
-            List<Piece> pieces = new List<Piece>(pieceCount);
-            for (int a = -1 ; ++a < pieceCount ; )
-                pieces.Add(Piece.LoadPiece(br, p));
-
-            p.pieces = pieces;
-
-            return p;
-        }
-        #endregion //saving and loading
     }
 }

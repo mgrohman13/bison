@@ -5,6 +5,7 @@ using System.IO;
 
 namespace CityWar
 {
+    [Serializable]
     public abstract class Piece
     {
         #region fields and constructors
@@ -26,17 +27,6 @@ namespace CityWar
             this.MaxMove = maxMove;
 
             group = Game.NewGroup();
-        }
-
-        //constructor for loading games
-        protected Piece(int group, int movement, int maxMove, string name, Tile tile, Abilities ability)
-        {
-            this.group = group;
-            this.movement = movement;
-            this.MaxMove = maxMove;
-            this.name = name;
-            this.ability = ability;
-            this.tile = tile;
         }
         #endregion //fields and constructors
 
@@ -207,93 +197,7 @@ namespace CityWar
         internal abstract void ResetMove();
         internal abstract double Heal();
         internal abstract void UndoHeal(double v);
-        internal abstract void SavePiece(BinaryWriter bw);
         #endregion //abstract members
-
-        #region saving and loading
-        protected void SavePieceStuff(BinaryWriter bw)
-        {
-            //int
-            bw.Write(group);
-            bw.Write(movement);
-            bw.Write(MaxMove);
-
-            //string 
-            bw.Write(name);
-
-            //tile 
-            bw.Write(tile.x);
-            bw.Write(tile.y);
-
-            //ability
-            bw.Write(ability.ToString());
-        }
-
-        internal static void LoadPieceStuff(BinaryReader br, out int group, out int movement, out int maxMove, out string name, out Tile tile, out Abilities ability)
-        {
-            group = br.ReadInt32();
-            movement = br.ReadInt32();
-            maxMove = br.ReadInt32();
-
-            name = br.ReadString();
-
-            tile = Game.GetTile(br.ReadInt32(), br.ReadInt32());
-
-            switch (br.ReadString())
-            {
-            case "AircraftCarrier":
-                ability = Abilities.AircraftCarrier;
-                break;
-
-            case "Aircraft":
-                ability = Abilities.Aircraft;
-                break;
-
-            case "None":
-                ability = Abilities.None;
-                break;
-
-            default:
-                throw new Exception();
-            }
-        }
-
-        internal static Piece LoadPiece(BinaryReader br, Player owner)
-        {
-            string type = br.ReadString();
-            Piece p;
-
-            switch (type)
-            {
-            case "Relic":
-                p = Relic.LoadRelic(br, owner);
-                break;
-
-            case "Wizard":
-                p = Wizard.LoadWizard(br, owner);
-                break;
-
-            case "City":
-                p = City.LoadCity(br, owner);
-                break;
-
-            case "Unit":
-                p = Unit.LoadUnit(br, owner);
-                break;
-
-            case "Portal":
-                p = Portal.LoadPortal(br, owner);
-                break;
-
-            default:
-                throw new Exception();
-            }
-
-            p.tile.Add(p);
-
-            return p;
-        }
-        #endregion //saving and loading
     }
 
     public enum Abilities

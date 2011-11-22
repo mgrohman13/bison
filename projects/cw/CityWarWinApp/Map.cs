@@ -14,6 +14,8 @@ namespace CityWarWinApp
     {
         #region Fields and Loading
 
+        public static Game game;
+
         //constants 
         public const int panelWidth = 255;
         public const int startZoom = 150;
@@ -79,7 +81,7 @@ namespace CityWarWinApp
             RefreshButtons();
             RefreshZoom();
 
-            CenterOn(Game.CurrentPlayer.GetCenter());
+            CenterOn(game.CurrentPlayer.GetCenter());
         }
 
         #endregion
@@ -102,7 +104,7 @@ namespace CityWarWinApp
         static bool CheckAircraft(Piece piece, int moveMod, Tile toTile, Dictionary<Tile, Tile> CanGetCarrier)
         {
             //cant move if it isn't your turn
-            if (piece.Owner != Game.CurrentPlayer)
+            if (piece.Owner != game.CurrentPlayer)
                 return true;
 
             Unit unit = piece as Unit;
@@ -171,8 +173,8 @@ namespace CityWarWinApp
 
         private void RefreshCurrentPlayer()
         {
-            Player currentPlayer = Game.CurrentPlayer;
-            this.lblTurn.Text = Game.Turn.ToString();
+            Player currentPlayer = game.CurrentPlayer;
+            this.lblTurn.Text = game.Turn.ToString();
             this.lblPlayer.Text = currentPlayer.Name;
             this.lblPlayer.BackColor = currentPlayer.Color;
             this.lblPlayer.ForeColor = currentPlayer.InverseColor;
@@ -181,7 +183,7 @@ namespace CityWarWinApp
         //this method speaks for itself...
         private void RefreshResources()
         {
-            Player currentPlayer = Game.CurrentPlayer;
+            Player currentPlayer = game.CurrentPlayer;
             this.lblAir.Text = currentPlayer.Air.ToString();
             this.lblDeath.Text = currentPlayer.Death.ToString();
             this.lblEarth.Text = currentPlayer.Earth.ToString();
@@ -204,7 +206,7 @@ namespace CityWarWinApp
             }
 
             //get the selected tile and its pieces
-            Tile selTile = Game.GetTile(selected.X, selected.Y);
+            Tile selTile = game.GetTile(selected.X, selected.Y);
             Piece[] Selected = selTile.GetSelectedPieces();
 
             //check if the only selected piece is a wizard, in which case you can change the terrain
@@ -254,20 +256,20 @@ namespace CityWarWinApp
             middle = Zoom / 4f;
 
             //see if there is enough room to scroll each axis
-            xAxis = ( ( Zoom * Game.Width ) > this.ClientSize.Width - panelWidth );
-            yAxis = ( ( side * 3 * Game.Height ) > this.ClientSize.Height );
+            xAxis = ( ( Zoom * game.Width ) > this.ClientSize.Width - panelWidth );
+            yAxis = ( ( side * 3 * game.Height ) > this.ClientSize.Height );
 
             //get the maximum values for offX and offY
             if (xAxis)
-                topX = ( (float)Game.Width + .5f ) * (float)Zoom - ( (float)ClientSize.Width - panelWidth - 24f );
+                topX = ( (float)game.Width + .5f ) * (float)Zoom - ( (float)ClientSize.Width - panelWidth - 24f );
             if (yAxis)
-                topY = ( (float)Game.Height + 1f / 3f ) * ( (float)Zoom * 3f * mult ) - (float)ClientSize.Height + 26f;
+                topY = ( (float)game.Height + 1f / 3f ) * ( (float)Zoom * 3f * mult ) - (float)ClientSize.Height + 26f;
 
             //get the font for city and wizard numbers on a tile
             tileInfoFont = new Font(new FontFamily("Arial"), Zoom / 9f, FontStyle.Bold);
 
             //reset the pics so they can be the proper size
-            Player.ResetPics(_zoom);
+            game.ResetPics(this._zoom);
 
             //center on the selected tile
             CenterOnSelected();
@@ -275,10 +277,10 @@ namespace CityWarWinApp
 
         private void CenterOnSelected()
         {
-            if (selected.X > -1 && selected.X < Game.Width && selected.Y > -1 && selected.Y < Game.Height)
-                CenterOn(Game.GetTile(selected.X, selected.Y));
+            if (selected.X > -1 && selected.X < game.Width && selected.Y > -1 && selected.Y < game.Height)
+                CenterOn(game.GetTile(selected.X, selected.Y));
             else
-                CenterOn(Game.CurrentPlayer.GetCenter());
+                CenterOn(game.CurrentPlayer.GetCenter());
         }
 
         private void CenterOn(Tile tile)
@@ -329,7 +331,7 @@ namespace CityWarWinApp
 
         private void CenterUnit()
         {
-            Tile selectedTile = Game.GetTile(selected.X, selected.Y);
+            Tile selectedTile = game.GetTile(selected.X, selected.Y);
 
             //select any pieces with movement left
             selectedTile.Select();
@@ -380,7 +382,7 @@ namespace CityWarWinApp
                 {
                     if (e.Button == MouseButtons.Left)
                     {
-                        Tile selectedTile = Game.GetTile(selected.X, selected.Y);
+                        Tile selectedTile = game.GetTile(selected.X, selected.Y);
                         lastGroup = selectedTile.CurrentGroup;
                         //click on the piece
                         selectedTile.ClickOn(clicked, shift, ctrl, alt);
@@ -401,7 +403,7 @@ namespace CityWarWinApp
                 {
                     if (e.Button == MouseButtons.Left)
                     {
-                        Tile selectedTile = Game.GetTile(selected.X, selected.Y);
+                        Tile selectedTile = game.GetTile(selected.X, selected.Y);
                         selectedTile.CurrentGroup = lastGroup;
                         //click on the piece
                         selectedTile.ClickOn(clicked, false, true, false);
@@ -439,7 +441,7 @@ namespace CityWarWinApp
         {
             if (selected.X > -1 && selected.Y > -1)
             {
-                return Game.GetTile(selected.X, selected.Y).GetAllPieces();
+                return game.GetTile(selected.X, selected.Y).GetAllPieces();
             }
             return new Piece[0];
         }
@@ -448,7 +450,7 @@ namespace CityWarWinApp
         {
             MattUtil.EnumFlags<PiecesPanel.DrawFlags> result = new MattUtil.EnumFlags<PiecesPanel.DrawFlags>();
 
-            if (piece.Owner == Game.CurrentPlayer)
+            if (piece.Owner == game.CurrentPlayer)
             {
                 if (piece.MaxMove > 0)
                     result.Add(PiecesPanel.DrawFlags.Text);
@@ -505,17 +507,17 @@ namespace CityWarWinApp
                 minX = -1;
             if (minY < -1)
                 minY = -1;
-            if (maxX > Game.Width)
-                maxX = Game.Width;
-            if (maxY > Game.Height)
-                maxY = Game.Height;
+            if (maxX > game.Width)
+                maxX = game.Width;
+            if (maxY > game.Height)
+                maxY = game.Height;
 
             //draw the hexes
             for (int X = minX ; ++X < maxX ; )
                 for (int Y = minY ; ++Y < maxY ; )
                 {
                     //get the current tile being drawn
-                    Tile thisTile = Game.GetTile(X, Y);
+                    Tile thisTile = game.GetTile(X, Y);
 
                     //get the proper color
                     Brush theBrush;
@@ -655,7 +657,7 @@ namespace CityWarWinApp
                 : (int)Math.Round(( (float)e.X + offX - 13f + Zoom / 2f ) / Zoom) - 1 );
 
             //show the x and y of the mouse, if it's within range
-            if (x >= 0 && x < Game.Width && y >= 0 && y < Game.Height)
+            if (x >= 0 && x < game.Width && y >= 0 && y < game.Height)
                 this.lblMouse.Text = string.Format("({0},{1})", x, y);
             else
                 this.lblMouse.Text = "";
@@ -675,7 +677,7 @@ namespace CityWarWinApp
                 int x = ( y % 2 == 0 ? (int)Math.Round(( (float)e.X + offX - 13f ) / Zoom) - 1
                     : (int)Math.Round(( (float)e.X + offX - 13f + Zoom / 2f ) / Zoom) - 1 );
 
-                if (x >= 0 && y >= 0 && x < Game.Width && y < Game.Height)
+                if (x >= 0 && y >= 0 && x < game.Width && y < game.Height)
                 {
                     //select the tile
                     if (e.Button == MouseButtons.Left)
@@ -688,14 +690,14 @@ namespace CityWarWinApp
                         //get the selected tile (if it exists) and the clicked tile
                         Tile selectedTile = null;
                         if (selected.X != -1 && selected.Y != -1)
-                            selectedTile = Game.GetTile(selected.X, selected.Y);
-                        Tile clicked = Game.GetTile(x, y);
+                            selectedTile = game.GetTile(selected.X, selected.Y);
+                        Tile clicked = game.GetTile(x, y);
 
                         //check that the selected tile exists
                         if (selected.X != -1 && selected.Y != -1)
                         {
                             Player occ, cur;
-                            if (!selectedTile.Occupied(out cur) || cur == Game.CurrentPlayer)
+                            if (!selectedTile.Occupied(out cur) || cur == game.CurrentPlayer)
                             {
                                 //check that the tiles are neighbors
                                 if (selectedTile.IsNeighbor(x, y))
@@ -715,11 +717,11 @@ namespace CityWarWinApp
                                             saved = false;
 
                                             //try to move the units
-                                            if (Game.MovePieces(selectedTile, x, y, this.chbGroup.Checked))
+                                            if (game.MovePieces(selectedTile, x, y, this.chbGroup.Checked))
                                             {
                                                 //if any were moved, select the destination tile
                                                 selected = new Point(x, y);
-                                                selectedTile = Game.GetTile(selected.X, selected.Y);
+                                                selectedTile = game.GetTile(selected.X, selected.Y);
                                             }
 
                                             //check if any selected units have move remaining
@@ -741,7 +743,7 @@ namespace CityWarWinApp
                                     else if (selectedTile.GetSelectedUnits().Length > 0)
                                     {
                                         //if there is an enemy at the destination, fight it
-                                        new Battle(Game.StartBattle(selectedTile, clicked)).ShowDialog();
+                                        new Battle(game.StartBattle(selectedTile, clicked)).ShowDialog();
                                     }
                                     else
                                         return;
@@ -770,7 +772,7 @@ namespace CityWarWinApp
 
         private void lblResource_Click(object sender, EventArgs e)
         {
-            new Trade(Game.CurrentPlayer).ShowDialog();
+            new Trade(game.CurrentPlayer).ShowDialog();
             RefreshResources();
         }
 
@@ -951,8 +953,8 @@ namespace CityWarWinApp
 
             //get all pieces that can build
             List<Capturable> capts = new List<Capturable>();
-            foreach (Piece p in Game.GetTile(selected.X, selected.Y).GetSelectedPieces())
-                if (p.Owner != Game.CurrentPlayer)
+            foreach (Piece p in game.GetTile(selected.X, selected.Y).GetSelectedPieces())
+                if (p.Owner != game.CurrentPlayer)
                     return;
                 else if (p is Capturable)
                     capts.Add((Capturable)p);
@@ -986,11 +988,11 @@ namespace CityWarWinApp
             //    selPieces = new Piece[0];
 
             //get the next piece based on the currently selected ones
-            Piece u = Game.CurrentPlayer.NextPiece(Game.GetTile(selected.X, selected.Y).CurrentGroup);
+            Piece u = game.CurrentPlayer.NextPiece(game.GetTile(selected.X, selected.Y).CurrentGroup);
             if (u == null)
             {
                 //if no pieces have move left
-                Game.GetTile(selected.X, selected.Y).CurrentGroup = int.MinValue;
+                game.GetTile(selected.X, selected.Y).CurrentGroup = int.MinValue;
                 CenterOnSelected();
             }
             else
@@ -1010,7 +1012,7 @@ namespace CityWarWinApp
             //get currently selected pieces
             Piece[] selPieces;
             if (selected.X != -1 && selected.Y != -1)
-                selPieces = Game.GetTile(selected.X, selected.Y).GetSelectedPieces();
+                selPieces = game.GetTile(selected.X, selected.Y).GetSelectedPieces();
             else
                 selPieces = new Piece[0];
 
@@ -1045,7 +1047,7 @@ namespace CityWarWinApp
 
             if (can)
             {
-                Game.HealPieces(selPieces);
+                game.HealPieces(selPieces);
 
                 bool nomoves = true;
                 foreach (Piece p in selPieces)
@@ -1073,7 +1075,7 @@ namespace CityWarWinApp
             saved = false;
 
             //get currently selected pieces
-            Tile tile = Game.GetTile(selected.X, selected.Y);
+            Tile tile = game.GetTile(selected.X, selected.Y);
             int curGroup = tile.CurrentGroup;
             Piece[] selPieces = tile.FindAllPieces(delegate(Piece p)
             {
@@ -1119,7 +1121,7 @@ namespace CityWarWinApp
             if (piece.MaxMove != 0 && piece.Movement == piece.MaxMove)
             {
                 //build the city
-                Game.ConvertCity(piece);
+                game.ConvertCity(piece);
 
                 //check if any selected units have move left
                 bool nomoves = true;
@@ -1154,23 +1156,23 @@ namespace CityWarWinApp
         {
             this.timerGraphics.Enabled = false;
 
-            if (Game.CurrentPlayer.HasMovesLeft())
+            if (game.CurrentPlayer.HasMovesLeft())
                 if (MessageBox.Show("You have not moved all of your units.\nDo you still wish to end your turn?",
                     "End Turn", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
                     return;
 
             //check for any dying aircraft
-            foreach (Piece p in Game.CurrentPlayer.GetPieces())
+            foreach (Piece p in game.CurrentPlayer.GetPieces())
                 if (!CheckAircraft(p, int.MaxValue))
                     return;
 
             saved = false;
 
             //end the tuen
-            Game.EndTurn();
+            game.EndTurn();
 
             //check if the game is over
-            if (Game.GetPlayers().Length < 1)
+            if (game.GetPlayers().Length < 1)
             {
                 if (new GameOver().ShowDialog() == DialogResult.Yes)
                     this.btnQuit_Click(null, null);
@@ -1187,7 +1189,7 @@ namespace CityWarWinApp
             okToMove.Clear();
 
             //center on the next player's center
-            CenterOn(Game.CurrentPlayer.GetCenter());
+            CenterOn(game.CurrentPlayer.GetCenter());
         }
 
         private void btnInfo_Click(object sender, EventArgs e)
@@ -1227,7 +1229,7 @@ namespace CityWarWinApp
 
         private void btnDisband_Click(object sender, EventArgs e)
         {
-            Unit[] units = Game.GetTile(selected.X, selected.Y).GetSelectedUnits();
+            Unit[] units = game.GetTile(selected.X, selected.Y).GetSelectedUnits();
             double deathValue = 0;
             foreach (Unit unit in units)
                 deathValue += (int)Math.Ceiling(unit.GetDisbandAmount());
@@ -1236,7 +1238,7 @@ namespace CityWarWinApp
             {
                 saved = false;
 
-                Game.DisbandUnits(units);
+                game.DisbandUnits(units);
 
                 RefreshResources();
                 RefreshButtons();
@@ -1248,14 +1250,14 @@ namespace CityWarWinApp
 
         private void btnGroup_Click(object sender, EventArgs e)
         {
-            Game.GetTile(selected.X, selected.Y).Group();
+            game.GetTile(selected.X, selected.Y).Group();
             this.panelPieces.Invalidate();
             RefreshButtons();
         }
 
         private void btnUngroup_Click(object sender, EventArgs e)
         {
-            Game.GetTile(selected.X, selected.Y).Ungroup();
+            game.GetTile(selected.X, selected.Y).Ungroup();
             this.panelPieces.Invalidate();
             RefreshButtons();
         }
@@ -1402,79 +1404,13 @@ namespace CityWarWinApp
 
         private void SaveGame(string file)
         {
-            //open a new file stream and binary writer
-            FileStream fs = File.Open(file, FileMode.OpenOrCreate);
-            BinaryWriter bw = new BinaryWriter(fs);
-
-            //save game data
-            Game.SaveGame(bw);
-
-            //float
-            bw.Write(offX);
-            bw.Write(offY);
-            bw.Write(scrollSpeed);
-            bw.Write(Zoom);
-            bw.Write(topX);
-            bw.Write(topY);
-            bw.Write(side);
-            bw.Write(middle);
-
-            //point
-            bw.Write(selected.X);
-            bw.Write(selected.Y);
-
-            //rectangle
-            bw.Write(oldBounds.X);
-            bw.Write(oldBounds.Y);
-            bw.Write(oldBounds.Width);
-            bw.Write(oldBounds.Height);
-
-            bw.Close();
-            fs.Close();
+            game.SaveGame(file);
         }
 
         public void LoadGame(string file)
         {
-            FileStream fs = File.OpenRead(file);
-            BinaryReader br = new BinaryReader(fs);
-
-            Game.LoadGame(br);
-
-            offX = br.ReadSingle();
-            offY = br.ReadSingle();
-            scrollSpeed = br.ReadSingle();
-            Zoom = br.ReadSingle();
-            topX = br.ReadSingle();
-            topY = br.ReadSingle();
-            side = br.ReadSingle();
-            middle = br.ReadSingle();
-
-            selected = new Point(br.ReadInt32(), br.ReadInt32());
-
-            oldBounds = new Rectangle(br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
-
-            //clear the OKed aircraft
-            okToMove.Clear();
-
-            saved = true;
-
-            br.Close();
-            fs.Close();
-
-            //refresh stuff after loading
-            RefreshCurrentPlayer();
-            RefreshResources();
-            RefreshButtons();
-            RefreshZoom();
-
-            //center on the selected tile, if it exists
-            if (selected.X == -1 && selected.Y == -1)
-            {
-                this.Invalidate(invalidateRectangle, false);
-                this.panelPieces.Invalidate();
-            }
-            else
-                CenterOnSelected();
+            game = Game.LoadGame(file);
+            game.ResetPics(this._zoom);
         }
 
         #endregion

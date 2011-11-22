@@ -6,12 +6,16 @@ using System.Drawing;
 
 namespace CityWar
 {
+    [Serializable]
     public class Tile
     {
         #region fields and constructors
+        private readonly Game game;
         public readonly int x, y;
 
-        private int currentGroup = int.MinValue;
+        [NonSerialized]
+        private int currentGroup = Game.NewGroup();
+
         private bool madeCity = false;
         private Terrain terrain;
         private List<Piece> pieces = new List<Piece>();
@@ -19,14 +23,16 @@ namespace CityWar
         private int wizardPoints = 0;
         private int cityTime = -1;
 
-        internal Tile(int x, int y, Terrain terrain)
+        internal Tile(Game game, int x, int y, Terrain terrain)
         {
+            this.game = game;
             this.x = x;
             this.y = y;
             this.terrain = terrain;
         }
-        internal Tile(int x, int y)
+        internal Tile(Game game, int x, int y)
         {
+            this.game = game;
             this.x = x;
             this.y = y;
             switch (Game.Random.NextBits(2))
@@ -46,18 +52,6 @@ namespace CityWar
             default:
                 throw new Exception();
             }
-        }
-
-        //constructor for loading games
-        private Tile(int x, int y, int currentGroup, int wizardPoints, int cityTime, bool madeCity, Terrain terrain)
-        {
-            this.x = x;
-            this.y = y;
-            this.CurrentGroup = currentGroup;
-            this.wizardPoints = wizardPoints;
-            this.cityTime = cityTime;
-            this.madeCity = madeCity;
-            this.terrain = terrain;
         }
         #endregion //fields and constructors
 
@@ -108,7 +102,7 @@ namespace CityWar
 
         public bool IsNeighbor(int x, int y)
         {
-            return IsNeighbor(Game.GetTile(x, y));
+            return IsNeighbor(game.GetTile(x, y));
         }
         public bool IsNeighbor(Tile t)
         {
@@ -255,7 +249,7 @@ namespace CityWar
         {
             Player player;
             Occupied(out player);
-            if (Game.CurrentPlayer != player)
+            if (game.CurrentPlayer != player)
                 return;
 
             CurrentGroup = Game.NewGroup();
@@ -266,7 +260,7 @@ namespace CityWar
         {
             Player player;
             Occupied(out player);
-            if (Game.CurrentPlayer != player)
+            if (game.CurrentPlayer != player)
                 return;
 
             int newGroup = CurrentGroup;
@@ -362,7 +356,7 @@ namespace CityWar
         }
         public override int GetHashCode()
         {
-            return x * Game.Height + y;
+            return x * game.Height + y;
         }
         #endregion //public methods and properties
 
@@ -419,7 +413,7 @@ namespace CityWar
             {
                 p.Owner.CollectWizardPts(wizardPoints);
                 wizardPoints = 0;
-                Game.CreateWizardPts();
+                game.CreateWizardPts();
                 canUndo = false;
             }
 
@@ -483,7 +477,7 @@ namespace CityWar
         internal void SetupNeighbors()
         {
             for (int a = -1 ; ++a < neighbors.Length ; )
-                neighbors[a] = Game.GetTileIn(x, y, a);
+                neighbors[a] = game.GetTileIn(x, y, a);
         }
 
         internal bool CheckCapture(Player owner)
@@ -523,7 +517,7 @@ namespace CityWar
             {
                 player.CollectWizardPts(this.WizardPoints);
                 wizardPoints = 0;
-                Game.CreateWizardPts();
+                game.CreateWizardPts();
                 return false;
             }
             return true;
@@ -931,62 +925,6 @@ namespace CityWar
             return int.MaxValue;
         }
         #endregion //find distance
-
-        #region saving and loading
-        internal void SaveTile(BinaryWriter bw)
-        {
-            //int
-            bw.Write(x);
-            bw.Write(y);
-            bw.Write(CurrentGroup);
-            bw.Write(wizardPoints);
-            bw.Write(cityTime);
-
-            //bool
-            bw.Write(MadeCity);
-
-            //terrain
-            bw.Write(terrain.ToString());
-        }
-        internal static Tile LoadTile(BinaryReader br)
-        {
-            //int
-            int x = br.ReadInt32(),
-                y = br.ReadInt32(),
-                currentGroup = br.ReadInt32(),
-                wizardPoints = br.ReadInt32(),
-                cityTime = br.ReadInt32();
-
-            //bool
-            bool MadeCity = br.ReadBoolean();
-
-            //terrain
-            Terrain terrain;
-            switch (br.ReadString())
-            {
-            case "Plains":
-                terrain = Terrain.Plains;
-                break;
-
-            case "Mountain":
-                terrain = Terrain.Mountain;
-                break;
-
-            case "Water":
-                terrain = Terrain.Water;
-                break;
-
-            case "Forest":
-                terrain = Terrain.Forest;
-                break;
-
-            default:
-                throw new Exception();
-            }
-
-            return new Tile(x, y, currentGroup, wizardPoints, cityTime, MadeCity, terrain);
-        }
-        #endregion //saving and loading
     }
 
     public enum Terrain

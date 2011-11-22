@@ -5,6 +5,7 @@ using System.IO;
 
 namespace CityWar
 {
+    [Serializable]
     public class Wizard : Capturable
     {
         #region fields and constructors
@@ -45,14 +46,6 @@ namespace CityWar
                     if (Game.Random.Bool(chance))
                         units.Add(u);
                 }
-        }
-
-        //constructor for loading games
-        private Wizard(Player owner, int group, int movement, int maxMove, string name, Tile tile, Abilities ability, List<string> units)
-            : base(group, movement, maxMove, name, tile, ability)
-        {
-            this.owner = owner;
-            this.units = units;
         }
         #endregion //fields and constructors
 
@@ -152,34 +145,5 @@ namespace CityWar
             }
         }
         #endregion //internal methods
-
-        #region saving and loading
-        internal override void SavePiece(BinaryWriter bw)
-        {
-            bw.Write("Wizard");
-
-            bw.Write(units.Count);
-            foreach (string s in units)
-                bw.Write(s);
-
-            SavePieceStuff(bw);
-        }
-
-        internal static Wizard LoadWizard(BinaryReader br, Player owner)
-        {
-            int unitCount = br.ReadInt32();
-            List<string> units = new List<string>(unitCount);
-            for (int a = -1 ; ++a < unitCount ; )
-                units.Add(br.ReadString());
-
-            int group, movement, maxMove;
-            string name;
-            Tile tile;
-            Abilities ability;
-            Piece.LoadPieceStuff(br, out group, out movement, out maxMove, out name, out tile, out ability);
-
-            return new Wizard(owner, group, movement, maxMove, name, tile, ability, units);
-        }
-        #endregion //saving and loading
     }
 }

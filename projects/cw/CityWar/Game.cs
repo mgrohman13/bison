@@ -2,10 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace CityWar
 {
-    public static class Game
+    [Serializable]
+    public class Game
     {
         #region fields
         public static MattUtil.MTRandom Random;
@@ -13,21 +17,43 @@ namespace CityWar
         {
             Random = new MattUtil.MTRandom();
             Random.StartTick();
+
+            InitRaces();
         }
 
         public static string Path = "..\\..\\..\\";
-
-        private static int turn, width, height, currentPlayer, startWork;
-        private static Player[] players, defeatedPlayers;
-        private static Dictionary<Player, int> winningPlayers;
-        private static Tile[,] map;
         public static Dictionary<string, string[]> Races;
-        private static Dictionary<string, int> unitsHave;
+
+        private int turn, width, height, currentPlayer, startWork;
+        private Player[] players, defeatedPlayers;
+        private Dictionary<Player, int> winningPlayers;
+        private Tile[,] map;
+        private Dictionary<string, int> unitsHave;
+
         #endregion //fields
 
         #region public commands
-        public static void StartNewGame(Player[] newPlayers, int width, int height)
+        public void SaveGame(string filePath)
         {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                new BinaryFormatter().Serialize(memory, this);
+                using (Stream file = new FileStream(filePath, FileMode.Create))
+                using (Stream compress = new DeflateStream(file, CompressionMode.Compress))
+                    memory.WriteTo(compress);
+            }
+        }
+        public static Game LoadGame(string filePath)
+        {
+            using (Stream file = new FileStream(filePath, FileMode.Open))
+            using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
+                return (Game)new BinaryFormatter().Deserialize(decompress);
+        }
+
+        public static Game StartNewGame(Player[] newPlayers, int width, int height)
+        {
+            Game game = new Game();
+
             int numPlayers = newPlayers.Length;
 
             //ensure the map is big enough for all the players
@@ -39,16 +65,17 @@ namespace CityWar
 
             //initialize variables
             ClearUndos();
-            turn = 1;
-            Width = width;
-            Height = height;
-            defeatedPlayers = new Player[0];
+            game.turn = 1;
+            game.Width = width;
+            game.Height = height;
+            game.defeatedPlayers = new Player[0];
+            game.winningPlayers = new Dictionary<Player, int>();
 
-            CreateMap(width, height);
+            game.CreateMap(width, height);
 
             UnitSchema us;
             int numUnits;
-            InitRaces(out us, out numUnits);
+            InitRaces(out us, out numUnits, out game.unitsHave);
 
             //pick 3 random starting units
 
@@ -58,7 +85,7 @@ namespace CityWar
             {
                 UnitSchema.UnitRow row = ( (UnitSchema.UnitRow)us.Unit.Rows[Random.Next(numUnits)] );
                 //this has to come after unitsHave is set to cost but before actualy initialized
-                startUnits[a] = GetForRaces(row.Name);
+                startUnits[a] = game.GetForRaces(row.Name);
             }
             double totalStartCost = 0;
             foreach (Player player in newPlayers)
@@ -68,8 +95,8 @@ namespace CityWar
 
             foreach (string[] race in Races.Values)
                 foreach (string name in race)
-                    if (unitsHave[name] > 0)
-                        unitsHave[name] = GetInitUnitsHave(unitsHave[name]);
+                    if (game.unitsHave[name] > 0)
+                        game.unitsHave[name] = game.GetInitUnitsHave(game.unitsHave[name]);
 
             //initialize the players, half with cities and half with wizards
             bool city = Random.Bool();
@@ -78,33 +105,35 @@ namespace CityWar
                 string[] raceUnits = new string[3];
                 for (int a = -1 ; ++a < 3 ; )
                     raceUnits[a] = startUnits[a][current.Race];
-                current.NewPlayer(city = !city, raceUnits, totalStartCost);
+                current.NewPlayer(game, city = !city, raceUnits, totalStartCost);
             }
 
             //randomize the turn order
-            currentPlayer = -1;
-            players = new Player[numPlayers];
+            game.currentPlayer = -1;
+            game.players = new Player[numPlayers];
             foreach (Player current in Random.Iterate<Player>(newPlayers))
             {
-                players[++currentPlayer] = current;
+                game.players[++game.currentPlayer] = current;
                 //players moving later in the turn order receive compensation
-                AddMoveOrderDiff(current, currentPlayer);
+                game.AddMoveOrderDiff(current, game.currentPlayer);
                 current.EndTurn();
             }
 
             //create wizard points and possibly some starting city spots
             int wizspots = 1 + Random.GaussianCappedInt(width * height / 66.6f, .09f);
             for (int a = -1 ; ++a < wizspots ; )
-                CreateWizardPts();
+                game.CreateWizardPts();
             for (int a = -1 ; ++a < numPlayers ; )
-                CreateCitySpot();
+                game.CreateCitySpot();
 
             //	Start the game!
-            Player.SubtractCommonUpkeep();
-            currentPlayer = 0;
-            startWork = players[0].StartTurn();
+            Player.SubtractCommonUpkeep(game.players);
+            game.currentPlayer = 0;
+            game.startWork = game.players[0].StartTurn();
+
+            return game;
         }
-        private static int GetInitUnitsHave(int needed)
+        private int GetInitUnitsHave(int needed)
         {
             //~1/28 will be outside [-needed,needed]
             return Random.GaussianInt(needed / 2.1f);
@@ -113,9 +142,10 @@ namespace CityWar
         {
             UnitSchema us;
             int numUnits;
-            InitRaces(out us, out numUnits);
+            Dictionary<string, int> unitsHave;
+            InitRaces(out us, out numUnits, out unitsHave);
         }
-        private static void InitRaces(out UnitSchema us, out int numUnits)
+        private static void InitRaces(out UnitSchema us, out int numUnits, out Dictionary<string, int> unitsHave)
         {
             //initialize units
             us = UnitTypes.GetSchema();
@@ -167,11 +197,11 @@ namespace CityWar
             return retVal;
         }
 
-        public static void EndTurn()
+        public void EndTurn()
         {
             EndTurn(false);
         }
-        private static void EndTurn(bool currentDead)
+        private void EndTurn(bool currentDead)
         {
             if (players.Length > 0)
             {
@@ -204,7 +234,7 @@ namespace CityWar
             }
         }
 
-        public static int AttackUnit(Battle b, Attack attack, Unit target)
+        public int AttackUnit(Battle b, Attack attack, Unit target)
         {
             int retVal = attack.AttackUnit(target);
 
@@ -229,7 +259,7 @@ namespace CityWar
             return retVal;
         }
 
-        public static Battle StartBattle(Tile attacker, Tile defender)
+        public Battle StartBattle(Tile attacker, Tile defender)
         {
             Player player;
             attacker.OccupiedByUnit(out player);
@@ -238,7 +268,7 @@ namespace CityWar
             return Unit.StartBattle(attacker.GetSelectedUnits(), defender);
         }
 
-        public static bool EndBattle(Battle b)
+        public bool EndBattle(Battle b)
         {
             if (b.canRetalliate)
             {
@@ -258,7 +288,7 @@ namespace CityWar
             return false;
         }
 
-        public static void ChangeTerrain(Wizard wizard, Terrain terrain)
+        public void ChangeTerrain(Wizard wizard, Terrain terrain)
         {
             int movement = wizard.Movement;
             if (movement > 0)
@@ -301,7 +331,7 @@ namespace CityWar
             }
         }
 
-        public static void BuildPiece(Capturable capt, string pieceName)
+        public void BuildPiece(Capturable capt, string pieceName)
         {
             if (capt.Owner != players[currentPlayer])
                 return;
@@ -319,7 +349,7 @@ namespace CityWar
                     RemoveUndosForPiece(capt);
                 }
         }
-        private static Piece UndoBuildPiece(object[] args)
+        private Piece UndoBuildPiece(object[] args)
         {
             Capturable capt = (Capturable)args[0];
             Piece piece = (Piece)args[1];
@@ -329,7 +359,7 @@ namespace CityWar
             return capt;
         }
 
-        public static bool MovePieces(Tile from, int x, int y, bool group)
+        public bool MovePieces(Tile from, int x, int y, bool group)
         {
             Player player;
             from.Occupied(out player);
@@ -358,7 +388,7 @@ namespace CityWar
                 return any;
             }
         }
-        private static bool MovePiecesHelper(Tile from, int x, int y, bool group)
+        private bool MovePiecesHelper(Tile from, int x, int y, bool group)
         {
             Player player;
             from.Occupied(out player);
@@ -408,7 +438,7 @@ namespace CityWar
 
             return any;
         }
-        private static void RegroupMoved(Tile from, int x, int y, IEnumerable<Piece> pieces)
+        private void RegroupMoved(Tile from, int x, int y, IEnumerable<Piece> pieces)
         {
             int newGroup = NewGroup();
             foreach (Piece piece in pieces)
@@ -416,11 +446,11 @@ namespace CityWar
                     piece.Group = newGroup;
             map[x, y].CurrentGroup = newGroup;
         }
-        private static Piece UndoMovePieces(object[] args)
+        private Piece UndoMovePieces(object[] args)
         {
             return UndoMovePieceSetGroup(args, NewGroup());
         }
-        private static Piece UndoMovePieceSetGroup(object[] args, int group)
+        private Piece UndoMovePieceSetGroup(object[] args, int group)
         {
             Tile from = (Tile)args[0];
             Piece p = (Piece)args[1];
@@ -444,7 +474,7 @@ namespace CityWar
             return p;
         }
 
-        public static void HealPieces(Piece[] selPieces)
+        public void HealPieces(Piece[] selPieces)
         {
             int length = selPieces.Length;
             if (length < 1)
@@ -474,7 +504,7 @@ namespace CityWar
                 UndoArgs.Push(new object[] { undoInfo });
             }
         }
-        private static Piece UndoHealPieces(object[] args)
+        private Piece UndoHealPieces(object[] args)
         {
             Dictionary<Piece, double> undoInfo = (Dictionary<Piece, double>)args[0];
 
@@ -543,7 +573,7 @@ namespace CityWar
             return piece;
         }
 
-        public static void ConvertCity(Piece p)
+        public void ConvertCity(Piece p)
         {
             if (players[currentPlayer] != p.Owner)
                 return;
@@ -554,7 +584,7 @@ namespace CityWar
                 UndoArgs.Push(new object[] { p });
             }
         }
-        private static Piece UndoConvertCity(object[] args)
+        private Piece UndoConvertCity(object[] args)
         {
             Piece piece = (Piece)args[0];
 
@@ -569,7 +599,7 @@ namespace CityWar
             return piece;
         }
 
-        public static void DisbandUnits(Unit[] units)
+        public void DisbandUnits(Unit[] units)
         {
             if (units.Length < 1)
                 return;
@@ -585,7 +615,7 @@ namespace CityWar
             UndoCommands.Push(UndoDisbandUnits);
             UndoArgs.Push(new object[] { undoInfo });
         }
-        private static Piece UndoDisbandUnits(object[] args)
+        private Piece UndoDisbandUnits(object[] args)
         {
             Dictionary<Unit, Stack<double>> undoInfo = (Dictionary<Unit, Stack<double>>)args[0];
 
@@ -726,7 +756,7 @@ namespace CityWar
         #endregion //public commands
 
         #region public methods and properties
-        public static int Turn
+        public int Turn
         {
             get
             {
@@ -734,12 +764,17 @@ namespace CityWar
             }
         }
 
-        public static Player[] GetDefeatedPlayers()
+        public void ResetPics(float zoom)
+        {
+            Player.ResetPics(this.players, zoom);
+        }
+
+        public Player[] GetDefeatedPlayers()
         {
             return (Player[])defeatedPlayers.Clone();
         }
 
-        public static Dictionary<Player, int> GetWon()
+        public Dictionary<Player, int> GetWon()
         {
             Dictionary<Player, int> r = new Dictionary<Player, int>();
             foreach (KeyValuePair<Player, int> p in winningPlayers)
@@ -747,12 +782,12 @@ namespace CityWar
             return r;
         }
 
-        public static int GetUnitHas(string name)
+        public int GetUnitHas(string name)
         {
             return unitsHave[name];
         }
 
-        public static int GetUnitNeeds(string name)
+        public int GetUnitNeeds(string name)
         {
             return Unit.CreateTempUnit(name).BaseCost;
         }
@@ -762,7 +797,7 @@ namespace CityWar
             return (int)Game.Random.NextUInt();
         }
 
-        public static int Width
+        public int Width
         {
             get
             {
@@ -774,7 +809,7 @@ namespace CityWar
             }
         }
 
-        public static int Height
+        public int Height
         {
             get
             {
@@ -786,17 +821,17 @@ namespace CityWar
             }
         }
 
-        public static Tile GetTile(int x, int y)
+        public Tile GetTile(int x, int y)
         {
             return map[x, y];
         }
 
-        public static Player[] GetPlayers()
+        public Player[] GetPlayers()
         {
             return (Player[])players.Clone();
         }
 
-        public static Player CurrentPlayer
+        public Player CurrentPlayer
         {
             get
             {
@@ -808,7 +843,7 @@ namespace CityWar
         #endregion //public methods and properties
 
         #region internal methods
-        internal static void CreateWizardPts()
+        internal void CreateWizardPts()
         {
             Tile t;
 
@@ -837,12 +872,12 @@ namespace CityWar
             t.MakeWizPts();
         }
 
-        internal static Tile RandomTile()
+        internal Tile RandomTile()
         {
             return map[Random.Next(Width), Random.Next(Height)];
         }
 
-        private static void WinGame(Player win)
+        private void WinGame(Player win)
         {
             if (win != null)
             {
@@ -859,7 +894,7 @@ namespace CityWar
                     }
             }
         }
-        internal static void DefeatPlayer(Player player)
+        internal void DefeatPlayer(Player player)
         {
             //add the losing player to the defeatedPlayers array
             Player[] newLost = new Player[defeatedPlayers.Length + 1];
@@ -870,7 +905,7 @@ namespace CityWar
 
             RemovePlayer(player);
         }
-        private static void RemovePlayer(Player player)
+        private void RemovePlayer(Player player)
         {
             //remove from the players array
             int removedIndex = players.Length - 1;
@@ -896,7 +931,7 @@ namespace CityWar
         #endregion //internal methods
 
         #region increment turn
-        private static void IncrementTurn()
+        private void IncrementTurn()
         {
             ++turn;
 
@@ -919,10 +954,10 @@ namespace CityWar
                 ChangeMap();
                 CreateCitySpot();
                 ChangeMoveOrder();
-                Player.SubtractCommonUpkeep();
+                Player.SubtractCommonUpkeep(this.players);
             }
         }
-        private static int[,] GetPlayerCounts(ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers, ref bool noCapts, out Player win)
+        private int[,] GetPlayerCounts(ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers, ref bool noCapts, out Player win)
         {
             win = null;
 
@@ -973,7 +1008,7 @@ next:
 
             return counts;
         }
-        private static void AddDeadPlayer(ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers, Player player)
+        private void AddDeadPlayer(ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers, Player player)
         {
             //dont initialize and use the list until its needed
             if (deadPlayer == null)
@@ -992,7 +1027,7 @@ next:
             }
         }
 
-        private static void FreeUnit(bool noCapts, ref int[,] counts)
+        private void FreeUnit(bool noCapts, ref int[,] counts)
         {
             List<string> units = new List<string>();
             foreach (string race in Races.Keys)
@@ -1024,7 +1059,7 @@ next:
             }
         }
 
-        private static Dictionary<string, string> GetForRaces(string baseUnit)
+        private Dictionary<string, string> GetForRaces(string baseUnit)
         {
             Dictionary<string, string> retVal = new Dictionary<string, string>();
             Unit unit = Unit.CreateTempUnit(baseUnit);
@@ -1081,7 +1116,7 @@ next:
             return retVal;
         }
 
-        private static void RemoveCapturables(bool noCapts, int[,] counts, ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers)
+        private void RemoveCapturables(bool noCapts, int[,] counts, ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers)
         {
             if (!noCapts)
             {
@@ -1139,7 +1174,7 @@ next:
                 }
             }
         }
-        private static void RemoveCapturables(Type type)
+        private void RemoveCapturables(Type type)
         {
             //const double portalAvg = Player.WizardCost;
             double portalAvg = 0;
@@ -1162,7 +1197,7 @@ next:
                 p.RemoveCapturable(type, portalAvg);
         }
 
-        private static void KillPlayers(Player deadPlayer, Dictionary<Player, double> deadPlayers, Player win)
+        private void KillPlayers(Player deadPlayer, Dictionary<Player, double> deadPlayers, Player win)
         {
             //kill off any players that died during IncrementTurn
             if (deadPlayers != null)
@@ -1198,13 +1233,13 @@ next:
                 WinGame(players[0]);
         }
 
-        private static void ResetTiles()
+        private void ResetTiles()
         {
             foreach (Tile t in map)
                 t.Reset();
         }
 
-        private static void ChangeMap()
+        private void ChangeMap()
         {
             if (Random.Bool(2 / 3f))
             {
@@ -1249,7 +1284,7 @@ next:
             }
         }
 
-        private static void CreateCitySpot()
+        private void CreateCitySpot()
         {
             int amt = Random.OEInt(Width * Height / 666.0);
             while (--amt > -1)
@@ -1275,7 +1310,7 @@ next:
             }
         }
 
-        private static void ChangeMoveOrder()
+        private void ChangeMoveOrder()
         {
             //a lower shuffleValue makes the move order change faster
             const double shuffleValue = 0.169;
@@ -1283,7 +1318,7 @@ next:
             foreach (KeyValuePair<Player, int> pair in bonus)
                 AddMoveOrderDiff(pair.Key, pair.Value);
         }
-        private static void AddMoveOrderDiff(Player player, int diff)
+        private void AddMoveOrderDiff(Player player, int diff)
         {
             //total difference between first and last moving player is worth 300 resources
             double amount = 3 * diff / ( players.Length - 1.0 );
@@ -1293,7 +1328,7 @@ next:
         #endregion //increment turn
 
         #region create map
-        private static void CreateMap(int width, int height)//, int numPlayers)
+        private void CreateMap(int width, int height)//, int numPlayers)
         {
             map = new Tile[width, height];
             foreach (int coord in Random.Iterate(width * height))
@@ -1307,7 +1342,7 @@ next:
                 for (int y = -1 ; ++y < height ; )
                     map[x, y].SetupNeighbors();
         }
-        private static Tile CreateTile(int x, int y)
+        private Tile CreateTile(int x, int y)
         {
             Tile tile = null;
             //try three times to find a neighbor that has already been initialized
@@ -1320,13 +1355,13 @@ next:
 
             Tile result;
             if (tile == null)
-                result = new Tile(x, y);
+                result = new Tile(this, x, y);
             else
-                result = new Tile(x, y, tile.Terrain);
+                result = new Tile(this, x, y, tile.Terrain);
 
             return result;
         }
-        internal static Tile GetTileIn(int x, int y, int direction)
+        internal Tile GetTileIn(int x, int y, int direction)
         {
             //this methoid is called to set up the neighbors array
             bool odd = y % 2 > 0;
@@ -1368,117 +1403,5 @@ next:
                 return map[x, y];
         }
         #endregion //create map
-
-        #region saving and loading
-
-        private static void SetSavePath()
-        {
-            if (File.Exists("..\\Units.xml"))
-                Path = "..\\";
-        }
-
-        public static void SaveGame(BinaryWriter bw)
-        {
-            SetSavePath();
-
-            //int
-            bw.Write(turn);
-            bw.Write(Width);
-            bw.Write(Height);
-            bw.Write(currentPlayer);
-            bw.Write(startWork);
-
-            //int
-            bw.Write(unitsHave.Count);
-
-            //string[] Hashtable
-            foreach (string s in unitsHave.Keys)
-            {
-                bw.Write(s);
-                bw.Write(unitsHave[s]);
-            }
-
-            //tile
-            bw.Write(map.Length);
-            foreach (Tile t in map)
-                t.SaveTile(bw);
-
-            //player
-            bw.Write(players.Length);
-            foreach (Player p in players)
-                p.SavePlayer(bw);
-            bw.Write(defeatedPlayers.Length);
-            foreach (Player p in defeatedPlayers)
-                p.SavePlayer(bw);
-        }
-
-        public static void LoadGame(BinaryReader br)
-        {
-            SetSavePath();
-
-            ClearUndos();
-
-            InitRaces();
-
-            //int
-            turn = br.ReadInt32();
-            Width = br.ReadInt32();
-            Height = br.ReadInt32();
-            currentPlayer = br.ReadInt32();
-            startWork = br.ReadInt32();
-
-            //int
-            int unitCount = br.ReadInt32();
-
-            unitsHave = new Dictionary<string, int>(unitCount);
-            for (int count = -1 ; ++count < unitCount ; )
-            {
-                string unit = br.ReadString();
-                int have = br.ReadInt32();
-
-                foreach (string[] race in Races.Values)
-                    foreach (string name in race)
-                        if (unit == name)
-                        {
-                            unitsHave.Add(unit, have);
-                            break;
-                        }
-            }
-            foreach (string[] race in Races.Values)
-                foreach (string name in race)
-                {
-                    bool found = false;
-                    foreach (string unit in unitsHave.Keys)
-                        if (unit == name)
-                        {
-                            found = true;
-                            break;
-                        }
-                    if (!found)
-                        unitsHave.Add(name, GetInitUnitsHave(Unit.CreateTempUnit(name).BaseCost));
-                }
-            //tile
-            map = new Tile[Width, Height];
-            int tileCount = br.ReadInt32();
-            for (int a = -1 ; ++a < tileCount ; )
-            {
-                Tile temp = Tile.LoadTile(br);
-                map[temp.x, temp.y] = temp;
-            }
-            for (int x = -1 ; ++x < Width ; )
-                for (int y = -1 ; ++y < Height ; )
-                    map[x, y].SetupNeighbors();
-
-            //player
-            int playerCount = br.ReadInt32();
-            players = new Player[playerCount];
-            for (int a = 0 ; a < playerCount ; ++a)
-                players[a] = Player.LoadPlayer(br);
-            int lostCount = br.ReadInt32();
-            defeatedPlayers = new Player[lostCount];
-            for (int a = 0 ; a < lostCount ; ++a)
-                defeatedPlayers[a] = Player.LoadPlayer(br);
-        }
-        #endregion //saving and loading
     }
 }

@@ -18,8 +18,8 @@ namespace CityWarWinApp
 
         private void gameOver_Load(object sender, EventArgs e)
         {
-            Dictionary<Player, int> won = Game.GetWon();
-            Player[] defeatedPlayers = Game.GetDefeatedPlayers();
+            Dictionary<Player, int> won = Map.game.GetWon();
+            Player[] defeatedPlayers = Map.game.GetDefeatedPlayers();
             Dictionary<Player, int> points = new Dictionary<Player, int>(won.Count + defeatedPlayers.Length);
 
             //adds in (x^2+x)/2 points, where x is the inverse index
@@ -31,7 +31,7 @@ namespace CityWarWinApp
             while (won.Count > 0)
             {
                 Player next = null;
-                int turn = Game.Turn;
+                int turn = Map.game.Turn;
                 foreach (KeyValuePair<Player, int> p in won)
                     if (p.Value < turn)
                     {

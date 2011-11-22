@@ -5,21 +5,17 @@ using System.IO;
 
 namespace CityWar
 {
-	public class UnitTypes
-	{
-		private static UnitSchema schema = new UnitSchema();
-		private static DateTime readTime = DateTime.MinValue;
-
-		public static UnitSchema GetSchema()
-		{
-			if (File.GetLastWriteTime(Game.Path + "Units.xml") > readTime)
-			{
-				readTime = DateTime.Now;
-
-				schema.Clear();
-				schema.ReadXml(Game.Path + "Units.xml");
-			}
-			return schema;
-		}
-	}
+    public static class UnitTypes
+    {
+        private static UnitSchema schema;
+        public static UnitSchema GetSchema()
+        {
+            if (schema == null)
+            {
+                schema = new UnitSchema();
+                schema.ReadXml(Game.Path + "Units.xml");
+            }
+            return schema;
+        }
+    }
 }

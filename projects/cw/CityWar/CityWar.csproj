@@ -48,8 +48,6 @@
   <ItemGroup>
     <Compile Include="Balance.cs" />
     <Compile Include="Battle.cs" />
-    <Compile Include="CityWarException.cs" />
-    <Compile Include="MyIO.cs" />
     <Compile Include="pieces\Attack.cs" />
     <Compile Include="pieces\Capturable.cs" />
     <Compile Include="pieces\City.cs" />
@@ -57,7 +55,6 @@
     <Compile Include="pieces\Piece.cs" />
     <Compile Include="pieces\Portal.cs" />
     <Compile Include="pieces\Relic.cs" />
-    <Compile Include="pieces\Upgrade.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tile.cs" />
