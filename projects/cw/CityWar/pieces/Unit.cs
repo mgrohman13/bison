@@ -173,7 +173,7 @@ namespace CityWar
             {
                 double heal = regen * regenPct;
                 int result = (int)heal;
-                if (owner.HealRound < ( heal % 1 ))
+                if (owner.HealRound < (heal % 1))
                     ++result;
                 return result;
             }
@@ -183,7 +183,7 @@ namespace CityWar
         {
             get
             {
-                return ( BaseRegen + Regen ) * .5;
+                return (BaseRegen + Regen) * .5;
             }
         }
 
@@ -192,7 +192,7 @@ namespace CityWar
             double low = Math.Min(Attack.DisbandDivide, Attack.DeathDivide),
                     high = Math.Max(Attack.DisbandDivide, Attack.DeathDivide);
             double healthPct = GetHealthPct();
-            return InverseCost / high * ( 1 - healthPct ) + InverseCost / low * healthPct;
+            return InverseCost / high * (1 - healthPct) + InverseCost / low * healthPct;
         }
 
         public double GetHealthPct()
@@ -212,7 +212,7 @@ namespace CityWar
             }
             else
             {
-                SetRegenPct(regenPct * .97 * ( maxHits + 30.0 - Math.Pow(3.9 * damage, 0.74) ) / ( maxHits + 30.0 ));
+                SetRegenPct(regenPct * .97 * (maxHits + 30.0 - Math.Pow(3.9 * damage, 0.74)) / (maxHits + 30.0));
                 if (isThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
@@ -233,13 +233,13 @@ namespace CityWar
                 --movement;
 
                 int regen = Regen;
-                owner.AddWork(( BaseRegen - regen ) * .5);
+                owner.AddWork((BaseRegen - regen) * .5);
 
                 hits += regen;
                 double pctWork = 0;
                 if (hits > maxHits)
                 {
-                    pctWork = ( hits - maxHits ) / (double)regen;
+                    pctWork = (hits - maxHits) / (double)regen;
                     owner.AddWork(hits - maxHits);
                     hits = maxHits;
                 }
@@ -256,7 +256,7 @@ namespace CityWar
             ++movement;
 
             int regen = Regen;
-            owner.AddWork(-( BaseRegen - regen ) * .5);
+            owner.AddWork(-(BaseRegen - regen) * .5);
 
             int work = Game.Random.Round(pctWork * regen);
             Owner.AddWork(-work);
@@ -300,7 +300,7 @@ namespace CityWar
                     if (newHits > maxHits)
                         newHits = maxHits;
 
-                    double needed = ( newHits - hits ) / (double)maxHits / 3.0;
+                    double needed = (newHits - hits) / (double)maxHits / 3.0;
                     double pplNeeded = needed * BasePplCost * randedCostMult;
                     needed *= BaseOtherCost * randedCostMult;
 
@@ -311,7 +311,7 @@ namespace CityWar
 
                 while (movement > 0)
                     Heal();
-                SetRegenPct(( 1 - ( 1 - regenPct ) / 1.69 ));
+                SetRegenPct((1 - (1 - regenPct) / 1.69));
 
                 movement = MaxMove;
 
@@ -352,12 +352,30 @@ namespace CityWar
         #endregion //internal methods
 
         #region hits
-        private Brush healthBrush = Brushes.Lime;
+        [NonSerialized]
+        private Brush _healthBrush = null;
         public Brush HealthBrush
         {
             get
             {
-                return healthBrush;
+                if (_healthBrush == null)
+                {
+                    double pct = GetHealthPct();
+                    if (pct < 1)
+                    {
+                        const double power = .666;
+
+                        double sign = Math.Sign(pct - .5);
+                        double greenPct = Math.Pow((2.0 * pct - 1.0) * sign, power) * sign / 2.0 + 1.0 / 2.0;
+
+                        _healthBrush = new SolidBrush(Color.FromArgb(255, Game.Random.Round(255f * (float)greenPct), 0));
+                    }
+                    else
+                    {
+                        _healthBrush = Brushes.Lime;
+                    }
+                }
+                return _healthBrush;
             }
         }
         internal int hits
@@ -368,27 +386,14 @@ namespace CityWar
             }
             set
             {
-                if (( _hits == value ) || ( ( _hits = value ) < 0 ))
+                if ((_hits == value) || ((_hits = value) < 0))
                     return;
-
                 CheckAttacks();
-
-                if (healthBrush != Brushes.Lime)
-                    healthBrush.Dispose();
-
-                //set the health brush to the right color
-                double pct = GetHealthPct();
-                if (pct < 1)
+                if (_healthBrush != null)
                 {
-                    const double power = .666;
-
-                    double sign = Math.Sign(pct - .5);
-                    double greenPct = Math.Pow(( 2.0 * pct - 1.0 ) * sign, power) * sign / 2.0 + 1.0 / 2.0;
-
-                    healthBrush = new SolidBrush(Color.FromArgb(255, Game.Random.Round(255f * (float)greenPct), 0));
+                    _healthBrush.Dispose();
+                    _healthBrush = null;
                 }
-                else
-                    healthBrush = Brushes.Lime;
             }
         }
 
@@ -405,7 +410,7 @@ namespace CityWar
 
         private void GetRandedCostMult()
         {
-            _randedCostMult = Balance.getCost(MaxMove, regen, Abilty, BaseArmor, Type, Attacks, isThree, maxHits) / (double)( BaseCost );
+            _randedCostMult = Balance.getCost(MaxMove, regen, Abilty, BaseArmor, Type, Attacks, isThree, maxHits) / (double)(BaseCost);
         }
 
         public double regenPct
@@ -431,9 +436,9 @@ namespace CityWar
                         ++used;
                 used /= attacks.Length;
                 Attack attack = attacks[0].Clone();
-                int numAttacks = ( 3 * hits + maxHits - 1 ) / maxHits;
+                int numAttacks = (3 * hits + maxHits - 1) / maxHits;
                 attacks = new Attack[numAttacks];
-                for (int a = -1 ; ++a < numAttacks ; )
+                for (int a = -1; ++a < numAttacks; )
                 {
                     attacks[a] = attack.Clone();
                     attacks[a].Used = Game.Random.Bool(used);
@@ -495,7 +500,7 @@ namespace CityWar
             UnitSchema.AttackRow[] attackRows = unitRow.GetAttackRows();
             int numAttacks = attackRows.Length;
             Attack[] attacks = new Attack[numAttacks];
-            for (int i = 0 ; i < numAttacks ; ++i)
+            for (int i = 0; i < numAttacks; ++i)
             {
                 UnitSchema.AttackRow attackRow = attackRows[i];
 
@@ -548,7 +553,7 @@ namespace CityWar
             newUnit.ResetMoveIntern(false);
 
             double maxMult = Math.Sqrt(Math.Min(Math.Min(Attack.DeathDivide, Attack.DisbandDivide), Attack.RelicDivide));
-            if (newUnit.randedCostMult > maxMult || newUnit.randedCostMult < ( 1 / maxMult ))
+            if (newUnit.randedCostMult > maxMult || newUnit.randedCostMult < (1 / maxMult))
                 newUnit.RandStats();
             else if (newUnit.Dead)
                 newUnit.Die();
@@ -583,7 +588,7 @@ namespace CityWar
             //units of type all defend first, by themselves
             Unit[] defenders = t.FindAllUnits(delegate(Unit unit)
                 {
-                    return ( unit.Type == UnitType.Immobile );
+                    return (unit.Type == UnitType.Immobile);
                 });
             if (defenders.Length < 1)
                 defenders = t.GetAllUnits();
@@ -617,11 +622,11 @@ namespace CityWar
                     a.Used = false;
                     ++usedAttacks;
                 }
-            if (usedAttacks > 0 && Owner == this.Owner.Game                .CurrentPlayer)
+            if (usedAttacks > 0 && Owner == this.Owner.Game.CurrentPlayer)
             {
                 //only reduce movement if any attacks were used
                 --movement;
-                Owner.AddWork(Attack.OverkillPercent * WorkRegen * ( attacks.Length - usedAttacks ) / (double)attacks.Length);
+                Owner.AddWork(Attack.OverkillPercent * WorkRegen * (attacks.Length - usedAttacks) / (double)attacks.Length);
             }
         }
         #endregion //start and end battle
@@ -701,7 +706,7 @@ namespace CityWar
             bool move;
             if (movement < needed)
             {
-                move = ( Game.Random.Bool(movement / (float)needed) );
+                move = (Game.Random.Bool(movement / (float)needed));
                 //cant undo a random move
                 canUndo = false;
                 movement = 0;
@@ -748,17 +753,17 @@ namespace CityWar
             {
                 switch (t.Terrain)
                 {
-                case Terrain.Plains:
-                    needed = 1;
-                    break;
-                case Terrain.Forest:
-                    needed = 2;
-                    break;
-                case Terrain.Mountain:
-                    needed = 3;
-                    break;
-                default:
-                    throw new Exception();
+                    case Terrain.Plains:
+                        needed = 1;
+                        break;
+                    case Terrain.Forest:
+                        needed = 2;
+                        break;
+                    case Terrain.Mountain:
+                        needed = 3;
+                        break;
+                    default:
+                        throw new Exception();
                 }
             }
             else if (Type == UnitType.Water && t.Terrain == Terrain.Water)
@@ -769,20 +774,20 @@ namespace CityWar
             {
                 switch (t.Terrain)
                 {
-                case Terrain.Water:
-                    needed = 1;
-                    break;
-                case Terrain.Plains:
-                    needed = 1;
-                    break;
-                case Terrain.Forest:
-                    needed = 2;
-                    break;
-                case Terrain.Mountain:
-                    needed = 3;
-                    break;
-                default:
-                    throw new Exception();
+                    case Terrain.Water:
+                        needed = 1;
+                        break;
+                    case Terrain.Plains:
+                        needed = 1;
+                        break;
+                    case Terrain.Forest:
+                        needed = 2;
+                        break;
+                    case Terrain.Mountain:
+                        needed = 3;
+                        break;
+                    default:
+                        throw new Exception();
                 }
             }
             else
@@ -795,6 +800,7 @@ namespace CityWar
         #endregion //moving
     }
 
+    [Serializable]
     public enum CostType
     {
         Air,
@@ -805,6 +811,7 @@ namespace CityWar
         Water
     }
 
+    [Serializable]
     public enum UnitType
     {
         Ground,

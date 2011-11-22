@@ -138,7 +138,7 @@ namespace CityWar
 
         public int GetMinDamage(Unit target)
         {
-            int minDamage = (int)( damStatic - ( (double)target.Armor / divide ) );
+            int minDamage = (int)(damStatic - ((double)target.Armor / divide));
             return minDamage > 0 ? minDamage : 0;
         }
 
@@ -195,11 +195,11 @@ namespace CityWar
             else if (damage > hits)
             {
                 if (owner.Owner == owner.Owner.Game.CurrentPlayer)
-                    owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * ( damage - hits ) / ( (double)damage * owner.Attacks.Length ));
+                    owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * (damage - hits) / ((double)damage * owner.Attacks.Length));
                 damage = hits;
             }
 
-            double relicValue = ( GetAverageDamage(damage, divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
+            double relicValue = (GetAverageDamage(damage, divide, armor, hits) - damage) / RelicDivide / unit.maxHits;
             if (relicValue > 0)
                 owner.Owner.AddRelic(unit.RandedCost * relicValue);
             else
@@ -267,14 +267,14 @@ namespace CityWar
 
             int baseDmg = (int)Math.Floor(damStatic);
             double roundChance = damStatic - baseDmg;
-            damMult /= ( damMult + 1 );
+            damMult /= (damMult + 1);
             double oeChance = damMult;
-            for (int oe = 0 ; oe <= oeLimit ; ++oe)
+            for (int oe = 0; oe <= oeLimit; ++oe)
             {
-                for (int round = 0 ; round < 2 ; ++round)
+                for (int round = 0; round < 2; ++round)
                 {
-                    double chance = oeChance * ( round == 0 ? 1 - roundChance : roundChance );
-                    int totDamage = Math.Max(Math.Min(baseDmg + ( round == 0 ? 0 : 1 ) + oe, targetHits), 0);
+                    double chance = oeChance * (round == 0 ? 1 - roundChance : roundChance);
+                    int totDamage = Math.Max(Math.Min(baseDmg + (round == 0 ? 0 : 1) + oe, targetHits), 0);
 
                     if (totDamage == targetHits)
                         killPct += chance;
@@ -295,6 +295,7 @@ namespace CityWar
     }
 
     [Flags]
+    [Serializable]
     public enum TargetType
     {
         Ground = 0x1,
