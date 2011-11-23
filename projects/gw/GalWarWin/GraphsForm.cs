@@ -54,7 +54,7 @@ namespace GalWarWin
                         labels[a, b] = null;
                     }
 
-            List<Player> players = game.GetPlayers();
+            Player[] players = game.GetPlayers();
 
             double maxArmada = double.MinValue;
             foreach (Player player in players)
@@ -63,14 +63,14 @@ namespace GalWarWin
             int div = GetDiv(place);
 
             Dictionary<Player, double> research = game.GetResearch();
-            labels = new Label[8, players.Count];
+            labels = new Label[8, players.Length];
             y = 32;
-            for (int i = 0 ; i < players.Count ; ++i)
+            for (int i = 0 ; i < players.Length ; ++i)
             {
                 int x = 12;
                 labels[0, i] = NewLabel(x, y, players[i].Name, players[i].Color);
                 x += 106;
-                labels[1, i] = NewLabel(x, y, players[i].GetColonies().Length.ToString(), players[i].Color);
+                labels[1, i] = NewLabel(x, y, players[i].GetColonies().Count.ToString(), players[i].Color);
                 x += 106;
                 labels[2, i] = NewLabel(x, y, players[i].GetTotalQuality().ToString(), players[i].Color);
                 x += 106;

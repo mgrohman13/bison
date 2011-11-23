@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.IO.Compression;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MattUtil
 {
@@ -60,6 +61,31 @@ namespace MattUtil
                     max = mid;
             }
             return ( trueHigh ? max : min );
+        }
+
+        public static void SaveGame(object game, string path, string fileName)
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            SaveGame(game, path.TrimEnd('/', '\\') + "/" + fileName);
+        }
+
+        public static void SaveGame(object game, string filePath)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                new BinaryFormatter().Serialize(memory, game);
+                using (Stream file = new FileStream(filePath, FileMode.Create))
+                using (Stream compress = new DeflateStream(file, CompressionMode.Compress))
+                    memory.WriteTo(compress);
+            }
+        }
+
+        public static T LoadGame<T>(string filePath)
+        {
+            using (Stream file = new FileStream(filePath, FileMode.Open))
+            using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
+                return (T)new BinaryFormatter().Deserialize(decompress);
         }
 
     }

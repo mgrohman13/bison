@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Serialization;
 using MattUtil;
-using System.IO;
 
 namespace CityWar
 {
     [Serializable]
-    public partial class Attack
+    public partial class Attack : IDeserializationCallback
     {
         #region fields and constructors
         //changing requires rebalance of units
@@ -34,24 +33,19 @@ namespace CityWar
         private int length, damage, divide;
         public readonly EnumFlags<TargetType> target;
 
+        //balance constructor
         public Attack(EnumFlags<TargetType> target, int length, int damage, int divide)
+            : this(null, target, length, damage, divide)
         {
-            this.target = target;
-            this.length = length;
-            this.damage = damage;
-            this.divide = divide;
         }
 
+        //in game constructor
         internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int divide)
+            : this(name, null, target, length, damage, divide, false)
         {
-            this.name = name;
-            this.target = target;
-            this.length = length;
-            this.damage = damage;
-            this.divide = divide;
         }
 
-        //constructor for cloning an attack		
+        //constructor for cloning an attack	for isThree
         private Attack(string name, Unit owner, EnumFlags<TargetType> target, int length, int damage, int divide, bool used)
         {
             this.name = name;
@@ -61,6 +55,8 @@ namespace CityWar
             this.damage = damage;
             this.divide = divide;
             this.used = used;
+
+            this.OnDeserialization(null);
         }
         #endregion //fields and constructors
 
@@ -138,7 +134,7 @@ namespace CityWar
 
         public int GetMinDamage(Unit target)
         {
-            int minDamage = (int)(damStatic - ((double)target.Armor / divide));
+            int minDamage = (int)( damStatic - ( (double)target.Armor / divide ) );
             return minDamage > 0 ? minDamage : 0;
         }
 
@@ -195,11 +191,11 @@ namespace CityWar
             else if (damage > hits)
             {
                 if (owner.Owner == owner.Owner.Game.CurrentPlayer)
-                    owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * (damage - hits) / ((double)damage * owner.Attacks.Length));
+                    owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * ( damage - hits ) / ( (double)damage * owner.Attacks.Length ));
                 damage = hits;
             }
 
-            double relicValue = (GetAverageDamage(damage, divide, armor, hits) - damage) / RelicDivide / unit.maxHits;
+            double relicValue = ( GetAverageDamage(damage, divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
             if (relicValue > 0)
                 owner.Owner.AddRelic(unit.RandedCost * relicValue);
             else
@@ -267,14 +263,14 @@ namespace CityWar
 
             int baseDmg = (int)Math.Floor(damStatic);
             double roundChance = damStatic - baseDmg;
-            damMult /= (damMult + 1);
+            damMult /= ( damMult + 1 );
             double oeChance = damMult;
-            for (int oe = 0; oe <= oeLimit; ++oe)
+            for (int oe = 0 ; oe <= oeLimit ; ++oe)
             {
-                for (int round = 0; round < 2; ++round)
+                for (int round = 0 ; round < 2 ; ++round)
                 {
-                    double chance = oeChance * (round == 0 ? 1 - roundChance : roundChance);
-                    int totDamage = Math.Max(Math.Min(baseDmg + (round == 0 ? 0 : 1) + oe, targetHits), 0);
+                    double chance = oeChance * ( round == 0 ? 1 - roundChance : roundChance );
+                    int totDamage = Math.Max(Math.Min(baseDmg + ( round == 0 ? 0 : 1 ) + oe, targetHits), 0);
 
                     if (totDamage == targetHits)
                         killPct += chance;
@@ -292,6 +288,15 @@ namespace CityWar
             return avgDamage / total;
         }
         #endregion //damage
+
+        #region IDeserializationCallback Members
+
+        public void OnDeserialization(object sender)
+        {
+            this.used = false;
+        }
+
+        #endregion
     }
 
     [Flags]

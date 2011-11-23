@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GalWar
 {
@@ -594,7 +593,7 @@ namespace GalWar
 
         internal override bool CanBeBuiltBy(Colony colony)
         {
-            return Array.IndexOf<ShipDesign>(colony.Player.GetShipDesigns(), this) >= 0;
+            return colony.Player.GetShipDesigns().Contains(this);
         }
 
         public override string GetProdText(string curProd)

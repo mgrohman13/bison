@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using MattUtil;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using MattUtil;
 
 namespace GalWar
 {
@@ -347,18 +346,14 @@ next_planet:
             return players;
         }
 
-        public List<Player> GetPlayers()
+        public Player[] GetPlayers()
         {
-            List<Player> retVal = new List<Player>(this.players.Length);
-            retVal.AddRange(this.players);
-            return retVal;
+            return (Player[])this.players.Clone();
         }
 
-        public List<Planet> GetPlanets()
+        public ReadOnlyCollection<Planet> GetPlanets()
         {
-            List<Planet> retVal = new List<Planet>(this.planets.Count);
-            retVal.AddRange(this.planets);
-            return retVal;
+            return this.planets.AsReadOnly();
         }
 
         public void EndTurn(IEventHandler handler)
@@ -377,10 +372,7 @@ next_planet:
 
         public void AutoSave()
         {
-            const string folder = "auto";
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-            SaveGame(folder + "/" + turn + ".gws");
+            TBSUtil.SaveGame(this, "../../../auto", turn + ".gws");
         }
 
         private void NewRound()
@@ -467,20 +459,12 @@ next_planet:
 
         public void SaveGame(string filePath)
         {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                new BinaryFormatter().Serialize(memory, this);
-                using (Stream file = new FileStream(filePath, FileMode.Create))
-                using (Stream compress = new DeflateStream(file, CompressionMode.Compress))
-                    memory.WriteTo(compress);
-            }
+            TBSUtil.SaveGame(this, filePath);
         }
 
         public static Game LoadGame(string filePath)
         {
-            using (Stream file = new FileStream(filePath, FileMode.Open))
-            using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
-                return (Game)new BinaryFormatter().Deserialize(decompress);
+            return TBSUtil.LoadGame<Game>(filePath);
         }
 
         public List<Result> GetGameResult()

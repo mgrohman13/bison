@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GalWar
 {
     [Serializable]
     public class Planet : ISpaceObject
     {
-
         #region fields and constructors
 
         private readonly Tile tile;
@@ -125,6 +123,5 @@ namespace GalWar
         }
 
         #endregion //public
-
     }
 }

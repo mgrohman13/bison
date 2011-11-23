@@ -412,22 +412,24 @@ namespace DaemonsWinApp
 
         private void button3_Click(object sender, EventArgs e)
         {
-            saveFileDialog1.ShowDialog();
-            game.SaveGame(saveFileDialog1.FileName);
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                game.SaveGame(saveFileDialog1.FileName);
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            openFileDialog1.ShowDialog();
-            game = game.LoadGame(openFileDialog1.FileName);
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                game = Game.LoadGame(openFileDialog1.FileName);
 
-            Refresh();
-            RefreshArrows();
-            RefreshButtons();
-            RefreshLog();
-            RefreshPlayer();
-            RefreshSouls();
-            RefreshUnits();
+                Refresh();
+                RefreshArrows();
+                RefreshButtons();
+                RefreshLog();
+                RefreshPlayer();
+                RefreshSouls();
+                RefreshUnits();
+            }
         }
     }
 }

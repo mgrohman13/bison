@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GalWar
 {
     [Serializable]
     public class Colony : Combatant
     {
-
         #region fields and constructors
 
         private readonly Player player;
@@ -1110,6 +1108,5 @@ namespace GalWar
         //}
 
         #endregion //planet defense
-
     }
 }

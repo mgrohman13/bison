@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Drawing;
 
 namespace CityWar
@@ -13,9 +11,7 @@ namespace CityWar
         private readonly Game game;
         public readonly int x, y;
 
-        [NonSerialized]
-        private int currentGroup = Game.NewGroup();
-
+        private int currentGroup;
         private bool madeCity = false;
         private Terrain terrain;
         private List<Piece> pieces = new List<Piece>();
@@ -25,33 +21,19 @@ namespace CityWar
 
         internal Tile(Game game, int x, int y, Terrain terrain)
         {
+            //mostly for validating the random terrain constructor
+            if (terrain != CityWar.Terrain.Forest && terrain != CityWar.Terrain.Mountain &&
+                    terrain != CityWar.Terrain.Plains && terrain != CityWar.Terrain.Water)
+                throw new Exception();
+
             this.game = game;
             this.x = x;
             this.y = y;
             this.terrain = terrain;
         }
         internal Tile(Game game, int x, int y)
+            : this(game, x, y, (Terrain)Game.Random.NextBits(2))
         {
-            this.game = game;
-            this.x = x;
-            this.y = y;
-            switch (Game.Random.NextBits(2))
-            {
-                case 0:
-                    this.terrain = Terrain.Forest;
-                    break;
-                case 1:
-                    this.terrain = Terrain.Mountain;
-                    break;
-                case 2:
-                    this.terrain = Terrain.Plains;
-                    break;
-                case 3:
-                    this.terrain = Terrain.Water;
-                    break;
-                default:
-                    throw new Exception();
-            }
         }
         #endregion //fields and constructors
 
@@ -106,7 +88,7 @@ namespace CityWar
         }
         public bool IsNeighbor(Tile t)
         {
-            for (int a = -1; ++a < 6; )
+            for (int a = -1 ; ++a < 6 ; )
                 if (neighbors[a] == t)
                     return true;
 
@@ -153,7 +135,7 @@ namespace CityWar
             {
                 string pieceName = centerPiece.Name;
                 //a dot is placed on the image for a capturable if there are any units with it
-                if ((centerPiece is Capturable) && this.OccupiedByUnit())
+                if (( centerPiece is Capturable ) && this.OccupiedByUnit())
                     pieceName += "Unit";
                 return centerPiece.Owner.GetPic(pieceName);
             }
@@ -167,14 +149,14 @@ namespace CityWar
         {
             return Tile.FindAllPieces(pieces, delegate(Piece p)
                 {
-                    return (p.Group == CurrentGroup);
+                    return ( p.Group == CurrentGroup );
                 });
         }
         public Unit[] GetSelectedUnits()
         {
             return Tile.FindAllUnits(pieces, delegate(Unit unit)
                 {
-                    return (unit.Group == CurrentGroup);
+                    return ( unit.Group == CurrentGroup );
                 });
         }
         public Unit[] GetAllUnits()
@@ -293,7 +275,7 @@ namespace CityWar
 
                 //find the last selected piece
                 int last = -1;
-                for (; a < count; ++a)
+                for ( ; a < count ; ++a)
                     if (pieces[a].Group == CurrentGroup)
                         last = a;
 
@@ -311,7 +293,7 @@ namespace CityWar
 
                 //select all pieces in between
                 CurrentGroup = Game.NewGroup();
-                for (a = min; a <= max; ++a)
+                for (a = min ; a <= max ; ++a)
                     pieces[a].Group = CurrentGroup;
             }
             else if (ctrl)
@@ -370,7 +352,7 @@ namespace CityWar
             foreach (Piece p in pieces)
                 if (p is Wizard)
                     armor += 1;
-                else if (!city && (p is City))
+                else if (!city && ( p is City ))
                     city = true;
 
             if (unitType == UnitType.Water)
@@ -409,7 +391,7 @@ namespace CityWar
             bool canUndo;
             SortedInsert(pieces, p, ComparePieces);
 
-            if (wizardPoints > 0 && (p is Wizard))
+            if (wizardPoints > 0 && ( p is Wizard ))
             {
                 p.Owner.CollectWizardPts(wizardPoints);
                 wizardPoints = 0;
@@ -471,12 +453,12 @@ namespace CityWar
         private double GetCaptureCityWork(Piece p)
         {
             Unit u = p as Unit;
-            return (u == null ? Player.WorkMult * 10 : u.WorkRegen) * p.MaxMove * .5;
+            return ( u == null ? Player.WorkMult * 10 : u.WorkRegen ) * p.MaxMove * .5;
         }
 
         internal void SetupNeighbors()
         {
-            for (int a = -1; ++a < neighbors.Length; )
+            for (int a = -1 ; ++a < neighbors.Length ; )
                 neighbors[a] = game.GetTileIn(x, y, a);
         }
 
@@ -486,7 +468,7 @@ namespace CityWar
             foreach (Piece p in pieces.ToArray())
                 if (p.Owner != owner)
                 {
-                    ((Capturable)p).Capture(owner);
+                    ( (Capturable)p ).Capture(owner);
                     canUndo = false;
                 }
             return canUndo;
@@ -497,7 +479,7 @@ namespace CityWar
             //the amount is one less than the distance to the nearest wizard or wizardpoints
             this.wizardPoints = FindDistance(delegate(Tile tile)
                 {
-                    return (tile.HasWizard() || tile.wizardPoints > 0);
+                    return ( tile.HasWizard() || tile.wizardPoints > 0 );
                 }) - 1;
             //should not have tried to place too close to existing wizard points
             if (this.wizardPoints < 1)
@@ -539,8 +521,8 @@ namespace CityWar
             Player thisP, tileP;
             //check that there are any pieces selected and that the destination tile 
             //is a neighbor and is not occupied by an enemy unit
-            if (!IsNeighbor(tile) || !Occupied(out thisP) || (tile.OccupiedByUnit(out tileP) && thisP != tileP)
-                || ((Piece[])(selectedPieces = this.GetSelectedPieces())).Length < 1)
+            if (!IsNeighbor(tile) || !Occupied(out thisP) || ( tile.OccupiedByUnit(out tileP) && thisP != tileP )
+                || ( (Piece[])( selectedPieces = this.GetSelectedPieces() ) ).Length < 1)
                 return null;
 
             if (group)
@@ -621,7 +603,7 @@ namespace CityWar
                 foreach (Piece p in pieces)
                 {
                     Portal portal;
-                    if ((portal = p as Portal) != null)
+                    if (( portal = p as Portal ) != null)
                     {
                         int portalCost = portal.PortalCost;
                         if (portalCost > cost)
@@ -647,7 +629,7 @@ namespace CityWar
             foreach (Piece p in pieces)
             {
                 Unit unit;
-                if ((unit = p as Unit) != null)
+                if (( unit = p as Unit ) != null)
                 {
                     //unit type all takes precedence
                     if (unit.Type == UnitType.Immobile)
@@ -691,7 +673,7 @@ namespace CityWar
             int index = -1, compValue = -1;
             while (min < max)
             {
-                index = (max - min) / 2 + min;
+                index = ( max - min ) / 2 + min;
                 compValue = compare(p, pieces[index]);
                 if (compValue < 0)
                 {
@@ -711,7 +693,7 @@ namespace CityWar
             if (min < count)
             {
                 //if min was the index in the last iteration we already have the compare result and dont need to call again
-                if ((min == index ? compValue : compare(p, pieces[min])) > 0)
+                if (( min == index ? compValue : compare(p, pieces[min]) ) > 0)
                     ++min;
                 pieces.Insert(min, p);
             }
@@ -745,42 +727,42 @@ namespace CityWar
                     return 7;
                 switch (u.Abilty)
                 {
-                    case Abilities.Aircraft:
-                        return 6;
-                    case Abilities.AircraftCarrier:
-                        return 5;
+                case Abilities.Aircraft:
+                    return 6;
+                case Abilities.AircraftCarrier:
+                    return 5;
                 }
                 switch (u.Type)
                 {
-                    case UnitType.Air:
-                        return 4;
-                    case UnitType.Ground:
-                        return 3;
-                    case UnitType.Amphibious:
-                        return 2;
-                    case UnitType.Water:
-                        return 1;
+                case UnitType.Air:
+                    return 4;
+                case UnitType.Ground:
+                    return 3;
+                case UnitType.Amphibious:
+                    return 2;
+                case UnitType.Water:
+                    return 1;
                 }
             }
 
             //give ample padding to make sure wizards are always above portals, etc.
             Relic r;
-            if ((r = piece as Relic) != null)
+            if (( r = piece as Relic ) != null)
             {
                 return 100000000 + r.CanBuildCount;
             }
             City c;
-            if ((c = piece as City) != null)
+            if (( c = piece as City ) != null)
             {
                 return 400000000 + c.CanBuildCount;
             }
             Portal p;
-            if ((p = piece as Portal) != null)
+            if (( p = piece as Portal ) != null)
             {
                 return 700000000 + p.PortalCost;
             }
             Wizard w;
-            if ((w = piece as Wizard) != null)
+            if (( w = piece as Wizard ) != null)
             {
                 return 1000000000 + w.CanBuildCount;
             }
@@ -803,7 +785,7 @@ namespace CityWar
                 int move = p.Movement - moveMod;
                 if (move < 0)
                     move = 0;
-                return (CheckAircraft(move, p.Owner, ref CanGetCarrier));
+                return ( CheckAircraft(move, p.Owner, ref CanGetCarrier) );
             }
             return false;
         }
@@ -829,7 +811,7 @@ namespace CityWar
             Dictionary<Tile, Tile> CanGetCarrierCopy = new Dictionary<Tile, Tile>(CanGetCarrier);
 
             //find the distance to the nearest tile where the aircraft can land
-            return (move < FindDistance(delegate(Tile tile)
+            return ( move < FindDistance(delegate(Tile tile)
                 {
                     //check if a friendly carrier can move into the tile this turn
                     if (CanGetCarrierCopy.ContainsKey(tile))
@@ -859,7 +841,7 @@ namespace CityWar
                         }
                         return false;
                     }
-                }, move));
+                }, move) );
         }
         private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Unit unit, Tile tile, int move)
         {
@@ -873,12 +855,12 @@ namespace CityWar
                         UnitType carrierType = unit == null ? UnitType.Air : unit.Type;
                         Terrain terrain = t.Terrain;
                         //check if the carrier can move onto the tile
-                        if (!(tile.OccupiedByUnit(out occupying) && occupying != unit.Owner) &&
-                            (carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
-                            ((carrierType == UnitType.Water || carrierType == UnitType.Amphibious) && terrain == Terrain.Water) ||
-                            ((carrierType == UnitType.Ground || carrierType == UnitType.Amphibious) && (terrain == Terrain.Plains ||
-                            (--newMove > -1 && (terrain == Terrain.Forest ||
-                            (--newMove > -1 && terrain == Terrain.Mountain)))))))
+                        if (!( tile.OccupiedByUnit(out occupying) && occupying != unit.Owner ) &&
+                            ( carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
+                            ( ( carrierType == UnitType.Water || carrierType == UnitType.Amphibious ) && terrain == Terrain.Water ) ||
+                            ( ( carrierType == UnitType.Ground || carrierType == UnitType.Amphibious ) && ( terrain == Terrain.Plains ||
+                            ( --newMove > -1 && ( terrain == Terrain.Forest ||
+                            ( --newMove > -1 && terrain == Terrain.Mountain ) ) ) ) ) ))
                             //if so, add the tile and check its neighbors
                             AddTilesInRange(CanGetCarrier, unit, t, newMove);
                     }

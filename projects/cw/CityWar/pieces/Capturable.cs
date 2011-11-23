@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CityWar
 {
@@ -8,7 +7,8 @@ namespace CityWar
     public abstract class Capturable : Piece
     {
         #region fields and constructors
-        protected Capturable(int maxMove, Player owner, Tile tile) : base(maxMove, owner, tile)
+        protected Capturable(int maxMove, Player owner, Tile tile)
+            : base(maxMove, owner, tile)
         {
         }
         #endregion //fields and constructors

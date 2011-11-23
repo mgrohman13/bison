@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -635,19 +636,19 @@ namespace GalWarWin
 
         private void SelectNextShip()
         {
-            Ship[] ships = game.CurrentPlayer.GetShips();
-            if (ships.Length > 0)
+            ReadOnlyCollection<Ship> ships = game.CurrentPlayer.GetShips();
+            if (ships.Count > 0)
             {
-                int start = Array.IndexOf(ships, this.selectedTile == null ? null : this.selectedTile.SpaceObject as Ship);
+                int start = ships.IndexOf(this.selectedTile == null ? null : this.selectedTile.SpaceObject as Ship);
                 int index = start + 1;
                 if (start < 0)
                 {
                     index = 0;
-                    start = ships.Length;
+                    start = ships.Count;
                 }
                 while (true)
                 {
-                    if (index == ships.Length)
+                    if (index == ships.Count)
                     {
                         index = -1;
                     }
@@ -1106,7 +1107,7 @@ namespace GalWarWin
 
         public void RefreshAll()
         {
-            if (!ended && game.GetPlayers().Count < 2)
+            if (!ended && game.GetPlayers().Length < 2)
             {
                 ended = true;
                 TextForm.ShowDialog(this, game.GetGameResult());

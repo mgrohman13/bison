@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GalWar
 {
     [Serializable]
     public abstract class Combatant : PopCarrier
     {
-
         #region fields and constructors
 
         private byte _att, _def;
@@ -169,6 +167,5 @@ namespace GalWar
         }
 
         #endregion //public
-
     }
 }

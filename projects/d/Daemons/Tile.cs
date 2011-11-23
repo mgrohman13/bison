@@ -216,7 +216,7 @@ namespace Daemons
             Player owner;
             if (!Occupied(out owner))
                 if (this.NumAttackers > 0)
-                    owner = this.Game.GetRandom(this.attackers).Owner;
+                    owner = Game.GetRandom(this.attackers).Owner;
                 else
                     return 0;
 

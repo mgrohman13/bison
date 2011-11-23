@@ -40,7 +40,8 @@ namespace GalWarWin
             this.lbxDesigns.Items.Add(colony.Player.Game.Soldiering);
             this.lbxDesigns.Items.Add(colony.Player.PlanetDefense);
             this.lbxDesigns.Items.Add(string.Empty);
-            this.lbxDesigns.Items.AddRange(colony.Player.GetShipDesigns());
+            foreach (ShipDesign shipDesign in colony.Player.GetShipDesigns())
+                this.lbxDesigns.Items.Add(shipDesign);
 
             if (colony.Buildable == null)
                 this.lbxDesigns.SelectedIndex = 0;

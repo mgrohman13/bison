@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using MattUtil;
 
 namespace Daemons
 {
@@ -188,6 +189,8 @@ namespace Daemons
                 currentPlayer++;
                 CheckTurnInc();
             }
+
+            AutoSave();
         }
 
         private void ProcessBattles()
@@ -397,31 +400,22 @@ namespace Daemons
             return result;
         }
 
-        public void SaveGame(string filePath)
-        {
-            Stream file = new FileStream(filePath, FileMode.Create);
-            Stream stream = new GZipStream(file, CompressionMode.Compress);
-
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(stream, this);
-            stream.Close();
-        }
-
-        public Game LoadGame(string filePath)
-        {
-            Stream file = new FileStream(filePath, FileMode.Open);
-            Stream stream = new GZipStream(file, CompressionMode.Decompress);
-
-            BinaryFormatter formatter = new BinaryFormatter();
-            Game loaded = (Game)formatter.Deserialize(stream);
-            stream.Close();
-
-            return loaded;
-        }
-
-        internal T GetRandom<T>(List<T> list)
+        internal static T GetRandom<T>(List<T> list)
         {
             return list[Random.Next(list.Count)];
+        }
+
+        public void AutoSave()
+        {
+            TBSUtil.SaveGame(this, "../../../auto", turn + "-" + currentPlayer + ".dae");
+        }
+        public void SaveGame(string filePath)
+        {
+            TBSUtil.SaveGame(this, filePath);
+        }
+        public static Game LoadGame(string filePath)
+        {
+            return TBSUtil.LoadGame<Game>(filePath);
         }
     }
 }

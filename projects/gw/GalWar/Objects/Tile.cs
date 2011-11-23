@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GalWar
 {
     [Serializable]
     public class Tile
     {
-
         #region static
 
         public static HashSet<Tile> GetNeighbors(Tile tile)
@@ -122,6 +120,5 @@ namespace GalWar
         }
 
         #endregion //public
-
     }
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.ObjectModel;
 using System.Drawing;
 
 namespace GalWar
@@ -8,7 +8,6 @@ namespace GalWar
     [Serializable]
     public class Player
     {
-
         #region fields and constructors
 
         public readonly Game Game;
@@ -463,19 +462,19 @@ namespace GalWar
                 gold -= ( ship.Upkeep - ship.GetUpkeepReturn() );
         }
 
-        public Colony[] GetColonies()
+        public ReadOnlyCollection<Colony> GetColonies()
         {
-            return colonies.ToArray();
+            return colonies.AsReadOnly();
         }
 
-        public Ship[] GetShips()
+        public ReadOnlyCollection<Ship> GetShips()
         {
-            return ships.ToArray();
+            return ships.AsReadOnly();
         }
 
-        public ShipDesign[] GetShipDesigns()
+        public ReadOnlyCollection<ShipDesign> GetShipDesigns()
         {
-            return designs.ToArray();
+            return designs.AsReadOnly();
         }
 
         public double GetResearchChance(int researchInc)
@@ -541,6 +540,5 @@ namespace GalWar
         }
 
         #endregion //public
-
     }
 }

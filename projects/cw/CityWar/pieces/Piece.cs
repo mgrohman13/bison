@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 
 namespace CityWar
 {
@@ -36,7 +34,7 @@ namespace CityWar
             if (tile.IsNeighbor(t))
             {
                 Player occupying;
-                if (!t.OccupiedByUnit(out occupying) || (owner == occupying))
+                if (!t.OccupiedByUnit(out occupying) || ( owner == occupying ))
                     return CanMoveChild(t);
             }
             return false;
@@ -141,20 +139,20 @@ namespace CityWar
             List<Unit> units = null;
             bool anyUnits = false, unitsMoved = false;
             //move units as a group so they either all make it or all dont
-            if (!t.HasCity() && (t.Terrain == Terrain.Forest || t.Terrain == Terrain.Mountain))
+            if (!t.HasCity() && ( t.Terrain == Terrain.Forest || t.Terrain == Terrain.Mountain ))
             {
                 //collect units that may not make it
                 units = new List<Unit>();
                 foreach (Piece p in pieces)
                 {
                     Unit u = p as Unit;
-                    if (u != null && (u.Type == UnitType.Amphibious || u.Type == UnitType.Ground))
+                    if (u != null && ( u.Type == UnitType.Amphibious || u.Type == UnitType.Ground ))
                         units.Add(u);
                 }
 
                 //move them, if any
                 anyUnits = units.Count > 0;
-                unitsMoved = (anyUnits && Unit.UnitGroupMove(units, t, undoPieces));
+                unitsMoved = ( anyUnits && Unit.UnitGroupMove(units, t, undoPieces) );
             }
 
             bool any = unitsMoved;

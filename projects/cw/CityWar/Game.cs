@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using MattUtil;
 
 namespace CityWar
 {
@@ -33,21 +32,17 @@ namespace CityWar
         #endregion //fields
 
         #region public commands
+        public void AutoSave()
+        {
+            TBSUtil.SaveGame(this, Path + "Saves/auto", turn + "-" + currentPlayer + ".cws");
+        }
         public void SaveGame(string filePath)
         {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                new BinaryFormatter().Serialize(memory, this);
-                using (Stream file = new FileStream(filePath, FileMode.Create))
-                using (Stream compress = new DeflateStream(file, CompressionMode.Compress))
-                    memory.WriteTo(compress);
-            }
+            TBSUtil.SaveGame(this, filePath);
         }
         public static Game LoadGame(string filePath)
         {
-            using (Stream file = new FileStream(filePath, FileMode.Open))
-            using (Stream decompress = new DeflateStream(file, CompressionMode.Decompress))
-                return (Game)new BinaryFormatter().Deserialize(decompress);
+            return TBSUtil.LoadGame<Game>(filePath);
         }
 
         public static Game StartNewGame(Player[] newPlayers, int width, int height)
@@ -200,6 +195,7 @@ namespace CityWar
         public void EndTurn()
         {
             EndTurn(false);
+            AutoSave();
         }
         private void EndTurn(bool currentDead)
         {

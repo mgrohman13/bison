@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace GalWar
 {
     [Serializable]
     public class Graphs
     {
-
         private readonly List<Dictionary<GraphType, Dictionary<Player, float>>> data;
 
         private readonly Player[] players;
@@ -15,18 +13,18 @@ namespace GalWar
         internal Graphs(Game game)
         {
             this.data = new List<Dictionary<GraphType, Dictionary<Player, float>>>();
-            this.players = game.GetPlayers().ToArray();
+            this.players = game.GetPlayers();
         }
 
         internal void Increment(Game game)
         {
-            List<Player> players = game.GetPlayers();
+            Player[] players = game.GetPlayers();
             Dictionary<Player, double> research = game.GetResearch();
 
             Dictionary<GraphType, Dictionary<Player, float>> playerGraphs = new Dictionary<GraphType, Dictionary<Player, float>>();
 
             foreach (Player player in this.players)
-                if (players.Contains(player))
+                if (Array.IndexOf(players, player) > -1)
                 {
                     Add(playerGraphs, GraphType.Research, player, (float)research[player]);
 
@@ -153,6 +151,5 @@ namespace GalWar
             Research,
             TotalIncome,
         }
-
     }
 }

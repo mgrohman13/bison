@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Drawing;
-using System.IO;
-using System.Drawing.Imaging;
 using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.Serialization;
 
 namespace CityWar
 {
     [Serializable]
-    public class Player
+    public class Player : IDeserializationCallback
     {
         #region fields and constructors
         public const int WizardCost = 1300, RelicCost = 300;//55
@@ -32,9 +31,9 @@ namespace CityWar
         private List<Piece> pieces = new List<Piece>();
 
         [NonSerialized]
-        private List<string> trades = new List<string>();
+        private List<string> trades;
         [NonSerialized]
-        private Dictionary<string, Bitmap> pics = new Dictionary<string, Bitmap>(), picsConst = new Dictionary<string, Bitmap>();
+        private Dictionary<string, Bitmap> pics, picsConst;
 
         public Player(string Race, Color color, string Name)
         {
@@ -43,6 +42,8 @@ namespace CityWar
             Color c = this.InverseColor;
             this.Name = Name;
             this.healRound = Game.Random.NextDouble();
+
+            this.OnDeserialization(null);
         }
         #endregion //fields and constructors
 
@@ -1315,5 +1316,16 @@ namespace CityWar
             return Game.Random.Round(amt - tradeAmt);
         }
         #endregion //removing pieces between turn rounds
+
+        #region IDeserializationCallback Members
+
+        public void OnDeserialization(object sender)
+        {
+            this.trades = new List<string>();
+            this.pics = new Dictionary<string, Bitmap>();
+            this.picsConst = new Dictionary<string, Bitmap>();
+        }
+
+        #endregion
     }
 }
