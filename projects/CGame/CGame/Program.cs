@@ -72,10 +72,10 @@ namespace CGame
 
             _enemiesPerTurn = Math.Sqrt(52.0 / _startEnemies);
 
-            _enemySpeed = 1 + mapMult * 2.6;
-            getValue(ref _enemySpeed, 2.1, 6.5);
+            _enemySpeed = Math.Max(Math.Max(1, _enemiesPerTurn) * 1.69, mapMult * 3.9);
+            getValue(ref _enemySpeed, Math.Max(1, _enemiesPerTurn) * 1.3, Math.Max(_enemySpeed * 1.3, 6.5));
 
-            _stillEnemySL = ( 2.0 / _enemiesPerTurn / 260.0 );
+            _stillEnemySL = 0; //( 2.0 / _enemiesPerTurn / 260.0 );
             _playerMoveSL = ( 1.0 / mapMult / 169.0 );
             _bulletMoveSL = ( _playerMoveSL / 2.1 );
             _bulletKillSL = .39 / _enemiesPerTurn;
@@ -412,7 +412,7 @@ input:
                             modFlag ? 0 : _bulletMoveSL, bulletCollisions);
                 else
                     //no decent input was given, so recurse
-                    playerInput();
+                    return playerInput();
             }
 
             return false;
@@ -542,11 +542,7 @@ input:
         {
             Dictionary<Point, double> retVal = new Dictionary<Point, double>();
             foreach (Point p in enemies)
-            {
-                int speed = getEnemy(p);
-                if (speed > 0 && Math.Abs(p.x - pX) + Math.Abs(p.y - pY) <= speed)
-                    retVal.Add(p, Math.Sqrt(doKillChance(p, speed, p.x, p.y)));
-            }
+                retVal.Add(p, Math.Sqrt(doKillChance(p, getEnemy(p), p.x, p.y)));
             return retVal;
         }
 
@@ -555,26 +551,23 @@ input:
             const double mult = ENEMYCHASEVALUE - 4;
             double chance = 0;
             double tot = 2 * ENEMYCHASEVALUE;
-            for (int rand = 0 ; rand < 5 ; ++rand)
-                for (int b = 0 ; b < ( rand > 3 ? 2 : 1 ) ; ++b)
-                {
-                    double add = 0;
-                    int xDif, yDif, flag;
-                    Point move = getMove(new Point(x, y), out xDif, out yDif, out flag, rand, b == 0);
-                    if (new Point(pX, pY).Equals(move))
+            if (speed > 0 && Math.Abs(x - pX) + Math.Abs(y - pY) <= speed)
+                for (int rand = 0 ; rand < 5 ; ++rand)
+                    for (int b = 0 ; b < ( rand > 3 ? 2 : 1 ) ; ++b)
                     {
-                        add = 1;
+                        double add = 0;
+                        int xDif, yDif, flag;
+                        Point move = getMove(new Point(x, y), out xDif, out yDif, out flag, rand, b == 0);
+                        if (new Point(pX, pY).Equals(move))
+                            add = 1;
+                        else if (speed > 1)
+                            if (move.x > -1 && move.x < _width && move.y > -1 && move.y < _height
+                                    && ( orig.Equals(move) || NOTHING == data[move.x, move.y] ))
+                                add = doKillChance(orig, speed - 1, move.x, move.y);
+                            else
+                                tot -= ( rand > 3 ? mult / 2.0 : 1 );
+                        chance += add * ( rand > 3 ? mult : 2 );
                     }
-                    else if (speed > 1)
-                    {
-                        if (move.x > -1 && move.x < _width && move.y > -1 && move.y < _height
-                                && ( orig.Equals(move) || NOTHING == data[move.x, move.y] ))
-                            add = doKillChance(orig, speed - 1, move.x, move.y);
-                        else
-                            tot -= ( rand > 3 ? mult / 2.0 : 1 );
-                    }
-                    chance += add * ( rand > 3 ? mult : 2 );
-                }
             return chance / tot;
         }
 
