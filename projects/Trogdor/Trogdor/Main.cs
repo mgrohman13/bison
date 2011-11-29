@@ -9,102 +9,122 @@ using System.Collections;
 
 namespace Trogdor
 {
-	public partial class Main : Form
-	{
-		public Main()
-		{
-			InitializeComponent();
+    public partial class Main : Form
+    {
+        public Main()
+        {
+            InitializeComponent();
 
-			this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
-				ControlStyles.AllPaintingInWmPaint, true);
-		}
+            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
+        }
 
-		protected override void OnPaint(PaintEventArgs e)
-		{
-			if (Game.paused)
-				e.Graphics.DrawString("PAUSED", new Font("Arial", 30), Brushes.Black,
-					new PointF((float)(Game.MaxWidth / 2.0 - 100.0),
-					(float)(Game.MaxHeight / 2.0 - 30.0)));
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (Game.Paused)
+                using (Font font = new Font("Arial", 30f))
+                    e.Graphics.DrawString("PAUSED", font, Brushes.Black, new PointF(Game.Width / 2f - 75f, Game.Height / 2f - 15f));
 
-			ArrayList temp = (ArrayList)Game.pieces.Clone();
+            foreach (Piece piece in Game.Pieces)
+                piece.Draw(e.Graphics, this.menuStrip1.Height);
 
-			foreach (Piece piece in temp)
-				piece.draw(e.Graphics);
+            this.Text = string.Format("Trogdor - {0:f0}", Game.Score);
+        }
 
-			this.Text = string.Format("Trogdor - {0:f0}", Game.score);
-		}
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+            case Keys.Down:
+                Game.Down = true;
+                break;
+            case Keys.Left:
+                Game.Left = true;
+                break;
+            case Keys.Right:
+                Game.Right = true;
+                break;
+            case Keys.Up:
+                Game.Up = true;
+                break;
+            }
+        }
 
-		private void Form1_KeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.KeyCode == Keys.Down)
-				Game.down = true;
-			if (e.KeyCode == Keys.Up)
-				Game.up = true;
-			if (e.KeyCode == Keys.Left)
-				Game.left = true;
-			if (e.KeyCode == Keys.Right)
-				Game.right = true;
-		}
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+            case Keys.Down:
+                Game.Down = false;
+                break;
+            case Keys.Left:
+                Game.Left = false;
+                break;
+            case Keys.Right:
+                Game.Right = false;
+                break;
+            case Keys.Up:
+                Game.Up = false;
+                break;
+            case Keys.P:
+            case Keys.Pause:
+                Game.Pause();
+                this.Refresh();
+                break;
+            case Keys.S:
+                Game.ShowScores();
+                break;
+            case Keys.N:
+                if (Game.GameOver)
+                {
+                    Game.NewGame();
+                    this.ResizeGame();
+                }
+                else if (MessageBox.Show("Are you sure you want to start a new game?\nThe current game will be lost!",
+                        "New Game", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    Game.EndGame();
+                    Game.NewGame();
+                    this.ResizeGame();
+                }
+                break;
+            }
+        }
 
-		private void Form1_KeyUp(object sender, KeyEventArgs e)
-		{
-			if (e.KeyCode == Keys.Down)
-				Game.down = false;
-			if (e.KeyCode == Keys.Up)
-				Game.up = false;
-			if (e.KeyCode == Keys.Left)
-				Game.left = false;
-			if (e.KeyCode == Keys.Right)
-				Game.right = false;
+        private void newGameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Game.GameOver)
+            {
+                Game.NewGame();
+                this.ResizeGame();
+            }
+            else if (MessageBox.Show("Are you sure you want to start a new game?\nThe current game will be lost!",
+                    "New Game", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            {
+                Game.EndGame();
+                Game.NewGame();
+                this.ResizeGame();
+            }
+        }
 
-			if (e.KeyCode == Keys.P || e.KeyCode == Keys.Pause)
-			{
-				Game.Pause();
-				this.Refresh();
-			}
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Game.EndGame();
+        }
 
-			if (e.KeyCode == Keys.S)
-				Game.ShowScores();
+        private void scoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Game.ShowScores();
+        }
 
-			if (e.KeyCode == Keys.N)
-			{
-				if (Game.gameOver)
-				{
-					Game.NewGame();
-				}
-				else if (MessageBox.Show("Are you sure you want to start a new game?\n" +
-					"The current game will be lost!", "New Game", MessageBoxButtons.YesNo,
-					MessageBoxIcon.Warning) == DialogResult.Yes)
-				{
-					Game.GameOver();
-					Game.NewGame();
-				}
-			}
-		}
+        internal void ResizeGame()
+        {
+            Size size = this.Size;
+            size.Width -= this.ClientSize.Width;
+            size.Height -= this.ClientSize.Height - this.menuStrip1.Height;
+            size.Width += Game.Width;
+            size.Height += Game.Height;
 
-		private void newGameToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (Game.gameOver)
-			{
-				Game.NewGame();
-			}
-			else if (MessageBox.Show("Are you sure you want to start a new game?\n" +
-					"The current game will be lost!", "New Game", MessageBoxButtons.YesNo,
-					MessageBoxIcon.Warning) == DialogResult.Yes)
-			{
-				Game.GameOver();
-				Game.NewGame();
-			}
-		}
-
-		private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			Game.GameOver();
-		}
-
-		private void scoresToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			Game.ShowScores();
-		}
-	}
+            this.MinimumSize = this.MaximumSize = this.Size = size;
+        }
+    }
 }

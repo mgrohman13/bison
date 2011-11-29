@@ -1,4 +1,3 @@
-using System.Collections;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -9,177 +8,141 @@ namespace Trogdor
 {
     static class Game
     {
-        public const double createChildTime = .00333;
-        public const double createTime = .00666;
         public const int FrameRate = 26;
-        public const double death = .666;
-        public const double playerSpeed = .6;
-        public const double playerOffset = .21;
-        public const double otherOffset = .9;
-        public const double otherSpeed = .0003;
-        public const double hitDamage = 13;
-        public const double hutSize = 300;
+        public const string ScoresFile = "inf.dat";
 
-        private static Stats statsForm;
-        public static System.Timers.Timer timer = new System.Timers.Timer(333);
-        public static int MaxWidth, MaxHeight;
-        public static bool up, down, left, right, gameOver, paused;
-        public static double score;
-        public static ArrayList pieces;
-        public static MattUtil.MTRandom rand;
-        private static Main form;
+        public const double HutSize = 300;
+        public const float CreateHut = .006f;
+        public const float CreateOther = CreateHut / 2f;
 
-        internal static double totalHut;
-        internal static double totalAlly;
-        internal static double totalEnemy;
-        internal static double totalPlayer;
-        internal static double decayHut;
-        internal static double decayAlly;
-        internal static double decayEnemy;
-        internal static double decayPlayer;
-        internal static double collectHut;
-        internal static double collectAlly;
-        internal static double collectEnemy;
+        public const float DeathChance = .05f;
+        public const double DeathConst = 2.6;
 
-        const string file = "inf.dat";
+        public const double PlayerSpeed = .6;
+        public const double OtherSpeed = .0003;
+        public const float DriftChance = .3f;
+        public const float PlayerDrift = .169f;
+        public const float OtherDrift = .6f;
+        public const double HitDamage = 26.0 / PlayerSpeed;
 
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
+        public static MattUtil.MTRandom Random;
+
+        private static Main MainForm;
+        private static Stats StatsForm;
+        private static System.Timers.Timer Timer = new System.Timers.Timer(1000);
+
+        public static int Width, Height;
+        public static bool Up, Down, Left, Right, GameOver, Paused;
+        public static double Score;
+        public static List<Piece> Pieces;
+        private static Piece Player;
+
+        public static double TotalHut;
+        public static double TotalEnemy;
+        public static double TotalAlly;
+        public static double TotalPlayer;
+        public static double DecayHut;
+        public static double DecayAlly;
+        public static double DecayEnemy;
+        public static double DecayPlayer;
+        public static double CollectHut;
+        public static double CollectAlly;
+        public static double CollectEnemy;
+
         [STAThread]
         static void Main()
         {
-            rand = new MattUtil.MTRandom();
-            rand.StartTick();
+            Random = new MattUtil.MTRandom();
+            Random.StartTick();
 
-            if (!File.Exists(file))
-                File.Create(file);
+            if (!File.Exists(ScoresFile))
+                File.Create(ScoresFile);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            timer.Elapsed += new ElapsedEventHandler(Interval);
-            timer.Enabled = false;
+            Timer.Elapsed += new ElapsedEventHandler(Interval);
+            Timer.Enabled = false;
 
-            form = new Main();
-            statsForm = new Stats();
-
-            MaxHeight = form.ClientSize.Height;
-            MaxWidth = form.ClientSize.Width;
+            MainForm = new Main();
+            StatsForm = new Stats();
 
             NewGame();
+            Application.Run(MainForm);
+            MainForm.ResizeGame();
 
-            Application.Run(form);
-
-            rand.Dispose();
+            Random.Dispose();
         }
 
         public static void Pause()
         {
-            if (paused)
+            if (Paused)
             {
-                Game.timer.Enabled = true;
-                Game.paused = false;
+                Game.Timer.Enabled = true;
+                Game.Paused = false;
             }
             else
             {
-                Game.timer.Enabled = false;
-                Game.paused = true;
+                Game.Timer.Enabled = false;
+                Game.Paused = true;
             }
         }
 
-        //static double tot, count;
-
         static void Interval(object sender, EventArgs e)
         {
-            timer.Enabled = false;
+            Timer.Enabled = false;
 
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
 
-            while (!gameOver && !paused)
+            while (!GameOver && !Paused)
             {
                 watch.Reset();
                 watch.Start();
 
                 RunGame();
 
-                form.Invalidate();
+                MainForm.Invalidate();
 
-                //count++;
-                //tot += watch.ElapsedMilliseconds;
-
-                //if (count > 1000)
-                //{
-                //    double meh = tot / count;
-                //}
-
-                long timeDiff = FrameRate - watch.ElapsedMilliseconds;
+                int timeDiff = (int)( FrameRate - watch.ElapsedMilliseconds );
                 if (timeDiff > 0)
-                    System.Threading.Thread.Sleep((int)timeDiff);
-
-                watch.Stop();
+                    System.Threading.Thread.Sleep(timeDiff);
             }
         }
 
         private static void RunGame()
         {
-            if (paused)
+            if (Paused)
                 return;
 
-            ArrayList temp = (ArrayList)pieces.Clone();
+            Player.CheckCollisions();
 
-            foreach (Piece piece in temp)
+            double total = 0;
+            foreach (Piece piece in Random.Iterate(Pieces))
             {
                 piece.Increment();
+                if (piece.Type == Type.Hut)
+                    total += piece.Size;
             }
 
-            if (rand.Bool(createChildTime))
-            {
-                double total = 0;
-
-                foreach (Piece piece in pieces)
-                {
-                    if (piece.Type == Type.Hut)
-                        total += piece.Size;
-                }
-
-                double size = rand.DoubleHalf(total);
-                totalEnemy += size;
-                pieces.Add(new Piece(Type.Enemy, size));
-            }
-
-            if (rand.Bool(createTime))
-            {
-                double size = rand.OE(hutSize);
-                totalHut += size;
-                pieces.Add(new Piece(Type.Hut, size));
-            }
-
-            temp = (ArrayList)pieces.Clone();
-
-            foreach (Piece piece in temp)
-            {
-                if (piece.Type == Type.Player)
-                {
-                    piece.checkCollisions();
-                    break;
-                }
-            }
+            if (Random.Bool(CreateOther))
+                new Piece(Type.Enemy, Random.DoubleHalf(total));
+            if (Random.Bool(CreateHut))
+                new Piece(Type.Hut, Random.OE(HutSize));
         }
 
-        public static void GameOver()
+        public static void EndGame()
         {
-            if (gameOver)
+            if (GameOver)
                 return;
 
-            gameOver = true;
+            GameOver = true;
 
-            timer.Enabled = false;
+            Timer.Enabled = false;
 
-            FileStream fs = new FileStream(file, FileMode.Append);
+            FileStream fs = new FileStream(ScoresFile, FileMode.Append);
             BinaryWriter writer = new BinaryWriter(fs);
 
-            uint[] uints = GetUInts(score);
+            uint[] uints = GetUInts(Score);
 
             foreach (uint ui in uints)
                 writer.Write(ui);
@@ -195,8 +158,8 @@ namespace Trogdor
 
         private static void ShowStats()
         {
-            statsForm.Init();
-            statsForm.ShowDialog();
+            StatsForm.Init();
+            StatsForm.ShowDialog();
         }
 
         public static void ShowScores()
@@ -205,7 +168,7 @@ namespace Trogdor
             {
                 double total = 0, games = 0, high = 0;
 
-                FileStream fs = new FileStream(file, FileMode.OpenOrCreate);
+                FileStream fs = new FileStream(ScoresFile, FileMode.OpenOrCreate);
                 BinaryReader reader = new BinaryReader(fs);
 
                 try
@@ -221,15 +184,17 @@ namespace Trogdor
                         total += temp;
                     }
                 }
-                catch { }
+                catch
+                {
+                }
 
                 reader.Close();
                 fs.Close();
                 fs.Dispose();
 
-                if (!gameOver)
+                if (!GameOver)
                 {
-                    paused = false;
+                    Paused = false;
                     Pause();
                 }
 
@@ -237,23 +202,25 @@ namespace Trogdor
                     "Games Played:\t{0:f0}\nHighest Score:\t{1:f0}\nAverage Score:\t{2:f0}",
                     games, high, total / games), "Scores", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                if (!gameOver)
+                if (!GameOver)
                 {
                     Pause();
                 }
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         static uint[] GetUInts(double value)
         {
             uint main = (uint)value;
-            uint dec = uint.Parse(((string)(value.ToString() + ".0")).Split('.')[1].PadRight(9).Substring(0, 9));
+            uint dec = uint.Parse(( (string)( value.ToString() + ".0" ) ).Split('.')[1].PadRight(9).Substring(0, 9));
 
             shift(ref main, true);
             shift(ref dec, true);
 
-            uint key = rand.NextUInt();
+            uint key = Random.NextUInt();
 
             main += key;
             dec += key;
@@ -310,17 +277,20 @@ namespace Trogdor
                 otherShift = origHash % 27,
                 counter = origHash % maxShift;
 
-            if (maxShift < 0) maxShift *= -1;
-            if (otherShift < 0) otherShift *= -1;
-            if (counter < 0) counter *= -1;
+            if (maxShift < 0)
+                maxShift *= -1;
+            if (otherShift < 0)
+                otherShift *= -1;
+            if (counter < 0)
+                counter *= -1;
 
             foreach (char c in value)
             {
                 uint val = Convert.ToUInt32(c) ^ (uint)c.GetHashCode();
-                result += val >> (32 - counter);
+                result += val >> ( 32 - counter );
                 result += val << counter;
                 if (++counter == maxShift)
-                    counter = (int)((result >> otherShift) % maxShift);
+                    counter = (int)( ( result >> otherShift ) % maxShift );
             }
             return result;
         }
@@ -329,46 +299,45 @@ namespace Trogdor
         {
             const double playerSize = 1300;
 
-            up = false;
-            down = false;
-            left = false;
-            right = false;
-            gameOver = false;
-            paused = false;
+            Up = false;
+            Down = false;
+            Left = false;
+            Right = false;
+            GameOver = false;
+            Paused = false;
 
-            score = 0;
+            Width = Random.GaussianCappedInt(750, .078, 500);
+            Height = Random.GaussianCappedInt(750, .078, 500);
 
-            totalHut = 0;
-            totalAlly = 0;
-            totalEnemy = 0;
-            totalPlayer = playerSize;
-            decayHut = 0;
-            decayAlly = 0;
-            decayEnemy = 0;
-            decayPlayer = 0;
-            collectHut = 0;
-            collectAlly = 0;
-            collectEnemy = 0;
+            Score = 0;
 
-            pieces = new ArrayList();
+            TotalHut = 0;
+            TotalAlly = 0;
+            TotalEnemy = 0;
+            TotalPlayer = playerSize;
+            DecayHut = 0;
+            DecayAlly = 0;
+            DecayEnemy = 0;
+            DecayPlayer = 0;
+            CollectHut = 0;
+            CollectAlly = 0;
+            CollectEnemy = 0;
 
-            pieces.Add(new Piece(Type.Player, playerSize));
+            Pieces = new List<Piece>();
 
-            while (rand.Bool(.75))
+            Player = new Piece(Type.Player, playerSize);
+
+            while (Random.Bool(.78f))
             {
-                double val = rand.OE(hutSize);
+                double val = Random.OE(HutSize);
+                double val2 = Random.DoubleHalf(val);
 
-                double val2 = rand.DoubleHalf(val);
-
-                totalAlly += val2;
-                pieces.Add(new Piece(Type.Ally, val2));
-                totalEnemy += val2;
-                pieces.Add(new Piece(Type.Enemy, val2));
-                totalHut += val;
-                pieces.Add(new Piece(Type.Hut, val));
+                new Piece(Type.Ally, val2);
+                new Piece(Type.Enemy, val2);
+                new Piece(Type.Hut, val);
             }
 
-            timer.Enabled = true;
+            Timer.Enabled = true;
         }
     }
 }

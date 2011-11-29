@@ -5,261 +5,284 @@ using System.Drawing;
 
 namespace Trogdor
 {
-	enum Type
-	{
-		Hut,
-		Ally,
-		Enemy,
-		Player
-	}
+    public enum Type
+    {
+        Hut,
+        Ally,
+        Enemy,
+        Player
+    }
 
-	class Piece
-	{
-		Type type;
-		double x, y, xVel, yVel, size;
+    public class Piece
+    {
+        private readonly Type type;
+        private double x, y, xVel, yVel, size;
 
-		public double Size
-		{
-			get { return size; }
-			set
-			{
-				double old = Side;
+        public double Size
+        {
+            get
+            {
+                return size;
+            }
+            private set
+            {
+                double old = Diameter;
+                size = value;
+                old -= this.Diameter;
+                old /= 2.0;
+                this.x += old;
+                this.y += old;
+            }
+        }
 
-				size = value;
+        public double Diameter
+        {
+            get
+            {
+                return 2.0 * Math.Sqrt(Size / Math.PI);
+            }
+        }
 
-				this.x += (old - Side) / 2.0;
-				this.y += (old - Side) / 2.0;
-			}
-		}
+        public Type Type
+        {
+            get
+            {
+                return type;
+            }
+        }
 
-		private double Side
-		{
-			get
-			{
-				return 2.0 * Math.Sqrt(Size / Math.PI);
-			}
-		}
+        internal Piece(Type type, double size)
+        {
+            this.type = type;
+            this.size = size;
+            double diameter = Diameter;
+            this.x = Game.Random.DoubleHalf(Game.Width - diameter);
+            this.y = Game.Random.DoubleHalf(Game.Height - diameter);
+            xVel = 0;
+            yVel = 0;
 
-		public Type Type
-		{
-			get { return type; }
-			set { type = value; }
-		}
+            switch (type)
+            {
+            case Type.Ally:
+                Game.TotalAlly += size;
+                break;
+            case Type.Enemy:
+                Game.TotalEnemy += size;
+                break;
+            case Type.Hut:
+                Game.TotalHut += size;
+                break;
+            }
 
-		public Piece(Type type, double Size)
-		{
-			this.type = type;
-			this.size = Size;
-			this.x = Game.rand.DoubleHalf((double)Game.MaxWidth - Side);
-			this.y = Game.rand.DoubleHalf((double)Game.MaxHeight - Side);
-			xVel = 0;
-			yVel = 0;
-		}
+            Game.Pieces.Add(this);
+        }
 
-		private void createChild()
-		{
-			if (Game.rand.Bool(Game.createChildTime))
-			{
-				double size = Game.rand.DoubleHalf() * this.Size;
-				Game.totalAlly += size;
-				Piece child = new Piece(Type.Ally, size);
-				child.x = this.x + this.Side / 2.0 - child.Side / 2.0;
-				child.y = this.y + this.Side / 2.0 - child.Side / 2.0;
-				Game.pieces.Add(child);
-			}
-		}
+        private void CreateChild()
+        {
+            if (Game.Random.Bool(Game.CreateOther))
+            {
+                Piece child = new Piece(Type.Ally, Game.Random.DoubleHalf(this.Size));
+                double diff = ( this.Diameter - child.Diameter ) / 2.0;
+                child.x = this.x + diff;
+                child.y = this.y + diff;
+            }
+        }
 
-		public void Accelerate(double xVel, double yVel)
-		{
-			this.xVel += xVel;
-			this.yVel += yVel;
-		}
+        private void Accelerate(double xVel, double yVel)
+        {
+            this.xVel += xVel;
+            this.yVel += yVel;
+        }
 
-		private void randomMove()
-		{
-			double offset = Game.otherOffset;
-			if (type == Type.Player)
-				offset = Game.playerOffset;
+        private void Drift()
+        {
+            if (Game.Random.Bool(Game.DriftChance))
+            {
+                float drift;
+                if (type == Type.Player)
+                    drift = Game.PlayerDrift;
+                else
+                    drift = Game.OtherDrift;
+                Accelerate(Game.Random.Gaussian(drift), Game.Random.Gaussian(drift));
+            }
+        }
 
-			Accelerate(Game.rand.DoubleHalf(offset) - Game.rand.DoubleHalf(offset),
-						Game.rand.DoubleHalf(offset) - Game.rand.DoubleHalf(offset));
-		}
+        internal void Increment()
+        {
+            if (this.Size > 0 && Game.Random.Bool(Game.DeathChance))
+            {
+                double decay = Game.Random.OE(Game.DeathConst + this.Size / Game.HutSize);
+                if (decay > this.Size)
+                    decay = this.size;
+                switch (this.Type)
+                {
+                case Type.Ally:
+                    Game.DecayAlly += decay;
+                    break;
+                case Type.Enemy:
+                    Game.DecayEnemy += decay;
+                    break;
+                case Type.Hut:
+                    Game.DecayHut += decay;
+                    break;
+                case Type.Player:
+                    Game.DecayPlayer += decay;
+                    break;
+                }
+                this.Size -= decay;
+            }
 
-		public void Increment()
-		{
-			if (this.Size == 0)
-			{
-				if (this.type == Type.Player)
-					Game.GameOver();
-				Game.pieces.Remove(this);
-				return;
-			}
+            if (this.Size > 0)
+            {
+                switch (this.Type)
+                {
+                case Type.Ally:
+                case Type.Enemy:
+                    Drift();
+                    double offset = this.Diameter / 2.0;
+                    Accelerate(Game.Random.DoubleFull(( Game.Width / 2.0 - this.x - offset ) * Game.OtherSpeed),
+                            Game.Random.DoubleFull(( Game.Height / 2.0 - this.y - offset ) * Game.OtherSpeed));
+                    break;
 
-			if (Game.rand.Bool() && Game.rand.Bool() && Game.rand.Bool() && Game.rand.Bool())
-			{
-				double decay = Game.rand.OE(Game.death * (3.0 + this.Size / Game.hutSize));
-				switch (this.Type)
-				{
-					case Type.Ally:
-						Game.decayAlly += decay;
-						break;
-					case Type.Enemy:
-						Game.decayEnemy += decay;
-						break;
-					case Type.Hut:
-						Game.decayHut += decay;
-						break;
-					case Type.Player:
-						Game.decayPlayer += decay;
-						break;
-				}
-				this.Size -= decay;
-			}
+                case Type.Player:
+                    Drift();
 
-			if (this.Size <= 0)
-				this.Size = 0;
+                    if (Game.Down)
+                        Accelerate(0, Game.PlayerSpeed);
+                    if (Game.Up)
+                        Accelerate(0, -Game.PlayerSpeed);
+                    if (Game.Left)
+                        Accelerate(-Game.PlayerSpeed, 0);
+                    if (Game.Right)
+                        Accelerate(Game.PlayerSpeed, 0);
+                    break;
+                }
 
-			switch (this.Type)
-			{
-				case Type.Ally:
-				case Type.Enemy:
-					randomMove();
+                this.x += xVel;
+                this.y += yVel;
 
-					Accelerate((Game.MaxWidth / 2.0 - this.x) * Game.otherSpeed,
-						(Game.MaxHeight / 2.0 - this.y) * Game.otherSpeed);
-					break;
+                CheckSides();
+            }
 
-				case Type.Player:
-					randomMove();
+            if (this.Size > 0)
+            {
+                if (type == Type.Hut)
+                    CreateChild();
+            }
+            else
+            {
+                if (this.type == Type.Player)
+                    Game.EndGame();
+                Game.Pieces.Remove(this);
+            }
+        }
 
-					if (Game.down)
-						Accelerate(0, Game.playerSpeed);
-					if (Game.up)
-						Accelerate(0, Game.playerSpeed * -1.0);
-					if (Game.left)
-						Accelerate(Game.playerSpeed * -1.0, 0);
-					if (Game.right)
-						Accelerate(Game.playerSpeed, 0);
-					break;
-			}
+        private void CheckSides()
+        {
+            bool hit = false;
 
-			this.x += xVel;
-			this.y += yVel;
+            double offset = this.Diameter;
+            double maxWidth = Game.Width - offset;
+            double maxHeight = Game.Height - offset;
+            if (x > maxWidth)
+            {
+                x = maxWidth;
+                hit = true;
+            }
+            else if (x < 0)
+            {
+                x = 0;
+                hit = true;
+            }
+            if (y > maxHeight)
+            {
+                y = maxHeight;
+                hit = true;
+            }
+            else if (y < 0)
+            {
+                y = 0;
+                hit = true;
+            }
 
-			checkSides();
+            if (hit)
+            {
+                if (this.type == Type.Player)
+                    this.Size -= Math.Sqrt(xVel * xVel + yVel * yVel) * Game.HitDamage;
 
-			if (type == Type.Hut)
-				createChild();
-		}
+                yVel = 0;
+                xVel = 0;
+            }
+        }
 
-		private void checkSides()
-		{
-			bool hit = false;
+        private bool Hits(Piece piece)
+        {
+            double radius = this.Diameter / 2.0;
+            double pieceRadius = piece.Diameter / 2.0;
+            double diff = radius - pieceRadius;
+            double x = this.x - piece.x + diff;
+            double y = this.y - piece.y + diff;
+            diff = radius + pieceRadius;
+            return ( diff * diff > x * x + y * y );
+        }
 
-			if (x + Side > Game.MaxWidth)
-			{
-				x = Game.MaxWidth - Side;
-				hit = true;
-			}
-			if (x < 0)
-			{
-				x = 0;
-				hit = true;
-			}
-			if (y + Side > Game.MaxHeight)
-			{
-				y = Game.MaxHeight - Side;
-				hit = true;
-			}
-			if (y < 24)
-			{
-				y = 24;
-				hit = true;
-			}
+        internal void CheckCollisions()
+        {
+            foreach (Piece piece in Game.Random.Iterate(Game.Pieces))
+                if (this.Hits(piece))
+                {
 
-			if (hit)
-			{
-				if (this.type == Type.Player)
-					this.Size -= Math.Sqrt(xVel * xVel + yVel * yVel) * Game.hitDamage;
+                    switch (piece.type)
+                    {
+                    case Type.Ally:
+                        double ad = piece.Size;
+                        Game.TotalPlayer += ad;
+                        Game.CollectAlly += ad;
 
-				yVel = 0;
-				xVel = 0;
-			}
-		}
+                        this.Size += ad;
+                        piece.Size = 0;
+                        break;
 
-		private bool hits(Piece piece)
-		{
-			return ((this.Side + piece.Side) / 2.0 >= Math.Sqrt(Math.Pow(
-				this.x + this.Side / 2.0 - piece.x - piece.Side / 2.0, 2)
-				+ Math.Pow(this.y + this.Side / 2.0 - piece.y - piece.Side / 2.0, 2)));
-		}
+                    case Type.Enemy:
+                        double ed = Math.Min(this.Size, piece.Size);
+                        Game.CollectEnemy += ed;
 
-		public void checkCollisions()
-		{
-			foreach (Piece piece in Game.pieces)
-			{
-				if (this.hits(piece))
-				{
-					double death = Math.Min(this.Size, piece.Size);
+                        this.Size -= ed;
+                        piece.Size -= ed;
+                        break;
 
-					switch (piece.type)
-					{
-						case Type.Ally:
-							Game.totalPlayer += piece.Size;
-							Game.collectAlly += piece.Size;
-							this.Size += piece.Size;
-							piece.Size = 0;
-							break;
+                    case Type.Hut:
+                        double hd = Math.Min(this.Size, piece.Size);
+                        Game.CollectHut += hd;
 
-						case Type.Enemy:
-							Game.collectEnemy += piece.Size;
-							this.Size -= death;
-							piece.Size -= death;
-							break;
+                        Game.Score += hd;
+                        this.Size -= hd;
+                        piece.Size -= hd;
+                        break;
+                    }
+                }
+        }
 
-						case Type.Hut:
-							Game.collectHut += piece.Size;
-							Game.score += death;
-							this.Size -= death;
-							piece.Size -= death;
-							break;
-					}
-				}
-			}
-		}
+        public void Draw(Graphics graphics, int yOffset)
+        {
+            float diameter = (float)Diameter;
+            graphics.FillEllipse(GetBrush(type), (float)x, (float)y + yOffset, diameter, diameter);
+        }
 
-		public void draw(Graphics g)
-		{
-			Brush brush = GetBrush(type);
-
-			g.FillEllipse(brush, (float)x, (float)y, (float)Side, (float)Side);
-		}
-
-		public static Brush GetBrush(Type type)
-		{
-			Brush brush;
-			switch (type)
-			{
-				case Type.Ally:
-					brush = Brushes.Green;
-					break;
-
-				case Type.Enemy:
-					brush = Brushes.Red;
-					break;
-
-				case Type.Hut:
-					brush = Brushes.Black;
-					break;
-
-				case Type.Player:
-					brush = Brushes.Blue;
-					break;
-
-				default:
-					throw new Exception();
-			}
-			return brush;
-		}
-	}
+        public static Brush GetBrush(Type type)
+        {
+            switch (type)
+            {
+            case Type.Ally:
+                return Brushes.Green;
+            case Type.Enemy:
+                return Brushes.Red;
+            case Type.Hut:
+                return Brushes.Black;
+            case Type.Player:
+                return Brushes.Blue;
+            }
+            throw new Exception();
+        }
+    }
 }

@@ -510,6 +510,7 @@ namespace MattUtil
             return ( mult * ( value & MWC_MASK ) + ( value >> MWC_SHIFT ) );
         }
 
+        //int asdf = 0;
         //Mersenne Twister pseudorandom number generator, period 2^19937-1.
         private uint MersenneTwister()
         {
@@ -519,7 +520,7 @@ namespace MattUtil
             {
                 if (mti >= LENGTH)
                 {
-                    //Console.WriteLine("MersenneTwister");
+                    //Console.WriteLine(++asdf);
                     //generate the next state of N 32-bit uints
                     uint b;
                     for (b = 0 ; b < LENGTH - STEP ; ++b)
