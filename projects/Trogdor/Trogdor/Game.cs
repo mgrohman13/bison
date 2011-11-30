@@ -29,7 +29,7 @@ namespace Trogdor
 
         private static Main MainForm;
         private static Stats StatsForm;
-        private static System.Timers.Timer Timer = new System.Timers.Timer(1000);
+        private static System.Timers.Timer Timer = new System.Timers.Timer(333);
 
         public static int Width, Height;
         public static bool Up, Down, Left, Right, GameOver, Paused;
@@ -68,8 +68,8 @@ namespace Trogdor
             StatsForm = new Stats();
 
             NewGame();
-            Application.Run(MainForm);
             MainForm.ResizeGame();
+            Application.Run(MainForm);
 
             Random.Dispose();
         }
@@ -91,21 +91,27 @@ namespace Trogdor
         static void Interval(object sender, EventArgs e)
         {
             Timer.Enabled = false;
+            float timeDiff = 0, tickMult = 1000f / System.Diagnostics.Stopwatch.Frequency;
+            const float maxSlow = -1000;
 
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-
+            watch.Start();
             while (!GameOver && !Paused)
             {
-                watch.Reset();
-                watch.Start();
+                System.Threading.Thread.Sleep(FrameRate);
 
                 RunGame();
-
                 MainForm.Invalidate();
 
-                int timeDiff = (int)( FrameRate - watch.ElapsedMilliseconds );
+                long ticks = watch.ElapsedTicks;
+                watch.Restart();
+
+                timeDiff += 2 * FrameRate - ticks * tickMult;
+                Console.WriteLine(timeDiff);
                 if (timeDiff > 0)
-                    System.Threading.Thread.Sleep(timeDiff);
+                    System.Threading.Thread.Sleep(Random.Round(timeDiff /= 2f));
+                else if (timeDiff < maxSlow)
+                    timeDiff = maxSlow;
             }
         }
 
