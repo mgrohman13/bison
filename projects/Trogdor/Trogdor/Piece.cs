@@ -26,6 +26,7 @@ namespace Trogdor
             }
             private set
             {
+                //Game.Invalidate(x, y, Math.Max(this.size, value));
                 double old = Diameter;
                 size = value;
                 old -= this.Diameter;

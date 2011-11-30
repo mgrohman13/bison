@@ -20,14 +20,21 @@ namespace Trogdor
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (Game.Paused)
-                using (Font font = new Font("Arial", 30f))
-                    e.Graphics.DrawString("PAUSED", font, Brushes.Black, new PointF(Game.Width / 2f - 75f, Game.Height / 2f - 15f));
+            try
+            {
+                if (Game.Paused)
+                    using (Font font = new Font("Arial", 30f))
+                        e.Graphics.DrawString("PAUSED", font, Brushes.Black, new PointF(Game.Width / 2f - 75f, Game.Height / 2f - 15f));
 
-            foreach (Piece piece in Game.Pieces)
-                piece.Draw(e.Graphics, this.menuStrip1.Height);
+                foreach (Piece piece in Game.Pieces)
+                    piece.Draw(e.Graphics, this.menuStrip1.Height);
 
-            this.Text = string.Format("Trogdor - {0:f0}", Game.Score);
+                this.Text = string.Format("Trogdor - {0:f0}", Game.Score);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)

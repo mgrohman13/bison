@@ -92,26 +92,24 @@ namespace Trogdor
         {
             Timer.Enabled = false;
             float timeDiff = 0, tickMult = 1000f / System.Diagnostics.Stopwatch.Frequency;
-            const float maxSlow = -1000;
+            const float maxSlow = FrameRate * -130f;
 
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             watch.Start();
             while (!GameOver && !Paused)
             {
-                System.Threading.Thread.Sleep(FrameRate);
-
-                RunGame();
                 MainForm.Invalidate();
 
                 long ticks = watch.ElapsedTicks;
                 watch.Restart();
 
-                timeDiff += 2 * FrameRate - ticks * tickMult;
-                Console.WriteLine(timeDiff);
+                timeDiff += FrameRate - ticks * tickMult;
                 if (timeDiff > 0)
-                    System.Threading.Thread.Sleep(Random.Round(timeDiff /= 2f));
+                    System.Threading.Thread.Sleep(Random.Round(timeDiff));
                 else if (timeDiff < maxSlow)
                     timeDiff = maxSlow;
+
+                RunGame();
             }
         }
 
@@ -138,6 +136,8 @@ namespace Trogdor
 
         public static void EndGame()
         {
+            MainForm.Invalidate();
+
             if (GameOver)
                 return;
 
