@@ -91,8 +91,9 @@ namespace Trogdor
         static void Interval(object sender, EventArgs e)
         {
             Timer.Enabled = false;
-            float timeDiff = 0, tickMult = 1000f / System.Diagnostics.Stopwatch.Frequency;
-            const float maxSlow = FrameRate * -130f;
+
+            const long maxSlow = -130;
+            long totalTime = 0;
 
             System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
             watch.Start();
@@ -100,14 +101,11 @@ namespace Trogdor
             {
                 MainForm.Invalidate();
 
-                long ticks = watch.ElapsedTicks;
-                watch.Restart();
-
-                timeDiff += FrameRate - ticks * tickMult;
+                int timeDiff = (int)( ( totalTime += FrameRate ) - watch.ElapsedMilliseconds );
                 if (timeDiff > 0)
-                    System.Threading.Thread.Sleep(Random.Round(timeDiff));
+                    System.Threading.Thread.Sleep(timeDiff);
                 else if (timeDiff < maxSlow)
-                    timeDiff = maxSlow;
+                    totalTime += maxSlow - timeDiff;
 
                 RunGame();
             }

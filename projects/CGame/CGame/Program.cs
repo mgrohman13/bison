@@ -13,9 +13,12 @@ namespace CGame
         const int EMENYSTARTCOUNT = 5;	//number of times to call createEnemies at the start
 
         //score constants
-        const double GOTGOAL = 10.0;//score gained for reaching the goal
-        const double SHOTGOAL = 3.0;	//score gained for shooting the goal
-        const double NEGATIVELIFE = 5.0;	//score lost for having negative life
+        const double GOTGOAL = 10; //score gained for reaching the goal
+        const double SHOTGOAL = 3; //score gained for shooting the goal
+        const double NEGATIVELIFE = 13; //score lost for having negative life
+
+        const double NEXTRANDOMMULT = .78; //multiple of next life actual and calculated difference received as score
+        const double GETLIFE = 7.8; //score required to receive a new life
 
         //characters
         const char NOTHING = (char)0;
@@ -46,7 +49,7 @@ namespace CGame
         static HashSet<Point> enemies = new HashSet<Point>();
         static double newEnemies;
         static int pX, pY, gX, gY;
-        static int lives;
+        static int lives, nextLife;
         static double score;
 
         static void initParams()
@@ -67,18 +70,18 @@ namespace CGame
             _numWalls = Random.Round(mapSize * .13);
             getValue(ref _numWalls, Random.Round(mapSize * .06), Random.Round(mapSize * .39));
 
-            _startEnemies = mapMult * 26.0;
-            getValue(ref _startEnemies, mapMult * 21.0, mapMult * 30.0);
+            _startEnemies = mapMult * 39.0;
+            getValue(ref _startEnemies, mapMult * 30.0, mapMult * 52.0);
 
-            _enemiesPerTurn = Math.Sqrt(52.0 / _startEnemies);
+            _enemiesPerTurn = Math.Sqrt(65.0 / _startEnemies * Math.Sqrt(mapSize * .13 / _numWalls * Math.Sqrt(mapSize / 507.0)));
 
             _enemySpeed = Math.Max(Math.Max(1, _enemiesPerTurn) * 1.69, mapMult * 3.9);
             getValue(ref _enemySpeed, Math.Max(1, _enemiesPerTurn) * 1.3, Math.Max(_enemySpeed * 1.3, 6.5));
 
-            _stillEnemySL = 0; //( 2.0 / _enemiesPerTurn / 260.0 );
-            _playerMoveSL = ( 1.0 / mapMult / 169.0 );
+            _stillEnemySL = 0; // ( 2.0 / _enemiesPerTurn / 260.0 );
+            _playerMoveSL = ( 1.0 / mapMult / 300.0 );
             _bulletMoveSL = ( _playerMoveSL / 2.1 );
-            _bulletKillSL = .39 / _enemiesPerTurn;
+            _bulletKillSL = ( .039 / _enemiesPerTurn );
 
             _killFraction = .5;
             getValue(ref _killFraction, .39, .65);
@@ -129,14 +132,22 @@ input:
                     }
 
                     Dictionary<Point, double> killers = getKillers();
-                    double total = 0;
+                    double chance = 1, total = 0;
                     foreach (KeyValuePair<Point, double> pair in killers)
+                    {
+                        chance *= ( 1 - pair.Value );
                         total += pair.Value;
-                    if (total > .013 || livesOld > lives)
+                    }
+                    chance = ( 1 - chance );
+                    if (livesOld > lives)
+                        chance = 1;
+                    if (chance > .005)
                     {
                         --Console.CursorTop;
                         --Console.WindowTop;
-                        Console.Write("Hit chance {0:0}%, continue? (y/n)", ( total + ( livesOld - lives ) ) * 100);
+                        double scoreLoss = ( total - chance + livesOld - lives ) * NEGATIVELIFE;
+                        Console.Write("Hit chance {0:0}%{1}, continue? (y/n)", chance * 100,
+                            scoreLoss > .05 ? string.Format(" (-{0:0.0})", scoreLoss) : "");
                         ConsoleKey k = Console.ReadKey().Key;
                         Console.CursorLeft = 0;
                         StringBuilder b = new StringBuilder();
@@ -156,14 +167,26 @@ input:
                             goto input;
                         }
 
-                        if (total > .013)
-                            foreach (KeyValuePair<Point, double> pair in killers)
-                                if (Random.Bool(pair.Value))
-                                {
-                                    --lives;
-                                    data[pair.Key.x, pair.Key.y] = NOTHING;
-                                    enemies.Remove(pair.Key);
-                                }
+                        foreach (KeyValuePair<Point, double> pair in killers)
+                            if (Random.Bool(pair.Value))
+                            {
+                                --lives;
+                                data[pair.Key.x, pair.Key.y] = NOTHING;
+                                enemies.Remove(pair.Key);
+                            }
+                    }
+
+                    if (lives < --livesOld)
+                    {
+                        score += ( lives - livesOld ) * NEGATIVELIFE;
+                        lives = livesOld;
+                    }
+                    while (score >= nextLife)
+                    {
+                        const double m1 = 8.0 / GETLIFE;
+                        const double m2 = GETLIFE / 2.0;
+                        SetNextLife(nextLife + ( Math.Sqrt(nextLife * m1 + 1) + 1 ) * m2);
+                        ++lives;
                     }
 
                     moveEnemies();
@@ -194,13 +217,21 @@ input:
             Random.Dispose();
         }
 
+        private static void SetNextLife(double next)
+        {
+            nextLife += Random.GaussianCappedInt((float)next - nextLife, 0.09, 1);
+            score += ( nextLife - next ) * NEXTRANDOMMULT;
+        }
+
         static void newGame()
         {
             //reset variables
-            lives = 3;
+            lives = 1;
             if (modFlag)
                 lives *= 6;
             score = 0;
+            nextLife = 0;
+            SetNextLife(GETLIFE);
             gX = -1;
             gY = -1;
             int i, j;
@@ -210,11 +241,11 @@ input:
             for ( ; _numWalls > 0 ; --_numWalls)
                 placeWall();
 
-            Point failed;
-            while (( failed = testWalls() ).x != -1)
+            Point? failed;
+            while (( failed = testWalls() ).HasValue)
             {
-                i = failed.x;
-                j = failed.y;
+                i = failed.Value.x;
+                j = failed.Value.y;
 
                 do
                 {
@@ -270,37 +301,23 @@ input:
             data[i, j] = WALL;
         }
 
-        static Point testWalls()
+        static Point? testWalls()
         {
-            bool[,] reached = new bool[_width, _height];
-            reached.Initialize();
-
             int sX, sY;
             do
             {
                 sX = Random.Next(_width);
                 sY = Random.Next(_height);
             } while (WALL == data[sX, sY]);
-
+            bool[,] reached = new bool[_width, _height];
             testHex(sX, sY, reached);
 
-            Point retVal = new Point(-1, -1);
+            foreach (int a in Random.Iterate(_width))
+                foreach (int b in Random.Iterate(_height))
+                    if (!reached[a, b] && WALL != data[a, b])
+                        return new Point(a, b);
 
-            int i, j;
-            for (i = 0 ; i < _width ; ++i)
-            {
-                for (j = 0 ; j < _height ; ++j)
-                {
-                    if (!reached[i, j] && NOTHING == data[i, j])
-                    {
-                        retVal.x = i;
-                        retVal.y = j;
-                        return retVal;
-                    }
-                }
-            }
-
-            return retVal;
+            return null;
         }
 
         static void testHex(int x, int y, bool[,] reached)
@@ -452,23 +469,14 @@ input:
             }
 
             //show player info
-            Console.Write("\nyou: ({0},{1})\tgoal: ({2},{3})\nscore:{4}\tlives:{5}\n",
-                    pX, _width + pY, gX, _width + gY, Random.Round(score), lives);
+            Console.Write("\nyou: ({0},{1})\tgoal: ({2},{3})\nscore:{4}\tlives:{5}\tnext:{6}\n",
+                    pX, _width + pY, gX, _width + gY, (int)score, lives, nextLife);
         }
 
         static void createEnemies()
         {
-            while (true)
-            {
-                int curenemy = 1 + Random.WeightedInt(8, ( _enemySpeed - 1.0 ) / 8.0);
-
-                //if curenemy is 0 or greater than the number of enemies that can be placed, exit the loop
-                if (curenemy > newEnemies)
-                    break;
-                else
-                    //if an enemy was placed, keep going so we can possibly place another
-                    newEnemy(curenemy);
-            }
+            while (newEnemies > 0)
+                newEnemy(1 + Random.WeightedInt(8, ( _enemySpeed - 1.0 ) / 8.0));
         }
 
         static void newEnemy(int curenemy)
@@ -542,7 +550,11 @@ input:
         {
             Dictionary<Point, double> retVal = new Dictionary<Point, double>();
             foreach (Point p in enemies)
-                retVal.Add(p, Math.Sqrt(doKillChance(p, getEnemy(p), p.x, p.y)));
+            {
+                double chance = doKillChance(p, getEnemy(p), p.x, p.y);
+                if (chance > 0)
+                    retVal.Add(p, Math.Sqrt(chance));
+            }
             return retVal;
         }
 
