@@ -18,7 +18,7 @@ namespace CGame
         const double NEGATIVELIFE = 13; //score lost for having negative life
 
         const double NEXTRANDOMMULT = .78; //multiple of next life actual and calculated difference received as score
-        const double GETLIFE = 7.8; //score required to receive a new life
+        const double GETLIFE = 1 / .3; //score required to receive a new life
 
         //characters
         const char NOTHING = (char)0;
@@ -62,6 +62,8 @@ namespace CGame
             getValue(ref _width, 13, 65);
 
             Console.WindowHeight = _height + 7;
+            Console.WindowWidth = Math.Max(_width + 4, 41);
+            Console.BufferWidth = Console.WindowWidth;
 
             _totalSides = ( _height + _width );
             double mapSize = ( _height * _width );
@@ -73,15 +75,15 @@ namespace CGame
             _startEnemies = mapMult * 39.0;
             getValue(ref _startEnemies, mapMult * 30.0, mapMult * 52.0);
 
-            _enemiesPerTurn = Math.Sqrt(65.0 / _startEnemies * Math.Sqrt(mapSize * .13 / _numWalls * Math.Sqrt(mapSize / 507.0)));
+            _enemiesPerTurn = 1.69 * Math.Sqrt(mapMult * mapSize * .13 / _numWalls * Math.Sqrt(mapMult * 39.0 / _startEnemies));
 
             _enemySpeed = Math.Max(Math.Max(1, _enemiesPerTurn) * 1.69, mapMult * 3.9);
             getValue(ref _enemySpeed, Math.Max(1, _enemiesPerTurn) * 1.3, Math.Max(_enemySpeed * 1.3, 6.5));
 
             _stillEnemySL = 0; // ( 2.0 / _enemiesPerTurn / 260.0 );
-            _playerMoveSL = ( 1.0 / mapMult / 300.0 );
-            _bulletMoveSL = ( _playerMoveSL / 2.1 );
-            _bulletKillSL = ( .039 / _enemiesPerTurn );
+            _playerMoveSL = ( 1.0 / mapMult / 260.0 );
+            _bulletMoveSL = ( _playerMoveSL / 1.69 );
+            _bulletKillSL = ( .03 / _enemiesPerTurn );
 
             _killFraction = .5;
             getValue(ref _killFraction, .39, .65);
@@ -183,9 +185,7 @@ input:
                     }
                     while (score >= nextLife)
                     {
-                        const double m1 = 8.0 / GETLIFE;
-                        const double m2 = GETLIFE / 2.0;
-                        SetNextLife(nextLife + ( Math.Sqrt(nextLife * m1 + 1) + 1 ) * m2);
+                        IncNextLife(nextLife);
                         ++lives;
                     }
 
@@ -217,21 +217,24 @@ input:
             Random.Dispose();
         }
 
-        private static void SetNextLife(double next)
+        private static void IncNextLife(double nextLife)
         {
-            nextLife += Random.GaussianCappedInt((float)next - nextLife, 0.09, 1);
-            score += ( nextLife - next ) * NEXTRANDOMMULT;
+            const double m1 = 8.0 / GETLIFE;
+            const double m2 = GETLIFE / 2.0;
+            double avg = nextLife + ( Math.Sqrt(nextLife * m1 + 1) + 1 ) * m2;
+            nextLife += Random.GaussianCapped((float)avg - nextLife, .09, GETLIFE * .78);
+            Program.nextLife = Random.Round(nextLife);
+            score += ( Program.nextLife - avg ) * NEXTRANDOMMULT;
         }
 
         static void newGame()
         {
             //reset variables
-            lives = 1;
+            lives = 2;
             if (modFlag)
                 lives *= 6;
-            score = 0;
-            nextLife = 0;
-            SetNextLife(GETLIFE);
+            score = GETLIFE;
+            IncNextLife(GETLIFE);
             gX = -1;
             gY = -1;
             int i, j;
@@ -419,7 +422,7 @@ input:
                     break;
                 case 'e':
                 case 'q':
-                    if (input.Length == 1 || 'x' == input[1] || 'u' == input[1])
+                    if (input.Length > 1 && ( 'x' == input[1] || 'u' == input[1] ))
                         //returning true signifies the game loop should exit prematurely
                         return true;
                     break;
@@ -469,7 +472,7 @@ input:
             }
 
             //show player info
-            Console.Write("\nyou: ({0},{1})\tgoal: ({2},{3})\nscore:{4}\tlives:{5}\tnext:{6}\n",
+            Console.Write("\nyou: ({0},{1})\tgoal: ({2},{3})\nscore:{4} \tlives:{5} \tnext:{6}\n",
                     pX, _width + pY, gX, _width + gY, (int)score, lives, nextLife);
         }
 
