@@ -7,9 +7,9 @@ namespace CGame
     static class Program
     {
         //arbitrary values
-        const int ChaseValue = 6;           //must be at least 4, higher means enemies more likely chase you
         const int StartLives = 2;
         const int StartEdgeDistance = 3;    //minimum distance from the map edge the player can start
+        const int ChaseValue = 6;           //must be at least 4, higher means enemies more likely chase you
 
         //score constants
         const double GoalScore = 10;            //score gained for reaching the goal
@@ -39,7 +39,6 @@ namespace CGame
         static double PlayerMoveSL;	    //score lost when the player moves
         static double BulletMoveSL;	    //score lost when a bullet moves
         static double BulletKillSL;	    //score lost when a bullet kills and enemy
-        static double KillFraction;	    //fraction of an enemy killed when hit by a bullet when playing with the mod option
 
         //game variables per game
         static char[,] map;
@@ -85,9 +84,6 @@ namespace CGame
             PlayerMoveSL = ( 1.0 / mapMult / 260.0 );
             BulletMoveSL = ( PlayerMoveSL / 1.69 );
             BulletKillSL = ( .03 / EnemiesPerTurn );
-
-            KillFraction = .5;
-            //getValue(ref KillFraction, .39, .65);
         }
 
         static void RandValue(ref int value, int min, int max)
@@ -279,7 +275,7 @@ input:
         static void TestPoint(Point point, bool[,] reached)
         {
             int x = point.x, y = point.y;
-            if (reached[x, y] || y < 0 || y >= Height || x < 0 || x >= Width)
+            if (y < 0 || y >= Height || x < 0 || x >= Width || reached[x, y])
                 return;
 
             reached[x, y] = true;
