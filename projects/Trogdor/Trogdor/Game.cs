@@ -134,29 +134,23 @@ namespace Trogdor
 
         public static void EndGame()
         {
-            MainForm.Invalidate();
-
             if (GameOver)
                 return;
 
-            GameOver = true;
-
             Timer.Enabled = false;
 
-            FileStream fs = new FileStream(ScoresFile, FileMode.Append);
-            BinaryWriter writer = new BinaryWriter(fs);
-
-            uint[] uints = GetUInts(Score);
-
-            foreach (uint ui in uints)
-                writer.Write(ui);
-
-            writer.Flush();
-            writer.Close();
-            fs.Close();
-            fs.Dispose();
-
+            GameOver = true;
+            MainForm.Invalidate();
             ShowStats();
+
+            using (FileStream fs = new FileStream(ScoresFile, FileMode.Append))
+            using (BinaryWriter writer = new BinaryWriter(fs))
+            {
+                uint[] uints = GetUInts(Score);
+                foreach (uint ui in uints)
+                    writer.Write(ui);
+            }
+
             ShowScores();
         }
 
@@ -336,9 +330,9 @@ namespace Trogdor
                 double val = Random.OE(HutSize);
                 double val2 = Random.DoubleHalf(val);
 
-                new Piece(Type.Ally, val2);
-                new Piece(Type.Enemy, val2);
                 new Piece(Type.Hut, val);
+                new Piece(Type.Enemy, val2);
+                new Piece(Type.Ally, val2);
             }
 
             Timer.Enabled = true;

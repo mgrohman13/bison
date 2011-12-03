@@ -269,6 +269,11 @@ namespace Trogdor
             float diameter = (float)Diameter;
             graphics.FillEllipse(GetBrush(type), (float)x, (float)y + yOffset, diameter, diameter);
         }
+        public void DrawBorder(Graphics graphics, int yOffset)
+        {
+            float diameter = (float)Diameter;
+            graphics.DrawEllipse(Pens.Gray, (float)x, (float)y + yOffset, diameter, diameter);
+        }
 
         public static Brush GetBrush(Type type)
         {

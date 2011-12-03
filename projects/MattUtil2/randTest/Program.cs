@@ -15,35 +15,29 @@ namespace randTest
             MTRandom r = new MTRandom(true);
             r.StartTick();
 
-            //const float v = 0.70710678118654752440084436210485f;
+            double total = 0;
+            float w = .368421048f;
+            int times = 1000000, max = 19;
+            int[] b = new int[max + 1];
+            for (int a = 0 ; a < times ; ++a)
+            {
+                int c = r.WeightedInt(max, w);
+                total += c;
+                ++b[c];
+            }
+            Console.WriteLine(max * w);
+            Console.WriteLine(total / times);
+            Console.WriteLine();
 
-            //float d1 = 0;
-            //float d2 = 0;
-            //float t1 = 100000;
-            //float av = GetMoveSoldiers(r, 500, 100, 100, false);
-            //float av2 = GetMoveSoldiers(r, 500, 100, 250, false);
-            //for (int a = 0 ; a < t1 ; ++a)
-            //{
-            //    float b = GetMoveSoldiers(r, 500, 100, 100, true) - av;
-            //    d1 += b * b;
-            //    b = GetMoveSoldiers(r, 500, 100, 250, true) - av2;
-            //    d2 += b * b;
+            for (int d = 0 ; d <= max ; ++d)
+                Console.WriteLine("{0:00} - {1:00.0}%", d + 6, b[d] * 100f / times);
 
-            //    //float b = 0;
-            //    //for (int c = 0 ; c < 100 ; ++c)
-            //    //    b += r.Gaussian(v);
-            //    //d1 += b * b;
-            //    //b = r.Gaussian(v * (float)Math.Sqrt(100));
-            //    //d2 += b * b;
-            //}
+            r.Dispose();
+            Console.ReadKey();
+        }
 
-            //Console.WriteLine(Math.Sqrt(d1 / t1));
-            //Console.WriteLine(Math.Sqrt(d2 / t1));
-
-            //uint[] seed = new uint[1 + r.OEInt(21)];
-            //for (int b = 0 ; b < seed.Length ; ++b)
-            //    seed[b] = r.NextUInt();
-
+        private static void DoTickTest(MTRandom r)
+        {
             Console.BufferWidth = Console.LargestWindowWidth;
             Console.WindowWidth = Console.LargestWindowWidth;
             Console.WindowHeight = Console.LargestWindowHeight;
@@ -73,56 +67,7 @@ namespace randTest
                     Console.BackgroundColor = ( b < rs.Length && c[a, b] ? ConsoleColor.White : ConsoleColor.Black );
                     Console.Write(' ');
                 }
-
-                //Thread.Sleep(a += r.OEInt(.0003 * rs.Length));
-                //Thread.Sleep(390);
             }
-
-            r.Dispose();
-            Console.ReadKey();
         }
-
-        //private const float MoveSoldiersMult = 3.9f;
-        //private const float SoldiersRndm = .26f;
-
-        //private static float GetMoveSoldiers(MTRandom r, int population, double soldiers, int movePop, bool doMove)
-        //{
-        //    float moveSoldiers = 0;
-        //    if (soldiers > 0)
-        //    {
-        //        if (population == movePop)
-        //            moveSoldiers = (float)soldiers;
-        //        else
-        //            for (int mov = 1 ; mov <= movePop ; ++mov)
-        //            {
-        //                float available = (float)( soldiers - moveSoldiers );
-        //                float chunk = available * MoveSoldiersMult / ( MoveSoldiersMult + population - mov );
-        //                if (doMove)
-        //                    chunk = r.GaussianCapped(chunk, SoldiersRndm, Math.Max(0, 2 * chunk - available));
-        //                moveSoldiers += chunk;
-        //            }
-        //    }
-        //    return moveSoldiers;
-        //}
-
-        //private static float GetMoveSoldiers2(MTRandom r, int population, double soldiers, int movePop, bool doMove)
-        //{
-        //    float moveSoldiers = 0;
-        //    if (soldiers > 0)
-        //    {
-        //        if (population == movePop)
-        //        {
-        //            moveSoldiers = (float)soldiers;
-        //        }
-        //        else
-        //        {
-        //            for (int mov = 1 ; mov <= movePop ; ++mov)
-        //                moveSoldiers += (float)( soldiers - moveSoldiers ) * MoveSoldiersMult / ( MoveSoldiersMult + population - mov );
-        //            if (doMove)
-        //                moveSoldiers = r.Gaussian(moveSoldiers, SoldiersRndm * (float)Math.Sqrt(movePop));
-        //        }
-        //    }
-        //    return moveSoldiers;
-        //}
     }
 }

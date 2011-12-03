@@ -1526,7 +1526,7 @@ namespace MattUtil
             else
                 key = DoubleHalf(avg);
 
-            avg = ( avg - mid ) / ( key - mid );
+            avg = ( mid - avg ) / ( mid - key );
 
             bool rand;
             if (isFloat)

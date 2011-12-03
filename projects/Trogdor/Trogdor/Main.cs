@@ -28,6 +28,8 @@ namespace Trogdor
 
                 foreach (Piece piece in Game.Pieces)
                     piece.Draw(e.Graphics, this.menuStrip1.Height);
+                foreach (Piece piece in Game.Pieces)
+                    piece.DrawBorder(e.Graphics, this.menuStrip1.Height);
 
                 this.Text = string.Format("Trogdor - {0:f0}", Game.Score);
             }
