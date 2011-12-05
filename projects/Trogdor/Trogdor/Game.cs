@@ -302,7 +302,7 @@ namespace Trogdor
             Left = false;
             Right = false;
             GameOver = false;
-            Paused = false;
+            Paused = true;
 
             Width = Random.GaussianCappedInt(750, .078, 500);
             Height = Random.GaussianCappedInt(750, .078, 500);
@@ -336,6 +336,8 @@ namespace Trogdor
             }
 
             Timer.Enabled = true;
+
+            MainForm.Invalidate();
         }
     }
 }

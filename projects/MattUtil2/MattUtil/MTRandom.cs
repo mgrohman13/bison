@@ -63,6 +63,17 @@ namespace MattUtil
 
         #region constants
 
+        static MTRandom()
+        {
+            MTRandom.watch = new Stopwatch();
+            watch.Start();
+
+            //find int limits for Geometric and Gaussian distributions with current double conversion implementation
+            MTRandom.OE_INT_LIMIT = (int)Math.Floor(int.MaxValue / GetOEMax());
+            double absMin = ( DOUBLE_DIV_1 / 2.0 + 1.0 ) / DOUBLE_DIV_1 * 2.0 - 1.0;
+            MTRandom.GAUSSIAN_MAX = absMin * Math.Sqrt(-2.0 * Math.Log(absMin * absMin) / ( absMin * absMin ));
+        }
+
         //constants for float generation and conversion
         private const byte FLOAT_BITS = 24;
         private const float FLOAT_DIV = 0x0FFFFFF;
@@ -75,13 +86,6 @@ namespace MattUtil
 
         private static readonly double OE_INT_LIMIT; //int.MaxValue/36.7368005696771 (=58455924)
         private static readonly double GAUSSIAN_MAX; //=12.007273360612251
-        static MTRandom()
-        {
-            //find int limits for Geometric and Gaussian distributions with current double conversion implementation
-            OE_INT_LIMIT = (int)Math.Floor(int.MaxValue / GetOEMax());
-            double absMin = ( DOUBLE_DIV_1 / 2.0 + 1.0 ) / DOUBLE_DIV_1 * 2.0 - 1.0;
-            GAUSSIAN_MAX = absMin * Math.Sqrt(-2.0 * Math.Log(absMin * absMin) / ( absMin * absMin ));
-        }
 
         //constants for the Mersenne Twister
         private const int LENGTH = 624;
@@ -132,16 +136,10 @@ namespace MattUtil
 
         //used for shifting time values into seeds
         private static uint counter = 0x17076A67;       //00010111000001110110101001100111
-        private static Stopwatch watch = GetWatch();
-        private static Stopwatch GetWatch()
-        {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-            return watch;
-        }
 
         //optional ticker thread to independently permutate the algorithms
         private Thread thread = null;
+        private static Stopwatch watch;
 
         //stuff for storing the initial seed
         private uint[] seedVals = null;
@@ -219,22 +217,25 @@ namespace MattUtil
 
         public static uint[] TimeSeed()
         {
-            //sleep for a minimal amount of time to bring in some entropy based off of background processes
+            long ticks = watch.ElapsedTicks;
+            uint a = ShiftVal((uint)ticks);
+            uint e = ShiftVal((uint)( ticks >> 32 ));
+
             Thread.Sleep(0);
 
-            uint b = ShiftVal((uint)Environment.TickCount);
+            uint c = ShiftVal((uint)Environment.TickCount);
 
-            long workingSet = Environment.WorkingSet;
-            uint c = ShiftVal((uint)workingSet);
-            uint e = ShiftVal((uint)( workingSet >> 32 ));
+            ticks = Environment.WorkingSet;
+            uint d = ShiftVal((uint)ticks);
+            uint g = ShiftVal((uint)( ticks >> 32 ));
 
             Thread.Sleep(1);
 
-            long ticks = DateTime.Now.Ticks;
-            uint a = ShiftVal((uint)ticks);
-            uint d = ShiftVal((uint)( ticks >> 32 ));
+            ticks = DateTime.Now.Ticks;
+            uint b = ShiftVal((uint)ticks);
+            uint f = ShiftVal((uint)( ticks >> 32 ));
 
-            return new uint[] { a, b, c, d, e };
+            return new uint[] { a, b, c, d, e, f, g };
         }
 
         /// <summary>
@@ -265,7 +266,7 @@ namespace MattUtil
         public void SetSeed()
         {
             //use a large seed size as it will limit the possible states attainable immediately after initialization
-            SetSeed(390);
+            SetSeed(LENGTH);
         }
 
         /// <summary>
@@ -433,7 +434,10 @@ namespace MattUtil
                 mwc1 = EnsureNonZero(mwc1, seed, ref a);
                 mwc2 = EnsureNonZero(mwc2, seed, ref a);
 
-                NextUInt();
+                uint firstUInt = NextUInt();
+                if (thread == null)
+                    lock (typeof(MTRandom))
+                        counter += firstUInt;
             }
         }
         private uint EnsureNonZero(uint value, uint[] seed, ref uint a)
