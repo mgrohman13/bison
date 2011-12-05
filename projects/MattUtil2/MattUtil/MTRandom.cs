@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Diagnostics;
 
@@ -133,6 +132,13 @@ namespace MattUtil
 
         //used for shifting time values into seeds
         private static uint counter = 0x17076A67;       //00010111000001110110101001100111
+        private static Stopwatch watch = GetWatch();
+        private static Stopwatch GetWatch()
+        {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            return watch;
+        }
 
         //optional ticker thread to independently permutate the algorithms
         private Thread thread = null;
@@ -237,13 +243,16 @@ namespace MattUtil
         /// </summary>
         public static uint ShiftVal(uint value)
         {
-            value += ( counter + SHIFT_FACTOR );
-            //determine a shift and negation based on the less-predictable low-order bits 
-            int shift = (int)( value % 124 );
-            int neg = shift / 31;
-            shift = ( shift % 31 ) + 1;
-            //shift to both sides to retain a full 32 bits in the shifted value
-            return ( counter = ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) ) );
+            lock (typeof(MTRandom))
+            {
+                value += ( counter + SHIFT_FACTOR );
+                //determine a shift and negation based on the less-predictable low-order bits 
+                int shift = (int)( value % 124 );
+                int neg = shift / 31;
+                shift = ( shift % 31 ) + 1;
+                //shift to both sides to retain a full 32 bits in the shifted value
+                return ( counter = ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) ) );
+            }
         }
 
         #endregion
@@ -423,6 +432,8 @@ namespace MattUtil
                 lfsr = EnsureNonZero(lfsr, seed, ref a);
                 mwc1 = EnsureNonZero(mwc1, seed, ref a);
                 mwc2 = EnsureNonZero(mwc2, seed, ref a);
+
+                NextUInt();
             }
         }
         private uint EnsureNonZero(uint value, uint[] seed, ref uint a)
@@ -455,7 +466,20 @@ namespace MattUtil
         public uint NextUInt()
         {
             //combining Marsaglia's KISS with the Mersenne Twister provdes higher quality random numbers with an obscene period>2^20060
-            return ( MersenneTwister() + MarsagliaKISS() );
+            uint value = ( MersenneTwister() + MarsagliaKISS() );
+
+            if (thread != null)
+                //lock here so we use the updated timer value once unblocked
+                lock (typeof(MTRandom))
+                {
+                    //combine in a value based off of the timing of calls
+                    long ticks = watch.ElapsedTicks;
+                    uint timeVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
+                    counter += value;
+                    value += timeVal;
+                }
+
+            return value;
         }
 
         //Marsaglia's KISS (Keep It Simple Stupid) pseudorandom number generator, overall period>2^123.
