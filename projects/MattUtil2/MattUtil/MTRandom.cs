@@ -1354,35 +1354,65 @@ namespace MattUtil
 
             //attempt a cast to ICollection to get the count
             ICollection<T> collection = enumerable as ICollection<T>;
-            if (collection == null || collection.Count > 1)
-                //create a local list to shuffle through without modifying the parameter object
-                return Iterate<T>(new List<T>(enumerable));
-            //if we know the count and it is 0 or 1, there is no element order
-            return enumerable;
+            int count;
+            if (collection == null)
+            {
+                //create a list to get the count
+                List<T> list = new List<T>(enumerable);
+                count = list.Count;
+                if (count > 1)
+                    return Iterate<T>(list, count, GetItem);
+            }
+            else if (( count = collection.Count ) > 1)
+            {
+                List<T> list = new List<T>(count);
+                list.AddRange(enumerable);
+                return Iterate<T>(list, count, GetItem);
+            }
+
+            //if the count is less than 2 there is no element order
+            return EnumerateOnce(enumerable.GetEnumerator());
         }
+        private static T GetItem<T>(IList<T> list, int idx)
+        {
+            return list[idx];
+        }
+        private IEnumerable<T> EnumerateOnce<T>(IEnumerator<T> enumerator)
+        {
+            if (enumerator.MoveNext())
+                yield return enumerator.Current;
+        }
+
         /// <summary>
         /// Iterates in random order over the integers 0 through count-1.
         /// </summary>
         public IEnumerable<int> Iterate(int count)
         {
-            if (count <= 0)
+            if (count < 1)
                 throw new ArgumentOutOfRangeException("count", "count must be greater than 0");
 
-            //create a list with an item for each number
-            List<int> list = new List<int>(count);
-            for (int i = 0 ; i < count ; ++i)
-                list.Add(i);
-            return Iterate<int>(list);
+            return Iterate(new int[count], count, GetItemIdx);
         }
-        private IEnumerable<T> Iterate<T>(List<T> list)
+        private static int GetItemIdx(IList<int> list, int idx)
         {
-            for (int count = list.Count ; --count > -1 ; )
+            int item = list[idx];
+            //we can avoid having to initialize the array by assuming the index if the value is 0
+            if (item == 0)
+                return idx;
+            return item;
+        }
+
+        private delegate T GetItemDelegate<T>(IList<T> list, int idx);
+        private IEnumerable<T> Iterate<T>(IList<T> list, int count, GetItemDelegate<T> GetItem)
+        {
+            while (--count > -1)
             {
-                int r = RangeInt(0, count);
+                int idx = RangeInt(0, count);
                 //yield return in random order as it is determined
-                yield return list[r];
+                yield return GetItem(list, idx);
                 //maintain remaining elements
-                list[r] = list[count];
+                if (idx < count)
+                    list[idx] = GetItem(list, count);
             }
         }
 

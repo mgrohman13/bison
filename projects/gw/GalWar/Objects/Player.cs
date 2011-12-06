@@ -272,7 +272,7 @@ namespace GalWar
 
         internal void Destroy()
         {
-            foreach (Colony colony in this.GetColonies())
+            foreach (Colony colony in this.colonies.ToArray())
             {
                 Planet planet = colony.Planet;
                 this.RemoveColony(colony);
@@ -280,7 +280,7 @@ namespace GalWar
                 //the player will only be destroyed while still having colonies if they won the game
                 planet.DamageVictory();
             }
-            foreach (Ship ship in this.GetShips())
+            foreach (Ship ship in this.ships.ToArray())
             {
                 ship.Tile.SpaceObject = null;
                 this.RemoveShip(ship);

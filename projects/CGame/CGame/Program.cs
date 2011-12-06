@@ -110,7 +110,7 @@ namespace CGame
 
                 //game loop;
                 bool quit = false;
-                while (lives > 0)
+                while (lives > 0 && score > 0)
                 {
                     if (-1 == goalX)
                         PlaceGoal();
@@ -203,8 +203,8 @@ input:
             goalY = -1;
             lives = StartLives;
             nextLife = -1;
-            IncNextLife(BaseNewLife);
             score = BaseNewLife;
+            IncNextLife(BaseNewLife);
 
             //lay out map
             LayoutWalls();
@@ -578,7 +578,7 @@ input:
             const double m1 = 8.0 / BaseNewLife;
             const double m2 = BaseNewLife / 2.0;
             double avg = value + ( Math.Sqrt(value * m1 + 1) + 1 ) * m2;
-            value += Random.GaussianCapped((float)avg - value, .09, BaseNewLife * .78);
+            value += Random.GaussianCapped((float)avg - value, .09, 1);
             nextLife = Random.Round(value);
             score += ( nextLife - avg ) * NextLifeScoreMult;
         }
@@ -586,14 +586,8 @@ input:
         static void MoveEnemies()
         {
             foreach (Point p in Random.Iterate(enemies))
-            {
-                int speed = GetEnemy(p);
-                if (speed > 0)
-                    for ( ; speed > 0 ; --speed)
-                        MoveEnemy(p);
-                else
-                    throw new Exception();
-            }
+                for (int speed = GetEnemy(p) ; speed > 0 ; --speed)
+                    MoveEnemy(p);
         }
 
         static void MoveEnemy(Point p)
@@ -769,12 +763,13 @@ actualmove:
             int x, y;
             do
             {
-                int twice = edgeDistance * 2;
-                x = edgeDistance + Random.Next(Width - twice);
-                y = edgeDistance + Random.Next(Height - twice);
+                int upper = edgeDistance + 1;
+                x = Random.RangeInt(edgeDistance, Width - upper);
+                y = Random.RangeInt(edgeDistance, Height - upper);
             } while (!PointIs(x, y, Empty));
-            SetPoint(x, y, type);
-            return new Point(x, y);
+            Point retVal = new Point(x, y);
+            SetPoint(retVal, type);
+            return retVal;
         }
 
         static bool PointIs(Point point, char type)

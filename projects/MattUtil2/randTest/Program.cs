@@ -15,22 +15,34 @@ namespace randTest
             MTRandom r = new MTRandom(true);
             r.StartTick();
 
-            double total = 0;
-            float w = .368421048f;
-            int times = 1000000, max = 19;
-            int[] b = new int[max + 1];
-            for (int a = 0 ; a < times ; ++a)
-            {
-                int c = r.WeightedInt(max, w);
-                total += c;
-                ++b[c];
-            }
-            Console.WriteLine(max * w);
-            Console.WriteLine(total / times);
+            foreach (int a in r.Iterate(3))
+                Console.WriteLine(a);
             Console.WriteLine();
+            foreach (int a in r.Iterate(new int[0]))
+                Console.WriteLine(a);
+            Console.WriteLine();
+            foreach (int a in r.Iterate(new int[] { 3 }))
+                Console.WriteLine(a);
+            Console.WriteLine();
+            foreach (int a in r.Iterate(new int[] { 5, 6, 4 }))
+                Console.WriteLine(a);
 
-            for (int d = 0 ; d <= max ; ++d)
-                Console.WriteLine("{0:00} - {1:00.0}%", d + 6, b[d] * 100f / times);
+            //double total = 0;
+            //float w = .368421048f;
+            //int times = 1000000, max = 19;
+            //int[] b = new int[max + 1];
+            //for (int a = 0 ; a < times ; ++a)
+            //{
+            //    int c = r.WeightedInt(max, w);
+            //    total += c;
+            //    ++b[c];
+            //}
+            //Console.WriteLine(max * w);
+            //Console.WriteLine(total / times);
+            //Console.WriteLine();
+
+            //for (int d = 0 ; d <= max ; ++d)
+            //    Console.WriteLine("{0:00} - {1:00.0}%", d + 6, b[d] * 100f / times);
 
             r.Dispose();
             Console.ReadKey();
