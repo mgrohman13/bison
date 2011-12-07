@@ -1,13 +1,8 @@
-soldier inc shows +- when neg from moving to trans on build
+design/actual colony prod bonus mismatch, probably due to cost rounding offset
 
 test other grph data storage implementations with real data
 main map improvements
-	planet def included in enemy moves
 	
-too many transport designs, not enough actual trans
-	transports too strong for combat?
-upkeep payoff for trans
-
 test combat performance for integral data type widths
 decimal gold
 emd game popup wackiness
@@ -18,3 +13,5 @@ undo
 auto repair
 	needs to be saveable?
 dialogs non modal
+
+

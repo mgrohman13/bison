@@ -473,15 +473,18 @@ namespace MattUtil
             uint value = ( MersenneTwister() + MarsagliaKISS() );
 
             if (thread != null)
+            {
+                uint timeVal;
                 //lock here so we use the updated timer value once unblocked
                 lock (typeof(MTRandom))
                 {
                     //combine in a value based off of the timing of calls
                     long ticks = watch.ElapsedTicks;
-                    uint timeVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
+                    timeVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
                     counter += value;
-                    value += timeVal;
                 }
+                value += timeVal;
+            }
 
             return value;
         }

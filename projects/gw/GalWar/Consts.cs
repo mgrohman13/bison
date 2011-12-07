@@ -163,7 +163,7 @@ namespace GalWar
         //upkeep payoff is the number of turns the ship is expected to live
         private static double GetUpkeepPayoff(int mapSize, bool colony, int trans, double speed)
         {
-            return Math.Sqrt(mapSize) * ( colony ? .6 : 1 ) * ( ( Math.Pow(trans, 0.169) + 1.69 ) / 2.6 ) * ( 3.9 / ( 2.1 + speed ) );
+            return Math.Sqrt(mapSize) * ( colony ? 0.39 : .666 ) * ( ( Math.Pow(trans, 0.169) + 39.0 ) / 39.0 ) * ( 4.2 / ( speed + 2.1 ) );
         }
 
         //randomized

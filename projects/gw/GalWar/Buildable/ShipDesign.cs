@@ -38,18 +38,19 @@ namespace GalWar
 
         private static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double statResearchMult, double totalResearchMult)
         {
+            double speedValue = speed + 2.1;
             double defValue = GetStatValue(def);
             return Consts.CostMult * (
                 (
                     (
-                        ( ( GetStatValue(att) * ( speed + 1.5 ) / 3.5 + defValue ) * hp )
+                        ( ( GetStatValue(att) * speedValue / 3.9 + defValue ) * hp )
                         *
                         ( statResearchMult )
                     )
                     +
                     (
                         (
-                            ( colony ? 26.0 * ( speed + 2.1 ) : 0.0 )
+                            ( colony ? 30.0 * speedValue : 0.0 )
                             +
                             (
                                 (
@@ -66,7 +67,7 @@ namespace GalWar
                     )
                 )
                 *
-                ( speed + 2.1 )
+                ( speedValue )
                 *
                 ( totalResearchMult )
              );
@@ -74,8 +75,7 @@ namespace GalWar
 
         public static double GetStatValue(double stat)
         {
-            double sqr = stat * stat;
-            return ( sqr * stat + 6.0 * sqr + 2.0 * stat ) / 9.0;
+            return ( 1.0 * stat * stat * stat + 7.0 * stat * stat + 2.0 * stat ) / 10.0;
         }
 
         internal static double GetHPStr(int s1, int s2)
@@ -177,7 +177,7 @@ namespace GalWar
             }
 
             //  ------  Colony/Trans  ------  
-            double transStr = MakeStatStr(research, 21, .666);
+            double transStr = MakeStatStr(research, 26, .666);
             DoColonyTrans(forceColony, forceTrans, forceNeither, research, designs, ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
             //being a transport makes average att and def lower, but hp higher
             double strMult = 3 * transStr / ( 3 * transStr + ( this.Colony ? 60 : 0 ) + this._trans );
@@ -188,7 +188,7 @@ namespace GalWar
             DoAttDef(transStr, str, out this._att, out this._def);
 
             //  ------  HP            ------  
-            double hpMult = Consts.BaseDesignHPMult / ( strMult * ( this.DeathStar ? 1 : strMult * ( this.Colony ? 1 : strMult ) ) );
+            double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, this.DeathStar ? 1.3 : ( this.Colony ? 1.8 : 2.6 ));
             //average hp is relative to actual randomized stats
             this._hp = MakeStat(GetHPStr(this._att, this._def, hpMult));
 
@@ -325,7 +325,7 @@ namespace GalWar
 
             pct = pct / ( pct + transStr );
 
-            return CreateType(.169, pct);
+            return CreateType(.13, pct);
         }
 
         private bool MakeColony(List<ShipDesign> designs)

@@ -287,37 +287,31 @@ namespace GalWarWin
 
         private Dictionary<Tile, float> GetMoves(Player player)
         {
-            Dictionary<Tile, Point> shipValues = new Dictionary<Tile, Point>();
-            Dictionary<Tile, double> temp = new Dictionary<Tile, double>();
+            Dictionary<Tile, Point> temp = new Dictionary<Tile, Point>();
+            Dictionary<Tile, float> totals = new Dictionary<Tile, float>();
             foreach (Player enemy in this.game.GetPlayers())
                 if (enemy != player)
+                {
                     foreach (Ship ship in enemy.GetShips())
-                    {
-                        shipValues.Clear();
-                        AddTiles(shipValues, enemy, ship.Tile, ship.MaxSpeed);
+                        AddShip(totals, temp, enemy, ship, ship.MaxSpeed);
+                    foreach (Colony colony in enemy.GetColonies())
+                        if (colony.HP > 0)
+                            AddShip(totals, temp, enemy, colony, 1);
+                }
 
-                        double statValue = ShipDesign.GetStatValue(ship.Att);
-                        foreach (KeyValuePair<Tile, Point> pair in shipValues)
-                        {
-                            double val;
-                            temp.TryGetValue(pair.Key, out val);
-                            temp[pair.Key] = val + pair.Value.X * statValue;
-                        }
-                    }
-
-            Dictionary<float, float> statFromValue = new Dictionary<float, float>();
-            Dictionary<Tile, float> retVal = new Dictionary<Tile, float>();
-            foreach (KeyValuePair<Tile, double> pair in temp)
+            Dictionary<float, float> statFromValue = new Dictionary<float, float>(totals.Count);
+            Dictionary<Tile, float> retVal = new Dictionary<Tile, float>(totals.Count);
+            foreach (KeyValuePair<Tile, float> pair in totals)
             {
                 Tile tile = pair.Key;
                 Ship ship;
                 if (tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == player ))
                 {
-                    float key = (float)pair.Value;
+                    float key = pair.Value;
                     float value;
                     if (!statFromValue.TryGetValue(key, out value))
                     {
-                        value = (float)GetStatFromValue(pair.Value);
+                        value = GetStatFromValue(pair.Value);
                         statFromValue.Add(key, value);
                     }
                     retVal.Add(tile, value);
@@ -326,22 +320,37 @@ namespace GalWarWin
             return retVal;
         }
 
-        private static double GetStatFromValue(double value)
+        private static float GetStatFromValue(float value)
         {
-            double min = 1, max = Math.Round(Math.Sqrt(value) + .1, 1);
+            float min = 1, max = (float)Math.Round(Math.Sqrt(value) + .1, 1);
             while (true)
             {
-                double mid = max - min;
-                if (mid < .15)
-                    if (ShipDesign.GetStatValue(min + mid / 2.0) < value)
+                float diff = max - min;
+                float mid = min + diff / 2.0f;
+                if (diff < .15f)
+                    if (ShipDesign.GetStatValue(mid) < value)
                         return max;
                     else
                         return min;
-                mid = Math.Round(min + mid / 2.0, 1, MidpointRounding.AwayFromZero);
+                mid = (float)Math.Round(mid, 1, MidpointRounding.AwayFromZero);
                 if (ShipDesign.GetStatValue(mid) < value)
                     min = mid;
                 else
                     max = mid;
+            }
+        }
+
+        private void AddShip(Dictionary<Tile, float> totals, Dictionary<Tile, Point> temp, Player enemy, Combatant combatant, int speed)
+        {
+            temp.Clear();
+            AddTiles(temp, enemy, combatant.Tile, speed);
+
+            float statValue = (float)ShipDesign.GetStatValue(combatant.Att);
+            foreach (KeyValuePair<Tile, Point> pair in temp)
+            {
+                float val;
+                totals.TryGetValue(pair.Key, out val);
+                totals[pair.Key] = val + pair.Value.X * statValue;
             }
         }
 
@@ -1359,7 +1368,7 @@ namespace GalWarWin
             {
                 string soldierChange = FormatPct(colony.SoldierChange, true);
                 if (soldierChange != "0.0%")
-                    this.lbl3Inf.Text += " (+" + soldierChange + ")";
+                    this.lbl3Inf.Text += string.Format(" ({1}{0})", soldierChange, colony.SoldierChange > 0 ? "+" : "");
 
                 if (colony.DefenseAttChange != 0 || colony.DefenseDefChange != 0 || colony.DefenseHPChange != 0)
                 {
