@@ -51,7 +51,7 @@ namespace GalWar
 
             AssertException.Assert(players != null);
             AssertException.Assert(numPlayers > 1);
-            AssertException.Assert(numPlayers * 78 < TotalTiles);
+            AssertException.Assert(numPlayers * 78 < MapSize);
             AssertException.Assert(radius < 70);
             AssertException.Assert(planetPct >= 0);
             AssertException.Assert(planetPct < 0.13);
@@ -76,7 +76,7 @@ namespace GalWar
                     ++nullTiles;
             }
 
-            int planets = Random.GaussianCappedInt(TotalTiles * planetPct, .21);
+            int planets = Random.GaussianCappedInt(MapSize * planetPct, .21);
             this._planetPct = Random.GaussianCapped(planetPct, .169f);
             this.planets = new List<Planet>(planets + numPlayers);
             //first create enough planets for homeworlds
@@ -280,7 +280,7 @@ next_planet:
 
         #region public
 
-        public int TotalTiles
+        public int MapSize
         {
             get
             {
@@ -420,7 +420,7 @@ next_planet:
 
         private void CreatePlanets()
         {
-            int planets = Game.Random.OEInt(Consts.PlanetCreationRate * this._planetPct * TotalTiles);
+            int planets = Game.Random.OEInt(Consts.PlanetCreationRate * this._planetPct * MapSize);
             for (int i = 0 ; i < planets ; ++i)
                 NewPlanet();
         }
@@ -514,7 +514,7 @@ next_planet:
                 this.Player = player;
                 //extra points are awarded for gaining a research victory as quickly as possible
                 this.points = ( won ? Random.Round(Consts.WinPointsMult
-                        * Math.Pow(player.Game.TotalTiles, Consts.WinPointsTilesPower) / (double)player.Game.Turn) : 0 );
+                        * Math.Pow(player.Game.MapSize, Consts.WinPointsTilesPower) / (double)player.Game.Turn) : 0 );
             }
 
             internal static void Finalize(List<Result> results)

@@ -13,6 +13,14 @@ namespace GalWarWin
 {
     public partial class MainForm : Form, IEventHandler
     {
+        private static Game game;
+        public static Game Game
+        {
+            get
+            {
+                return game;
+            }
+        }
 
         #region fields and constructors
 
@@ -21,7 +29,6 @@ namespace GalWarWin
         private Tile dialogTile = null;
 
         private bool started = false, saved = true, ended = false, showMoves = false;
-        private Game game;
         private Point mouse;
         private Font font = new Font("arial", 13f);
 
@@ -31,14 +38,6 @@ namespace GalWarWin
 
         private Tile selectedTile = null;
         private HashSet<Ship> hold;
-
-        public Game Game
-        {
-            get
-            {
-                return game;
-            }
-        }
 
         private MainForm(bool isDialog)
         {
@@ -127,7 +126,7 @@ namespace GalWarWin
 
                     Dictionary<Tile, float> moves = null;
                     if (showMoves)
-                        moves = GetMoves(this.game.CurrentPlayer);
+                        moves = GetMoves(game.CurrentPlayer);
 
                     Tile[,] map = game.GetMap();
                     for (int x = 0 ; x < game.Diameter ; ++x)
@@ -289,7 +288,7 @@ namespace GalWarWin
         {
             Dictionary<Tile, Point> temp = new Dictionary<Tile, Point>();
             Dictionary<Tile, float> totals = new Dictionary<Tile, float>();
-            foreach (Player enemy in this.game.GetPlayers())
+            foreach (Player enemy in game.GetPlayers())
                 if (enemy != player)
                 {
                     foreach (Ship ship in enemy.GetShips())
@@ -406,16 +405,14 @@ namespace GalWarWin
             Player pink = new Player("Pink", Color.Magenta);
             Player red = new Player("Red", Color.Red);
             Player yellow = new Player("Yellow", Color.Gold);
-            this.game = new Game(new Player[] { black, blue, green, pink, red, yellow },
+            game = new Game(new Player[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianCappedInt(16.5f, .26f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .5, 0.0021));
-
-            this.dialog.game = this.game;
 
             mouse = new Point(ClientSize.Width / 2, ClientSize.Height / 2);
             StartGame();
 
-            this.game.StartGame(this);
+            game.StartGame(this);
 
             saved = false;
             this.RefreshAll();
@@ -429,8 +426,7 @@ namespace GalWarWin
                 this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
                 this.saveFileDialog1.FileName = Path.GetFileName(filePath);
 
-                this.game = Game.LoadGame(filePath);
-                this.dialog.game = this.game;
+                game = Game.LoadGame(filePath);
 
                 StartGame();
 
@@ -601,7 +597,7 @@ namespace GalWarWin
             if (CheckGold() && CheckShips())
             {
                 showMoves = false;
-                this.game.EndTurn(this);
+                game.EndTurn(this);
 
                 this.hold.Clear();
                 SelectNextShip();

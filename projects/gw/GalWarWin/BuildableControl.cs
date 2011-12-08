@@ -68,13 +68,8 @@ namespace GalWarWin
 
         private static string GetColonyText(ShipDesign design)
         {
-            return ( design.Colony ? "Colony Ship (" + MainForm.FormatDouble(GetColonyValue(design)) + ")" : ( design.DeathStar ?
-                    "Death Star (" + MainForm.FormatDouble(design.BombardDamage) + ")" : string.Empty ) );
-        }
-
-        private static double GetColonyValue(ShipDesign design)
-        {
-            return ShipDesign.GetColonizationValue(design.Speed, design.Cost, design.HP, design.HP);
+            return ( design.Colony ? "Colony Ship (" + MainForm.FormatDouble(design.GetColonizationValue(MainForm.Game.MapSize)) + ")"
+                    : ( design.DeathStar ? "Death Star (" + MainForm.FormatDouble(design.BombardDamage) + ")" : string.Empty ) );
         }
     }
 }

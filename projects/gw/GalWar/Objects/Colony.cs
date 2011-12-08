@@ -517,7 +517,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.player);
 
-                return PlanetDefenseUpkeep + Consts.GetProductionUpkeepMult(player.Game.TotalTiles) * this.production;
+                return PlanetDefenseUpkeep + Consts.GetProductionUpkeepMult(player.Game.MapSize) * this.production;
             }
         }
 
@@ -864,7 +864,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.player);
 
-                return this.HP * PlanetDefenseCost * Consts.PlanetDefensesUpkeepMult * Consts.GetProductionUpkeepMult(player.Game.TotalTiles);
+                return this.HP * PlanetDefenseCost * Consts.PlanetDefensesUpkeepMult * Consts.GetProductionUpkeepMult(player.Game.MapSize);
             }
         }
 

@@ -18,9 +18,6 @@ namespace GalWarWin
         private Combatant attacker, defender;
         private bool isConfirmation;
 
-        //public static int cc = 0;
-        //public const bool old = true;
-
         public CombatForm()
         {
             InitializeComponent();
@@ -96,14 +93,6 @@ namespace GalWarWin
             double avgAtt, avgDef;
             Dictionary<int, double> damageTable = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
 
-            //if (!old)
-            //{
-            //    double zero = damageTable[0];
-            //    damageTable.Remove(0);
-            //    foreach (KeyValuePair<int, double> pair in new List<KeyValuePair<int, double>>(damageTable))
-            //        damageTable[pair.Key] = pair.Value / zero;
-            //}
-
             this.lblAttDmg.Text = FormatDmg(avgDef);
             this.lblDefDmg.Text = FormatDmg(avgAtt);
 
@@ -147,59 +136,21 @@ namespace GalWarWin
 
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
-
-            //double totalDmgChance;
-            //if (old)
-            //{
-
             double totalDmgChance = ( att + 1 ) * ( def + 1 );
-
-            //}
-            //else
-            //{
-            //    totalDmgChance = 0;
-            //    foreach (double dmg in damageTable.Values)
-            //        totalDmgChance += dmg;
-            //}
-
             int dmgLength = damageTable.Count;
 
             Dictionary<ResultPoint, double> chances = new Dictionary<ResultPoint, double>();
             ResultPoint rp = new ResultPoint(attHP, defHP);
             chances.Add(rp, 1);
-
-            //Dictionary<ResultPoint, double> oldChances;
-            //if (old)
-
             Dictionary<ResultPoint, double> oldChances = new Dictionary<ResultPoint, double>();
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
             {
-
-                //cc -= Environment.TickCount;
-                //List<KeyValuePair<ResultPoint, double>> en;
-                //if (old)
-                //{
-
                 Dictionary<ResultPoint, double> temp = oldChances;
                 oldChances = chances;
                 chances = temp;
                 chances.Clear();
-
-                //en = oldChances;
-                //}
-                //else
-                //{
-                //    //int c = chances.Count;
-                //    //KeyValuePair<ResultPoint, double>[] li = new KeyValuePair<ResultPoint, double>[c];
-                //    //foreach (KeyValuePair<ResultPoint, double> chancePair in chances)
-                //    //    li[--c] = chancePair;
-                //    List<KeyValuePair<ResultPoint, double>> li = new List<KeyValuePair<ResultPoint, double>>();
-                //    li.AddRange(chances);
-                //    en = li;
-                //}
-                //cc += Environment.TickCount;
 
                 foreach (KeyValuePair<ResultPoint, double> chancePair in oldChances)
                 {
@@ -214,9 +165,19 @@ namespace GalWarWin
                             int dmg = damagePair.Key;
                             ResultPoint res = oldRes;
                             if (dmg > 0)
-                                res.DefHP = dhp - dmg;
-                            else
-                                res.AttHP = ahp + dmg;
+                            {
+                                dmg = dhp - dmg;
+                                if (dmg < 0)
+                                    dmg = 0;
+                                res.DefHP = dmg;
+                            }
+                            else if (dmg < 0)
+                            {
+                                dmg = ahp + dmg;
+                                if (dmg < 0)
+                                    dmg = 0;
+                                res.AttHP = dmg;
+                            }
 
                             double val;
                             chances.TryGetValue(res, out val);
@@ -243,16 +204,10 @@ namespace GalWarWin
                 total += chance;
                 int ahp = res.AttHP;
                 int dhp = res.DefHP;
-                if (dhp <= 0)
-                {
+                if (dhp == 0)
                     defDead += chance;
-                    dhp = 0;
-                }
-                else if (ahp <= 0)
-                {
+                else if (ahp == 0)
                     attDead += chance;
-                    ahp = 0;
-                }
                 attDmg += ( attHP - ahp ) * chance;
                 defDmg += ( defHP - dhp ) * chance;
             }

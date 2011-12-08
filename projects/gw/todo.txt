@@ -1,5 +1,3 @@
-design/actual colony prod bonus mismatch, probably due to cost rounding offset
-
 test other grph data storage implementations with real data
 main map improvements
 	
@@ -13,5 +11,3 @@ undo
 auto repair
 	needs to be saveable?
 dialogs non modal
-
-

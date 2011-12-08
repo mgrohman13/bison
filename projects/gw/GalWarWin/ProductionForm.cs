@@ -232,11 +232,11 @@ namespace GalWarWin
             if (result == DialogResult.OK)
                 return form.GetSelectedDesign();
             else if (result == DialogResult.Abort)
-                gameForm.Game.CurrentPlayer.MarkObsolete((ShipDesign)form.GetSelectedDesign(), gameForm, accountForIncome, additionalLosses);
+                MainForm.Game.CurrentPlayer.MarkObsolete((ShipDesign)form.GetSelectedDesign(), gameForm, accountForIncome, additionalLosses);
 
             if (colony.CanBuild(colony.Buildable))
                 return colony.Buildable;
-            return gameForm.Game.StoreProd;
+            return MainForm.Game.StoreProd;
         }
 
         private void lbxDesigns_DoubleClick(object sender, EventArgs e)

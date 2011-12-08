@@ -58,7 +58,7 @@ namespace GalWar
             this.LastResearched = research[2];
 
             this.designs = new List<ShipDesign>();
-            needProd = ShipDesign.GetStartDesigns(Game.TotalTiles, research, this, this.designs, Game.ShipNames);
+            needProd = ShipDesign.GetStartDesigns(Game.MapSize, research, this, this.designs, Game.ShipNames);
             this.planetDefense = new PlanetDefense(this, this.designs);
 
             this.colonies = new List<Colony>();
@@ -154,9 +154,9 @@ namespace GalWar
                 designResearch = Game.Random.RangeInt(1, designResearch);
             designResearch += this.LastResearched;
 
-            ShipDesign newDesign = new ShipDesign(Game.TotalTiles, designResearch, this, this.designs, this.Game.ShipNames);
+            ShipDesign newDesign = new ShipDesign(Game.MapSize, designResearch, this, this.designs, this.Game.ShipNames);
 
-            HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.TotalTiles, this.designs);
+            HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)
                 this.designs.Remove(obsoleteDesign);
             //switch to the new production at AutomaticObsoleteLossPct

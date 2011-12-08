@@ -133,7 +133,7 @@ namespace GalWar
             return retVal;
         }
 
-        public static double GetColonizationValue(int maxSpeed, double cost, int curHP, int maxHP)
+        internal static double GetColonizationValue(int maxSpeed, double cost, int curHP, int maxHP)
         {
             //higher speed reduces bonus
             return GetDisbandValue(cost, curHP, maxHP) + Consts.ColonizationBonusPct / ( Consts.ColonizationBonusMoveFactor + maxSpeed )
@@ -484,9 +484,19 @@ namespace GalWar
             cost = ( totCost - upkeep * upkeepPayoff );
         }
 
-        internal double CalculateCost(int mapSize)
+        public double GetColonizationValue(int mapSize)
         {
-            return GetTotCost() - this.Upkeep * this.GetUpkeepPayoff(mapSize);
+            return GetColonizationValue(this.Speed, AdjustCost(mapSize), this.HP, this.HP);
+        }
+
+        internal double AdjustCost(int mapSize)
+        {
+            double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
+            double cost = GetTotCost() - this.Upkeep * upkeepPayoff;
+            cost = cost + ( cost - this.Cost ) / Consts.RepairCostMult;
+            if (cost < upkeepPayoff * Consts.MinCostMult)
+                throw new Exception();
+            return cost;
         }
 
         private double GetTotCost()

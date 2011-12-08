@@ -52,10 +52,7 @@ namespace GalWar
 
             this.HP = this.MaxHP;
 
-            this.cost = design.CalculateCost(player.Game.TotalTiles);
-            this.cost = this.cost + ( this.cost - design.Cost ) / Consts.RepairCostMult;
-            if (this.cost < design.GetUpkeepPayoff(player.Game.TotalTiles) * Consts.MinCostMult)
-                throw new Exception();
+            this.cost = design.AdjustCost(player.Game.MapSize);
 
             this.curExp = 0;
             this.totalExp = 0;
@@ -549,7 +546,7 @@ namespace GalWar
             {
                 double costInc = this.GetCostLastResearched();
                 this.cost += this.Upkeep * Consts.ExperienceUpkeepPayoffMult
-                        * Consts.GetUpkeepPayoff(this.Tile.Game.TotalTiles, this.Colony, this.MaxPop, this.MaxSpeed);
+                        * Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
 
                 float pct = this.HP / (float)this.MaxHP;
                 switch (this.NextExpType)
@@ -587,7 +584,7 @@ namespace GalWar
                 //add gold for level randomness and percent of ship injured 
                 player.AddGold(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
-                double upkeepPayoff = Consts.GetUpkeepPayoff(this.Tile.Game.TotalTiles, this.Colony, this.MaxPop, this.MaxSpeed);
+                double upkeepPayoff = Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
                 double minCost = upkeepPayoff * Consts.MinCostMult;
 
                 //upkeep payoff is higher when leveling up since production cost is now only used for repairs
