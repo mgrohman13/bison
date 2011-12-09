@@ -222,9 +222,9 @@ namespace GalWarWin
                 double pct = colony.Population / (double)planet.Quality;
                 if (pct < 1)
                 {
-                    string s = FormatPct(pct);
-                    SizeF strSize = e.Graphics.MeasureString(s, font);
-                    e.Graphics.DrawString(s, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
+                    string str = FormatPctWithCheck(pct);
+                    SizeF strSize = e.Graphics.MeasureString(str, font);
+                    e.Graphics.DrawString(str, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
                 }
             }
         }
@@ -1517,6 +1517,15 @@ namespace GalWarWin
         public static string FormatDouble(double value)
         {
             return value.ToString("0.0");
+        }
+
+        public static string FormatPctWithCheck(double pct)
+        {
+            string retVal = FormatPct(pct);
+            //never display 100% if pct is less than 1
+            if (pct < 1 && retVal == "100%")
+                retVal = "99%";
+            return retVal;
         }
 
         public static string FormatPct(double pct)

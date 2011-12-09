@@ -75,7 +75,10 @@ namespace CGame
             StartEnemies = avgEnemies;
             RandValue(ref StartEnemies, .13, mapMult * 52.0);
 
-            EnemiesPerTurn = 1.69 * Math.Sqrt(mapMult * avgWalls / NumWalls * Math.Sqrt(avgEnemies / StartEnemies));
+            double sizeFactor = Math.Pow(mapMult, 1.0 / 3);
+            double wallFactor = Math.Pow(avgWalls / NumWalls, 1.0 / 4);
+            double startFactor = Math.Pow(2 * avgEnemies / ( avgEnemies + StartEnemies ), 1.0 / 5);
+            EnemiesPerTurn = 1.69 * sizeFactor * wallFactor * startFactor;
 
             EnemySpeed = Math.Min(Math.Max(mapMult * 3.0, Math.Max(EnemiesPerTurn, 1) * 1.69), 6.5);
             RandValue(ref EnemySpeed, Math.Min(Math.Max(EnemiesPerTurn, 1) * 1.3, EnemySpeed / 1.3),
@@ -84,6 +87,12 @@ namespace CGame
             PlayerMoveSL = ( 1.0 / mapMult / 260.0 );
             BulletMoveSL = ( PlayerMoveSL / 1.69 );
             BulletKillSL = ( .03 / EnemiesPerTurn );
+
+            Console.WriteLine("mapSize \t{0:0000}\t{1:0.00}\t{2:0.00}", mapSize, mapSize / AvgHeight / AvgWidth, sizeFactor);
+            Console.WriteLine("NumWalls\t  {0:00}\t{1:0.00}\t{2:0.00}", NumWalls, NumWalls / avgWalls, wallFactor);
+            Console.WriteLine("StartEnemies\t  {0:00.0}\t{1:0.00}\t{2:0.00}", StartEnemies, StartEnemies / avgEnemies, startFactor);
+            Console.WriteLine("EnemiesPerTurn\t   {0:0.00}\t{1:0.00}", EnemiesPerTurn, EnemiesPerTurn / 1.69);
+            Console.WriteLine("EnemySpeed\t   {0:0.0}\t{1:0.00}", EnemySpeed, EnemySpeed / mapMult / 3.0);
         }
 
         static void RandValue(ref int value, int min, int max)

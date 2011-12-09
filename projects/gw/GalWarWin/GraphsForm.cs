@@ -82,7 +82,7 @@ namespace GalWarWin
                 x += 106;
                 labels[6, i] = NewLabel(x, y, GetString(GetValue(players[i].GetArmadaStrength(), false, div), div, place), players[i].Color);
                 x += 106;
-                labels[7, i] = NewLabel(x, y, GetResearch(research[players[i]]) + "%", players[i].Color);
+                labels[7, i] = NewLabel(x, y, GetResearch(research[players[i]]), players[i].Color);
                 y += 26;
             }
 
@@ -118,11 +118,7 @@ namespace GalWarWin
 
         private string GetResearch(double research)
         {
-            string retVal = research.ToString("0");
-            //make sure we dont display 100% when a research victory wont happen
-            if (retVal == "100" && research < 100)
-                retVal = "99";
-            return retVal;
+            return MainForm.FormatPctWithCheck(research / 100.0);
         }
 
         private Label NewLabel(int x, int y, string text, Color? backColor)

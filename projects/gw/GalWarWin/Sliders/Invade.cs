@@ -77,12 +77,7 @@ namespace GalWarWin.Sliders
 
         private string GetEffcnt(int gold)
         {
-            double winPct = GetWinPct(GetAttack(gold));
-            string retVal = MainForm.FormatPct(winPct);
-            //display 99% if there is any chance at all of losing
-            if (retVal == "100%" && winPct < 1)
-                retVal = "99%";
-            return retVal;
+            return MainForm.FormatPctWithCheck(GetWinPct(GetAttack(gold)));
         }
 
         protected override string GetExtra()
