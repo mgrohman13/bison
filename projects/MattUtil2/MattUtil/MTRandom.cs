@@ -217,23 +217,23 @@ namespace MattUtil
 
         public static uint[] TimeSeed()
         {
-            long ticks = watch.ElapsedTicks;
-            uint a = ShiftVal((uint)ticks);
-            uint e = ShiftVal((uint)( ticks >> 32 ));
+            uint c = ShiftVal((uint)Environment.TickCount);
 
             Thread.Sleep(0);
 
-            uint c = ShiftVal((uint)Environment.TickCount);
+            long ticks = DateTime.Now.Ticks;
+            uint b = ShiftVal((uint)ticks);
+            uint f = ShiftVal((uint)( ticks >> 32 ));
+
+            Thread.Sleep(1);
 
             ticks = Environment.WorkingSet;
             uint d = ShiftVal((uint)ticks);
             uint g = ShiftVal((uint)( ticks >> 32 ));
 
-            Thread.Sleep(1);
-
-            ticks = DateTime.Now.Ticks;
-            uint b = ShiftVal((uint)ticks);
-            uint f = ShiftVal((uint)( ticks >> 32 ));
+            ticks = watch.ElapsedTicks;
+            uint a = ShiftVal((uint)ticks);
+            uint e = ShiftVal((uint)( ticks >> 32 ));
 
             return new uint[] { a, b, c, d, e, f, g };
         }

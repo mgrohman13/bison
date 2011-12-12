@@ -130,7 +130,7 @@ namespace GalWar
                 return min;
         }
 
-        public static string GetName(byte name, byte mark)
+        internal static string GetName(byte name, byte mark)
         {
             return ( (ShipClass)name ).ToString() + " " + NumberToRoman(mark);
         }

@@ -1368,11 +1368,9 @@ namespace GalWarWin
 
                 if (colony.DefenseAttChange != 0 || colony.DefenseDefChange != 0 || colony.DefenseHPChange != 0)
                 {
-                    double strChange = colony.PlanetDefenseStrength * colony.HP;
-                    strChange -= ShipDesign.GetPlanetDefenseStrength(colony.Att - colony.DefenseAttChange, colony.Def - colony.DefenseDefChange)
-                            * ( colony.HP - colony.DefenseHPChange );
-                    strChange /= colony.PlanetDefenseStrength;
-                    this.lbl4Inf.Text += " (+" + FormatUsuallyInt(strChange) + ")";
+                    double strChange = colony.HP - ShipDesign.GetPlanetDefenseStrength(colony.Att - colony.DefenseAttChange, colony.Def - colony.DefenseDefChange)
+                            * ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrength;
+                    this.lbl4Inf.Text += string.Format(" ({1}{0})", FormatUsuallyInt(strChange), strChange > 0 ? "+" : "");
                 }
             }
 
