@@ -620,14 +620,32 @@ namespace GalWar
         {
             //randomly select a stat to increase next based on the current ratios
             Dictionary<ExpType, int> stats = new Dictionary<ExpType, int>();
-            stats.Add(ExpType.Att, GetStatExpChance(Att, Def));
-            stats.Add(ExpType.Def, GetStatExpChance(Def, Att));
-            stats.Add(ExpType.HP, this.MaxHP);
-            stats.Add(ExpType.DS, Game.Random.Round(ShipDesign.GetBombardDamage(this.Att, this.bombardDamageMult - 1) / 1.3));
-            stats.Add(ExpType.Trans, Game.Random.Round(this.MaxPop / 2.6));
-            stats.Add(ExpType.Speed, Game.Random.Round(this.MaxSpeed / 3.9));
-            this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
 
+            int att = GetStatExpChance(Att, Def);
+            int total = att;
+            stats.Add(ExpType.Att, att);
+            int def = GetStatExpChance(Def, Att);
+            total += def;
+            stats.Add(ExpType.Def, def);
+            int hp = this.MaxHP;
+            total += hp;
+            stats.Add(ExpType.HP, hp);
+
+            if (this.DeathStar)
+            {
+                int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 66.6);
+                total += ds;
+                stats.Add(ExpType.DS, ds);
+            }
+            else
+            {
+                int trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / 3.0);
+                total += trans;
+                stats.Add(ExpType.Trans, trans);
+            }
+            stats.Add(ExpType.Speed, Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9));
+
+            this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
             this.needExpMult = Game.Random.GaussianCapped(1f, Consts.ExperienceRndm);
 
             LevelUp(handler);

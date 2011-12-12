@@ -372,7 +372,7 @@ next_planet:
 
         public void AutoSave()
         {
-            TBSUtil.SaveGame(this, "../../../auto", turn + ".gws");
+            //TBSUtil.SaveGame(this, "../../../auto", turn + ".gws");
         }
 
         private void NewRound()

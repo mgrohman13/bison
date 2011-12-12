@@ -39,14 +39,12 @@ namespace GalWar
         private static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double statResearchMult, double totalResearchMult)
         {
             double speedValue = speed + 2.1;
-            double defValue = GetStatValue(def);
+            double statMult = statResearchMult * hp;
+            double attValue = GetStatValue(att) * statMult * speedValue / 3.9;
+            double defValue = GetStatValue(def) * statMult;
             return Consts.CostMult * (
                 (
-                    (
-                        ( ( GetStatValue(att) * speedValue / 3.9 + defValue ) * hp )
-                        *
-                        ( statResearchMult )
-                    )
+                    ( attValue + defValue )
                     +
                     (
                         (
@@ -56,26 +54,27 @@ namespace GalWar
                                 (
                                     ( Math.Pow(trans, 1 + Consts.AttackNumbersPower) )
                                     +
-                                    ( 16.9 * GetBombardDamage(att, bombardDamageMult) )
+                                    ( 13.0 * GetBombardDamage(att, bombardDamageMult) )
                                 )
                                 *
                                 speed
                             )
                         )
                         *
-                        ( ( defValue * hp * statResearchMult + 9000.0 ) / 3000.0 )
+                        ( ( defValue + 9000.0 ) / 3000.0 )
                     )
                 )
                 *
                 ( speedValue )
                 *
                 ( totalResearchMult )
-             );
+            );
         }
 
         public static double GetStatValue(double stat)
         {
-            return ( 1.0 * stat * stat * stat + 7.0 * stat * stat + 2.0 * stat ) / 10.0;
+            double sqr = stat * stat;
+            return ( sqr * stat + 6.0 * sqr + 2.0 * stat ) / 9.0;
         }
 
         internal static double GetHPStr(int s1, int s2)
@@ -181,7 +180,7 @@ namespace GalWar
             DoColonyTrans(forceColony, forceTrans, forceNeither, research, designs, ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
             //being a transport makes average att and def lower, but hp higher
             double strMult = 3 * transStr / ( 3 * transStr + ( this.Colony ? 60 : 0 ) + this._trans );
-            strMult *= 501 / ( 500 + this._bombardDamageMult );
+            strMult *= 600 / ( 599 + this._bombardDamageMult );
 
             //  ------  Att/Def       ------  
             double str = MakeStatStr(research, 1.69 * strMult, .666);
@@ -204,7 +203,8 @@ namespace GalWar
                 this._speed = (byte)MakeStat(MultStr(speedStr, GetSpeedMult(str, hpMult)));
             }
 
-            this._bombardDamageMult = (float)MultStr(this._bombardDamageMult, Math.Sqrt(this._def / (double)this._att / this._speed * speedStr));
+            this._bombardDamageMult = (float)MultStr(this._bombardDamageMult,
+                    speedStr / this._speed * Math.Sqrt(str * this._def) / this._att);
 
             //  ------  cost/Upkeep   ------  
             double cost = -1;

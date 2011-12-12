@@ -1,9 +1,7 @@
 test other grph data storage implementations with real data
 main map improvements
-	
 test combat performance for integral data type widths
 decimal gold
-emd game popup wackiness
 planet defence att/def:hp ratio
 rethink colony ships
 hp threshhold to abort combat
