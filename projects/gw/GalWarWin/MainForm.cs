@@ -406,7 +406,7 @@ namespace GalWarWin
             Player red = new Player("Red", Color.Red);
             Player yellow = new Player("Yellow", Color.Gold);
             game = new Game(new Player[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianCappedInt(16.5f, .26f, 13) + Game.Random.OEInt(1.3),
+                    Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .5, 0.0021));
 
             mouse = new Point(ClientSize.Width / 2, ClientSize.Height / 2);

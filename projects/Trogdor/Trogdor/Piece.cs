@@ -95,17 +95,10 @@ namespace Trogdor
             this.yVel += yVel;
         }
 
-        private void Drift()
+        private void Drift(float drift)
         {
             if (Game.Random.Bool(Game.DriftChance))
-            {
-                float drift;
-                if (type == Type.Player)
-                    drift = Game.PlayerDrift;
-                else
-                    drift = Game.OtherDrift;
                 Accelerate(Game.Random.Gaussian(drift), Game.Random.Gaussian(drift));
-            }
         }
 
         internal void Increment()
@@ -139,14 +132,15 @@ namespace Trogdor
                 {
                 case Type.Ally:
                 case Type.Enemy:
-                    Drift();
+                    Drift(Game.OtherDrift);
+
                     double offset = this.Diameter / 2.0;
                     Accelerate(Game.Random.DoubleFull(( Game.Width / 2.0 - this.x - offset ) * Game.OtherSpeed),
                             Game.Random.DoubleFull(( Game.Height / 2.0 - this.y - offset ) * Game.OtherSpeed));
                     break;
 
                 case Type.Player:
-                    Drift();
+                    Drift(Game.PlayerDrift);
 
                     if (Game.Down)
                         Accelerate(0, Game.PlayerSpeed);
@@ -232,7 +226,6 @@ namespace Trogdor
             foreach (Piece piece in Game.Random.Iterate(Game.Pieces))
                 if (this.Hits(piece))
                 {
-
                     switch (piece.type)
                     {
                     case Type.Ally:

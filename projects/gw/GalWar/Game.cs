@@ -76,8 +76,9 @@ namespace GalWar
                     ++nullTiles;
             }
 
-            int planets = Random.GaussianCappedInt(MapSize * planetPct, .21);
-            this._planetPct = Random.GaussianCapped(planetPct, .169f);
+            planetPct *= MapSize;
+            int planets = Random.GaussianCappedInt(planetPct, .21);
+            this._planetPct = Random.GaussianCapped(planetPct * Consts.PlanetCreationRate, .169);
             this.planets = new List<Planet>(planets + numPlayers);
             //first create enough planets for homeworlds
             while (this.planets.Count < numPlayers)
@@ -372,7 +373,7 @@ next_planet:
 
         public void AutoSave()
         {
-            //TBSUtil.SaveGame(this, "../../../auto", turn + ".gws");
+            TBSUtil.SaveGame(this, "../../../auto", turn + ".gws");
         }
 
         private void NewRound()
@@ -420,7 +421,7 @@ next_planet:
 
         private void CreatePlanets()
         {
-            int planets = Game.Random.OEInt(Consts.PlanetCreationRate * this._planetPct * MapSize);
+            int planets = Game.Random.OEInt(this._planetPct);
             for (int i = 0 ; i < planets ; ++i)
                 NewPlanet();
         }

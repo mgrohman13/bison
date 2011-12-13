@@ -122,7 +122,7 @@ namespace Trogdor
             foreach (Piece piece in Random.Iterate(Pieces))
             {
                 piece.Increment();
-                if (piece.Type == Type.Hut)
+                if (piece.Size > 0 && piece.Type == Type.Hut)
                     total += piece.Size;
             }
 

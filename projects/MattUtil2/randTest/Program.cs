@@ -15,17 +15,22 @@ namespace randTest
             MTRandom r = new MTRandom(true);
             r.StartTick();
 
-            foreach (int a in r.Iterate(3))
-                Console.WriteLine(a);
-            Console.WriteLine();
-            foreach (int a in r.Iterate(new int[0]))
-                Console.WriteLine(a);
-            Console.WriteLine();
-            foreach (int a in r.Iterate(new int[] { 3 }))
-                Console.WriteLine(a);
-            Console.WriteLine();
-            foreach (int a in r.Iterate(new int[] { 5, 6, 4 }))
-                Console.WriteLine(a);
+            //List<int> b = new List<int>();
+            //b.Add(3);
+            //foreach (int c in r.Iterate(b))
+            //    b.Remove(c);
+            //foreach (int a in r.Iterate(100))
+            //    Console.WriteLine("{0:00}", a);
+
+            double c = 1.3;
+            double a = c;
+            int b;
+            do
+            {
+                b = MTRandom.GetOEIntMax(a /= c);
+                Console.WriteLine("{0}\t\t{1}", a, b);
+            }
+            while (b > 1);
 
             //double total = 0;
             //float w = .368421048f;
