@@ -19,7 +19,7 @@ namespace GalWar
         public const double MoveOrderGold = AverageQuality * Income;
         //a higher MoveOrderShuffle makes the move order change faster
         public const double MoveOrderShuffle = .13;
-        //multiplied by the number of starting planets
+        //multiplied by the starting planet percent
         public const double PlanetCreationRate = 1 / 100.0;
 
         public const int PlanetQualityMin = 0;

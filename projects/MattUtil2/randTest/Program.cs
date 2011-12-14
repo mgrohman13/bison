@@ -22,15 +22,42 @@ namespace randTest
             //foreach (int a in r.Iterate(100))
             //    Console.WriteLine("{0:00}", a);
 
-            double c = 1.3;
-            double a = c;
-            int b;
-            do
+            int iter = 0;
+            List<double> values = new List<double>();
+            double current = 0;
+            const double limit = 2.2795310419041614;
+            for (int target = 1 ; current < limit ; ++target)
             {
-                b = MTRandom.GetOEIntMax(a /= c);
-                Console.WriteLine("{0}\t\t{1}", a, b);
+                int curValue;
+                double min = current, max = limit + 1 - r.NextDouble();
+                do
+                {
+                    ++iter;
+                    current = ( min + max ) / 2.0;
+                    curValue = MTRandom.GetOEIntMax(current);
+                    max = current;
+                } while (curValue != target);
+                values.Add(current);
             }
-            while (b > 1);
+            for (int idx = 1 ; idx < values.Count ; ++idx)
+            {
+                double min = values[idx - 1], max = values[idx];
+                while (true)
+                {
+                    ++iter;
+                    double mid = ( min + max ) / 2.0;
+                    if (mid == min || mid == max)
+                        break;
+                    if (MTRandom.GetOEIntMax(mid) > idx)
+                        max = mid;
+                    else
+                        min = mid;
+                }
+                Console.WriteLine();
+                ShowOEIntMax(min);
+                ShowOEIntMax(max);
+            }
+            Console.Write(iter);
 
             //double total = 0;
             //float w = .368421048f;
@@ -51,6 +78,22 @@ namespace randTest
 
             r.Dispose();
             Console.ReadKey();
+        }
+
+        private static void ShowOEIntMax(double value)
+        {
+            string str = value.ToString("e16");
+            str = DoSplit(str, '-');
+            str = DoSplit(str, '+');
+            Console.WriteLine("{0}\t\t{1}", str, MTRandom.GetOEIntMax(value).ToString().PadLeft(3));
+        }
+
+        private static string DoSplit(string str, char separator)
+        {
+            string[] split = str.Split(separator);
+            if (split.Length == 2)
+                return split[0] + separator + split[1].TrimStart('0').PadLeft(1, '0');
+            return str;
         }
 
         private static void DoTickTest(MTRandom r)

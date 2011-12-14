@@ -24,30 +24,30 @@ namespace GalWarWin
             //kick off random ticker
             Game.Random.ToString();
 
-            for (int a = 1 ; a < 16 ; ++a)
-            {
-                double tot = 0;
-                double div = 0;
-                for (int b = 1 ; b < 31 ; ++b)
-                {
-                    double avg, c;
-                    Consts.GetDamageTable(a, b, out avg, out c);
-                    //Console.Write("{0:0.00}\t", avg);
-                    double diff = ( Math.Abs(a - b) - 3.0 ) / ( a + 3.9 );
-                    if (diff < .6)
-                    {
-                        diff = 1;
-                        //Math.Abs(1 - diff);
-                        tot += avg * diff;
-                        div += diff;
-                        Console.Write("{0:0.00}\t", diff);
-                    }
-                    else
-                        Console.Write("0.00\t");
-                }
-                double d = tot / div, e = ShipDesign.GetStatValue(a);
-                Console.WriteLine("{0:0.00}\t{1:00.0}\t{2:0.000}", d, e, e / d);
-            }
+            //for (int a = 1 ; a < 16 ; ++a)
+            //{
+            //    double tot = 0;
+            //    double div = 0;
+            //    for (int b = 1 ; b < 31 ; ++b)
+            //    {
+            //        double avg, c;
+            //        Consts.GetDamageTable(a, b, out avg, out c);
+            //        //Console.Write("{0:0.00}\t", avg);
+            //        double diff = ( Math.Abs(a - b) - 3.0 ) / ( a + 3.9 );
+            //        if (diff < .6)
+            //        {
+            //            diff = 1;
+            //            //Math.Abs(1 - diff);
+            //            tot += avg * diff;
+            //            div += diff;
+            //            Console.Write("{0:0.00}\t", diff);
+            //        }
+            //        else
+            //            Console.Write("0.00\t");
+            //    }
+            //    double d = tot / div, e = ShipDesign.GetStatValue(a);
+            //    Console.WriteLine("{0:0.00}\t{1:00.0}\t{2:0.000}", d, e, e / d);
+            //}
 
             //run app
             Application.EnableVisualStyles();
