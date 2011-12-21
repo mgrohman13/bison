@@ -1,3 +1,9 @@
+enemy turn sold/def incs
+	attacking with def
+	moving soldiers
+	???
+build with no open tile shouldnt show dialog
+
 test other grph data storage implementations with real data
 main map improvements
 test combat performance for integral data type widths
