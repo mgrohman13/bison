@@ -4,6 +4,8 @@ enemy turn sold/def incs
 	???
 build with no open tile shouldnt show dialog
 
+use consts to ensure planet att/def cost is equal
+
 test other grph data storage implementations with real data
 main map improvements
 test combat performance for integral data type widths
