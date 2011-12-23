@@ -1359,11 +1359,16 @@ namespace GalWarWin
                 if (soldierChange != "0.0%")
                     this.lbl3Inf.Text += string.Format(" ({1}{0})", soldierChange, colony.SoldierChange > 0 ? "+" : "");
 
-                double defChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrength
-                        * ShipDesign.GetPlanetDefenseStrength(colony.Att - colony.DefenseAttChange, colony.Def - colony.DefenseDefChange);
-                string strChange = FormatUsuallyInt(defChange);
+                int attChange = colony.DefenseAttChange, defChange = colony.DefenseDefChange;
+                if (attChange == colony.Att)
+                    --attChange;
+                if (defChange == colony.Def)
+                    --defChange;
+                double pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrength
+                        * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
+                string strChange = FormatUsuallyInt(pdChange);
                 if (strChange != "0")
-                    this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, defChange > 0 ? "+" : "");
+                    this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : "");
             }
 
             this.lbl4.BorderStyle = BorderStyle.FixedSingle;
