@@ -1,10 +1,5 @@
-enemy turn sold/def incs
-	attacking with def
-	moving soldiers
-	???
-build with no open tile shouldnt show dialog
-
 use consts to ensure planet att/def cost is equal
+HP to ushort
 
 test other grph data storage implementations with real data
 main map improvements

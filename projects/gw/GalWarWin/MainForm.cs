@@ -694,16 +694,9 @@ namespace GalWarWin
         private void GameForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
-            {
                 e.Cancel = true;
-            }
             else
-            {
-                Console.WriteLine();
-                Console.Write(GetLog());
-
                 Game.Random.Dispose();
-            }
         }
 
         private void GameForm_MouseClick(object sender, MouseEventArgs e)
@@ -1366,12 +1359,11 @@ namespace GalWarWin
                 if (soldierChange != "0.0%")
                     this.lbl3Inf.Text += string.Format(" ({1}{0})", soldierChange, colony.SoldierChange > 0 ? "+" : "");
 
-                if (colony.DefenseAttChange != 0 || colony.DefenseDefChange != 0 || colony.DefenseHPChange != 0)
-                {
-                    double strChange = colony.HP - ShipDesign.GetPlanetDefenseStrength(colony.Att - colony.DefenseAttChange, colony.Def - colony.DefenseDefChange)
-                            * ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrength;
-                    this.lbl4Inf.Text += string.Format(" ({1}{0})", FormatUsuallyInt(strChange), strChange > 0 ? "+" : "");
-                }
+                double defChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrength
+                        * ShipDesign.GetPlanetDefenseStrength(colony.Att - colony.DefenseAttChange, colony.Def - colony.DefenseDefChange);
+                string strChange = FormatUsuallyInt(defChange);
+                if (strChange != "0")
+                    this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, defChange > 0 ? "+" : "");
             }
 
             this.lbl4.BorderStyle = BorderStyle.FixedSingle;
@@ -1598,12 +1590,15 @@ namespace GalWarWin
 
         public void LogMsg(string format, params object[] args)
         {
-            log += string.Format(format, args);
+            string msg = string.Format(format, args);
+            Console.Write(msg);
+            log += msg;
             LogMsg();
         }
 
         public void LogMsg()
         {
+            Console.WriteLine();
             log += "\r\n";
         }
 

@@ -81,17 +81,6 @@ namespace GalWar
 
         internal void DoBuild(IEventHandler handler)
         {
-            int att = this.Att, def = this.Def;
-            if (this.MinDefenses)
-            {
-                --att;
-                --def;
-            }
-            double soldierChange = this.GetPublicSoldierPct();
-            int defenseAttChange = att;
-            int defenseDefChange = def;
-            int defenseHPChange = this.HP;
-
             //actual building of new ships happens at turn end
             if (this.Buildable != null)
             {
@@ -102,7 +91,13 @@ namespace GalWar
                     Tile tile = null;
                     if (this.Buildable.NeedsTile)
                     {
-                        tile = handler.getBuildTile(this);
+                        foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
+                            if (neighbor.SpaceObject == null)
+                            {
+                                //only ask for a tile if there is one available
+                                tile = handler.getBuildTile(this);
+                                break;
+                            }
                         //null means to not actually produce the ship
                         if (tile == null)
                             break;
@@ -120,10 +115,13 @@ namespace GalWar
                         break;
                 }
             }
+        }
 
+        private void DoChange(double soldierChange, int defenseAttChange, int defenseDefChange, int defenseHPChange)
+        {
             this._soldierChange = (float)( this.GetPublicSoldierPct() - soldierChange );
-            att = this.Att;
-            def = this.Def;
+            int att = this.Att;
+            int def = this.Def;
             if (this.MinDefenses)
             {
                 --att;
@@ -139,6 +137,8 @@ namespace GalWar
 
         internal void StartTurn(IEventHandler handler)
         {
+            DoChange(0, 0, 0, 0);
+
             if (this.built)
             {
                 StartBuilding(handler.getNewBuild(this, true, true));
@@ -164,7 +164,7 @@ namespace GalWar
             if (buildFirst)
                 this.DoBuild(handler);
             if (this.HP > 0)
-                foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Planet.Tile)))
+                foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
                 {
                     Ship ship = tile.SpaceObject as Ship;
                     if (ship != null && ship.Player != this.Player && handler.ConfirmCombat(this, ship))
@@ -177,6 +177,8 @@ namespace GalWar
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
                 this.DoBuild(handler);
+
+            DoChange(this._soldierChange, this._defenseAttChange, this._defenseDefChange, this._defenseHPChange);
         }
 
         private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn)
@@ -530,7 +532,7 @@ namespace GalWar
                 //best place to make sure ship is still valid to repair
                 if (this._repairShip != null &&
                         ( this._repairShip.HP == this._repairShip.MaxHP || this._repairShip.Dead
-                        || !Tile.IsNeighbor(this.Planet.Tile, this._repairShip.Tile) ))
+                        || !Tile.IsNeighbor(this.Tile, this._repairShip.Tile) ))
                     this._repairShip = null;
                 return this._repairShip;
             }
@@ -674,7 +676,7 @@ namespace GalWar
                 MinGold(production, ref gold, 1);
 
                 if (this.HP > 0)
-                    foreach (Tile tile in Tile.GetNeighbors(this.Planet.Tile))
+                    foreach (Tile tile in Tile.GetNeighbors(this.Tile))
                     {
                         Ship ship = tile.SpaceObject as Ship;
                         if (ship != null && ship.Player != this.Player)
