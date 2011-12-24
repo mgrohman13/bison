@@ -1,5 +1,8 @@
 use consts to ensure planet att/def cost is equal
 HP to ushort
+DS exp
+
+dont store x,y; calculate?
 
 test other grph data storage implementations with real data
 main map improvements
