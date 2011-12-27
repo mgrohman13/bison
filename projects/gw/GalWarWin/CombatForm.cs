@@ -16,7 +16,7 @@ namespace GalWarWin
 
         private MainForm gameForm;
         private Combatant attacker, defender;
-        private bool isConfirmation;
+        private bool isConfirmation, showConfirmation;
 
         public CombatForm()
         {
@@ -26,6 +26,7 @@ namespace GalWarWin
         private void SetCombatants(Combatant attacker, Combatant defender, bool isConfirmation)
         {
             this.isConfirmation = isConfirmation;
+            this.showConfirmation = true;
 
             this.nudAttack.Visible = false;
             this.nudAttHP.Visible = false;
@@ -49,8 +50,11 @@ namespace GalWarWin
             Ship attShip = attacker as Ship;
             Ship defShip = defender as Ship;
 
-            this.btnAttack.Visible = ( isConfirmation || ( attShip != null && attShip.CurSpeed > 0 && attacker.Player.IsTurn
+            this.btnAttack.Visible = ( isConfirmation ? ( showConfirmation )
+                    : ( attShip != null && attShip.CurSpeed > 0 && attacker.Player.IsTurn
                     && !( attShip.DeathStar && defender is Colony ) && Tile.IsNeighbor(attacker.Tile, defender.Tile) ) );
+
+            form.btnEdit.Visible = !isConfirmation;
 
             SetValue(this.nudAttack, attacker.Att);
             SetValue(this.nudAttHP, attacker.HP);
@@ -274,6 +278,8 @@ end:
 
         private void btnSwap_Click(object sender, EventArgs e)
         {
+            showConfirmation = !showConfirmation;
+
             Combatant temp = attacker;
             attacker = defender;
             defender = temp;
@@ -341,13 +347,11 @@ end:
                 form.FlushLog();
 
                 form.btnAttack.DialogResult = DialogResult.Yes;
-                form.btnEdit.Visible = false;
                 return ( form.ShowDialog() == DialogResult.Yes );
             }
             else
             {
                 form.btnAttack.DialogResult = DialogResult.None;
-                form.btnEdit.Visible = true;
                 return ( form.ShowDialog() != DialogResult.Cancel );
             }
         }

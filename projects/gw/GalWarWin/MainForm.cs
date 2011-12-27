@@ -1080,10 +1080,21 @@ namespace GalWarWin
                 int research = 0, production2, research2;
                 colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
                 colony.GetTurnValues(out production2, out gold2, out research2);
-                MessageBox.Show(string.Format("Income: {0}\r\nUpkeep: {1}\r\n\r\nGold: {2} ({5})\r\nResearch: {3}\r\nProduction: {4} ({6})",
-                        FormatDouble(colony.GetTotalIncome()), FormatDouble(colony.Upkeep),
-                        FormatDouble(gold), research, FormatUsuallyInt(production), FormatDouble(gold2), production2));
+                string modInc = FormatDouble(production + gold + research);
+                string modGold = FormatDouble(gold);
+                string modProd = FormatUsuallyInt(production);
+                MessageBox.Show(string.Format("Income: {0}{7}\r\nUpkeep: {1}\r\n\r\nGold: {2}{5}\r\nResearch: {3}\r\nProduction: {4}{6}",
+                        modInc, FormatDouble(colony.Upkeep), modGold, research, modProd,
+                        ShowOrig(FormatDouble(gold2), modGold), ShowOrig(production2.ToString(), modProd),
+                        ShowOrig(FormatDouble(colony.GetTotalIncome()), modInc)));
             }
+        }
+
+        private string ShowOrig(string orig, string mod)
+        {
+            if (orig == mod)
+                return "";
+            return string.Format(" ({0})", orig);
         }
 
         private Colony GetSelectedColony()
@@ -1374,7 +1385,19 @@ namespace GalWarWin
             this.lbl4.BorderStyle = BorderStyle.FixedSingle;
 
             this.lbl5.Text = "Income";
-            FormatIncome(this.lbl5Inf, colony.GetTotalIncome() - ( colony.Player.IsTurn ? colony.Upkeep : 0 ), true);
+            double income;
+            if (colony.Player.IsTurn)
+            {
+                double population = 0, production = 0, gold = 0;
+                int research = 0;
+                colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
+                income = production + gold + research;
+            }
+            else
+            {
+                income = colony.GetTotalIncome();
+            }
+            FormatIncome(this.lbl5Inf, income, true);
 
             if (colony.Player.IsTurn)
             {

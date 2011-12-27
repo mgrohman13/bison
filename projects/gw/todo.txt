@@ -1,7 +1,3 @@
-planet income details
-	top income shows mod(orig), mod sums actual income of each type
-	(orig) only shows for each if diff?
-planet defense attack bug when having swapped attacker logs wrong sides
 planet defense soldier change batch operation
 
 pts for when you die?
