@@ -9,7 +9,7 @@ namespace GalWar
         #region fields and constructors
 
         private byte _att, _def;
-        private int _hp;
+        private ushort _hp;
 
         protected Combatant()
         {
@@ -163,7 +163,10 @@ namespace GalWar
         {
             if (value < 0)
                 value = 0;
-            this._hp = value;
+            checked
+            {
+                this._hp = (ushort)value;
+            }
         }
 
         #endregion //public

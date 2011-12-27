@@ -36,7 +36,12 @@ namespace GalWar
 
         private int GetStat(int cur, int add)
         {
-            return Math.Max(GetStat(( cur + add * Consts.PlanetDefensesRndm ) / ( 1 + Consts.PlanetDefensesRndm )), GetStat(add));
+            double newStat;
+            if (cur == add)
+                newStat = add;
+            else
+                newStat = ( cur + add * Consts.PlanetDefensesRndm ) / ( 1 + Consts.PlanetDefensesRndm );
+            return Math.Max(GetStat(newStat), GetStat(add));
         }
 
         private static int GetStat(double stat)

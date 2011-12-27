@@ -1,9 +1,14 @@
-use consts to ensure planet att/def cost is equal
-HP to ushort
-DS exp
+planet income details
+	top income shows mod(orig), mod sums actual income of each type
+	(orig) only shows for each if diff?
+planet defense attack bug when having swapped attacker logs wrong sides
+planet defense soldier change batch operation
 
-dont store x,y; calculate?
+pts for when you die?
 
+planet invasion calculator
+cost calculator
+autosave viewer
 test other grph data storage implementations with real data
 main map improvements
 test combat performance for integral data type widths

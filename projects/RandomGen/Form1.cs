@@ -389,7 +389,7 @@ namespace RandomGen
             this.rndDiv.Name = "rndDiv";
             this.rndDiv.Size = new System.Drawing.Size(100, 20);
             this.rndDiv.TabIndex = 9;
-            this.rndDiv.Text = "6.5";
+            this.rndDiv.Text = "6";
             // 
             // label6
             // 

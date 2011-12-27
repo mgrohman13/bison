@@ -20,7 +20,7 @@ namespace GalWar
         private bool _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
         private ushort _maxTrans;
-        private int _maxHP;
+        private ushort _maxHP;
         private float _curExp, _totalExp, _needExpMult, _expDiv;
         private double _cost;
 
@@ -352,7 +352,10 @@ namespace GalWar
             }
             private set
             {
-                this._maxHP = value;
+                checked
+                {
+                    this._maxHP = (ushort)value;
+                }
             }
         }
 
@@ -618,6 +621,8 @@ namespace GalWar
 
         private void GetNextLevel(IEventHandler handler)
         {
+            this.needExpMult = Game.Random.GaussianCapped(1f, Consts.ExperienceRndm, (float)Consts.FLOAT_ERROR);
+
             //randomly select a stat to increase next based on the current ratios
             Dictionary<ExpType, int> stats = new Dictionary<ExpType, int>();
 
@@ -633,7 +638,7 @@ namespace GalWar
 
             if (this.DeathStar)
             {
-                int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 66.6);
+                int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 39.0 / this.needExpMult);
                 total += ds;
                 stats.Add(ExpType.DS, ds);
             }
@@ -646,7 +651,6 @@ namespace GalWar
             stats.Add(ExpType.Speed, Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9));
 
             this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
-            this.needExpMult = Game.Random.GaussianCapped(1f, Consts.ExperienceRndm);
 
             LevelUp(handler);
         }

@@ -33,11 +33,6 @@ namespace GalWarWin.Sliders
             baseHeight = this.Height;
         }
 
-        private void SliderForm_Load(object sender, EventArgs e)
-        {
-            this.txtAmt.SelectAll();
-        }
-
         private void SetController(SliderController controller)
         {
             this.controller = controller;
@@ -71,6 +66,8 @@ namespace GalWarWin.Sliders
             SetText();
 
             this.trackBar.Visible = ( max > min );
+
+            form.txtAmt.SelectAll();
         }
 
         private int GetValue()

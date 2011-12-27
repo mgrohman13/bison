@@ -164,7 +164,6 @@ namespace GalWarWin.Sliders
             this.Name = "SliderForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SliderForm_FormClosed);
-            this.Load += new System.EventHandler(this.SliderForm_Load);
             ( (System.ComponentModel.ISupportInitialize)( this.trackBar ) ).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

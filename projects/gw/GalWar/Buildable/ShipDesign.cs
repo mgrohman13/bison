@@ -26,8 +26,9 @@ namespace GalWar
 
         internal static double GetPlanetDefenseCost(int att, int def, int research)
         {
-            //pass a speed of 2 so att cost=def cost and then adjust total cost as though speed were 0
-            return GetTotCost(att, def, 1, 2, 0, false, 0, research) * 2.1 / 4.1 * Consts.PlanetDefensesCostMult;
+            double researchMult = GetResearchMult(research);
+            //pass a speed value such that att cost=def cost and then adjust total cost as though speed were 0
+            return GetTotCost(att, def, 1, attDiv - speedAdd, 0, false, 0, researchMult, researchMult) * speedAdd / attDiv * Consts.PlanetDefensesCostMult;
         }
 
         internal static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, int research)
@@ -36,11 +37,12 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, researchMult);
         }
 
-        private static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double statResearchMult, double totalResearchMult)
+        const double speedAdd = 2.1, attDiv = 3.9;
+        private static double GetTotCost(int att, int def, int hp, double speed, int trans, bool colony, float bombardDamageMult, double statResearchMult, double totalResearchMult)
         {
-            double speedValue = speed + 2.1;
+            double speedValue = speed + speedAdd;
             double statMult = statResearchMult * hp;
-            double attValue = GetStatValue(att) * statMult * speedValue / 3.9;
+            double attValue = GetStatValue(att) * statMult * speedValue / attDiv;
             double defValue = GetStatValue(def) * statMult;
             return Consts.CostMult * (
                 (
@@ -159,7 +161,7 @@ namespace GalWar
 
         private readonly byte _upkeep, _att, _def, _speed;
         private readonly ushort _cost, _research, _trans;
-        private readonly int _hp;
+        private readonly ushort _hp;
         private readonly float _bombardDamageMult;
 
         internal ShipDesign(int mapSize, int research, Player player, List<ShipDesign> designs, ShipNames shipNames)
@@ -189,7 +191,10 @@ namespace GalWar
             //  ------  HP            ------  
             double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, this.DeathStar ? 1.3 : ( this.Colony ? 1.8 : 2.6 ));
             //average hp is relative to actual randomized stats
-            this._hp = MakeStat(GetHPStr(this._att, this._def, hpMult));
+            checked
+            {
+                this._hp = (ushort)MakeStat(GetHPStr(this._att, this._def, hpMult));
+            }
 
             //  ------  Speed         ------  
             double speedStr = MakeStatStr(research, .666, .39);
@@ -224,7 +229,10 @@ namespace GalWar
                     --this._def;
                     break;
                 case ModifyStat.HP:
-                    --this._hp;
+                    checked
+                    {
+                        --this._hp;
+                    }
                     break;
                 case ModifyStat.Speed:
                     --this._speed;
@@ -256,7 +264,10 @@ namespace GalWar
                     ++this._def;
                     break;
                 case ModifyStat.HP:
-                    ++this._hp;
+                    checked
+                    {
+                        ++this._hp;
+                    }
                     break;
                 default:
                     throw new Exception();
