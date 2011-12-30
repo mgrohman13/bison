@@ -1,3 +1,5 @@
+only show trans attack/bombard when move left
+
 planet defense soldier change batch operation
 
 pts for when you die?
