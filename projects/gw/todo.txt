@@ -2,6 +2,7 @@ only show trans attack/bombard when move left
 
 planet defense soldier change batch operation
 
+col/trans/ds pcts take into account cost
 pts for when you die?
 
 planet invasion calculator
