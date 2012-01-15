@@ -66,9 +66,40 @@ namespace CityWarWinApp
             try
             {
                 CityWar.Player[] realPlayers = new CityWar.Player[players.Count];
-                int i = -1;
-                foreach (Player player in players)
-                    realPlayers[++i] = new CityWar.Player(player.Race == Player.Random ? (string)cbxRace.Items[CityWar.Game.Random.Next(cbxRace.Items.Count - 1) + 1] : player.Race, player.Color, player.Name);
+
+                bool loop;
+                do
+                {
+                    bool[] races = new bool[cbxRace.Items.Count - 1];
+                    int i = -1;
+                    foreach (Player player in players)
+                    {
+                        string race = player.Race;
+                        if (race == Player.Random)
+                        {
+                            int idx = CityWar.Game.Random.Next(cbxRace.Items.Count - 1);
+                            races[idx] = true;
+                            race = (string)cbxRace.Items[idx + 1];
+                        }
+                        else
+                        {
+                            for (int b = 0 ; b < races.Length ; ++b)
+                                races[b] = true;
+                        }
+
+                        realPlayers[++i] = new CityWar.Player(race, player.Color, player.Name);
+                    }
+
+                    loop = false;
+                    if (players.Count >= races.Length)
+                        foreach (bool has in races)
+                            if (!has)
+                            {
+                                loop = true;
+                                break;
+                            }
+                } while (loop);
+
                 Map.game = CityWar.Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
             }
             catch (ArgumentOutOfRangeException aoore)
