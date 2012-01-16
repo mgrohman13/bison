@@ -179,7 +179,7 @@ namespace GalWar
 
             //  ------  Colony/Trans  ------  
             double transStr = MakeStatStr(research, 26, .666);
-            DoColonyTrans(forceColony, forceTrans, forceNeither, research, designs, ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
+            DoColonyTrans(forceColony, forceTrans, forceNeither, research, designs, mapSize, ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
             //being a transport makes average att and def lower, but hp higher
             double strMult = 3 * transStr / ( 3 * transStr + ( this.Colony ? 60 : 0 ) + this._trans );
             strMult *= 600 / ( 599 + this._bombardDamageMult );
@@ -284,9 +284,14 @@ namespace GalWar
             this._mark = shipNames.GetMark(player, _name);
         }
 
-        private void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, List<ShipDesign> designs,
+        private void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, List<ShipDesign> designs, int mapSize,
                 ref double transStr, out bool colony, out ushort trans, out float bombardDamageMult)
         {
+            double pctMult = 0;
+            foreach (ShipDesign design in designs)
+                pctMult += design._cost + design.Upkeep * design.GetUpkeepPayoff(mapSize);
+            pctMult /= designs.Count * designs.Count;
+
             bombardDamageMult = 1;
 
             bool transport;
@@ -295,14 +300,14 @@ namespace GalWar
             else if (forceNeither || forceColony)
                 transport = false;
             else
-                transport = MakeTransport(designs, transStr);
+                transport = MakeTransport(designs, transStr, mapSize, pctMult);
 
             if (forceColony)
                 colony = true;
             else if (forceNeither || forceTrans)
                 colony = false;
             else
-                colony = MakeColony(designs);
+                colony = MakeColony(designs, mapSize, pctMult);
 
             //colony ships transport a reduced amount on average
             if (colony && !transport)
@@ -319,27 +324,28 @@ namespace GalWar
             {
                 trans = 0;
 
-                if (!forceNeither && MakeDeathStar(designs, research))
+                if (!forceNeither && MakeDeathStar(designs, research, mapSize, pctMult))
                     bombardDamageMult = MakeStat(130) + ( 1 - Game.Random.NextFloat() );
             }
         }
 
-        private bool MakeTransport(List<ShipDesign> designs, double transStr)
+        private bool MakeTransport(List<ShipDesign> designs, double transStr, int mapSize, double pctMult)
         {
             if (designs.Count == 0)
                 return false;
 
             double pct = 0;
             foreach (ShipDesign design in designs)
-                pct += design.Speed * design.Trans * ( design.Colony ? .13 : 1 );
-            pct /= designs.Count * 2.1;
+                pct += ( design.Speed * design.Trans * ( design.Colony ? .13 : 1 ) )
+                        / ( design._cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
+            pct *= pctMult / 2.1;
 
             pct = pct / ( pct + transStr );
 
             return CreateType(.13, pct);
         }
 
-        private bool MakeColony(List<ShipDesign> designs)
+        private bool MakeColony(List<ShipDesign> designs, int mapSize, double pctMult)
         {
             if (designs.Count == 0)
                 return false;
@@ -347,21 +353,22 @@ namespace GalWar
             double pct = 0;
             foreach (ShipDesign design in designs)
                 if (design.Colony)
-                    ++pct;
-            pct /= designs.Count;
+                    pct += 1 / ( design._cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
+            pct *= pctMult;
 
             return CreateType(.078, pct);
         }
 
-        private bool MakeDeathStar(List<ShipDesign> designs, int research)
+        private bool MakeDeathStar(List<ShipDesign> designs, int research, int mapSize, double pctMult)
         {
             if (designs.Count == 0)
                 return false;
 
             double pct = 0;
             foreach (ShipDesign design in designs)
-                pct += design.Speed * design.BombardDamage;
-            pct /= designs.Count;
+                pct += ( design.Speed * design.BombardDamage )
+                        / ( design._cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
+            pct *= pctMult;
 
             pct = pct / ( pct + 30 );
 

@@ -6,7 +6,8 @@ namespace GalWar
     public static class Consts
     {
         public const double WinPointsMult = 130;
-        public const double WinPointsTilesPower = .39;
+        public const double LosePointsMult = -5;
+        public const double PointsTilesPower = .39;
         //as a multiple of the second place players research
         public const double ResearchVictoryMult = 1.5;
 
@@ -77,7 +78,7 @@ namespace GalWar
         public const double PopulationIncomeForGold = 1 / Income / 13.0;
         public const float ProductionForSoldiers = 1.39f;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers * 1.3;
-        public const float DefendingSoldiersForGold = (float)( SoldiersForGold * 1.3 );
+        public const double DefendingSoldiersForGold = SoldiersForGold * 1.3;
         //ExpForGold will be increased by the players most recent research
         public const double ExpForGold = 1 / DisbandPct;
 

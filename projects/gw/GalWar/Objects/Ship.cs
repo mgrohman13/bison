@@ -551,7 +551,7 @@ namespace GalWar
                 this.cost += this.Upkeep * Consts.ExperienceUpkeepPayoffMult
                         * Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
 
-                float pct = this.HP / (float)this.MaxHP;
+                double pct = this.HP / (double)this.MaxHP;
                 switch (this.NextExpType)
                 {
                 case ExpType.Att:
@@ -561,7 +561,7 @@ namespace GalWar
                     ++this.Def;
                     break;
                 case ExpType.HP:
-                    int inc = Game.Random.Round(pct);
+                    int inc = Game.Random.Round((float)pct);
                     pct = inc;
                     this.HP += inc;
                     ++this.MaxHP;

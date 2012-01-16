@@ -779,6 +779,14 @@ namespace GalWar
 
         #region planet defense
 
+        private void SetPlanetDefense(int att, int def, int hp)
+        {
+            double oldCost = this.PlanetDefenseCost * this.HP;
+            base.SetAtt(att);
+            base.SetDef(def);
+            base.SetHP(hp);
+            ModDefenseSoldiers(oldCost);
+        }
         protected override void SetAtt(int value)
         {
             double oldCost = this.PlanetDefenseCost * this.HP;
@@ -928,9 +936,8 @@ namespace GalWar
             double newAtt, newDef, newHP;
             int att, def, hp;
             GetPlanetDefenseInc(this.production, out att, out def, out hp, out newAtt, out newDef, out newHP, true);
-            this.Att = att;
-            this.Def = def;
-            this.HP = hp;
+
+            SetPlanetDefense(att, def, hp);
             this.production = 0;
         }
 
@@ -981,9 +988,8 @@ namespace GalWar
                         ModStat(1, this.Att, newHP, oldCost, out d, out newAtt);
                         ModStat(1, this.Def, newHP, oldCost, out d, out newDef);
 
-                        this.Att = newAtt;
-                        this.Def = newDef;
-                        this.HP = GetStat(this.HP * oldCost / PlanetDefenseCost * mult, this.HP);
+                        SetPlanetDefense(newAtt, newDef, GetStat(mult * this.HP * oldCost /
+                                ShipDesign.GetPlanetDefenseCost(newAtt, newDef, this.player.LastResearched), this.HP));
                     }
                 }
                 else

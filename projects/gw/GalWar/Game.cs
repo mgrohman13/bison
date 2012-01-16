@@ -500,13 +500,21 @@ next_planet:
         public class Result
         {
             public readonly Player Player;
-            private int points;
+
+            private sbyte _points;
 
             public int Points
             {
                 get
                 {
-                    return points;
+                    return _points;
+                }
+                private set
+                {
+                    checked
+                    {
+                        _points = (sbyte)value;
+                    }
                 }
             }
 
@@ -514,17 +522,24 @@ next_planet:
             {
                 this.Player = player;
                 //extra points are awarded for gaining a research victory as quickly as possible
-                this.points = ( won ? Random.Round(Consts.WinPointsMult
-                        * Math.Pow(player.Game.MapSize, Consts.WinPointsTilesPower) / (double)player.Game.Turn) : 0 );
+                double mult = Math.Pow(player.Game.MapSize, Consts.PointsTilesPower) / (double)player.Game.Turn;
+                this.Points = Random.Round(mult * ( won ? Consts.WinPointsMult : Consts.LosePointsMult ));
             }
 
             internal static void Finalize(List<Result> results)
             {
-                //adds in (x^2+x)/2 points, where x is the inverse index
                 int points = 0;
                 int add = -1;
+                int min = int.MaxValue;
+                //adds in (x^2+x)/2 points, where x is the inverse index
                 for (int i = results.Count ; --i > -1 ; )
-                    results[i].points += ( points += ( ++add ) );
+                {
+                    int newPoints = results[i].Points + ( points += ( ++add ) );
+                    results[i].Points = newPoints;
+                    min = Math.Min(min, newPoints);
+                }
+                foreach (Result result in results)
+                    result.Points -= min;
             }
         }
     }
