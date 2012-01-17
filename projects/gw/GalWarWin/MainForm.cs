@@ -61,7 +61,7 @@ namespace GalWarWin
         {
             if (parent is CheckBox)
                 parent.Enabled = false;
-            else if (parent is Button && parent != this.btnCancel)
+            else if (parent is Button && parent != this.btnCancel && parent != this.btnCombat && parent != this.btnInvasion && parent != this.btnShowMoves)
                 parent.Hide();
             else
                 foreach (Control child in parent.Controls)
@@ -1093,7 +1093,7 @@ namespace GalWarWin
         private string ShowOrig(string orig, string mod)
         {
             if (orig == mod)
-                return "";
+                return string.Empty;
             return string.Format(" ({0})", orig);
         }
 
@@ -1108,6 +1108,16 @@ namespace GalWarWin
                 }
             }
             return null;
+        }
+
+        private void btnCombat_Click(object sender, EventArgs e)
+        {
+            CombatForm.ShowDialog(this);
+        }
+
+        private void btnInvasion_Click(object sender, EventArgs e)
+        {
+            InvadeCalculatorForm.ShowDialog(this);
         }
 
         #endregion //Events
@@ -1283,7 +1293,7 @@ namespace GalWarWin
                 this.lbl7.Text = "Troops";
                 this.lbl7Inf.Text = ship.Population.ToString() + " / " + ship.MaxPop.ToString();
                 if (ship.Population > 0)
-                    this.lbl7Inf.Text += " (" + FormatPct(ship.GetPublicSoldierPct()) + ")";
+                    this.lbl7Inf.Text += " (" + FormatPct(ship.GetTotalSoldierPct()) + ")";
             }
 
             if (ship.Colony)
@@ -1358,7 +1368,7 @@ namespace GalWarWin
             this.lbl2Inf.Text = colony.Population.ToString() + " " + lbl2Inf.Text;
 
             this.lbl3.Text = "Soldiers";
-            this.lbl3Inf.Text = FormatPct(colony.Player.IsTurn ? colony.GetSoldierPct() : colony.GetPublicSoldierPct());
+            this.lbl3Inf.Text = FormatPct(colony.Player.IsTurn ? colony.GetSoldierPct() : colony.GetTotalSoldierPct());
 
             this.lbl4.Text = "Defense";
             if (!colony.MinDefenses)
@@ -1368,7 +1378,7 @@ namespace GalWarWin
             {
                 string soldierChange = FormatPct(colony.SoldierChange, true);
                 if (soldierChange != "0.0%")
-                    this.lbl3Inf.Text += string.Format(" ({1}{0})", soldierChange, colony.SoldierChange > 0 ? "+" : "");
+                    this.lbl3Inf.Text += string.Format(" ({1}{0})", soldierChange, colony.SoldierChange > 0 ? "+" : string.Empty);
 
                 int attChange = colony.DefenseAttChange, defChange = colony.DefenseDefChange;
                 if (attChange == colony.Att)
@@ -1379,7 +1389,7 @@ namespace GalWarWin
                         * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
                 string strChange = FormatUsuallyInt(pdChange);
                 if (strChange != "0")
-                    this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : "");
+                    this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : string.Empty);
             }
 
             this.lbl4.BorderStyle = BorderStyle.FixedSingle;
@@ -1460,7 +1470,7 @@ namespace GalWarWin
             {
                 prodInc += production;
                 prodInc /= Consts.ProductionForSoldiers;
-                prodInc += colony.GetSoldiers(colony.Population);
+                prodInc += colony.Soldiers;
                 prodInc /= colony.Population + colony.GetPopulationGrowth();
                 prodInc -= colony.GetSoldierPct();
 
@@ -1507,7 +1517,7 @@ namespace GalWarWin
                 ++newDef;
             }
             return string.Format("{3}{0}:{4}{1} ({5}{2})", FormatUsuallyInt(newAtt), FormatUsuallyInt(newDef), FormatUsuallyInt(newHP),
-                    newAtt > 0 ? "+" : "", newDef > 0 ? "+" : "", newHP > 0 ? "+" : "");
+                    newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
         }
 
         private void PlayerInfo(Player player)

@@ -17,7 +17,7 @@ namespace GalWarWin
         private MainForm gameForm;
         private Colony colony;
 
-        public PlanetDefenseForm()
+        private PlanetDefenseForm()
         {
             InitializeComponent();
         }
@@ -25,8 +25,6 @@ namespace GalWarWin
         private void SetColony(Colony colony)
         {
             this.colony = colony;
-
-            //this.Width = 230;
 
             this.btnDisband.Visible = false;
             this.lblSoldiers.Visible = false;
@@ -80,18 +78,10 @@ namespace GalWarWin
                 this.lblUpkeepL.Text = "Change";
                 this.lblUpkeep.Text = MainForm.GetBuildingDefense(colony, colony.DefenseAttChange, colony.DefenseDefChange, colony.DefenseHPChange);
             }
-
-            //this.lblAttacking.Text = "";
-            //foreach (Ship ship in colony.GetPlanetDefenseAttacks())
-            //{
-            //    this.Width = 400;
-            //    this.lblAttacking.Text += ship.Name + " (" + ship.GetTotalExp() + ")\r\n";
-            //}
         }
 
         public static void ShowDialog(MainForm gameForm, Colony colony)
         {
-            //form.Width = 400;
             form.gameForm = gameForm;
             gameForm.SetLocation(form);
 

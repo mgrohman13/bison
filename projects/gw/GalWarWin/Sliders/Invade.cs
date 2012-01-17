@@ -7,20 +7,30 @@ namespace GalWarWin.Sliders
 {
     public class Invade : SliderController
     {
-        private readonly Ship ship;
-        private readonly Colony colony;
+        private int attPop, attTotal, defPop, maxGold;
+        private double attSoldiers, defSoldiers;
         private readonly int initial;
 
-        //cache results from brute-force calls to Game.FindValue that will be evaluated multiple times on a single event
+        //cache results from brute-force calls to FindValue that will be evaluated multiple times on a single event
         private Dictionary<int, int> goldTroopValues = new Dictionary<int, int>();
         private Dictionary<int, double> goldAttackValues = new Dictionary<int, double>();
 
         public Invade(Ship ship, Colony colony)
+            : this(ship.AvailablePop, ship.Population, colony.Population, ship.TotalSoldiers, colony.TotalSoldiers)
         {
-            this.ship = ship;
-            this.colony = colony;
+            this.maxGold = (int)Math.Floor(MainForm.Game.CurrentPlayer.Gold);
+        }
 
-            //triple-nested Game.FindValue calls...
+        public Invade(int attPop, int attTotal, int defPop, double attSoldiers, double defSoldiers)
+        {
+            this.maxGold = (int)Math.Max(MainForm.Game.CurrentPlayer.Gold, attPop * 13) + defPop;
+            this.attPop = attPop;
+            this.attTotal = attTotal;
+            this.defPop = defPop;
+            this.attSoldiers = attSoldiers;
+            this.defSoldiers = defSoldiers;
+
+            //triple-nested FindValue calls...
             this.initial = MattUtil.TBSUtil.FindValue(delegate(int gold)
             {
                 string effcnt = GetEffcnt(gold);
@@ -35,7 +45,7 @@ namespace GalWarWin.Sliders
 
         protected override int GetMaxInternal()
         {
-            return (int)Math.Floor(ship.Player.Gold);
+            return maxGold;
         }
 
         protected override double GetResult()
@@ -49,9 +59,9 @@ namespace GalWarWin.Sliders
             if (attack > 0)
             {
                 if (attack > defense)
-                    return ( ship.AvailablePop - attackers + ( attack - defense ) / ( attack / attackers ) );
+                    return ( attPop - attackers + ( attack - defense ) / ( attack / attackers ) );
                 else
-                    return ( colony.Population - ( defense - attack ) / ( defense / colony.Population ) );
+                    return ( defPop - ( defense - attack ) / ( defense / defPop ) );
             }
             return 0;
         }
@@ -85,7 +95,7 @@ namespace GalWarWin.Sliders
             int troops = GetTroops(GetValue());
             if (troops < 0)
                 troops = 0;
-            return troops + "/" + ship.AvailablePop;
+            return troops + "/" + attPop;
         }
 
         private double GetWinPct(double attack)
@@ -124,16 +134,15 @@ namespace GalWarWin.Sliders
             if (attackers > 0)
             {
                 //called multiple times on a single event, so cache the results
-                int key = attackers + gold * ship.AvailablePop;
+                int key = attackers + gold * attPop;
                 double result;
                 if (!goldAttackValues.TryGetValue(key, out result))
                 {
-                    double soldiers = ship.GetPublicSoldiers(attackers);
+                    double soldiers = PopCarrier.GetSoldiers(attTotal, attSoldiers, attackers);
                     double bonusGold = gold - PopCarrier.GetGoldCost(attackers);
-                    int initialWave = colony.GetInitialWave(attackers, soldiers, bonusGold, GetDefense());
+                    int initialWave = Colony.GetInitialWave(attackers, soldiers, bonusGold, defPop, GetDefense());
                     double bonus = Consts.GetInvasionStrengthBase(attackers, soldiers, initialWave, bonusGold);
                     result = attackers * bonus;
-
 
                     goldAttackValues.Add(key, result);
                 }
@@ -145,7 +154,7 @@ namespace GalWarWin.Sliders
 
         private double GetDefense()
         {
-            return ( colony.Population * Consts.GetPlanetDefenseStrengthBase(colony.Population, colony.GetPublicSoldiers(colony.Population)) );
+            return ( defPop * Consts.GetPlanetDefenseStrengthBase(defPop, defSoldiers) );
         }
 
         internal int GetTroops(int gold)
@@ -157,7 +166,7 @@ namespace GalWarWin.Sliders
                 if (!goldTroopValues.TryGetValue(gold, out result))
                 {
                     double defense = GetDefense();
-                    int max = Math.Min(ship.AvailablePop, (int)Math.Floor(gold / Consts.MovePopulationGoldCost));
+                    int max = Math.Min(attPop, (int)Math.Floor(gold / Consts.MovePopulationGoldCost));
                     result = MattUtil.TBSUtil.FindValue(delegate(int troops)
                     {
                         if (troops < max)
@@ -181,8 +190,8 @@ namespace GalWarWin.Sliders
             double attack = GetAttack(troops, gold);
             double result = GetResult(attack, troops, defense);
             if (attack > defense)
-                result += colony.Population;
-            result += ( ship.AvailablePop + colony.Population ) * GetWinPct(attack);
+                result += defPop;
+            result += ( attPop + defPop ) * GetWinPct(attack);
             return result;
         }
     }

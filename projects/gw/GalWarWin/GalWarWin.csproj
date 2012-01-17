@@ -53,6 +53,12 @@
     <Compile Include="CombatForm.Designer.cs">
       <DependentUpon>CombatForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="InvadeCalculatorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvadeCalculatorForm.Designer.cs">
+      <DependentUpon>InvadeCalculatorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -83,6 +89,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>CombatForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="InvadeCalculatorForm.resx">
+      <DependentUpon>InvadeCalculatorForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -93,6 +102,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PlanetDefenseForm.resx">
       <DependentUpon>PlanetDefenseForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ProductionForm.resx">
       <SubType>Designer</SubType>

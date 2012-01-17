@@ -119,7 +119,7 @@ namespace GalWar
 
         private void DoChange(double soldierChange, int defenseAttChange, int defenseDefChange, int defenseHPChange)
         {
-            this._soldierChange = (float)( this.GetPublicSoldierPct() - soldierChange );
+            this._soldierChange = (float)( this.GetTotalSoldierPct() - soldierChange );
             int att = this.Att;
             int def = this.Def;
             if (this.MinDefenses)
@@ -317,12 +317,12 @@ namespace GalWar
         {
             if (this.Population > 0)
             {
-                double defense = Consts.GetPlanetDefenseStrength(this.Population, this.DefendingSoldiers);
+                double defense = Consts.GetPlanetDefenseStrength(this.Population, this.TotalSoldiers);
 
                 //when possible, try to maximize use of the spent gold and minimize losses
                 int initialWave;
                 if (gold > 0)
-                    initialWave = GetInitialWave(attackers, soldiers, gold, defense);
+                    initialWave = GetInitialWave(attackers, soldiers, gold, this.Population, defense);
                 else
                     initialWave = attackers;
 
@@ -585,9 +585,9 @@ namespace GalWar
             }
         }
 
-        public int GetInitialWave(int attackers, double soldiers, double gold, double defense)
+        public static int GetInitialWave(int attackers, double soldiers, double gold, int population, double defense)
         {
-            defense *= this.Population;
+            defense *= population;
             //find the least number of troops you can attack with and still win 100% of the time
             return MattUtil.TBSUtil.FindValue(delegate(int initialWave)
             {
@@ -832,11 +832,11 @@ namespace GalWar
             return this.defenseSoldiers;
         }
 
-        protected override double DefendingSoldiers
+        public override double TotalSoldiers
         {
             get
             {
-                return base.DefendingSoldiers + this.defenseSoldiers;
+                return base.TotalSoldiers + this.defenseSoldiers;
             }
         }
 

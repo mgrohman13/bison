@@ -10,7 +10,17 @@ namespace GalWarWin
 {
     public partial class CombatForm : Form
     {
-        private static CombatForm form = new CombatForm();
+        private static CombatForm form;
+
+        private static CombatForm Form
+        {
+            get
+            {
+                if (form == null)
+                    form = new CombatForm();
+                return form;
+            }
+        }
 
         private BackgroundWorker worker;
 
@@ -18,9 +28,22 @@ namespace GalWarWin
         private Combatant attacker, defender;
         private bool isConfirmation, showConfirmation;
 
-        public CombatForm()
+        private CombatForm()
         {
             InitializeComponent();
+
+            SetRand(this.nudAttack, false);
+            SetRand(this.nudAttHP, true);
+            SetRand(this.nudDefense, false);
+            SetRand(this.nudDefHP, true);
+        }
+
+        private void SetRand(NumericUpDown nud, bool hp)
+        {
+            double str = ShipDesign.GetAttDefStr(MainForm.Game.ExpResearch);
+            if (hp)
+                str = ShipDesign.GetHPStr(ShipDesign.MakeStat(str), ShipDesign.MakeStat(str));
+            SetValue(nud, ShipDesign.MakeStat(str));
         }
 
         private void SetCombatants(Combatant attacker, Combatant defender, bool isConfirmation)
@@ -54,26 +77,33 @@ namespace GalWarWin
                     : ( attShip != null && attShip.CurSpeed > 0 && attacker.Player.IsTurn
                     && !( attShip.DeathStar && defender is Colony ) && Tile.IsNeighbor(attacker.Tile, defender.Tile) ) );
 
-            form.btnEdit.Visible = !isConfirmation;
+            Form.btnEdit.Visible = !isConfirmation;
 
-            SetValue(this.nudAttack, attacker.Att);
-            SetValue(this.nudAttHP, attacker.HP);
-            SetValue(this.nudDefense, defender.Def);
-            SetValue(this.nudDefHP, defender.HP);
+            if (attacker == null)
+            {
+                ShowEdit();
+            }
+            else
+            {
+                SetValue(this.nudAttack, attacker.Att);
+                SetValue(this.nudAttHP, attacker.HP);
+                SetValue(this.nudDefense, defender.Def);
+                SetValue(this.nudDefHP, defender.HP);
 
-            this.lblAttack.Text = attacker.Att.ToString();
-            this.lblAttHP.Text = attacker.HP.ToString();
-            if (attShip != null)
-                this.lblAttHP.Text += " / " + attShip.MaxHP.ToString();
-            this.lblDefense.Text = defender.Def.ToString();
-            this.lblDefHP.Text = defender.HP.ToString();
-            if (defShip != null)
-                this.lblDefHP.Text += " / " + defShip.MaxHP.ToString();
+                this.lblAttack.Text = attacker.Att.ToString();
+                this.lblAttHP.Text = attacker.HP.ToString();
+                if (attShip != null)
+                    this.lblAttHP.Text += " / " + attShip.MaxHP.ToString();
+                this.lblDefense.Text = defender.Def.ToString();
+                this.lblDefHP.Text = defender.HP.ToString();
+                if (defShip != null)
+                    this.lblDefHP.Text += " / " + defShip.MaxHP.ToString();
 
-            this.lblAttPlayer.BackColor = attacker.Player.Color;
-            this.lblAttPlayer.Text = attacker.Player.Name;
-            this.lblDefPlayer.BackColor = defender.Player.Color;
-            this.lblDefPlayer.Text = defender.Player.Name;
+                this.lblAttPlayer.BackColor = attacker.Player.Color;
+                this.lblAttPlayer.Text = attacker.Player.Name;
+                this.lblDefPlayer.BackColor = defender.Player.Color;
+                this.lblDefPlayer.Text = defender.Player.Name;
+            }
 
             CalculateOdds();
         }
@@ -101,7 +131,7 @@ namespace GalWarWin
             this.lblDefDmg.Text = FormatDmg(avgAtt);
 
             if (( att * att >= defHP || att * def >= attHP ) &&
-                    ( !( attacker.HP == 0 || defender.HP == 0 ) || this.nudAttack.Visible ))
+                    ( !( attacker != null && ( attacker.HP == 0 || defender.HP == 0 ) ) || this.nudAttack.Visible ))
             {
                 this.lblAttKill.Text = "...";
                 this.lblDefKill.Text = "...";
@@ -111,8 +141,8 @@ namespace GalWarWin
             }
             else
             {
-                this.lblAttKill.Text = MainForm.FormatPct(attacker.HP == 0 ? 1 : 0);
-                this.lblDefKill.Text = MainForm.FormatPct(defender.HP == 0 ? 1 : 0);
+                this.lblAttKill.Text = MainForm.FormatPct(attacker != null && attacker.HP == 0 ? 1 : 0);
+                this.lblDefKill.Text = MainForm.FormatPct(defender != null && defender.HP == 0 ? 1 : 0);
             }
         }
 
@@ -289,6 +319,11 @@ end:
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
+            ShowEdit();
+        }
+
+        private void ShowEdit()
+        {
             this.nudAttack.Visible = true;
             this.nudAttHP.Visible = true;
             this.nudDefense.Visible = true;
@@ -316,18 +351,23 @@ end:
 
         public static void Combat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss)
         {
-            form.OnCombat(attacker, defender, attack, defense, popLoss);
+            Form.OnCombat(attacker, defender, attack, defense, popLoss);
         }
 
         public static void LevelUp(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
         {
-            form.OnLevel(ship, expType, pct, needExp, lastExp);
+            Form.OnLevel(ship, expType, pct, needExp, lastExp);
         }
 
         public static void FlushLog(MainForm gameForm)
         {
-            form.gameForm = gameForm;
-            form.FlushLog();
+            Form.gameForm = gameForm;
+            Form.FlushLog();
+        }
+
+        public static bool ShowDialog(MainForm gameForm)
+        {
+            return ShowDialog(gameForm, null, null);
         }
 
         public static bool ShowDialog(MainForm gameForm, Combatant attacker, Combatant defender)
@@ -337,22 +377,22 @@ end:
 
         public static bool ShowDialog(MainForm gameForm, Combatant attacker, Combatant defender, bool isConfirmation)
         {
-            form.gameForm = gameForm;
-            gameForm.SetLocation(form);
+            Form.gameForm = gameForm;
+            gameForm.SetLocation(Form);
 
-            form.SetCombatants(attacker, defender, isConfirmation);
+            Form.SetCombatants(attacker, defender, isConfirmation);
 
             if (isConfirmation)
             {
-                form.FlushLog();
+                Form.FlushLog();
 
-                form.btnAttack.DialogResult = DialogResult.Yes;
-                return ( form.ShowDialog() == DialogResult.Yes );
+                Form.btnAttack.DialogResult = DialogResult.Yes;
+                return ( Form.ShowDialog() == DialogResult.Yes );
             }
             else
             {
-                form.btnAttack.DialogResult = DialogResult.None;
-                return ( form.ShowDialog() != DialogResult.Cancel );
+                Form.btnAttack.DialogResult = DialogResult.None;
+                return ( Form.ShowDialog() != DialogResult.Cancel );
             }
         }
 
@@ -466,9 +506,9 @@ end:
             bool attShip = !( attacker is Ship ), defShip = !( defender is Ship );
 
             gameForm.LogMsg("{10} {0} ({1}, {2}{3}{8}) : {11} {4} ({5}, {6}{7}{9})", attacker.ToString(), logAtt, logAttCurHP,
-                    attShip ? "" : ( "/" + logAttMaxHP ), defender.ToString(), logDef, logDefCurHP,
-                    defShip ? "" : ( "/" + logDefMaxHP ), attShip ? "" : ( ", " + logAttExp ),
-                    defShip ? "" : ( ", " + logDefExp ), attacker.Player.Name, defender.Player.Name);
+                    attShip ? string.Empty : ( "/" + logAttMaxHP ), defender.ToString(), logDef, logDefCurHP,
+                    defShip ? string.Empty : ( "/" + logDefMaxHP ), attShip ? string.Empty : ( ", " + logAttExp ),
+                    defShip ? string.Empty : ( ", " + logDefExp ), attacker.Player.Name, defender.Player.Name);
 
             int rounds = combat.Count;
             int attDmg = 0, defDmg = 0, attTot = 0, defTot = 0;
@@ -487,7 +527,7 @@ end:
                 defTot += defense;
 
                 gameForm.LogMsg("{3}={0} :{1} ({2}){4}", Format(attack, 3), Format(defense, 4), Format(damage, true),
-                        Format(round), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : "");
+                        Format(round), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : string.Empty);
             }
 
             double attAdv = attTot - logAtt * rounds / 2.0;

@@ -85,13 +85,13 @@ namespace GalWarWin.Sliders
                     if (to == null || !to.Player.IsTurn)
                         soldiers = from.GetMoveSoldiers(value) / value;
                     else
-                        soldiers = ( from.GetMoveSoldiers(value) + to.GetSoldiers(to.Population) ) / ( value + to.Population ) - to.GetSoldierPct();
+                        soldiers = ( from.GetMoveSoldiers(value) + to.Soldiers) / ( value + to.Population ) - to.GetSoldierPct();
                 }
                 if (soldiers != 0)
                 {
                     string retVal = MainForm.FormatPct(soldiers, true);
                     if (retVal != "0.0%")
-                        return ( soldiers > 0 ? "+" : "" ) + retVal;
+                        return ( soldiers > 0 ? "+" : string.Empty ) + retVal;
                 }
             }
             return string.Empty;

@@ -194,30 +194,23 @@ namespace GalWar
             return population * Consts.MovePopulationGoldCost;
         }
 
-        public double GetPublicSoldiers(int troops)
-        {
-            return GetSoldiers(troops, this.DefendingSoldiers);
-        }
-
-        public double GetSoldiers(int troops)
-        {
-            TurnException.CheckTurn(this.Player);
-
-            return GetSoldiers(troops, this.soldiers);
-        }
-
         protected double GetSoldiers(int troops, double soldiers)
         {
-            if (soldiers == 0 || troops == 0)
-                return 0;
-            if (this.Population <= 0)
-                throw new Exception();
-            return soldiers * troops / this.Population;
+            return GetSoldiers(this.Population, soldiers, troops);
         }
 
-        public double GetPublicSoldierPct()
+        public static double GetSoldiers(int population, double soldiers, int attPop)
         {
-            return GetSoldierPct(this.DefendingSoldiers);
+            if (soldiers == 0 || attPop == 0)
+                return 0;
+            if (population <= 0)
+                throw new Exception();
+            return soldiers * attPop / population;
+        }
+
+        public double GetTotalSoldierPct()
+        {
+            return GetSoldierPct(this.TotalSoldiers);
         }
 
         public double GetSoldierPct()
@@ -236,7 +229,17 @@ namespace GalWar
             return soldiers / this.Population;
         }
 
-        protected virtual double DefendingSoldiers
+        public virtual double Soldiers
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return this.soldiers;
+            }
+        }
+
+        public virtual double TotalSoldiers
         {
             get
             {
