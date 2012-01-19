@@ -670,7 +670,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.player);
             AssertException.Assert(colony != null);
-            AssertException.Assert(Tile.IsNeighbor(this.Tile, colony.Planet.Tile));
+            AssertException.Assert(Tile.IsNeighbor(this.Tile, colony.Tile));
             AssertException.Assert(this.Player != colony.Player);
             AssertException.Assert(this.CurSpeed > 0);
             handler = new HandlerWrapper(handler);
@@ -841,7 +841,7 @@ namespace GalWar
             AssertException.Assert(destination != null);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);
-            AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Planet.Tile));
+            AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player != destination.Player);
             handler = new HandlerWrapper(handler);
 

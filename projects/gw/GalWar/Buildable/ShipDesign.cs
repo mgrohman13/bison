@@ -327,7 +327,7 @@ namespace GalWar
             foreach (ShipDesign design in designs)
                 pct += ( design.Speed * design.Trans * ( design.Colony ? .13 : 1 ) )
                         / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
-            pct *= pctMult / 2.1;
+            pct *= pctMult / 1.69;
 
             pct = pct / ( pct + transStr );
 

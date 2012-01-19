@@ -201,6 +201,7 @@
             this.Controls.Add(this.lblAttPlayer);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "InvadeCalculatorForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "InvadeCalculatorForm";
             ( (System.ComponentModel.ISupportInitialize)( this.nudPop ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudDefSoldiers ) ).EndInit();

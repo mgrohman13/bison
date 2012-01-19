@@ -215,7 +215,7 @@ namespace GalWar
                     foreach (Player player in this.players)
                         if (player != null)
                             foreach (Colony colony in player.GetColonies())
-                                if (Tile.GetDistance(planet.Tile, colony.Planet.Tile) <= Consts.HomeworldDistance)
+                                if (Tile.GetDistance(planet.Tile, colony.Tile) <= Consts.HomeworldDistance)
                                     goto next_planet;
                     retVal.Add(planet);
 next_planet:

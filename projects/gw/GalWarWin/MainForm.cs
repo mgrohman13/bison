@@ -476,7 +476,7 @@ namespace GalWarWin
 
         private Buildable ChangeBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
         {
-            this.selectedTile = colony.Planet.Tile;
+            this.selectedTile = colony.Tile;
             this.RefreshAll();
 
             return ProductionForm.ShowDialog(this, colony, accountForIncome, switchLoss, additionalLosses);
@@ -762,7 +762,7 @@ namespace GalWarWin
                                         defender = clickedTile.SpaceObject as Combatant;
                                     else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
                                         defender = planet.Colony;
-                                    if (defender != null && ship.Player != defender.Player)
+                                    if (defender != null && ship.Player != defender.Player && !( ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
                                     {
                                         Colony defCol = defender as Colony;
                                         if (defCol != null && ship.Population > 0)
@@ -1351,7 +1351,7 @@ namespace GalWarWin
                 if (colony.RepairShip == null)
                 {
                     bool enabled = false;
-                    foreach (Tile tile in Tile.GetNeighbors(colony.Planet.Tile))
+                    foreach (Tile tile in Tile.GetNeighbors(colony.Tile))
                     {
                         Ship ship = tile.SpaceObject as Ship;
                         if (ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn)
@@ -1595,7 +1595,7 @@ namespace GalWarWin
         int IEventHandler.MoveTroops(Colony fromColony, int total, int free, int totalPop, double soldiers)
         {
             if (fromColony != null)
-                this.selectedTile = fromColony.Planet.Tile;
+                this.selectedTile = fromColony.Tile;
             this.RefreshAll();
 
             return SliderForm.ShowDialog(this, new MoveTroops(game, fromColony, total, free, totalPop, soldiers));
