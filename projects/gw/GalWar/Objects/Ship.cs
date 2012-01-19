@@ -195,21 +195,24 @@ namespace GalWar
             return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.Upkeep;
         }
 
-        internal double ProductionRepair(double production, bool doRepair)
+        internal double ProductionRepair(double production, bool doRepair, bool minGold)
         {
-            double spend = production;
-
-            double hp = GetHPForProd(spend);
+            double hp = GetHPForProd(production);
             if (hp > this.MaxHP - HP)
-            {
                 hp = this.MaxHP - HP;
-                spend = GetProdForHP(hp);
-            }
 
             if (doRepair)
-                this.HP += Game.Random.Round(hp);
+            {
+                int repairHP = Game.Random.Round(hp);
+                this.HP += repairHP;
+                hp = repairHP;
+            }
+            else if (minGold)
+            {
+                hp = Math.Ceiling(hp);
+            }
 
-            return production - spend;
+            return ( production - GetProdForHP(hp) );
         }
 
         internal void Destroy()

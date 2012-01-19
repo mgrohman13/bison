@@ -141,7 +141,7 @@ namespace GalWar
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
             double gold = GetGoldCost(population);
-            AssertException.Assert(gold <= this.Player.Gold);
+            AssertException.Assert(gold < this.Player.Gold);
 
             this.Player.SpendGold(gold);
 

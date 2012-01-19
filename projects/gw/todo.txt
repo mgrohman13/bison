@@ -1,14 +1,10 @@
-production costs actual amount repaired
-bring up invasion calculator clicking planet from a distance
 only show trans attack/bombard when move left
-allow seeing combat form during production
 
 cost calculator
 autosave viewer
 test other grph data storage implementations with real data
 main map improvements
 test combat performance for integral data type widths
-gold rounding means you dont actually know if you can pay for something
 planet defence att/def:hp ratio
 rethink colony ships
 hp threshhold to abort combat

@@ -108,7 +108,7 @@ namespace GalWarWin
             CalculateOdds();
         }
 
-        private void SetValue(NumericUpDown nud, decimal value)
+        public static void SetValue(NumericUpDown nud, decimal value)
         {
             if (value < nud.Minimum)
                 value = nud.Minimum;

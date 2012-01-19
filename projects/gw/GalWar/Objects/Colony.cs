@@ -152,7 +152,7 @@ namespace GalWar
 
             //modify real values
             double population = 0, production = 0;
-            TurnStuff(ref population, ref production, ref gold, ref research, true);
+            TurnStuff(ref population, ref production, ref gold, ref research, true, false);
 
             this.Population += RoundValue(population, ref gold, Consts.PopulationIncomeForGold);
             this.production += RoundValue(production, ref gold);
@@ -181,7 +181,7 @@ namespace GalWar
             DoChange(this._soldierChange, this._defenseAttChange, this._defenseDefChange, this._defenseHPChange);
         }
 
-        private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn)
+        private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn, bool minGold)
         {
             //pay upkeep for stored production before getting income
             gold -= Upkeep;
@@ -193,7 +193,14 @@ namespace GalWar
 
             Ship repairShip = RepairShip;
             if (repairShip != null)
-                productionInc = repairShip.ProductionRepair(productionInc, doTurn);
+            {
+                productionInc = repairShip.ProductionRepair(productionInc, doTurn, minGold);
+                if (productionInc < 0)
+                {
+                    gold += productionInc;
+                    productionInc = 0;
+                }
+            }
 
             if (this.Buildable == null)
                 LoseProduction(productionInc, ref productionInc, ref gold, Consts.GoldProductionForGold);
@@ -668,7 +675,7 @@ namespace GalWar
             TurnException.CheckTurn(this.player);
 
             //modify parameter values
-            TurnStuff(ref population, ref production, ref gold, ref research, false);
+            TurnStuff(ref population, ref production, ref gold, ref research, false, minGold);
 
             if (minGold)
             {
@@ -732,7 +739,7 @@ namespace GalWar
             TurnException.CheckTurn(this.player);
             AssertException.Assert(production > 0);
             double gold = production * Consts.GoldForProduction;
-            AssertException.Assert(gold <= this.player.Gold);
+            AssertException.Assert(gold < this.player.Gold);
 
             this.production += production;
             this.player.SpendGold(gold);
@@ -847,31 +854,32 @@ namespace GalWar
             AssertException.Assert(hp <= this.HP);
 
             if (gold)
-                this.player.AddGold(GetPlanetDefenseDisbandValue(hp));
+                for (int a = 0 ; a < hp ; ++a)
+                    this.player.AddGold(GetPlanetDefenseDisbandValue());
             else
-                AddProduction(GetPlanetDefenseDisbandValue(hp));
+                AddProduction(hp * GetPlanetDefenseDisbandValue());
 
             this.HP -= hp;
         }
 
-        public double GetPlanetDefenseDisbandValue(int hp)
+        public double GetPlanetDefenseDisbandValue()
         {
             TurnException.CheckTurn(this.player);
 
-            return GetDisbandValue(hp);
+            return GetDisbandValue();
         }
 
         private double PlanetDefenseDisbandValue
         {
             get
             {
-                return GetDisbandValue(this.HP);
+                return GetDisbandValue() * this.HP;
             }
         }
 
-        private double GetDisbandValue(int hp)
+        private double GetDisbandValue()
         {
-            return hp * PlanetDefenseCost * Consts.DisbandPct;
+            return PlanetDefenseCost * Consts.DisbandPct;
         }
 
         public double PlanetDefenseUpkeep

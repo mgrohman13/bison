@@ -23,7 +23,7 @@ namespace GalWar
         private byte _id;
         private ushort _research, _newResearch, _lastResearched;
         private float _incomeTotal, _rKey, _rChance, _rMult;
-        private double _gold;
+        private double _gold, _goldDiff;
 
         private PlanetDefense planetDefense;
 
@@ -50,7 +50,8 @@ namespace GalWar
             {
                 this._id = (byte)id;
             }
-            AddGold(gold);
+            this._gold = gold;
+            this._goldDiff = 0;
 
             //the highest research value is the actual starting research
             this.Research = research[3];
@@ -123,6 +124,13 @@ namespace GalWar
             //gain any levels for exp acquired during enemy turns
             foreach (Ship ship in this.ships)
                 ship.LevelUp(handler);
+
+            this._gold += this._goldDiff;
+            double gold = 0;
+            if (this._gold > 0)
+                gold = Game.Random.Round(this._gold * 10) / 10.0;
+            this._goldDiff = this._gold - gold;
+            this._gold = gold;
         }
 
         private void CheckResearch(IEventHandler handler)
@@ -197,7 +205,10 @@ namespace GalWar
 
         private void CheckGold()
         {
-            if (this.Gold < 0)
+            this._gold += this._goldDiff;
+            this._goldDiff = 0;
+
+            if (this._gold < 0)
             {
                 Dictionary<Colony, int> production = new Dictionary<Colony, int>();
                 foreach (Colony colony in this.colonies)
@@ -205,7 +216,7 @@ namespace GalWar
                         production.Add(colony, colony.Production);
 
                 //first any production is sold
-                while (this.Gold < 0 && production.Count > 0)
+                while (this._gold < 0 && production.Count > 0)
                 {
                     Colony colony = Game.Random.SelectValue<Colony>(production);
                     colony.SellProduction(1);
@@ -216,7 +227,7 @@ namespace GalWar
                 }
 
                 //then random ships are disbanded for gold
-                while (this.Gold < 0 && this.ships.Count > 0)
+                while (this._gold < 0 && this.ships.Count > 0)
                 {
                     Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
                     //the upkeep that was just paid for the ship this turn is re-added
@@ -253,12 +264,19 @@ namespace GalWar
 
         internal void AddGold(double gold)
         {
-            this._gold += gold;
+            double addGold = RoundGold(gold);
+            this._goldDiff += gold - addGold;
+            this._gold += addGold;
         }
 
         internal void SpendGold(double gold)
         {
             AddGold(-gold);
+        }
+
+        public static double RoundGold(double gold)
+        {
+            return Math.Round(gold, 1, MidpointRounding.AwayFromZero);
         }
 
         internal void DeathCheck()
@@ -320,7 +338,9 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return this._gold;
+                if (this._gold < .05)
+                    return 0;
+                return this._gold + .05 - Consts.FLOAT_ERROR;
             }
         }
 
@@ -460,6 +480,8 @@ namespace GalWar
                 colony.GetTurnIncome(ref population, ref production, ref gold, ref research, minGold);
             foreach (Ship ship in this.ships)
                 gold -= ( ship.Upkeep - ship.GetUpkeepReturn() );
+
+            gold += this._goldDiff;
         }
 
         public ReadOnlyCollection<Colony> GetColonies()

@@ -19,7 +19,12 @@ namespace GalWarWin
         {
             InitializeComponent();
 
-            double shipTrans = 0, totPop = 0, totSoldiers = 0, planetQuality = 0, count = 0;
+            SetRand();
+        }
+
+        private void SetRand()
+        {
+            float shipTrans = 0, totPop = 0, totSoldiers = 0, planetQuality = 0, count = 0;
 
             foreach (Player p in MainForm.Game.GetPlayers())
                 foreach (Ship s in p.GetShips())
@@ -27,7 +32,7 @@ namespace GalWarWin
                     ++count;
                     shipTrans += s.MaxPop;
                     totPop += s.Population;
-                    totSoldiers += s.TotalSoldiers;
+                    totSoldiers += (float)s.TotalSoldiers;
                 }
             if (count > 0)
                 shipTrans /= count;
@@ -40,40 +45,57 @@ namespace GalWarWin
                 {
                     ++count;
                     totPop += p.Colony.Population;
-                    totSoldiers += p.Colony.TotalSoldiers;
+                    totSoldiers += (float)p.Colony.TotalSoldiers;
                 }
-                planetQuality += p.PlanetValue * 2;
+                planetQuality += (float)( p.PlanetValue * 2 );
             }
             totPop /= count;
             totSoldiers /= count;
             planetQuality /= planets.Count;
 
-            count = ShipDesign.GetTransStr(MainForm.Game.ExpResearch);
+            count = (float)ShipDesign.GetTransStr(MainForm.Game.ExpResearch);
             if (shipTrans == 0)
                 shipTrans = count;
             else
-                shipTrans = ( shipTrans + 2.0 * count ) / 3.0;
-            totPop = ( 5.0 * totPop + planetQuality ) / 6.0;
+                shipTrans = ( shipTrans + 2f * count ) / 3f;
+            totPop = ( 5f * totPop + planetQuality ) / 6f;
 
             SetRand(this.nudTroops, shipTrans, true);
             SetRand(this.nudPop, totPop, true);
-            SetRand(this.nudAttSoldiers, PopCarrier.GetMoveSoldiers(Game.Random.Round(totPop), totSoldiers, Game.Random.Round(shipTrans))
-                    * 100.0 / (double)this.nudTroops.Value, false);
-            SetRand(this.nudDefSoldiers, totSoldiers * 100.0 / (double)this.nudPop.Value, false);
+            SetRand(this.nudAttSoldiers, GetSoldiers((float)PopCarrier.GetMoveSoldiers(
+                    Game.Random.Round(totPop), totSoldiers, Game.Random.Round(shipTrans)), this.nudTroops), false);
+            SetRand(this.nudDefSoldiers, GetSoldiers(totSoldiers, this.nudPop), false);
         }
 
-        private void SetRand(NumericUpDown nud, double avg, bool pop)
+        private float GetSoldiers(float soldiers, NumericUpDown nud)
+        {
+            return ( soldiers * 100f / (float)nud.Value );
+        }
+
+        private void SetRand(NumericUpDown nud, float avg, bool pop)
         {
             if (!pop)
                 avg *= 10;
-            decimal value = Game.Random.GaussianCappedInt(avg, .6);
+            decimal value = Game.Random.GaussianCappedInt(avg, .6f);
             if (!pop)
                 value /= 10;
-            if (value < nud.Minimum)
-                value = nud.Minimum;
-            else if (value > nud.Maximum)
-                value = nud.Maximum;
-            nud.Value = value;
+            CombatForm.SetValue(nud, value);
+        }
+
+        private void SetValues(Ship ship, Colony colony)
+        {
+            if (ship != null)
+            {
+                CombatForm.SetValue(this.nudTroops, ship.Population);
+                CombatForm.SetValue(this.nudPop, colony.Population);
+                CombatForm.SetValue(this.nudAttSoldiers, GetSoldiers(ship));
+                CombatForm.SetValue(this.nudDefSoldiers, GetSoldiers(colony));
+            }
+        }
+
+        private decimal GetSoldiers(PopCarrier popCarrier)
+        {
+            return Game.Random.Round(popCarrier.TotalSoldiers * 10) / 10m;
         }
 
         private void btnTest_Click(object sender, EventArgs e)
@@ -92,11 +114,19 @@ namespace GalWarWin
 
         public static void ShowDialog(MainForm gameForm)
         {
+            ShowDialog(gameForm, null, null);
+        }
+
+        internal static void ShowDialog(MainForm gameForm, Ship ship, Colony colony)
+        {
             if (form == null)
                 form = new InvadeCalculatorForm();
 
             form.gameForm = gameForm;
             gameForm.SetLocation(form);
+
+            form.SetValues(ship, colony);
+
             form.ShowDialog();
         }
     }

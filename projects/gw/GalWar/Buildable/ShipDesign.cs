@@ -683,14 +683,14 @@ namespace GalWar
                 double goldBonus = PopCarrier.GetGoldCost(max);
                 if (colony.Player.Gold > goldBonus)
                     goldBonus = 0;
-                else if (colony.Player.Gold < 0)
-                    goldBonus -= colony.Player.Gold;
                 colony.Player.AddGold(goldBonus);
 
                 max = handler.MoveTroops(colony, max, 0, colony.Population, colony.Soldiers);
                 if (max > 0)
+                {
                     colony.MovePop(max, ship);
-                ship.ResetMoved();
+                    ship.ResetMoved();
+                }
 
                 colony.Player.SpendGold(goldBonus);
             }

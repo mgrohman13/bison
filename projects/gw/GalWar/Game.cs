@@ -294,6 +294,8 @@ next_planet:
         {
             get
             {
+                if (this.currentPlayer == byte.MaxValue)
+                    throw new InvalidOperationException();
                 return this.players[this.currentPlayer];
             }
         }
@@ -378,14 +380,14 @@ next_planet:
 
         private void NewRound()
         {
-            this.Graphs.Increment(this);
-
             //just so an exception is thrown if current player is mistakenly used
             this.currentPlayer = byte.MaxValue;
 
             CheckResearchVictory();
             RandMoveOrder();
             CreatePlanets();
+
+            this.Graphs.Increment(this);
 
             ++this.turn;
             this.currentPlayer = 0;
@@ -465,7 +467,13 @@ next_planet:
 
         public static Game LoadGame(string filePath)
         {
-            return TBSUtil.LoadGame<Game>(filePath);
+            Game g = TBSUtil.LoadGame<Game>(filePath);
+            //foreach (Player p in g.players)
+            //{
+            //    p.__gold = (decimal)p._gold;
+            //    p.__goldDiff = (decimal)p._goldDiff;
+            //}
+            return g;
         }
 
         public List<Result> GetGameResult()

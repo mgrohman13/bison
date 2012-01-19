@@ -61,7 +61,8 @@ namespace GalWarWin
         {
             if (parent is CheckBox)
                 parent.Enabled = false;
-            else if (parent is Button && parent != this.btnCancel && parent != this.btnCombat && parent != this.btnInvasion && parent != this.btnShowMoves)
+            else if (parent is Button && parent != this.btnCancel && parent != this.btnCombat
+                    && parent != this.btnInvasion && parent != this.btnShowMoves && parent != this.btnGraphs)
                 parent.Hide();
             else
                 foreach (Control child in parent.Controls)
@@ -761,8 +762,14 @@ namespace GalWarWin
                                         defender = clickedTile.SpaceObject as Combatant;
                                     else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
                                         defender = planet.Colony;
-                                    if (defender != null && ship.Player != defender.Player && defender.HP > 0)
-                                        selectNext &= Attack(ship, defender);
+                                    if (defender != null && ship.Player != defender.Player)
+                                    {
+                                        Colony defCol = defender as Colony;
+                                        if (defCol != null && ship.Population > 0)
+                                            InvadeCalculatorForm.ShowDialog(this, ship, defCol);
+                                        else if (defender.HP > 0)
+                                            selectNext &= Attack(ship, defender);
+                                    }
                                 }
 
                                 if (selectNext && ( this.selectedTile == null || ( ship == null || !ship.Player.IsTurn || ship.CurSpeed == 0 || ship.CurSpeed == oldSpeed ) ))
@@ -1544,7 +1551,7 @@ namespace GalWarWin
 
         public static string FormatDouble(double value)
         {
-            return value.ToString("0.0");
+            return Player.RoundGold(value).ToString("0.0");
         }
 
         public static string FormatPctWithCheck(double pct)

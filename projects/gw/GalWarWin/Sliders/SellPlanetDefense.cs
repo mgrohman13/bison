@@ -60,7 +60,10 @@ namespace GalWarWin.Sliders
 
         protected override double GetResult()
         {
-            return colony.GetPlanetDefenseDisbandValue(GetValue());
+            double disbandValue = colony.GetPlanetDefenseDisbandValue();
+            if (!sellForProd.Checked)
+                disbandValue = Player.RoundGold(colony.GetPlanetDefenseDisbandValue());
+            return ( disbandValue * GetValue() );
         }
 
         protected override string GetResultType()

@@ -80,7 +80,7 @@
             1410065407,
             2,
             0,
-            0});
+            65536});
             this.nudDefSoldiers.Name = "nudDefSoldiers";
             this.nudDefSoldiers.Size = new System.Drawing.Size(97, 20);
             this.nudDefSoldiers.TabIndex = 17;
@@ -99,7 +99,7 @@
             1410065407,
             2,
             0,
-            0});
+            65536});
             this.nudAttSoldiers.Name = "nudAttSoldiers";
             this.nudAttSoldiers.Size = new System.Drawing.Size(97, 20);
             this.nudAttSoldiers.TabIndex = 16;
