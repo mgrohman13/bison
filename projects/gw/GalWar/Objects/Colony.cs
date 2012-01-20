@@ -193,14 +193,7 @@ namespace GalWar
 
             Ship repairShip = RepairShip;
             if (repairShip != null)
-            {
-                productionInc = repairShip.ProductionRepair(productionInc, doTurn, minGold);
-                if (productionInc < 0)
-                {
-                    gold += productionInc;
-                    productionInc = 0;
-                }
-            }
+                repairShip.ProductionRepair(ref productionInc, ref gold, doTurn, minGold);
 
             if (this.Buildable == null)
                 LoseProduction(productionInc, ref productionInc, ref gold, Consts.GoldProductionForGold);
@@ -419,7 +412,7 @@ namespace GalWar
             LoseProduction(this.production);
             if (this.HP > 0)
             {
-                this.player.AddGold(this.PlanetDefenseDisbandValue);
+                this.player.AddGold(this.GetDisbandValue());
                 this.HP = 0;
             }
             if (this.defenseSoldiers > 0)
@@ -655,6 +648,18 @@ namespace GalWar
             return population * Consts.Income;
         }
 
+        public double GetAfterRepairProdInc()
+        {
+            double production = GetProductionIncome();
+            Ship repairShip = RepairShip;
+            if (repairShip != null)
+            {
+                double gold = 0;
+                repairShip.ProductionRepair(ref production, ref gold, false, false);
+            }
+            return production;
+        }
+
         public int GetProductionIncome()
         {
             return GetProductionIncome(this.Population);
@@ -853,33 +858,57 @@ namespace GalWar
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
 
+            double actualValue = GetDisbandValue(hp);
             if (gold)
-                for (int a = 0 ; a < hp ; ++a)
-                    this.player.AddGold(GetPlanetDefenseDisbandValue());
+            {
+                double disbandValue = GetPlanetDefenseDisbandValue(hp, gold);
+                this.player.AddGold(disbandValue);
+                for (double totalExtra = actualValue - disbandValue ; totalExtra != 0 ; )
+                {
+                    const double MIN = .05 - Consts.FLOAT_ERROR;
+                    double extra;
+                    if (totalExtra > 0)
+                        extra = Math.Min(totalExtra, MIN);
+                    else
+                        extra = Math.Max(totalExtra, -MIN);
+                    this.player.AddGold(extra);
+                    totalExtra -= extra;
+                }
+            }
             else
-                AddProduction(hp * GetPlanetDefenseDisbandValue());
-
-            this.HP -= hp;
+            {
+                AddProduction(actualValue);
+            }
         }
 
-        public double GetPlanetDefenseDisbandValue()
+        public double GetPlanetDefenseDisbandValue(int hp, bool gold)
         {
             TurnException.CheckTurn(this.player);
 
-            return GetDisbandValue();
-        }
-
-        private double PlanetDefenseDisbandValue
-        {
-            get
+            double disbandValue = GetDisbandValue(1);
+            if (gold)
             {
-                return GetDisbandValue() * this.HP;
+                double rounded = Player.RoundGold(disbandValue);
+                if (rounded < .1)
+                    rounded = .1;
+                disbandValue = rounded * hp;
             }
+            else
+            {
+                disbandValue *= hp;
+            }
+
+            return disbandValue;
         }
 
         private double GetDisbandValue()
         {
-            return PlanetDefenseCost * Consts.DisbandPct;
+            return GetDisbandValue(this.HP);
+        }
+
+        private double GetDisbandValue(int hp)
+        {
+            return hp * PlanetDefenseCost * Consts.DisbandPct;
         }
 
         public double PlanetDefenseUpkeep

@@ -16,7 +16,7 @@ namespace GalWarWin.Sliders
             this.ship = ship;
             this.max = MattUtil.TBSUtil.FindValue(delegate(int hp)
             {
-                return ( ship.GetGoldForHP(hp) <= ship.Player.Gold );
+                return ( ship.GetGoldForHP(hp) < ship.Player.Gold );
             }, 0, ship.MaxHP - ship.HP, false);
         }
 

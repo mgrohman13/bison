@@ -195,7 +195,7 @@ namespace GalWar
             return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.Upkeep;
         }
 
-        internal double ProductionRepair(double production, bool doRepair, bool minGold)
+        internal void ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
         {
             double hp = GetHPForProd(production);
             if (hp > this.MaxHP - HP)
@@ -211,8 +211,23 @@ namespace GalWar
             {
                 hp = Math.Ceiling(hp);
             }
+            else
+            {
+                int low = (int)hp;
+                if (hp != low)
+                {
+                    gold += ( hp - low ) * ( production - GetProdForHP(low + 1) );
+                    production = ( low + 1 - hp ) * ( production - GetProdForHP(low) );
+                    return;
+                }
+            }
 
-            return ( production - GetProdForHP(hp) );
+            production -= GetProdForHP(hp);
+            if (production < 0)
+            {
+                gold += production;
+                production = 0;
+            }
         }
 
         internal void Destroy()
@@ -854,11 +869,12 @@ namespace GalWar
                 gold = invadeGold - goldCost;
                 goldCost = invadeGold;
             }
-            AssertException.Assert(goldCost <= Player.Gold);
+            AssertException.Assert(goldCost < Player.Gold);
+
+            this.player.SpendGold(goldCost);
 
             double soldiers = GetSoldiers(population, this.soldiers);
             this.soldiers -= soldiers;
-            this.player.SpendGold(goldCost);
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
@@ -877,9 +893,9 @@ namespace GalWar
             AssertException.Assert(this.Colony);
             AssertException.Assert(planet.Colony == null);
             AssertException.Assert(this.AvailablePop == this.Population);
-            AssertException.Assert(AvailablePop > 0);
-            double gold = GetGoldCost(AvailablePop) + planet.ColonizationCost;
-            AssertException.Assert(gold <= Player.Gold);
+            AssertException.Assert(Population > 0);
+            double gold = GetGoldCost(Population) + planet.ColonizationCost;
+            AssertException.Assert(gold < Player.Gold);
             handler = new HandlerWrapper(handler);
 
             this.player.SpendGold(gold);
@@ -896,7 +912,7 @@ namespace GalWar
             AssertException.Assert(hp <= this.MaxHP - HP);
             AssertException.Assert(!this.HasRepaired);
             double spend = GetGoldForHP(hp);
-            AssertException.Assert(spend <= Player.Gold);
+            AssertException.Assert(spend < Player.Gold);
 
             this.HP += hp;
             Player.SpendGold(spend);

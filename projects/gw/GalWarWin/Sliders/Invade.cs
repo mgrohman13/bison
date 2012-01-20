@@ -18,7 +18,7 @@ namespace GalWarWin.Sliders
         public Invade(Ship ship, Colony colony)
             : this(ship.AvailablePop, ship.Population, colony.Population, ship.TotalSoldiers, colony.TotalSoldiers)
         {
-            this.maxGold = (int)Math.Floor(MainForm.Game.CurrentPlayer.Gold);
+            this.maxGold = (int)MainForm.Game.CurrentPlayer.Gold;
         }
 
         public Invade(int attPop, int attTotal, int defPop, double attSoldiers, double defSoldiers)
@@ -166,7 +166,7 @@ namespace GalWarWin.Sliders
                 if (!goldTroopValues.TryGetValue(gold, out result))
                 {
                     double defense = GetDefense();
-                    int max = Math.Min(attPop, (int)Math.Floor(gold / Consts.MovePopulationGoldCost));
+                    int max = Math.Min(attPop, (int)( gold / Consts.MovePopulationGoldCost ));
                     result = MattUtil.TBSUtil.FindValue(delegate(int troops)
                     {
                         if (troops < max)

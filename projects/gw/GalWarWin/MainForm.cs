@@ -615,7 +615,7 @@ namespace GalWarWin
             bool end = true;
 
             double gold = game.CurrentPlayer.GetMinGold();
-            if (game.CurrentPlayer.Gold < -gold)
+            if (Player.RoundGold(game.CurrentPlayer.Gold) < -gold)
                 end = ShowOption("You are running out of gold.  Partial production may be sold and one or more ships disbanded.  Are you sure you want to end your turn?", true);
 
             return end;
@@ -914,7 +914,7 @@ namespace GalWarWin
             bool bombard = true;
             if (ship.Colony && ship.AvailablePop == ship.Population && ship.AvailablePop > 0)
             {
-                double goldCost = ship.Population * Consts.MovePopulationGoldCost + planet.ColonizationCost;
+                double goldCost = PopCarrier.GetGoldCost(ship.Population) + planet.ColonizationCost;
                 string cost = FormatDouble(goldCost);
                 if (goldCost > ship.Player.Gold)
                 {
@@ -1327,8 +1327,19 @@ namespace GalWarWin
             {
                 this.lblTop.Text = "Uncolonized";
 
+                int pop = 0, dist = int.MaxValue;
+                foreach (Ship ship in game.CurrentPlayer.GetShips())
+                    if (ship.Colony && ship.Population > 0)
+                    {
+                        int thisDist = Tile.GetDistance(ship.Tile, planet.Tile);
+                        if (thisDist < dist)
+                        {
+                            dist = thisDist;
+                            pop = ship.Population;
+                        }
+                    }
                 this.lbl2.Text = "Cost";
-                this.lbl2Inf.Text = FormatDouble(planet.ColonizationCost);
+                this.lbl2Inf.Text = FormatDouble(PopCarrier.GetGoldCost(pop) + planet.ColonizationCost);
 
                 return null;
             }
@@ -1457,14 +1468,7 @@ namespace GalWarWin
             if (build != null)
                 retVal = build.GetProdText(FormatUsuallyInt(production));
 
-            double prodInc = colony.GetProductionIncome();
-            Ship repairShip = colony.RepairShip;
-            if (repairShip != null)
-            {
-                prodInc -= repairShip.GetProdForHP(repairShip.MaxHP - repairShip.HP);
-                if (prodInc < 0)
-                    prodInc = 0;
-            }
+            double prodInc = colony.GetAfterRepairProdInc();
 
             string inc;
             if (build == null)

@@ -95,7 +95,7 @@ namespace GalWarWin
 
         private decimal GetSoldiers(PopCarrier popCarrier)
         {
-            return Game.Random.Round(popCarrier.GetTotalSoldierPct() * 1000) / 10m;
+            return Game.Random.Round((float)( popCarrier.GetTotalSoldierPct() * 1000 )) / 10m;
         }
 
         private void btnTest_Click(object sender, EventArgs e)

@@ -467,13 +467,7 @@ next_planet:
 
         public static Game LoadGame(string filePath)
         {
-            Game g = TBSUtil.LoadGame<Game>(filePath);
-            //foreach (Player p in g.players)
-            //{
-            //    p.__gold = (decimal)p._gold;
-            //    p.__goldDiff = (decimal)p._goldDiff;
-            //}
-            return g;
+            return TBSUtil.LoadGame<Game>(filePath);
         }
 
         public List<Result> GetGameResult()

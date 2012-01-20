@@ -59,7 +59,16 @@ namespace GalWarWin.Sliders
                 max = this.max.Value;
             else
                 max = Math.Min(from.AvailablePop, to.FreeSpace);
-            return Math.Min(max, free + (int)Math.Floor(game.CurrentPlayer.Gold / Consts.MovePopulationGoldCost));
+            int canPay = (int)( game.CurrentPlayer.Gold / Consts.MovePopulationGoldCost );
+            while (game.CurrentPlayer.Gold > PopCarrier.GetGoldCost(canPay))
+            {
+                ++canPay;
+                if (game.CurrentPlayer.Gold > PopCarrier.GetGoldCost(canPay))
+                {
+                }
+            }
+            --canPay;
+            return Math.Min(max, free + canPay);
         }
 
         protected override double GetResult()
@@ -85,7 +94,7 @@ namespace GalWarWin.Sliders
                     if (to == null || !to.Player.IsTurn)
                         soldiers = from.GetMoveSoldiers(value) / value;
                     else
-                        soldiers = ( from.GetMoveSoldiers(value) + to.Soldiers) / ( value + to.Population ) - to.GetSoldierPct();
+                        soldiers = ( from.GetMoveSoldiers(value) + to.Soldiers ) / ( value + to.Population ) - to.GetSoldierPct();
                 }
                 if (soldiers != 0)
                 {

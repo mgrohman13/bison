@@ -160,7 +160,7 @@ namespace GalWarWin
 
         private static int LoseProduction(int prod, double loss)
         {
-            return (int)Math.Floor(prod * ( 1 - loss ));
+            return (int)( prod * ( 1 - loss ) );
         }
 
         private int GetIncome()

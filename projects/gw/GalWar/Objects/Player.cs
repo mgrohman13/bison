@@ -265,6 +265,8 @@ namespace GalWar
         internal void AddGold(double gold)
         {
             double addGold = RoundGold(gold);
+            if (addGold < -this._gold)
+                addGold = -this._gold;
             this._goldDiff += gold - addGold;
             this._gold += addGold;
         }
@@ -338,8 +340,6 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                if (this._gold < .05)
-                    return 0;
                 return this._gold + .05 - Consts.FLOAT_ERROR;
             }
         }

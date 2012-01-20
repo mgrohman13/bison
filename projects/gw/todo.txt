@@ -1,7 +1,4 @@
-take into account new repair logic
-	avg gold income
-	buy production
-only show trans attack/bombard when move left
+PlanetDefenseAttackCost accounts for excess HP
 
 cost calculator
 autosave viewer

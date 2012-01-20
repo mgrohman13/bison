@@ -25,7 +25,7 @@ namespace GalWarWin.Sliders
 
         protected override int GetMaxInternal()
         {
-            return (int)Math.Floor(player.Gold / Consts.GoldForProduction);
+            return (int)( player.Gold / Consts.GoldForProduction );
         }
 
         protected override double GetResult()
