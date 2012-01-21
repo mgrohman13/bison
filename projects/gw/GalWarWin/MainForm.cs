@@ -117,10 +117,12 @@ namespace GalWarWin
                             GetVals(ref minStr, ref maxStr, (float)ship.GetStrength() * ship.HP / (float)ship.MaxHP);
 
                     float newSize = font.Size * scale / e.Graphics.MeasureString("99%", font).Width;
+                    if (newSize > 13f)
+                        newSize = 13f;
+                    else if (newSize < 1f)
+                        newSize = 1f;
                     if (newSize != font.Size)
                     {
-                        if (newSize > 13f)
-                            newSize = 13f;
                         font.Dispose();
                         font = new Font("arial", newSize);
                     }
@@ -762,7 +764,8 @@ namespace GalWarWin
                                         defender = clickedTile.SpaceObject as Combatant;
                                     else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
                                         defender = planet.Colony;
-                                    if (defender != null && ship.Player != defender.Player && !( ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
+                                    if (defender != null && ship.Player != defender.Player &&
+                                            !( defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
                                     {
                                         Colony defCol = defender as Colony;
                                         if (defCol != null && ship.Population > 0)
@@ -1502,7 +1505,8 @@ namespace GalWarWin
                 inc = FormatUsuallyInt(prodInc);
             }
 
-            if (prodInc != 0)
+            double incDbl;
+            if (prodInc != 0 && ( !double.TryParse(inc.TrimEnd('%'), out incDbl) || incDbl != 0 ))
             {
                 if (retVal.Length > 0)
                     retVal += " ";

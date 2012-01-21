@@ -879,6 +879,8 @@ namespace GalWar
             {
                 AddProduction(actualValue);
             }
+
+            this.HP -= hp;
         }
 
         public double GetPlanetDefenseDisbandValue(int hp, bool gold)
