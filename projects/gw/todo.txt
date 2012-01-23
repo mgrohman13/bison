@@ -1,4 +1,3 @@
-prod shows +0
 enemy moves should show move and/or attack
 PlanetDefenseAttackCost accounts for excess HP
 minGold PlanetDefenseAttackCost does not account for building defense
