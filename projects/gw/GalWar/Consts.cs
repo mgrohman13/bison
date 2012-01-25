@@ -6,7 +6,7 @@ namespace GalWar
     public static class Consts
     {
         public const double WinPointsMult = 130;
-        public const double LosePointsMult = -5;
+        public const double LosePointsMult = -6.66;
         public const double PointsTilesPower = .39;
         //as a multiple of the second place players research
         public const double ResearchVictoryMult = 1.5;
@@ -139,11 +139,11 @@ namespace GalWar
         public const float PlanetDefensesRndm = .169f;
         public const double PlanetDefensesCostMult = 1.3;
         public const double PlanetDefensesUpkeepMult = .666;
-        public const double PlanetDefensesAttackCostMult = .39;
+        public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const float PlanetDefensesSoldiersMult = (float)( DisbandPct / ProductionForSoldiers * 1.3 );
         public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
 
-        internal const double FLOAT_ERROR = 0.0000002384185791015625;
+        internal const double FLOAT_ERROR = 0.00000041239971437789791;
 
         internal static double GetMoveOrderGold(int numPlayers)
         {

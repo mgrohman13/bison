@@ -37,7 +37,7 @@ namespace GalWar
         private readonly List<Planet> planets;
         private Player[] players;
 
-        private readonly List<Player> deadPlayers;
+        private readonly List<Result> deadPlayers;
         private readonly List<Result> winningPlayers;
 
         private byte _currentPlayer;
@@ -130,8 +130,8 @@ namespace GalWar
             this.currentPlayer = byte.MaxValue;
             this.turn = 0;
 
-            this.deadPlayers = new List<Player>(numPlayers);
-            this.winningPlayers = new List<Result>(numPlayers);
+            this.deadPlayers = new List<Result>(numPlayers - 1);
+            this.winningPlayers = new List<Result>(numPlayers - 1);
 
             this.Graphs = new Graphs(this);
         }
@@ -248,7 +248,7 @@ next_planet:
         internal void KillPlayer(Player player)
         {
             RemovePlayer(player);
-            this.deadPlayers.Add(player);
+            this.deadPlayers.Add(new Result(player, false));
             //if one player wipes out the other in a 1 vs 1 situation, they still get a victory bonus
             if (this.players.Length == 1)
                 this.winningPlayers.Add(new Result(this.players[0], true));
@@ -413,10 +413,11 @@ next_planet:
                 double moveOrderGold = Consts.GetMoveOrderGold(this.players.Length);
                 foreach (KeyValuePair<Player, int> pair in playerGold)
                 {
+                    Player player = pair.Key;
                     //player cant move up any further
                     double gold = moveOrderGold * pair.Value;
-                    pair.Key.AddGold(gold);
-                    pair.Key.IncomeTotal += gold;
+                    player.AddGold(gold);
+                    player.IncomeTotal += gold;
                 }
             }
         }
@@ -488,7 +489,7 @@ next_planet:
                 result.Add(new Result(this.players[0], false));
 
             for (int i = this.deadPlayers.Count ; --i > -1 ; )
-                result.Add(new Result(this.deadPlayers[i], false));
+                result.Add(this.deadPlayers[i]);
 
             //add in the final point score
             Result.Finalize(result);

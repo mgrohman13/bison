@@ -28,7 +28,7 @@ namespace GalWarWin
         private bool isBuild;
         private Tile dialogTile = null;
 
-        private bool started = false, saved = true, ended = false, showMoves = false;
+        private bool started = false, saved = true, ended = false, showMoves = false, showAtt = false;
         private Point mouse;
         private Font font = new Font("arial", 13f);
 
@@ -129,7 +129,7 @@ namespace GalWarWin
 
                     Dictionary<Tile, float> moves = null;
                     if (showMoves)
-                        moves = GetMoves(game.CurrentPlayer);
+                        moves = GetMoves();
 
                     Tile[,] map = game.GetMap();
                     for (int x = 0 ; x < game.Diameter ; ++x)
@@ -154,7 +154,17 @@ namespace GalWarWin
                                     float move;
                                     if (moves.TryGetValue(tile, out move))
                                     {
-                                        string s = FormatDouble(move);
+                                        string s = ( showAtt ? FormatDouble(move) : move.ToString("0") );
+                                        if (showAtt)
+                                            foreach (Tile neighbor in Tile.GetNeighbors(tile))
+                                            {
+                                                planet = neighbor.SpaceObject as Planet;
+                                                if (planet != null && planet.Colony != null && !planet.Colony.Player.IsTurn)
+                                                {
+                                                    s = move.ToString("0") + "+";
+                                                    break;
+                                                }
+                                            }
                                         SizeF strSize = e.Graphics.MeasureString(s, font);
                                         e.Graphics.DrawString(s, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
                                     }
@@ -287,43 +297,49 @@ namespace GalWarWin
             return width - scale * ( game.Diameter + .5f ) - 3;
         }
 
-        private Dictionary<Tile, float> GetMoves(Player player)
+        private Dictionary<Tile, float> GetMoves()
         {
             Dictionary<Tile, Point> temp = new Dictionary<Tile, Point>();
             Dictionary<Tile, float> totals = new Dictionary<Tile, float>();
             foreach (Player enemy in game.GetPlayers())
-                if (enemy != player)
+                if (enemy != game.CurrentPlayer)
                 {
                     foreach (Ship ship in enemy.GetShips())
                         AddShip(totals, temp, enemy, ship, ship.MaxSpeed);
                     foreach (Colony colony in enemy.GetColonies())
-                        if (colony.HP > 0)
-                            AddShip(totals, temp, enemy, colony, 1);
+                        AddShip(totals, temp, enemy, colony, 1);
                 }
 
-            Dictionary<float, float> statFromValue = new Dictionary<float, float>(totals.Count);
-            Dictionary<Tile, float> retVal = new Dictionary<Tile, float>(totals.Count);
-            foreach (KeyValuePair<Tile, float> pair in totals)
+            if (showAtt)
             {
-                Tile tile = pair.Key;
-                Ship ship;
-                if (tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == player ))
+                Dictionary<float, float> statFromValue = new Dictionary<float, float>(totals.Count);
+                Dictionary<Tile, float> retVal = new Dictionary<Tile, float>(totals.Count);
+                foreach (KeyValuePair<Tile, float> pair in totals)
                 {
-                    float key = pair.Value;
-                    float value;
-                    if (!statFromValue.TryGetValue(key, out value))
+                    Tile tile = pair.Key;
+                    Ship ship;
+                    if (tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == game.CurrentPlayer ))
                     {
-                        value = GetStatFromValue(pair.Value);
-                        statFromValue.Add(key, value);
+                        float statValue = pair.Value;
+                        float value;
+                        if (!statFromValue.TryGetValue(statValue, out value))
+                        {
+                            value = GetStatFromValue(statValue);
+                            statFromValue.Add(statValue, value);
+                        }
+                        retVal.Add(tile, value);
                     }
-                    retVal.Add(tile, value);
                 }
+                totals = retVal;
             }
-            return retVal;
+
+            return totals;
         }
 
         private static float GetStatFromValue(float value)
         {
+            if (value < 1)
+                return 0;
             float min = 1, max = (float)Math.Round(Math.Sqrt(value) + .1, 1);
             while (true)
             {
@@ -345,18 +361,40 @@ namespace GalWarWin
         private void AddShip(Dictionary<Tile, float> totals, Dictionary<Tile, Point> temp, Player enemy, Combatant combatant, int speed)
         {
             temp.Clear();
-            AddTiles(temp, enemy, combatant.Tile, speed);
+            AddTiles(temp, enemy, combatant.Tile, speed, combatant is Colony);
 
-            float statValue = (float)ShipDesign.GetStatValue(combatant.Att);
-            foreach (KeyValuePair<Tile, Point> pair in temp)
+            if (showAtt)
             {
-                float val;
-                totals.TryGetValue(pair.Key, out val);
-                totals[pair.Key] = val + pair.Value.X * statValue;
+                float statValue = (float)ShipDesign.GetStatValue(combatant.Att);
+                Colony colony = ( combatant as Colony );
+                if (colony != null && colony.MinDefenses)
+                    statValue = 0;
+                foreach (KeyValuePair<Tile, Point> pair in temp)
+                {
+                    Tile tile = pair.Key;
+                    float val;
+                    totals.TryGetValue(tile, out val);
+                    totals[tile] = val + pair.Value.X * statValue;
+                }
+            }
+            else
+            {
+                foreach (KeyValuePair<Tile, Point> pair in temp)
+                    if (pair.Value.Y > 0)
+                    {
+                        Tile tile = pair.Key;
+                        Ship ship;
+                        if (tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == combatant.Player ))
+                        {
+                            float val;
+                            totals.TryGetValue(tile, out val);
+                            totals[tile] = val + 1;
+                        }
+                    }
             }
         }
 
-        private void AddTiles(Dictionary<Tile, Point> retVal, Player enemy, Tile tile, int speed)
+        private void AddTiles(Dictionary<Tile, Point> retVal, Player enemy, Tile tile, int speed, bool ignoreZoc)
         {
             foreach (Tile neighbor in Tile.GetNeighbors(tile))
             {
@@ -365,23 +403,19 @@ namespace GalWarWin
                 int damage = v1.X;
                 int move = v1.Y;
                 int newDamage = Math.Max(speed, damage);
-                int newMove = speed - 1;
+                int newMove = speed - ( showAtt ? 1 : 0 );
 
-                bool added = false;
-                if (newMove > move)
+                Ship ship;
+                if (newMove > move && ( neighbor.SpaceObject == null || ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
+                            && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
                 {
-                    Ship ship;
-                    if (( neighbor.SpaceObject == null || ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
-                            && Ship.CheckZOC(enemy, tile, neighbor))
-                    {
-                        added = true;
-                        retVal[neighbor] = new Point(newDamage, newMove);
-                        AddTiles(retVal, enemy, neighbor, newMove);
-                    }
+                    retVal[neighbor] = new Point(newDamage, newMove);
+                    AddTiles(retVal, enemy, neighbor, newMove - ( showAtt ? 0 : 1 ), ignoreZoc);
                 }
-
-                if (!added && newDamage > damage)
+                else if (newDamage > damage)
+                {
                     retVal[neighbor] = new Point(newDamage, move);
+                }
             }
         }
 
@@ -391,6 +425,8 @@ namespace GalWarWin
 
         private void btnShowMoves_Click(object sender, EventArgs e)
         {
+            showAtt = ( showMoves ? !showAtt : false );
+            this.btnShowMoves.Text = ( showAtt ? "Enemy Moves" : "Enemy Attacks" );
             showMoves = true;
             InvalidateMap();
         }
@@ -600,6 +636,7 @@ namespace GalWarWin
             if (CheckGold() && CheckShips())
             {
                 showMoves = false;
+                this.btnShowMoves.Text = "Enemy Moves";
                 game.EndTurn(this);
 
                 this.hold.Clear();
@@ -784,6 +821,7 @@ namespace GalWarWin
                 }
 
                 showMoves = false;
+                this.btnShowMoves.Text = "Enemy Moves";
                 RefreshAll();
             }
         }

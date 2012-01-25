@@ -37,7 +37,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnTest = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             ( (System.ComponentModel.ISupportInitialize)( this.nudPop ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudDefSoldiers ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttSoldiers ) ).BeginInit();
@@ -168,7 +168,7 @@
             // 
             // btnTest
             // 
-            this.btnTest.Location = new System.Drawing.Point(179, 87);
+            this.btnTest.Location = new System.Drawing.Point(98, 87);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
             this.btnTest.TabIndex = 24;
@@ -176,20 +176,24 @@
             this.btnTest.UseVisualStyleBackColor = true;
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
             // 
-            // button1
+            // btnCancel
             // 
-            this.button1.Location = new System.Drawing.Point(179, 87);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 24;
-            this.button1.Text = "Test";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Location = new System.Drawing.Point(179, 87);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 25;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // InvadeCalculatorForm
             // 
+            this.AcceptButton = this.btnTest;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(266, 122);
+            this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnTest);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -202,7 +206,6 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "InvadeCalculatorForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "InvadeCalculatorForm";
             ( (System.ComponentModel.ISupportInitialize)( this.nudPop ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudDefSoldiers ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttSoldiers ) ).EndInit();
@@ -222,7 +225,7 @@
         private System.Windows.Forms.Label lblAttPlayer;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button btnTest;
+        private System.Windows.Forms.Button btnCancel;
     }
 }

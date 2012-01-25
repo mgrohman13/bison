@@ -687,12 +687,14 @@ namespace GalWar
                 MinGold(population, ref gold, Consts.PopulationIncomeForGold);
                 MinGold(production, ref gold, 1);
 
-                if (this.HP > 0)
+                int att, def, hp;
+                this.GetPlanetDefenseIncMinGold(production, out att, out def, out hp);
+                if (hp > 0)
                     foreach (Tile tile in Tile.GetNeighbors(this.Tile))
                     {
                         Ship ship = tile.SpaceObject as Ship;
                         if (ship != null && ship.Player != this.Player)
-                            gold -= PlanetDefenseAttackCost;
+                            gold -= GetPlanetDefenseAttackCost(att, def, hp, ship.Def);
                     }
             }
         }
@@ -700,6 +702,17 @@ namespace GalWar
         private void MinGold(double value, ref double gold, double rate)
         {
             gold += ( value - (int)Math.Ceiling(value) ) / rate;
+        }
+
+        private void GetPlanetDefenseIncMinGold(double production, out int newAtt, out int newDef, out int newHP)
+        {
+            if (!( this.Buildable is PlanetDefense ))
+                production = 0;
+            double att, def, hp;
+            GetPlanetDefenseInc(production, out att, out def, out hp);
+            newAtt = (int)Math.Ceiling(att);
+            newDef = (int)Math.Ceiling(def);
+            newHP = (int)Math.Ceiling(hp);
         }
 
         public void SellProduction(int production)
@@ -923,12 +936,16 @@ namespace GalWar
             }
         }
 
-        private double PlanetDefenseAttackCost
+        private double GetPlanetDefenseAttackCost(int shipDef)
         {
-            get
-            {
-                return PlanetDefenseUpkeep * Consts.PlanetDefensesAttackCostMult;
-            }
+            return GetPlanetDefenseAttackCost(this.Att, this.Def, this.HP, shipDef);
+        }
+
+        private double GetPlanetDefenseAttackCost(int att, int def, int hp, int shipDef)
+        {
+            //only pay for the maximum HP you could possibly use
+            return Math.Min(hp, ( att - 1 ) * shipDef + 1) * ShipDesign.GetPlanetDefenseCost(att, def, this.player.LastResearched)
+                    * Consts.PlanetDefensesAttackCostMult * Consts.GetProductionUpkeepMult(player.Game.MapSize);
         }
 
         internal double PlanetDefenseCost
@@ -950,7 +967,7 @@ namespace GalWar
         private void AttackShip(Ship ship, IEventHandler handler)
         {
             //get the attack cost before possibly being injured
-            double cost = PlanetDefenseAttackCost;
+            double cost = GetPlanetDefenseAttackCost(ship.Def);
             double pct = Combat(ship, handler);
             this.player.SpendGold(cost * ( 1 - pct ));
         }

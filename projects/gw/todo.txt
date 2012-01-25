@@ -1,7 +1,4 @@
-invade calc form title and cancel
-enemy moves should show move and/or attack
-PlanetDefenseAttackCost accounts for excess HP
-minGold PlanetDefenseAttackCost does not account for building defense
+fractional prod into soldiers/planet def
 
 cost calculator
 autosave viewer

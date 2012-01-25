@@ -238,7 +238,6 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "PlanetDefenseForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "PlanetDefense";
             this.ResumeLayout(false);
 
         }

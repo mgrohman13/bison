@@ -179,7 +179,6 @@ namespace GalWarWin.Sliders
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "AutoRepairForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "AutoRepairForm";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);

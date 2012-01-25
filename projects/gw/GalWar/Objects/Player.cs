@@ -193,12 +193,13 @@ namespace GalWar
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
 
-            foreach (Ship ship in this.ships)
-                SpendGold(ship.EndTurn());
             int research = 0;
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
                 colony.EndTurn(ref this._gold, ref research, handler);
             this.newResearch += research;
+
+            foreach (Ship ship in this.ships)
+                SpendGold(ship.EndTurn());
 
             CheckGold();
         }
