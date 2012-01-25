@@ -1,3 +1,6 @@
+new ships look at existing att/def/spd/upk?
+move troops with colony no longer shows prod
+avg gold account for carryProdloss
 fractional prod into soldiers/planet def
 
 cost calculator
