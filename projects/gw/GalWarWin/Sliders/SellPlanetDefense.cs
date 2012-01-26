@@ -6,23 +6,23 @@ namespace GalWarWin.Sliders
 {
     public class SellPlanetDefense : SliderController
     {
-        private static CheckBox sellForProd;
+        private static CheckBox chkProd;
         private static EventHandler eventHandler;
 
         static SellPlanetDefense()
         {
-            sellForProd = new CheckBox();
-            sellForProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            sellForProd.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            sellForProd.Text = "Production";
-            sellForProd.Checked = true;
+            chkProd = new CheckBox();
+            chkProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            chkProd.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            chkProd.Text = "Production";
+            chkProd.Checked = true;
         }
 
         public static bool Gold
         {
             get
             {
-                return !sellForProd.Checked;
+                return !chkProd.Checked;
             }
         }
 
@@ -33,9 +33,9 @@ namespace GalWarWin.Sliders
             this.colony = colony;
 
             if (eventHandler != null)
-                sellForProd.CheckedChanged -= eventHandler;
+                chkProd.CheckedChanged -= eventHandler;
             eventHandler = new EventHandler(this.sellForProd_CheckedChanged);
-            sellForProd.CheckedChanged += eventHandler;
+            chkProd.CheckedChanged += eventHandler;
         }
 
         private void sellForProd_CheckedChanged(object sender, EventArgs e)
@@ -45,7 +45,7 @@ namespace GalWarWin.Sliders
 
         public override Control GetCustomControl()
         {
-            return sellForProd;
+            return chkProd;
         }
 
         public override double GetInitial()

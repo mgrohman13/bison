@@ -37,7 +37,7 @@ namespace GalWarWin
             this.label5 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.chbSmooth = new System.Windows.Forms.CheckBox();
+            this.chkSmooth = new System.Windows.Forms.CheckBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.cbxType = new System.Windows.Forms.ComboBox();
             this.btnDone = new System.Windows.Forms.Button();
@@ -121,7 +121,7 @@ namespace GalWarWin
             // 
             this.groupBox1.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.groupBox1.Controls.Add(this.chbSmooth);
+            this.groupBox1.Controls.Add(this.chkSmooth);
             this.groupBox1.Controls.Add(this.checkBox1);
             this.groupBox1.Controls.Add(this.cbxType);
             this.groupBox1.Controls.Add(this.btnDone);
@@ -133,17 +133,17 @@ namespace GalWarWin
             this.groupBox1.Text = "Graphs";
             this.groupBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.groupBox1_Paint);
             // 
-            // chbSmooth
+            // chkSmooth
             // 
-            this.chbSmooth.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.chbSmooth.Location = new System.Drawing.Point(850, 73);
-            this.chbSmooth.Name = "chbSmooth";
-            this.chbSmooth.Size = new System.Drawing.Size(130, 21);
-            this.chbSmooth.TabIndex = 3;
-            this.chbSmooth.Text = "Smooth Lines";
-            this.chbSmooth.UseVisualStyleBackColor = true;
-            this.chbSmooth.Visible = false;
-            this.chbSmooth.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
+            this.chkSmooth.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chkSmooth.Location = new System.Drawing.Point(850, 73);
+            this.chkSmooth.Name = "chkSmooth";
+            this.chkSmooth.Size = new System.Drawing.Size(130, 21);
+            this.chkSmooth.TabIndex = 3;
+            this.chkSmooth.Text = "Smooth Lines";
+            this.chkSmooth.UseVisualStyleBackColor = true;
+            this.chkSmooth.Visible = false;
+            this.chkSmooth.CheckedChanged += new System.EventHandler(this.checkBox_CheckedChanged);
             // 
             // checkBox1
             // 
@@ -226,7 +226,7 @@ namespace GalWarWin
 		private System.Windows.Forms.Button btnDone;
 		private System.Windows.Forms.ComboBox cbxType;
 		private System.Windows.Forms.CheckBox checkBox1;
-		private System.Windows.Forms.CheckBox chbSmooth;
+		private System.Windows.Forms.CheckBox chkSmooth;
 		private System.Windows.Forms.Label label9;
 	}
 }

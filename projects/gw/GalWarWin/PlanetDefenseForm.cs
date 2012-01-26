@@ -54,10 +54,10 @@ namespace GalWarWin
                 this.lblUpkeep.Visible = true;
                 this.lblUpkeepL.Visible = true;
 
-                this.lblSoldiers.Text = MainForm.FormatPct(colony.GetPlanetDefenseSoldiers() / Math.Max(1, colony.Population));
+                this.lblSoldiers.Text = MainForm.FormatPct(colony.PlanetDefenseSoldiers / Math.Max(1, colony.Population));
 
                 this.lblUpkeepL.Text = "Upkeep";
-                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PlanetDefenseUpkeep);
+                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PlanetDefenseTotalUpkeep);
 
                 if (colony.Buildable is PlanetDefense)
                 {

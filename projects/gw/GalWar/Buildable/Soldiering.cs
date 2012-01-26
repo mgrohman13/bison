@@ -34,9 +34,18 @@ namespace GalWar
             }
         }
 
+        public override bool HandlesFraction
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         internal override void Build(Colony colony, Tile tile, IEventHandler handler)
         {
-            colony.BuildSoldiers();
+            colony.BuildSoldiers(this.production);
+            this.production = 0;
         }
 
         internal override bool CanBeBuiltBy(Colony colony)

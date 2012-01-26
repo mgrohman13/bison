@@ -173,41 +173,49 @@ namespace GalWar
         {
             checked
             {
-                //  ------  Research      ------  
+                //  ------  Research          ------
                 this._research = (ushort)research;
 
-                //  ------  Colony/Trans  ------  
+                double speedStr = MakeStatStr(research, .666, .39);
                 double transStr = GetTransStr(research);
-                DoColonyTrans(forceColony, forceTrans, forceNeither, research, designs, mapSize, ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
+
+                //get pcts for existing designs
+                double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
+                GetPcts(designs, mapSize, speedStr, transStr,
+                        out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
+
+                //  ------  Colony/Trans      ------
+                DoColonyTrans(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
+                        ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
                 //being a transport makes average att and def lower, but hp higher
                 double strMult = 3 * transStr / ( 3 * transStr + ( this.Colony ? 60 : 0 ) + this.Trans );
                 strMult *= 600 / ( 599 + this.BombardDamageMult );
 
-                //  ------  Att/Def       ------  
+                //  ------  Att/Def           ------
                 double str = GetAttDefStr(research, strMult);
-                DoAttDef(transStr, str, out this._att, out this._def);
+                DoAttDef(transStr, str, attPct, out this._att, out this._def);
 
-                //  ------  HP            ------  
+                //  ------  HP                ------
                 double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, this.DeathStar ? 1.3 : ( this.Colony ? 1.8 : 2.6 ));
                 //average hp is relative to actual randomized stats
                 this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
-                //  ------  Speed         ------  
-                double speedStr = MakeStatStr(research, .666, .39);
+                //  ------  Speed             ------
                 if (this.Colony)
                     speedStr = MultStr(speedStr, .39);
                 else if (this.DeathStar)
                     speedStr = MultStr(speedStr, .666);
                 //average speed is higher for more offensive and weaker ships
-                this._speed = (byte)MakeStat(MultStr(speedStr, GetSpeedMult(str, hpMult)));
+                this._speed = (byte)MakeStat(MultStr(speedStr, GetSpeedMult(str, hpMult, speedPct)));
 
+                //  ------  BombardDamageMult ------
                 this._bombardDamageMult = (float)MultStr(this.BombardDamageMult,
                         speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att);
 
-                //  ------  cost/Upkeep   ------  
+                //  ------  Cost/Upkeep       ------
                 double cost = -1;
                 int upkeep = -1;
-                GetCost(mapSize, ref cost, ref upkeep);
+                GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
                 double maxCost = GetMaxCost(research);
                 double minCost = GetMinCost(mapSize, maxCost);
                 maxCost = GetMaxCost(minCost, maxCost);
@@ -241,7 +249,7 @@ namespace GalWar
                     default:
                         throw new Exception();
                     }
-                    GetCost(mapSize, ref cost, ref upkeep);
+                    GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
                 }
                 while (cost < minCost)
                 {
@@ -259,13 +267,64 @@ namespace GalWar
                     default:
                         throw new Exception();
                     }
-                    GetCost(mapSize, ref cost, ref upkeep);
+                    GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
                 }
                 this._cost = (ushort)Game.Random.Round(cost);
                 this._upkeep = (byte)upkeep;
-                //  ------  name          ------  
+
+                //  ------  Name              ------
                 this._name = shipNames.GetName(player, this, transStr, speedStr);
                 this._mark = shipNames.GetMark(player, _name);
+            }
+        }
+
+        private static void GetPcts(List<ShipDesign> designs, int mapSize, double speedStr, double transStr,
+                out double colony, out double upkeep, out double att, out double speed, out double trans, out double ds)
+        {
+            int numDesigns;
+            if (designs != null && ( numDesigns = designs.Count ) > 0)
+            {
+                colony = 0;
+                upkeep = 0;
+                att = 0;
+                speed = 0;
+                trans = 0;
+                ds = 0;
+
+                double costMult = 0;
+                foreach (ShipDesign design in designs)
+                {
+                    double upkeepPayoff = design.GetUpkeepPayoff(mapSize);
+                    double totalCost = design.Cost + design.Upkeep * upkeepPayoff;
+                    costMult += totalCost;
+
+                    if (design.Colony)
+                        colony += 1.0 / totalCost;
+                    upkeep += design.Upkeep / ( totalCost / upkeepPayoff * Consts.CostUpkeepPct );
+                    att += design.Att / (double)design.Def;
+                    speed += design.Speed;
+                    trans += design.Speed * design.Trans * ( design.Colony ? .13 : 1 ) / totalCost;
+                    ds += design.Speed * design.BombardDamage / totalCost;
+                }
+                costMult /= numDesigns * numDesigns;
+
+                colony *= costMult;
+                upkeep /= numDesigns;
+                att /= numDesigns;
+                speed /= numDesigns * speedStr;
+                trans *= costMult / 1.69;
+                trans = trans / ( trans + transStr );
+                ds *= costMult;
+                ds = ds / ( ds + 30 );
+            }
+            else
+            {
+                colony = 1;
+                upkeep = 1;
+                att = 1;
+                speed = 1;
+                trans = 1;
+                ds = 1;
             }
         }
 
@@ -274,16 +333,9 @@ namespace GalWar
             return MakeStatStr(research, 26, .666);
         }
 
-        private void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, List<ShipDesign> designs, int mapSize,
+        private void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
                 ref double transStr, out bool colony, out ushort trans, out float bombardDamageMult)
         {
-            double pctMult = 0;
-            if (designs != null)
-            {
-                foreach (ShipDesign design in designs)
-                    pctMult += design.Cost + design.Upkeep * design.GetUpkeepPayoff(mapSize);
-                pctMult /= designs.Count * designs.Count;
-            }
 
             bool transport;
             if (forceTrans)
@@ -291,14 +343,14 @@ namespace GalWar
             else if (forceNeither || forceColony)
                 transport = false;
             else
-                transport = MakeTransport(designs, transStr, mapSize, pctMult);
+                transport = CreateType(.13, transPct);
 
             if (forceColony)
                 colony = true;
             else if (forceNeither || forceTrans)
                 colony = false;
             else
-                colony = MakeColony(designs, mapSize, pctMult);
+                colony = CreateType(.078, colonyPct);
 
             //colony ships transport a reduced amount on average
             if (colony && !transport)
@@ -313,54 +365,13 @@ namespace GalWar
             {
                 trans = 0;
 
-                if (!forceNeither && MakeDeathStar(designs, research, mapSize, pctMult))
+                if (!forceNeither && MakeDeathStar(research, dsPct))
                     bombardDamageMult = MakeStat(130) + ( 1 - Game.Random.NextFloat() );
             }
         }
 
-        private bool MakeTransport(List<ShipDesign> designs, double transStr, int mapSize, double pctMult)
+        private bool MakeDeathStar(int research, double pct)
         {
-            if (designs.Count == 0)
-                return false;
-
-            double pct = 0;
-            foreach (ShipDesign design in designs)
-                pct += ( design.Speed * design.Trans * ( design.Colony ? .13 : 1 ) )
-                        / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
-            pct *= pctMult / 1.69;
-
-            pct = pct / ( pct + transStr );
-
-            return CreateType(.13, pct);
-        }
-
-        private bool MakeColony(List<ShipDesign> designs, int mapSize, double pctMult)
-        {
-            if (designs.Count == 0)
-                return false;
-
-            double pct = 0;
-            foreach (ShipDesign design in designs)
-                if (design.Colony)
-                    pct += 1.0 / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
-            pct *= pctMult;
-
-            return CreateType(.078, pct);
-        }
-
-        private bool MakeDeathStar(List<ShipDesign> designs, int research, int mapSize, double pctMult)
-        {
-            if (designs.Count == 0)
-                return false;
-
-            double pct = 0;
-            foreach (ShipDesign design in designs)
-                pct += ( design.Speed * design.BombardDamage )
-                        / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(mapSize) );
-            pct *= pctMult;
-
-            pct = pct / ( pct + 30 );
-
             double target = research / ( 2.1 * Consts.ResearchFactor + research );
             target *= target * target * .21;
 
@@ -388,7 +399,7 @@ namespace GalWar
             return MakeStatStr(research, 1.69 * strMult, .666);
         }
 
-        private void DoAttDef(double transStr, double str, out byte att, out byte def)
+        private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def)
         {
             int s1 = MakeStat(str);
             //average second stat adjusted to compensate for first
@@ -399,8 +410,15 @@ namespace GalWar
                 s1 = s2;
                 s2 = temp;
             }
+
             //colony, transports more likely to be defensive
-            if (Game.Random.Bool(( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .6, .39) ) ? .21f : .666f))
+            double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .6, .39) ) ? .21f : .666f );
+            attPct = Math.Sqrt(attPct);
+            if (attPct < 1)
+                chance = ( 1 - ( ( 1 - chance ) * attPct ) );
+            else
+                chance /= attPct;
+            if (Game.Random.Bool(chance))
             {
                 att = (byte)s1;
                 def = (byte)s2;
@@ -412,12 +430,12 @@ namespace GalWar
             }
         }
 
-        private double GetSpeedMult(double str, double hpMult)
+        private double GetSpeedMult(double str, double hpMult, double speedPct)
         {
-            double offenseFactor = Math.Sqrt(this.Att / (double)this.Def);
-            double strengthFactor = Math.Sqrt(2 * GetStatValue(str) * MultStr(4 * str * str, hpMult)
-                    / (double)( ( GetStatValue(this.Att) + GetStatValue(this.Def) ) * this.HP ));
-            return Math.Sqrt(offenseFactor * strengthFactor);
+            double offenseFactor = this.Att / (double)this.Def;
+            double strengthFactor = 2 * GetStatValue(str) * MultStr(4 * str * str, hpMult)
+                    / (double)( ( GetStatValue(this.Att) + GetStatValue(this.Def) ) * this.HP );
+            return Math.Pow(offenseFactor * strengthFactor / speedPct, 1.0 / 6);
         }
 
         private static double MakeStatStr(double research, double mult, double power)
@@ -466,7 +484,7 @@ namespace GalWar
             return maxCost;
         }
 
-        private void GetCost(int mapSize, ref double cost, ref int upkeep)
+        private void GetCost(int mapSize, double upkeepPct, ref double cost, ref int upkeep)
         {
             double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
 
@@ -482,7 +500,7 @@ namespace GalWar
             }
             else
             {
-                double avgUpk = totCost / upkeepPayoff * Consts.CostUpkeepPct;
+                double avgUpk = totCost / upkeepPayoff * Consts.CostUpkeepPct / Math.Sqrt(upkeepPct);
                 if (avgUpk > 1)
                     upkeep = Game.Random.GaussianCappedInt(avgUpk, 1, 1);
                 else

@@ -91,7 +91,7 @@ namespace GalWarWin
 
         private static int GetPlace(double max)
         {
-            return ( max.ToString("0").Length - 2 ) / 3;
+            return ( MainForm.FormatInt(max).Length - 2 ) / 3;
         }
 
         private int GetDiv(int place)
@@ -150,7 +150,7 @@ namespace GalWarWin
                 {
                     type = Graphs.GraphType.PopulationTrans;
                     checks[type][0] = checkBox1.Checked;
-                    checks[type][1] = chbSmooth.Checked;
+                    checks[type][1] = chkSmooth.Checked;
                 }
                 else if (type == Graphs.GraphType.Research)
                 {
@@ -390,7 +390,7 @@ namespace GalWarWin
             }
 
             checkBox1.Checked = checks[type][0];
-            chbSmooth.Checked = checks[type][1];
+            chkSmooth.Checked = checks[type][1];
 
             RefreshGraph();
             checkEvents = true;
@@ -402,7 +402,7 @@ namespace GalWarWin
             {
                 Graphs.GraphType type = (Graphs.GraphType)cbxType.SelectedItem;
 
-                checks[type] = new bool[] { checkBox1.Checked, chbSmooth.Checked };
+                checks[type] = new bool[] { checkBox1.Checked, chkSmooth.Checked };
 
                 RefreshGraph();
             }

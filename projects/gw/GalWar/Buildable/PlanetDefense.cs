@@ -73,6 +73,14 @@ namespace GalWar
             }
         }
 
+        public override bool HandlesFraction
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public int Att
         {
             get
@@ -113,7 +121,8 @@ namespace GalWar
 
         internal override void Build(Colony colony, Tile tile, IEventHandler handler)
         {
-            colony.BuildPlanetDefense();
+            colony.BuildPlanetDefense(this.production);
+            this.production = 0;
         }
 
         internal override bool CanBeBuiltBy(Colony colony)

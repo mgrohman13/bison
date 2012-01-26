@@ -6,6 +6,9 @@ namespace GalWar
     [Serializable]
     public abstract class Buildable
     {
+        [NonSerialized]
+        internal double production;
+
         public abstract int Cost
         {
             get;
@@ -19,6 +22,19 @@ namespace GalWar
         internal abstract bool Multiple
         {
             get;
+        }
+
+        public virtual bool HandlesFraction
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        internal void SetFraction(double production)
+        {
+            this.production = production;
         }
 
         internal abstract void Build(Colony colony, Tile tile, IEventHandler handler);

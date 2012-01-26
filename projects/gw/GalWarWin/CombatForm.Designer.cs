@@ -47,7 +47,7 @@ namespace GalWarWin
             this.nudDefHP = new System.Windows.Forms.NumericUpDown();
             this.nudDefense = new System.Windows.Forms.NumericUpDown();
             this.btnLog = new System.Windows.Forms.Button();
-            this.chbLog = new System.Windows.Forms.CheckBox();
+            this.chkLog = new System.Windows.Forms.CheckBox();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttack ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttHP ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudDefHP ) ).BeginInit();
@@ -315,15 +315,15 @@ namespace GalWarWin
             this.btnLog.UseVisualStyleBackColor = true;
             this.btnLog.Click += new System.EventHandler(this.btnLog_Click);
             // 
-            // chbLog
+            // chkLog
             // 
-            this.chbLog.AutoSize = true;
-            this.chbLog.Location = new System.Drawing.Point(140, 183);
-            this.chbLog.Name = "chbLog";
-            this.chbLog.Size = new System.Drawing.Size(78, 17);
-            this.chbLog.TabIndex = 9;
-            this.chbLog.Text = "Auto Show";
-            this.chbLog.UseVisualStyleBackColor = true;
+            this.chkLog.AutoSize = true;
+            this.chkLog.Location = new System.Drawing.Point(140, 183);
+            this.chkLog.Name = "chkLog";
+            this.chkLog.Size = new System.Drawing.Size(78, 17);
+            this.chkLog.TabIndex = 9;
+            this.chkLog.Text = "Auto Show";
+            this.chkLog.UseVisualStyleBackColor = true;
             // 
             // CombatForm
             // 
@@ -332,7 +332,7 @@ namespace GalWarWin
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(230, 253);
-            this.Controls.Add(this.chbLog);
+            this.Controls.Add(this.chkLog);
             this.Controls.Add(this.btnLog);
             this.Controls.Add(this.nudDefense);
             this.Controls.Add(this.nudDefHP);
@@ -386,6 +386,6 @@ namespace GalWarWin
         private System.Windows.Forms.NumericUpDown nudDefHP;
         private System.Windows.Forms.NumericUpDown nudDefense;
         private System.Windows.Forms.Button btnLog;
-        private System.Windows.Forms.CheckBox chbLog;
+        private System.Windows.Forms.CheckBox chkLog;
     }
 }

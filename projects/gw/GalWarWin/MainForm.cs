@@ -28,7 +28,7 @@ namespace GalWarWin
         private bool isBuild;
         private Tile dialogTile = null;
 
-        private bool started = false, saved = true, ended = false, showMoves = false, showAtt = false;
+        private bool started = false, saved = true, ended = false, _showMoves = false, _showAtt = false;
         private Point mouse;
         private Font font = new Font("arial", 13f);
 
@@ -81,6 +81,36 @@ namespace GalWarWin
             this.openFileDialog1.FileName = "g.gws";
             this.saveFileDialog1.InitialDirectory = this.openFileDialog1.InitialDirectory;
             this.saveFileDialog1.FileName = this.openFileDialog1.FileName;
+        }
+
+        private bool showMoves
+        {
+            get
+            {
+                return _showMoves;
+            }
+            set
+            {
+                _showMoves = value;
+                SetBtnShowMovesText();
+            }
+        }
+        private bool showAtt
+        {
+            get
+            {
+                return _showAtt;
+            }
+            set
+            {
+                _showAtt = value;
+                SetBtnShowMovesText();
+            }
+        }
+
+        private void SetBtnShowMovesText()
+        {
+            this.btnShowMoves.Text = ( ( showMoves && !showAtt ) ? "Enemy Attacks" : "Enemy Moves" );
         }
 
         #endregion //fields and constructors
@@ -154,14 +184,14 @@ namespace GalWarWin
                                     float move;
                                     if (moves.TryGetValue(tile, out move))
                                     {
-                                        string s = ( showAtt ? FormatDouble(move) : move.ToString("0") );
+                                        string s = ( showAtt ? FormatDouble(move) : FormatInt(move) );
                                         if (showAtt)
                                             foreach (Tile neighbor in Tile.GetNeighbors(tile))
                                             {
                                                 planet = neighbor.SpaceObject as Planet;
                                                 if (planet != null && planet.Colony != null && !planet.Colony.Player.IsTurn)
                                                 {
-                                                    s = move.ToString("0") + "+";
+                                                    s = FormatInt(move) + "+";
                                                     break;
                                                 }
                                             }
@@ -317,8 +347,7 @@ namespace GalWarWin
                 foreach (KeyValuePair<Tile, float> pair in totals)
                 {
                     Tile tile = pair.Key;
-                    Ship ship;
-                    if (tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == game.CurrentPlayer ))
+                    if (ShowMove(tile, game.CurrentPlayer))
                     {
                         float statValue = pair.Value;
                         float value;
@@ -338,7 +367,7 @@ namespace GalWarWin
 
         private static float GetStatFromValue(float value)
         {
-            if (value < 1)
+            if (value < .5)
                 return 0;
             float min = 1, max = (float)Math.Round(Math.Sqrt(value) + .1, 1);
             while (true)
@@ -363,35 +392,34 @@ namespace GalWarWin
             temp.Clear();
             AddTiles(temp, enemy, combatant.Tile, speed, combatant is Colony);
 
-            if (showAtt)
+            Colony colony;
+            float statValue = 0;
+            if (showAtt && ( ( colony = combatant as Colony ) == null || !colony.MinDefenses ))
+                statValue = (float)ShipDesign.GetStatValue(combatant.Att);
+
+            foreach (KeyValuePair<Tile, Point> pair in temp)
             {
-                float statValue = (float)ShipDesign.GetStatValue(combatant.Att);
-                Colony colony = ( combatant as Colony );
-                if (colony != null && colony.MinDefenses)
-                    statValue = 0;
-                foreach (KeyValuePair<Tile, Point> pair in temp)
-                {
-                    Tile tile = pair.Key;
-                    float val;
-                    totals.TryGetValue(tile, out val);
-                    totals[tile] = val + pair.Value.X * statValue;
-                }
+                Tile tile = pair.Key;
+                Point point = pair.Value;
+
+                float add;
+                if (showAtt)
+                    add = point.X * statValue;
+                else if (point.Y > 0 && ShowMove(tile, combatant.Player))
+                    add = 1;
+                else
+                    continue;
+
+                float val;
+                totals.TryGetValue(tile, out val);
+                totals[tile] = val + add;
             }
-            else
-            {
-                foreach (KeyValuePair<Tile, Point> pair in temp)
-                    if (pair.Value.Y > 0)
-                    {
-                        Tile tile = pair.Key;
-                        Ship ship;
-                        if (tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == combatant.Player ))
-                        {
-                            float val;
-                            totals.TryGetValue(tile, out val);
-                            totals[tile] = val + 1;
-                        }
-                    }
-            }
+        }
+
+        private static bool ShowMove(Tile tile, Player player)
+        {
+            Ship ship;
+            return tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == player );
         }
 
         private void AddTiles(Dictionary<Tile, Point> retVal, Player enemy, Tile tile, int speed, bool ignoreZoc)
@@ -426,7 +454,6 @@ namespace GalWarWin
         private void btnShowMoves_Click(object sender, EventArgs e)
         {
             showAtt = ( showMoves ? !showAtt : false );
-            this.btnShowMoves.Text = ( showAtt ? "Enemy Moves" : "Enemy Attacks" );
             showMoves = true;
             InvalidateMap();
         }
@@ -636,7 +663,6 @@ namespace GalWarWin
             if (CheckGold() && CheckShips())
             {
                 showMoves = false;
-                this.btnShowMoves.Text = "Enemy Moves";
                 game.EndTurn(this);
 
                 this.hold.Clear();
@@ -821,7 +847,6 @@ namespace GalWarWin
                 }
 
                 showMoves = false;
-                this.btnShowMoves.Text = "Enemy Moves";
                 RefreshAll();
             }
         }
@@ -1590,6 +1615,11 @@ namespace GalWarWin
             return ( MessageBox.Show(message, string.Empty, MessageBoxButtons.OKCancel, alert ? MessageBoxIcon.Warning : MessageBoxIcon.None) == DialogResult.OK );
         }
 
+        public static string FormatInt(double value)
+        {
+            return value.ToString("0");
+        }
+
         public static string FormatUsuallyInt(double value)
         {
             return FormatDouble(value).TrimEnd('0').TrimEnd('.');
@@ -1617,7 +1647,7 @@ namespace GalWarWin
         public static string FormatPct(double pct, bool place)
         {
             pct *= 100;
-            return ( place ? FormatDouble(pct) : pct.ToString("0") ) + "%";
+            return ( place ? FormatDouble(pct) : FormatInt(pct) ) + "%";
         }
 
         #endregion //Refresh

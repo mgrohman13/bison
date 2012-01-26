@@ -6,6 +6,14 @@ namespace GalWarWin.Sliders
 {
     public class MoveTroops : SliderController
     {
+        private static Label lblProd;
+
+        static MoveTroops()
+        {
+            lblProd = new Label();
+            lblProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+        }
+
         private readonly Game game;
 
         private readonly PopCarrier from;
@@ -43,6 +51,13 @@ namespace GalWarWin.Sliders
 
             this.totalPop = totalPop;
             this.soldiers = soldiers;
+        }
+
+        public override Control GetCustomControl()
+        {
+            if (this.from is Colony || this.to is Colony)
+                return lblProd;
+            return null;
         }
 
         public override double GetInitial()
@@ -117,10 +132,23 @@ namespace GalWarWin.Sliders
 
         protected override void SetText(Label lblTitle, Label lblSlideType)
         {
+            int value = GetValue();
+
             lblTitle.Text = "Move Troops";
             lblSlideType.Text = "Troop";
-            if (GetValue() != 1)
+            if (value != 1)
                 lblSlideType.Text += "s";
+
+            Colony from, to;
+            if (( from = this.from as Colony ) != null)
+                ShowProd(from, -value);
+            else if (( to = this.to as Colony ) != null)
+                ShowProd(to, value);
+        }
+
+        private static void ShowProd(Colony colony, int popChange)
+        {
+            lblProd.Text = "Prod: " + colony.GetProductionIncome(colony.Population + popChange).ToString();
         }
     }
 }

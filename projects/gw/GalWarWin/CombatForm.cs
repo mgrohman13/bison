@@ -495,7 +495,7 @@ end:
                 this.levels.Clear();
             }
 
-            if (show && this.chbLog.Checked)
+            if (show && this.chkLog.Checked)
                 ShowLog();
         }
 
@@ -556,11 +556,11 @@ end:
 
         private void LogLevelUp(Ship ship, List<LevelUpType> levels)
         {
-            gameForm.LogMsg("{2} {0} - {1}", ship.ToString(), levels[0].lastExp.ToString("0"), ship.Player.Name);
+            gameForm.LogMsg("{2} {0} - {1}", ship.ToString(), MainForm.FormatInt(levels[0].lastExp), ship.Player.Name);
 
             foreach (LevelUpType level in levels)
                 gameForm.LogMsg(" {0} ({1}) - {2}", level.expType.ToString().PadRight(5, ' '),
-                        MainForm.FormatPct(level.pct).PadLeft(4, ' '), level.needExp.ToString("0"));
+                        MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needExp));
 
             gameForm.LogMsg("({0}) {2}/{3} - {1}", ship.NextExpType.ToString().PadRight(5, ' '), ship.GetTotalExp(), ship.HP, ship.MaxHP);
             gameForm.LogMsg();

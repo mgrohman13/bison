@@ -138,6 +138,7 @@ namespace GalWar
 
         public const float PlanetDefensesRndm = .169f;
         public const double PlanetDefensesCostMult = 1.3;
+        //will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .666;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const float PlanetDefensesSoldiersMult = (float)( DisbandPct / ProductionForSoldiers * 1.3 );
