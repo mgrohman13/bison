@@ -55,7 +55,7 @@ namespace GalWarWin.Sliders
 
         public override Control GetCustomControl()
         {
-            if (this.from is Colony || this.to is Colony)
+            if (( this.from is Colony && this.from.Player.IsTurn ) || ( this.to is Colony && this.to.Player.IsTurn ))
                 return lblProd;
             return null;
         }
@@ -139,16 +139,14 @@ namespace GalWarWin.Sliders
             if (value != 1)
                 lblSlideType.Text += "s";
 
-            Colony from, to;
-            if (( from = this.from as Colony ) != null)
-                ShowProd(from, -value);
-            else if (( to = this.to as Colony ) != null)
-                ShowProd(to, value);
+            ShowProd(this.from as Colony, -value);
+            ShowProd(this.to as Colony, value);
         }
 
         private static void ShowProd(Colony colony, int popChange)
         {
-            lblProd.Text = "Prod: " + colony.GetProductionIncome(colony.Population + popChange).ToString();
+            if (colony != null && colony.Player.IsTurn)
+                lblProd.Text = "Prod: " + colony.GetProductionIncome(colony.Population + popChange).ToString();
         }
     }
 }
