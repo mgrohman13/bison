@@ -285,9 +285,9 @@ namespace GalWar
             if (designs != null && ( numDesigns = designs.Count ) > 0)
             {
                 colony = 0;
-                upkeep = 0;
-                att = 0;
-                speed = 0;
+                upkeep = 1;
+                att = 1;
+                speed = 1;
                 trans = 0;
                 ds = 0;
 
@@ -300,18 +300,19 @@ namespace GalWar
 
                     if (design.Colony)
                         colony += 1.0 / totalCost;
-                    upkeep += design.Upkeep / ( totalCost / upkeepPayoff * Consts.CostUpkeepPct );
-                    att += design.Att / (double)design.Def;
-                    speed += design.Speed;
+                    upkeep *= design.Upkeep / ( totalCost / upkeepPayoff * Consts.CostUpkeepPct );
+                    att *= design.Att / (double)design.Def;
+                    speed *= design.Speed / speedStr;
                     trans += design.Speed * design.Trans * ( design.Colony ? .13 : 1 ) / totalCost;
                     ds += design.Speed * design.BombardDamage / totalCost;
                 }
                 costMult /= numDesigns * numDesigns;
 
+                double pow = 1.0 / numDesigns;
                 colony *= costMult;
-                upkeep /= numDesigns;
-                att /= numDesigns;
-                speed /= numDesigns * speedStr;
+                upkeep = Math.Pow(upkeep, pow);
+                att = Math.Pow(att, pow);
+                speed = Math.Pow(speed, pow);
                 trans *= costMult / 1.69;
                 trans = trans / ( trans + transStr );
                 ds *= costMult;
@@ -412,12 +413,12 @@ namespace GalWar
             }
 
             //colony, transports more likely to be defensive
-            double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .6, .39) ) ? .21f : .666f );
-            attPct = Math.Sqrt(attPct);
+            float chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .6, .39) ) ? .21f : .666f );
+            float pct = (float)Math.Sqrt(attPct);
             if (attPct < 1)
-                chance = ( 1 - ( ( 1 - chance ) * attPct ) );
+                chance = ( 1 - ( ( 1 - chance ) * pct ) );
             else
-                chance /= attPct;
+                chance /= pct;
             if (Game.Random.Bool(chance))
             {
                 att = (byte)s1;

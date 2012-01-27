@@ -1,7 +1,4 @@
-occupy move show prod
-
 cost calculator
-autosave viewer
 test other grph data storage implementations with real data
 main map improvements
 test combat performance for integral data type widths

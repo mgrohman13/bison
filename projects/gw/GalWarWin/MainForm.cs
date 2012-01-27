@@ -113,6 +113,18 @@ namespace GalWarWin
             this.btnShowMoves.Text = ( ( showMoves && !showAtt ) ? "Enemy Attacks" : "Enemy Moves" );
         }
 
+
+        private int ClientHeight
+        {
+            get
+            {
+                int height = ClientSize.Height;
+                if (this.tbTurns.Visible)
+                    height -= this.tbTurns.Height;
+                return height;
+            }
+        }
+
         #endregion //fields and constructors
 
         #region Drawing
@@ -125,7 +137,7 @@ namespace GalWarWin
 
                 if (started)
                 {
-                    float height = this.ClientSize.Height;
+                    float height = this.ClientHeight;
                     float width = this.ClientSize.Width - this.pnlInfo.Width;
 
                     e.Graphics.FillRectangle(Brushes.Black, 0, 0, width, height);
@@ -315,7 +327,7 @@ namespace GalWarWin
 
         private float GetScale()
         {
-            float height = this.ClientSize.Height - 5;
+            float height = this.ClientHeight - 5;
             float width = this.ClientSize.Width - this.pnlInfo.Width - 5;
             return (float)Math.Min(height / (double)game.Diameter, width / (double)( game.Diameter + .5 ));
         }
@@ -475,7 +487,7 @@ namespace GalWarWin
                     Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .5, 0.0021));
 
-            mouse = new Point(ClientSize.Width / 2, ClientSize.Height / 2);
+            mouse = new Point(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
 
             game.StartGame(this);
@@ -486,19 +498,90 @@ namespace GalWarWin
 
         private void btnLoadGame_Click(object sender, EventArgs e)
         {
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (this.openFileDialog1.ShowDialog() == DialogResult.OK)
+                LoadGame(this.openFileDialog1.FileName);
+        }
+
+        private void LoadGame(string filePath)
+        {
+            this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
+            this.saveFileDialog1.FileName = Path.GetFileName(filePath);
+
+            game = Game.LoadGame(filePath);
+
+            StartGame();
+
+            saved = true;
+            RefreshAll();
+        }
+
+        private void btnAutosaveView_Click(object sender, EventArgs e)
+        {
+            this.openFileDialog1.InitialDirectory += "\\auto";
+            this.openFileDialog1.FileName = "1.gws";
+
+            if (this.openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                string filePath = openFileDialog1.FileName;
-                this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
-                this.saveFileDialog1.FileName = Path.GetFileName(filePath);
+                string[] files = Directory.GetFiles(GetAutosaveFolder(), "*.gws", SearchOption.AllDirectories);
 
-                game = Game.LoadGame(filePath);
+                int min = int.MaxValue, max = int.MinValue;
+                foreach (string file in files)
+                {
+                    int turn;
+                    if (int.TryParse(Path.GetFileNameWithoutExtension(file), out turn))
+                    {
+                        min = Math.Min(min, turn);
+                        max = Math.Max(max, turn);
+                    }
+                }
 
-                StartGame();
+                this.tbTurns.Visible = true;
+                this.tbTurns.Maximum = max;
+                this.tbTurns.Value = max;
+                this.tbTurns.Minimum = min;
+                this.tbTurns.Value = min;
 
-                saved = true;
-                RefreshAll();
+                this.tbTurns.TickFrequency = ( max - min ) / 39;
+
+                tbTurns_Scroll(null, null);
             }
+        }
+
+        private void tbTurns_Scroll(object sender, EventArgs e)
+        {
+            while (true)
+            {
+                int turn = (int)this.tbTurns.Value;
+                if (game == null || game.Turn != turn)
+                {
+                    string filePath = GetAutosaveFolder() + "\\" + turn + ".gws";
+                    if (File.Exists(filePath))
+                        try
+                        {
+                            LoadGame(filePath);
+                            return;
+                        }
+                        catch
+                        {
+                        }
+                    try
+                    {
+                        if (game == null || game.Turn < turn)
+                            ++this.tbTurns.Value;
+                        else
+                            --this.tbTurns.Value;
+                    }
+                    catch
+                    {
+                        Application.Exit();
+                    }
+                }
+            }
+        }
+
+        private string GetAutosaveFolder()
+        {
+            return Path.GetDirectoryName(this.openFileDialog1.FileName);
         }
 
         private void StartGame()
@@ -507,13 +590,14 @@ namespace GalWarWin
             this.pnlInfo.Show();
             this.btnNewGame.Hide();
             this.btnLoadGame.Hide();
+            this.btnAutosaveView.Hide();
         }
 
         private void btnSaveGame_Click(object sender, EventArgs e)
         {
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            if (this.saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                string filePath = saveFileDialog1.FileName;
+                string filePath = this.saveFileDialog1.FileName;
                 this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
                 this.saveFileDialog1.FileName = Path.GetFileName(filePath);
 

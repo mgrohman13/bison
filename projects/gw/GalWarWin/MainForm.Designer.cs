@@ -77,8 +77,11 @@ namespace GalWarWin
             this.btnLoadGame = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.btnAutosaveView = new System.Windows.Forms.Button();
+            this.tbTurns = new System.Windows.Forms.TrackBar();
             this.pnlInfo.SuspendLayout();
             this.panel1.SuspendLayout();
+            ( (System.ComponentModel.ISupportInitialize)( this.tbTurns ) ).BeginInit();
             this.SuspendLayout();
             // 
             // pnlInfo
@@ -606,6 +609,28 @@ namespace GalWarWin
             // 
             this.saveFileDialog1.Filter = "Gal War Save|*.gws";
             // 
+            // btnAutosaveView
+            // 
+            this.btnAutosaveView.Location = new System.Drawing.Point(12, 70);
+            this.btnAutosaveView.Name = "btnAutosaveView";
+            this.btnAutosaveView.Size = new System.Drawing.Size(75, 23);
+            this.btnAutosaveView.TabIndex = 3;
+            this.btnAutosaveView.Text = "History";
+            this.btnAutosaveView.UseVisualStyleBackColor = true;
+            this.btnAutosaveView.Click += new System.EventHandler(this.btnAutosaveView_Click);
+            // 
+            // tbTurns
+            // 
+            this.tbTurns.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.tbTurns.LargeChange = 1;
+            this.tbTurns.Location = new System.Drawing.Point(0, 742);
+            this.tbTurns.Maximum = 0;
+            this.tbTurns.Name = "tbTurns";
+            this.tbTurns.Size = new System.Drawing.Size(409, 45);
+            this.tbTurns.TabIndex = 4;
+            this.tbTurns.Visible = false;
+            this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
+            // 
             // MainForm
             // 
             this.AcceptButton = this.btnEndTurn;
@@ -613,6 +638,8 @@ namespace GalWarWin
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnSaveGame;
             this.ClientSize = new System.Drawing.Size(609, 787);
+            this.Controls.Add(this.tbTurns);
+            this.Controls.Add(this.btnAutosaveView);
             this.Controls.Add(this.btnLoadGame);
             this.Controls.Add(this.btnNewGame);
             this.Controls.Add(this.pnlInfo);
@@ -626,7 +653,9 @@ namespace GalWarWin
             this.pnlInfo.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ( (System.ComponentModel.ISupportInitialize)( this.tbTurns ) ).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -681,6 +710,8 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnShowMoves;
         private System.Windows.Forms.Button btnCombat;
         private System.Windows.Forms.Button btnInvasion;
+        private System.Windows.Forms.Button btnAutosaveView;
+        private System.Windows.Forms.TrackBar tbTurns;
     }
 }
 
