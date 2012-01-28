@@ -574,6 +574,7 @@ namespace GalWarWin
                     catch
                     {
                         Application.Exit();
+                        return;
                     }
                 }
             }

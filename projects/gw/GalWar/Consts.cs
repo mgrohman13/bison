@@ -15,7 +15,7 @@ namespace GalWar
         //StartGold will be divided by the number of planets per player and by each players homeworld quality
         public const double StartGold = 2 * AverageQuality * 260;
         public const double StartResearch = 390;
-        public const double StartRndm = .09;
+        public const double StartRndm = .091;
         public const double StartMinMult = .6;
         public const double MoveOrderGold = AverageQuality * Income;
         //a higher MoveOrderShuffle makes the move order change faster
@@ -93,7 +93,7 @@ namespace GalWar
         //value of exp gained as a pct of ship value
         public const double ExperienceMult = .13;
         //extra bonus for destroying a ship, as a pct of HP
-        public const double ExperienceDestroyMult = .09;
+        public const double ExperienceDestroyMult = .091;
         //damage amount for constant exp every combat round, in addition to standard exp for actual damage
         public const double ExperienceConstDmgAmt = 1;
         //randomness for exp gained and needed
@@ -115,10 +115,10 @@ namespace GalWar
         public const double ColonizationBonusPct = ( 1 + ColonizationBonusMoveFactor ) * ( .666 - DisbandPct );
         //a lower ColonizationBonusMoveFactor means a greater bonus reduction for faster colony ships
         public const double ColonizationBonusMoveFactor = 2.1;
-        public const double ColonizationHitPctPower = .9;
+        public const double ColonizationHitPctPower = .91;
 
         public const double AttackStrength = 1;
-        public const double AttackNumbersPower = 0.09;
+        public const double AttackNumbersPower = 0.091;
         public const double DefenseStrength = 1.13;
         public const double DefenseNumbersPower = 0.03;
         public const double TroopExperienceMult = 1 / PopulationForGold / 2.6;
