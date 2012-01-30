@@ -179,7 +179,8 @@ namespace GalWar
                 this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
-                this._speed = (byte)MakeStat(MultStr(ModSpeedStr(speedStr, transStr, true), GetSpeedMult(str, hpMult, speedPct)));
+                speedStr = MultStr(ModSpeedStr(speedStr, transStr, true), GetSpeedMult(str, hpMult, speedPct));
+                this._speed = (byte)MakeStat(speedStr);
 
                 //  ------  BombardDamageMult ------
                 //modify bombard mult based on speed and att

@@ -16,14 +16,24 @@ namespace GalWarWin.Sliders
         private Dictionary<int, double> goldAttackValues = new Dictionary<int, double>();
 
         public Invade(Ship ship, Colony colony)
-            : this(ship.AvailablePop, ship.Population, colony.Population, ship.TotalSoldiers, colony.TotalSoldiers)
+            : this(ship.AvailablePop, ship.Population, colony.Population, ship.TotalSoldiers, colony.TotalSoldiers, (int)MainForm.Game.CurrentPlayer.Gold)
         {
-            this.maxGold = (int)MainForm.Game.CurrentPlayer.Gold;
         }
 
         public Invade(int attPop, int attTotal, int defPop, double attSoldiers, double defSoldiers)
+            : this(attPop, attTotal, defPop, attSoldiers, defSoldiers, (int)Math.Max(MainForm.Game.CurrentPlayer.Gold, attPop * 13) + defPop)
         {
-            this.maxGold = (int)Math.Max(MainForm.Game.CurrentPlayer.Gold, attPop * 13) + defPop;
+            int gold = this.initial;
+            string effcnt;
+            do
+                effcnt = GetEffcnt(++gold);
+            while (effcnt != "100%");
+            this.maxGold = Math.Max(gold, (int)MainForm.Game.CurrentPlayer.Gold);
+        }
+
+        private Invade(int attPop, int attTotal, int defPop, double attSoldiers, double defSoldiers, int maxGold)
+        {
+            this.maxGold = maxGold;
             this.attPop = attPop;
             this.attTotal = attTotal;
             this.defPop = defPop;
