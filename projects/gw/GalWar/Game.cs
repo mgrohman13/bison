@@ -387,6 +387,9 @@ next_planet:
             RandMoveOrder();
             CreatePlanets();
 
+            foreach (Player player in players)
+                player.NewRound();
+
             this.Graphs.Increment(this);
 
             ++this.turn;

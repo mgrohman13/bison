@@ -1,5 +1,4 @@
 empire level gold breakdown
-all reasearch gained at round start?
 
 cost calculator
 test other grph data storage implementations with real data

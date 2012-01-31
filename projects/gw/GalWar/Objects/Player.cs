@@ -133,31 +133,28 @@ namespace GalWar
             this._gold = gold;
         }
 
+        internal void NewRound()
+        {
+            this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
+        }
+
         private void CheckResearch(IEventHandler handler)
         {
             if (this.newResearch > 0)
             {
-                //new design chance happens before randomization so that it always matches what was expected
-                bool newDesign = Game.Random.Bool(GetResearchChance(this.newResearch));
-
-                //newResearch was calculated at the end of the last turn; now it is used and cleared
-                int researchInc = Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
+                if (Game.Random.Bool(GetResearchChance(this.newResearch)))
+                    NewShipDesign(handler);
                 this.newResearch = 0;
-
-                if (newDesign)
-                    NewShipDesign(researchInc, handler);
-
-                this.Research += researchInc;
             }
 
             //re-randomize research chance
             ResetResearchChance();
         }
 
-        private void NewShipDesign(int researchInc, IEventHandler handler)
+        private void NewShipDesign(IEventHandler handler)
         {
             //only a random portion of total research can be used in the new design
-            int designResearch = this.Research + researchInc - this.LastResearched;
+            int designResearch = this.Research - this.LastResearched;
             if (designResearch > 1)
                 designResearch = Game.Random.RangeInt(1, designResearch);
             designResearch += this.LastResearched;
