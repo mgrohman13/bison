@@ -98,12 +98,12 @@ namespace GalWar
                 default:
                     throw new Exception();
                 }
-            return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.player.Game.ExpResearch);
+            return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.Player.Game.ExpResearch);
         }
 
         private double GetCostLastResearched()
         {
-            return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.bombardDamageMult, this.player.LastResearched);
+            return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.bombardDamageMult, this.Player.LastResearched);
         }
 
         private Tile tile
@@ -185,8 +185,10 @@ namespace GalWar
             return upkeep;
         }
 
-        internal double GetUpkeepReturn()
+        public double GetUpkeepReturn()
         {
+            TurnException.CheckTurn(this.Player);
+
             return GetUpkeepReturn(this.CurSpeed);
         }
 
@@ -240,9 +242,9 @@ namespace GalWar
             if (this.soldiers > Consts.FLOAT_ERROR)
                 throw new Exception();
 
-            this.player.AddGold(GetDestroyGold());
+            this.Player.AddGold(GetDestroyGold());
 
-            this.player.RemoveShip(this);
+            this.Player.RemoveShip(this);
             this.Tile.SpaceObject = null;
         }
 
@@ -334,7 +336,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return this._upkeep;
             }
@@ -390,7 +392,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return this._hasRepaired;
             }
@@ -404,7 +406,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return ShipDesign.GetDisbandValue(this.cost, this.HP, this.MaxHP);
             }
@@ -442,7 +444,7 @@ namespace GalWar
 
         public double GetColonizationValue(int repair)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             return ShipDesign.GetColonizationValue(this.MaxSpeed, this.cost, this.HP + repair, this.MaxHP);
         }
@@ -459,18 +461,18 @@ namespace GalWar
         public double GetDestroyGold()
         {
             double gold = this.Population / Consts.PopulationForGold + this.soldiers / Consts.SoldiersForGold + GetCostExperience(this.curExp) / Consts.ExpForGold;
-            if (this.player.IsTurn)
+            if (this.Player.IsTurn)
                 gold += GetUpkeepReturn();
             return gold;
         }
 
         public void Disband(Colony colony)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
             if (colony == null)
-                this.player.AddGold(DisbandValue);
+                this.Player.AddGold(DisbandValue);
             else
                 colony.AddProduction(DisbandValue);
 
@@ -479,9 +481,9 @@ namespace GalWar
 
         public void Move(Tile tile)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(this.CurSpeed > 0);
-            AssertException.Assert(CheckZOC(this.player, this.Tile, tile));
+            AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
 
             --this.CurSpeed;
@@ -505,7 +507,7 @@ namespace GalWar
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
                 Ship ship = neighbor.SpaceObject as Ship;
-                if (!( ship == null || ship.player == player || !( neighbors == null ? neighbors = Tile.GetNeighbors(from) : neighbors ).Contains(neighbor) ))
+                if (!( ship == null || ship.Player == player || !( neighbors == null ? neighbors = Tile.GetNeighbors(from) : neighbors ).Contains(neighbor) ))
                     return false;
             }
 
@@ -514,7 +516,7 @@ namespace GalWar
 
         public void AttackShip(Ship ship, IEventHandler handler)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(ship != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, ship.Tile));
             AssertException.Assert(this.Player != ship.Player);
@@ -524,7 +526,7 @@ namespace GalWar
             --this.CurSpeed;
 
             double pct = Combat(ship, handler);
-            this.player.AddGold(this.GetUpkeepReturn(pct));
+            this.Player.AddGold(this.GetUpkeepReturn(pct));
 
             //only the ship whose turn it is can immediately gain levels from the exp
             this.LevelUp(handler);
@@ -603,7 +605,7 @@ namespace GalWar
                 costInc = this.GetCostLastResearched() - costInc;
 
                 //add gold for level randomness and percent of ship injured 
-                player.AddGold(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
+                Player.AddGold(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
                 double upkeepPayoff = Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
                 double minCost = upkeepPayoff * Consts.MinCostMult;
@@ -683,7 +685,7 @@ namespace GalWar
 
         public void AttackColony(Colony colony, IEventHandler handler)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, colony.Tile));
             AssertException.Assert(this.Player != colony.Player);
@@ -716,7 +718,7 @@ namespace GalWar
 
             if (pct > 0)
                 if (colony.HP > 0)
-                    this.player.AddGold(GetUpkeepReturn(pct));
+                    this.Player.AddGold(GetUpkeepReturn(pct));
                 else
                     Bombard(colony.Planet, false, pct, handler);
 
@@ -731,7 +733,7 @@ namespace GalWar
 
         public void Bombard(Planet planet, IEventHandler handler)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(planet != null);
             bool friendly = ( planet.Colony != null && this.Player == planet.Colony.Player );
             AssertException.Assert(friendly ? this.DeathStar : planet.Colony == null || planet.Colony.HP == 0);
@@ -810,7 +812,7 @@ namespace GalWar
                 planet.ReduceQuality(planetDamage);
 
                 double exp = planetDamage * Consts.TroopExperienceMult;
-                this.player.SpendGold(exp);
+                this.Player.SpendGold(exp);
                 AddCostExperience(exp);
             }
 
@@ -847,12 +849,12 @@ namespace GalWar
             if (popDmg > pop)
                 move += ( 1 - ( pop / popDmg ) );
             if (move > 0)
-                this.player.AddGold(GetUpkeepReturn(move / 2 * pct));
+                this.Player.AddGold(GetUpkeepReturn(move / 2 * pct));
         }
 
         public void Invade(Colony destination, int invadeGold, int population, ref int extraPop, IEventHandler handler)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(destination != null);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);
@@ -871,14 +873,14 @@ namespace GalWar
             }
             AssertException.Assert(goldCost < Player.Gold);
 
-            this.player.SpendGold(goldCost);
+            this.Player.SpendGold(goldCost);
 
             double soldiers = GetSoldiers(population, this.soldiers);
             this.soldiers -= soldiers;
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
-            population = destination.Invasion(this.player, population, ref soldiers, gold, handler, ref extraPop);
+            population = destination.Invasion(this.Player, population, ref soldiers, gold, handler, ref extraPop);
             this.Population += population;
             this.movedPop += population;
 
@@ -887,7 +889,7 @@ namespace GalWar
 
         public void Colonize(Planet planet, IEventHandler handler)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
             AssertException.Assert(this.Colony);
@@ -898,8 +900,8 @@ namespace GalWar
             AssertException.Assert(gold < Player.Gold);
             handler = new HandlerWrapper(handler);
 
-            this.player.SpendGold(gold);
-            this.player.NewColony(planet, this.Population, this.soldiers, Game.Random.Round(ColonizationValue), handler);
+            this.Player.SpendGold(gold);
+            this.Player.NewColony(planet, this.Population, this.soldiers, Game.Random.Round(ColonizationValue), handler);
             this.Population = 0;
             this.soldiers = 0;
             Destroy();
@@ -907,7 +909,7 @@ namespace GalWar
 
         public void GoldRepair(int hp)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.MaxHP - HP);
             AssertException.Assert(!this.HasRepaired);
@@ -921,21 +923,21 @@ namespace GalWar
 
         public double GetGoldForHP(int hp)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             return hp * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
         }
 
         public double GetProdForHP(double hp)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             return hp * RepairCost;
         }
 
         public double GetHPForProd(double production)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             return production / RepairCost;
         }

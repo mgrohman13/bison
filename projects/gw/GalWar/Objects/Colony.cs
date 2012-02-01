@@ -216,7 +216,7 @@ namespace GalWar
 
         public void GetTurnValues(out int production, out double gold, out int research)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             GetTurnValues(this.Population, out production, out gold, out research);
         }
@@ -225,9 +225,9 @@ namespace GalWar
         {
             double income = GetTotalIncome(population);
 
-            double researchPct = GetPct(this.player.ResearchEmphasis);
-            double productionPct = GetPct(this.player.ProductionEmphasis);
-            double totalPct = GetPct(this.player.GoldEmphasis) + researchPct + productionPct;
+            double researchPct = GetPct(this.Player.ResearchEmphasis);
+            double productionPct = GetPct(this.Player.ProductionEmphasis);
+            double totalPct = GetPct(this.Player.GoldEmphasis) + researchPct + productionPct;
             researchPct /= totalPct;
             productionPct /= totalPct;
 
@@ -263,7 +263,7 @@ namespace GalWar
 
             LosePopulation(damage);
 
-            this.soldiers += GetExperienceSoldiers(this.player, this.Population, initPop, exp);
+            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
         }
 
         internal int Invasion(Player player, int attackers, ref double soldiers, double gold, IEventHandler handler, ref int extra)
@@ -296,7 +296,7 @@ namespace GalWar
                 throw new Exception();
 
             deadPop *= Consts.TroopExperienceMult;
-            this.soldiers += GetExperienceSoldiers(this.player, this.Population, initPop, deadPop);
+            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, deadPop);
             soldiers += GetExperienceSoldiers(player, attackers, initAttackers, deadPop);
 
             //in the event of a tie, the defender keeps the planet with the remaining population of 0
@@ -419,15 +419,15 @@ namespace GalWar
             LoseProduction(this.production);
             if (this.HP > 0)
             {
-                this.player.AddGold(this.TotalDisbandValue);
+                this.Player.AddGold(this.TotalDisbandValue);
                 this.HP = 0;
             }
             if (this.defenseSoldiers > 0)
-                this.player.AddGold(this.defenseSoldiers / Consts.DefendingSoldiersForGold);
+                this.Player.AddGold(this.defenseSoldiers / Consts.DefendingSoldiersForGold);
 
-            this.player.RemoveColony(this);
+            this.Player.RemoveColony(this);
 
-            this.player.DeathCheck();
+            this.Player.DeathCheck();
         }
 
         internal void AddProduction(double production)
@@ -438,7 +438,7 @@ namespace GalWar
 
             this.production += RoundValue(production, ref addGold);
 
-            player.AddGold(addGold);
+            Player.AddGold(addGold);
         }
 
         internal void BuildSoldiers(double prodInc)
@@ -490,7 +490,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return this._buildable;
             }
@@ -500,7 +500,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return this.production;
             }
@@ -524,9 +524,9 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
-                return PlanetDefenseTotalUpkeep + Consts.GetProductionUpkeepMult(player.Game.MapSize) * this.production;
+                return PlanetDefenseTotalUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production;
             }
         }
 
@@ -674,7 +674,7 @@ namespace GalWar
 
         public int GetProductionIncome(int population)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             double gold;
             int production, research;
@@ -684,7 +684,7 @@ namespace GalWar
 
         public void GetTurnIncome(ref double population, ref double production, ref double gold, ref int research, bool minGold)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             double popInc = 0, prodInc = 0;
             TurnStuff(ref popInc, ref prodInc, ref gold, ref research, false, minGold);
@@ -743,7 +743,7 @@ namespace GalWar
 
         public void SellProduction(int production)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production <= this.production);
 
@@ -757,7 +757,7 @@ namespace GalWar
 
             this.production = RoundValue(production, ref gold, Consts.ProductionForGold);
 
-            player.AddGold(gold);
+            Player.AddGold(gold);
         }
 
         private int RoundValue(double value, ref double gold)
@@ -780,13 +780,13 @@ namespace GalWar
 
         public void BuyProduction(int production)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             double gold = production * Consts.GoldForProduction;
-            AssertException.Assert(gold < this.player.Gold);
+            AssertException.Assert(gold < this.Player.Gold);
 
             this.production += production;
-            this.player.SpendGold(gold);
+            this.Player.SpendGold(gold);
         }
 
         public bool CanBuild(Buildable buildable)
@@ -796,7 +796,7 @@ namespace GalWar
 
         public void StartBuilding(Buildable newBuild)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
             SetBuildable(newBuild, GetLossPct(newBuild));
@@ -880,7 +880,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return this.defenseSoldiers;
             }
@@ -896,7 +896,7 @@ namespace GalWar
 
         public void DisbandPlanetDefense(int hp, bool gold)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
 
@@ -904,7 +904,7 @@ namespace GalWar
             if (gold)
             {
                 double disbandValue = GetPlanetDefenseDisbandValue(hp, gold);
-                this.player.AddGold(disbandValue);
+                this.Player.AddGold(disbandValue);
                 for (double totalExtra = actualValue - disbandValue ; totalExtra != 0 ; )
                 {
                     const double MIN = .05 - Consts.FLOAT_ERROR;
@@ -913,7 +913,7 @@ namespace GalWar
                         extra = Math.Min(totalExtra, MIN);
                     else
                         extra = Math.Max(totalExtra, -MIN);
-                    this.player.AddGold(extra);
+                    this.Player.AddGold(extra);
                     totalExtra -= extra;
                 }
             }
@@ -927,7 +927,7 @@ namespace GalWar
 
         public double GetPlanetDefenseDisbandValue(int hp, bool gold)
         {
-            TurnException.CheckTurn(this.player);
+            TurnException.CheckTurn(this.Player);
 
             double disbandValue = GetDisbandValue(1);
             if (gold)
@@ -962,7 +962,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.player);
+                TurnException.CheckTurn(this.Player);
 
                 return GetPlanetDefenseUpkeep(this.HP, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
             }
@@ -981,14 +981,14 @@ namespace GalWar
 
         private double GetPlanetDefenseUpkeep(int hp, int att, int def, double mult)
         {
-            return hp * mult * ShipDesign.GetPlanetDefenseCost(att, def, this.player.LastResearched) * Consts.GetProductionUpkeepMult(player.Game.MapSize);
+            return hp * mult * ShipDesign.GetPlanetDefenseCost(att, def, this.Player.LastResearched) * Consts.GetProductionUpkeepMult(Player.Game.MapSize);
         }
 
         internal double PlanetDefenseCost
         {
             get
             {
-                return ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, this.player.LastResearched);
+                return ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, this.Player.LastResearched);
             }
         }
 
@@ -1013,7 +1013,7 @@ namespace GalWar
             //get the attack cost before possibly being injured
             double cost = GetPlanetDefenseAttackCost(ship.Def);
             double pct = Combat(ship, handler);
-            this.player.SpendGold(cost * ( 1 - pct ));
+            this.Player.SpendGold(cost * ( 1 - pct ));
         }
 
         protected override double GetExpForDamage(double damage)
@@ -1028,7 +1028,7 @@ namespace GalWar
 
         protected override void AddExperience(double experience)
         {
-            this.soldiers += GetExperienceSoldiers(this.player, this.Population, this.Population, experience * this.PlanetDefenseCost / this.PlanetDefenseStrength);
+            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, experience * this.PlanetDefenseCost / this.PlanetDefenseStrength);
         }
 
         internal void BuildPlanetDefense(double prodInc)
@@ -1054,15 +1054,15 @@ namespace GalWar
                 double oldCost = PlanetDefenseCost;
                 newHP = production / oldCost;
 
-                ModStat(this.player.PlanetDefense.Att, this.Att, newHP, oldCost, out newAtt, out newAttInt);
-                ModStat(this.player.PlanetDefense.Def, this.Def, newHP, oldCost, out newDef, out newDefInt);
+                ModStat(this.Player.PlanetDefense.Att, this.Att, newHP, oldCost, out newAtt, out newAttInt);
+                ModStat(this.Player.PlanetDefense.Def, this.Def, newHP, oldCost, out newDef, out newDefInt);
 
                 newHP += this.HP;
                 newHP *= oldCost;
                 if (doRound)
-                    newHP /= ShipDesign.GetPlanetDefenseCost(newAttInt, newDefInt, this.player.LastResearched);
+                    newHP /= ShipDesign.GetPlanetDefenseCost(newAttInt, newDefInt, this.Player.LastResearched);
                 else
-                    newHP /= GetCost(newAtt, newDef, this.player.LastResearched);
+                    newHP /= GetCost(newAtt, newDef, this.Player.LastResearched);
                 newHPInt = GetStat(newHP, this.HP);
             }
             else
@@ -1089,7 +1089,7 @@ namespace GalWar
                         ModStat(1, this.Def, newHP, oldCost, out d, out newDef);
 
                         SetPlanetDefense(newAtt, newDef, GetStat(mult * this.HP * oldCost /
-                                ShipDesign.GetPlanetDefenseCost(newAtt, newDef, this.player.LastResearched), this.HP));
+                                ShipDesign.GetPlanetDefenseCost(newAtt, newDef, this.Player.LastResearched), this.HP));
                     }
                 }
                 else

@@ -1219,7 +1219,25 @@ namespace GalWarWin
 
         private void lblGold_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Minimum gold: " + FormatDouble(game.CurrentPlayer.GetMinGold()));
+            int i1, i2, ships = 0;
+            double d1, d2, income = 0, upkeep = 0, total;
+            foreach (Colony colony in game.CurrentPlayer.GetColonies())
+            {
+                double gold;
+                colony.GetTurnValues(out i1, out gold, out i2);
+                income += gold;
+                upkeep += colony.Upkeep;
+            }
+            foreach (Ship ship in game.CurrentPlayer.GetShips())
+            {
+                upkeep += ship.Upkeep - ship.GetUpkeepReturn();
+                ships += ship.Upkeep;
+            }
+            game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
+
+            MessageBox.Show(string.Format("Income: {0}\r\nUpkeep: {1}\r\nShips: {2}\r\nOther: {3}\r\nTotal: {4}\r\nMinimum: {5}",
+                    FormatDouble(income), FormatDouble(upkeep), ships, FormatDouble(total - income + upkeep),
+                    FormatDouble(total), FormatDouble(game.CurrentPlayer.GetMinGold())));
         }
 
         private void lbl4_Click(object sender, EventArgs e)
