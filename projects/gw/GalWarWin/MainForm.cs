@@ -662,7 +662,7 @@ namespace GalWarWin
             if (build)
                 dialog.pnlBuild.SetBuildable((Buildable)( (Planet)tile.SpaceObject ).Colony.Buildable);
             dialog.pnlBuild.Visible = build;
-            dialog.btnCancel.Visible = build;
+            dialog.btnCancel.Visible = true;
 
             dialog.isBuild = build;
             dialog.dialogTile = tile;
