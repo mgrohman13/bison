@@ -13,12 +13,17 @@ namespace GalWarWin
 {
     public partial class MainForm : Form, IEventHandler
     {
-        private static Game game;
+        private static Game _game;
         public static Game Game
         {
             get
             {
-                return game;
+                return _game;
+            }
+            private set
+            {
+                _game = value;
+                _game.AutoSavePath = GetInitialAutoSave();
             }
         }
 
@@ -77,10 +82,37 @@ namespace GalWarWin
 
             this.pnlInfo.Hide();
 
-            this.openFileDialog1.InitialDirectory = Directory.GetParent(Directory.GetParent(Directory.GetParent(Environment.CurrentDirectory).FullName).FullName).FullName;
+            this.openFileDialog1.InitialDirectory = GetInitialDirectory();
             this.openFileDialog1.FileName = "g.gws";
             this.saveFileDialog1.InitialDirectory = this.openFileDialog1.InitialDirectory;
             this.saveFileDialog1.FileName = this.openFileDialog1.FileName;
+        }
+
+        private static string GetInitialDirectory()
+        {
+            string savePath;
+            try
+            {
+                using (StreamReader reader = new StreamReader("savepath.txt"))
+                    savePath = reader.ReadLine();
+                if (!Directory.Exists(savePath))
+                    savePath = null;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                savePath = null;
+            }
+
+            if (savePath == null)
+                savePath = Directory.GetParent(Directory.GetParent(Directory.GetParent(Environment.CurrentDirectory).FullName).FullName).FullName;
+
+            return savePath;
+        }
+
+        private static string GetInitialAutoSave()
+        {
+            return GetInitialDirectory() + "\\auto";
         }
 
         private bool showMoves
@@ -148,13 +180,13 @@ namespace GalWarWin
 
                     float minQuality = int.MaxValue, maxQuality = int.MinValue,
                            minPop = int.MaxValue, maxPop = int.MinValue, minStr = int.MaxValue, maxStr = int.MinValue;
-                    foreach (Planet planet in game.GetPlanets())
+                    foreach (Planet planet in Game.GetPlanets())
                     {
                         GetVals(ref minQuality, ref maxQuality, planet.Quality);
                         if (planet.Colony != null)
                             GetVals(ref minPop, ref maxPop, planet.Colony.Population);
                     }
-                    foreach (Player player in game.GetPlayers())
+                    foreach (Player player in Game.GetPlayers())
                         foreach (Ship ship in player.GetShips())
                             GetVals(ref minStr, ref maxStr, (float)ship.GetStrength() * ship.HP / (float)ship.MaxHP);
 
@@ -173,9 +205,9 @@ namespace GalWarWin
                     if (showMoves)
                         moves = GetMoves();
 
-                    Tile[,] map = game.GetMap();
-                    for (int x = 0 ; x < game.Diameter ; ++x)
-                        for (int y = 0 ; y < game.Diameter ; ++y)
+                    Tile[,] map = Game.GetMap();
+                    for (int x = 0 ; x < Game.Diameter ; ++x)
+                        for (int y = 0 ; y < Game.Diameter ; ++y)
                         {
                             Tile tile = map[x, y];
                             if (tile != null)
@@ -329,22 +361,22 @@ namespace GalWarWin
         {
             float height = this.ClientHeight - 5;
             float width = this.ClientSize.Width - this.pnlInfo.Width - 5;
-            return (float)Math.Min(height / (double)game.Diameter, width / (double)( game.Diameter + .5 ));
+            return (float)Math.Min(height / (double)Game.Diameter, width / (double)( Game.Diameter + .5 ));
         }
 
         private float GetStartX()
         {
             float width = this.ClientSize.Width - this.pnlInfo.Width;
             float scale = GetScale();
-            return width - scale * ( game.Diameter + .5f ) - 3;
+            return width - scale * ( Game.Diameter + .5f ) - 3;
         }
 
         private Dictionary<Tile, float> GetMoves()
         {
             Dictionary<Tile, Point> temp = new Dictionary<Tile, Point>();
             Dictionary<Tile, float> totals = new Dictionary<Tile, float>();
-            foreach (Player enemy in game.GetPlayers())
-                if (enemy != game.CurrentPlayer)
+            foreach (Player enemy in Game.GetPlayers())
+                if (enemy != Game.CurrentPlayer)
                 {
                     foreach (Ship ship in enemy.GetShips())
                         AddShip(totals, temp, enemy, ship, ship.MaxSpeed);
@@ -359,7 +391,7 @@ namespace GalWarWin
                 foreach (KeyValuePair<Tile, float> pair in totals)
                 {
                     Tile tile = pair.Key;
-                    if (ShowMove(tile, game.CurrentPlayer))
+                    if (ShowMove(tile, Game.CurrentPlayer))
                     {
                         float statValue = pair.Value;
                         float value;
@@ -472,7 +504,7 @@ namespace GalWarWin
 
         private void btnGraphs_Click(object sender, EventArgs e)
         {
-            GraphsForm.ShowDialog(this, game);
+            GraphsForm.ShowDialog(this, Game);
         }
 
         private void btnNewGame_Click(object sender, EventArgs e)
@@ -483,14 +515,14 @@ namespace GalWarWin
             Player pink = new Player("Pink", Color.Magenta);
             Player red = new Player("Red", Color.Red);
             Player yellow = new Player("Yellow", Color.Gold);
-            game = new Game(new Player[] { black, blue, green, pink, red, yellow },
+            Game = new Game(new Player[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .5, 0.0021));
 
             mouse = new Point(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
 
-            game.StartGame(this);
+            Game.StartGame(this);
 
             saved = false;
             this.RefreshAll();
@@ -507,7 +539,7 @@ namespace GalWarWin
             this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
             this.saveFileDialog1.FileName = Path.GetFileName(filePath);
 
-            game = Game.LoadGame(filePath);
+            Game = Game.LoadGame(filePath);
 
             StartGame();
 
@@ -517,7 +549,7 @@ namespace GalWarWin
 
         private void btnAutosaveView_Click(object sender, EventArgs e)
         {
-            this.openFileDialog1.InitialDirectory += "\\auto";
+            this.openFileDialog1.InitialDirectory = GetInitialAutoSave();
             this.openFileDialog1.FileName = "1.gws";
 
             if (this.openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -552,7 +584,7 @@ namespace GalWarWin
             while (true)
             {
                 int turn = (int)this.tbTurns.Value;
-                if (game == null || game.Turn != turn)
+                if (Game == null || Game.Turn != turn)
                 {
                     string filePath = GetAutosaveFolder() + "\\" + turn + ".gws";
                     if (File.Exists(filePath))
@@ -566,7 +598,7 @@ namespace GalWarWin
                         }
                     try
                     {
-                        if (game == null || game.Turn < turn)
+                        if (Game == null || Game.Turn < turn)
                             ++this.tbTurns.Value;
                         else
                             --this.tbTurns.Value;
@@ -602,7 +634,7 @@ namespace GalWarWin
                 this.saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
                 this.saveFileDialog1.FileName = Path.GetFileName(filePath);
 
-                game.SaveGame(filePath);
+                Game.SaveGame(filePath);
                 saved = true;
             }
         }
@@ -748,7 +780,7 @@ namespace GalWarWin
             if (CheckGold() && CheckShips())
             {
                 showMoves = false;
-                game.EndTurn(this);
+                Game.EndTurn(this);
 
                 this.hold.Clear();
                 SelectNextShip();
@@ -764,8 +796,8 @@ namespace GalWarWin
         {
             bool end = true;
 
-            double gold = game.CurrentPlayer.GetMinGold();
-            if (Player.RoundGold(game.CurrentPlayer.Gold) < -gold)
+            double gold = Game.CurrentPlayer.GetMinGold();
+            if (Player.RoundGold(Game.CurrentPlayer.Gold) < -gold)
                 end = ShowOption("You are running out of gold.  Partial production may be sold and one or more ships disbanded.  Are you sure you want to end your turn?", true);
 
             return end;
@@ -775,7 +807,7 @@ namespace GalWarWin
         {
             bool end = true;
 
-            foreach (Ship ship in game.CurrentPlayer.GetShips())
+            foreach (Ship ship in Game.CurrentPlayer.GetShips())
                 if (ship.CurSpeed > 0 && !hold.Contains(ship))
                 {
                     end = ShowOption("You have not moved all of your ships.  Are you sure you want to end your turn?");
@@ -792,7 +824,7 @@ namespace GalWarWin
 
         private void SelectNextShip()
         {
-            ReadOnlyCollection<Ship> ships = game.CurrentPlayer.GetShips();
+            ReadOnlyCollection<Ship> ships = Game.CurrentPlayer.GetShips();
             if (ships.Count > 0)
             {
                 int start = ships.IndexOf(this.selectedTile == null ? null : this.selectedTile.SpaceObject as Ship);
@@ -834,9 +866,9 @@ namespace GalWarWin
         {
             if (emphasisEvent)
             {
-                game.CurrentPlayer.GoldEmphasis = chkGold.Checked;
-                game.CurrentPlayer.ResearchEmphasis = chkResearch.Checked;
-                game.CurrentPlayer.ProductionEmphasis = chkProduction.Checked;
+                Game.CurrentPlayer.GoldEmphasis = chkGold.Checked;
+                Game.CurrentPlayer.ResearchEmphasis = chkResearch.Checked;
+                Game.CurrentPlayer.ProductionEmphasis = chkProduction.Checked;
 
                 RefreshAll();
             }
@@ -859,9 +891,9 @@ namespace GalWarWin
                 int y = (int)( e.Y / scale );
                 int x = (int)( ( ( e.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale );
 
-                if (x >= 0 && y >= 0 && x < game.Diameter && y < game.Diameter)
+                if (x >= 0 && y >= 0 && x < Game.Diameter && y < Game.Diameter)
                 {
-                    Tile clickedTile = game.GetMap()[x, y];
+                    Tile clickedTile = Game.GetMap()[x, y];
                     if (clickedTile != null)
                         if (e.Button == MouseButtons.Left)
                         {
@@ -1122,7 +1154,7 @@ namespace GalWarWin
         {
             if (from.MaxPop > 0 && to.MaxPop > 0)
             {
-                int troops = SliderForm.ShowDialog(this, new MoveTroops(game, from, to));
+                int troops = SliderForm.ShowDialog(this, new MoveTroops(Game, from, to));
                 if (troops > 0)
                 {
                     this.selectedTile = to.Tile;
@@ -1151,7 +1183,7 @@ namespace GalWarWin
                 else
                 {
                     gold = int.MaxValue;
-                    troops = SliderForm.ShowDialog(this, new MoveTroops(game, ship, colony));
+                    troops = SliderForm.ShowDialog(this, new MoveTroops(Game, ship, colony));
                 }
 
             bool selectShip = true;
@@ -1221,23 +1253,23 @@ namespace GalWarWin
         {
             int i1, i2, ships = 0;
             double d1, d2, income = 0, upkeep = 0, total;
-            foreach (Colony colony in game.CurrentPlayer.GetColonies())
+            foreach (Colony colony in Game.CurrentPlayer.GetColonies())
             {
                 double gold;
                 colony.GetTurnValues(out i1, out gold, out i2);
                 income += gold;
                 upkeep += colony.Upkeep;
             }
-            foreach (Ship ship in game.CurrentPlayer.GetShips())
+            foreach (Ship ship in Game.CurrentPlayer.GetShips())
             {
                 upkeep += ship.Upkeep - ship.GetUpkeepReturn();
                 ships += ship.Upkeep;
             }
-            game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
+            Game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
 
             MessageBox.Show(string.Format("Income: {0}\r\nUpkeep: {1}\r\nShips: {2}\r\nOther: {3}\r\nTotal: {4}\r\nMinimum: {5}",
                     FormatDouble(income), FormatDouble(upkeep), ships, FormatDouble(total - income + upkeep),
-                    FormatDouble(total), FormatDouble(game.CurrentPlayer.GetMinGold())));
+                    FormatDouble(total), FormatDouble(Game.CurrentPlayer.GetMinGold())));
         }
 
         private void lbl4_Click(object sender, EventArgs e)
@@ -1302,11 +1334,11 @@ namespace GalWarWin
 
         public void RefreshAll()
         {
-            if (!ended && game.GetPlayers().Length < 2)
+            if (!ended && Game.GetPlayers().Length < 2)
             {
                 ended = true;
-                TextForm.ShowDialog(this, game.GetGameResult());
-                game.AutoSave();
+                TextForm.ShowDialog(this, Game.GetGameResult());
+                Game.AutoSave();
             }
 
             RefreshCurrentPlayer();
@@ -1326,30 +1358,30 @@ namespace GalWarWin
 
         private void RefreshCurrentPlayer()
         {
-            this.lblPlayer.BackColor = game.CurrentPlayer.Color;
-            this.lblPlayer.Text = game.Turn.ToString() + " - " + game.CurrentPlayer.Name;
+            this.lblPlayer.BackColor = Game.CurrentPlayer.Color;
+            this.lblPlayer.Text = Game.Turn.ToString() + " - " + Game.CurrentPlayer.Name;
             RefreshPlayerInfo();
         }
 
         private void RefreshPlayerInfo()
         {
-            this.lblPopulation.Text = game.CurrentPlayer.GetPopulation().ToString();
-            this.lblGold.Text = FormatDouble(game.CurrentPlayer.Gold);
+            this.lblPopulation.Text = Game.CurrentPlayer.GetPopulation().ToString();
+            this.lblGold.Text = FormatDouble(Game.CurrentPlayer.Gold);
 
             int research;
             double population, production, gold;
-            game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
+            Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
 
             FormatIncome(lblPopInc, population);
             FormatIncome(lblGoldInc, gold, true);
             FormatIncome(lblResearch, research);
-            this.lblRsrchPct.Text = FormatPct(game.CurrentPlayer.GetResearchChance(research));
+            this.lblRsrchPct.Text = FormatPct(Game.CurrentPlayer.GetResearchChance(research));
             FormatIncome(lblProduction, production);
 
             emphasisEvent = false;
-            chkGold.Checked = game.CurrentPlayer.GoldEmphasis;
-            chkResearch.Checked = game.CurrentPlayer.ResearchEmphasis;
-            chkProduction.Checked = game.CurrentPlayer.ProductionEmphasis;
+            chkGold.Checked = Game.CurrentPlayer.GoldEmphasis;
+            chkResearch.Checked = Game.CurrentPlayer.ResearchEmphasis;
+            chkProduction.Checked = Game.CurrentPlayer.ProductionEmphasis;
             emphasisEvent = true;
         }
 
@@ -1497,7 +1529,7 @@ namespace GalWarWin
                 this.lblTop.Text = "Uncolonized";
 
                 int pop = 0, dist = int.MaxValue;
-                foreach (Ship ship in game.CurrentPlayer.GetShips())
+                foreach (Ship ship in Game.CurrentPlayer.GetShips())
                     if (ship.Colony && ship.Population > 0)
                     {
                         int thisDist = Tile.GetDistance(ship.Tile, planet.Tile);
@@ -1777,7 +1809,7 @@ namespace GalWarWin
                 this.selectedTile = fromColony.Tile;
             this.RefreshAll();
 
-            return SliderForm.ShowDialog(this, new MoveTroops(game, fromColony, total, free, totalPop, soldiers));
+            return SliderForm.ShowDialog(this, new MoveTroops(Game, fromColony, total, free, totalPop, soldiers));
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)

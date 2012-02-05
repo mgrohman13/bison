@@ -1,6 +1,3 @@
-variable default save/autosave location
-	move saves from repo to dropbox
-
 cost calculator
 test other grph data storage implementations with real data
 main map improvements

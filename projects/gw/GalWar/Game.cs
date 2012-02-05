@@ -24,6 +24,9 @@ namespace GalWar
 
         #region fields and constructors
 
+        [NonSerialized]
+        public string AutoSavePath = "../../../auto";
+
         public readonly Graphs Graphs;
 
         public readonly StoreProd StoreProd;
@@ -375,7 +378,7 @@ next_planet:
 
         public void AutoSave()
         {
-            TBSUtil.SaveGame(this, "../../../auto", turn + ".gws");
+            TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
         }
 
         private void NewRound()
