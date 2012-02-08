@@ -475,18 +475,22 @@ namespace MattUtil
             if (thread != null)
             {
                 uint timeVal;
-                //lock here so we use the updated timer value once unblocked
                 lock (typeof(MTRandom))
                 {
                     //combine in a value based off of the timing of calls
-                    long ticks = watch.ElapsedTicks;
-                    timeVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
+                    timeVal = GetShiftedTicks();
                     counter += value;
                 }
                 value += timeVal;
             }
 
             return value;
+        }
+
+        private static uint GetShiftedTicks()
+        {
+            long ticks = watch.ElapsedTicks;
+            return ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
         }
 
         //Marsaglia's KISS (Keep It Simple Stupid) pseudorandom number generator, overall period>2^123.
@@ -1639,17 +1643,19 @@ namespace MattUtil
         private void RunTick(object obj)
         {
             ushort frequency = (ushort)obj;
+
             while (true)
             {
+                //amount of sleep time is random, averaging at frequency
+                int sleep = OEInt(frequency);
+
                 //randomly choose an algorithm or number of bits to permutate
                 switch (NextBits(4))
                 {
                 case 0:
-                    //Console.Write("Gaussian(false): ");
                     Gaussian(false);
                     break;
                 case 1:
-                    //Console.Write("Gaussian(true): ");
                     Gaussian(true);
                     break;
                 case 2:
@@ -1657,45 +1663,39 @@ namespace MattUtil
                 case 4:
                 case 5:
                 case 6:
-                    byte numBits = (byte)RangeInt(1, 31);
-                    //Console.Write("NextBits(" + numBits + "): ");
-                    NextBits(numBits);
+                    NextBits((byte)RangeInt(1, 31));
                     break;
                 case 7:
-                    //Console.Write("NextUInt(): ");
                     NextUInt();
                     break;
                 case 8:
                 case 9:
                 case 10:
-                    //Console.Write("MersenneTwister(): ");
                     MersenneTwister();
                     break;
                 case 11:
-                    //Console.Write("MarsagliaKISS(): ");
                     MarsagliaKISS();
                     break;
                 case 12:
-                    //Console.Write("LCG(): ");
                     LCG();
                     break;
                 case 13:
-                    //Console.Write("LFSR(): ");
                     LFSR();
                     break;
                 case 14:
-                    //Console.Write("MWC1(): ");
                     MWC1();
                     break;
                 case 15:
-                    //Console.Write("MWC2(): ");
                     MWC2();
                     break;
                 default:
                     throw new Exception("internal error");
                 }
-                //sleep for a random amount of time, averaging at frequency
-                Thread.Sleep(OEInt(frequency));
+
+                //permutate counter
+                GetShiftedTicks();
+
+                Thread.Sleep(sleep);
             }
         }
 
