@@ -1267,9 +1267,13 @@ namespace GalWarWin
             }
             Game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
 
-            MessageBox.Show(string.Format("Income: {0}\r\nUpkeep: {1}\r\nShips: {2}\r\nOther: {3}\r\nTotal: {4}\r\nMinimum: {5}",
-                    FormatDouble(income), FormatDouble(upkeep), ships, FormatDouble(total - income + upkeep),
-                    FormatDouble(total), FormatDouble(Game.CurrentPlayer.GetMinGold())));
+            income = Player.RoundGold(income);
+            upkeep = Player.RoundGold(upkeep);
+            total = Player.RoundGold(total);
+
+            MessageBox.Show(string.Format("Ships: {2}\r\n\r\nIncome: {0}\r\nUpkeep: {1}\r\nOther: {3}\r\nTotal: {4}\r\nMinimum: {5}",
+                    FormatIncome(income), FormatIncome(-upkeep), ships, FormatIncome(total - income + upkeep),
+                    FormatIncome(total), FormatIncome(Game.CurrentPlayer.GetMinGold())));
         }
 
         private void lbl4_Click(object sender, EventArgs e)
@@ -1392,24 +1396,25 @@ namespace GalWarWin
 
         private void FormatIncome(Label label, double income, bool forceDouble)
         {
-            string sign = string.Empty;
-
             if (income < 0)
-            {
                 label.ForeColor = Color.DarkRed;
-            }
             else
-            {
                 label.ForeColor = Color.Black;
 
-                if (income > 0)
-                    sign = "+";
-            }
-
-            label.Text = sign + ( forceDouble ? FormatDouble(income) : FormatUsuallyInt(income) );
+            label.Text = FormatIncome(income, forceDouble);
 
             if (label.TextAlign == ContentAlignment.MiddleRight)
                 label.Width = ( label.Text.Contains(".") ? 46 : 35 );
+        }
+
+        public string FormatIncome(double income)
+        {
+            return FormatIncome(income, true);
+        }
+
+        public string FormatIncome(double income, bool forceDouble)
+        {
+            return ( income > 0 ? "+" : string.Empty ) + ( forceDouble ? FormatDouble(income) : FormatUsuallyInt(income) );
         }
 
         private void RefreshSelectedInfo()
