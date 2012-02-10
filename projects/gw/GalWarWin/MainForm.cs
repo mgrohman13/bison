@@ -1271,9 +1271,8 @@ namespace GalWarWin
             upkeep = Player.RoundGold(upkeep);
             total = Player.RoundGold(total);
 
-            MessageBox.Show(string.Format("Ships: {2}\r\n\r\nIncome: {0}\r\nUpkeep: {1}\r\nOther: {3}\r\nTotal: {4}\r\nMinimum: {5}",
-                    FormatIncome(income), FormatIncome(-upkeep), ships, FormatIncome(total - income + upkeep),
-                    FormatIncome(total), FormatIncome(Game.CurrentPlayer.GetMinGold())));
+            LabelsForm.ShowDialog(this, "Ships", ships.ToString(), string.Empty, string.Empty, "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
+                    "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total), "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
         }
 
         private void lbl4_Click(object sender, EventArgs e)
@@ -1295,18 +1294,18 @@ namespace GalWarWin
                 string modInc = FormatDouble(production + gold + research);
                 string modGold = FormatDouble(gold);
                 string modProd = FormatUsuallyInt(production);
-                MessageBox.Show(string.Format("Income: {0}{7}\r\nUpkeep: {1}\r\n\r\nGold: {2}{5}\r\nResearch: {3}\r\nProduction: {4}{6}",
-                        modInc, FormatDouble(colony.Upkeep), modGold, research, modProd,
-                        ShowOrig(FormatDouble(gold2), modGold), ShowOrig(production2.ToString(), modProd),
-                        ShowOrig(FormatDouble(colony.GetTotalIncome()), modInc)));
+
+                LabelsForm.ShowDialog(this, "Income", ShowOrig(FormatDouble(colony.GetTotalIncome()), modInc), "Upkeep", FormatDouble(colony.Upkeep), string.Empty, string.Empty,
+                        "Gold", ShowOrig(FormatDouble(gold2), modGold), "Research", research.ToString(), "Production", ShowOrig(production2.ToString(), modProd));
             }
         }
 
         private string ShowOrig(string orig, string mod)
         {
-            if (orig == mod)
-                return string.Empty;
-            return string.Format(" ({0})", orig);
+            string retVal = mod;
+            if (orig != mod)
+                retVal += string.Format(" ({0})", orig);
+            return retVal;
         }
 
         private Colony GetSelectedColony()
@@ -1389,17 +1388,14 @@ namespace GalWarWin
             emphasisEvent = true;
         }
 
-        private void FormatIncome(Label label, double income)
+        private static void FormatIncome(Label label, double income)
         {
             FormatIncome(label, income, false);
         }
 
-        private void FormatIncome(Label label, double income, bool forceDouble)
+        private static void FormatIncome(Label label, double income, bool forceDouble)
         {
-            if (income < 0)
-                label.ForeColor = Color.DarkRed;
-            else
-                label.ForeColor = Color.Black;
+            ColorForIncome(label, income < 0);
 
             label.Text = FormatIncome(income, forceDouble);
 
@@ -1407,12 +1403,17 @@ namespace GalWarWin
                 label.Width = ( label.Text.Contains(".") ? 46 : 35 );
         }
 
-        public string FormatIncome(double income)
+        public static void ColorForIncome(Label label, bool negative)
+        {
+            label.ForeColor = ( negative ? Color.DarkRed : Color.Black );
+        }
+
+        public static string FormatIncome(double income)
         {
             return FormatIncome(income, true);
         }
 
-        public string FormatIncome(double income, bool forceDouble)
+        public static string FormatIncome(double income, bool forceDouble)
         {
             return ( income > 0 ? "+" : string.Empty ) + ( forceDouble ? FormatDouble(income) : FormatUsuallyInt(income) );
         }

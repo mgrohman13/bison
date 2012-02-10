@@ -59,6 +59,12 @@
     <Compile Include="InvadeCalculatorForm.Designer.cs">
       <DependentUpon>InvadeCalculatorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="LabelsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LabelsForm.Designer.cs">
+      <DependentUpon>LabelsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -91,6 +97,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="InvadeCalculatorForm.resx">
       <DependentUpon>InvadeCalculatorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LabelsForm.resx">
+      <DependentUpon>LabelsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <SubType>Designer</SubType>

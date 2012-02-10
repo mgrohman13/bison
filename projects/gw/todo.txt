@@ -1,5 +1,3 @@
-income popups right-justify
-
 cost calculator
 test other grph data storage implementations with real data
 main map improvements
