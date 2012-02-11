@@ -34,27 +34,32 @@ namespace GalWarWin.Sliders
                 if (planet != null)
                 {
                     if (planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == ship)
-                        return GetOptimalProd(this.max);
+                        return GetOptimalProd();
                     break;
                 }
             }
             if (ship.Colony)
-                return GetOptimalColony(this.max);
+                return GetOptimalColony();
+            return GetDefault();
+        }
+
+        private double GetDefault()
+        {
             return ( ship.MaxHP * Consts.RepairGoldHPPct );
         }
 
-        private int GetOptimalProd(int max)
+        private int GetOptimalProd()
         {
             return MattUtil.TBSUtil.FindValue(delegate(int repair)
             {
-                if (repair < max)
+                if (repair < this.max)
                 {
                     double cur = GetProdSaved(repair);
                     double next = GetProdSaved(repair + 1);
                     return ( cur > next );
                 }
                 return true;
-            }, 0, max, true);
+            }, 0, this.max, true);
         }
 
         private double GetProdSaved(int repair)
@@ -62,18 +67,18 @@ namespace GalWarWin.Sliders
             return Consts.GoldForProduction * ship.GetProdForHP(repair) - ship.GetGoldForHP(repair);
         }
 
-        private int GetOptimalColony(int max)
+        private int GetOptimalColony()
         {
             return MattUtil.TBSUtil.FindValue(delegate(int repair)
             {
-                if (repair < max)
+                if (repair < this.max)
                 {
                     double cur = GetColony(repair);
                     double next = GetColony(repair + 1);
                     return ( cur > next );
                 }
                 return true;
-            }, 0, max, true);
+            }, 0, this.max, true);
         }
 
         private double GetColony(int repair)
@@ -100,6 +105,16 @@ namespace GalWarWin.Sliders
         {
             lblTitle.Text = "Repair Ship";
             lblSlideType.Text = "HP";
+        }
+
+        internal override double lblExtra_Click()
+        {
+            return GetOptimalProd();
+        }
+
+        internal override double lblEffcnt_Click()
+        {
+            return GetDefault();
         }
     }
 }

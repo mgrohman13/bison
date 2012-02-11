@@ -86,5 +86,15 @@ namespace GalWarWin.Sliders
                 lblEffcnt.Text = GetEffcnt();
             }
         }
+
+        internal virtual double lblExtra_Click()
+        {
+            return GetValue();
+        }
+
+        internal virtual double lblEffcnt_Click()
+        {
+            return GetValue();
+        }
     }
 }

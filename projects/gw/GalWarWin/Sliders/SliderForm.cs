@@ -147,6 +147,16 @@ namespace GalWarWin.Sliders
             return -1;
         }
 
+        private void lblExtra_Click(object sender, EventArgs e)
+        {
+            SetValue(Game.Random.Round(controller.lblExtra_Click()));
+        }
+
+        private void lblEffcnt_Click(object sender, EventArgs e)
+        {
+            SetValue(Game.Random.Round(controller.lblEffcnt_Click()));
+        }
+
         private void SliderForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (custom != null)

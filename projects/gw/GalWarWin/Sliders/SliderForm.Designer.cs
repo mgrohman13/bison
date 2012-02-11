@@ -92,6 +92,7 @@ namespace GalWarWin.Sliders
             this.lblEffcnt.TabIndex = 7;
             this.lblEffcnt.Text = "lblEffcnt";
             this.lblEffcnt.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblEffcnt.Click += new System.EventHandler(this.lblEffcnt_Click);
             // 
             // lblResultType
             // 
@@ -133,6 +134,7 @@ namespace GalWarWin.Sliders
             this.lblExtra.TabIndex = 4;
             this.lblExtra.Text = "lblExtra";
             this.lblExtra.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblExtra.Click += new System.EventHandler(this.lblExtra_Click);
             // 
             // lblSlideType
             // 

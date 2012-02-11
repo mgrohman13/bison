@@ -1287,24 +1287,24 @@ namespace GalWarWin
             Colony colony = GetSelectedColony();
             if (colony != null && colony.Player.IsTurn)
             {
-                double population = 0, production = 0, gold = 0, gold2;
-                int research = 0, production2, research2;
+                double population = 0, production = 0, gold = 0, origGold;
+                int research = 0, origProd;
                 colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
-                colony.GetTurnValues(out production2, out gold2, out research2);
-                string modInc = FormatDouble(production + gold + research);
-                string modGold = FormatDouble(gold);
-                string modProd = FormatUsuallyInt(production);
+                colony.GetTurnValues(out origProd, out origGold, out research);
+                gold = Player.RoundGold(gold);
+                production = Player.RoundGold(production);
 
-                LabelsForm.ShowDialog(this, "Income", ShowOrig(FormatDouble(colony.GetTotalIncome()), modInc), "Upkeep", FormatDouble(colony.Upkeep), string.Empty, string.Empty,
-                        "Gold", ShowOrig(FormatDouble(gold2), modGold), "Research", research.ToString(), "Production", ShowOrig(production2.ToString(), modProd));
+                LabelsForm.ShowDialog(this, "Income", ShowOrig(colony.GetTotalIncome(), production + gold + research), "Upkeep", FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
+                        "Gold", ShowOrig(origGold, gold), "Research", FormatDouble(research), "Production", ShowOrig(origProd, production));
             }
         }
 
-        private string ShowOrig(string orig, string mod)
+        private string ShowOrig(double orig, double mod)
         {
-            string retVal = mod;
+            orig = Player.RoundGold(orig);
+            string retVal = FormatDouble(mod);
             if (orig != mod)
-                retVal += string.Format(" ({0})", orig);
+                retVal = string.Format("({0}) {1}", FormatUsuallyInt(orig), retVal);
             return retVal;
         }
 

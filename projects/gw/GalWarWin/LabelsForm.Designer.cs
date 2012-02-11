@@ -35,7 +35,7 @@
             // 
             // label
             // 
-            this.label.Location = new System.Drawing.Point(12, 9);
+            this.label.Location = new System.Drawing.Point(3, 0);
             this.label.Name = "label";
             this.label.Size = new System.Drawing.Size(65, 23);
             this.label.TabIndex = 0;
@@ -44,7 +44,7 @@
             // 
             // info
             // 
-            this.info.Location = new System.Drawing.Point(83, 9);
+            this.info.Location = new System.Drawing.Point(69, 0);
             this.info.Name = "info";
             this.info.Size = new System.Drawing.Size(40, 23);
             this.info.TabIndex = 1;
@@ -54,7 +54,7 @@
             // button1
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Location = new System.Drawing.Point(0, 0);
+            this.button1.Location = new System.Drawing.Point(-1, -9);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(0, 0);
             this.button1.TabIndex = 2;

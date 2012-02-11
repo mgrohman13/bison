@@ -51,35 +51,49 @@ namespace GalWarWin
                 lbl.Show();
             }
 
-            for (int b = 0 ; b < a ; b += 2)
+            for (int b = 0 ; b < a ; ++b)
             {
                 Label lbl = this.labels[b];
                 if (( b & 1 ) == 0)
                     lbl.Width = 65;
                 else
-                    lbl.Location = new Point(83, lbl.Location.Y);
+                    lbl.Location = new Point(69, lbl.Location.Y);
             }
-            int minDiff = int.MaxValue, maxWidth = int.MinValue;
-            for (int b = 0 ; b < a ; b += 2)
+            int minDiff = int.MaxValue, infoWidth = int.MinValue, valueWidth = int.MinValue;
+            for (int b = 0 ; b < a ; ++b)
             {
                 Label lbl = this.labels[b];
                 int diff = lbl.Width;
                 lbl.AutoSize = true;
                 int width = lbl.Width;
                 lbl.AutoSize = false;
-                diff -= width;
-                if (diff < minDiff)
-                    minDiff = diff;
-                if (width > maxWidth)
-                    maxWidth = width;
+
+                if (( b & 1 ) == 0)
+                {
+                    diff -= width;
+                    if (diff < minDiff)
+                        minDiff = diff;
+                    if (width > infoWidth)
+                        infoWidth = width;
+                }
+                else
+                {
+                    if (width > valueWidth)
+                        valueWidth = width;
+                }
             }
-            for (int b = 0 ; b < a ; b += 2)
+            for (int b = 0 ; b < a ; ++b)
             {
                 Label lbl = this.labels[b];
                 if (( b & 1 ) == 0)
-                    lbl.Width = maxWidth;
+                {
+                    lbl.Width = infoWidth;
+                }
                 else
+                {
+                    lbl.Width = valueWidth;
                     lbl.Location = new Point(lbl.Location.X - minDiff, lbl.Location.Y);
+                }
             }
 
             while (a < this.labels.Count)
@@ -92,7 +106,7 @@ namespace GalWarWin
 
             label.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 
-            label.Location = new System.Drawing.Point(( text ? 12 : 83 ), this.labels[this.labels.Count - 1].Location.Y + 23);
+            label.Location = new System.Drawing.Point(( text ? 3 : 69 ), this.labels[this.labels.Count - 1].Location.Y + 23);
             label.Size = new System.Drawing.Size(( text ? 65 : 40 ), 23);
 
             this.Controls.Add(label);
