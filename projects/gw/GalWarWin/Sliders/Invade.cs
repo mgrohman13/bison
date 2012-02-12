@@ -176,7 +176,7 @@ namespace GalWarWin.Sliders
                 if (!goldTroopValues.TryGetValue(gold, out result))
                 {
                     double defense = GetDefense();
-                    int max = Math.Min(attPop, (int)( gold / Consts.MovePopulationGoldCost ));
+                    int max = Math.Min(attPop, MoveTroops.GetMaxMovePop(gold + .01));
                     result = MattUtil.TBSUtil.FindValue(delegate(int troops)
                     {
                         if (troops < max)

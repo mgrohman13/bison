@@ -191,7 +191,7 @@ namespace GalWar
 
         public static double GetGoldCost(int population)
         {
-            return population * Consts.MovePopulationGoldCost;
+            return Player.CeilGold(population * Consts.MovePopulationGoldCost);
         }
 
         protected double GetSoldiers(int troops, double soldiers)

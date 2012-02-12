@@ -902,25 +902,9 @@ namespace GalWar
 
             double actualValue = GetDisbandValue(hp);
             if (gold)
-            {
-                double disbandValue = GetPlanetDefenseDisbandValue(hp, gold);
-                this.Player.AddGold(disbandValue);
-                for (double totalExtra = actualValue - disbandValue ; totalExtra != 0 ; )
-                {
-                    const double MIN = .05 - Consts.FLOAT_ERROR;
-                    double extra;
-                    if (totalExtra > 0)
-                        extra = Math.Min(totalExtra, MIN);
-                    else
-                        extra = Math.Max(totalExtra, -MIN);
-                    this.Player.AddGold(extra);
-                    totalExtra -= extra;
-                }
-            }
+                this.Player.AddGold(actualValue, GetPlanetDefenseDisbandValue(hp, gold));
             else
-            {
                 AddProduction(actualValue);
-            }
 
             this.HP -= hp;
         }

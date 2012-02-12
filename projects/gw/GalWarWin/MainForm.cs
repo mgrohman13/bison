@@ -741,7 +741,7 @@ namespace GalWarWin
             Ship ship = (Ship)this.selectedTile.SpaceObject;
             double disbandValue = ship.DisbandValue;
             double goldValue = ship.GetDestroyGold();
-            double total = disbandValue + goldValue;
+            double total = Player.RoundGold(disbandValue) + Player.RoundGold(goldValue);
 
             Colony colony = null;
             foreach (Tile neighbor in Tile.GetNeighbors(this.selectedTile))

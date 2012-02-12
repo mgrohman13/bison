@@ -49,9 +49,6 @@ namespace GalWarWin
             //    Console.WriteLine("{0:0.00}\t{1:00.0}\t{2:0.000}", d, e, e / d);
             //}
 
-            //ensure gold cost for moving population cannot be exploited by rounding
-            if (Player.RoundGold(Consts.MovePopulationGoldCost) < Consts.MovePopulationGoldCost)
-                throw new Exception();
             //run app
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

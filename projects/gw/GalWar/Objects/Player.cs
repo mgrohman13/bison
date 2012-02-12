@@ -262,11 +262,18 @@ namespace GalWar
 
         internal void AddGold(double gold)
         {
-            double addGold = RoundGold(gold);
-            if (addGold < -this._gold)
-                addGold = -this._gold;
-            this._goldDiff += gold - addGold;
-            this._gold += addGold;
+            AddGold(gold, RoundGold(gold));
+        }
+
+        internal void AddGold(double gold, double rounded)
+        {
+            if (Math.Abs(rounded - RoundGold(rounded)) > Consts.FLOAT_ERROR)
+                throw new Exception();
+
+            if (rounded < -this._gold)
+                rounded = -this._gold;
+            this._goldDiff += gold - rounded;
+            this._gold += rounded;
         }
 
         internal void SpendGold(double gold)
@@ -277,6 +284,11 @@ namespace GalWar
         public static double RoundGold(double gold)
         {
             return Math.Round(gold, 1, MidpointRounding.AwayFromZero);
+        }
+
+        public static double CeilGold(double gold)
+        {
+            return Math.Ceiling(gold * 10.0) / 10.0;
         }
 
         internal void DeathCheck()

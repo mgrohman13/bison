@@ -74,16 +74,15 @@ namespace GalWarWin.Sliders
                 max = this.max.Value;
             else
                 max = Math.Min(from.AvailablePop, to.FreeSpace);
-            int canPay = (int)( game.CurrentPlayer.Gold / Consts.MovePopulationGoldCost );
-            while (game.CurrentPlayer.Gold > PopCarrier.GetGoldCost(canPay))
-            {
-                ++canPay;
-                if (game.CurrentPlayer.Gold > PopCarrier.GetGoldCost(canPay))
-                {
-                }
-            }
-            --canPay;
-            return Math.Min(max, free + canPay);
+            return Math.Min(max, free + GetMaxMovePop(game.CurrentPlayer.Gold));
+        }
+
+        public static int GetMaxMovePop(double gold)
+        {
+            int max = (int)( gold / Consts.MovePopulationGoldCost ) - 1;
+            while (gold > PopCarrier.GetGoldCost(max))
+                ++max;
+            return --max;
         }
 
         protected override double GetResult()

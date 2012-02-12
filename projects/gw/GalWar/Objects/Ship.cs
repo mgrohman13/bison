@@ -237,11 +237,6 @@ namespace GalWar
             if (this.Dead)
                 throw new Exception();
 
-            LosePopulation(this.Population);
-
-            if (this.soldiers > Consts.FLOAT_ERROR)
-                throw new Exception();
-
             this.Player.AddGold(GetDestroyGold());
 
             this.Player.RemoveShip(this);
