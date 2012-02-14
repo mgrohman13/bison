@@ -1615,6 +1615,12 @@ namespace GalWarWin
                 string strChange = FormatUsuallyInt(pdChange);
                 if (strChange != "0")
                     this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : string.Empty);
+
+                if (colony.ProdHeal > 0)
+                {
+                    this.lbl6.Text = "Repair";
+                    this.lbl6Inf.Text = "+" + colony.ProdHeal;
+                }
             }
 
             this.lbl4.BorderStyle = BorderStyle.FixedSingle;

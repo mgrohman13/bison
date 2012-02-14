@@ -7,13 +7,54 @@ namespace GalWar
     public class Graphs
     {
         private readonly List<Dictionary<GraphType, Dictionary<Player, float>>> data;
+        private readonly Dictionary<GraphType, Dictionary<Player, float>> turnVals;
 
         private readonly Player[] players;
 
         internal Graphs(Game game)
         {
             this.data = new List<Dictionary<GraphType, Dictionary<Player, float>>>();
+            this.turnVals = new Dictionary<GraphType, Dictionary<Player, float>>();
             this.players = game.GetPlayers();
+        }
+
+        internal void StartTurn(Player player)
+        {
+            float f, quality, armada, damaged;
+            LoopColonies(player, out f, out quality);
+            LoopShips(player, out armada, out damaged, out f);
+
+            StartTurn(GraphType.Quality, player, quality);
+            StartTurn(GraphType.Armada, player, armada);
+            StartTurn(GraphType.ArmadaDamaged, player, damaged);
+        }
+
+        private void StartTurn(GraphType graphType, Player player, float amount)
+        {
+            Dictionary<Player, float> playerVals;
+            if (!turnVals.TryGetValue(graphType, out playerVals))
+            {
+                playerVals = new Dictionary<Player, float>();
+                turnVals[graphType] = playerVals;
+            }
+            playerVals[player] = amount;
+        }
+
+        internal void EndTurn(Player player)
+        {
+            float f, quality, armada, damaged;
+            LoopColonies(player, out f, out quality);
+            LoopShips(player, out armada, out damaged, out f);
+
+            //values subject to major fluctuation depending on who moved last get averaged out to eliminate the effect of turn order
+            EndTurn(GraphType.Quality, player, quality);
+            EndTurn(GraphType.Armada, player, armada);
+            EndTurn(GraphType.ArmadaDamaged, player, damaged);
+        }
+
+        private void EndTurn(GraphType graphType, Player player, float amount)
+        {
+            turnVals[graphType][player] = ( turnVals[graphType][player] + amount ) / 2f;
         }
 
         internal void Increment(Game game)
@@ -26,25 +67,19 @@ namespace GalWar
             foreach (Player player in this.players)
                 if (Array.IndexOf(players, player) > -1)
                 {
-                    Add(playerGraphs, GraphType.Research, player, (float)research[player]);
+                    Add(playerGraphs, GraphType.Quality, player, turnVals[GraphType.Quality][player]);
+                    Add(playerGraphs, GraphType.Armada, player, turnVals[GraphType.Armada][player]);
+                    Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[GraphType.ArmadaDamaged][player]);
 
-                    //loop once through colonies
-                    float pop, quality;
-                    LoopColonies(player, out pop, out quality);
+                    Add(playerGraphs, GraphType.Research, player, (float)research[player]);
+                    Add(playerGraphs, GraphType.TotalIncome, player, (float)player.IncomeTotal);
+
+                    float pop, trans, f1, f2, f3;
+                    LoopColonies(player, out pop, out f1);
+                    LoopShips(player, out f2, out f3, out trans);
 
                     Add(playerGraphs, GraphType.Population, player, pop);
-                    Add(playerGraphs, GraphType.Quality, player, quality);
-
-                    //loop once through ships
-                    float armada, damaged, trans;
-                    LoopShips(player, out armada, out damaged, out trans);
-
-                    Add(playerGraphs, GraphType.Armada, player, armada);
-                    Add(playerGraphs, GraphType.ArmadaDamaged, player, damaged);
-
                     Add(playerGraphs, GraphType.PopulationTrans, player, pop + trans);
-
-                    Add(playerGraphs, GraphType.TotalIncome, player, (float)player.IncomeTotal);
                 }
                 else
                 {
@@ -58,6 +93,8 @@ namespace GalWar
                 }
 
             data.Add(playerGraphs);
+
+            turnVals.Clear();
         }
 
         private void Add(Dictionary<GraphType, Dictionary<Player, float>> playerGraphs, GraphType graphType, Player player, float value)

@@ -367,6 +367,7 @@ next_planet:
             handler = new HandlerWrapper(handler);
 
             CurrentPlayer.EndTurn(handler);
+            Graphs.EndTurn(CurrentPlayer);
 
             if (++this.currentPlayer >= this.players.Length)
                 NewRound();
@@ -464,6 +465,7 @@ next_planet:
 
         private void StartPlayerTurn(IEventHandler handler)
         {
+            Graphs.StartTurn(CurrentPlayer);
             CurrentPlayer.StartTurn(handler);
         }
 

@@ -17,7 +17,7 @@ namespace GalWar
         private bool _built;
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
-        private ushort _production;
+        private ushort _production, _prodHeal;
         private float _defenseSoldiers, _researchRounding, _productionRounding, _soldierChange;
 
         internal Colony(Player player, Planet planet, int population, double soldiers, int production, IEventHandler handler)
@@ -156,6 +156,7 @@ namespace GalWar
 
         internal void EndTurn(ref double gold, ref int research, IEventHandler handler)
         {
+            ProdHeal = 0;
             ResetMoved();
 
             //modify real values
@@ -200,7 +201,12 @@ namespace GalWar
 
             Ship repairShip = RepairShip;
             if (repairShip != null)
+            {
+                int hp = repairShip.HP;
                 repairShip.ProductionRepair(ref productionInc, ref gold, doTurn, minGold);
+                if (doTurn)
+                    ProdHeal = repairShip.HP - hp;
+            }
 
             if (this.Buildable == null)
                 LoseProduction(productionInc, ref productionInc, ref gold, Consts.GoldProductionForGold);
@@ -549,6 +555,21 @@ namespace GalWar
                 AssertException.Assert(value == null || this.Player == value.Player);
 
                 this._repairShip = value;
+            }
+        }
+
+        public int ProdHeal
+        {
+            get
+            {
+                return this._prodHeal;
+            }
+            private set
+            {
+                checked
+                {
+                    this._prodHeal = (ushort)value;
+                }
             }
         }
 

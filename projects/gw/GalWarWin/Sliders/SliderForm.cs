@@ -141,6 +141,7 @@ namespace GalWarWin.Sliders
         {
             gameForm.SetLocation(form);
 
+            controller.SetGameForm(gameForm);
             form.SetController(controller);
             if (form.ShowDialog() == DialogResult.OK)
                 return form.GetValue();

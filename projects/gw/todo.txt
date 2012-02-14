@@ -1,14 +1,9 @@
-show enemy prod heal amt
-eaasier invade for gold per saved/killed pop
-graph swapping a colony
-show invade form only when ship is turn
-
 nonColonyPct^2
 	0.3-.666 (GetUpkeepPayoff)
 	1-ExperienceUpkeepPayoffMult (Upkeep *)
 	0-1/ExperienceUpkeepPayoffMult (upkeepInc)
 	AdjustCost?
-trans pct
+	trans pct?
 
 cost calculator
 test other grph data storage implementations with real data

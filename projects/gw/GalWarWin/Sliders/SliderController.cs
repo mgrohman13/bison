@@ -6,11 +6,18 @@ namespace GalWarWin.Sliders
 {
     public abstract class SliderController
     {
+        protected MainForm gameForm;
+
         protected GetValueDelegate GetValue;
 
         public delegate int GetValueDelegate();
 
         public event GetValueDelegate DoSetText;
+
+        internal void SetGameForm(MainForm gameForm)
+        {
+            this.gameForm = gameForm;
+        }
 
         protected void Refresh()
         {

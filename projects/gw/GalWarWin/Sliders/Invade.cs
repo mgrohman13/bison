@@ -60,7 +60,11 @@ namespace GalWarWin.Sliders
 
         protected override double GetResult()
         {
-            int gold = GetValue();
+            return GetResult(GetValue());
+        }
+
+        private double GetResult(int gold)
+        {
             return GetResult(GetAttack(gold), GetTroops(gold), GetDefense());
         }
 
@@ -80,6 +84,46 @@ namespace GalWarWin.Sliders
         {
             lblTitle.Text = "Invade Planet";
             lblSlideType.Text = "Gold";
+        }
+
+        internal override double lblExtra_Click()
+        {
+            double target = InputForm.ShowDialog(this.gameForm, "Enter maximum gold per troop left:");
+            if (double.IsNaN(target))
+                return GetValue();
+
+            int max = GetMax();
+            int gold = MattUtil.TBSUtil.FindValue(delegate(int findGold)
+            {
+                return ( GetAttack(findGold) > GetDefense() );
+            }, 1, max, true);
+
+            int retVal = gold;
+            double last = GetResult(gold);
+            while (++gold <= max)
+            {
+                double cur = GetResult(gold);
+                if (( gold - retVal ) / ( cur - last ) < target)
+                {
+                    retVal = gold;
+                    last = cur;
+                }
+            }
+            return retVal;
+        }
+
+        internal override double lblEffcnt_Click()
+        {
+            double target = InputForm.ShowDialog(this.gameForm, "Enter target percent chance of winning (1-99):");
+            if (double.IsNaN(target) || target < 1 || target > 99)
+                return GetValue();
+
+            target = .5 / 100;
+
+            return MattUtil.TBSUtil.FindValue(delegate(int gold)
+            {
+                return ( GetWinPct(GetAttack(gold)) > target );
+            }, 1, GetMax(), true);
         }
 
         protected override string GetResultType()
