@@ -1,3 +1,4 @@
+DS cancel and still attack
 show DS free dmg
 gold during turn
 
