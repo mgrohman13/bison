@@ -24,20 +24,20 @@ namespace GalWar
             LoopColonies(player, out f, out quality);
             LoopShips(player, out armada, out damaged, out f);
 
-            StartTurn(GraphType.Quality, player, quality);
-            StartTurn(GraphType.Armada, player, armada);
-            StartTurn(GraphType.ArmadaDamaged, player, damaged);
+            AddNested(turnVals, GraphType.Quality, player, quality);
+            AddNested(turnVals, GraphType.Armada, player, armada);
+            AddNested(turnVals, GraphType.ArmadaDamaged, player, damaged);
         }
 
-        private void StartTurn(GraphType graphType, Player player, float amount)
+        private static void AddNested(Dictionary<GraphType, Dictionary<Player, float>> dictionary, GraphType graphType, Player player, float amount)
         {
             Dictionary<Player, float> playerVals;
-            if (!turnVals.TryGetValue(graphType, out playerVals))
+            if (!dictionary.TryGetValue(graphType, out playerVals))
             {
                 playerVals = new Dictionary<Player, float>();
-                turnVals[graphType] = playerVals;
+                dictionary.Add(graphType, playerVals);
             }
-            playerVals[player] = amount;
+            playerVals.Add(player, amount);
         }
 
         internal void EndTurn(Player player)
@@ -115,18 +115,10 @@ namespace GalWar
             }
 
             if (last < -1 || Math.Abs(last - value) / ( last + value ) > 0.0001)
-            {
-                Dictionary<Player, float> graphs;
-                if (!playerGraphs.TryGetValue(graphType, out graphs))
-                {
-                    graphs = new Dictionary<Player, float>();
-                    playerGraphs.Add(graphType, graphs);
-                }
-                graphs.Add(player, value);
-            }
+                AddNested(playerGraphs, graphType, player, value);
         }
 
-        private void LoopColonies(Player player, out float pop, out float quality)
+        private static void LoopColonies(Player player, out float pop, out float quality)
         {
             pop = 0;
             quality = 0;
@@ -137,7 +129,7 @@ namespace GalWar
             }
         }
 
-        private void LoopShips(Player player, out float armada, out float damaged, out float trans)
+        private static void LoopShips(Player player, out float armada, out float damaged, out float trans)
         {
             armada = 0;
             damaged = 0;
@@ -157,7 +149,7 @@ namespace GalWar
             //tells the caller which players are at which indices
             playerIndexes = new Dictionary<int, Player>();
             for (int b = 0 ; b < this.players.Length ; ++b)
-                playerIndexes[b] = this.players[b];
+                playerIndexes.Add(b, this.players[b]);
 
             for (int a = 0 ; a < this.data.Count ; ++a)
             {
