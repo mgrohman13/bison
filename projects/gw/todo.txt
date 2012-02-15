@@ -1,3 +1,4 @@
+show DS free dmg
 gold during turn
 
 nonColonyPct^2
