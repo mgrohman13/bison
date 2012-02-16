@@ -77,7 +77,7 @@ namespace GalWar
         {
             Ship ship = combatant as Ship;
             if (ship != null && ship.HP == 0)
-                ship.Destroy();
+                ship.Destroy(true);
         }
 
         private double AddKillExp()

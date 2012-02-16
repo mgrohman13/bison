@@ -232,12 +232,17 @@ namespace GalWar
             }
         }
 
-        internal void Destroy()
+        internal void Destroy(bool addGold)
         {
             if (this.Dead)
                 throw new Exception();
 
-            this.Player.AddGold(GetDestroyGold());
+            double destroyGold = GetDestroyGold();
+            if (destroyGold > 0)
+                if (addGold)
+                    this.Player.AddGold(destroyGold);
+                else
+                    this.Player.GoldIncome(destroyGold);
 
             this.Player.RemoveShip(this);
             this.Tile.SpaceObject = null;
@@ -466,12 +471,14 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
-            if (colony == null)
+            bool gold = ( colony == null );
+
+            if (gold)
                 this.Player.AddGold(DisbandValue);
             else
                 colony.AddProduction(DisbandValue);
 
-            Destroy();
+            Destroy(gold);
         }
 
         public void Move(Tile tile)
@@ -521,7 +528,7 @@ namespace GalWar
             --this.CurSpeed;
 
             double pct = Combat(ship, handler);
-            this.Player.AddGold(this.GetUpkeepReturn(pct));
+            this.Player.GoldIncome(this.GetUpkeepReturn(pct));
 
             //only the ship whose turn it is can immediately gain levels from the exp
             this.LevelUp(handler);
@@ -600,7 +607,7 @@ namespace GalWar
                 costInc = this.GetCostLastResearched() - costInc;
 
                 //add gold for level randomness and percent of ship injured 
-                Player.AddGold(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
+                Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
                 double upkeepPayoff = Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
                 double minCost = upkeepPayoff * Consts.MinCostMult;
@@ -694,17 +701,18 @@ namespace GalWar
                 double damage, d;
                 Consts.GetDamageTable(this.Att, colony.Def, out damage, out d);
 
-                int freeDamage = GetBombardDamage(this.GetFreeDmg(colony));
-                colony.HP -= freeDamage;
+                double freeDmg = this.GetFreeDmg(colony);
+                int bombardDamage = GetBombardDamage(freeDmg);
+                colony.HP -= bombardDamage;
 
                 if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
                     pct = Combat(colony, handler);
                 else
                     pct = 1;
 
-                pct *= damage / ( damage + freeDamage );
-                if (freeDamage > oldHP)
-                    pct += ( 1 - ( oldHP / (double)freeDamage ) ) * freeDamage / ( damage + freeDamage );
+                pct *= damage / ( damage + freeDmg );
+                if (bombardDamage > oldHP)
+                    pct += ( 1 - ( oldHP / (double)bombardDamage ) ) * freeDmg / ( damage + freeDmg );
             }
             else
             {
@@ -713,7 +721,7 @@ namespace GalWar
 
             if (pct > 0)
                 if (colony.HP > 0)
-                    this.Player.AddGold(GetUpkeepReturn(pct));
+                    this.Player.GoldIncome(GetUpkeepReturn(pct));
                 else
                     Bombard(colony.Planet, false, pct, handler);
 
@@ -755,6 +763,7 @@ namespace GalWar
             double popDmg;
             if (friendly)
             {
+                //when bombarding a friendly colony, you actually get overkill gold for population you do kill
                 popDmg = this.BombardDamage;
                 initPop = popDmg - Math.Min(colonyDamage, initPop);
             }
@@ -806,8 +815,8 @@ namespace GalWar
             {
                 planet.ReduceQuality(planetDamage);
 
-                double exp = planetDamage * Consts.TroopExperienceMult;
-                this.Player.SpendGold(exp);
+                double exp = Math.Min(initQuality, planetDamage) * Consts.TroopExperienceMult;
+                this.Player.GoldIncome(-exp);
                 AddCostExperience(exp);
             }
 
@@ -822,29 +831,24 @@ namespace GalWar
                 initPop = colony.Population;
 
                 if (colonyDamage > 0)
-                {
-                    double exp;
-                    colony.Bombard(colonyDamage, out exp);
-
-                    AddCostExperience(exp);
-                }
+                    AddCostExperience(colony.Bombard(colonyDamage));
             }
 
             return initPop;
         }
 
-        private void BombardOverkill(double qualityDamage, double quality, double popDmg, double pop, double pct)
+        private void BombardOverkill(double planetDamage, double quality, double colonyDamage, double pop, double pct)
         {
-            //the 1 movement is split between planet and colony damage
+            //the 1 movement is split evenly between planet and colony damage
             double move = 0;
             //planet quality overkill
-            if (qualityDamage > quality)
-                move += ( 1 - ( quality / qualityDamage ) );
+            if (planetDamage > quality)
+                move += ( 1 - ( quality / planetDamage ) );
             //colony population overkill
-            if (popDmg > pop)
-                move += ( 1 - ( pop / popDmg ) );
+            if (colonyDamage > pop)
+                move += ( 1 - ( pop / colonyDamage ) );
             if (move > 0)
-                this.Player.AddGold(GetUpkeepReturn(move / 2 * pct));
+                this.Player.GoldIncome(GetUpkeepReturn(move / 2 * pct));
         }
 
         public void Invade(Colony destination, int invadeGold, int population, ref int extraPop, IEventHandler handler)
@@ -896,10 +900,15 @@ namespace GalWar
             handler = new HandlerWrapper(handler);
 
             this.Player.SpendGold(gold);
-            this.Player.NewColony(planet, this.Population, this.soldiers, Game.Random.Round(ColonizationValue), handler);
+
+            int production = Game.Random.Round(ColonizationValue);
+            this.Player.NewColony(planet, this.Population, this.soldiers, production, handler);
+            this.Player.GoldIncome(ColonizationValue - production);
+
             this.Population = 0;
             this.soldiers = 0;
-            Destroy();
+
+            Destroy(false);
         }
 
         public void GoldRepair(int hp)

@@ -54,10 +54,10 @@ namespace GalWar
             if (population > 0)
             {
                 double soldiers = GetSoldiers(population, this.soldiers);
-                Player.AddGold(soldiers / Consts.SoldiersForGold);
+                Player.GoldIncome(soldiers / Consts.SoldiersForGold);
                 this.soldiers -= soldiers;
 
-                Player.AddGold(population / Consts.PopulationForGold);
+                Player.GoldIncome(population / Consts.PopulationForGold);
                 this.Population -= population;
             }
         }

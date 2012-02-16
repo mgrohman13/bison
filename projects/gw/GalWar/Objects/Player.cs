@@ -272,8 +272,13 @@ namespace GalWar
 
             if (rounded < -this._gold)
                 rounded = -this._gold;
-            this._goldDiff += gold - rounded;
+            GoldIncome(gold - rounded);
             this._gold += rounded;
+        }
+
+        internal void GoldIncome(double gold)
+        {
+            this._goldDiff += gold;
         }
 
         internal void SpendGold(double gold)

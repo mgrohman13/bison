@@ -262,14 +262,14 @@ namespace GalWar
             this._productionRounding = Game.Random.NextFloat();
         }
 
-        internal void Bombard(int damage, out double exp)
+        internal double Bombard(int damage)
         {
             int initPop = this.Population;
-            exp = damage * Consts.TroopExperienceMult;
-
             LosePopulation(damage);
 
+            double exp = Math.Min(initPop, damage) * Consts.TroopExperienceMult;
             this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
+            return exp;
         }
 
         internal int Invasion(Player player, int attackers, ref double soldiers, double gold, IEventHandler handler, ref int extra)
@@ -322,7 +322,7 @@ namespace GalWar
         private static float GetExperienceSoldiers(Player player, int curPop, double initPop, double exp)
         {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
-            player.AddGold(exp - mult);
+            player.GoldIncome(exp - mult);
             return Game.Random.GaussianCapped((float)( mult / Consts.ProductionForSoldiers ), Consts.SoldiersRndm);
         }
 
@@ -421,15 +421,9 @@ namespace GalWar
             if (this.Dead)
                 throw new Exception();
 
-            LosePopulation(this.Population);
-            LoseProduction(this.production);
-            if (this.HP > 0)
-            {
-                this.Player.AddGold(this.TotalDisbandValue);
-                this.HP = 0;
-            }
-            if (this.defenseSoldiers > 0)
-                this.Player.AddGold(this.defenseSoldiers / Consts.DefendingSoldiersForGold);
+            this.Player.AddGold(( this.Population / Consts.PopulationForGold ) + ( this.soldiers / Consts.SoldiersForGold )
+                    + ( this.production / Consts.ProductionForGold )
+                    + ( this.TotalDisbandValue ) + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold ));
 
             this.Player.RemoveColony(this);
 
@@ -444,7 +438,7 @@ namespace GalWar
 
             this.production += RoundValue(production, ref addGold);
 
-            Player.AddGold(addGold);
+            Player.GoldIncome(addGold);
         }
 
         internal void BuildSoldiers(double prodInc)
@@ -882,16 +876,12 @@ namespace GalWar
             double cost = this.PlanetDefenseTotalCost - oldCost;
             if (cost != 0)
             {
-                Console.WriteLine(this.defenseSoldiers);
                 float diff = (float)( cost * Consts.PlanetDefensesSoldiersMult );
-                Console.WriteLine(diff);
                 this.defenseSoldiers += Game.Random.Gaussian(diff, Consts.SoldiersRndm);
-                Console.WriteLine(this.defenseSoldiers);
                 if (this.defenseSoldiers < 0 || ( this.HP == 0 && this.defenseSoldiers > 0 ))
                 {
                     double gold = this.defenseSoldiers / Consts.DefendingSoldiersForGold;
-                    Console.WriteLine(gold);
-                    Player.AddGold(gold);
+                    Player.GoldIncome(gold);
                     this.defenseSoldiers = 0;
                 }
             }
@@ -937,17 +927,12 @@ namespace GalWar
             double disbandValue = GetDisbandValue(1);
             if (gold)
             {
-                double rounded = Player.RoundGold(disbandValue);
-                if (rounded < .1)
-                    rounded = .1;
-                disbandValue = rounded * hp;
-            }
-            else
-            {
-                disbandValue *= hp;
+                disbandValue = Player.RoundGold(disbandValue);
+                if (disbandValue < .1)
+                    disbandValue = .1;
             }
 
-            return disbandValue;
+            return ( hp * disbandValue );
         }
 
         private double TotalDisbandValue

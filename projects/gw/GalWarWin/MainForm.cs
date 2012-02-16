@@ -739,9 +739,6 @@ namespace GalWarWin
         private void btnDisband_Click(object sender, EventArgs e)
         {
             Ship ship = (Ship)this.selectedTile.SpaceObject;
-            double disbandValue = ship.DisbandValue;
-            double goldValue = ship.GetDestroyGold();
-            double total = Player.RoundGold(disbandValue) + Player.RoundGold(goldValue);
 
             Colony colony = null;
             foreach (Tile neighbor in Tile.GetNeighbors(this.selectedTile))
@@ -755,20 +752,18 @@ namespace GalWarWin
                 }
             }
 
+            double production = ship.DisbandValue;
+            double gold = Player.RoundGold(production) + Player.RoundGold(ship.GetDestroyGold());
+
             Buildable buildable = null;
             if (colony != null && colony.Player.IsTurn)
                 buildable = colony.Buildable;
-
             if (buildable is StoreProd)
-            {
-                double loseProduction = disbandValue * Consts.StoreProdLossPct;
-                goldValue += loseProduction / Consts.ProductionForGold;
-                disbandValue -= loseProduction;
-            }
+                production -= production * Consts.StoreProdLossPct;
 
-            if (buildable != null && ShowOption("Disband for " + FormatDouble(disbandValue) + " production and " + FormatDouble(goldValue) + " gold?"))
+            if (buildable != null && ShowOption("Disband for " + FormatDouble(production) + " production?"))
                 ship.Disband(colony);
-            else if (ShowOption("Disband for " + FormatDouble(total) + " gold?"))
+            else if (ShowOption("Disband for " + FormatDouble(gold) + " gold?"))
                 ship.Disband(null);
 
             saved = false;

@@ -313,9 +313,9 @@ next_planet:
 
         public void StartGame(IEventHandler handler)
         {
-            this.Graphs.Increment(this);
-
             handler = new HandlerWrapper(handler);
+
+            this.Graphs.Increment(this);
 
             this.currentPlayer = 0;
             this.turn = 1;

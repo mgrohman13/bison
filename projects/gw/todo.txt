@@ -1,7 +1,5 @@
-DS cancel and still attack
-show DS free dmg
-gold during turn
-
+pi,e
+refactor _gold/_goldDiff into uint/double
 nonColonyPct^2
 	0.3-.666 (GetUpkeepPayoff)
 	1-ExperienceUpkeepPayoffMult (Upkeep *)
