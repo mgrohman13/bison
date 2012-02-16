@@ -15,14 +15,14 @@ namespace GalWarWin
         [STAThread]
         public static void Main()
         {
+            //kick off random ticker
+            Game.Random.StartTick();
+
             //for (int a = 0 ; a < 13 ; ++a)
             //    CombatPerformance();
 
             //Console.WriteLine();
             //Console.WriteLine(CombatForm.cc);
-
-            //kick off random ticker
-            Game.Random.ToString();
 
             //for (int a = 1 ; a < 16 ; ++a)
             //{
@@ -53,6 +53,8 @@ namespace GalWarWin
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
+
+            Game.Random.Dispose();
         }
 
         //private static void CombatPerformance()

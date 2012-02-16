@@ -425,6 +425,8 @@ namespace GalWar
                     + ( this.production / Consts.ProductionForGold )
                     + ( this.TotalDisbandValue ) + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold ));
 
+            this.Population = 0;
+
             this.Player.RemoveColony(this);
 
             this.Player.DeathCheck();

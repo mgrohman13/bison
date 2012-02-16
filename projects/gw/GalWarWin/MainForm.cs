@@ -873,8 +873,6 @@ namespace GalWarWin
         {
             if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
                 e.Cancel = true;
-            else
-                Game.Random.Dispose();
         }
 
         private void GameForm_MouseClick(object sender, MouseEventArgs e)

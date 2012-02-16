@@ -13,12 +13,7 @@ namespace GalWar
     {
         #region static
 
-        public static readonly MTRandom Random;
-        static Game()
-        {
-            Random = new MTRandom();
-            Random.StartTick();
-        }
+        public static readonly MTRandom Random = new MTRandom();
 
         #endregion //static
 
