@@ -1076,7 +1076,7 @@ namespace GalWar
                     if (!this.MinDefenses)
                     {
                         double oldCost = PlanetDefenseCost;
-                        double newHP = ( this.HP + Consts.MoveOrderGold / Math.PI / oldCost ) * ( 1 / mult - 1 );
+                        double newHP = GetCurHpAdj(oldCost) * ( 1 / mult - 1 );
 
                         double d;
                         int newAtt, newDef;
@@ -1108,12 +1108,17 @@ namespace GalWar
                 const double power = 3.9;
 
                 newHP = Math.Sqrt(newHP);
-                double curHP = Math.Sqrt(this.HP + Consts.MoveOrderGold / Math.PI / cost);
+                double curHP = Math.Sqrt(GetCurHpAdj(cost));
                 double value = ( Math.Pow(current, 1 / power) * curHP + Math.Pow(stat, 1 / power) * newHP ) / ( curHP + newHP );
 
                 newStat = Math.Pow(value, power);
                 newStatInt = GetStat(newStat, current);
             }
+        }
+
+        private double GetCurHpAdj(double cost)
+        {
+            return ( this.HP + ( Consts.MoveOrderGold / Math.E / cost ) );
         }
 
         private static int GetStat(double stat, int current)

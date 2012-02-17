@@ -68,7 +68,7 @@ namespace GalWar
         public const double NumDesignsFactor = 3.9;
         public const double NumDesignsPower = .21;
         //turn research income randomness
-        public const float ResearchRndm = (float)( Math.PI / 10 );
+        public const float ResearchRndm = .3f;
 
         //trade rates
         public const double ProductionForGold = 10.0 / 3.0;
@@ -123,7 +123,7 @@ namespace GalWar
         public const double DefenseNumbersPower = 0.03;
         public const double TroopExperienceMult = 1 / PopulationForGold / Math.E;
         //maximum for random pct bonus to troop combat strength
-        public const double InvadeMultRandMax = .39;
+        public const double InvadeMultRandMax = Math.PI * .13;
         //payoff power for gold used to boost a planetary invasion
         public const double InvadeGoldIncPower = .3;
         //average planet quality lost as a percentage of total troops killed in the battle
@@ -134,7 +134,7 @@ namespace GalWar
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamageMult = .52 / PlanetDamageAvg;
         //multiplyer to population lost when bombarding a friendly planet with a death star
-        public const double DeathStarFriendlyPopDamageMult = .26;
+        public const double DeathStarFriendlyPopDamageMult = Math.PI / 13;
 
         public const float PlanetDefensesRndm = .169f;
         public const double PlanetDefensesCostMult = 1.3;

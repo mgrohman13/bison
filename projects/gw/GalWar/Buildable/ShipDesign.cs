@@ -171,7 +171,8 @@ namespace GalWar
 
                 //  ------  Att/Def           ------
                 //being a colony ship/transport/death star makes att and def lower
-                double strMult = Math.PI * transStr / ( Math.PI * transStr + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + this.BombardDamageMult );
+                double strMultOffset = Math.PI * transStr;
+                double strMult = strMultOffset / ( strMultOffset + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + this.BombardDamageMult );
                 double str = GetAttDefStr(research, strMult);
                 DoAttDef(transStr, str, attPct, out this._att, out this._def);
 
@@ -691,7 +692,7 @@ namespace GalWar
         {
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
-            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.PI / 10));
+            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.E * .13));
         }
 
         internal override void Build(Colony colony, Tile tile, IEventHandler handler)

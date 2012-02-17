@@ -267,13 +267,18 @@ namespace GalWar
 
         internal void AddGold(double gold, double rounded)
         {
-            if (Math.Abs(rounded - RoundGold(rounded)) > Consts.FLOAT_ERROR)
-                throw new Exception();
+            VerifyRounded(rounded);
 
             if (rounded < -this._gold)
                 rounded = -this._gold;
             GoldIncome(gold - rounded);
             this._gold += rounded;
+        }
+
+        public static void VerifyRounded(double rounded)
+        {
+            if (Math.Abs(rounded - RoundGold(rounded)) > Consts.FLOAT_ERROR)
+                throw new Exception();
         }
 
         internal void GoldIncome(double gold)
