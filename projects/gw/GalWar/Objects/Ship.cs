@@ -238,11 +238,15 @@ namespace GalWar
                 throw new Exception();
 
             double destroyGold = GetDestroyGold();
-            if (destroyGold > 0)
-                if (addGold)
-                    this.Player.AddGold(destroyGold);
-                else
-                    this.Player.GoldIncome(destroyGold);
+            if (addGold)
+                this.Player.AddGold(destroyGold);
+            else
+                this.Player.GoldIncome(destroyGold);
+
+            this.Population = 0;
+            this.soldiers = 0;
+            this.curExp = 0;
+            this.CurSpeed = 0;
 
             this.Player.RemoveShip(this);
             this.Tile.SpaceObject = null;
@@ -455,7 +459,7 @@ namespace GalWar
         }
         private int GetExp(float exp)
         {
-            return (int)Math.Round(100.0 * ( this.totalExp + exp ) / this._expDiv);
+            return (int)Math.Round(104 * ( this.totalExp + exp ) / this._expDiv);
         }
 
         public double GetDestroyGold()
@@ -666,7 +670,7 @@ namespace GalWar
             }
             else
             {
-                int trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / 3.0);
+                int trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / Math.PI);
                 total += trans;
                 stats.Add(ExpType.Trans, trans);
             }

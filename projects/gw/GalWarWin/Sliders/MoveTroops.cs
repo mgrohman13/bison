@@ -82,7 +82,7 @@ namespace GalWarWin.Sliders
             int max = (int)( gold / Consts.MovePopulationGoldCost ) - 1;
             while (gold > PopCarrier.GetGoldCost(max))
                 ++max;
-            return --max;
+            return ( max - 1 );
         }
 
         protected override double GetResult()

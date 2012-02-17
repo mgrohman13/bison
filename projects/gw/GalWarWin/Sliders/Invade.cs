@@ -114,12 +114,11 @@ namespace GalWarWin.Sliders
 
         internal override double lblEffcnt_Click()
         {
-            double target = InputForm.ShowDialog(this.gameForm, "Enter target percent chance of winning (1-99):");
-            if (double.IsNaN(target) || target < 1 || target > 99)
+            double target = InputForm.ShowDialog(this.gameForm, "Enter target percent chance of winning (0-99):");
+            if (double.IsNaN(target) || target < 0 || target > 99)
                 return GetValue();
 
-            target = .5 / 100;
-
+            target /= 100;
             return MattUtil.TBSUtil.FindValue(delegate(int gold)
             {
                 return ( GetWinPct(GetAttack(gold)) > target );

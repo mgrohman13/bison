@@ -80,7 +80,7 @@ namespace GalWar
 
             //determine which array to use
             ShipClass[] type;
-            if (design.Trans > RandMult(transStr * .3))
+            if (design.Trans > RandMult(transStr * Math.PI))
                 type = transport;
             else if (design.Speed > RandMult(speedStr * 1.3))
                 type = speed;

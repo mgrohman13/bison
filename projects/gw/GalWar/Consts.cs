@@ -6,7 +6,7 @@ namespace GalWar
     public static class Consts
     {
         public const double WinPointsMult = 130;
-        public const double LosePointsMult = -6.66;
+        public const double LosePointsMult = -6.5;
         public const double PointsTilesPower = .39;
         //as a multiple of the second place players research
         public const double ResearchVictoryMult = 1.5;
@@ -16,16 +16,16 @@ namespace GalWar
         public const double StartGold = 2 * AverageQuality * 260;
         public const double StartResearch = 390;
         public const double StartRndm = .091;
-        public const double StartMinMult = .6;
+        public const double StartMinMult = .65;
         public const double MoveOrderGold = AverageQuality * Income;
         //a higher MoveOrderShuffle makes the move order change faster
         public const double MoveOrderShuffle = .13;
         //multiplied by the starting planet percent
-        public const double PlanetCreationRate = 1 / 100.0;
+        public const double PlanetCreationRate = 1.0 / 104;
 
         public const int PlanetQualityMin = 0;
         public const int PlanetQualityMax = 390;
-        public const double PlanetQualityOE = 66.6;
+        public const double PlanetQualityOE = 65;
         public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
@@ -54,7 +54,7 @@ namespace GalWar
         //as a multiple of upkeep payoff
         public const double MinCostMult = 1;
         //as a multiple and a power of research
-        public const double MaxCostMult = 66.6;
+        public const double MaxCostMult = 65;
         public const double MaxCostPower = 0.21;
 
         //higher value makes research less useful
@@ -62,13 +62,13 @@ namespace GalWar
         //how often new designs are researched
         public const float NewResearchFactor = 390;
         //mult and power of turn research income
-        public const double ResearchIncMult = 2.6;
+        public const double ResearchIncMult = Math.E;
         public const double ResearchIncPower = .39;
         //mult and power of number of existing designs
         public const double NumDesignsFactor = 3.9;
         public const double NumDesignsPower = .21;
         //turn research income randomness
-        public const float ResearchRndm = .3f;
+        public const float ResearchRndm = (float)( Math.PI / 10 );
 
         //trade rates
         public const double ProductionForGold = 10.0 / 3.0;
@@ -87,7 +87,7 @@ namespace GalWar
         public const float SoldiersRndm = .26f;
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
-        public const double TransLossMult = .666;
+        public const double TransLossMult = .65;
         public const double TransLossRndm = .39;
 
         //value of exp gained as a pct of ship value
@@ -112,7 +112,7 @@ namespace GalWar
         public const double DisbandHitPctPower = 1;
         public const double ColonizationValueGoldCost = 1 / 1.69;
         //extra bonus to the production of a new colony, in addition to standard disband amount
-        public const double ColonizationBonusPct = ( 1 + ColonizationBonusMoveFactor ) * ( .666 - DisbandPct );
+        public const double ColonizationBonusPct = ( 1 + ColonizationBonusMoveFactor ) * ( .65 - DisbandPct );
         //a lower ColonizationBonusMoveFactor means a greater bonus reduction for faster colony ships
         public const double ColonizationBonusMoveFactor = 2.1;
         public const double ColonizationHitPctPower = .91;
@@ -121,7 +121,7 @@ namespace GalWar
         public const double AttackNumbersPower = 0.091;
         public const double DefenseStrength = 1.13;
         public const double DefenseNumbersPower = 0.03;
-        public const double TroopExperienceMult = 1 / PopulationForGold / 2.6;
+        public const double TroopExperienceMult = 1 / PopulationForGold / Math.E;
         //maximum for random pct bonus to troop combat strength
         public const double InvadeMultRandMax = .39;
         //payoff power for gold used to boost a planetary invasion
@@ -132,14 +132,14 @@ namespace GalWar
         public const float BombardAttackMult = .039f;
         public const double DeathStarDamageRndm = .13;
         //multiplyer to planet quality lost when bombarded by a death star
-        public const double DeathStarPlanetDamageMult = .5 / PlanetDamageAvg;
+        public const double DeathStarPlanetDamageMult = .52 / PlanetDamageAvg;
         //multiplyer to population lost when bombarding a friendly planet with a death star
         public const double DeathStarFriendlyPopDamageMult = .26;
 
         public const float PlanetDefensesRndm = .169f;
         public const double PlanetDefensesCostMult = 1.3;
         //will be multiplied by ProductionUpkeepMult
-        public const double PlanetDefensesUpkeepMult = .666;
+        public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const float PlanetDefensesSoldiersMult = (float)( DisbandPct / ProductionForSoldiers * 1.3 );
         public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
@@ -148,7 +148,7 @@ namespace GalWar
 
         internal static double GetMoveOrderGold(int numPlayers)
         {
-            return MoveOrderGold / ( numPlayers - 1.0 );
+            return MoveOrderGold / ( numPlayers - 1 );
         }
 
         public static double GetProductionUpkeepMult(int mapSize)
@@ -165,7 +165,7 @@ namespace GalWar
         //upkeep payoff is the number of turns the ship is expected to live
         private static double GetUpkeepPayoff(int mapSize, bool colony, int trans, double speed)
         {
-            return Math.Sqrt(mapSize) * ( colony ? 0.39 : .666 ) * ( ( Math.Pow(trans, 0.169) + 39.0 ) / 39.0 ) * ( 4.2 / ( speed + 2.1 ) );
+            return Math.Sqrt(mapSize) * ( colony ? 0.39 : .65 ) * ( ( Math.Pow(trans, 0.169) + 39.0 ) / 39.0 ) * ( 4.2 / ( speed + 2.1 ) );
         }
 
         //randomized

@@ -155,9 +155,12 @@ namespace GalWar
                 //  ------  Research          ------
                 this._research = (ushort)research;
 
+                //calculate initial speed and trans values
+                double origSpeedStr, speedStr, origTransStr, transStr;
+                origSpeedStr = speedStr = MakeStatStr(research, .65, .39);
+                origTransStr = transStr = GetTransStr(research);
+
                 //get pcts for existing designs
-                double speedStr = MakeStatStr(research, .666, .39);
-                double transStr = GetTransStr(research);
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
                 GetPcts(designs, mapSize, speedStr, transStr,
                         out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
@@ -168,14 +171,14 @@ namespace GalWar
 
                 //  ------  Att/Def           ------
                 //being a colony ship/transport/death star makes att and def lower
-                double strMult = 3 * transStr / ( 3 * transStr + ( this.Colony ? 60 : 0 ) + this.Trans ) * 601 / ( 600 + this.BombardDamageMult );
+                double strMult = Math.PI * transStr / ( Math.PI * transStr + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + this.BombardDamageMult );
                 double str = GetAttDefStr(research, strMult);
                 DoAttDef(transStr, str, attPct, out this._att, out this._def);
 
                 //  ------  HP                ------
                 //being a colony ship/transport/death star makes hp higher
-                double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, this.DeathStar ? 1.3 : ( this.Colony ? 1.69 : 2.6 ));
-                //average hp is relative to actual randomized stats
+                double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, this.DeathStar ? 1.3 : ( this.Colony ? 1.69 : Math.E ));
+                //hp is relative to actual randomized stats
                 this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
@@ -247,7 +250,7 @@ namespace GalWar
                 this._upkeep = (byte)upkeep;
 
                 //  ------  Name              ------
-                this._name = shipNames.GetName(player, this, transStr, speedStr);
+                this._name = shipNames.GetName(player, this, origTransStr, origSpeedStr);
                 this._mark = shipNames.GetMark(player, _name);
             }
         }
@@ -278,7 +281,7 @@ namespace GalWar
 
                     costMult += totalCost;
                     if (design.Colony)
-                        colony += 1.0 / totalCost;
+                        colony += 1 / totalCost;
                     trans += design.Speed / 2.1 * design.Trans / totalCost;
                     ds += design.Speed * design.BombardDamage / totalCost;
                 }
@@ -333,7 +336,7 @@ namespace GalWar
 
         public static double GetTransStr(double research)
         {
-            return MakeStatStr(research, 26, .666);
+            return MakeStatStr(research, 26, .65);
         }
 
         private void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
@@ -403,7 +406,7 @@ namespace GalWar
 
         private static double GetAttDefStr(double research, double strMult)
         {
-            return MakeStatStr(research, 1.69 * strMult, .666);
+            return MakeStatStr(research, 1.69 * strMult, .65);
         }
 
         private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def)
@@ -419,7 +422,7 @@ namespace GalWar
             }
 
             //colony ships and transports are more likely to be defensive
-            double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .6, .39) ) ? .21 : .666 );
+            double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .52, .39) ) ? .26 : .65 );
             attPct = Math.Sqrt(attPct);
             if (attPct < 1)
                 chance = ( 1 - ( ( 1 - chance ) * attPct ) );
@@ -447,18 +450,19 @@ namespace GalWar
             if (this.Colony)
                 speedStr = MultStr(speedStr, .39);
             else if (this.DeathStar)
-                speedStr = MultStr(speedStr, .666);
+                speedStr = MultStr(speedStr, .65);
             if (( doColAndTrans || !this.Colony ) && this.Trans > 0)
             {
                 double transFactor = transStr / this.Trans;
-                speedStr = MultStr(speedStr, Math.Pow(transFactor, transFactor > 1 ? .13 : .3));
+                if (transFactor < 1)
+                    speedStr = MultStr(speedStr, Math.Pow(transFactor, .3));
             }
             return speedStr;
         }
 
         private double GetSpeedMult(double str, double hpMult, double speedPct)
         {
-            //average speed is higher for more offensive and weaker ships
+            //speed is higher for more offensive and weaker ships
             double offenseFactor = this.Att / (double)this.Def;
             double strengthFactor = 2 * GetStatValue(str) * MultStr(4 * str * str, hpMult)
                     / (double)( ( GetStatValue(this.Att) + GetStatValue(this.Def) ) * this.HP );
@@ -687,7 +691,7 @@ namespace GalWar
         {
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
-            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, .36));
+            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.PI / 10));
         }
 
         internal override void Build(Colony colony, Tile tile, IEventHandler handler)

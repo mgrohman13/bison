@@ -120,7 +120,7 @@ namespace GalWar
                         break;
                 }
 
-                if (this.Buildable.production > Consts.FLOAT_ERROR || this.Buildable.production < -Consts.FLOAT_ERROR)
+                if (this.Buildable.production != 0)
                     throw new Exception();
             }
         }
@@ -426,9 +426,12 @@ namespace GalWar
                     + ( this.TotalDisbandValue ) + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold ));
 
             this.Population = 0;
+            this.soldiers = 0;
+            this.production = 0;
+            base.SetHP(0);
+            this.defenseSoldiers = 0;
 
             this.Player.RemoveColony(this);
-
             this.Player.DeathCheck();
         }
 
@@ -1073,7 +1076,7 @@ namespace GalWar
                     if (!this.MinDefenses)
                     {
                         double oldCost = PlanetDefenseCost;
-                        double newHP = ( this.HP + Consts.MoveOrderGold / 3 / oldCost ) * ( 1 / mult - 1 );
+                        double newHP = ( this.HP + Consts.MoveOrderGold / Math.PI / oldCost ) * ( 1 / mult - 1 );
 
                         double d;
                         int newAtt, newDef;
@@ -1105,8 +1108,8 @@ namespace GalWar
                 const double power = 3.9;
 
                 newHP = Math.Sqrt(newHP);
-                double curHP = Math.Sqrt(this.HP + Consts.MoveOrderGold / 3 / cost);
-                double value = ( Math.Pow(current, 1.0 / power) * curHP + Math.Pow(stat, 1.0 / power) * newHP ) / ( curHP + newHP );
+                double curHP = Math.Sqrt(this.HP + Consts.MoveOrderGold / Math.PI / cost);
+                double value = ( Math.Pow(current, 1 / power) * curHP + Math.Pow(stat, 1 / power) * newHP ) / ( curHP + newHP );
 
                 newStat = Math.Pow(value, power);
                 newStatInt = GetStat(newStat, current);

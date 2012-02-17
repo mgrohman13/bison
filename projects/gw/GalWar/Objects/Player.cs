@@ -293,7 +293,7 @@ namespace GalWar
 
         public static double CeilGold(double gold)
         {
-            return Math.Ceiling(gold * 10.0) / 10.0;
+            return Math.Ceiling(gold * 10) / 10;
         }
 
         internal void DeathCheck()

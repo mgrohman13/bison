@@ -67,7 +67,7 @@ namespace GalWar
         {
             get
             {
-                return Quality + .5 / Consts.PopulationGrowth;
+                return Quality + .52 / Consts.PopulationGrowth;
             }
         }
 

@@ -517,7 +517,7 @@ namespace GalWarWin
             Player yellow = new Player("Yellow", Color.Gold);
             Game = new Game(new Player[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
-                    Game.Random.GaussianCapped(0.006, .5, 0.0021));
+                    Game.Random.GaussianCapped(0.006, .52, 0.0021));
 
             mouse = new Point(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -671,14 +671,7 @@ namespace GalWarWin
             {
                 Tile tile = SelectTile(this.selectedTile, false);
                 if (tile != null)
-                    try
-                    {
-                        colony.RepairShip = tile.SpaceObject as Ship;
-                    }
-                    catch (AssertException e)
-                    {
-                        Console.Write(e.ToString());
-                    }
+                    colony.RepairShip = tile.SpaceObject as Ship;
             }
             else
             {
