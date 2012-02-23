@@ -858,17 +858,14 @@ namespace GalWar
             base.SetHP(hp);
             ModDefenseSoldiers(oldCost);
         }
+        //should only be setting att and def through SetPlanetDefense()
         protected override void SetAtt(int value)
         {
-            double oldCost = this.PlanetDefenseTotalCost;
-            base.SetAtt(value);
-            ModDefenseSoldiers(oldCost);
+            throw new Exception();
         }
         protected override void SetDef(int value)
         {
-            double oldCost = this.PlanetDefenseTotalCost;
-            base.SetDef(value);
-            ModDefenseSoldiers(oldCost);
+            throw new Exception();
         }
         protected override void SetHP(int value)
         {
@@ -1089,9 +1086,7 @@ namespace GalWar
                 }
                 else
                 {
-                    this.HP = 0;
-                    this.Att = 1;
-                    this.Def = 1;
+                    SetPlanetDefense(1, 1, 0);
                 }
         }
 

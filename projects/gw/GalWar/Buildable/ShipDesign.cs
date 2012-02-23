@@ -79,7 +79,7 @@ namespace GalWar
             return ( sqr * stat + 6.0 * sqr + 2.0 * stat ) / 9.0;
         }
 
-        internal static double GetBombardDamage(int att, double bombardDamageMult)
+        internal static double GetBombardDamage(double att, double bombardDamageMult)
         {
             return att * bombardDamageMult * Consts.BombardAttackMult;
         }
@@ -155,17 +155,12 @@ namespace GalWar
                 //  ------  Research          ------
                 this._research = (ushort)research;
 
-                //calculate initial speed and trans values
-                double origSpeedStr, speedStr, origTransStr, transStr;
-                origSpeedStr = speedStr = MakeStatStr(research, .65, .39);
-                origTransStr = transStr = GetTransStr(research);
-
                 //get pcts for existing designs
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
-                GetPcts(designs, mapSize, speedStr, transStr,
-                        out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
+                GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
 
                 //  ------  Colony/Trans      ------
+                double transStr = GetTransStr(research);
                 DoColonyTrans(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
                         ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
 
@@ -183,7 +178,7 @@ namespace GalWar
                 this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
-                speedStr = MultStr(ModSpeedStr(speedStr, transStr, true), GetSpeedMult(str, hpMult, speedPct));
+                double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, true), GetSpeedMult(str, hpMult, speedPct));
                 this._speed = (byte)MakeStat(speedStr);
 
                 //  ------  BombardDamageMult ------
@@ -251,12 +246,13 @@ namespace GalWar
                 this._upkeep = (byte)upkeep;
 
                 //  ------  Name              ------
-                this._name = shipNames.GetName(player, this, origTransStr, origSpeedStr);
+                this._name = shipNames.GetName(player, this, GetTransStr(research), GetSpeedStr(research));
                 this._mark = shipNames.GetMark(player, _name);
             }
         }
 
-        private static void GetPcts(List<ShipDesign> designs, int mapSize, double speedStr, double transStr,
+        private const float DeathStarAvg = 130;
+        private static void GetPcts(List<ShipDesign> designs, int mapSize, int research,
                 out double colony, out double upkeep, out double att, out double speed, out double trans, out double ds)
         {
             upkeep = 1;
@@ -278,13 +274,14 @@ namespace GalWar
 
                     upkeep *= design.Upkeep / ( totalCost / upkeepPayoff * Consts.CostUpkeepPct );
                     att *= design.Att / (double)design.Def;
-                    speed *= design.Speed / design.ModSpeedStr(speedStr, transStr, false);
+                    speed *= design.Speed / design.ModSpeedStr(GetSpeedStr(design.Research), GetTransStr(design.Research), false);
 
                     costMult += totalCost;
+                    double mult = ( design.Research + Consts.ResearchFactor ) / research / totalCost;
                     if (design.Colony)
-                        colony += 1 / totalCost;
-                    trans += design.Speed / 2.1 * design.Trans / totalCost;
-                    ds += design.Speed * design.BombardDamage / totalCost;
+                        colony += mult;
+                    trans += design.Speed * design.Trans * mult;
+                    ds += design.Speed * design.BombardDamage * mult;
                 }
 
                 double pow = 1.0 / numDesigns;
@@ -296,8 +293,10 @@ namespace GalWar
                 colony *= costMult;
                 trans *= costMult;
                 ds *= costMult;
-                trans = trans / ( trans + transStr );
-                ds = ds / ( ds + 30 );
+
+                double speedStr = GetSpeedStr(research);
+                trans /= speedStr * GetTransStr(research);
+                ds /= speedStr * GetBombardDamage(GetAttDefStr(research), DeathStarAvg);
             }
             else
             {
@@ -324,7 +323,8 @@ namespace GalWar
 
         public static int MakeStat(double str)
         {
-            //str will always be greater than 1
+            if (str < 1)
+                throw new Exception();
             --str;
             double oe = str * .13;
             double gaussian = str - oe;
@@ -349,7 +349,7 @@ namespace GalWar
             else if (forceNeither || forceColony)
                 transport = false;
             else
-                transport = CreateType(.13, transPct);
+                transport = CreateType(.21, transPct);
 
             if (forceColony)
                 colony = true;
@@ -372,17 +372,20 @@ namespace GalWar
                 trans = 0;
 
                 if (!forceNeither && MakeDeathStar(research, dsPct))
-                    bombardDamageMult = MakeStat(130) + ( 1 - Game.Random.NextFloat() );
+                {
+                    float min = 1 / Consts.BombardAttackMult - .5f;
+                    bombardDamageMult = MakeStat(DeathStarAvg - min) + min + Game.Random.FloatHalf() - .5f;
+                }
             }
         }
 
-        private bool MakeDeathStar(int research, double pct)
+        private bool MakeDeathStar(int research, double actual)
         {
             //target pct of ships that should be death stars increases with research
             double target = research / ( 2.1 * Consts.ResearchFactor + research );
-            target *= target * target * .21;
+            target *= target * target * .169;
 
-            return CreateType(target, pct);
+            return CreateType(target, actual);
         }
 
         private bool CreateType(double target, double actual)
@@ -445,6 +448,11 @@ namespace GalWar
         #endregion //Att/Def
 
         #region Speed
+
+        private static double GetSpeedStr(int research)
+        {
+            return MakeStatStr(research, .65, .39);
+        }
 
         private double ModSpeedStr(double speedStr, double transStr, bool doColAndTrans)
         {

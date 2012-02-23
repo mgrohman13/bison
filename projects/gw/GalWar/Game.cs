@@ -310,6 +310,8 @@ next_planet:
         {
             handler = new HandlerWrapper(handler);
 
+            foreach (Player p in players)
+                this.Graphs.StartTurn(p);
             this.Graphs.Increment(this);
 
             this.currentPlayer = 0;

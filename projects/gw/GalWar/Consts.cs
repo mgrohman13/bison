@@ -60,7 +60,7 @@ namespace GalWar
         //higher value makes research less useful
         public const double ResearchFactor = 1300;
         //how often new designs are researched
-        public const float NewResearchFactor = 390;
+        public const double NewResearchFactor = Math.E * 130;
         //mult and power of turn research income
         public const double ResearchIncMult = Math.E;
         public const double ResearchIncPower = .39;
@@ -132,7 +132,7 @@ namespace GalWar
         public const float BombardAttackMult = .039f;
         public const double DeathStarDamageRndm = .13;
         //multiplyer to planet quality lost when bombarded by a death star
-        public const double DeathStarPlanetDamageMult = .52 / PlanetDamageAvg;
+        public const double DeathStarPlanetDamageMult = .5 / PlanetDamageAvg;
         //multiplyer to population lost when bombarding a friendly planet with a death star
         public const double DeathStarFriendlyPopDamageMult = Math.PI / 13;
 

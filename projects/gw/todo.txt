@@ -1,10 +1,12 @@
 refactor _gold/_goldDiff into uint/double
 nonColonyPct^2
-	0.3-.666 (GetUpkeepPayoff)
+	0.39-.65 (GetUpkeepPayoff)
 	1-ExperienceUpkeepPayoffMult (Upkeep *)
 	0-1/ExperienceUpkeepPayoffMult (upkeepInc)
 	AdjustCost?
 	trans pct?
+	increase make colony chance
+	make sure for trans/colony +hp/+trans always causes +cost
 
 cost calculator
 test other grph data storage implementations with real data

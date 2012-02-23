@@ -526,7 +526,7 @@ namespace GalWar
             float newResearch = this.Research - this.LastResearched;
             if (researchInc > 0 && newResearch > 0)
             {
-                float chance = RandResearch(newResearch / ( newResearch + Consts.NewResearchFactor ));
+                double chance = RandResearch(newResearch / ( newResearch + Consts.NewResearchFactor ));
 
                 //parameters that may be modified during a players turn are done after RandResearch
                 //so that a change in them doesnt have an inverse or exaggerated effect
@@ -539,13 +539,13 @@ namespace GalWar
         }
 
         //analogous to MTRandom.Weighted, but using constants for the random values
-        private float RandResearch(float avg)
+        private double RandResearch(double avg)
         {
             bool neg = avg > .5;
             if (neg)
                 avg = 1 - avg;
 
-            float key = _rKey * avg;
+            double key = _rKey * avg;
             if (_rChance < ( avg - .5 ) / ( key - .5 ))
                 key *= 2;
             else
