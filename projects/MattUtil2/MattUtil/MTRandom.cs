@@ -434,10 +434,7 @@ namespace MattUtil
                 mwc1 = EnsureNonZero(mwc1, seed, ref a);
                 mwc2 = EnsureNonZero(mwc2, seed, ref a);
 
-                uint firstUInt = NextUInt();
-                if (thread == null)
-                    lock (typeof(MTRandom))
-                        counter += firstUInt;
+                NextUInt();
             }
         }
         private uint EnsureNonZero(uint value, uint[] seed, ref uint a)
@@ -472,25 +469,24 @@ namespace MattUtil
             //combining Marsaglia's KISS with the Mersenne Twister provdes higher quality random numbers with an obscene period>2^20060
             uint value = ( MersenneTwister() + MarsagliaKISS() );
 
-            if (thread != null)
+            uint timeVal;
+            lock (typeof(MTRandom))
             {
-                uint timeVal;
-                lock (typeof(MTRandom))
-                {
-                    //combine in a value based off of the timing of calls
-                    timeVal = GetShiftedTicks();
-                    counter += value;
-                }
-                value += timeVal;
+                //combine in a value based off of the timing of calls
+                timeVal = GetShiftedTicks();
+                counter += value;
             }
 
-            return value;
+            return ( value + timeVal );
         }
 
-        private static uint GetShiftedTicks()
+        private uint GetShiftedTicks()
         {
             long ticks = watch.ElapsedTicks;
-            return ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
+            uint retVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
+            if (this.thread == null)
+                retVal = 0;
+            return retVal;
         }
 
         //Marsaglia's KISS (Keep It Simple Stupid) pseudorandom number generator, overall period>2^123.
@@ -693,14 +689,18 @@ namespace MattUtil
             //take initial coherent 32 bit uints when we can
             ulong retVal;
             if (numBits > 32)
-                retVal = ( (ulong)NextUInt() << ( numBits -= 32 ) );
+                retVal = ( ( (ulong)NextUInt() ) << ( numBits -= 32 ) );
             else
                 retVal = 0;
             if (numBits == 32)
-                return ( retVal | (ulong)NextUInt() );
+                return ( retVal | ( (ulong)NextUInt() ) );
 
             lock (this)
             {
+                //any bits left over need to include an updated time value
+                if (this.bitCount > 0)
+                    this.bits ^= MaskBits(GetShiftedTicks(), this.bitCount);
+
                 int moreBits = numBits - this.bitCount;
                 if (moreBits < 0)
                 {
@@ -710,9 +710,10 @@ namespace MattUtil
                 else
                 {
                     //use all the remaining bits as high-roder bits
-                    retVal |= ( (ulong)this.bits << moreBits );
+                    retVal |= ( ( (ulong)this.bits ) << moreBits );
                     //reset the bits field with a new set of 32
-                    ResetBits();
+                    this.bits = NextUInt();
+                    this.bitCount = 32;
                     //fill in the result low-order bits
                     if (moreBits > 0)
                         CopyBits(ref retVal, (byte)moreBits);
@@ -721,26 +722,18 @@ namespace MattUtil
 
             return retVal;
         }
-        private void ResetBits()
-        {
-            this.bits = NextUInt();
-            this.bitCount = 32;
-        }
         private void CopyBits(ref ulong retVal, byte numBits)
         {
-            //create a mask for the requested number of bits
-            uint mask = ( uint.MaxValue >> ( 32 - numBits ) );
             //consume the bits
-            retVal |= ( mask & this.bits );
-            //update the remaining bits
-            UsedBits(numBits);
-        }
-        private void UsedBits(byte numBits)
-        {
+            retVal |= MaskBits(this.bits, numBits);
             //remove the used bits and bring the next bits to the bottom
             this.bits >>= numBits;
             //keep track of how many bits we have
             this.bitCount -= numBits;
+        }
+        private static uint MaskBits(uint bits, byte numBits)
+        {
+            return ( bits & ( uint.MaxValue >> ( 32 - numBits ) ) );
         }
 
         /// <summary>
@@ -1713,7 +1706,8 @@ namespace MattUtil
             {
                 //dont want to abort in the middle of an algorithm permutation
                 lock (this)
-                    thread.Abort();
+                    lock (typeof(MTRandom))
+                        thread.Abort();
                 thread = null;
             }
         }
