@@ -705,7 +705,7 @@ namespace GalWar
                 double damage, d;
                 Consts.GetDamageTable(this.Att, colony.Def, out damage, out d);
 
-                double freeDmg = this.GetFreeDmg(colony);
+                double freeDmg = GetFreeDmg(colony);
                 int bombardDamage = GetBombardDamage(freeDmg);
                 colony.HP -= bombardDamage;
 
@@ -733,7 +733,7 @@ namespace GalWar
             LevelUp(handler);
         }
 
-        internal double GetFreeDmg(Colony colony)
+        private double GetFreeDmg(Colony colony)
         {
             return this.BombardDamage * Consts.PlanetDefensesDeathStarMult / colony.PlanetDefenseCost;
         }
@@ -805,7 +805,7 @@ namespace GalWar
                 return Consts.GetPlanetDamage(colonyDamage);
         }
 
-        private int GetDeathStarDamage(double damage)
+        private static int GetDeathStarDamage(double damage)
         {
             return Game.Random.GaussianCappedInt(damage, Consts.DeathStarDamageRndm);
         }
@@ -855,48 +855,35 @@ namespace GalWar
                 this.Player.GoldIncome(GetUpkeepReturn(move / 2 * pct));
         }
 
-        public void Invade(Colony destination, int invadeGold, int population, IEventHandler handler)
+        public void Invade(Colony target, int population, int gold, IEventHandler handler)
         {
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(destination != null);
+            AssertException.Assert(target != null);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);
-            AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
-            AssertException.Assert(this.Player != destination.Player);
+            AssertException.Assert(Tile.IsNeighbor(this.Tile, target.Tile));
+            AssertException.Assert(this.Player != target.Player);
+            if (target.Population > 0)
+            {
+                AssertException.Assert(gold > 0);
+                AssertException.Assert(gold < Player.Gold);
+            }
             handler = new HandlerWrapper(handler);
 
-            double actual, rounded;
-            GetGoldCost(population, out actual, out rounded);
-            AssertException.Assert(invadeGold + Consts.FLOAT_ERROR > rounded);
-            double gold = 0;
-            if (destination.Population > 0)
-            {
-                //all attackers cost gold to move regardless of where they end up
-                gold = invadeGold - rounded;
-                actual = rounded = invadeGold;
-            }
-            AssertException.Assert(rounded < Player.Gold);
-
-            this.Player.SpendGold(actual, rounded);
-
-            Planet planet = destination.Planet;
-            int extraPop = AvailablePop - population;
+            if (target.Population == 0)
+                gold = 0;
+            //all attackers cost gold to move regardless of where they end up
+            double actual = PopCarrier.GetActualGoldCost(population);
+            this.Player.SpendGold(gold + actual, gold);
 
             double soldiers = GetSoldiers(population, this.soldiers);
             this.soldiers -= soldiers;
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
-            population = destination.Invasion(this.Player, population, ref soldiers, gold, handler, ref extraPop);
+            target.Invasion(this.Player, ref population, ref soldiers, gold, handler);
             this.Population += population;
             this.movedPop += population;
-
-            if (extraPop > 0)
-            {
-                double goldBonus = PopCarrier.GetRoundedGoldCost(extraPop);
-                this.player.AddGold(0, goldBonus);
-                MovePop(extraPop, planet.Colony);
-            }
 
             this.soldiers += soldiers;
         }

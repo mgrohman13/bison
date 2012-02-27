@@ -184,6 +184,8 @@ namespace GalWar
                 //  ------  BombardDamageMult ------
                 //modify bombard mult based on speed and att
                 this._bombardDamageMult = (float)MultStr(this.BombardDamageMult, Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att));
+                if (this.BombardDamage < 1)
+                    this._bombardDamageMult = 1 / Consts.BombardAttackMult / this.Att;
 
                 //  ------  Cost/Upkeep       ------
                 double cost = -1;
@@ -213,7 +215,7 @@ namespace GalWar
                         break;
                     case ModifyStat.BombardDamageMult:
                         this._bombardDamageMult -= ( 1 - Game.Random.NextFloat() );
-                        if (this.BombardDamageMult < 1)
+                        if (this.BombardDamage < 1)
                             this._bombardDamageMult = 1;
                         break;
                     case ModifyStat.None:
@@ -251,7 +253,7 @@ namespace GalWar
             }
         }
 
-        private const float DeathStarAvg = 130;
+        private const float deathStarAvg = 130;
         private static void GetPcts(List<ShipDesign> designs, int mapSize, int research,
                 out double colony, out double upkeep, out double att, out double speed, out double trans, out double ds)
         {
@@ -296,7 +298,7 @@ namespace GalWar
 
                 double speedStr = GetSpeedStr(research);
                 trans /= speedStr * GetTransStr(research);
-                ds /= speedStr * GetBombardDamage(GetAttDefStr(research), DeathStarAvg);
+                ds /= speedStr * GetBombardDamage(GetAttDefStr(research), deathStarAvg);
             }
             else
             {
@@ -374,7 +376,7 @@ namespace GalWar
                 if (!forceNeither && MakeDeathStar(research, dsPct))
                 {
                     float min = 1 / Consts.BombardAttackMult - .5f;
-                    bombardDamageMult = MakeStat(DeathStarAvg - min) + min + Game.Random.FloatHalf() - .5f;
+                    bombardDamageMult = MakeStat(deathStarAvg - min) + min + Game.Random.FloatHalf() - .5f;
                 }
             }
         }
@@ -552,7 +554,7 @@ namespace GalWar
             if (this.Trans > 1)
                 stats.Add(ModifyStat.Trans, Game.Random.Round(this.Trans * 1.3f));
             if (this.DeathStar)
-                stats.Add(ModifyStat.BombardDamageMult, Game.Random.Round(GetBombardDamage(this.Att, this.BombardDamageMult) * this.Speed * 13 + 78));
+                stats.Add(ModifyStat.BombardDamageMult, Game.Random.Round(this.BombardDamage * this.Speed * 13 + 78));
 
             bool none = true;
             foreach (int value in stats.Values)

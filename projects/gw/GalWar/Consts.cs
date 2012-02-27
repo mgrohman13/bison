@@ -110,7 +110,7 @@ namespace GalWar
 
         public const double DisbandPct = RepairCostMult;
         public const double DisbandHitPctPower = 1;
-        public const double ColonizationValueGoldCost = 1 / 1.69;
+        public const double ColonizationValueGoldCost = Math.E / 3.9;
         //extra bonus to the production of a new colony, in addition to standard disband amount
         public const double ColonizationBonusPct = ( 1 + ColonizationBonusMoveFactor ) * ( .65 - DisbandPct );
         //a lower ColonizationBonusMoveFactor means a greater bonus reduction for faster colony ships
@@ -144,9 +144,9 @@ namespace GalWar
         public const float PlanetDefensesSoldiersMult = (float)( DisbandPct / ProductionForSoldiers * 1.3 );
         public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
 
-        internal const double FLOAT_ERROR = 0.000000696112635978352;
+        public const double FLOAT_ERROR = 0.000000696112635978352;
 
-        internal static double GetMoveOrderGold(int numPlayers)
+        public static double GetMoveOrderGold(int numPlayers)
         {
             return MoveOrderGold / ( numPlayers - 1 );
         }
@@ -169,22 +169,33 @@ namespace GalWar
         }
 
         //randomized
-        public static double GetInvasionStrength(int attackers, double soldiers, int initialWave, double gold)
+        public static double GetInvasionStrength(int attackers, double soldiers, double gold, double totalDefense)
         {
-            return RandomizeInvasionStr(GetInvasionStrengthBase(attackers, soldiers, initialWave, gold));
+            return GetInvasionStrength(attackers, soldiers, gold, totalDefense, true);
         }
 
         //non-randomized
-        public static double GetInvasionStrengthBase(int attackers, double soldiers, int initialWave, double gold)
+        public static double GetInvasionStrengthBase(int attackers, double soldiers, double gold, double totalDefense)
         {
-            return GetStrengthBase(attackers, soldiers, GetInvasionBonus(initialWave, gold) * AttackStrength, AttackNumbersPower);
+            return GetInvasionStrength(attackers, soldiers, gold, totalDefense, false);
         }
 
-        private static double GetInvasionBonus(int initialWave, double gold)
+        private static double GetInvasionStrength(int attackers, double soldiers, double gold, double totalDefense, bool randomize)
+        {
+            double attack = GetStrengthBase(attackers, soldiers, AttackStrength, AttackNumbersPower);
+            if (randomize)
+                attack = RandomizeInvasionStr(attack);
+            return GetInvasionStrength(MattUtil.TBSUtil.FindValue(delegate(int initialWave)
+            {
+                return ( initialWave * GetInvasionStrength(initialWave, attack, gold) > totalDefense );
+            }, 1, attackers, true), attack, gold);
+        }
+
+        private static double GetInvasionStrength(double initialWave, double attack, double gold)
         {
             if (gold == 0)
                 return 1;
-            return ( initialWave + gold * Math.Pow(initialWave / gold, InvadeGoldIncPower) ) / (double)initialWave;
+            return ( initialWave + gold * Math.Pow(initialWave / gold, InvadeGoldIncPower) ) * attack / initialWave;
         }
 
         //randomized

@@ -1158,24 +1158,17 @@ namespace GalWarWin
             this.selectedTile = planet.Tile;
             this.RefreshAll();
 
-            int gold = -1, troops = -1;
-            if (ship.AvailablePop > 0)
+            int gold = 0, troops = ship.AvailablePop;
+            if (troops > 0)
                 if (colony.Population > 0)
-                {
-                    Invade invadeSlider = new Invade(ship, colony);
-                    gold = SliderForm.ShowDialog(this, invadeSlider);
-                    troops = invadeSlider.GetTroops(gold);
-                }
+                    gold = SliderForm.ShowDialog(this, new Invade(ship, colony));
                 else
-                {
-                    gold = int.MaxValue;
                     troops = SliderForm.ShowDialog(this, new MoveTroops(Game, ship, colony));
-                }
 
             bool selectShip = true;
             if (troops > 0)
             {
-                ship.Invade(colony, gold, troops,  this);
+                ship.Invade(colony, troops, gold, this);
 
                 if (!planet.Dead)
                     selectShip = false;
@@ -1797,13 +1790,13 @@ namespace GalWarWin
             return ChangeBuild(colony, accountForIncome, switchLoss, additionalLosses);
         }
 
-        int IEventHandler.MoveTroops(Colony fromColony, int total, int free, int totalPop, double soldiers)
+        int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
         {
             if (fromColony != null)
                 this.selectedTile = fromColony.Tile;
             this.RefreshAll();
 
-            return SliderForm.ShowDialog(this, new MoveTroops(Game, fromColony, total, free, totalPop, soldiers));
+            return SliderForm.ShowDialog(this, new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)

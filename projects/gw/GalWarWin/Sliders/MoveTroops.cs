@@ -35,8 +35,14 @@ namespace GalWarWin.Sliders
             this.to = to;
 
             if (from.Player == to.Player)
+            {
                 if (( colony = from as Colony ) == null)
-                    colony = to as Colony;
+                    this.colony = to as Colony;
+            }
+            else
+            {
+                this.free = GetMaxInternal();
+            }
         }
 
         public MoveTroops(Game game, Colony from, int max, int free, int totalPop, double soldiers)

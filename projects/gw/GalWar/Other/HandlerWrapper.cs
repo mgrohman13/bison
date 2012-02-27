@@ -47,25 +47,25 @@ namespace GalWar
             return colony.Player.Game.StoreProd;
         }
 
-        int IEventHandler.MoveTroops(Colony fromColony, int total, int free, int totalPop, double soldiers)
+        int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
         {
             int retVal;
 
             try
             {
-                retVal = handler.MoveTroops(fromColony, total, free, totalPop, soldiers);
+                retVal = handler.MoveTroops(fromColony, max, free, totalPop, soldiers);
 
                 if (retVal < 0)
                     retVal = 0;
-                else if (retVal > total)
-                    retVal = total;
+                else if (retVal > max)
+                    retVal = max;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
 
                 if (fromColony == null)
-                    retVal = total;
+                    retVal = max;
                 else
                     retVal = 0;
             }
