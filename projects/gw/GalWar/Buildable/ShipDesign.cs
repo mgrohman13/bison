@@ -711,10 +711,9 @@ namespace GalWar
             if (max > 0)
             {
                 //ensure the player has enough gold to move any number of troops
-                double goldBonus = PopCarrier.GetGoldCost(max);
-                if (colony.Player.Gold > goldBonus)
-                    goldBonus = 0;
-                colony.Player.AddGold(goldBonus);
+                double goldBonus = PopCarrier.GetRoundedGoldCost(max);
+                if (colony.Player.Gold < goldBonus)
+                    colony.Player.AddGold(0, goldBonus);
 
                 max = handler.MoveTroops(colony, max, 0, colony.Population, colony.Soldiers);
                 if (max > 0)
@@ -723,8 +722,6 @@ namespace GalWar
                     //troops can be moved again next turn
                     ship.ResetMoved();
                 }
-
-                colony.Player.SpendGold(goldBonus);
             }
         }
 

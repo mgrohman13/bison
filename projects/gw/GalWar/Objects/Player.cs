@@ -291,6 +291,11 @@ namespace GalWar
             AddGold(-gold);
         }
 
+        internal void SpendGold(double gold, double rounded)
+        {
+            AddGold(-gold, -rounded);
+        }
+
         public static double RoundGold(double gold)
         {
             return Math.Round(gold, 1, MidpointRounding.AwayFromZero);
@@ -298,7 +303,7 @@ namespace GalWar
 
         public static double CeilGold(double gold)
         {
-            return Math.Ceiling(gold * 10) / 10;
+            return Math.Ceiling(gold * 10 - Consts.FLOAT_ERROR) / 10;
         }
 
         internal void DeathCheck()

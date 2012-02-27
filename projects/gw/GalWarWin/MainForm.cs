@@ -1083,7 +1083,7 @@ namespace GalWarWin
             bool bombard = true;
             if (ship.Colony && ship.AvailablePop == ship.Population && ship.AvailablePop > 0)
             {
-                double goldCost = PopCarrier.GetGoldCost(ship.Population) + planet.ColonizationCost;
+                double goldCost = PopCarrier.GetRoundedGoldCost(ship.Population) + planet.ColonizationCost;
                 string cost = FormatDouble(goldCost);
                 if (goldCost > ship.Player.Gold)
                 {
@@ -1175,11 +1175,7 @@ namespace GalWarWin
             bool selectShip = true;
             if (troops > 0)
             {
-                int extraPop = ship.AvailablePop - troops;
-                ship.Invade(colony, gold, troops, ref extraPop, this);
-
-                if (extraPop > 0)
-                    ship.MovePop(extraPop, planet.Colony);
+                ship.Invade(colony, gold, troops,  this);
 
                 if (!planet.Dead)
                     selectShip = false;
@@ -1532,7 +1528,7 @@ namespace GalWarWin
                         }
                     }
                 this.lbl2.Text = "Cost";
-                this.lbl2Inf.Text = FormatDouble(PopCarrier.GetGoldCost(pop) + planet.ColonizationCost);
+                this.lbl2Inf.Text = FormatDouble(PopCarrier.GetRoundedGoldCost(pop) + planet.ColonizationCost);
 
                 return null;
             }

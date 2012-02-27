@@ -140,10 +140,11 @@ namespace GalWar
             AssertException.Assert(destination != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
-            double gold = GetGoldCost(population);
-            AssertException.Assert(gold < this.Player.Gold);
+            double actual, rounded;
+            GetGoldCost(population, out actual, out rounded);
+            AssertException.Assert(rounded < this.Player.Gold);
 
-            this.Player.SpendGold(gold);
+            this.Player.SpendGold(actual, rounded);
 
             double soldiers = MoveSoldiers(this.Population, this.soldiers, population);
             this.soldiers -= soldiers;
@@ -189,9 +190,17 @@ namespace GalWar
             return moveSoldiers;
         }
 
-        public static double GetGoldCost(int population)
+        public static double GetRoundedGoldCost(int population)
         {
-            return Player.CeilGold(population * Consts.MovePopulationGoldCost);
+            double actual, rounded;
+            GetGoldCost(population, out actual, out rounded);
+            return rounded;
+        }
+
+        internal static void GetGoldCost(int population, out double actual, out double rounded)
+        {
+            actual = population * Consts.MovePopulationGoldCost;
+            rounded = Player.CeilGold(actual);
         }
 
         protected double GetSoldiers(int troops, double soldiers)

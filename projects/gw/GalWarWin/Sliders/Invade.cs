@@ -192,7 +192,7 @@ namespace GalWarWin.Sliders
                 if (!goldAttackValues.TryGetValue(key, out result))
                 {
                     double soldiers = PopCarrier.GetSoldiers(attTotal, attSoldiers, attackers);
-                    double bonusGold = gold - PopCarrier.GetGoldCost(attackers);
+                    double bonusGold = gold - PopCarrier.GetRoundedGoldCost(attackers);
                     int initialWave = Colony.GetInitialWave(attackers, soldiers, bonusGold, defPop, GetDefense());
                     double bonus = Consts.GetInvasionStrengthBase(attackers, soldiers, initialWave, bonusGold);
                     result = attackers * bonus;

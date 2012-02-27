@@ -855,7 +855,7 @@ namespace GalWar
                 this.Player.GoldIncome(GetUpkeepReturn(move / 2 * pct));
         }
 
-        public void Invade(Colony destination, int invadeGold, int population, ref int extraPop, IEventHandler handler)
+        public void Invade(Colony destination, int invadeGold, int population, IEventHandler handler)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(destination != null);
@@ -865,18 +865,22 @@ namespace GalWar
             AssertException.Assert(this.Player != destination.Player);
             handler = new HandlerWrapper(handler);
 
-            double goldCost = GetGoldCost(population);
-            AssertException.Assert(invadeGold >= goldCost);
+            double actual, rounded;
+            GetGoldCost(population, out actual, out rounded);
+            AssertException.Assert(invadeGold + Consts.FLOAT_ERROR > rounded);
             double gold = 0;
             if (destination.Population > 0)
             {
                 //all attackers cost gold to move regardless of where they end up
-                gold = invadeGold - goldCost;
-                goldCost = invadeGold;
+                gold = invadeGold - rounded;
+                actual = rounded = invadeGold;
             }
-            AssertException.Assert(goldCost < Player.Gold);
+            AssertException.Assert(rounded < Player.Gold);
 
-            this.Player.SpendGold(goldCost);
+            this.Player.SpendGold(actual, rounded);
+
+            Planet planet = destination.Planet;
+            int extraPop = AvailablePop - population;
 
             double soldiers = GetSoldiers(population, this.soldiers);
             this.soldiers -= soldiers;
@@ -886,6 +890,13 @@ namespace GalWar
             population = destination.Invasion(this.Player, population, ref soldiers, gold, handler, ref extraPop);
             this.Population += population;
             this.movedPop += population;
+
+            if (extraPop > 0)
+            {
+                double goldBonus = PopCarrier.GetRoundedGoldCost(extraPop);
+                this.player.AddGold(0, goldBonus);
+                MovePop(extraPop, planet.Colony);
+            }
 
             this.soldiers += soldiers;
         }
@@ -899,11 +910,14 @@ namespace GalWar
             AssertException.Assert(planet.Colony == null);
             AssertException.Assert(this.AvailablePop == this.Population);
             AssertException.Assert(Population > 0);
-            double gold = GetGoldCost(Population) + planet.ColonizationCost;
-            AssertException.Assert(gold < Player.Gold);
+            double actual, rounded;
+            GetGoldCost(Population, out actual, out rounded);
+            actual += planet.ColonizationCost;
+            rounded += Player.RoundGold(planet.ColonizationCost);
+            AssertException.Assert(rounded < Player.Gold);
             handler = new HandlerWrapper(handler);
 
-            this.Player.SpendGold(gold);
+            this.Player.SpendGold(actual, rounded);
 
             int production = Game.Random.Round(ColonizationValue);
             this.Player.NewColony(planet, this.Population, this.soldiers, production, handler);

@@ -391,7 +391,7 @@ namespace GalWar
             int occupy = attackers;
             if (occupy + extra > 1 && initPop > 0)
             {
-                occupy = handler.MoveTroops(null, occupy + extra, occupy, attackers, soldiers);
+                occupy = handler.MoveTroops(null, occupy + extra, occupy + extra, attackers, soldiers);
                 extra = 0;
                 //must occupy with at least 1 troop to capture
                 if (occupy < 1)

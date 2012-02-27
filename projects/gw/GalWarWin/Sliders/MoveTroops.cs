@@ -80,7 +80,7 @@ namespace GalWarWin.Sliders
         public static int GetMaxMovePop(double gold)
         {
             int max = (int)( gold / Consts.MovePopulationGoldCost ) - 1;
-            while (gold > PopCarrier.GetGoldCost(max))
+            while (gold > PopCarrier.GetRoundedGoldCost(max))
                 ++max;
             return ( max - 1 );
         }
@@ -90,7 +90,7 @@ namespace GalWarWin.Sliders
             int value = GetValue() - free;
             if (value < 1)
                 return 0;
-            return PopCarrier.GetGoldCost(value);
+            return PopCarrier.GetRoundedGoldCost(value);
         }
 
         protected override string GetExtra()
