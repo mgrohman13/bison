@@ -50,40 +50,30 @@ namespace GalWarWin.Sliders
 
         private int GetOptimalProd()
         {
-            return MattUtil.TBSUtil.FindValue(delegate(int repair)
+            return FindValue(delegate(int repair)
             {
-                if (repair < this.max)
-                {
-                    double cur = GetProdSaved(repair);
-                    double next = GetProdSaved(repair + 1);
-                    return ( cur > next );
-                }
-                return true;
-            }, 0, this.max, true);
-        }
-
-        private double GetProdSaved(int repair)
-        {
-            return Consts.GoldForProduction * ship.GetProdForHP(repair) - ship.GetGoldForHP(repair);
+                return Consts.GoldForProduction * ship.GetProdForHP(repair) - ship.GetGoldForHP(repair);
+            });
         }
 
         private int GetOptimalColony()
         {
-            return MattUtil.TBSUtil.FindValue(delegate(int repair)
+            return FindValue(delegate(int repair)
             {
-                if (repair < this.max)
-                {
-                    double cur = GetColony(repair);
-                    double next = GetColony(repair + 1);
-                    return ( cur > next );
-                }
-                return true;
-            }, 0, this.max, true);
+                return ship.GetColonizationValue(repair) - ship.GetGoldForHP(repair);
+            });
         }
 
-        private double GetColony(int repair)
+        private delegate double FindValueDelegate(int value);
+        private int FindValue(FindValueDelegate FindValue)
         {
-            return ship.GetColonizationValue(repair) - ship.GetGoldForHP(repair);
+            return MattUtil.TBSUtil.FindValue(delegate(int value)
+            {
+                if (value < this.max)
+                    return ( FindValue(value) > FindValue(value + 1) );
+                else
+                    return true;
+            }, 0, this.max, true);
         }
 
         protected override int GetMaxInternal()

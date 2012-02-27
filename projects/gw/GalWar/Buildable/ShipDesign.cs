@@ -713,7 +713,7 @@ namespace GalWar
             if (max > 0)
             {
                 //ensure the player has enough gold to move any number of troops
-                double goldBonus = PopCarrier.GetRoundedGoldCost(max);
+                double goldBonus = PopCarrier.GetGoldCost(max);
                 if (colony.Player.Gold < goldBonus)
                     colony.Player.AddGold(0, goldBonus);
 

@@ -1083,7 +1083,7 @@ namespace GalWarWin
             bool bombard = true;
             if (ship.Colony && ship.AvailablePop == ship.Population && ship.AvailablePop > 0)
             {
-                double goldCost = PopCarrier.GetRoundedGoldCost(ship.Population) + planet.ColonizationCost;
+                double goldCost = planet.ColonizationCost;
                 string cost = FormatDouble(goldCost);
                 if (goldCost > ship.Player.Gold)
                 {
@@ -1181,7 +1181,7 @@ namespace GalWarWin
                 }
                 else
                 {
-                    ship.AttackColony(colony, this);
+                    ship.Bombard(colony.Planet, this);
                     CombatForm.FlushLog(this);
                 }
 
@@ -1521,7 +1521,7 @@ namespace GalWarWin
                         }
                     }
                 this.lbl2.Text = "Cost";
-                this.lbl2Inf.Text = FormatDouble(PopCarrier.GetRoundedGoldCost(pop) + planet.ColonizationCost);
+                this.lbl2Inf.Text = FormatDouble(PopCarrier.GetGoldCost(pop) + planet.ColonizationCost);
 
                 return null;
             }

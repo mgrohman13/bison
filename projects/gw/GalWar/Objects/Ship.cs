@@ -689,69 +689,57 @@ namespace GalWar
             return Game.Random.Round(hpStr);
         }
 
-        public void AttackColony(Colony colony, IEventHandler handler)
+        public void Bombard(Planet planet, IEventHandler handler)
         {
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(colony != null);
-            AssertException.Assert(Tile.IsNeighbor(this.Tile, colony.Tile));
-            AssertException.Assert(this.Player != colony.Player);
+            AssertException.Assert(planet != null);
+            AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
             AssertException.Assert(this.CurSpeed > 0);
+            Colony colony = planet.Colony;
+            bool friendly = ( colony != null && this.Player == colony.Player );
+            if (friendly)
+                AssertException.Assert(this.DeathStar);
             handler = new HandlerWrapper(handler);
 
-            double pct;
-            int oldHP = colony.HP;
+            int oldHP = -1;
+            if (!friendly && colony != null)
+                oldHP = colony.HP;
+            double pct = 1;
             if (oldHP > 0)
-            {
-                double damage, d;
-                Consts.GetDamageTable(this.Att, colony.Def, out damage, out d);
-
-                double freeDmg = GetFreeDmg(colony);
-                int bombardDamage = GetBombardDamage(freeDmg);
-                colony.HP -= bombardDamage;
-
-                if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
-                    pct = Combat(colony, handler);
-                else
-                    pct = 1;
-
-                pct *= damage / ( damage + freeDmg );
-                if (bombardDamage > oldHP)
-                    pct += ( 1 - ( oldHP / (double)bombardDamage ) ) * freeDmg / ( damage + freeDmg );
-            }
-            else
-            {
-                pct = 1;
-            }
+                pct = AttackColony(handler, colony, oldHP);
 
             if (pct > 0)
-                if (colony.HP > 0)
+                if (colony != null && colony.HP > 0)
                     this.Player.GoldIncome(GetUpkeepReturn(pct));
                 else
-                    Bombard(colony.Planet, false, pct, handler);
+                    Bombard(planet, friendly, pct, handler);
 
             --this.CurSpeed;
             LevelUp(handler);
+        }
+
+        private double AttackColony(IEventHandler handler, Colony colony, int oldHP)
+        {
+            double damage, d;
+            Consts.GetDamageTable(this.Att, colony.Def, out damage, out d);
+
+            double freeDmg = GetFreeDmg(colony);
+            int bombardDamage = GetBombardDamage(freeDmg);
+            colony.HP -= bombardDamage;
+
+            double pct = 1;
+            if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
+                pct = Combat(colony, handler);
+
+            pct *= damage / ( damage + freeDmg );
+            if (bombardDamage > oldHP)
+                pct += ( 1 - ( oldHP / (double)bombardDamage ) ) * freeDmg / ( damage + freeDmg );
+            return pct;
         }
 
         private double GetFreeDmg(Colony colony)
         {
             return this.BombardDamage * Consts.PlanetDefensesDeathStarMult / colony.PlanetDefenseCost;
-        }
-
-        public void Bombard(Planet planet, IEventHandler handler)
-        {
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(planet != null);
-            bool friendly = ( planet.Colony != null && this.Player == planet.Colony.Player );
-            AssertException.Assert(friendly ? this.DeathStar : planet.Colony == null || planet.Colony.HP == 0);
-            AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
-            AssertException.Assert(this.CurSpeed > 0);
-            handler = new HandlerWrapper(handler);
-
-            Bombard(planet, friendly, 1, handler);
-
-            --this.CurSpeed;
-            LevelUp(handler);
         }
 
         private void Bombard(Planet planet, bool friendly, double pct, IEventHandler handler)
@@ -897,14 +885,10 @@ namespace GalWar
             AssertException.Assert(planet.Colony == null);
             AssertException.Assert(this.AvailablePop == this.Population);
             AssertException.Assert(Population > 0);
-            double actual, rounded;
-            GetGoldCost(Population, out actual, out rounded);
-            actual += planet.ColonizationCost;
-            rounded += Player.RoundGold(planet.ColonizationCost);
-            AssertException.Assert(rounded < Player.Gold);
+            AssertException.Assert(planet.ColonizationCost < Player.Gold);
             handler = new HandlerWrapper(handler);
 
-            this.Player.SpendGold(actual, rounded);
+            this.Player.SpendGold(GetActualGoldCost(Population) + planet.ColonizationCost, Player.RoundGold(planet.ColonizationCost));
 
             int production = Game.Random.Round(ColonizationValue);
             this.Player.NewColony(planet, this.Population, this.soldiers, production, handler);

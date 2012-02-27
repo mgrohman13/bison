@@ -190,19 +190,19 @@ namespace GalWar
             return moveSoldiers;
         }
 
-        public static double GetActualGoldCost(int population)
+        internal static double GetActualGoldCost(int population)
         {
             return population * Consts.MovePopulationGoldCost;
         }
 
-        public static double GetRoundedGoldCost(int population)
+        public static double GetGoldCost(int population)
         {
             double actual, rounded;
             GetGoldCost(population, out actual, out rounded);
             return rounded;
         }
 
-        internal static void GetGoldCost(int population, out double actual, out double rounded)
+        private static void GetGoldCost(int population, out double actual, out double rounded)
         {
             actual = GetActualGoldCost(population);
             rounded = Player.CeilGold(actual);
