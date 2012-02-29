@@ -183,9 +183,12 @@ namespace GalWar
 
                 //  ------  BombardDamageMult ------
                 //modify bombard mult based on speed and att
-                this._bombardDamageMult = (float)MultStr(this.BombardDamageMult, Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att));
-                if (this.BombardDamage < 1)
-                    this._bombardDamageMult = 1 / Consts.BombardAttackMult / this.Att;
+                if (this.DeathStar)
+                {
+                    this._bombardDamageMult = (float)MultStr(this.BombardDamageMult, Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att));
+                    if (this.BombardDamage < 1)
+                        this._bombardDamageMult = 1 / Consts.BombardAttackMult / this.Att;
+                }
 
                 //  ------  Cost/Upkeep       ------
                 double cost = -1;

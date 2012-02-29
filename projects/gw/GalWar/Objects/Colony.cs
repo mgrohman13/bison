@@ -285,7 +285,7 @@ namespace GalWar
             //damage planet for every dead troop
             double deadPop = ( initAttackers - attackers + initPop - this.Population );
             int reduceQuality = Game.Random.Round(planetDamageMult * deadPop);
-            if (reduceQuality > Planet.Quality + 1)
+            if (reduceQuality > Planet.Quality + 2)
                 throw new Exception();
             Planet.ReduceQuality(reduceQuality);
 
@@ -373,7 +373,11 @@ namespace GalWar
         {
             int occupy = attackers;
             if (initPop > 0 && attackers > 1)
+            {
                 occupy = handler.MoveTroops(null, occupy, occupy, occupy, soldiers);
+                if (occupy < 1)
+                    occupy = 1;
+            }
 
             double moveSoldiers = MoveSoldiers(attackers, soldiers, occupy);
             player.NewColony(Planet, occupy, moveSoldiers, 0, handler);

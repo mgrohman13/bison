@@ -1166,7 +1166,7 @@ namespace GalWarWin
                     troops = SliderForm.ShowDialog(this, new MoveTroops(Game, ship, colony));
 
             bool selectShip = true;
-            if (troops > 0)
+            if (troops > 0 && gold > -1)
             {
                 ship.Invade(colony, troops, gold, this);
 
