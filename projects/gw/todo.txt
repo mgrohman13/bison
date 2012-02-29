@@ -1,4 +1,3 @@
-refactor _gold/_goldDiff into uint/double
 nonColonyPct^2
 	0.39-.65 (GetUpkeepPayoff)
 	1-ExperienceUpkeepPayoffMult (Upkeep *)

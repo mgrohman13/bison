@@ -783,11 +783,8 @@ namespace GalWarWin
         private bool CheckGold()
         {
             bool end = true;
-
-            double gold = Game.CurrentPlayer.GetMinGold();
-            if (Player.RoundGold(Game.CurrentPlayer.Gold) < -gold)
+            if (Game.CurrentPlayer.MinGoldNegative())
                 end = ShowOption("You are running out of gold.  Partial production may be sold and one or more ships disbanded.  Are you sure you want to end your turn?", true);
-
             return end;
         }
 

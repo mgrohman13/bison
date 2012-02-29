@@ -23,7 +23,8 @@ namespace GalWar
         private byte _id;
         private ushort _research, _newResearch, _lastResearched;
         private float _incomeTotal, _rKey, _rChance, _rMult;
-        private double _gold, _goldDiff;
+        private uint _goldValue;
+        private double _goldOffset;
 
         private PlanetDefense planetDefense;
 
@@ -50,8 +51,8 @@ namespace GalWar
             {
                 this._id = (byte)id;
             }
-            this._gold = gold;
-            this._goldDiff = 0;
+            this.goldValue = 0;
+            this.goldOffset = gold;
 
             //the highest research value is the actual starting research
             this.Research = research[3];
@@ -83,6 +84,37 @@ namespace GalWar
                 checked
                 {
                     this._newResearch = (ushort)value;
+                }
+            }
+        }
+
+        private double goldOffset
+        {
+            get
+            {
+                return this._goldOffset;
+            }
+            set
+            {
+                this._goldOffset = value;
+            }
+        }
+
+        private double goldValue
+        {
+            get
+            {
+                return this._goldValue / 10.0;
+            }
+            set
+            {
+                VerifyRounded(value);
+                value += Consts.FLOAT_ERROR;
+                if (value < 0)
+                    throw new Exception();
+                checked
+                {
+                    this._goldValue = (uint)( value * 10 );
                 }
             }
         }
@@ -125,12 +157,11 @@ namespace GalWar
             foreach (Ship ship in this.ships)
                 ship.LevelUp(handler);
 
-            this._gold += this._goldDiff;
-            double gold = 0;
-            if (this._gold > 0)
-                gold = Game.Random.Round(this._gold * 10) / 10.0;
-            this._goldDiff = this._gold - gold;
-            this._gold = gold;
+            //consolidate all gold to start the turn
+            double gold = this.goldValue + this.goldOffset;
+            this.goldValue = 0;
+            this.goldOffset = 0;
+            AddGold(gold, Game.Random.Round(gold * 10) / 10.0);
         }
 
         internal void NewRound()
@@ -192,7 +223,7 @@ namespace GalWar
 
             int research = 0;
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
-                colony.EndTurn(ref this._gold, ref research, handler);
+                colony.EndTurn(ref this._goldOffset, ref research, handler);
             this.newResearch += research;
 
             foreach (Ship ship in this.ships)
@@ -203,10 +234,7 @@ namespace GalWar
 
         private void CheckGold()
         {
-            this._gold += this._goldDiff;
-            this._goldDiff = 0;
-
-            if (this._gold < 0)
+            if (NegativeGold())
             {
                 Dictionary<Colony, int> production = new Dictionary<Colony, int>();
                 foreach (Colony colony in this.colonies)
@@ -214,10 +242,13 @@ namespace GalWar
                         production.Add(colony, colony.Production);
 
                 //first any production is sold
-                while (this._gold < 0 && production.Count > 0)
+                while (NegativeGold() && production.Count > 0)
                 {
                     Colony colony = Game.Random.SelectValue<Colony>(production);
+
+                    AddGold(Consts.GetProductionUpkeepMult(Game.MapSize));
                     colony.SellProduction(1);
+
                     if (colony.Production > 0)
                         production[colony] = colony.Production;
                     else
@@ -225,14 +256,29 @@ namespace GalWar
                 }
 
                 //then random ships are disbanded for gold
-                while (this._gold < 0 && this.ships.Count > 0)
+                while (NegativeGold() && this.ships.Count > 0)
                 {
                     Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
+
                     //the upkeep that was just paid for the ship this turn is re-added
                     AddGold(ship.Upkeep);
                     ship.Disband(null);
                 }
             }
+        }
+
+        public bool MinGoldNegative()
+        {
+            return NegativeGold(RoundGold(GetMinGold()));
+        }
+        private bool NegativeGold()
+        {
+            //fudge factor of half-rounding so that NegativeGold will never return true when MinGoldNegative returned false
+            return NegativeGold(this.goldOffset + .05);
+        }
+        private bool NegativeGold(double add)
+        {
+            return ( this.goldValue + add < -Consts.FLOAT_ERROR );
         }
 
         internal Colony NewColony(Planet planet, int population, double soldiers, int production, IEventHandler handler)
@@ -267,12 +313,10 @@ namespace GalWar
 
         internal void AddGold(double gold, double rounded)
         {
-            VerifyRounded(rounded);
-
-            if (rounded < -this._gold)
-                rounded = -this._gold;
+            if (rounded < -this.goldValue)
+                rounded = -this.goldValue;
             GoldIncome(gold - rounded);
-            this._gold += rounded;
+            this.goldValue += rounded;
         }
 
         public static void VerifyRounded(double rounded)
@@ -283,7 +327,7 @@ namespace GalWar
 
         internal void GoldIncome(double gold)
         {
-            this._goldDiff += gold;
+            this.goldOffset += gold;
         }
 
         internal void SpendGold(double gold)
@@ -365,7 +409,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return this._gold + .05 - Consts.FLOAT_ERROR;
+                return this.goldValue + .05 - Consts.FLOAT_ERROR;
             }
         }
 
@@ -506,7 +550,7 @@ namespace GalWar
             foreach (Ship ship in this.ships)
                 gold -= ( ship.Upkeep - ship.GetUpkeepReturn() );
 
-            gold += this._goldDiff;
+            gold += this.goldOffset;
         }
 
         public ReadOnlyCollection<Colony> GetColonies()

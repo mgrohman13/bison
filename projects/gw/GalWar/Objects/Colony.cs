@@ -671,12 +671,12 @@ namespace GalWar
 
             if (minGold)
             {
-                //min gold accounts for pop/prod rounding
+                //pop/prod rounding
                 MinGold(popInc, ref gold, Consts.PopulationIncomeForGold);
                 if (this.Buildable == null || !this.Buildable.HandlesFraction)
                     MinGold(prodInc, ref gold, 1);
 
-                //min gold accounts for planet defense attack cost
+                //planet defense attack cost
                 int att, def, hp;
                 this.GetPlanetDefenseIncMinGold(this.production + prodInc, out att, out def, out hp);
                 if (hp > 0)
@@ -687,22 +687,35 @@ namespace GalWar
                             gold -= GetPlanetDefenseAttackCost(att, def, hp, ship.Def);
                     }
             }
-            else if (this.Buildable != null && this.Buildable.Cost > 0)
-            {
-                //avg gold accounts for carry production loss pct
-                double totalProd = this.production + prodInc;
-                while (this.Buildable.Multiple && totalProd > this.Buildable.Cost)
-                {
-                    totalProd -= this.Buildable.Cost;
-                    double loss = totalProd * Consts.CarryProductionLossPct;
-                    totalProd -= loss;
-                    gold += loss / Consts.ProductionForGold;
-                }
-            }
+            gold += BuildingShipTurnIncome(prodInc, minGold);
 
             //modify parameter values
             population += popInc;
             production += prodInc;
+        }
+
+        private double BuildingShipTurnIncome(double prodInc, bool minGold)
+        {
+            double gold = 0;
+            ShipDesign shipDesign = this.Buildable as ShipDesign;
+            if (minGold ? ( shipDesign != null && shipDesign.Trans > 0 ) : ( this.Buildable != null && this.Buildable.Cost > 0 ))
+            {
+                double totalProd = this.production + prodInc;
+                while (totalProd > this.Buildable.Cost)
+                {
+                    totalProd -= this.Buildable.Cost;
+                    double loss = totalProd * Consts.CarryProductionLossPct;
+                    if (minGold)
+                        loss = Math.Floor(loss);
+                    totalProd -= loss;
+                    gold += loss / Consts.ProductionForGold;
+                    if (minGold)
+                        gold -= PopCarrier.GetActualGoldCost(shipDesign.Trans);
+                    if (!this.Buildable.Multiple)
+                        break;
+                }
+            }
+            return gold;
         }
 
         private void MinGold(double value, ref double gold, double rate)
