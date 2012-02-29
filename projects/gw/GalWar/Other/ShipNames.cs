@@ -60,7 +60,7 @@ namespace GalWar
             SetDivision(1, this._total / (double)this._count);
         }
 
-        internal byte GetName(Player player, ShipDesign design, double transStr, double speedStr)
+        internal byte GetName(ShipDesign design, double transStr, double speedStr)
         {
             return (byte)GetNameType(design, transStr, speedStr);
         }

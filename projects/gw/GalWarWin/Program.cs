@@ -18,6 +18,9 @@ namespace GalWarWin
             //kick off random ticker
             Game.Random.StartTick();
 
+            //ShipDesign.Test();
+            //return;
+
             //for (int a = 0 ; a < 13 ; ++a)
             //    CombatPerformance();
 

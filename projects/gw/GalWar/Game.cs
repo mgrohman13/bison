@@ -226,14 +226,14 @@ next_planet:
 
         #region internal
 
-        public double ExpResearch
+        internal double AvgResearch
         {
             get
             {
-                double expResearch = 0;
+                double avgResearch = 0;
                 foreach (Player player in this.players)
-                    expResearch += player.LastResearched;
-                return expResearch / this.players.Length;
+                    avgResearch += player.LastResearched;
+                return avgResearch / this.players.Length;
             }
         }
 

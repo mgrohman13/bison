@@ -52,7 +52,7 @@ namespace GalWar
 
             this.HP = this.MaxHP;
 
-            this.cost = design.AdjustCost(player.Game.MapSize);
+            this.cost = design.AdjustCost(this.Player.Game.MapSize);
 
             this.curExp = 0;
             this.totalExp = 0;
@@ -98,7 +98,7 @@ namespace GalWar
                 default:
                     throw new Exception();
                 }
-            return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.Player.Game.ExpResearch);
+            return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.Player.Game.AvgResearch);
         }
 
         private double GetCostLastResearched()
@@ -574,8 +574,9 @@ namespace GalWar
             if (this.HP > 0 && !this.Dead && this.curExp > ( needExp = (float)( this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ) ))
             {
                 double costInc = this.GetCostLastResearched();
-                this.cost += this.Upkeep * Consts.ExperienceUpkeepPayoffMult
-                        * Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
+
+                //temporarily add upkeep to cost, using pre-level payoff and mult
+                this.cost += this.Upkeep * GetUpkeepPayoff() * GetExperienceUpkeepPayoffMult();
 
                 double pct = this.HP / (double)this.MaxHP;
                 switch (this.NextExpType)
@@ -605,44 +606,56 @@ namespace GalWar
                     throw new Exception();
                 }
 
-                handler.OnLevel(this, this.NextExpType, pct, GetExp(needExp), GetExp(0));
-
-                //increase the repair cost and upkeep of the ship as it levels
                 costInc = this.GetCostLastResearched() - costInc;
 
-                //add gold for level randomness and percent of ship injured 
+                //add/subtract gold for level randomness and percent of ship injured 
                 Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
-                double upkeepPayoff = Consts.GetUpkeepPayoff(this.Tile.Game.MapSize, this.Colony, this.MaxPop, this.MaxSpeed);
+                double upkeepPayoff = GetUpkeepPayoff();
                 double minCost = upkeepPayoff * Consts.MinCostMult;
+                upkeepPayoff *= GetExperienceUpkeepPayoffMult();
 
-                //upkeep payoff is higher when leveling up since production cost is now only used for repairs
-                upkeepPayoff *= Consts.ExperienceUpkeepPayoffMult;
-                this.cost -= this.Upkeep * upkeepPayoff;
+                this.Upkeep += Game.Random.Round(costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
+                //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
+                this.cost += costInc - this.Upkeep * upkeepPayoff;
 
-                if (!this.Colony)
+                while (this.Upkeep > 1 && this.cost < minCost)
                 {
-                    int upkeepInc = Game.Random.Round(costInc * this.Upkeep / ( this.cost + this.Upkeep * upkeepPayoff ) / Consts.ExperienceUpkeepPayoffMult);
-
-                    //make sure we wont go below the minimum cost
-                    while (this.Upkeep + upkeepInc > 1 && this.cost + costInc - upkeepInc * upkeepPayoff < minCost)
-                        --upkeepInc;
-                    costInc -= upkeepInc * upkeepPayoff;
-
-                    this.Upkeep += upkeepInc;
-                    if (this.Upkeep < 1)
-                        throw new Exception();
+                    --this.Upkeep;
+                    this.cost += upkeepPayoff;
                 }
-                this.cost += costInc;
+                if (this.cost < 1)
+                    throw new Exception();
+                if (this.Upkeep < 1)
+                    throw new Exception();
+
+                handler.OnLevel(this, this.NextExpType, pct, GetExp(needExp), GetExp(0));
 
                 this.totalExp += needExp;
                 this.curExp -= needExp;
-                GetNextLevel(handler);
 
-                if (this.cost < minCost)
-                {
-                }
+                GetNextLevel(handler);
             }
+        }
+
+        private double GetUpkeepPayoff()
+        {
+            return Consts.GetUpkeepPayoff(this.Player.Game.MapSize, GetNonColonyPct(), GetNonTransPct(), this.MaxSpeed);
+        }
+
+        private double GetExperienceUpkeepPayoffMult()
+        {
+            return Consts.ScalePct(1, Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
+        }
+
+        private double GetNonColonyPct()
+        {
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.bombardDamageMult, this.Player.Game.AvgResearch);
+        }
+
+        private double GetNonTransPct()
+        {
+            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.bombardDamageMult, this.Player.Game.AvgResearch);
         }
 
         private void GetNextLevel(IEventHandler handler)

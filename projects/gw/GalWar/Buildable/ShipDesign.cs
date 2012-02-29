@@ -31,7 +31,7 @@ namespace GalWar
             return GetTotCost(att, def, 1, attDiv - speedAdd, 0, false, 0, researchMult, researchMult) * speedAdd / attDiv * Consts.PlanetDefensesCostMult;
         }
 
-        internal static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, int research)
+        internal static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
         {
             double researchMult = GetResearchMult(research);
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, researchMult);
@@ -195,8 +195,7 @@ namespace GalWar
                 int upkeep = -1;
                 GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
                 double maxCost = GetMaxCost(research);
-                double minCost = GetMinCost(mapSize, maxCost);
-                maxCost = GetMaxCost(minCost, maxCost);
+                maxCost = GetMaxCost(GetMinCost(mapSize, maxCost), maxCost);
                 while (cost > maxCost)
                 {
                     switch (GetReduce(cost, hpMult))
@@ -229,7 +228,7 @@ namespace GalWar
                     }
                     GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
                 }
-                while (cost < minCost)
+                while (cost < GetMinCost(mapSize, maxCost))
                 {
                     switch (GetIncrease(hpMult))
                     {
@@ -251,7 +250,7 @@ namespace GalWar
                 this._upkeep = (byte)upkeep;
 
                 //  ------  Name              ------
-                this._name = shipNames.GetName(player, this, GetTransStr(research), GetSpeedStr(research));
+                this._name = shipNames.GetName(this, GetTransStr(research), GetSpeedStr(research));
                 this._mark = shipNames.GetMark(player, _name);
             }
         }
@@ -361,7 +360,7 @@ namespace GalWar
             else if (forceNeither || forceTrans)
                 colony = false;
             else
-                colony = CreateType(.091, colonyPct);
+                colony = CreateType(.13, colonyPct);
 
             //pure colony ships transport a reduced amount
             if (colony && !transport)
@@ -496,7 +495,7 @@ namespace GalWar
         {
             double minCost = this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + 1 / Consts.RepairCostMult;
             //randomized increase to absolute min
-            return minCost + Game.Random.OE(maxCost / 16.9);
+            return minCost + Game.Random.OE(maxCost / 21);
         }
 
         private static double GetMaxCost(double minCost, double maxCost)
@@ -533,7 +532,7 @@ namespace GalWar
                     upkeep = 1;
             }
 
-            //upkeep should never account for more than half the ships cost
+            //upkeep should never account for more than half the ship's cost
             while (upkeep > 1 && upkeep * upkeepPayoff > totCost / 2.0)
                 --upkeep;
 
@@ -624,7 +623,7 @@ namespace GalWar
 
         internal double GetUpkeepPayoff(int mapSize)
         {
-            return Consts.GetUpkeepPayoff(mapSize, this.Colony, this.Trans, this.Speed);
+            return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(), GetNonTransPct(), this.Speed);
         }
 
         internal float BombardDamageMult
@@ -833,10 +832,20 @@ namespace GalWar
         {
             double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
             double cost = GetTotCost() - this.Upkeep * upkeepPayoff;
-            cost = cost + ( cost - this.Cost ) / Consts.RepairCostMult;
+            cost = cost + ( cost - this.Cost ) / Consts.ScalePct(1, Consts.RepairCostMult, GetNonColonyPct());
             if (cost < upkeepPayoff * Consts.MinCostMult)
                 throw new Exception();
             return cost;
+        }
+
+        private double GetNonColonyPct()
+        {
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this._bombardDamageMult, this.Research);
+        }
+
+        private double GetNonTransPct()
+        {
+            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this._bombardDamageMult, this.Research);
         }
 
         public override string GetProdText(string curProd)
@@ -850,6 +859,37 @@ namespace GalWar
         }
 
         #endregion //public
+
+        //public static void Test()
+        //{
+        //    Player player = new Player("", System.Drawing.Color.Black);
+        //    while (true)
+        //    {
+        //        int radius = Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3);
+        //        int mapSize = 3 * radius * radius - 3 * radius + 1;
+        //        int research = Game.Random.WeightedInt(ushort.MaxValue, .13);
+        //        ShipNames names = new ShipNames(1);
+        //        names.EndSetup();
+        //        bool forceColony = Game.Random.Bool();
+
+        //        ShipDesign design = new ShipDesign(mapSize, research, player, null, names, forceColony, !forceColony, false);
+
+        //        double cost = design.GetTotCost() - design.Upkeep * design.GetUpkeepPayoff(mapSize);
+        //        if (Game.Random.Bool())
+        //            ++design._hp;
+        //        else
+        //            ++design._trans;
+        //        double newCost = design.GetTotCost() - design.Upkeep * design.GetUpkeepPayoff(mapSize);
+
+        //        Console.WriteLine();
+        //        Console.WriteLine(research.ToString().PadLeft(6));
+        //        Console.WriteLine(cost.ToString("0.000").PadLeft(8));
+        //        Console.WriteLine(newCost.ToString("0.000").PadLeft(8));
+
+        //        if (newCost < cost)
+        //            throw new Exception();
+        //    }
+        //}
 
         private enum ModifyStat
         {

@@ -153,19 +153,46 @@ namespace GalWar
 
         public static double GetProductionUpkeepMult(int mapSize)
         {
-            return Consts.ProdUpkeepMult / GetUpkeepPayoff(mapSize, false, 0, 2.1);
+            return Consts.ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);
         }
 
         //upkeep payoff is the number of turns the ship is expected to live
-        public static double GetUpkeepPayoff(int mapSize, bool colony, int trans, int speed)
+        public static double GetUpkeepPayoff(int mapSize, double nonColonyPct, double nonTransPct, int speed)
         {
-            return GetUpkeepPayoff(mapSize, colony, trans, (double)speed);
+            return GetUpkeepPayoff(mapSize, nonColonyPct, nonTransPct, (double)speed);
         }
 
         //upkeep payoff is the number of turns the ship is expected to live
-        private static double GetUpkeepPayoff(int mapSize, bool colony, int trans, double speed)
+        private static double GetUpkeepPayoff(int mapSize, double nonColonyPct, double nonTransPct, double speed)
         {
-            return Math.Sqrt(mapSize) * ( colony ? 0.39 : .65 ) * ( ( Math.Pow(trans, 0.169) + 39.0 ) / 39.0 ) * ( 4.2 / ( speed + 2.1 ) );
+            return ( .65 * Math.Sqrt(mapSize) * ScalePct(.52, 1, nonColonyPct) * ScalePct(1.3, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
+        }
+
+        internal static double ScalePct(double zero, double one, double pct)
+        {
+            return ( zero + ( one - zero ) * pct );
+        }
+
+        internal static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
+        {
+            if (colony)
+            {
+                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamageMult, research)
+                    / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+                return ( retVal * retVal );
+            }
+            return 1;
+        }
+
+        internal static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
+        {
+            if (trans > 0)
+            {
+                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamageMult, research)
+                    / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+                return ( retVal * retVal );
+            }
+            return 1;
         }
 
         //randomized

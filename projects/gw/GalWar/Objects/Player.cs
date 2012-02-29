@@ -376,6 +376,13 @@ namespace GalWar
             }
         }
 
+        public int GetLastResearched()
+        {
+            TurnException.CheckTurn(this);
+
+            return LastResearched;
+        }
+
         internal int LastResearched
         {
             get
