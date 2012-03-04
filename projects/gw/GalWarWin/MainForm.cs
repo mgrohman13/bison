@@ -13,6 +13,8 @@ namespace GalWarWin
 {
     public partial class MainForm : Form, IEventHandler
     {
+        private static string initialAutoSave = GetInitialAutoSave();
+
         private static Game _game;
         public static Game Game
         {
@@ -23,7 +25,7 @@ namespace GalWarWin
             private set
             {
                 _game = value;
-                _game.AutoSavePath = GetInitialAutoSave();
+                _game.AutoSavePath = initialAutoSave;
             }
         }
 
@@ -549,7 +551,7 @@ namespace GalWarWin
 
         private void btnAutosaveView_Click(object sender, EventArgs e)
         {
-            this.openFileDialog1.InitialDirectory = GetInitialAutoSave();
+            this.openFileDialog1.InitialDirectory = initialAutoSave;
             this.openFileDialog1.FileName = "1.gws";
 
             if (this.openFileDialog1.ShowDialog() == DialogResult.OK)

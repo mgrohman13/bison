@@ -715,6 +715,8 @@ namespace GalWar
                         break;
                 }
             }
+            if (minGold && gold > 0)
+                gold = 0;
             return gold;
         }
 
