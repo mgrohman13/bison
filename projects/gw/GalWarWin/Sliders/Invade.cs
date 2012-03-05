@@ -11,16 +11,13 @@ namespace GalWarWin.Sliders
         private double attSoldiers, defSoldiers;
         private readonly int initial;
 
-        //cache results from brute-force calls to FindValue that will be evaluated multiple times on a single event
-        private Dictionary<int, double> goldAttackValues = new Dictionary<int, double>();
-
         public Invade(Ship ship, Colony colony)
             : this(ship.AvailablePop, ship.Population, colony.Population, ship.TotalSoldiers, colony.TotalSoldiers, (int)MainForm.Game.CurrentPlayer.Gold)
         {
         }
 
-        public Invade(int attPop, int attTotal, int defPop, double attSoldiers, double defSoldiers)
-            : this(attPop, attTotal, defPop, attSoldiers, defSoldiers, (int)Math.Max(MainForm.Game.CurrentPlayer.Gold, attPop * 13) + defPop)
+        public Invade(int attPop, int defPop, double attSoldiers, double defSoldiers)
+            : this(attPop, attPop, defPop, attSoldiers, defSoldiers, (int)Math.Max(MainForm.Game.CurrentPlayer.Gold, attPop * 13) + defPop)
         {
             int gold = this.initial;
             string effcnt;
@@ -39,7 +36,6 @@ namespace GalWarWin.Sliders
             this.attSoldiers = attSoldiers;
             this.defSoldiers = defSoldiers;
 
-            //nested FindValue calls...
             this.initial = MattUtil.TBSUtil.FindValue(delegate(int gold)
             {
                 string effcnt = GetEffcnt(gold);
@@ -143,6 +139,13 @@ namespace GalWarWin.Sliders
             return MainForm.FormatPctWithCheck(GetWinPct(GetAttack(gold)));
         }
 
+        protected override string GetExtra()
+        {
+            if (attPop == attTotal)
+                return base.GetExtra();
+            return attPop + "/" + attTotal;
+        }
+
         private double GetWinPct(double attack)
         {
             if (attack > 0)
@@ -169,16 +172,17 @@ namespace GalWarWin.Sliders
             return 0;
         }
 
+        private Dictionary<int, double> getAttackCache = new Dictionary<int, double>();
         private double GetAttack(int gold)
         {
             if (attPop > 0)
             {
-                //called multiple times on a single event, so cache the results
+                //this calls a brute-force algorithm and will be evaluated multiple times on a single event, so cache the results
                 double result;
-                if (!goldAttackValues.TryGetValue(gold, out result))
+                if (!getAttackCache.TryGetValue(gold, out result))
                 {
                     result = attPop * Consts.GetInvasionStrengthBase(attPop, PopCarrier.GetSoldiers(attTotal, attSoldiers, attPop), gold, GetDefense());
-                    goldAttackValues.Add(gold, result);
+                    getAttackCache.Add(gold, result);
                 }
 
                 return result;

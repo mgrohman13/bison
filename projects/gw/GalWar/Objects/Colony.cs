@@ -191,7 +191,7 @@ namespace GalWar
 
         private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn, bool minGold)
         {
-            //pay upkeep for stored production before getting income
+            //pay upkeep for stored production before adding production income
             gold -= Upkeep;
 
             double goldInc;
@@ -272,15 +272,14 @@ namespace GalWar
             return exp;
         }
 
-        internal void Invasion(Player player, ref int attackers, ref double soldiers, double gold, IEventHandler handler)
+        internal void Invasion(Player attackPlayer, ref int attackers, ref double soldiers, int gold, IEventHandler handler)
         {
             double initAttackers = attackers;
             double initPop = this.Population;
 
             double planetDamageMult = Consts.GetPlanetDamageMult();
 
-            TroopBattle(ref attackers, ref soldiers, ref gold, planetDamageMult);
-            player.AddGold(gold);
+            TroopBattle(attackPlayer, ref attackers, ref soldiers, gold, planetDamageMult);
 
             //damage planet for every dead troop
             double deadPop = ( initAttackers - attackers + initPop - this.Population );
@@ -294,13 +293,13 @@ namespace GalWar
 
             deadPop *= Consts.TroopExperienceMult;
             this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, deadPop);
-            soldiers += GetExperienceSoldiers(player, attackers, initAttackers, deadPop);
+            soldiers += GetExperienceSoldiers(attackPlayer, attackers, initAttackers, deadPop);
 
             //in the event of a tie, the defender keeps the planet with the remaining population of 0
             if (attackers > 0 && !Planet.Dead)
             {
                 Destroy();
-                OccupyPlanet(player, ref attackers, ref soldiers, initPop, handler);
+                OccupyPlanet(attackPlayer, ref attackers, ref soldiers, initPop, handler);
             }
         }
 
@@ -311,25 +310,24 @@ namespace GalWar
             return Game.Random.GaussianCapped((float)( mult / Consts.ProductionForSoldiers ), Consts.SoldiersRndm);
         }
 
-        private void TroopBattle(ref int attackers, ref double soldiers, ref double gold, double planetDamageMult)
+        private void TroopBattle(Player attackPlayer, ref int attackers, ref double soldiers, int gold, double planetDamageMult)
         {
-            if (this.Population > 0)
+            double initAttackers = attackers;
+            double initPop = this.Population;
+
+            if (initPop > 0)
             {
-                double initAttackers = attackers;
-                double initPop = this.Population;
-
                 double defense = Consts.GetPlanetDefenseStrength(this.Population, this.TotalSoldiers);
-                double mult = Consts.GetInvasionStrength(attackers, soldiers, gold, this.Population * defense) / defense;
+                double mult = Consts.GetInvasionStrength(attackers, soldiers, gold, initPop * defense) / defense;
 
-                double attStr = mult * attackers;
-                double defStr = this.Population;
+                double attStr = mult * initAttackers;
                 int planetStr = (int)Math.Ceiling(( Planet.Quality + 1 ) / planetDamageMult);
 
-                double attLeft = ( attStr - defStr ) / mult;
-                double defLeft = defStr - attStr;
+                double attLeft = ( attStr - initPop ) / mult;
+                double defLeft = initPop - attStr;
 
                 int dead = attackers + this.Population;
-                if (attStr > defStr)
+                if (attStr > initPop)
                     dead -= (int)Math.Ceiling(attLeft);
                 else
                     dead -= (int)Math.Ceiling(defLeft);
@@ -339,19 +337,19 @@ namespace GalWar
                     double attDead = planetStr / ( mult + 1 );
                     attDead = Math.Min(Math.Ceiling(attDead), Math.Ceiling(attDead * mult) / mult);
 
-                    gold *= ( attackers - attDead ) / attackers;
+                    //only pay for the portion of gold spent until the planet is destroyed
+                    attackPlayer.AddGold(gold * ( initAttackers - attDead ) / initAttackers);
+
                     attackers -= Game.Random.Round(attDead);
                     this.Population -= Game.Random.Round(mult * attDead);
                 }
-                else if (attStr > defStr)
+                else if (attStr > initPop)
                 {
-                    gold = 0;
                     attackers = Game.Random.Round(attLeft);
                     this.Population = 0;
                 }
                 else
                 {
-                    gold = 0;
                     attackers = 0;
                     this.Population = Game.Random.Round(defLeft);
                 }
@@ -369,7 +367,7 @@ namespace GalWar
             }
         }
 
-        private void OccupyPlanet(Player player, ref int attackers, ref double soldiers, double initPop, IEventHandler handler)
+        private void OccupyPlanet(Player occupyingPlayer, ref int attackers, ref double soldiers, double initPop, IEventHandler handler)
         {
             int occupy = attackers;
             if (initPop > 0 && attackers > 1)
@@ -380,7 +378,7 @@ namespace GalWar
             }
 
             double moveSoldiers = MoveSoldiers(attackers, soldiers, occupy);
-            player.NewColony(Planet, occupy, moveSoldiers, 0, handler);
+            occupyingPlayer.NewColony(Planet, occupy, moveSoldiers, 0, handler);
 
             attackers -= occupy;
             soldiers -= moveSoldiers;
@@ -584,46 +582,17 @@ namespace GalWar
 
         public double GetPopulationGrowth()
         {
-            //logistic growth
+            //approximately logistic growth, but modified such that quality is irrelevant until it is exceeded by population
             double growth;
             if (this.Population > Planet.Quality)
                 growth = 2 * Planet.Quality - this.Population;
             else
                 growth = this.Population;
 
-            growth *= Consts.PopulationGrowth;
-
             //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
             //and to make even pitiful planets have a small carrying capacity
-            return growth + 1;
+            return ( 1 + growth * Consts.PopulationGrowth );
         }
-
-        //public int GetTransIn(int max)
-        //{
-        //    if (this.Population + max <= this.Planet.Quality)
-        //        return max;
-        //    else
-        //        return GetTrans(Math.Max(this.Planet.Quality - this.Population, 0), max, false,
-        //                Math.Max(this.Population, this.Planet.Quality), true);
-        //}
-
-        //public int GetTransOut(int max)
-        //{
-        //    if (this.Population - max >= this.Planet.Quality)
-        //        return max;
-        //    else
-        //        return GetTrans(Math.Max(this.Population - this.Planet.Quality, 0), max, false,
-        //                Math.Min(this.Population, this.Planet.Quality), false);
-        //}
-
-        //private int GetTrans(int min, int max, bool trueHigh, int bestPop, bool add)
-        //{
-        //    int growth = GetPopulationGrowth(bestPop);
-        //    return MattUtil.TBSUtil.FindValue(delegate(int trans)
-        //    {
-        //        return ( growth == GetPopulationGrowth(this.Population + ( add ? trans : -trans )) );
-        //    }, min, max, trueHigh);
-        //}
 
         public double GetTotalIncome()
         {
@@ -710,7 +679,7 @@ namespace GalWar
                     totalProd -= loss;
                     gold += loss / Consts.ProductionForGold;
                     if (minGold)
-                        gold -= PopCarrier.GetActualGoldCost(shipDesign.Trans);
+                        gold -= GetActualGoldCost(shipDesign.Trans);
                     if (!this.Buildable.Multiple)
                         break;
                 }
@@ -1129,67 +1098,6 @@ namespace GalWar
                     + ShipDesign.GetPlanetDefenseCost(attLow, defHigh, research) * attLowMult * defHighMult
                     + ShipDesign.GetPlanetDefenseCost(attHigh, defHigh, research) * attHighMult * defHighMult;
         }
-
-        //public IEnumerable<Ship> GetPlanetDefenseAttacks()
-        //{
-        //    if (this.HP > 0)
-        //    {
-        //        HashSet<Tile> tiles = Tile.GetNeighbors(this.Planet.Tile);
-        //        foreach (Tile tile in Game.Random.Iterate<Tile>(tiles))
-        //        {
-        //            Ship ship = tile.SpaceObject as Ship;
-        //            if (ship != null && ship.Player != this.Player)
-        //            {
-        //                double avgAtt, avgDef;
-        //                Consts.GetDamageTable(this.Att, ship.Def, out avgAtt, out avgDef);
-        //                bool attack = ( avgAtt >= ship.HP && avgAtt / ship.HP > avgDef / this.HP );
-
-        //                if (!attack)
-        //                {
-        //                    if (ship.Population > 0)
-        //                    {
-        //                        double damage = avgAtt;
-        //                        if (avgDef > this.HP)
-        //                            damage *= this.HP / avgDef;
-        //                        attack = ( ship.GetTransLoss(damage) * 3.9 > GetPlanetDefenseSoldiers(Math.Min(this.HP, avgDef)) );
-        //                    }
-
-        //                    if (!attack)
-        //                    {
-        //                        double defAtt, defDef;
-        //                        Consts.GetDamageTable(ship.Att, this.Def, out defAtt, out defDef);
-        //                        attack = ( avgAtt / avgDef >= defDef / ( defAtt + ship.GetFreeDmg(this) * ship.MaxSpeed ) );
-
-        //                        if (!attack)
-        //                            attack = !HasFreeSpace(tiles, tile);
-        //                    }
-        //                }
-
-        //                if (attack)
-        //                {
-        //                    yield return ship;
-        //                    if (this.HP == 0)
-        //                        yield break;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private bool HasFreeSpace(HashSet<Tile> tiles, Tile tile)
-        //{
-        //    bool freeSpace = false;
-        //    foreach (Tile t2 in tiles)
-        //    {
-        //        Ship s2 = tile.SpaceObject as Ship;
-        //        if (s2 != null && s2.Player != this.Player)
-        //        {
-        //            freeSpace = true;
-        //            break;
-        //        }
-        //    }
-        //    return freeSpace;
-        //}
 
         #endregion //planet defense
     }

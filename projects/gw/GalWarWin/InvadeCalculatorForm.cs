@@ -102,7 +102,7 @@ namespace GalWarWin
         {
             int troops = (int)this.nudTroops.Value;
             int pop = (int)this.nudPop.Value;
-            if (Sliders.SliderForm.ShowDialog(gameForm, new Sliders.Invade(troops, troops, pop,
+            if (Sliders.SliderForm.ShowDialog(gameForm, new Sliders.Invade(troops, pop,
                     GetSoldiers(troops, this.nudAttSoldiers.Value), GetSoldiers(pop, this.nudDefSoldiers.Value))) > 0)
                 this.DialogResult = DialogResult.OK;
         }

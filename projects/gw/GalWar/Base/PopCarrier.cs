@@ -215,11 +215,11 @@ namespace GalWar
 
         public static double GetSoldiers(int population, double soldiers, int attPop)
         {
-            if (soldiers == 0 || attPop == 0)
+            if (soldiers < Consts.FLOAT_ERROR || attPop <= 0)
                 return 0;
             if (population <= 0)
                 throw new Exception();
-            return soldiers * attPop / population;
+            return ( ( soldiers * attPop ) / population );
         }
 
         public double GetTotalSoldierPct()

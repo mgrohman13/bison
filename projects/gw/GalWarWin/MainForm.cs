@@ -13,7 +13,7 @@ namespace GalWarWin
 {
     public partial class MainForm : Form, IEventHandler
     {
-        private static string initialAutoSave = GetInitialAutoSave();
+        private static string initialAutoSave;
 
         private static Game _game;
         public static Game Game
@@ -84,7 +84,10 @@ namespace GalWarWin
 
             this.pnlInfo.Hide();
 
-            this.openFileDialog1.InitialDirectory = GetInitialDirectory();
+            string initialDirectory = GetInitialDirectory();
+            MainForm.initialAutoSave = GetInitialAutoSave(initialDirectory);
+
+            this.openFileDialog1.InitialDirectory = initialDirectory;
             this.openFileDialog1.FileName = "g.gws";
             this.saveFileDialog1.InitialDirectory = this.openFileDialog1.InitialDirectory;
             this.saveFileDialog1.FileName = this.openFileDialog1.FileName;
@@ -112,9 +115,9 @@ namespace GalWarWin
             return savePath;
         }
 
-        private static string GetInitialAutoSave()
+        private static string GetInitialAutoSave(string initialDirectory)
         {
-            return GetInitialDirectory() + "\\auto";
+            return initialDirectory + "\\auto";
         }
 
         private bool showMoves
@@ -583,33 +586,30 @@ namespace GalWarWin
 
         private void tbTurns_Scroll(object sender, EventArgs e)
         {
-            while (true)
+            int turn;
+            while (( Game == null ? -1 : Game.Turn ) != ( turn = (int)this.tbTurns.Value ))
             {
-                int turn = (int)this.tbTurns.Value;
-                if (Game == null || Game.Turn != turn)
-                {
-                    string filePath = GetAutosaveFolder() + "\\" + turn + ".gws";
-                    if (File.Exists(filePath))
-                        try
-                        {
-                            LoadGame(filePath);
-                            return;
-                        }
-                        catch
-                        {
-                        }
+                string filePath = GetAutosaveFolder() + "\\" + turn + ".gws";
+                if (File.Exists(filePath))
                     try
                     {
-                        if (Game == null || Game.Turn < turn)
-                            ++this.tbTurns.Value;
-                        else
-                            --this.tbTurns.Value;
+                        LoadGame(filePath);
+                        return;
                     }
                     catch
                     {
-                        Application.Exit();
-                        return;
                     }
+                try
+                {
+                    if (Game == null || Game.Turn < turn)
+                        ++this.tbTurns.Value;
+                    else
+                        --this.tbTurns.Value;
+                }
+                catch
+                {
+                    Application.Exit();
+                    return;
                 }
             }
         }
@@ -1507,20 +1507,8 @@ namespace GalWarWin
             if (colony == null)
             {
                 this.lblTop.Text = "Uncolonized";
-
-                int pop = 0, dist = int.MaxValue;
-                foreach (Ship ship in Game.CurrentPlayer.GetShips())
-                    if (ship.Colony && ship.Population > 0)
-                    {
-                        int thisDist = Tile.GetDistance(ship.Tile, planet.Tile);
-                        if (thisDist < dist)
-                        {
-                            dist = thisDist;
-                            pop = ship.Population;
-                        }
-                    }
                 this.lbl2.Text = "Cost";
-                this.lbl2Inf.Text = FormatDouble(PopCarrier.GetGoldCost(pop) + planet.ColonizationCost);
+                this.lbl2Inf.Text = FormatDouble(planet.ColonizationCost);
 
                 return null;
             }

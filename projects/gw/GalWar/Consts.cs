@@ -32,7 +32,7 @@ namespace GalWar
         public const int HomeworldDistance = 6;
 
         //as pcts of population
-        public const double PopulationGrowth = .021;
+        public const double PopulationGrowth = Math.E / 130;
         public const double Income = .13;
         //set up so that emphasising a single value allows double the income of when emphasising the other two
         public const double EmphasisValue = 1.6861406616345072; // = 8 / ( Math.Sqrt(33) - 1 )
@@ -52,7 +52,7 @@ namespace GalWar
         //percent of upkeep returned when a ship doesnt move
         public const double UpkeepUnmovedReturn = .169;
         //as a multiple of upkeep payoff
-        public const double MinCostMult = 1;
+        public const double MinCostMult = 1.13;
         //as a multiple and a power of research
         public const double MaxCostMult = 65;
         public const double MaxCostPower = 0.21;
@@ -196,18 +196,18 @@ namespace GalWar
         }
 
         //randomized
-        public static double GetInvasionStrength(int attackers, double soldiers, double gold, double totalDefense)
+        public static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense)
         {
             return GetInvasionStrength(attackers, soldiers, gold, totalDefense, true);
         }
 
         //non-randomized
-        public static double GetInvasionStrengthBase(int attackers, double soldiers, double gold, double totalDefense)
+        public static double GetInvasionStrengthBase(int attackers, double soldiers, int gold, double totalDefense)
         {
             return GetInvasionStrength(attackers, soldiers, gold, totalDefense, false);
         }
 
-        private static double GetInvasionStrength(int attackers, double soldiers, double gold, double totalDefense, bool randomize)
+        private static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense, bool randomize)
         {
             double attack = GetStrengthBase(attackers, soldiers, AttackStrength, AttackNumbersPower);
             if (randomize)
@@ -218,11 +218,11 @@ namespace GalWar
             }, 1, attackers, true), attack, gold);
         }
 
-        private static double GetInvasionStrength(double initialWave, double attack, double gold)
+        private static double GetInvasionStrength(int initialWave, double attack, int gold)
         {
             if (gold == 0)
-                return 1;
-            return ( initialWave + gold * Math.Pow(initialWave / gold, InvadeGoldIncPower) ) * attack / initialWave;
+                return attack;
+            return ( initialWave + gold * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) ) * attack / initialWave;
         }
 
         //randomized

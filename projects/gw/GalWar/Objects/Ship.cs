@@ -611,18 +611,19 @@ namespace GalWar
                 //add/subtract gold for level randomness and percent of ship injured 
                 Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
-                double upkeepPayoff = GetUpkeepPayoff();
-                double minCost = upkeepPayoff * Consts.MinCostMult;
-                upkeepPayoff *= GetExperienceUpkeepPayoffMult();
+                double basePayoff = GetUpkeepPayoff();
+                double minCost = basePayoff * Consts.MinCostMult;
+                double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
                 this.Upkeep += Game.Random.Round(costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
                 //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
-                this.cost += costInc - this.Upkeep * upkeepPayoff;
+                this.cost += costInc - this.Upkeep * multPayoff;
 
-                while (this.Upkeep > 1 && this.cost < minCost)
+                //upkeep should never account for more than half of the ship's cost
+                while (this.Upkeep > 1 && ( ( this.cost < minCost ) || ( this.Upkeep * basePayoff > ( this.cost + this.Upkeep * basePayoff ) / 2.0 ) ))
                 {
                     --this.Upkeep;
-                    this.cost += upkeepPayoff;
+                    this.cost += multPayoff;
                 }
                 if (this.cost < 1)
                     throw new Exception();
@@ -677,7 +678,7 @@ namespace GalWar
 
             if (this.DeathStar)
             {
-                int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 39.0 / this.needExpMult);
+                int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 39.0);
                 total += ds;
                 stats.Add(ExpType.DS, ds);
             }
@@ -776,7 +777,9 @@ namespace GalWar
             {
                 popDmg = colonyDamage;
             }
-            BombardOverkill(planetDamage, initQuality, popDmg, initPop, pct);
+            double move = GetBombardMoveLeft(planetDamage, initQuality, popDmg, initPop, pct);
+            if (move > 0)
+                this.Player.GoldIncome(GetUpkeepReturn(move));
         }
 
         private int GetColonyDamage(bool friendly, double pct)
@@ -842,7 +845,7 @@ namespace GalWar
             return initPop;
         }
 
-        private void BombardOverkill(double planetDamage, double quality, double colonyDamage, double pop, double pct)
+        private static double GetBombardMoveLeft(double planetDamage, double quality, double colonyDamage, double pop, double pct)
         {
             //the 1 movement is split evenly between planet and colony damage
             double move = 0;
@@ -852,8 +855,7 @@ namespace GalWar
             //colony population overkill
             if (colonyDamage > pop)
                 move += ( 1 - ( pop / colonyDamage ) );
-            if (move > 0)
-                this.Player.GoldIncome(GetUpkeepReturn(move / 2 * pct));
+            return move / 2 * pct;
         }
 
         public void Invade(Colony target, int population, int gold, IEventHandler handler)
@@ -869,13 +871,14 @@ namespace GalWar
                 AssertException.Assert(gold > 0);
                 AssertException.Assert(gold < Player.Gold);
             }
+            else
+            {
+                gold = 0;
+            }
             handler = new HandlerWrapper(handler);
 
-            if (target.Population == 0)
-                gold = 0;
             //all attackers cost gold to move regardless of where they end up
-            double actual = PopCarrier.GetActualGoldCost(population);
-            this.Player.SpendGold(gold + actual, gold);
+            this.Player.SpendGold(GetActualGoldCost(population) + gold, gold);
 
             double soldiers = GetSoldiers(population, this.soldiers);
             this.soldiers -= soldiers;
@@ -897,11 +900,11 @@ namespace GalWar
             AssertException.Assert(this.Colony);
             AssertException.Assert(planet.Colony == null);
             AssertException.Assert(this.AvailablePop == this.Population);
-            AssertException.Assert(Population > 0);
+            AssertException.Assert(this.Population > 0);
             AssertException.Assert(planet.ColonizationCost < Player.Gold);
             handler = new HandlerWrapper(handler);
 
-            this.Player.SpendGold(GetActualGoldCost(Population) + planet.ColonizationCost, Player.RoundGold(planet.ColonizationCost));
+            this.Player.SpendGold(GetActualGoldCost(this.Population) + planet.ColonizationCost, Player.RoundGold(planet.ColonizationCost));
 
             int production = Game.Random.Round(ColonizationValue);
             this.Player.NewColony(planet, this.Population, this.soldiers, production, handler);

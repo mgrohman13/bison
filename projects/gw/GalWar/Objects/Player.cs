@@ -342,7 +342,7 @@ namespace GalWar
 
         public static double RoundGold(double gold)
         {
-            return Math.Round(gold, 1, MidpointRounding.AwayFromZero);
+            return Math.Round(gold, 1);
         }
 
         public static double CeilGold(double gold)

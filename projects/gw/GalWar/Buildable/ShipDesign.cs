@@ -251,7 +251,7 @@ namespace GalWar
 
                 //  ------  Name              ------
                 this._name = shipNames.GetName(this, GetTransStr(research), GetSpeedStr(research));
-                this._mark = shipNames.GetMark(player, _name);
+                this._mark = shipNames.GetMark(player, this._name);
             }
         }
 
@@ -375,7 +375,7 @@ namespace GalWar
             {
                 trans = 0;
 
-                if (!forceNeither && MakeDeathStar(research, dsPct))
+                if (!forceNeither && CreateDeathStar(research, dsPct))
                 {
                     float min = 1 / Consts.BombardAttackMult - .5f;
                     bombardDamageMult = MakeStat(deathStarAvg - min) + min + Game.Random.FloatHalf() - .5f;
@@ -383,10 +383,10 @@ namespace GalWar
             }
         }
 
-        private bool MakeDeathStar(int research, double actual)
+        private bool CreateDeathStar(int research, double actual)
         {
             //target pct of ships that should be death stars increases with research
-            double target = research / ( 2.1 * Consts.ResearchFactor + research );
+            double target = research / ( 1.3 * Consts.ResearchFactor + research );
             target *= target * target * .169;
 
             return CreateType(target, actual);
@@ -495,7 +495,7 @@ namespace GalWar
         {
             double minCost = this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + 1 / Consts.RepairCostMult;
             //randomized increase to absolute min
-            return minCost + Game.Random.OE(maxCost / 21);
+            return minCost + Game.Random.OE(maxCost / 39);
         }
 
         private static double GetMaxCost(double minCost, double maxCost)
@@ -515,7 +515,7 @@ namespace GalWar
 
             if (cost > 0)
             {
-                //cost has been previously calculated so maintain upkeep pct
+                //cost has been previously calculated, so maintain upkeep pct
                 double avgUpk = totCost * upkeep / ( cost + upkeep * upkeepPayoff );
                 if (avgUpk > 1)
                     upkeep = Game.Random.Round(avgUpk);
@@ -532,7 +532,7 @@ namespace GalWar
                     upkeep = 1;
             }
 
-            //upkeep should never account for more than half the ship's cost
+            //upkeep should never account for more than half of the ship's cost
             while (upkeep > 1 && upkeep * upkeepPayoff > totCost / 2.0)
                 --upkeep;
 
