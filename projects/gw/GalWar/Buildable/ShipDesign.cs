@@ -281,7 +281,9 @@ namespace GalWar
                     speed *= design.Speed / design.ModSpeedStr(GetSpeedStr(design.Research), GetTransStr(design.Research), false);
 
                     costMult += totalCost;
-                    double mult = ( design.Research + Consts.ResearchFactor ) / research / totalCost;
+                    double mult = design.Research + 260;
+                    mult = ( mult + ( Math.Pow(mult, .169) - 2.6 ) * 1300 ) / research / totalCost;
+
                     if (design.Colony)
                         colony += mult;
                     trans += design.Speed * design.Trans * mult;
@@ -297,7 +299,6 @@ namespace GalWar
                 colony *= costMult;
                 trans *= costMult;
                 ds *= costMult;
-
                 double speedStr = GetSpeedStr(research);
                 trans /= speedStr * GetTransStr(research);
                 ds /= speedStr * GetBombardDamage(GetAttDefStr(research), deathStarAvg);
@@ -386,7 +387,7 @@ namespace GalWar
         private bool CreateDeathStar(int research, double actual)
         {
             //target pct of ships that should be death stars increases with research
-            double target = research / ( 1.3 * Consts.ResearchFactor + research );
+            double target = research / ( 2100.0 + research );
             target *= target * target * .169;
 
             return CreateType(target, actual);

@@ -1,3 +1,5 @@
+when planet is destroyed attacker gets too much gold back when attacker would have won (does not account for initial wave)
+
 cost calculator
 test other grph data storage implementations with real data
 main map improvements
