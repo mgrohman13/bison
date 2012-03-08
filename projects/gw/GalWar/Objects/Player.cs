@@ -109,12 +109,9 @@ namespace GalWar
             set
             {
                 VerifyRounded(value);
-                value += Consts.FLOAT_ERROR;
-                if (value < 0)
-                    throw new Exception();
                 checked
                 {
-                    this._goldValue = (uint)( value * 10 );
+                    this._goldValue = (uint)Math.Round(value * 10);
                 }
             }
         }

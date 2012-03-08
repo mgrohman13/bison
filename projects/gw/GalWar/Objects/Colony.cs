@@ -313,53 +313,53 @@ namespace GalWar
         private void TroopBattle(Player attackPlayer, ref int attackers, ref double soldiers, int gold, double planetDamageMult)
         {
             double initAttackers = attackers;
-            double initPop = this.Population;
+            double initDefenders = this.Population;
 
-            if (initPop > 0)
+            if (initDefenders > 0)
             {
                 double defense = Consts.GetPlanetDefenseStrength(this.Population, this.TotalSoldiers);
-                double mult = Consts.GetInvasionStrength(attackers, soldiers, gold, initPop * defense) / defense;
+                double attMult = Consts.GetInvasionStrength(attackers, soldiers, gold, initDefenders * defense) / defense;
 
-                double attStr = mult * initAttackers;
-                int planetStr = (int)Math.Ceiling(( Planet.Quality + 1 ) / planetDamageMult);
+                double attStr = attMult * initAttackers;
 
-                double attLeft = ( attStr - initPop ) / mult;
-                double defLeft = initPop - attStr;
+                double attackersLeft = ( attStr - initDefenders ) / attMult;
+                double defendersLeft = initDefenders - attStr;
 
-                int dead = attackers + this.Population;
-                if (attStr > initPop)
-                    dead -= (int)Math.Ceiling(attLeft);
+                double deadPop = initAttackers + initDefenders;
+                if (attStr > initDefenders)
+                    deadPop -= attackersLeft;
                 else
-                    dead -= (int)Math.Ceiling(defLeft);
+                    deadPop -= defendersLeft;
 
-                if (dead >= planetStr)
+                if (Math.Floor(Math.Floor(deadPop) * planetDamageMult) > Planet.Quality)
                 {
-                    double attDead = planetStr / ( mult + 1 );
-                    attDead = Math.Min(Math.Ceiling(attDead), Math.Ceiling(attDead * mult) / mult);
+                    double deadAttackers = (int)Math.Ceiling(( Planet.Quality + 1 ) / planetDamageMult) / ( attMult + 1 );
+                    deadAttackers = Math.Min(Math.Ceiling(deadAttackers), Math.Ceiling(deadAttackers * attMult) / attMult);
+                    double deadDefenders = attMult * deadAttackers;
 
                     //only pay for the portion of gold spent until the planet is destroyed
-                    attackPlayer.AddGold(gold * ( initAttackers - attDead ) / initAttackers);
+                    attackPlayer.AddGold(gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers, ( initDefenders - deadDefenders ) / initDefenders));
 
-                    attackers -= Game.Random.Round(attDead);
-                    this.Population -= Game.Random.Round(mult * attDead);
+                    attackers -= Game.Random.Round(deadAttackers);
+                    this.Population -= Game.Random.Round(deadDefenders);
                 }
-                else if (attStr > initPop)
+                else if (attStr > initDefenders)
                 {
-                    attackers = Game.Random.Round(attLeft);
+                    attackers = Game.Random.Round(attackersLeft);
                     this.Population = 0;
                 }
                 else
                 {
                     attackers = 0;
-                    this.Population = Game.Random.Round(defLeft);
+                    this.Population = Game.Random.Round(defendersLeft);
                 }
 
                 soldiers *= attackers / initAttackers;
 
-                double defRemain = this.Population / initPop;
-                this.soldiers *= defRemain;
+                double defLeftMult = this.Population / initDefenders;
+                this.soldiers *= defLeftMult;
                 //will reduce defendingSoldiers
-                ReduceDefenses(defRemain);
+                ReduceDefenses(defLeftMult);
             }
             else if (this.soldiers > Consts.FLOAT_ERROR)
             {
