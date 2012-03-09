@@ -1,4 +1,5 @@
 split planetary defense between building attack or defense
+decrease soldier cost?
 
 cost calculator
 test other grph data storage implementations with real data
