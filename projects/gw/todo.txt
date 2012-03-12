@@ -1,5 +1,8 @@
+decrease specialty pcts and total ship appearace
+single turn repair gold save with rounding
 split planetary defense between building attack or defense
-decrease soldier cost?
+decrease soldier cost
+increase production upkeep
 
 cost calculator
 test other grph data storage implementations with real data
