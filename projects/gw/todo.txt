@@ -1,3 +1,5 @@
+guesses
+research display mult
 decrease specialty pcts and total ship appearace
 single turn repair gold save with rounding
 split planetary defense between building attack or defense
