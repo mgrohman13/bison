@@ -715,6 +715,8 @@ namespace GalWar
                 AssertException.Assert(this.DeathStar);
             handler = new HandlerWrapper(handler);
 
+            --this.CurSpeed;
+
             int oldHP = -1;
             if (!friendly && colony != null)
                 oldHP = colony.HP;
@@ -728,7 +730,6 @@ namespace GalWar
                 else
                     Bombard(planet, friendly, pct, handler);
 
-            --this.CurSpeed;
             LevelUp(handler);
         }
 
