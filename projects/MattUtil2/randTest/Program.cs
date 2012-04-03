@@ -10,124 +10,68 @@ namespace randTest
 {
     class Program
     {
-        static void Main(string[] args)
+        private static readonly MTRandom rand = new MTRandom();
+
+        public static void Main(string[] args)
         {
-            MTRandom r = new MTRandom(true);
-            r.StartTick();
+            rand.StartTick();
 
-            //List<int> b = new List<int>();
-            //b.Add(3);
-            //foreach (int c in r.Iterate(b))
-            //    b.Remove(c);
-            //foreach (int a in r.Iterate(100))
-            //    Console.WriteLine("{0:00}", a);
+            SimulateAll();
 
-            int iter = 0;
-            List<double> values = new List<double>();
-            double current = 0;
-            const double limit = 2.2795310419041614;
-            for (int target = 1 ; current < limit ; ++target)
-            {
-                int curValue;
-                double min = current, max = limit + 1 - r.NextDouble();
-                do
-                {
-                    ++iter;
-                    current = ( min + max ) / 2.0;
-                    curValue = MTRandom.GetOEIntMax(current);
-                    max = current;
-                } while (curValue != target);
-                values.Add(current);
-            }
-            for (int idx = 1 ; idx < values.Count ; ++idx)
-            {
-                double min = values[idx - 1], max = values[idx];
-                while (true)
-                {
-                    ++iter;
-                    double mid = ( min + max ) / 2.0;
-                    if (mid == min || mid == max)
-                        break;
-                    if (MTRandom.GetOEIntMax(mid) > idx)
-                        max = mid;
-                    else
-                        min = mid;
-                }
-                Console.WriteLine();
-                ShowOEIntMax(min);
-                ShowOEIntMax(max);
-            }
-            Console.Write(iter);
-
-            //double total = 0;
-            //float w = .368421048f;
-            //int times = 1000000, max = 19;
-            //int[] b = new int[max + 1];
-            //for (int a = 0 ; a < times ; ++a)
-            //{
-            //    int c = r.WeightedInt(max, w);
-            //    total += c;
-            //    ++b[c];
-            //}
-            //Console.WriteLine(max * w);
-            //Console.WriteLine(total / times);
-            //Console.WriteLine();
-
-            //for (int d = 0 ; d <= max ; ++d)
-            //    Console.WriteLine("{0:00} - {1:00.0}%", d + 6, b[d] * 100f / times);
-
-            r.Dispose();
+            rand.Dispose();
             Console.ReadKey();
         }
 
-        private static void ShowOEIntMax(double value)
+        private static void SimulateAll()
         {
-            string str = value.ToString("e16");
-            str = DoSplit(str, '-');
-            str = DoSplit(str, '+');
-            Console.WriteLine("{0}\t\t{1}", str, MTRandom.GetOEIntMax(value).ToString().PadLeft(3));
+            Console.WriteLine("100%-100%");
+            SimulateSetup(24, 500, .5f, 1, 1);
+            SimulateSetup(6, 1200, .8f, 1, 1);
+
+            Console.WriteLine();
+            Console.WriteLine("50%-100%");
+            SimulateSetup(24, 500, .5f, .5, 1);
+            SimulateSetup(6, 1200, .8f, .5, 1);
+
+            Console.WriteLine();
+            Console.WriteLine("50%-150%");
+            SimulateSetup(24, 500, .5f, .5, 1.5);
+            SimulateSetup(6, 1200, .8f, .5, 1.5);
+
+            Console.WriteLine();
+            Console.WriteLine("0%-200%");
+            SimulateSetup(24, 500, .5f, 0, 2);
+            SimulateSetup(6, 1200, .8f, 0, 2);
         }
 
-        private static string DoSplit(string str, char separator)
+        private static void SimulateSetup(int shots, int damage, float acc, double minMult, double maxMult)
         {
-            string[] split = str.Split(separator);
-            if (split.Length == 2)
-                return split[0] + separator + split[1].TrimStart('0').PadLeft(1, '0');
-            return str;
+            const int trials = 1500000;
+            int minDmg = GetInt(damage, minMult), maxDmg = GetInt(damage, maxMult), ships = 0;
+            for (int a = 0 ; a < trials ; ++a)
+                if (SimulateAttack(shots, acc, minDmg, maxDmg))
+                    ++ships;
+            Console.WriteLine("{0} shots,\t{1} damage,\t{2}% accuracy:", shots, damage, acc * 100);
+            Console.WriteLine("{0:00.00} ships", trials / (double)ships);
         }
 
-        private static void DoTickTest(MTRandom r)
+        private static int GetInt(int damage, double mult)
         {
-            Console.BufferWidth = Console.LargestWindowWidth;
-            Console.WindowWidth = Console.LargestWindowWidth;
-            Console.WindowHeight = Console.LargestWindowHeight;
+            mult *= damage;
+            int dmg = (int)( mult );
+            if (dmg != mult)
+                throw new Exception();
+            return dmg;
+        }
 
-            MTRandom[] rs = new MTRandom[Console.BufferWidth];
-            for (int b = 0 ; b < rs.Length ; ++b)
-            {
-                rs[b] = new MTRandom(r.Seed);
-                rs[b].Bool();
-            }
-            for (int b = 0 ; b < rs.Length ; ++b)
-                rs[b].StartTick();
-            Thread.Sleep(13);
-
-            bool[,] c = new bool[Console.BufferHeight, rs.Length];
-            for (int a = 0 ; a < Console.BufferHeight ; ++a)
-            {
-                for (int b = 0 ; b < rs.Length ; ++b)
-                    c[a, b] = rs[b].Bool();
-                Thread.Sleep(r.OEInt(1000));
-            }
-
-            for (int a = 0 ; a < Console.BufferHeight ; ++a)
-            {
-                for (int b = 0 ; b < Console.BufferWidth ; ++b)
-                {
-                    Console.BackgroundColor = ( b < rs.Length && c[a, b] ? ConsoleColor.White : ConsoleColor.Black );
-                    Console.Write(' ');
-                }
-            }
+        private static bool SimulateAttack(int shots, float acc, int minDmg, int maxDmg)
+        {
+            const int HP = 3200;
+            int total = 0;
+            for (int b = 0 ; total < HP && b < shots ; ++b)
+                if (rand.Bool(acc))
+                    total += rand.RangeInt(minDmg, maxDmg);
+            return ( total < HP );
         }
     }
 }
