@@ -60,6 +60,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PointD.cs" />
+    <Compile Include="Point.cs" />
     <Compile Include="TestRand.cs" />
     <Compile Include="RootRandom.cs" />
     <Compile Include="TBSUtil.cs" />
