@@ -15,15 +15,20 @@ namespace z2
         private const double DistRndm = .21, DenseRndm = .065;
 
         public double minX, maxX, minY, maxY;
-        private readonly List<HeightPoint>[] levels;
         private readonly VoronoiGraph[] graphs;
+        private readonly List<HeightPoint>[] levels;
+        private Dictionary<Point, double>[] heights;
 
         public Map()
         {
-            this.levels = new List<HeightPoint>[NumLevels];
             this.graphs = new VoronoiGraph[NumLevels];
+            this.levels = new List<HeightPoint>[NumLevels];
+            this.heights = new Dictionary<Point, double>[NumLevels];
             for (int level = 0 ; level < NumLevels ; ++level)
+            {
                 this.levels[level] = new List<HeightPoint>();
+                this.heights[level] = new Dictionary<Point, double>();
+            }
             this.minX = -GetCreateDist();
             this.maxX = GetCreateDist();
             this.minY = -GetCreateDist();
@@ -101,46 +106,162 @@ namespace z2
         {
             for (int level = 0 ; level < NumLevels ; ++level)
             {
-                VoronoiGraph g = graphs[level];
-                if (g != null)
-                {
-                    //list all points
-                    HashSet<VoronoiVertex> points = new HashSet<VoronoiVertex>();
-                    foreach (VoronoiEdge e in g.Edges)
-                    {
-                        points.Add(e.LeftPolygon);
-                        points.Add(e.RightPolygon);
-                    }
-                    //eliminate points with unfinished edges
-                    foreach (VoronoiEdge e in g.Edges)
-                        if (e.VertexA == null || e.VertexB == null)
-                        {
-                            points.Remove(e.LeftPolygon);
-                            points.Remove(e.RightPolygon);
-                        }
-                    //include all edges that have the points on both sides included
-                    HashSet<VoronoiEdge> edges = new HashSet<VoronoiEdge>();
-                    foreach (VoronoiEdge e in g.Edges)
-                        if (points.Contains(e.LeftPolygon) && points.Contains(e.RightPolygon))
-                            edges.Add(e);
-                    //remove any points next to unincluded edges
-                    foreach (VoronoiEdge e in g.Edges)
-                        if (!edges.Contains(e))
-                        {
-                            points.Remove(e.LeftPolygon);
-                            points.Remove(e.RightPolygon);
-                        }
-                    //remove included points from the diagram
-                    levels[level].RemoveAll(delegate(HeightPoint hp)
-                    {
-                        foreach (VoronoiVertex v in points)
-                            if (hp.point.EqualsWithFudge(v.Point, 1e-10))
-                                return true;
-                        return false;
-                    });
-                }
-                graphs[level] = Voronoi.GetVoronoiGraph(levels[level], minX, maxX, minY, maxY);
+                VoronoiGraph g = graphs[level] = Voronoi.GetVoronoiGraph(levels[level], minX, maxX, minY, maxY);
+                Dictionary<VoronoiVertex, List<VoronoiEdge>> pointToEdge = GetCompletedPoints(g);
+                foreach (List<VoronoiEdge> polygon in pointToEdge.Values)
+                    MapCompletedPolygons(level, polygon);
+                RemoveInnerPoints(level, g, pointToEdge);
             }
+        }
+
+        private static Dictionary<VoronoiVertex, List<VoronoiEdge>> GetCompletedPoints(VoronoiGraph g)
+        {
+            //list all points
+            Dictionary<VoronoiVertex, List<VoronoiEdge>> pointToEdge = new Dictionary<VoronoiVertex, List<VoronoiEdge>>();
+            foreach (VoronoiEdge e in g.Edges)
+                if (e.VertexA != null && e.VertexB != null)
+                {
+                    MapEdge(pointToEdge, e, e.LeftPolygon);
+                    MapEdge(pointToEdge, e, e.RightPolygon);
+                }
+            //eliminate points with unfinished edges
+            foreach (VoronoiEdge e in g.Edges)
+                if (e.VertexA == null || e.VertexB == null)
+                {
+                    pointToEdge.Remove(e.LeftPolygon);
+                    pointToEdge.Remove(e.RightPolygon);
+                }
+            return pointToEdge;
+        }
+
+        private static void MapEdge(Dictionary<VoronoiVertex, List<VoronoiEdge>> pointToEdge, VoronoiEdge e, VoronoiVertex v)
+        {
+            List<VoronoiEdge> list;
+            if (!pointToEdge.TryGetValue(v, out list))
+            {
+                list = new List<VoronoiEdge>();
+                pointToEdge[v] = list;
+            }
+            list.Add(e);
+        }
+
+        private void MapCompletedPolygons(int level, List<VoronoiEdge> polygon)
+        {
+            int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+            HashSet<VoronoiVertex> options = new HashSet<VoronoiVertex>();
+            foreach (VoronoiEdge e in polygon)
+            {
+                GetMinMax(ref minX, ref maxX, e.VertexA.Point.X);
+                GetMinMax(ref minY, ref maxY, e.VertexA.Point.Y);
+                GetMinMax(ref minX, ref maxX, e.VertexB.Point.X);
+                GetMinMax(ref minY, ref maxY, e.VertexB.Point.Y);
+
+                options.Add(e.LeftPolygon);
+                options.Add(e.RightPolygon);
+            }
+
+            for (int y = minY ; y <= maxY ; ++y)
+                for (int x = minX ; x <= maxX ; ++x)
+                {
+                    int count = 0;
+                    foreach (VoronoiEdge side in polygon)
+                        if (RayIntersectsSegment(new Point(x, y), side))
+                            ++count;
+                    if (count % 2 == 1)
+                    {
+                        double modX = x + Game.Random.Gaussian(), modY = y + Game.Random.Gaussian();
+
+                        double found = int.MaxValue;
+                        VoronoiVertex close = null;
+                        foreach (VoronoiVertex p in options)
+                        {
+                            double distX = ( p.Point.X - modX );
+                            double distY = ( p.Point.Y - modY );
+                            double dist = distX * distX + distY * distY;
+                            if (dist < found)
+                            {
+                                found = dist;
+                                close = p;
+                            }
+                        }
+
+                        foreach (HeightPoint hp in this.levels[level])
+                            if (hp.point == close.Point)
+                            {
+                                heights[level].Add(new Point(x, y), hp.height);
+                                break;
+                            }
+                    }
+                }
+        }
+
+        private bool RayIntersectsSegment(Point P, VoronoiEdge e)
+        {
+            PointD A, B;
+            if (e.VertexA.Point.Y < e.VertexB.Point.Y)
+            {
+                A = e.VertexA.Point;
+                B = e.VertexB.Point;
+            }
+            else
+            {
+                A = e.VertexB.Point;
+                B = e.VertexA.Point;
+            }
+
+            if (P.Y < A.Y || P.Y > B.Y)
+                return false;
+            if (P.X > Math.Max(A.X, B.X))
+                return false;
+
+            if (P.X < Math.Min(A.X, B.X))
+                return true;
+
+            double m_red;
+            if (A.X != B.X)
+                m_red = ( B.Y - A.Y ) / ( B.X - A.X );
+            else
+                m_red = double.PositiveInfinity;
+            double m_blue;
+            if (A.X != P.X)
+                m_blue = ( P.Y - A.Y ) / ( P.X - A.X );
+            else
+                m_blue = double.PositiveInfinity;
+            if (m_blue >= m_red)
+                return true;
+            else
+                return false;
+        }
+
+        private void GetMinMax(ref int min, ref int max, double v)
+        {
+            min = Math.Min(min, (int)v - 1);
+            max = Math.Max(max, (int)v + 1);
+        }
+
+        private void RemoveInnerPoints(int level, VoronoiGraph g, Dictionary<VoronoiVertex, List<VoronoiEdge>> pointToEdge)
+        {
+            //include all edges that have the points on both sides included
+            HashSet<VoronoiEdge> edges = new HashSet<VoronoiEdge>();
+            foreach (VoronoiEdge e in g.Edges)
+                if (pointToEdge.ContainsKey(e.LeftPolygon) && pointToEdge.ContainsKey(e.RightPolygon))
+                    edges.Add(e);
+            //remove any points next to unincluded edges
+            foreach (VoronoiEdge e in g.Edges)
+                if (!edges.Contains(e))
+                {
+                    pointToEdge.Remove(e.LeftPolygon);
+                    pointToEdge.Remove(e.RightPolygon);
+                }
+
+            //remove included points from the diagram
+            levels[level].RemoveAll(delegate(HeightPoint hp)
+            {
+                foreach (VoronoiVertex v in pointToEdge.Keys)
+                    if (hp.point == v.Point)
+                        return true;
+                return false;
+            });
         }
 
         private void DoPt(int[,] data, double xx, double yy, int level)
