@@ -8,6 +8,8 @@ namespace MattUtil
     [Serializable]
     public struct PointD
     {
+        public static int EQUALITY_PRECISION = 10;
+
         private double x, y;
         public double X
         {
@@ -28,32 +30,24 @@ namespace MattUtil
             this.x = x;
             this.y = y;
         }
-        public bool EqualsWithFudge(PointD obj, double fudgeFactor)
-        {
-            PointD p2 = (PointD)obj;
-            return ( EqualsWithFudge(x, p2.x, fudgeFactor) && EqualsWithFudge(y, p2.y, fudgeFactor) );
-        }
-        private static bool EqualsWithFudge(double a, double b, double fudgeFactor)
-        {
-            return ( Math.Abs(a - b) < fudgeFactor );
-        }
         public override bool Equals(object obj)
         {
             if (obj is PointD)
             {
                 PointD p2 = (PointD)obj;
-                return ( x == p2.x && y == p2.y );
+                return ( Math.Round(x, EQUALITY_PRECISION) == Math.Round(p2.x, EQUALITY_PRECISION)
+                        && Math.Round(y, EQUALITY_PRECISION) == Math.Round(p2.y, EQUALITY_PRECISION) );
             }
             return false;
         }
         public override int GetHashCode()
         {
-            return Point.GetHashCode(GetInt(x), GetInt(y));
+            return Point.GetHashCode(GetInt(Math.Round(x, EQUALITY_PRECISION)), GetInt(Math.Round(y, EQUALITY_PRECISION)));
         }
         private static int GetInt(double val)
         {
             ulong a = (ulong)BitConverter.DoubleToInt64Bits(val);
-            return (int)( a ^ ( a >> 32 ) );
+            return (int)( a + ( a >> 32 ) );
         }
         public override string ToString()
         {

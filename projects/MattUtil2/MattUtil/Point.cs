@@ -43,7 +43,7 @@ namespace MattUtil
         }
         public static int GetHashCode(int x, int y)
         {
-            return ( ( x << 16 ) + ( x >> 16 ) + y + ( y < 0 ? 1073750016 : 0 ) );
+            return ( ( x << 16 ) + ( x >> 16 ) + y + ( y < 0 ? 1073750016 : 0 ) + ( x < 0 ? 536887296 : 0 ) );
         }
         public override string ToString()
         {

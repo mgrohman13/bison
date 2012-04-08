@@ -30,11 +30,14 @@ namespace z2
             this.maxY = GetCreateDist();
 
             CreateStartPoints();
-            OnMove(new Point(0, 0));
+            //OnMove(new Point(0, 0));
         }
 
         public void OnMove(Point point)
         {
+            double minX = maxX;
+            maxX += GetCreateDist();
+            CreatePoints(minX, maxX, minY, maxY);
         }
 
         public void DrawAll(Point topLeft, int width, int height)
@@ -61,7 +64,7 @@ namespace z2
             for (int y = topLeft.Y ; y < topLeft.Y + height ; ++y)
                 for (int x = topLeft.X ; x < topLeft.X + width ; ++x)
                 {
-                    Console.BackgroundColor = (ConsoleColor)data[x - topLeft.X, y - topLeft.Y];
+                    Console.BackgroundColor = (ConsoleColor)( data[x - topLeft.X, y - topLeft.Y] );
                     Console.Write(' ');
                 }
             Console.SetCursorPosition(0, 0);
@@ -97,7 +100,47 @@ namespace z2
         private void CreateVoronoi()
         {
             for (int level = 0 ; level < NumLevels ; ++level)
+            {
+                VoronoiGraph g = graphs[level];
+                if (g != null)
+                {
+                    //list all points
+                    HashSet<VoronoiVertex> points = new HashSet<VoronoiVertex>();
+                    foreach (VoronoiEdge e in g.Edges)
+                    {
+                        points.Add(e.LeftPolygon);
+                        points.Add(e.RightPolygon);
+                    }
+                    //eliminate points with unfinished edges
+                    foreach (VoronoiEdge e in g.Edges)
+                        if (e.VertexA == null || e.VertexB == null)
+                        {
+                            points.Remove(e.LeftPolygon);
+                            points.Remove(e.RightPolygon);
+                        }
+                    //include all edges that have the points on both sides included
+                    HashSet<VoronoiEdge> edges = new HashSet<VoronoiEdge>();
+                    foreach (VoronoiEdge e in g.Edges)
+                        if (points.Contains(e.LeftPolygon) && points.Contains(e.RightPolygon))
+                            edges.Add(e);
+                    //remove any points next to unincluded edges
+                    foreach (VoronoiEdge e in g.Edges)
+                        if (!edges.Contains(e))
+                        {
+                            points.Remove(e.LeftPolygon);
+                            points.Remove(e.RightPolygon);
+                        }
+                    //remove included points from the diagram
+                    levels[level].RemoveAll(delegate(HeightPoint hp)
+                    {
+                        foreach (VoronoiVertex v in points)
+                            if (hp.point.EqualsWithFudge(v.Point, 1e-10))
+                                return true;
+                        return false;
+                    });
+                }
                 graphs[level] = Voronoi.GetVoronoiGraph(levels[level], minX, maxX, minY, maxY);
+            }
         }
 
         private void DoPt(int[,] data, double xx, double yy, int level)
@@ -105,7 +148,7 @@ namespace z2
             int x = (int)Math.Round(xx);
             int y = (int)Math.Round(yy);
             if (x >= 0 && x < data.GetLength(0) && y >= 0 && y < data.GetLength(1))
-                data[x, y] = level;
+                data[x, y] = level + 1;
         }
 
         public class HeightPoint

@@ -31,7 +31,7 @@ namespace z2
 
         private void Run()
         {
-            int width = 100, height = 50;//Console.LargestWindowWidth, height = Console.LargestWindowHeight;
+            int width = Console.LargestWindowWidth, height = Console.LargestWindowHeight;
             if (width > Console.WindowWidth)
                 Console.WindowWidth = Console.BufferWidth = width;
             else
@@ -41,18 +41,19 @@ namespace z2
             else
                 Console.BufferHeight = ( Console.WindowHeight = height ) + 1;
 
-            int x = (int)map.minX - width / 2;
-            int y = (int)map.minY - height / 2;
+            int x = (int)map.minX;
+            int y = (int)map.minY;
             while (true)
             {
                 map.DrawAll(new Point(x, y), width, height);
-                System.Threading.Thread.Sleep(1000);
-                x += width / 2;
-                if (x + width / 2 > map.maxX)
-                {
-                    x = (int)map.minX - width / 2;
-                    y += height;
-                }
+                System.Threading.Thread.Sleep(3000);
+                map.OnMove(new Point(0, 0));
+                //    x += width / 2;
+                //    if (x + width / 2 > map.maxX)
+                //    {
+                //        x = (int)map.minX - width / 2;
+                //        y += height;
+                //    }
             }
         }
     }
