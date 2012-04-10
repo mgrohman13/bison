@@ -46,14 +46,16 @@ namespace z2
             while (true)
             {
                 map.DrawAll(new Point(x, y), width, height);
-                System.Threading.Thread.Sleep(3000);
-                map.OnMove(new Point(0, 0));
-                //    x += width / 2;
-                //    if (x + width / 2 > map.maxX)
-                //    {
-                //        x = (int)map.minX - width / 2;
-                //        y += height;
-                //    }
+                System.Threading.Thread.Sleep(1000);
+                if (Random.Bool())
+                {
+                    x += width / 2;
+                    if (x + width / 2 > map.maxX)
+                    {
+                        x = (int)map.minX - width / 2;
+                        y += height;
+                    }
+                }
             }
         }
     }

@@ -28,6 +28,25 @@ namespace randTest
                 else
                     Console.BufferHeight = ( Console.WindowHeight = height ) + 1;
 
+                for (int y = 0 ; y < height ; ++y)
+                    for (int x = 0 ; x < width ; ++x)
+                        DrawTerrain(.5f, ( x + .5f ) / width, 1 - ( y + .5f ) / height);
+
+                Console.SetCursorPosition(0, 0);
+            } while (Console.ReadKey(true).Key != ConsoleKey.Q);
+
+            do
+            {
+                int width = Console.LargestWindowWidth, height = Console.LargestWindowHeight;
+                if (width > Console.WindowWidth)
+                    Console.WindowWidth = Console.BufferWidth = width;
+                else
+                    Console.BufferWidth = Console.WindowWidth = width;
+                if (height > Console.WindowHeight)
+                    Console.WindowHeight = ( Console.BufferHeight = height + 1 ) - 1;
+                else
+                    Console.BufferHeight = ( Console.WindowHeight = height ) + 1;
+
                 Tile[,] res = new Tile[width, height];
                 for (int y = 0 ; y < height ; ++y)
                     for (int x = 0 ; x < width ; ++x)
@@ -36,6 +55,8 @@ namespace randTest
                 DoStat(width, height, res, Tile.GetHeight, Tile.SetHeight);
                 DoStat(width, height, res, Tile.GetRain, Tile.SetRain);
                 DoStat(width, height, res, Tile.GetTemp, Tile.SetTemp);
+
+                float equator = rand.FloatHalf(), eqDif = rand.GaussianCapped(1f - Math.Abs(.5f - equator), .169f, .39f);
 
                 for (int y = 0 ; y < height ; ++y)
                     for (int x = 0 ; x < width ; ++x)
@@ -56,40 +77,71 @@ namespace randTest
                         t /= count;
                         r /= count;
 
-                        r *= 430 * t;
-                        t *= 430;
-
-                        if (h < .39)
-                            Console.BackgroundColor = ConsoleColor.Blue;
-                        else if (r < ( t - 130 ) * ( t - 130 ) / 900f)
-                            if (r < ( t - 247 ) / 2.1f)
-                                Console.BackgroundColor = ConsoleColor.DarkRed; // sub.desert
-                            else
-                                Console.BackgroundColor = ConsoleColor.Red; // temp. grass / desert
-                        else if (r < 30 + 400 / ( 1 + Math.Pow(Math.E, .039 * ( 338 - t )) ))
-                            if (r < 247 + ( t - 338 ) * ( t - 338 ) / 260f)
-                                Console.BackgroundColor = ConsoleColor.Yellow; // trop.seas.forest / savannah
-                            else
-                                Console.BackgroundColor = ConsoleColor.Cyan; // trop.rain forest
-                        else if (r < ( t - 65 ) / 2.1f)
-                            Console.BackgroundColor = ConsoleColor.DarkYellow; // woodland / shrubland
-                        else if (r < 39 + 169 / ( 1 + Math.Pow(Math.E, .13 * ( 169 - t )) ))
-                            if (r < 169 + 10 * Math.Log(t - 169))
-                                Console.BackgroundColor = ConsoleColor.Green; // temp.dec. forest
-                            else
-                                Console.BackgroundColor = ConsoleColor.DarkCyan; // temp.rain forest
-                        else if (r < 100 / ( 1 + Math.Pow(Math.E, .39 * ( 78 - t )) ))
-                            Console.BackgroundColor = ConsoleColor.DarkGreen; // taiga
-                        else
-                            Console.BackgroundColor = ConsoleColor.White; // tundra
-
-                        Console.Write(' ');
+                        double pow = .5 + 3 * Math.Abs(( y + .5 ) / height - equator) * eqDif;
+                        t = (float)Math.Pow(t, pow * pow);
+                        DrawTerrain(h, t, r);
                     }
 
                 Console.SetCursorPosition(0, 0);
             } while (Console.ReadKey(true).Key != ConsoleKey.Q);
 
             rand.Dispose();
+        }
+
+        private static void DrawTerrain(float height, float temp, float rain)
+        {
+            if (height > .39 && height < .5)
+            {
+                rain = (float)Math.Pow(rain, 1 + ( height - .5 ) * 7.8);
+            }
+            else if (height > .75 && height < .87)
+            {
+                rain = (float)Math.Pow(rain, 1 + ( .75 - height ) * 3.9);
+                temp -= .13f;
+                if (temp > 0)
+                    temp = (float)Math.Pow(temp, 1 + ( height - .75 ) * 6.5);
+                temp += .13f;
+            }
+
+            temp *= 500;
+            rain *= temp;
+
+            if (temp < 39)
+                Console.BackgroundColor = ConsoleColor.White; // glacier
+            else if (height < .169)
+                Console.BackgroundColor = ConsoleColor.DarkBlue; // deep sea
+            else if (height < .39)
+                Console.BackgroundColor = ConsoleColor.Blue; // sea
+            else if (height > .97)
+                Console.BackgroundColor = ConsoleColor.White; // alpine glacier
+            else if (height > .87)
+                if (height % .02f < ( height - .87f ) / 5f)
+                    Console.BackgroundColor = ConsoleColor.DarkGray; // mountain
+                else
+                    Console.BackgroundColor = ConsoleColor.Gray; // alpine tundra
+            else if (( temp > 100 ) && ( ( rain < ( temp - 100 ) * ( temp - 100 ) / 1000f ) ))
+                if (rain < temp - 313)
+                    Console.BackgroundColor = ConsoleColor.Red; // sub. desert
+                else
+                    Console.BackgroundColor = ConsoleColor.DarkRed; // temp. grass / desert
+            else if (( temp > 300 ) && ( rain < 25 + 490 / ( 1.0 + Math.Pow(Math.E, ( 390 - temp ) / 26.0) ) ))
+                if (rain < 260 + ( temp - 333 ) * ( temp - 333 ) / 260f)
+                    Console.BackgroundColor = ConsoleColor.Yellow; // trop. seas. forest / savannah
+                else
+                    Console.BackgroundColor = ConsoleColor.Cyan; // trop. rain forest
+            else if (rain < ( temp - 65 ) / 2.1f)
+                Console.BackgroundColor = ConsoleColor.DarkYellow; // woodland / shrubland
+            else if (( temp > 200 ) || ( ( temp > 130 ) && ( rain < 21 + 196 / ( 1.0 + Math.Pow(Math.E, ( 169 - temp ) / 13.0) ) ) ))
+                if (( temp < 169 ) || rain < 125 + 10 * Math.Sqrt(temp - 169))
+                    Console.BackgroundColor = ConsoleColor.Green; // temp. dec. forest
+                else
+                    Console.BackgroundColor = ConsoleColor.DarkCyan; // temp. rain forest
+            else if (( temp > 100 ) || ( rain < 120 / ( 1.0 + Math.Pow(Math.E, ( 78 - temp ) / 13.0) ) ))
+                Console.BackgroundColor = ConsoleColor.DarkGreen; // taiga
+            else
+                Console.BackgroundColor = ConsoleColor.Gray; // tundra
+
+            Console.Write(' ');
         }
 
         private static float DoStat(int width, int height, Tile[,] res, Tile.GetStat Get, Tile.SetStat Set)

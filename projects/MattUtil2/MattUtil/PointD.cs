@@ -30,12 +30,7 @@ namespace MattUtil
 
         public override int GetHashCode()
         {
-            return Point.GetHashCode(GetInt(Math.Round(X, EQUALITY_PRECISION)), GetInt(Math.Round(Y, EQUALITY_PRECISION)));
-        }
-        private static int GetInt(double val)
-        {
-            ulong a = (ulong)BitConverter.DoubleToInt64Bits(val);
-            return (int)( a + ( a >> 32 ) );
+            return Point.GetHashCode(Math.Round(X, EQUALITY_PRECISION).GetHashCode(), Math.Round(Y, EQUALITY_PRECISION).GetHashCode());
         }
 
         public override string ToString()

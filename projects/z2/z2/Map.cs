@@ -17,17 +17,21 @@ namespace z2
         public double minX, maxX, minY, maxY;
         private readonly VoronoiGraph[] graphs;
         private readonly List<HeightPoint>[] levels;
-        private Dictionary<Point, double>[] heights;
+        private readonly HashSet<PointD>[] completed;
+        private readonly Dictionary<Point, double[]> heights;
+        private readonly Dictionary<Point, double> final;
 
         public Map()
         {
             this.graphs = new VoronoiGraph[NumLevels];
+            this.heights = new Dictionary<Point, double[]>();
+            this.final = new Dictionary<Point, double>();
             this.levels = new List<HeightPoint>[NumLevels];
-            this.heights = new Dictionary<Point, double>[NumLevels];
+            this.completed = new HashSet<PointD>[NumLevels];
             for (int level = 0 ; level < NumLevels ; ++level)
             {
                 this.levels[level] = new List<HeightPoint>();
-                this.heights[level] = new Dictionary<Point, double>();
+                this.completed[level] = new HashSet<PointD>();
             }
             this.minX = -GetCreateDist();
             this.maxX = GetCreateDist();
@@ -47,32 +51,50 @@ namespace z2
 
         public void DrawAll(Point topLeft, int width, int height)
         {
-            int[,] data = new int[width, height];
+            if (Game.Random.Bool())
+            {
+                int[,] data = new int[width, height];
 
-            for (int level = 0 ; level < NumLevels ; ++level)
-                foreach (VoronoiEdge e in graphs[level].Edges)
-                    if (e.VertexA != null && e.VertexB != null)
+                for (int level = 0 ; level < NumLevels ; ++level)
+                    foreach (VoronoiEdge e in graphs[level].Edges)
+                        if (e.VertexA != null && e.VertexB != null)
+                        {
+                            PointD r = e.VertexA.Point;
+                            PointD l = e.VertexB.Point;
+                            double a = Math.Abs(r.X - l.X), b = Math.Abs(r.Y - l.Y);
+                            double dist = Math.Sqrt(a * a + b * b);
+                            for (int c = 1 ; c < dist ; c++)
+                                DoPt(data, ( r.X * c + l.X * ( dist - c ) ) / dist - topLeft.X, ( r.Y * c + l.Y * ( dist - c ) ) / dist - topLeft.Y, level);
+                        }
+
+                for (int level = 0 ; level < NumLevels ; ++level)
+                    foreach (HeightPoint p in levels[level])
+                        DoPt(data, p.point.X - topLeft.X, p.point.Y - topLeft.Y, level);
+
+                Console.SetCursorPosition(0, 0);
+                for (int y = topLeft.Y ; y < topLeft.Y + height ; ++y)
+                    for (int x = topLeft.X ; x < topLeft.X + width ; ++x)
                     {
-                        PointD r = e.VertexA.Point;
-                        PointD l = e.VertexB.Point;
-                        double a = Math.Abs(r.X - l.X), b = Math.Abs(r.Y - l.Y);
-                        double dist = Math.Sqrt(a * a + b * b);
-                        for (int c = 1 ; c < dist ; c++)
-                            DoPt(data, ( r.X * c + l.X * ( dist - c ) ) / dist - topLeft.X, ( r.Y * c + l.Y * ( dist - c ) ) / dist - topLeft.Y, level);
+                        Console.BackgroundColor = (ConsoleColor)( data[x - topLeft.X, y - topLeft.Y] );
+                        Console.Write(' ');
                     }
-
-            for (int level = 0 ; level < NumLevels ; ++level)
-                foreach (HeightPoint p in levels[level])
-                    DoPt(data, p.point.X - topLeft.X, p.point.Y - topLeft.Y, level);
-
-            Console.SetCursorPosition(0, 0);
-            for (int y = topLeft.Y ; y < topLeft.Y + height ; ++y)
-                for (int x = topLeft.X ; x < topLeft.X + width ; ++x)
-                {
-                    Console.BackgroundColor = (ConsoleColor)( data[x - topLeft.X, y - topLeft.Y] );
-                    Console.Write(' ');
-                }
-            Console.SetCursorPosition(0, 0);
+                Console.SetCursorPosition(0, 0);
+            }
+            else
+            {
+                for (int y = topLeft.Y ; y < topLeft.Y + height ; ++y)
+                    for (int x = topLeft.X ; x < topLeft.X + width ; ++x)
+                    {
+                        double h = 0;
+                        double[] l;
+                        if (this.heights.TryGetValue(new Point(x, y), out l))
+                            foreach (double d in l)
+                                h += d;
+                        Console.BackgroundColor = (ConsoleColor)( h );
+                        Console.Write(' ');
+                    }
+                Console.SetCursorPosition(0, 0);
+            }
         }
 
         private void CreateStartPoints()
@@ -108,8 +130,12 @@ namespace z2
             {
                 VoronoiGraph g = graphs[level] = Voronoi.GetVoronoiGraph(levels[level], minX, maxX, minY, maxY);
                 Dictionary<VoronoiVertex, List<VoronoiEdge>> pointToEdge = GetCompletedPoints(g);
-                foreach (List<VoronoiEdge> polygon in pointToEdge.Values)
-                    MapCompletedPolygons(level, polygon);
+                foreach (KeyValuePair<VoronoiVertex, List<VoronoiEdge>> polygon in pointToEdge)
+                    if (!this.completed[level].Contains(polygon.Key.Point))
+                    {
+                        MapCompletedPolygons(level, polygon.Value);
+                        this.completed[level].Add(polygon.Key.Point);
+                    }
                 RemoveInnerPoints(level, g, pointToEdge);
             }
         }
@@ -188,8 +214,33 @@ namespace z2
                         foreach (HeightPoint hp in this.levels[level])
                             if (hp.point == close.Point)
                             {
-                                heights[level].Add(new Point(x, y), hp.height);
-                                break;
+                                Point p = new Point(x, y);
+                                double[] l;
+                                if (!heights.TryGetValue(p, out l))
+                                {
+                                    l = new double[NumLevels];
+                                    heights.Add(p, l);
+                                }
+                                if (l[level] > 0)
+                                    throw new Exception();
+                                l[level] = hp.height;
+                                double tot = 0;
+                                bool comp = true;
+                                foreach (double d in l)
+                                    if (d > 0)
+                                    {
+                                        tot += d;
+                                    }
+                                    else
+                                    {
+                                        comp = false;
+                                        break;
+                                    }
+                                if (comp)
+                                {
+                                    heights.Remove(p);
+                                    final.Add(p, tot);
+                                }
                             }
                     }
                 }
@@ -255,6 +306,13 @@ namespace z2
                 }
 
             //remove included points from the diagram
+            this.completed[level].RemoveWhere(delegate(PointD hp)
+            {
+                foreach (VoronoiVertex v in pointToEdge.Keys)
+                    if (hp == v.Point)
+                        return true;
+                return false;
+            });
             levels[level].RemoveAll(delegate(HeightPoint hp)
             {
                 foreach (VoronoiVertex v in pointToEdge.Keys)
@@ -279,7 +337,7 @@ namespace z2
             public HeightPoint(double minX, double maxX, double minY, double maxY, float height)
             {
                 this.point = new PointD(Game.Random.Range(minX, maxX), Game.Random.Range(minY, maxY));
-                this.height = Game.Random.DoubleHalf(height);
+                this.height = height * ( 1 - Game.Random.NextFloat() );
             }
             public override string ToString()
             {
