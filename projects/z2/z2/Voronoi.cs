@@ -16,7 +16,7 @@ namespace z2
             VNode RootNode = null;
             foreach (Map.HeightPoint V in points)
             {
-                PQ.Push(new VDataEvent(new VoronoiVertex(V.point.X, V.point.Y)));
+                PQ.Push(new VDataEvent(new VoronoiVertex(V.Point.X, V.Point.Y)));
             }
             while (PQ.Count > 0)
             {
@@ -365,7 +365,7 @@ namespace z2
                 CircleCheckList = new VDataNode[] { a, c };
                 //1. Create the new Vertex
                 VoronoiVertex VNew = new VoronoiVertex(e.Center.Point.X, e.Center.Point.Y);
-                VG.Vertices.Add(VNew);
+                //VG.Vertices.Add(VNew);
                 //2. Find out if a or c are in a distand part of the tree (the other is then b's sibling) and assign the new vertex
                 if (eu.Left == b) // c is sibling
                 {
@@ -594,7 +594,7 @@ namespace z2
 
     public class VoronoiGraph
     {
-        public readonly HashSet<VoronoiVertex> Vertices = new HashSet<VoronoiVertex>();
+        //public readonly HashSet<VoronoiVertex> Vertices = new HashSet<VoronoiVertex>();
         public readonly HashSet<VoronoiEdge> Edges = new HashSet<VoronoiEdge>();
     }
 
