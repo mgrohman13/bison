@@ -67,3 +67,10 @@ StartEnemies      17.0  0.35    1.08
 EnemiesPerTurn     2.40 1.42
 EnemySpeed         5.1  1.35
 Game Over!   Score:323
+
+mapSize         1232    2.43    1.16
+NumWalls          76    0.47    1.20
+StartEnemies      04.7  0.08    1.13
+EnemiesPerTurn     2.67 1.58
+EnemySpeed         5.9  1.26
+Game Over!   Score:308
