@@ -76,10 +76,16 @@ namespace z2
                     }
                 }
                 double range = Random.GaussianCapped(26, .13);
-                for (int vx = x - (int)range ; vx < x + (int)range ; vx++)
-                    for (int vy = y - (int)range ; vy < y + (int)range ; vy++)
-                        if (( vx - x ) * ( vx - x ) + ( vy - y ) * ( vy - y ) < range * range)
+                int r = (int)range;
+                range *= range;
+                foreach (int mx in Random.Iterate(2 * r + 1))
+                    foreach (int my in Random.Iterate(2 * r + 1))
+                    {
+                        int vx = x + mx - r;
+                        int vy = y + my - r;
+                        if (( vx - x ) * ( vx - x ) + ( vy - y ) * ( vy - y ) < range)
                             map.Explore(new Point(vx, vy));
+                    }
                 map.DrawAll(new Point(x - width / 2, y - height / 2), width, height);
             }
             while (( k = Console.ReadKey(true) ).Value.Key != ConsoleKey.Q);

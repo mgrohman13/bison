@@ -74,3 +74,44 @@ StartEnemies      04.7  0.08    1.13
 EnemiesPerTurn     2.67 1.58
 EnemySpeed         5.9  1.26
 Game Over!   Score:308
+
+mapSize         0360    0.71    0.94
+NumWalls          22    0.47    1.21
+StartEnemies      34.4  1.05    1.00
+EnemiesPerTurn     1.92 1.14
+EnemySpeed         2.6  1.05
+Game Over!   Score:144
+
+mapSize         0224    0.44    0.87
+NumWalls          14    0.48    1.20
+StartEnemies      34.4  1.33    0.97
+EnemiesPerTurn     1.72 1.02
+EnemySpeed         2.5  1.23
+Game Over!   Score:343
+
+mapSize         0255    0.50    0.89
+NumWalls          46    1.39    0.92
+StartEnemies      17.1  0.62    1.04
+EnemiesPerTurn     1.45 0.86
+EnemySpeed         1.9  0.90
+Game Over!   Score:78
+
+mapSize         0176    0.35    0.84
+NumWalls          11    0.48    1.20
+StartEnemies      29.5  1.28    0.97
+EnemiesPerTurn     1.66 0.98
+EnemySpeed         2.3  1.30
+Game Over!   Score:579
+
+mapSize         0882    1.74    1.10
+NumWalls          118   1.03    0.99
+StartEnemies      25.3  0.49    1.06
+EnemiesPerTurn     1.95 1.15
+EnemySpeed         3.2  0.80
+Game Over!   Score:321
+
+mapSize         0098    0.19    0.76
+NumWalls          06    0.47    1.21
+StartEnemies      00.7  0.04    1.14
+EnemiesPerTurn     1.77 1.05
+EnemySpeed         3.1  2.36
