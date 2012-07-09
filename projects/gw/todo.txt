@@ -1,3 +1,4 @@
+invade can now default 100% not 99?
 guesses
 research display mult
 decrease specialty pcts and total ship appearace
