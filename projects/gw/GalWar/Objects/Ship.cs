@@ -924,8 +924,6 @@ namespace GalWar
             AssertException.Assert(hp <= this.MaxHP - HP);
             AssertException.Assert(!this.HasRepaired);
             double spend = GetGoldForHP(hp);
-            double round= Game.Random.NextFloat();
-            Player.Round(spend, round);
             AssertException.Assert(spend < Player.Gold);
 
             this.HP += hp;

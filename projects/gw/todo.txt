@@ -1,4 +1,3 @@
-invade can now default 100% not 99?
 guesses
 research display mult
 decrease specialty pcts and total ship appearace
@@ -7,6 +6,9 @@ split planetary defense between building attack or defense
 decrease soldier cost
 increase production upkeep
 
+AI
+enemy designs
+shroud
 cost calculator
 test other grph data storage implementations with real data
 main map improvements
@@ -17,3 +19,11 @@ hp threshhold to abort combat
 undo
 auto repair
 	needs to be saveable?
+
+Green - 24
+Pink - 15
+Black - 11
+Blue - 8
+Red - 5
+Yellow - 0
+

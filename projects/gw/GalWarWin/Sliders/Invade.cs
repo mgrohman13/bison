@@ -39,7 +39,7 @@ namespace GalWarWin.Sliders
             this.initial = MattUtil.TBSUtil.FindValue(delegate(int gold)
             {
                 string effcnt = GetEffcnt(gold);
-                return ( effcnt == "99%" || effcnt == "100%" );
+                return ( effcnt == "100%" );
             }, 1, GetMax(), true);
         }
 
