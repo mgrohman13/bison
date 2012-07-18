@@ -24,7 +24,7 @@ namespace GalWar
         private float _curExp, _totalExp, _needExpMult, _expDiv;
         private double _cost;
 
-        internal Ship(Player player, Tile tile, ShipDesign design, IEventHandler handler)
+        internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
         {
             this.Colony = design.Colony;
 
@@ -470,8 +470,10 @@ namespace GalWar
             return gold;
         }
 
-        public void Disband(Colony colony)
+        //blerg
+        public void Disband(IEventHandler handler, Colony colony)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
@@ -485,8 +487,10 @@ namespace GalWar
             Destroy(gold);
         }
 
-        public void Move(Tile tile)
+        //blerg
+        public void Move(IEventHandler handler, Tile tile)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(this.CurSpeed > 0);
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
@@ -520,8 +524,10 @@ namespace GalWar
             return true;
         }
 
-        public void AttackShip(Ship ship, IEventHandler handler)
+        //blerg
+        public void AttackShip(IEventHandler handler, Ship ship)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(ship != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, ship.Tile));
@@ -531,7 +537,7 @@ namespace GalWar
 
             --this.CurSpeed;
 
-            double pct = Combat(ship, handler);
+            double pct = Combat(handler, ship);
             this.Player.GoldIncome(this.GetUpkeepReturn(pct));
 
             //only the ship whose turn it is can immediately gain levels from the exp
@@ -703,8 +709,10 @@ namespace GalWar
             return Game.Random.Round(hpStr);
         }
 
-        public void Bombard(Planet planet, IEventHandler handler)
+        //blerg
+        public void Bombard(IEventHandler handler, Planet planet)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
@@ -713,7 +721,6 @@ namespace GalWar
             bool friendly = ( colony != null && this.Player == colony.Player );
             if (friendly)
                 AssertException.Assert(this.DeathStar);
-            handler = new HandlerWrapper(handler);
 
             --this.CurSpeed;
 
@@ -728,7 +735,7 @@ namespace GalWar
                 if (colony != null && colony.HP > 0)
                     this.Player.GoldIncome(GetUpkeepReturn(pct));
                 else
-                    Bombard(planet, friendly, pct, handler);
+                    Bombard(handler, planet, friendly, pct);
 
             LevelUp(handler);
         }
@@ -744,7 +751,7 @@ namespace GalWar
 
             double pct = 1;
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
-                pct = Combat(colony, handler);
+                pct = Combat(handler, colony);
 
             pct *= damage / ( damage + freeDmg );
             if (bombardDamage > oldHP)
@@ -757,15 +764,15 @@ namespace GalWar
             return this.BombardDamage * Consts.PlanetDefensesDeathStarMult / colony.PlanetDefenseCost;
         }
 
-        private void Bombard(Planet planet, bool friendly, double pct, IEventHandler handler)
+        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct)
         {
             int colonyDamage = GetColonyDamage(friendly, pct);
             int planetDamage = GetPlanetDamage(colonyDamage, pct);
 
             //bombard the planet first, since it might get destroyed
-            int initQuality = BombardPlanet(planet, planetDamage, handler);
+            int initQuality = BombardPlanet(handler, planet, planetDamage);
             //bombard the colony second, if it exists
-            double initPop = BombardColony(planet.Colony, colonyDamage, handler);
+            double initPop = BombardColony(handler, planet.Colony, colonyDamage);
 
             double popDmg;
             if (friendly)
@@ -815,7 +822,7 @@ namespace GalWar
             return Game.Random.GaussianCappedInt(damage, Consts.DeathStarDamageRndm);
         }
 
-        private int BombardPlanet(Planet planet, int planetDamage, IEventHandler handler)
+        private int BombardPlanet(IEventHandler handler, Planet planet, int planetDamage)
         {
             //quality has to drop to -1 to destroy planet
             int initQuality = planet.Quality + 1;
@@ -832,7 +839,7 @@ namespace GalWar
             return initQuality;
         }
 
-        private int BombardColony(Colony colony, int colonyDamage, IEventHandler handler)
+        private int BombardColony(IEventHandler handler, Colony colony, int colonyDamage)
         {
             int initPop = 0;
             if (colony != null)
@@ -859,8 +866,10 @@ namespace GalWar
             return move / 2 * pct;
         }
 
-        public void Invade(Colony target, int population, int gold, IEventHandler handler)
+        //blerg
+        public void Invade(IEventHandler handler, Colony target, int population, int gold)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(target != null);
             AssertException.Assert(population > 0);
@@ -876,7 +885,6 @@ namespace GalWar
             {
                 gold = 0;
             }
-            handler = new HandlerWrapper(handler);
 
             //all attackers cost gold to move regardless of where they end up
             this.Player.SpendGold(GetActualGoldCost(population) + gold, gold);
@@ -886,15 +894,17 @@ namespace GalWar
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
-            target.Invasion(this.Player, ref population, ref soldiers, gold, handler);
+            target.Invasion(handler, this.Player, ref population, ref soldiers, gold);
             this.Population += population;
             this.movedPop += population;
 
             this.soldiers += soldiers;
         }
 
-        public void Colonize(Planet planet, IEventHandler handler)
+        //blerg
+        public void Colonize(IEventHandler handler, Planet planet)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
@@ -903,12 +913,11 @@ namespace GalWar
             AssertException.Assert(this.AvailablePop == this.Population);
             AssertException.Assert(this.Population > 0);
             AssertException.Assert(planet.ColonizationCost < Player.Gold);
-            handler = new HandlerWrapper(handler);
 
             this.Player.SpendGold(GetActualGoldCost(this.Population) + planet.ColonizationCost, Player.RoundGold(planet.ColonizationCost));
 
             int production = Game.Random.Round(ColonizationValue);
-            this.Player.NewColony(planet, this.Population, this.soldiers, production, handler);
+            this.Player.NewColony(handler, planet, this.Population, this.soldiers, production);
             this.Player.GoldIncome(ColonizationValue - production);
 
             this.Population = 0;
@@ -917,8 +926,10 @@ namespace GalWar
             Destroy(false);
         }
 
-        public void GoldRepair(int hp)
+        //blerg
+        public void GoldRepair(IEventHandler handler, int hp)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.MaxHP - HP);

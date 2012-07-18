@@ -514,12 +514,12 @@ namespace GalWarWin
 
         private void btnNewGame_Click(object sender, EventArgs e)
         {
-            Player black = new Player("Black", Color.Blue);
-            Player blue = new Player("Blue", Color.Cyan);
-            Player green = new Player("Green", Color.Green);
-            Player pink = new Player("Pink", Color.Magenta);
-            Player red = new Player("Red", Color.Red);
-            Player yellow = new Player("Yellow", Color.Gold);
+            Player black = new Player("Black", Color.Blue, new GalWarAI.GalWarAI());
+            Player blue = new Player("Blue", Color.Cyan, new GalWarAI.GalWarAI());
+            Player green = new Player("Green", Color.Green, new GalWarAI.GalWarAI());
+            Player pink = new Player("Pink", Color.Magenta, new GalWarAI.GalWarAI());
+            Player red = new Player("Red", Color.Red, new GalWarAI.GalWarAI());
+            Player yellow = new Player("Yellow", Color.Gold, new GalWarAI.GalWarAI());
             Game = new Game(new Player[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .52, 0.0021));
@@ -652,7 +652,7 @@ namespace GalWarWin
         private void btnProduction_Click(object sender, EventArgs e)
         {
             Colony colony = ( (Planet)this.selectedTile.SpaceObject ).Colony;
-            colony.StartBuilding(ChangeBuild(colony, true, true));
+            colony.StartBuilding(this, ChangeBuild(colony, true, true));
 
             saved = false;
             this.RefreshAll();
@@ -673,11 +673,11 @@ namespace GalWarWin
             {
                 Tile tile = SelectTile(this.selectedTile, false);
                 if (tile != null)
-                    colony.RepairShip = tile.SpaceObject as Ship;
+                    colony.SetRepairShip(this, tile.SpaceObject as Ship);
             }
             else
             {
-                colony.RepairShip = null;
+                colony.SetRepairShip(this, null);
             }
 
             saved = false;
@@ -724,7 +724,7 @@ namespace GalWarWin
 
             if (HP > 0)
             {
-                ship.GoldRepair(HP);
+                ship.GoldRepair(this, HP);
 
                 saved = false;
                 this.RefreshAll();
@@ -757,9 +757,9 @@ namespace GalWarWin
                 production -= production * Consts.StoreProdLossPct;
 
             if (buildable != null && ShowOption("Disband for " + FormatDouble(production) + " production?"))
-                ship.Disband(colony);
+                ship.Disband(this, colony);
             else if (ShowOption("Disband for " + FormatDouble(gold) + " gold?"))
-                ship.Disband(null);
+                ship.Disband(this, null);
 
             saved = false;
             this.RefreshAll();
@@ -853,9 +853,9 @@ namespace GalWarWin
         {
             if (emphasisEvent)
             {
-                Game.CurrentPlayer.GoldEmphasis = chkGold.Checked;
-                Game.CurrentPlayer.ResearchEmphasis = chkResearch.Checked;
-                Game.CurrentPlayer.ProductionEmphasis = chkProduction.Checked;
+                Game.CurrentPlayer.SetGoldEmphasis(this, chkGold.Checked);
+                Game.CurrentPlayer.SetResearchEmphasis(this, chkResearch.Checked);
+                Game.CurrentPlayer.SetProductionEmphasis(this, chkProduction.Checked);
 
                 RefreshAll();
             }
@@ -1029,7 +1029,7 @@ namespace GalWarWin
 
             if (move)
             {
-                ship.Move(targetTile);
+                ship.Move(this, targetTile);
                 this.selectedTile = targetTile;
             }
         }
@@ -1091,7 +1091,7 @@ namespace GalWarWin
                 else if (ShowOption("Colonize planet for " + cost + " gold?"))
                 {
                     bombard = false;
-                    ship.Colonize(planet, this);
+                    ship.Colonize(this, planet);
                     this.selectedTile = planet.Tile;
                 }
             }
@@ -1102,7 +1102,7 @@ namespace GalWarWin
                     this.selectedTile = planet.Tile;
                 selectNext = false;
 
-                ship.Bombard(planet, this);
+                ship.Bombard(this, planet);
                 CombatForm.FlushLog(this);
             }
 
@@ -1118,7 +1118,7 @@ namespace GalWarWin
                     this.selectedTile = targetColony.Tile;
                 selectNext = false;
 
-                ship.Bombard(targetColony.Planet, this);
+                ship.Bombard(this, targetColony.Planet);
                 CombatForm.FlushLog(this);
             }
             return selectNext;
@@ -1143,7 +1143,7 @@ namespace GalWarWin
                 if (troops > 0)
                 {
                     this.selectedTile = to.Tile;
-                    from.MovePop(troops, to);
+                    from.MovePop(this, troops, to);
                 }
                 return false;
             }
@@ -1167,7 +1167,7 @@ namespace GalWarWin
             bool selectShip = true;
             if (troops > 0 && gold > -1)
             {
-                ship.Invade(colony, troops, gold, this);
+                ship.Invade(this, colony, troops, gold);
 
                 if (!planet.Dead)
                     selectShip = false;
@@ -1180,7 +1180,7 @@ namespace GalWarWin
                 }
                 else
                 {
-                    ship.Bombard(colony.Planet, this);
+                    ship.Bombard(this, colony.Planet);
                     CombatForm.FlushLog(this);
                 }
 

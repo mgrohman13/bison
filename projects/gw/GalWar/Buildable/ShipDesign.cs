@@ -708,9 +708,9 @@ namespace GalWar
             return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.E * .13));
         }
 
-        internal override void Build(Colony colony, Tile tile, IEventHandler handler)
+        internal override void Build(IEventHandler handler, Colony colony, Tile tile)
         {
-            Ship ship = colony.Player.NewShip(tile, this, handler);
+            Ship ship = colony.Player.NewShip(handler, tile, this);
 
             int max = Math.Min(colony.AvailablePop, ship.FreeSpace);
             if (max > 0)
@@ -723,7 +723,7 @@ namespace GalWar
                 max = handler.MoveTroops(colony, max, 0, colony.Population, colony.Soldiers);
                 if (max > 0)
                 {
-                    colony.MovePop(max, ship);
+                    colony.MovePop(handler, max, ship);
                     //troops can be moved again next turn
                     ship.ResetMoved();
                 }

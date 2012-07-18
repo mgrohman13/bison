@@ -277,7 +277,7 @@ next_planet:
 
         #endregion //internal
 
-        #region public
+        #region    public
 
         public int MapSize
         {
@@ -317,6 +317,9 @@ next_planet:
             this.currentPlayer = 0;
             this.turn = 1;
 
+            foreach (Player p in players)
+                p.SetGame(this);
+
             StartPlayerTurn(handler);
         }
 
@@ -329,12 +332,51 @@ next_planet:
         public Dictionary<Player, double> GetResearch()
         {
             Player[] players = GetResearchOrder();
-            Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
-            foreach (Player player in players)
+            double[] rawValues = new double[players.Length];
+            for (int a = 0 ; a < players.Length ; ++a)
+            {
+                Player player = players[a];
+                double research;
                 if (players.Length > 1)
-                    retVal.Add(player, player.Research / (double)players[1].Research * 100 / Consts.ResearchVictoryMult);
+                    research = player.Research / (double)players[1].Research / Consts.ResearchVictoryMult;
                 else
-                    retVal.Add(player, 100 / Consts.ResearchVictoryMult);
+                    research = 1 / Consts.ResearchVictoryMult;
+                rawValues[a] = research;
+            }
+            Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
+            for (int b = 0 ; b < players.Length ; ++b)
+            {
+                double value = rawValues[b];
+                if (b != 1)
+                {
+                    double skew = players[b].ResearchDisplaySkew;
+                    double low, high;
+                    if (b == 0)
+                    {
+                        low = 1 / Consts.ResearchVictoryMult;
+                        high = 1 - Consts.FLOAT_ERROR;
+                        if (value < high)
+                            skew *= ( 1 - value ) / ( 2 - value ) * ( 2 - low ) / ( 1 - low );
+                        else
+                            skew = 0;
+                    }
+                    else
+                    {
+                        if (b + 1 < rawValues.Length)
+                            low = rawValues[b + 1];
+                        else
+                            low = 0;
+                        high = rawValues[b - 1];
+                    }
+                    double s2 = Math.Min(high - value, value - low);
+                    if (skew < 0)
+                        value = value + -s2 * ( skew / ( skew - 1 ) );
+                    else
+                        value = value + s2 * ( skew / ( skew + 1 ) );
+                }
+                retVal.Add(players[b], value * 100);
+                rawValues[b] = value;
+            }
             return retVal;
         }
 
@@ -359,6 +401,7 @@ next_planet:
             return this.planets.AsReadOnly();
         }
 
+        //blerg
         public void EndTurn(IEventHandler handler)
         {
             handler = new HandlerWrapper(handler);
@@ -372,11 +415,13 @@ next_planet:
             StartPlayerTurn(handler);
 
             AutoSave();
+
+            CurrentPlayer.PlayTurn(handler);
         }
 
         public void AutoSave()
         {
-            TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
+            //TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
         }
 
         private void NewRound()
@@ -473,7 +518,10 @@ next_planet:
 
         public static Game LoadGame(string filePath)
         {
-            return TBSUtil.LoadGame<Game>(filePath);
+            Game game = TBSUtil.LoadGame<Game>(filePath);
+            foreach (Player player in game.GetPlayers())
+                player.SetGame(game);
+            return game;
         }
 
         public List<Result> GetGameResult()
@@ -502,7 +550,7 @@ next_planet:
             return result;
         }
 
-        #endregion //public
+        #endregion //   public
 
         [Serializable]
         public class Result

@@ -131,8 +131,10 @@ namespace GalWar
             }
         }
 
-        public void MovePop(int population, PopCarrier destination)
+        //blerg
+        public void MovePop(IEventHandler handler , int population, PopCarrier destination)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(Player);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);

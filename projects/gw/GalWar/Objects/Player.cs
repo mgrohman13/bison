@@ -10,10 +10,13 @@ namespace GalWar
     {
         #region fields and constructors
 
+        [NonSerialized]
         public readonly Game Game;
 
         public readonly string Name;
         public readonly Color Color;
+
+        private readonly IGalWarAI AI;
 
         private readonly List<ShipDesign> designs;
         private readonly List<Ship> ships;
@@ -22,16 +25,17 @@ namespace GalWar
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
         private byte _id;
         private ushort _research, _newResearch, _lastResearched;
-        private float _incomeTotal, _rKey, _rChance, _rMult;
+        private float _incomeTotal, _rKey, _rChance, _rMult, _rDispSkew;
         private uint _goldValue;
         private double _goldOffset;
 
         private PlanetDefense planetDefense;
 
-        public Player(string name, Color color)
+        public Player(string name, Color color, IGalWarAI AI)
         {
             this.Name = name;
             this.Color = color;
+            this.AI = AI;
         }
 
         internal Player(int id, Game Game, Player player, Planet planet,
@@ -41,6 +45,8 @@ namespace GalWar
 
             this.Name = player.Name;
             this.Color = player.Color;
+
+            this.AI = player.AI;
 
             this.ships = new List<Ship>();
 
@@ -65,7 +71,7 @@ namespace GalWar
 
             this.colonies = new List<Colony>();
             //starting production is handled after all players have been created
-            NewColony(planet, population, soldiers, 0, null);
+            NewColony(null, planet, population, soldiers, 0);
 
             //production is added in later
             this.IncomeTotal = gold + this.Research;
@@ -175,8 +181,13 @@ namespace GalWar
                 this.newResearch = 0;
             }
 
-            //re-randomize research chance
+            //re-randomize research chance and display skew
             ResetResearchChance();
+            ResearchDisplaySkew += Game.Random.Gaussian(.039f);
+            ResearchDisplaySkew *= 1 - .0078f;
+
+            if (this.Name == "Red")
+                Console.WriteLine(ResearchDisplaySkew);
         }
 
         private void NewShipDesign(IEventHandler handler)
@@ -220,16 +231,16 @@ namespace GalWar
 
             int research = 0;
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
-                colony.EndTurn(ref this._goldOffset, ref research, handler);
+                colony.EndTurn(handler, ref this._goldOffset, ref research);
             this.newResearch += research;
 
             foreach (Ship ship in this.ships)
                 SpendGold(ship.EndTurn());
 
-            CheckGold();
+            CheckGold(handler);
         }
 
-        private void CheckGold()
+        private void CheckGold(IEventHandler handler)
         {
             if (NegativeGold())
             {
@@ -244,7 +255,7 @@ namespace GalWar
                     Colony colony = Game.Random.SelectValue<Colony>(production);
 
                     AddGold(Consts.GetProductionUpkeepMult(Game.MapSize));
-                    colony.SellProduction(1);
+                    colony.SellProduction(handler, 1);
 
                     if (colony.Production > 0)
                         production[colony] = colony.Production;
@@ -259,7 +270,7 @@ namespace GalWar
 
                     //the upkeep that was just paid for the ship this turn is re-added
                     AddGold(ship.Upkeep);
-                    ship.Disband(null);
+                    ship.Disband(handler, null);
                 }
             }
         }
@@ -278,16 +289,16 @@ namespace GalWar
             return ( this.goldValue + add < -Consts.FLOAT_ERROR );
         }
 
-        internal Colony NewColony(Planet planet, int population, double soldiers, int production, IEventHandler handler)
+        internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, int production)
         {
-            Colony colony = new Colony(this, planet, population, soldiers, production, handler);
+            Colony colony = new Colony(handler, this, planet, population, soldiers, production);
             this.colonies.Add(colony);
             return colony;
         }
 
-        internal Ship NewShip(Tile tile, ShipDesign design, IEventHandler handler)
+        internal Ship NewShip(IEventHandler handler, Tile tile, ShipDesign design)
         {
-            Ship ship = new Ship(this, tile, design, handler);
+            Ship ship = new Ship(handler, this, tile, design);
             this.ships.Add(ship);
             return ship;
         }
@@ -429,6 +440,18 @@ namespace GalWar
             }
         }
 
+        internal float ResearchDisplaySkew
+        {
+            get
+            {
+                return this._rDispSkew;
+            }
+            private set
+            {
+                this._rDispSkew = value;
+            }
+        }
+
         public bool GoldEmphasis
         {
             get
@@ -436,12 +459,6 @@ namespace GalWar
                 TurnException.CheckTurn(this);
 
                 return this._goldEmphasis;
-            }
-            set
-            {
-                TurnException.CheckTurn(this);
-
-                this._goldEmphasis = value;
             }
         }
         public bool ResearchEmphasis
@@ -452,12 +469,6 @@ namespace GalWar
 
                 return _researchEmphasis;
             }
-            set
-            {
-                TurnException.CheckTurn(this);
-
-                this._researchEmphasis = value;
-            }
         }
         public bool ProductionEmphasis
         {
@@ -467,13 +478,33 @@ namespace GalWar
 
                 return _productionEmphasis;
             }
-            set
-            {
-                TurnException.CheckTurn(this);
-
-                this._productionEmphasis = value;
-            }
         }
+
+        //blerg
+        public void SetGoldEmphasis(IEventHandler handler, bool value)
+        {
+            handler = new HandlerWrapper(handler);
+            TurnException.CheckTurn(this);
+
+            this._goldEmphasis = value;
+        }
+        //blerg
+        public void SetResearchEmphasis(IEventHandler handler, bool value)
+        {
+            handler = new HandlerWrapper(handler);
+            TurnException.CheckTurn(this);
+
+            this._researchEmphasis = value;
+        }
+        //blerg
+        public void SetProductionEmphasis(IEventHandler handler, bool value)
+        {
+            handler = new HandlerWrapper(handler);
+            TurnException.CheckTurn(this);
+
+            this._productionEmphasis = value;
+        }
+
 
         public PlanetDefense PlanetDefense
         {
@@ -611,12 +642,13 @@ namespace GalWar
         }
 
         //additionalLossPct and accountForIncome are only there to be passed back into the handler; they do not affect the call itself
-        public void MarkObsolete(ShipDesign obsoleteDesign, IEventHandler handler, bool accountForIncome, params double[] additionalLosses)
+        //blerg
+        public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign, bool accountForIncome, params double[] additionalLosses)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));
-            handler = new HandlerWrapper(handler);
 
             double[] losses = new double[additionalLosses.Length + 1];
             losses[0] = Consts.ManualObsoleteLossPct;
@@ -629,11 +661,23 @@ namespace GalWar
                     colony.SetBuildable(handler.getNewBuild(colony, accountForIncome, false, losses), Consts.ManualObsoleteLossPct);
         }
 
+        internal void PlayTurn(IEventHandler handler)
+        {
+            if (AI != null)
+                AI.PlayTurn(handler);
+            Game.EndTurn(handler);
+        }
+
         public override string ToString()
         {
             return Name;
         }
 
         #endregion //public
+
+        internal void SetGame(Game game)
+        {
+            this.AI.SetGame(game);
+        }
     }
 }

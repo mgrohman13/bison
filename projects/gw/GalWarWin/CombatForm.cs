@@ -292,9 +292,9 @@ end:
             if (btnAttack.DialogResult == DialogResult.None)
             {
                 if (defShip == null)
-                    attShip.Bombard(( (Colony)defender ).Planet, gameForm);
+                    attShip.Bombard(gameForm, ( (Colony)defender ).Planet);
                 else
-                    attShip.AttackShip(defShip, gameForm);
+                    attShip.AttackShip(gameForm, defShip);
 
                 RefreshShips();
                 gameForm.RefreshAll();

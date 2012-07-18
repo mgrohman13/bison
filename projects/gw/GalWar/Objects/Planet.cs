@@ -81,16 +81,16 @@ namespace GalWar
 
         public Colony Colony
         {
+            get
+            {
+                return this._colony;
+            }
             internal set
             {
                 if (( value == null ) == ( this._colony == null ))
                     throw new Exception();
 
                 this._colony = value;
-            }
-            get
-            {
-                return this._colony;
             }
         }
 

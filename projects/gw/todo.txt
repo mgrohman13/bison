@@ -1,14 +1,14 @@
-guesses
-research display mult
-decrease specialty pcts and total ship appearace
-single turn repair gold save with rounding
+re-enable AutoSave
+
 split planetary defense between building attack or defense
-decrease soldier cost
-increase production upkeep
+ship upkeep lower bound
+	tied in with production upkeep
 
 AI
+guesses
 enemy designs
 shroud
+single turn repair gold save with rounding ???
 cost calculator
 test other grph data storage implementations with real data
 main map improvements
@@ -19,11 +19,3 @@ hp threshhold to abort combat
 undo
 auto repair
 	needs to be saveable?
-
-Green - 24
-Pink - 15
-Black - 11
-Blue - 8
-Red - 5
-Yellow - 0
-

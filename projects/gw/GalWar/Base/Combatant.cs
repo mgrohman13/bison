@@ -32,7 +32,7 @@ namespace GalWar
 
         #region protected
 
-        protected double Combat(Combatant defender, IEventHandler handler)
+        protected double Combat(IEventHandler handler, Combatant defender)
         {
             double pct = 0;
             double experience = 0;

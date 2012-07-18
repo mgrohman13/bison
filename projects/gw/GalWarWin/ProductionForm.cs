@@ -121,11 +121,11 @@ namespace GalWarWin
                 {
                     if (switchFirst)
                     {
-                        colony.StartBuilding(buildable);
+                        colony.StartBuilding(gameForm, buildable);
                         if (prod == initial)
                             prod = GetInitialBuy(buildable, false);
                     }
-                    colony.BuyProduction(prod);
+                    colony.BuyProduction(gameForm, prod);
                     RefreshBuild();
                 }
             }
@@ -205,7 +205,7 @@ namespace GalWarWin
             int prod = SliderForm.ShowDialog(gameForm, new SellProd(colony));
             if (prod > 0)
             {
-                colony.SellProduction(prod);
+                colony.SellProduction(gameForm, prod);
                 RefreshBuild();
             }
         }
@@ -232,7 +232,7 @@ namespace GalWarWin
             if (result == DialogResult.OK)
                 return form.GetSelectedDesign();
             else if (result == DialogResult.Abort)
-                MainForm.Game.CurrentPlayer.MarkObsolete((ShipDesign)form.GetSelectedDesign(), gameForm, accountForIncome, additionalLosses);
+                MainForm.Game.CurrentPlayer.MarkObsolete(gameForm, (ShipDesign)form.GetSelectedDesign(), accountForIncome, additionalLosses);
 
             if (colony.CanBuild(colony.Buildable))
                 return colony.Buildable;

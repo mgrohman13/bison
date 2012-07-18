@@ -37,7 +37,7 @@ namespace GalWar
             this.production = production;
         }
 
-        internal abstract void Build(Colony colony, Tile tile, IEventHandler handler);
+        internal abstract void Build(IEventHandler handler, Colony colony, Tile tile);
 
         internal abstract bool CanBeBuiltBy(Colony colony);
 

@@ -20,7 +20,7 @@ namespace GalWar
         private ushort _production, _prodHeal;
         private float _defenseSoldiers, _researchRounding, _productionRounding, _soldierChange;
 
-        internal Colony(Player player, Planet planet, int population, double soldiers, int production, IEventHandler handler)
+        internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
         {
             this.player = player;
             this.Planet = planet;
@@ -42,7 +42,7 @@ namespace GalWar
             if (handler == null)
                 this.built = true;
             else
-                StartBuilding(handler.getNewBuild(this, true, false));
+                StartBuilding(handler, handler.getNewBuild(this, true, false));
         }
 
         private bool built
@@ -79,7 +79,7 @@ namespace GalWar
             this._buildable = newDesign;
         }
 
-        internal void DoBuild(double productionInc, ref double gold, IEventHandler handler)
+        internal void DoBuild(IEventHandler handler, double productionInc, ref double gold)
         {
             if (this.Buildable != null && this.Buildable.HandlesFraction)
                 this.Buildable.SetFraction(productionInc);
@@ -112,7 +112,7 @@ namespace GalWar
                     }
 
                     //build the ship
-                    this.Buildable.Build(this, tile, handler);
+                    this.Buildable.Build(handler, this, tile);
                     this.production -= this.Buildable.Cost;
                     LoseProductionPct(Consts.CarryProductionLossPct);
 
@@ -149,12 +149,12 @@ namespace GalWar
 
             if (this.built)
             {
-                StartBuilding(handler.getNewBuild(this, true, true));
+                StartBuilding(handler, handler.getNewBuild(this, true, true));
                 this.built = false;
             }
         }
 
-        internal void EndTurn(ref double gold, ref int research, IEventHandler handler)
+        internal void EndTurn(IEventHandler handler, ref double gold, ref int research)
         {
             ProdHeal = 0;
             ResetMoved();
@@ -170,7 +170,7 @@ namespace GalWar
             //build planet defences first so they can attack this turn
             bool buildFirst = ( this.Buildable is PlanetDefense );
             if (buildFirst)
-                this.DoBuild(production, ref gold, handler);
+                this.DoBuild(handler, production, ref gold);
             if (this.HP > 0)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
                 {
@@ -184,7 +184,7 @@ namespace GalWar
                 }
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
-                this.DoBuild(production, ref gold, handler);
+                this.DoBuild(handler, production, ref gold);
 
             DoChange(this._soldierChange, this._defenseAttChange, this._defenseDefChange, this._defenseHPChange);
         }
@@ -272,7 +272,7 @@ namespace GalWar
             return exp;
         }
 
-        internal void Invasion(Player attackPlayer, ref int attackers, ref double soldiers, int gold, IEventHandler handler)
+        internal void Invasion(IEventHandler handler, Player attackPlayer, ref int attackers, ref double soldiers, int gold)
         {
             double initAttackers = attackers;
             double initPop = this.Population;
@@ -299,7 +299,7 @@ namespace GalWar
             if (attackers > 0 && !Planet.Dead)
             {
                 Destroy();
-                OccupyPlanet(attackPlayer, ref attackers, ref soldiers, initPop, handler);
+                OccupyPlanet(handler, attackPlayer, ref attackers, ref soldiers, initPop);
             }
         }
 
@@ -367,7 +367,7 @@ namespace GalWar
             }
         }
 
-        private void OccupyPlanet(Player occupyingPlayer, ref int attackers, ref double soldiers, double initPop, IEventHandler handler)
+        private void OccupyPlanet(IEventHandler handler, Player occupyingPlayer, ref int attackers, ref double soldiers, double initPop)
         {
             int occupy = attackers;
             if (initPop > 0 && attackers > 1)
@@ -378,7 +378,7 @@ namespace GalWar
             }
 
             double moveSoldiers = MoveSoldiers(attackers, soldiers, occupy);
-            occupyingPlayer.NewColony(Planet, occupy, moveSoldiers, 0, handler);
+            occupyingPlayer.NewColony(handler, Planet, occupy, moveSoldiers, 0);
 
             attackers -= occupy;
             soldiers -= moveSoldiers;
@@ -516,13 +516,20 @@ namespace GalWar
                     this._repairShip = null;
                 return this._repairShip;
             }
-            set
+            internal set
             {
-                TurnException.CheckTurn(this.Player);
-                AssertException.Assert(value == null || this.Player == value.Player);
-
                 this._repairShip = value;
             }
+        }
+
+        //blerg
+        public void SetRepairShip(IEventHandler handler, Ship value)
+        {
+            handler = new HandlerWrapper(handler);
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(value == null || this.Player == value.Player);
+
+            this.RepairShip = value;
         }
 
         public int ProdHeal
@@ -705,8 +712,10 @@ namespace GalWar
             newHP = (int)Math.Ceiling(hp);
         }
 
-        public void SellProduction(int production)
+        //blerg
+        public void SellProduction(IEventHandler handler, int production)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production <= this.production);
@@ -742,8 +751,10 @@ namespace GalWar
             production -= loseProduction;
         }
 
-        public void BuyProduction(int production)
+        //blerg
+        public void BuyProduction(IEventHandler handler, int production)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             double gold = production * Consts.GoldForProduction;
@@ -758,8 +769,10 @@ namespace GalWar
             return ( buildable == null || buildable.CanBeBuiltBy(this) );
         }
 
-        public void StartBuilding(Buildable newBuild)
+        //blerg
+        public void StartBuilding(IEventHandler handler, Buildable newBuild)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
@@ -851,8 +864,10 @@ namespace GalWar
             }
         }
 
-        public void DisbandPlanetDefense(int hp, bool gold)
+        //blerg
+        public void DisbandPlanetDefense(IEventHandler handler, int hp, bool gold)
         {
+            handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
@@ -948,7 +963,7 @@ namespace GalWar
         {
             //get the attack cost before possibly being injured
             double cost = GetPlanetDefenseAttackCost(ship.Def);
-            double pct = Combat(ship, handler);
+            double pct = Combat(handler, ship);
             this.Player.SpendGold(cost * ( 1 - pct ));
         }
 

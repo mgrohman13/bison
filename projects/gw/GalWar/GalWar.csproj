@@ -53,6 +53,7 @@
     <Compile Include="Consts.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Buildable\Buildable.cs" />
+    <Compile Include="Base\IGalWarAI.cs" />
     <Compile Include="Other\Graphs.cs" />
     <Compile Include="Base\IEventHandler.cs" />
     <Compile Include="Base\PopCarrier.cs" />

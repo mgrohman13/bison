@@ -224,6 +224,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GalWarAI\GalWarAI.csproj">
+      <Project>{05592685-D42B-4DE5-9A43-5EBE6485771A}</Project>
+      <Name>GalWarAI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GalWar\GalWar.csproj">
       <Project>{D4C91515-1065-4B47-8300-AC59CA0E6039}</Project>
       <Name>GalWar</Name>
