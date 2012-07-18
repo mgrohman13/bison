@@ -1,21 +1,14 @@
 re-enable AutoSave
 
-split planetary defense between building attack or defense
-ship upkeep lower bound
-	tied in with production upkeep
-
 AI
 guesses
 enemy designs
 shroud
-single turn repair gold save with rounding ???
+split planetary defense between building attack or defense
+	att/def:hp ratio
 cost calculator
-test other grph data storage implementations with real data
 main map improvements
-test combat performance for integral data type widths
-planet defence att/def:hp ratio
-rethink colony ships
-hp threshhold to abort combat
+	ship speed/type
 undo
 auto repair
 	needs to be saveable?

@@ -354,14 +354,14 @@ namespace GalWar
             else if (forceNeither || forceColony)
                 transport = false;
             else
-                transport = CreateType(.21, transPct);
+                transport = CreateType(.169, transPct);
 
             if (forceColony)
                 colony = true;
             else if (forceNeither || forceTrans)
                 colony = false;
             else
-                colony = CreateType(.13, colonyPct);
+                colony = CreateType(.104, colonyPct);
 
             //pure colony ships transport a reduced amount
             if (colony && !transport)
@@ -387,7 +387,7 @@ namespace GalWar
         private bool CreateDeathStar(int research, double actual)
         {
             //target pct of ships that should be death stars increases with research
-            double target = research / ( 2100.0 + research );
+            double target = research / ( Math.PI * 1040.0 + research );
             target *= target * target * .169;
 
             return CreateType(target, actual);

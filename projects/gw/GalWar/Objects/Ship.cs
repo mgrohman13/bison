@@ -626,7 +626,7 @@ namespace GalWar
                 this.cost += costInc - this.Upkeep * multPayoff;
 
                 //upkeep should never account for more than half of the ship's cost
-                while (this.Upkeep > 1 && ( ( this.cost < minCost ) || ( this.Upkeep * basePayoff > ( this.cost + this.Upkeep * basePayoff ) / 2.0 ) ))
+                while (this.Upkeep > 1 && ( ( this.cost < minCost ) || ( this.Upkeep * basePayoff > this.cost ) ))
                 {
                     --this.Upkeep;
                     this.cost += multPayoff;

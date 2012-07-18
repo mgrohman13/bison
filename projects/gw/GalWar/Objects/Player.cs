@@ -10,12 +10,12 @@ namespace GalWar
     {
         #region fields and constructors
 
-        [NonSerialized]
         public readonly Game Game;
 
         public readonly string Name;
         public readonly Color Color;
 
+        [NonSerialized]
         private readonly IGalWarAI AI;
 
         private readonly List<ShipDesign> designs;
@@ -149,6 +149,12 @@ namespace GalWar
             }
         }
 
+        internal void SetGame(Game game)
+        {
+            if (this.AI != null)
+                this.AI.SetGame(game);
+        }
+
         internal void StartTurn(IEventHandler handler)
         {
             //actual researching happens at turn start
@@ -185,9 +191,6 @@ namespace GalWar
             ResetResearchChance();
             ResearchDisplaySkew += Game.Random.Gaussian(.039f);
             ResearchDisplaySkew *= 1 - .0078f;
-
-            if (this.Name == "Red")
-                Console.WriteLine(ResearchDisplaySkew);
         }
 
         private void NewShipDesign(IEventHandler handler)
@@ -505,7 +508,6 @@ namespace GalWar
             this._productionEmphasis = value;
         }
 
-
         public PlanetDefense PlanetDefense
         {
             get
@@ -664,8 +666,10 @@ namespace GalWar
         internal void PlayTurn(IEventHandler handler)
         {
             if (AI != null)
+            {
                 AI.PlayTurn(handler);
-            Game.EndTurn(handler);
+                Game.EndTurn(handler);
+            }
         }
 
         public override string ToString()
@@ -674,10 +678,5 @@ namespace GalWar
         }
 
         #endregion //public
-
-        internal void SetGame(Game game)
-        {
-            this.AI.SetGame(game);
-        }
     }
 }

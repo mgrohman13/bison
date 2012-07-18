@@ -47,7 +47,7 @@ namespace GalWar
 
         public const double CostMult = .13;
         public const double CostUpkeepPct = .21;
-        public const double ProdUpkeepMult = 1 / ( 1 / Consts.CostUpkeepPct - 1 ) / 2.1;
+        public const double ProdUpkeepMult = 1 / ( 1 / Consts.CostUpkeepPct - 1 ) / 1.3;
         public const double BaseDesignHPMult = .3;
         //percent of upkeep returned when a ship doesnt move
         public const double UpkeepUnmovedReturn = .169;
@@ -60,7 +60,7 @@ namespace GalWar
         //higher value makes research less useful
         public const double ResearchFactor = 1300;
         //how often new designs are researched
-        public const double NewResearchFactor = Math.E * 130;
+        public const double NewResearchFactor = 390;
         //mult and power of turn research income
         public const double ResearchIncMult = Math.E;
         public const double ResearchIncPower = .39;
@@ -76,7 +76,7 @@ namespace GalWar
         public const double GoldForProduction = 2;
         public const double PopulationForGold = 1 / Income / 2.1;
         public const double PopulationIncomeForGold = 1 / Income / 13.0;
-        public const float ProductionForSoldiers = 1.39f;
+        public const float ProductionForSoldiers = .91f;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers * 1.3;
         public const double DefendingSoldiersForGold = SoldiersForGold * 1.3;
         //ExpForGold will be increased by the players most recent research
