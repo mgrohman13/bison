@@ -19,6 +19,8 @@ namespace GalWarAI
 
         public void PlayTurn(IEventHandler handler)
         {
+            TacticalOverrides(handler);
+
             if (state == null)
             {
                 this.state = Transition();
@@ -31,23 +33,19 @@ namespace GalWarAI
                     this.state = EmergencyTransition();
             }
 
-            TacticalOverrides(handler);
-
             state.PlayTurn(handler);
-        }
-
-        private void TacticalOverrides(IEventHandler handler)
-        {
-
         }
 
         private IState EmergencyTransition()
         {
-            IState state = this.state;
+            foreach (Planet p in game.GetPlanets())
+                if (p.Colony == null)
+                {
+                    TileInfluence inf = new TileInfluence(game, p.Tile);
+                    return new Colonize(game, this);
+                }
 
-
-
-            return state;
+            return this.state;
         }
 
         private IState Transition()
@@ -60,6 +58,21 @@ namespace GalWarAI
 
 
             return state;
+        }
+
+        private void TacticalOverrides(IEventHandler handler)
+        {
+            foreach (Planet p in game.GetPlanets())
+                if (p.Colony == null)
+                {
+                    TileInfluence inf = new TileInfluence(game, p.Tile);
+                    if (inf.GetInfluence(TileInfluence.InfluenceType.Prod).GetRank(game.CurrentPlayer) == 0)
+                        ColonizePlanet(p);
+                }
+        }
+
+        private void ColonizePlanet(Planet p)
+        {
         }
     }
 }

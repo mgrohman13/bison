@@ -8,8 +8,8 @@ namespace GalWarAI
 {
     class Colonize : BaseState
     {
-        public Colonize(Game game)
-            : base(game)
+        public Colonize(Game game, GalWarAI ai)
+            : base(game, ai)
         {
         }
     }

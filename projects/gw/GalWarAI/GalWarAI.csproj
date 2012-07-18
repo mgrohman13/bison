@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseState.cs" />
+    <Compile Include="TileInfluence.cs" />
     <Compile Include="States\Blitz.cs" />
     <Compile Include="States\Colonize.cs" />
     <Compile Include="States\Defend.cs" />

@@ -533,7 +533,6 @@ namespace GalWar
             AssertException.Assert(Tile.IsNeighbor(this.Tile, ship.Tile));
             AssertException.Assert(this.Player != ship.Player);
             AssertException.Assert(this.CurSpeed > 0);
-            handler = new HandlerWrapper(handler);
 
             --this.CurSpeed;
 

@@ -321,6 +321,7 @@ next_planet:
                 p.SetGame(this);
 
             StartPlayerTurn(handler);
+            CurrentPlayer.PlayTurn(handler);
         }
 
         public Tile[,] GetMap()
@@ -404,7 +405,13 @@ next_planet:
         //blerg
         public void EndTurn(IEventHandler handler)
         {
+            EndTurn(handler, false);
+        }
+        internal void EndTurn(IEventHandler handler, bool allowAI)
+        {
             handler = new HandlerWrapper(handler);
+
+            AssertException.Assert(allowAI || CurrentPlayer.AI == null);
 
             CurrentPlayer.EndTurn(handler);
             Graphs.EndTurn(CurrentPlayer);
@@ -519,8 +526,6 @@ next_planet:
         public static Game LoadGame(string filePath)
         {
             Game game = TBSUtil.LoadGame<Game>(filePath);
-            foreach (Player player in game.GetPlayers())
-                player.SetGame(game);
             return game;
         }
 

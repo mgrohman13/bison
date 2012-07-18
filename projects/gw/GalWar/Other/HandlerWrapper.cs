@@ -11,6 +11,7 @@ namespace GalWar
         {
             AssertException.Assert(handler != null);
             this.handler = handler;
+            this.Event();
         }
 
         Tile IEventHandler.getBuildTile(Colony colony)
@@ -126,5 +127,22 @@ namespace GalWar
                 Console.WriteLine(e.ToString());
             }
         }
+
+        #region IEventHandler Members
+
+
+        public void Event()
+        {
+            try
+            {
+                handler.Event();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        #endregion
     }
 }

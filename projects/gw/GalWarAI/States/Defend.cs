@@ -8,8 +8,8 @@ namespace GalWarAI
 {
     class Defend : BaseState
     {
-        public Defend(Game game)
-            : base(game)
+        public Defend(Game game, GalWarAI ai)
+            : base(game, ai)
         {
         }
     }

@@ -8,8 +8,8 @@ namespace GalWarAI
 {
     class Blitz : BaseState
     {
-        public Blitz(Game game)
-            : base(game)
+        public Blitz(Game game, GalWarAI ai)
+            : base(game, ai)
         {
         }
     }

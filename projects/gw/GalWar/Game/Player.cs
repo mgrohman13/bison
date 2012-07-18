@@ -15,8 +15,7 @@ namespace GalWar
         public readonly string Name;
         public readonly Color Color;
 
-        [NonSerialized]
-        private readonly IGalWarAI AI;
+        public readonly IGalWarAI AI;
 
         private readonly List<ShipDesign> designs;
         private readonly List<Ship> ships;
@@ -667,8 +666,15 @@ namespace GalWar
         {
             if (AI != null)
             {
-                AI.PlayTurn(handler);
-                Game.EndTurn(handler);
+                try
+                {
+                    AI.PlayTurn(handler);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+                Game.EndTurn(handler, true);
             }
         }
 

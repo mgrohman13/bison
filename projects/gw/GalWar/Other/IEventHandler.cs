@@ -18,5 +18,7 @@ namespace GalWar
         void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss);
 
         void OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp);
+
+        void Event();
     }
 }

@@ -1814,6 +1814,16 @@ namespace GalWarWin
             CombatForm.LevelUp(ship, expType, pct, needExp, lastExp);
         }
 
+        void IEventHandler.Event()
+        {
+            if (Game.CurrentPlayer.Name == "Pink")
+            {
+                Refresh();
+                MessageBox.Show(Environment.StackTrace);
+                System.Threading.Thread.Sleep(1000);
+            }
+        }
+
         #endregion
 
         private string log = string.Empty;

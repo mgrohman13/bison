@@ -8,8 +8,8 @@ namespace GalWarAI
 {
     class TotalWar : BaseState
     {
-        public TotalWar(Game game)
-            : base(game)
+        public TotalWar(Game game, GalWarAI ai)
+            : base(game, ai)
         {
         }
     }

@@ -8,8 +8,8 @@ namespace GalWarAI
 {
     class Wait : BaseState
     {
-        public Wait(Game game)
-            : base(game)
+        public Wait(Game game,GalWarAI ai)
+            : base(game, ai)
         {
         }
     }
