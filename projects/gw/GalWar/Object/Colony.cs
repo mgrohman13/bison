@@ -589,16 +589,7 @@ namespace GalWar
 
         public double GetPopulationGrowth()
         {
-            //approximately logistic growth, but modified such that quality is irrelevant until it is exceeded by population
-            double growth;
-            if (this.Population > Planet.Quality)
-                growth = 2 * Planet.Quality - this.Population;
-            else
-                growth = this.Population;
-
-            //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
-            //and to make even pitiful planets have a small carrying capacity
-            return ( 1 + growth * Consts.PopulationGrowth );
+            return Consts.GetPopulationGrowth(this.Population, Planet.Quality);
         }
 
         public double GetTotalIncome()

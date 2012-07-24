@@ -1,7 +1,7 @@
 re-enable AutoSave
 
 AI
-guesses
+integrate AI-algorithm guesses into game for player to use as well
 enemy designs
 shroud
 split planetary defense between building attack or defense
@@ -12,3 +12,4 @@ main map improvements
 undo
 auto repair
 	needs to be saveable?
+event needs to be pulled out of other handler stuff

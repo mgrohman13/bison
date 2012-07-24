@@ -622,7 +622,7 @@ namespace GalWar
             return Consts.DisbandPct * cost * Math.Pow(curHP / (double)maxHP, Consts.DisbandHitPctPower);
         }
 
-        internal double GetUpkeepPayoff(int mapSize)
+        public double GetUpkeepPayoff(int mapSize)
         {
             return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(), GetNonTransPct(), this.Speed);
         }
@@ -814,6 +814,11 @@ namespace GalWar
             }
         }
 
+        public double GetStrength()
+        {
+            return GetStrength(this.Att, this.Def, this.HP, this.Speed);
+        }
+
         public static double GetHPStr(int s1, int s2)
         {
             return GetHPStr(s1, s2, Consts.BaseDesignHPMult);
@@ -860,37 +865,6 @@ namespace GalWar
         }
 
         #endregion //public
-
-        //public static void Test()
-        //{
-        //    Player player = new Player("", System.Drawing.Color.Black);
-        //    while (true)
-        //    {
-        //        int radius = Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3);
-        //        int mapSize = 3 * radius * radius - 3 * radius + 1;
-        //        int research = Game.Random.WeightedInt(ushort.MaxValue, .13);
-        //        ShipNames names = new ShipNames(1);
-        //        names.EndSetup();
-        //        bool forceColony = Game.Random.Bool();
-
-        //        ShipDesign design = new ShipDesign(mapSize, research, player, null, names, forceColony, !forceColony, false);
-
-        //        double cost = design.GetTotCost() - design.Upkeep * design.GetUpkeepPayoff(mapSize);
-        //        if (Game.Random.Bool())
-        //            ++design._hp;
-        //        else
-        //            ++design._trans;
-        //        double newCost = design.GetTotCost() - design.Upkeep * design.GetUpkeepPayoff(mapSize);
-
-        //        Console.WriteLine();
-        //        Console.WriteLine(research.ToString().PadLeft(6));
-        //        Console.WriteLine(cost.ToString("0.000").PadLeft(8));
-        //        Console.WriteLine(newCost.ToString("0.000").PadLeft(8));
-
-        //        if (newCost < cost)
-        //            throw new Exception();
-        //    }
-        //}
 
         private enum ModifyStat
         {

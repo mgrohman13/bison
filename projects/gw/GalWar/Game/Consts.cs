@@ -151,6 +151,20 @@ namespace GalWar
             return MoveOrderGold / ( numPlayers - 1 );
         }
 
+        public static double GetPopulationGrowth(double population, int quality)
+        {
+            //approximately logistic growth, but modified such that quality is irrelevant until it is exceeded by population
+            double growth;
+            if (population > quality)
+                growth = 2 * quality - population;
+            else
+                growth = population;
+
+            //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
+            //and to make even pitiful planets have a small carrying capacity
+            return ( 1 + growth * Consts.PopulationGrowth );
+        }
+
         public static double GetProductionUpkeepMult(int mapSize)
         {
             return Consts.ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);

@@ -8,7 +8,7 @@ namespace GalWarAI
 {
     internal interface IState
     {
-        void PlayTurn(IEventHandler handler);
+        void PlayTurn();
 
         bool TransitionOK();
     }
