@@ -8,11 +8,16 @@ namespace GalWarAI
 {
     class TileInfluence
     {
+        internal static void ClearCache()
+        {
+            //TODO influence caching? - maybe be more intelligent with distances to avoid looping so much?
+        }
+
         public readonly Tile tile;
 
         private Dictionary<InfluenceType, Influence> influence;
 
-        public TileInfluence(Game game, Tile tile)
+        private TileInfluence(Game game, GalWarAI ai, Tile tile)
         {
             this.tile = tile;
 
@@ -23,26 +28,29 @@ namespace GalWarAI
             influence.Add(InfluenceType.Transport, new Influence());
             influence.Add(InfluenceType.Quality, new Influence());
 
-            foreach (Player p in game.GetPlayers())
-                foreach (Ship s in p.GetShips())
-                {
-                    double mod = GetMod(tile, s.Tile, s.MaxSpeed);
-                    double str = s.GetStrength() * mod;
-                    double trans = s.Population * mod;
-                    double ds = s.BombardDamage * s.MaxSpeed * mod;
-                    influence[InfluenceType.Armada].Add(p, str);
-                    influence[InfluenceType.Transport].Add(p, trans);
-                    influence[InfluenceType.DeathStar].Add(p, ds);
-                }
-            foreach (Planet p in game.GetPlanets())
-                if (p.Colony != null)
-                {
-                    double mod = GetMod(tile, p.Tile, null);
-                    double prod = p.Colony.Population * mod;
-                    double quality = p.Quality * mod;
-                    influence[InfluenceType.Population].Add(p.Colony.Player, prod);
-                    influence[InfluenceType.Quality].Add(p.Colony.Player, quality);
-                }
+            foreach (Ship s in ai.LoopShips())
+            {
+                double mod = GetMod(tile, s.Tile, s.MaxSpeed);
+                double str = s.GetStrength() * mod;
+                double trans = s.Population * mod;
+                double ds = s.BombardDamage * s.MaxSpeed * mod;
+                influence[InfluenceType.Armada].Add(s.Player, str);
+                influence[InfluenceType.Transport].Add(s.Player, trans);
+                influence[InfluenceType.DeathStar].Add(s.Player, ds);
+            }
+            foreach (Colony c in ai.LoopColonies())
+            {
+                double mod = GetMod(tile, c.Tile, null);
+                double prod = c.Population * mod;
+                double quality = c.Planet.Quality * mod;
+                influence[InfluenceType.Population].Add(c.Player, prod);
+                influence[InfluenceType.Quality].Add(c.Player, quality);
+            }
+        }
+
+        public static TileInfluence GetInfluence(Game game, GalWarAI ai, Tile tile)
+        {
+            return new TileInfluence(game, ai, tile);
         }
 
         private double GetMod(Tile t1, Tile t2, int? speed)

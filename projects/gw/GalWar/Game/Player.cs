@@ -678,6 +678,11 @@ namespace GalWar
             }
         }
 
+        public override int GetHashCode()
+        {
+            return this.Name.GetHashCode();
+        }
+
         public override string ToString()
         {
             return Name;

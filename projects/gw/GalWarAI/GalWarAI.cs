@@ -44,7 +44,7 @@ namespace GalWarAI
             foreach (Ship s in ShipMovement.Keys.ToArray())
                 if (s.Dead)
                     ShipMovement.Remove(s);
-            LoopShips(false, delegate(Ship s)
+            foreach (Ship s in LoopShips(false))
             {
                 Tuple<Tile, int> value;
                 Tile t;
@@ -56,7 +56,7 @@ namespace GalWarAI
                 else
                     value = new Tuple<Tile, int>(s.Tile, 0);
                 ShipMovement[s] = value;
-            });
+            }
         }
 
         private void TurnEnd()
@@ -64,10 +64,8 @@ namespace GalWarAI
             this.NewDesign = null;
 
             newShipMovement.Clear();
-            LoopShips(false, delegate(Ship s)
-            {
+            foreach (Ship s in LoopShips(false))
                 newShipMovement[s] = s.Tile;
-            });
         }
 
         private void TransitionState(IEventHandler humanHandler)
@@ -216,14 +214,14 @@ namespace GalWarAI
 
             //TODO: check military viability
             //TODO: check current colony ship locations/direction
-            LoopPlanets(true, delegate(Planet p)
+            foreach (Planet p in LoopPlanets(true))
             {
-                TileInfluence inf = new TileInfluence(game, p.Tile);
+                TileInfluence inf = TileInfluence.GetInfluence(game, this, p.Tile);
                 int qualRank = inf.GetInfluence(TileInfluence.InfluenceType.Quality).GetRank(game.CurrentPlayer),
                     popRank = inf.GetInfluence(TileInfluence.InfluenceType.Population).GetRank(game.CurrentPlayer);
                 if (( qualRank == 0 || popRank == 0 ) && qualRank < 2 && popRank < 2)
                     ColonizePlanet.Add(p);
-            });
+            }
         }
 
         internal void Execute()
@@ -256,9 +254,12 @@ namespace GalWarAI
 
         [NonSerialized]
         private Dictionary<Colony, Dictionary<Player, double>> cacheThreat = null;
+        private Dictionary<SpecialShip, Dictionary<PlayerType, HashSet<Ship>>> cacheSpecialShip = null;
         private void ClearCache()
         {
+            TileInfluence.ClearCache();
             cacheThreat = null;
+            cacheSpecialShip = null;
         }
 
         internal void OnResearch(ShipDesign newDesign)
@@ -271,46 +272,44 @@ namespace GalWarAI
             if (cacheThreat == null)
             {
                 cacheThreat = new Dictionary<Colony, Dictionary<Player, double>>();
-                foreach (Colony c in game.CurrentPlayer.GetColonies())
+                foreach (Colony c in LoopColonies(true))
                 {
-                    Dictionary<Player, double> playerThreat = new Dictionary<Player, double>();
-                    foreach (Player p in game.GetPlayers())
-                        if (!p.IsTurn)
-                        {
-                            //personality	
+                    var playerThreat = new Dictionary<Player, double>();
+                    foreach (Player p in LoopPlayers(false))
+                    {
+                        //personality	
 
-                            double moveStrThreat = 1;
-                            double moveInvThreat = 1;
-                            double buildStr = ( c.GetTotalIncome() / 3 * 3.9 + Math.Sqrt(game.CurrentPlayer.GetPopulation()) * 1.3 ) * GetStrPerProd();
-                            Dictionary<Ship, double> shipsWithin = GetShipsWithin(c.Tile, 5.2);
-                            foreach (KeyValuePair<Ship, double> pair in shipsWithin)
-                                if (pair.Key.Player == p)
+                        double moveStrThreat = 1;
+                        double moveInvThreat = 1;
+                        double buildStr = ( c.GetTotalIncome() / 3 * 3.9 + Math.Sqrt(game.CurrentPlayer.GetPopulation()) * 1.3 ) * GetStrPerProd();
+                        foreach (Tuple<Ship, double> pair in GetShipsWithin(c.Tile, 5.2))
+                            if (pair.Item1.Player == p)
+                            {
+                                Ship s = pair.Item1;
+                                Tuple<Tile, int> move = ShipMovement[s];
+                                double value = ( Tile.GetDistance(move.Item1, c.Tile) - Tile.GetDistance(s.Tile, c.Tile) )
+                                        / s.MaxSpeed / ( move.Item2 * move.Item2 + 1 ) / pair.Item2;
+                                if (value > 0)
                                 {
-                                    Ship s = pair.Key;
-                                    Tuple<Tile, int> move = ShipMovement[s];
-                                    double value = ( Tile.GetDistance(move.Item1, c.Tile) - Tile.GetDistance(s.Tile, c.Tile) )
-                                            / s.MaxSpeed / ( move.Item2 * move.Item2 + 1 ) / pair.Value;
-                                    if (value > 0)
-                                    {
-                                        moveStrThreat += value * s.GetStrength();
-                                        moveInvThreat += value * ( s.BombardDamage * s.MaxSpeed * 3.9 + s.Population );
-                                    }
+                                    moveStrThreat += value * s.GetStrength();
+                                    moveInvThreat += value * ( s.BombardDamage * s.MaxSpeed * 3.9 + s.Population );
                                 }
-                            moveStrThreat /= buildStr;
-                            double moveThreat = Math.Pow(moveStrThreat, .78) * Math.Pow(moveInvThreat, 2.6);
+                            }
+                        moveStrThreat /= buildStr;
+                        double moveThreat = Math.Pow(moveStrThreat, .78) * Math.Pow(moveInvThreat, 2.6);
 
-                            TileInfluence inf = new TileInfluence(game, c.Planet.Tile);
-                            TileInfluence.Influence armada = inf.GetInfluence(TileInfluence.InfluenceType.Armada);
-                            double strThreat = Math.Pow(( armada.GetValue(p) + 1 ) / ( armada.GetValue(game.CurrentPlayer) + buildStr / 3.9 + 1 ), 1.3);
+                        TileInfluence inf = TileInfluence.GetInfluence(game, this, c.Tile);
+                        TileInfluence.Influence armada = inf.GetInfluence(TileInfluence.InfluenceType.Armada);
+                        double strThreat = Math.Pow(( armada.GetValue(p) + 1 ) / ( armada.GetValue(game.CurrentPlayer) + buildStr / 3.9 + 1 ), 1.3);
 
-                            double invDistThreat = ( 7.8 + .52 ) / ( GetInvadeDist(c, 7.8, p) + .52 );
-                            double invInfThreat = 1;
-                            invInfThreat += inf.GetInfluence(TileInfluence.InfluenceType.Transport).GetValue(p);
-                            invInfThreat += inf.GetInfluence(TileInfluence.InfluenceType.DeathStar).GetValue(p) * 3.9;
-                            double invThreat = Math.Pow(invDistThreat, 2.1) * Math.Pow(invInfThreat, .39);
+                        double invDistThreat = ( 7.8 + .52 ) / ( GetInvadeDist(c, 7.8, p) + .52 );
+                        double invInfThreat = 1;
+                        invInfThreat += inf.GetInfluence(TileInfluence.InfluenceType.Transport).GetValue(p);
+                        invInfThreat += inf.GetInfluence(TileInfluence.InfluenceType.DeathStar).GetValue(p) * 3.9;
+                        double invThreat = Math.Pow(invDistThreat, 2.1) * Math.Pow(invInfThreat, .39);
 
-                            playerThreat[p] = moveThreat * strThreat * invThreat;
-                        }
+                        playerThreat[p] = moveThreat * strThreat * invThreat;
+                    }
                     cacheThreat[c] = playerThreat;
                 }
             }
@@ -322,7 +321,7 @@ namespace GalWarAI
         }
         internal Dictionary<Colony, double> GetThreat(Player p)
         {
-            Dictionary<Colony, double> ret = new Dictionary<Colony, double>();
+            var ret = new Dictionary<Colony, double>();
             foreach (KeyValuePair<Colony, Dictionary<Player, double>> pair in GetThreat())
                 ret[pair.Key] = pair.Value[p];
             return ret;
@@ -372,41 +371,34 @@ namespace GalWarAI
             //TODO: check actual popluation trend over time
             turns = 0;
             enemyTurns = 0;
-            foreach (Planet p in game.GetPlanets())
-                if (p.Colony != null)
-                    if (p.Colony.Player.IsTurn)
-                        turns = Math.Max(turns, GetAvgTurnsToFill(p.Colony));
-                    else
-                        enemyTurns = Math.Max(turns, GetAvgTurnsToFill(p.Colony));
+            foreach (Colony c in LoopColonies())
+                if (c.Player.IsTurn)
+                    turns = Math.Max(turns, GetAvgTurnsToFill(c));
+                else
+                    enemyTurns = Math.Max(turns, GetAvgTurnsToFill(c));
         }
 
         internal double GetInvadeDist(Colony c, double max)
         {
             return GetInvadeDist(c, max, null);
         }
-
-        internal double GetInvadeDist(Colony c, double max, Player p2)
+        internal double GetInvadeDist(Colony c, double max, Player player)
         {
             double turns = max;
-            foreach (Player p in game.GetPlayers())
-                if (p2 == null ? !p.IsTurn : p == p2)
-                    foreach (Ship s in p.GetShips())
-                        if (s.Population > 0 || s.DeathStar)
-                            turns = Math.Min(turns, GetShipDistance(s, c.Tile));
+            foreach (Ship s in ( player == null ? LoopShips() : LoopShips(player) ))
+                if (s.Population > 0 || s.DeathStar)
+                    turns = Math.Min(turns, GetShipDistance(s, c.Tile));
             return turns;
         }
 
-        internal Dictionary<Ship, double> GetShipsWithin(Tile t, double turns)
+        internal IEnumerable<Tuple<Ship, double>> GetShipsWithin(Tile t, double turns)
         {
-            Dictionary<Ship, double> retVal = new Dictionary<Ship, double>();
-            foreach (Player p in game.GetPlayers())
-                foreach (Ship s in p.GetShips())
-                {
-                    double dist = GetShipDistance(s, t);
-                    if (dist < turns + Consts.FLOAT_ERROR)
-                        retVal.Add(s, dist);
-                }
-            return retVal;
+            foreach (Ship s in LoopShips())
+            {
+                double dist = GetShipDistance(s, t);
+                if (dist < turns + Consts.FLOAT_ERROR)
+                    yield return new Tuple<Ship, double>(s, dist);
+            }
         }
 
         internal double GetShipDistance(Ship s, Tile t)
@@ -439,72 +431,231 @@ namespace GalWarAI
 
         internal void GetQuality(out int quality, out int enemyQuality)
         {
-            quality = 0;
+            quality = GetQuality(game.CurrentPlayer);
             enemyQuality = 0;
-            foreach (Player p in game.GetPlayers())
-            {
-                int tot = 0;
-                foreach (Colony c in p.GetColonies())
-                    tot += c.Planet.Quality;
-                if (p.IsTurn)
-                    quality = tot;
-                else
-                    enemyQuality = Math.Max(enemyQuality, tot);
-            }
+            foreach (Player p in LoopPlayers(false))
+                enemyQuality = Math.Max(enemyQuality, GetQuality(p));
+        }
+        internal int GetQuality(Player p)
+        {
+            int tot = 0;
+            foreach (Colony c in LoopColonies(p))
+                tot += c.Planet.Quality;
+            return tot;
         }
 
         internal double GetStrPerProd()
         {
             double strPerProd = 0;
-            foreach (ShipDesign design in game.CurrentPlayer.GetShipDesigns())
+            foreach (ShipDesign design in LoopDesigns())
                 strPerProd = Math.Max(strPerProd, design.GetStrength() / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(game.MapSize) ));
             return strPerProd;
         }
 
-        internal void LoopShips(Action<Ship> Action)
+        internal IEnumerable<Player> LoopPlayers()
         {
-            LoopShips(null, Action);
+            return game.GetPlayers();
         }
-        internal void LoopShips(bool friendly, Action<Ship> Action)
+        internal IEnumerable<Player> LoopPlayers(bool friendly)
         {
-            LoopShips(delegate(Ship s)
-            {
-                return ( friendly == s.Player.IsTurn );
-            }, Action);
-        }
-        internal void LoopShips(Predicate<Ship> Filter, Action<Ship> Action)
-        {
-            foreach (Player p in game.GetPlayers())
-                foreach (Ship s in p.GetShips())
-                    if (Filter == null || Filter(s))
-                        Action(s);
+            if (friendly)
+                yield return game.CurrentPlayer;
+            else
+                foreach (Player p in LoopPlayers())
+                    if (!p.IsTurn)
+                        yield return p;
         }
 
-        internal void LoopPlanets(Action<Planet> Action)
+        internal IEnumerable<ShipDesign> LoopDesigns()
         {
-            LoopPlanets(null, Action);
+            return game.CurrentPlayer.GetShipDesigns();
         }
-        internal void LoopPlanets(bool uncolonized, Action<Planet> Action)
+
+        internal IEnumerable<Ship> LoopShips()
         {
-            LoopPlanets(delegate(Planet p)
+            return LoopShips((bool?)null);
+        }
+        internal IEnumerable<Ship> LoopShips(bool? friendly)
+        {
+            foreach (Player p in ( friendly.HasValue ? LoopPlayers(friendly.Value) : LoopPlayers() ))
+                foreach (Ship s in LoopShips(p))
+                    yield return s;
+        }
+        internal IEnumerable<Ship> LoopShips(Player p)
+        {
+            return p.GetShips();
+        }
+        internal IEnumerable<Ship> LoopShips(bool? friendly, SpecialShip type)
+        {
+            return LoopShips(new PlayerType(game, friendly), type);
+        }
+        internal IEnumerable<Ship> LoopShips(Player p, SpecialShip type)
+        {
+            return LoopShips(new PlayerType(p), type);
+        }
+        private IEnumerable<Ship> LoopShips(PlayerType player, SpecialShip type)
+        {
+            if (cacheSpecialShip == null)
             {
-                return ( uncolonized == ( p.Colony == null ) );
-            }, Action);
+                cacheSpecialShip = new Dictionary<SpecialShip, Dictionary<PlayerType, HashSet<Ship>>>();
+                foreach (Ship s in LoopShips())
+                {
+                    if (s.MaxPop > 0)
+                    {
+                        CacheSpecialShipFill(SpecialShip.Transport, s);
+                        if (s.Population > 0)
+                            CacheSpecialShipFill(SpecialShip.LoadedTransport, s);
+                    }
+                    else if (s.DeathStar)
+                    {
+                        CacheSpecialShipFill(SpecialShip.DeathStar, s);
+                    }
+                }
+            }
+
+            switch (type)
+            {
+            case SpecialShip.TDS:
+                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.Transport))
+                    yield return s;
+                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.DeathStar))
+                    yield return s;
+                break;
+            case SpecialShip.LTDS:
+                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.LoadedTransport))
+                    yield return s;
+                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.DeathStar))
+                    yield return s;
+                break;
+            default:
+                foreach (Ship s in CacheSpecialShipGet(player, type))
+                    yield return s;
+                break;
+            }
         }
-        internal void LoopPlanets(Predicate<Planet> Filter, Action<Planet> Action)
+        private void CacheSpecialShipFill(SpecialShip type, Ship s)
         {
-            foreach (Planet p in game.GetPlanets())
-                if (Filter == null || Filter(p))
-                    Action(p);
+            Dictionary<PlayerType, HashSet<Ship>> byPlayerType;
+            if (!cacheSpecialShip.TryGetValue(type, out byPlayerType))
+            {
+                byPlayerType = new Dictionary<PlayerType, HashSet<Ship>>();
+                cacheSpecialShip[type] = byPlayerType;
+            }
+
+            foreach (PlayerType p in PlayerType.GetPlayerTypes(s.Player))
+            {
+                HashSet<Ship> ships;
+                if (!byPlayerType.TryGetValue(p, out ships))
+                {
+                    ships = new HashSet<Ship>();
+                    byPlayerType[p] = ships;
+                }
+
+                ships.Add(s);
+            }
+        }
+        private IEnumerable<Ship> CacheSpecialShipGet(PlayerType player, SpecialShip type)
+        {
+            Dictionary<PlayerType, HashSet<Ship>> byPlayerType;
+            if (cacheSpecialShip.TryGetValue(type, out byPlayerType))
+            {
+                HashSet<Ship> ships;
+                if (byPlayerType.TryGetValue(player, out ships))
+                    foreach (Ship s in ships)
+                        yield return s;
+            }
+        }
+
+        internal IEnumerable<Colony> LoopColonies()
+        {
+            return LoopColonies((bool?)null);
+        }
+        internal IEnumerable<Colony> LoopColonies(bool? friendly)
+        {
+            foreach (Player p in ( friendly.HasValue ? LoopPlayers(friendly.Value) : LoopPlayers() ))
+                foreach (Colony c in LoopColonies(p))
+                    yield return c;
+        }
+        internal IEnumerable<Colony> LoopColonies(Player p)
+        {
+            return p.GetColonies();
+        }
+
+        internal IEnumerable<Planet> LoopPlanets()
+        {
+            return game.GetPlanets();
+        }
+        internal IEnumerable<Planet> LoopPlanets(bool uncolonized)
+        {
+            if (uncolonized)
+            {
+                foreach (Planet p in LoopPlanets())
+                    if (p.Colony == null)
+                        yield return p;
+            }
+            else
+            {
+                foreach (Colony c in LoopColonies())
+                    yield return c.Planet;
+            }
         }
 
         #endregion //Information
 
-        //All actual command to the game should be sent through here and ClearCache() probably called after each one
+        //All actual commands to the game should be sent through here and ClearCache() probably called after each one
         #region Commands
 
 
 
         #endregion //Commands
+
+        internal enum SpecialShip
+        {
+            Transport,
+            LoadedTransport,
+            DeathStar,
+            TDS,
+            LTDS,
+        }
+
+        private struct PlayerType
+        {
+            private readonly Player player;
+            //false enemies means all players
+            private readonly bool? enemies;
+            internal PlayerType(Player player)
+            {
+                this.player = player;
+                this.enemies = ( player == null ? false : (bool?)null );
+            }
+            internal PlayerType(Game game, bool? friendly)
+            {
+                this.player = ( ( friendly.HasValue && friendly.Value ) ? game.CurrentPlayer : null );
+                this.enemies = ( friendly.HasValue ? ( friendly.Value ? (bool?)null : true ) : false );
+            }
+            private PlayerType(bool enemies)
+            {
+                this.player = null;
+                this.enemies = enemies;
+            }
+            internal static IEnumerable<PlayerType> GetPlayerTypes(Player player)
+            {
+                yield return new PlayerType(player);
+                yield return new PlayerType(false);
+                if (!player.IsTurn)
+                    yield return new PlayerType(true);
+            }
+            public override bool Equals(object obj)
+            {
+                PlayerType? pt = obj as PlayerType?;
+                if (!pt.HasValue)
+                    return false;
+                return ( player == pt.Value.player && enemies == pt.Value.enemies );
+            }
+            public override int GetHashCode()
+            {
+                return ( player.GetHashCode() | enemies.GetHashCode() );
+            }
+        }
     }
 }
