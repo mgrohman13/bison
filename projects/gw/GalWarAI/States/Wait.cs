@@ -13,6 +13,11 @@ namespace GalWarAI
         {
         }
 
+        public override bool TransitionOK()
+        {
+            return true;
+        }
+
         protected override void GetDeafultEconomy(out bool gold, out bool research, out bool production)
         {
             gold = false;

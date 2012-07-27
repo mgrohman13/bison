@@ -1,8 +1,9 @@
-re-enable AutoSave
+re-enable AutoSave but only on human turns
 
 AI
 integrate AI-algorithm guesses into game for player to use as well
-enemy designs
+known enemy designs
+event needs to be pulled out of other handler stuff and only show events for things visible to other players
 shroud
 split planetary defense between building attack or defense
 	att/def:hp ratio
@@ -12,4 +13,3 @@ main map improvements
 undo
 auto repair
 	needs to be saveable?
-event needs to be pulled out of other handler stuff

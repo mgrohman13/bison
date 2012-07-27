@@ -143,6 +143,7 @@ namespace GalWar
             }
         }
 
+        //[turn,playerIndex,(0=turn,1=value)]
         public float[, ,] Get(GraphType type, out Dictionary<int, Player> playerIndexes)
         {
             float[, ,] retVal = new float[this.data.Count, this.players.Length, 2];

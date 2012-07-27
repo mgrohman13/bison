@@ -26,7 +26,7 @@ namespace GalWarAI
         }
 
         //TODO: abstract
-        public bool TransitionOK()
+        public virtual bool TransitionOK()
         {
             //TODO: check if we can transition out
             return true;

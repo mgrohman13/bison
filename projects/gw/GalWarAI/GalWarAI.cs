@@ -14,6 +14,7 @@ namespace GalWarAI
         private IState state;
 
         //info
+        internal int Research = Game.Random.Round(Consts.StartResearch);
         internal Dictionary<Ship, Tuple<Tile, int>> ShipMovement = new Dictionary<Ship, Tuple<Tile, int>>();
         private Dictionary<Ship, Tile> newShipMovement = new Dictionary<Ship, Tile>();
         internal ShipDesign NewDesign = null;
@@ -34,6 +35,9 @@ namespace GalWarAI
             GlobalPriorities();
             TransitionState(humanHandler);
             state.PlayTurn();
+
+            if (Game.Random.OEInt(game.Turn) > 13)
+                GetTurnsToVictory();
 
             TurnEnd();
             ClearCache();
@@ -66,6 +70,11 @@ namespace GalWarAI
             newShipMovement.Clear();
             foreach (Ship s in LoopShips(false))
                 newShipMovement[s] = s.Tile;
+
+            int research;
+            double population, production, gold;
+            game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
+            this.Research += research;
         }
 
         private void TransitionState(IEventHandler humanHandler)
@@ -91,6 +100,7 @@ namespace GalWarAI
                 int enemyQuality;
                 GetQuality(out quality, out enemyQuality);
                 //TODO: determine if reasearch victory is potenitially quicker than killing
+                //int turns = GetTurnsToVictory(game.CurrentPlayer);
                 if (quality > enemyQuality * Consts.ResearchVictoryMult)
                 {
                     if (GetThreatLevel() > 130)
@@ -118,11 +128,11 @@ namespace GalWarAI
                 return new Wait(game, this, humanHandler);
             if (DoBlitz())
                 return new Blitz(game, this, humanHandler);
+            if (DoDefend())
+                return new Defend(game, this, humanHandler);
             Player enemy;
             if (DoTotalWar(out enemy))
                 return new TotalWar(enemy, game, this, humanHandler);
-            if (DoDefend())
-                return new Defend(game, this, humanHandler);
 
             //default state - this method should never return null
             if (this.state == null)
@@ -141,7 +151,8 @@ namespace GalWarAI
 
             double turns;
             double enemyTurns;
-            GetPopShort(out turns, out enemyTurns);
+            //TODO: check actual popluation trend over time
+            GetPopNeededMaxTurns(out turns, out enemyTurns);
             //need population
             if (turns > enemyTurns)
                 return true;
@@ -159,6 +170,9 @@ namespace GalWarAI
         private bool DoBlitz()
         {
             ////easy/close target
+            //TODO: based on ?
+
+            ////prevent victory
             //TODO: based on ?
 
             return false;
@@ -254,17 +268,24 @@ namespace GalWarAI
 
         [NonSerialized]
         private Dictionary<Colony, Dictionary<Player, double>> cacheThreat = null;
-        private Dictionary<SpecialShip, Dictionary<PlayerType, HashSet<Ship>>> cacheSpecialShip = null;
+        private Tuple<Player, int> cacheTurnsToVictory = null;
+        private Dictionary<Graphs.GraphType, Tuple<float[, ,], Dictionary<Player, int>>> cacheGraph = null;
         private void ClearCache()
         {
-            TileInfluence.ClearCache();
             cacheThreat = null;
-            cacheSpecialShip = null;
+            cacheTurnsToVictory = null;
+            cacheGraph = null;
+
+            TileInfluence.ClearCache();
         }
 
         internal void OnResearch(ShipDesign newDesign)
         {
             this.NewDesign = newDesign;
+
+            if (this.Research < newDesign.Research)
+                this.Research = newDesign.Research;
+            //TODO: bring down if significatly greater?
         }
 
         internal Dictionary<Colony, Dictionary<Player, double>> GetThreat()
@@ -366,9 +387,110 @@ namespace GalWarAI
             return threat;
         }
 
-        internal void GetPopShort(out double turns, out double enemyTurns)
+        internal Tuple<Player, int> GetTurnsToVictory()
         {
-            //TODO: check actual popluation trend over time
+            if (cacheTurnsToVictory == null)
+            {
+                //TODO: does not take into account impending invasions, colonization, currently transporting troops...
+
+                //TODO: take into account turn order
+                Dictionary<Player, List<Tuple<int, double>>> colonies = new Dictionary<Player, List<Tuple<int, double>>>();
+                Dictionary<Player, double> totalPop = new Dictionary<Player, double>();
+                foreach (Colony c in LoopColonies())
+                {
+                    List<Tuple<int, double>> playerColonies;
+                    if (!colonies.TryGetValue(c.Player, out playerColonies))
+                    {
+                        playerColonies = new List<Tuple<int, double>>();
+                        colonies[c.Player] = playerColonies;
+                    }
+                    playerColonies.Add(new Tuple<int, double>(c.Planet.Quality, c.Population));
+
+                    double pop;
+                    totalPop.TryGetValue(c.Player, out pop);
+                    totalPop[c.Player] = pop + c.Population;
+                }
+
+                Dictionary<Player, double> currentReseach = game.GetResearch();
+                double mult = this.Research / currentReseach[game.CurrentPlayer];
+                Dictionary<Player, double> research = new Dictionary<Player, double>();
+                foreach (Player p in LoopPlayers())
+                    research[p] = currentReseach[p] * mult;
+
+                //personality		
+                int maxTurns = (int)Math.Round(1.3 / Consts.PlanetCreationRate);
+                for (int a = 0 ; a <= maxTurns ; ++a)
+                {
+                    Player top = null;
+                    double maxR = -1, secondR = -1;
+                    foreach (Player p in LoopPlayers())
+                    {
+                        double playerPop = totalPop[p];
+
+                        //check victory
+                        double res = research[p];
+                        if (res > maxR)
+                        {
+                            top = p;
+                            secondR = maxR;
+                            maxR = res;
+                        }
+                        else if (res > secondR)
+                        {
+                            secondR = res;
+                        }
+
+                        //inc research
+                        research[p] = res + playerPop * Consts.Income / 3;
+
+                        //grow pop
+                        List<Tuple<int, double>> playerColonies = colonies[p];
+                        for (int b = 0 ; b < playerColonies.Count ; ++b)
+                        {
+                            Tuple<int, double> colony = playerColonies[b];
+                            double growth = Consts.GetPopulationGrowth(colony.Item2, colony.Item1);
+                            playerColonies[b] = new Tuple<int, double>(colony.Item1, colony.Item2 + growth);
+                            playerPop += growth;
+                        }
+
+                        totalPop[p] = playerPop;
+                    }
+
+                    if (maxR > secondR * Consts.ResearchVictoryMult)
+                    {
+                        cacheTurnsToVictory = new Tuple<Player, int>(top, a);
+                        return cacheTurnsToVictory;
+                    }
+                }
+
+                cacheTurnsToVictory = new Tuple<Player, int>(null, int.MaxValue);
+            }
+
+            return cacheTurnsToVictory;
+        }
+
+        private Tuple<float[, ,], Dictionary<Player, int>> GetGraph(Graphs.GraphType type)
+        {
+            if (cacheGraph == null)
+                cacheGraph = new Dictionary<Graphs.GraphType, Tuple<float[, ,], Dictionary<Player, int>>>();
+
+            Tuple<float[, ,], Dictionary<Player, int>> retVal;
+            if (!cacheGraph.TryGetValue(type, out retVal))
+            {
+                Dictionary<int, Player> playerIndexes;
+                float[, ,] graph = game.Graphs.Get(type, out playerIndexes);
+                var reverse = new Dictionary<Player, int>();
+                foreach (KeyValuePair<int, Player> pair in playerIndexes)
+                    reverse[pair.Value] = pair.Key;
+                retVal = new Tuple<float[, ,], Dictionary<Player, int>>(graph, reverse);
+                cacheGraph[type] = retVal;
+            }
+            return retVal;
+        }
+
+        internal void GetPopNeededMaxTurns(out double turns, out double enemyTurns)
+        {
+            //TODO: take into account turn order
             turns = 0;
             enemyTurns = 0;
             foreach (Colony c in LoopColonies())
@@ -382,11 +504,11 @@ namespace GalWarAI
         {
             return GetInvadeDist(c, max, null);
         }
-        internal double GetInvadeDist(Colony c, double max, Player player)
+        internal double GetInvadeDist(Colony c, double max, Player enemy)
         {
             double turns = max;
-            foreach (Ship s in ( player == null ? LoopShips() : LoopShips(player) ))
-                if (s.Population > 0 || s.DeathStar)
+            foreach (Ship s in ( enemy == null ? LoopShipsNotPlayer(c.Player) : LoopShips(enemy) ))
+                if (( s.Population > 0 || s.DeathStar ))
                     turns = Math.Min(turns, GetShipDistance(s, c.Tile));
             return turns;
         }
@@ -444,6 +566,14 @@ namespace GalWarAI
             return tot;
         }
 
+        internal int GetPopulation(Player p)
+        {
+            int tot = 0;
+            foreach (Colony c in LoopColonies(p))
+                tot += c.Population;
+            return tot;
+        }
+
         internal double GetStrPerProd()
         {
             double strPerProd = 0;
@@ -461,9 +591,14 @@ namespace GalWarAI
             if (friendly)
                 yield return game.CurrentPlayer;
             else
-                foreach (Player p in LoopPlayers())
-                    if (!p.IsTurn)
-                        yield return p;
+                foreach (Player p in LoopNotPlayer(game.CurrentPlayer))
+                    yield return p;
+        }
+        private IEnumerable<Player> LoopNotPlayer(Player player)
+        {
+            foreach (Player p in LoopPlayers())
+                if (p != player)
+                    yield return p;
         }
 
         internal IEnumerable<ShipDesign> LoopDesigns()
@@ -485,85 +620,11 @@ namespace GalWarAI
         {
             return p.GetShips();
         }
-        internal IEnumerable<Ship> LoopShips(bool? friendly, SpecialShip type)
+        private IEnumerable<Ship> LoopShipsNotPlayer(Player player)
         {
-            return LoopShips(new PlayerType(game, friendly), type);
-        }
-        internal IEnumerable<Ship> LoopShips(Player p, SpecialShip type)
-        {
-            return LoopShips(new PlayerType(p), type);
-        }
-        private IEnumerable<Ship> LoopShips(PlayerType player, SpecialShip type)
-        {
-            if (cacheSpecialShip == null)
-            {
-                cacheSpecialShip = new Dictionary<SpecialShip, Dictionary<PlayerType, HashSet<Ship>>>();
-                foreach (Ship s in LoopShips())
-                {
-                    if (s.MaxPop > 0)
-                    {
-                        CacheSpecialShipFill(SpecialShip.Transport, s);
-                        if (s.Population > 0)
-                            CacheSpecialShipFill(SpecialShip.LoadedTransport, s);
-                    }
-                    else if (s.DeathStar)
-                    {
-                        CacheSpecialShipFill(SpecialShip.DeathStar, s);
-                    }
-                }
-            }
-
-            switch (type)
-            {
-            case SpecialShip.TDS:
-                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.Transport))
+            foreach (Player p in LoopNotPlayer(player))
+                foreach (Ship s in LoopShips(p))
                     yield return s;
-                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.DeathStar))
-                    yield return s;
-                break;
-            case SpecialShip.LTDS:
-                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.LoadedTransport))
-                    yield return s;
-                foreach (Ship s in CacheSpecialShipGet(player, SpecialShip.DeathStar))
-                    yield return s;
-                break;
-            default:
-                foreach (Ship s in CacheSpecialShipGet(player, type))
-                    yield return s;
-                break;
-            }
-        }
-        private void CacheSpecialShipFill(SpecialShip type, Ship s)
-        {
-            Dictionary<PlayerType, HashSet<Ship>> byPlayerType;
-            if (!cacheSpecialShip.TryGetValue(type, out byPlayerType))
-            {
-                byPlayerType = new Dictionary<PlayerType, HashSet<Ship>>();
-                cacheSpecialShip[type] = byPlayerType;
-            }
-
-            foreach (PlayerType p in PlayerType.GetPlayerTypes(s.Player))
-            {
-                HashSet<Ship> ships;
-                if (!byPlayerType.TryGetValue(p, out ships))
-                {
-                    ships = new HashSet<Ship>();
-                    byPlayerType[p] = ships;
-                }
-
-                ships.Add(s);
-            }
-        }
-        private IEnumerable<Ship> CacheSpecialShipGet(PlayerType player, SpecialShip type)
-        {
-            Dictionary<PlayerType, HashSet<Ship>> byPlayerType;
-            if (cacheSpecialShip.TryGetValue(type, out byPlayerType))
-            {
-                HashSet<Ship> ships;
-                if (byPlayerType.TryGetValue(player, out ships))
-                    foreach (Ship s in ships)
-                        yield return s;
-            }
         }
 
         internal IEnumerable<Colony> LoopColonies()
@@ -608,54 +669,5 @@ namespace GalWarAI
 
 
         #endregion //Commands
-
-        internal enum SpecialShip
-        {
-            Transport,
-            LoadedTransport,
-            DeathStar,
-            TDS,
-            LTDS,
-        }
-
-        private struct PlayerType
-        {
-            private readonly Player player;
-            //false enemies means all players
-            private readonly bool? enemies;
-            internal PlayerType(Player player)
-            {
-                this.player = player;
-                this.enemies = ( player == null ? false : (bool?)null );
-            }
-            internal PlayerType(Game game, bool? friendly)
-            {
-                this.player = ( ( friendly.HasValue && friendly.Value ) ? game.CurrentPlayer : null );
-                this.enemies = ( friendly.HasValue ? ( friendly.Value ? (bool?)null : true ) : false );
-            }
-            private PlayerType(bool enemies)
-            {
-                this.player = null;
-                this.enemies = enemies;
-            }
-            internal static IEnumerable<PlayerType> GetPlayerTypes(Player player)
-            {
-                yield return new PlayerType(player);
-                yield return new PlayerType(false);
-                if (!player.IsTurn)
-                    yield return new PlayerType(true);
-            }
-            public override bool Equals(object obj)
-            {
-                PlayerType? pt = obj as PlayerType?;
-                if (!pt.HasValue)
-                    return false;
-                return ( player == pt.Value.player && enemies == pt.Value.enemies );
-            }
-            public override int GetHashCode()
-            {
-                return ( player.GetHashCode() | enemies.GetHashCode() );
-            }
-        }
     }
 }

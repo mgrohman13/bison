@@ -81,12 +81,12 @@ namespace GalWarAI
 
         public class Influence
         {
-            private SortedDictionary<Player, double> values;
+            private Dictionary<Player, double> values;
             private Dictionary<Player, int> ranks;
 
             public Influence()
             {
-                values = new SortedDictionary<Player, double>();
+                values = new Dictionary<Player, double>();
             }
 
             public KeyValuePair<Player, double> GetRank(int rank)
@@ -103,6 +103,7 @@ namespace GalWarAI
                 {
                     ranks = new Dictionary<Player, int>();
                     int rank = -1;
+                    //TODO: wont work - need sorting by value
                     foreach (Player p in values.Keys)
                         ranks[p] = ++rank;
                 }
@@ -111,7 +112,9 @@ namespace GalWarAI
 
             public double GetValue(Player player)
             {
-                return values[player];
+                double val;
+                values.TryGetValue(player, out val);
+                return val;
             }
 
             public double GetTotalEnemyInfluence()

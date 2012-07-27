@@ -73,7 +73,7 @@ namespace GalWar
             NewColony(null, planet, population, soldiers, 0);
 
             //production is added in later
-            this.IncomeTotal = gold + this.Research;
+            this.IncomeTotal = gold + Consts.StartResearch;
 
             ResetResearchChance();
         }
