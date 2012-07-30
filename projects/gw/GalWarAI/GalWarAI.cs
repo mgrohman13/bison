@@ -36,9 +36,6 @@ namespace GalWarAI
             TransitionState(humanHandler);
             state.PlayTurn();
 
-            if (Game.Random.OEInt(game.Turn) > 13)
-                GetTurnsToVictory();
-
             TurnEnd();
             ClearCache();
         }
@@ -96,11 +93,15 @@ namespace GalWarAI
                     return ( !p.IsTurn );
                 });
 
+                //personality		
                 int quality;
                 int enemyQuality;
                 GetQuality(out quality, out enemyQuality);
-                //TODO: determine if reasearch victory is potenitially quicker than killing
-                //int turns = GetTurnsToVictory(game.CurrentPlayer);
+                Tuple<Player, int> victory = GetTurnsToVictory();
+                if (victory.Item1.IsTurn)
+                {
+                    //TODO: determine if reasearch victory is potenitially quicker than killing
+                }
                 if (quality > enemyQuality * Consts.ResearchVictoryMult)
                 {
                     if (GetThreatLevel() > 130)
