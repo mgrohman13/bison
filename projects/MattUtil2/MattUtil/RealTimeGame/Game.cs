@@ -6,7 +6,13 @@ namespace MattUtil.RealTimeGame
 {
     public abstract class Game
     {
-        public static MTRandom Random;//= new MTRandom();
+        public static MTRandom Random;
+
+        static Game()
+        {
+            Random = new MTRandom();
+            Random.StartTick();
+        }
 
         public MattUtil.RealTimeGame.GameTicker gameTicker;
 
@@ -21,23 +27,47 @@ namespace MattUtil.RealTimeGame
 
         public bool Running
         {
-            get { return gameTicker.Running; }
-            set { gameTicker.Running = value; }
+            get
+            {
+                return gameTicker.Running;
+            }
+            set
+            {
+                gameTicker.Running = value;
+            }
         }
         public bool Paused
         {
-            get { return gameTicker.Paused; }
-            set { gameTicker.Paused = value; }
+            get
+            {
+                return gameTicker.Paused;
+            }
+            set
+            {
+                gameTicker.Paused = value;
+            }
         }
         public bool Scoring
         {
-            get { return scoring; }
-            protected set { scoring = value; }
+            get
+            {
+                return scoring;
+            }
+            protected set
+            {
+                scoring = value;
+            }
         }
         public bool Started
         {
-            get { return gameTicker.Started; }
-            set { gameTicker.Started = value; }
+            get
+            {
+                return gameTicker.Started;
+            }
+            set
+            {
+                gameTicker.Started = value;
+            }
         }
 
         public abstract decimal Score
@@ -52,9 +82,6 @@ namespace MattUtil.RealTimeGame
 
         public abstract void Step();
 
-        internal void Draw(System.Drawing.Graphics graphics)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
+        public abstract void Draw(System.Drawing.Graphics graphics);
     }
 }
