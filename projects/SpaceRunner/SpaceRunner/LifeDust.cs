@@ -41,7 +41,9 @@ namespace SpaceRunner
         }
         public static void NewLifeDust(float x, float y, float amt)
         {
-            int i = Game.Random.GaussianCappedInt(amt, Game.LifeDustAmtRandomness, Game.Random.Round(amt * Game.LifeDustAmtCap));
+            float oeAmt = amt * Game.LifeDustClumpOEPct;
+            amt -= oeAmt;
+            int i = Game.Random.OEInt(oeAmt) + Game.Random.GaussianCappedInt(amt, Game.LifeDustAmtRandomness, Game.Random.Round(amt * Game.LifeDustAmtCap));
             float xDir = RandVal(Game.LifeDustClumpSpeed);
             float yDir = RandVal(Game.LifeDustClumpSpeed);
             for ( ; i > 0 ; --i)

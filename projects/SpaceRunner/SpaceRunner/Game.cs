@@ -65,7 +65,6 @@ namespace SpaceRunner
             Application.SetCompatibleTextRenderingDefault(false);
 
             Forms.GameForm mainForm = new Forms.GameForm();
-            mainForm.NewGame();
 
             Alien.NewAlien();
             AlienShip.NewAlienShip();
@@ -176,12 +175,12 @@ namespace SpaceRunner
         public const int IncAmmo = 3;
 
         //chances of objects being created each iteration (will be multiplied by players current speed)
-        public const float LifeDustCreationRate = .0026f;
-        public const float PowerUpCreationRate = .0026f;
+        public const float LifeDustCreationRate = .0033f;
+        public const float PowerUpCreationRate = .0021f;
         public const float AsteroidCreationRate = .078f;
         public const float AlienCreationRate = .013f;
         //will be divided by number of alien ships
-        public const float AlienShipCreationRate = .000169f;
+        public const float AlienShipCreationRate = .00015f;
 
         public const float AlienSize = 13f;
         public const float AlienSpeed = GameSpeed * 2.6f;
@@ -261,9 +260,10 @@ namespace SpaceRunner
         public const float LifeDustSize = 1.75f;
         //average amount in new clumps
         public const float LifeDustClumpAmt = 13f;
+        public const float LifeDustClumpOEPct = .169f;
         public const float LifeDustAmtRandomness = .21f;
         //lower cap as a percentage of the average value
-        public const float LifeDustAmtCap = .078f;
+        public const float LifeDustAmtCap = .13f;
         //initial spacing between objects in a clump
         public const float LifeDustSpacing = 3f;
         //speed of the entire clump
@@ -275,7 +275,7 @@ namespace SpaceRunner
         //chance of life dust getting hit by a bullet or fuel explosion
         public const float LifeDustHitChance = GameTick * .003f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
-        public const float LifeDustAmtToHeal = 39f;
+        public const float LifeDustAmtToHeal = 50f;
 
         public const float PowerUpSize = 9f;
         //these three chance value are only relative to one another

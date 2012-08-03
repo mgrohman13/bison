@@ -38,6 +38,7 @@ namespace SpaceRunner.Forms
         public GameForm()
         {
             form = this;
+            MattUtil.RealTimeGame.GameForm.game = new Game(this.RefreshGame);
             InitializeComponent();
 
             center = GetCenter();

@@ -35,17 +35,14 @@ namespace SpaceRunner
             }
         }
 
-        Alien(float x, float y, float speed, float fireRate, int ammo, int life, int fuel, PowerUp droppedLife)
-            : base(x, y, speed, Game.AlienSize, AlienImage, PowerUp.Rotate)
+        Alien(float x, float y, int life, PowerUp droppedLife)
+            : this(x, y)
         {
-            this.fireRate = fireRate;
-            this.ammo = ammo;
             this.life = life;
-            this.fuel = fuel;
             this.droppedLife = droppedLife;
         }
-        Alien(float x, float y, float speed)
-            : base(x, y, speed, Game.AlienSize, AlienImage, PowerUp.Rotate)
+        Alien(float x, float y)
+            : base(x, y, startSpeed(), Game.AlienSize, AlienImage, PowerUp.Rotate)
         {
             fireRate = 0;
             ammo = 0;
@@ -56,11 +53,11 @@ namespace SpaceRunner
         public static void NewAlien()
         {
             PointF point = Game.RandomEdgePoint();
-            new Alien(point.X, point.Y, startSpeed());
+            new Alien(point.X, point.Y);
         }
         public static void NewAlien(float x, float y)
         {
-            new Alien(x, y, startSpeed());
+            new Alien(x, y);
         }
         static float startSpeed()
         {
@@ -201,17 +198,15 @@ namespace SpaceRunner
 
         void DropPowerUps()
         {
+            while (--ammo > -1)
+                PowerUp.NewPowerUp(x, y, PowerUp.PowerUpType.Ammo);
+            while (--fuel > -1)
+                PowerUp.NewPowerUp(x, y, PowerUp.PowerUpType.Fuel);
+
             if (--life > -1)
             {
                 droppedLife = PowerUp.NewPowerUp(x, y, PowerUp.PowerUpType.Life);
-                new Alien(x, y, speed, fireRate, ammo, life, fuel, droppedLife);
-            }
-            else
-            {
-                while (--ammo > -1)
-                    PowerUp.NewPowerUp(x, y, PowerUp.PowerUpType.Ammo);
-                while (--fuel > -1)
-                    PowerUp.NewPowerUp(x, y, PowerUp.PowerUpType.Fuel);
+                new Alien(x, y, life, droppedLife);
             }
         }
 
