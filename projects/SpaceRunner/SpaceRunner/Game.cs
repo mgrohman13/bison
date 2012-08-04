@@ -449,7 +449,7 @@ namespace SpaceRunner
 #endif
 
             DrawPlayer(graphics);
-            if (!Paused)
+            if (!Paused && !GameOver())
             {
                 DrawHealthBar(graphics, Dead ? Brushes.Lime : Brushes.White, centerX, centerY, PlayerSize,
                         Dead ? deadCounter / DeathTime : CurrentLifePart / PlayerLife);
@@ -1111,6 +1111,14 @@ namespace SpaceRunner
                     //the player died
                     deadCounter = 0;
                 }
+            }
+
+            if (GameOver())
+            {
+                AddScore(ammo);
+                ammo = 0;
+                AddScore((decimal)fuel / (decimal)FuelMult);
+                fuel = 0;
             }
         }
 

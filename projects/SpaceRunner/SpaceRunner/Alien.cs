@@ -103,41 +103,24 @@ namespace SpaceRunner
             else if (( asteroid = obj as Asteroid ) != null)
             {
                 float damage = asteroid.Area / Game.AsteroidAreaToAlienDamageRatio;
-                if (xDir > 0 || yDir > 0)
-                {
-                    float constSpeed = Game.GetDistance(xDir, yDir) - damage;
-                    if (constSpeed > 0)
-                    {
-                        damage = 0;
-                        Game.NormalizeDirs(ref xDir, ref yDir, constSpeed);
-                    }
-                    else
-                    {
-                        damage = -constSpeed;
-                        xDir = yDir = 0;
-                    }
-                }
 
-                if (damage > 0)
+                damage = ReduceConstSpeed(damage);
+                while (speed < damage && Game.GetDistance(xDir, yDir) > 0)
+                    damage = ReduceConstSpeed(damage);
+
+                if (speed > damage)
                 {
-                    if (speed > damage)
-                    {
-                        //reduce speed
-                        speed -= damage;
-                        Forms.GameForm.Game.AddScore((decimal)damage * Game.AlienSpeedScoreMult);
-                        //destroy asteroid
-                        Forms.GameForm.Game.RemoveObject(obj);
-                    }
-                    else
-                    {
-                        //if speed falls to less than zero, kill the alien and explode the asteroid
-                        this.Die();
-                        obj.Die();
-                    }
+                    //reduce speed
+                    speed -= damage;
+                    Forms.GameForm.Game.AddScore((decimal)damage * Game.AlienSpeedScoreMult);
+                    //destroy asteroid
+                    Forms.GameForm.Game.RemoveObject(obj);
                 }
                 else
                 {
-                    Forms.GameForm.Game.RemoveObject(obj);
+                    //if speed falls to less than zero, kill the alien and explode the asteroid
+                    this.Die();
+                    obj.Die();
                 }
             }
             else if (obj is Alien)
@@ -155,6 +138,27 @@ namespace SpaceRunner
                 throw new Exception();
             }
 #endif
+        }
+
+        private float ReduceConstSpeed(float damage)
+        {
+            float constSpeed = Game.GetDistance(xDir, yDir);
+            if (constSpeed > 0)
+            {
+                float constDmg = Game.Random.DoubleHalf(damage);
+                damage -= constDmg;
+                constSpeed -= constDmg;
+                if (constSpeed > 0)
+                {
+                    Game.NormalizeDirs(ref xDir, ref yDir, constSpeed);
+                }
+                else
+                {
+                    damage += -constSpeed;
+                    xDir = yDir = 0;
+                }
+            }
+            return damage;
         }
 
         static float RandVal(float value)
