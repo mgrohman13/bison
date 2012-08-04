@@ -1344,6 +1344,74 @@ namespace MattUtil
             return result;
         }
 
+        public float GaussianOE(float average, float devPct, float oePct)
+        {
+            SplitAvg(ref average, ref oePct);
+            return Gaussian(average, devPct) + OE(oePct);
+        }
+        public double GaussianOE(double average, double devPct, double oePct)
+        {
+            SplitAvg(ref average, ref oePct);
+            return Gaussian(average, devPct) + OE(oePct);
+        }
+        public int GaussianOEInt(float average, float devPct, float oePct)
+        {
+            SplitAvg(ref average, ref oePct);
+            return GaussianInt(average, devPct) + OEInt(oePct);
+        }
+        public int GaussianOEInt(double average, double devPct, double oePct)
+        {
+            SplitAvg(ref average, ref oePct);
+            return GaussianInt(average, devPct) + OEInt(oePct);
+        }
+        public float GaussianOE(float average, float devPct, float oePct, float lowerCap)
+        {
+            SplitAvg(ref average, ref oePct, lowerCap);
+            return GaussianCapped(average, devPct, lowerCap) + OE(oePct);
+        }
+        public double GaussianOE(double average, double devPct, double oePct, double lowerCap)
+        {
+            SplitAvg(ref average, ref oePct, lowerCap);
+            return GaussianCapped(average, devPct, lowerCap) + OE(oePct);
+        }
+        public int GaussianOEInt(float average, float devPct, float oePct, int lowerCap)
+        {
+            SplitAvg(ref average, ref oePct, lowerCap);
+            return GaussianCappedInt(average, devPct, lowerCap) + OEInt(oePct);
+        }
+        public int GaussianOEInt(double average, double devPct, double oePct, int lowerCap)
+        {
+            SplitAvg(ref average, ref oePct, lowerCap);
+            return GaussianCappedInt(average, devPct, lowerCap) + OEInt(oePct);
+        }
+        private static void SplitAvg(ref float average, ref float oePct)
+        {
+            SplitAvg(ref average, ref oePct, null);
+        }
+        private static void SplitAvg(ref float average, ref float oePct, double? lowerCap)
+        {
+            double averageDouble = average, oePctDouble = oePct;
+            SplitAvg(ref averageDouble, ref oePctDouble, lowerCap);
+            average = (float)averageDouble;
+            oePct = (float)oePctDouble;
+        }
+        private static void SplitAvg(ref double average, ref double oePct)
+        {
+            SplitAvg(ref average, ref oePct, null);
+        }
+        private static void SplitAvg(ref double average, ref double oePct, double? lowerCap)
+        {
+            oePct *= average;
+            average -= oePct;
+            if (lowerCap.HasValue && lowerCap > average)
+            {
+                oePct += average - lowerCap.Value;
+                average = lowerCap.Value;
+                if (oePct < 0)
+                    throw new ArgumentOutOfRangeException("lowerCap", lowerCap, "lowerCap must be less than or equal to average");
+            }
+        }
+
         /// <summary>
         /// Iterates in random order over an enumeration of objects.
         /// </summary>

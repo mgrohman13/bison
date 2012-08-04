@@ -41,23 +41,16 @@ namespace SpaceRunner
         }
         public static void NewLifeDust(float x, float y, float amt)
         {
-            float oeAmt = amt * Game.LifeDustClumpOEPct;
-            amt -= oeAmt;
-            int i = Game.Random.OEInt(oeAmt) + Game.Random.GaussianCappedInt(amt, Game.LifeDustAmtRandomness, Game.Random.Round(amt * Game.LifeDustAmtCap));
-            float xDir = RandVal(Game.LifeDustClumpSpeed);
-            float yDir = RandVal(Game.LifeDustClumpSpeed);
+            int i = Game.Random.GaussianOEInt(amt, Game.LifeDustAmtRandomness, Game.LifeDustClumpOEPct, 1);
+            float xDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
+            float yDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
             for ( ; i > 0 ; --i)
             {
                 //new LifeDust(x + RandVal(Game.LifeDustSpacing), y + RandVal(Game.LifeDustSpacing), xDir, yDir, Game.Random.Next(Game.NumLifeDustImages));
-                new LifeDust(x + RandVal(Game.LifeDustSpacing), y + RandVal(Game.LifeDustSpacing),
-                    xDir + RandVal(Game.LifeDustIndividualSpeed), yDir + RandVal(Game.LifeDustIndividualSpeed),
+                new LifeDust(x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
+                    xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
                     Game.Random.Next(Game.NumLifeDustImages));
             }
-        }
-
-        static float RandVal(float avg)
-        {
-            return Game.Random.Gaussian(avg);
         }
 
         void AdjustMove(GameObject obj)
@@ -89,20 +82,16 @@ namespace SpaceRunner
 
         protected override void Collide(GameObject obj)
         {
-            bool adjustOther;
-            LifeDust lifeDust;
-            if (( lifeDust = obj as LifeDust ) != null)
+            LifeDust lifeDust = ( obj as LifeDust );
+            bool adjustOther = ( lifeDust != null );
+            if (adjustOther)
             {
-                xDir = ( xDir + lifeDust.xDir ) / 2f;
-                yDir = ( yDir + lifeDust.yDir ) / 2f;
-                lifeDust.xDir = xDir;
-                lifeDust.yDir = yDir;
-                adjustOther = true;
+                lifeDust.xDir = xDir = ( xDir + lifeDust.xDir ) / 2f;
+                lifeDust.yDir = yDir = ( yDir + lifeDust.yDir ) / 2f;
             }
             else
             {
                 AdjustMove(obj);
-                adjustOther = false;
             }
             BumpCollision(obj, adjustOther);
         }

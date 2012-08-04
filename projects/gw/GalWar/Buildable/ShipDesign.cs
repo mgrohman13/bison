@@ -328,12 +328,7 @@ namespace GalWar
 
         public static int MakeStat(double str)
         {
-            if (str < 1)
-                throw new Exception();
-            --str;
-            double oe = str * .13;
-            double gaussian = str - oe;
-            return Game.Random.GaussianCappedInt(gaussian + 1, 1, 1) + Game.Random.OEInt(oe);
+            return Game.Random.GaussianOEInt(str, 1, .1, 1);
         }
 
         #endregion //fields and constructors

@@ -13,9 +13,7 @@ namespace SpaceRunner
         {
             Image[] retVal = new Image[Game.NumAsteroidImages];
             for (int i = 0 ; i < Game.NumAsteroidImages ; i++)
-            {
                 retVal[i] = LoadImage(i);
-            }
             return retVal;
         }
         static Image LoadImage(int number)
@@ -39,20 +37,13 @@ namespace SpaceRunner
         }
 
         //cached area
-        float area;
-        public float Area
-        {
-            get
-            {
-                return area;
-            }
-        }
+        public readonly float Area;
 
         public override decimal Score
         {
             get
             {
-                return (decimal)area * Game.AsteroidAreaScoreMult;
+                return (decimal)Area * Game.AsteroidAreaScoreMult;
             }
         }
 
@@ -61,7 +52,7 @@ namespace SpaceRunner
             : base(x, y, xDir, yDir, size, GetImage(size), speed / Game.AsteroidPieceSpeed * .6f)
         {
             //cache area (size is the radius)
-            area = (float)( Math.PI * size * size );
+            Area = (float)( Math.PI * size * size );
         }
         public static void NewAsteroid()
         {
@@ -88,9 +79,8 @@ namespace SpaceRunner
         {
             //random number of pieces, but always have at least one
             int numPieces = Game.Random.GaussianCappedInt(Game.AsteroidPieces, Game.AsteroidPiecesRandomness, 1);
-            //maintain total area with the formula: numPieces*pieceArea=area | pieceArea=Math.PI*pieceSize*pieceSize
-            //i.e. pieceSize=Math.Sqrt(area/(Math.PI*numPieces))
-            float pieceSize = (float)Math.Sqrt(area / ( Math.PI * numPieces ));
+            //maintain total area with the formula: Area=numPieces*pieceArea | pieceArea=Math.PI*pieceSize*pieceSize
+            float pieceSize = (float)Math.Sqrt(Area / ( Math.PI * numPieces ));
 
             float angle = Game.Random.DoubleFull((float)Math.PI);
             float step = Game.TwoPi / numPieces;
@@ -98,7 +88,7 @@ namespace SpaceRunner
             float newSpeed = Game.Random.GaussianCapped(Game.AsteroidPieceSpeed, Game.AsteroidPieceSpeedRandomness);
 
             //space pieces out evenly in all directions
-            float spacing = (float)( ( pieceSize + Forms.GameForm.Game.TotalSpeed / 2.0 ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
+            float spacing = (float)( ( pieceSize + newSpeed ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
             for (int i = 0 ; i < numPieces ; i++)
             {
                 angle += step;
@@ -146,9 +136,9 @@ namespace SpaceRunner
                 //check if the two asteroids should explode or if either should be destroyed uneventfully
                 //asteroids close to the same size as each other will be more likely to explode
                 //the smaller the asteroids the less likely to explode
-                if (( ( thisPassed = area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) ) &
-                    ( otherPassed = asteroid.area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) ) )
-                    && Game.Random.OE(Math.Abs(area - asteroid.area)) < Game.AsteroidCollisionChance)
+                if (( ( thisPassed = Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) ) &
+                    ( otherPassed = asteroid.Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) ) )
+                    && Game.Random.OE(Math.Abs(Area - asteroid.Area)) < Game.AsteroidCollisionChance)
                 {
                     //both asteroids explode
                     this.Die();
@@ -185,7 +175,7 @@ namespace SpaceRunner
         {
             //call HitPlayer to do cleanup stuff and add to score, but return damage based on size
             base.HitPlayer();
-            return area / Game.AsteroidAreaToDamageRatio;
+            return Area / Game.AsteroidAreaToDamageRatio;
         }
 
         void IDisposable.Dispose()

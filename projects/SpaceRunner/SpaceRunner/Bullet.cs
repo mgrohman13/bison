@@ -131,7 +131,7 @@ namespace SpaceRunner
                     Forms.GameForm.Game.AddScore(-obj.Score);
             }
             else if (obj is Bullet)
-                BulletExplosion(( x + obj.X ) / 2f, ( y + obj.Y ) / 2f, 2f);
+                BulletExplosion(( x + obj.X ) / 2f, ( y + obj.Y ) / 2f, 2);
             else if (( lifeDust = obj as LifeDust ) != null)
                 hit = lifeDust.HitBy(this);
 

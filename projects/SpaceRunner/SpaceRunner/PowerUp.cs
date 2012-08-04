@@ -9,11 +9,10 @@ namespace SpaceRunner
 
         public enum PowerUpType
         {
-            Life = 0,
-            Ammo = 1,
-            Fuel = 2,
-            Max = 3,
-            Firework = 4,
+            Life,
+            Ammo,
+            Fuel,
+            Firework,
         }
 
         public static readonly Image lifeImage = Game.LoadImage("life.bmp", Game.PowerUpSize),
@@ -66,26 +65,12 @@ namespace SpaceRunner
         }
         public static void NewPowerUp(float x, float y)
         {
-            int max = (int)PowerUpType.Max;
-            PowerUpType[] types = new PowerUpType[max];
-            for (int i = 0 ; i < max ; ++i)
-                types[i] = (PowerUpType)i;
-            PowerUpType type = Game.Random.SelectValue<PowerUpType>(types, delegate(PowerUpType powerUpType)
-            {
-                switch (powerUpType)
-                {
-                case PowerUpType.Ammo:
-                    return Game.PowerUpAmmoChance;
-                case PowerUpType.Fuel:
-                    return Game.PowerUpFuelChance;
-                case PowerUpType.Life:
-                    return Game.PowerUpLifeChance;
-                default:
-                    throw new Exception();
-                }
-            });
+            var types = new System.Collections.Generic.Dictionary<PowerUpType, int>();
+            types.Add(PowerUpType.Ammo, Game.PowerUpAmmoChance);
+            types.Add(PowerUpType.Fuel, Game.PowerUpFuelChance);
+            types.Add(PowerUpType.Life, Game.PowerUpLifeChance);
 
-            new PowerUp(x, y, type);
+            new PowerUp(x, y, Game.Random.SelectValue<PowerUpType>(types));
         }
         public static PowerUp NewPowerUp(float x, float y, PowerUpType type)
         {
@@ -112,7 +97,7 @@ namespace SpaceRunner
                 Forms.GameForm.Game.AddAmmo();
                 break;
             case PowerUpType.Life:
-                Forms.GameForm.Game.AddLife(Game.PlayerLife);
+                Forms.GameForm.Game.AddLife(Game.PlayerLife, true);
                 break;
             case PowerUpType.Fuel:
                 Forms.GameForm.Game.AddFuel();

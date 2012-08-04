@@ -25,10 +25,11 @@ namespace SpaceRunner.Forms
             Game game = new Game(this.RefreshGame);
             MattUtil.RealTimeGame.GameForm.game = game;
             game.InitGame(this.center.X, this.center.Y, false, scoring);
+            RefreshGame();
             return game;
         }
 
-        const int TotalMapSize = SpaceRunner.Game.MapRadius * 2;
+        const float TotalMapSize = SpaceRunner.Game.MapSize * 2f;
         const int PadSides = 13;
 
         readonly Point center;
@@ -39,6 +40,7 @@ namespace SpaceRunner.Forms
         {
             form = this;
             MattUtil.RealTimeGame.GameForm.game = new Game(this.RefreshGame);
+            MattUtil.RealTimeGame.GameForm.game.Running = false;
             InitializeComponent();
 
             center = GetCenter();
@@ -48,14 +50,17 @@ namespace SpaceRunner.Forms
             this.picLife.Image = PowerUp.lifeImage;
 
             GraphicsPath p = new GraphicsPath();
-            p.AddEllipse(center.X - Game.MapRadius, center.Y - Game.MapRadius, TotalMapSize, TotalMapSize);
+            p.AddEllipse(center.X - Game.MapSize, center.Y - Game.MapSize, TotalMapSize, TotalMapSize);
             clip = new Region(p);
             p.Dispose();
         }
 
         Point GetCenter()
         {
-            const int total = Game.MapRadius + PadSides;
+            int total = (int)Math.Ceiling(Game.MapSize + PadSides);
+#if TRACE
+            total += (int)Math.Ceiling(Game.RemovalDist);
+#endif
             this.Size = new Size(this.Width - this.ClientSize.Width + total * 2,
                 this.Height - this.ClientSize.Height + total * 2 + base.menuStrip.Height);
             this.MinimumSize = Size;
@@ -76,7 +81,9 @@ namespace SpaceRunner.Forms
 
         protected override void OnPaint(PaintEventArgs e)
         {
+#if !TRACE
             e.Graphics.Clip = clip;
+#endif
             e.Graphics.Clear(Color.Black);
 
             base.OnPaint(e);

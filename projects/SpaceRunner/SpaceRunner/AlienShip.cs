@@ -19,17 +19,17 @@ namespace SpaceRunner
         float baseLife;
         void Damage(float amt)
         {
-            amt = Game.Random.GaussianCapped(amt, Game.AlienShipDamageRandomness);
+            amt = Game.Random.GaussianOE(amt, Game.AlienShipDamageRandomness, Game.AlienShipDamageOEPct, 0);
             if (amt > life)
                 amt = life;
-            Forms.GameForm.Game.AddScore((decimal)amt / (decimal)Game.AlienShipLife * GetScore() * (decimal)Game.AlienShipScoreMult);
+            Forms.GameForm.Game.AddScore((decimal)amt / (decimal)Game.AlienShipLife * GetScore() * Game.AlienShipScoreMult);
             life -= amt;
         }
         public override decimal Score
         {
             get
             {
-                return (decimal)baseLife / (decimal)Game.AlienShipLife * GetScore() * (decimal)Game.AlienShipDeathScoreMult;
+                return (decimal)baseLife / (decimal)Game.AlienShipLife * GetScore() * Game.AlienShipDeathScoreMult;
             }
         }
         decimal GetScore()
@@ -59,7 +59,7 @@ namespace SpaceRunner
         protected override void OnStep()
         {
             //speed adjusts based on distance from player to keep from running into the player
-            speed = Game.GetDistance(x, y) / Game.MapRadius * speedMult * Game.BasePlayerSpeed;
+            speed = Game.GetDistance(x, y) / Game.MapSize * speedMult * Game.BasePlayerSpeed;
             ////move towards player
             //Game.AdjustForPlayerSpeed(ref xDir, ref  yDir, speed * 3.9f, x, y, size);
             //Game.NormalizeDirs(ref xDir, ref  yDir, speed);
@@ -159,9 +159,7 @@ namespace SpaceRunner
 
             //check if the ship is dead
             if (life <= 0)
-            {
                 Die();
-            }
         }
 
         protected override float HitPlayer()
@@ -174,9 +172,7 @@ namespace SpaceRunner
 
                 Damage(retVal);
                 if (life <= 0)
-                {
                     Die();
-                }
             }
             return retVal;
         }

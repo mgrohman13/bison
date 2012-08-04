@@ -97,8 +97,8 @@ namespace SpaceRunner
             graphics.DrawImageUnscaled(image, Game.Round(objectX - image.Width / 2f), Game.Round(objectY - image.Height / 2f));
 
 #if TRACE
-			graphics.ResetTransform();
-			graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
+            graphics.ResetTransform();
+            graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
 #endif
         }
 
@@ -108,7 +108,7 @@ namespace SpaceRunner
 
         public float Step(float playerXMove, float playerYMove)
         {
-            const float EdgeDistSqr = ( Game.MapRadius + Game.ExtraMapDistance ) * ( Game.MapRadius + Game.ExtraMapDistance );
+            const float EdgeDistSqr = ( Game.MapSize + Game.RemovalDist ) * ( Game.MapSize + Game.RemovalDist );
 
             //constant rotation
             curAngle += rotate;
@@ -131,14 +131,10 @@ namespace SpaceRunner
             //check for player hit
             float distSqr, checkDist, damage = 0;
             if (( distSqr = Game.GetDistanceSqr(x, y) ) < ( checkDist = Game.PlayerSize + size ) * ( checkDist ))
-            {
                 damage = HitPlayer();
-            }
             //check game edge
             else if (distSqr > EdgeDistSqr)
-            {
                 Forms.GameForm.Game.RemoveObject(this);
-            }
 
             //return damage to player
             return damage;

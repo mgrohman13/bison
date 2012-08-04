@@ -21,7 +21,13 @@ namespace MattUtil.RealTimeGame
         public Game(int GameTick, int Framerate, GameTicker.EventDelegate RefreshGame)
         {
             gameTicker = new GameTicker(this, GameTick, Framerate, RefreshGame);
-            //start game
+            Started = false;
+            Running = true;
+        }
+
+        public void Start()
+        {
+            Started = true;
             gameTicker.Start();
         }
 
