@@ -105,7 +105,7 @@ namespace SpaceRunner
                 float damage = asteroid.Area / Game.AsteroidAreaToAlienDamageRatio;
 
                 damage = ReduceConstSpeed(damage);
-                while (speed < damage && Game.GetDistance(xDir, yDir) > 0)
+                while (speed < damage && ( xDir != 0 || yDir != 0 ))
                     damage = ReduceConstSpeed(damage);
 
                 if (speed > damage)
