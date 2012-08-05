@@ -108,7 +108,7 @@ namespace SpaceRunner
 
         public float Step(float playerXMove, float playerYMove)
         {
-            const float EdgeDistSqr = ( Game.MapSize + Game.RemovalDist ) * ( Game.MapSize + Game.RemovalDist );
+            const float EdgeDistSqr = Game.RemovalDist * Game.RemovalDist;
 
             //constant rotation
             curAngle += rotate;

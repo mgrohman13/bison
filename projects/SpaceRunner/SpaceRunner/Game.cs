@@ -160,9 +160,9 @@ namespace SpaceRunner
 
         public const float MapSize = 338f;
         //distance from the edge of the map that objects are removed from the game
-        public const float RemovalDist = 169f;
+        public const float RemovalDist = MapSize * 1.69f;
         //distance from the edge of the map at which new objects are created
-        public const float NewObjectDist = 26f;
+        public const float NewObjectDist = MapSize + Asteroid.AsteroidMaxSize;
 #if TRACE
         public const float GameSpeed = GameTick * 0.021f;
 #else
@@ -437,14 +437,13 @@ namespace SpaceRunner
 #if TRACE
             graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX - MapSize, centerY - MapSize, MapSize * 2, MapSize * 2);
-            float totalDist = MapSize + NewObjectDist;
-            int drawSectors = (int)Math.Ceiling(totalDist / SectorSize);
+            int drawSectors = (int)Math.Ceiling(NewObjectDist / SectorSize);
             for (int sect = -drawSectors ; sect <= drawSectors ; ++sect)
             {
                 float x = centerX + ( sect * SectorSize );
-                graphics.DrawLine(Pens.White, x, centerY - totalDist, x, centerY + totalDist);
+                graphics.DrawLine(Pens.White, x, centerY - NewObjectDist, x, centerY + NewObjectDist);
                 float y = centerY + ( sect * SectorSize );
-                graphics.DrawLine(Pens.White, centerX - totalDist, y, centerX + totalDist, y);
+                graphics.DrawLine(Pens.White, centerX - NewObjectDist, y, centerX + NewObjectDist, y);
             }
             graphics.DrawEllipse(Pens.White, centerX - PlayerSize, centerY - PlayerSize, PlayerSize * 2, PlayerSize * 2);
 #endif
@@ -795,19 +794,20 @@ namespace SpaceRunner
 
         public static PointF RandomEdgePoint()
         {
-            const float CreationDist = ( MapSize + NewObjectDist );
-
             float angle;
-            return new PointF((float)( Math.Cos(angle = Random.DoubleFull((float)Math.PI)) * CreationDist ),
-                (float)( Math.Sin(angle) * CreationDist ));
+            return new PointF((float)( Math.Cos(angle = Random.DoubleFull((float)Math.PI)) * NewObjectDist ),
+                (float)( Math.Sin(angle) * NewObjectDist ));
         }
 
         public PointF RandomStartPoint(float size, bool fullMap)
         {
             float angle = Random.DoubleFull((float)Math.PI);
-            float maxDist = MapSize - PlayerSize - size - size;
+            float maxDist;
             if (fullMap)
-                maxDist += RemovalDist;
+                maxDist = RemovalDist;
+            else
+                maxDist = MapSize;
+            maxDist -= PlayerSize + size + size;
             float dist = PlayerSize + size + Random.DoubleHalf(maxDist);
             PointF retVal = new PointF((float)( Math.Cos(angle) * dist ), (float)( Math.Sin(angle) * dist ));
             bool valid = true;
@@ -1079,7 +1079,7 @@ namespace SpaceRunner
         }
         Point? GetSector(GameObject obj)
         {
-            if (GetDistance(obj.X, obj.Y) - obj.Size > MapSize + NewObjectDist)
+            if (GetDistance(obj.X, obj.Y) - obj.Size > NewObjectDist)
                 return null;
             return new Point((int)( obj.X / SectorSize ) + ( obj.X > 0 ? 1 : 0 ), (int)( obj.Y / SectorSize ) + ( obj.Y > 0 ? 1 : 0 ));
             //if (p.X < -5 || p.X > 6 || p.Y < -5 || p.Y > 6)
