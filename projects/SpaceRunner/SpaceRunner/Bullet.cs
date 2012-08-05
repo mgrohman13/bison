@@ -126,9 +126,9 @@ namespace SpaceRunner
             if (obj is Alien)
             {
                 if (friendly == FriendlyStatus.Friend)
-                    Forms.GameForm.Game.AddScore(obj.Score);
+                    obj.AddScore(obj.Score);
                 else if (friendly == FriendlyStatus.Enemy)
-                    Forms.GameForm.Game.AddScore(-obj.Score);
+                    obj.AddScore(-obj.Score);
             }
             else if (obj is Bullet)
                 BulletExplosion(( x + obj.X ) / 2f, ( y + obj.Y ) / 2f, 2);

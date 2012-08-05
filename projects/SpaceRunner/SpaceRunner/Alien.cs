@@ -23,7 +23,7 @@ namespace SpaceRunner
         {
             get
             {
-                return (decimal)speed * Game.AlienSpeedScoreMult + (decimal)fireRate * Game.AlienFireRateScoreMult;
+                return ( (decimal)Game.GetDistance(xDir, yDir) + (decimal)speed ) * Game.AlienSpeedScoreMult + (decimal)fireRate * Game.AlienFireRateScoreMult;
             }
         }
 
@@ -83,11 +83,18 @@ namespace SpaceRunner
                         break;
                     case PowerUp.PowerUpType.Fuel:
                         ++fuel;
-                        float speedInc = RandVal(Game.AlienSpeedInc);
+                        float inc1 = RandVal(Game.AlienSpeedInc);
+                        float inc2 = RandVal(Game.AlienSpeedInc);
+                        if (inc1 > inc2 && Game.Random.Bool())
+                        {
+                            float temp = inc1;
+                            inc1 = inc2;
+                            inc2 = temp;
+                        }
                         float angle = Game.Random.DoubleFull((float)Math.PI);
-                        xDir += (float)( Math.Cos(angle) * speedInc );
-                        yDir += (float)( Math.Sin(angle) * speedInc );
-                        speed += speedInc;
+                        xDir += (float)( Math.Cos(angle) * inc1 );
+                        yDir += (float)( Math.Sin(angle) * inc1 );
+                        speed += inc2;
                         break;
                     case PowerUp.PowerUpType.Life:
                         ++life;
@@ -112,7 +119,7 @@ namespace SpaceRunner
                 {
                     //reduce speed
                     speed -= damage;
-                    Forms.GameForm.Game.AddScore((decimal)damage * Game.AlienSpeedScoreMult);
+                    AddScore((decimal)damage * Game.AlienSpeedScoreMult);
                     //destroy asteroid
                     Forms.GameForm.Game.RemoveObject(obj);
                 }
@@ -145,18 +152,22 @@ namespace SpaceRunner
             float constSpeed = Game.GetDistance(xDir, yDir);
             if (constSpeed > 0)
             {
-                float constDmg = Game.Random.DoubleHalf(damage);
+                float constDmg = Game.Random.Weighted(damage, 2 / 3f);
                 damage -= constDmg;
                 constSpeed -= constDmg;
+                decimal score;
                 if (constSpeed > 0)
                 {
                     Game.NormalizeDirs(ref xDir, ref yDir, constSpeed);
+                    score = (decimal)constDmg;
                 }
                 else
                 {
                     damage += -constSpeed;
                     xDir = yDir = 0;
+                    score = (decimal)constSpeed + (decimal)constDmg;
                 }
+                AddScore(score * Game.AlienSpeedScoreMult);
             }
             return damage;
         }

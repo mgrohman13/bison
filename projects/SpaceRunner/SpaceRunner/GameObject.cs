@@ -150,8 +150,14 @@ namespace SpaceRunner
 
         public virtual void Die()
         {
-            Forms.GameForm.Game.AddScore(Score);
+            AddScore(Score);
             Forms.GameForm.Game.RemoveObject(this);
+        }
+
+        internal void AddScore(decimal Score)
+        {
+            if (Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
+                Forms.GameForm.Game.AddScore(Score);
         }
 
         protected void BumpCollision(GameObject obj)

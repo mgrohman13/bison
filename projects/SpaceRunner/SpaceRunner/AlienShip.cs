@@ -22,7 +22,7 @@ namespace SpaceRunner
             amt = Game.Random.GaussianOE(amt, Game.AlienShipDamageRandomness, Game.AlienShipDamageOEPct, 0);
             if (amt > life)
                 amt = life;
-            Forms.GameForm.Game.AddScore((decimal)amt / (decimal)Game.AlienShipLife * GetScore() * Game.AlienShipScoreMult);
+            AddScore((decimal)amt / (decimal)Game.AlienShipLife * GetScore() * Game.AlienShipScoreMult);
             life -= amt;
         }
         public override decimal Score
