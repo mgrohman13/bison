@@ -805,8 +805,9 @@ namespace SpaceRunner
                 maxDist = RemovalDist;
             else
                 maxDist = MapSize;
-            maxDist -= PlayerSize + size + size;
-            float dist = PlayerSize + size + Random.DoubleHalf(maxDist);
+            float padding = 3f * ( PlayerSize + size );
+            maxDist -= padding + size;
+            float dist = padding + Random.DoubleHalf(maxDist);
             PointF retVal = new PointF((float)( Math.Cos(angle) * dist ), (float)( Math.Sin(angle) * dist ));
             bool valid = true;
             foreach (GameObject obj in objects)
