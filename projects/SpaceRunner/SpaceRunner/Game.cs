@@ -162,7 +162,7 @@ namespace SpaceRunner
         //distance from the edge of the map that objects are removed from the game
         public const float RemovalDist = MapSize * 1.69f;
         //distance from the edge of the map at which new objects are created
-        public const float NewObjectDist = MapSize + Asteroid.AsteroidMaxSize;
+        public const float NewObjectDist = MapSize + 39f;
 #if TRACE
         public const float GameSpeed = GameTick * 0.021f;
 #else
@@ -323,8 +323,6 @@ namespace SpaceRunner
         public const decimal AlienShipScoreMult = 100m;
         //score an alien ship is worth for killing based on its stats compared to average
         public const decimal AlienShipDeathScoreMult = 10m;
-        //score an asteroid is worth for killing based on its size
-        public const decimal AsteroidAreaScoreMult = 0m;
 
         #endregion //game params
         #region fields

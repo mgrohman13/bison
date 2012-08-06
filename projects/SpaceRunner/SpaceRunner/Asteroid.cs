@@ -43,7 +43,7 @@ namespace SpaceRunner
         {
             get
             {
-                return (decimal)Area * Game.AsteroidAreaScoreMult;
+                return 0m;
             }
         }
 
