@@ -11,7 +11,7 @@ namespace SpaceRunner
         {
             get
             {
-                return size < Game.SectorSize - Asteroid.AsteroidMaxSize ? 1 : 2;
+                return size < Game.SectorSize - Game.AsteroidMaxSize ? 1 : 2;
             }
         }
 
@@ -54,7 +54,8 @@ namespace SpaceRunner
             }
         }
 
-        FuelExplosion(float x, float y) : base(x, y, Game.PowerUpSize, images[0])
+        FuelExplosion(float x, float y)
+            : base(x, y, Game.PowerUpSize, images[0])
         {
         }
         public static void NewFuelExplosion(float x, float y)
@@ -79,9 +80,6 @@ namespace SpaceRunner
 
         protected override void Collide(GameObject obj)
         {
-            //note that if fuel explosions need to collide with one another, the collision detection may not work properly
-            //look for the comment in Game.CollisionDetection that says:
-            //'this case is only valid because fuel explosions do not collide with one another'
             if (!( obj is FuelExplosion ))
             {
                 //only kill objects whose center is within the explosion

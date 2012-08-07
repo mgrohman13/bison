@@ -1,0 +1,10 @@
+GameTick/Speed for checks by iteration
+	life dust collsion/speed adjust
+	fuel explosion
+	explosion
+extract engine
+alien life power up re rand speed on death
+	add back fuel speed num and not XY
+max turn speed
+replay
+mines

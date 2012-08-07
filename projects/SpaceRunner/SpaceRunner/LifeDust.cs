@@ -46,10 +46,9 @@ namespace SpaceRunner
             float yDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
             for ( ; i > 0 ; --i)
             {
-                //new LifeDust(x + RandVal(Game.LifeDustSpacing), y + RandVal(Game.LifeDustSpacing), xDir, yDir, Game.Random.Next(Game.NumLifeDustImages));
                 new LifeDust(x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
-                    xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
-                    Game.Random.Next(Game.NumLifeDustImages));
+                        xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
+                        Game.Random.Next(Game.NumLifeDustImages));
             }
         }
 
@@ -99,8 +98,7 @@ namespace SpaceRunner
         protected override float HitPlayer()
         {
             Forms.GameForm.Game.AddLife(Game.PlayerLife / Game.LifeDustAmtToHeal, false);
-            base.HitPlayer();
-            return 0;
+            return base.HitPlayer();
         }
     }
 }

@@ -45,9 +45,9 @@ namespace SpaceRunner.Forms
 
             center = GetCenter();
             //power up count images
-            this.picAmmo.Image = PowerUp.ammoImage;
-            this.picFuel.Image = PowerUp.fuelImage;
-            this.picLife.Image = PowerUp.lifeImage;
+            this.picAmmo.Image = PowerUp.AmmoImage;
+            this.picFuel.Image = PowerUp.FuelImage;
+            this.picLife.Image = PowerUp.LifeImage;
 
             GraphicsPath p = new GraphicsPath();
             p.AddEllipse(center.X - Game.MapSize, center.Y - Game.MapSize, TotalMapSize, TotalMapSize);

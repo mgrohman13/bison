@@ -82,24 +82,32 @@ namespace SpaceRunner
             this.image = image;
 
             curAngle = Game.Random.DoubleHalf(360);
-            rotate = Game.Random.Gaussian(Game.GameSpeed * ( rotateSpeed + .3f ));
+            rotate = Game.Random.Gaussian(rotateSpeed);
 
             Forms.GameForm.Game.AddObject(this);
         }
 
         public virtual void Draw(Graphics graphics, int centerX, int centerY)
         {
-            float objectX = ( centerX + x ), objectY = ( centerY + y );
-            if (speed > 0)
-                Game.Rotate(graphics, -x, -y, objectX, objectY);
-            else
-                Game.Rotate(graphics, curAngle, objectX, objectY);
-            graphics.DrawImageUnscaled(image, Game.Round(objectX - image.Width / 2f), Game.Round(objectY - image.Height / 2f));
+            DrawImage(graphics, image, centerX, centerY, speed, x, y, curAngle);
 
 #if TRACE
             graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
 #endif
+        }
+
+        protected static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float curAngle)
+        {
+            float objectX = ( centerX + x );
+            float objectY = ( centerY + y );
+
+            if (speed > 0)
+                Game.Rotate(graphics, -x, -y, objectX, objectY);
+            else
+                Game.Rotate(graphics, curAngle, objectX, objectY);
+
+            graphics.DrawImageUnscaled(image, Game.Round(objectX - image.Width / 2f), Game.Round(objectY - image.Height / 2f));
         }
 
         protected virtual void OnStep()
@@ -117,13 +125,10 @@ namespace SpaceRunner
             x -= playerXMove;
             y -= playerYMove;
 
-            //directional object movement
-            x += xDir;
-            y += yDir;
-
-            //move towards the player
-            if (speed > 0)
-                MoveTowards(-x, -y, speed);
+            float xMove, yMove;
+            GetTotalMove(out xMove, out yMove);
+            x += xMove;
+            y += yMove;
 
             //do stuff in child classes
             OnStep();
@@ -140,12 +145,23 @@ namespace SpaceRunner
             return damage;
         }
 
+        protected void GetTotalMove(out float xMove, out float yMove)
+        {
+            //move towards the player
+            xMove = -x;
+            yMove = -y;
+            Game.NormalizeDirs(ref xMove, ref yMove, speed);
+
+            //directional object movement
+            xMove += xDir;
+            yMove += yDir;
+        }
+
         protected virtual float HitPlayer()
         {
             Forms.GameForm.Game.AddScore(Score);
             Forms.GameForm.Game.RemoveObject(this);
-            //defualt to always killing player
-            return Game.PlayerLife;
+            return 0f;
         }
 
         public virtual void Die()
@@ -154,10 +170,10 @@ namespace SpaceRunner
             Forms.GameForm.Game.RemoveObject(this);
         }
 
-        internal void AddScore(decimal Score)
+        internal void AddScore(decimal score)
         {
-            if (Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
-                Forms.GameForm.Game.AddScore(Score);
+            if (score != 0 && Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
+                Forms.GameForm.Game.AddScore(score);
         }
 
         protected void BumpCollision(GameObject obj)
@@ -179,7 +195,7 @@ namespace SpaceRunner
                 obj.MoveTowards(-xDif, -yDif, moveDist);
         }
 
-        void MoveTowards(float xDir, float yDir, float moveDist)
+        private void MoveTowards(float xDir, float yDir, float moveDist)
         {
             Game.NormalizeDirs(ref xDir, ref yDir, moveDist);
             x += xDir;
@@ -209,27 +225,25 @@ namespace SpaceRunner
         {
             //determines which objects Collide method is called when two objects collide
             //the object with the higher return value has its method called
-
             if (obj is PowerUp)
-                return 10;
+                return 1;
             if (obj is Asteroid)
-                return 20;
+                return 2;
             if (obj is LifeDust)
-                return 25;
+                return 3;
             if (obj is Alien)
-                return 30;
+                return 4;
             if (obj is Bullet)
-                return 50;
+                return 5;
             if (obj is FuelExplosion)
-                return 60;
+                return 6;
             if (obj is AlienShip)
-                return 70;
+                return 7;
             if (obj is Explosion)
-                return 80;
-            //if (obj is Mine)
-            //    return 90;
-
+                return 8;
+#if DEBUG
             throw new Exception();
+#endif
         }
 
         public override string ToString()
