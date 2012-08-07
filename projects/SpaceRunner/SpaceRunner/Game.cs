@@ -175,13 +175,15 @@ namespace SpaceRunner
         public const float BasePlayerSpeed = GameSpeed * 3f;
         //time spent dead before getting the next life
         public const float DeathTime = 1f / GameSpeed * 65f;
-        //time spent reloading (will be divided by ammo)
-        public const float FireTimeMult = 1f / GameSpeed * 650f;
-
+        //time spent reloading (will be divided by ammo^FireTimePower)
+        public const double FireTimeMult = 1.0 / GameSpeed * 5200.0;
+        public const double FireTimePower = 1.69;
         //how many extra pixels each fuel point will take you
         public const float FuelMult = 169f;
         //percentage of fuel consumed each iteration when using turbo
-        public const float FuelRate = GameSpeed * .052f;
+        public const double FuelRate = GameSpeed * .052;
+        //exponent of fuel consumption
+        public const double FuelPower = .52;
 
         public const float StartFuel = FuelMult * 10f;
         //average fuel per power up
@@ -419,7 +421,7 @@ namespace SpaceRunner
         {
             get
             {
-                return (float)Math.Min(Math.Sqrt(fuel) * FuelRate, fuel);
+                return (float)Math.Min(Math.Pow(fuel, FuelPower) * FuelRate, fuel);
             }
         }
         public float TotalSpeed
@@ -530,7 +532,7 @@ namespace SpaceRunner
             bounds.Y += bounds.Height;
             if (fireCounter > -1 || ammo < 1)
                 DrawBar(graphics, Pens.White, Brushes.Cyan, Brushes.Black, bounds,
-                        ammo > 0 ? Math.Max(fireCounter, 0) * ( ammo + 1 ) / FireTimeMult : 1);
+                        ammo > 0 ? (float)( Math.Max(fireCounter, 0) * Math.Pow(ammo, FireTimePower) / FireTimeMult ) : 1);
         }
 
         public static void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
@@ -943,9 +945,10 @@ namespace SpaceRunner
             --fireCounter;
             if (Fire && !Dead && fireCounter < 0 && ammo > 0)
             {
-                fireCounter = Random.Round(FireTimeMult / ammo);
                 if (--ammo < 1)
                     fireCounter = -1;
+                else
+                    fireCounter = Random.Round(FireTimeMult / Math.Pow(ammo, FireTimePower));
                 Bullet.NewBullet(0, 0, inputX, inputY, speed, PlayerSize, Bullet.FriendlyStatus.Friend);
             }
         }
@@ -1126,6 +1129,7 @@ namespace SpaceRunner
                     life = newLives;
                     //the player died
                     deadCounter = 0;
+                    fireCounter = -1;
                 }
             }
 

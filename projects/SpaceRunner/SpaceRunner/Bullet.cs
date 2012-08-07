@@ -87,8 +87,8 @@ namespace SpaceRunner
             this.Friendly = friendly;
             //space out from whoever fired it
             NormalizeDirs(ref xDir, ref yDir, spacing + GetSpacing(speed));
-            x += xDir;
-            y += yDir;
+            this.x += xDir;
+            this.y += yDir;
             //set bullet speed
             NormalizeDirs(ref this.xDir, ref this.yDir, speed + Game.BulletSpeed);
         }
