@@ -3,9 +3,9 @@ using System.Drawing;
 
 namespace SpaceRunner
 {
-    class Bullet : GameObject
+    internal class Bullet : GameObject
     {
-        public enum FriendlyStatus
+        internal enum FriendlyStatus
         {
             //fired by player; gives double score when killing aliens
             Friend,
@@ -31,7 +31,7 @@ namespace SpaceRunner
                 Fireworks[i] = Game.LoadImage("fireworks\\" + i.ToString() + ".bmp", Game.BulletSize);
         }
 
-        public static void Dispose()
+        internal static void Dispose()
         {
             BulletImage.Dispose();
 
@@ -40,9 +40,9 @@ namespace SpaceRunner
                     i.Dispose();
         }
 
-        public readonly FriendlyStatus Friendly;
+        internal readonly FriendlyStatus Friendly;
 
-        public static void BulletExplosion(float x, float y, float numBullets)
+        internal static void BulletExplosion(float x, float y, float numBullets)
         {
             //randomize number of bullets
             int numPieces = Game.Random.OEInt(numBullets);
@@ -76,7 +76,7 @@ namespace SpaceRunner
             }
         }
 
-        public static void NewBullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
+        internal static void NewBullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
         {
             new Bullet(x, y, xDir, yDir, speed, spacing, friendly, -1);
         }
@@ -106,7 +106,7 @@ namespace SpaceRunner
                 Game.NormalizeDirs(ref xDir, ref yDir, speed);
         }
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -118,9 +118,7 @@ namespace SpaceRunner
         {
             bool hit = true;
             LifeDust lifeDust;
-            if (obj is Alien)
-                HitAlien(obj);
-            else if (obj is Bullet)
+            if (obj is Bullet)
                 BulletExplosion(( x + obj.X ) / 2, ( y + obj.Y ) / 2, 2);
             else if (( lifeDust = obj as LifeDust ) != null)
                 hit = lifeDust.HitBy(this);
@@ -132,21 +130,13 @@ namespace SpaceRunner
             }
         }
 
-        private void HitAlien(GameObject obj)
-        {
-            if (Friendly == FriendlyStatus.Friend)
-                obj.AddScore(obj.Score);
-            else if (Friendly == FriendlyStatus.Enemy)
-                obj.AddScore(-obj.Score);
-        }
-
         protected override float HitPlayer()
         {
             if (Forms.GameForm.Game.Fireworks && Friendly == FriendlyStatus.Neutral)
                 return 0;
 
-            //call HitPlayer to do cleanup stuff and add to score, but return bullet damage
             base.HitPlayer();
+
             return Game.BulletDamage;
         }
     }

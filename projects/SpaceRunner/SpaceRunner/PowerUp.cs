@@ -3,9 +3,9 @@ using System.Drawing;
 
 namespace SpaceRunner
 {
-    class PowerUp : GameObject
+    internal class PowerUp : GameObject
     {
-        public enum PowerUpType
+        internal enum PowerUpType
         {
             Life,
             Ammo,
@@ -13,7 +13,7 @@ namespace SpaceRunner
             Firework,
         }
 
-        public static readonly Image LifeImage, AmmoImage, FuelImage, BlankImage;
+        internal static readonly Image LifeImage, AmmoImage, FuelImage, BlankImage;
 
         static PowerUp()
         {
@@ -23,7 +23,7 @@ namespace SpaceRunner
             BlankImage = Game.LoadImage("fireworks\\blank.bmp", 1);
         }
 
-        public static void Dispose()
+        internal static void Dispose()
         {
             AmmoImage.Dispose();
             FuelImage.Dispose();
@@ -31,21 +31,21 @@ namespace SpaceRunner
             BlankImage.Dispose();
         }
 
-        public readonly PowerUpType Type;
+        internal readonly PowerUpType Type;
 
-        public static PowerUp NewFirework()
+        internal static PowerUp NewFirework()
         {
             PointF point = Game.RandomEdgePoint();
             return NewPowerUp(point.X, point.Y, PowerUpType.Firework);
         }
 
-        public static PowerUp NewPowerUp()
+        internal static PowerUp NewPowerUp()
         {
             PointF point = Game.RandomEdgePoint();
             return NewPowerUp(point.X, point.Y);
         }
 
-        public static PowerUp NewPowerUp(float x, float y)
+        internal static PowerUp NewPowerUp(float x, float y)
         {
             var types = new System.Collections.Generic.Dictionary<PowerUpType, int>();
             types.Add(PowerUpType.Ammo, Game.PowerUpAmmoChance);
@@ -55,7 +55,7 @@ namespace SpaceRunner
             return NewPowerUp(x, y, Game.Random.SelectValue<PowerUpType>(types));
         }
 
-        public static PowerUp NewPowerUp(float x, float y, PowerUpType type)
+        internal static PowerUp NewPowerUp(float x, float y, PowerUpType type)
         {
             return new PowerUp(x, y, type);
         }
@@ -68,7 +68,7 @@ namespace SpaceRunner
             this.Type = type;
         }
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -93,7 +93,6 @@ namespace SpaceRunner
             if (obj is PowerUp)
                 BumpCollision(obj);
 #if DEBUG
-            //lowest type priority, never hits anything but itself
             else
                 throw new Exception();
 #endif
@@ -119,11 +118,14 @@ namespace SpaceRunner
 #endif
             }
 
-            return base.HitPlayer();
+            Forms.GameForm.Game.RemoveObject(this);
+            return 0;
         }
 
-        public override void Die()
+        internal override void Die()
         {
+            base.Die();
+
             switch (Type)
             {
             case PowerUpType.Firework:
@@ -141,8 +143,6 @@ namespace SpaceRunner
                 throw new Exception();
 #endif
             }
-
-            base.Die();
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 
 namespace SpaceRunner
 {
-    public abstract class GameObject
+    internal abstract class GameObject
     {
         protected Image image;
         protected float x, y;
@@ -14,64 +14,42 @@ namespace SpaceRunner
         protected float curAngle;
         protected float rotate;
 
-        public float X
+        protected GameObject(float x, float y, float size, Image image) :
+            this(x, y, 0, 0, 0, size, image, 0)
         {
-            get
-            {
-                return x;
-            }
-        }
-        public float Y
-        {
-            get
-            {
-                return y;
-            }
-        }
-        public float Size
-        {
-            get
-            {
-                return size;
-            }
         }
 
-        //score stuff
-        public abstract decimal Score
+        protected GameObject(float x, float y, float size, Image image, float rotateSpeed) :
+            this(x, y, 0, 0, 0, size, image, rotateSpeed)
         {
-            get;
         }
 
-        //constructor overloads for easy use
-        protected GameObject(float x, float y, float size, Image image)
+        protected GameObject(float x, float y, float xDir, float yDir, float size, Image image) :
+            this(x, y, xDir, yDir, 0, size, image, 0)
         {
-            Init(x, y, 0, 0, 0, size, image, 0);
         }
-        protected GameObject(float x, float y, float size, Image image, float rotateSpeed)
+
+        protected GameObject(float x, float y, float xDir, float yDir, float size, Image image, float rotateSpeed) :
+            this(x, y, xDir, yDir, 0, size, image, rotateSpeed)
         {
-            Init(x, y, 0, 0, speed, size, image, rotateSpeed);
         }
-        protected GameObject(float x, float y, float xDir, float yDir, float size, Image image)
+
+        protected GameObject(float x, float y, float speed, float size, Image image) :
+            this(x, y, 0, 0, speed, size, image, 0)
         {
-            Init(x, y, xDir, yDir, 0, size, image, 0);
         }
-        protected GameObject(float x, float y, float xDir, float yDir, float size, Image image, float rotateSpeed)
+
+        protected GameObject(float x, float y, float speed, float size, Image image, float rotateSpeed) :
+            this(x, y, 0, 0, speed, size, image, rotateSpeed)
         {
-            Init(x, y, xDir, yDir, 0, size, image, rotateSpeed);
         }
-        protected GameObject(float x, float y, float speed, float size, Image image)
+
+        protected GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image) :
+            this(x, y, xDir, yDir, speed, size, image, 0)
         {
-            Init(x, y, 0, 0, speed, size, image, 0);
         }
-        protected GameObject(float x, float y, float speed, float size, Image image, float rotateSpeed)
-        {
-            Init(x, y, 0, 0, speed, size, image, rotateSpeed);
-        }
-        protected GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image)
-        {
-            Init(x, y, xDir, yDir, speed, size, image, 0);
-        }
-        void Init(float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed)
+
+        private GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed)
         {
             this.x = x;
             this.y = y;
@@ -87,10 +65,54 @@ namespace SpaceRunner
             Forms.GameForm.Game.AddObject(this);
         }
 
-        public virtual void Draw(Graphics graphics, int centerX, int centerY)
+        internal float X
+        {
+            get
+            {
+                return x;
+            }
+        }
+
+        internal float Y
+        {
+            get
+            {
+                return y;
+            }
+        }
+
+        internal float XDir
+        {
+            get
+            {
+                return xDir;
+            }
+        }
+
+        internal float YDir
+        {
+            get
+            {
+                return yDir;
+            }
+        }
+
+        internal float Size
+        {
+            get
+            {
+                return size;
+            }
+        }
+
+        internal abstract decimal Score
+        {
+            get;
+        }
+
+        internal virtual void Draw(Graphics graphics, int centerX, int centerY)
         {
             DrawImage(graphics, image, centerX, centerY, speed, x, y, curAngle);
-
 #if TRACE
             graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
@@ -99,8 +121,8 @@ namespace SpaceRunner
 
         protected static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float curAngle)
         {
-            float objectX = ( centerX + x );
-            float objectY = ( centerY + y );
+            float objectX = centerX + x;
+            float objectY = centerY + y;
 
             if (speed > 0)
                 Game.Rotate(graphics, -x, -y, objectX, objectY);
@@ -114,32 +136,27 @@ namespace SpaceRunner
         {
         }
 
-        public float Step(float playerXMove, float playerYMove)
+        internal float Step(float playerXMove, float playerYMove)
         {
-            const float EdgeDistSqr = Game.RemovalDist * Game.RemovalDist;
-
-            //constant rotation
-            curAngle += rotate;
-
-            //move the object to simulate player movement
-            x -= playerXMove;
-            y -= playerYMove;
-
-            float xMove, yMove;
-            GetTotalMove(out xMove, out yMove);
-            x += xMove;
-            y += yMove;
-
             //do stuff in child classes
             OnStep();
 
-            //check for player hit
-            float distSqr, checkDist, damage = 0;
-            if (( distSqr = Game.GetDistanceSqr(x, y) ) < ( checkDist = Game.PlayerSize + size ) * ( checkDist ))
-                damage = HitPlayer();
-            //check game edge
-            else if (distSqr > EdgeDistSqr)
+            curAngle += rotate;
+
+            //move the object to simulate player movement
+            Move(-playerXMove, -playerYMove);
+
+            //directional and towards-player movement
+            float xMove, yMove;
+            GetTotalMove(out xMove, out yMove);
+            Move(xMove, yMove);
+
+            float distSqr = Game.GetDistanceSqr(x, y);
+            float checkDist, damage = 0;
+            if (distSqr > Game.RemovalDist * Game.RemovalDist)
                 Forms.GameForm.Game.RemoveObject(this);
+            else if (distSqr < ( checkDist = Game.PlayerSize + size ) * checkDist)
+                damage = HitPlayer();
 
             //return damage to player
             return damage;
@@ -164,14 +181,15 @@ namespace SpaceRunner
             return 0f;
         }
 
-        public virtual void Die()
+        internal virtual void Die()
         {
             AddScore(Score);
             Forms.GameForm.Game.RemoveObject(this);
         }
 
-        internal void AddScore(decimal score)
+        protected void AddScore(decimal score)
         {
+            //only add score if the center of the object is within the visible portion of the map
             if (score != 0 && Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
                 Forms.GameForm.Game.AddScore(score);
         }
@@ -180,24 +198,23 @@ namespace SpaceRunner
         {
             BumpCollision(obj, true);
         }
+
         protected void BumpCollision(GameObject obj, bool adjustOther)
         {
-            float moveDist = ( size + obj.size - Game.GetDistance(x, y, obj.x, obj.y) ) / ( adjustOther ? 2f : 1f );
+            float moveDist = ( size + obj.size - Game.GetDistance(x, y, obj.x, obj.y) ) / ( adjustOther ? 2 : 1 );
             float xDif = x - obj.x, yDif = y - obj.y;
             if (xDif == 0 && yDif == 0)
-            {
-                float angle = Game.Random.DoubleFull((float)Math.PI);
-                xDif = (float)Math.Cos(angle);
-                yDif = (float)Math.Sin(angle);
-            }
-            MoveTowards(xDif, yDif, moveDist);
+                Game.GetRandomDirection(out xDif, out yDif, moveDist);
+            else
+                Game.NormalizeDirs(ref xDif, ref yDif, moveDist);
+
+            Move(xDif, yDif);
             if (adjustOther)
-                obj.MoveTowards(-xDif, -yDif, moveDist);
+                obj.Move(-xDif, -yDif);
         }
 
-        private void MoveTowards(float xDir, float yDir, float moveDist)
+        private void Move(float xDir, float yDir)
         {
-            Game.NormalizeDirs(ref xDir, ref yDir, moveDist);
             x += xDir;
             y += yDir;
         }
@@ -205,7 +222,7 @@ namespace SpaceRunner
         //actual collision logic
         protected abstract void Collide(GameObject obj);
 
-        public void CheckCollision(GameObject obj)
+        internal void CheckCollision(GameObject obj)
         {
             float sizes;
             //check distance for collision
@@ -231,9 +248,9 @@ namespace SpaceRunner
                 return 2;
             if (obj is LifeDust)
                 return 3;
-            if (obj is Alien)
-                return 4;
             if (obj is Bullet)
+                return 4;
+            if (obj is Alien)
                 return 5;
             if (obj is FuelExplosion)
                 return 6;

@@ -9,14 +9,14 @@ using Point = MattUtil.Point;
 
 namespace SpaceRunner
 {
-    public class Game : MattUtil.RealTimeGame.Game
+    internal class Game : MattUtil.RealTimeGame.Game
     {
-        public Game(MattUtil.RealTimeGame.GameTicker.EventDelegate Refresh)
+        internal Game(MattUtil.RealTimeGame.GameTicker.EventDelegate Refresh)
             : base(GameTick, Framerate, Refresh)
         {
         }
 
-        public void InitGame(int centerX, int centerY, bool fireworks, bool scoring)
+        internal void InitGame(int centerX, int centerY, bool fireworks, bool scoring)
         {
             this.Scoring = scoring;
             this.fireworks = fireworks;
@@ -59,7 +59,7 @@ namespace SpaceRunner
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        public static void Main()
+        internal static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -110,9 +110,9 @@ namespace SpaceRunner
         #region consts
 
         //miliseconds per game iteration
-        public const int GameTick = 6;
+        internal const int GameTick = 6;
         //minimum miliseconds between graphics refresh
-        public const int Framerate = 21;
+        internal const int Framerate = 21;
 
         //directory info
         const string PicLocation = "..\\..\\..\\pics\\";
@@ -125,19 +125,19 @@ namespace SpaceRunner
         }
 
         //image information, should reflect actual images
-        public const int NumExplosions = 5;
-        public const int NumExplosionImages = 15;
-        public const int NumAsteroidImages = 8;
-        public const float AsteroidMaxImageSizeHalf = 27f;
-        public const int NumFuelExplosionImages = 6;
-        public const float FuelExplosionImageSizeHalf = 65f;
-        public const int NumLifeDustImages = 6;
-        public const int NumFireworks = 13;
+        internal const int NumExplosions = 5;
+        internal const int NumExplosionImages = 15;
+        internal const int NumAsteroidImages = 8;
+        internal const float AsteroidMaxImageSizeHalf = 27f;
+        internal const int NumFuelExplosionImages = 6;
+        internal const float FuelExplosionImageSizeHalf = 65f;
+        internal const int NumLifeDustImages = 6;
+        internal const int NumFireworks = 13;
 
         //mathematical values
-        public const float HalfPi = (float)( Math.PI / 2.0 );
-        public const float TwoPi = (float)( Math.PI * 2.0 );
-        public const float DegToRad = (float)( Math.PI / 180.0 );
+        internal const float HalfPi = (float)( Math.PI / 2.0 );
+        internal const float TwoPi = (float)( Math.PI * 2.0 );
+        internal const float DegToRad = (float)( Math.PI / 180.0 );
 
         #endregion //consts
         #region game params
@@ -158,176 +158,174 @@ namespace SpaceRunner
 
         //size constants are the radius of the object
 
-        public const float MapSize = 338f;
+        internal const float MapSize = 338f;
         //distance from the edge of the map that objects are removed from the game
-        public const float RemovalDist = MapSize * 1.69f;
+        internal const float RemovalDist = MapSize * 1.69f;
         //distance from the edge of the map at which new objects are created
-        public const float CreationDist = MapSize + 39f;
+        internal const float CreationDist = MapSize + 39f;
 #if TRACE
-        public const float GameSpeed = GameTick * 0.021f;
+        internal const float GameSpeed = GameTick * 0.021f;
 #else
-        public const float GameSpeed = (float)( GameTick * Math.PI * .0139 );
+        internal const float GameSpeed = (float)( GameTick * Math.PI * .0139 );
 #endif
         //sectors for collision detection
-        public const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2f;
+        internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2f;
 
-        public const float PlayerSize = 17f;
-        public const float BasePlayerSpeed = GameSpeed * 3f;
+        internal const float PlayerSize = 17f;
+        internal const float BasePlayerSpeed = GameSpeed * 3f;
         //time spent dead before getting the next life
-        public const float DeathTime = 1f / GameSpeed * 65f;
+        internal const float DeathTime = 1f / GameSpeed * 65f;
         //time spent reloading (will be divided by ammo^FireTimePower)
-        public const double FireTimeMult = 1.0 / GameSpeed * 5200.0;
-        public const double FireTimePower = 1.69;
+        internal const double FireTimeMult = 1.0 / GameSpeed * 2600.0;
+        internal const double FireTimePower = 1.69;
         //how many extra pixels each fuel point will take you
-        public const float FuelMult = 169f;
+        internal const float FuelMult = 169f;
         //percentage of fuel consumed each iteration when using turbo
-        public const double FuelRate = GameSpeed * .052;
+        internal const double FuelRate = GameSpeed * .052;
         //exponent of fuel consumption
-        public const double FuelPower = .52;
+        internal const double FuelPower = .52;
 
-        public const float StartFuel = FuelMult * 10f;
+        internal const float StartFuel = FuelMult * 10f;
         //average fuel per power up
-        public const float IncFuel = FuelMult * 3f;
-        public const float IncFuelRandomness = .104f;
+        internal const float IncFuel = FuelMult * 3f;
+        internal const float IncFuelRandomness = .104f;
 
 #if TRACE
-        public const float StartLife = PlayerLife * 30f;
+        internal const float StartLife = PlayerLife * 30f;
 #else
-        public const float StartLife = PlayerLife * 3f;
+        internal const float StartLife = PlayerLife * 3f;
 #endif
-        public const float PlayerLife = 13f;
-        public const float PlayerDamageRandomness = .065f;
+        internal const float PlayerLife = 13f;
+        internal const float PlayerDamageRandomness = .065f;
 
-        public const int StartAmmo = 10;
-        public const int IncAmmo = 3;
+        internal const int StartAmmo = 10;
+        internal const int IncAmmo = 3;
 
         //chances of objects being created each iteration (will be multiplied by players current speed)
-        public const float LifeDustCreationRate = (float)( Math.E * .0013 );
-        public const float PowerUpCreationRate = (float)( Math.E / 1300 );
-        public const float AsteroidCreationRate = .078f;
-        public const float AlienCreationRate = .013f;
+        internal const float LifeDustCreationRate = (float)( Math.E * .0013 );
+        internal const float PowerUpCreationRate = (float)( Math.E / 1300 );
+        internal const float AsteroidCreationRate = .078f;
+        internal const float AlienCreationRate = .013f;
         //will be divided by number of alien ships
-        public const float AlienShipCreationRate = .00013f;
+        internal const float AlienShipCreationRate = .00013f;
 
-        public const float AlienSize = 13f;
-        public const float AlienSpeed = GameSpeed * 2.6f;
-        public const float AlienSpeedRandomness = .39f;
+        internal const float AlienSize = 13f;
+        internal const float AlienSpeed = GameSpeed * 2.6f;
+        internal const float AlienSpeedRandomness = .39f;
         //fuel power up
-        public const float AlienSpeedInc = GameSpeed * 3f;
+        internal const float AlienSpeedInc = GameSpeed * 3f;
         //only when an alien picks up a first ammo power up
-        public const float AlienFireRate = (float)( GameSpeed * Math.PI / 130 );
+        internal const float AlienFireRate = (float)( GameSpeed * Math.PI / 130 );
         //subsequent ammo power ups
-        public const float AlienFireRateInc = GameSpeed * .0117f;
+        internal const float AlienFireRateInc = GameSpeed * .0117f;
         //randomness for power up values
-        public const float AlienIncRandomness = .13f;
+        internal const float AlienIncRandomness = .13f;
         //lower cap as a percentage of the average value
-        public const float AlienIncCap = .39f;
-        public const float AlienConstSpeedReduceWeight = .65f;
+        internal const float AlienIncCap = .39f;
+        internal const float AlienConstSpeedReduceWeight = .65f;
 
-        public const float ExplosionSize = Game.AlienSize * 1.21f;
+        internal const float ExplosionSize = Game.AlienSize * 1.21f;
 
-        public const float AlienShipSize = 21f;
-        public const float AlienShipLife = 169f;
-        public const float AlienShipLifeInc = AlienShipLife;
-        public const float AlienShipFireRate = GameSpeed * .0169f;
-        public const float AlienShipFireRateInc = GameSpeed * .0078f;
-        public const float AlienShipSpeedMult = 1.69f;
-        public const float AlienShipSpeedMultInc = .39f;
-        public const float AlienShipStatRandomness = .169f;
+        internal const float AlienShipSize = 21f;
+        internal const float AlienShipLife = 169f;
+        internal const float AlienShipLifeInc = AlienShipLife;
+        internal const float AlienShipFireRate = GameSpeed * .0169f;
+        internal const float AlienShipFireRateInc = GameSpeed * .0078f;
+        internal const float AlienShipSpeedMult = 1.69f;
+        internal const float AlienShipSpeedMultInc = .39f;
+        internal const float AlienShipStatRandomness = .169f;
         //lower cap as a percentage of the average value
-        public const float AlienShipStatCap = .13f;
-        public const float AlienShipFriendlyBulletDamageMult = 9.1f;
-        public const float AlienShipNeutralBulletDamageMult = 5.2f;
-        public const float AlienShipFuelExplosionDamageMult = 7.8f;
-        public const float AlienShipDamageRandomness = .078f;
-        public const float AlienShipDamageOEPct = .26f;
+        internal const float AlienShipStatCap = .13f;
+        internal const float AlienShipFriendlyBulletDamageMult = 9.1f;
+        internal const float AlienShipNeutralBulletDamageMult = 5.2f;
+        internal const float AlienShipFuelExplosionDamageMult = 7.8f;
+        internal const float AlienShipDamageRandomness = .078f;
+        internal const float AlienShipDamageOEPct = .26f;
         //average number of bullets in the explosion on death
-        public const float AlienShipExplosionBullets = 6.5f;
+        internal const float AlienShipExplosionBullets = 6.5f;
 
-        public const float AsteroidAverageSize = 16.9f;
-        public const float AsteroidSizeRandomness = .091f;
-        public const float AsteroidMaxSize = Game.AsteroidAverageSize * ( 2f - Game.AsteroidSizeCap );
+        internal const float AsteroidAverageSize = 16.9f;
+        internal const float AsteroidSizeRandomness = .091f;
+        internal const float AsteroidMaxSize = Game.AsteroidAverageSize * ( 2f - Game.AsteroidSizeCap );
         //lower cap as a percentage of the average value
-        public const float AsteroidSizeCap = .52f;
+        internal const float AsteroidSizeCap = .52f;
         //damage to player and alien ship
-        public const float AsteroidAreaToDamageRatio = (float)( Math.PI * PlayerSize * PlayerSize / PlayerLife );
+        internal const float AsteroidAreaToDamageRatio = (float)( Math.PI * PlayerSize * PlayerSize / PlayerLife );
         //alien life is actually its speed in pixels, so this damage is in pixels
-        public const float AsteroidAreaToAlienDamageRatio = 1f / GameSpeed * 169f;
+        internal const float AsteroidAreaToAlienDamageRatio = 1f / GameSpeed * 169f;
         //drift speed for new asteroids
-        public const float AsteroidInitialSpeed = GameSpeed * .13f;
+        internal const float AsteroidInitialSpeed = GameSpeed * .13f;
         //when an asteroid breaks, the exponent for the chance (based on the breaking astroid size) of each new smaller piece to be created
-        public const float AsteroidPieceChancePower = .6f;
+        internal const float AsteroidPieceChancePower = .6f;
         //average number of smaller asteroids created when a larger one breaks
-        public const float AsteroidPieces = 2.6f;
-        public const float AsteroidPiecesRandomness = .117f;
+        internal const float AsteroidPieces = 2.6f;
+        internal const float AsteroidPiecesRandomness = .117f;
         //speed of new smaller asteroids when a larger one breaks
-        public const float AsteroidPieceSpeed = GameSpeed * 1.69f;
-        public const float AsteroidPieceSpeedRandomness = .21f;
+        internal const float AsteroidPieceSpeed = GameSpeed * 1.69f;
+        internal const float AsteroidPieceSpeedRandomness = .21f;
         //chance (based on the difference in asteroid area) for the asteroids to both break
-        public const float AsteroidCollisionChance = 520f;
+        internal const float AsteroidCollisionChance = 520f;
         //asteroids smaller than this area are frequently destroyed uneventfully when colliding with other asteroids
-        public const float AsteroidCollisionCriticalArea = 117f;
-        public const float AsteroidRotateConst = Game.GameSpeed * .39f;
-        public const float AsteroidRotateMult = Game.GameSpeed / Game.AsteroidPieceSpeed * .65f;
+        internal const float AsteroidCollisionCriticalArea = 117f;
+        internal const float AsteroidRotateConst = Game.GameSpeed * .39f;
+        internal const float AsteroidRotateMult = Game.GameSpeed / Game.AsteroidPieceSpeed * .65f;
 
-        public const float BulletSize = 2.5f;
+        internal const float BulletSize = 2.5f;
         //speed added to the speed of the object firing the bullet
-        public const float BulletSpeed = (float)( GameSpeed * Math.PI );
+        internal const float BulletSpeed = (float)( GameSpeed * Math.PI );
         //damage to player and alien ship (bullets always kill aliens and asteroids)
-        public const float BulletDamage = 3.9f;
+        internal const float BulletDamage = 3.9f;
         //average speed of bullets from bullet explosions
-        public const float BulletExplosionSpeed = BulletSpeed * 1.3f;
-        public const float BulletExplosionSpeedRandomness = .52f;
+        internal const float BulletExplosionSpeed = BulletSpeed * 1.3f;
+        internal const float BulletExplosionSpeedRandomness = .52f;
         //randomness on the angle (in degrees) when an alien shoots at the player
-        public const float BulletRandomnessForAliens = 3f;
+        internal const float BulletRandomnessForAliens = 3f;
 
-        public const float FuelExplosionSize = 91f;
+        internal const float FuelExplosionSize = 91f;
         //number of iterations a fuel explosion lasts
-        public const float FuelExplosionSteps = 1f / GameSpeed * 65f;
+        internal const float FuelExplosionSteps = 1f / GameSpeed * 65f;
         //an object at the center of the explosion is cosidered to be this distance from it for damage purposes
-        public const float FuelExplosionDamageStartDist = FuelExplosionSize * .3f;
+        internal const float FuelExplosionDamageStartDist = FuelExplosionSize * .3f;
         //damage done each iteration to the player or an alien ship inside the explosion
-        public const float FuelExplosionDamage = 1f / FuelExplosionSteps * 30f;
+        internal const float FuelExplosionDamage = 1f / FuelExplosionSteps * 30f;
 
-        public const float LifeDustSize = 1.75f;
+        internal const float LifeDustSize = 1.75f;
         //average amount in new clumps
-        public const float LifeDustClumpAmt = 13f;
-        public const float LifeDustClumpOEPct = .13f;
-        public const float LifeDustAmtRandomness = .3f;
+        internal const float LifeDustClumpAmt = 13f;
+        internal const float LifeDustClumpOEPct = .13f;
+        internal const float LifeDustAmtRandomness = .3f;
         //initial spacing between objects in a clump
-        public const float LifeDustSpacing = LifeDustSize * 2;
+        internal const float LifeDustSpacing = LifeDustSize * 2;
         //speed of the entire clump
-        public const float LifeDustClumpSpeed = GameSpeed * .3f;
+        internal const float LifeDustClumpSpeed = GameSpeed * .3f;
         //speed of each individual
-        public const float LifeDustIndividualSpeed = GameSpeed * .013f;
-        //speed change when hit by something
-        public const float LifeDustAdjustSpeed = GameSpeed * 0.0052f;
+        internal const float LifeDustIndividualSpeed = GameSpeed * .013f;
         //chance of life dust getting hit by a bullet or fuel explosion
-        public const float LifeDustHitChance = GameSpeed * 0.039f;
+        internal const float LifeDustHitChance = GameTick * .0013f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
-        public const float LifeDustAmtToHeal = 52f;
+        internal const float LifeDustAmtToHeal = 52f;
 
-        public const float PowerUpSize = 9f;
+        internal const float PowerUpSize = 9f;
         //these three chance value are only relative to one another
-        public const int PowerUpAmmoChance = 5;
-        public const int PowerUpFuelChance = 6;
-        public const int PowerUpLifeChance = 2;
+        internal const int PowerUpAmmoChance = 5;
+        internal const int PowerUpFuelChance = 6;
+        internal const int PowerUpLifeChance = 2;
         //average number of bullets in the explosion when an ammo power up explodes
-        public const float PowerUpAmmoExplosionBullets = 13f;
-        public const float PowerUpRotate = Game.GameSpeed * .78f;
+        internal const float PowerUpAmmoExplosionBullets = 13f;
+        internal const float PowerUpRotate = Game.GameSpeed * .78f;
 
         //amount each damage point while dead reduces your score
-        public const decimal ScoreToDamageRatio = 1m / (decimal)PlayerLife * 10m;
+        internal const decimal ScoreToDamageRatio = 1m / (decimal)PlayerLife * 10m;
         //score added per pixel traveled
-        public const decimal SpeedScoreMult = .001m;
+        internal const decimal SpeedScoreMult = .001m;
         //score an alien is worth for killing based on its speed
-        public const decimal AlienSpeedScoreMult = 1m / (decimal)AlienSpeed * 1m;
+        internal const decimal AlienSpeedScoreMult = 1m / (decimal)AlienSpeed * 1m;
         //extra score an alien that shoots is worth for killing
-        public const decimal AlienFireRateScoreMult = 1m / (decimal)AlienFireRate * 1m;
+        internal const decimal AlienFireRateScoreMult = 1m / (decimal)AlienFireRate * 1m;
         //score an alien ship is worth for injuring based on its stats compared to average
-        public const decimal AlienShipScoreMult = 100m;
+        internal const decimal AlienShipScoreMult = 100m;
         //score an alien ship is worth for killing based on its stats compared to average
-        public const decimal AlienShipDeathScoreMult = 10m;
+        internal const decimal AlienShipDeathScoreMult = 10m;
 
         #endregion //game params
         #region fields
@@ -352,13 +350,13 @@ namespace SpaceRunner
         int deadCounter;
         int fireCounter;
 
-        public bool Turbo;
-        public bool Fire;
+        internal bool Turbo;
+        internal bool Fire;
 
         #endregion //fields
         #region properties
 
-        public bool Fireworks
+        internal bool Fireworks
         {
             get
             {
@@ -374,14 +372,14 @@ namespace SpaceRunner
             }
         }
 
-        public int Lives
+        internal int Lives
         {
             get
             {
                 return (int)Math.Ceiling(life / PlayerLife);
             }
         }
-        public float CurrentLifePart
+        internal float CurrentLifePart
         {
             get
             {
@@ -389,14 +387,14 @@ namespace SpaceRunner
                 return ( retVal = life % PlayerLife ) > 0 ? retVal : PlayerLife;
             }
         }
-        public int Ammo
+        internal int Ammo
         {
             get
             {
                 return ammo;
             }
         }
-        public float Fuel
+        internal float Fuel
         {
             get
             {
@@ -404,7 +402,7 @@ namespace SpaceRunner
             }
         }
 
-        public bool Dead
+        internal bool Dead
         {
             get
             {
@@ -417,14 +415,14 @@ namespace SpaceRunner
             return life <= 0;
         }
 
-        public float TurboSpeed
+        internal float TurboSpeed
         {
             get
             {
                 return (float)Math.Min(Math.Pow(fuel, FuelPower) * FuelRate, fuel);
             }
         }
-        public float TotalSpeed
+        internal float TotalSpeed
         {
             get
             {
@@ -433,7 +431,7 @@ namespace SpaceRunner
         }
 
         #endregion //properties
-        #region public functional methods
+        #region internal functional methods
 
         public override void Draw(System.Drawing.Graphics graphics)
         {
@@ -525,7 +523,7 @@ namespace SpaceRunner
             }
         }
 
-        public void DrawFireBar(Graphics graphics)
+        internal void DrawFireBar(Graphics graphics)
         {
             Rectangle bounds = GetBarRect(centerX, centerY, PlayerSize);
             bounds.Height += 2;
@@ -535,15 +533,15 @@ namespace SpaceRunner
                         ammo > 0 ? (float)( Math.Max(fireCounter, 0) * Math.Pow(ammo, FireTimePower) / FireTimeMult ) : 1);
         }
 
-        public static void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
+        internal static void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
         {
             DrawHealthBar(graphics, Brushes.White, Forms.GameForm.Game.centerX + obj.X, Forms.GameForm.Game.centerY + obj.Y, obj.Size, pct);
         }
-        public static void DrawHealthBar(Graphics graphics, Brush brush, float x, float y, float size, float pct)
+        internal static void DrawHealthBar(Graphics graphics, Brush brush, float x, float y, float size, float pct)
         {
             DrawBar(graphics, Pens.White, brush, Brushes.Black, GetBarRect(x, y, size), pct);
         }
-        public static void DrawBar(Graphics graphics, Pen Border, Brush full, Brush empty, Rectangle rect, float pct)
+        internal static void DrawBar(Graphics graphics, Pen Border, Brush full, Brush empty, Rectangle rect, float pct)
         {
             graphics.ResetTransform();
 
@@ -560,13 +558,13 @@ namespace SpaceRunner
             return new Rectangle(Round(x - size), Round(y + size), (int)( .5 + size * 2f ), 3);
         }
 
-        public void AddObject(GameObject obj)
+        internal void AddObject(GameObject obj)
         {
             objects.Add(obj);
             if (obj is AlienShip)
                 ++alienCount;
         }
-        public void RemoveObject(GameObject obj)
+        internal void RemoveObject(GameObject obj)
         {
             objects.Remove(obj);
             IDisposable disposable;
@@ -576,7 +574,7 @@ namespace SpaceRunner
                 --alienCount;
         }
 
-        public void SetMouseCoordinates(int x, int y)
+        internal void SetMouseCoordinates(int x, int y)
         {
             const float MapSizeSqr = MapSize * MapSize;
             if (!GameOver() && Running && !( GetDistanceSqr(x, y) > MapSizeSqr ))
@@ -618,11 +616,11 @@ namespace SpaceRunner
             }
         }
 
-        public void AddScore(decimal amt)
+        internal void AddScore(decimal amt)
         {
             score += amt;
         }
-        public void AddAmmo()
+        internal void AddAmmo()
         {
             ammo += IncAmmo;
             fireCounter = -1;
@@ -631,7 +629,7 @@ namespace SpaceRunner
         {
             life += amt;
         }
-        public void AddLife(float amt, bool allowNew)
+        internal void AddLife(float amt, bool allowNew)
         {
             if (allowNew)
             {
@@ -655,13 +653,13 @@ namespace SpaceRunner
                 }
             }
         }
-        public void AddFuel()
+        internal void AddFuel()
         {
             fuel += Random.GaussianCapped(IncFuel, IncFuelRandomness);
         }
 
-        #endregion //public functional methods
-        #region public abstraction methods
+        #endregion //internal functional methods
+        #region internal abstraction methods
 
         void DisposeObjects()
         {
@@ -679,18 +677,18 @@ namespace SpaceRunner
             inputY = Random.Round(fy);
         }
 
-        public static void GetRandomDirection(out float xDir, out float yDir, float dist)
+        internal static void GetRandomDirection(out float xDir, out float yDir, float dist)
         {
             float angle = Random.DoubleFull((float)Math.PI);
             xDir = (float)( Math.Cos(angle) * dist );
             yDir = (float)( Math.Sin(angle) * dist );
         }
 
-        public static Image LoadImage(string name, float size)
+        internal static Image LoadImage(string name, float size)
         {
             return LoadImage(name, Color.Magenta, size);
         }
-        public static Image LoadImage(string name, Color color, float size)
+        internal static Image LoadImage(string name, Color color, float size)
         {
             int sizeInt = Random.Round(size * 2f);
             Bitmap image = new Bitmap(PicLocation + name);
@@ -701,19 +699,19 @@ namespace SpaceRunner
             return retVal;
         }
 
-        public static void Rotate(Graphics graphics, float angle, float centerX, float centerY)
+        internal static void Rotate(Graphics graphics, float angle, float centerX, float centerY)
         {
             graphics.ResetTransform();
             graphics.TranslateTransform(centerX, centerY);
             graphics.RotateTransform(angle);
             graphics.TranslateTransform(-centerX, -centerY);
         }
-        public static void Rotate(Graphics graphics, float xSpeed, float ySpeed, float centerX, float centerY)
+        internal static void Rotate(Graphics graphics, float xSpeed, float ySpeed, float centerX, float centerY)
         {
             Rotate(graphics, GetAngle(xSpeed, ySpeed) + 90f, centerX, centerY);
         }
 
-        public static void ShootAtPlayer(float speed, float x, float y, float size)
+        internal static void ShootAtPlayer(float speed, float x, float y, float size)
         {
             float dirX = -x, dirY = -y;
 
@@ -730,7 +728,7 @@ namespace SpaceRunner
             Bullet.NewBullet(x, y, dirX, dirY, speed, size, Bullet.FriendlyStatus.Enemy);
         }
 
-        public static void AdjustForPlayerSpeed(ref float dirX, ref float dirY, float speed, float x, float y, float spacing)
+        internal static void AdjustForPlayerSpeed(ref float dirX, ref float dirY, float speed, float x, float y, float spacing)
         {
             //angle between enemy and player movement vectors
             float angle = ( GetAngle(dirX, dirY) - GetAngle(Forms.GameForm.Game.inputX, Forms.GameForm.Game.inputY) ) * DegToRad;
@@ -759,7 +757,7 @@ namespace SpaceRunner
             }
         }
 
-        public static void NormalizeDirs(ref float xDir, ref float yDir, float speed)
+        internal static void NormalizeDirs(ref float xDir, ref float yDir, float speed)
         {
             float distance;
             if (( distance = GetDistance(xDir, yDir) ) > 0)
@@ -778,7 +776,7 @@ namespace SpaceRunner
                 yDir = 0;
             }
         }
-        public static float GetAngle(float xSpeed, float ySpeed)
+        internal static float GetAngle(float xSpeed, float ySpeed)
         {
             float arctan;
             if (xSpeed == 0)
@@ -789,31 +787,31 @@ namespace SpaceRunner
             return arctan / DegToRad + ( xSpeed == 0 ? ( ySpeed < 0 ? 180 : 0 ) : ( xSpeed < 0 ? 180 : 0 ) );
         }
 
-        public static float GetDistanceSqr(float x, float y)
+        internal static float GetDistanceSqr(float x, float y)
         {
             return ( x * x + y * y );
         }
-        public static float GetDistanceSqr(float x1, float y1, float x2, float y2)
+        internal static float GetDistanceSqr(float x1, float y1, float x2, float y2)
         {
             return GetDistanceSqr(x1 - x2, y1 - y2);
         }
-        public static float GetDistance(float x, float y)
+        internal static float GetDistance(float x, float y)
         {
             return (float)Math.Sqrt(GetDistanceSqr(x, y));
         }
-        public static float GetDistance(float x1, float y1, float x2, float y2)
+        internal static float GetDistance(float x1, float y1, float x2, float y2)
         {
             return GetDistance(x1 - x2, y1 - y2);
         }
 
-        public static PointF RandomEdgePoint()
+        internal static PointF RandomEdgePoint()
         {
             float angle;
             return new PointF((float)( Math.Cos(angle = Random.DoubleFull((float)Math.PI)) * CreationDist ),
                 (float)( Math.Sin(angle) * CreationDist ));
         }
 
-        public PointF RandomStartPoint(float size, bool fullMap)
+        internal PointF RandomStartPoint(float size, bool fullMap)
         {
             float angle = Random.DoubleFull((float)Math.PI);
             float maxDist;
@@ -837,12 +835,12 @@ namespace SpaceRunner
             return RandomStartPoint(size, fullMap);
         }
 
-        public static int Round(float value)
+        internal static int Round(float value)
         {
             return (int)Math.Round(value);
         }
 
-        #endregion //public abstraction methods
+        #endregion //internal abstraction methods
         #region game logic
 
         void StartObjects()
@@ -955,17 +953,6 @@ namespace SpaceRunner
 
         void CreateObjects(float appearChance)
         {
-            //if (Fireworks)
-            //    appearChance /= 3f;
-
-            //in case appearChance > 1 we dont want to overflow Random.Bool
-            for ( ; appearChance > 1 ; --appearChance)
-                ActualCreate(1);
-            ActualCreate(appearChance);
-        }
-        void ActualCreate(float appearChance)
-        {
-            //this relies on each objects creation rate being less than 1
             if (Random.Bool(appearChance * LifeDustCreationRate))
                 LifeDust.NewLifeDust();
             if (Random.Bool(appearChance * PowerUpCreationRate))
@@ -1231,7 +1218,7 @@ namespace SpaceRunner
         #endregion //game logic
 
         #region extra definitions
-        public interface IChecksExtraSectors
+        internal interface IChecksExtraSectors
         {
             int DistanceChecked
             {

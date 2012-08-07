@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 
 namespace SpaceRunner
 {
-    class Alien : GameObject
+    internal class Alien : GameObject
     {
         private static readonly Image AlienImage;
 
@@ -13,7 +13,7 @@ namespace SpaceRunner
             AlienImage = Game.LoadImage("alien.bmp", Game.AlienSize);
         }
 
-        public static void Dispose()
+        internal static void Dispose()
         {
             AlienImage.Dispose();
         }
@@ -22,25 +22,25 @@ namespace SpaceRunner
         private int ammo, life, fuel;
         private PowerUp droppedLife;
 
-        public static void NewAlien()
+        internal static void NewAlien()
         {
             PointF point = Game.RandomEdgePoint();
             NewAlien(point.X, point.Y);
         }
 
-        public static void NewAlien(float x, float y)
+        internal static void NewAlien(float x, float y)
         {
             new Alien(x, y);
         }
 
-        Alien(float x, float y, int life, PowerUp droppedLife)
+        private Alien(float x, float y, int life, PowerUp droppedLife)
             : this(x, y)
         {
             this.life = life;
             this.droppedLife = droppedLife;
         }
 
-        Alien(float x, float y)
+        private Alien(float x, float y)
             : base(x, y, GetStartSpeed(), Game.AlienSize, AlienImage, Game.PowerUpRotate)
         {
             fireRate = 0;
@@ -50,7 +50,7 @@ namespace SpaceRunner
             droppedLife = null;
         }
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -65,9 +65,12 @@ namespace SpaceRunner
 
         protected override void Collide(GameObject obj)
         {
+            Bullet bullet;
             PowerUp powerUp;
             Asteroid asteroid;
-            if (( powerUp = obj as PowerUp ) != null)
+            if (( bullet = obj as Bullet ) != null)
+                HitBullet(bullet);
+            else if (( powerUp = obj as PowerUp ) != null)
                 CollectPowerUp(powerUp);
             else if (( asteroid = obj as Asteroid ) != null)
                 HitAsteroid(asteroid);
@@ -79,6 +82,17 @@ namespace SpaceRunner
             else
                 throw new Exception();
 #endif
+        }
+
+        private void HitBullet(Bullet bullet)
+        {
+            if (bullet.Friendly == Bullet.FriendlyStatus.Friend)
+                AddScore(Score);
+            else if (bullet.Friendly == Bullet.FriendlyStatus.Enemy)
+                AddScore(-Score);
+
+            this.Die();
+            bullet.Die();
         }
 
         private void CollectPowerUp(PowerUp powerUp)
@@ -172,21 +186,17 @@ namespace SpaceRunner
             if (constSpeed > 0)
             {
                 float constDmg = Game.Random.Weighted(damage, Game.AlienConstSpeedReduceWeight);
-                damage -= constDmg;
-                constSpeed -= constDmg;
-                decimal score;
-                if (constSpeed > 0)
+                if (constDmg > constSpeed)
                 {
-                    Game.NormalizeDirs(ref xDir, ref yDir, constSpeed);
-                    score = (decimal)constDmg;
+                    constDmg = constSpeed;
+                    xDir = yDir = 0;
                 }
                 else
                 {
-                    damage += -constSpeed;
-                    xDir = yDir = 0;
-                    score = (decimal)constSpeed + (decimal)constDmg;
+                    Game.NormalizeDirs(ref xDir, ref yDir, constSpeed - constDmg);
                 }
-                AddScore(score * Game.AlienSpeedScoreMult);
+                damage -= constDmg;
+                AddScore((decimal)constDmg * Game.AlienSpeedScoreMult);
             }
             return damage;
         }
@@ -202,7 +212,7 @@ namespace SpaceRunner
             return Game.Random.GaussianCapped(value, Game.AlienIncRandomness, value * Game.AlienIncCap);
         }
 
-        public override void Draw(Graphics graphics, int centerX, int centerY)
+        internal override void Draw(Graphics graphics, int centerX, int centerY)
         {
             base.Draw(graphics, centerX, centerY);
 
@@ -238,7 +248,7 @@ namespace SpaceRunner
             }
         }
 
-        public override void Die()
+        internal override void Die()
         {
             base.Die();
 

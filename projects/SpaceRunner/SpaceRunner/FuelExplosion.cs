@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace SpaceRunner
 {
-    class FuelExplosion : GameObject, Game.IChecksExtraSectors
+    internal class FuelExplosion : GameObject, Game.IChecksExtraSectors
     {
         //if its size is greater than the sector size minus the maximum object size (for non fuel explosions),
         //check for collisions 2 sectors away
@@ -40,13 +40,13 @@ namespace SpaceRunner
             return retVal;
         }
 
-        public static void Dispose()
+        internal static void Dispose()
         {
             foreach (Image i in images)
                 i.Dispose();
         }
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -58,7 +58,7 @@ namespace SpaceRunner
             : base(x, y, Game.PowerUpSize, images[0])
         {
         }
-        public static void NewFuelExplosion(float x, float y)
+        internal static void NewFuelExplosion(float x, float y)
         {
             new FuelExplosion(x, y);
         }
@@ -97,7 +97,7 @@ namespace SpaceRunner
             return GetDamage(Game.GetDistance(x, y));
         }
 
-        public float GetDamage(float dist)
+        internal float GetDamage(float dist)
         {
             //do more damage closer to center
             return Game.FuelExplosionDamage * size / ( dist + Game.FuelExplosionDamageStartDist );

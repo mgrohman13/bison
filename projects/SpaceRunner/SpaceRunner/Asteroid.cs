@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace SpaceRunner
 {
-    class Asteroid : GameObject, IDisposable
+    internal class Asteroid : GameObject, IDisposable
     {
         //load all possible different images, though each asteroid instance will have its own sized copy
         private static readonly Image[] images;
@@ -16,19 +16,19 @@ namespace SpaceRunner
         }
 
         //dispose all static images, not to be confused with IDisposable implementation
-        public static void Dispose()
+        internal static void Dispose()
         {
             foreach (Image i in images)
                 i.Dispose();
         }
 
-        public static void NewAsteroid()
+        internal static void NewAsteroid()
         {
             PointF point = Game.RandomEdgePoint();
             NewAsteroid(point.X, point.Y);
         }
 
-        public static void NewAsteroid(float x, float y)
+        internal static void NewAsteroid(float x, float y)
         {
             float xDir, yDir, speed = Game.Random.Gaussian(Game.AsteroidInitialSpeed);
             Game.GetRandomDirection(out xDir, out yDir, speed);
@@ -36,14 +36,14 @@ namespace SpaceRunner
             new Asteroid(x, y, size, xDir, yDir, speed);
         }
 
-        public static void NewAsteroid(float x, float y, float size, float xDir, float yDir)
+        internal static void NewAsteroid(float x, float y, float size, float xDir, float yDir)
         {
             //used when an old asteroid breaks up
             new Asteroid(x, y, size, xDir, yDir, Game.GetDistance(xDir, yDir));
         }
 
         //pass in xDir and yDir total distance so it only needs to be calculated once
-        Asteroid(float x, float y, float size, float xDir, float yDir, float speed) :
+        private Asteroid(float x, float y, float size, float xDir, float yDir, float speed) :
             base(x, y, xDir, yDir, size, GetImage(size), speed * Game.AsteroidRotateMult + Game.AsteroidRotateConst)
         {
         }
@@ -56,7 +56,7 @@ namespace SpaceRunner
             return new Bitmap(images[Game.Random.Next(Game.NumAsteroidImages)], new Size(imageSize, imageSize));
         }
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -64,7 +64,7 @@ namespace SpaceRunner
             }
         }
 
-        public float Area
+        internal float Area
         {
             get
             {
@@ -72,7 +72,7 @@ namespace SpaceRunner
             }
         }
 
-        public override void Die()
+        internal override void Die()
         {
             base.Die();
 

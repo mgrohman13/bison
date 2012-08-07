@@ -2,7 +2,7 @@ using System.Drawing;
 
 namespace SpaceRunner
 {
-    class Explosion : GameObject
+    internal class Explosion : GameObject
     {
         static Image[,] images = LoadImages();
         static Image[,] LoadImages()
@@ -18,7 +18,7 @@ namespace SpaceRunner
             return Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
         }
 
-        public static void Dispose()
+        internal static void Dispose()
         {
             foreach (Image i in images)
                 i.Dispose();
@@ -29,7 +29,7 @@ namespace SpaceRunner
         int time = 0;
         int expNum;
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -47,7 +47,7 @@ namespace SpaceRunner
             this.cachedSpeed = speed;
             this.expNum = expNum;
         }
-        public static void NewExplosion(float x, float y, float speed)
+        internal static void NewExplosion(float x, float y, float speed)
         {
             new Explosion(x, y, speed, Game.Random.Next(Game.NumExplosions));
         }

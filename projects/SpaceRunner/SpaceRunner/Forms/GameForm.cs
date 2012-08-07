@@ -5,9 +5,9 @@ using System.Windows.Forms;
 
 namespace SpaceRunner.Forms
 {
-    public partial class GameForm : MattUtil.RealTimeGame.GameForm
+    internal partial class GameForm : MattUtil.RealTimeGame.GameForm
     {
-        new public static Game Game
+        new internal static Game Game
         {
             get
             {
@@ -36,7 +36,7 @@ namespace SpaceRunner.Forms
         Region clip;
 
         private static GameForm form;
-        public GameForm()
+        internal GameForm()
         {
             form = this;
             MattUtil.RealTimeGame.GameForm.game = new Game(this.RefreshGame);

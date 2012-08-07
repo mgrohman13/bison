@@ -6,7 +6,7 @@ using System.Drawing.Drawing2D;
 
 namespace SpaceRunner
 {
-    class AlienShip : GameObject
+    internal class AlienShip : GameObject
     {
         private static readonly Image AlienShipImage;
 
@@ -15,14 +15,14 @@ namespace SpaceRunner
             AlienShipImage = Game.LoadImage("alienship.bmp", Game.AlienShipSize);
         }
 
-        public static void Dispose()
+        internal static void Dispose()
         {
             AlienShipImage.Dispose();
         }
 
         private float life, baseLife, fireRate, speedMult;
 
-        public static void NewAlienShip()
+        internal static void NewAlienShip()
         {
             PointF point = Game.RandomEdgePoint();
             new AlienShip(point.X, point.Y);
@@ -36,7 +36,7 @@ namespace SpaceRunner
             speedMult = RandVal(Game.AlienShipSpeedMult);
         }
 
-        public override decimal Score
+        internal override decimal Score
         {
             get
             {
@@ -63,7 +63,7 @@ namespace SpaceRunner
                     * (decimal)speedMult / (decimal)Game.AlienShipSpeedMult * mult );
         }
 
-        public override void Die()
+        internal override void Die()
         {
             base.Die();
 
@@ -177,7 +177,7 @@ namespace SpaceRunner
             return Game.Random.GaussianCapped(value, Game.AlienShipStatRandomness, value * Game.AlienShipStatCap);
         }
 
-        public override void Draw(Graphics graphics, int centerX, int centerY)
+        internal override void Draw(Graphics graphics, int centerX, int centerY)
         {
             base.Draw(graphics, centerX, centerY);
 
