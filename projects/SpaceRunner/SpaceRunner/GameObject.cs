@@ -136,7 +136,7 @@ namespace SpaceRunner
         {
         }
 
-        internal float Step(float playerXMove, float playerYMove)
+        internal float Step(float playerXMove, float playerYMove, float playerDist)
         {
             //do stuff in child classes
             OnStep();
@@ -151,11 +151,10 @@ namespace SpaceRunner
             GetTotalMove(out xMove, out yMove);
             Move(xMove, yMove);
 
-            float distSqr = Game.GetDistanceSqr(x, y);
-            float checkDist, damage = 0;
-            if (distSqr > Game.RemovalDist * Game.RemovalDist)
+            float dist = Game.GetDistance(x, y), damage = 0, checkDist = ( dist - Game.MapSize ) * playerDist;
+            if (checkDist > 0 && Game.Random.Bool(checkDist / ( checkDist + Game.RemovalDist )))
                 Forms.GameForm.Game.RemoveObject(this);
-            else if (distSqr < ( checkDist = Game.PlayerSize + size ) * checkDist)
+            else if (dist - size < Game.PlayerSize)
                 damage = HitPlayer();
 
             //return damage to player
@@ -203,10 +202,7 @@ namespace SpaceRunner
         {
             float moveDist = ( size + obj.size - Game.GetDistance(x, y, obj.x, obj.y) ) / ( adjustOther ? 2 : 1 );
             float xDif = x - obj.x, yDif = y - obj.y;
-            if (xDif == 0 && yDif == 0)
-                Game.GetRandomDirection(out xDif, out yDif, moveDist);
-            else
-                Game.NormalizeDirs(ref xDif, ref yDif, moveDist);
+            Game.NormalizeDirs(ref xDif, ref yDif, moveDist);
 
             Move(xDif, yDif);
             if (adjustOther)

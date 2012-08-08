@@ -64,7 +64,7 @@ namespace SpaceRunner
                 float spacing = 0;
                 //half the time, space bullets out evenly in all directions for a uniform explosion
                 if (Game.Random.Bool())
-                    spacing = (float)( ( 2 * Game.BulletSize + Forms.GameForm.Game.TotalSpeed ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
+                    spacing = (float)( ( Game.BulletSize + Forms.GameForm.Game.TotalSpeed / 2 ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
                 //we don't want standard spacing for explosions
                 spacing -= GetSpacing(speed);
 
@@ -100,10 +100,7 @@ namespace SpaceRunner
 
         private static void NormalizeDirs(ref float xDir, ref float yDir, float speed)
         {
-            if (xDir == 0 && yDir == 0)
-                Game.GetRandomDirection(out xDir, out yDir, speed);
-            else
-                Game.NormalizeDirs(ref xDir, ref yDir, speed);
+            Game.NormalizeDirs(ref xDir, ref yDir, speed);
         }
 
         internal override decimal Score

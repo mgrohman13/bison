@@ -59,7 +59,8 @@ namespace SpaceRunner.Forms
         {
             int total = (int)Math.Ceiling(Game.MapSize + PadSides);
 #if TRACE
-            total = (int)Math.Ceiling(Game.RemovalDist + PadSides);
+            Rectangle r = Screen.GetWorkingArea(this);
+            total = Math.Min(r.Width, r.Height) / 2;
 #endif
             this.Size = new Size(this.Width - this.ClientSize.Width + total * 2,
                 this.Height - this.ClientSize.Height + total * 2 + base.menuStrip.Height);

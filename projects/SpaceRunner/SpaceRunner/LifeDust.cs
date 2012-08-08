@@ -52,6 +52,20 @@ namespace SpaceRunner
 
         private void AdjustMove(GameObject obj)
         {
+            float xd = obj.XDir, yd = obj.YDir;
+            if (obj is Explosion || obj is FuelExplosion)
+            {
+                xd = x - obj.X;
+                yd = y - obj.Y;
+                Game.NormalizeDirs(ref xd, ref yd, Game.ExplosionSpeed);
+            }
+            xDir = Mod(xd);
+            yDir = Mod(yd);
+        }
+
+        private float Mod(float objDir)
+        {
+            return (float)( Math.Sign(objDir) * ( Math.Sqrt(Math.Abs(objDir) + 1) - 1 ) );
         }
 
         internal bool HitBy(GameObject obj)

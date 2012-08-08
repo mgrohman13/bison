@@ -84,7 +84,7 @@ namespace SpaceRunner
             //space pieces out evenly in all directions
             float angle = Game.Random.DoubleFull((float)Math.PI);
             float angleStep = Game.TwoPi / numPieces;
-            float spacing = (float)( ( 2 * pieceSize + Forms.GameForm.Game.TotalSpeed ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
+            float spacing = (float)( ( pieceSize + Forms.GameForm.Game.TotalSpeed / 2 ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
             for (int i = 0 ; i < numPieces ; i++)
             {
                 if (Game.Random.Bool(Math.Pow(size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
