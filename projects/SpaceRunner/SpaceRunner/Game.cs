@@ -159,8 +159,8 @@ namespace SpaceRunner
         //size constants are the radius of the object
 
         internal const float MapSize = 338f;
-        //distance from the edge of the map at which objects have a 50% chance of being remved per pixel moved
-        internal const double RemovalDist = MapSize * MapSize;
+        //distance from the CreationDist at which objects have a 50% chance of being removed per pixel moved
+        internal const double RemovalDist = MapSize * MapSize * 1.3;
         //distance from the center of the map at which new objects are created
         internal const float CreationDist = MapSize + 39f;
 #if TRACE
@@ -302,6 +302,8 @@ namespace SpaceRunner
         internal const float LifeDustClumpSpeed = GameSpeed * .3f;
         //speed of each individual
         internal const float LifeDustIndividualSpeed = GameSpeed * .013f;
+        //exponent to the speed picked up from collisions with other objects
+        internal const double LifeDustObjSpeedPower = GameSpeed / ( GameSpeed + .169 );
         //chance of life dust getting hit by a bullet or fuel explosion
         internal const float LifeDustHitChance = GameTick * .003f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
@@ -878,21 +880,21 @@ namespace SpaceRunner
             if (Dead && ++deadCounter > DeathTime)
                 deadCounter = -1;
 
-            float speed = MovePlayer();
+            float playerSpeed = MovePlayer();
             //direction
             float xSpeed = inputX;
             float ySpeed = inputY;
             //normalize for speed
-            NormalizeDirs(ref xSpeed, ref ySpeed, speed);
+            NormalizeDirs(ref xSpeed, ref ySpeed, playerSpeed);
 
-            PlayerFiring(speed);
+            PlayerFiring(playerSpeed);
             //RegenLife();
 
             //create new objects
-            CreateObjects(speed);
+            CreateObjects(playerSpeed);
 
             //move objects and detect collisions
-            MoveObjects(xSpeed, ySpeed, speed);
+            MoveObjects(xSpeed, ySpeed, playerSpeed);
 
             CheckFireworks();
         }
@@ -958,7 +960,7 @@ namespace SpaceRunner
                 AlienShip.NewAlienShip();
         }
 
-        void MoveObjects(float xSpeed, float ySpeed, float playerDist)
+        void MoveObjects(float xSpeed, float ySpeed, float playerSpeed)
         {
 
             //Mine.indexer = 0;
@@ -968,7 +970,7 @@ namespace SpaceRunner
             List<GameObject> objs;
             if (objectSectors.TryGetValue(new Point(int.MinValue, int.MinValue), out objs))
                 foreach (GameObject obj in objs)
-                    obj.Step(xSpeed, ySpeed, playerDist);
+                    obj.Step(xSpeed, ySpeed, playerSpeed);
 
             bool xFirst = Random.Bool(), xDir = Random.Bool(), yDir = Random.Bool();
 
@@ -999,7 +1001,7 @@ namespace SpaceRunner
                             if (objects.Contains(obj))
                             {
                                 //move the object
-                                float damage = obj.Step(xSpeed, ySpeed, playerDist);
+                                float damage = obj.Step(xSpeed, ySpeed, playerSpeed);
                                 //check for damage to the player
                                 if (damage > 0)
                                     HitPlayer(damage);

@@ -136,7 +136,7 @@ namespace SpaceRunner
         {
         }
 
-        internal float Step(float playerXMove, float playerYMove, float playerDist)
+        internal float Step(float playerXMove, float playerYMove, float playerSpeed)
         {
             //do stuff in child classes
             OnStep();
@@ -151,10 +151,11 @@ namespace SpaceRunner
             GetTotalMove(out xMove, out yMove);
             Move(xMove, yMove);
 
-            float dist = Game.GetDistance(x, y), damage = 0, checkDist = ( dist - Game.MapSize ) * playerDist;
-            if (checkDist > 0 && Game.Random.Bool(checkDist / ( checkDist + Game.RemovalDist )))
+            float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
+            if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
+                    Game.Random.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
                 Forms.GameForm.Game.RemoveObject(this);
-            else if (dist - size < Game.PlayerSize)
+            else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();
 
             //return damage to player
@@ -222,8 +223,7 @@ namespace SpaceRunner
         {
             float sizes;
             //check distance for collision
-            if (Game.GetDistanceSqr(x, y, obj.x, obj.y) <
-                ( sizes = size + obj.size ) * sizes)
+            if (Game.GetDistanceSqr(x, y, obj.x, obj.y) < ( sizes = size + obj.size ) * sizes)
                 Collide(this, obj);
         }
         static void Collide(GameObject obj1, GameObject obj2)

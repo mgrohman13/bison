@@ -65,13 +65,10 @@ namespace SpaceRunner
 
         protected override void OnStep()
         {
-            //the amount size is incremented each step
-            const float SizeInc = ( Game.FuelExplosionSize - Game.PowerUpSize ) / Game.FuelExplosionSteps;
-
             int img;
 
             //increment size and select proper image
-            if (( img = (int)Math.Ceiling(( ( size += SizeInc ) - Game.PowerUpSize ) / ImgStep) - 1 ) < NumImages)
+            if (( img = (int)Math.Ceiling(( ( size += Game.ExplosionSpeed ) - Game.PowerUpSize ) / ImgStep) - 1 ) < NumImages)
                 this.image = images[img];
             else
                 //die when out of images
