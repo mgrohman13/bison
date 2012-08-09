@@ -22,10 +22,10 @@ namespace SpaceRunner
 
         private float life, baseLife, fireRate, speedMult;
 
-        internal static void NewAlienShip()
+        internal static AlienShip NewAlienShip()
         {
             PointF point = Game.RandomEdgePoint();
-            new AlienShip(point.X, point.Y);
+            return new AlienShip(point.X, point.Y);
         }
 
         private AlienShip(float x, float y)
@@ -44,9 +44,13 @@ namespace SpaceRunner
             }
         }
 
-        private void Damage(float amt)
+        private void Damage(float amt, params GameObject[] objs)
         {
-            amt = Game.Random.GaussianOE(amt, Game.AlienShipDamageRandomness, Game.AlienShipDamageOEPct, 0);
+            amt = Game.RandDmgToAlien(amt);
+
+            if (objs.Length > 0 && amt > Game.PlayerLife)
+                Explosion.NewExplosion(objs);
+
             if (amt > life)
                 amt = life;
             AddScore(GetScore(amt, Game.AlienShipScoreMult));
@@ -107,7 +111,7 @@ namespace SpaceRunner
         private void HitAsteroid(Asteroid asteroid)
         {
             //lose life based on the area of the asteroid
-            Damage(asteroid.Area / Game.AsteroidAreaToDamageRatio);
+            Damage(asteroid.Area / Game.AsteroidAreaToDamageRatio, asteroid, this);
             if (life > 0)
                 Forms.GameForm.Game.RemoveObject(asteroid);
             else
@@ -119,7 +123,8 @@ namespace SpaceRunner
             //bullets fired by aliens or alien ships wont hit alien ships
             if (bullet.Friendly != Bullet.FriendlyStatus.Enemy)
             {
-                Damage(Game.BulletDamage * ( bullet.Friendly == Bullet.FriendlyStatus.Friend ? Game.AlienShipFriendlyBulletDamageMult : Game.AlienShipNeutralBulletDamageMult ));
+                Damage(( bullet.Friendly == Bullet.FriendlyStatus.Friend ? Game.AlienShipFriendlyBulletDamageMult : Game.AlienShipNeutralBulletDamageMult )
+                        * Game.BulletDamage, bullet, this, this);
                 bullet.Die();
             }
         }
@@ -167,7 +172,7 @@ namespace SpaceRunner
             {
                 //either kill the ship or the player
                 damage = Math.Min(Forms.GameForm.Game.CurrentLifePart, life);
-                Damage(damage);
+                Damage(damage, Forms.GameForm.Game.GetPlayerObject(), this);
             }
             return damage;
         }

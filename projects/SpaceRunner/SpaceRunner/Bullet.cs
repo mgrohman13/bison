@@ -76,9 +76,9 @@ namespace SpaceRunner
             }
         }
 
-        internal static void NewBullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
+        internal static Bullet NewBullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
         {
-            new Bullet(x, y, xDir, yDir, speed, spacing, friendly, -1);
+            return new Bullet(x, y, xDir, yDir, speed, spacing, friendly, -1);
         }
 
         private Bullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly, int FireworkIndex)
@@ -134,6 +134,8 @@ namespace SpaceRunner
 
             base.HitPlayer();
 
+            GameObject player = Forms.GameForm.Game.GetPlayerObject();
+            Explosion.NewExplosion(this, player, player);
             return Game.BulletDamage;
         }
     }

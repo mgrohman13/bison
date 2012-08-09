@@ -22,15 +22,15 @@ namespace SpaceRunner
         private int ammo, life, fuel;
         private PowerUp droppedLife;
 
-        internal static void NewAlien()
+        internal static Alien NewAlien()
         {
             PointF point = Game.RandomEdgePoint();
-            NewAlien(point.X, point.Y);
+            return NewAlien(point.X, point.Y);
         }
 
-        internal static void NewAlien(float x, float y)
+        internal static Alien NewAlien(float x, float y)
         {
-            new Alien(x, y);
+            return new Alien(x, y);
         }
 
         private Alien(float x, float y, int life, PowerUp droppedLife)
@@ -157,7 +157,10 @@ namespace SpaceRunner
 
         private void HitAsteroid(Asteroid asteroid)
         {
-            float damage = asteroid.Area / Game.AsteroidAreaToAlienDamageRatio;
+            float damage = Game.RandDmgToAlien(asteroid.Area / Game.AsteroidAreaToAlienDamageRatio);
+
+            if (damage > Game.AlienSpeed && Game.GetDistance(xDir, yDir) + speed > damage)
+                Explosion.NewExplosion(asteroid, this);
 
             if (xDir != 0 || yDir != 0)
             {
@@ -253,7 +256,7 @@ namespace SpaceRunner
             base.Die();
 
             DropPowerUps();
-            Explosion.NewExplosion(x, y, speed);
+            Explosion.NewExplosion(this);
         }
 
         private void DropPowerUps()
@@ -280,6 +283,7 @@ namespace SpaceRunner
             base.HitPlayer();
 
             DropPowerUps();
+            Explosion.NewExplosion(this);
             //always kill player
             return Game.PlayerLife;
         }

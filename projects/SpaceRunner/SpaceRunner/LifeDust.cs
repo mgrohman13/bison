@@ -66,7 +66,7 @@ namespace SpaceRunner
 
         private void Mod(ref float dir, float objDir)
         {
-            dir = (float)( ( dir + Math.Sign(objDir) * ( Math.Pow(Math.Abs(objDir) + 1, Game.LifeDustObjSpeedPower) - 1 ) ) / 2 );
+            dir = ( dir + Game.ReduceWithPower(objDir, Game.LifeDustObjSpeedPower) ) / 2;
         }
 
         internal bool HitBy(GameObject obj)

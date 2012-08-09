@@ -54,13 +54,14 @@ namespace SpaceRunner
             }
         }
 
-        FuelExplosion(float x, float y)
-            : base(x, y, Game.PowerUpSize, images[0])
+        internal static FuelExplosion NewFuelExplosion(float x, float y)
         {
+            return new FuelExplosion(x, y);
         }
-        internal static void NewFuelExplosion(float x, float y)
+
+        private FuelExplosion(float x, float y)
+            : base(x, y, Game.PowerUpSize, images[0], Game.ExplosionRotate)
         {
-            new FuelExplosion(x, y);
         }
 
         protected override void OnStep()

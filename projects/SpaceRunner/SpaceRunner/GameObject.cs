@@ -49,7 +49,17 @@ namespace SpaceRunner
         {
         }
 
+        private GameObject(float xDir, float yDir)
+            : this(0, 0, xDir, yDir, 0, 0, null, 0, false)
+        {
+        }
+
         private GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed)
+            : this(x, y, xDir, yDir, speed, size, image, rotateSpeed, true)
+        {
+        }
+
+        private GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed, bool add)
         {
             this.x = x;
             this.y = y;
@@ -59,10 +69,15 @@ namespace SpaceRunner
             this.size = size;
             this.image = image;
 
-            curAngle = Game.Random.DoubleHalf(360);
-            rotate = Game.Random.Gaussian(rotateSpeed);
+            if (speed == 0 || rotateSpeed != 0)
+            {
+                curAngle = Game.Random.DoubleHalf(360);
+                if (rotateSpeed != 0)
+                    rotate = Game.Random.Gaussian(rotateSpeed);
+            }
 
-            Forms.GameForm.Game.AddObject(this);
+            if (add)
+                Forms.GameForm.Game.AddObject(this);
         }
 
         internal float X
@@ -94,6 +109,14 @@ namespace SpaceRunner
             get
             {
                 return yDir;
+            }
+        }
+
+        internal float Speed
+        {
+            get
+            {
+                return speed;
             }
         }
 
@@ -221,22 +244,23 @@ namespace SpaceRunner
 
         internal void CheckCollision(GameObject obj)
         {
-            float sizes;
-            //check distance for collision
-            if (Game.GetDistanceSqr(x, y, obj.x, obj.y) < ( sizes = size + obj.size ) * sizes)
+            float sizes = size + obj.size;
+            if (Game.GetDistanceSqr(x, y, obj.x, obj.y) < sizes * sizes)
                 Collide(this, obj);
         }
-        static void Collide(GameObject obj1, GameObject obj2)
+
+        private static void Collide(GameObject obj1, GameObject obj2)
         {
-            //run the correct objects Collide method
+            //run the correct object's Collide method
             if (TypePriority(obj2) > TypePriority(obj1))
                 obj2.Collide(obj1);
             else
                 obj1.Collide(obj2);
         }
-        static int TypePriority(GameObject obj)
+
+        static byte TypePriority(GameObject obj)
         {
-            //determines which objects Collide method is called when two objects collide
+            //determines which object's Collide method is called when two objects collide
             //the object with the higher return value has its method called
             if (obj is PowerUp)
                 return 1;
@@ -259,9 +283,23 @@ namespace SpaceRunner
 #endif
         }
 
-        public override string ToString()
+        internal class DummyObject : GameObject
         {
-            return string.Format("{0} ({1},{2})", GetType(), x, y);
+            internal DummyObject(float xDir, float yDir)
+                : base(xDir, yDir)
+            {
+            }
+            internal override decimal Score
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            protected override void Collide(GameObject obj)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

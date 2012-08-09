@@ -4,18 +4,13 @@ namespace SpaceRunner
 {
     internal class Explosion : GameObject
     {
-        static Image[,] images = LoadImages();
-        static Image[,] LoadImages()
+        private static Image[,] images;
+        static Explosion()
         {
-            Image[,] retVal = new Image[Game.NumExplosions, Game.NumExplosionImages];
-            for (int a = 0 ; a < Game.NumExplosions ; ++a)
-                for (int b = 0 ; b < Game.NumExplosionImages ; )
-                    retVal[a, b] = LoadImage(a + 1, ++b);
-            return retVal;
-        }
-        static Image LoadImage(int explosion, int number)
-        {
-            return Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
+            images = new Image[Game.NumExplosions, Game.NumExplosionImages];
+            for (int explosion = 1 ; explosion <= Game.NumExplosions ; ++explosion)
+                for (int number = 1 ; number <= Game.NumExplosionImages ; ++number)
+                    images[explosion - 1, number - 1] = Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
         }
 
         internal static void Dispose()
@@ -24,10 +19,37 @@ namespace SpaceRunner
                 i.Dispose();
         }
 
-        float cachedSpeed;
-        int alt = 0;
-        int time = 0;
-        int expNum;
+        private int time = 0;
+        private int expNum;
+
+        internal static Explosion NewExplosion(params GameObject[] objs)
+        {
+#if DEBUG
+            if (objs.Length == 0)
+                throw new System.Exception();
+#endif
+            float xDir = 0, yDir = 0, count = 0;
+            foreach (GameObject obj in objs)
+            {
+                float x = obj.X, y = obj.Y;
+                Game.NormalizeDirs(ref x, ref y, obj.Speed);
+                xDir += obj.XDir - x;
+                yDir += obj.YDir - y;
+                ++count;
+            }
+            xDir /= count;
+            yDir /= count;
+            return new Explosion(objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(Game.NumExplosions));
+        }
+
+        private Explosion(float x, float y, float xDir, float yDir, int expNum)
+            : base(x, y, Game.ExplosionSize, images[expNum, 0], Game.ExplosionRotate)
+        {
+            this.xDir = xDir;
+            this.yDir = yDir;
+            this.expNum = expNum;
+            this.time = Game.Random.Round(Game.ExplosionTime);
+        }
 
         internal override decimal Score
         {
@@ -37,54 +59,29 @@ namespace SpaceRunner
             }
         }
 
-        Explosion(float x, float y, float speed, int expNum)
-            : base(x, y, Game.ExplosionSize, images[expNum, 0])
-        {
-            //keep direction constant, no longer chase player
-            Game.NormalizeDirs(ref x, ref y, speed);
-            this.xDir = -x;
-            this.yDir = -y;
-            this.cachedSpeed = speed;
-            this.expNum = expNum;
-        }
-        internal static void NewExplosion(float x, float y, float speed)
-        {
-            new Explosion(x, y, speed, Game.Random.Next(Game.NumExplosions));
-        }
-
         protected override void OnStep()
         {
-            //dont run every frame
-            const int Frames = (int)( .5f + Game.Framerate * 2.6f / Game.GameTick );
-            if (++alt % Frames < 1)
+            if (time > 0)
             {
-                //reduce speed each iteration
-                Game.NormalizeDirs(ref this.xDir, ref this.yDir, cachedSpeed /= 1.13f);
-
-                if (++time < Game.NumExplosionImages)
-                    this.image = images[expNum, time];
-                else
-                {
-                    //die when out of images
-                    this.Die();
-                }
+                Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(xDir, yDir) * Game.ExplosionSpeedMult);
+                this.image = images[expNum, (int)( ( Game.ExplosionTime - time ) / Game.ExplosionTime * Game.NumExplosionImages )];
+                --time;
+            }
+            else
+            {
+                this.Die();
             }
         }
 
-        //dont hit anything
         protected override void Collide(GameObject obj)
         {
-            LifeDust ld;
-            if (( ld = obj as LifeDust ) != null)
-            {
-                if (ld.HitBy(this))
-                    ld.Die();
-            }
+            LifeDust ld = obj as LifeDust;
+            if (ld != null && ld.HitBy(this))
+                ld.Die();
         }
 
         protected override float HitPlayer()
         {
-            //no damage
             return 0f;
         }
     }

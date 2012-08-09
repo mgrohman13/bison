@@ -22,24 +22,24 @@ namespace SpaceRunner
                 i.Dispose();
         }
 
-        internal static void NewAsteroid()
+        internal static Asteroid NewAsteroid()
         {
             PointF point = Game.RandomEdgePoint();
-            NewAsteroid(point.X, point.Y);
+            return NewAsteroid(point.X, point.Y);
         }
 
-        internal static void NewAsteroid(float x, float y)
+        internal static Asteroid NewAsteroid(float x, float y)
         {
             float xDir, yDir, speed = Game.Random.Gaussian(Game.AsteroidInitialSpeed);
             Game.GetRandomDirection(out xDir, out yDir, speed);
             float size = Game.Random.GaussianCapped(Game.AsteroidAverageSize, Game.AsteroidSizeRandomness, Game.AsteroidAverageSize * Game.AsteroidSizeCap);
-            new Asteroid(x, y, size, xDir, yDir, speed);
+            return new Asteroid(x, y, size, xDir, yDir, speed);
         }
 
-        internal static void NewAsteroid(float x, float y, float size, float xDir, float yDir)
+        internal static Asteroid NewAsteroid(float x, float y, float size, float xDir, float yDir)
         {
             //used when an old asteroid breaks up
-            new Asteroid(x, y, size, xDir, yDir, Game.GetDistance(xDir, yDir));
+            return new Asteroid(x, y, size, xDir, yDir, Game.GetDistance(xDir, yDir));
         }
 
         //pass in xDir and yDir total distance so it only needs to be calculated once
@@ -162,7 +162,10 @@ namespace SpaceRunner
         {
             base.HitPlayer();
 
-            return Area / Game.AsteroidAreaToDamageRatio;
+            float damage = Area / Game.AsteroidAreaToDamageRatio;
+            if (damage > Game.BulletDamage)
+                Explosion.NewExplosion(this, Forms.GameForm.Game.GetPlayerObject());
+            return damage;
         }
 
         void IDisposable.Dispose()
