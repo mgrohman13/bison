@@ -52,21 +52,40 @@ namespace SpaceRunner
 
         private void AdjustMove(GameObject obj)
         {
-            float objXDir = obj.XDir, objYDir = obj.YDir;
+            float objXDir = obj.XDir, objYDir = obj.YDir, xDist = this.x - obj.X, yDist = this.y - obj.Y;
+            Game.NormalizeDirs(ref xDist, ref yDist, 1);
             if (obj is Explosion || obj is FuelExplosion)
             {
-                float expX = x - obj.X, expY = y - obj.Y;
-                Game.NormalizeDirs(ref expX, ref expY, Game.ExplosionSpeed);
-                objXDir += expX;
-                objYDir += expY;
+                //explosion shockwave acts as outward speed
+                objXDir += GetExplosionSpeed(xDist);
+                objYDir += GetExplosionSpeed(yDist);
             }
-            Mod(ref xDir, objXDir);
-            Mod(ref yDir, objYDir);
+
+            this.xDir = AvgWith(this.xDir, objXDir);
+            this.yDir = AvgWith(this.yDir, objYDir);
+
+            //retain whatever the final total speed would have been, but half of it ends up being in the direction away from the other object
+            float totalSpeed = Game.GetDistance(this.xDir, this.yDir);
+            this.xDir = AvgWith(this.xDir, totalSpeed, xDist);
+            this.yDir = AvgWith(this.yDir, totalSpeed, yDist);
+            Game.NormalizeDirs(ref this.xDir, ref this.yDir, totalSpeed);
         }
 
-        private void Mod(ref float dir, float objDir)
+        private static float GetExplosionSpeed(float dist)
         {
-            dir = ( dir + Game.ReduceWithPower(objDir, Game.LifeDustObjSpeedPower) ) / 2;
+            //inverse the LifeDustObjSpeedPower so explosions convey the total ExplosionSpeed
+            return Game.VectorExponent(dist * Game.ExplosionSpeed, 1 / Game.LifeDustObjSpeedPower);
+        }
+
+        private static float AvgWith(float dir, float objDir)
+        {
+            //average the current speed with the maximum speed the other object can convey
+            return ( dir + Game.VectorExponent(objDir, Game.LifeDustObjSpeedPower) ) / 2;
+        }
+
+        private static float AvgWith(float dir, float totalSpeed, float dist)
+        {
+            return dir / totalSpeed + dist;
         }
 
         internal bool HitBy(GameObject obj)
@@ -86,8 +105,8 @@ namespace SpaceRunner
         protected override void Collide(GameObject obj)
         {
             LifeDust lifeDust = ( obj as LifeDust );
-            bool adjustOther = ( lifeDust != null );
-            if (adjustOther)
+            bool isLifeDust = ( lifeDust != null );
+            if (isLifeDust)
             {
                 lifeDust.xDir = xDir = ( xDir + lifeDust.xDir ) / 2;
                 lifeDust.yDir = yDir = ( yDir + lifeDust.yDir ) / 2;
@@ -96,7 +115,7 @@ namespace SpaceRunner
             {
                 AdjustMove(obj);
             }
-            BumpCollision(obj, adjustOther);
+            BumpCollision(obj, isLifeDust);
         }
 
         protected override float HitPlayer()

@@ -784,7 +784,7 @@ namespace SpaceRunner
                 xDir *= ( mult = speed / distance );
                 yDir *= mult;
             }
-            else
+            else if (speed != 0)
             {
                 GetRandomDirection(out xDir, out yDir, speed);
             }
@@ -844,7 +844,7 @@ namespace SpaceRunner
             return RandomStartPoint(size, fullMap);
         }
 
-        internal static float ReduceWithPower(double value, double power)
+        internal static float VectorExponent(double value, double power)
         {
             return (float)( Math.Sign(value) * ( Math.Pow(Math.Abs(value) + 1, power) - 1 ) );
         }

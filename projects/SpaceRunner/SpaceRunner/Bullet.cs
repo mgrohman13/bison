@@ -86,21 +86,16 @@ namespace SpaceRunner
         {
             this.Friendly = friendly;
             //space out from whoever fired it
-            NormalizeDirs(ref xDir, ref yDir, spacing + GetSpacing(speed));
+            Game.NormalizeDirs(ref xDir, ref yDir, spacing + GetSpacing(speed));
             this.x += xDir;
             this.y += yDir;
             //set bullet speed
-            NormalizeDirs(ref this.xDir, ref this.yDir, speed + Game.BulletSpeed);
+            Game.NormalizeDirs(ref this.xDir, ref this.yDir, speed + Game.BulletSpeed);
         }
 
         private static float GetSpacing(float speed)
         {
             return Game.BulletSize + speed + Forms.GameForm.Game.TotalSpeed;
-        }
-
-        private static void NormalizeDirs(ref float xDir, ref float yDir, float speed)
-        {
-            Game.NormalizeDirs(ref xDir, ref yDir, speed);
         }
 
         internal override decimal Score
