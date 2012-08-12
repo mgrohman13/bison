@@ -92,13 +92,13 @@ namespace SpaceRunner
 
         protected override float HitPlayer()
         {
-            return GetDamage(Game.GetDistance(x, y));
+            return GetDamage(x, y, 1);
         }
 
-        internal float GetDamage(float dist)
+        internal float GetDamage(float x, float y, float mult)
         {
             //do more damage closer to center
-            return Game.FuelExplosionDamage * size / ( dist + Game.FuelExplosionDamageStartDist );
+            return Game.FuelExplosionDamage * size / ( Game.GetDistance(x, y) * mult + Game.FuelExplosionDamageStartDist );
         }
     }
 }

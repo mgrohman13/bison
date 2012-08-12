@@ -132,11 +132,11 @@ namespace SpaceRunner
         private void HitAsteroid(Asteroid asteroid)
         {
             //critical size check for each asteroid
-            bool thisPassed = ( Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) );
+            bool thisPassed = ( this.Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) );
             bool otherPassed = ( asteroid.Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) );
 
             //asteroids close to the same size as each other will be more likely to explode
-            if (thisPassed && otherPassed && Game.AsteroidCollisionChance > Game.Random.OE(Math.Abs(Area - asteroid.Area)))
+            if (thisPassed && otherPassed && Game.AsteroidCollisionChance > Game.Random.OE(Math.Abs(this.Area - asteroid.Area)))
             {
                 //both asteroids explode
                 this.Die();
@@ -150,11 +150,14 @@ namespace SpaceRunner
                     Forms.GameForm.Game.RemoveObject(this);
                     Forms.GameForm.Game.RemoveObject(asteroid);
                 }
-                //destroy the smaller one
-                else if (size < asteroid.size)
-                    Forms.GameForm.Game.RemoveObject(this);
                 else
-                    Forms.GameForm.Game.RemoveObject(asteroid);
+                {
+                    //destroy the smaller one
+                    if (this.size < asteroid.size)
+                        Forms.GameForm.Game.RemoveObject(this);
+                    else
+                        Forms.GameForm.Game.RemoveObject(asteroid);
+                }
             }
         }
 

@@ -9,7 +9,7 @@ namespace SpaceRunner
         {
             //fired by player; gives double score when killing aliens
             Friend,
-            //fired by aliens; doesnt hit alien ships and gives no score when killing aliens
+            //fired by aliens; doesn't hit alien ships and gives no score when killing aliens
             Enemy,
             //from bullet explosions; hits alien ships for reduced damage and gives standard score for killing aliens
             Neutral,

@@ -115,7 +115,7 @@ namespace SpaceRunner
         //miliseconds per game iteration
         internal const int GameTick = 6;
         //minimum miliseconds between graphics refresh
-        internal const int Framerate = 21;
+        internal const int Framerate = 13;
 
         //directory info
         const string PicLocation = "..\\..\\..\\pics\\";
@@ -172,14 +172,14 @@ namespace SpaceRunner
         internal const float GameSpeed = (float)( GameTick * Math.PI * .0139 );
 #endif
         //sectors for collision detection
-        internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2f;
+        internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2;
 
         internal const float PlayerSize = 17f;
         internal const float BasePlayerSpeed = GameSpeed * 3f;
         //time spent dead before getting the next life
-        internal const float DeathTime = 1f / GameSpeed * 65f;
+        internal const float DeathTime = 1 / GameSpeed * 65f;
         //time spent reloading (will be divided by ammo^FireTimePower)
-        internal const double FireTimeMult = 1.0 / GameSpeed * 3000.0;
+        internal const double FireTimeMult = 1 / GameSpeed * 3000.0;
         internal const double FireTimePower = 1.69;
         //how many extra pixels each fuel point will take you
         internal const float FuelMult = 169f;
@@ -232,7 +232,7 @@ namespace SpaceRunner
 
         internal const float AlienShipSize = 21f;
         internal const float AlienShipLife = 169f;
-        internal const float AlienShipLifeInc = AlienShipLife;
+        internal const float AlienShipLifeInc = 130f;
         internal const float AlienShipFireRate = GameSpeed * .0169f;
         internal const float AlienShipFireRateInc = GameSpeed * .0078f;
         internal const float AlienShipSpeedMult = 1.69f;
@@ -241,20 +241,20 @@ namespace SpaceRunner
         //lower cap as a percentage of the average value
         internal const float AlienShipStatCap = .13f;
         internal const float AlienShipFriendlyBulletDamageMult = 9.1f;
-        internal const float AlienShipNeutralBulletDamageMult = 5.2f;
+        internal const float AlienShipNeutralBulletDamageMult = AlienShipFriendlyBulletDamageMult / AlienShipExplosionBullets * 3f;
         internal const float AlienShipFuelExplosionDamageMult = 7.8f;
         //average number of bullets in the explosion on death
         internal const float AlienShipExplosionBullets = 6.5f;
 
         internal const float AsteroidAverageSize = 16.9f;
         internal const float AsteroidSizeRandomness = .091f;
-        internal const float AsteroidMaxSize = AsteroidAverageSize * ( 2f - AsteroidSizeCap );
+        internal const float AsteroidMaxSize = AsteroidAverageSize * ( 2 - AsteroidSizeCap );
         //lower cap as a percentage of the average value
         internal const float AsteroidSizeCap = .52f;
         //damage to player and alien ship
         internal const float AsteroidAreaToDamageRatio = (float)( Math.PI * PlayerSize * PlayerSize / PlayerLife );
         //alien life is actually its speed in pixels, so this damage is in pixels
-        internal const float AsteroidAreaToAlienDamageRatio = 1f / GameSpeed * 169f;
+        internal const float AsteroidAreaToAlienDamageRatio = 1 / GameSpeed * 169f;
         //drift speed for new asteroids
         internal const float AsteroidInitialSpeed = GameSpeed * .13f;
         //when an asteroid breaks, the exponent for the chance (based on the breaking astroid size) of each new smaller piece to be created
@@ -270,7 +270,7 @@ namespace SpaceRunner
         //asteroids smaller than this area are frequently destroyed uneventfully when colliding with other asteroids
         internal const float AsteroidCollisionCriticalArea = 117f;
         internal const float AsteroidRotateConst = GameSpeed * .39f;
-        internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * .65f;
+        internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * .91f;
 
         internal const float BulletSize = 2.5f;
         //speed added to the speed of the object firing the bullet
@@ -285,11 +285,11 @@ namespace SpaceRunner
 
         internal const float FuelExplosionSize = 91f;
         //number of iterations a fuel explosion lasts
-        internal const float FuelExplosionSteps = 1f / GameSpeed * 65f;
+        internal const float FuelExplosionSteps = 1 / GameSpeed * 65f;
         //an object at the center of the explosion is cosidered to be this distance from it for damage purposes
         internal const float FuelExplosionDamageStartDist = FuelExplosionSize * .3f;
         //damage done each iteration to the player or an alien ship inside the explosion
-        internal const float FuelExplosionDamage = 1f / FuelExplosionSteps * 30f;
+        internal const float FuelExplosionDamage = 1 / FuelExplosionSteps * 30f;
 
         //for both fuel and standard explosions
         internal const float ExplosionRotate = GameSpeed * .13f;
@@ -325,16 +325,16 @@ namespace SpaceRunner
         internal const int PowerUpLifeChance = 2;
         //average number of bullets in the explosion when an ammo power up explodes
         internal const float PowerUpAmmoExplosionBullets = 13f;
-        internal const float PowerUpRotate = GameSpeed * .78f;
+        internal const float PowerUpRotate = GameSpeed * 1.3f;
 
         //amount each damage point while dead reduces your score
-        internal const decimal ScoreToDamageRatio = 1m / (decimal)PlayerLife * 10m;
+        internal const decimal ScoreToDamageRatio = 1 / (decimal)PlayerLife * 10m;
         //score added per pixel traveled
         internal const decimal SpeedScoreMult = .001m;
         //score an alien is worth for killing based on its speed
-        internal const decimal AlienSpeedScoreMult = 1m / (decimal)AlienSpeed * 1m;
+        internal const decimal AlienSpeedScoreMult = 1 / (decimal)AlienSpeed * 1m;
         //extra score an alien that shoots is worth for killing
-        internal const decimal AlienFireRateScoreMult = 1m / (decimal)AlienFireRate * 1m;
+        internal const decimal AlienFireRateScoreMult = 1 / (decimal)AlienFireRate * 1m;
         //score an alien ship is worth for injuring based on its stats compared to average
         internal const decimal AlienShipScoreMult = 100m;
         //score an alien ship is worth for killing based on its stats compared to average
@@ -824,7 +824,7 @@ namespace SpaceRunner
                 (float)( Math.Sin(angle) * CreationDist ));
         }
 
-        internal PointF RandomStartPoint(float size, bool fullMap)
+        internal PointF RandomStartPoint(float size)
         {
             float angle = Random.DoubleFull((float)Math.PI);
             float maxDist = MapSize;
@@ -841,7 +841,7 @@ namespace SpaceRunner
                 }
             if (valid)
                 return retVal;
-            return RandomStartPoint(size, fullMap);
+            return RandomStartPoint(size);
         }
 
         internal static float VectorExponent(double value, double power)
@@ -861,19 +861,19 @@ namespace SpaceRunner
         {
             //1 power up, 3 aliens, random number of asteroids
 
-            PointF start = RandomStartPoint(PowerUpSize, false);
+            PointF start = RandomStartPoint(PowerUpSize);
             PowerUp.NewPowerUp(start.X, start.Y);
 
             for (int i = 0 ; i < 3 ; i++)
             {
-                start = RandomStartPoint(AlienSize, false);
+                start = RandomStartPoint(AlienSize);
                 Alien.NewAlien(start.X, start.Y);
             }
 
             int startAsteroids = Random.GaussianOEInt(7.8f, .39f, .26f, 1);
             for (int i = 0 ; i < startAsteroids ; i++)
             {
-                start = RandomStartPoint(AsteroidMaxSize, true);
+                start = RandomStartPoint(AsteroidMaxSize);
                 Asteroid.NewAsteroid(start.X, start.Y);
             }
         }

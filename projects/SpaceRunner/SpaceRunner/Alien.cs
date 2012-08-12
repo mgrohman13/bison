@@ -109,7 +109,7 @@ namespace SpaceRunner
                     AddFuel();
                     break;
                 case PowerUp.PowerUpType.Life:
-                    AddLife();
+                    ++life;
                     break;
 #if DEBUG
                 default:
@@ -150,11 +150,6 @@ namespace SpaceRunner
             ++fuel;
         }
 
-        private void AddLife()
-        {
-            ++life;
-        }
-
         private void HitAsteroid(Asteroid asteroid)
         {
             float damage = Game.RandDmgToAlien(asteroid.Area / Game.AsteroidAreaToAlienDamageRatio);
@@ -162,11 +157,11 @@ namespace SpaceRunner
             if (damage > Game.AlienSpeed && Game.GetDistance(xDir, yDir) + speed > damage)
                 Explosion.NewExplosion(asteroid, this);
 
-            if (xDir != 0 || yDir != 0)
+            if (HasConstSpeed())
             {
                 damage = ReduceConstSpeed(damage);
                 //use const speed to save from getting destroyed
-                while (speed < damage && ( xDir != 0 || yDir != 0 ))
+                while (speed < damage && HasConstSpeed())
                     damage = ReduceConstSpeed(damage);
             }
 
@@ -181,6 +176,11 @@ namespace SpaceRunner
                 this.Die();
                 asteroid.Die();
             }
+        }
+
+        private bool HasConstSpeed()
+        {
+            return ( xDir != 0 || yDir != 0 );
         }
 
         private float ReduceConstSpeed(float damage)
@@ -241,7 +241,7 @@ namespace SpaceRunner
             if (Game.Random.Bool(fireRate))
             {
                 float towardsPlayer = speed;
-                if (xDir != 0 || yDir != 0)
+                if (HasConstSpeed())
                 {
                     float xMove, yMove;
                     GetTotalMove(out xMove, out yMove);
