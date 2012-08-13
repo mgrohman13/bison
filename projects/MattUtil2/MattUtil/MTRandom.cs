@@ -1452,6 +1452,28 @@ namespace MattUtil
         }
 
         /// <summary>
+        /// Iterates in random order over each point on an integral grid in euclidean space
+        /// </summary>
+        public IEnumerable<Point> Iterate(int width, int height)
+        {
+            return Iterate(0, width - 1, 0, height - 1);
+        }
+        /// <summary>
+        /// Iterates in random order over each point on an integral grid in euclidean space
+        /// </summary>
+        public IEnumerable<Point> Iterate(int startX, int endX, int startY, int endY)
+        {
+            if (startX > endX)
+                throw new ArgumentOutOfRangeException("endX", endX, "endX must be greater than or equal to startX");
+            if (startY > endY)
+                throw new ArgumentOutOfRangeException("endY", endY, "endY must be greater than or equal to startY");
+
+            int height = endY - startY + 1;
+            foreach (int coord in Iterate(( endX - startX + 1 ) * height))
+                yield return new Point(startX + coord / height, startY + coord % height);
+        }
+
+        /// <summary>
         /// Iterates in random order over the integers 0 through count-1.
         /// </summary>
         public IEnumerable<int> Iterate(int count)

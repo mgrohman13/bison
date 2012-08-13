@@ -55,7 +55,7 @@ namespace SpaceRunner
         {
             get
             {
-                return 0m;
+                return 0;
             }
         }
 
@@ -63,7 +63,7 @@ namespace SpaceRunner
         {
             if (time > 0)
             {
-                Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(xDir, yDir) * Game.ExplosionSpeedMult);
+                Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(this.xDir, this.yDir) * Game.ExplosionSpeedMult);
                 this.image = images[expNum, (int)( ( Game.ExplosionTime - time ) / Game.ExplosionTime * Game.NumExplosionImages )];
                 --time;
             }
@@ -82,7 +82,7 @@ namespace SpaceRunner
 
         protected override float HitPlayer()
         {
-            return 0f;
+            return 0;
         }
     }
 }

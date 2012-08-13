@@ -1326,13 +1326,8 @@ next:
         #region create map
         private void CreateMap(int width, int height)//, int numPlayers)
         {
-            map = new Tile[width, height];
-            foreach (int coord in Random.Iterate(width * height))
-            {
-                int x = coord / height;
-                int y = coord % height;
-                map[x, y] = CreateTile(x, y);
-            }
+            foreach (Point coord in Random.Iterate(width, height))
+                map[coord.X, coord.Y] = CreateTile(coord.X, coord.Y);
 
             for (int x = -1 ; ++x < width ; )
                 for (int y = -1 ; ++y < height ; )

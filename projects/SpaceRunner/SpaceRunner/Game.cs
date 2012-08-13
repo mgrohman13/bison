@@ -989,84 +989,43 @@ namespace SpaceRunner
 
         void MoveObjects(float xSpeed, float ySpeed, float playerSpeed)
         {
-            int minX, maxX, minY, maxY;
-            Dictionary<Point, List<GameObject>> objectSectors = GetObjectSectors(out minX, out maxX, out minY, out maxY);
-            List<GameObject> objs;
-            if (objectSectors.TryGetValue(new Point(int.MinValue, int.MinValue), out objs))
-                foreach (GameObject obj in objs)
-                    obj.Step(xSpeed, ySpeed, playerSpeed);
-
-            bool xFirst = Random.Bool(), xDir = Random.Bool(), yDir = Random.Bool();
-
-            int x, y;
-            x = xDir ? minX : maxX;
-            y = yDir ? minY : maxY;
-
-            while (xFirst ? ( xDir ? x <= maxX : x >= minX ) : ( yDir ? y <= maxY : y >= minY ))
+            Dictionary<Point, List<GameObject>> objectSectors = GetObjectSectors();
+            HashSet<Point> done = new HashSet<Point>();
+            foreach (KeyValuePair<Point, List<GameObject>> pair in Random.Iterate(objectSectors))
             {
-                if (xFirst)
-                    y = yDir ? minY : maxY;
-                else
-                    x = xDir ? minX : maxX;
-                while (xFirst ? ( yDir ? y <= maxY : y >= minY ) : ( xDir ? x <= maxX : x >= minX ))
+                Point point = pair.Key;
+                List<GameObject> curSector = pair.Value;
+
+                int count = curSector.Count;
+                for (int i = 0 ; i < count ; ++i)
                 {
-                    List<GameObject> curSector;
-                    if (objectSectors.TryGetValue(new Point(x, y), out curSector))
+                    GameObject obj = curSector[i];
+
+                    //make sure the object is still in the game
+                    if (objects.Contains(obj))
                     {
-                        int count = curSector.Count;
-                        for (int i = 0 ; i < count ; ++i)
-                        {
-                            GameObject obj = curSector[i];
+                        //move the object
+                        float damage = obj.Step(xSpeed, ySpeed, playerSpeed);
+                        //damage the player
+                        if (damage > 0)
+                            HitPlayer(damage);
 
-                            //make sure the object is still in the game
-                            if (objects.Contains(obj))
-                            {
-                                //move the object
-                                float damage = obj.Step(xSpeed, ySpeed, playerSpeed);
-                                //check for damage to the player
-                                if (damage > 0)
-                                    HitPlayer(damage);
-
-                                //make sure moving the object did not kill it
-                                if (objects.Contains(obj))
-                                {
-                                    //detect collisions with other objects
-                                    CollisionDetection(objectSectors, xFirst, xDir, yDir, obj, x, y, i);
-                                }
-                            }
-                        }
+                        //make sure the object is in a collision sector and that it still exists after moving
+                        if (point.X > int.MinValue && objects.Contains(obj))
+                            CollisionDetection(objectSectors, obj, point, i, done);
                     }
-                    if (xFirst)
-                        y += yDir ? 1 : -1;
-                    else
-                        x += xDir ? 1 : -1;
                 }
-                if (xFirst)
-                    x += xDir ? 1 : -1;
-                else
-                    y += yDir ? 1 : -1;
+
+                done.Add(point);
             }
         }
 
-        Dictionary<Point, List<GameObject>> GetObjectSectors(out int minX, out int maxX, out int minY, out int maxY)
+        Dictionary<Point, List<GameObject>> GetObjectSectors()
         {
-            minX = int.MaxValue;
-            maxX = int.MinValue;
-            minY = int.MaxValue;
-            maxY = int.MinValue;
             Dictionary<Point, List<GameObject>> objectSectors = new Dictionary<Point, List<GameObject>>();
-
-            //List<GameObject> mines = new List<GameObject>();
 
             foreach (GameObject obj in Random.Iterate(objects))
             {
-
-                //if (obj is Mine)
-                //{
-                //    mines.Add(obj);
-                //    continue;
-                //}
-
                 Point? s = GetSector(obj);
                 Point p;
                 if (s.HasValue)
@@ -1081,14 +1040,6 @@ namespace SpaceRunner
                     objectSectors.Add(p, sector);
                 }
                 sector.Add(obj);
-
-                if (s.HasValue)
-                {
-                    minX = Math.Min(minX, p.X);
-                    maxX = Math.Max(maxX, p.X);
-                    minY = Math.Min(minY, p.Y);
-                    maxY = Math.Max(maxY, p.Y);
-                }
             }
 
             return objectSectors;
@@ -1137,91 +1088,58 @@ namespace SpaceRunner
             }
         }
 
-        void CollisionDetection(Dictionary<Point, List<GameObject>> objectSectors, bool xFirst, bool xDir, bool yDir, GameObject obj, int objX, int objY, int objIndex)
+        void CollisionDetection(Dictionary<Point, List<GameObject>> objectSectors, GameObject obj, Point point, int objIndex, HashSet<Point> done)
         {
             //some objects need to check extra sectors away
-            int checkDist;
-            IChecksExtraSectors checksExtra;
-            if (( checksExtra = obj as IChecksExtraSectors ) != null)
+            int checkDist = 1;
+            IChecksExtraSectors checksExtra = ( obj as IChecksExtraSectors );
+            if (checksExtra != null)
             {
                 checkDist = checksExtra.DistanceChecked;
                 if (checkDist < 2)
                     checkDist = 1;
             }
-            else
+
+            ++objIndex;
+            foreach (Point p2 in Random.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
             {
-                checkDist = 1;
-            }
-
-            int addX, addY;
-            addX = xDir ? -checkDist : checkDist;
-            addY = yDir ? -checkDist : checkDist;
-
-            while (xFirst ? ( yDir ? addY <= checkDist : addY >= -checkDist ) : ( xDir ? addX <= checkDist : addX >= -checkDist ))
-            {
-                if (xFirst)
-                    addX = xDir ? -checkDist : checkDist;
-                else
-                    addY = yDir ? -checkDist : checkDist;
-
-                while (xFirst ? ( xDir ? addX <= checkDist : addX >= -checkDist ) : ( yDir ? addY <= checkDist : addY >= -checkDist ))
+                List<GameObject> value;
+                if (( ( checkDist > 1 && ( Math.Abs(point.X - p2.X) > 1 || Math.Abs(point.Y - p2.Y) > 1 ) ) || !done.Contains(p2) )
+                        && objectSectors.TryGetValue(p2, out value))
                 {
-                    //skip the four adjacent sectors that have already checked this sector
-                    if (!( xFirst ? ( ( addX == ( xDir ? -1 : 1 ) && addY > -2 && addY < 2 ) || ( addX == 0 && addY == ( yDir ? -1 : 1 ) ) ) :
-                        ( ( addY == ( yDir ? -1 : 1 ) && addX > -2 && addX < 2 ) || ( addY == 0 && addX == ( xDir ? -1 : 1 ) ) ) ))
-                    {
-                        //Mine.NewMine((objX + addX - 1) * SectorSize, (objY + addY - 1) * SectorSize, false);
+                    int start = 0;
+                    //when checking the object's own sector, we only need to check objects with a higher index
+                    if (p2 == point)
+                        start = objIndex + 1;
 
-                        List<GameObject> curSector;
-                        if (objectSectors.TryGetValue(new Point(objX + addX, objY + addY), out curSector))
+                    if (start < value.Count)
+                        foreach (int idx in Random.Iterate(value.Count - start))
                         {
-                            //when checking the objects sector, we only need to check objects with a higher index
-                            int i;
-                            if (addX == 0 && addY == 0)
-                                i = objIndex + 1;
-                            else
-                                i = 0;
-                            int count = curSector.Count;
-                            for ( ; i < count ; ++i)
-                            {
-                                GameObject obj2 = curSector[i];
-
-#if DEBUG //this code just checks if the collision detection is working properly
-                                //if either object checks extra sectors, the sector size is effectively multiplied by that amount
-                                int sectMult = checkDist;
-                                IChecksExtraSectors checksExtra2;
-                                if (( checksExtra2 = obj2 as IChecksExtraSectors ) != null)
-                                    sectMult = Math.Max(sectMult, checksExtra2.DistanceChecked);
-                                //this collision detection algorithm only works properly
-                                //if the sum of the sizes of any two objects is less than the sector size
-                                if (obj.Size + obj2.Size > SectorSize * sectMult
-                                    //this case is only valid because fuel explosions do not collide with one another
-                                    && !( obj is FuelExplosion && obj2 is FuelExplosion ))
-                                    //SectorSize needs to be increased
-                                    throw new Exception(string.Format("Sector size ({4}) needs to be increased.  {0} ({1}) and {2} ({3})",
-                                        obj.GetType(), obj.Size, obj2.GetType(), obj2.Size, SectorSize));
+                            GameObject checkObj = value[start + idx];
+#if DEBUG
+                            //if either object checks extra sectors, the sector size is effectively multiplied by that amount
+                            int sectMult = checkDist;
+                            IChecksExtraSectors checksExtra2;
+                            if (( checksExtra2 = checkObj as IChecksExtraSectors ) != null)
+                                sectMult = Math.Max(sectMult, checksExtra2.DistanceChecked);
+                            //this collision detection algorithm only works properly
+                            //if the sum of the sizes of any two objects is less than the sector size
+                            if (obj.Size + checkObj.Size > SectorSize * sectMult
+                                //this case is only valid because fuel explosions do not collide with one another
+                                && !( obj is FuelExplosion && checkObj is FuelExplosion ))
+                                throw new Exception(string.Format("Sector size ({4}) is too small for:  {0} ({1}) and {2} ({3})",
+                                        obj.GetType(), obj.Size, checkObj.GetType(), checkObj.Size, SectorSize));
 #endif
-
-                                //make sure the second object is still in the game
-                                if (objects.Contains(obj2))
-                                {
-                                    obj.CheckCollision(obj2);
-                                    //if the collision killed the main object, return early
-                                    if (!objects.Contains(obj))
-                                        return;
-                                }
+                            //make sure the second object is still in the game
+                            if (objects.Contains(checkObj))
+                            {
+                                obj.CheckCollision(checkObj);
+                                //if the collision killed the main object, return early
+                                if (!objects.Contains(obj))
+                                    return;
                             }
                         }
-                    }
-                    if (xFirst)
-                        addX += xDir ? 1 : -1;
-                    else
-                        addY += yDir ? 1 : -1;
                 }
-                if (xFirst)
-                    addY += yDir ? 1 : -1;
-                else
-                    addX += xDir ? 1 : -1;
             }
         }
 

@@ -5,15 +5,6 @@ namespace SpaceRunner
 {
     internal class FuelExplosion : GameObject, Game.IChecksExtraSectors
     {
-        //if its size is greater than the sector size minus the maximum object size (for non fuel explosions),
-        //check for collisions 2 sectors away
-        int Game.IChecksExtraSectors.DistanceChecked
-        {
-            get
-            {
-                return size < Game.SectorSize - Game.AsteroidMaxSize ? 1 : 2;
-            }
-        }
 
         //the amount image size is incremented each image
         const float ImgStep = ( Game.FuelExplosionSize - Game.PowerUpSize ) / NumImages;
@@ -50,7 +41,7 @@ namespace SpaceRunner
         {
             get
             {
-                return 0m;
+                return 0;
             }
         }
 
@@ -99,6 +90,14 @@ namespace SpaceRunner
         {
             //do more damage closer to center
             return Game.FuelExplosionDamage * size / ( Game.GetDistance(x, y) * mult + Game.FuelExplosionDamageStartDist );
+        }
+
+        int Game.IChecksExtraSectors.DistanceChecked
+        {
+            get
+            {
+                return (int)Math.Ceiling(( size + Game.AsteroidMaxSize ) / Game.SectorSize);
+            }
         }
     }
 }

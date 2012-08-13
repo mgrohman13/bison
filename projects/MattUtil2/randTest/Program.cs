@@ -187,13 +187,13 @@ namespace randTest
             }
 
             SortedDictionary<float, Point> sort = new SortedDictionary<float, Point>();
-            foreach (int x in rand.Iterate(width))
-                foreach (int y in rand.Iterate(height))
-                {
-                    while (sort.ContainsKey(Get(res[x, y])))
-                        Set(res[x, y], Get(res[x, y]) + rand.GaussianFloat());
-                    sort.Add(Get(res[x, y]), new Point(x, y));
-                }
+            foreach (Point p in rand.Iterate(width, height))
+            {
+                int x = p.X, y = p.Y;
+                while (sort.ContainsKey(Get(res[x, y])))
+                    Set(res[x, y], Get(res[x, y]) + rand.GaussianFloat());
+                sort.Add(Get(res[x, y]), p);
+            }
             int v1 = 0;
             float div = res.Length - 1;
             foreach (Point value in sort.Values)
