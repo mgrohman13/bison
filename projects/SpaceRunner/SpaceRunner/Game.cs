@@ -133,7 +133,6 @@ namespace SpaceRunner
         internal const int NumAsteroidImages = 8;
         internal const float AsteroidMaxImageSizeHalf = 27f;
         internal const int NumFuelExplosionImages = 6;
-        internal const float FuelExplosionImageSizeHalf = 65f;
         internal const int NumLifeDustImages = 6;
         internal const int NumFireworks = 13;
 
@@ -184,9 +183,9 @@ namespace SpaceRunner
         //how many extra pixels each fuel point will take you
         internal const float FuelMult = 169f;
         //percentage of fuel consumed each iteration when using turbo
-        internal const double FuelRate = GameSpeed * .052;
+        internal const double FuelRate = GameSpeed * .021;
         //exponent of fuel consumption
-        internal const double FuelPower = .52;
+        internal const double FuelPower = .65;
 
         internal const float StartFuel = FuelMult * 10f;
         //average fuel per power up
@@ -242,7 +241,7 @@ namespace SpaceRunner
         internal const float AlienShipStatCap = .13f;
         internal const float AlienShipFriendlyBulletDamageMult = 9.1f;
         internal const float AlienShipNeutralBulletDamageMult = AlienShipFriendlyBulletDamageMult / AlienShipExplosionBullets * 3f;
-        internal const float AlienShipFuelExplosionDamageMult = 7.8f;
+        internal const float AlienShipFuelExplosionDamageMult = 6.5f;
         //average number of bullets in the explosion on death
         internal const float AlienShipExplosionBullets = 6.5f;
 
@@ -285,16 +284,16 @@ namespace SpaceRunner
 
         internal const float FuelExplosionSize = 91f;
         //number of iterations a fuel explosion lasts
-        internal const float FuelExplosionSteps = 1 / GameSpeed * 65f;
+        internal const float FuelExplosionTime = 1 / GameSpeed * 65f;
         //an object at the center of the explosion is cosidered to be this distance from it for damage purposes
         internal const float FuelExplosionDamageStartDist = FuelExplosionSize * .3f;
         //damage done each iteration to the player or an alien ship inside the explosion
-        internal const float FuelExplosionDamage = 1 / FuelExplosionSteps * 30f;
+        internal const float FuelExplosionDamage = 1 / FuelExplosionTime * 30f;
 
         //for both fuel and standard explosions
         internal const float ExplosionRotate = GameSpeed * .13f;
         //speed the explosion shockwave is considered to be traveling
-        internal const float ExplosionSpeed = ( FuelExplosionSize - PowerUpSize ) / FuelExplosionSteps;
+        internal const float ExplosionSpeed = ( FuelExplosionSize - PowerUpSize ) / FuelExplosionTime;
 
         internal const float ExplosionSize = AlienSize * 1.21f;
         internal const float ExplosionTime = 1 / GameSpeed * 39f;
@@ -396,8 +395,8 @@ namespace SpaceRunner
         {
             get
             {
-                float retVal;
-                return ( retVal = life % PlayerLife ) > 0 ? retVal : PlayerLife;
+                float retVal = life % PlayerLife;
+                return ( retVal > 0 ? retVal : PlayerLife );
             }
         }
         internal int Ammo
@@ -907,7 +906,6 @@ namespace SpaceRunner
             NormalizeDirs(ref xSpeed, ref ySpeed, playerSpeed);
 
             PlayerFiring(playerSpeed);
-            //RegenLife();
 
             //create new objects
             CreateObjects(playerSpeed);
@@ -1084,7 +1082,7 @@ namespace SpaceRunner
             if (!alreadyLost && GameOver())
             {
                 AddScore(ammo);
-                AddScore((decimal)fuel / (decimal)FuelMult);
+                AddScore((decimal)Fuel);
             }
         }
 
@@ -1100,7 +1098,6 @@ namespace SpaceRunner
                     checkDist = 1;
             }
 
-            ++objIndex;
             foreach (Point p2 in Random.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
             {
                 List<GameObject> value;

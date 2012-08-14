@@ -4,18 +4,18 @@ namespace SpaceRunner
 {
     internal class Explosion : GameObject
     {
-        private static Image[,] images;
+        private static Image[,] Images;
         static Explosion()
         {
-            images = new Image[Game.NumExplosions, Game.NumExplosionImages];
+            Images = new Image[Game.NumExplosions, Game.NumExplosionImages];
             for (int explosion = 1 ; explosion <= Game.NumExplosions ; ++explosion)
                 for (int number = 1 ; number <= Game.NumExplosionImages ; ++number)
-                    images[explosion - 1, number - 1] = Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
+                    Images[explosion - 1, number - 1] = Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
         }
 
         internal static void Dispose()
         {
-            foreach (Image i in images)
+            foreach (Image i in Images)
                 i.Dispose();
         }
 
@@ -43,7 +43,7 @@ namespace SpaceRunner
         }
 
         private Explosion(float x, float y, float xDir, float yDir, int expNum)
-            : base(x, y, Game.ExplosionSize, images[expNum, 0], Game.ExplosionRotate)
+            : base(x, y, Game.ExplosionSize, Images[expNum, 0], Game.ExplosionRotate)
         {
             this.xDir = xDir;
             this.yDir = yDir;
@@ -61,16 +61,12 @@ namespace SpaceRunner
 
         protected override void OnStep()
         {
-            if (time > 0)
-            {
-                Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(this.xDir, this.yDir) * Game.ExplosionSpeedMult);
-                this.image = images[expNum, (int)( ( Game.ExplosionTime - time ) / Game.ExplosionTime * Game.NumExplosionImages )];
-                --time;
-            }
+            Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(this.xDir, this.yDir) * Game.ExplosionSpeedMult);
+
+            if (--time > 0)
+                this.image = Images[expNum, (int)( ( Game.ExplosionTime - time ) / Game.ExplosionTime * Game.NumExplosionImages )];
             else
-            {
                 this.Die();
-            }
         }
 
         protected override void Collide(GameObject obj)

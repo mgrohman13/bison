@@ -97,7 +97,7 @@ namespace SpaceRunner
             else if (( powerUp = obj as PowerUp ) != null)
                 CollectPowerUp(powerUp);
             else if (( fuelExplosion = obj as FuelExplosion ) != null)
-                Damage(fuelExplosion.GetDamage(x - obj.X, y - obj.Y, Game.AlienShipFuelExplosionDamageMult));
+                Damage(fuelExplosion.GetDamage(x, y) * Game.AlienShipFuelExplosionDamageMult);
             else if (obj is AlienShip || obj is Alien)
                 BumpCollision(obj);
             else if (obj is LifeDust)

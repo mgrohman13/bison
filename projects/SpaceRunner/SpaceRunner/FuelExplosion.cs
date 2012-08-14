@@ -5,36 +5,40 @@ namespace SpaceRunner
 {
     internal class FuelExplosion : GameObject, Game.IChecksExtraSectors
     {
+        private static readonly int NumImages;
+        private static Image[] Images;
 
-        //the amount image size is incremented each image
-        const float ImgStep = ( Game.FuelExplosionSize - Game.PowerUpSize ) / NumImages;
-
-        //GameTick * FuelExplosionSteps / Framerate is the number of frames the explosion lasts, so load one more than that many images
-        const int NumImages = (int)( Game.GameTick * Game.FuelExplosionSteps / Game.Framerate + 1.5f );
-        static Image[] images = LoadImages();
-        static Image[] LoadImages()
+        static FuelExplosion()
         {
-            float curSize = Game.PowerUpSize + ImgStep;
+            //create one image per painted frame the explosion lasts
+            NumImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / Game.Framerate);
+            Images = new Image[NumImages];
 
-            Image[] retVal = new Image[NumImages];
+            float size = Game.PowerUpSize;
             for (int i = 0 ; i < NumImages ; ++i)
             {
-                //load a random one of the available images
-                Image baseImage = Game.LoadImage("fuelExps\\" + Game.Random.Next(Game.NumFuelExplosionImages) + ".bmp", Game.FuelExplosionImageSizeHalf);
-                //resize image
-                int size = (int)( curSize * 2f + .5f );
-                retVal[i] = ( new Bitmap(baseImage, new Size(size, size)) );
-                curSize += ImgStep;
-                baseImage.Dispose();
+                Images[i] = Game.LoadImage("fuelExps\\" + Game.Random.Next(Game.NumFuelExplosionImages) + ".bmp", size);
+                size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( NumImages - 1 );
             }
-
-            return retVal;
         }
 
         internal static void Dispose()
         {
-            foreach (Image i in images)
+            foreach (Image i in Images)
                 i.Dispose();
+        }
+
+        private int time = 0;
+
+        internal static FuelExplosion NewFuelExplosion(float x, float y)
+        {
+            return new FuelExplosion(x, y);
+        }
+
+        private FuelExplosion(float x, float y)
+            : base(x, y, Game.PowerUpSize, Images[0], Game.ExplosionRotate)
+        {
+            this.time = Game.Random.Round(Game.FuelExplosionTime);
         }
 
         internal override decimal Score
@@ -45,51 +49,36 @@ namespace SpaceRunner
             }
         }
 
-        internal static FuelExplosion NewFuelExplosion(float x, float y)
-        {
-            return new FuelExplosion(x, y);
-        }
-
-        private FuelExplosion(float x, float y)
-            : base(x, y, Game.PowerUpSize, images[0], Game.ExplosionRotate)
-        {
-        }
-
         protected override void OnStep()
         {
-            int img;
+            size += Game.ExplosionSpeed;
 
-            //increment size and select proper image
-            if (( img = (int)Math.Ceiling(( ( size += Game.ExplosionSpeed ) - Game.PowerUpSize ) / ImgStep) - 1 ) < NumImages)
-                this.image = images[img];
+            if (--time > 0)
+                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * NumImages )];
             else
-                //die when out of images
                 this.Die();
         }
 
         protected override void Collide(GameObject obj)
         {
-            if (!( obj is FuelExplosion ))
+            //only hit objects whose center is within the explosion
+            if (!( obj is FuelExplosion ) && Game.GetDistanceSqr(x, y, obj.X, obj.Y) < size * size)
             {
-                //only kill objects whose center is within the explosion
-                if (Game.GetDistanceSqr(x, y, obj.X, obj.Y) < size * size)
-                {
-                    LifeDust lifeDust;
-                    if (( lifeDust = obj as LifeDust ) == null || lifeDust.HitBy(this))
-                        obj.Die();
-                }
+                LifeDust lifeDust = obj as LifeDust;
+                if (lifeDust == null || lifeDust.HitBy(this))
+                    obj.Die();
             }
         }
 
         protected override float HitPlayer()
         {
-            return GetDamage(x, y, 1);
+            return GetDamage(0, 0);
         }
 
-        internal float GetDamage(float x, float y, float mult)
+        internal float GetDamage(float x, float y)
         {
             //do more damage closer to center
-            return Game.FuelExplosionDamage * size / ( Game.GetDistance(x, y) * mult + Game.FuelExplosionDamageStartDist );
+            return Game.FuelExplosionDamage * this.size / ( Game.GetDistance(this.x, this.y, x, y) + Game.FuelExplosionDamageStartDist );
         }
 
         int Game.IChecksExtraSectors.DistanceChecked

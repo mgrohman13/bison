@@ -72,19 +72,7 @@ namespace SpaceRunner
         {
             get
             {
-                switch (this.Type)
-                {
-                case PowerUpType.Firework:
-                case PowerUpType.Ammo:
-                    return Game.IncAmmo;
-                case PowerUpType.Fuel:
-                    return (decimal)Game.IncFuel / (decimal)Game.FuelMult;
-                case PowerUpType.Life:
-                    return Game.ScoreToDamageRatio * (decimal)Game.PlayerLife;
-                }
-#if DEBUG
-                throw new Exception();
-#endif
+                return 0;
             }
         }
 
