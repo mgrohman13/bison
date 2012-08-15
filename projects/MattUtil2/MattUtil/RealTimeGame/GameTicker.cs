@@ -14,27 +14,20 @@ namespace MattUtil.RealTimeGame
 
         public delegate void EventDelegate();
 
-        private int GameTick;
-        private int MaxConsecutive;
-        private int MaxConsecutiveSleepTime;
-        private int Framerate;
+        private double GameTick;
 
         private Game game;
-        private Thread thread;
         private Timer timer;
 
         private EventDelegate Refresh;
 
         private bool paused, started, running;
 
-        public GameTicker(Game game, int GameTick, int Framerate, EventDelegate Refresh)
+        public GameTicker(Game game, double GameTick, EventDelegate Refresh)
         {
             this.game = game;
 
             this.GameTick = GameTick;
-            this.Framerate = Framerate;
-            MaxConsecutive = (int)( .5f + Framerate / (float)GameTick );
-            MaxConsecutiveSleepTime = (int)( .5f + Framerate / 1.69 );
 
             paused = false;
             started = false;
@@ -85,29 +78,31 @@ namespace MattUtil.RealTimeGame
 
         public void Start()
         {
-            timer.Dispose();
-            timer = new Timer();
-            timer.Tick += new EventHandler(RefreshGame);
-            timer.Interval = Framerate;
-            timer.Start();
+            Thread refresh = new Thread(RefreshGame);
+            refresh.IsBackground = true;
+            refresh.Start();
 
-            thread = new Thread(RunGame);
-            thread.Start();
+            Thread tick = new Thread(RunGame);
+            tick.Priority = ThreadPriority.AboveNormal;
+            tick.IsBackground = true;
+            tick.Start();
         }
 
         private void RunGame()
         {
             Stopwatch stopwatch = new Stopwatch();
-            float steps = int.MinValue, consecutiveCount = int.MinValue;
+            double offset = GameTick;
+            //Console.WriteLine(offset);
+
+            lock (this)
+                stopwatch.Start();
 
             while (Running)
             {
-                int millisecondsTimeout = -1;
+                //int millisecondsTimeout = -1;
+
                 lock (this)
                 {
-                    if (!Running)
-                        break;
-
                     if (( !paused || game.GameOver() ) && started)
                     {
                         if (game.GameOver())
@@ -115,42 +110,35 @@ namespace MattUtil.RealTimeGame
                         else
                             game.Step();
 
-                        if (consecutiveCount < 0)
-                            consecutiveCount = 0;
-                        else if (steps < 0)
-                            steps = 0;
-                    }
+                        if (Running)
+                        {
+                            long timeDiff = stopwatch.ElapsedTicks;
+                            stopwatch.Restart();
 
-                    if (Running)
+                            offset += GameTick - timeDiff / TicksPerMilisecond;
+                            //Console.WriteLine(offset);
+                            //millisecondsTimeout = (int)offset;
+                            //offset = ( offset - GameTick ) * ( 1 - 1 / GameTick ) + GameTick;
+                        }
+                    }
+                    else
                     {
-                        if (steps < 0)
-                        {
-                            System.Threading.Thread.Sleep(GameTick);
-                            if (started)
-                            {
-                                stopwatch.Reset();
-                                stopwatch.Start();
-                            }
-                        }
-                        else
-                        {
-                            int timeDiff;
-                            //long ticks = stopwatch.ElapsedTicks;
-                            if (( timeDiff = ( (int)Math.Round(++steps * GameTick - stopwatch.ElapsedTicks / TicksPerMilisecond) ) ) > 0)
-                            {
-                                millisecondsTimeout = timeDiff;
-                                consecutiveCount = 0;
-                            }
-                            else if (++consecutiveCount > MaxConsecutive)
-                            {
-                                millisecondsTimeout = MaxConsecutiveSleepTime;
-                                consecutiveCount = 0;
-                            }
-                        }
+                        stopwatch.Restart();
+
+                        offset = GameTick;
+                        //Console.WriteLine(offset);
+                        //millisecondsTimeout = GameTick;
                     }
                 }
-                if (millisecondsTimeout > -1)
-                    System.Threading.Thread.Sleep(millisecondsTimeout);
+
+                if (offset > 0)
+                {
+                    lock (timer)
+                        Monitor.Pulse(timer);
+
+                    //Console.WriteLine("sleep: {0}", (int)offset);
+                    System.Threading.Thread.Sleep((int)offset);
+                }
             }
 
             stopwatch.Stop();
@@ -171,7 +159,7 @@ namespace MattUtil.RealTimeGame
                 try
                 {
                     Refresh();
-                    Thread.Sleep(Framerate);
+                    Thread.Sleep(26);
 
                     //we dont need to be locked for this
                     if (saveScore)
@@ -185,9 +173,15 @@ namespace MattUtil.RealTimeGame
             }
         }
 
-        private void RefreshGame(object sender, EventArgs e)
+        private void RefreshGame()
         {
-            Refresh();
+            while (Running)
+            {
+                Refresh();
+
+                lock (timer)
+                    Monitor.Wait(timer);
+            }
         }
 
         public void Dispose()

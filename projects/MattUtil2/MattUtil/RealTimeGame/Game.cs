@@ -18,9 +18,9 @@ namespace MattUtil.RealTimeGame
 
         private bool scoring;
 
-        public Game(int GameTick, int Framerate, GameTicker.EventDelegate RefreshGame)
+        public Game(double GameTick, GameTicker.EventDelegate RefreshGame)
         {
-            gameTicker = new GameTicker(this, GameTick, Framerate, RefreshGame);
+            gameTicker = new GameTicker(this, GameTick, RefreshGame);
             Started = false;
             Running = true;
         }

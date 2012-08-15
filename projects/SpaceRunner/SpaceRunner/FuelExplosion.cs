@@ -10,8 +10,7 @@ namespace SpaceRunner
 
         static FuelExplosion()
         {
-            //create one image per painted frame the explosion lasts
-            NumImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / Game.Framerate);
+            NumImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
             Images = new Image[NumImages];
 
             float size = Game.PowerUpSize;

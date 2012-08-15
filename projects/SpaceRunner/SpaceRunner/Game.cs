@@ -12,7 +12,7 @@ namespace SpaceRunner
     internal class Game : MattUtil.RealTimeGame.Game
     {
         internal Game(MattUtil.RealTimeGame.GameTicker.EventDelegate Refresh)
-            : base(GameTick, Framerate, Refresh)
+            : base(GameTick, Refresh)
         {
         }
 
@@ -113,9 +113,7 @@ namespace SpaceRunner
         #region consts
 
         //miliseconds per game iteration
-        internal const int GameTick = 6;
-        //minimum miliseconds between graphics refresh
-        internal const int Framerate = 13;
+        internal const float GameTick = 13;
 
         //directory info
         const string PicLocation = "..\\..\\..\\pics\\";
@@ -187,9 +185,9 @@ namespace SpaceRunner
         //exponent of fuel consumption
         internal const double FuelPower = .65;
 
-        internal const float StartFuel = FuelMult * 10f;
+        internal static float StartFuel = FuelMult * 13f;
         //average fuel per power up
-        internal const float IncFuel = FuelMult * 3f;
+        internal const float IncFuel = FuelMult * 2.6f;
         internal const float IncFuelRandomness = .104f;
 
 #if TRACE
@@ -205,7 +203,7 @@ namespace SpaceRunner
 
         //chances of objects being created each iteration (will be multiplied by players current speed)
         internal const float LifeDustCreationRate = (float)( Math.E * .0013 );
-        internal const float PowerUpCreationRate = (float)( Math.E / 1300 );
+        internal const float PowerUpCreationRate = 0.0021f;
         internal const float AsteroidCreationRate = .078f;
         internal const float AlienCreationRate = .013f;
         //will be divided by number of alien ships
@@ -241,7 +239,7 @@ namespace SpaceRunner
         internal const float AlienShipStatCap = .13f;
         internal const float AlienShipFriendlyBulletDamageMult = 9.1f;
         internal const float AlienShipNeutralBulletDamageMult = AlienShipFriendlyBulletDamageMult / AlienShipExplosionBullets * 3f;
-        internal const float AlienShipFuelExplosionDamageMult = 6.5f;
+        internal const float AlienShipFuelExplosionDamageMult = 5.2f;
         //average number of bullets in the explosion on death
         internal const float AlienShipExplosionBullets = 5.2f;
 
@@ -289,6 +287,7 @@ namespace SpaceRunner
         internal const float FuelExplosionDamageStartDist = FuelExplosionSize * .3f;
         //damage done each iteration to the player or an alien ship inside the explosion
         internal const float FuelExplosionDamage = 1 / FuelExplosionTime * 30f;
+        internal const float FuelExplosionImagesPerSecond = 39f;
 
         //for both fuel and standard explosions
         internal const float ExplosionRotate = GameSpeed * .13f;
@@ -460,6 +459,17 @@ namespace SpaceRunner
             }
             graphics.DrawEllipse(Pens.White, centerX - PlayerSize, centerY - PlayerSize, PlayerSize * 2, PlayerSize * 2);
 #endif
+            if (Paused && !GameOver())
+            {
+                graphics.ResetTransform();
+                const string PausedText = "PAUSED";
+                float sect = centerX - graphics.MeasureString(PausedText, pausedFont).Width / 2f;
+                graphics.DrawString(PausedText, pausedFont, Brushes.White, sect, centerY + PlayerSize);
+            }
+            else
+            {
+                DrawObjects(graphics);
+            }
 
             DrawPlayer(graphics);
             if (!Paused && !GameOver())
@@ -468,56 +478,43 @@ namespace SpaceRunner
                         Dead ? deadCounter / DeathTime : CurrentLifePart / PlayerLife);
                 DrawFireBar(graphics);
             }
-            DrawObjects(graphics);
-            if (Paused && !GameOver())
-            {
-                graphics.ResetTransform();
-                const string PausedText = "PAUSED";
-                float sect = centerX - graphics.MeasureString(PausedText, pausedFont).Width / 2f;
-                graphics.DrawString(PausedText, pausedFont, Brushes.White, sect, centerY + PlayerSize);
-            }
         }
 
         void DrawObjects(Graphics graphics)
         {
-            if (GameOver() || !Paused)
+            GameObject[] array;
+            int count;
+            lock (gameTicker)
             {
-                GameObject[] array;
-                int count;
+                count = objects.Count;
+                array = new GameObject[count];
+                objects.CopyTo(array, 0);
+            }
+            Array.Sort<GameObject>(array, delegate(GameObject p1, GameObject p2)
+            {
+                //z-index: explosions, fuel explosions, other, alien ships
+                int retVal = 0;
+                if (p1 is AlienShip)
+                    retVal -= 1;
+                else if (p1 is FuelExplosion)
+                    retVal += 1;
+                else if (p1 is Explosion)
+                    retVal += 2;
+                if (p2 is AlienShip)
+                    retVal += 1;
+                else if (p2 is FuelExplosion)
+                    retVal -= 1;
+                else if (p2 is Explosion)
+                    retVal -= 2;
+                return retVal;
+            });
+            //draw objects
+            for (int i = 0 ; i < count ; ++i)
+            {
+                GameObject obj = array[i];
                 lock (gameTicker)
-                {
-                    count = objects.Count;
-                    array = new GameObject[count];
-                    objects.CopyTo(array, 0);
-                }
-                Array.Sort<GameObject>(array, delegate(GameObject p1, GameObject p2)
-                {
-                    //draw explosions, then fuel explosions, then bullets, on top of everything else
-                    int retVal = 0;
-                    if (p1 is Bullet)
-                        ++retVal;
-                    else if (p1 is Explosion)
-                        retVal += 3;
-                    else if (p1 is FuelExplosion)
-                        retVal += 2;
-                    if (p2 is Bullet)
-                        --retVal;
-                    else if (p2 is Explosion)
-                        retVal -= 3;
-                    else if (p2 is FuelExplosion)
-                        retVal -= 2;
-                    return retVal;
-                });
-                //draw objects
-                for (int i = 0 ; i < count ; ++i)
-                {
-                    GameObject obj = array[i];
-                    lock (gameTicker)
-                    {
-                        if (objects.Contains(obj))
-                            obj.Draw(graphics, centerX, centerY);
-                    }
-                }
+                    if (objects.Contains(obj))
+                        obj.Draw(graphics, centerX, centerY);
             }
         }
 

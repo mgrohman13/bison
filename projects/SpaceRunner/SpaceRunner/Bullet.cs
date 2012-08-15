@@ -64,7 +64,7 @@ namespace SpaceRunner
                 float spacing = 0;
                 //half the time, space bullets out evenly in all directions for a uniform explosion
                 if (Game.Random.Bool())
-                    spacing = (float)( ( Game.BulletSize + Forms.GameForm.Game.TotalSpeed / 2 ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
+                    spacing = (float)( ( Game.BulletSize + Game.BasePlayerSpeed / 2 ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
                 //we don't want standard spacing for explosions
                 spacing -= GetSpacing(speed);
 
