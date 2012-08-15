@@ -243,7 +243,7 @@ namespace SpaceRunner
         internal const float AlienShipNeutralBulletDamageMult = AlienShipFriendlyBulletDamageMult / AlienShipExplosionBullets * 3f;
         internal const float AlienShipFuelExplosionDamageMult = 6.5f;
         //average number of bullets in the explosion on death
-        internal const float AlienShipExplosionBullets = 6.5f;
+        internal const float AlienShipExplosionBullets = 5.2f;
 
         internal const float AsteroidAverageSize = 16.9f;
         internal const float AsteroidSizeRandomness = .091f;
