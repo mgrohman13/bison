@@ -14,7 +14,7 @@ namespace MattUtil.RealTimeGame
 
         public delegate void EventDelegate();
 
-        private double GameTick;
+        private int GameTick;
 
         private Game game;
         private Timer timer;
@@ -23,7 +23,7 @@ namespace MattUtil.RealTimeGame
 
         private bool paused, started, running;
 
-        public GameTicker(Game game, double GameTick, EventDelegate Refresh)
+        public GameTicker(Game game, int GameTick, EventDelegate Refresh)
         {
             this.game = game;
 
@@ -92,7 +92,7 @@ namespace MattUtil.RealTimeGame
         {
             Stopwatch stopwatch = new Stopwatch();
             double offset = GameTick;
-            //Console.WriteLine(offset);
+            //WriteLine(offset);
 
             lock (this)
                 stopwatch.Start();
@@ -105,10 +105,12 @@ namespace MattUtil.RealTimeGame
                 {
                     if (( !paused || game.GameOver() ) && started)
                     {
+                        //WriteLine("   step " + Environment.TickCount);
                         if (game.GameOver())
                             End();
                         else
                             game.Step();
+                        //WriteLine("endstep " + Environment.TickCount);
 
                         if (Running)
                         {
@@ -116,7 +118,7 @@ namespace MattUtil.RealTimeGame
                             stopwatch.Restart();
 
                             offset += GameTick - timeDiff / TicksPerMilisecond;
-                            //Console.WriteLine(offset);
+                            //WriteLine(offset);
                             //millisecondsTimeout = (int)offset;
                             //offset = ( offset - GameTick ) * ( 1 - 1 / GameTick ) + GameTick;
                         }
@@ -126,7 +128,7 @@ namespace MattUtil.RealTimeGame
                         stopwatch.Restart();
 
                         offset = GameTick;
-                        //Console.WriteLine(offset);
+                        //WriteLine(offset);
                         //millisecondsTimeout = GameTick;
                     }
                 }
@@ -136,7 +138,7 @@ namespace MattUtil.RealTimeGame
                     lock (timer)
                         Monitor.Pulse(timer);
 
-                    //Console.WriteLine("sleep: {0}", (int)offset);
+                    //WriteLine("sleep:" + (int)offset);
                     System.Threading.Thread.Sleep((int)offset);
                 }
             }
@@ -177,12 +179,31 @@ namespace MattUtil.RealTimeGame
         {
             while (Running)
             {
-                Refresh();
-
+                //WriteLine("   wait " + Environment.TickCount);
                 lock (timer)
                     Monitor.Wait(timer);
+                //WriteLine("endwait " + Environment.TickCount);
+
+                Refresh();
+
+                //WriteLine("   sleep" + Environment.TickCount);
+                Thread.Sleep(GameTick);
+                //WriteLine("endsleep" + Environment.TickCount);
             }
         }
+
+        //private int index = -1;
+        //private string[] output = new string[10000];
+        //private void WriteLine(object s)
+        //{
+        //    if (++index >= 10000)
+        //    {
+        //        foreach (string s2 in output)
+        //            Console.WriteLine(s2);
+        //        index = 0;
+        //    }
+        //    output[index] = s.ToString();
+        //}
 
         public void Dispose()
         {

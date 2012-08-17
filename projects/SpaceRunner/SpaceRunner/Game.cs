@@ -101,7 +101,7 @@ namespace SpaceRunner
         #region consts
 
         //miliseconds per game iteration
-        internal const float GameTick = 13;
+        internal const int GameTick = 13;
 
         private const string PicLocation = "..\\..\\..\\pics\\";
         public override string ScoreFile
@@ -171,9 +171,9 @@ namespace SpaceRunner
         //how many extra pixels each fuel point will take you
         internal const float FuelMult = 169f;
         //percentage of fuel consumed each iteration when using turbo
-        internal const double FuelRate = GameSpeed * .021;
+        internal static readonly double FuelRate = BasePlayerSpeed / Math.Pow(StartFuel, FuelPower);
         //exponent of fuel consumption
-        internal const double FuelPower = .65;
+        internal const double FuelPower = .39;
 
 #if TRACE
         internal const float StartLife = PlayerLife * 30f;
