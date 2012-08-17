@@ -2,16 +2,17 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using BaseForm = MattUtil.RealTimeGame.GameForm;
 
 namespace SpaceRunner.Forms
 {
-    internal partial class GameForm : MattUtil.RealTimeGame.GameForm
+    internal partial class GameForm : BaseForm
     {
         new internal static Game Game
         {
             get
             {
-                return (Game)MattUtil.RealTimeGame.GameForm.Game;
+                return (Game)BaseForm.Game;
             }
         }
 
@@ -23,7 +24,9 @@ namespace SpaceRunner.Forms
         protected override MattUtil.RealTimeGame.Game StartNewGame(MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, bool scoring)
         {
             Game game = new Game(this.RefreshGame);
-            MattUtil.RealTimeGame.GameForm.game = game;
+            if (BaseForm.game != null)
+                ( (IDisposable)BaseForm.game ).Dispose();
+            BaseForm.game = game;
             game.InitGame(this.center.X, this.center.Y, false, scoring);
             RefreshGame();
             return game;
@@ -39,8 +42,8 @@ namespace SpaceRunner.Forms
         internal GameForm()
         {
             form = this;
-            MattUtil.RealTimeGame.GameForm.game = new Game(this.RefreshGame);
-            MattUtil.RealTimeGame.GameForm.game.Running = false;
+            BaseForm.game = new Game(this.RefreshGame);
+            BaseForm.game.Running = false;
             InitializeComponent();
 
             center = GetCenter();

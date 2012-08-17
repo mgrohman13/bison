@@ -6,19 +6,19 @@ namespace SpaceRunner
     internal class Asteroid : GameObject, IDisposable
     {
         //load all possible different images, though each asteroid instance will have its own sized copy
-        private static readonly Image[] images;
+        private static readonly Image[] Images;
 
         static Asteroid()
         {
-            images = new Image[Game.NumAsteroidImages];
+            Images = new Image[Game.NumAsteroidImages];
             for (int i = 0 ; i < Game.NumAsteroidImages ; i++)
-                images[i] = Game.LoadImage("asteroids\\" + i.ToString() + ".bmp", Game.AsteroidMaxImageSizeHalf);
+                Images[i] = Game.LoadImage("asteroids\\" + i.ToString() + ".bmp");
         }
 
         //dispose all static images, not to be confused with IDisposable implementation
         internal static void Dispose()
         {
-            foreach (Image i in images)
+            foreach (Image i in Images)
                 i.Dispose();
         }
 
@@ -50,10 +50,7 @@ namespace SpaceRunner
 
         private static Image GetImage(float size)
         {
-            int imageSize = Game.Random.Round(size * 2);
-            if (imageSize < 1)
-                imageSize = 1;
-            return new Bitmap(images[Game.Random.Next(Game.NumAsteroidImages)], new Size(imageSize, imageSize));
+            return Game.ResizeImage(Images[Game.Random.Next(Game.NumAsteroidImages)], size, false);
         }
 
         internal override decimal Score

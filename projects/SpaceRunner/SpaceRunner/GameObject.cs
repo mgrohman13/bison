@@ -50,7 +50,12 @@ namespace SpaceRunner
         }
 
         private GameObject(float xDir, float yDir)
-            : this(0, 0, xDir, yDir, 0, 0, null, 0, false)
+            : this(0, 0, xDir, yDir)
+        {
+        }
+
+        private GameObject(float x, float y, float xDir, float yDir)
+            : this(x, y, xDir, yDir, 0, 0, null, 0, false)
         {
         }
 
@@ -135,14 +140,14 @@ namespace SpaceRunner
 
         internal virtual void Draw(Graphics graphics, int centerX, int centerY)
         {
-            DrawImage(graphics, image, centerX, centerY, speed, x, y, curAngle);
 #if TRACE
             graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
 #endif
+            DrawImage(graphics, image, centerX, centerY, speed, x, y, curAngle);
         }
 
-        protected static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float curAngle)
+        internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float curAngle)
         {
             float objectX = centerX + x;
             float objectY = centerY + y;
@@ -244,8 +249,8 @@ namespace SpaceRunner
 
         internal void CheckCollision(GameObject obj)
         {
-            float sizes = size + obj.size;
-            if (Game.GetDistanceSqr(x, y, obj.x, obj.y) < sizes * sizes)
+            float sizes = this.size + obj.size;
+            if (Game.GetDistanceSqr(this.x, this.y, obj.x, obj.y) < sizes * sizes)
                 Collide(this, obj);
         }
 
@@ -285,6 +290,10 @@ namespace SpaceRunner
 
         internal class DummyObject : GameObject
         {
+            internal DummyObject(float x, float y, float xDir, float yDir)
+                : base(x, y, xDir, yDir)
+            {
+            }
             internal DummyObject(float xDir, float yDir)
                 : base(xDir, yDir)
             {

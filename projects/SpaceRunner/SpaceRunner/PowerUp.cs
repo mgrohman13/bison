@@ -25,9 +25,9 @@ namespace SpaceRunner
 
         internal static void Dispose()
         {
+            LifeImage.Dispose();
             AmmoImage.Dispose();
             FuelImage.Dispose();
-            LifeImage.Dispose();
             BlankImage.Dispose();
         }
 

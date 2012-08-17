@@ -61,7 +61,7 @@ namespace SpaceRunner
         protected override void Collide(GameObject obj)
         {
             //only hit objects whose center is within the explosion
-            if (!( obj is FuelExplosion ) && Game.GetDistanceSqr(x, y, obj.X, obj.Y) < size * size)
+            if (!( obj is FuelExplosion ) && Game.GetDistanceSqr(this.x, this.y, obj.X, obj.Y) < this.size * this.size)
             {
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
@@ -80,7 +80,7 @@ namespace SpaceRunner
             return Game.FuelExplosionDamage * this.size / ( Game.GetDistance(this.x, this.y, x, y) + Game.FuelExplosionDamageStartDist );
         }
 
-        int Game.IChecksExtraSectors.DistanceChecked
+        int Game.IChecksExtraSectors.CheckSectors
         {
             get
             {

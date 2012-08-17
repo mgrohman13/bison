@@ -5,19 +5,19 @@ namespace SpaceRunner
 {
     internal class LifeDust : GameObject
     {
-        private static readonly Image[] LifeDustImage;
+        private static readonly Image[] Images;
 
         static LifeDust()
         {
-            LifeDustImage = new Image[Game.NumLifeDustImages];
+            Images = new Image[Game.NumLifeDustImages];
             for (int i = 1 ; i <= Game.NumLifeDustImages ; ++i)
-                LifeDustImage[i - 1] = Game.LoadImage(@"lifedust\" + i.ToString() + ".bmp", Game.LifeDustSize);
+                Images[i - 1] = Game.LoadImage(@"lifedust\" + i.ToString() + ".bmp", Game.LifeDustSize);
         }
 
         internal static void Dispose()
         {
-            for (int i = 0 ; i < Game.NumLifeDustImages ; ++i)
-                LifeDustImage[i].Dispose();
+            foreach (Image i in Images)
+                i.Dispose();
         }
 
         internal static void NewLifeDust()
@@ -38,7 +38,7 @@ namespace SpaceRunner
         }
 
         private LifeDust(float x, float y, float xDir, float yDir, int imageIndex)
-            : base(x, y, xDir, yDir, Game.LifeDustSize, LifeDustImage[imageIndex])
+            : base(x, y, xDir, yDir, Game.LifeDustSize, Images[imageIndex])
         {
         }
 

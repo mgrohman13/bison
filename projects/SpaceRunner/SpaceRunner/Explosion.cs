@@ -7,9 +7,9 @@ namespace SpaceRunner
         private static Image[,] Images;
         static Explosion()
         {
-            Images = new Image[Game.NumExplosions, Game.NumExplosionImages];
-            for (int explosion = 1 ; explosion <= Game.NumExplosions ; ++explosion)
-                for (int number = 1 ; number <= Game.NumExplosionImages ; ++number)
+            Images = new Image[Game.NumExplosionImages, Game.NumImagesPerExplosion];
+            for (int explosion = 1 ; explosion <= Game.NumExplosionImages ; ++explosion)
+                for (int number = 1 ; number <= Game.NumImagesPerExplosion ; ++number)
                     Images[explosion - 1, number - 1] = Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
         }
 
@@ -39,7 +39,7 @@ namespace SpaceRunner
             }
             xDir /= count;
             yDir /= count;
-            return new Explosion(objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(Game.NumExplosions));
+            return new Explosion(objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(Game.NumExplosionImages));
         }
 
         private Explosion(float x, float y, float xDir, float yDir, int expNum)
@@ -64,7 +64,7 @@ namespace SpaceRunner
             Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(this.xDir, this.yDir) * Game.ExplosionSpeedMult);
 
             if (--time > 0)
-                this.image = Images[expNum, (int)( ( Game.ExplosionTime - time ) / Game.ExplosionTime * Game.NumExplosionImages )];
+                this.image = Images[expNum, (int)( ( Game.ExplosionTime - time ) / Game.ExplosionTime * Game.NumImagesPerExplosion )];
             else
                 this.Die();
         }
