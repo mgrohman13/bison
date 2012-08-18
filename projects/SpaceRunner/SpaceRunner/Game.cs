@@ -46,6 +46,9 @@ namespace SpaceRunner
 
             InitializeImages();
         }
+        //InitializeImages serves 2 purposes:
+        // -call the static constructor for each object type to load all images
+        // -show something interesting on the screen when the game is first launched
         private static void InitializeImages()
         {
             Game game = GameForm.Game;
@@ -78,7 +81,7 @@ namespace SpaceRunner
 
             amt = Random.OEInt(6);
             while (--amt > -1)
-                game.MoveObjects(0, 0, 0);
+                game.MoveAndCollide(0, 0, 0);
         }
         private static void StaticDispose()
         {
@@ -101,7 +104,7 @@ namespace SpaceRunner
         #region consts
 
         //miliseconds per game iteration
-        internal const int GameTick = 13;
+        internal const int GameTick = 17;
 
         private const string PicLocation = "..\\..\\..\\pics\\";
         public override string ScoreFile
@@ -121,9 +124,9 @@ namespace SpaceRunner
         internal const int NumFireworks = 13;
 
         //mathematical values
-        internal const float HalfPi = (float)( Math.PI / 2.0 );
-        internal const float TwoPi = (float)( Math.PI * 2.0 );
-        internal const float DegToRad = (float)( Math.PI / 180.0 );
+        internal const float HalfPi = (float)( Math.PI / 2 );
+        internal const float TwoPi = (float)( Math.PI * 2 );
+        internal const float RadToDeg = (float)( 180 / Math.PI );
 
         #endregion //consts
 
@@ -156,24 +159,13 @@ namespace SpaceRunner
 #if TRACE
         internal const float GameSpeed = GameTick * 0.021f;
 #else
-        internal const float GameSpeed = (float)( GameTick * Math.PI * .0139 );
+        internal const float GameSpeed = (float)( GameTick * Math.PI * .013 );
 #endif
 
         internal const float PlayerSize = 17f;
         internal const float BasePlayerSpeed = GameSpeed * 3f;
         //time spent dead before getting the next life
         internal const float DeathTime = 1 / GameSpeed * 65f;
-
-        internal static float StartFuel = FuelMult * 13f;
-        //average fuel per power up
-        internal const float IncFuel = FuelMult * 2.6f;
-        internal const float IncFuelRandomness = .104f;
-        //how many extra pixels each fuel point will take you
-        internal const float FuelMult = 169f;
-        //percentage of fuel consumed each iteration when using turbo
-        internal static readonly double FuelRate = BasePlayerSpeed / Math.Pow(StartFuel, FuelPower);
-        //exponent of fuel consumption
-        internal const double FuelPower = .39;
 
 #if TRACE
         internal const float StartLife = PlayerLife * 30f;
@@ -183,11 +175,24 @@ namespace SpaceRunner
         internal const float PlayerLife = 13f;
         internal const float PlayerDamageRandomness = .065f;
 
+        internal const float StartFuel = FuelMult * 13f;
+        //average fuel per power up
+        internal const float IncFuel = FuelMult * 2.6f;
+        internal const float IncFuelRandomness = .104f;
+        //how many extra pixels each fuel point will take you
+        internal const float FuelMult = 169f;
+        //percentage of fuel consumed each iteration when using turbo
+        internal static readonly double FuelRate = GameSpeed * 0.13;
+        //exponent of fuel consumption
+        internal const double FuelPower = .39;
+
         internal const int StartAmmo = 10;
         internal const int IncAmmo = 3;
         //time spent reloading (will be divided by ammo^FireTimePower)
-        internal const double FireTimeMult = 1 / GameSpeed * 3000.0;
+        internal const double FireTimeMult = 1 / GameSpeed * 3900.0;
         internal const double FireTimePower = 1.69;
+        //constant added to current ammo for fire time calculation
+        internal const double FireTimeAmmoAdd = 1.69;
 
         private const float DeadBlinkDiv = 300f / GameTick;
         private const float DeadBlinkWindow = DeadBlinkDiv / 2.1f;
@@ -231,7 +236,7 @@ namespace SpaceRunner
         internal const float AlienShipStatCap = .13f;
         internal const float AlienShipFriendlyBulletDamageMult = 9.1f;
         internal const float AlienShipNeutralBulletDamageMult = AlienShipFriendlyBulletDamageMult / AlienShipExplosionBullets * 3f;
-        internal const float AlienShipFuelExplosionDamageMult = 3.9f;
+        internal const float AlienShipFuelExplosionDamageMult = 5.2f;
         //average number of bullets in the explosion on death
         internal const float AlienShipExplosionBullets = 5.2f;
 
@@ -258,8 +263,8 @@ namespace SpaceRunner
         internal const float AsteroidCollisionChance = 520f;
         //asteroids smaller than this area are frequently destroyed uneventfully when colliding with other asteroids
         internal const float AsteroidCollisionCriticalArea = 117f;
-        internal const float AsteroidRotateConst = GameSpeed * .39f;
-        internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * .91f;
+        internal const float AsteroidRotateConst = GameSpeed * 0.0065f;
+        internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * 0.0169f;
 
         internal const float BulletSize = 2.5f;
         //speed added to the speed of the object firing the bullet
@@ -269,8 +274,10 @@ namespace SpaceRunner
         //average speed of bullets from bullet explosions
         internal const float BulletExplosionSpeed = BulletSpeed * 1.3f;
         internal const float BulletExplosionSpeedRandomness = .52f;
-        //randomness on the angle (in degrees) when an alien shoots at the player
-        internal const float BulletRandomnessForAliens = 3f;
+        //randomness on the angle (in radians) when an alien shoots at the player
+        internal const float AlienFiringInaccuracy = 0.052f;
+        //chance that, when a bullet hits and kills a piece of life dust, the bullet will also be killed
+        internal const float BulletLifeDustDieChance = 6f / ( 6f + LifeDustClumpAmt );
 
         internal const float FuelExplosionSize = 91f;
         //number of iterations a fuel explosion lasts
@@ -282,7 +289,7 @@ namespace SpaceRunner
         internal const float FuelExplosionImagesPerSecond = 26f;
 
         //for both fuel and standard explosions
-        internal const float ExplosionRotate = GameSpeed * .13f;
+        internal const float ExplosionRotate = GameSpeed * 0.0052f;
         //speed the explosion shockwave is considered to be traveling
         internal const float ExplosionSpeed = ( FuelExplosionSize - PowerUpSize ) / FuelExplosionTime;
 
@@ -304,7 +311,7 @@ namespace SpaceRunner
         //exponent to the speed picked up from collisions with other objects
         internal const double LifeDustObjSpeedPower = GameSpeed / ( GameSpeed + .169 );
         //chance of life dust getting hit by a bullet or fuel explosion
-        internal const float LifeDustHitChance = GameTick * 0.0039f;
+        internal const float LifeDustHitChance = GameTick * 0.0065f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
         internal const float LifeDustAmtToHeal = 52f;
 
@@ -315,20 +322,23 @@ namespace SpaceRunner
         internal const int PowerUpLifeChance = 2;
         //average number of bullets in the explosion when an ammo power up explodes
         internal const float PowerUpAmmoExplosionBullets = 13f;
-        internal const float PowerUpRotate = GameSpeed * 1.3f;
+        internal const float PowerUpRotate = GameSpeed * 0.03f;
 
+        internal const decimal ScoreMult = 10m;
         //amount each damage point while dead reduces your score
-        internal const decimal ScoreToDamageRatio = 1 / (decimal)PlayerLife * 10m;
+        internal const decimal ScoreToDamageRatio = ScoreMult / (decimal)PlayerLife * 10m;
         //score added per pixel traveled
-        internal const decimal SpeedScoreMult = .001m;
+        internal const decimal DistanceScore = ScoreMult / (decimal)MapSize;
         //score an alien is worth for killing based on its speed
-        internal const decimal AlienSpeedScoreMult = 1 / (decimal)AlienSpeed * 1m;
+        internal const decimal AlienSpeedScoreMult = ScoreMult / (decimal)AlienSpeed * 1m;
         //extra score an alien that shoots is worth for killing
-        internal const decimal AlienFireRateScoreMult = 1 / (decimal)AlienFireRate * 1m;
+        internal const decimal AlienFireRateScoreMult = ScoreMult / (decimal)AlienFireRate * 1.5m;
         //score an alien ship is worth for injuring based on its stats compared to average
-        internal const decimal AlienShipScoreMult = 100m;
+        internal const decimal AlienShipScoreMult = ScoreMult * 100m;
         //score an alien ship is worth for killing based on its stats compared to average
-        internal const decimal AlienShipDeathScoreMult = 10m;
+        internal const decimal AlienShipDeathScoreMult = AlienShipScoreMult / 10m;
+        internal const decimal RemainingAmmoScore = ScoreMult * 10m / (decimal)StartAmmo;
+        internal const decimal RemainingFuelScore = ScoreMult * 10m / (decimal)StartFuel;
 
         #endregion //game params
 
@@ -476,8 +486,12 @@ namespace SpaceRunner
             {
                 //choose between regular image and no ammo image
                 Image image = ( ( fireCounter < 0 || GameOver() || Paused || Fireworks ) ? PlayerImage : NoAmmoImage );
-                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, GetAngleImageAdjusted(inputX, inputY));
+                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, 0, GetAngleImageAdjusted(inputX, inputY));
             }
+        }
+        internal static float GetAngleImageAdjusted(float xSpeed, float ySpeed)
+        {
+            return GetAngle(xSpeed, ySpeed) + HalfPi;
         }
 
         private void DrawFireBar(Graphics graphics)
@@ -564,21 +578,22 @@ namespace SpaceRunner
             graphics.DrawRectangle(border, rect.X, rect.Y, rect.Width, rect.Height);
             graphics.FillRectangle(fill, fillRect);
         }
-
-        static Rectangle GetBarRect(float x, float y, float size)
+        private static Rectangle GetBarRect(float x, float y, float size)
         {
-            return new Rectangle(Round(x - size), Round(y + size), (int)( .5 + size * 2f ), 3);
+            return new Rectangle(Round(x - size), Round(y + size), Round(size * 2), 3);
         }
 
         internal void AddObject(GameObject obj)
         {
             objects.Add(obj);
+
             if (obj is AlienShip)
                 ++alienCount;
         }
         internal void RemoveObject(GameObject obj)
         {
             objects.Remove(obj);
+
             IDisposable disposable;
             if (( disposable = obj as IDisposable ) != null)
                 disposable.Dispose();
@@ -588,23 +603,20 @@ namespace SpaceRunner
 
         internal void SetMouseCoordinates(int x, int y)
         {
-            const float MapSizeSqr = MapSize * MapSize;
-            if (!GameOver() && Running && !( GetDistanceSqr(x, y) > MapSizeSqr ))
+            if (!GameOver() && Running && !( GetDistanceSqr(x, y) > MapSize * MapSize ))
             {
-                //start the game if it hasnt already
                 if (!Started)
+                {
                     Start();
-
-                //unpause
-                if (Paused)
+                }
+                else if (Paused)
                 {
                     Paused = false;
                     //this fixes an exploit where you could use pause to instantly turn and fire any direction you wanted
-                    //setting the input variables has to be done after this for the fix to work
                     lock (gameTicker)
                     {
                     }
-                    System.Threading.Thread.Sleep(0);
+                    System.Threading.Thread.Sleep(GameTick);
                     lock (gameTicker)
                     {
                     }
@@ -612,8 +624,7 @@ namespace SpaceRunner
 
                 if (x == 0 && y == 0)
                 {
-                    //if you put the mouse right on the center, move a random direction
-                    RandomInput();
+                    SetRandomInput();
                 }
                 else
                 {
@@ -637,9 +648,9 @@ namespace SpaceRunner
             ammo += IncAmmo;
             fireCounter = -1;
         }
-        private void AddLife(float amt)
+        internal void AddFuel()
         {
-            life += amt;
+            fuel += Random.GaussianCapped(IncFuel, IncFuelRandomness);
         }
         internal void AddLife(float amt, bool allowNew)
         {
@@ -665,9 +676,9 @@ namespace SpaceRunner
                 }
             }
         }
-        internal void AddFuel()
+        private void AddLife(float amt)
         {
-            fuel += Random.GaussianCapped(IncFuel, IncFuelRandomness);
+            life += amt;
         }
 
         #endregion //internal functional methods
@@ -693,7 +704,7 @@ namespace SpaceRunner
             }
         }
 
-        void RandomInput()
+        private void SetRandomInput()
         {
             float fx, fy;
             GetRandomDirection(out fx, out fy, MapSize);
@@ -701,11 +712,28 @@ namespace SpaceRunner
             inputY = Random.Round(fy);
         }
 
+        internal static float GetRingSpacing(int numPieces, double size)
+        {
+            return (float)( size * ( numPieces < 3 ? 1 : 1 / Math.Sin(Math.PI / numPieces) ) );
+        }
+
         internal static void GetRandomDirection(out float xDir, out float yDir, float dist)
         {
-            float angle = Random.DoubleFull((float)Math.PI);
+            float angle = GetRandomAngle();
+            GetDirs(out xDir, out yDir, angle, dist);
+        }
+        internal static void GetDirs(out float xDir, out float yDir, float angle)
+        {
+            GetDirs(out xDir, out yDir, angle, 1);
+        }
+        internal static void GetDirs(out float xDir, out float yDir, float angle, float dist)
+        {
             xDir = (float)( Math.Cos(angle) * dist );
             yDir = (float)( Math.Sin(angle) * dist );
+        }
+        internal static float GetRandomAngle()
+        {
+            return Random.DoubleFull((float)Math.PI);
         }
 
         internal static Image LoadImage(string name)
@@ -743,76 +771,61 @@ namespace SpaceRunner
             return retVal;
         }
 
-        internal static void Rotate(Graphics graphics, float angle, float centerX, float centerY)
-        {
-            graphics.ResetTransform();
-            graphics.TranslateTransform(centerX, centerY);
-            graphics.RotateTransform(angle);
-            graphics.TranslateTransform(-centerX, -centerY);
-        }
-        internal static void Rotate(Graphics graphics, float xSpeed, float ySpeed, float centerX, float centerY)
-        {
-            Rotate(graphics, GetAngleImageAdjusted(xSpeed, ySpeed), centerX, centerY);
-        }
-
-        private static float GetAngleImageAdjusted(float xSpeed, float ySpeed)
-        {
-            return GetAngle(xSpeed, ySpeed) + 90f;
-        }
-
         internal static void ShootAtPlayer(float speed, float x, float y, float size)
         {
-            float dirX = -x, dirY = -y;
-
+            float xDir = -x, yDir = -y;
             //half the time, adjust for the player's movement
             if (Random.Bool())
-                AdjustForPlayerSpeed(ref dirX, ref dirY, speed, x, y, size);
+                AdjustForPlayerSpeed(ref xDir, ref yDir, speed + BulletSpeed, size + BulletSize);
 
+            float bulletAngle = GetAngle(xDir, yDir);
             //randomize the angle slightly
-            float bulletAngle = GetAngle(dirX, dirY) + Random.Gaussian(BulletRandomnessForAliens);
-            bulletAngle *= DegToRad;
-            dirX = (float)Math.Cos(bulletAngle);
-            dirY = (float)Math.Sin(bulletAngle);
+            bulletAngle += Random.Gaussian(AlienFiringInaccuracy);
 
-            Bullet.NewBullet(x, y, dirX, dirY, speed, size, Bullet.FriendlyStatus.Enemy);
+            GetDirs(out xDir, out yDir, bulletAngle);
+            Bullet.NewBullet(x, y, xDir, yDir, speed, size, Bullet.FriendlyStatus.Enemy);
         }
 
-        internal static void AdjustForPlayerSpeed(ref float dirX, ref float dirY, float speed, float x, float y, float spacing)
+        internal static void AdjustForPlayerSpeed(ref float xDir, ref float yDir, float speed, float spacing)
         {
-            //angle between enemy and player movement vectors
-            float angle = ( GetAngle(dirX, dirY) - GetAngle(GameForm.Game.inputX, GameForm.Game.inputY) ) * DegToRad;
+            //angle between bullet and player movement vectors
+            float angle = ( GetAngle(xDir, yDir) - GetAngle(GameForm.Game.inputX, GameForm.Game.inputY) );
             //distance from player
-            float dist = GetDistance(x, y) - spacing - PlayerSize;
-            float xDist = (float)( Math.Cos(angle) * dist );
-            float yDist = (float)( Math.Sin(angle) * dist );
+            float distance = GetDistance(xDir, yDir) - spacing;
+            float xDist, yDist;
+            GetDirs(out xDist, out yDist, angle, distance);
             //ratio of speed between the bullet and the player
-            float speedRatio = ( speed + BulletSpeed ) / GameForm.Game.TotalSpeed;
+            float speedRatio = speed / GameForm.Game.TotalSpeed;
             //check that a zero will not be in the denominator
-            if (( speedRatio *= speedRatio ) != 1)
+            if (speedRatio != 1)
             {
-                //all occurances of yDist in the formula are squared, so do it now
+                speedRatio *= speedRatio;
                 yDist *= yDist;
+                float sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
                 //check that the value inside the square root is positive
-                float sqrtInner = ( xDist * xDist + yDist ) * speedRatio - yDist;
-                if (sqrtInner >= 0)
+                if (sqrt >= 0)
                 {
                     //lead is the extra distance the player will travel until the bullet hits
-                    float lead = (float)( ( Math.Sqrt(sqrtInner) + xDist ) / ( speedRatio - 1.0 ) );
-                    //add the buffer to the direction
-                    float totalInput = GetDistance(GameForm.Game.inputX, GameForm.Game.inputY);
-                    dirX += lead * GameForm.Game.inputX / totalInput;
-                    dirY += lead * GameForm.Game.inputY / totalInput;
+                    float lead = (float)( ( Math.Sqrt(sqrt) + xDist ) / ( speedRatio - 1 ) );
+                    //negative lead means the player is traveling away too quickly
+                    if (lead > 0)
+                    {
+                        //add the lead to the firing direction
+                        float totalInput = GetDistance(GameForm.Game.inputX, GameForm.Game.inputY);
+                        xDir += lead * GameForm.Game.inputX / totalInput;
+                        yDir += lead * GameForm.Game.inputY / totalInput;
+                    }
                 }
             }
         }
 
         internal static void NormalizeDirs(ref float xDir, ref float yDir, float speed)
         {
-            float distance;
-            if (( distance = GetDistance(xDir, yDir) ) > 0)
+            float distance = GetDistance(xDir, yDir);
+            if (distance > 0)
             {
-                float mult;
-                xDir *= ( mult = speed / distance );
+                float mult = speed / distance;
+                xDir *= mult;
                 yDir *= mult;
             }
             else if (speed != 0)
@@ -820,15 +833,9 @@ namespace SpaceRunner
                 GetRandomDirection(out xDir, out yDir, speed);
             }
         }
-        internal static float GetAngle(float xSpeed, float ySpeed)
+        internal static float GetAngle(double xSpeed, double ySpeed)
         {
-            float arctan;
-            if (xSpeed == 0)
-                arctan = HalfPi;
-            else
-                arctan = (float)Math.Atan(ySpeed / xSpeed);
-
-            return arctan / DegToRad + ( xSpeed == 0 ? ( ySpeed < 0 ? 180 : 0 ) : ( xSpeed < 0 ? 180 : 0 ) );
+            return (float)Math.Atan2(ySpeed, xSpeed);
         }
 
         internal static float GetDistanceSqr(float x, float y)
@@ -850,34 +857,31 @@ namespace SpaceRunner
 
         internal static PointF RandomEdgePoint()
         {
-            float angle;
-            return new PointF((float)( Math.Cos(angle = Random.DoubleFull((float)Math.PI)) * CreationDist ),
-                (float)( Math.Sin(angle) * CreationDist ));
+            return GetPoint(GetRandomAngle(), CreationDist);
         }
-
-        internal PointF RandomStartPoint(float size)
+        private PointF RandomStartPoint(float size)
         {
-            float angle = Random.DoubleFull((float)Math.PI);
-            float maxDist = MapSize;
-            float padding = 3f * ( PlayerSize + size );
-            maxDist -= padding + size;
-            float dist = padding + Random.DoubleHalf(maxDist);
-            PointF retVal = new PointF((float)( Math.Cos(angle) * dist ), (float)( Math.Sin(angle) * dist ));
-            bool valid = true;
+            float padding = 3.9f * ( PlayerSize + AlienSize );
+            PointF retVal = GetPoint(GetRandomAngle(), padding + Random.DoubleHalf(MapSize - padding));
+
             foreach (GameObject obj in objects)
                 if (GetDistanceSqr(retVal.X, retVal.Y, obj.X, obj.Y) < ( size + obj.Size ) * ( size + obj.Size ))
-                {
-                    valid = false;
-                    break;
-                }
-            if (valid)
-                return retVal;
-            return RandomStartPoint(size);
+                    return RandomStartPoint(size);
+
+            return retVal;
+        }
+        private static PointF GetPoint(float angle, float dist)
+        {
+            float x, y;
+            GetDirs(out x, out y, angle, dist);
+            return new PointF(x, y);
         }
 
-        internal static float VectorExponent(double value, double power)
+        //redefines the exponent operation such that it behaves for all inputs 
+        //very closely to its real behavior when base is greater than 1
+        internal static float VectorExponent(double expBase, double expPower)
         {
-            return (float)( Math.Sign(value) * ( Math.Pow(Math.Abs(value) + 1, power) - 1 ) );
+            return (float)( Math.Sign(expBase) * ( Math.Pow(Math.Abs(expBase) + 1, expPower) - 1 ) );
         }
 
         internal static int Round(float value)
@@ -905,10 +909,10 @@ namespace SpaceRunner
             this.centerX = centerX;
             this.centerY = centerY;
 
-            RandomInput();
+            SetRandomInput();
             if (Fireworks)
             {
-                headingAngle = Random.DoubleFull((float)Math.PI);
+                headingAngle = GetRandomAngle();
                 headingAngleDir = Random.Bool();
             }
 
@@ -926,16 +930,15 @@ namespace SpaceRunner
             this.Turbo = Fireworks;
             this.Fire = Fireworks;
 
-            StartObjects();
+            CreateStartObjects();
 
             Running = true;
             Started = Fireworks;
         }
 
-        void StartObjects()
+        //1 power up, 3 aliens, random number of asteroids
+        private void CreateStartObjects()
         {
-            //1 power up, 3 aliens, random number of asteroids
-
             PointF start = RandomStartPoint(PowerUpSize);
             PowerUp.NewPowerUp(start.X, start.Y);
 
@@ -953,8 +956,7 @@ namespace SpaceRunner
             }
         }
 
-
-        void CheckFireworks()
+        private void CheckFireworks()
         {
             if (Fireworks)
             {
@@ -964,7 +966,7 @@ namespace SpaceRunner
                 if (Random.Bool(GameSpeed * .039))
                     headingAngleDir = !headingAngleDir;
                 headingAngle += Random.OE(GameSpeed * .039f) * ( headingAngleDir ? -1f : 1f );
-                PointF p = new PointF((float)( Math.Cos(headingAngle) * MapSize * .39 ), (float)( Math.Sin(headingAngle) * MapSize * .39 ));
+                PointF p = GetPoint(headingAngle, MapSize * .39f);
                 SetMouseCoordinates(Random.Round(p.X), Random.Round(p.Y));
             }
         }
@@ -987,7 +989,7 @@ namespace SpaceRunner
             CreateObjects(playerSpeed);
 
             //move objects and detect collisions
-            MoveObjects(xSpeed, ySpeed, playerSpeed);
+            MoveAndCollide(xSpeed, ySpeed, playerSpeed);
 
             CheckFireworks();
         }
@@ -1000,24 +1002,7 @@ namespace SpaceRunner
             return new GameObject.DummyObject(xSpeed, ySpeed);
         }
 
-        //  void RegenLife()
-        //{
-        //    //regen life
-        //    float maxLifeRegen = PlayerLife - CurrentLifePart;
-        //    if (PlayerLifeRegen > maxLifeRegen)
-        //    {
-        //        life += maxLifeRegen;
-        //        float extra = PlayerLifeRegen - maxLifeRegen;
-        //        //add to score when not regenerating life
-        //        AddScore((decimal)extra * ScoreToDamageRatio);
-        //    }
-        //    else
-        //    {
-        //        life += PlayerLifeRegen;
-        //    }
-        //}
-
-        float MovePlayer()
+        private float MovePlayer()
         {
             //check turbo
             float speed = BasePlayerSpeed;
@@ -1029,11 +1014,11 @@ namespace SpaceRunner
             }
 
             //add traveling score
-            AddScore((decimal)speed * SpeedScoreMult);
+            AddScore((decimal)speed * DistanceScore);
             return speed;
         }
 
-        void PlayerFiring(float speed)
+        private void PlayerFiring(float speed)
         {
             //check that the player is firing and can fire
             --fireCounter;
@@ -1049,10 +1034,10 @@ namespace SpaceRunner
 
         private float GetCoolDown()
         {
-            return (float)( FireTimeMult / Math.Pow(ammo, FireTimePower) );
+            return (float)( FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower) );
         }
 
-        void CreateObjects(float appearChance)
+        private void CreateObjects(float appearChance)
         {
             if (Random.Bool(appearChance * LifeDustCreationRate))
                 LifeDust.NewLifeDust();
@@ -1066,71 +1051,48 @@ namespace SpaceRunner
                 AlienShip.NewAlienShip();
         }
 
-        void MoveObjects(float xSpeed, float ySpeed, float playerSpeed)
+        private void MoveAndCollide(float xSpeed, float ySpeed, float playerSpeed)
         {
-            Dictionary<Point, List<GameObject>> objectSectors = GetObjectSectors();
-            HashSet<Point> done = new HashSet<Point>();
-            foreach (KeyValuePair<Point, List<GameObject>> pair in Random.Iterate(objectSectors))
-            {
-                Point point = pair.Key;
-                List<GameObject> curSector = pair.Value;
-
-                int count = curSector.Count;
-                for (int i = 0 ; i < count ; ++i)
-                {
-                    GameObject obj = curSector[i];
-
-                    //make sure the object is still in the game
-                    if (objects.Contains(obj))
-                    {
-                        //move the object
-                        float damage = obj.Step(xSpeed, ySpeed, playerSpeed);
-                        //damage the player
-                        if (damage > 0)
-                            HitPlayer(damage);
-
-                        //make sure the object is in a collision sector and that it still exists after moving
-                        if (point.X > int.MinValue && objects.Contains(obj))
-                            CollisionDetection(objectSectors, obj, point, i, done);
-                    }
-                }
-
-                done.Add(point);
-            }
+            var objectSectors = MoveObjects(xSpeed, ySpeed, playerSpeed);
+            CollideObjects(objectSectors);
         }
 
-        Dictionary<Point, List<GameObject>> GetObjectSectors()
+        private Dictionary<Point, List<GameObject>> MoveObjects(float xSpeed, float ySpeed, float playerSpeed)
         {
-            Dictionary<Point, List<GameObject>> objectSectors = new Dictionary<Point, List<GameObject>>();
+            var objectSectors = new Dictionary<Point, List<GameObject>>();
 
             foreach (GameObject obj in Random.Iterate(objects))
             {
-                Point? s = GetSector(obj);
-                Point p;
-                if (s.HasValue)
-                    p = s.Value;
-                else
-                    p = new Point(int.MinValue, int.MinValue);
+                //move the object
+                float playerDamage = obj.Step(xSpeed, ySpeed, playerSpeed);
+                if (playerDamage > 0)
+                    HitPlayer(playerDamage);
 
-                List<GameObject> sector;
-                if (!objectSectors.TryGetValue(p, out  sector))
+                //make sure the object is still in the game
+                if (objects.Contains(obj))
                 {
-                    sector = new List<GameObject>();
-                    objectSectors.Add(p, sector);
+                    //add for collision detection
+                    Point p = GetSector(obj);
+                    List<GameObject> sector;
+                    if (!objectSectors.TryGetValue(p, out  sector))
+                    {
+                        sector = new List<GameObject>();
+                        objectSectors.Add(p, sector);
+                    }
+                    sector.Add(obj);
                 }
-                sector.Add(obj);
             }
 
             return objectSectors;
         }
-        Point? GetSector(GameObject obj)
+        private Point GetSector(GameObject obj)
         {
             //no collisions for objects completely outside of the creation distance
             if (GetDistance(obj.X, obj.Y) - obj.Size > CreationDist)
-                return null;
+                return new Point(int.MinValue, int.MinValue);
+
             return new Point((int)( obj.X / SectorSize ) + ( obj.X > 0 ? 1 : 0 ), (int)( obj.Y / SectorSize ) + ( obj.Y > 0 ? 1 : 0 ));
         }
-
         private void HitPlayer(float damage)
         {
             bool alreadyLost = GameOver();
@@ -1162,12 +1124,35 @@ namespace SpaceRunner
 
             if (!alreadyLost && GameOver())
             {
-                AddScore(ammo);
-                AddScore((decimal)Fuel);
+                AddScore(ammo * RemainingAmmoScore);
+                AddScore((decimal)Fuel * RemainingFuelScore);
             }
         }
 
-        void CollisionDetection(Dictionary<Point, List<GameObject>> objectSectors, GameObject obj, Point point, int objIndex, HashSet<Point> done)
+        private void CollideObjects(Dictionary<Point, List<GameObject>> objectSectors)
+        {
+            HashSet<Point> done = new HashSet<Point>();
+            foreach (KeyValuePair<Point, List<GameObject>> pair in Random.Iterate(objectSectors))
+            {
+                Point point = pair.Key;
+                //int.MinValue is a special sector where objects don't collide
+                if (point.X > int.MinValue)
+                {
+                    List<GameObject> curSector = pair.Value;
+                    int count = curSector.Count;
+                    for (int i = 0 ; i < count ; ++i)
+                    {
+                        GameObject obj = curSector[i];
+                        //make sure the object is still in the game
+                        if (objects.Contains(obj))
+                            CollideObject(objectSectors, obj, point, i, done);
+                    }
+
+                    done.Add(point);
+                }
+            }
+        }
+        private void CollideObject(Dictionary<Point, List<GameObject>> objectSectors, GameObject obj, Point point, int objIndex, HashSet<Point> done)
         {
             //some objects need to check extra sectors away
             int checkDist = 1;

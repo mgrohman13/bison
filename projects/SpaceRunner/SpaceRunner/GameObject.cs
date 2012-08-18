@@ -76,7 +76,7 @@ namespace SpaceRunner
 
             if (speed == 0 || rotateSpeed != 0)
             {
-                curAngle = Game.Random.DoubleHalf(360);
+                curAngle = Game.GetRandomAngle();
                 if (rotateSpeed != 0)
                     rotate = Game.Random.Gaussian(rotateSpeed);
             }
@@ -144,20 +144,34 @@ namespace SpaceRunner
             graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
 #endif
-            DrawImage(graphics, image, centerX, centerY, speed, x, y, curAngle);
+            DrawImage(graphics, image, centerX, centerY, speed, x, y, size, curAngle);
         }
 
-        internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float curAngle)
+        internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float size, float curAngle)
         {
-            float objectX = centerX + x;
-            float objectY = centerY + y;
+            if (Game.GetDistance(x, y) - size < Game.MapSize)
+            {
+                float objectX = centerX + x;
+                float objectY = centerY + y;
 
-            if (speed > 0)
-                Game.Rotate(graphics, -x, -y, objectX, objectY);
-            else
-                Game.Rotate(graphics, curAngle, objectX, objectY);
+                if (speed > 0)
+                    Rotate(graphics, -x, -y, objectX, objectY);
+                else
+                    Rotate(graphics, curAngle, objectX, objectY);
 
-            graphics.DrawImageUnscaled(image, Game.Round(objectX - image.Width / 2f), Game.Round(objectY - image.Height / 2f));
+                graphics.DrawImageUnscaled(image, Game.Round(objectX - image.Width / 2f), Game.Round(objectY - image.Height / 2f));
+            }
+        }
+        private static void Rotate(Graphics graphics, float xSpeed, float ySpeed, float centerX, float centerY)
+        {
+            Rotate(graphics, Game.GetAngleImageAdjusted(xSpeed, ySpeed), centerX, centerY);
+        }
+        private static void Rotate(Graphics graphics, float angle, float centerX, float centerY)
+        {
+            graphics.ResetTransform();
+            graphics.TranslateTransform(centerX, centerY);
+            graphics.RotateTransform(angle * Game.RadToDeg);
+            graphics.TranslateTransform(-centerX, -centerY);
         }
 
         protected virtual void OnStep()
@@ -166,9 +180,6 @@ namespace SpaceRunner
 
         internal float Step(float playerXMove, float playerYMove, float playerSpeed)
         {
-            //do stuff in child classes
-            OnStep();
-
             curAngle += rotate;
 
             //move the object to simulate player movement
@@ -185,6 +196,9 @@ namespace SpaceRunner
                 Forms.GameForm.Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();
+
+            //do stuff in child classes
+            OnStep();
 
             //return damage to player
             return damage;

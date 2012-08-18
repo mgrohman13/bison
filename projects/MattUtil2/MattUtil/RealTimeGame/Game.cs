@@ -28,6 +28,7 @@ namespace MattUtil.RealTimeGame
         public void Start()
         {
             Started = true;
+            Paused = false;
             gameTicker.Start();
         }
 

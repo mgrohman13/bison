@@ -79,20 +79,19 @@ namespace SpaceRunner
             float pieceSize = (float)Math.Sqrt(Area / ( Math.PI * numPieces ));
             float pieceSpeed = Game.Random.GaussianCapped(Game.AsteroidPieceSpeed, Game.AsteroidPieceSpeedRandomness);
             //space pieces out evenly in all directions
-            float angle = Game.Random.DoubleFull((float)Math.PI);
+            float angle = Game.GetRandomAngle();
             float angleStep = Game.TwoPi / numPieces;
-            float spacing = (float)( ( pieceSize + Forms.GameForm.Game.TotalSpeed / 2 ) * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
+            float spacing = Game.GetRingSpacing(numPieces, pieceSize);
             for (int i = 0 ; i < numPieces ; i++)
             {
                 if (Game.Random.Bool(Math.Pow(size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
                 {
                     float addX, addY;
-                    float addXDir = addX = (float)Math.Cos(angle);
-                    float addYDir = addY = (float)Math.Sin(angle);
+                    Game.GetDirs(out addX, out addY, angle);
+                    float addXDir = addX * pieceSpeed;
+                    float addYDir = addY * pieceSpeed;
                     addX *= spacing;
                     addY *= spacing;
-                    addXDir *= pieceSpeed;
-                    addYDir *= pieceSpeed;
                     NewAsteroid(x + addX, y + addY, pieceSize, xDir + addXDir, yDir + addYDir);
                 }
 

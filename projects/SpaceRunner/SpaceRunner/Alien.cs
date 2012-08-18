@@ -232,7 +232,7 @@ namespace SpaceRunner
                 else
                     throw new Exception();
 #endif
-                DrawImage(graphics, image, centerX, centerY, 0, x, y, curAngle);
+                DrawImage(graphics, image, centerX, centerY, 0, x, y, Game.PowerUpSize, curAngle);
             }
         }
 
