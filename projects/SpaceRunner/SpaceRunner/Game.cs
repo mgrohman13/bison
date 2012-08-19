@@ -230,18 +230,18 @@ namespace SpaceRunner
         internal const float AlienDamageOEPct = .26f;
 
         internal const float AlienShipSize = 21f;
-        internal const float AlienShipLife = 169f;
-        internal const float AlienShipLifeInc = 130f;
-        internal const float AlienShipFireRate = GameSpeed * .0169f;
-        internal const float AlienShipFireRateInc = GameSpeed * .0078f;
+        internal const float AlienShipLife = 260f;
+        internal const float AlienShipLifeInc = 210f;
+        internal const float AlienShipFireRate = GameSpeed * .0210f;
+        internal const float AlienShipFireRateInc = GameSpeed * .0104f;
         internal const float AlienShipSpeedMult = 1.69f;
         internal const float AlienShipSpeedMultInc = .39f;
         internal const float AlienShipStatRandomness = .169f;
         //lower cap as a percentage of the average value
         internal const float AlienShipStatCap = .13f;
-        internal const float AlienShipFriendlyBulletDamageMult = 9.1f;
+        internal const float AlienShipFriendlyBulletDamageMult = 13f;
         internal const float AlienShipNeutralBulletDamageMult = AlienShipFriendlyBulletDamageMult / AlienShipExplosionBullets * 3f;
-        internal const float AlienShipFuelExplosionDamageMult = 5.2f;
+        internal const float AlienShipFuelExplosionDamageMult = 7.8f;
         //average number of bullets in the explosion on death
         internal const float AlienShipExplosionBullets = 5.2f;
 
@@ -251,7 +251,7 @@ namespace SpaceRunner
         //lower cap as a percentage of the average value
         internal const float AsteroidSizeCap = .52f;
         //damage to player and alien ship
-        internal const float AsteroidAreaToDamageRatio = (float)( Math.PI * PlayerSize * PlayerSize / PlayerLife );
+        internal const float AsteroidAreaToDamageRatio = (float)( Math.PI * PlayerSize * PlayerSize / PlayerLife ) / 1.3f;
         //alien life is actually its speed in pixels, so this damage is in pixels
         internal const float AsteroidAreaToAlienDamageRatio = 1 / GameSpeed * 169f;
         //drift speed for new asteroids
@@ -339,7 +339,7 @@ namespace SpaceRunner
         //extra score an alien that shoots is worth for killing
         internal const decimal AlienFireRateScoreMult = ScoreMult / (decimal)AlienFireRate * 1.5m;
         //score an alien ship is worth for injuring based on its stats compared to average
-        internal const decimal AlienShipScoreMult = ScoreMult * 100m;
+        internal const decimal AlienShipScoreMult = ScoreMult * 150m;
         //score an alien ship is worth for killing based on its stats compared to average
         internal const decimal AlienShipDeathScoreMult = AlienShipScoreMult / 10m;
         internal const decimal RemainingAmmoScore = ScoreMult;
@@ -801,26 +801,24 @@ namespace SpaceRunner
             GetDirs(out xDist, out yDist, angle, distance);
             //ratio of speed between the bullet and the player
             float speedRatio = speed / GameForm.Game.TotalSpeed;
-            //check that a zero will not be in the denominator
-            if (speedRatio != 1)
+            speedRatio *= speedRatio;
+            //make sure a zero will not be in the denominator
+            while (speedRatio == 1)
+                speedRatio = 1 + Random.Gaussian(1f / ( 1 << 24 ));
+            yDist *= yDist;
+            float sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
+            //make sure the value inside the square root is positive
+            while (sqrt < 0)
+                sqrt = Random.OE(float.Epsilon);
+            //lead is the extra distance the player will travel until the bullet hits
+            float lead = (float)( ( Math.Sqrt(sqrt) + xDist ) / ( speedRatio - 1 ) );
+            //negative lead means the player is traveling away too quickly
+            if (lead > 0)
             {
-                speedRatio *= speedRatio;
-                yDist *= yDist;
-                float sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
-                //check that the value inside the square root is positive
-                if (sqrt >= 0)
-                {
-                    //lead is the extra distance the player will travel until the bullet hits
-                    float lead = (float)( ( Math.Sqrt(sqrt) + xDist ) / ( speedRatio - 1 ) );
-                    //negative lead means the player is traveling away too quickly
-                    if (lead > 0)
-                    {
-                        //add the lead to the firing direction
-                        float totalInput = GetDistance(GameForm.Game.inputX, GameForm.Game.inputY);
-                        xDir += lead * GameForm.Game.inputX / totalInput;
-                        yDir += lead * GameForm.Game.inputY / totalInput;
-                    }
-                }
+                //add the lead to the firing direction
+                float totalInput = GetDistance(GameForm.Game.inputX, GameForm.Game.inputY);
+                xDir += lead * GameForm.Game.inputX / totalInput;
+                yDir += lead * GameForm.Game.inputY / totalInput;
             }
         }
 

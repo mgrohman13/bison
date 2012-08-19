@@ -139,7 +139,7 @@ namespace MattUtil.RealTimeGame
                     Monitor.Pulse(timer);
 
                 //WriteLine("sleep:" + (int)offset);
-                System.Threading.Thread.Sleep(Math.Max(0, (int)offset));
+                System.Threading.Thread.Sleep(Math.Max(0, (int)( ( offset + GameTick ) / 2 )));
                 //}
             }
 
@@ -187,7 +187,7 @@ namespace MattUtil.RealTimeGame
                 Refresh();
 
                 //WriteLine("   sleep" + Environment.TickCount);
-                Thread.Sleep(GameTick);
+                //Thread.Sleep(GameTick);
                 //WriteLine("endsleep" + Environment.TickCount);
             }
         }
