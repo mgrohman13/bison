@@ -299,6 +299,8 @@ namespace SpaceRunner
                 return 8;
 #if DEBUG
             throw new Exception();
+#else
+            return 0;
 #endif
         }
 

@@ -221,7 +221,7 @@ namespace SpaceRunner
 
             if (fuel > 0 || ammo > 0 || life > 0)
             {
-                Image image;
+                Image image = null;
                 if (life > 0)
                     image = PowerUp.LifeImage;
                 else if (ammo > 0)
