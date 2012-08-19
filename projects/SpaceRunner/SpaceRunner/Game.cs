@@ -797,28 +797,31 @@ namespace SpaceRunner
             float angle = ( GetAngle(xDir, yDir) - GetAngle(GameForm.Game.inputX, GameForm.Game.inputY) );
             //distance from player
             float distance = GetDistance(xDir, yDir) - spacing;
-            float xDist, yDist;
-            GetDirs(out xDist, out yDist, angle, distance);
+            float xd, yd;
+            GetDirs(out xd, out yd, angle, distance);
+            double xDist = xd, yDist = yd;
             //ratio of speed between the bullet and the player
-            float speedRatio = speed / GameForm.Game.TotalSpeed;
+            double speedRatio = speed / GameForm.Game.TotalSpeed;
             speedRatio *= speedRatio;
             //make sure a zero will not be in the denominator
-            while (speedRatio == 1)
-                speedRatio = 1 + Random.Gaussian(1f / ( 1 << 24 ));
+            while (speedRatio == 1.0)
+                speedRatio = 1.0 + Random.Gaussian(1.0 / ( 1 << 53 ));
             yDist *= yDist;
-            float sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
-            //make sure the value inside the square root is positive
-            while (sqrt < 0)
-                sqrt = Random.OE(float.Epsilon);
+            double sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
+            //handle negative square root
+            if (sqrt < 0)
+                sqrt = -Math.Sqrt(-sqrt);
+            else
+                sqrt = Math.Sqrt(sqrt);
             //lead is the extra distance the player will travel until the bullet hits
-            float lead = (float)( ( Math.Sqrt(sqrt) + xDist ) / ( speedRatio - 1 ) );
+            double lead = ( sqrt + xDist ) / ( speedRatio - 1.0 );
             //negative lead means the player is traveling away too quickly
             if (lead > 0)
             {
                 //add the lead to the firing direction
                 float totalInput = GetDistance(GameForm.Game.inputX, GameForm.Game.inputY);
-                xDir += lead * GameForm.Game.inputX / totalInput;
-                yDir += lead * GameForm.Game.inputY / totalInput;
+                xDir += (float)( lead * GameForm.Game.inputX / totalInput );
+                yDir += (float)( lead * GameForm.Game.inputY / totalInput );
             }
         }
 
