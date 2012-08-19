@@ -81,7 +81,12 @@ namespace SpaceRunner
 
             amt = Random.OEInt(6);
             while (--amt > -1)
+            {
                 game.MoveAndCollide(0, 0, 0);
+
+                game.life = StartLife;
+                game.deadCounter = -1;
+            }
         }
         private static void StaticDispose()
         {
@@ -104,7 +109,7 @@ namespace SpaceRunner
         #region consts
 
         //miliseconds per game iteration
-        internal const int GameTick = 17;
+        internal const int GameTick = 13;
 
         private const string PicLocation = "..\\..\\..\\pics\\";
         public override string ScoreFile
@@ -175,12 +180,12 @@ namespace SpaceRunner
         internal const float PlayerLife = 13f;
         internal const float PlayerDamageRandomness = .065f;
 
-        internal const float StartFuel = FuelMult * 13f;
+        internal const float StartFuel = FuelMult * 15;
         //average fuel per power up
-        internal const float IncFuel = FuelMult * 2.6f;
+        internal const float IncFuel = FuelMult * 3;
         internal const float IncFuelRandomness = .104f;
         //how many extra pixels each fuel point will take you
-        internal const float FuelMult = 169f;
+        internal const float FuelMult = 130f;
         //percentage of fuel consumed each iteration when using turbo
         internal static readonly double FuelRate = GameSpeed * 0.13;
         //exponent of fuel consumption
@@ -328,7 +333,7 @@ namespace SpaceRunner
         //amount each damage point while dead reduces your score
         internal const decimal ScoreToDamageRatio = ScoreMult / (decimal)PlayerLife * 10m;
         //score added per pixel traveled
-        internal const decimal DistanceScore = ScoreMult / (decimal)MapSize;
+        internal const decimal DistanceScore = ScoreMult / (decimal)MapSize / 2m;
         //score an alien is worth for killing based on its speed
         internal const decimal AlienSpeedScoreMult = ScoreMult / (decimal)AlienSpeed * 1m;
         //extra score an alien that shoots is worth for killing
@@ -337,8 +342,8 @@ namespace SpaceRunner
         internal const decimal AlienShipScoreMult = ScoreMult * 100m;
         //score an alien ship is worth for killing based on its stats compared to average
         internal const decimal AlienShipDeathScoreMult = AlienShipScoreMult / 10m;
-        internal const decimal RemainingAmmoScore = ScoreMult * 10m / (decimal)StartAmmo;
-        internal const decimal RemainingFuelScore = ScoreMult * 10m / (decimal)StartFuel;
+        internal const decimal RemainingAmmoScore = ScoreMult;
+        internal const decimal RemainingFuelScore = ScoreMult / (decimal)FuelMult / 2m;
 
         #endregion //game params
 
@@ -1124,8 +1129,8 @@ namespace SpaceRunner
 
             if (!alreadyLost && GameOver())
             {
-                AddScore(ammo * RemainingAmmoScore);
-                AddScore((decimal)Fuel * RemainingFuelScore);
+                AddScore((decimal)ammo * RemainingAmmoScore);
+                AddScore((decimal)fuel * RemainingFuelScore);
             }
         }
 

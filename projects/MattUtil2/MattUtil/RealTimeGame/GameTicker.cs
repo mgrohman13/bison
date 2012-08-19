@@ -133,14 +133,14 @@ namespace MattUtil.RealTimeGame
                     }
                 }
 
-                if (offset > 0)
-                {
-                    lock (timer)
-                        Monitor.Pulse(timer);
+                //if (offset > 0)
+                //{
+                lock (timer)
+                    Monitor.Pulse(timer);
 
-                    //WriteLine("sleep:" + (int)offset);
-                    System.Threading.Thread.Sleep((int)offset);
-                }
+                //WriteLine("sleep:" + (int)offset);
+                System.Threading.Thread.Sleep(Math.Max(0, (int)offset));
+                //}
             }
 
             stopwatch.Stop();
