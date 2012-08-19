@@ -14,7 +14,7 @@ namespace MattUtil.RealTimeGame
 
         public delegate void EventDelegate();
 
-        private int GameTick;
+        private double GameTick;
 
         private Game game;
         private Timer timer;
@@ -23,7 +23,7 @@ namespace MattUtil.RealTimeGame
 
         private bool paused, started, running;
 
-        public GameTicker(Game game, int GameTick, EventDelegate Refresh)
+        public GameTicker(Game game, double GameTick, EventDelegate Refresh)
         {
             this.game = game;
 

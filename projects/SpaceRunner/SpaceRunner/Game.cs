@@ -109,7 +109,7 @@ namespace SpaceRunner
         #region consts
 
         //miliseconds per game iteration
-        internal const int GameTick = 13;
+        internal const float GameTick = 1000 / 65f;
 
         private const string PicLocation = "..\\..\\..\\pics\\";
         public override string ScoreFile
@@ -232,7 +232,7 @@ namespace SpaceRunner
         internal const float AlienShipSize = 21f;
         internal const float AlienShipLife = 260f;
         internal const float AlienShipLifeInc = 210f;
-        internal const float AlienShipFireRate = GameSpeed * .0210f;
+        internal const float AlienShipFireRate = GameSpeed * .021f;
         internal const float AlienShipFireRateInc = GameSpeed * .0104f;
         internal const float AlienShipSpeedMult = 1.69f;
         internal const float AlienShipSpeedMultInc = .39f;
@@ -536,24 +536,32 @@ namespace SpaceRunner
                 objects.CopyTo(array, 0);
             }
 
-            //z-index (top to bottom): Explosion, FuelExplosion, other, AlienShip
+            //z-index (top to bottom): Explosion, FuelExplosion, Bullet, AlienShip, LifeDust, other
             Array.Sort<GameObject>(array, delegate(GameObject p1, GameObject p2)
             {
                 int retVal = 0;
 
-                if (p1 is AlienShip)
-                    retVal -= 1;
+                if (p1 is Explosion)
+                    retVal += 5;
                 else if (p1 is FuelExplosion)
-                    retVal += 1;
-                else if (p1 is Explosion)
+                    retVal += 4;
+                else if (p1 is Bullet)
+                    retVal += 3;
+                else if (p1 is AlienShip)
                     retVal += 2;
-
-                if (p2 is AlienShip)
+                else if (p1 is LifeDust)
                     retVal += 1;
+
+                if (p2 is Explosion)
+                    retVal -= 5;
                 else if (p2 is FuelExplosion)
-                    retVal -= 1;
-                else if (p2 is Explosion)
+                    retVal -= 4;
+                else if (p2 is Bullet)
+                    retVal -= 3;
+                else if (p2 is AlienShip)
                     retVal -= 2;
+                else if (p2 is LifeDust)
+                    retVal -= 1;
 
                 return retVal;
             });
@@ -621,7 +629,7 @@ namespace SpaceRunner
                     lock (gameTicker)
                     {
                     }
-                    System.Threading.Thread.Sleep(GameTick);
+                    System.Threading.Thread.Sleep(Random.Round(GameTick));
                     lock (gameTicker)
                     {
                     }
