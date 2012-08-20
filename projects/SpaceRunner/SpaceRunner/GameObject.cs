@@ -149,29 +149,26 @@ namespace SpaceRunner
 
         internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float size, float curAngle)
         {
+#if DEBUG
+            if (image.Width != image.Height)
+                throw new Exception();
+#endif
             if (Game.GetDistance(x, y) - size < Game.MapSize)
             {
                 float objectX = centerX + x;
                 float objectY = centerY + y;
 
                 if (speed > 0)
-                    Rotate(graphics, -x, -y, objectX, objectY);
-                else
-                    Rotate(graphics, curAngle, objectX, objectY);
+                    curAngle = Game.GetAngleImageAdjusted(-x, -y);
 
-                graphics.DrawImageUnscaled(image, Game.Round(objectX - image.Width / 2f), Game.Round(objectY - image.Height / 2f));
+                graphics.ResetTransform();
+                graphics.TranslateTransform(objectX, objectY);
+                graphics.RotateTransform(curAngle * Game.RadToDeg);
+                graphics.TranslateTransform(-objectX, -objectY);
+
+                float offset = image.Width / 2f;
+                graphics.DrawImageUnscaled(image, Game.Round(objectX - offset), Game.Round(objectY - offset));
             }
-        }
-        private static void Rotate(Graphics graphics, float xSpeed, float ySpeed, float centerX, float centerY)
-        {
-            Rotate(graphics, Game.GetAngleImageAdjusted(xSpeed, ySpeed), centerX, centerY);
-        }
-        private static void Rotate(Graphics graphics, float angle, float centerX, float centerY)
-        {
-            graphics.ResetTransform();
-            graphics.TranslateTransform(centerX, centerY);
-            graphics.RotateTransform(angle * Game.RadToDeg);
-            graphics.TranslateTransform(-centerX, -centerY);
         }
 
         protected virtual void OnStep()
@@ -190,15 +187,15 @@ namespace SpaceRunner
             GetTotalMove(out xMove, out yMove);
             Move(xMove, yMove);
 
+            //do stuff in child classes
+            OnStep();
+
             float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
                     Game.Random.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
                 Forms.GameForm.Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();
-
-            //do stuff in child classes
-            OnStep();
 
             //return damage to player
             return damage;
@@ -271,32 +268,32 @@ namespace SpaceRunner
         private static void Collide(GameObject obj1, GameObject obj2)
         {
             //run the correct object's Collide method
-            if (TypePriority(obj2) > TypePriority(obj1))
+            if (GetCollidePriority(obj2) > GetCollidePriority(obj1))
                 obj2.Collide(obj1);
             else
                 obj1.Collide(obj2);
         }
 
-        static byte TypePriority(GameObject obj)
+        private static int GetCollidePriority(GameObject obj)
         {
             //determines which object's Collide method is called when two objects collide
             //the object with the higher return value has its method called
-            if (obj is PowerUp)
-                return 1;
-            if (obj is Asteroid)
-                return 2;
-            if (obj is LifeDust)
-                return 3;
-            if (obj is Bullet)
-                return 4;
             if (obj is Alien)
                 return 5;
-            if (obj is FuelExplosion)
-                return 6;
             if (obj is AlienShip)
                 return 7;
+            if (obj is Asteroid)
+                return 2;
+            if (obj is Bullet)
+                return 4;
             if (obj is Explosion)
                 return 8;
+            if (obj is FuelExplosion)
+                return 6;
+            if (obj is LifeDust)
+                return 3;
+            if (obj is PowerUp)
+                return 1;
 #if DEBUG
             throw new Exception();
 #else

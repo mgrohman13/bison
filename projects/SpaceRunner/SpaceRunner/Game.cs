@@ -491,7 +491,7 @@ namespace SpaceRunner
             {
                 //choose between regular image and no ammo image
                 Image image = ( ( fireCounter < 0 || GameOver() || Paused || Fireworks ) ? PlayerImage : NoAmmoImage );
-                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, 0, GetAngleImageAdjusted(inputX, inputY));
+                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, GetAngleImageAdjusted(inputX, inputY));
             }
         }
         internal static float GetAngleImageAdjusted(float xSpeed, float ySpeed)
@@ -521,6 +521,7 @@ namespace SpaceRunner
         {
             const string PausedText = "PAUSED";
             float drawX = centerX - graphics.MeasureString(PausedText, Font).Width / 2f;
+
             graphics.ResetTransform();
             graphics.DrawString(PausedText, Font, Brushes.White, drawX, centerY + PlayerSize);
         }
@@ -536,34 +537,9 @@ namespace SpaceRunner
                 objects.CopyTo(array, 0);
             }
 
-            //z-index (top to bottom): Explosion, FuelExplosion, Bullet, AlienShip, LifeDust, other
             Array.Sort<GameObject>(array, delegate(GameObject p1, GameObject p2)
             {
-                int retVal = 0;
-
-                if (p1 is Explosion)
-                    retVal += 5;
-                else if (p1 is FuelExplosion)
-                    retVal += 4;
-                else if (p1 is Bullet)
-                    retVal += 3;
-                else if (p1 is AlienShip)
-                    retVal += 2;
-                else if (p1 is LifeDust)
-                    retVal += 1;
-
-                if (p2 is Explosion)
-                    retVal -= 5;
-                else if (p2 is FuelExplosion)
-                    retVal -= 4;
-                else if (p2 is Bullet)
-                    retVal -= 3;
-                else if (p2 is AlienShip)
-                    retVal -= 2;
-                else if (p2 is LifeDust)
-                    retVal -= 1;
-
-                return retVal;
+                return GetDrawPriority(p1) - GetDrawPriority(p2);
             });
 
             for (int a = 0 ; a < count ; ++a)
@@ -573,6 +549,32 @@ namespace SpaceRunner
                     if (objects.Contains(obj))
                         obj.Draw(graphics, centerX, centerY);
             }
+        }
+
+        private static int GetDrawPriority(GameObject obj)
+        {
+            //z-index: higher values are drawn on top of lower values
+            if (obj is Alien)
+                return 4000;
+            if (obj is AlienShip)
+                return 5000 - (int)( 999 * obj.Y / ( MapSize + obj.Size ) );
+            if (obj is Asteroid)
+                return 1000;
+            if (obj is Bullet)
+                return 6000;
+            if (obj is Explosion)
+                return 8000;
+            if (obj is FuelExplosion)
+                return 7000;
+            if (obj is LifeDust)
+                return 3000;
+            if (obj is PowerUp)
+                return 2000;
+#if DEBUG
+            throw new Exception();
+#else
+            return 0;
+#endif
         }
 
         internal static void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
@@ -956,56 +958,18 @@ namespace SpaceRunner
             PointF start = RandomStartPoint(PowerUpSize);
             PowerUp.NewPowerUp(start.X, start.Y);
 
-            for (int i = 0 ; i < 3 ; i++)
+            for (int a = 0 ; a < 3 ; a++)
             {
                 start = RandomStartPoint(AlienSize);
                 Alien.NewAlien(start.X, start.Y);
             }
 
             int startAsteroids = Random.GaussianOEInt(7.8f, .39f, .26f, 1);
-            for (int i = 0 ; i < startAsteroids ; i++)
+            for (int b = 0 ; b < startAsteroids ; b++)
             {
                 start = RandomStartPoint(AsteroidMaxSize);
                 Asteroid.NewAsteroid(start.X, start.Y);
             }
-        }
-
-        private void CheckFireworks()
-        {
-            if (Fireworks)
-            {
-                if (Random.Bool(TotalSpeed * .039))
-                    PowerUp.NewFirework();
-
-                if (Random.Bool(GameSpeed * .039))
-                    headingAngleDir = !headingAngleDir;
-                headingAngle += Random.OE(GameSpeed * .039f) * ( headingAngleDir ? -1f : 1f );
-                PointF p = GetPoint(headingAngle, MapSize * .39f);
-                SetMouseCoordinates(Random.Round(p.X), Random.Round(p.Y));
-            }
-        }
-
-        public override void Step()
-        {
-            if (Dead && ++deadCounter > DeathTime)
-                deadCounter = -1;
-
-            float playerSpeed = MovePlayer();
-            //direction
-            float xSpeed = inputX;
-            float ySpeed = inputY;
-            //normalize for speed
-            NormalizeDirs(ref xSpeed, ref ySpeed, playerSpeed);
-
-            PlayerFiring(playerSpeed);
-
-            //create new objects
-            CreateObjects(playerSpeed);
-
-            //move objects and detect collisions
-            MoveAndCollide(xSpeed, ySpeed, playerSpeed);
-
-            CheckFireworks();
         }
 
         internal GameObject GetPlayerObject()
@@ -1016,23 +980,39 @@ namespace SpaceRunner
             return new GameObject.DummyObject(xSpeed, ySpeed);
         }
 
+        public override void Step()
+        {
+            if (Dead && ++deadCounter > DeathTime)
+                deadCounter = -1;
+
+            float playerSpeed = MovePlayer();
+            float xSpeed = inputX;
+            float ySpeed = inputY;
+            NormalizeDirs(ref xSpeed, ref ySpeed, playerSpeed);
+            PlayerFiring(playerSpeed);
+
+            MoveAndCollide(xSpeed, ySpeed, playerSpeed);
+            CreateObjects(playerSpeed);
+
+            CheckFireworks();
+        }
+
         private float MovePlayer()
         {
-            //check turbo
-            float speed = BasePlayerSpeed;
+            float playerSpeed = BasePlayerSpeed;
             if (Turbo && !Dead)
             {
                 float turbo = TurboSpeed;
                 fuel -= turbo;
-                speed += turbo;
+                playerSpeed += turbo;
             }
 
-            //add traveling score
-            AddScore((decimal)speed * DistanceScore);
-            return speed;
+            AddScore((decimal)playerSpeed * DistanceScore);
+
+            return playerSpeed;
         }
 
-        private void PlayerFiring(float speed)
+        private void PlayerFiring(float playerSpeed)
         {
             //check that the player is firing and can fire
             --fireCounter;
@@ -1042,27 +1022,13 @@ namespace SpaceRunner
                     fireCounter = -1;
                 else
                     fireCounter = Random.Round(GetCoolDown());
-                Bullet.NewBullet(0, 0, inputX, inputY, speed, PlayerSize, Bullet.FriendlyStatus.Friend);
+                Bullet.NewBullet(0, 0, inputX, inputY, playerSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
             }
         }
 
         private float GetCoolDown()
         {
             return (float)( FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower) );
-        }
-
-        private void CreateObjects(float appearChance)
-        {
-            if (Random.Bool(appearChance * LifeDustCreationRate))
-                LifeDust.NewLifeDust();
-            if (Random.Bool(appearChance * PowerUpCreationRate))
-                PowerUp.NewPowerUp();
-            if (Random.Bool(appearChance * AsteroidCreationRate))
-                Asteroid.NewAsteroid();
-            if (Random.Bool(appearChance * AlienCreationRate))
-                Alien.NewAlien();
-            if (Random.Bool(appearChance * AlienShipCreationRate / alienCount))
-                AlienShip.NewAlienShip();
         }
 
         private void MoveAndCollide(float xSpeed, float ySpeed, float playerSpeed)
@@ -1086,26 +1052,22 @@ namespace SpaceRunner
                 if (objects.Contains(obj))
                 {
                     //add for collision detection
-                    Point p = GetSector(obj);
-                    List<GameObject> sector;
-                    if (!objectSectors.TryGetValue(p, out  sector))
+                    Point? p = GetSector(obj);
+                    if (p.HasValue)
                     {
-                        sector = new List<GameObject>();
-                        objectSectors.Add(p, sector);
+                        Point key = p.Value;
+                        List<GameObject> sector;
+                        if (!objectSectors.TryGetValue(key, out  sector))
+                        {
+                            sector = new List<GameObject>();
+                            objectSectors.Add(key, sector);
+                        }
+                        sector.Add(obj);
                     }
-                    sector.Add(obj);
                 }
             }
 
             return objectSectors;
-        }
-        private Point GetSector(GameObject obj)
-        {
-            //no collisions for objects completely outside of the creation distance
-            if (GetDistance(obj.X, obj.Y) - obj.Size > CreationDist)
-                return new Point(int.MinValue, int.MinValue);
-
-            return new Point((int)( obj.X / SectorSize ) + ( obj.X > 0 ? 1 : 0 ), (int)( obj.Y / SectorSize ) + ( obj.Y > 0 ? 1 : 0 ));
         }
         private void HitPlayer(float damage)
         {
@@ -1142,28 +1104,32 @@ namespace SpaceRunner
                 AddScore((decimal)fuel * RemainingFuelScore);
             }
         }
+        private Point? GetSector(GameObject obj)
+        {
+            //no collisions for objects completely outside of the creation distance
+            if (GetDistance(obj.X, obj.Y) - obj.Size > CreationDist)
+                return null;
+
+            return new Point((int)( obj.X / SectorSize ) + ( obj.X > 0 ? 1 : 0 ), (int)( obj.Y / SectorSize ) + ( obj.Y > 0 ? 1 : 0 ));
+        }
 
         private void CollideObjects(Dictionary<Point, List<GameObject>> objectSectors)
         {
             HashSet<Point> done = new HashSet<Point>();
-            foreach (KeyValuePair<Point, List<GameObject>> pair in Random.Iterate(objectSectors))
+            foreach (var pair in Random.Iterate(objectSectors))
             {
                 Point point = pair.Key;
-                //int.MinValue is a special sector where objects don't collide
-                if (point.X > int.MinValue)
-                {
-                    List<GameObject> curSector = pair.Value;
-                    int count = curSector.Count;
-                    for (int i = 0 ; i < count ; ++i)
-                    {
-                        GameObject obj = curSector[i];
-                        //make sure the object is still in the game
-                        if (objects.Contains(obj))
-                            CollideObject(objectSectors, obj, point, i, done);
-                    }
+                List<GameObject> curSector = pair.Value;
 
-                    done.Add(point);
+                for (int a = 0 ; a < curSector.Count ; ++a)
+                {
+                    GameObject obj = curSector[a];
+                    //make sure the object is still in the game
+                    if (objects.Contains(obj))
+                        CollideObject(objectSectors, obj, point, a, done);
                 }
+
+                done.Add(point);
             }
         }
         private void CollideObject(Dictionary<Point, List<GameObject>> objectSectors, GameObject obj, Point point, int objIndex, HashSet<Point> done)
@@ -1181,42 +1147,70 @@ namespace SpaceRunner
             foreach (Point p2 in Random.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
             {
                 List<GameObject> value;
-                if (( ( checkDist > 1 && ( Math.Abs(point.X - p2.X) > 1 || Math.Abs(point.Y - p2.Y) > 1 ) ) || !done.Contains(p2) )
-                        && objectSectors.TryGetValue(p2, out value))
+                if (objectSectors.TryGetValue(p2, out value) && ( !done.Contains(p2) ||
+                        ( checkDist > 1 && ( Math.Abs(point.X - p2.X) > 1 || Math.Abs(point.Y - p2.Y) > 1 ) ) ))
                 {
                     int start = 0;
                     //when checking the object's own sector, we only need to check objects with a higher index
                     if (p2 == point)
                         start = objIndex + 1;
 
-                    if (start < value.Count)
-                        foreach (int idx in Random.Iterate(value.Count - start))
-                        {
-                            GameObject checkObj = value[start + idx];
+                    for (int a = start ; a < value.Count ; ++a)
+                    {
+                        GameObject checkObj = value[a];
 #if DEBUG
-                            //if either object checks extra sectors, the sector size is effectively multiplied by that amount
-                            int sectMult = checkDist;
-                            IChecksExtraSectors checksExtra2;
-                            if (( checksExtra2 = checkObj as IChecksExtraSectors ) != null)
-                                sectMult = Math.Max(sectMult, checksExtra2.CheckSectors);
-                            //this collision detection algorithm only works properly
-                            //if the sum of the sizes of any two objects is less than the sector size
-                            if (obj.Size + checkObj.Size > SectorSize * sectMult
-                                //this case is only valid because fuel explosions do not collide with one another
-                                && !( obj is FuelExplosion && checkObj is FuelExplosion ))
-                                throw new Exception(string.Format("Sector size ({4}) is too small for:  {0} ({1}) and {2} ({3})",
-                                        obj.GetType(), obj.Size, checkObj.GetType(), checkObj.Size, SectorSize));
+                        //if either object checks extra sectors, the sector size is effectively multiplied by that amount
+                        int sectMult = checkDist;
+                        IChecksExtraSectors checksExtra2;
+                        if (( checksExtra2 = checkObj as IChecksExtraSectors ) != null)
+                            sectMult = Math.Max(sectMult, checksExtra2.CheckSectors);
+                        //this collision detection algorithm only works properly
+                        //if the sum of the sizes of any two objects is less than the sector size
+                        if (obj.Size + checkObj.Size > SectorSize * sectMult
+                            //this case is only valid because fuel explosions do not collide with one another
+                            && !( obj is FuelExplosion && checkObj is FuelExplosion ))
+                            throw new Exception(string.Format("Sector size ({4}) is too small for:  {0} ({1}) and {2} ({3})",
+                                    obj.GetType(), obj.Size, checkObj.GetType(), checkObj.Size, SectorSize));
 #endif
-                            //make sure the second object is still in the game
-                            if (objects.Contains(checkObj))
-                            {
-                                obj.CheckCollision(checkObj);
-                                //if the collision killed the main object, return early
-                                if (!objects.Contains(obj))
-                                    return;
-                            }
+                        //make sure the second object is still in the game
+                        if (objects.Contains(checkObj))
+                        {
+                            obj.CheckCollision(checkObj);
+                            //if the collision killed the main object, return early
+                            if (!objects.Contains(obj))
+                                return;
                         }
+                    }
                 }
+            }
+        }
+
+        private void CreateObjects(float playerSpeed)
+        {
+            if (Random.Bool(playerSpeed * AlienCreationRate))
+                Alien.NewAlien();
+            if (Random.Bool(playerSpeed * AlienShipCreationRate / alienCount))
+                AlienShip.NewAlienShip();
+            if (Random.Bool(playerSpeed * AsteroidCreationRate))
+                Asteroid.NewAsteroid();
+            if (Random.Bool(playerSpeed * LifeDustCreationRate))
+                LifeDust.NewLifeDust();
+            if (Random.Bool(playerSpeed * PowerUpCreationRate))
+                PowerUp.NewPowerUp();
+        }
+
+        private void CheckFireworks()
+        {
+            if (Fireworks)
+            {
+                if (Random.Bool(TotalSpeed * .039))
+                    PowerUp.NewFirework();
+
+                if (Random.Bool(GameSpeed * .039))
+                    headingAngleDir = !headingAngleDir;
+                headingAngle += Random.OE(GameSpeed * .039f) * ( headingAngleDir ? -1f : 1f );
+                PointF p = GetPoint(headingAngle, MapSize * .39f);
+                SetMouseCoordinates(Random.Round(p.X), Random.Round(p.Y));
             }
         }
 

@@ -1,6 +1,10 @@
-glancing hits
+improve asteroid collisions
+	momentum affects damage - glancing hits
+	momentum partially/randomly conserved
+	fuel explosion interaction - 'pushing' effect
+improve hitboxes for less-round objects
 extract engine
-max turn speed
+max player turning speed
 	directly proportional to movement speed
 replay
 mines

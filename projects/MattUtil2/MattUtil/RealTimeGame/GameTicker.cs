@@ -83,7 +83,7 @@ namespace MattUtil.RealTimeGame
             refresh.Start();
 
             Thread tick = new Thread(RunGame);
-            tick.Priority = ThreadPriority.AboveNormal;
+            //tick.Priority = ThreadPriority.AboveNormal;
             tick.IsBackground = true;
             tick.Start();
         }
