@@ -65,7 +65,11 @@ namespace SpaceRunner
             {
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
+                {
+                    if (obj.Size > Game.Random.OE(Game.ExplosionSize))
+                        Explosion.NewExplosion(obj);
                     obj.Die();
+                }
             }
         }
 

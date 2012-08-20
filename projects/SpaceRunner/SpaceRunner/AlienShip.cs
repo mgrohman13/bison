@@ -46,9 +46,15 @@ namespace SpaceRunner
 
         private void Damage(float amt, params GameObject[] objs)
         {
+#if DEBUG
+            if (objs.Length == 0)
+                throw new Exception();
+#endif
             amt = Game.RandDmgToAlien(amt);
 
-            if (objs.Length > 0 && amt > Game.PlayerLife)
+            if (objs[0] is FuelExplosion ?
+                    Game.Random.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime)
+                    : amt > Game.PlayerLife)
                 Explosion.NewExplosion(objs);
 
             if (amt > life)
@@ -97,7 +103,7 @@ namespace SpaceRunner
             else if (( powerUp = obj as PowerUp ) != null)
                 CollectPowerUp(powerUp);
             else if (( fuelExplosion = obj as FuelExplosion ) != null)
-                Damage(fuelExplosion.GetDamage(x, y) * Game.AlienShipFuelExplosionDamageMult);
+                Damage(fuelExplosion.GetDamage(x, y) * Game.AlienShipFuelExplosionDamageMult, fuelExplosion);
             else if (obj is AlienShip || obj is Alien)
                 BumpCollision(obj);
             else if (obj is LifeDust)
