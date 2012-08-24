@@ -171,12 +171,13 @@ namespace GalWarWin
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
             double totalDmgChance = ( att + 1 ) * ( def + 1 );
-            int dmgLength = damageTable.Count;
 
-            Dictionary<ResultPoint, double> chances = new Dictionary<ResultPoint, double>();
+            int guess = Math.Min(attHP, ( def * att * 70 ) / 99) * Math.Min(defHP, ( att * att * 70 ) / 99);
+
+            Dictionary<ResultPoint, double> chances = new Dictionary<ResultPoint, double>(guess);
             ResultPoint rp = new ResultPoint(attHP, defHP);
             chances.Add(rp, 1);
-            Dictionary<ResultPoint, double> oldChances = new Dictionary<ResultPoint, double>();
+            Dictionary<ResultPoint, double> oldChances = new Dictionary<ResultPoint, double>(guess);
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
@@ -229,6 +230,9 @@ namespace GalWarWin
                 if (worker.CancellationPending)
                     goto end;
             }
+
+            Console.WriteLine("Att {0} Def {1} AHP {2} DHP {3}", att, def, attHP, defHP);
+            Console.WriteLine("Guess {0} Count {1}", guess, chances.Count);
 
             double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
             foreach (KeyValuePair<ResultPoint, double> pair in chances)
