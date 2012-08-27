@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -16,28 +17,15 @@ namespace SpaceRunner
         }
 
         private static readonly Image BulletImage;
-        private static Image[] Fireworks;
 
         static Bullet()
         {
             BulletImage = Game.LoadImage("bullet.bmp", Game.BulletSize);
-            Fireworks = null;
-        }
-
-        private static void LoadFireworks()
-        {
-            Fireworks = new Image[Game.NumFireworks];
-            for (int i = 0 ; i < Game.NumFireworks ; i++)
-                Fireworks[i] = Game.LoadImage("fireworks\\" + i.ToString() + ".bmp", Game.BulletSize);
         }
 
         internal static void Dispose()
         {
             BulletImage.Dispose();
-
-            if (Fireworks != null)
-                foreach (Image i in Fireworks)
-                    i.Dispose();
         }
 
         internal readonly FriendlyStatus Friendly;
@@ -48,14 +36,6 @@ namespace SpaceRunner
             int numPieces = Game.Random.OEInt(numBullets);
             if (numPieces > 0)
             {
-                int fireworkIndex = -1;
-                if (Forms.GameForm.Game.Fireworks)
-                {
-                    if (Fireworks == null)
-                        LoadFireworks();
-                    fireworkIndex = Game.Random.Next(Game.NumFireworks);
-                }
-
                 float speed = Game.Random.Gaussian(Game.BulletExplosionSpeed, Game.BulletExplosionSpeedRandomness);
                 float angle = Game.GetRandomAngle();
                 float angleStep = Game.TwoPi / numPieces;
@@ -72,7 +52,7 @@ namespace SpaceRunner
                 {
                     float xDir, yDir;
                     Game.GetDirs(out xDir, out yDir, angle);
-                    new Bullet(x, y, xDir, yDir, speed, spacing, FriendlyStatus.Neutral, fireworkIndex);
+                    new Bullet(x, y, xDir, yDir, speed, spacing, FriendlyStatus.Neutral);
                     angle += angleStep;
                 }
             }
@@ -80,11 +60,11 @@ namespace SpaceRunner
 
         internal static Bullet NewBullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
         {
-            return new Bullet(x, y, xDir, yDir, speed, spacing, friendly, -1);
+            return new Bullet(x, y, xDir, yDir, speed, spacing, friendly);
         }
 
-        private Bullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly, int FireworkIndex)
-            : base(x, y, xDir, yDir, Game.BulletSize, FireworkIndex > -1 ? Fireworks[FireworkIndex] : BulletImage)
+        private Bullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
+            : base(x, y, xDir, yDir, Game.BulletSize, BulletImage)
         {
             this.Friendly = friendly;
             //space out from whoever fired it
@@ -122,12 +102,9 @@ namespace SpaceRunner
 
         protected override float HitPlayer()
         {
-            if (Forms.GameForm.Game.Fireworks && Friendly == FriendlyStatus.Neutral)
-                return 0;
-
             base.HitPlayer();
 
-            GameObject player = Forms.GameForm.Game.GetPlayerObject();
+            GameObject player = Form.Game.GetPlayerObject();
             Explosion.NewExplosion(this, player, player);
             return Game.BulletDamage;
         }

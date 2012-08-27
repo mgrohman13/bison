@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -119,7 +120,7 @@ namespace SpaceRunner
             //lose life based on the area of the asteroid
             Damage(asteroid.Area / Game.AsteroidAreaToDamageRatio, asteroid, this);
             if (life > 0)
-                Forms.GameForm.Game.RemoveObject(asteroid);
+                Form.Game.RemoveObject(asteroid);
             else
                 asteroid.Die();
         }
@@ -140,7 +141,6 @@ namespace SpaceRunner
             //collect the power up
             switch (powerUp.Type)
             {
-            case PowerUp.PowerUpType.Firework:
             case PowerUp.PowerUpType.Ammo:
                 fireRate += RandVal(Game.AlienShipFireRateInc);
                 break;
@@ -155,7 +155,7 @@ namespace SpaceRunner
                 throw new Exception();
 #endif
             }
-            Forms.GameForm.Game.RemoveObject(powerUp);
+            Form.Game.RemoveObject(powerUp);
         }
 
         private void CollectLifeDust(GameObject obj)
@@ -174,11 +174,11 @@ namespace SpaceRunner
         protected override float HitPlayer()
         {
             float damage = 0;
-            if (!Forms.GameForm.Game.Dead)
+            if (!Form.Game.Dead)
             {
                 //either kill the ship or the player
-                damage = Math.Min(Forms.GameForm.Game.CurrentLifePart, life);
-                Damage(damage, Forms.GameForm.Game.GetPlayerObject(), this);
+                damage = Math.Min(Form.Game.CurrentLifePart, life);
+                Damage(damage, Form.Game.GetPlayerObject(), this);
             }
             return damage;
         }

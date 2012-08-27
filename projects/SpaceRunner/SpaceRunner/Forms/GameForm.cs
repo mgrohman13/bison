@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BaseForm = MattUtil.RealTimeGame.GameForm;
+using BaseGame = MattUtil.RealTimeGame.Game;
 
 namespace SpaceRunner.Forms
 {
@@ -21,13 +22,21 @@ namespace SpaceRunner.Forms
             base.NewGame(this.RefreshGame);
         }
 
-        protected override MattUtil.RealTimeGame.Game StartNewGame(MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, bool scoring)
+        protected override BaseGame StartNewGame(MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, bool scoring)
+        {
+            return StartNewGame(RefreshGame, scoring, null);
+        }
+
+        private BaseGame StartNewGame(MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, bool scoring, Replay replay)
         {
             Game game = new Game(this.RefreshGame);
             if (BaseForm.game != null)
                 ( (IDisposable)BaseForm.game ).Dispose();
             BaseForm.game = game;
-            game.InitGame(this.center.X, this.center.Y, false, scoring);
+            if (replay == null)
+                game.InitGame(this.center.X, this.center.Y, scoring);
+            else
+                game.InitReplay(this.center.X, this.center.Y, replay);
             RefreshGame();
             return game;
         }
@@ -38,9 +47,17 @@ namespace SpaceRunner.Forms
         readonly Point center;
         Region clip;
 
+        private ToolStripMenuItem replay;
+
         private static GameForm form;
         internal GameForm()
         {
+            this.replay = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip.Items.Add(this.replay);
+            this.replay.Name = "newGameToolStripMenuItem";
+            this.replay.Size = new System.Drawing.Size(130, 20);
+            this.replay.Click += new EventHandler(replay_Click);
+
             form = this;
             BaseForm.game = new Game(this.RefreshGame);
             BaseForm.game.Running = false;
@@ -58,6 +75,49 @@ namespace SpaceRunner.Forms
             p.Dispose();
         }
 
+        void replay_Click(object sender, EventArgs e)
+        {
+            Replay replay = null;
+
+            if (!Game.Started)
+            {
+                if (QuitPrompt())
+                {
+                    string load = LoadReplay();
+                    if (load != null)
+                        replay = MattUtil.TBSUtil.LoadGame<Replay>(load);
+                }
+            }
+            else if (Game.IsReplay)
+            {
+                string save = SaveReplay();
+                if (save != null)
+                    MattUtil.TBSUtil.SaveGame(Game.Replay, save);
+            }
+            else
+            {
+                if (QuitPrompt())
+                    replay = Game.Replay;
+            }
+
+            if (replay != null)
+                StartNewGame(this.RefreshGame, false, replay);
+        }
+
+        private string LoadReplay()
+        {
+            if (this.openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                return this.openFileDialog1.FileName;
+            return null;
+        }
+
+        private string SaveReplay()
+        {
+            if (this.saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                return this.openFileDialog1.FileName;
+            return null;
+        }
+
         Point GetCenter()
         {
             int total = (int)Math.Ceiling(Game.MapSize + PadSides);
@@ -70,17 +130,6 @@ namespace SpaceRunner.Forms
             this.MinimumSize = Size;
             this.MaximumSize = Size;
             return new Point(total, total + base.menuStrip.Height);
-        }
-
-        //void fireworksToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    if (QuitPrompt())
-        //        Game.StartNewFireworks(RefreshGame, center.X, center.Y);
-        //}
-
-        protected override bool AskQuit()
-        {
-            return ( base.AskQuit() && !Game.Fireworks );
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -97,40 +146,45 @@ namespace SpaceRunner.Forms
             this.lblFuel.Text = Game.Fuel.ToString("0");
             this.lblLife.Text = Game.Lives.ToString();
             this.lblScore.Text = Game.Score.ToString("0");
+
+            if (!Game.Started)
+                this.replay.Text = "Load Replay";
+            else if (Game.IsReplay)
+                this.replay.Text = "Save Replay";
+            else
+                this.replay.Text = "Replay";
         }
 
+        //private bool setMouse = true;
         void GameForm_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!Game.Fireworks)
-                Game.SetMouseCoordinates(e.X - center.X, e.Y - center.Y);
+            //if (setMouse)
+            //{
+            //    setMouse = false;
+            Game.SetMouseCoordinates(e.X - center.X, e.Y - center.Y);
+            //    setMouse = true;
+            //}
         }
 
         void GameForm_MouseLeave(object sender, EventArgs e)
         {
-            if (!Game.Fireworks)
-                Game.Paused = true;
+            Game.Paused = true;
         }
 
         void GameForm_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!Game.Fireworks)
-            {
-                if (e.Button == MouseButtons.Left)
-                    Game.Fire = true;
-                else if (e.Button == MouseButtons.Right)
-                    Game.Turbo = true;
-            }
+            if (e.Button == MouseButtons.Left)
+                Game.Fire = true;
+            else if (e.Button == MouseButtons.Right)
+                Game.Turbo = true;
         }
 
         void GameForm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!Game.Fireworks)
-            {
-                if (e.Button == MouseButtons.Left)
-                    Game.Fire = false;
-                else if (e.Button == MouseButtons.Right)
-                    Game.Turbo = false;
-            }
+            if (e.Button == MouseButtons.Left)
+                Game.Fire = false;
+            else if (e.Button == MouseButtons.Right)
+                Game.Turbo = false;
         }
     }
 }

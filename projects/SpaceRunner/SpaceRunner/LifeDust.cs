@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -120,7 +121,7 @@ namespace SpaceRunner
 
         protected override float HitPlayer()
         {
-            Forms.GameForm.Game.AddLife(Game.PlayerLife / Game.LifeDustAmtToHeal, false);
+            Form.Game.AddLife(Game.PlayerLife / Game.LifeDustAmtToHeal, false);
 
             return base.HitPlayer();
         }

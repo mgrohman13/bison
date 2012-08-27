@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -101,7 +102,6 @@ namespace SpaceRunner
             {
                 switch (powerUp.Type)
                 {
-                case PowerUp.PowerUpType.Firework:
                 case PowerUp.PowerUpType.Ammo:
                     AddAmmo();
                     break;
@@ -116,7 +116,7 @@ namespace SpaceRunner
                     throw new Exception();
 #endif
                 }
-                Forms.GameForm.Game.RemoveObject(powerUp);
+                Form.Game.RemoveObject(powerUp);
             }
         }
 
@@ -169,7 +169,7 @@ namespace SpaceRunner
             {
                 speed -= damage;
                 AddScore((decimal)damage * Game.AlienSpeedScoreMult);
-                Forms.GameForm.Game.RemoveObject(asteroid);
+                Form.Game.RemoveObject(asteroid);
             }
             else
             {

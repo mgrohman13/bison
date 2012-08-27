@@ -6,7 +6,7 @@ namespace MattUtil.RealTimeGame
 {
     public abstract class Game
     {
-        public static MTRandom Random;
+        public static readonly MTRandom Random;
 
         static Game()
         {
@@ -43,7 +43,7 @@ namespace MattUtil.RealTimeGame
                 gameTicker.Running = value;
             }
         }
-        public bool Paused
+        public virtual bool Paused
         {
             get
             {

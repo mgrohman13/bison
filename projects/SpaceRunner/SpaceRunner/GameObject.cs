@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -82,7 +83,7 @@ namespace SpaceRunner
             }
 
             if (add)
-                Forms.GameForm.Game.AddObject(this);
+                Form.Game.AddObject(this);
         }
 
         internal float X
@@ -193,7 +194,7 @@ namespace SpaceRunner
             float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
                     Game.Random.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
-                Forms.GameForm.Game.RemoveObject(this);
+                Form.Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();
 
@@ -215,22 +216,22 @@ namespace SpaceRunner
 
         protected virtual float HitPlayer()
         {
-            Forms.GameForm.Game.AddScore(Score);
-            Forms.GameForm.Game.RemoveObject(this);
+            Form.Game.AddScore(Score);
+            Form.Game.RemoveObject(this);
             return 0f;
         }
 
         internal virtual void Die()
         {
             AddScore(Score);
-            Forms.GameForm.Game.RemoveObject(this);
+            Form.Game.RemoveObject(this);
         }
 
         protected void AddScore(decimal score)
         {
             //only add score if the center of the object is within the visible portion of the map
             if (score != 0 && Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
-                Forms.GameForm.Game.AddScore(score);
+                Form.Game.AddScore(score);
         }
 
         protected void BumpCollision(GameObject obj)

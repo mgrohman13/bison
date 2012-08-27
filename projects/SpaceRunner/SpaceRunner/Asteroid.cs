@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -121,7 +122,7 @@ namespace SpaceRunner
             }
             else
             {
-                Forms.GameForm.Game.RemoveObject(this);
+                Form.Game.RemoveObject(this);
             }
         }
 
@@ -143,16 +144,16 @@ namespace SpaceRunner
                 if (!thisPassed && !otherPassed)
                 {
                     //if both asteroids failed the critical size check, destroy them both uneventfully
-                    Forms.GameForm.Game.RemoveObject(this);
-                    Forms.GameForm.Game.RemoveObject(asteroid);
+                    Form.Game.RemoveObject(this);
+                    Form.Game.RemoveObject(asteroid);
                 }
                 else
                 {
                     //destroy the smaller one
                     if (this.size < asteroid.size)
-                        Forms.GameForm.Game.RemoveObject(this);
+                        Form.Game.RemoveObject(this);
                     else
-                        Forms.GameForm.Game.RemoveObject(asteroid);
+                        Form.Game.RemoveObject(asteroid);
                 }
             }
         }
@@ -163,7 +164,7 @@ namespace SpaceRunner
 
             float damage = Area / Game.AsteroidAreaToDamageRatio;
             if (damage > Game.BulletDamage)
-                Explosion.NewExplosion(this, Forms.GameForm.Game.GetPlayerObject());
+                Explosion.NewExplosion(this, Form.Game.GetPlayerObject());
             return damage;
         }
 
