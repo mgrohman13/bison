@@ -36,7 +36,7 @@ namespace SpaceRunner
         private static void StaticInit()
         {
             Game game = Form.Game;
-            game.InitGame(Random.Round(MapSize), Random.Round(MapSize), false);
+            game.Init(Random.Round(MapSize), Random.Round(MapSize), false, null, false);
             game.Running = false;
             game.Started = false;
             game.Dispose();
@@ -962,16 +962,31 @@ namespace SpaceRunner
 
         internal void InitGame(int centerX, int centerY, bool scoring)
         {
-            Game.Random.StopTick();
-            Game.Random.SetSeed(true);
-            Init(centerX, centerY, scoring, new Replay(Game.Random.Seed), false);
+            uint[] seed = NewSeed();
+            ReSeed(seed);
+            Init(centerX, centerY, scoring, new Replay(seed), false);
         }
 
         internal void InitReplay(int centerX, int centerY, Replay replay)
         {
-            Game.Random.StopTick();
-            Game.Random.SetSeed(replay.Seed);
+            ReSeed(replay.Seed);
             Init(centerX, centerY, false, replay, true);
+        }
+
+        private static uint[] NewSeed()
+        {
+            Game.Random.StartTick();
+            const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
+            uint[] seed = MattUtil.MTRandom.GenerateSeed((ushort)( Game.Random.WeightedInt(max, 12.0 / max) + 1 ));
+            for (int a = 0 ; a < seed.Length ; ++a)
+                seed[a] += Game.Random.NextUInt();
+            return seed;
+        }
+
+        private static void ReSeed(uint[] seed)
+        {
+            Game.Random.StopTick();
+            Game.Random.SetSeed(false, seed);
         }
 
         private void Init(int centerX, int centerY, bool scoring, Replay replay, bool isReplay)

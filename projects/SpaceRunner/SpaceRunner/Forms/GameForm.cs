@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BaseForm = MattUtil.RealTimeGame.GameForm;
@@ -83,14 +84,14 @@ namespace SpaceRunner.Forms
             {
                 if (QuitPrompt())
                 {
-                    string load = LoadReplay();
-                    if (load != null)
+                    string load = ShowDialog(this.openFileDialog);
+                    if (load != null && File.Exists(load))
                         replay = MattUtil.TBSUtil.LoadGame<Replay>(load);
                 }
             }
             else if (Game.IsReplay)
             {
-                string save = SaveReplay();
+                string save = ShowDialog(this.saveFileDialog);
                 if (save != null)
                     MattUtil.TBSUtil.SaveGame(Game.Replay, save);
             }
@@ -104,17 +105,10 @@ namespace SpaceRunner.Forms
                 StartNewGame(this.RefreshGame, false, replay);
         }
 
-        private string LoadReplay()
+        private static string ShowDialog(FileDialog fileDialog)
         {
-            if (this.openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                return this.openFileDialog1.FileName;
-            return null;
-        }
-
-        private string SaveReplay()
-        {
-            if (this.saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                return this.openFileDialog1.FileName;
+            if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                return fileDialog.FileName;
             return null;
         }
 

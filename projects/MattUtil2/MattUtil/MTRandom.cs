@@ -29,7 +29,7 @@ namespace MattUtil
         /// <summary>
         /// Instantiates with a default, time-based, random seed with the specified size of unsigned integers.
         /// </summary>
-        public MTRandom(int seedSize)
+        public MTRandom(ushort seedSize)
         {
             SetSeed(seedSize);
         }
@@ -38,7 +38,7 @@ namespace MattUtil
         /// Instantiates with a default, time-based, random seed with the specified size of unsigned integers.
         /// 'storeSeed' of true will store the initial seed for future retreival.
         /// </summary>
-        public MTRandom(bool storeSeed, int seedSize)
+        public MTRandom(bool storeSeed, ushort seedSize)
         {
             SetSeed(storeSeed, seedSize);
         }
@@ -74,13 +74,16 @@ namespace MattUtil
             MTRandom.GAUSSIAN_MAX = absMin * Math.Sqrt(-2.0 * Math.Log(absMin * absMin) / ( absMin * absMin ));
         }
 
+        //the maximum number of seed values that can be incorporated into the generator's initial state
+        public const ushort MAX_SEED_SIZE = LENGTH + 3;
+
         //constants for float generation and conversion
-        private const byte FLOAT_BITS = 24;
+        public const byte FLOAT_BITS = 24;
         private const float FLOAT_DIV = 0x0FFFFFF;
         private const float FLOAT_DIV_1 = 0x1000000;
 
         //constants for double generation and conversion
-        private const byte DOUBLE_BITS = 53;
+        public const byte DOUBLE_BITS = 53;
         private const double DOUBLE_DIV = 0x1FFFFFFFFFFFFF;
         private const double DOUBLE_DIV_1 = 0x20000000000000;
 
@@ -197,7 +200,7 @@ namespace MattUtil
             {
                 if (!storeSeed || seedVals == null)
                     throw new InvalidOperationException("The instance did not store the initial seed value.  "
-                           + "This is because the object was initialized with storeSeed set to false (default), "
+                           + "This is because the object was initialized with StoreSeed set to false (default), "
                            + "the last call to SetSeed() was made while StoreSeed was false, "
                            + "or StoreSeed was set to false at any time since the last call to SetSeed().");
 
@@ -266,7 +269,7 @@ namespace MattUtil
         public void SetSeed()
         {
             //use a large seed size as it will limit the possible states attainable immediately after initialization
-            SetSeed(LENGTH);
+            SetSeed(MAX_SEED_SIZE);
         }
 
         /// <summary>
@@ -281,7 +284,7 @@ namespace MattUtil
         /// <summary>
         /// Resets the random sequence with a default, time-based, random seed with the specified number of unsigned integers.
         /// </summary>
-        public void SetSeed(int seedSize)
+        public void SetSeed(ushort seedSize)
         {
             SetSeed(GenerateSeed(seedSize));
         }
@@ -290,7 +293,7 @@ namespace MattUtil
         /// Resets the random sequence with a default, time-based, random seed with the specified number of unsigned integers.
         /// 'storeSeed' of true will store the initial seed for future retreival.
         /// </summary>
-        public void SetSeed(bool storeSeed, int seedSize)
+        public void SetSeed(bool storeSeed, ushort seedSize)
         {
             this.storeSeed = storeSeed;
             SetSeed(seedSize);
@@ -310,16 +313,16 @@ namespace MattUtil
 
         #region Seeding Algorithm
 
-        private static uint[] GenerateSeed(int seedSize)
+        public static uint[] GenerateSeed(ushort seedSize)
         {
             //we get the first time seed before doing anything else for 2 reasons:
             //1 - the total time taken to execute this method provides minor entropy
             //2 - the ShiftVal counter is immediately modified based on the current time
             uint[] timeSeed = TimeSeed();
 
-            if (seedSize <= 0 || seedSize >= LENGTH + 5)
+            if (seedSize <= 0 || seedSize > MAX_SEED_SIZE)
                 throw new ArgumentOutOfRangeException("seedSize", seedSize,
-                        "seedSize must be greater than 0 and less than " + ( LENGTH + 5 ).ToString());
+                        "seedSize must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ).ToString());
 
             uint[] seed = new uint[seedSize];
 
@@ -354,11 +357,11 @@ namespace MattUtil
             }
 
             //use any remaining uints left over in the timeSeed array 
-            for (a = seedSize ; --b > -1 ; )
+            for (a = 0 ; --b > -1 ; )
             {
-                seed[--a] += timeSeed[b];
-                if (a == 0)
-                    a = seedSize;
+                seed[a] += timeSeed[b];
+                if (++a == seedSize)
+                    a = 0;
             }
 
             //provide a second time seed if we have only used one so far
@@ -367,9 +370,9 @@ namespace MattUtil
             if (seedSize <= b)
                 for (timeSeed = TimeSeed() ; --b > -1 ; )
                 {
-                    seed[--a] += timeSeed[b];
-                    if (a == 0)
-                        a = seedSize;
+                    seed[a] += timeSeed[b];
+                    if (++a == seedSize)
+                        a = 0;
                 }
             return seed;
         }
@@ -390,9 +393,9 @@ namespace MattUtil
             lock (this)
             {
                 int length = seed.Length;
-                if (length <= 0 || length >= LENGTH + 5)
+                if (length <= 0 || length > MAX_SEED_SIZE)
                     throw new ArgumentOutOfRangeException("seed", seed,
-                       "seed array length must be greater than 0 and less than " + ( LENGTH + 5 ).ToString());
+                       "seed array length must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ).ToString());
 
                 //reset fields
                 if (storeSeed)
@@ -913,6 +916,11 @@ namespace MattUtil
             return (float)( OE((double)average) );
         }
 
+        public static int GetOEIntMax()
+        {
+            return GetOEIntMax(1);
+        }
+
         public static int GetOEIntMax(double average)
         {
             return DoOEInt(average, GetOEMax());
@@ -939,6 +947,11 @@ namespace MattUtil
         public static double GetOEMax()
         {
             return DoOE(DOUBLE_DIV / DOUBLE_DIV_1);
+        }
+
+        public static double GetOEMax(double average)
+        {
+            return GetOEMax() * average;
         }
 
         private static double DoOE(double nextDouble)
@@ -1636,13 +1649,13 @@ namespace MattUtil
             if (weight < 0 || weight > 1)
                 throw new ArgumentOutOfRangeException("weight", weight, "weight must be between 0 and 1, inclusive");
             //before generating the actual result, run the same algorithm on the 'weight' parameter itself
-            //this prevents result values higher than max*weight*2 from having a uniform distribution
+            //this prevents result values higher than max*weight*4 from having a uniform distribution
             weight *= 4;
             if (weight > 2)
                 return 1 + DoWeight(1, weight - 2, isFloat);
             if (weight < 2)
                 return DoWeight(1, weight, isFloat);
-            //when weight=1, we do actually want a uniform distribution
+            //when weight=.5, we do actually want a uniform distribution
             return 1;
         }
         private double DoWeight(double max, double weight, bool isFloat)

@@ -35,8 +35,8 @@ namespace SpaceRunner.Forms
             this.lblAmmo = new System.Windows.Forms.Label();
             this.picAmmo = new System.Windows.Forms.PictureBox();
             this.lblScore = new System.Windows.Forms.Label();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             ( (System.ComponentModel.ISupportInitialize)( this.picLife ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.picFuel ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.picAmmo ) ).BeginInit();
@@ -117,15 +117,15 @@ namespace SpaceRunner.Forms
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.FileName = "replay.srr";
-            this.openFileDialog1.Filter = "Space Runner Replay|*.srr";
-            this.openFileDialog1.InitialDirectory = ".";
+            this.openFileDialog.FileName = "replay.srr";
+            this.openFileDialog.Filter = "Space Runner Replay|*.srr";
+            this.openFileDialog.InitialDirectory = ".";
             // 
             // saveFileDialog1
             // 
-            this.saveFileDialog1.FileName = "replay.srr";
-            this.saveFileDialog1.Filter = "Space Runner Replay|*.srr";
-            this.saveFileDialog1.InitialDirectory = ".";
+            this.saveFileDialog.FileName = "replay.srr";
+            this.saveFileDialog.Filter = "Space Runner Replay|*.srr";
+            this.saveFileDialog.InitialDirectory = ".";
             // 
             // GameForm
             // 
@@ -169,8 +169,8 @@ namespace SpaceRunner.Forms
         private System.Windows.Forms.Label lblAmmo;
         private System.Windows.Forms.PictureBox picAmmo;
         private System.Windows.Forms.Label lblScore;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
     }
 }
 
