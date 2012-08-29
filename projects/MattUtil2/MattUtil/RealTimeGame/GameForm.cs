@@ -7,26 +7,18 @@ namespace MattUtil.RealTimeGame
 {
     public partial class GameForm : Form
     {
-        protected static Game game = null;
-        public static Game Game
+        protected Game game = null;
+
+        protected void NewGame(bool scoring)
         {
-            get
-            {
-                return game;
-            }
+            if (this.game != null)
+                lock (this.game.gameTicker)
+                    this.game.gameTicker.End();
+            this.game = GetNewGame(scoring);
+            RefreshGame();
         }
 
-        protected void NewGame(GameTicker.EventDelegate RefreshGame)
-        {
-            if (game != null)
-                lock (game.gameTicker)
-                {
-                    game.gameTicker.End();
-                }
-            game = StartNewGame(RefreshGame, ScoresForm.Scoring);
-        }
-
-        protected virtual Game StartNewGame(GameTicker.EventDelegate RefreshGame, bool scoring)
+        protected virtual Game GetNewGame(bool scoring)
         {
             throw new Exception("must override this method");
         }
@@ -43,7 +35,7 @@ namespace MattUtil.RealTimeGame
         private void newGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (QuitPrompt())
-                NewGame(RefreshGame);
+                NewGame(ScoresForm.Scoring);
         }
 
         protected bool QuitPrompt()
@@ -51,12 +43,12 @@ namespace MattUtil.RealTimeGame
             if (AskQuit())
             {
                 bool retVal = false;
-                bool wasPaused = GameForm.game.Paused;
-                GameForm.game.Paused = true;
+                bool wasPaused = this.game.Paused;
+                this.game.Paused = true;
                 if (MessageBox.Show("Are you sure you want to quit the current game?", "Quit",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
                     retVal = true;
-                GameForm.game.Paused = wasPaused;
+                this.game.Paused = wasPaused;
                 return retVal;
             }
             return true;
@@ -64,7 +56,7 @@ namespace MattUtil.RealTimeGame
 
         protected virtual bool AskQuit()
         {
-            return ( game.Running && game.Scoring );
+            return ( this.game.Running && this.game.Scoring );
         }
 
         protected virtual void RefreshGame()
@@ -74,24 +66,24 @@ namespace MattUtil.RealTimeGame
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (game != null)
-                game.Draw(e.Graphics);
+            if (this.game != null)
+                this.game.Draw(e.Graphics);
             base.OnPaint(e);
         }
 
         private void scoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            HighScores.ShowScores();
+            HighScores.ShowScores(this.game);
         }
 
         private void GameForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = !QuitPrompt();
             if (!e.Cancel)
-                lock (game.gameTicker)
+                lock (this.game.gameTicker)
                 {
                     //clean up
-                    game.gameTicker.End();
+                    this.game.gameTicker.End();
                 }
         }
     }

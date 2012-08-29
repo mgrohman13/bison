@@ -14,13 +14,13 @@ namespace MattUtil.RealTimeGame
             Random.StartTick();
         }
 
-        public MattUtil.RealTimeGame.GameTicker gameTicker;
+        protected internal GameTicker gameTicker;
 
         private bool scoring;
 
-        public Game(double GameTick, GameTicker.EventDelegate RefreshGame)
+        public Game(double gameTick, GameTicker.EventDelegate RefreshGame)
         {
-            gameTicker = new GameTicker(this, GameTick, RefreshGame);
+            gameTicker = new GameTicker(this, gameTick, RefreshGame);
             Started = false;
             Running = true;
         }
@@ -76,19 +76,34 @@ namespace MattUtil.RealTimeGame
                 gameTicker.Started = value;
             }
         }
+        public double GameTick
+        {
+            get
+            {
+                return gameTicker.GameTick;
+            }
+            protected set
+            {
+                gameTicker.GameTick = value;
+            }
+        }
 
         public abstract decimal Score
         {
             get;
         }
+
         public abstract String ScoreFile
         {
             get;
         }
+
         public abstract bool GameOver();
 
         public abstract void Step();
 
         public abstract void Draw(System.Drawing.Graphics graphics);
+
+        protected internal abstract void OnEnd();
     }
 }

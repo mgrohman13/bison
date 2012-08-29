@@ -22,7 +22,7 @@ namespace SpaceRunner
         private int time = 0;
         private int expNum;
 
-        internal static Explosion NewExplosion(params GameObject[] objs)
+        internal static Explosion NewExplosion(Game game, params GameObject[] objs)
         {
 #if DEBUG
             if (objs.Length == 0)
@@ -39,11 +39,11 @@ namespace SpaceRunner
             }
             xDir /= count;
             yDir /= count;
-            return new Explosion(objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(Game.NumExplosionImages));
+            return new Explosion(game, objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(Game.NumExplosionImages));
         }
 
-        private Explosion(float x, float y, float xDir, float yDir, int expNum)
-            : base(x, y, Game.ExplosionSize, Images[expNum, 0], Game.ExplosionRotate)
+        private Explosion(Game game, float x, float y, float xDir, float yDir, int expNum)
+            : base(game, x, y, Game.ExplosionSize, Images[expNum, 0], Game.ExplosionRotate)
         {
             this.xDir = xDir;
             this.yDir = yDir;

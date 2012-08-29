@@ -1360,22 +1360,22 @@ namespace MattUtil
         public float GaussianOE(float average, float devPct, float oePct)
         {
             SplitAvg(ref average, ref oePct);
-            return Gaussian(average, devPct) + OE(oePct);
+            return GaussianCapped(average, devPct) + OE(oePct);
         }
         public double GaussianOE(double average, double devPct, double oePct)
         {
             SplitAvg(ref average, ref oePct);
-            return Gaussian(average, devPct) + OE(oePct);
+            return GaussianCapped(average, devPct) + OE(oePct);
         }
         public int GaussianOEInt(float average, float devPct, float oePct)
         {
             SplitAvg(ref average, ref oePct);
-            return GaussianInt(average, devPct) + OEInt(oePct);
+            return GaussianCappedInt(average, devPct) + OEInt(oePct);
         }
         public int GaussianOEInt(double average, double devPct, double oePct)
         {
             SplitAvg(ref average, ref oePct);
-            return GaussianInt(average, devPct) + OEInt(oePct);
+            return GaussianCappedInt(average, devPct) + OEInt(oePct);
         }
         public float GaussianOE(float average, float devPct, float oePct, float lowerCap)
         {

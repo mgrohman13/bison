@@ -10,9 +10,13 @@ namespace MattUtil.RealTimeGame
 {
     public partial class ScoresForm : Form
     {
-        internal ScoresForm(HighScores scores)
+        private Game game;
+
+        internal ScoresForm(Game game, HighScores scores)
         {
             InitializeComponent();
+
+            this.game = game;
 
             decimal total = scores.total;
             int games = scores.games;
@@ -48,7 +52,7 @@ namespace MattUtil.RealTimeGame
         void RefreshScoringText()
         {
             this.btnScoring.Text = Scoring ? "Disable Scoring" : "Enable Scoring";
-            this.btnScoring.Visible = !GameForm.Game.Running;
+            this.btnScoring.Visible = !game.Running;
         }
 
         void btnOK_Click(object sender, EventArgs e)
@@ -61,7 +65,7 @@ namespace MattUtil.RealTimeGame
             if (MessageBox.Show("Are you sure you want to delete the high scores?", this.btnClear.Text,
                 MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
             {
-                HighScores.ClearScores();
+                HighScores.ClearScores(game);
                 this.Close();
             }
         }
@@ -70,7 +74,7 @@ namespace MattUtil.RealTimeGame
 
         void btnScoring_Click(object sender, EventArgs e)
         {
-            if (!GameForm.Game.Running)
+            if (!game.Running)
                 Scoring = !Scoring;
             RefreshScoringText();
         }

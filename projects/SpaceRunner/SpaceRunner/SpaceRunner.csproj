@@ -78,6 +78,7 @@
     <Compile Include="Forms\GameForm.designer.cs">
       <DependentUpon>GameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Main.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameObject.cs" />
     <Compile Include="FuelExplosion.cs" />

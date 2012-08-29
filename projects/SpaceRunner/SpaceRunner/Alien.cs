@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -23,26 +22,26 @@ namespace SpaceRunner
         private int ammo, life, fuel;
         private PowerUp droppedLife;
 
-        internal static Alien NewAlien()
+        internal static Alien NewAlien(Game game)
         {
             PointF point = Game.RandomEdgePoint();
-            return NewAlien(point.X, point.Y);
+            return NewAlien(game, point.X, point.Y);
         }
 
-        internal static Alien NewAlien(float x, float y)
+        internal static Alien NewAlien(Game game, float x, float y)
         {
-            return new Alien(x, y);
+            return new Alien(game, x, y);
         }
 
-        private Alien(float x, float y, int life, PowerUp droppedLife)
-            : this(x, y)
+        private Alien(Game game, float x, float y, int life, PowerUp droppedLife)
+            : this(game, x, y)
         {
             this.life = life;
             this.droppedLife = droppedLife;
         }
 
-        private Alien(float x, float y)
-            : base(x, y, GetStartSpeed(), Game.AlienSize, AlienImage, Game.PowerUpRotate)
+        private Alien(Game game, float x, float y)
+            : base(game, x, y, GetStartSpeed(), Game.AlienSize, AlienImage, Game.PowerUpRotate)
         {
             fireRate = 0;
             ammo = 0;
@@ -116,7 +115,7 @@ namespace SpaceRunner
                     throw new Exception();
 #endif
                 }
-                Form.Game.RemoveObject(powerUp);
+                Game.RemoveObject(powerUp);
             }
         }
 
@@ -155,7 +154,7 @@ namespace SpaceRunner
             float damage = Game.RandDmgToAlien(asteroid.Area / Game.AsteroidAreaToAlienDamageRatio);
 
             if (damage > Game.AlienSpeed && Game.GetDistance(xDir, yDir) + speed > damage)
-                Explosion.NewExplosion(asteroid, this);
+                Explosion.NewExplosion(Game, asteroid, this);
 
             if (HasConstSpeed())
             {
@@ -169,7 +168,7 @@ namespace SpaceRunner
             {
                 speed -= damage;
                 AddScore((decimal)damage * Game.AlienSpeedScoreMult);
-                Form.Game.RemoveObject(asteroid);
+                Game.RemoveObject(asteroid);
             }
             else
             {
@@ -256,20 +255,20 @@ namespace SpaceRunner
             base.Die();
 
             DropPowerUps();
-            Explosion.NewExplosion(this);
+            Explosion.NewExplosion(Game, this);
         }
 
         private void DropPowerUps()
         {
             while (--ammo > -1)
-                PowerUp.NewPowerUp(OffsetPowerUp(x), OffsetPowerUp(y), PowerUp.PowerUpType.Ammo);
+                PowerUp.NewPowerUp(Game, OffsetPowerUp(x), OffsetPowerUp(y), PowerUp.PowerUpType.Ammo);
             while (--fuel > -1)
-                PowerUp.NewPowerUp(OffsetPowerUp(x), OffsetPowerUp(y), PowerUp.PowerUpType.Fuel);
+                PowerUp.NewPowerUp(Game, OffsetPowerUp(x), OffsetPowerUp(y), PowerUp.PowerUpType.Fuel);
 
             if (--life > -1)
             {
-                droppedLife = PowerUp.NewPowerUp(OffsetPowerUp(x), OffsetPowerUp(y), PowerUp.PowerUpType.Life);
-                new Alien(x, y, life, droppedLife);
+                droppedLife = PowerUp.NewPowerUp(Game, OffsetPowerUp(x), OffsetPowerUp(y), PowerUp.PowerUpType.Life);
+                new Alien(Game, x, y, life, droppedLife);
             }
         }
 
@@ -283,7 +282,7 @@ namespace SpaceRunner
             base.HitPlayer();
 
             DropPowerUps();
-            Explosion.NewExplosion(this);
+            Explosion.NewExplosion(Game, this);
             //always kill player
             return Game.PlayerLife;
         }

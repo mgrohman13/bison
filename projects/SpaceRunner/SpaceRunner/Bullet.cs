@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -30,7 +29,7 @@ namespace SpaceRunner
 
         internal readonly FriendlyStatus Friendly;
 
-        internal static void BulletExplosion(float x, float y, float numBullets)
+        internal static void BulletExplosion(Game game, float x, float y, float numBullets)
         {
             //randomize number of bullets
             int numPieces = Game.Random.OEInt(numBullets);
@@ -52,19 +51,19 @@ namespace SpaceRunner
                 {
                     float xDir, yDir;
                     Game.GetDirs(out xDir, out yDir, angle);
-                    new Bullet(x, y, xDir, yDir, speed, spacing, FriendlyStatus.Neutral);
+                    new Bullet(game, x, y, xDir, yDir, speed, spacing, FriendlyStatus.Neutral);
                     angle += angleStep;
                 }
             }
         }
 
-        internal static Bullet NewBullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
+        internal static Bullet NewBullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
         {
-            return new Bullet(x, y, xDir, yDir, speed, spacing, friendly);
+            return new Bullet(game, x, y, xDir, yDir, speed, spacing, friendly);
         }
 
-        private Bullet(float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
-            : base(x, y, xDir, yDir, Game.BulletSize, BulletImage)
+        private Bullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
+            : base(game, x, y, xDir, yDir, Game.BulletSize, BulletImage)
         {
             this.Friendly = friendly;
             //space out from whoever fired it
@@ -88,7 +87,7 @@ namespace SpaceRunner
             bool hit = true;
             LifeDust lifeDust = obj as LifeDust;
             if (obj is Bullet)
-                BulletExplosion(( x + obj.X ) / 2, ( y + obj.Y ) / 2, 2);
+                BulletExplosion(Game, ( x + obj.X ) / 2, ( y + obj.Y ) / 2, 2);
             else if (lifeDust != null)
                 hit = lifeDust.HitBy(this);
 
@@ -104,8 +103,8 @@ namespace SpaceRunner
         {
             base.HitPlayer();
 
-            GameObject player = Form.Game.GetPlayerObject();
-            Explosion.NewExplosion(this, player, player);
+            GameObject player = Game.GetPlayerObject();
+            Explosion.NewExplosion(Game, this, player, player);
             return Game.BulletDamage;
         }
     }

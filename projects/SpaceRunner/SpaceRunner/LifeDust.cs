@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -21,25 +20,25 @@ namespace SpaceRunner
                 i.Dispose();
         }
 
-        internal static void NewLifeDust()
+        internal static void NewLifeDust(Game game)
         {
             PointF point = Game.RandomEdgePoint();
-            NewLifeDust(point.X, point.Y, Game.LifeDustClumpAmt);
+            NewLifeDust(game, point.X, point.Y, Game.LifeDustClumpAmt);
         }
 
-        internal static void NewLifeDust(float x, float y, float amt)
+        internal static void NewLifeDust(Game game, float x, float y, float amt)
         {
             int i = Game.Random.GaussianOEInt(amt, Game.LifeDustAmtRandomness, Game.LifeDustClumpOEPct, 1);
             float xDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
             float yDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
             for ( ; i > 0 ; --i)
-                new LifeDust(x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
+                new LifeDust(game, x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
                         xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
                         Game.Random.Next(Game.NumLifeDustImages));
         }
 
-        private LifeDust(float x, float y, float xDir, float yDir, int imageIndex)
-            : base(x, y, xDir, yDir, Game.LifeDustSize, Images[imageIndex])
+        private LifeDust(Game game, float x, float y, float xDir, float yDir, int imageIndex)
+            : base(game, x, y, xDir, yDir, Game.LifeDustSize, Images[imageIndex])
         {
         }
 
@@ -121,7 +120,7 @@ namespace SpaceRunner
 
         protected override float HitPlayer()
         {
-            Form.Game.AddLife(Game.PlayerLife / Game.LifeDustAmtToHeal, false);
+            Game.AddLife(Game.PlayerLife / Game.LifeDustAmtToHeal, false);
 
             return base.HitPlayer();
         }

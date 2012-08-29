@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -31,29 +30,29 @@ namespace SpaceRunner
 
         internal readonly PowerUpType Type;
 
-        internal static PowerUp NewPowerUp()
+        internal static PowerUp NewPowerUp(Game game)
         {
             PointF point = Game.RandomEdgePoint();
-            return NewPowerUp(point.X, point.Y);
+            return NewPowerUp(game, point.X, point.Y);
         }
 
-        internal static PowerUp NewPowerUp(float x, float y)
+        internal static PowerUp NewPowerUp(Game game, float x, float y)
         {
             var types = new System.Collections.Generic.Dictionary<PowerUpType, int>();
             types.Add(PowerUpType.Ammo, Game.PowerUpAmmoChance);
             types.Add(PowerUpType.Fuel, Game.PowerUpFuelChance);
             types.Add(PowerUpType.Life, Game.PowerUpLifeChance);
 
-            return NewPowerUp(x, y, Game.Random.SelectValue<PowerUpType>(types));
+            return NewPowerUp(game, x, y, Game.Random.SelectValue<PowerUpType>(types));
         }
 
-        internal static PowerUp NewPowerUp(float x, float y, PowerUpType type)
+        internal static PowerUp NewPowerUp(Game game, float x, float y, PowerUpType type)
         {
-            return new PowerUp(x, y, type);
+            return new PowerUp(game, x, y, type);
         }
 
-        private PowerUp(float x, float y, PowerUpType type)
-            : base(x, y, Game.PowerUpSize,
+        private PowerUp(Game game, float x, float y, PowerUpType type)
+            : base(game, x, y, Game.PowerUpSize,
                     type == PowerUpType.Ammo ? AmmoImage : type == PowerUpType.Fuel ? FuelImage :
                     type == PowerUpType.Life ? LifeImage : null, Game.PowerUpRotate)
         {
@@ -83,13 +82,13 @@ namespace SpaceRunner
             switch (Type)
             {
             case PowerUpType.Ammo:
-                Form.Game.AddAmmo();
+                Game.AddAmmo();
                 break;
             case PowerUpType.Life:
-                Form.Game.AddLife(Game.PlayerLife, true);
+                Game.AddLife(Game.PlayerLife, true);
                 break;
             case PowerUpType.Fuel:
-                Form.Game.AddFuel();
+                Game.AddFuel();
                 break;
 #if DEBUG
             default:
@@ -97,7 +96,7 @@ namespace SpaceRunner
 #endif
             }
 
-            Form.Game.RemoveObject(this);
+            Game.RemoveObject(this);
             return 0;
         }
 
@@ -108,13 +107,13 @@ namespace SpaceRunner
             switch (Type)
             {
             case PowerUpType.Ammo:
-                Bullet.BulletExplosion(x, y, Game.PowerUpAmmoExplosionBullets);
+                Bullet.BulletExplosion(Game, x, y, Game.PowerUpAmmoExplosionBullets);
                 break;
             case PowerUpType.Fuel:
-                FuelExplosion.NewFuelExplosion(x, y);
+                FuelExplosion.NewFuelExplosion(Game, x, y);
                 break;
             case PowerUpType.Life:
-                LifeDust.NewLifeDust(x, y, Game.LifeDustAmtToHeal);
+                LifeDust.NewLifeDust(Game, x, y, Game.LifeDustAmtToHeal);
                 break;
 #if DEBUG
             default:

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -23,14 +22,14 @@ namespace SpaceRunner
 
         private float life, baseLife, fireRate, speedMult;
 
-        internal static AlienShip NewAlienShip()
+        internal static AlienShip NewAlienShip(Game game)
         {
             PointF point = Game.RandomEdgePoint();
-            return new AlienShip(point.X, point.Y);
+            return new AlienShip(game, point.X, point.Y);
         }
 
-        private AlienShip(float x, float y)
-            : base(x, y, Game.AlienShipSize, AlienShipImage)
+        private AlienShip(Game game, float x, float y)
+            : base(game, x, y, Game.AlienShipSize, AlienShipImage)
         {
             life = baseLife = RandVal(Game.AlienShipLife);
             fireRate = RandVal(Game.AlienShipFireRate);
@@ -56,7 +55,7 @@ namespace SpaceRunner
             if (objs[0] is FuelExplosion ?
                     Game.Random.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime)
                     : amt > Game.PlayerLife)
-                Explosion.NewExplosion(objs);
+                Explosion.NewExplosion(Game, objs);
 
             if (amt > life)
                 amt = life;
@@ -78,7 +77,7 @@ namespace SpaceRunner
         {
             base.Die();
 
-            Bullet.BulletExplosion(x, y, Game.AlienShipExplosionBullets);
+            Bullet.BulletExplosion(Game, x, y, Game.AlienShipExplosionBullets);
         }
 
         protected override void OnStep()
@@ -120,7 +119,7 @@ namespace SpaceRunner
             //lose life based on the area of the asteroid
             Damage(asteroid.Area / Game.AsteroidAreaToDamageRatio, asteroid, this);
             if (life > 0)
-                Form.Game.RemoveObject(asteroid);
+                Game.RemoveObject(asteroid);
             else
                 asteroid.Die();
         }
@@ -155,7 +154,7 @@ namespace SpaceRunner
                 throw new Exception();
 #endif
             }
-            Form.Game.RemoveObject(powerUp);
+            Game.RemoveObject(powerUp);
         }
 
         private void CollectLifeDust(GameObject obj)
@@ -174,11 +173,11 @@ namespace SpaceRunner
         protected override float HitPlayer()
         {
             float damage = 0;
-            if (!Form.Game.Dead)
+            if (!Game.Dead)
             {
                 //either kill the ship or the player
-                damage = Math.Min(Form.Game.CurrentLifePart, life);
-                Damage(damage, Form.Game.GetPlayerObject(), this);
+                damage = Math.Min(Game.CurrentLifePart, life);
+                Damage(damage, Game.GetPlayerObject(), this);
             }
             return damage;
         }

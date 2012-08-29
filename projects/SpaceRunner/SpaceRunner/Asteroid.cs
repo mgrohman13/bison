@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
@@ -23,29 +22,29 @@ namespace SpaceRunner
                 i.Dispose();
         }
 
-        internal static Asteroid NewAsteroid()
+        internal static Asteroid NewAsteroid(Game game)
         {
             PointF point = Game.RandomEdgePoint();
-            return NewAsteroid(point.X, point.Y);
+            return NewAsteroid(game, point.X, point.Y);
         }
 
-        internal static Asteroid NewAsteroid(float x, float y)
+        internal static Asteroid NewAsteroid(Game game, float x, float y)
         {
             float xDir, yDir, speed = Game.Random.Gaussian(Game.AsteroidInitialSpeed);
             Game.GetRandomDirection(out xDir, out yDir, speed);
             float size = Game.Random.GaussianCapped(Game.AsteroidAverageSize, Game.AsteroidSizeRandomness, Game.AsteroidAverageSize * Game.AsteroidSizeCap);
-            return new Asteroid(x, y, size, xDir, yDir, speed);
+            return new Asteroid(game, x, y, size, xDir, yDir, speed);
         }
 
-        internal static Asteroid NewAsteroid(float x, float y, float size, float xDir, float yDir)
+        internal static Asteroid NewAsteroid(Game game, float x, float y, float size, float xDir, float yDir)
         {
             //used when an old asteroid breaks up
-            return new Asteroid(x, y, size, xDir, yDir, Game.GetDistance(xDir, yDir));
+            return new Asteroid(game, x, y, size, xDir, yDir, Game.GetDistance(xDir, yDir));
         }
 
         //pass in xDir and yDir total distance so it only needs to be calculated once
-        private Asteroid(float x, float y, float size, float xDir, float yDir, float speed) :
-            base(x, y, xDir, yDir, size, GetImage(size), speed * Game.AsteroidRotateMult + Game.AsteroidRotateConst)
+        private Asteroid(Game game, float x, float y, float size, float xDir, float yDir, float speed) :
+            base(game, x, y, xDir, yDir, size, GetImage(size), speed * Game.AsteroidRotateMult + Game.AsteroidRotateConst)
         {
         }
 
@@ -93,7 +92,7 @@ namespace SpaceRunner
                     float addYDir = addY * pieceSpeed;
                     addX *= spacing;
                     addY *= spacing;
-                    NewAsteroid(x + addX, y + addY, pieceSize, xDir + addXDir, yDir + addYDir);
+                    NewAsteroid(Game, x + addX, y + addY, pieceSize, xDir + addXDir, yDir + addYDir);
                 }
 
                 angle += angleStep;
@@ -122,7 +121,7 @@ namespace SpaceRunner
             }
             else
             {
-                Form.Game.RemoveObject(this);
+                Game.RemoveObject(this);
             }
         }
 
@@ -144,16 +143,16 @@ namespace SpaceRunner
                 if (!thisPassed && !otherPassed)
                 {
                     //if both asteroids failed the critical size check, destroy them both uneventfully
-                    Form.Game.RemoveObject(this);
-                    Form.Game.RemoveObject(asteroid);
+                    Game.RemoveObject(this);
+                    Game.RemoveObject(asteroid);
                 }
                 else
                 {
                     //destroy the smaller one
                     if (this.size < asteroid.size)
-                        Form.Game.RemoveObject(this);
+                        Game.RemoveObject(this);
                     else
-                        Form.Game.RemoveObject(asteroid);
+                        Game.RemoveObject(asteroid);
                 }
             }
         }
@@ -164,7 +163,7 @@ namespace SpaceRunner
 
             float damage = Area / Game.AsteroidAreaToDamageRatio;
             if (damage > Game.BulletDamage)
-                Explosion.NewExplosion(this, Form.Game.GetPlayerObject());
+                Explosion.NewExplosion(Game, this, Game.GetPlayerObject());
             return damage;
         }
 

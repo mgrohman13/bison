@@ -29,13 +29,13 @@ namespace SpaceRunner
 
         private int time = 0;
 
-        internal static FuelExplosion NewFuelExplosion(float x, float y)
+        internal static FuelExplosion NewFuelExplosion(Game game, float x, float y)
         {
-            return new FuelExplosion(x, y);
+            return new FuelExplosion(game, x, y);
         }
 
-        private FuelExplosion(float x, float y)
-            : base(x, y, Game.PowerUpSize, Images[0], Game.ExplosionRotate)
+        private FuelExplosion(Game game, float x, float y)
+            : base(game, x, y, Game.PowerUpSize, Images[0], Game.ExplosionRotate)
         {
             this.time = Game.Random.Round(Game.FuelExplosionTime);
         }
@@ -67,7 +67,7 @@ namespace SpaceRunner
                 if (lifeDust == null || lifeDust.HitBy(this))
                 {
                     if (obj.Size > Game.Random.OE(Game.ExplosionSize))
-                        Explosion.NewExplosion(obj);
+                        Explosion.NewExplosion(Game, obj);
                     obj.Die();
                 }
             }

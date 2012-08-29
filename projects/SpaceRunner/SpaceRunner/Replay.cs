@@ -9,10 +9,15 @@ namespace SpaceRunner
     [Serializable]
     public class Replay
     {
+        [NonSerialized]
+        private const ushort NoLength = default(ushort);
+
         public readonly uint[] Seed;
 
-        public Dictionary<ushort, Tuple<short, short>> input;
-        public HashSet<ushort> turbo, fire;
+        private Dictionary<ushort, Tuple<short, short>> input = null;
+        private HashSet<ushort> turbo = null, fire = null;
+
+        private ushort length = NoLength;
 
         [NonSerialized]
         private Tuple<short, short> lastInput;
@@ -26,6 +31,27 @@ namespace SpaceRunner
             this.input = new Dictionary<ushort, Tuple<short, short>>();
             this.turbo = new HashSet<ushort>();
             this.fire = new HashSet<ushort>();
+
+            this.length = NoLength;
+        }
+
+        public int Length
+        {
+            get
+            {
+                if (length == NoLength)
+                    GetLength();
+                return length;
+            }
+        }
+        private void GetLength()
+        {
+            foreach (ushort shortTick in this.input.Keys)
+                this.length = Math.Max(length, shortTick);
+            foreach (ushort shortTick in this.turbo)
+                this.length = Math.Max(length, shortTick);
+            foreach (ushort shortTick in this.fire)
+                this.length = Math.Max(length, shortTick);
         }
 
         public void Record(int tickCount, int inputX, int inputY, bool turbo, bool fire)
@@ -41,6 +67,11 @@ namespace SpaceRunner
 
             RecordBool(shortTick, this.turbo, ref lastTurbo, turbo);
             RecordBool(shortTick, this.fire, ref lastFire, fire);
+        }
+
+        public void EndRecord(int tickCount)
+        {
+            this.length = (ushort)tickCount;
         }
 
         public void Play(int tickCount, ref int inputX, ref int inputY, ref bool turbo, ref bool fire)

@@ -14,7 +14,7 @@ namespace MattUtil.RealTimeGame
 
         public delegate void EventDelegate();
 
-        private double GameTick;
+        private double gameTick;
 
         private Game game;
         private Timer timer;
@@ -27,7 +27,7 @@ namespace MattUtil.RealTimeGame
         {
             this.game = game;
 
-            this.GameTick = GameTick;
+            this.gameTick = GameTick;
 
             paused = false;
             started = false;
@@ -76,6 +76,19 @@ namespace MattUtil.RealTimeGame
             }
         }
 
+        public double GameTick
+        {
+            get
+            {
+                return gameTick;
+            }
+            internal set
+            {
+                gameTick = value;
+            }
+        }
+
+
         public void Start()
         {
             Thread refresh = new Thread(RefreshGame);
@@ -91,7 +104,7 @@ namespace MattUtil.RealTimeGame
         private void RunGame()
         {
             Stopwatch stopwatch = new Stopwatch();
-            double offset = GameTick;
+            double offset = gameTick;
             //WriteLine(offset);
 
             lock (this)
@@ -117,7 +130,7 @@ namespace MattUtil.RealTimeGame
                             long timeDiff = stopwatch.ElapsedTicks;
                             stopwatch.Restart();
 
-                            offset += GameTick - timeDiff / TicksPerMilisecond;
+                            offset += gameTick - timeDiff / TicksPerMilisecond;
                             //WriteLine(offset);
                             //millisecondsTimeout = (int)offset;
                             //offset = ( offset - GameTick ) * ( 1 - 1 / GameTick ) + GameTick;
@@ -127,7 +140,7 @@ namespace MattUtil.RealTimeGame
                     {
                         stopwatch.Restart();
 
-                        offset = GameTick;
+                        offset = gameTick;
                         //WriteLine(offset);
                         //millisecondsTimeout = GameTick;
                     }
@@ -139,7 +152,7 @@ namespace MattUtil.RealTimeGame
                     Monitor.Pulse(timer);
 
                 //WriteLine("sleep:" + (int)offset);
-                System.Threading.Thread.Sleep(Math.Max(0, (int)( ( offset + GameTick ) / 2 )));
+                Thread.Sleep(Math.Max(0, (int)( ( offset + gameTick ) / 2 )));
                 //}
             }
 
@@ -150,10 +163,12 @@ namespace MattUtil.RealTimeGame
         {
             if (Running)
             {
+                game.OnEnd();
+
                 Running = false;
 
                 //get critical information while we still have the lock
-                bool saveScore = GameForm.Game.Scoring;
+                bool saveScore = game.Scoring;
                 decimal newScore = game.Score;
 
                 //release the lock so that the form can draw everything on the refresh
@@ -161,15 +176,18 @@ namespace MattUtil.RealTimeGame
                 try
                 {
                     Refresh();
-                    Thread.Sleep(26);
 
-                    //we dont need to be locked for this
+                    Thread.Sleep(100);
+
+                    //we don't need to be locked for this
                     if (saveScore)
-                        HighScores.SaveScore(true, newScore);
+                        HighScores.SaveScore(game, true, newScore);
+
+                    Thread.Sleep(100);
                 }
                 finally
                 {
-                    //reaquire the lock since were inside a lock block
+                    //reaquire the lock since we're inside a lock block
                     Monitor.Enter(this);
                 }
             }

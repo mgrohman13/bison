@@ -1,68 +1,52 @@
 using System;
 using System.Drawing;
-using System.IO;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BaseForm = MattUtil.RealTimeGame.GameForm;
 using BaseGame = MattUtil.RealTimeGame.Game;
+using System.Threading;
 
 namespace SpaceRunner.Forms
 {
     internal partial class GameForm : BaseForm
     {
-        new internal static Game Game
+        private Game Game
         {
             get
             {
-                return (Game)BaseForm.Game;
+                return (Game)base.game;
             }
         }
 
-        internal void NewGame()
+        protected override BaseGame GetNewGame(bool scoring)
         {
-            base.NewGame(this.RefreshGame);
-        }
+            Game.Dispose();
 
-        protected override BaseGame StartNewGame(MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, bool scoring)
-        {
-            return StartNewGame(RefreshGame, scoring, null);
-        }
+            bool isReplay = ( this.replay != null );
+            this.tbTime.Visible = isReplay;
+            this.tbSpeed.Visible = isReplay;
 
-        private BaseGame StartNewGame(MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, bool scoring, Replay replay)
-        {
-            Game game = new Game(this.RefreshGame);
-            if (BaseForm.game != null)
-                ( (IDisposable)BaseForm.game ).Dispose();
-            BaseForm.game = game;
-            if (replay == null)
-                game.InitGame(this.center.X, this.center.Y, scoring);
+            if (isReplay)
+                return new Game(base.RefreshGame, this.center.X, this.center.Y, this.replay);
             else
-                game.InitReplay(this.center.X, this.center.Y, replay);
-            RefreshGame();
-            return game;
+                return new Game(base.RefreshGame, this.center.X, this.center.Y, scoring);
         }
 
-        const float TotalMapSize = SpaceRunner.Game.MapSize * 2f;
-        const int PadSides = 13;
+        private const float TotalMapSize = SpaceRunner.Game.MapSize * 2f;
+        private const int PadSides = 13;
 
-        readonly Point center;
-        Region clip;
+        private readonly Point center;
+        private Region clip;
 
-        private ToolStripMenuItem replay;
+        private ToolStripMenuItem replayParent, replayShow, replaySave, replayLoad;
+        private Replay replay;
 
-        private static GameForm form;
-        internal GameForm()
+        internal GameForm(Game game)
         {
-            this.replay = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuStrip.Items.Add(this.replay);
-            this.replay.Name = "newGameToolStripMenuItem";
-            this.replay.Size = new System.Drawing.Size(130, 20);
-            this.replay.Click += new EventHandler(replay_Click);
-
-            form = this;
-            BaseForm.game = new Game(this.RefreshGame);
-            BaseForm.game.Running = false;
+            InitializeReplayMenu();
             InitializeComponent();
+
+            base.game = game;
 
             center = GetCenter();
             //power up count images
@@ -74,45 +58,11 @@ namespace SpaceRunner.Forms
             p.AddEllipse(center.X - Game.MapSize, center.Y - Game.MapSize, TotalMapSize, TotalMapSize);
             clip = new Region(p);
             p.Dispose();
+
+            RefreshGame();
         }
 
-        void replay_Click(object sender, EventArgs e)
-        {
-            Replay replay = null;
-
-            if (!Game.Started)
-            {
-                if (QuitPrompt())
-                {
-                    string load = ShowDialog(this.openFileDialog);
-                    if (load != null && File.Exists(load))
-                        replay = MattUtil.TBSUtil.LoadGame<Replay>(load);
-                }
-            }
-            else if (Game.IsReplay)
-            {
-                string save = ShowDialog(this.saveFileDialog);
-                if (save != null)
-                    MattUtil.TBSUtil.SaveGame(Game.Replay, save);
-            }
-            else
-            {
-                if (QuitPrompt())
-                    replay = Game.Replay;
-            }
-
-            if (replay != null)
-                StartNewGame(this.RefreshGame, false, replay);
-        }
-
-        private static string ShowDialog(FileDialog fileDialog)
-        {
-            if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                return fileDialog.FileName;
-            return null;
-        }
-
-        Point GetCenter()
+        private Point GetCenter()
         {
             int total = (int)Math.Ceiling(Game.MapSize + PadSides);
 #if TRACE
@@ -128,29 +78,40 @@ namespace SpaceRunner.Forms
 
         protected override void OnPaint(PaintEventArgs e)
         {
-#if !TRACE
-            e.Graphics.Clip = clip;
+#if DEBUG
+            try
+            {
 #endif
-            e.Graphics.Clear(Color.Black);
+#if !TRACE
+                e.Graphics.Clip = clip;
+#endif
+                e.Graphics.Clear(Color.Black);
 
-            base.OnPaint(e);
+                base.OnPaint(e);
 
-            //show power up counts
-            this.lblAmmo.Text = Game.Ammo.ToString();
-            this.lblFuel.Text = Game.Fuel.ToString("0");
-            this.lblLife.Text = Game.Lives.ToString();
-            this.lblScore.Text = Game.Score.ToString("0");
+                //show power up counts
+                this.lblAmmo.Text = Game.Ammo.ToString();
+                this.lblFuel.Text = Game.Fuel.ToString("0");
+                this.lblLife.Text = Game.Lives.ToString();
+                this.lblScore.Text = Game.Score.ToString("0");
 
-            if (!Game.Started)
-                this.replay.Text = "Load Replay";
-            else if (Game.IsReplay)
-                this.replay.Text = "Save Replay";
-            else
-                this.replay.Text = "Replay";
+                bool enabled = ( Game.IsReplay || Game.GameOver() );
+                this.replayShow.Enabled = enabled;
+                this.replaySave.Enabled = enabled;
+
+                if (Game.IsReplay)
+                    this.tbTime.Value = Game.TickCount;
+#if DEBUG
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.StackTrace);
+            }
+#endif
         }
 
         //private bool setMouse = true;
-        void GameForm_MouseMove(object sender, MouseEventArgs e)
+        private void GameForm_MouseMove(object sender, MouseEventArgs e)
         {
             //if (setMouse)
             //{
@@ -160,12 +121,12 @@ namespace SpaceRunner.Forms
             //}
         }
 
-        void GameForm_MouseLeave(object sender, EventArgs e)
+        private void GameForm_MouseLeave(object sender, EventArgs e)
         {
             Game.Paused = true;
         }
 
-        void GameForm_MouseDown(object sender, MouseEventArgs e)
+        private void GameForm_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
                 Game.Fire = true;
@@ -173,12 +134,106 @@ namespace SpaceRunner.Forms
                 Game.Turbo = true;
         }
 
-        void GameForm_MouseUp(object sender, MouseEventArgs e)
+        private void GameForm_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
                 Game.Fire = false;
             else if (e.Button == MouseButtons.Right)
                 Game.Turbo = false;
+        }
+
+        private void InitializeReplayMenu()
+        {
+            this.replayParent = new System.Windows.Forms.ToolStripMenuItem();
+            this.replayShow = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaySave = new System.Windows.Forms.ToolStripMenuItem();
+            this.replayLoad = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip.Items.Add(this.replayParent);
+            this.replayParent.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { this.replayShow, this.replaySave, this.replayLoad });
+            this.replayParent.Name = "replayParent";
+            this.replayParent.Size = new System.Drawing.Size(130, 20);
+            this.replayParent.Text = "Replay";
+            this.replayShow.Name = "replayShow";
+            this.replayShow.Size = new System.Drawing.Size(130, 20);
+            this.replayShow.Text = "Replay";
+            this.replayShow.Click += new EventHandler(replayShow_Click);
+            this.replaySave.Name = "replaySave";
+            this.replaySave.Size = new System.Drawing.Size(130, 20);
+            this.replaySave.Text = "Save";
+            this.replaySave.Click += new EventHandler(replaySave_Click);
+            this.replayLoad.Name = "replayLoad";
+            this.replayLoad.Size = new System.Drawing.Size(130, 20);
+            this.replayLoad.Text = "Load";
+            this.replayLoad.Click += new EventHandler(replayLoad_Click);
+        }
+
+        private void replayShow_Click(object sender, EventArgs e)
+        {
+            if (QuitPrompt())
+                ShowReplay(Game.Replay);
+        }
+        private void replaySave_Click(object sender, EventArgs e)
+        {
+            string save = ShowDialog(this.saveFileDialog);
+            if (save != null)
+                MattUtil.TBSUtil.SaveGame(Game.Replay, save);
+        }
+        private void replayLoad_Click(object sender, EventArgs e)
+        {
+            if (QuitPrompt())
+            {
+                string load = ShowDialog(this.openFileDialog);
+                if (load != null)
+                    ShowReplay(MattUtil.TBSUtil.LoadGame<Replay>(load));
+            }
+        }
+
+        private static string ShowDialog(FileDialog fileDialog)
+        {
+            if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                return fileDialog.FileName;
+            return null;
+        }
+        private void ShowReplay(Replay replay)
+        {
+            this.replay = replay;
+            NewGame(false);
+            this.replay = null;
+
+            this.tbTime.Maximum = replay.Length;
+            this.tbTime.TickFrequency = Game.Round(replay.Length / 13f);
+            this.tbTime.LargeChange = Game.Round(replay.Length / 5.2f);
+            this.tbTime.SmallChange = Game.Round(replay.Length / 9.1f);
+
+            this.tbSpeed.Value = 13;
+        }
+
+        private Thread timeScroll = null;
+        private void tbSpeed_Scroll(object sender, EventArgs e)
+        {
+            Game.SetReplaySpeed(this.tbSpeed.Value / 13.0);
+        }
+        private void tbTime_Scroll(object sender, EventArgs e)
+        {
+            lock (this.tbTime)
+            {
+                if (timeScroll != null)
+                    timeScroll.Abort();
+
+                timeScroll = new Thread(tbTime_Scroll);
+                timeScroll.IsBackground = true;
+                timeScroll.Start(this.tbTime.Value);
+            }
+        }
+        private void tbTime_Scroll(object position)
+        {
+            Thread.Sleep(300);
+
+            lock (this.tbTime)
+            {
+                base.game = Game.SetReplayPosition(Game, (int)position, base.RefreshGame);
+                timeScroll = null;
+            }
         }
     }
 }

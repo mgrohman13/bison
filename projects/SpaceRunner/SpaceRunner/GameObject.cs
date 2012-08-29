@@ -1,12 +1,13 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Form = SpaceRunner.Forms.GameForm;
 
 namespace SpaceRunner
 {
     internal abstract class GameObject
     {
+        protected readonly Game Game;
+
         protected Image image;
         protected float x, y;
         protected float speed;
@@ -15,38 +16,38 @@ namespace SpaceRunner
         protected float curAngle;
         protected float rotate;
 
-        protected GameObject(float x, float y, float size, Image image) :
-            this(x, y, 0, 0, 0, size, image, 0)
+        protected GameObject(Game game, float x, float y, float size, Image image) :
+            this(game, x, y, 0, 0, 0, size, image, 0)
         {
         }
 
-        protected GameObject(float x, float y, float size, Image image, float rotateSpeed) :
-            this(x, y, 0, 0, 0, size, image, rotateSpeed)
+        protected GameObject(Game game, float x, float y, float size, Image image, float rotateSpeed) :
+            this(game, x, y, 0, 0, 0, size, image, rotateSpeed)
         {
         }
 
-        protected GameObject(float x, float y, float xDir, float yDir, float size, Image image) :
-            this(x, y, xDir, yDir, 0, size, image, 0)
+        protected GameObject(Game game, float x, float y, float xDir, float yDir, float size, Image image) :
+            this(game, x, y, xDir, yDir, 0, size, image, 0)
         {
         }
 
-        protected GameObject(float x, float y, float xDir, float yDir, float size, Image image, float rotateSpeed) :
-            this(x, y, xDir, yDir, 0, size, image, rotateSpeed)
+        protected GameObject(Game game, float x, float y, float xDir, float yDir, float size, Image image, float rotateSpeed) :
+            this(game, x, y, xDir, yDir, 0, size, image, rotateSpeed)
         {
         }
 
-        protected GameObject(float x, float y, float speed, float size, Image image) :
-            this(x, y, 0, 0, speed, size, image, 0)
+        protected GameObject(Game game, float x, float y, float speed, float size, Image image) :
+            this(game, x, y, 0, 0, speed, size, image, 0)
         {
         }
 
-        protected GameObject(float x, float y, float speed, float size, Image image, float rotateSpeed) :
-            this(x, y, 0, 0, speed, size, image, rotateSpeed)
+        protected GameObject(Game game, float x, float y, float speed, float size, Image image, float rotateSpeed) :
+            this(game, x, y, 0, 0, speed, size, image, rotateSpeed)
         {
         }
 
-        protected GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image) :
-            this(x, y, xDir, yDir, speed, size, image, 0)
+        protected GameObject(Game game, float x, float y, float xDir, float yDir, float speed, float size, Image image) :
+            this(game, x, y, xDir, yDir, speed, size, image, 0)
         {
         }
 
@@ -56,17 +57,19 @@ namespace SpaceRunner
         }
 
         private GameObject(float x, float y, float xDir, float yDir)
-            : this(x, y, xDir, yDir, 0, 0, null, 0, false)
+            : this(null, x, y, xDir, yDir, 0, 0, null, 0, false)
         {
         }
 
-        private GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed)
-            : this(x, y, xDir, yDir, speed, size, image, rotateSpeed, true)
+        private GameObject(Game game, float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed)
+            : this(game, x, y, xDir, yDir, speed, size, image, rotateSpeed, true)
         {
         }
 
-        private GameObject(float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed, bool add)
+        private GameObject(Game game, float x, float y, float xDir, float yDir, float speed, float size, Image image, float rotateSpeed, bool add)
         {
+            this.Game = game;
+
             this.x = x;
             this.y = y;
             this.xDir = xDir;
@@ -83,7 +86,7 @@ namespace SpaceRunner
             }
 
             if (add)
-                Form.Game.AddObject(this);
+                game.AddObject(this);
         }
 
         internal float X
@@ -150,25 +153,28 @@ namespace SpaceRunner
 
         internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float size, float curAngle)
         {
-#if DEBUG
-            if (image.Width != image.Height)
-                throw new Exception();
-#endif
-            if (Game.GetDistance(x, y) - size < Game.MapSize)
+            lock (image)
             {
-                float objectX = centerX + x;
-                float objectY = centerY + y;
+#if DEBUG
+                if (image.Width != image.Height)
+                    throw new Exception();
+#endif
+                if (Game.GetDistance(x, y) - size < Game.MapSize)
+                {
+                    float objectX = centerX + x;
+                    float objectY = centerY + y;
 
-                if (speed > 0)
-                    curAngle = Game.GetAngleImageAdjusted(-x, -y);
+                    if (speed > 0)
+                        curAngle = Game.GetAngleImageAdjusted(-x, -y);
 
-                graphics.ResetTransform();
-                graphics.TranslateTransform(objectX, objectY);
-                graphics.RotateTransform(curAngle * Game.RadToDeg);
-                graphics.TranslateTransform(-objectX, -objectY);
+                    graphics.ResetTransform();
+                    graphics.TranslateTransform(objectX, objectY);
+                    graphics.RotateTransform(curAngle * Game.RadToDeg);
+                    graphics.TranslateTransform(-objectX, -objectY);
 
-                float offset = image.Width / 2f;
-                graphics.DrawImageUnscaled(image, Game.Round(objectX - offset), Game.Round(objectY - offset));
+                    float offset = image.Width / 2f;
+                    graphics.DrawImageUnscaled(image, Game.Round(objectX - offset), Game.Round(objectY - offset));
+                }
             }
         }
 
@@ -194,7 +200,7 @@ namespace SpaceRunner
             float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
                     Game.Random.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
-                Form.Game.RemoveObject(this);
+                Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();
 
@@ -216,22 +222,22 @@ namespace SpaceRunner
 
         protected virtual float HitPlayer()
         {
-            Form.Game.AddScore(Score);
-            Form.Game.RemoveObject(this);
+            Game.AddScore(Score);
+            Game.RemoveObject(this);
             return 0f;
         }
 
         internal virtual void Die()
         {
             AddScore(Score);
-            Form.Game.RemoveObject(this);
+            Game.RemoveObject(this);
         }
 
         protected void AddScore(decimal score)
         {
             //only add score if the center of the object is within the visible portion of the map
             if (score != 0 && Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
-                Form.Game.AddScore(score);
+                Game.AddScore(score);
         }
 
         protected void BumpCollision(GameObject obj)

@@ -6,31 +6,31 @@ using System.IO;
 
 namespace MattUtil.RealTimeGame
 {
-    class HighScores
+    internal class HighScores
     {
         public List<HighScoreEntry> highScores;
         public decimal total;
         public int games;
 
-        HighScores(List<HighScoreEntry> highScores, decimal total, int games)
+        private HighScores(List<HighScoreEntry> highScores, decimal total, int games)
         {
             this.highScores = highScores;
             this.total = total;
             this.games = games;
         }
 
-        HighScores()
+        private HighScores()
         {
             this.highScores = new List<HighScoreEntry>();
             this.total = 0;
             this.games = 0;
         }
 
-        public static void SaveScore(bool showScores, decimal newScore)
+        public static void SaveScore(Game game, bool showScores, decimal newScore)
         {
             lock (typeof(HighScores))
             {
-                HighScores scores = ReadScores();
+                HighScores scores = ReadScores(game.ScoreFile);
                 List<HighScoreEntry> highScores = scores.highScores;
 
                 if (highScores.Count < 10 || newScore > highScores[9].score)
@@ -60,7 +60,7 @@ namespace MattUtil.RealTimeGame
                 }
 
                 //write to the file
-                FileStream stream = new FileStream(GameForm.Game.ScoreFile, FileMode.Create);
+                FileStream stream = new FileStream(game.ScoreFile, FileMode.Create);
                 BinaryWriter writer = new BinaryWriter(stream);
 
                 writer.Write(scores.total);
@@ -80,11 +80,11 @@ namespace MattUtil.RealTimeGame
             }
 
             if (showScores)
-                ShowScores();
+                ShowScores(game);
         }
-        static HighScores ReadScores()
+        static HighScores ReadScores(string scoreFile)
         {
-            FileStream fs = new FileStream(GameForm.Game.ScoreFile, FileMode.OpenOrCreate);
+            FileStream fs = new FileStream(scoreFile, FileMode.OpenOrCreate);
             BinaryReader reader = new BinaryReader(fs);
 
             int hash;
@@ -112,7 +112,9 @@ namespace MattUtil.RealTimeGame
                 for (int i = 0 ; i < 10 ; ++i)
                     highScores.Add(new HighScoreEntry(ChangeString(false, reader.ReadString()), reader.ReadDecimal()));
             }
-            catch { }
+            catch
+            {
+            }
 
             reader.Close();
             fs.Close();
@@ -153,15 +155,15 @@ namespace MattUtil.RealTimeGame
             return retval;
         }
 
-        public static void ShowScores()
+        public static void ShowScores(Game game)
         {
-            ScoresForm form = new ScoresForm(ReadScores());
+            ScoresForm form = new ScoresForm(game, ReadScores(game.ScoreFile));
             form.ShowDialog();
             form.Dispose();
         }
-        public static void ClearScores()
+        public static void ClearScores(Game game)
         {
-            FileStream fs = new FileStream(GameForm.Game.ScoreFile, FileMode.Create);
+            FileStream fs = new FileStream(game.ScoreFile, FileMode.Create);
             BinaryWriter writer = new BinaryWriter(fs);
 
             //write a bunch of random data to the file so its size doesnt change too much
@@ -175,7 +177,7 @@ namespace MattUtil.RealTimeGame
             fs.Close();
             fs.Dispose();
 
-            ShowScores();
+            ShowScores(game);
         }
     }
     struct HighScoreEntry

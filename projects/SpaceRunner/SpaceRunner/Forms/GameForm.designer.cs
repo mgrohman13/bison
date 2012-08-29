@@ -37,9 +37,15 @@ namespace SpaceRunner.Forms
             this.lblScore = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.tbTime = new System.Windows.Forms.TrackBar();
+            this.tbSpeed = new System.Windows.Forms.TrackBar();
+            this.lblTime = new System.Windows.Forms.Label();
+            this.lblSpeed = new System.Windows.Forms.Label();
             ( (System.ComponentModel.ISupportInitialize)( this.picLife ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.picFuel ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.picAmmo ) ).BeginInit();
+            ( (System.ComponentModel.ISupportInitialize)( this.tbTime ) ).BeginInit();
+            ( (System.ComponentModel.ISupportInitialize)( this.tbSpeed ) ).BeginInit();
             this.SuspendLayout();
             // 
             // picLife
@@ -115,17 +121,66 @@ namespace SpaceRunner.Forms
             this.lblScore.TabIndex = 7;
             this.lblScore.Text = "0";
             // 
-            // openFileDialog1
+            // openFileDialog
             // 
             this.openFileDialog.FileName = "replay.srr";
             this.openFileDialog.Filter = "Space Runner Replay|*.srr";
             this.openFileDialog.InitialDirectory = ".";
             // 
-            // saveFileDialog1
+            // saveFileDialog
             // 
             this.saveFileDialog.FileName = "replay.srr";
             this.saveFileDialog.Filter = "Space Runner Replay|*.srr";
             this.saveFileDialog.InitialDirectory = ".";
+            // 
+            // tbTime
+            // 
+            this.tbTime.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.tbTime.AutoSize = false;
+            this.tbTime.Location = new System.Drawing.Point(81, 1);
+            this.tbTime.Name = "tbTime";
+            this.tbTime.Size = new System.Drawing.Size(210, 26);
+            this.tbTime.TabIndex = 8;
+            this.tbTime.Visible = false;
+            this.tbTime.Scroll += new System.EventHandler(this.tbTime_Scroll);
+            // 
+            // tbSpeed
+            // 
+            this.tbSpeed.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.tbSpeed.AutoSize = false;
+            this.tbSpeed.LargeChange = 3;
+            this.tbSpeed.Location = new System.Drawing.Point(81, 30);
+            this.tbSpeed.Maximum = 39;
+            this.tbSpeed.Minimum = 1;
+            this.tbSpeed.Name = "tbSpeed";
+            this.tbSpeed.Size = new System.Drawing.Size(210, 26);
+            this.tbSpeed.TabIndex = 9;
+            this.tbSpeed.TickFrequency = 3;
+            this.tbSpeed.Value = 1;
+            this.tbSpeed.Visible = false;
+            this.tbSpeed.Scroll += new System.EventHandler(this.tbSpeed_Scroll);
+            // 
+            // lblTime
+            // 
+            this.lblTime.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblTime.AutoSize = true;
+            this.lblTime.Location = new System.Drawing.Point(58, 7);
+            this.lblTime.Name = "lblTime";
+            this.lblTime.Size = new System.Drawing.Size(30, 13);
+            this.lblTime.TabIndex = 10;
+            this.lblTime.Text = "Time";
+            this.lblTime.Visible = false;
+            // 
+            // lblSpeed
+            // 
+            this.lblSpeed.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblSpeed.AutoSize = true;
+            this.lblSpeed.Location = new System.Drawing.Point(50, 36);
+            this.lblSpeed.Name = "lblSpeed";
+            this.lblSpeed.Size = new System.Drawing.Size(38, 13);
+            this.lblSpeed.TabIndex = 11;
+            this.lblSpeed.Text = "Speed";
+            this.lblSpeed.Visible = false;
             // 
             // GameForm
             // 
@@ -133,6 +188,10 @@ namespace SpaceRunner.Forms
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(292, 273);
+            this.Controls.Add(this.lblSpeed);
+            this.Controls.Add(this.lblTime);
+            this.Controls.Add(this.tbSpeed);
+            this.Controls.Add(this.tbTime);
             this.Controls.Add(this.lblScore);
             this.Controls.Add(this.lblAmmo);
             this.Controls.Add(this.picAmmo);
@@ -152,9 +211,15 @@ namespace SpaceRunner.Forms
             this.Controls.SetChildIndex(this.picAmmo, 0);
             this.Controls.SetChildIndex(this.lblAmmo, 0);
             this.Controls.SetChildIndex(this.lblScore, 0);
+            this.Controls.SetChildIndex(this.tbTime, 0);
+            this.Controls.SetChildIndex(this.tbSpeed, 0);
+            this.Controls.SetChildIndex(this.lblTime, 0);
+            this.Controls.SetChildIndex(this.lblSpeed, 0);
             ( (System.ComponentModel.ISupportInitialize)( this.picLife ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.picFuel ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.picAmmo ) ).EndInit();
+            ( (System.ComponentModel.ISupportInitialize)( this.tbTime ) ).EndInit();
+            ( (System.ComponentModel.ISupportInitialize)( this.tbSpeed ) ).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -171,6 +236,10 @@ namespace SpaceRunner.Forms
         private System.Windows.Forms.Label lblScore;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.TrackBar tbTime;
+        private System.Windows.Forms.TrackBar tbSpeed;
+        private System.Windows.Forms.Label lblTime;
+        private System.Windows.Forms.Label lblSpeed;
     }
 }
 
