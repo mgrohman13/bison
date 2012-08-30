@@ -137,22 +137,14 @@ namespace SpaceRunner
         //sectors for collision detection
         internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2;
 
-#if TRACE
-        internal const float GameSpeed = GameTick * 0.021f;
-#else
         internal const float GameSpeed = (float)( GameTick * Math.PI * .013 );
-#endif
 
         internal const float PlayerSize = 17f;
         internal const float BasePlayerSpeed = GameSpeed * 3f;
         //time spent dead before getting the next life
         internal const float DeathTime = 1 / GameSpeed * 65f;
 
-#if TRACE
-        internal const float StartLife = PlayerLife * 30f;
-#else
         internal const float StartLife = PlayerLife * 3f;
-#endif
         internal const float PlayerLife = 13f;
         internal const float PlayerDamageRandomness = .065f;
 
@@ -526,11 +518,11 @@ namespace SpaceRunner
             //not drawing when deadCounter is within a certain range causes the player to blink when dead
             if (!Dead || GameOver() || Paused || !Started || ( deadCounter % DeadBlinkDiv > DeadBlinkWindow ))
             {
-                //choose between regular image and no ammo image
+                bool turbo = ( Turbo && !Dead && fuel > 0 );
                 Image image = ( ( fireCounter < 0 || GameOver() || Paused ) ?
                         ( turbo ? TurboImage : PlayerImage ) :
                         ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
-                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, GetAngleImageAdjusted(inputX, inputY));
+                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, GetAngleImageAdjusted(inputX, inputY) - HalfPi / 2f);
             }
         }
         internal static float GetAngleImageAdjusted(float xSpeed, float ySpeed)

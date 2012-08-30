@@ -12,7 +12,7 @@ namespace SpaceRunner.Forms
             Application.SetCompatibleTextRenderingDefault(false);
 
 #if TRACE
-            ScoresForm.Scoring = false;
+            MattUtil.RealTimeGame.ScoresForm.Scoring = false;
 #endif
             Game game = Game.StaticInit();
             GameForm mainForm = new GameForm(game);
