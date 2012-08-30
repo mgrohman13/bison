@@ -99,7 +99,7 @@ namespace SpaceRunner.Forms
                 this.replayShow.Enabled = enabled;
                 this.replaySave.Enabled = enabled;
 
-                if (Game.IsReplay)
+                if (Game.IsReplay && timeScroll == null)
                     this.tbTime.Value = Game.TickCount;
 #if DEBUG
             }
@@ -222,16 +222,18 @@ namespace SpaceRunner.Forms
 
                 timeScroll = new Thread(tbTime_Scroll);
                 timeScroll.IsBackground = true;
-                timeScroll.Start(this.tbTime.Value);
+                timeScroll.Start(new Tuple<int, int>(this.tbTime.Value, this.tbSpeed.Value));
             }
         }
-        private void tbTime_Scroll(object position)
+        private void tbTime_Scroll(object args)
         {
-            Thread.Sleep(300);
+            Thread.Sleep(1000);
 
             lock (this.tbTime)
             {
-                base.game = Game.SetReplayPosition(Game, (int)position, base.RefreshGame);
+                Tuple<int, int> values = (Tuple<int, int>)args;
+                base.game = Game.SetReplayPosition(Game, values.Item1, base.RefreshGame);
+                Game.SetReplaySpeed(values.Item2 / 13.0);
                 timeScroll = null;
             }
         }
