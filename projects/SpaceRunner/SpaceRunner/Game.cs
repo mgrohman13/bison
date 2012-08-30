@@ -105,7 +105,7 @@ namespace SpaceRunner
         internal const int NumLifeDustImages = 6;
 
         //mathematical values
-        internal const float HalfPi = (float)( Math.PI / 2 );
+        internal const float QuarterPi = (float)( Math.PI / 4 );
         internal const float TwoPi = (float)( Math.PI * 2 );
         internal const float RadToDeg = (float)( 180 / Math.PI );
 
@@ -522,12 +522,12 @@ namespace SpaceRunner
                 Image image = ( ( fireCounter < 0 || GameOver() || Paused ) ?
                         ( turbo ? TurboImage : PlayerImage ) :
                         ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
-                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, GetAngleImageAdjusted(inputX, inputY) - HalfPi / 2f);
+                GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, GetAngleImageAdjusted(inputX, inputY));
             }
         }
         internal static float GetAngleImageAdjusted(float xSpeed, float ySpeed)
         {
-            return GetAngle(xSpeed, ySpeed) + HalfPi;
+            return GetAngle(xSpeed, ySpeed) + QuarterPi;
         }
 
         private void DrawFireBar(Graphics graphics)
@@ -715,13 +715,13 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-                base.Paused = true;
-                Refresh();
-                lock (gameTicker)
-                    while (tickCount < position)
-                        this.Step();
-                SleepTick();
-                base.Paused = false;
+            base.Paused = true;
+            Refresh();
+            lock (gameTicker)
+                while (tickCount < position)
+                    this.Step();
+            SleepTick();
+            base.Paused = false;
 #if DEBUG
             }
             else
