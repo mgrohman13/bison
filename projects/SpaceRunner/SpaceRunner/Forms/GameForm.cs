@@ -83,24 +83,24 @@ namespace SpaceRunner.Forms
             {
 #endif
 #if !TRACE
-                e.Graphics.Clip = clip;
+            e.Graphics.Clip = clip;
 #endif
-                e.Graphics.Clear(Color.Black);
+            e.Graphics.Clear(Color.Black);
 
-                base.OnPaint(e);
+            base.OnPaint(e);
 
-                //show power up counts
-                this.lblAmmo.Text = Game.Ammo.ToString();
-                this.lblFuel.Text = Game.Fuel.ToString("0");
-                this.lblLife.Text = Game.Lives.ToString();
-                this.lblScore.Text = Game.Score.ToString("0");
+            //show power up counts
+            this.lblAmmo.Text = Game.Ammo.ToString();
+            this.lblFuel.Text = Game.Fuel.ToString("0");
+            this.lblLife.Text = Game.Lives.ToString();
+            this.lblScore.Text = Game.Score.ToString("0");
 
-                bool enabled = ( Game.IsReplay || Game.GameOver() );
-                this.replayShow.Enabled = enabled;
-                this.replaySave.Enabled = enabled;
+            bool enabled = ( Game.IsReplay || Game.GameOver() );
+            this.replayShow.Enabled = enabled;
+            this.replaySave.Enabled = enabled;
 
-                if (Game.IsReplay && timeScroll == null)
-                    this.tbTime.Value = Game.TickCount;
+            if (Game.IsReplay && timeScroll == null)
+                this.tbTime.Value = Game.TickCount;
 #if DEBUG
             }
             catch (Exception exception)
@@ -200,18 +200,18 @@ namespace SpaceRunner.Forms
             NewGame(false);
             this.replay = null;
 
+            SetReplaySpeed(this.tbSpeed.Value);
+
             this.tbTime.Maximum = replay.Length;
             this.tbTime.TickFrequency = Game.Round(replay.Length / 13f);
             this.tbTime.LargeChange = Game.Round(replay.Length / 5.2f);
             this.tbTime.SmallChange = Game.Round(replay.Length / 9.1f);
-
-            this.tbSpeed.Value = 13;
         }
 
         private Thread timeScroll = null;
         private void tbSpeed_Scroll(object sender, EventArgs e)
         {
-            Game.SetReplaySpeed(this.tbSpeed.Value / 13.0);
+            SetReplaySpeed(this.tbSpeed.Value);
         }
         private void tbTime_Scroll(object sender, EventArgs e)
         {
@@ -232,10 +232,19 @@ namespace SpaceRunner.Forms
             lock (this.tbTime)
             {
                 Tuple<int, int> values = (Tuple<int, int>)args;
-                base.game = Game.SetReplayPosition(Game, values.Item1, base.RefreshGame);
-                Game.SetReplaySpeed(values.Item2 / 13.0);
+                SetReplayPosition(values.Item1);
+                SetReplaySpeed(values.Item2);
                 timeScroll = null;
             }
+        }
+
+        private void SetReplaySpeed(int value)
+        {
+            Game.SetReplaySpeed(value / 13.0);
+        }
+        private void SetReplayPosition(int position)
+        {
+            base.game = Game.SetReplayPosition(Game, position, base.RefreshGame);
         }
     }
 }

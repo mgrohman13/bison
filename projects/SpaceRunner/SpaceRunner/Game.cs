@@ -717,6 +717,7 @@ namespace SpaceRunner
 #endif
             base.Paused = true;
             Refresh();
+            SleepTick();
             lock (gameTicker)
                 while (tickCount < position)
                     this.Step();
@@ -731,7 +732,7 @@ namespace SpaceRunner
 
         private static void SleepTick()
         {
-            Thread.Sleep(Round(GameTick * 1.3f) + 78);
+            Thread.Sleep(Round(GameTick * 1.3f) + 91);
         }
 
         internal void AddScore(decimal amt)
