@@ -156,7 +156,7 @@ namespace SpaceRunner.Forms
             this.tbSpeed.Size = new System.Drawing.Size(210, 26);
             this.tbSpeed.TabIndex = 9;
             this.tbSpeed.TickFrequency = 3;
-            this.tbSpeed.Value = 1;
+            this.tbSpeed.Value = 13;
             this.tbSpeed.Visible = false;
             this.tbSpeed.Scroll += new System.EventHandler(this.tbSpeed_Scroll);
             // 

@@ -23,7 +23,9 @@ namespace SpaceRunner.Forms
             Game.Dispose();
 
             bool isReplay = ( this.replay != null );
+            this.lblTime.Visible = isReplay;
             this.tbTime.Visible = isReplay;
+            this.lblSpeed.Visible = isReplay;
             this.tbSpeed.Visible = isReplay;
 
             if (isReplay)
@@ -76,6 +78,8 @@ namespace SpaceRunner.Forms
             return new Point(total, total + base.menuStrip.Height);
         }
 
+        bool enabled = true;
+        int ammo = -1, fuel = -1, lives = -1, score = -1;
         protected override void OnPaint(PaintEventArgs e)
         {
 #if DEBUG
@@ -89,18 +93,40 @@ namespace SpaceRunner.Forms
 
             base.OnPaint(e);
 
-            //show power up counts
-            this.lblAmmo.Text = Game.Ammo.ToString();
-            this.lblFuel.Text = Game.Fuel.ToString("0");
-            this.lblLife.Text = Game.Lives.ToString();
-            this.lblScore.Text = Game.Score.ToString("0");
+            int ammo = Game.Ammo, fuel = Game.Round(Game.Fuel), lives = Game.Lives, score = Game.Round((float)Game.Score);
+            if (this.ammo != ammo)
+            {
+                this.ammo = ammo;
+                this.lblAmmo.Text = this.ammo.ToString();
+            }
+            if (this.fuel != fuel)
+            {
+                this.fuel = fuel;
+                this.lblFuel.Text = fuel.ToString();
+            }
+            if (this.lives != lives)
+            {
+                this.lives = lives;
+                this.lblLife.Text = lives.ToString();
+            }
+            if (this.score != score)
+            {
+                this.score = score;
+                this.lblScore.Text = score.ToString("0");
+            }
 
             bool enabled = ( Game.IsReplay || Game.GameOver() );
-            this.replayShow.Enabled = enabled;
-            this.replaySave.Enabled = enabled;
+            if (this.enabled != enabled)
+            {
+                this.enabled = enabled;
+                this.replayShow.Enabled = enabled;
+                this.replaySave.Enabled = enabled;
+            }
 
             if (Game.IsReplay && timeScroll == null)
+            {
                 this.tbTime.Value = Game.TickCount;
+            }
 #if DEBUG
             }
             catch (Exception exception)
