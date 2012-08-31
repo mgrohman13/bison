@@ -15,16 +15,19 @@ namespace SpaceRunner
             Neutral,
         }
 
-        private static readonly Image BulletImage;
+        private static readonly Image[] Images;
 
         static Bullet()
         {
-            BulletImage = Game.LoadImage("bullet.bmp", Game.BulletSize);
+            Images = new Image[Game.BulletImageCount];
+            for (int a = 0 ; a < Game.BulletImageCount ; ++a)
+                Images[a] = Game.LoadImageRotated("bullet.bmp", Game.BulletSize);
         }
 
         internal static void Dispose()
         {
-            BulletImage.Dispose();
+            foreach (Image i in Images)
+                i.Dispose();
         }
 
         internal readonly FriendlyStatus Friendly;
@@ -63,7 +66,7 @@ namespace SpaceRunner
         }
 
         private Bullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
-            : base(game, x, y, xDir, yDir, Game.BulletSize, BulletImage)
+            : base(game, x, y, xDir, yDir, Game.BulletSize, Images[Game.Random.Next(Game.BulletImageCount)])
         {
             this.Friendly = friendly;
             //space out from whoever fired it

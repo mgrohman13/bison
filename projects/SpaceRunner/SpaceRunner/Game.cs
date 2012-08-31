@@ -34,7 +34,7 @@ namespace SpaceRunner
             AlienShip.NewAlienShip(game);
 
             p = game.RandomStartPoint(0);
-            LifeDust.NewLifeDust(game, p.X, p.Y, NumLifeDustImages);
+            LifeDust.NewLifeDust(game, p.X, p.Y, 6);
             int amt = Random.GaussianOEInt(4, 1, .1, 1);
             while (--amt > -1)
             {
@@ -55,7 +55,7 @@ namespace SpaceRunner
             p = game.RandomStartPoint(-ExplosionSize);
             Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0, 0));
 
-            amt = Random.OEInt(6);
+            amt = Random.OEInt(8);
             while (--amt > -1)
             {
                 game.MoveAndCollide(0, 0, 0);
@@ -108,6 +108,7 @@ namespace SpaceRunner
         internal const float QuarterPi = (float)( Math.PI / 4 );
         internal const float TwoPi = (float)( Math.PI * 2 );
         internal const float RadToDeg = (float)( 180 / Math.PI );
+        internal static readonly float SqrtTwo = (float)( Math.Sqrt(2) );
 
         #endregion //consts
 
@@ -251,6 +252,7 @@ namespace SpaceRunner
         internal const float AlienFiringInaccuracy = 0.052f;
         //chance that, when a bullet hits and kills a piece of life dust, the bullet will also be killed
         internal const float BulletLifeDustDieChance = 6f / ( 6f + LifeDustClumpAmt );
+        internal const int BulletImageCount = 13;
 
         internal const float FuelExplosionSize = 91f;
         //number of iterations a fuel explosion lasts
@@ -287,6 +289,8 @@ namespace SpaceRunner
         internal const float LifeDustHitChance = GameTick * 0.0065f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
         internal const float LifeDustAmtToHeal = 52f;
+        internal const int LifeDustImageCount = 130;
+        internal const float LifeDustImageSizeRandomness = .26f;
 
         internal const float PowerUpSize = 9f;
         //these three chance value are only relative to one another
@@ -829,9 +833,33 @@ namespace SpaceRunner
         }
         internal static float GetRandomAngle()
         {
-            return Random.DoubleFull((float)Math.PI);
+            return ( Random.NextFloat() * TwoPi );
         }
 
+        internal static Image LoadImageRotated(string name, float size)
+        {
+            size = Random.Round(size * 2);
+            int newSize = (int)Math.Ceiling(size * SqrtTwo);
+
+            Bitmap retVal = new Bitmap(newSize, newSize);
+            Graphics g = Graphics.FromImage(retVal);
+            Image image = LoadImage(name);
+
+            float scale = size / image.Width;
+            float trans2 = -size / 2f;
+            float trans1 = ( newSize - size ) / 2f - .5f - trans2;
+            g.TranslateTransform(trans1, trans1);
+            g.RotateTransform(GetRandomAngle() * RadToDeg);
+            g.TranslateTransform(trans2, trans2);
+            g.ScaleTransform(scale, scale);
+
+            g.DrawImage(image, 0f, 0f);
+
+            g.Dispose();
+            image.Dispose();
+
+            return retVal;
+        }
         internal static Image LoadImage(string name)
         {
             return LoadImage(name, Color.Magenta);
@@ -858,12 +886,12 @@ namespace SpaceRunner
         }
         internal static Image ResizeImage(Image image, float size, bool disposeOriginal)
         {
-            int sizeInt = Random.Round(size * 2);
-            if (sizeInt < 1)
-                sizeInt = 1;
+            int actualSize = Random.Round(size * 2);
+            if (actualSize < 1)
+                actualSize = 1;
             Image retVal;
             lock (image)
-                retVal = new Bitmap(image, new Size(sizeInt, sizeInt));
+                retVal = new Bitmap(image, new Size(actualSize, actualSize));
             if (disposeOriginal)
                 image.Dispose();
             return retVal;

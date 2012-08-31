@@ -5,19 +5,19 @@ namespace SpaceRunner
 {
     internal class FuelExplosion : GameObject, Game.IChecksExtraSectors
     {
-        private static readonly int NumImages;
+        private static readonly int ImageCount;
         private static Image[] Images;
 
         static FuelExplosion()
         {
-            NumImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
-            Images = new Image[NumImages];
+            ImageCount = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
+            Images = new Image[ImageCount];
 
             float size = Game.PowerUpSize;
-            for (int i = 0 ; i < NumImages ; ++i)
+            for (int i = 0 ; i < ImageCount ; ++i)
             {
                 Images[i] = Game.LoadImage("fuelExps\\" + Game.Random.Next(Game.NumFuelExplosionImages) + ".bmp", size);
-                size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( NumImages - 1 );
+                size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( ImageCount - 1 );
             }
         }
 
@@ -53,7 +53,7 @@ namespace SpaceRunner
             size += Game.ExplosionSpeed;
 
             if (--time > 0)
-                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * NumImages )];
+                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * ImageCount)];
             else
                 this.Die();
         }

@@ -17,7 +17,7 @@ namespace SpaceRunner
         protected float rotate;
 
         protected GameObject(Game game, float x, float y, float size, Image image) :
-            this(game, x, y, 0, 0, 0, size, image, 0)
+            this(game, x, y, 0, 0, 0, size, image, float.NaN)
         {
         }
 
@@ -27,7 +27,7 @@ namespace SpaceRunner
         }
 
         protected GameObject(Game game, float x, float y, float xDir, float yDir, float size, Image image) :
-            this(game, x, y, xDir, yDir, 0, size, image, 0)
+            this(game, x, y, xDir, yDir, 0, size, image, float.NaN)
         {
         }
 
@@ -36,18 +36,8 @@ namespace SpaceRunner
         {
         }
 
-        protected GameObject(Game game, float x, float y, float speed, float size, Image image) :
-            this(game, x, y, 0, 0, speed, size, image, 0)
-        {
-        }
-
         protected GameObject(Game game, float x, float y, float speed, float size, Image image, float rotateSpeed) :
             this(game, x, y, 0, 0, speed, size, image, rotateSpeed)
-        {
-        }
-
-        protected GameObject(Game game, float x, float y, float xDir, float yDir, float speed, float size, Image image) :
-            this(game, x, y, xDir, yDir, speed, size, image, 0)
         {
         }
 
@@ -57,7 +47,7 @@ namespace SpaceRunner
         }
 
         private GameObject(float x, float y, float xDir, float yDir)
-            : this(null, x, y, xDir, yDir, 0, 0, null, 0, false)
+            : this(null, x, y, xDir, yDir, 0, 0, null, float.NaN, false)
         {
         }
 
@@ -78,7 +68,11 @@ namespace SpaceRunner
             this.size = size;
             this.image = image;
 
-            if (speed == 0 || rotateSpeed != 0)
+            if (float.IsNaN(rotateSpeed))
+            {
+                curAngle = float.NaN;
+            }
+            else
             {
                 curAngle = Game.GetRandomAngle();
                 if (rotateSpeed != 0)
@@ -168,9 +162,12 @@ namespace SpaceRunner
                         curAngle = Game.GetAngleImageAdjusted(-x, -y);
 
                     graphics.ResetTransform();
-                    graphics.TranslateTransform(objectX, objectY);
-                    graphics.RotateTransform(curAngle * Game.RadToDeg);
-                    graphics.TranslateTransform(-objectX, -objectY);
+                    if (!float.IsNaN(curAngle))
+                    {
+                        graphics.TranslateTransform(objectX, objectY);
+                        graphics.RotateTransform(curAngle * Game.RadToDeg);
+                        graphics.TranslateTransform(-objectX, -objectY);
+                    }
 
                     float offset = image.Width / 2f;
                     graphics.DrawImageUnscaled(image, Game.Round(objectX - offset), Game.Round(objectY - offset));
@@ -184,7 +181,8 @@ namespace SpaceRunner
 
         internal float Step(float playerXMove, float playerYMove, float playerSpeed)
         {
-            curAngle += rotate;
+            if (!float.IsNaN(curAngle))
+                curAngle += rotate;
 
             //move the object to simulate player movement
             Move(-playerXMove, -playerYMove);

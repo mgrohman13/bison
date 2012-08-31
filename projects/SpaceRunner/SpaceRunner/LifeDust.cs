@@ -9,9 +9,10 @@ namespace SpaceRunner
 
         static LifeDust()
         {
-            Images = new Image[Game.NumLifeDustImages];
-            for (int i = 1 ; i <= Game.NumLifeDustImages ; ++i)
-                Images[i - 1] = Game.LoadImage(@"lifedust\" + i.ToString() + ".bmp", Game.LifeDustSize);
+            Images = new Image[Game.LifeDustImageCount];
+            for (int a = 0 ; a < Game.LifeDustImageCount ; ++a)
+                Images[a] = Game.LoadImageRotated(@"lifedust\" + Game.Random.RangeInt(1, Game.NumLifeDustImages).ToString() + ".bmp",
+                         Game.Random.GaussianCapped(Game.LifeDustSize, Game.LifeDustImageSizeRandomness, .5f));
         }
 
         internal static void Dispose()
@@ -34,7 +35,7 @@ namespace SpaceRunner
             for ( ; i > 0 ; --i)
                 new LifeDust(game, x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
                         xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
-                        Game.Random.Next(Game.NumLifeDustImages));
+                        Game.Random.Next(Game.LifeDustImageCount));
         }
 
         private LifeDust(Game game, float x, float y, float xDir, float yDir, int imageIndex)
