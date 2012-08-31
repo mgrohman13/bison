@@ -130,9 +130,9 @@ namespace SpaceRunner
         //size constants are the radius of the object
 
         internal const float MapSize = 338f;
-        //distance from the center of the map at which new this.objects are created
+        //distance from the center of the map at which new objects are created
         internal const float CreationDist = MapSize + 39f;
-        //distance from the CreationDist at which this.objects have a 50% chance of being removed per pixel the player moves
+        //distance from the CreationDist at which objects have a 50% chance of being removed per pixel the player moves
         internal const double RemovalDist = MapSize * MapSize * 1.3;
         //sectors for collision detection
         internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2;
@@ -170,7 +170,7 @@ namespace SpaceRunner
         private const float DeadBlinkDiv = 300f / GameTick;
         private const float DeadBlinkWindow = DeadBlinkDiv / 2.1f;
 
-        //chances of this.objects being created each iteration (will be multiplied by players current speed)
+        //chances of objects being created each iteration (will be multiplied by player's current speed)
         internal const float LifeDustCreationRate = (float)( Math.E * .0013 );
         internal const float PowerUpCreationRate = 0.0021f;
         internal const float AsteroidCreationRate = .078f;
@@ -275,13 +275,13 @@ namespace SpaceRunner
         internal const float LifeDustClumpAmt = 13f;
         internal const float LifeDustClumpOEPct = .13f;
         internal const float LifeDustAmtRandomness = .3f;
-        //initial spacing between this.objects in a clump
+        //initial spacing between objects in a clump
         internal const float LifeDustSpacing = LifeDustSize * 2;
         //speed of the entire clump
         internal const float LifeDustClumpSpeed = GameSpeed * .3f;
         //speed of each individual
         internal const float LifeDustIndividualSpeed = GameSpeed * .013f;
-        //exponent to the speed picked up from collisions with other this.objects
+        //exponent to the speed picked up from collisions with other objects
         internal const double LifeDustObjSpeedPower = GameSpeed / ( GameSpeed + .169 );
         //chance of life dust getting hit by a bullet or fuel explosion
         internal const float LifeDustHitChance = GameTick * 0.0065f;
@@ -1047,20 +1047,20 @@ namespace SpaceRunner
 
         private static uint[] NewSeed()
         {
-            const double avgSeedSize = 13;
+            const double AvgSeedSize = 13;
 
-            Game.Random.StartTick();
+            Random.StartTick();
             const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
-            uint[] seed = MattUtil.MTRandom.GenerateSeed((ushort)( Game.Random.WeightedInt(max, ( avgSeedSize - 1.0 ) / max) + 1 ));
+            uint[] seed = MattUtil.MTRandom.GenerateSeed((ushort)( Random.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
             for (int a = 0 ; a < seed.Length ; ++a)
-                seed[a] += Game.Random.NextUInt();
+                seed[a] += Random.NextUInt();
             return seed;
         }
 
         private static void ReSeed(uint[] seed)
         {
-            Game.Random.StopTick();
-            Game.Random.SetSeed(false, seed);
+            Random.StopTick();
+            Random.SetSeed(false, seed);
         }
 
         //1 power up, 3 aliens, random number of asteroids
@@ -1213,7 +1213,7 @@ namespace SpaceRunner
         }
         private Point? GetSector(GameObject obj)
         {
-            //no collisions for this.objects completely outside of the creation distance
+            //no collisions for objects completely outside of the creation distance
             if (GetDistance(obj.X, obj.Y) - obj.Size > CreationDist)
                 return null;
 
@@ -1241,7 +1241,7 @@ namespace SpaceRunner
         }
         private void CollideObject(Dictionary<Point, List<GameObject>> objectSectors, GameObject obj, Point point, int objIndex, HashSet<Point> done)
         {
-            //some this.objects need to check extra sectors away
+            //some objects need to check extra sectors away
             int checkDist = 1;
             IChecksExtraSectors checksExtra = ( obj as IChecksExtraSectors );
             if (checksExtra != null)
@@ -1258,7 +1258,7 @@ namespace SpaceRunner
                         ( checkDist > 1 && ( Math.Abs(point.X - p2.X) > 1 || Math.Abs(point.Y - p2.Y) > 1 ) ) ))
                 {
                     int start = 0;
-                    //when checking the object's own sector, we only need to check this.objects with a higher index
+                    //when checking the object's own sector, we only need to check objects with a higher index
                     if (p2 == point)
                         start = objIndex + 1;
 
@@ -1272,7 +1272,7 @@ namespace SpaceRunner
                         if (( checksExtra2 = checkObj as IChecksExtraSectors ) != null)
                             sectMult = Math.Max(sectMult, checksExtra2.CheckSectors);
                         //this collision detection algorithm only works properly
-                        //if the sum of the sizes of any two this.objects is less than the sector size
+                        //if the sum of the sizes of any two objects is less than the sector size
                         if (obj.Size + checkObj.Size > SectorSize * sectMult
                             //this case is only valid because fuel explosions do not collide with one another
                             && !( obj is FuelExplosion && checkObj is FuelExplosion ))
