@@ -272,5 +272,14 @@ namespace SpaceRunner.Forms
         {
             base.game = Game.SetReplayPosition(Game, position, base.RefreshGame);
         }
+
+        private void lblTime_Click(object sender, EventArgs e)
+        {
+            this.tbTime.Value = 0;
+        }
+        private void lblSpeed_Click(object sender, EventArgs e)
+        {
+            this.tbSpeed.Value = 13;
+        }
     }
 }

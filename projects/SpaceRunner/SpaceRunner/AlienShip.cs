@@ -159,7 +159,7 @@ namespace SpaceRunner
 
         private void CollectLifeDust(GameObject obj)
         {
-            AddLife(Game.AlienShipLifeInc / Game.LifeDustAmtToHeal);
+            AddLife(LifeDust.GetHeal(Game.AlienShipLifeInc, obj));
             obj.Die();
         }
 

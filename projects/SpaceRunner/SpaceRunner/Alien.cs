@@ -205,7 +205,7 @@ namespace SpaceRunner
 
         private void CollectLifeDust(GameObject obj)
         {
-            speed += RandVal(Game.AlienSpeedInc / Game.LifeDustAmtToHeal);
+            speed += RandVal(LifeDust.GetHeal(Game.AlienSpeedInc, obj));
             obj.Die();
         }
 

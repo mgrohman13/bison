@@ -102,7 +102,7 @@ namespace SpaceRunner
         internal const int NumImagesPerExplosion = 15;
         internal const int NumAsteroidImages = 8;
         internal const int NumFuelExplosionImages = 6;
-        internal const int NumLifeDustImages = 6;
+        internal const int NumLifeDustImages = 13;
 
         //mathematical values
         internal const float QuarterPi = (float)( Math.PI / 4 );
@@ -115,7 +115,7 @@ namespace SpaceRunner
         #region game params
 
         // object	radius	diameter   area
-        //life dust	 1.75     3.5	     9.6
+        //life dust	 1.7      3.4	     9.0
         //bullet	 2.5      5.	    19.6
         //asteroid	 8.8	 17.6	   242.6    (min)
         //fuel exp.	 9.0     18.0	   254.5    (min)
@@ -232,7 +232,7 @@ namespace SpaceRunner
         internal const float AsteroidPiecesRandomness = .117f;
         //speed of new smaller asteroids when a larger one breaks
         internal const float AsteroidPieceSpeed = GameSpeed * 1.69f;
-        internal const float AsteroidPieceSpeedRandomness = .21f;
+        internal const float AsteroidPieceSpeedRandomness = .26f;
         //chance (based on the difference in asteroid area) for the asteroids to both break
         internal const float AsteroidCollisionChance = 520f;
         //asteroids smaller than this area are frequently destroyed uneventfully when colliding with other asteroids
@@ -272,25 +272,25 @@ namespace SpaceRunner
         internal const float ExplosionTime = 1 / GameSpeed * 39f;
         internal static readonly float ExplosionSpeedMult = (float)Math.Pow(1 - .052, GameSpeed);
 
-        internal const float LifeDustSize = 1.75f;
+        internal const float LifeDustSize = 1.69f;
+        internal const float LifeDustSizeRandomness = .21f;
         //average amount in new clumps
         internal const float LifeDustClumpAmt = 13f;
         internal const float LifeDustClumpOEPct = .13f;
         internal const float LifeDustAmtRandomness = .3f;
         //initial spacing between objects in a clump
-        internal const float LifeDustSpacing = LifeDustSize * 2;
+        internal const float LifeDustSpacing = LifeDustSize * 1.69f;
         //speed of the entire clump
         internal const float LifeDustClumpSpeed = GameSpeed * .3f;
         //speed of each individual
-        internal const float LifeDustIndividualSpeed = GameSpeed * .013f;
+        internal const float LifeDustIndividualSpeed = GameSpeed * .03f;
         //exponent to the speed picked up from collisions with other objects
         internal const double LifeDustObjSpeedPower = GameSpeed / ( GameSpeed + .169 );
         //chance of life dust getting hit by a bullet or fuel explosion
         internal const float LifeDustHitChance = GameTick * 0.0065f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
         internal const float LifeDustAmtToHeal = 52f;
-        internal const int LifeDustImageCount = 130;
-        internal const float LifeDustImageSizeRandomness = .26f;
+        internal const int LifeDustImageCount = 169;
 
         internal const float PowerUpSize = 9f;
         //these three chance value are only relative to one another
@@ -590,26 +590,34 @@ namespace SpaceRunner
         {
             //z-index: higher values are drawn on top of lower values
             if (obj is Alien)
-                return 4000;
+                return 4 * ushort.MaxValue;
             if (obj is AlienShip)
-                return 5000 - (int)( 999 * obj.Y / ( MapSize + obj.Size ) );
+                return 5 * ushort.MaxValue - GetDrawPriority(obj.Y / ( MapSize + AlienShipSize ));
             if (obj is Asteroid)
-                return 1000;
+                return 1 * ushort.MaxValue;
             if (obj is Bullet)
-                return 6000;
+                return 6 * ushort.MaxValue;
             if (obj is Explosion)
-                return 8000;
+                return 8 * ushort.MaxValue;
             if (obj is FuelExplosion)
-                return 7000;
+                return 7 * ushort.MaxValue;
             if (obj is LifeDust)
-                return 3000;
+                return 3 * ushort.MaxValue - GetDrawPriority(LifeDust.GetSizePct(obj) / 2);
             if (obj is PowerUp)
-                return 2000;
+                return 2 * ushort.MaxValue;
 #if DEBUG
             throw new Exception();
 #else
             return 0;
 #endif
+        }
+        private static int GetDrawPriority(float priority)
+        {
+#if DEBUG
+            if (priority < -1 || priority > 1)
+                throw new Exception();
+#endif
+            return Round(( ushort.MaxValue / 2 - 1 ) * priority);
         }
 
         internal void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
@@ -838,19 +846,19 @@ namespace SpaceRunner
 
         internal static Image LoadImageRotated(string name, float size)
         {
-            size = Random.Round(size * 2);
-            int newSize = (int)Math.Ceiling(size * SqrtTwo);
+            float twoSize = 2 * size;
+            int newSize = (int)Math.Ceiling(twoSize * SqrtTwo);
 
             Bitmap retVal = new Bitmap(newSize, newSize);
             Graphics g = Graphics.FromImage(retVal);
             Image image = LoadImage(name);
 
-            float scale = size / image.Width;
-            float trans2 = -size / 2f;
-            float trans1 = ( newSize - size ) / 2f - .5f - trans2;
-            g.TranslateTransform(trans1, trans1);
+            float trans = newSize / 2f;
+            float scale = twoSize / image.Width;
+
+            g.TranslateTransform(trans, trans);
             g.RotateTransform(GetRandomAngle() * RadToDeg);
-            g.TranslateTransform(trans2, trans2);
+            g.TranslateTransform(-size, -size);
             g.ScaleTransform(scale, scale);
 
             g.DrawImage(image, 0f, 0f);

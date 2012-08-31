@@ -5,14 +5,21 @@ namespace SpaceRunner
 {
     internal class LifeDust : GameObject
     {
+        private const float StartSizeImage = .5f;
+        private static readonly float SizeIncImage;
         private static readonly Image[] Images;
 
         static LifeDust()
         {
             Images = new Image[Game.LifeDustImageCount];
-            for (int a = 0 ; a < Game.LifeDustImageCount ; ++a)
-                Images[a] = Game.LoadImageRotated(@"lifedust\" + Game.Random.RangeInt(1, Game.NumLifeDustImages).ToString() + ".bmp",
-                         Game.Random.GaussianCapped(Game.LifeDustSize, Game.LifeDustImageSizeRandomness, .5f));
+            SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( Game.LifeDustImageCount - 1 );
+
+            float size = StartSizeImage;
+            for (int i = 0 ; i < Game.LifeDustImageCount ; ++i)
+            {
+                Images[i] = Game.LoadImageRotated(@"lifedust\" + Game.Random.RangeInt(1, Game.NumLifeDustImages).ToString("00") + ".bmp", size);
+                size += SizeIncImage;
+            }
         }
 
         internal static void Dispose()
@@ -35,11 +42,12 @@ namespace SpaceRunner
             for ( ; i > 0 ; --i)
                 new LifeDust(game, x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
                         xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
-                        Game.Random.Next(Game.LifeDustImageCount));
+                        Game.Random.GaussianCapped(Game.LifeDustSize, Game.LifeDustSizeRandomness));
         }
 
-        private LifeDust(Game game, float x, float y, float xDir, float yDir, int imageIndex)
-            : base(game, x, y, xDir, yDir, Game.LifeDustSize, Images[imageIndex])
+        private LifeDust(Game game, float x, float y, float xDir, float yDir, float size)
+            : base(game, x, y, xDir, yDir, size,
+                    Images[Game.Random.Round(Math.Max(0, ( size - StartSizeImage ) / SizeIncImage))])
         {
         }
 
@@ -91,7 +99,7 @@ namespace SpaceRunner
 
         internal bool HitBy(GameObject obj)
         {
-            if (Game.Random.Bool(Game.LifeDustHitChance))
+            if (Game.Random.Bool(Game.LifeDustHitChance * GetSizePct(this)))
             {
                 return true;
             }
@@ -109,8 +117,9 @@ namespace SpaceRunner
             bool isLifeDust = ( lifeDust != null );
             if (isLifeDust)
             {
-                lifeDust.xDir = xDir = ( xDir + lifeDust.xDir ) / 2;
-                lifeDust.yDir = yDir = ( yDir + lifeDust.yDir ) / 2;
+                float sizes = ( this.size + obj.Size );
+                lifeDust.xDir = xDir = ( xDir * this.size + lifeDust.xDir * obj.Size ) / sizes;
+                lifeDust.yDir = yDir = ( yDir * this.size + lifeDust.yDir * obj.Size ) / sizes;
             }
             else
             {
@@ -121,9 +130,19 @@ namespace SpaceRunner
 
         protected override float HitPlayer()
         {
-            Game.AddLife(Game.PlayerLife / Game.LifeDustAmtToHeal, false);
+            Game.AddLife(GetHeal(Game.PlayerLife, this), false);
 
             return base.HitPlayer();
+        }
+
+        internal static float GetHeal(float amt, GameObject lifeDust)
+        {
+            return ( amt / Game.LifeDustAmtToHeal * GetSizePct(lifeDust) );
+        }
+
+        internal static float GetSizePct(GameObject lifeDust)
+        {
+            return ( lifeDust.Size / Game.LifeDustSize );
         }
     }
 }

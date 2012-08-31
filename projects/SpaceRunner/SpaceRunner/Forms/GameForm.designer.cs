@@ -170,6 +170,7 @@ namespace SpaceRunner.Forms
             this.lblTime.TabIndex = 10;
             this.lblTime.Text = "Time";
             this.lblTime.Visible = false;
+            this.lblTime.Click += new System.EventHandler(this.lblTime_Click);
             // 
             // lblSpeed
             // 
@@ -181,6 +182,7 @@ namespace SpaceRunner.Forms
             this.lblSpeed.TabIndex = 11;
             this.lblSpeed.Text = "Speed";
             this.lblSpeed.Visible = false;
+            this.lblSpeed.Click += new System.EventHandler(this.lblSpeed_Click);
             // 
             // GameForm
             // 
