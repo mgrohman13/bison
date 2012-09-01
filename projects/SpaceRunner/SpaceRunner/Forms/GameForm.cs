@@ -123,7 +123,7 @@ namespace SpaceRunner.Forms
                     this.replaySave.Enabled = enabled;
                 }
 
-                if (Game.IsReplay && timeScroll == null)
+                if (Game.IsReplay && timeScroll == null && !Game.Paused)
                 {
                     this.tbTime.Value = Game.TickCount;
                 }
@@ -261,15 +261,12 @@ namespace SpaceRunner.Forms
         private Thread timeScroll = null;
         private void SetReplayPosition()
         {
-            lock (this.tbTime)
-            {
-                if (timeScroll != null)
-                    timeScroll.Abort();
+            if (timeScroll != null)
+                timeScroll.Abort();
 
-                timeScroll = new Thread(ThreadStart);
-                timeScroll.IsBackground = true;
-                timeScroll.Start();
-            }
+            timeScroll = new Thread(ThreadStart);
+            timeScroll.IsBackground = true;
+            timeScroll.Start();
         }
 
         private void ThreadStart()
@@ -278,9 +275,9 @@ namespace SpaceRunner.Forms
 
             lock (this.tbTime)
             {
+                timeScroll = null;
                 base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
                 SetReplaySpeed(InvokeGetValue(this.tbSpeed));
-                timeScroll = null;
             }
         }
         private static int InvokeGetValue(TrackBar tb)
