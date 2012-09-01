@@ -18,7 +18,7 @@ namespace randTest
 
             double sum = 0;
             int[] val = new int[MTRandom.MAX_SEED_SIZE + 2];
-            for (int x = 0 ; x < 9999999 ; ++x)
+            for (int x = 0 ; x < 999999 ; ++x)
             {
                 const float AvgSeedSize = 13;
                 const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
@@ -31,10 +31,10 @@ namespace randTest
 
             int runtot = 0;
             for (int x = 0 ; x < MTRandom.MAX_SEED_SIZE + 2 ; ++x)
-                Console.WriteLine("{0} - {1} - {2}", x.ToString("000"), val[x].ToString("0000000"), ( runtot += val[x] ).ToString("0000000"));
+                Console.WriteLine("{0} - {1} - {2}", x.ToString("000"), val[x].ToString("000000"), ( runtot += val[x] ).ToString("000000"));
             Console.WriteLine();
             Console.WriteLine(MTRandom.MAX_SEED_SIZE);
-            Console.WriteLine(sum / 9999999);
+            Console.WriteLine(sum / 999999);
 
             Console.ReadKey();
 

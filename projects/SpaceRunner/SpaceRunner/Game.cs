@@ -115,8 +115,8 @@ namespace SpaceRunner
         #region game params
 
         // object	radius	diameter   area
-        //life dust	 1.7      3.4	     9.0
-        //bullet	 2.5      5.	    19.6
+        //life dust	 2.1      4.2	    13.9
+        //bullet	 3.1      6.3	    31.0
         //asteroid	 8.8	 17.6	   242.6    (min)
         //fuel exp.	 9.0     18.0	   254.5    (min)
         //power up	 9.      18.	   254.5
@@ -240,7 +240,7 @@ namespace SpaceRunner
         internal const float AsteroidRotateConst = GameSpeed * 0.0065f;
         internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * 0.0169f;
 
-        internal const float BulletSize = 2.5f;
+        internal const float BulletSize = (float)Math.PI;
         //speed added to the speed of the object firing the bullet
         internal const float BulletSpeed = (float)( GameSpeed * Math.PI );
         //damage to player and alien ship (bullets always kill aliens and asteroids)
@@ -272,7 +272,7 @@ namespace SpaceRunner
         internal const float ExplosionTime = 1 / GameSpeed * 39f;
         internal static readonly float ExplosionSpeedMult = (float)Math.Pow(1 - .052, GameSpeed);
 
-        internal const float LifeDustSize = 1.69f;
+        internal const float LifeDustSize = 2.1f;
         internal const float LifeDustSizeRandomness = .21f;
         //average amount in new clumps
         internal const float LifeDustClumpAmt = 13f;
@@ -359,7 +359,7 @@ namespace SpaceRunner
             }
         }
 
-        public int TickCount
+        internal int TickCount
         {
             get
             {
@@ -441,7 +441,7 @@ namespace SpaceRunner
             }
         }
 
-        public bool Turbo
+        internal bool Turbo
         {
             get
             {
@@ -455,7 +455,7 @@ namespace SpaceRunner
             }
         }
 
-        public bool Fire
+        internal bool Fire
         {
             get
             {
@@ -469,7 +469,7 @@ namespace SpaceRunner
             }
         }
 
-        public Replay Replay
+        internal Replay Replay
         {
             get
             {
@@ -477,7 +477,7 @@ namespace SpaceRunner
             }
         }
 
-        public bool IsReplay
+        internal bool IsReplay
         {
             get
             {
@@ -588,6 +588,10 @@ namespace SpaceRunner
 
         private static int GetDrawPriority(GameObject obj)
         {
+#if DEBUG
+            if (Game.GetDistance(obj.X, obj.Y) - obj.Size > Game.MapSize)
+                return 0;
+#endif
             //z-index: higher values are drawn on top of lower values
             if (obj is Alien)
                 return 4 * ushort.MaxValue;
@@ -697,7 +701,7 @@ namespace SpaceRunner
             }
         }
 
-        public void SetReplaySpeed(double speedMult)
+        internal void SetReplaySpeed(double speedMult)
         {
             if (isReplay)
             {
@@ -710,7 +714,7 @@ namespace SpaceRunner
             }
 #endif
         }
-        public static Game SetReplayPosition(Game game, int position, GameTicker.EventDelegate Refresh)
+        internal static Game SetReplayPosition(Game game, int position, GameTicker.EventDelegate Refresh)
         {
             if (position < game.tickCount)
             {
@@ -727,14 +731,15 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-            base.Paused = true;
-            Refresh();
-            SleepTick();
-            lock (gameTicker)
-                while (tickCount < position)
-                    this.Step();
-            SleepTick();
-            base.Paused = false;
+                base.Paused = true;
+                SleepTick();
+                Refresh();
+                SleepTick();
+                lock (gameTicker)
+                    while (tickCount < position)
+                        this.Step();
+                SleepTick();
+                base.Paused = false;
 #if DEBUG
             }
             else
@@ -1019,7 +1024,7 @@ namespace SpaceRunner
             return (float)( Math.Sign(expBase) * ( Math.Pow(Math.Abs(expBase) + 1, expPower) - 1 ) );
         }
 
-        public static int Round(float value)
+        internal static int Round(float value)
         {
             return (int)Math.Round(value);
         }

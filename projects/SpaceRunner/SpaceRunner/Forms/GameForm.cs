@@ -87,46 +87,46 @@ namespace SpaceRunner.Forms
             {
 #endif
 #if !TRACE
-            e.Graphics.Clip = clip;
+                e.Graphics.Clip = clip;
 #endif
-            e.Graphics.Clear(Color.Black);
+                e.Graphics.Clear(Color.Black);
 
-            base.OnPaint(e);
+                base.OnPaint(e);
 
-            int ammo = Game.Ammo, fuel = Game.Round(Game.Fuel), lives = Game.Lives, score = Game.Round((float)Game.Score);
-            if (this.ammo != ammo)
-            {
-                this.ammo = ammo;
-                this.lblAmmo.Text = this.ammo.ToString();
-            }
-            if (this.fuel != fuel)
-            {
-                this.fuel = fuel;
-                this.lblFuel.Text = fuel.ToString();
-            }
-            if (this.lives != lives)
-            {
-                this.lives = lives;
-                this.lblLife.Text = lives.ToString();
-            }
-            if (this.score != score)
-            {
-                this.score = score;
-                this.lblScore.Text = score.ToString("0");
-            }
+                int ammo = Game.Ammo, fuel = Game.Round(Game.Fuel), lives = Game.Lives, score = Game.Round((float)Game.Score);
+                if (this.ammo != ammo)
+                {
+                    this.ammo = ammo;
+                    this.lblAmmo.Text = this.ammo.ToString();
+                }
+                if (this.fuel != fuel)
+                {
+                    this.fuel = fuel;
+                    this.lblFuel.Text = fuel.ToString();
+                }
+                if (this.lives != lives)
+                {
+                    this.lives = lives;
+                    this.lblLife.Text = lives.ToString();
+                }
+                if (this.score != score)
+                {
+                    this.score = score;
+                    this.lblScore.Text = score.ToString("0");
+                }
 
-            bool enabled = ( Game.IsReplay || Game.GameOver() );
-            if (this.enabled != enabled)
-            {
-                this.enabled = enabled;
-                this.replayShow.Enabled = enabled;
-                this.replaySave.Enabled = enabled;
-            }
+                bool enabled = ( Game.IsReplay || Game.GameOver() );
+                if (this.enabled != enabled)
+                {
+                    this.enabled = enabled;
+                    this.replayShow.Enabled = enabled;
+                    this.replaySave.Enabled = enabled;
+                }
 
-            if (Game.IsReplay && timeScroll == null)
-            {
-                this.tbTime.Value = Game.TickCount;
-            }
+                if (Game.IsReplay && timeScroll == null)
+                {
+                    this.tbTime.Value = Game.TickCount;
+                }
 #if DEBUG
             }
             catch (Exception exception)
@@ -136,15 +136,9 @@ namespace SpaceRunner.Forms
 #endif
         }
 
-        //private bool setMouse = true;
         private void GameForm_MouseMove(object sender, MouseEventArgs e)
         {
-            //if (setMouse)
-            //{
-            //    setMouse = false;
             Game.SetMouseCoordinates(e.X - center.X, e.Y - center.Y);
-            //    setMouse = true;
-            //}
         }
 
         private void GameForm_MouseLeave(object sender, EventArgs e)
@@ -220,13 +214,14 @@ namespace SpaceRunner.Forms
                 return fileDialog.FileName;
             return null;
         }
+
         private void ShowReplay(Replay replay)
         {
             this.replay = replay;
             NewGame(false);
             this.replay = null;
 
-            SetReplaySpeed(this.tbSpeed.Value);
+            SetReplaySpeed();
 
             this.tbTime.Maximum = replay.Length;
             this.tbTime.TickFrequency = Game.Round(replay.Length / 13f);
@@ -234,52 +229,72 @@ namespace SpaceRunner.Forms
             this.tbTime.SmallChange = Game.Round(replay.Length / 9.1f);
         }
 
-        private Thread timeScroll = null;
         private void tbSpeed_Scroll(object sender, EventArgs e)
+        {
+            SetReplaySpeed();
+        }
+        private void tbTime_Scroll(object sender, EventArgs e)
+        {
+            SetReplayPosition();
+        }
+
+        private void lblSpeed_Click(object sender, EventArgs e)
+        {
+            this.tbSpeed.Value = 13;
+            SetReplaySpeed();
+        }
+        private void lblTime_Click(object sender, EventArgs e)
+        {
+            this.tbTime.Value = 0;
+            SetReplayPosition();
+        }
+
+        private void SetReplaySpeed()
         {
             SetReplaySpeed(this.tbSpeed.Value);
         }
-        private void tbTime_Scroll(object sender, EventArgs e)
+        private void SetReplaySpeed(int value)
+        {
+            Game.SetReplaySpeed(value / 13.0);
+        }
+
+        private Thread timeScroll = null;
+        private void SetReplayPosition()
         {
             lock (this.tbTime)
             {
                 if (timeScroll != null)
                     timeScroll.Abort();
 
-                timeScroll = new Thread(tbTime_Scroll);
+                timeScroll = new Thread(ThreadStart);
                 timeScroll.IsBackground = true;
-                timeScroll.Start(new Tuple<int, int>(this.tbTime.Value, this.tbSpeed.Value));
+                timeScroll.Start();
             }
         }
-        private void tbTime_Scroll(object args)
+
+        private void ThreadStart()
         {
             Thread.Sleep(1000);
 
             lock (this.tbTime)
             {
-                Tuple<int, int> values = (Tuple<int, int>)args;
-                SetReplayPosition(values.Item1);
-                SetReplaySpeed(values.Item2);
+                base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
+                SetReplaySpeed(InvokeGetValue(this.tbSpeed));
                 timeScroll = null;
             }
         }
-
-        private void SetReplaySpeed(int value)
+        private static int InvokeGetValue(TrackBar tb)
         {
-            Game.SetReplaySpeed(value / 13.0);
-        }
-        private void SetReplayPosition(int position)
-        {
-            base.game = Game.SetReplayPosition(Game, position, base.RefreshGame);
-        }
-
-        private void lblTime_Click(object sender, EventArgs e)
-        {
-            this.tbTime.Value = 0;
-        }
-        private void lblSpeed_Click(object sender, EventArgs e)
-        {
-            this.tbSpeed.Value = 13;
+            int value = -1;
+            tb.Invoke(new MethodInvoker(delegate()
+            {
+                value = tb.Value;
+            }));
+#if DEBUG
+            if (value == -1)
+                throw new Exception();
+#endif
+            return value;
         }
     }
 }
