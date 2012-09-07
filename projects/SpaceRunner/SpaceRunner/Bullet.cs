@@ -20,14 +20,14 @@ namespace SpaceRunner
         static Bullet()
         {
             Images = new Image[Game.BulletImageCount];
-            for (int a = 0 ; a < Game.BulletImageCount ; ++a)
-                Images[a] = Game.LoadImageRotated("bullet.bmp", Game.BulletSize);
+            for (int idx = 0 ; idx < Game.BulletImageCount ; ++idx)
+                Images[idx] = Game.LoadImageRotated("bullet.bmp", Game.BulletSize);
         }
 
         internal static void Dispose()
         {
-            foreach (Image i in Images)
-                i.Dispose();
+            foreach (Image image in Images)
+                image.Dispose();
         }
 
         internal readonly FriendlyStatus Friendly;
@@ -35,22 +35,22 @@ namespace SpaceRunner
         internal static void BulletExplosion(Game game, float x, float y, float numBullets)
         {
             //randomize number of bullets
-            int numPieces = Game.Random.OEInt(numBullets);
+            int numPieces = game.GameRand.OEInt(numBullets);
             if (numPieces > 0)
             {
-                float speed = Game.Random.Gaussian(Game.BulletExplosionSpeed, Game.BulletExplosionSpeedRandomness);
-                float angle = Game.GetRandomAngle();
+                float speed = game.GameRand.Gaussian(Game.BulletExplosionSpeed, Game.BulletExplosionSpeedRandomness);
+                float angle = game.GetRandomAngle();
                 float angleStep = Game.TwoPi / numPieces;
 
                 //placing all bullets in the same spot will cause collisions and more explosions
                 float spacing = 0;
                 //half the time, space bullets out evenly in all directions for a uniform explosion
-                if (Game.Random.Bool())
+                if (game.GameRand.Bool())
                     spacing = Game.GetRingSpacing(numPieces, Game.BulletSize);
                 //we don't want standard spacing for explosions
                 spacing -= Game.BulletSize;
 
-                for (int i = 0 ; i < numPieces ; ++i)
+                for (int idx = 0 ; idx < numPieces ; ++idx)
                 {
                     float xDir, yDir;
                     Game.GetDirs(out xDir, out yDir, angle);
@@ -96,7 +96,7 @@ namespace SpaceRunner
 
             if (hit)
             {
-                if (lifeDust == null || Game.Random.Bool(Game.BulletLifeDustDieChance))
+                if (lifeDust == null || Game.GameRand.Bool(Game.BulletLifeDustDieChance))
                     this.Die();
                 obj.Die();
             }

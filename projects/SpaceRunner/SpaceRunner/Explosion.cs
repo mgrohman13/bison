@@ -15,8 +15,8 @@ namespace SpaceRunner
 
         internal static void Dispose()
         {
-            foreach (Image i in Images)
-                i.Dispose();
+            foreach (Image image in Images)
+                image.Dispose();
         }
 
         private int time = 0;
@@ -32,7 +32,7 @@ namespace SpaceRunner
             foreach (GameObject obj in objs)
             {
                 float x = obj.X, y = obj.Y;
-                Game.NormalizeDirs(ref x, ref y, obj.Speed);
+                game.NormalizeDirs(ref x, ref y, obj.Speed);
                 xDir += obj.XDir - x;
                 yDir += obj.YDir - y;
                 ++count;
@@ -48,7 +48,7 @@ namespace SpaceRunner
             this.xDir = xDir;
             this.yDir = yDir;
             this.expNum = expNum;
-            this.time = Game.Random.Round(Game.ExplosionTime);
+            this.time = Game.GameRand.Round(Game.ExplosionTime);
         }
 
         internal override decimal Score

@@ -11,28 +11,28 @@ namespace SpaceRunner
         static Asteroid()
         {
             Images = new Image[Game.NumAsteroidImages];
-            for (int i = 0 ; i < Game.NumAsteroidImages ; i++)
-                Images[i] = Game.LoadImage("asteroids\\" + i.ToString() + ".bmp");
+            for (int idx = 0 ; idx < Game.NumAsteroidImages ; idx++)
+                Images[idx] = Game.LoadImage("asteroids\\" + idx.ToString() + ".bmp");
         }
 
         //dispose all static images, not to be confused with IDisposable implementation
         internal static void Dispose()
         {
-            foreach (Image i in Images)
-                i.Dispose();
+            foreach (Image image in Images)
+                image.Dispose();
         }
 
         internal static Asteroid NewAsteroid(Game game)
         {
-            PointF point = Game.RandomEdgePoint();
+            PointF point = game.RandomEdgePoint();
             return NewAsteroid(game, point.X, point.Y);
         }
 
         internal static Asteroid NewAsteroid(Game game, float x, float y)
         {
-            float xDir, yDir, speed = Game.Random.Gaussian(Game.AsteroidInitialSpeed);
-            Game.GetRandomDirection(out xDir, out yDir, speed);
-            float size = Game.Random.GaussianCapped(Game.AsteroidAverageSize, Game.AsteroidSizeRandomness, Game.AsteroidAverageSize * Game.AsteroidSizeCap);
+            float xDir, yDir, speed = game.GameRand.Gaussian(Game.AsteroidInitialSpeed);
+            game.GetRandomDirection(out xDir, out yDir, speed);
+            float size = game.GameRand.GaussianCapped(Game.AsteroidAverageSize, Game.AsteroidSizeRandomness, Game.AsteroidAverageSize * Game.AsteroidSizeCap);
             return new Asteroid(game, x, y, size, xDir, yDir, speed);
         }
 
@@ -74,17 +74,17 @@ namespace SpaceRunner
             base.Die();
 
             //random number of pieces, but always have at least one
-            int numPieces = Game.Random.GaussianCappedInt(Game.AsteroidPieces, Game.AsteroidPiecesRandomness, 1);
+            int numPieces = Game.GameRand.GaussianCappedInt(Game.AsteroidPieces, Game.AsteroidPiecesRandomness, 1);
             //maintain total area with the formula: Area=numPieces*pieceArea | pieceArea=Math.PI*pieceSize*pieceSize
             float pieceSize = (float)Math.Sqrt(Area / ( Math.PI * numPieces ));
-            float pieceSpeed = Game.Random.GaussianCapped(Game.AsteroidPieceSpeed, Game.AsteroidPieceSpeedRandomness);
+            float pieceSpeed = Game.GameRand.GaussianCapped(Game.AsteroidPieceSpeed, Game.AsteroidPieceSpeedRandomness);
             //space pieces out evenly in all directions
             float angle = Game.GetRandomAngle();
             float angleStep = Game.TwoPi / numPieces;
             float spacing = Game.GetRingSpacing(numPieces, pieceSize);
-            for (int i = 0 ; i < numPieces ; i++)
+            for (int idx = 0 ; idx < numPieces ; idx++)
             {
-                if (Game.Random.Bool(Math.Pow(size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
+                if (Game.GameRand.Bool(Math.Pow(size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
                 {
                     float addX, addY;
                     Game.GetDirs(out addX, out addY, angle);
@@ -128,11 +128,11 @@ namespace SpaceRunner
         private void HitAsteroid(Asteroid asteroid)
         {
             //critical size check for each asteroid
-            bool thisPassed = ( this.Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) );
-            bool otherPassed = ( asteroid.Area > Game.Random.OE(Game.AsteroidCollisionCriticalArea) );
+            bool thisPassed = ( this.Area > Game.GameRand.OE(Game.AsteroidCollisionCriticalArea) );
+            bool otherPassed = ( asteroid.Area > Game.GameRand.OE(Game.AsteroidCollisionCriticalArea) );
 
             //asteroids close to the same size as each other will be more likely to explode
-            if (thisPassed && otherPassed && Game.AsteroidCollisionChance > Game.Random.OE(Math.Abs(this.Area - asteroid.Area)))
+            if (thisPassed && otherPassed && Game.AsteroidCollisionChance > Game.GameRand.OE(Math.Abs(this.Area - asteroid.Area)))
             {
                 //both asteroids explode
                 this.Die();

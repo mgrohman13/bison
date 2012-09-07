@@ -15,34 +15,34 @@ namespace SpaceRunner
             SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( Game.LifeDustImageCount - 1 );
 
             float size = StartSizeImage;
-            for (int i = 0 ; i < Game.LifeDustImageCount ; ++i)
+            for (int idx = 0 ; idx < Game.LifeDustImageCount ; ++idx)
             {
-                Images[i] = Game.LoadImageRotated(@"lifedust\" + Game.Random.RangeInt(1, Game.NumLifeDustImages).ToString("00") + ".bmp", size);
+                Images[idx] = Game.LoadImageRotated(@"lifedust\" + Game.Random.RangeInt(1, Game.NumLifeDustImages).ToString("00") + ".bmp", size);
                 size += SizeIncImage;
             }
         }
 
         internal static void Dispose()
         {
-            foreach (Image i in Images)
-                i.Dispose();
+            foreach (Image image in Images)
+                image.Dispose();
         }
 
         internal static void NewLifeDust(Game game)
         {
-            PointF point = Game.RandomEdgePoint();
+            PointF point = game.RandomEdgePoint();
             NewLifeDust(game, point.X, point.Y, Game.LifeDustClumpAmt);
         }
 
         internal static void NewLifeDust(Game game, float x, float y, float amt)
         {
-            int i = Game.Random.GaussianOEInt(amt, Game.LifeDustAmtRandomness, Game.LifeDustClumpOEPct, 1);
-            float xDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
-            float yDir = Game.Random.Gaussian(Game.LifeDustClumpSpeed);
-            for ( ; i > 0 ; --i)
-                new LifeDust(game, x + Game.Random.Gaussian(Game.LifeDustSpacing), y + Game.Random.Gaussian(Game.LifeDustSpacing),
-                        xDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed), yDir + Game.Random.Gaussian(Game.LifeDustIndividualSpeed),
-                        Game.Random.GaussianCapped(Game.LifeDustSize, Game.LifeDustSizeRandomness));
+            int num = game.GameRand.GaussianOEInt(amt, Game.LifeDustAmtRandomness, Game.LifeDustClumpOEPct, 1);
+            float xDir = game.GameRand.Gaussian(Game.LifeDustClumpSpeed);
+            float yDir = game.GameRand.Gaussian(Game.LifeDustClumpSpeed);
+            for ( ; num > 0 ; --num)
+                new LifeDust(game, x + game.GameRand.Gaussian(Game.LifeDustSpacing), y + game.GameRand.Gaussian(Game.LifeDustSpacing),
+                        xDir + game.GameRand.Gaussian(Game.LifeDustIndividualSpeed), yDir + game.GameRand.Gaussian(Game.LifeDustIndividualSpeed),
+                        game.GameRand.GaussianCapped(Game.LifeDustSize, Game.LifeDustSizeRandomness));
         }
 
         private LifeDust(Game game, float x, float y, float xDir, float yDir, float size)
@@ -99,7 +99,7 @@ namespace SpaceRunner
 
         internal bool HitBy(GameObject obj)
         {
-            if (Game.Random.Bool(Game.LifeDustHitChance * GetSizePct(this)))
+            if (Game.GameRand.Bool(Game.LifeDustHitChance * GetSizePct(this)))
             {
                 return true;
             }

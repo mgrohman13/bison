@@ -2,9 +2,11 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Threading;
+using MattUtil;
+using Point = MattUtil.Point;
 using BaseForm = MattUtil.RealTimeGame.GameForm;
 using BaseGame = MattUtil.RealTimeGame.Game;
-using System.Threading;
 
 namespace SpaceRunner.Forms
 {
@@ -31,17 +33,18 @@ namespace SpaceRunner.Forms
             if (isReplay)
                 return new Game(base.RefreshGame, this.center.X, this.center.Y, this.replay);
             else
-                return new Game(base.RefreshGame, this.center.X, this.center.Y, scoring);
+                return new Game(base.RefreshGame, this.center.X, this.center.Y, scoring, allowReplay);
         }
 
-        private const float TotalMapSize = SpaceRunner.Game.MapSize * 2f;
+        private const float TotalMapSize = SpaceRunner.Game.MapSize * 2 - 1;
         private const int PadSides = 13;
 
         private readonly Point center;
         private Region clip;
 
-        private ToolStripMenuItem replayParent, replayShow, replaySave, replayLoad;
+        private ToolStripMenuItem replayParent, replayShow, replaySave, replayLoad, replayEnable;
         private Replay replay;
+        private bool allowReplay = true;
 
         internal GameForm(Game game)
         {
@@ -56,10 +59,10 @@ namespace SpaceRunner.Forms
             this.picFuel.Image = PowerUp.FuelImage;
             this.picLife.Image = PowerUp.LifeImage;
 
-            GraphicsPath p = new GraphicsPath();
-            p.AddEllipse(center.X - Game.MapSize, center.Y - Game.MapSize, TotalMapSize, TotalMapSize);
-            clip = new Region(p);
-            p.Dispose();
+            GraphicsPath path = new GraphicsPath();
+            path.AddEllipse(center.X - Game.MapSize, center.Y - Game.MapSize, TotalMapSize, TotalMapSize);
+            clip = new Region(path);
+            path.Dispose();
 
             RefreshGame();
         }
@@ -87,46 +90,49 @@ namespace SpaceRunner.Forms
             {
 #endif
 #if !TRACE
-                e.Graphics.Clip = clip;
+            e.Graphics.Clip = clip;
 #endif
-                e.Graphics.Clear(Color.Black);
+            e.Graphics.Clear(Color.Black);
 
-                base.OnPaint(e);
+            base.OnPaint(e);
 
-                int ammo = Game.Ammo, fuel = Game.Round(Game.Fuel), lives = Game.Lives, score = Game.Round((float)Game.Score);
-                if (this.ammo != ammo)
-                {
-                    this.ammo = ammo;
-                    this.lblAmmo.Text = this.ammo.ToString();
-                }
-                if (this.fuel != fuel)
-                {
-                    this.fuel = fuel;
-                    this.lblFuel.Text = fuel.ToString();
-                }
-                if (this.lives != lives)
-                {
-                    this.lives = lives;
-                    this.lblLife.Text = lives.ToString();
-                }
-                if (this.score != score)
-                {
-                    this.score = score;
-                    this.lblScore.Text = score.ToString("0");
-                }
+            int ammo = Game.Ammo, fuel = Game.FuelInt, lives = Game.Lives, score = Game.Round((float)Game.Score);
+            if (this.ammo != ammo)
+            {
+                this.ammo = ammo;
+                this.lblAmmo.Text = this.ammo.ToString();
+            }
+            if (this.fuel != fuel)
+            {
+                this.fuel = fuel;
+                this.lblFuel.Text = fuel.ToString();
+            }
+            if (this.lives != lives)
+            {
+                this.lives = lives;
+                this.lblLife.Text = lives.ToString();
+            }
+            if (this.score != score)
+            {
+                this.score = score;
+                this.lblScore.Text = score.ToString("0");
+            }
 
-                bool enabled = ( Game.IsReplay || Game.GameOver() );
-                if (this.enabled != enabled)
-                {
-                    this.enabled = enabled;
-                    this.replayShow.Enabled = enabled;
-                    this.replaySave.Enabled = enabled;
-                }
+            bool enabled = ( ( Game.Replay != null ) && ( Game.IsReplay || Game.GameOver() ) );
+            if (this.enabled != enabled)
+            {
+                this.enabled = enabled;
+                this.replayShow.Enabled = enabled;
+                this.replaySave.Enabled = enabled;
+            }
 
-                if (Game.IsReplay && timeScroll == null && !Game.Paused)
-                {
-                    this.tbTime.Value = Game.TickCount;
-                }
+            if (Game.IsReplay && timeScroll == null && !Game.Paused)
+            {
+                int value = Game.TickCount;
+                if (value > this.tbTime.Maximum)
+                    value = this.tbTime.Maximum;
+                this.tbTime.Value = value;
+            }
 #if DEBUG
             }
             catch (Exception exception)
@@ -168,8 +174,9 @@ namespace SpaceRunner.Forms
             this.replayShow = new System.Windows.Forms.ToolStripMenuItem();
             this.replaySave = new System.Windows.Forms.ToolStripMenuItem();
             this.replayLoad = new System.Windows.Forms.ToolStripMenuItem();
+            this.replayEnable = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.Items.Add(this.replayParent);
-            this.replayParent.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { this.replayShow, this.replaySave, this.replayLoad });
+            this.replayParent.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { this.replayShow, this.replaySave, this.replayLoad, this.replayEnable });
             this.replayParent.Name = "replayParent";
             this.replayParent.Size = new System.Drawing.Size(130, 20);
             this.replayParent.Text = "Replay";
@@ -185,6 +192,10 @@ namespace SpaceRunner.Forms
             this.replayLoad.Size = new System.Drawing.Size(130, 20);
             this.replayLoad.Text = "Load";
             this.replayLoad.Click += new EventHandler(replayLoad_Click);
+            this.replayEnable.Name = "replayEnable";
+            this.replayEnable.Size = new System.Drawing.Size(130, 20);
+            RefreshReplayEnable();
+            this.replayEnable.Click += new EventHandler(replayEnable_Click);
         }
 
         private void replayShow_Click(object sender, EventArgs e)
@@ -196,7 +207,7 @@ namespace SpaceRunner.Forms
         {
             string save = ShowDialog(this.saveFileDialog);
             if (save != null)
-                MattUtil.TBSUtil.SaveGame(Game.Replay, save);
+                TBSUtil.SaveGame(Game.Replay, save);
         }
         private void replayLoad_Click(object sender, EventArgs e)
         {
@@ -204,8 +215,17 @@ namespace SpaceRunner.Forms
             {
                 string load = ShowDialog(this.openFileDialog);
                 if (load != null)
-                    ShowReplay(MattUtil.TBSUtil.LoadGame<Replay>(load));
+                    ShowReplay(TBSUtil.LoadGame<Replay>(load));
             }
+        }
+        private void replayEnable_Click(object sender, EventArgs e)
+        {
+            allowReplay = !allowReplay;
+            RefreshReplayEnable();
+        }
+        private void RefreshReplayEnable()
+        {
+            this.replayEnable.Text = ( allowReplay ? "Disable" : "Enable" );
         }
 
         private static string ShowDialog(FileDialog fileDialog)
@@ -224,9 +244,9 @@ namespace SpaceRunner.Forms
             SetReplaySpeed();
 
             this.tbTime.Maximum = replay.Length;
-            this.tbTime.TickFrequency = Game.Round(replay.Length / 13f);
-            this.tbTime.LargeChange = Game.Round(replay.Length / 5.2f);
-            this.tbTime.SmallChange = Game.Round(replay.Length / 9.1f);
+            this.tbTime.TickFrequency = Game.Random.Round(replay.Length / 13f);
+            this.tbTime.LargeChange = Game.Random.Round(replay.Length / 5.2f);
+            this.tbTime.SmallChange = Game.Random.Round(replay.Length / 9.1f);
         }
 
         private void tbSpeed_Scroll(object sender, EventArgs e)

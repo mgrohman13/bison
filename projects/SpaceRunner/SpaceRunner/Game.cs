@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading;
+using MattUtil;
 using MattUtil.RealTimeGame;
 using Point = MattUtil.Point;
 
@@ -15,7 +16,7 @@ namespace SpaceRunner
 
         internal static Game StaticInit()
         {
-            Game game = new Game(null, null, Random.Round(MapSize), Random.Round(MapSize), false);
+            Game game = new Game(null, Game.Random.Round(MapSize), Game.Random.Round(MapSize), false, false);
             game.Running = false;
             game.Started = false;
             game.Dispose();
@@ -29,19 +30,19 @@ namespace SpaceRunner
         // -show something interesting on the screen when the game is first launched
         private static void InitializeImages(Game game)
         {
-            PointF p = RandomEdgePoint();
+            PointF p = game.RandomEdgePoint();
             FuelExplosion.NewFuelExplosion(game, p.X, p.Y);
             AlienShip.NewAlienShip(game);
 
             p = game.RandomStartPoint(0);
             LifeDust.NewLifeDust(game, p.X, p.Y, 6);
-            int amt = Random.GaussianOEInt(4, 1, .1, 1);
+            int amt = Game.Random.GaussianOEInt(4, 1, .1, 1);
             while (--amt > -1)
             {
                 p = game.RandomStartPoint(AsteroidMaxSize);
                 Asteroid.NewAsteroid(game, p.X, p.Y);
             }
-            amt = Random.GaussianCappedInt(2, 1);
+            amt = Game.Random.GaussianCappedInt(2, 1);
             while (--amt > -1)
             {
                 p = game.RandomStartPoint(AlienSize);
@@ -55,7 +56,7 @@ namespace SpaceRunner
             p = game.RandomStartPoint(-ExplosionSize);
             Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0, 0));
 
-            amt = Random.OEInt(8);
+            amt = Game.Random.OEInt(8);
             while (--amt > -1)
             {
                 game.MoveAndCollide(0, 0, 0);
@@ -336,6 +337,7 @@ namespace SpaceRunner
         private int tickCount;
         private readonly bool isReplay;
         private readonly Replay replay;
+        private MTRandom gameRand;
 
         private readonly HashSet<GameObject> objects = new HashSet<GameObject>();
 
@@ -350,6 +352,16 @@ namespace SpaceRunner
         #endregion //fields
 
         #region properties
+
+        internal MTRandom GameRand
+        {
+            get
+            {
+                if (gameRand == null)
+                    return Game.Random;
+                return gameRand;
+            }
+        }
 
         public override decimal Score
         {
@@ -391,11 +403,14 @@ namespace SpaceRunner
             }
         }
 
-        internal float Fuel
+        internal int FuelInt
         {
             get
             {
-                return fuel / FuelMult;
+                int retVal = Round(fuel / FuelMult);
+                if (retVal < 1 && fuel > 0)
+                    retVal = 1;
+                return retVal;
             }
         }
 
@@ -493,7 +508,7 @@ namespace SpaceRunner
         {
 #if TRACE
             graphics.ResetTransform();
-            graphics.DrawEllipse(Pens.White, centerX - MapSize, centerY - MapSize, MapSize * 2, MapSize * 2);
+            graphics.DrawEllipse(Pens.White, centerX - MapSize, centerY - MapSize, MapSize * 2 - 1, MapSize * 2 - 1);
             int drawSectors = (int)Math.Ceiling(CreationDist / SectorSize);
             for (int sect = -drawSectors ; sect <= drawSectors ; ++sect)
             {
@@ -502,7 +517,7 @@ namespace SpaceRunner
                 float y = centerY + ( sect * SectorSize );
                 graphics.DrawLine(Pens.White, centerX - CreationDist, y, centerX + CreationDist, y);
             }
-            graphics.DrawEllipse(Pens.White, centerX - PlayerSize, centerY - PlayerSize, PlayerSize * 2, PlayerSize * 2);
+            graphics.DrawEllipse(Pens.White, centerX - PlayerSize, centerY - PlayerSize, PlayerSize * 2 - 1, PlayerSize * 2 - 1);
 #endif
             DrawPlayer(graphics);
             if (!Paused && !GameOver())
@@ -577,9 +592,9 @@ namespace SpaceRunner
                 return GetDrawPriority(p1) - GetDrawPriority(p2);
             });
 
-            for (int a = 0 ; a < count ; ++a)
+            for (int idx = 0 ; idx < count ; ++idx)
             {
-                GameObject obj = array[a];
+                GameObject obj = array[idx];
                 lock (gameTicker)
                     if (this.objects.Contains(obj))
                         obj.Draw(graphics, centerX, centerY);
@@ -637,12 +652,12 @@ namespace SpaceRunner
             Rectangle fillRect = new Rectangle(rect.X + 1, rect.Y + 1, Round(pct * ( rect.Width - 1 )), rect.Height - 1);
 
             graphics.ResetTransform();
-            graphics.DrawRectangle(border, rect.X, rect.Y, rect.Width, rect.Height);
+            graphics.DrawRectangle(border, rect);
             graphics.FillRectangle(fill, fillRect);
         }
         private static Rectangle GetBarRect(float x, float y, float size)
         {
-            return new Rectangle(Round(x - size), Round(y + size), Round(size * 2), 3);
+            return new Rectangle(Round(x - size), Round(y + size), Round(size * 2 - 1), 3);
         }
 
         internal void AddObject(GameObject obj)
@@ -709,9 +724,7 @@ namespace SpaceRunner
             }
 #if DEBUG
             else
-            {
                 throw new Exception();
-            }
 #endif
         }
         internal static Game SetReplayPosition(Game game, int position, GameTicker.EventDelegate Refresh)
@@ -731,15 +744,15 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-                base.Paused = true;
-                SleepTick();
-                Refresh();
-                SleepTick();
-                lock (gameTicker)
-                    while (tickCount < position)
-                        this.Step();
-                SleepTick();
-                base.Paused = false;
+            base.Paused = true;
+            SleepTick();
+            Refresh();
+            SleepTick();
+            lock (gameTicker)
+                while (tickCount < position)
+                    this.Step();
+            SleepTick();
+            base.Paused = false;
 #if DEBUG
             }
             else
@@ -749,7 +762,7 @@ namespace SpaceRunner
 
         private static void SleepTick()
         {
-            Thread.Sleep(Round(GameTick * 1.3f) + 91);
+            Thread.Sleep(Game.Random.Round(GameTick * 1.3f) + 91);
         }
 
         internal void AddScore(decimal amt)
@@ -763,7 +776,7 @@ namespace SpaceRunner
         }
         internal void AddFuel()
         {
-            fuel += Random.GaussianCapped(IncFuel, IncFuelRandomness);
+            fuel += GameRand.GaussianCapped(IncFuel, IncFuelRandomness);
         }
         internal void AddLife(float amt, bool allowNew)
         {
@@ -775,7 +788,7 @@ namespace SpaceRunner
             {
                 float maxLifeRegen = PlayerLife - CurrentLifePart;
                 if (amt < maxLifeRegen)
-                    amt = Random.GaussianCapped(amt, PlayerDamageRandomness);
+                    amt = GameRand.GaussianCapped(amt, PlayerDamageRandomness);
                 if (amt > maxLifeRegen)
                 {
                     AddLife(maxLifeRegen);
@@ -798,9 +811,9 @@ namespace SpaceRunner
 
         #region internal abstraction methods
 
-        internal static float RandDmgToAlien(float amt)
+        internal float RandDmgToAlien(float amt)
         {
-            return Random.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
+            return GameRand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
         }
 
         public void Dispose()
@@ -820,9 +833,9 @@ namespace SpaceRunner
         private void SetRandomInput()
         {
             float fx, fy;
-            GetRandomDirection(out fx, out fy, MapSize);
-            inputX = Random.Round(fx);
-            inputY = Random.Round(fy);
+            GetRandomDirection(Game.Random, out fx, out fy, MapSize);
+            this.inputX = Game.Random.Round(fx);
+            this.inputY = Game.Random.Round(fy);
         }
 
         internal static float GetRingSpacing(int numPieces, double size)
@@ -830,9 +843,13 @@ namespace SpaceRunner
             return (float)( size * ( numPieces < 3 ? 1 : 1 / Math.Sin(Math.PI / numPieces) ) );
         }
 
-        internal static void GetRandomDirection(out float xDir, out float yDir, float dist)
+        internal void GetRandomDirection(out float xDir, out float yDir, float dist)
         {
-            float angle = GetRandomAngle();
+            GetRandomDirection(GameRand, out xDir, out yDir, dist);
+        }
+        private static void GetRandomDirection(MTRandom rand, out float xDir, out float yDir, float dist)
+        {
+            float angle = GetRandomAngle(rand);
             GetDirs(out xDir, out yDir, angle, dist);
         }
         internal static void GetDirs(out float xDir, out float yDir, float angle)
@@ -844,9 +861,17 @@ namespace SpaceRunner
             xDir = (float)( Math.Cos(angle) * dist );
             yDir = (float)( Math.Sin(angle) * dist );
         }
-        internal static float GetRandomAngle()
+        internal float GetRandomAngle()
         {
-            return ( Random.NextFloat() * TwoPi );
+            return GetRandomAngle(GameRand);
+        }
+        internal static float GetImageAngle()
+        {
+            return GetRandomAngle(Game.Random);
+        }
+        private static float GetRandomAngle(MTRandom rand)
+        {
+            return ( rand.NextFloat() * TwoPi );
         }
 
         internal static Image LoadImageRotated(string name, float size)
@@ -855,20 +880,28 @@ namespace SpaceRunner
             int newSize = (int)Math.Ceiling(twoSize * SqrtTwo);
 
             Bitmap retVal = new Bitmap(newSize, newSize);
-            Graphics g = Graphics.FromImage(retVal);
+            Graphics graphics = Graphics.FromImage(retVal);
             Image image = LoadImage(name);
+
+            const int NumRotateFlipTypes = 8;
+            RotateFlipType rotateFlipType = (RotateFlipType)Game.Random.Next(NumRotateFlipTypes);
+#if DEBUG
+            if (Enum.IsDefined(typeof(RotateFlipType), NumRotateFlipTypes) || !Enum.IsDefined(typeof(RotateFlipType), rotateFlipType))
+                throw new Exception();
+#endif
+            image.RotateFlip(rotateFlipType);
 
             float trans = newSize / 2f;
             float scale = twoSize / image.Width;
 
-            g.TranslateTransform(trans, trans);
-            g.RotateTransform(GetRandomAngle() * RadToDeg);
-            g.TranslateTransform(-size, -size);
-            g.ScaleTransform(scale, scale);
+            graphics.TranslateTransform(trans, trans);
+            graphics.RotateTransform(GetRandomAngle(Game.Random) * RadToDeg);
+            graphics.TranslateTransform(-size, -size);
+            graphics.ScaleTransform(scale, scale);
 
-            g.DrawImage(image, 0f, 0f);
+            graphics.DrawImage(image, 0f, 0f);
 
-            g.Dispose();
+            graphics.Dispose();
             image.Dispose();
 
             return retVal;
@@ -899,7 +932,7 @@ namespace SpaceRunner
         }
         internal static Image ResizeImage(Image image, float size, bool disposeOriginal)
         {
-            int actualSize = Random.Round(size * 2);
+            int actualSize = Game.Random.Round(size * 2);
             if (actualSize < 1)
                 actualSize = 1;
             Image retVal;
@@ -914,12 +947,12 @@ namespace SpaceRunner
         {
             float xDir = -x, yDir = -y;
             //half the time, adjust for the player's movement
-            if (Random.Bool())
+            if (GameRand.Bool())
                 this.AdjustForPlayerSpeed(ref xDir, ref yDir, speed + BulletSpeed, size + BulletSize);
 
             float bulletAngle = GetAngle(xDir, yDir);
             //randomize the angle slightly
-            bulletAngle += Random.Gaussian(AlienFiringInaccuracy);
+            bulletAngle += GameRand.Gaussian(AlienFiringInaccuracy);
 
             GetDirs(out xDir, out yDir, bulletAngle);
             Bullet.NewBullet(this, x, y, xDir, yDir, speed, size, Bullet.FriendlyStatus.Enemy);
@@ -939,7 +972,7 @@ namespace SpaceRunner
             speedRatio *= speedRatio;
             //make sure a zero will not be in the denominator
             while (speedRatio == 1.0)
-                speedRatio = 1.0 + Random.Gaussian(1.0 / ( 1 << 53 ));
+                speedRatio = 1.0 + GameRand.Gaussian(1.0 / ( 1 << 53 ));
             yDist *= yDist;
             double sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
             //handle negative square root
@@ -959,7 +992,7 @@ namespace SpaceRunner
             }
         }
 
-        internal static void NormalizeDirs(ref float xDir, ref float yDir, float speed)
+        internal void NormalizeDirs(ref float xDir, ref float yDir, float speed)
         {
             float distance = GetDistance(xDir, yDir);
             if (distance > 0)
@@ -995,14 +1028,14 @@ namespace SpaceRunner
             return GetDistance(x1 - x2, y1 - y2);
         }
 
-        internal static PointF RandomEdgePoint()
+        internal PointF RandomEdgePoint()
         {
             return GetPoint(GetRandomAngle(), CreationDist);
         }
         private PointF RandomStartPoint(float size)
         {
             float padding = 3.9f * ( PlayerSize + AlienSize );
-            PointF retVal = GetPoint(GetRandomAngle(), padding + Random.DoubleHalf(MapSize - padding));
+            PointF retVal = GetPoint(GetRandomAngle(), padding + GameRand.DoubleHalf(MapSize - padding));
 
             foreach (GameObject obj in this.objects)
                 if (GetDistanceSqr(retVal.X, retVal.Y, obj.X, obj.Y) < ( size + obj.Size ) * ( size + obj.Size ))
@@ -1039,21 +1072,23 @@ namespace SpaceRunner
             Start();
         }
 
-        internal Game(GameTicker.EventDelegate Refresh, int centerX, int centerY, bool scoring)
-            : this(Refresh, NewSeed(), centerX, centerY, scoring)
+        internal Game(GameTicker.EventDelegate Refresh, int centerX, int centerY, bool scoring, bool allowReplay)
+            : this(Refresh, NewSeed(allowReplay), centerX, centerY, scoring, allowReplay)
         {
         }
 
-        private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring)
-            : this(Refresh, seed, centerX, centerY, scoring, new Replay(seed), false)
+        private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring, bool allowReplay)
+            : this(Refresh, seed, centerX, centerY, scoring, allowReplay ? new Replay(seed) : null, false)
         {
         }
 
         private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring, Replay replay, bool isReplay)
             : base(GameTick, Refresh)
         {
-            if (seed != null)
-                ReSeed(seed);
+            if (seed == null)
+                this.gameRand = null;
+            else
+                this.gameRand = new MTRandom(seed);
 
             this.tickCount = 0;
             this.isReplay = isReplay;
@@ -1086,41 +1121,41 @@ namespace SpaceRunner
             Started = false;
         }
 
-        private static uint[] NewSeed()
+        private static uint[] NewSeed(bool allowReplay)
         {
             const double AvgSeedSize = 13;
 
-            Random.StartTick();
-            const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
-            uint[] seed = MattUtil.MTRandom.GenerateSeed((ushort)( Random.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
-            for (int a = 0 ; a < seed.Length ; ++a)
-                seed[a] += Random.NextUInt();
-            return seed;
-        }
+            if (allowReplay)
+            {
+                const int max = MTRandom.MAX_SEED_SIZE - 1;
+                uint[] seed = MTRandom.GenerateSeed((ushort)( Game.Random.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
+                for (int idx = 0 ; idx < seed.Length ; ++idx)
+                    seed[idx] += Game.Random.NextUInt();
+                return seed;
+            }
 
-        private static void ReSeed(uint[] seed)
-        {
-            Random.StopTick();
-            Random.SetSeed(false, seed);
+            return null;
         }
 
         //1 power up, 3 aliens, random number of asteroids
         private void CreateStartObjects()
         {
-            PointF start = RandomStartPoint(PowerUpSize);
-            PowerUp.NewPowerUp(this, start.X, start.Y);
-
-            for (int a = 0 ; a < 3 ; a++)
-            {
-                start = RandomStartPoint(AlienSize);
-                Alien.NewAlien(this, start.X, start.Y);
-            }
-
-            int startAsteroids = Random.GaussianOEInt(7.8f, .39f, .26f, 1);
-            for (int b = 0 ; b < startAsteroids ; b++)
+            PointF start;
+            int startAsteroids = GameRand.GaussianOEInt(7.8f, .39f, .26f, 1);
+            for (int idx = 0 ; idx < startAsteroids ; idx++)
             {
                 start = RandomStartPoint(AsteroidMaxSize);
                 Asteroid.NewAsteroid(this, start.X, start.Y);
+            }
+
+            start = RandomStartPoint(PowerUpSize);
+            PowerUp.NewPowerUp(this, start.X, start.Y);
+
+            const int startAliens = 3;
+            for (int idx = 0 ; idx < startAliens ; idx++)
+            {
+                start = RandomStartPoint(AlienSize);
+                Alien.NewAlien(this, start.X, start.Y);
             }
         }
 
@@ -1134,11 +1169,14 @@ namespace SpaceRunner
 
         public override void Step()
         {
-            ++tickCount;
-            if (isReplay)
-                replay.Play(tickCount, ref inputX, ref inputY, ref turbo, ref fire);
-            else
-                replay.Record(tickCount, inputX, inputY, turbo, fire);
+            if (replay != null)
+            {
+                ++tickCount;
+                if (isReplay)
+                    replay.Play(tickCount, ref inputX, ref inputY, ref turbo, ref fire);
+                else
+                    replay.Record(tickCount, inputX, inputY, turbo, fire);
+            }
 
             if (Dead && ++deadCounter > DeathTime)
                 deadCounter = -1;
@@ -1177,7 +1215,7 @@ namespace SpaceRunner
                 if (--ammo < 1)
                     fireCounter = -1;
                 else
-                    fireCounter = Random.Round(GetCoolDown());
+                    fireCounter = GameRand.Round(GetCoolDown());
                 Bullet.NewBullet(this, 0, 0, inputX, inputY, playerSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
             }
         }
@@ -1197,7 +1235,7 @@ namespace SpaceRunner
         {
             var objectSectors = new Dictionary<Point, List<GameObject>>();
 
-            foreach (GameObject obj in Random.Iterate(this.objects))
+            foreach (GameObject obj in GameRand.Iterate(this.objects))
             {
                 //move the object
                 float playerDamage = obj.Step(xSpeed, ySpeed, playerSpeed);
@@ -1228,7 +1266,7 @@ namespace SpaceRunner
         private void HitPlayer(float damage)
         {
             if (damage < PlayerLife)
-                damage = Random.GaussianCapped(damage, PlayerDamageRandomness);
+                damage = GameRand.GaussianCapped(damage, PlayerDamageRandomness);
 
             if (Dead)
             {
@@ -1264,17 +1302,17 @@ namespace SpaceRunner
         private void CollideObjects(Dictionary<Point, List<GameObject>> objectSectors)
         {
             HashSet<Point> done = new HashSet<Point>();
-            foreach (var pair in Random.Iterate(objectSectors))
+            foreach (var pair in GameRand.Iterate(objectSectors))
             {
                 Point point = pair.Key;
                 List<GameObject> curSector = pair.Value;
 
-                for (int a = 0 ; a < curSector.Count ; ++a)
+                for (int idx = 0 ; idx < curSector.Count ; ++idx)
                 {
-                    GameObject obj = curSector[a];
+                    GameObject obj = curSector[idx];
                     //make sure the object is still in the game
                     if (this.objects.Contains(obj))
-                        CollideObject(objectSectors, obj, point, a, done);
+                        CollideObject(objectSectors, obj, point, idx, done);
                 }
 
                 done.Add(point);
@@ -1292,7 +1330,7 @@ namespace SpaceRunner
                     checkDist = 1;
             }
 
-            foreach (Point p2 in Random.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
+            foreach (Point p2 in GameRand.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
             {
                 List<GameObject> value;
                 if (objectSectors.TryGetValue(p2, out value) && ( !done.Contains(p2) ||
@@ -1303,9 +1341,9 @@ namespace SpaceRunner
                     if (p2 == point)
                         start = objIndex + 1;
 
-                    for (int a = start ; a < value.Count ; ++a)
+                    for (int idx = start ; idx < value.Count ; ++idx)
                     {
-                        GameObject checkObj = value[a];
+                        GameObject checkObj = value[idx];
 #if DEBUG
                         //if either object checks extra sectors, the sector size is effectively multiplied by that amount
                         int sectMult = checkDist;
@@ -1335,15 +1373,15 @@ namespace SpaceRunner
 
         private void CreateObjects(float playerSpeed)
         {
-            if (Random.Bool(playerSpeed * AlienCreationRate))
+            if (GameRand.Bool(playerSpeed * AlienCreationRate))
                 Alien.NewAlien(this);
-            if (Random.Bool(playerSpeed * AlienShipCreationRate / alienCount))
+            if (GameRand.Bool(playerSpeed * AlienShipCreationRate / alienCount))
                 AlienShip.NewAlienShip(this);
-            if (Random.Bool(playerSpeed * AsteroidCreationRate))
+            if (GameRand.Bool(playerSpeed * AsteroidCreationRate))
                 Asteroid.NewAsteroid(this);
-            if (Random.Bool(playerSpeed * LifeDustCreationRate))
+            if (GameRand.Bool(playerSpeed * LifeDustCreationRate))
                 LifeDust.NewLifeDust(this);
-            if (Random.Bool(playerSpeed * PowerUpCreationRate))
+            if (GameRand.Bool(playerSpeed * PowerUpCreationRate))
                 PowerUp.NewPowerUp(this);
         }
 
@@ -1352,9 +1390,8 @@ namespace SpaceRunner
             AddScore((decimal)ammo * RemainingAmmoScore);
             AddScore((decimal)fuel * RemainingFuelScore);
 
-            replay.EndRecord(this.tickCount);
-
-            //objects.TrimExcess();
+            if (replay != null)
+                replay.EndRecord(this.tickCount);
         }
 
         #endregion //game logic

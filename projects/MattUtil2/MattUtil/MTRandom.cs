@@ -376,7 +376,6 @@ namespace MattUtil
                 }
             return seed;
         }
-
         private static void AddSeedValue(uint[] seed, ref int a, int seedSize, object value)
         {
             //shift value to help randomize time or memory signatures
@@ -403,7 +402,7 @@ namespace MattUtil
                 else
                     seedVals = null;
                 mt = new uint[LENGTH];
-                mti = 1;
+                mti = 0;
                 bitCount = 0;
                 bits = 0;
                 gaussian = double.NaN;
@@ -411,19 +410,19 @@ namespace MattUtil
 
                 //seed KISS
                 uint a = (uint)length - 1;
-                lcg = LCG_SEED + GetSeed(seed, ref a);
-                lfsr = LFSR_SEED + GetSeed(seed, ref a);
-                mwc1 = MWC_1_SEED + GetSeed(seed, ref a);
                 mwc2 = MWC_2_SEED + GetSeed(seed, ref a);
+                lfsr = LFSR_SEED + GetSeed(seed, ref a);
+                lcg = LCG_SEED + GetSeed(seed, ref a);
+                mwc1 = MWC_1_SEED + GetSeed(seed, ref a);
 
                 //initialize MT with a constant PRNG
-                for (mt[0] = INIT_SEED ; mti < LENGTH ; ++mti)
+                for (mt[0] = INIT_SEED ; ++mti < LENGTH ; )
                     mt[mti] = ( SEED_FACTOR_1 * ( mt[mti - 1] ^ ( mt[mti - 1] >> 30 ) ) + mti );
                 //combine the seed values with the results of another (different) PRNG pass
                 uint b = 0;
-                for (int c = LENGTH ; --c > 0 ; )
-                    mt[++b] = ( mt[b] ^ ( ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) * SEED_FACTOR_2 ) ) + a + GetSeed(seed, ref a);
-                //run a third and final pass to make sure all seed values are represented in all mt state values
+                for (uint c = LENGTH ; --c > 0 ; )
+                    mt[++b] = ( mt[b] ^ ( ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) * SEED_FACTOR_2 ) ) + GetSeed(seed, ref a) - a + b - c;
+                //run a third and final pass to ensure all seed values are represented in all MT state values
                 mt[0] = mt[LENGTH - 1];
                 b = 0;
                 for (uint c = LENGTH ; --c > 0 ; )
@@ -502,18 +501,14 @@ namespace MattUtil
         private uint LCG()
         {
             lock (this)
-            {
                 return ( lcg = ( LCG_MULTIPLIER * lcg + LCG_INCREMENT ) );
-            }
         }
 
         //A 3-shift shift-register generator, period 2^32-1,
         private uint LFSR()
         {
             lock (this)
-            {
                 return ( lfsr = XorLShift(XorRShift(XorLShift(lfsr, LFSR_1), LFSR_2), LFSR_3) );
-            }
         }
         private uint XorLShift(uint value, int shift)
         {
@@ -528,16 +523,12 @@ namespace MattUtil
         private uint MWC1()
         {
             lock (this)
-            {
                 return ( mwc1 = MWC(MWC_1_MULT, mwc1) );
-            }
         }
         private uint MWC2()
         {
             lock (this)
-            {
                 return ( mwc2 = MWC(MWC_2_MULT, mwc2) );
-            }
         }
         private uint MWC(uint mult, uint value)
         {
@@ -1232,7 +1223,6 @@ namespace MattUtil
         private double Gaussian(bool isFloat)
         {
             lock (this)
-            {
                 //check if we have a buffered result
                 if (isFloat ? float.IsNaN(this.gaussianFloat) : double.IsNaN(this.gaussian))
                 {
@@ -1281,7 +1271,6 @@ namespace MattUtil
                     this.gaussian = double.NaN;
                     return retVal;
                 }
-            }
         }
 
         /// <summary>

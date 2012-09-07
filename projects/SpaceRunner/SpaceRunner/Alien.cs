@@ -24,7 +24,7 @@ namespace SpaceRunner
 
         internal static Alien NewAlien(Game game)
         {
-            PointF point = Game.RandomEdgePoint();
+            PointF point = game.RandomEdgePoint();
             return NewAlien(game, point.X, point.Y);
         }
 
@@ -41,7 +41,7 @@ namespace SpaceRunner
         }
 
         private Alien(Game game, float x, float y)
-            : base(game, x, y, GetStartSpeed(), Game.AlienSize, AlienImage, Game.PowerUpRotate)
+            : base(game, x, y, game.GameRand.GaussianCapped(Game.AlienSpeed, Game.AlienSpeedRandomness), Game.AlienSize, AlienImage, Game.PowerUpRotate)
         {
             fireRate = 0;
             ammo = 0;
@@ -56,11 +56,6 @@ namespace SpaceRunner
             {
                 return ( (decimal)Game.GetDistance(xDir, yDir) + (decimal)speed ) * Game.AlienSpeedScoreMult + (decimal)fireRate * Game.AlienFireRateScoreMult;
             }
-        }
-
-        private static float GetStartSpeed()
-        {
-            return Game.Random.GaussianCapped(Game.AlienSpeed, Game.AlienSpeedRandomness);
         }
 
         protected override void Collide(GameObject obj)
@@ -133,7 +128,7 @@ namespace SpaceRunner
         {
             float inc1 = RandVal(Game.AlienSpeedInc);
             float inc2 = RandVal(Game.AlienSpeedInc);
-            if (inc1 > inc2 && Game.Random.Bool())
+            if (inc1 > inc2 && Game.GameRand.Bool())
             {
                 float temp = inc1;
                 inc1 = inc2;
@@ -187,7 +182,7 @@ namespace SpaceRunner
             float constSpeed = Game.GetDistance(xDir, yDir);
             if (constSpeed > 0)
             {
-                float constDmg = Game.Random.Weighted(damage, Game.AlienConstSpeedReduceWeight);
+                float constDmg = Game.GameRand.Weighted(damage, Game.AlienConstSpeedReduceWeight);
                 if (constDmg > constSpeed)
                 {
                     constDmg = constSpeed;
@@ -209,9 +204,9 @@ namespace SpaceRunner
             obj.Die();
         }
 
-        private static float RandVal(float value)
+        private float RandVal(float value)
         {
-            return Game.Random.GaussianCapped(value, Game.AlienIncRandomness, value * Game.AlienIncCap);
+            return Game.GameRand.GaussianCapped(value, Game.AlienIncRandomness, value * Game.AlienIncCap);
         }
 
         internal override void Draw(Graphics graphics, int centerX, int centerY)
@@ -237,7 +232,7 @@ namespace SpaceRunner
 
         protected override void OnStep()
         {
-            if (Game.Random.Bool(fireRate))
+            if (Game.GameRand.Bool(fireRate))
             {
                 float towardsPlayer = speed;
                 if (HasConstSpeed())
@@ -272,9 +267,9 @@ namespace SpaceRunner
             }
         }
 
-        private static float OffsetPowerUp(float val)
+        private float OffsetPowerUp(float val)
         {
-            return val + Game.Random.GaussianFloat();
+            return val + Game.GameRand.GaussianFloat();
         }
 
         protected override float HitPlayer()

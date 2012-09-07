@@ -14,17 +14,17 @@ namespace SpaceRunner
             Images = new Image[ImageCount];
 
             float size = Game.PowerUpSize;
-            for (int i = 0 ; i < ImageCount ; ++i)
+            for (int idx = 0 ; idx < ImageCount ; ++idx)
             {
-                Images[i] = Game.LoadImage("fuelExps\\" + Game.Random.Next(Game.NumFuelExplosionImages) + ".bmp", size);
+                Images[idx] = Game.LoadImage("fuelExps\\" + Game.Random.Next(Game.NumFuelExplosionImages) + ".bmp", size);
                 size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( ImageCount - 1 );
             }
         }
 
         internal static void Dispose()
         {
-            foreach (Image i in Images)
-                i.Dispose();
+            foreach (Image image in Images)
+                image.Dispose();
         }
 
         private int time = 0;
@@ -37,7 +37,7 @@ namespace SpaceRunner
         private FuelExplosion(Game game, float x, float y)
             : base(game, x, y, Game.PowerUpSize, Images[0], Game.ExplosionRotate)
         {
-            this.time = Game.Random.Round(Game.FuelExplosionTime);
+            this.time = Game.GameRand.Round(Game.FuelExplosionTime);
         }
 
         internal override decimal Score
@@ -53,7 +53,7 @@ namespace SpaceRunner
             size += Game.ExplosionSpeed;
 
             if (--time > 0)
-                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * ImageCount)];
+                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * ImageCount )];
             else
                 this.Die();
         }
@@ -66,7 +66,7 @@ namespace SpaceRunner
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
                 {
-                    if (obj.Size > Game.Random.OE(Game.ExplosionSize))
+                    if (obj.Size > Game.GameRand.OE(Game.ExplosionSize))
                         Explosion.NewExplosion(Game, obj);
                     obj.Die();
                 }

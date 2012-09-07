@@ -7,12 +7,12 @@ using MattUtil;
 namespace SpaceRunner
 {
     [Serializable]
-    public class Replay
+    internal class Replay
     {
         [NonSerialized]
         private const int NoLength = -1;
 
-        public readonly uint[] Seed;
+        internal readonly uint[] Seed;
 
         private Dictionary<int, Tuple<short, short>> input = null;
         private HashSet<int> turbo = null, fire = null;
@@ -24,7 +24,7 @@ namespace SpaceRunner
         [NonSerialized]
         private bool lastTurbo, lastFire;
 
-        public Replay(uint[] Seed)
+        internal Replay(uint[] Seed)
         {
             this.Seed = Seed;
 
@@ -35,7 +35,7 @@ namespace SpaceRunner
             this.length = NoLength;
         }
 
-        public int Length
+        internal int Length
         {
             get
             {
@@ -54,9 +54,9 @@ namespace SpaceRunner
                 this.length = Math.Max(length, shortTick);
         }
 
-        public void Record(int tickCount, int inputX, int inputY, bool turbo, bool fire)
+        internal void Record(int tickCount, int inputX, int inputY, bool turbo, bool fire)
         {
-            Tuple<short, short> input = new Tuple<short, short>((short)inputX, (short)inputY);
+            var input = new Tuple<short, short>((short)inputX, (short)inputY);
             if (this.lastInput != input)
             {
                 this.lastInput = input;
@@ -67,12 +67,12 @@ namespace SpaceRunner
             RecordBool(tickCount, this.fire, ref lastFire, fire);
         }
 
-        public void EndRecord(int tickCount)
+        internal void EndRecord(int tickCount)
         {
             this.length = tickCount;
         }
 
-        public void Play(int tickCount, ref int inputX, ref int inputY, ref bool turbo, ref bool fire)
+        internal void Play(int tickCount, ref int inputX, ref int inputY, ref bool turbo, ref bool fire)
         {
             Tuple<short, short> input;
             if (this.input.TryGetValue(tickCount, out input))

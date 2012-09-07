@@ -152,7 +152,7 @@ namespace MattUtil.RealTimeGame
                     Monitor.Pulse(timer);
 
                 //WriteLine("sleep:" + (int)offset);
-                Thread.Sleep(Math.Max(0, (int)( ( offset + gameTick ) / 2 )));
+                Thread.Sleep(Game.Random.Round(Math.Max(0.0, ( offset + gameTick ) / 2.0)));
                 //}
             }
 
@@ -177,13 +177,13 @@ namespace MattUtil.RealTimeGame
                 {
                     Refresh();
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(Game.Random.Round(gameTick));
 
                     //we don't need to be locked for this
                     if (saveScore)
                         HighScores.SaveScore(game, true, newScore);
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(Game.Random.Round(gameTick));
                 }
                 finally
                 {

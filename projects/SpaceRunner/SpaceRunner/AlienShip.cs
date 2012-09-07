@@ -24,7 +24,7 @@ namespace SpaceRunner
 
         internal static AlienShip NewAlienShip(Game game)
         {
-            PointF point = Game.RandomEdgePoint();
+            PointF point = game.RandomEdgePoint();
             return new AlienShip(game, point.X, point.Y);
         }
 
@@ -53,7 +53,7 @@ namespace SpaceRunner
             amt = Game.RandDmgToAlien(amt);
 
             if (objs[0] is FuelExplosion ?
-                    Game.Random.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime)
+                    Game.GameRand.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime)
                     : amt > Game.PlayerLife)
                 Explosion.NewExplosion(Game, objs);
 
@@ -86,7 +86,7 @@ namespace SpaceRunner
             speed = Game.GetDistance(x, y) / Game.MapSize * speedMult * Game.BasePlayerSpeed;
 
             //fire at the player
-            if (Game.Random.Bool(fireRate))
+            if (Game.GameRand.Bool(fireRate))
                 Game.ShootAtPlayer(speed, x, y, size);
         }
 
@@ -182,9 +182,9 @@ namespace SpaceRunner
             return damage;
         }
 
-        private static float RandVal(float value)
+        private float RandVal(float value)
         {
-            return Game.Random.GaussianCapped(value, Game.AlienShipStatRandomness, value * Game.AlienShipStatCap);
+            return Game.GameRand.GaussianCapped(value, Game.AlienShipStatRandomness, value * Game.AlienShipStatCap);
         }
 
         internal override void Draw(Graphics graphics, int centerX, int centerY)

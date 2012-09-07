@@ -74,7 +74,7 @@ namespace SpaceRunner
             }
             else
             {
-                curAngle = Game.GetRandomAngle();
+                curAngle = Game.GetImageAngle();
                 if (rotateSpeed != 0)
                     rotate = Game.Random.Gaussian(rotateSpeed);
             }
@@ -140,7 +140,7 @@ namespace SpaceRunner
         {
 #if TRACE
             graphics.ResetTransform();
-            graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2, size * 2);
+            graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2 - 1, size * 2 - 1);
 #endif
             DrawImage(graphics, image, centerX, centerY, speed, x, y, size, curAngle);
         }
@@ -170,7 +170,7 @@ namespace SpaceRunner
                     }
 
                     float offset = image.Width / 2f;
-                    graphics.DrawImageUnscaled(image, Game.Round(objectX - offset), Game.Round(objectY - offset));
+                    graphics.DrawImage(image, objectX - offset, objectY - offset);
                 }
             }
         }
@@ -197,7 +197,7 @@ namespace SpaceRunner
 
             float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
-                    Game.Random.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
+                    Game.GameRand.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
                 Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();

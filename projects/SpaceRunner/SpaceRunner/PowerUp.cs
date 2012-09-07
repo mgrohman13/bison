@@ -32,7 +32,7 @@ namespace SpaceRunner
 
         internal static PowerUp NewPowerUp(Game game)
         {
-            PointF point = Game.RandomEdgePoint();
+            PointF point = game.RandomEdgePoint();
             return NewPowerUp(game, point.X, point.Y);
         }
 
@@ -43,7 +43,7 @@ namespace SpaceRunner
             types.Add(PowerUpType.Fuel, Game.PowerUpFuelChance);
             types.Add(PowerUpType.Life, Game.PowerUpLifeChance);
 
-            return NewPowerUp(game, x, y, Game.Random.SelectValue<PowerUpType>(types));
+            return NewPowerUp(game, x, y, game.GameRand.SelectValue<PowerUpType>(types));
         }
 
         internal static PowerUp NewPowerUp(Game game, float x, float y, PowerUpType type)
