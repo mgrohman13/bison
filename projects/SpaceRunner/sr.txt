@@ -17,3 +17,6 @@ difficulty increase with time
 	alien ship appearance
 	alien speed?
 remove fuel powerup increase randomness
+dynamically create images
+	exp, fuel exp
+	life dust? bullet?

@@ -99,8 +99,8 @@ namespace SpaceRunner
         }
 
         //should reflect actual information about the images in PicLocation
-        internal const int NumExplosionImages = 5;
-        internal const int NumImagesPerExplosion = 15;
+        internal const int NumExplosionImages = 6;
+        internal const int NumImagesPerExplosion = 25;
         internal const int NumAsteroidImages = 8;
         internal const int NumFuelExplosionImages = 6;
         internal const int NumLifeDustImages = 13;
@@ -427,20 +427,6 @@ namespace SpaceRunner
             return ( life <= 0 );
         }
 
-        public override bool Paused
-        {
-            get
-            {
-                return base.Paused;
-            }
-            set
-            {
-                if (isReplay)
-                    value = false;
-                base.Paused = value;
-            }
-        }
-
         internal float TurboSpeed
         {
             get
@@ -464,7 +450,7 @@ namespace SpaceRunner
             }
             set
             {
-                if (!isReplay)
+                if (!IsReplay)
                     lock (gameTicker)
                         turbo = value;
             }
@@ -478,7 +464,7 @@ namespace SpaceRunner
             }
             set
             {
-                if (!isReplay)
+                if (!IsReplay)
                     lock (gameTicker)
                         fire = value;
             }
@@ -520,27 +506,28 @@ namespace SpaceRunner
             graphics.DrawEllipse(Pens.White, centerX - PlayerSize, centerY - PlayerSize, PlayerSize * 2 - 1, PlayerSize * 2 - 1);
 #endif
             DrawPlayer(graphics);
-            if (!Paused && !GameOver())
+            bool pauseDraw = ( Paused && !IsReplay );
+            if (!pauseDraw && !GameOver())
             {
                 DrawFireBar(graphics);
                 DrawHealthBar(graphics);
             }
 
+            if (!( pauseDraw && !GameOver() ))
+                DrawObjects(graphics);
             if (Paused && !GameOver())
                 DrawPaused(graphics);
-            else
-                DrawObjects(graphics);
         }
 
         private void DrawPlayer(Graphics graphics)
         {
+            bool pauseDraw = ( Paused && !IsReplay );
             //not drawing when deadCounter is within a certain range causes the player to blink when dead
-            if (!Dead || GameOver() || Paused || !Started || ( deadCounter % DeadBlinkDiv > DeadBlinkWindow ))
+            if (pauseDraw || !Dead || GameOver() || !Started || ( deadCounter % DeadBlinkDiv > DeadBlinkWindow ))
             {
-                bool turbo = ( Turbo && !Dead && fuel > 0 );
-                Image image = ( ( fireCounter < 0 || GameOver() || Paused ) ?
-                        ( turbo ? TurboImage : PlayerImage ) :
-                        ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
+                bool turbo = ( !pauseDraw && Turbo && !Dead && fuel > 0 );
+                bool canFire = ( pauseDraw || fireCounter < 0 || GameOver() );
+                Image image = ( canFire ? ( turbo ? TurboImage : PlayerImage ) : ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
                 GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, GetAngleImageAdjusted(inputX, inputY));
             }
         }
@@ -573,7 +560,7 @@ namespace SpaceRunner
             float drawX = centerX - graphics.MeasureString(PausedText, Font).Width / 2f;
 
             graphics.ResetTransform();
-            graphics.DrawString(PausedText, Font, Brushes.White, drawX, centerY + PlayerSize);
+            graphics.DrawString(PausedText, Font, Brushes.White, drawX, centerY + PlayerSize + ( IsReplay ? 9 : 0 ));
         }
 
         private void DrawObjects(Graphics graphics)
@@ -680,7 +667,7 @@ namespace SpaceRunner
 
         internal void SetMouseCoordinates(int x, int y)
         {
-            if (!isReplay)
+            if (!IsReplay)
             {
                 bool sleep = false;
                 lock (gameTicker)
@@ -705,7 +692,7 @@ namespace SpaceRunner
                             inputY = y;
                         }
                     }
-                    else if (Started)
+                    else if (Started && !IsReplay)
                     {
                         //pause the game if the mouse is outside the playing area
                         Paused = true;
@@ -718,7 +705,7 @@ namespace SpaceRunner
 
         internal void SetReplaySpeed(double speedMult)
         {
-            if (isReplay)
+            if (IsReplay)
             {
                 base.GameTick = GameTick / speedMult;
             }
@@ -744,7 +731,7 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-            base.Paused = true;
+            Paused = true;
             SleepTick();
             Refresh();
             SleepTick();
@@ -752,7 +739,7 @@ namespace SpaceRunner
                 while (tickCount < position)
                     this.Step();
             SleepTick();
-            base.Paused = false;
+            Paused = false;
 #if DEBUG
             }
             else
@@ -908,22 +895,13 @@ namespace SpaceRunner
         }
         internal static Image LoadImage(string name)
         {
-            return LoadImage(name, Color.Magenta);
-        }
-        internal static Image LoadImage(string name, Color color)
-        {
             Bitmap retVal = new Bitmap(PicLocation + name);
-            retVal.MakeTransparent(color);
+            retVal.MakeTransparent(Color.Magenta);
             return retVal;
         }
         internal static Image LoadImage(string name, float size)
         {
             Image image = LoadImage(name);
-            return ResizeImage(image, size);
-        }
-        internal static Image LoadImage(string name, Color color, float size)
-        {
-            Image image = LoadImage(name, color);
             return ResizeImage(image, size);
         }
         internal static Image ResizeImage(Image image, float size)
@@ -1172,7 +1150,7 @@ namespace SpaceRunner
             if (replay != null)
             {
                 ++tickCount;
-                if (isReplay)
+                if (IsReplay)
                     replay.Play(tickCount, ref inputX, ref inputY, ref turbo, ref fire);
                 else
                     replay.Record(tickCount, inputX, inputY, turbo, fire);

@@ -149,12 +149,15 @@ namespace SpaceRunner.Forms
 
         private void GameForm_MouseLeave(object sender, EventArgs e)
         {
-            Game.Paused = true;
+            if (!Game.IsReplay)
+                Game.Paused = true;
         }
 
         private void GameForm_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            if (Game.IsReplay)
+                Game.Paused = !Game.Paused;
+            else if (e.Button == MouseButtons.Left)
                 Game.Fire = true;
             else if (e.Button == MouseButtons.Right)
                 Game.Turbo = true;

@@ -10,7 +10,7 @@ namespace SpaceRunner
             Images = new Image[Game.NumExplosionImages, Game.NumImagesPerExplosion];
             for (int explosion = 1 ; explosion <= Game.NumExplosionImages ; ++explosion)
                 for (int number = 1 ; number <= Game.NumImagesPerExplosion ; ++number)
-                    Images[explosion - 1, number - 1] = Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Color.White, Game.ExplosionSize);
+                    Images[explosion - 1, number - 1] = Game.LoadImage("explosion\\" + explosion.ToString() + "\\" + number.ToString() + ".bmp", Game.ExplosionSize);
         }
 
         internal static void Dispose()
