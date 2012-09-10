@@ -949,8 +949,8 @@ namespace SpaceRunner
             double speedRatio = speed / this.TotalSpeed;
             speedRatio *= speedRatio;
             //make sure a zero will not be in the denominator
-            while (speedRatio == 1.0)
-                speedRatio = 1.0 + GameRand.Gaussian(1.0 / ( 1 << 53 ));
+            if (speedRatio == 1.0)
+                speedRatio = 1.0 + ( ( GameRand.Bool() ? -1.1 : 1.1 ) / ( 1L << 53 ) );
             yDist *= yDist;
             double sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
             //handle negative square root
@@ -963,6 +963,9 @@ namespace SpaceRunner
             //negative lead means the player is traveling away too quickly
             if (lead > 0)
             {
+                if (sqrt < 0)
+                {
+                }
                 //add the lead to the firing direction
                 float totalInput = GetDistance(this.inputX, this.inputY);
                 xDir += (float)( lead * this.inputX / totalInput );
