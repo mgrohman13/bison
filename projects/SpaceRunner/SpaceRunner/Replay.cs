@@ -14,23 +14,23 @@ namespace SpaceRunner
 
         internal readonly uint[] Seed;
 
-        private Dictionary<int, Tuple<short, short>> input = null;
-        private HashSet<int> turbo = null, fire = null;
+        private Dictionary<int, float> input = null;
+        private HashSet<int> turbo = null;
+        private Dictionary<int, Point?> fire = null;
 
         private int length = NoLength;
 
         [NonSerialized]
-        private Tuple<short, short> lastInput;
-        [NonSerialized]
-        private bool lastTurbo, lastFire;
+        private float lastInput;
+        private bool lastTurbo;
 
         internal Replay(uint[] Seed)
         {
             this.Seed = Seed;
 
-            this.input = new Dictionary<int, Tuple<short, short>>();
+            this.input = new Dictionary<int, float>();
             this.turbo = new HashSet<int>();
-            this.fire = new HashSet<int>();
+            this.fire = new Dictionary<int, Point?>();
 
             this.length = NoLength;
         }
@@ -50,13 +50,13 @@ namespace SpaceRunner
                 this.length = Math.Max(length, shortTick);
             foreach (int shortTick in this.turbo)
                 this.length = Math.Max(length, shortTick);
-            foreach (int shortTick in this.fire)
+            foreach (int shortTick in this.fire.Keys)
                 this.length = Math.Max(length, shortTick);
         }
 
-        internal void Record(int tickCount, int inputX, int inputY, bool turbo, bool fire)
+        internal void Record(int tickCount, float inputAngle, bool turbo, Point? fire)
         {
-            var input = new Tuple<short, short>((short)inputX, (short)inputY);
+            float input = inputAngle;
             if (this.lastInput != input)
             {
                 this.lastInput = input;
@@ -64,7 +64,9 @@ namespace SpaceRunner
             }
 
             RecordBool(tickCount, this.turbo, ref lastTurbo, turbo);
-            RecordBool(tickCount, this.fire, ref lastFire, fire);
+
+            if (fire.HasValue)
+                this.fire.Add(tickCount, fire);
         }
 
         internal void EndRecord(int tickCount)
@@ -72,17 +74,15 @@ namespace SpaceRunner
             this.length = tickCount;
         }
 
-        internal void Play(int tickCount, ref int inputX, ref int inputY, ref bool turbo, ref bool fire)
+        internal void Play(int tickCount, ref float inputAngle, ref bool turbo, ref Point? fire)
         {
-            Tuple<short, short> input;
-            if (this.input.TryGetValue(tickCount, out input))
-            {
-                inputX = input.Item1;
-                inputY = input.Item2;
-            }
+            float saved;
+            if (this.input.TryGetValue(tickCount, out saved))
+                inputAngle = saved;
 
             PlayBool(tickCount, this.turbo, ref turbo);
-            PlayBool(tickCount, this.fire, ref fire);
+
+            this.fire.TryGetValue(tickCount, out fire);
         }
 
         private static void RecordBool(int tickCount, HashSet<int> save, ref bool last, bool incoming)

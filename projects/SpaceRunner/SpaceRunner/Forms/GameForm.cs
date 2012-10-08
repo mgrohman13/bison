@@ -158,16 +158,14 @@ namespace SpaceRunner.Forms
             if (Game.IsReplay)
                 Game.Paused = !Game.Paused;
             else if (e.Button == MouseButtons.Left)
-                Game.Fire = true;
+                Game.Fire(e.X - center.X, e.Y - center.Y);
             else if (e.Button == MouseButtons.Right)
                 Game.Turbo = true;
         }
 
         private void GameForm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-                Game.Fire = false;
-            else if (e.Button == MouseButtons.Right)
+            if (e.Button == MouseButtons.Right)
                 Game.Turbo = false;
         }
 

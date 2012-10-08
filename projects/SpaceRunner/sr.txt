@@ -5,8 +5,6 @@ improve asteroid collisions
 	fuel explosion interaction - 'pushing' effect
 improve hitboxes for less-round objects
 fix extracted engine
-max player turning speed
-	directly proportional to movement speed
 mines
 	power up visibly sits on player
 	click fire drops one
@@ -20,3 +18,4 @@ remove fuel powerup increase randomness
 dynamically create images
 	exp, fuel exp
 	life dust? bullet?
+	recreate between every game

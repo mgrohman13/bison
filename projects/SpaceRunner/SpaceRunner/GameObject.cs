@@ -179,7 +179,7 @@ namespace SpaceRunner
         {
         }
 
-        internal float Step(float playerXMove, float playerYMove, float playerSpeed)
+        internal float Step(float playerXMove, float playerYMove)
         {
             if (!float.IsNaN(curAngle))
                 curAngle += rotate;
@@ -197,7 +197,7 @@ namespace SpaceRunner
 
             float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
-                    Game.GameRand.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), playerSpeed)))
+                    Game.GameRand.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed)))
                 Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();
