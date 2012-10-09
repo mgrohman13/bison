@@ -142,9 +142,14 @@ namespace SpaceRunner.Forms
 #endif
         }
 
+        private bool fire = false;
+
         private void GameForm_MouseMove(object sender, MouseEventArgs e)
         {
-            Game.SetMouseCoordinates(e.X - center.X, e.Y - center.Y);
+            int x = e.X - center.X, y = e.Y - center.Y;
+            Game.SetMouseCoordinates(x, y);
+            if (fire)
+                Game.Fire(x, y);
         }
 
         private void GameForm_MouseLeave(object sender, EventArgs e)
@@ -156,16 +161,25 @@ namespace SpaceRunner.Forms
         private void GameForm_MouseDown(object sender, MouseEventArgs e)
         {
             if (Game.IsReplay)
+            {
                 Game.Paused = !Game.Paused;
+            }
             else if (e.Button == MouseButtons.Left)
-                Game.Fire(e.X - center.X, e.Y - center.Y);
+            {
+                fire = true;
+                GameForm_MouseMove(sender, e);
+            }
             else if (e.Button == MouseButtons.Right)
+            {
                 Game.Turbo = true;
+            }
         }
 
         private void GameForm_MouseUp(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            if (e.Button == MouseButtons.Left)
+                fire = false;
+            else if (e.Button == MouseButtons.Right)
                 Game.Turbo = false;
         }
 

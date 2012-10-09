@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using SpaceRunner.Images;
 
 namespace SpaceRunner
 {
@@ -15,13 +16,15 @@ namespace SpaceRunner
             Neutral,
         }
 
-        private static readonly Image[] Images;
+        private static int ImageCount;
+        private static Image[] Images;
 
-        static Bullet()
+        internal static void InitImages()
         {
-            Images = new Image[Game.BulletImageCount];
-            for (int idx = 0 ; idx < Game.BulletImageCount ; ++idx)
-                Images[idx] = Game.LoadImageRotated("bullet.bmp", Game.BulletSize);
+            ImageCount = Game.Random.GaussianOEInt(13, .13, .13, 6);
+            Images = new Image[ImageCount];
+            for (int idx = 0 ; idx < ImageCount ; ++idx)
+                Images[idx] = Game.LoadImageRotated(BulletGenerator.GenerateBullet(), Game.BulletSize);
         }
 
         internal static void Dispose()
@@ -66,7 +69,7 @@ namespace SpaceRunner
         }
 
         private Bullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
-            : base(game, x, y, xDir, yDir, Game.BulletSize, Images[Game.Random.Next(Game.BulletImageCount)])
+            : base(game, x, y, xDir, yDir, Game.BulletSize, Images[Game.Random.Next(ImageCount)])
         {
             this.Friendly = friendly;
             //space out from whoever fired it

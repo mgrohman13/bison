@@ -99,8 +99,6 @@ namespace SpaceRunner
         }
 
         //should reflect actual information about the images in PicLocation
-        internal const int NumExplosionImages = 6;
-        internal const int NumImagesPerExplosion = 25;
         internal const int NumAsteroidImages = 8;
         internal const int NumFuelExplosionImages = 6;
         internal const int NumLifeDustImages = 13;
@@ -154,7 +152,6 @@ namespace SpaceRunner
         internal const float StartFuel = FuelMult * 15;
         //average fuel per power up
         internal const float IncFuel = FuelMult * 3;
-        internal const float IncFuelRandomness = .104f;
         //how many extra pixels each fuel point will take you
         internal const float FuelMult = 130f;
         //percentage of fuel consumed each iteration when using turbo
@@ -254,7 +251,6 @@ namespace SpaceRunner
         internal const float AlienFiringInaccuracy = 0.052f;
         //chance that, when a bullet hits and kills a piece of life dust, the bullet will also be killed
         internal const float BulletLifeDustDieChance = 6f / ( 6f + LifeDustClumpAmt );
-        internal const int BulletImageCount = 13;
 
         internal const float FuelExplosionSize = 91f;
         //number of iterations a fuel explosion lasts
@@ -292,7 +288,6 @@ namespace SpaceRunner
         internal const float LifeDustHitChance = GameTick * 0.0065f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
         internal const float LifeDustAmtToHeal = 52f;
-        internal const int LifeDustImageCount = 169;
 
         internal const float PowerUpSize = 9f;
         //these three chance value are only relative to one another
@@ -409,10 +404,7 @@ namespace SpaceRunner
         {
             get
             {
-                int retVal = Round(fuel / FuelMult);
-                if (retVal < 1 && fuel > 0)
-                    retVal = 1;
-                return retVal;
+                return (int)Math.Ceiling(fuel / FuelMult);
             }
         }
 
@@ -657,11 +649,11 @@ namespace SpaceRunner
                 --alienCount;
         }
 
-        public void Fire(int x, int y)
+        internal void Fire(int x, int y)
         {
             if (!IsReplay)
                 lock (gameTicker)
-                    if (!Paused && ammo > 0 && !( x == 0 && y == 0 ))
+                    if (x != 0 || y != 0)
                         fire = new Point(x, y);
         }
 
@@ -715,15 +707,15 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-            Paused = true;
-            SleepTick();
-            Refresh();
-            SleepTick();
-            lock (gameTicker)
-                while (tickCount < position)
-                    this.Step();
-            SleepTick();
-            Paused = false;
+                Paused = true;
+                SleepTick();
+                Refresh();
+                SleepTick();
+                lock (gameTicker)
+                    while (tickCount < position)
+                        this.Step();
+                SleepTick();
+                Paused = false;
 #if DEBUG
             }
             else
@@ -747,7 +739,7 @@ namespace SpaceRunner
         }
         internal void AddFuel()
         {
-            fuel += GameRand.GaussianCapped(IncFuel, IncFuelRandomness);
+            fuel += IncFuel;
         }
         internal void AddLife(float amt, bool allowNew)
         {
@@ -852,14 +844,14 @@ namespace SpaceRunner
             return ( rand.NextFloat() * TwoPi );
         }
 
-        internal static Image LoadImageRotated(string name, float size)
+        internal static Image LoadImageRotated(Bitmap image, float size)
         {
             float twoSize = 2 * size;
             int newSize = (int)Math.Ceiling(twoSize * SqrtTwo);
 
-            Bitmap retVal = new Bitmap(newSize, newSize);
+            Image retVal = new Bitmap(newSize, newSize);
             Graphics graphics = Graphics.FromImage(retVal);
-            Image image = LoadImage(name);
+            Image temp = SetTransparentBackground(image);
 
             const int NumRotateFlipTypes = 8;
             RotateFlipType rotateFlipType = (RotateFlipType)Game.Random.Next(NumRotateFlipTypes);
@@ -867,28 +859,35 @@ namespace SpaceRunner
             if (Enum.IsDefined(typeof(RotateFlipType), NumRotateFlipTypes) || !Enum.IsDefined(typeof(RotateFlipType), rotateFlipType))
                 throw new Exception();
 #endif
-            image.RotateFlip(rotateFlipType);
+            temp.RotateFlip(rotateFlipType);
 
             float trans = newSize / 2f;
-            float scale = twoSize / image.Width;
+            float scale = twoSize / temp.Width;
 
             graphics.TranslateTransform(trans, trans);
             graphics.RotateTransform(GetRandomAngle(Game.Random) * RadToDeg);
             graphics.TranslateTransform(-size, -size);
             graphics.ScaleTransform(scale, scale);
 
-            graphics.DrawImage(image, 0f, 0f);
+            graphics.DrawImage(temp, 0f, 0f);
 
             graphics.Dispose();
-            image.Dispose();
+            temp.Dispose();
 
             return retVal;
         }
+        internal static Image LoadImage(Bitmap image, float size)
+        {
+            return ResizeImage(SetTransparentBackground(image), size);
+        }
         internal static Image LoadImage(string name)
         {
-            Bitmap retVal = new Bitmap(PicLocation + name);
-            retVal.MakeTransparent(Color.Magenta);
-            return retVal;
+            return SetTransparentBackground(new Bitmap(PicLocation + name));
+        }
+        internal static Image SetTransparentBackground(Bitmap image)
+        {
+            image.MakeTransparent(Color.Magenta);
+            return image;
         }
         internal static Image LoadImage(string name, float size)
         {
@@ -1014,7 +1013,7 @@ namespace SpaceRunner
 
             return retVal;
         }
-        private static PointF GetPoint(float angle, float dist)
+        internal static PointF GetPoint(float angle, float dist)
         {
             float x, y;
             GetDirs(out x, out y, angle, dist);
@@ -1056,6 +1055,8 @@ namespace SpaceRunner
         private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring, Replay replay, bool isReplay)
             : base(GameTick, Refresh)
         {
+            SpaceRunner.Images.Generator.Generate();
+
             if (seed == null)
                 this.gameRand = null;
             else
@@ -1166,21 +1167,33 @@ namespace SpaceRunner
         private void TurnPlayer()
         {
             float input;
-            if (fire.HasValue)
+            if (IsFiring())
                 input = GetFireAngle();
             else
                 input = inputAngle;
-            float diff = input - moveAngle;
-            if (diff > Math.PI)
-                diff -= TwoPi;
-            else if (diff < -Math.PI)
-                diff += TwoPi;
-            float turnSpeed = TurnSpeed * TotalSpeed;
+
+            float diff = NormalizeAngle(input - moveAngle);
+            float turnSpeed = GetTurnSpeed();
             if (diff > turnSpeed)
                 diff = turnSpeed;
             else if (diff < -turnSpeed)
                 diff = -turnSpeed;
-            moveAngle += diff;
+
+            moveAngle = NormalizeAngle(moveAngle + diff);
+        }
+
+        private float GetTurnSpeed()
+        {
+            return TurnSpeed * TotalSpeed;
+        }
+
+        private static float NormalizeAngle(float diff)
+        {
+            if (diff > Math.PI)
+                diff -= TwoPi;
+            else if (diff < -Math.PI)
+                diff += TwoPi;
+            return diff;
         }
 
         private void MovePlayer()
@@ -1196,15 +1209,26 @@ namespace SpaceRunner
             //check that the player is firing and can fire
             --fireCounter;
 
-            if (fire.HasValue && !Dead && fireCounter < 0 && ammo > 0 && Math.Abs(GetFireAngle() - moveAngle) < TurnSpeed * TotalSpeed)
+            if (IsFiring())
             {
-                if (--ammo < 1)
-                    fireCounter = -1;
-                else
-                    fireCounter = GameRand.Round(GetCoolDown());
-                Bullet.NewBullet(this, 0, 0, fire.Value.X, fire.Value.Y, TotalSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
+                if (Math.Abs(GetFireAngle() - moveAngle) < GetTurnSpeed())
+                {
+                    if (--ammo < 1)
+                        fireCounter = -1;
+                    else
+                        fireCounter = GameRand.Round(GetCoolDown());
+                    Bullet.NewBullet(this, 0, 0, fire.Value.X, fire.Value.Y, TotalSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
+                }
+            }
+            else if (fire.HasValue)
+            {
                 fire = null;
             }
+        }
+
+        private bool IsFiring()
+        {
+            return ( fire.HasValue && !Dead && fireCounter < 0 && ammo > 0 );
         }
 
         private float GetCoolDown()

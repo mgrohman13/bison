@@ -1,4 +1,3 @@
-explosion graphics
 improve asteroid collisions
 	momentum affects damage - glancing hits
 	momentum partially/randomly conserved
@@ -14,8 +13,4 @@ mines
 difficulty increase with time
 	alien ship appearance
 	alien speed?
-remove fuel powerup increase randomness
-dynamically create images
-	exp, fuel exp
-	life dust? bullet?
-	recreate between every game
+dynamically create fuel exp

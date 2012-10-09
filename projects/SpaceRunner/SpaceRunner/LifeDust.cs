@@ -1,23 +1,27 @@
 using System;
 using System.Drawing;
+using SpaceRunner.Images;
 
 namespace SpaceRunner
 {
     internal class LifeDust : GameObject
     {
         private const float StartSizeImage = .5f;
-        private static readonly float SizeIncImage;
-        private static readonly Image[] Images;
+        private static int ImageCount;
+        private static float SizeIncImage;
+        private static Image[] Images;
 
-        static LifeDust()
+        internal static void InitImages()
         {
-            Images = new Image[Game.LifeDustImageCount];
-            SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( Game.LifeDustImageCount - 1 );
+            ImageCount = Game.Random.GaussianOEInt(169, .13, .13, 130);
+            SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( ImageCount - 1 );
+
+            Images = new Image[ImageCount];
 
             float size = StartSizeImage;
-            for (int idx = 0 ; idx < Game.LifeDustImageCount ; ++idx)
+            for (int idx = 0 ; idx < ImageCount ; ++idx)
             {
-                Images[idx] = Game.LoadImageRotated(@"lifedust\" + Game.Random.RangeInt(1, Game.NumLifeDustImages).ToString("00") + ".bmp", size);
+                Images[idx] = Game.LoadImageRotated(LifeDustGenerator.GenerateLifeDust(), size);
                 size += SizeIncImage;
             }
         }
