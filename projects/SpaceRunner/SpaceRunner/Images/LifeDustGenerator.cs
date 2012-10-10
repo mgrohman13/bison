@@ -13,10 +13,10 @@ namespace SpaceRunner.Images
             Graphics graphics;
             Bitmap retVal = Generator.CreateInitialImage(13, dark, light, 3, out graphics);
 
-            Generator.DrawBlobs(graphics, new SolidBrush(light), new SolidBrush(GetLight()), 39, 21, 1.5f, 2.5f, 3f);
+            Generator.DrawBlobs(graphics, new SolidBrush(light), new SolidBrush(GetLight()), 39, 13, 1.5f, 2.5f, Game.Random.GaussianCapped(3f, .13f), .65f);
 
-            int corner = Game.Random.Next(4);
-            Rectangle r;
+            int corner = Game.Random.Next(5);
+            Rectangle? r;
             switch (corner)
             {
             case 0:
@@ -32,11 +32,15 @@ namespace SpaceRunner.Images
                 r = new Rectangle(15, 7, 6, -1);
                 break;
             default:
-                throw new Exception();
+                r = null;
+                break;
             }
-            graphics.DrawLine(new Pen(Color.Magenta, 3), r.X, r.Y, r.Width, r.Height);
-            if (corner == 0)
-                retVal.SetPixel(6, 1, dark);
+            if (r.HasValue)
+            {
+                graphics.DrawLine(new Pen(Color.Magenta, 3), r.Value.X, r.Value.Y, r.Value.Width, r.Value.Height);
+                if (corner == 0)
+                    retVal.SetPixel(6, 1, dark);
+            }
 
             Generator.DisposeGraphics(graphics);
             return retVal;

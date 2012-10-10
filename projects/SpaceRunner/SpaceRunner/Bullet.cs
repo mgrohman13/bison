@@ -16,14 +16,13 @@ namespace SpaceRunner
             Neutral,
         }
 
-        private static int ImageCount;
         private static Image[] Images;
 
         internal static void InitImages()
         {
-            ImageCount = Game.Random.GaussianOEInt(13, .13, .13, 6);
-            Images = new Image[ImageCount];
-            for (int idx = 0 ; idx < ImageCount ; ++idx)
+            int numImages = Game.Random.GaussianOEInt(13, .13f, .21f, 6);
+            Images = new Image[numImages];
+            for (int idx = 0 ; idx < numImages ; ++idx)
                 Images[idx] = Game.LoadImageRotated(BulletGenerator.GenerateBullet(), Game.BulletSize);
         }
 
@@ -69,7 +68,7 @@ namespace SpaceRunner
         }
 
         private Bullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
-            : base(game, x, y, xDir, yDir, Game.BulletSize, Images[Game.Random.Next(ImageCount)])
+            : base(game, x, y, xDir, yDir, Game.BulletSize, Images[Game.Random.Next(Images.Length)])
         {
             this.Friendly = friendly;
             //space out from whoever fired it

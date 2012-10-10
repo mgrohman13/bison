@@ -7,19 +7,18 @@ namespace SpaceRunner
     internal class LifeDust : GameObject
     {
         private const float StartSizeImage = .5f;
-        private static int ImageCount;
         private static float SizeIncImage;
         private static Image[] Images;
 
         internal static void InitImages()
         {
-            ImageCount = Game.Random.GaussianOEInt(169, .13, .13, 130);
-            SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( ImageCount - 1 );
+            int numImages = Game.Random.GaussianOEInt(169, .065f, .13f, 130);
+            SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( numImages - 1 );
 
-            Images = new Image[ImageCount];
+            Images = new Image[numImages];
 
             float size = StartSizeImage;
-            for (int idx = 0 ; idx < ImageCount ; ++idx)
+            for (int idx = 0 ; idx < numImages ; ++idx)
             {
                 Images[idx] = Game.LoadImageRotated(LifeDustGenerator.GenerateLifeDust(), size);
                 size += SizeIncImage;

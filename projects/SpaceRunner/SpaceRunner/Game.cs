@@ -114,7 +114,7 @@ namespace SpaceRunner
         #region game params
 
         // object	radius	diameter   area
-        //life dust	 2.1      4.2	    13.9
+        //life dust	 2.1      4.2	    13.9    (avg)
         //bullet	 3.1      6.3	    31.0
         //asteroid	 8.8	 17.6	   242.6    (min)
         //fuel exp.	 9.0     18.0	   254.5    (min)

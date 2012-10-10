@@ -6,14 +6,14 @@ namespace SpaceRunner.Images
 {
     public class ExplosionGenerator
     {
-        public static Bitmap[] GenerateExplosion(int width, int length, double size)
+        public static Bitmap[] GenerateExplosion(int width, int length, float size)
         {
             Bitmap[] result = new Bitmap[length * 2 - 1];
 
             Bitmap last = new Bitmap(width, width);
             Generator.CreateInitialImage(last);
 
-            double center = ( width - 1.0 ) / 2;
+            float center = ( width - 1f ) / 2f;
 
             int idx1 = 0;
             while (++idx1 <= length)
@@ -28,14 +28,14 @@ namespace SpaceRunner.Images
                 Game.Random.NextBytes(temp);
                 byte color = temp[0];
 
-                int amt = Game.Random.GaussianCappedInt(size, .13);
+                int amt = Game.Random.GaussianCappedInt(size, .13f);
                 for (int idx2 = 0 ; idx2 < amt ; ++idx2)
                 {
                     int oldX = x, oldY = y;
                     x = Mod(x, width, center);
                     y = Mod(y, width, center);
 
-                    if (( x - center ) * ( x - center ) + ( y - center ) * ( y - center ) > width * width / 4.0)
+                    if (( x - center ) * ( x - center ) + ( y - center ) * ( y - center ) > width * width / 4f)
                     {
                         --idx2;
                         x = oldX;
@@ -73,9 +73,9 @@ namespace SpaceRunner.Images
             return result;
         }
 
-        private static int Mod(int v, int width, double center)
+        private static int Mod(int v, int width, float center)
         {
-            return Game.Random.Round(( 3 * v + center ) / 4 + Game.Random.Gaussian(width * .091));
+            return Game.Random.Round(( 3f * v + center ) / 4f + Game.Random.Gaussian(width * .091f));
         }
     }
 }

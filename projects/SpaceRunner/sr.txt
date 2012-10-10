@@ -14,3 +14,5 @@ difficulty increase with time
 	alien ship appearance
 	alien speed?
 dynamically create fuel exp
+lifedust (and asteroid) size calculations based on area, not size
+explosion size?

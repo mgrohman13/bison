@@ -6,20 +6,22 @@ namespace SpaceRunner
 {
     internal class Explosion : GameObject
     {
-        private static int ImageCount;
         private static Image[][] Images;
+
         internal static void InitImages()
         {
             Dispose();
 
-            ImageCount = Game.Random.GaussianOEInt(6, .13, .13, 3);
+            int numExplosions = Game.Random.GaussianOEInt(9.1f, .065f, .065f, 6);
 
-            Images = new Image[ImageCount][];
-            for (int explosion = 0 ; explosion < ImageCount ; ++explosion)
+            Images = new Image[numExplosions][];
+            for (int explosion = 0 ; explosion < numExplosions ; ++explosion)
             {
-                int numImages = Game.Random.GaussianOEInt(13, .13, .13, 9);
+                int numImages = Game.Random.GaussianOEInt(16.9f, .039f, .091f, 13);
                 Images[explosion] = new Image[numImages * 2 - 1];
-                Bitmap[] b = ExplosionGenerator.GenerateExplosion(39, numImages, 16.9);
+                const float avgWidth = 39;
+                int width = Game.Random.GaussianOEInt(avgWidth, .052f, .078f, 26);
+                Bitmap[] b = ExplosionGenerator.GenerateExplosion(width, numImages, Game.Random.GaussianCapped(13f * width / avgWidth, .078f));
                 for (int number = 0 ; number < numImages * 2 - 1 ; ++number)
                     Images[explosion][number] = Game.LoadImage(b[number], Game.ExplosionSize);
             }
@@ -53,7 +55,7 @@ namespace SpaceRunner
             }
             xDir /= count;
             yDir /= count;
-            return new Explosion(game, objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(ImageCount));
+            return new Explosion(game, objs[0].X, objs[0].Y, xDir, yDir, Game.Random.Next(Images.Length));
         }
 
         private Explosion(Game game, float x, float y, float xDir, float yDir, int expNum)

@@ -74,18 +74,17 @@ namespace SpaceRunner.Images
             return retVal;
         }
 
-        internal static void DrawBlobs(Graphics graphics, Brush light, Brush dot, int num, int min, float minSize, float maxSize, float dotSize)
+        internal static void DrawBlobs(Graphics graphics, Brush light, Brush dot, int num, int min, float minSize, float maxSize, float dotSize, float dotPosition)
         {
-            int numBlobs = Game.Random.GaussianOEInt(num, .13, .13, min);
+            int numBlobs = Game.Random.GaussianOEInt(num, .13f, .13f, min);
             for (int idx = 0 ; idx < numBlobs ; ++idx)
             {
                 float size = Game.Random.Range(minSize, maxSize);
                 PointF pf = GetPoint(Game.Random.DoubleHalf(6.5f - size));
                 graphics.FillRectangle(light, GetRectangle(pf, size));
             }
-            float s2 = Game.Random.Gaussian(dotSize, 0.052f);
-            PointF p2 = GetPoint(Game.Random.Weighted(6.5f - s2 / Game.SqrtTwo, .75f));
-            graphics.FillEllipse(dot, GetRectangle(p2, s2));
+            PointF p2 = GetPoint(Game.Random.Weighted(6.5f - dotSize / Game.SqrtTwo, dotPosition));
+            graphics.FillEllipse(dot, GetRectangle(p2, dotSize));
         }
         private static PointF GetPoint(float dist)
         {
