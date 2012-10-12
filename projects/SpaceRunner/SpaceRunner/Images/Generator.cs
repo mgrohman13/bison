@@ -9,6 +9,7 @@ namespace SpaceRunner.Images
         {
             Bullet.InitImages();
             Explosion.InitImages();
+            FuelExplosion.InitImages();
             LifeDust.InitImages();
         }
 

@@ -1,24 +1,36 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using SpaceRunner.Images;
 
 namespace SpaceRunner
 {
     internal class FuelExplosion : GameObject, Game.IChecksExtraSectors
     {
-        private static readonly int ImageCount;
+        private static List<Bitmap> generated = new List<Bitmap>();
         private static Image[] Images;
 
         static FuelExplosion()
         {
-            ImageCount = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
-            Images = new Image[ImageCount];
+            GenerateOne();
+        }
+        internal static void InitImages()
+        {
+            GenerateOne();
+
+            int numImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
+            Images = new Image[numImages];
 
             float size = Game.PowerUpSize;
-            for (int idx = 0 ; idx < ImageCount ; ++idx)
+            for (int idx = 0 ; idx < numImages ; ++idx)
             {
-                Images[idx] = Game.LoadImage("fuelExps\\" + Game.Random.Next(Game.NumFuelExplosionImages) + ".bmp", size);
-                size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( ImageCount - 1 );
+                Images[idx] = Game.LoadImage(generated[Game.Random.Next(generated.Count)], size, false);
+                size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( numImages - 1 );
             }
+        }
+        private static void GenerateOne()
+        {
+            generated.Add(FuelExplosionGenerator.GenerateFuelExplosion(Game.Random.GaussianOEInt(195, .13f, .13f, 104)));
         }
 
         internal static void Dispose()
@@ -53,7 +65,7 @@ namespace SpaceRunner
             size += Game.ExplosionSpeed;
 
             if (--time > 0)
-                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * ImageCount )];
+                this.image = Images[(int)( ( Game.FuelExplosionTime - time ) / Game.FuelExplosionTime * Images.Length )];
             else
                 this.Die();
         }

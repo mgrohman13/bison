@@ -707,15 +707,15 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-                Paused = true;
-                SleepTick();
-                Refresh();
-                SleepTick();
-                lock (gameTicker)
-                    while (tickCount < position)
-                        this.Step();
-                SleepTick();
-                Paused = false;
+            Paused = true;
+            SleepTick();
+            Refresh();
+            SleepTick();
+            lock (gameTicker)
+                while (tickCount < position)
+                    this.Step();
+            SleepTick();
+            Paused = false;
 #if DEBUG
             }
             else
@@ -878,7 +878,11 @@ namespace SpaceRunner
         }
         internal static Image LoadImage(Bitmap image, float size)
         {
-            return ResizeImage(SetTransparentBackground(image), size);
+            return LoadImage(image, size, true);
+        }
+        internal static Image LoadImage(Bitmap image, float size, bool disposeOriginal)
+        {
+            return ResizeImage(SetTransparentBackground(image), size, disposeOriginal);
         }
         internal static Image LoadImage(string name)
         {

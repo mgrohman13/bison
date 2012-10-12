@@ -35,7 +35,7 @@ namespace SpaceRunner.Images
                     x = Mod(x, width, center);
                     y = Mod(y, width, center);
 
-                    if (( x - center ) * ( x - center ) + ( y - center ) * ( y - center ) > width * width / 4f)
+                    if (Game.GetDistanceSqr(x - center, y - center) > width * width / 4f)
                     {
                         --idx2;
                         x = oldX;

@@ -514,12 +514,12 @@ namespace GalWarWin
 
         private void btnNewGame_Click(object sender, EventArgs e)
         {
-            Player black = new Player("Black", Color.Blue, new GalWarAI.GalWarAI());
-            Player blue = new Player("Blue", Color.Cyan, new GalWarAI.GalWarAI());
-            Player green = new Player("Green", Color.Green, new GalWarAI.GalWarAI());
-            Player pink = new Player("Pink", Color.Magenta, new GalWarAI.GalWarAI());
-            Player red = new Player("Red", Color.Red, new GalWarAI.GalWarAI());
-            Player yellow = new Player("Yellow", Color.Gold, new GalWarAI.GalWarAI());
+            Player black = new Player("Black", Color.Blue, null);//new GalWarAI.GalWarAI());
+            Player blue = new Player("Blue", Color.Cyan, null);//new GalWarAI.GalWarAI());
+            Player green = new Player("Green", Color.Green, null);//new GalWarAI.GalWarAI());
+            Player pink = new Player("Pink", Color.Magenta, null);//new GalWarAI.GalWarAI());
+            Player red = new Player("Red", Color.Red, null);//new GalWarAI.GalWarAI());
+            Player yellow = new Player("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .52, 0.0021));
@@ -1816,12 +1816,12 @@ namespace GalWarWin
 
         void IEventHandler.Event()
         {
-            if (Game.CurrentPlayer.Name == "Pink")
-            {
-                Refresh();
-                MessageBox.Show(Environment.StackTrace);
-                System.Threading.Thread.Sleep(1000);
-            }
+            //if (Game.CurrentPlayer.Name == "Pink")
+            //{
+            //    Refresh();
+            //    MessageBox.Show(Environment.StackTrace);
+            //    System.Threading.Thread.Sleep(1000);
+            //}
         }
 
         #endregion

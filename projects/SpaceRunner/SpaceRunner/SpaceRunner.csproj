@@ -84,6 +84,7 @@
     <Compile Include="GameObject.cs" />
     <Compile Include="FuelExplosion.cs" />
     <Compile Include="Images\BulletGenerator.cs" />
+    <Compile Include="Images\FuelExplosionGenerator.cs" />
     <Compile Include="Images\ExplosionGenerator.cs" />
     <Compile Include="Images\Generator.cs" />
     <Compile Include="Images\LifeDustGenerator.cs" />
