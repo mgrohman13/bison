@@ -1,5 +1,3 @@
-re-enable AutoSave but only on human turns
-
 AI
 integrate AI-algorithm guesses into game for player to use as well
 known enemy designs

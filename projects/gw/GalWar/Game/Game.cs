@@ -421,14 +421,15 @@ next_planet:
 
             StartPlayerTurn(handler);
 
-            AutoSave();
+            if (CurrentPlayer.AI == null)
+                AutoSave();
 
             CurrentPlayer.PlayTurn(handler);
         }
 
         public void AutoSave()
         {
-            //TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
+            TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
         }
 
         private void NewRound()
