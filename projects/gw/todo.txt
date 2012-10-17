@@ -8,6 +8,9 @@ split planetary defense between building attack or defense
 cost calculator
 main map improvements
 	ship speed/type
+	zooming, panning
+	minimap
 undo
 auto repair
 	needs to be saveable?
+randomize planet colonization cost

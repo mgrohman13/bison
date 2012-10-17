@@ -165,7 +165,7 @@ namespace GalWar
 
         private static int GetStartInt(double avg)
         {
-            return Random.GaussianCappedInt(avg, Consts.StartRndm, Random.Round(avg * Consts.StartMinMult));
+            return Random.Round(GetStartDouble(avg));
         }
 
         private static double GetStartDouble(double avg)
