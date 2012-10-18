@@ -14,3 +14,4 @@ undo
 auto repair
 	needs to be saveable?
 randomize planet colonization cost
+research display offset

@@ -172,12 +172,13 @@ namespace GalWarWin
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
             double totalDmgChance = ( att + 1 ) * ( def + 1 );
 
-            int guess = Math.Min(attHP, ( def * att * 70 ) / 99) * Math.Min(defHP, ( att * att * 70 ) / 99);
+            int capacity = GetCapacity(att, def, att, attHP, defHP);
+            int c2 = GetCapacity(att, def, att - 1, attHP, defHP);
 
-            Dictionary<ResultPoint, double> chances = new Dictionary<ResultPoint, double>(guess);
+            Dictionary<ResultPoint, double> chances = new Dictionary<ResultPoint, double>(capacity);
             ResultPoint rp = new ResultPoint(attHP, defHP);
             chances.Add(rp, 1);
-            Dictionary<ResultPoint, double> oldChances = new Dictionary<ResultPoint, double>(guess);
+            Dictionary<ResultPoint, double> oldChances = new Dictionary<ResultPoint, double>(c2);
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
@@ -231,8 +232,13 @@ namespace GalWarWin
                     goto end;
             }
 
+            if (chances.Count > capacity)
+                throw new Exception();
+            if (oldChances.Count > c2)
+                throw new Exception();
             Console.WriteLine("Att {0} Def {1} AHP {2} DHP {3}", att, def, attHP, defHP);
-            Console.WriteLine("Guess {0} Count {1}", guess, chances.Count);
+            Console.WriteLine("Capacity {0} Count {1}", capacity, chances.Count);
+            Console.WriteLine("c2 {0} oldChances {1}", c2, oldChances.Count);
 
             double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
             foreach (KeyValuePair<ResultPoint, double> pair in chances)
@@ -258,6 +264,10 @@ namespace GalWarWin
 end:
             if (worker.CancellationPending)
                 e.Cancel = true;
+        }
+        private static int GetCapacity(int att, int def, int rounds, int attHP, int defHP)
+        {
+            return ( ( Math.Min(attHP, def * rounds) + 1 ) * ( Math.Min(defHP, att * rounds) + 1 ) - 1 );
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
