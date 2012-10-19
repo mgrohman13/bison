@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -172,13 +173,19 @@ namespace GalWarWin
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
             double totalDmgChance = ( att + 1 ) * ( def + 1 );
 
-            int capacity = GetCapacity(att, def, att, attHP, defHP);
-            int c2 = GetCapacity(att, def, att - 1, attHP, defHP);
+            int c1 = GetCapacity(att, def, ( att / 2 ) * 2, attHP, defHP),
+                c2 = GetCapacity(att, def, ( ( ( att + 1 ) / 2 ) * 2 ) - 1, attHP, defHP);
+            var chances = new Dictionary<ResultPoint, double>(c1);
+            var oldChances = new Dictionary<ResultPoint, double>(c2);
 
-            Dictionary<ResultPoint, double> chances = new Dictionary<ResultPoint, double>(capacity);
+            FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
+            Console.WriteLine();
+            Console.WriteLine("att {0} def {1} attHP {2} defHP {3}", att, def, attHP, defHP);
+            Console.WriteLine("c1: {0} c2: {1}", c1, c2);
+            Console.WriteLine("chances: {0} oldChances: {1}", GetCapacity(chances, buckets), GetCapacity(oldChances, buckets));
+
             ResultPoint rp = new ResultPoint(attHP, defHP);
             chances.Add(rp, 1);
-            Dictionary<ResultPoint, double> oldChances = new Dictionary<ResultPoint, double>(c2);
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
@@ -187,6 +194,8 @@ namespace GalWarWin
                 oldChances = chances;
                 chances = temp;
                 chances.Clear();
+
+                int capacity = GetCapacity(chances, buckets);
 
                 foreach (KeyValuePair<ResultPoint, double> chancePair in oldChances)
                 {
@@ -228,17 +237,16 @@ namespace GalWarWin
                     }
                 }
 
+                if (capacity != GetCapacity(chances, buckets))
+                    throw new Exception();
+
                 if (worker.CancellationPending)
                     goto end;
             }
 
-            if (chances.Count > capacity)
-                throw new Exception();
-            if (oldChances.Count > c2)
-                throw new Exception();
-            Console.WriteLine("Att {0} Def {1} AHP {2} DHP {3}", att, def, attHP, defHP);
-            Console.WriteLine("Capacity {0} Count {1}", capacity, chances.Count);
-            Console.WriteLine("c2 {0} oldChances {1}", c2, oldChances.Count);
+            Console.WriteLine("chances: {0} cap: {1}", chances.Count, GetCapacity(chances, buckets));
+            Console.WriteLine("oldChances: {0} cap: {1}", oldChances.Count, GetCapacity(oldChances, buckets));
+            Console.WriteLine();
 
             double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
             foreach (KeyValuePair<ResultPoint, double> pair in chances)
@@ -268,6 +276,10 @@ end:
         private static int GetCapacity(int att, int def, int rounds, int attHP, int defHP)
         {
             return ( ( Math.Min(attHP, def * rounds) + 1 ) * ( Math.Min(defHP, att * rounds) + 1 ) - 1 );
+        }
+        private static int GetCapacity(Dictionary<ResultPoint, double> chances, FieldInfo buckets)
+        {
+            return ( (Array)buckets.GetValue(chances) ).Length;
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
