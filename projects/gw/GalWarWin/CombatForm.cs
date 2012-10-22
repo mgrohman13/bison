@@ -173,15 +173,17 @@ namespace GalWarWin
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
             double totalDmgChance = ( att + 1 ) * ( def + 1 );
 
-            int c1 = GetCapacity(att, def, ( att / 2 ) * 2, attHP, defHP),
-                c2 = GetCapacity(att, def, ( ( ( att + 1 ) / 2 ) * 2 ) - 1, attHP, defHP);
-            var chances = new Dictionary<ResultPoint, double>(c1);
-            var oldChances = new Dictionary<ResultPoint, double>(c2);
+            //int c1 = GetCapacity(att, def, ( att / 2 ) * 2, attHP, defHP),
+            //    c2 = GetCapacity(att, def, ( ( ( att + 1 ) / 2 ) * 2 ) - 1, attHP, defHP);
+            int c = GetCapacity(att, def, att, attHP, defHP);
+            var chances = new Dictionary<ResultPoint, double>(c);
+            var oldChances = new Dictionary<ResultPoint, double>(c);
 
             FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
             Console.WriteLine();
             Console.WriteLine("att {0} def {1} attHP {2} defHP {3}", att, def, attHP, defHP);
-            Console.WriteLine("c1: {0} c2: {1}", c1, c2);
+            //Console.WriteLine("c1: {0} c2: {1}", c1, c2);
+            Console.WriteLine("c: {0}", c);
             Console.WriteLine("chances: {0} oldChances: {1}", GetCapacity(chances, buckets), GetCapacity(oldChances, buckets));
 
             ResultPoint rp = new ResultPoint(attHP, defHP);
@@ -238,14 +240,14 @@ namespace GalWarWin
                 }
 
                 if (capacity != GetCapacity(chances, buckets))
-                    throw new Exception();
+                    Console.WriteLine("RESIZE");
 
                 if (worker.CancellationPending)
                     goto end;
             }
 
-            Console.WriteLine("chances: {0} cap: {1}", chances.Count, GetCapacity(chances, buckets));
-            Console.WriteLine("oldChances: {0} cap: {1}", oldChances.Count, GetCapacity(oldChances, buckets));
+            Console.WriteLine("chances: {0} cap: {1}   ({2})", chances.Count, GetCapacity(chances, buckets), ( (double)( chances.Count / (double)GetCapacity(chances, buckets) ) ).ToString("0.000"));
+            Console.WriteLine("oldChances: {0} cap: {1}   ({2})", oldChances.Count, GetCapacity(oldChances, buckets), ( (double)( oldChances.Count / (double)GetCapacity(oldChances, buckets) ) ).ToString("0.000"));
             Console.WriteLine();
 
             double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
@@ -275,7 +277,9 @@ end:
         }
         private static int GetCapacity(int att, int def, int rounds, int attHP, int defHP)
         {
-            return ( ( Math.Min(attHP, def * rounds) + 1 ) * ( Math.Min(defHP, att * rounds) + 1 ) - 1 );
+            //return ( ( Math.Min(attHP, def * rounds) + 1 ) * ( Math.Min(defHP, att * rounds) + 1 ) - 1 );
+            return (int)( Math.Min(attHP, def * rounds / ( 1.0 + Math.Min(1, defHP / ( att * rounds )) ))
+                    * Math.Min(defHP, att * rounds / ( 1.0 + Math.Min(1, attHP / ( def * rounds )) )) * Math.PI );
         }
         private static int GetCapacity(Dictionary<ResultPoint, double> chances, FieldInfo buckets)
         {
