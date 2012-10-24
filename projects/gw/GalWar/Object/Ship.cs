@@ -87,7 +87,7 @@ namespace GalWar
                     ++hp;
                     break;
                 case ExpType.DS:
-                    ds += this.needExpMult / Consts.BombardAttackMult;
+                    ds += GetBombardLevelInc();
                     break;
                 case ExpType.Speed:
                     ++speed;
@@ -599,7 +599,7 @@ namespace GalWar
                     ++this.MaxHP;
                     break;
                 case ExpType.DS:
-                    this.bombardDamageMult += this.needExpMult / Consts.BombardAttackMult;
+                    this.bombardDamageMult += GetBombardLevelInc();
                     break;
                 case ExpType.Speed:
                     ++this.MaxSpeed;
@@ -642,6 +642,11 @@ namespace GalWar
 
                 GetNextLevel(handler);
             }
+        }
+
+        private float GetBombardLevelInc()
+        {
+            return this.needExpMult / Consts.BombardAttackMult;
         }
 
         private double GetUpkeepPayoff()

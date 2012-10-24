@@ -1245,7 +1245,7 @@ namespace GalWarWin
             upkeep = Player.RoundGold(upkeep);
             total = Player.RoundGold(total);
 
-            LabelsForm.ShowDialog(this, "Ships", ships.ToString(), string.Empty, string.Empty, "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
+            LabelsForm.ShowDialog(this, "Ship Upk", ships.ToString(), string.Empty, string.Empty, "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
                     "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total), "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
         }
 

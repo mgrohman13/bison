@@ -1,3 +1,4 @@
+test exact vs oversize dictionary capacity for combat performance
 AI
 integrate AI-algorithm guesses into game for player to use as well
 known enemy designs
@@ -16,3 +17,4 @@ auto repair
 randomize planet colonization cost
 research display offset
 bring up test dialog on enemy adjacent invasion
+Ship.GetBombardLevelInc - div by att?
