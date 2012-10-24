@@ -185,9 +185,8 @@ namespace GalWar
                 //modify bombard mult based on speed and att
                 if (this.DeathStar)
                 {
-                    this._bombardDamageMult = (float)MultStr(this.BombardDamageMult, Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att));
-                    if (this.BombardDamage < 1)
-                        this._bombardDamageMult = 1 / Consts.BombardAttackMult / this.Att;
+                    this._bombardDamageMult *= (float)Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att);
+                    this._bombardDamageMult = CheckBombardDamage(true);
                 }
 
                 //  ------  Cost/Upkeep       ------
@@ -202,6 +201,8 @@ namespace GalWar
                     {
                     case ModifyStat.Att:
                         --this._att;
+                        if (this.DeathStar)
+                            this._bombardDamageMult = CheckBombardDamage(true);
                         break;
                     case ModifyStat.Def:
                         --this._def;
@@ -217,8 +218,7 @@ namespace GalWar
                         break;
                     case ModifyStat.BombardDamageMult:
                         this._bombardDamageMult -= ( 1 - Game.Random.NextFloat() );
-                        if (this.BombardDamage < 1)
-                            this._bombardDamageMult = 1;
+                        this._bombardDamageMult = CheckBombardDamage(false);
                         break;
                     case ModifyStat.None:
                         maxCost = cost;
@@ -601,6 +601,17 @@ namespace GalWar
             return mult * stat / (double)( this.Att + this.Def );
         }
 
+        private float CheckBombardDamage(bool keepDeathStar)
+        {
+            const float minDamage = 1f;
+            if (this.BombardDamageMult < 1 || this.BombardDamage < minDamage)
+                if (keepDeathStar)
+                    return Math.Max(1, minDamage / Consts.BombardAttackMult / this.Att);
+                else
+                    return 1;
+            return this.BombardDamageMult;
+        }
+
         #endregion //Cost/Upkeep
 
         #region internal
@@ -841,12 +852,12 @@ namespace GalWar
 
         private double GetNonColonyPct()
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this._bombardDamageMult, this.Research);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamageMult, this.Research);
         }
 
         private double GetNonTransPct()
         {
-            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this._bombardDamageMult, this.Research);
+            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamageMult, this.Research);
         }
 
         public override string GetProdText(string curProd)
