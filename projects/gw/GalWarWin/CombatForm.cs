@@ -178,10 +178,8 @@ namespace GalWarWin
             int c = GetCapacity(att, def, att, attHP, defHP);
             var chances = new Dictionary<ResultPoint, double>(c);
             var oldChances = new Dictionary<ResultPoint, double>(c);
-
             FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
-            Console.WriteLine("att {0} def {1} attHP {2} defHP {3}", att, def, attHP, defHP);
-            Console.WriteLine("target {0} actual {1}", c, GetCapacity(oldChances, buckets));
+            int startCap = GetCapacity(oldChances, buckets);
 
             ResultPoint rp = new ResultPoint(attHP, defHP);
             chances.Add(rp, 1);
@@ -246,6 +244,8 @@ namespace GalWarWin
             int chancesCap = GetCapacity(chances, buckets), oldCap = GetCapacity(oldChances, buckets),
                     max = Math.Max(chances.Count, oldChances.Count);
             double p1 = 100.0 * chances.Count / chancesCap, p2 = 100.0 * oldChances.Count / oldCap, p3 = 100.0 * max / c;
+            Console.WriteLine("att {0} def {1} attHP {2} defHP {3}", att, def, attHP, defHP);
+            Console.WriteLine("target {0} actual {1}", c, startCap);
             Console.WriteLine("ch1 {0} pct {1}%", chances.Count, p1.ToString("00.0"));
             Console.WriteLine("ch2 {0} pct {1}%", oldChances.Count, p2.ToString("00.0"));
             Console.WriteLine("max {0} pct {1}%", max, p3.ToString("00.0"));
@@ -279,12 +279,18 @@ end:
         private static int GetCapacity(int att, int def, int rounds, int attHP, int defHP)
         {
             //return ( ( Math.Min(attHP, def * rounds) + 1 ) * ( Math.Min(defHP, att * rounds) + 1 ) - 1 );
-            return (int)( .5 + Math.Min(attHP, def * rounds / ( 1.0 + Math.Min(1, defHP / ( att * rounds )) ))
-                    * Math.Min(defHP, att * rounds / ( 1.0 + Math.Min(1, attHP / ( def * rounds )) )) * Math.PI );
+            return (int)( GetCapacityMult(att, def, rounds, attHP, defHP) * GetCapacityMult(def, att, rounds, defHP, attHP) * 3.9 );
+        }
+        private static double GetCapacityMult(int s1, int s2, int rounds, int hp1, int hp2)
+        {
+            return Math.Min(hp1, s2 * rounds / ( 1 + Math.Min(1, hp2 / (double)( s1 * rounds )) * .39 )) + 1.04;
         }
         private static int GetCapacity(Dictionary<ResultPoint, double> chances, FieldInfo buckets)
         {
-            return ( (Array)buckets.GetValue(chances) ).Length;
+            Array array = (Array)buckets.GetValue(chances);
+            if (array == null)
+                return 0;
+            return array.Length;
         }
 
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

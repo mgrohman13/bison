@@ -90,6 +90,8 @@ namespace MattUtil
         private static readonly double OE_INT_LIMIT; //int.MaxValue/36.7368005696771 (=58455924)
         private static readonly double GAUSSIAN_MAX; //=12.007273360612251
 
+        private static readonly double LN_2 = Math.Log(2);
+
         //constants for the Mersenne Twister
         private const int LENGTH = 624;
         private const int STEP = 397;
@@ -823,14 +825,14 @@ namespace MattUtil
             }
 
             //determine the number of bits we need
-            uint range = (uint)( value2 - value1 );
-            byte numBits = (byte)Math.Ceiling(Math.Log(range + 1.0, 2.0));
+            ulong range = (uint)( value2 - value1 );
+            byte numBits = (byte)Math.Ceiling(Math.Log(range + 1) / LN_2);
 
             //throw out any values outside of the range in order to ensure a uniform distribution (worst-case expected retries <1)
-            uint bits;
+            ulong bits;
             do
             {
-                bits = (uint)NextBits(numBits);
+                bits = NextBits(numBits);
             } while (bits > range);
 
             return value1 + (int)bits;
