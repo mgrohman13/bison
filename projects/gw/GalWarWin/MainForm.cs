@@ -1475,7 +1475,7 @@ namespace GalWarWin
             }
 
             this.lbl6.Text = "Experience";
-            this.lbl6Inf.Text = ship.GetTotalExp().ToString() + " (" + Enum.GetName(typeof(Ship.ExpType), ship.NextExpType) + ")";
+            this.lbl6Inf.Text = ship.GetTotalExp().ToString() + " (" + ship.NextExpType.ToString() + ")";
 
             if (ship.MaxPop > 0)
             {
