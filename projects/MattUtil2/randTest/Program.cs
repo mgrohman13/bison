@@ -16,25 +16,34 @@ namespace randTest
         {
             rand.StartTick();
 
-            double sum = 0;
-            int[] val = new int[MTRandom.MAX_SEED_SIZE + 2];
-            for (int x = 0 ; x < 999999 ; ++x)
-            {
-                const float AvgSeedSize = 13;
-                const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
-                int l = rand.WeightedInt(max, ( AvgSeedSize - 1f ) / max) + 1;
-                sum += l;
-                val[l]++;
-            }
+            //Console.BufferHeight *= 2;
+            //Console.BufferWidth *= 2;
+            //const double AvgSeedSize = 390;
+            //const int max = MTRandom.MAX_SEED_SIZE - 1;
+            //uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
+            //Write(new MTRandom(true, seed));
+            //seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
+            //Write(new MTRandom(true, seed));
 
-            Console.BufferHeight = MTRandom.MAX_SEED_SIZE + 13;
+            //double sum = 0;
+            //int[] val = new int[MTRandom.MAX_SEED_SIZE + 2];
+            //for (int x = 0 ; x < 999999 ; ++x)
+            //{
+            //    const float AvgSeedSize = 13;
+            //    const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
+            //    int l = rand.WeightedInt(max, ( AvgSeedSize - 1f ) / max) + 1;
+            //    sum += l;
+            //    val[l]++;
+            //}
 
-            int runtot = 0;
-            for (int x = 0 ; x < MTRandom.MAX_SEED_SIZE + 2 ; ++x)
-                Console.WriteLine("{0} - {1} - {2}", x.ToString("000"), val[x].ToString("000000"), ( runtot += val[x] ).ToString("000000"));
-            Console.WriteLine();
-            Console.WriteLine(MTRandom.MAX_SEED_SIZE);
-            Console.WriteLine(sum / 999999);
+            //Console.BufferHeight = MTRandom.MAX_SEED_SIZE + 13;
+
+            //int runtot = 0;
+            //for (int x = 0 ; x < MTRandom.MAX_SEED_SIZE + 2 ; ++x)
+            //    Console.WriteLine("{0} - {1} - {2}", x.ToString("000"), val[x].ToString("000000"), ( runtot += val[x] ).ToString("000000"));
+            //Console.WriteLine();
+            //Console.WriteLine(MTRandom.MAX_SEED_SIZE);
+            //Console.WriteLine(sum / 999999);
 
             Console.ReadKey();
 
@@ -108,6 +117,30 @@ namespace randTest
             //} while (Console.ReadKey(true).Key != ConsoleKey.Q);
 
             rand.Dispose();
+        }
+
+        //private static void Write(MTRandom rand)
+        //{
+        //    Console.WriteLine("seed:");
+        //    foreach (uint seed in rand.Seed)
+        //        Write(seed);
+        //    Console.WriteLine();
+        //    Console.WriteLine();
+        //    Console.WriteLine("state:");
+        //    Write(rand.lcg);
+        //    Write(rand.lfsr);
+        //    Write(rand.mwc1);
+        //    Write(rand.mwc2);
+        //    Console.WriteLine();
+        //    foreach (uint v in rand.mt)
+        //        Write(v);
+        //    Console.WriteLine();
+        //    Console.WriteLine();
+        //}
+
+        private static void Write(uint seed)
+        {
+            Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
         }
 
         //private static void DrawTerrain(float height, float temp, float rain)

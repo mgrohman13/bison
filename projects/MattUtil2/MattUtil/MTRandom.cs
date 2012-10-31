@@ -133,14 +133,14 @@ namespace MattUtil
         private const uint MWC_1_SEED = 0x1F123BB5;     //00011111000100100011101110110101
         private const uint MWC_2_SEED = 0x369BF75D;     //00110110100110111111011101011101
 
-        private const uint SHIFT_FACTOR = 0xB69D08B3;   //10110110100111010000100010110011
+        private const uint SHIFT_FACTOR = 0x816B8DF8;   //10000001011010111000110111111000
 
         #endregion
 
         #region fields
 
         //used for shifting time values into seeds
-        private static uint counter = 0x17076A67;       //00010111000001110110101001100111
+        private static uint counter = 0xF2154EE4;       //11110010000101010100111011100100
 
         //optional ticker thread to independently permutate the algorithms
         private Thread thread = null;
@@ -430,7 +430,13 @@ namespace MattUtil
                 for (uint c = LENGTH ; --c > 0 ; )
                     mt[++b] = ( mt[b] ^ ( ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) * SEED_FACTOR_3 ) ) - c;
 
-                //choose a random position of the mt to ensure (other than mt[0])
+                //ensure all seed values are represented in KISS as well
+                mwc2 += mt[b--];
+                lfsr += mt[b--];
+                lcg += mt[b--];
+                mwc1 += mt[b--];
+
+                //choose an arbitrary position of the mt to ensure (other than mt[0])
                 b = 1 + ( mt[LENGTH - 1 - ( GetSeed(seed, ref a) % LENGTH )] % ( LENGTH - 1 ) );
                 //ensure non-zero MT, LFSR, and MWCs (LCG can be zero)
                 mt[b] = EnsureNonZero(mt[b], seed, ref a);

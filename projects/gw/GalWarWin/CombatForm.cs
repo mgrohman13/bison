@@ -241,7 +241,7 @@ namespace GalWarWin
 
             int max = Math.Max(chances.Count, oldChances.Count);
             double p3 = 100.0 * max / targetCap;
-            const double trgPct = Math.PI / .13, pctError = .21;
+            const double trgPct = 21, pctError = .3;
             if (Math.Abs(p3 - trgPct) / trgPct > pctError)
             {
                 FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
