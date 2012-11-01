@@ -37,7 +37,7 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, researchMult);
         }
 
-        const double speedAdd = 2.1, attDiv = 3.9;
+        private const double speedAdd = 2.1, attDiv = 3.9;
         private static double GetTotCost(int att, int def, int hp, double speed, int trans, bool colony, float bombardDamageMult, double statResearchMult, double totalResearchMult)
         {
             double speedValue = speed + speedAdd;

@@ -757,10 +757,10 @@ namespace GalWar
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
                 pct = Combat(handler, colony);
 
-            pct *= damage / ( damage + freeDmg );
+            pct *= damage;
             if (bombardDamage > oldHP)
-                pct += ( 1 - ( oldHP / (double)bombardDamage ) ) * freeDmg / ( damage + freeDmg );
-            return pct;
+                pct += ( 1 - ( oldHP / (double)bombardDamage ) ) * freeDmg;
+            return ( pct / ( damage + freeDmg ) );
         }
 
         private double GetFreeDmg(Colony colony)
