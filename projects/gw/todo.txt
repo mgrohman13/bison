@@ -21,3 +21,5 @@ Ship.GetBombardLevelInc - div by att?
 	att inc randomises bombard?
 ship design bombard min
 PlanetDefensesDeathStarMult
+incorporate gaussian OEs
+PlanetDamageAvg

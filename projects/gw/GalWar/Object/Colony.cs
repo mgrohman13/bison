@@ -284,7 +284,7 @@ namespace GalWar
             //damage planet for every dead troop
             double deadPop = ( initAttackers - attackers + initPop - this.Population );
             int reduceQuality = Game.Random.Round(planetDamageMult * deadPop);
-            if (reduceQuality > Planet.Quality + 2)
+            if (reduceQuality > Planet.Quality + 3)
                 throw new Exception();
             Planet.ReduceQuality(reduceQuality);
 
