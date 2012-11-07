@@ -45,7 +45,24 @@ namespace GalWarWin.Sliders
 
         private double GetDefault()
         {
-            return ( ship.MaxHP * Consts.RepairGoldHPPct );
+            double target = ship.GetProdForHP(1) / Consts.RepairCostMult;
+            int upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
+            {
+                return ( ship.GetGoldForHP(hp) / hp >= target );
+            }, 0, this.max, true);
+            if (upper > 0)
+            {
+                double high = ship.GetGoldForHP(upper) / upper;
+                int lower = upper - 1;
+                double low = ship.GetGoldForHP(lower) / lower;
+                if (low <= target && target <= high)
+                {
+                    if (Game.Random.Bool(( target - low ) / ( high - low )))
+                        return upper;
+                    return lower;
+                }
+            }
+            return upper;
         }
 
         private int GetOptimalProd()

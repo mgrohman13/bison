@@ -12,8 +12,15 @@ main map improvements
 	zooming, panning
 	minimap
 undo
-auto repair
-	needs to be saveable?
+something to reduce micromanage of repair
+	auto repair
+		needs to be saveable
+	cost incentive
+		certain specific value?
+		pct you have been doing?
+	defaults to arbitrary RepairGoldIncPowBase
+		1/RepairCostMult instead?
+		Some maniupulation base on buy/sell?
 randomize planet colonization cost
 research display offset
 bring up test dialog on enemy adjacent invasion
@@ -23,3 +30,5 @@ ship design bombard min
 PlanetDefensesDeathStarMult
 incorporate gaussian OEs
 PlanetDamageAvg
+transport exp for invasion?
+ExperienceConstDmgAmt

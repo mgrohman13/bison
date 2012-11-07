@@ -537,7 +537,12 @@ namespace GalWar
             --this.CurSpeed;
 
             double pct = Combat(handler, ship);
-            this.Player.GoldIncome(this.GetUpkeepReturn(pct));
+            double goldIncome = this.GetUpkeepReturn(pct);
+            if (goldIncome != 0)
+            {
+                Console.WriteLine(goldIncome);
+                this.Player.GoldIncome(goldIncome);
+            }
 
             //only the ship whose turn it is can immediately gain levels from the exp
             this.LevelUp(handler);
