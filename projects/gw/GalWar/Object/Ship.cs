@@ -238,6 +238,7 @@ namespace GalWar
                 throw new Exception();
 
             double destroyGold = GetDestroyGold();
+            Console.WriteLine("Destroy Gold:  " + destroyGold);
             if (addGold)
                 this.Player.AddGold(destroyGold);
             else
@@ -540,7 +541,7 @@ namespace GalWar
             double goldIncome = this.GetUpkeepReturn(pct);
             if (goldIncome != 0)
             {
-                Console.WriteLine(goldIncome);
+                Console.WriteLine("Upkeep Return: " + goldIncome);
                 this.Player.GoldIncome(goldIncome);
             }
 
@@ -619,7 +620,12 @@ namespace GalWar
                 costInc = this.GetCostLastResearched() - costInc;
 
                 //add/subtract gold for level randomness and percent of ship injured 
-                Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
+                double gold = ( this.needExpMult - pct ) * costInc / Consts.ExpForGold;
+                if (gold != 0)
+                {
+                    Console.WriteLine("Level Gold:    " + gold);
+                    Player.GoldIncome(gold);
+                }
 
                 double basePayoff = GetUpkeepPayoff();
                 double minCost = basePayoff * Consts.MinCostMult;
@@ -970,6 +976,26 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
 
             return production / RepairCost;
+        }
+
+        public double GetDefaultGoldRepair()
+        {
+            TurnException.CheckTurn(this.Player);
+
+            double target = this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / this.MaxHP;
+            int upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
+            {
+                return ( this.GetGoldForHP(hp) / hp >= target );
+            }, 0, this.MaxHP - this.HP, true);
+            if (upper > 0)
+            {
+                double high = this.GetGoldForHP(upper) / upper;
+                int lower = upper - 1;
+                double low = this.GetGoldForHP(lower) / lower;
+                if (low <= target && target <= high)
+                    return ( lower + ( ( target - low ) / ( high - low ) ) );
+            }
+            return upper;
         }
 
         public override string ToString()

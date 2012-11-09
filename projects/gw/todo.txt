@@ -32,3 +32,4 @@ incorporate gaussian OEs
 PlanetDamageAvg
 transport exp for invasion?
 ExperienceConstDmgAmt
+allow death stars to limit planet damage by pop left
