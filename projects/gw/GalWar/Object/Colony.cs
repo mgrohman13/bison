@@ -675,7 +675,7 @@ namespace GalWar
                     if (minGold)
                         loss = Math.Floor(loss);
                     totalProd -= loss;
-                    gold += loss / Consts.ProductionForGold;
+                    gold += loss / Consts.ProductionForGold - shipDesign.Upkeep * ( 1 - Consts.UpkeepUnmovedReturn );
                     if (minGold)
                         gold -= GetActualGoldCost(shipDesign.Trans);
                     if (!this.Buildable.Multiple)

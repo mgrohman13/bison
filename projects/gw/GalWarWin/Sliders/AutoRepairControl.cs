@@ -12,6 +12,8 @@ namespace GalWarWin.Sliders
     {
         private Ship ship;
 
+        private GoldRepair.SetValueDelegate SetValue;
+
         public AutoRepairControl()
         {
             InitializeComponent();
@@ -24,7 +26,21 @@ namespace GalWarWin.Sliders
 
         private void button1_Click(object sender, EventArgs e)
         {
-            AutoRepairForm.ShowDialog(ship);
+            double result = AutoRepairForm.ShowDialog(ship);
+            if (double.IsNaN(result))
+            {
+                ship.AutoRepair = result;
+            }
+            else if (result > 0)
+            {
+                SetValue(result);
+                ship.AutoRepair = ship.GetGoldRepairMultiplyer(result);
+            }
+        }
+
+        internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
+        {
+            this.SetValue = SetValue;
         }
     }
 }

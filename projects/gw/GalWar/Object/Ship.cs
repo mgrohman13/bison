@@ -21,7 +21,7 @@ namespace GalWar
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
         private ushort _maxTrans;
         private ushort _maxHP;
-        private float _curExp, _totalExp, _needExpMult, _expDiv;
+        private float _curExp, _totalExp, _needExpMult, _expDiv, _autoRepair;
         private double _cost;
 
         internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
@@ -165,6 +165,18 @@ namespace GalWar
             set
             {
                 this._totalExp = (float)value;
+            }
+        }
+
+        public double AutoRepair
+        {
+            get
+            {
+                return this._autoRepair;
+            }
+            set
+            {
+                this._autoRepair = (float)value;
             }
         }
 
@@ -620,12 +632,7 @@ namespace GalWar
                 costInc = this.GetCostLastResearched() - costInc;
 
                 //add/subtract gold for level randomness and percent of ship injured 
-                double gold = ( this.needExpMult - pct ) * costInc / Consts.ExpForGold;
-                if (gold != 0)
-                {
-                    Console.WriteLine("Level Gold:    " + gold);
-                    Player.GoldIncome(gold);
-                }
+                Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
                 double basePayoff = GetUpkeepPayoff();
                 double minCost = basePayoff * Consts.MinCostMult;
@@ -980,9 +987,17 @@ namespace GalWar
 
         public double GetDefaultGoldRepair()
         {
+            double multiplyer = AutoRepair;
+            if (double.IsNaN(multiplyer))
+                multiplyer = 1;
+            return GetDefaultGoldRepair(multiplyer);
+        }
+
+        public double GetDefaultGoldRepair(double multiplyer)
+        {
             TurnException.CheckTurn(this.Player);
 
-            double target = this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / this.MaxHP;
+            double target = GetGoldRepairTarget() * multiplyer;
             int upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
             {
                 return ( this.GetGoldForHP(hp) / hp >= target );
@@ -996,6 +1011,26 @@ namespace GalWar
                     return ( lower + ( ( target - low ) / ( high - low ) ) );
             }
             return upper;
+        }
+
+        public double GetGoldRepairMultiplyer(double hp)
+        {
+            double retVal = ( CalcGoldForHP(hp) / hp / GetGoldRepairTarget() );
+
+            return retVal;
+        }
+
+        private double GetGoldRepairTarget()
+        {
+            return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / this.MaxHP );
+        }
+
+        public double CalcGoldForHP(double hp)
+        {
+            int floor = (int)Math.Floor(hp);
+            double lower = GetGoldForHP(floor);
+            double upper = GetGoldForHP(floor + 1);
+            return ( lower + ( upper - lower ) * ( hp - floor ) );
         }
 
         public override string ToString()

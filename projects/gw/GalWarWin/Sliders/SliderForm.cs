@@ -62,7 +62,7 @@ namespace GalWarWin.Sliders
             this.trackBar.Minimum = min;
             this.trackBar.Maximum = max;
 
-            SetValue(Game.Random.Round(controller.GetInitial()));
+            SetValue(controller.GetInitial());
             SetText();
 
             this.trackBar.Visible = ( max > min );
@@ -122,8 +122,9 @@ namespace GalWarWin.Sliders
                 SetText();
         }
 
-        private void SetValue(int value)
+        private void SetValue(double v)
         {
+            int value = Game.Random.Round(v);
             if (value < trackBar.Minimum)
                 value = trackBar.Minimum;
             if (value > trackBar.Maximum)
@@ -139,6 +140,10 @@ namespace GalWarWin.Sliders
 
         public static int ShowDialog(MainForm gameForm, SliderController controller)
         {
+            GoldRepair gr = controller as GoldRepair;
+            if (gr != null)
+                gr.SetSetValueDelegate(new GoldRepair.SetValueDelegate(form.SetValue));
+
             gameForm.SetLocation(form);
 
             controller.SetGameForm(gameForm);
@@ -150,12 +155,12 @@ namespace GalWarWin.Sliders
 
         private void lblExtra_Click(object sender, EventArgs e)
         {
-            SetValue(Game.Random.Round(controller.lblExtra_Click()));
+            SetValue(controller.lblExtra_Click());
         }
 
         private void lblEffcnt_Click(object sender, EventArgs e)
         {
-            SetValue(Game.Random.Round(controller.lblEffcnt_Click()));
+            SetValue(controller.lblEffcnt_Click());
         }
 
         private void SliderForm_FormClosed(object sender, FormClosedEventArgs e)

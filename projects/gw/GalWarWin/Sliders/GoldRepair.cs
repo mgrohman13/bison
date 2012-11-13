@@ -6,7 +6,9 @@ namespace GalWarWin.Sliders
 {
     public class GoldRepair : SliderController
     {
-        //private static AutoRepairControl control = new AutoRepairControl();
+        public delegate void SetValueDelegate(double value);
+
+        private static AutoRepairControl control = new AutoRepairControl();
 
         private readonly Ship ship;
         private readonly int max;
@@ -20,11 +22,16 @@ namespace GalWarWin.Sliders
             }, 0, ship.MaxHP - ship.HP, false);
         }
 
-        //public override Control GetCustomControl()
-        //{
-        //    control.SetShip(ship);
-        //    return control;
-        //}
+        internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
+        {
+            control.SetSetValueDelegate(SetValue);
+        }
+
+        public override Control GetCustomControl()
+        {
+            control.SetShip(ship);
+            return control;
+        }
 
         public override double GetInitial()
         {
