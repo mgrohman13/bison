@@ -767,7 +767,7 @@ namespace GalWarWin
 
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
-            if (CheckGold() && CheckShips())
+            if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
                 showMoves = false;
                 Game.EndTurn(this);
@@ -790,7 +790,7 @@ namespace GalWarWin
             return end;
         }
 
-        private bool CheckShips()
+        private bool CheckMovedShips()
         {
             bool end = true;
 
@@ -799,6 +799,28 @@ namespace GalWarWin
                 {
                     end = ShowOption("You have not moved all of your ships.  Are you sure you want to end your turn?");
                     break;
+                }
+
+            return end;
+        }
+
+        private bool CheckRepairedShips()
+        {
+            bool end = true;
+
+            foreach (Ship ship in Game.CurrentPlayer.GetShips())
+                if (!ship.HasRepaired && ship.HP < ship.MaxHP && double.IsNaN(ship.AutoRepair))
+                {
+                    selectedTile = ship.Tile;
+                    RefreshAll();
+
+                    int HP = SliderForm.ShowDialog(this, new GoldRepair(ship));
+                    if (HP > 0)
+                        ship.GoldRepair(this, HP);
+
+                    end = ( HP > -1 );
+                    if (!end)
+                        break;
                 }
 
             return end;

@@ -228,6 +228,8 @@ namespace GalWar
 
         internal void EndTurn(IEventHandler handler)
         {
+            AutoRepairShips(handler);
+
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
 
@@ -660,6 +662,36 @@ namespace GalWar
             foreach (Colony colony in this.colonies)
                 if (colony.Buildable == obsoleteDesign)
                     colony.SetBuildable(handler.getNewBuild(colony, accountForIncome, false, losses), Consts.ManualObsoleteLossPct);
+        }
+
+        public void AutoRepairShips(IEventHandler handler)
+        {
+            handler = new HandlerWrapper(handler);
+            TurnException.CheckTurn(this);
+
+            double goldLoss = this.GetMinGold();
+            if (goldLoss > 0)
+                goldLoss = 0;
+
+            foreach (Ship ship in Game.Random.Iterate(this.ships))
+                if (ship.DoAutoRepair)
+                {
+                    double cost = 0;
+                    foreach (Ship checkShip in this.ships)
+                        if (checkShip.DoAutoRepair)
+                            cost += checkShip.GetGoldForHP(checkShip.GetAutoRepairHP());
+                    cost = ( this.goldValue + goldLoss ) / cost;
+                    if (cost < 0)
+                        cost = 0;
+                    if (cost < 1)
+                        ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(ship.GetGoldForHP(ship.GetAutoRepairHP()) * cost));
+
+                    int hp = Game.Random.Round(ship.GetAutoRepairHP());
+                    while (ship.GetGoldForHP(hp) > this.Gold + RoundGold(goldLoss))
+                        --hp;
+                    if (hp > 0)
+                        ship.GoldRepair(handler, hp);
+                }
         }
 
         internal void PlayTurn(IEventHandler handler)

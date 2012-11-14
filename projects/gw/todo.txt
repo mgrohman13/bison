@@ -14,7 +14,10 @@ main map improvements
 undo
 something to reduce micromanage of repair
 	auto repair
-		needs to be saveable
+		at turn start?
+		income calculations
+		button to do immediately
+		show which ships are set to auto
 	cost incentive
 		certain specific value?
 		pct you have been doing?

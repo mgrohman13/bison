@@ -84,7 +84,7 @@ namespace GalWarWin.Sliders
         internal override double lblExtra_Click()
         {
             double target = InputForm.ShowDialog(this.gameForm, "Enter maximum gold per troop left:");
-            if (double.IsNaN(target))
+            if (double.IsNaN(target) || target < 0)
                 return GetValue();
 
             int max = GetMax();

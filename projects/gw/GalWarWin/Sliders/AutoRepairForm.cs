@@ -14,6 +14,7 @@ namespace GalWarWin.Sliders
 
         private Ship ship;
         private bool events = true;
+        private double result = -1;
 
         private AutoRepairForm()
         {
@@ -24,18 +25,29 @@ namespace GalWarWin.Sliders
         {
             this.ship = ship;
 
+            RadioButton checkRB;
+            double setValue;
             double autoRepair = ship.AutoRepair;
-            this.txtDefault.Text = string.Empty;
             if (double.IsNaN(autoRepair))
             {
-                this.rbNone.Checked = true;
-                SetValue(this.txtDefault, 1);
+                checkRB = this.rbManual;
+                setValue = 1;
+            }
+            else if (autoRepair == 0)
+            {
+                checkRB = this.rbNone;
+                setValue = 1;
             }
             else
             {
-                this.rbDefault.Checked = true;
-                SetValue(this.txtDefault, autoRepair);
+                checkRB = this.rbDefault;
+                setValue = autoRepair;
             }
+
+            checkRB.Checked = true;
+
+            this.txtDefault.Text = string.Empty;
+            SetValue(this.txtDefault, setValue);
 
             RefreshEnabled();
         }
@@ -53,11 +65,12 @@ namespace GalWarWin.Sliders
         {
             if (events && !double.IsNaN(value))
             {
-                if (value <= 1)
+                if (value < 1)
                 {
                     value = 1;
                     sender = null;
                 }
+                result = value;
 
                 events = false;
                 if (sender != this.txtDefault)
@@ -84,20 +97,26 @@ namespace GalWarWin.Sliders
             return double.NaN;
         }
 
-        private static void SetValue(TextBox textBox, double value)
+        private void SetValue(TextBox textBox, double value)
         {
-            Console.WriteLine(textBox.Name);
-            textBox.Text = value.ToString("0.000");
+            string format;
+            if (textBox == this.txtDefault)
+                format = "0.".PadRight((int)Math.Ceiling(-Math.Log10(Consts.FLOAT_ERROR)) + 2, '0');
+            else
+                format = "0.000";
+            textBox.Text = value.ToString(format);
         }
 
         public static double ShowDialog(Ship ship)
         {
             form.SetShip(ship);
             if (form.ShowDialog() == DialogResult.OK)
-                if (form.rbNone.Checked)
+                if (form.rbManual.Checked)
                     return double.NaN;
+                else if (form.rbNone.Checked)
+                    return 0;
                 else
-                    return ParseValue(form.txtConst);
+                    return form.result;
             return -1;
         }
 
@@ -113,12 +132,13 @@ namespace GalWarWin.Sliders
                 value = 0;
             else if (value > 1000)
                 value = 1000;
-            value = ship.GetDefaultGoldRepair(value);
+            if (!double.IsNaN(value))
+                value = ship.GetAutoRepairHP(value);
             RefreshValues(sender, value);
         }
         private void setDefault(double value)
         {
-            value = ship.GetGoldRepairMultiplyer(value);
+            value = ship.GetAutoRepairForHP(value);
             SetValue(this.txtDefault, value);
         }
 
@@ -159,27 +179,12 @@ namespace GalWarWin.Sliders
                 value = 0;
             else if (value > 10000)
                 value = 10000;
-
-            double target = value;
-            int upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
-            {
-                return ( ship.GetGoldForHP(hp) >= target );
-            }, 0, ship.MaxHP - ship.HP, true);
-            value = upper;
-            if (upper > 0)
-            {
-                double high = ship.GetGoldForHP(upper);
-                int lower = upper - 1;
-                double low = ship.GetGoldForHP(lower);
-                if (low <= target && target <= high)
-                    value = ( lower + ( ( target - low ) / ( high - low ) ) );
-            }
-
+            value = ship.GetHPForGold(value);
             RefreshValues(sender, value);
         }
         private void setCost(double value)
         {
-            value = ship.CalcGoldForHP(value);
+            value = ship.GetGoldForHP(value);
             SetValue(this.txtCost, value);
         }
 

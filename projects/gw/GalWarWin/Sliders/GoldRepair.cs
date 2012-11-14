@@ -22,10 +22,10 @@ namespace GalWarWin.Sliders
             }, 0, ship.MaxHP - ship.HP, false);
         }
 
-        internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
-        {
-            control.SetSetValueDelegate(SetValue);
-        }
+        //internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
+        //{
+        //    control.SetSetValueDelegate(SetValue);
+        //}
 
         public override Control GetCustomControl()
         {
@@ -52,7 +52,7 @@ namespace GalWarWin.Sliders
 
         private double GetDefault()
         {
-            return ship.GetDefaultGoldRepair();
+            return ship.GetAutoRepairHP();
         }
 
         private int GetOptimalProd()

@@ -41,6 +41,7 @@ namespace GalWarWin.Sliders
             this.rbNone = new System.Windows.Forms.RadioButton();
             this.rbTurn = new System.Windows.Forms.RadioButton();
             this.rbConst = new System.Windows.Forms.RadioButton();
+            this.rbManual = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
             // 
             // rbPct
@@ -123,7 +124,7 @@ namespace GalWarWin.Sliders
             // 
             this.btnOK.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(12, 167);
+            this.btnOK.Location = new System.Drawing.Point(12, 193);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(72, 23);
             this.btnOK.TabIndex = 0;
@@ -134,7 +135,7 @@ namespace GalWarWin.Sliders
             // 
             this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(90, 167);
+            this.btnCancel.Location = new System.Drawing.Point(90, 193);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(72, 23);
             this.btnCancel.TabIndex = 1;
@@ -144,7 +145,7 @@ namespace GalWarWin.Sliders
             // rbNone
             // 
             this.rbNone.AutoSize = true;
-            this.rbNone.Location = new System.Drawing.Point(12, 142);
+            this.rbNone.Location = new System.Drawing.Point(12, 168);
             this.rbNone.Name = "rbNone";
             this.rbNone.Size = new System.Drawing.Size(39, 17);
             this.rbNone.TabIndex = 8;
@@ -177,14 +178,26 @@ namespace GalWarWin.Sliders
             this.rbConst.UseVisualStyleBackColor = true;
             this.rbConst.CheckedChanged += new System.EventHandler(this.rb_CheckedChanged);
             // 
+            // rbManual
+            // 
+            this.rbManual.AutoSize = true;
+            this.rbManual.Location = new System.Drawing.Point(12, 142);
+            this.rbManual.Name = "rbManual";
+            this.rbManual.Size = new System.Drawing.Size(60, 17);
+            this.rbManual.TabIndex = 14;
+            this.rbManual.TabStop = true;
+            this.rbManual.Text = "Manual";
+            this.rbManual.UseVisualStyleBackColor = true;
+            // 
             // AutoRepairForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(174, 202);
+            this.ClientSize = new System.Drawing.Size(174, 228);
             this.ControlBox = false;
+            this.Controls.Add(this.rbManual);
             this.Controls.Add(this.txtDefault);
             this.Controls.Add(this.rbDefault);
             this.Controls.Add(this.txtCost);
@@ -221,5 +234,6 @@ namespace GalWarWin.Sliders
         private System.Windows.Forms.TextBox txtCost;
         private System.Windows.Forms.RadioButton rbCost;
         private System.Windows.Forms.TextBox txtDefault;
+        private System.Windows.Forms.RadioButton rbManual;
     }
 }

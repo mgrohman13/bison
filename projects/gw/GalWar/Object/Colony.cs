@@ -529,6 +529,8 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(value == null || this.Player == value.Player);
 
+            if (value != null && value != this.RepairShip)
+                value.AutoRepair = 0;
             this.RepairShip = value;
         }
 

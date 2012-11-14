@@ -52,6 +52,8 @@ namespace GalWar
 
             this.HP = this.MaxHP;
 
+            this.AutoRepair = double.NaN;
+
             this.cost = design.AdjustCost(this.Player.Game.MapSize);
 
             this.curExp = 0;
@@ -172,11 +174,23 @@ namespace GalWar
         {
             get
             {
+                if (this._autoRepair <= 0)
+                    this._autoRepair = 0;
+                else if (HP == MaxHP)
+                    this._autoRepair = float.NaN;
                 return this._autoRepair;
             }
             set
             {
                 this._autoRepair = (float)value;
+            }
+        }
+
+        public bool DoAutoRepair
+        {
+            get
+            {
+                return ( !HasRepaired && !double.IsNaN(AutoRepair) && AutoRepair > 0 );
             }
         }
 
@@ -220,6 +234,9 @@ namespace GalWar
                 int repairHP = Game.Random.Round(hp);
                 this.HP += repairHP;
                 hp = repairHP;
+
+                if (repairHP > 0 && this.HP == this.MaxHP && this.AutoRepair == 0)
+                    this.AutoRepair = double.NaN;
             }
             else if (minGold)
             {
@@ -964,11 +981,52 @@ namespace GalWar
             this.HasRepaired = true;
         }
 
-        public double GetGoldForHP(int hp)
+        public double GetGoldForHP(double hp)
         {
             TurnException.CheckTurn(this.Player);
 
-            return hp * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
+            int floor = (int)Math.Floor(hp);
+            double lower = GetGoldForHP(floor, true);
+            if (floor == hp)
+                return lower;
+            double upper = GetGoldForHP(floor + 1, true);
+            return ( lower + ( upper - lower ) * ( hp - floor ) );
+        }
+        private double GetGoldForHP(int hp, bool isTotal)
+        {
+            return ( isTotal ? hp : 1 ) * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
+        }
+
+        public double GetHPForGold(double gold)
+        {
+            TurnException.CheckTurn(this.Player);
+
+            return GetHPForGold(gold, true);
+        }
+        private double GetHPForGold(double target, bool isTotal)
+        {
+            int upper = this.MaxHP - this.HP;
+            if (upper > 0)
+            {
+
+                upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
+                {
+                    return ( GetGoldForHP(hp, isTotal) >= target );
+                }, 0, upper, true);
+
+                if (upper > 0)
+                {
+                    double high = this.GetGoldForHP(upper, isTotal);
+                    if (high > target)
+                    {
+                        int lower = upper - 1;
+                        double low = this.GetGoldForHP(lower, isTotal);
+                        return ( lower + ( target - low ) / ( high - low ) );
+                    }
+                }
+
+            }
+            return upper;
         }
 
         public double GetProdForHP(double hp)
@@ -985,52 +1043,47 @@ namespace GalWar
             return production / RepairCost;
         }
 
-        public double GetDefaultGoldRepair()
-        {
-            double multiplyer = AutoRepair;
-            if (double.IsNaN(multiplyer))
-                multiplyer = 1;
-            return GetDefaultGoldRepair(multiplyer);
-        }
-
-        public double GetDefaultGoldRepair(double multiplyer)
+        public double GetAutoRepairHP()
         {
             TurnException.CheckTurn(this.Player);
 
-            double target = GetGoldRepairTarget() * multiplyer;
-            int upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
-            {
-                return ( this.GetGoldForHP(hp) / hp >= target );
-            }, 0, this.MaxHP - this.HP, true);
-            if (upper > 0)
-            {
-                double high = this.GetGoldForHP(upper) / upper;
-                int lower = upper - 1;
-                double low = this.GetGoldForHP(lower) / lower;
-                if (low <= target && target <= high)
-                    return ( lower + ( ( target - low ) / ( high - low ) ) );
-            }
-            return upper;
+            return GetAutoRepairHP(DoAutoRepair ? AutoRepair : 1);
+        }
+        public double GetAutoRepairHP(double autoRepair)
+        {
+            TurnException.CheckTurn(this.Player);
+
+            double hp = GetHPForGold(GetGoldRepairTarget() * autoRepair, false);
+            if (hp < 1 && this.HP < this.MaxHP)
+                hp = 1;
+            return hp;
         }
 
-        public double GetGoldRepairMultiplyer(double hp)
+        public double GetAutoRepairForHP(double hp)
         {
-            double retVal = ( CalcGoldForHP(hp) / hp / GetGoldRepairTarget() );
+            TurnException.CheckTurn(this.Player);
+
+            double low = CalcAutoRepair(hp - 1), high = CalcAutoRepair(hp + 1);
+
+            double actual, retVal = CalcAutoRepair(hp);
+            while (Math.Abs(( actual = GetAutoRepairHP(retVal) ) - hp) > Consts.FLOAT_ERROR)
+            {
+                if (actual > hp)
+                    high = retVal;
+                else
+                    low = retVal;
+                retVal = ( high + low ) / 2;
+            }
 
             return retVal;
         }
-
+        private double CalcAutoRepair(double hp)
+        {
+            return ( GetGoldForHP(hp) / hp / GetGoldRepairTarget() );
+        }
         private double GetGoldRepairTarget()
         {
             return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / this.MaxHP );
-        }
-
-        public double CalcGoldForHP(double hp)
-        {
-            int floor = (int)Math.Floor(hp);
-            double lower = GetGoldForHP(floor);
-            double upper = GetGoldForHP(floor + 1);
-            return ( lower + ( upper - lower ) * ( hp - floor ) );
         }
 
         public override string ToString()

@@ -140,9 +140,9 @@ namespace GalWarWin.Sliders
 
         public static int ShowDialog(MainForm gameForm, SliderController controller)
         {
-            GoldRepair gr = controller as GoldRepair;
-            if (gr != null)
-                gr.SetSetValueDelegate(new GoldRepair.SetValueDelegate(form.SetValue));
+            //GoldRepair gr = controller as GoldRepair;
+            //if (gr != null)
+            //    gr.SetSetValueDelegate(new GoldRepair.SetValueDelegate(form.SetValue));
 
             gameForm.SetLocation(form);
 
