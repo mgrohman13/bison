@@ -1063,6 +1063,8 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
+            if (hp < 1)
+                hp = 1;
             double low = CalcAutoRepair(hp - 1), high = CalcAutoRepair(hp + 1);
 
             double actual, retVal = CalcAutoRepair(hp);
