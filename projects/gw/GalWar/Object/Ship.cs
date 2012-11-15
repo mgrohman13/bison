@@ -190,7 +190,7 @@ namespace GalWar
         {
             get
             {
-                return ( !HasRepaired && !double.IsNaN(AutoRepair) && AutoRepair > 0 );
+                return ( !HasRepaired && AutoRepair > 0 );
             }
         }
 

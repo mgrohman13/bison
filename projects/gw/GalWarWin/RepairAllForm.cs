@@ -41,7 +41,11 @@ namespace GalWarWin
             double value = GetValue();
             foreach (Ship ship in MainForm.Game.CurrentPlayer.GetShips())
                 if (!ship.HasRepaired && DoAutoRepair(ship))
-                    cost += ship.GetGoldForHP(ship.GetAutoRepairHP(GetAutoRepair(ship, value)));
+                {
+                    double autoRepair = GetAutoRepair(ship, value);
+                    if (autoRepair > 0)
+                        cost += ship.GetGoldForHP(ship.GetAutoRepairHP(autoRepair));
+                }
             MainForm.FormatIncome(this.lblRepairs, -cost, true);
         }
 

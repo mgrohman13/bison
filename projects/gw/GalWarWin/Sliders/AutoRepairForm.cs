@@ -121,7 +121,7 @@ namespace GalWarWin.Sliders
 
             if (double.IsNaN(result) || result > -1)
             {
-                if (!double.IsNaN(result) && result > 0)
+                if (result > 0)
                     result = ship.GetAutoRepairForHP(result);
                 ship.AutoRepair = result;
 
@@ -189,7 +189,8 @@ namespace GalWarWin.Sliders
                 value = 0;
             else if (value > 10000)
                 value = 10000;
-            value = ship.GetHPForGold(value);
+            if (!double.IsNaN(value))
+                value = ship.GetHPForGold(value);
             RefreshValues(sender, value);
         }
         private void setCost(double value)

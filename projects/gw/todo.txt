@@ -20,7 +20,6 @@ repair micromanagement
 		pct you have been doing?
 randomize planet colonization cost
 research display offset
-bring up test dialog on enemy adjacent invasion
 Ship.GetBombardLevelInc - div by att?
 	att inc randomises bombard?
 ship design bombard min

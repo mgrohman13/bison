@@ -970,7 +970,7 @@ namespace GalWarWin
                                     else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
                                         defender = planet.Colony;
                                     if (defender != null && ship.Player != defender.Player &&
-                                            !( defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
+                                            !( ship.Player.IsTurn && defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
                                     {
                                         Colony defCol = defender as Colony;
                                         if (defCol != null && ship.Population > 0)
