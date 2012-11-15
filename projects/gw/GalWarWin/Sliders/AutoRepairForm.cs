@@ -107,17 +107,27 @@ namespace GalWarWin.Sliders
             textBox.Text = value.ToString(format);
         }
 
-        public static double ShowDialog(Ship ship)
+        public static bool ShowDialog(Ship ship)
         {
+            double result = -1;
             form.SetShip(ship);
             if (form.ShowDialog() == DialogResult.OK)
                 if (form.rbManual.Checked)
-                    return double.NaN;
+                    result = double.NaN;
                 else if (form.rbNone.Checked)
-                    return 0;
+                    result = 0;
                 else
-                    return form.result;
-            return -1;
+                    result = form.result;
+
+            if (double.IsNaN(result) || result > -1)
+            {
+                if (!double.IsNaN(result) && result > 0)
+                    result = ship.GetAutoRepairForHP(result);
+                ship.AutoRepair = result;
+
+                return true;
+            }
+            return false;
         }
 
         private void rb_CheckedChanged(object sender, EventArgs e)

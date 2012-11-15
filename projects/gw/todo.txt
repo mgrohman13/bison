@@ -12,18 +12,12 @@ main map improvements
 	zooming, panning
 	minimap
 undo
-something to reduce micromanage of repair
+repair micromanagement
 	auto repair
-		at turn start?
-		income calculations
-		button to do immediately
-		show which ships are set to auto
+		see active average?
 	cost incentive
 		certain specific value?
 		pct you have been doing?
-	defaults to arbitrary RepairGoldIncPowBase
-		1/RepairCostMult instead?
-		Some maniupulation base on buy/sell?
 randomize planet colonization cost
 research display offset
 bring up test dialog on enemy adjacent invasion

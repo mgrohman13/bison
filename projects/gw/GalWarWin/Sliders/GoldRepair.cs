@@ -35,16 +35,8 @@ namespace GalWarWin.Sliders
 
         public override double GetInitial()
         {
-            foreach (Tile tile in Tile.GetNeighbors(ship.Tile))
-            {
-                Planet planet = tile.SpaceObject as Planet;
-                if (planet != null)
-                {
-                    if (planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == ship)
-                        return GetOptimalProd();
-                    break;
-                }
-            }
+            if (ship.GetRepairedFrom() != null)
+                return GetOptimalProd();
             if (ship.Colony)
                 return GetOptimalColony();
             return GetDefault();

@@ -228,7 +228,10 @@ namespace GalWar
 
         internal void EndTurn(IEventHandler handler)
         {
-            AutoRepairShips(handler);
+            double goldLoss = this.GetMinGold(false);
+            if (goldLoss > 0)
+                goldLoss = 0;
+            AutoRepairShips(handler, goldLoss);
 
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
@@ -563,18 +566,25 @@ namespace GalWar
 
         public double GetMinGold()
         {
+            return GetMinGold(true);
+        }
+        public double GetMinGold(bool countRepair)
+        {
             int research;
             double population, production, gold;
-            GetTurnIncome(out population, out research, out production, out gold, true);
+            GetTurnIncome(out population, out research, out production, out gold, true, countRepair);
             return gold;
         }
 
         public void GetTurnIncome(out double population, out int research, out double production, out double gold)
         {
-            GetTurnIncome(out population, out research, out production, out gold, false);
+            GetTurnIncome(out population, out research, out production, out gold, true);
         }
-
-        private void GetTurnIncome(out double population, out int research, out double production, out double gold, bool minGold)
+        public void GetTurnIncome(out double population, out int research, out double production, out double gold, bool countRepair)
+        {
+            GetTurnIncome(out population, out research, out production, out gold, false, countRepair);
+        }
+        private void GetTurnIncome(out double population, out int research, out double production, out double gold, bool minGold, bool countRepair)
         {
             TurnException.CheckTurn(this);
 
@@ -589,6 +599,24 @@ namespace GalWar
                 gold -= ( ship.Upkeep - ship.GetUpkeepReturn() );
 
             gold += this.goldOffset;
+
+            if (countRepair)
+            {
+                double repairGold = gold;
+                if (!minGold)
+                    repairGold = GetMinGold(false);
+                if (repairGold > 0)
+                    repairGold = 0;
+                else
+                    repairGold = RoundGold(repairGold);
+                repairGold += this.goldValue;
+
+                double repairCost = this.GetAutoRepairCost(minGold);
+                if (repairCost > repairGold)
+                    repairCost = repairGold;
+
+                gold -= repairCost;
+            }
         }
 
         public ReadOnlyCollection<Colony> GetColonies()
@@ -669,20 +697,14 @@ namespace GalWar
             handler = new HandlerWrapper(handler);
             TurnException.CheckTurn(this);
 
-            double goldLoss = this.GetMinGold();
-            if (goldLoss > 0)
-                goldLoss = 0;
-
+            AutoRepairShips(handler, 0);
+        }
+        private void AutoRepairShips(IEventHandler handler, double goldLoss)
+        {
             foreach (Ship ship in Game.Random.Iterate(this.ships))
                 if (ship.DoAutoRepair)
                 {
-                    double cost = 0;
-                    foreach (Ship checkShip in this.ships)
-                        if (checkShip.DoAutoRepair)
-                            cost += checkShip.GetGoldForHP(checkShip.GetAutoRepairHP());
-                    cost = ( this.goldValue + goldLoss ) / cost;
-                    if (cost < 0)
-                        cost = 0;
+                    double cost = ( this.goldValue + goldLoss ) / GetAutoRepairCost();
                     if (cost < 1)
                         ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(ship.GetGoldForHP(ship.GetAutoRepairHP()) * cost));
 
@@ -692,6 +714,23 @@ namespace GalWar
                     if (hp > 0)
                         ship.GoldRepair(handler, hp);
                 }
+        }
+        public double GetAutoRepairCost()
+        {
+            return GetAutoRepairCost(false);
+        }
+        public double GetAutoRepairCost(bool minGold)
+        {
+            double cost = 0;
+            foreach (Ship ship in this.ships)
+                if (ship.DoAutoRepair)
+                {
+                    double hp = ship.GetAutoRepairHP();
+                    if (minGold)
+                        hp = Math.Ceiling(hp);
+                    cost += ship.GetGoldForHP(hp);
+                }
+            return cost;
         }
 
         internal void PlayTurn(IEventHandler handler)

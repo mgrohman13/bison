@@ -526,11 +526,19 @@ namespace GalWar
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
 
+            Colony repairedFrom = null;
+            if (this.AutoRepair == 0)
+                repairedFrom = GetRepairedFrom();
+
             --this.CurSpeed;
 
             this.Tile.SpaceObject = null;
             this.tile = tile;
             this.Tile.SpaceObject = this;
+
+            //if this ship was being production repaired, auto repair was off, and it just moved away from the colony, set auto repair to manual
+            if (repairedFrom != null && !Tile.IsNeighbor(this.Tile, repairedFrom.Tile))
+                this.AutoRepair = double.NaN;
         }
 
         public static bool CheckZOC(Player player, Tile from, Tile to)
@@ -981,18 +989,34 @@ namespace GalWar
             this.HasRepaired = true;
         }
 
+        public Colony GetRepairedFrom()
+        {
+            foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
+            {
+                Planet planet = ( neighbor.SpaceObject as Planet );
+                if (planet != null && planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == this)
+                    return planet.Colony;
+            }
+            return null;
+        }
+
         public double GetGoldForHP(double hp)
+        {
+            return GetGoldForHP(hp, true);
+        }
+        private double GetGoldForHP(double hp, bool isTotal)
         {
             TurnException.CheckTurn(this.Player);
 
             int floor = (int)Math.Floor(hp);
-            double lower = GetGoldForHP(floor, true);
+            double lower = CalcGoldForHP(floor, isTotal);
             if (floor == hp)
                 return lower;
-            double upper = GetGoldForHP(floor + 1, true);
+
+            double upper = CalcGoldForHP(floor + 1, isTotal);
             return ( lower + ( upper - lower ) * ( hp - floor ) );
         }
-        private double GetGoldForHP(int hp, bool isTotal)
+        private double CalcGoldForHP(int hp, bool isTotal)
         {
             return ( isTotal ? hp : 1 ) * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
         }
@@ -1003,26 +1027,28 @@ namespace GalWar
 
             return GetHPForGold(gold, true);
         }
-        private double GetHPForGold(double target, bool isTotal)
+        private double GetHPForGold(double gold, bool isTotal)
         {
             int upper = this.MaxHP - this.HP;
             if (upper > 0)
             {
-
                 upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
                 {
-                    return ( GetGoldForHP(hp, isTotal) >= target );
+                    return ( GetGoldForHP(hp, isTotal) >= gold );
                 }, 0, upper, true);
 
-                if (upper > 0)
+                if (upper > 0 && GetGoldForHP(upper, isTotal) > gold)
                 {
-                    double high = this.GetGoldForHP(upper, isTotal);
-                    if (high > target)
+                    double actual, low = upper - 1, high = upper, mid = Game.Random.Range(low, high);
+                    while (Math.Abs(( actual = GetGoldForHP(mid, isTotal) ) - gold) > Consts.FLOAT_ERROR)
                     {
-                        int lower = upper - 1;
-                        double low = this.GetGoldForHP(lower, isTotal);
-                        return ( lower + ( target - low ) / ( high - low ) );
+                        if (actual > gold)
+                            high = mid;
+                        else
+                            low = mid;
+                        mid = ( low + high ) / 2;
                     }
+                    return mid;
                 }
 
             }
@@ -1063,26 +1089,16 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
+            if (hp <= 0)
+                return 0;
+            if (hp > this.MaxHP - this.HP)
+                hp = this.MaxHP - this.HP;
             if (hp < 1)
                 hp = 1;
-            double low = CalcAutoRepair(hp - 1), high = CalcAutoRepair(hp + 1);
 
-            double actual, retVal = CalcAutoRepair(hp);
-            while (Math.Abs(( actual = GetAutoRepairHP(retVal) ) - hp) > Consts.FLOAT_ERROR)
-            {
-                if (actual > hp)
-                    high = retVal;
-                else
-                    low = retVal;
-                retVal = ( high + low ) / 2;
-            }
+            return GetGoldForHP(hp, false) / GetGoldRepairTarget();
+        }
 
-            return retVal;
-        }
-        private double CalcAutoRepair(double hp)
-        {
-            return ( GetGoldForHP(hp) / hp / GetGoldRepairTarget() );
-        }
         private double GetGoldRepairTarget()
         {
             return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / this.MaxHP );

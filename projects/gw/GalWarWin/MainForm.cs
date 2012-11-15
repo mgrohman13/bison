@@ -279,7 +279,8 @@ namespace GalWarWin
             float size;
             if (tile == this.selectedTile)
                 size = 3f;
-            else if (planet != null || ( this.isDialog ? ValidDialogTile(tile) : ship != null && ship.CurSpeed > 0 && ship.Player.IsTurn ))
+            else if (planet != null || ( this.isDialog ? ValidDialogTile(tile) : ship != null &&
+                    ( ( ship.AutoRepair == 0 && ship.HP < ship.MaxHP ) || ship.CurSpeed > 0 ) && ship.Player.IsTurn ))
                 size = 2f;
             else
                 size = 1f;
@@ -720,11 +721,28 @@ namespace GalWarWin
         {
             Ship ship = (Ship)this.selectedTile.SpaceObject;
 
-            int HP = SliderForm.ShowDialog(this, new GoldRepair(ship));
-
-            if (HP > 0)
+            if (ship.HP < ship.MaxHP && !ship.HasRepaired)
             {
-                ship.GoldRepair(this, HP);
+                int HP = SliderForm.ShowDialog(this, new GoldRepair(ship));
+
+                if (HP > 0)
+                    ship.GoldRepair(this, HP);
+
+                saved = false;
+                this.RefreshAll();
+            }
+            else if (AutoRepairForm.ShowDialog(ship))
+            {
+                saved = false;
+                this.RefreshAll();
+            }
+        }
+
+        private void btnAutoRepairShips_Click(object sender, EventArgs e)
+        {
+            if (RepairAllForm.ShowDialog(this))
+            {
+                CheckRepairedShips();
 
                 saved = false;
                 this.RefreshAll();
@@ -814,11 +832,11 @@ namespace GalWarWin
                     selectedTile = ship.Tile;
                     RefreshAll();
 
-                    int HP = SliderForm.ShowDialog(this, new GoldRepair(ship));
-                    if (HP > 0)
-                        ship.GoldRepair(this, HP);
+                    int hp = SliderForm.ShowDialog(this, new GoldRepair(ship));
+                    if (hp > 0)
+                        ship.GoldRepair(this, hp);
 
-                    end = ( HP > -1 );
+                    end = ( hp > -1 );
                     if (!end)
                         break;
                 }
@@ -1268,8 +1286,10 @@ namespace GalWarWin
             total = Player.RoundGold(total);
 
             LabelsForm.ShowDialog(this, "Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(), "Ship Upk", ships.ToString(),
-                    string.Empty, string.Empty, "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
-                    "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total), "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
+                    "Repairs", FormatIncome(-Game.CurrentPlayer.GetAutoRepairCost()), string.Empty, string.Empty,
+                    "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
+                    "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total),
+                    "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
         }
 
         private void lbl4_Click(object sender, EventArgs e)
@@ -1385,12 +1405,12 @@ namespace GalWarWin
             emphasisEvent = true;
         }
 
-        private static void FormatIncome(Label label, double income)
+        public static void FormatIncome(Label label, double income)
         {
             FormatIncome(label, income, false);
         }
 
-        private static void FormatIncome(Label label, double income, bool forceDouble)
+        public static void FormatIncome(Label label, double income, bool forceDouble)
         {
             ColorForIncome(label, income < 0);
 
@@ -1472,7 +1492,11 @@ namespace GalWarWin
             if (!this.isDialog && ship.Player.IsTurn)
             {
                 this.btnDisband.Visible = true;
-                this.btnGoldRepair.Visible = ship.HP < ship.MaxHP && !ship.HasRepaired;
+
+                this.btnGoldRepair.Visible = true;
+                this.btnGoldRepair.Text = ( ship.HP < ship.MaxHP && !ship.HasRepaired ? "Repair Ship" : "Auto Repair" );
+                if (ship.AutoRepair != 0)
+                    this.btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(ship.AutoRepair) ? "M" : FormatDouble(ship.AutoRepair));
             }
 
             this.lblTop.Text = ship.ToString();

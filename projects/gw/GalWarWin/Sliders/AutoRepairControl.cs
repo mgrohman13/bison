@@ -26,14 +26,8 @@ namespace GalWarWin.Sliders
 
         private void button1_Click(object sender, EventArgs e)
         {
-            double result = AutoRepairForm.ShowDialog(ship);
-            if (double.IsNaN(result) || result > -1)
-            {
-                if (!double.IsNaN(result) && result > 0)
-                    result = ship.GetAutoRepairForHP(result);
-                ship.AutoRepair = result;
+            if (AutoRepairForm.ShowDialog(ship) && this.Parent is SliderForm)
                 ( (Form)this.Parent ).DialogResult = DialogResult.Cancel;
-            }
         }
 
         //internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
