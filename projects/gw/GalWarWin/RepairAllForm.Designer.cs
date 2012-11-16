@@ -44,13 +44,15 @@
             this.cbOff = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnRepair = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtAvg = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnOK
             // 
             this.btnOK.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(12, 185);
+            this.btnOK.Location = new System.Drawing.Point(12, 223);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -61,7 +63,7 @@
             // 
             this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(93, 185);
+            this.btnCancel.Location = new System.Drawing.Point(93, 223);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 1;
@@ -124,7 +126,7 @@
             // 
             // txtMultiply
             // 
-            this.txtMultiply.Location = new System.Drawing.Point(78, 81);
+            this.txtMultiply.Location = new System.Drawing.Point(78, 113);
             this.txtMultiply.Name = "txtMultiply";
             this.txtMultiply.Size = new System.Drawing.Size(90, 20);
             this.txtMultiply.TabIndex = 11;
@@ -135,7 +137,7 @@
             // 
             this.rbMultiply.AutoSize = true;
             this.rbMultiply.Checked = true;
-            this.rbMultiply.Location = new System.Drawing.Point(12, 82);
+            this.rbMultiply.Location = new System.Drawing.Point(12, 114);
             this.rbMultiply.Name = "rbMultiply";
             this.rbMultiply.Size = new System.Drawing.Size(60, 17);
             this.rbMultiply.TabIndex = 12;
@@ -147,7 +149,7 @@
             // rbSet
             // 
             this.rbSet.AutoSize = true;
-            this.rbSet.Location = new System.Drawing.Point(12, 108);
+            this.rbSet.Location = new System.Drawing.Point(12, 140);
             this.rbSet.Name = "rbSet";
             this.rbSet.Size = new System.Drawing.Size(41, 17);
             this.rbSet.TabIndex = 13;
@@ -158,7 +160,7 @@
             // txtSet
             // 
             this.txtSet.Enabled = false;
-            this.txtSet.Location = new System.Drawing.Point(59, 107);
+            this.txtSet.Location = new System.Drawing.Point(59, 139);
             this.txtSet.Name = "txtSet";
             this.txtSet.Size = new System.Drawing.Size(109, 20);
             this.txtSet.TabIndex = 14;
@@ -169,7 +171,7 @@
             // 
             this.cbManual.AutoSize = true;
             this.cbManual.Enabled = false;
-            this.cbManual.Location = new System.Drawing.Point(61, 133);
+            this.cbManual.Location = new System.Drawing.Point(61, 165);
             this.cbManual.Name = "cbManual";
             this.cbManual.Size = new System.Drawing.Size(61, 17);
             this.cbManual.TabIndex = 15;
@@ -181,7 +183,7 @@
             // 
             this.cbOff.AutoSize = true;
             this.cbOff.Enabled = false;
-            this.cbOff.Location = new System.Drawing.Point(128, 133);
+            this.cbOff.Location = new System.Drawing.Point(128, 165);
             this.cbOff.Name = "cbOff";
             this.cbOff.Size = new System.Drawing.Size(40, 17);
             this.cbOff.TabIndex = 16;
@@ -192,7 +194,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(14, 134);
+            this.label1.Location = new System.Drawing.Point(14, 166);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 13);
             this.label1.TabIndex = 17;
@@ -202,12 +204,29 @@
             // 
             this.btnRepair.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnRepair.DialogResult = System.Windows.Forms.DialogResult.Yes;
-            this.btnRepair.Location = new System.Drawing.Point(52, 156);
+            this.btnRepair.Location = new System.Drawing.Point(52, 194);
             this.btnRepair.Name = "btnRepair";
             this.btnRepair.Size = new System.Drawing.Size(76, 23);
             this.btnRepair.TabIndex = 18;
             this.btnRepair.Text = "Repair";
             this.btnRepair.UseVisualStyleBackColor = true;
+            // 
+            // label3
+            // 
+            this.label3.Location = new System.Drawing.Point(0, 85);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(90, 23);
+            this.label3.TabIndex = 19;
+            this.label3.Text = "Average";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // txtAvg
+            // 
+            this.txtAvg.Location = new System.Drawing.Point(96, 87);
+            this.txtAvg.Name = "txtAvg";
+            this.txtAvg.ReadOnly = true;
+            this.txtAvg.Size = new System.Drawing.Size(72, 20);
+            this.txtAvg.TabIndex = 20;
             // 
             // RepairAllForm
             // 
@@ -215,7 +234,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(180, 220);
+            this.ClientSize = new System.Drawing.Size(180, 258);
+            this.Controls.Add(this.txtAvg);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.btnRepair);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbOff);
@@ -258,5 +279,7 @@
         private System.Windows.Forms.CheckBox cbOff;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnRepair;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtAvg;
     }
 }

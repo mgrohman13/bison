@@ -103,7 +103,7 @@ namespace GalWar
             return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.Player.Game.AvgResearch);
         }
 
-        private double GetCostLastResearched()
+        internal double GetCostLastResearched()
         {
             return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.bombardDamageMult, this.Player.LastResearched);
         }
@@ -452,6 +452,13 @@ namespace GalWar
             {
                 return GetColonizationValue(0);
             }
+        }
+
+        public double GetCurrentCost()
+        {
+            TurnException.CheckTurn(this.Player);
+
+            return GetCostLastResearched();
         }
 
         protected override void SetHP(int value)

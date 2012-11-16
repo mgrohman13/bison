@@ -30,6 +30,23 @@ namespace GalWarWin
             MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold, false);
             MainForm.FormatIncome(this.lblIncome, gold, true);
 
+            double avg = 0, tot = 0;
+            foreach (Ship ship in MainForm.Game.CurrentPlayer.GetShips())
+            {
+                double autoRepair = ship.AutoRepair;
+                if (autoRepair > 0)
+                {
+                    double weight = ship.GetCurrentCost();
+                    avg += autoRepair * weight;
+                    tot += weight;
+                }
+            }
+            if (tot == 0)
+                avg = 1;
+            else
+                avg /= tot;
+            this.txtAvg.Text = avg.ToString(Sliders.AutoRepairForm.GetFloatErrorPrecisionFormat());
+
             Recalculate();
 
             this.btnRepair.Focus();
@@ -37,15 +54,15 @@ namespace GalWarWin
 
         private void Recalculate()
         {
-            double cost = 0;
-            double value = GetValue();
-            foreach (Ship ship in MainForm.Game.CurrentPlayer.GetShips())
-                if (!ship.HasRepaired && DoAutoRepair(ship))
-                {
-                    double autoRepair = GetAutoRepair(ship, value);
-                    if (autoRepair > 0)
-                        cost += ship.GetGoldForHP(ship.GetAutoRepairHP(autoRepair));
-                }
+            double cost = 0, value = GetValue();
+            if (!double.IsNaN(value))
+                foreach (Ship ship in MainForm.Game.CurrentPlayer.GetShips())
+                    if (!ship.HasRepaired && DoAutoRepair(ship))
+                    {
+                        double autoRepair = GetAutoRepair(ship, value);
+                        if (autoRepair > 0)
+                            cost += ship.GetGoldForHP(ship.GetAutoRepairHP(autoRepair));
+                    }
             MainForm.FormatIncome(this.lblRepairs, -cost, true);
         }
 
@@ -53,6 +70,8 @@ namespace GalWarWin
         {
             if (this.rbMultiply.Checked)
                 return ParseValue(this.txtMultiply);
+            if ("M".Equals(this.txtSet.Text, StringComparison.OrdinalIgnoreCase))
+                return double.NaN;
             return ParseValue(this.txtSet);
         }
 

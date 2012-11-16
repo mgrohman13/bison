@@ -30,3 +30,4 @@ transport exp for invasion?
 ExperienceConstDmgAmt
 allow death stars to limit planet damage by pop left
 extra combat exp for troops killed in transport
+target win pct include 100

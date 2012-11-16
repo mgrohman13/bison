@@ -101,10 +101,15 @@ namespace GalWarWin.Sliders
         {
             string format;
             if (textBox == this.txtDefault)
-                format = "0.".PadRight((int)Math.Ceiling(-Math.Log10(Consts.FLOAT_ERROR)) + 2, '0');
+                format = GetFloatErrorPrecisionFormat();
             else
                 format = "0.000";
             textBox.Text = value.ToString(format);
+        }
+
+        public static string GetFloatErrorPrecisionFormat()
+        {
+            return "0.".PadRight((int)Math.Ceiling(-Math.Log10(Consts.FLOAT_ERROR)) + 2, '0');
         }
 
         public static bool ShowDialog(Ship ship)
