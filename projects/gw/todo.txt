@@ -1,23 +1,21 @@
 test exact vs oversize dictionary capacity for combat performance
-AI
-integrate AI-algorithm guesses into game for player to use as well
-known enemy designs
-event needs to be pulled out of other handler stuff and only show events for things visible to other players
-shroud
-split planetary defense between building attack or defense
-	att/def:hp ratio
-cost calculator
 main map improvements
 	ship speed/type
 	zooming, panning
 	minimap
-undo
+also can undo other deterministic actions
+management screens
+	colonies
+	ships
+account for auto repair in prod repair calculations
+refactor prod/auto repair logic into Colony RepairShip setter
+
 repair micromanagement
-	auto repair
-		see active average?
 	cost incentive
 		certain specific value?
 		pct you have been doing?
+split planetary defense between building attack or defense
+	att/def:hp ratio
 randomize planet colonization cost
 research display offset
 Ship.GetBombardLevelInc - div by att?
@@ -29,6 +27,10 @@ PlanetDamageAvg
 transport exp for invasion?
 ExperienceConstDmgAmt
 allow death stars to limit planet damage by pop left
-extra combat exp for troops killed in transport
-target win pct include 100
-write log to file?
+extra combat exp for troops killed in transport, (troops get exp?)
+
+AI
+integrate AI-algorithm guesses into game for player to use as well
+known enemy designs
+event needs to be pulled out of other handler stuff and only show events for things visible to other players
+shroud

@@ -19,8 +19,7 @@ namespace GalWar
 
         private bool _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
-        private ushort _maxTrans;
-        private ushort _maxHP;
+        private ushort _maxTrans, _maxHP, _repair;
         private float _curExp, _totalExp, _needExpMult, _expDiv, _autoRepair;
         private double _cost;
 
@@ -194,6 +193,21 @@ namespace GalWar
             }
         }
 
+        public int Repair
+        {
+            get
+            {
+                return this._repair;
+            }
+            private set
+            {
+                checked
+                {
+                    this._repair = (ushort)value;
+                }
+            }
+        }
+
         #endregion //fields and constructors
 
         #region internal
@@ -223,8 +237,10 @@ namespace GalWar
             return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.Upkeep;
         }
 
-        internal void ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
+        internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
         {
+            int retVal = 0;
+
             double hp = GetHPForProd(production);
             if (hp > this.MaxHP - HP)
                 hp = this.MaxHP - HP;
@@ -237,6 +253,9 @@ namespace GalWar
 
                 if (repairHP > 0 && this.HP == this.MaxHP && this.AutoRepair == 0)
                     this.AutoRepair = double.NaN;
+
+                this.Repair += repairHP;
+                retVal = repairHP;
             }
             else if (minGold)
             {
@@ -249,7 +268,7 @@ namespace GalWar
                 {
                     gold += ( hp - low ) * ( production - GetProdForHP(low + 1) );
                     production = ( low + 1 - hp ) * ( production - GetProdForHP(low) );
-                    return;
+                    return retVal;
                 }
             }
 
@@ -259,6 +278,8 @@ namespace GalWar
                 gold += production;
                 production = 0;
             }
+
+            return retVal;
         }
 
         internal void Destroy(bool addGold)
@@ -507,10 +528,9 @@ namespace GalWar
             return gold;
         }
 
-        //blerg
         public void Disband(IEventHandler handler, Colony colony)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
@@ -524,10 +544,9 @@ namespace GalWar
             Destroy(gold);
         }
 
-        //blerg
         public void Move(IEventHandler handler, Tile tile)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(this.CurSpeed > 0);
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
@@ -537,15 +556,32 @@ namespace GalWar
             if (this.AutoRepair == 0)
                 repairedFrom = GetRepairedFrom();
 
-            --this.CurSpeed;
-
-            this.Tile.SpaceObject = null;
-            this.tile = tile;
-            this.Tile.SpaceObject = this;
+            this.Player.Game.MoveShip(this);
+            Move(tile, false);
 
             //if this ship was being production repaired, auto repair was off, and it just moved away from the colony, set auto repair to manual
             if (repairedFrom != null && !Tile.IsNeighbor(this.Tile, repairedFrom.Tile))
                 this.AutoRepair = double.NaN;
+        }
+        internal void UndoMove(Tile tile)
+        {
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(this.CurSpeed < this.MaxSpeed);
+            AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
+            AssertException.Assert(tile.SpaceObject == null);
+
+            Move(tile, true);
+        }
+        private void Move(Tile tile, bool undo)
+        {
+            if (undo)
+                ++this.CurSpeed;
+            else
+                --this.CurSpeed;
+
+            this.Tile.SpaceObject = null;
+            this.tile = tile;
+            this.Tile.SpaceObject = this;
         }
 
         public static bool CheckZOC(Player player, Tile from, Tile to)
@@ -562,17 +598,16 @@ namespace GalWar
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
                 Ship ship = neighbor.SpaceObject as Ship;
-                if (!( ship == null || ship.Player == player || !( neighbors == null ? neighbors = Tile.GetNeighbors(from) : neighbors ).Contains(neighbor) ))
+                if (ship != null && ship.Player != player && ( neighbors == null ? neighbors = Tile.GetNeighbors(from) : neighbors ).Contains(neighbor))
                     return false;
             }
 
             return true;
         }
 
-        //blerg
         public void AttackShip(IEventHandler handler, Ship ship)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(ship != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, ship.Tile));
@@ -621,6 +656,12 @@ namespace GalWar
         private double GetCostExpForExp()
         {
             return GetCostLastResearched() / GetValue();
+        }
+
+        internal void StartTurn(IEventHandler handler)
+        {
+            this.Repair = 0;
+            LevelUp(handler);
         }
 
         internal void LevelUp(IEventHandler handler)
@@ -763,10 +804,9 @@ namespace GalWar
             return Game.Random.Round(hpStr);
         }
 
-        //blerg
         public void Bombard(IEventHandler handler, Planet planet)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
@@ -920,10 +960,9 @@ namespace GalWar
             return move / 2 * pct;
         }
 
-        //blerg
         public void Invade(IEventHandler handler, Colony target, int population, int gold)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(target != null);
             AssertException.Assert(population > 0);
@@ -955,10 +994,9 @@ namespace GalWar
             this.soldiers += soldiers;
         }
 
-        //blerg
         public void Colonize(IEventHandler handler, Planet planet)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
@@ -980,10 +1018,9 @@ namespace GalWar
             Destroy(false);
         }
 
-        //blerg
         public void GoldRepair(IEventHandler handler, int hp)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.MaxHP - HP);
@@ -994,6 +1031,8 @@ namespace GalWar
             this.HP += hp;
             Player.SpendGold(spend);
             this.HasRepaired = true;
+
+            this.Repair += hp;
         }
 
         public Colony GetRepairedFrom()

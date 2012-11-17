@@ -12,7 +12,7 @@ namespace GalWarWin
     {
         private static GraphsForm form = new GraphsForm();
 
-        private static readonly String[] abbr = new string[] { string.Empty, "k", "m" };
+        private static readonly String[] abbr = new string[] { string.Empty, "k", "M", "G" };
 
         private Game game;
 
@@ -60,7 +60,7 @@ namespace GalWarWin
             foreach (Player player in players)
                 maxArmada = Math.Max(maxArmada, player.GetArmadaStrength());
             int place = GetPlace(maxArmada);
-            int div = GetDiv(place);
+            long div = GetDiv(place);
 
             Dictionary<Player, double> research = game.GetResearch();
             labels = new Label[8, players.Length];
@@ -94,21 +94,21 @@ namespace GalWarWin
             return ( MainForm.FormatInt(max).Length - 2 ) / 3;
         }
 
-        private int GetDiv(int place)
+        private long GetDiv(int place)
         {
-            int retVal = 1;
+            long retVal = 1;
             while (--place > -1)
                 retVal *= 1000;
             return retVal;
         }
 
-        private static int GetValue(double value, bool ceil, int div)
+        private static long GetValue(double value, bool ceil, long div)
         {
             value /= div;
-            return (int)( ceil ? Math.Ceiling(value) : Math.Round(value) ) * div;
+            return (long)( ceil ? Math.Ceiling(value) : Math.Round(value) ) * div;
         }
 
-        private string GetString(int value, int div, int place)
+        private string GetString(long value, long div, int place)
         {
             if (value == 0)
                 return "0";
@@ -299,7 +299,7 @@ namespace GalWarWin
         private void DrawGrid(PaintEventArgs e, float height, float maxX, float maxY, float xScale, ref float yScale)
         {
             int place = GetPlace(maxY);
-            int value;
+            long value;
 
             DrawYLine(e, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
 
@@ -315,7 +315,7 @@ namespace GalWarWin
             DrawXLine(e, value, xScale, yScale, (int)Math.Ceiling(maxX));
         }
 
-        private void DrawXLine(PaintEventArgs e, int maxY, float xScale, float yScale, int x)
+        private void DrawXLine(PaintEventArgs e, long maxY, float xScale, float yScale, int x)
         {
             PointF startPoint = GetPoint(x, 0, xScale, yScale);
             DrawString(e, x.ToString(), startPoint, true);
@@ -324,13 +324,13 @@ namespace GalWarWin
 
         private void DrawYLine(PaintEventArgs e, float maxX, float xScale, float yScale, float y, int place)
         {
-            int value;
+            long value;
             DrawYLine(e, -1, maxX, xScale, ref yScale, ref y, place, false, out value);
         }
 
-        private void DrawYLine(PaintEventArgs e, float height, float maxX, float xScale, ref float yScale, ref float y, int place, bool ceil, out int value)
+        private void DrawYLine(PaintEventArgs e, float height, float maxX, float xScale, ref float yScale, ref float y, int place, bool ceil, out long value)
         {
-            int div = GetDiv(place);
+            long div = GetDiv(place);
             value = GetValue(y, ceil, div);
             if (height > 0)
             {
@@ -340,7 +340,7 @@ namespace GalWarWin
 
             PointF startPoint = GetPoint(0, value, xScale, yScale);
             DrawString(e, GetString(value, div, place), startPoint, false);
-            e.Graphics.DrawLine(Pens.Black, startPoint, GetPoint((int)Math.Ceiling(maxX), value, xScale, yScale));
+            e.Graphics.DrawLine(Pens.Black, startPoint, GetPoint((float)Math.Ceiling(maxX), value, xScale, yScale));
         }
 
         private void DrawString(PaintEventArgs e, string text, PointF point, bool xLine)

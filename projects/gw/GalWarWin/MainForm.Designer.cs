@@ -29,6 +29,8 @@ namespace GalWarWin
         private void InitializeComponent()
         {
             this.pnlInfo = new System.Windows.Forms.Panel();
+            this.btnUndo = new System.Windows.Forms.Button();
+            this.btnAutoRepairShips = new System.Windows.Forms.Button();
             this.btnCombat = new System.Windows.Forms.Button();
             this.btnInvasion = new System.Windows.Forms.Button();
             this.btnShowMoves = new System.Windows.Forms.Button();
@@ -72,14 +74,14 @@ namespace GalWarWin
             this.lbl3 = new System.Windows.Forms.Label();
             this.lbl2 = new System.Windows.Forms.Label();
             this.lblTop = new System.Windows.Forms.Label();
+            this.pnlBuild = new GalWarWin.BuildableControl();
             this.btnNewGame = new System.Windows.Forms.Button();
             this.btnLoadGame = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
-            this.btnAutoRepairShips = new System.Windows.Forms.Button();
-            this.pnlBuild = new GalWarWin.BuildableControl();
+            this.btnCostCalc = new System.Windows.Forms.Button();
             this.pnlInfo.SuspendLayout();
             this.panel1.SuspendLayout();
             ( (System.ComponentModel.ISupportInitialize)( this.tbTurns ) ).BeginInit();
@@ -87,6 +89,8 @@ namespace GalWarWin
             // 
             // pnlInfo
             // 
+            this.pnlInfo.Controls.Add(this.btnCostCalc);
+            this.pnlInfo.Controls.Add(this.btnUndo);
             this.pnlInfo.Controls.Add(this.btnAutoRepairShips);
             this.pnlInfo.Controls.Add(this.btnCombat);
             this.pnlInfo.Controls.Add(this.btnInvasion);
@@ -125,10 +129,32 @@ namespace GalWarWin
             this.pnlInfo.TabIndex = 2;
             this.pnlInfo.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GameForm_MouseMove);
             // 
+            // btnUndo
+            // 
+            this.btnUndo.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.btnUndo.Location = new System.Drawing.Point(0, 498);
+            this.btnUndo.Name = "btnUndo";
+            this.btnUndo.Size = new System.Drawing.Size(200, 23);
+            this.btnUndo.TabIndex = 51;
+            this.btnUndo.Text = "Undo";
+            this.btnUndo.UseVisualStyleBackColor = true;
+            this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
+            // 
+            // btnAutoRepairShips
+            // 
+            this.btnAutoRepairShips.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.btnAutoRepairShips.Location = new System.Drawing.Point(0, 527);
+            this.btnAutoRepairShips.Name = "btnAutoRepairShips";
+            this.btnAutoRepairShips.Size = new System.Drawing.Size(200, 23);
+            this.btnAutoRepairShips.TabIndex = 50;
+            this.btnAutoRepairShips.Text = "Repair All";
+            this.btnAutoRepairShips.UseVisualStyleBackColor = true;
+            this.btnAutoRepairShips.Click += new System.EventHandler(this.btnAutoRepairShips_Click);
+            // 
             // btnCombat
             // 
             this.btnCombat.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.btnCombat.Location = new System.Drawing.Point(0, 585);
+            this.btnCombat.Location = new System.Drawing.Point(0, 556);
             this.btnCombat.Name = "btnCombat";
             this.btnCombat.Size = new System.Drawing.Size(200, 23);
             this.btnCombat.TabIndex = 49;
@@ -139,7 +165,7 @@ namespace GalWarWin
             // btnInvasion
             // 
             this.btnInvasion.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.btnInvasion.Location = new System.Drawing.Point(0, 614);
+            this.btnInvasion.Location = new System.Drawing.Point(0, 585);
             this.btnInvasion.Name = "btnInvasion";
             this.btnInvasion.Size = new System.Drawing.Size(200, 23);
             this.btnInvasion.TabIndex = 48;
@@ -573,6 +599,15 @@ namespace GalWarWin
             this.lblTop.Text = "lblTop";
             this.lblTop.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // pnlBuild
+            // 
+            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.pnlBuild.Location = new System.Drawing.Point(0, 701);
+            this.pnlBuild.Name = "pnlBuild";
+            this.pnlBuild.Size = new System.Drawing.Size(200, 207);
+            this.pnlBuild.TabIndex = 44;
+            this.pnlBuild.Visible = false;
+            // 
             // btnNewGame
             // 
             this.btnNewGame.Location = new System.Drawing.Point(12, 12);
@@ -624,25 +659,16 @@ namespace GalWarWin
             this.tbTurns.Visible = false;
             this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
             // 
-            // btnAutoRepairShips
+            // btnCostCalc
             // 
-            this.btnAutoRepairShips.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.btnAutoRepairShips.Location = new System.Drawing.Point(0, 556);
-            this.btnAutoRepairShips.Name = "btnAutoRepairShips";
-            this.btnAutoRepairShips.Size = new System.Drawing.Size(200, 23);
-            this.btnAutoRepairShips.TabIndex = 50;
-            this.btnAutoRepairShips.Text = "Repair All";
-            this.btnAutoRepairShips.UseVisualStyleBackColor = true;
-            this.btnAutoRepairShips.Click += new System.EventHandler(this.btnAutoRepairShips_Click);
-            // 
-            // pnlBuild
-            // 
-            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.pnlBuild.Location = new System.Drawing.Point(0, 701);
-            this.pnlBuild.Name = "pnlBuild";
-            this.pnlBuild.Size = new System.Drawing.Size(200, 207);
-            this.pnlBuild.TabIndex = 44;
-            this.pnlBuild.Visible = false;
+            this.btnCostCalc.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.btnCostCalc.Location = new System.Drawing.Point(0, 614);
+            this.btnCostCalc.Name = "btnCostCalc";
+            this.btnCostCalc.Size = new System.Drawing.Size(200, 23);
+            this.btnCostCalc.TabIndex = 52;
+            this.btnCostCalc.Text = "Ship Costs";
+            this.btnCostCalc.UseVisualStyleBackColor = true;
+            this.btnCostCalc.Click += new System.EventHandler(this.btnCostCalc_Click);
             // 
             // MainForm
             // 
@@ -726,6 +752,8 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnAutosaveView;
         private System.Windows.Forms.TrackBar tbTurns;
         private System.Windows.Forms.Button btnAutoRepairShips;
+        private System.Windows.Forms.Button btnUndo;
+        private System.Windows.Forms.Button btnCostCalc;
     }
 }
 

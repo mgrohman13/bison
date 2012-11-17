@@ -8,7 +8,7 @@ namespace GalWar
     {
         #region cost
 
-        internal static double GetStrength(int att, int def, int hp, int speed)
+        public static double GetStrength(int att, int def, int hp, int speed)
         {
             return GetTotCost(att, def, hp, speed, 0, false, 0, 0);
         }
@@ -18,7 +18,7 @@ namespace GalWar
             return GetPlanetDefenseCost(att, def, 0);
         }
 
-        internal static double GetValue(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
+        public static double GetValue(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
         {
             double researchMult = GetResearchMult(research);
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, 1 / researchMult);
@@ -31,7 +31,7 @@ namespace GalWar
             return GetTotCost(att, def, 1, attDiv - speedAdd, 0, false, 0, researchMult, researchMult) * speedAdd / attDiv * Consts.PlanetDefensesCostMult;
         }
 
-        internal static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
+        public static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
         {
             double researchMult = GetResearchMult(research);
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, researchMult);

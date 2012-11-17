@@ -308,7 +308,7 @@ next_planet:
 
         public void StartGame(IEventHandler handler)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this);
 
             foreach (Player p in players)
                 this.Graphs.StartTurn(p);
@@ -402,14 +402,13 @@ next_planet:
             return this.planets.AsReadOnly();
         }
 
-        //blerg
         public void EndTurn(IEventHandler handler)
         {
             EndTurn(handler, false);
         }
         internal void EndTurn(IEventHandler handler, bool allowAI)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this);
 
             AssertException.Assert(allowAI || CurrentPlayer.AI == null);
 
@@ -558,6 +557,49 @@ next_planet:
 
         #endregion //   public
 
+        #region Undo
+
+        [NonSerialized]
+        private Stack<Tuple<Ship, Tile>> _undoStack;
+        private Stack<Tuple<Ship, Tile>> undoStack
+        {
+            get
+            {
+                if (this._undoStack == null)
+                    this._undoStack = new Stack<Tuple<Ship, Tile>>();
+                return this._undoStack;
+            }
+        }
+
+        internal void Event(bool clearStack)
+        {
+            if (clearStack)
+                undoStack.Clear();
+        }
+
+        internal void MoveShip(Ship ship)
+        {
+            undoStack.Push(new Tuple<Ship, Tile>(ship, ship.Tile));
+        }
+
+        public bool CanUndo()
+        {
+            return ( undoStack.Count > 0 );
+        }
+
+        public void Undo(IEventHandler handler)
+        {
+            handler = new HandlerWrapper(handler, this, false);
+            AssertException.Assert(CanUndo());
+
+            Tuple<Ship, Tile> command = undoStack.Pop();
+            command.Item1.UndoMove(command.Item2);
+        }
+
+        #endregion Undo
+
+        #region Result
+
         [Serializable]
         public class Result
         {
@@ -604,5 +646,7 @@ next_planet:
                     result.Points -= min;
             }
         }
+
+        #endregion //Result
     }
 }

@@ -7,11 +7,17 @@ namespace GalWar
     {
         private IEventHandler handler;
 
-        internal HandlerWrapper(IEventHandler handler)
+        internal HandlerWrapper(IEventHandler handler, Game game)
+            : this(handler, game, true)
+        {
+        }
+        internal HandlerWrapper(IEventHandler handler, Game game, bool clearStack)
         {
             AssertException.Assert(handler != null);
             this.handler = handler;
             this.Event();
+
+            game.Event(clearStack);
         }
 
         Tile IEventHandler.getBuildTile(Colony colony)

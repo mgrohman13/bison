@@ -783,6 +783,14 @@ namespace GalWarWin
             this.RefreshAll();
         }
 
+        private void btnUndo_Click(object sender, EventArgs e)
+        {
+            Game.Undo(this);
+
+            saved = false;
+            this.RefreshAll();
+        }
+
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
@@ -1044,7 +1052,7 @@ namespace GalWarWin
                     }
                     catch (AssertException e)
                     {
-                        Console.Write(e.ToString());
+                        Console.WriteLine(e.ToString());
                     }
                 }
             }
@@ -1240,7 +1248,7 @@ namespace GalWarWin
             }
             catch (ObjectDisposedException e)
             {
-                Console.Write(e.ToString());
+                Console.WriteLine(e.ToString());
 
                 return;
             }
@@ -1348,6 +1356,18 @@ namespace GalWarWin
             InvadeCalculatorForm.ShowDialog(this);
         }
 
+        private void btnCostCalc_Click(object sender, EventArgs e)
+        {
+            Colony colony = GetSelectedColony();
+            if (colony == null)
+                if (this.selectedTile == null)
+                    CostCalculatorForm.ShowForm(this);
+                else
+                    CostCalculatorForm.ShowForm(this, this.selectedTile.SpaceObject as Ship);
+            else
+                CostCalculatorForm.ShowForm(this, colony.Buildable as ShipDesign);
+        }
+
         #endregion //Events
 
         #region Refresh
@@ -1364,6 +1384,8 @@ namespace GalWarWin
             RefreshCurrentPlayer();
             RefreshSelectedInfo();
             InvalidateMap();
+
+            this.btnUndo.Enabled = Game.CanUndo();
         }
 
         private void InvalidateMap()
@@ -1519,6 +1541,11 @@ namespace GalWarWin
                 this.lbl5.Text = "Upkeep";
                 this.lbl5Inf.Text = ship.Upkeep.ToString();
             }
+            else if (ship.Repair > 0)
+            {
+                this.lbl5.Text = "Repair";
+                this.lbl5Inf.Text = "+" + ship.Repair;
+            }
 
             this.lbl6.Text = "Experience";
             this.lbl6Inf.Text = ship.GetTotalExp().ToString() + " (" + ship.NextExpType.ToString() + ")";
@@ -1625,10 +1652,10 @@ namespace GalWarWin
                 if (strChange != "0")
                     this.lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : string.Empty);
 
-                if (colony.ProdHeal > 0)
+                if (colony.Repair > 0)
                 {
                     this.lbl6.Text = "Repair";
-                    this.lbl6Inf.Text = "+" + colony.ProdHeal;
+                    this.lbl6Inf.Text = "+" + colony.Repair;
                 }
             }
 
@@ -1873,6 +1900,7 @@ namespace GalWarWin
 
         #endregion
 
+        private int flushed = 0;
         private string log = string.Empty;
 
         public void LogMsg(string format, params object[] args)
@@ -1887,11 +1915,20 @@ namespace GalWarWin
         {
             Console.WriteLine();
             log += "\r\n";
+
+            using (StreamWriter streamWriter = new StreamWriter(GetLogPath(), true))
+                streamWriter.Write(log.Substring(flushed));
+            flushed = log.Length;
         }
 
         public string GetLog()
         {
             return log;
+        }
+
+        private string GetLogPath()
+        {
+            return this.saveFileDialog1.InitialDirectory + "\\gw.log";
         }
     }
 }

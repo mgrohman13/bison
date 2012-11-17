@@ -163,7 +163,7 @@ namespace GalWar
                 colony.StartTurn(handler);
             //gain any levels for exp acquired during enemy turns
             foreach (Ship ship in this.ships)
-                ship.LevelUp(handler);
+                ship.StartTurn(handler);
 
             //consolidate all gold to start the turn
             double gold = this.goldValue + this.goldOffset;
@@ -487,26 +487,23 @@ namespace GalWar
             }
         }
 
-        //blerg
         public void SetGoldEmphasis(IEventHandler handler, bool value)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler,this.Game ,false);
             TurnException.CheckTurn(this);
 
             this._goldEmphasis = value;
         }
-        //blerg
         public void SetResearchEmphasis(IEventHandler handler, bool value)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
             this._researchEmphasis = value;
         }
-        //blerg
         public void SetProductionEmphasis(IEventHandler handler, bool value)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
             this._productionEmphasis = value;
@@ -673,10 +670,9 @@ namespace GalWar
         }
 
         //additionalLossPct and accountForIncome are only there to be passed back into the handler; they do not affect the call itself
-        //blerg
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign, bool accountForIncome, params double[] additionalLosses)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));
@@ -694,7 +690,7 @@ namespace GalWar
 
         public void AutoRepairShips(IEventHandler handler)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
             AutoRepairShips(handler, 0);

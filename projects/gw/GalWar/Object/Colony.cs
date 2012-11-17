@@ -17,7 +17,7 @@ namespace GalWar
         private bool _built;
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
-        private ushort _production, _prodHeal;
+        private ushort _production, _repair;
         private float _defenseSoldiers, _researchRounding, _productionRounding, _soldierChange;
 
         internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
@@ -156,7 +156,7 @@ namespace GalWar
 
         internal void EndTurn(IEventHandler handler, ref double gold, ref int research)
         {
-            ProdHeal = 0;
+            this.Repair = 0;
             ResetMoved();
 
             //modify real values
@@ -201,12 +201,7 @@ namespace GalWar
 
             Ship repairShip = RepairShip;
             if (repairShip != null)
-            {
-                int hp = repairShip.HP;
-                repairShip.ProductionRepair(ref productionInc, ref gold, doTurn, minGold);
-                if (doTurn)
-                    ProdHeal = repairShip.HP - hp;
-            }
+                this.Repair += repairShip.ProductionRepair(ref productionInc, ref gold, doTurn, minGold);
 
             if (this.Buildable == null)
                 LoseProduction(productionInc, ref productionInc, ref gold, Consts.GoldProductionForGold);
@@ -522,29 +517,38 @@ namespace GalWar
             }
         }
 
-        //blerg
         public void SetRepairShip(IEventHandler handler, Ship value)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(value == null || this.Player == value.Player);
 
-            if (value != null && value != this.RepairShip)
-                value.AutoRepair = 0;
+            Ship repairShip = this.RepairShip;
+            if (value == null)
+            {
+                if (repairShip != null)
+                    repairShip.AutoRepair = double.NaN;
+            }
+            else
+            {
+                if (repairShip != value)
+                    value.AutoRepair = 0;
+            }
+
             this.RepairShip = value;
         }
 
-        public int ProdHeal
+        public int Repair
         {
             get
             {
-                return this._prodHeal;
+                return this._repair;
             }
             private set
             {
                 checked
                 {
-                    this._prodHeal = (ushort)value;
+                    this._repair = (ushort)value;
                 }
             }
         }
@@ -705,10 +709,9 @@ namespace GalWar
             newHP = (int)Math.Ceiling(hp);
         }
 
-        //blerg
         public void SellProduction(IEventHandler handler, int production)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production <= this.production);
@@ -744,10 +747,9 @@ namespace GalWar
             production -= loseProduction;
         }
 
-        //blerg
         public void BuyProduction(IEventHandler handler, int production)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             double gold = production * Consts.GoldForProduction;
@@ -762,10 +764,9 @@ namespace GalWar
             return ( buildable == null || buildable.CanBeBuiltBy(this) );
         }
 
-        //blerg
         public void StartBuilding(IEventHandler handler, Buildable newBuild)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
@@ -857,10 +858,9 @@ namespace GalWar
             }
         }
 
-        //blerg
         public void DisbandPlanetDefense(IEventHandler handler, int hp, bool gold)
         {
-            handler = new HandlerWrapper(handler);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
