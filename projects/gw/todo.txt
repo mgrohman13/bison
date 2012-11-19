@@ -9,6 +9,7 @@ management screens
 	ships
 account for auto repair in prod repair calculations
 refactor prod/auto repair logic into Colony RepairShip setter
+cost calc str and value use abbr
 
 repair micromanagement
 	cost incentive
