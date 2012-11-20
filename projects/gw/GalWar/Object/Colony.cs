@@ -826,17 +826,12 @@ namespace GalWar
         }
         private void ModDefenseSoldiers(double oldCost)
         {
-            double cost = this.PlanetDefenseTotalCost - oldCost;
-            if (cost != 0)
+            float diff = (float)( ( this.PlanetDefenseTotalCost - oldCost ) * Consts.PlanetDefensesSoldiersMult );
+            this.defenseSoldiers += Game.Random.Gaussian(diff, Consts.SoldiersRndm);
+            if (this.defenseSoldiers < 0 || this.HP == 0)
             {
-                float diff = (float)( cost * Consts.PlanetDefensesSoldiersMult );
-                this.defenseSoldiers += Game.Random.Gaussian(diff, Consts.SoldiersRndm);
-                if (this.defenseSoldiers < 0 || ( this.HP == 0 && this.defenseSoldiers > 0 ))
-                {
-                    double gold = this.defenseSoldiers / Consts.DefendingSoldiersForGold;
-                    Player.GoldIncome(gold);
-                    this.defenseSoldiers = 0;
-                }
+                Player.GoldIncome(this.defenseSoldiers / Consts.DefendingSoldiersForGold);
+                this.defenseSoldiers = 0;
             }
         }
 

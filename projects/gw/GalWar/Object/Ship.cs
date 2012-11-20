@@ -288,7 +288,6 @@ namespace GalWar
                 throw new Exception();
 
             double destroyGold = GetDestroyGold();
-            Console.WriteLine("Destroy Gold:  " + destroyGold);
             if (addGold)
                 this.Player.AddGold(destroyGold);
             else
@@ -499,9 +498,8 @@ namespace GalWar
 
         private double GetTransLoss(int damage)
         {
-            if (damage >= this.HP)
-                return this.Population;
-            return ( damage / (double)this.MaxHP * this.MaxPop * Math.Pow(this.Population / (double)this.MaxPop, Consts.TransLossPctPower) * Consts.TransLossMult );
+            return ( damage / (double)this.MaxHP * this.MaxPop * Consts.TransLossMult
+                    * Math.Pow(this.Population / (double)this.MaxPop, Consts.TransLossPctPower) );
         }
 
         public double GetColonizationValue(int repair)
@@ -522,9 +520,16 @@ namespace GalWar
 
         public double GetDestroyGold()
         {
-            double gold = this.Population / Consts.PopulationForGold + this.soldiers / Consts.SoldiersForGold + GetCostExperience(this.curExp) / Consts.ExpForGold;
+            double gold = this.Population / Consts.PopulationForGold + this.soldiers / Consts.SoldiersForGold
+                    + GetCostExperience(this.curExp) / Consts.ExpForGold;
             if (this.Player.IsTurn)
                 gold += GetUpkeepReturn();
+            Console.WriteLine("Destroy Gold:  " + gold);
+            Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGold);
+            Console.WriteLine("Soldiers:  " + this.soldiers / Consts.SoldiersForGold);
+            Console.WriteLine("Experience:  " + GetCostExperience(this.curExp) / Consts.ExpForGold);
+            Console.WriteLine("Upkeep:  " + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 ));
+            Console.WriteLine();
             return gold;
         }
 
@@ -617,12 +622,7 @@ namespace GalWar
             --this.CurSpeed;
 
             double pct = Combat(handler, ship);
-            double goldIncome = this.GetUpkeepReturn(pct);
-            if (goldIncome != 0)
-            {
-                Console.WriteLine("Upkeep Return: " + goldIncome);
-                this.Player.GoldIncome(goldIncome);
-            }
+            this.Player.GoldIncome(this.GetUpkeepReturn(pct));
 
             //only the ship whose turn it is can immediately gain levels from the exp
             this.LevelUp(handler);
@@ -818,12 +818,9 @@ namespace GalWar
 
             --this.CurSpeed;
 
-            int oldHP = -1;
-            if (!friendly && colony != null)
-                oldHP = colony.HP;
             double pct = 1;
-            if (oldHP > 0)
-                pct = AttackColony(handler, colony, oldHP);
+            if (!friendly && colony != null && colony.HP > 0)
+                pct = AttackColony(handler, colony);
 
             if (pct > 0)
                 if (colony != null && colony.HP > 0)
@@ -834,23 +831,25 @@ namespace GalWar
             LevelUp(handler);
         }
 
-        private double AttackColony(IEventHandler handler, Colony colony, int oldHP)
+        private double AttackColony(IEventHandler handler, Colony colony)
         {
-            double damage, d;
-            Consts.GetDamageTable(this.Att, colony.Def, out damage, out d);
+            double freeDmg = GetFreeDmg(colony), combatDmg, avgDef;
+            Consts.GetDamageTable(this.Att, colony.Def, out combatDmg, out avgDef);
 
-            double freeDmg = GetFreeDmg(colony);
-            int bombardDamage = GetBombardDamage(freeDmg);
-            colony.HP -= bombardDamage;
+            double freePct = 0;
+            int bombard = GetBombardDamage(freeDmg);
+            if (bombard > colony.HP)
+            {
+                freePct = ( 1 - ( colony.HP / (double)bombard ) );
+                bombard = colony.HP;
+            }
+            colony.HP -= bombard;
 
-            double pct = 1;
+            double combatPct = 1;
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
-                pct = Combat(handler, colony);
+                combatPct = Combat(handler, colony);
 
-            pct *= damage;
-            if (bombardDamage > oldHP)
-                pct += ( 1 - ( oldHP / (double)bombardDamage ) ) * freeDmg;
-            return ( pct / ( damage + freeDmg ) );
+            return ( ( freePct * freeDmg + combatPct * combatDmg ) / ( freeDmg + combatDmg ) );
         }
 
         private double GetFreeDmg(Colony colony)

@@ -161,8 +161,6 @@ namespace GalWar
 
         protected virtual void SetHP(int value)
         {
-            if (value < 0)
-                value = 0;
             checked
             {
                 this._hp = (ushort)value;

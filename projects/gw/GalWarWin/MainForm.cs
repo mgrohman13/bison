@@ -1686,10 +1686,10 @@ namespace GalWarWin
                 Ship repairShip = colony.RepairShip;
                 if (repairShip != null)
                 {
-                    double HP = repairShip.GetHPForProd(colony.GetProductionIncome());
-                    if (HP > repairShip.MaxHP - repairShip.HP)
-                        HP = repairShip.MaxHP - repairShip.HP;
-                    this.lbl6Inf.Text = "Repair +" + FormatDouble(HP);
+                    double hp = repairShip.GetHPForProd(colony.GetProductionIncome());
+                    if (hp > repairShip.MaxHP - repairShip.HP)
+                        hp = repairShip.MaxHP - repairShip.HP;
+                    this.lbl6Inf.Text = "Repair +" + FormatDouble(hp);
                 }
                 else if (colony.Buildable != null)
                 {

@@ -135,11 +135,14 @@ namespace GalWar
             return ( (ShipClass)name ).ToString() + " " + NumberToRoman(mark);
         }
 
-        private static readonly byte[] values = new byte[] { 100, 90, 50, 40, 10, 9, 5, 4, 1 };
-        private static readonly string[] numerals = new string[] { "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+        private static readonly byte[] values = new byte[] { 90, 50, 40, 10, 9, 5, 4, 1 };
+        private static readonly string[] numerals = new string[] { "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
         private static string NumberToRoman(byte mark)
         {
+            if (mark > 99)
+                return mark.ToString();
+
             string result = string.Empty;
             for (int i = 0 ; i < values.Length ; ++i)
                 while (mark >= values[i])

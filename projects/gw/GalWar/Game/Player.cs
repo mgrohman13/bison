@@ -489,7 +489,7 @@ namespace GalWar
 
         public void SetGoldEmphasis(IEventHandler handler, bool value)
         {
-            handler = new HandlerWrapper(handler,this.Game ,false);
+            handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
             this._goldEmphasis = value;

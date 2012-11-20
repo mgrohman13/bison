@@ -321,15 +321,6 @@ end:
             Ship attShip = this.attacker as Ship;
             Ship defShip = this.defender as Ship;
 
-            logAtt = attacker.Att;
-            logAttCurHP = attacker.HP;
-            logAttMaxHP = attShip == null ? -1 : attShip.MaxHP;
-            logAttExp = attShip == null ? -1 : attShip.GetTotalExp();
-            logDef = defender.Def;
-            logDefCurHP = defender.HP;
-            logDefMaxHP = defShip == null ? -1 : defShip.MaxHP;
-            logDefExp = defShip == null ? -1 : defShip.GetTotalExp();
-
             if (btnAttack.DialogResult == DialogResult.None)
             {
                 if (defShip == null)
@@ -490,19 +481,28 @@ end:
             TextForm.ShowDialog(gameForm);
         }
 
-        private int logAtt;
-        private int logAttCurHP;
-        private int logAttMaxHP;
-        private int logAttExp;
-        private int logDef;
-        private int logDefCurHP;
-        private int logDefMaxHP;
-        private int logDefExp;
+        private int logAtt = -1, logAttCurHP, logAttMaxHP, logAttExp, logDef, logDefCurHP, logDefMaxHP, logDefExp;
+
         private List<CombatType> combat = new List<CombatType>();
         private Dictionary<Ship, List<LevelUpType>> levels = new Dictionary<Ship, List<LevelUpType>>();
 
         private void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss)
         {
+            if (logAtt == -1)
+            {
+                Ship attShip = this.attacker as Ship;
+                Ship defShip = this.defender as Ship;
+
+                logAtt = attacker.Att;
+                logAttCurHP = attacker.HP;
+                logAttMaxHP = attShip == null ? -1 : attShip.MaxHP;
+                logAttExp = attShip == null ? -1 : attShip.GetTotalExp();
+                logDef = defender.Def;
+                logDefCurHP = defender.HP;
+                logDefMaxHP = defShip == null ? -1 : defShip.MaxHP;
+                logDefExp = defShip == null ? -1 : defShip.GetTotalExp();
+            }
+
             combat.Add(new CombatType(attacker, defender, attack, defense, popLoss));
         }
 
@@ -579,6 +579,8 @@ end:
 
             LogLevelUp(attacker);
             LogLevelUp(defender);
+
+            logAtt = -1;
         }
 
         private void LogLevelUp(Combatant combatant)

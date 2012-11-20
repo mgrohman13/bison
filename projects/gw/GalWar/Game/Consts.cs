@@ -141,7 +141,7 @@ namespace GalWar
         //will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
-        public const float PlanetDefensesSoldiersMult = (float)( DisbandPct / ProductionForSoldiers * 1.3 );
+        public const double PlanetDefensesSoldiersMult = DisbandPct / ProductionForSoldiers * 1.3;
         public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
 
         public const double FLOAT_ERROR = 0.0000015050172805786133;
