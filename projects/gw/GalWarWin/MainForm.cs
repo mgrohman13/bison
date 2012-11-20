@@ -785,7 +785,7 @@ namespace GalWarWin
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
-            Game.Undo(this);
+            this.selectedTile = Game.Undo(this);
 
             saved = false;
             this.RefreshAll();

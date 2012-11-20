@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using GalWar;
+using MattUtil;
 
 namespace GalWarWin.Sliders
 {
@@ -36,7 +37,7 @@ namespace GalWarWin.Sliders
             this.attSoldiers = attSoldiers;
             this.defSoldiers = defSoldiers;
 
-            this.initial = MattUtil.TBSUtil.FindValue(delegate(int gold)
+            this.initial = TBSUtil.FindValue(delegate(int gold)
             {
                 string effcnt = GetEffcnt(gold);
                 return ( effcnt == "100%" );
@@ -89,7 +90,7 @@ namespace GalWarWin.Sliders
 
             int max = GetMax();
             double defense = GetDefense();
-            int gold = MattUtil.TBSUtil.FindValue(delegate(int findGold)
+            int gold = TBSUtil.FindValue(delegate(int findGold)
             {
                 return ( GetAttack(findGold) > defense );
             }, 1, max, true);
@@ -115,7 +116,7 @@ namespace GalWarWin.Sliders
                 return GetValue();
 
             target /= 100;
-            return MattUtil.TBSUtil.FindValue(delegate(int gold)
+            return TBSUtil.FindValue(delegate(int gold)
             {
                 return ( GetWinPct(GetAttack(gold)) >= target );
             }, 1, GetMax(), true);

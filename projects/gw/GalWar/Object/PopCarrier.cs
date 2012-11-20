@@ -133,7 +133,7 @@ namespace GalWar
 
         public void MovePop(IEventHandler handler, int population, PopCarrier destination)
         {
-            handler = new HandlerWrapper(handler,this.Player.Game);
+            handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(Player);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);

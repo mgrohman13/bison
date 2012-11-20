@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MattUtil;
 
 namespace GalWar
 {
@@ -560,17 +561,22 @@ namespace GalWar
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
 
-            this.Player.Game.MoveShip(this);
+            this.Player.Game.PushMoveShip(this);
             Move(tile, false);
         }
-        internal void UndoMove(Tile tile)
+        internal Tile UndoMove(object[] args)
         {
+            AssertException.Assert(args.Length == 1);
+            Tile tile = args[0] as Tile;
+
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(this.CurSpeed < this.MaxSpeed);
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
 
             Move(tile, true);
+
+            return this.Tile;
         }
         private void Move(Tile tile, bool undo)
         {
@@ -1019,14 +1025,42 @@ namespace GalWar
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.MaxHP - HP);
             AssertException.Assert(!this.HasRepaired);
+            AssertException.Assert(GetGoldForHP(hp) < Player.Gold);
+
+            this.Player.Game.PushGoldRepair(this, hp);
+
+            GoldRepair(hp, false);
+        }
+        internal Tile UndoGoldRepair(object[] args)
+        {
+            AssertException.Assert(args.Length == 1);
+            int hp = (int)args[0];
+
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(hp > 0);
+            AssertException.Assert(this.HP - hp > 0);
+            AssertException.Assert(this.HasRepaired);
+
+            GoldRepair(hp, true);
+
+            return this.Tile;
+        }
+        private void GoldRepair(int hp, bool undo)
+        {
             double spend = GetGoldForHP(hp);
-            AssertException.Assert(spend < Player.Gold);
-
-            this.HP += hp;
-            Player.SpendGold(spend);
-            this.HasRepaired = true;
-
-            this.Repair += hp;
+            if (undo)
+            {
+                this.HP -= hp;
+                this.Repair -= hp;
+            }
+            else
+            {
+                this.HP += hp;
+                this.Repair += hp;
+                spend = -spend;
+            }
+            Player.AddGold(spend);
+            this.HasRepaired = !undo;
         }
 
         public Colony GetRepairedFrom()
@@ -1072,7 +1106,7 @@ namespace GalWar
             int upper = this.MaxHP - this.HP;
             if (upper > 0)
             {
-                upper = MattUtil.TBSUtil.FindValue(delegate(int hp)
+                upper = TBSUtil.FindValue(delegate(int hp)
                 {
                     return ( GetGoldForHP(hp, isTotal) >= gold );
                 }, 0, upper, true);

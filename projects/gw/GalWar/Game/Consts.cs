@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MattUtil;
 
 namespace GalWar
 {
@@ -226,7 +227,7 @@ namespace GalWar
             double attack = GetStrengthBase(attackers, soldiers, AttackStrength, AttackNumbersPower);
             if (randomize)
                 attack = RandomizeInvasionStr(attack);
-            return GetInvasionStrength(MattUtil.TBSUtil.FindValue(delegate(int initialWave)
+            return GetInvasionStrength(TBSUtil.FindValue(delegate(int initialWave)
             {
                 return ( initialWave * GetInvasionStrength(initialWave, attack, gold) > totalDefense );
             }, 1, attackers, true), attack, gold);

@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using GalWar;
+using MattUtil;
 
 namespace GalWarWin.Sliders
 {
@@ -16,7 +17,7 @@ namespace GalWarWin.Sliders
         public GoldRepair(Ship ship)
         {
             this.ship = ship;
-            this.max = MattUtil.TBSUtil.FindValue(delegate(int hp)
+            this.max = TBSUtil.FindValue(delegate(int hp)
             {
                 return ( ship.GetGoldForHP(hp) < ship.Player.Gold );
             }, 0, ship.MaxHP - ship.HP, false);
@@ -66,7 +67,7 @@ namespace GalWarWin.Sliders
         private delegate double FindValueDelegate(int value);
         private int FindValue(FindValueDelegate FindValue)
         {
-            return MattUtil.TBSUtil.FindValue(delegate(int value)
+            return TBSUtil.FindValue(delegate(int value)
             {
                 if (value < this.max)
                     return ( FindValue(value) > FindValue(value + 1) );

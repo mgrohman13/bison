@@ -15,23 +15,26 @@ namespace MattUtil
 
             int playerLength = players.Length;
             int numShuffles = random.OEInt(playerLength * shuffle);
-            HashSet<int> affected = new HashSet<int>();
+            bool[] affected = new bool[playerLength];
             for (int a = 0 ; a < numShuffles ; ++a)
             {
                 int index = random.Next(playerLength);
-                if (index == 0 || affected.Contains(index - 1) || affected.Contains(index))
+                int swap = ( index - 1 );
+                Player player = players[index];
+
+                if (index == 0 || affected[index] || affected[swap])
                 {
                     int amt;
-                    retVal.TryGetValue(players[index], out amt);
-                    retVal[players[index]] = amt + 1;
+                    retVal.TryGetValue(player, out amt);
+                    retVal[player] = amt + 1;
                 }
                 else
                 {
-                    affected.Add(index - 1);
-                    affected.Add(index);
-                    Player temp = players[index - 1];
-                    players[index - 1] = players[index];
-                    players[index] = temp;
+                    affected[swap] = true;
+                    affected[index] = true;
+
+                    players[index] = players[swap];
+                    players[swap] = player;
                 }
             }
 

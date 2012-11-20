@@ -4,6 +4,8 @@ main map improvements
 	zooming, panning
 	minimap
 also can undo other deterministic actions
+	buy/sell prod
+	repair all?
 management screens
 	colonies
 	ships

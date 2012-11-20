@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using GalWar;
+using MattUtil;
 
 namespace GalWarWin
 {
@@ -108,9 +109,9 @@ namespace GalWarWin
             return totCost;
         }
 
-        private double CalcResearch(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double prod, int upk)
+        private int CalcResearch(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double prod, int upk)
         {
-            int research = MattUtil.TBSUtil.FindValue(delegate(int r)
+            int research = TBSUtil.FindValue(delegate(int r)
             {
                 return ( GetProd(att, def, hp, speed, trans, colony, bombardDamageMult, r, upk) < prod );
             }, (int)this.nudResearch.Minimum, (int)this.nudResearch.Maximum, true);

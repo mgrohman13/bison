@@ -463,7 +463,7 @@ next_planet:
 
         private void RandMoveOrder()
         {
-            Dictionary<Player, int> playerGold = MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
+            Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
             if (playerGold.Count > 0)
             {
                 double moveOrderGold = Consts.GetMoveOrderGold(this.players.Length);
@@ -560,15 +560,31 @@ next_planet:
         #region Undo
 
         [NonSerialized]
-        private Stack<Tuple<Ship, Tile>> _undoStack;
-        private Stack<Tuple<Ship, Tile>> undoStack
+        private Stack<Tuple<UndoCommand, object[]>> _undoStack;
+        private Stack<Tuple<UndoCommand, object[]>> undoStack
         {
             get
             {
                 if (this._undoStack == null)
-                    this._undoStack = new Stack<Tuple<Ship, Tile>>();
+                    this._undoStack = new Stack<Tuple<UndoCommand, object[]>>();
                 return this._undoStack;
             }
+        }
+
+        private delegate Tile UndoCommand(object[] args);
+
+        public bool CanUndo()
+        {
+            return ( undoStack.Count > 0 );
+        }
+
+        public Tile Undo(IEventHandler handler)
+        {
+            handler = new HandlerWrapper(handler, this, false);
+            AssertException.Assert(CanUndo());
+
+            Tuple<UndoCommand, object[]> tuple = undoStack.Pop();
+            return tuple.Item1(tuple.Item2);
         }
 
         internal void Event(bool clearStack)
@@ -577,23 +593,18 @@ next_planet:
                 undoStack.Clear();
         }
 
-        internal void MoveShip(Ship ship)
+        private void PushUndoCommand(UndoCommand command, params object[] args)
         {
-            undoStack.Push(new Tuple<Ship, Tile>(ship, ship.Tile));
+            undoStack.Push(new Tuple<UndoCommand, object[]>(command, args));
         }
 
-        public bool CanUndo()
+        internal void PushMoveShip(Ship ship)
         {
-            return ( undoStack.Count > 0 );
+            PushUndoCommand(new UndoCommand(ship.UndoMove), ship.Tile);
         }
-
-        public void Undo(IEventHandler handler)
+        internal void PushGoldRepair(Ship ship, int hp)
         {
-            handler = new HandlerWrapper(handler, this, false);
-            AssertException.Assert(CanUndo());
-
-            Tuple<Ship, Tile> command = undoStack.Pop();
-            command.Item1.UndoMove(command.Item2);
+            PushUndoCommand(new UndoCommand(ship.UndoGoldRepair), hp);
         }
 
         #endregion Undo
