@@ -187,7 +187,7 @@ namespace GalWar
             return ( zero + ( one - zero ) * pct );
         }
 
-        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
+        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
         {
             if (colony)
             {
@@ -198,7 +198,7 @@ namespace GalWar
             return 1;
         }
 
-        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, float bombardDamageMult, double research)
+        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
         {
             if (trans > 0)
             {

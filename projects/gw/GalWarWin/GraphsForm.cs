@@ -89,12 +89,22 @@ namespace GalWarWin
             this.GraphsForm_SizeChanged(null, null);
         }
 
+        internal static string GetArmadaString(double value)
+        {
+            double maxArmada = double.MinValue;
+            foreach (Player player in MainForm.Game.GetPlayers())
+                maxArmada = Math.Max(maxArmada, player.GetArmadaStrength());
+            int place = GetPlace(maxArmada);
+            long div = GetDiv(place);
+            return GetString(GetValue(value, false, div), div, place);
+        }
+
         private static int GetPlace(double max)
         {
             return ( MainForm.FormatInt(max).Length - 2 ) / 3;
         }
 
-        private long GetDiv(int place)
+        private static long GetDiv(int place)
         {
             long retVal = 1;
             while (--place > -1)
@@ -108,7 +118,7 @@ namespace GalWarWin
             return (long)( ceil ? Math.Ceiling(value) : Math.Round(value) ) * div;
         }
 
-        private string GetString(long value, long div, int place)
+        private static string GetString(long value, long div, int place)
         {
             if (value == 0)
                 return "0";

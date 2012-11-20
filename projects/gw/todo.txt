@@ -7,9 +7,6 @@ also can undo other deterministic actions
 management screens
 	colonies
 	ships
-account for auto repair in prod repair calculations
-refactor prod/auto repair logic into Colony RepairShip setter
-cost calc str and value use abbr
 
 use player.ID (as byte) in graphs dictionary, cast GraphType to byte
 repair micromanagement

@@ -56,6 +56,7 @@
             this.txtStr = new System.Windows.Forms.TextBox();
             this.txtCost = new System.Windows.Forms.TextBox();
             this.lblOverflow = new System.Windows.Forms.Label();
+            this.cbDS = new System.Windows.Forms.CheckBox();
             ( (System.ComponentModel.ISupportInitialize)( this.nudProd ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudResearch ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAtt ) ).BeginInit();
@@ -125,7 +126,7 @@
             0,
             0,
             0});
-            this.nudAtt.ValueChanged += new System.EventHandler(this.nud_ValueChanged);
+            this.nudAtt.ValueChanged += new System.EventHandler(this.nudAtt_ValueChanged);
             // 
             // nudDef
             // 
@@ -225,7 +226,7 @@
             this.nudTrans.Name = "nudTrans";
             this.nudTrans.Size = new System.Drawing.Size(100, 20);
             this.nudTrans.TabIndex = 15;
-            this.nudTrans.ValueChanged += new System.EventHandler(this.nud_ValueChanged);
+            this.nudTrans.ValueChanged += new System.EventHandler(this.nudTrans_ValueChanged);
             // 
             // label10
             // 
@@ -311,16 +312,16 @@
             // nudDS
             // 
             this.nudDS.DecimalPlaces = 1;
-            this.nudDS.Location = new System.Drawing.Point(109, 246);
+            this.nudDS.Location = new System.Drawing.Point(130, 246);
             this.nudDS.Maximum = new decimal(new int[] {
             1000,
             0,
             0,
             0});
             this.nudDS.Name = "nudDS";
-            this.nudDS.Size = new System.Drawing.Size(100, 20);
+            this.nudDS.Size = new System.Drawing.Size(79, 20);
             this.nudDS.TabIndex = 54;
-            this.nudDS.ValueChanged += new System.EventHandler(this.nud_ValueChanged);
+            this.nudDS.ValueChanged += new System.EventHandler(this.nudDS_ValueChanged);
             // 
             // label2
             // 
@@ -414,6 +415,16 @@
             this.lblOverflow.Text = "Overflow";
             this.lblOverflow.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // cbDS
+            // 
+            this.cbDS.AutoSize = true;
+            this.cbDS.Location = new System.Drawing.Point(109, 248);
+            this.cbDS.Name = "cbDS";
+            this.cbDS.Size = new System.Drawing.Size(15, 14);
+            this.cbDS.TabIndex = 70;
+            this.cbDS.UseVisualStyleBackColor = true;
+            this.cbDS.CheckedChanged += new System.EventHandler(this.cbDS_CheckedChanged);
+            // 
             // CostCalculatorForm
             // 
             this.AcceptButton = this.btnDone;
@@ -421,6 +432,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnDone;
             this.ClientSize = new System.Drawing.Size(221, 385);
+            this.Controls.Add(this.cbDS);
             this.Controls.Add(this.lblOverflow);
             this.Controls.Add(this.txtCost);
             this.Controls.Add(this.txtStr);
@@ -496,5 +508,6 @@
         private System.Windows.Forms.TextBox txtStr;
         private System.Windows.Forms.TextBox txtCost;
         private System.Windows.Forms.Label lblOverflow;
+        private System.Windows.Forms.CheckBox cbDS;
     }
 }

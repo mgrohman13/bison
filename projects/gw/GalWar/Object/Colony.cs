@@ -504,16 +504,24 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                //best place to make sure ship is still valid to repair
                 if (this._repairShip != null &&
                         ( this._repairShip.HP == this._repairShip.MaxHP || this._repairShip.Dead
                         || !Tile.IsNeighbor(this.Tile, this._repairShip.Tile) ))
-                    this._repairShip = null;
+                    this.RepairShip = null;
+
                 return this._repairShip;
             }
             internal set
             {
-                this._repairShip = value;
+                if (this._repairShip != value)
+                {
+                    if (this._repairShip != null)
+                        this._repairShip.AutoRepair = double.NaN;
+                    if (value != null)
+                        value.AutoRepair = 0;
+
+                    this._repairShip = value;
+                }
             }
         }
 
@@ -522,18 +530,6 @@ namespace GalWar
             handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(value == null || this.Player == value.Player);
-
-            Ship repairShip = this.RepairShip;
-            if (value == null)
-            {
-                if (repairShip != null)
-                    repairShip.AutoRepair = double.NaN;
-            }
-            else
-            {
-                if (repairShip != value)
-                    value.AutoRepair = 0;
-            }
 
             this.RepairShip = value;
         }

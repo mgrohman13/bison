@@ -174,9 +174,12 @@ namespace GalWar
             get
             {
                 if (this._autoRepair <= 0)
-                    this._autoRepair = 0;
-                else if (HP == MaxHP)
-                    this._autoRepair = float.NaN;
+                    this.AutoRepair = 0;
+                else if (this.HP == this.MaxHP)
+                    this.AutoRepair = float.NaN;
+                else if (this._autoRepair > 0)
+                    this.AutoRepair = this.GetAutoRepairForHP(this.GetAutoRepairHP(this._autoRepair));
+
                 return this._autoRepair;
             }
             set
@@ -242,17 +245,17 @@ namespace GalWar
             int retVal = 0;
 
             double hp = GetHPForProd(production);
-            if (hp > this.MaxHP - HP)
-                hp = this.MaxHP - HP;
+            double max = this.MaxHP - HP;
+            if (!doRepair && DoAutoRepair)
+                max -= GetAutoRepairHP();
+            if (hp > max)
+                hp = max;
 
             if (doRepair)
             {
                 int repairHP = Game.Random.Round(hp);
                 this.HP += repairHP;
                 hp = repairHP;
-
-                if (repairHP > 0 && this.HP == this.MaxHP && this.AutoRepair == 0)
-                    this.AutoRepair = double.NaN;
 
                 this.Repair += repairHP;
                 retVal = repairHP;
@@ -557,16 +560,8 @@ namespace GalWar
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
 
-            Colony repairedFrom = null;
-            if (this.AutoRepair == 0)
-                repairedFrom = GetRepairedFrom();
-
             this.Player.Game.MoveShip(this);
             Move(tile, false);
-
-            //if this ship was being production repaired, auto repair was off, and it just moved away from the colony, set auto repair to manual
-            if (repairedFrom != null && !Tile.IsNeighbor(this.Tile, repairedFrom.Tile))
-                this.AutoRepair = double.NaN;
         }
         internal void UndoMove(Tile tile)
         {
