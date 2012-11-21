@@ -705,16 +705,6 @@ namespace GalWar
             newHP = (int)Math.Ceiling(hp);
         }
 
-        public void SellProduction(IEventHandler handler, int production)
-        {
-            handler = new HandlerWrapper(handler, this.Player.Game, false);
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(production > 0);
-            AssertException.Assert(production <= this.production);
-
-            LoseProduction(production);
-        }
-
         private void LoseProduction(double loseProduction)
         {
             double production = this.production, gold = 0;
@@ -743,16 +733,58 @@ namespace GalWar
             production -= loseProduction;
         }
 
+        public void SellProduction(IEventHandler handler, int production)
+        {
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(production > 0);
+            AssertException.Assert(production <= this.production);
+
+            this.Player.Game.PushSellProduction(this, production);
+
+            TradeProduction(-production, 1 / Consts.ProductionForGold);
+        }
+        internal Tile UndoSellProduction(object[] args)
+        {
+            AssertException.Assert(args.Length == 1);
+            int production = (int)args[0];
+
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(production > 0);
+            AssertException.Assert(production * Consts.ProductionForGold < this.Player.Gold);
+
+            TradeProduction(production, 1 / Consts.ProductionForGold);
+
+            return this.Tile;
+        }
         public void BuyProduction(IEventHandler handler, int production)
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
-            double gold = production * Consts.GoldForProduction;
-            AssertException.Assert(gold < this.Player.Gold);
+            AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
 
+            this.Player.Game.PushBuyProduction(this, production);
+
+            TradeProduction(production, Consts.GoldForProduction);
+        }
+        internal Tile UndoBuyProduction(object[] args)
+        {
+            AssertException.Assert(args.Length == 1);
+            int production = (int)args[0];
+
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(production > 0);
+            AssertException.Assert(production <= this.production);
+
+            TradeProduction(-production, Consts.GoldForProduction);
+
+            return this.Tile;
+        }
+        private void TradeProduction(int production, double rate)
+        {
             this.production += production;
-            this.Player.SpendGold(gold);
+            Player.SpendGold(production * rate);
         }
 
         public bool CanBuild(Buildable buildable)

@@ -3,13 +3,20 @@ main map improvements
 	ship speed/type
 	zooming, panning
 	minimap
-also can undo other deterministic actions
-	buy/sell prod
-	repair all?
+undo
+	PopCarrier.MovePop
+	Colony.StartBuilding
+	Ship.Disband?
+	Colony.DisbandPlanetDefense?
 management screens
 	colonies
 	ships
 
+GetMoveSoldiers
+	scrap randomness to allow undo?
+	use destination PopCarrier to ensure 1-at-a-time contract?
+		multiply SoldiersRndm by Sqrt(movePop)?
+		add together and re-rand entirely?
 use player.ID (as byte) in graphs dictionary, cast GraphType to byte
 repair micromanagement
 	cost incentive
@@ -19,15 +26,17 @@ split planetary defense between building attack or defense
 	att/def:hp ratio
 randomize planet colonization cost
 research display offset
-Ship.GetBombardLevelInc - div by att?
-	att inc randomises bombard?
-ship design bombard min
-PlanetDefensesDeathStarMult
+Death Stars
+	keep DS whole numbers?
+	Ship.GetBombardLevelInc - div by att?
+		att inc randomises bombard?
+	ship design bombard min
+	PlanetDefensesDeathStarMult
+	PlanetDamageAvg
+	allow death stars to limit planet damage by pop left
 incorporate gaussian OEs
-PlanetDamageAvg
 transport exp for invasion?
 ExperienceConstDmgAmt
-allow death stars to limit planet damage by pop left
 extra combat exp for troops killed in transport, (troops get exp?)
 
 AI

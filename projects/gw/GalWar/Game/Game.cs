@@ -516,6 +516,8 @@ next_planet:
         {
             Graphs.StartTurn(CurrentPlayer);
             CurrentPlayer.StartTurn(handler);
+
+            ClearStack();
         }
 
         public void SaveGame(string filePath)
@@ -587,10 +589,9 @@ next_planet:
             return tuple.Item1(tuple.Item2);
         }
 
-        internal void Event(bool clearStack)
+        internal void ClearStack()
         {
-            if (clearStack)
-                undoStack.Clear();
+            undoStack.Clear();
         }
 
         private void PushUndoCommand(UndoCommand command, params object[] args)
@@ -605,6 +606,14 @@ next_planet:
         internal void PushGoldRepair(Ship ship, int hp)
         {
             PushUndoCommand(new UndoCommand(ship.UndoGoldRepair), hp);
+        }
+        internal void PushSellProduction(Colony colony, int production)
+        {
+            PushUndoCommand(new UndoCommand(colony.UndoSellProduction), production);
+        }
+        internal void PushBuyProduction(Colony colony, int production)
+        {
+            PushUndoCommand(new UndoCommand(colony.UndoBuyProduction), production);
         }
 
         #endregion Undo

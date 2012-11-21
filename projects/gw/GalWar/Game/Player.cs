@@ -690,7 +690,7 @@ namespace GalWar
 
         public void AutoRepairShips(IEventHandler handler)
         {
-            handler = new HandlerWrapper(handler, this.Game, false);
+            handler = new HandlerWrapper(handler, this.Game);
             TurnException.CheckTurn(this);
 
             AutoRepairShips(handler, 0);

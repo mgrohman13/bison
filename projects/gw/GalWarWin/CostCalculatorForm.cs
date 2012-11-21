@@ -88,7 +88,13 @@ namespace GalWarWin
             int trans = (int)this.nudTrans.Value;
             bool colony = (bool)this.cbCol.Checked;
             double bombardDamageMult = GetBombardDamageMult(att);
-            this.cbDS.Checked = ( Math.Abs(bombardDamageMult - 1) > Consts.FLOAT_ERROR );
+
+            if (bombardDamageMult < 1)
+            {
+                bombardDamageMult = 1;
+                ClearDS();
+            }
+            this.cbDS.Checked = ( bombardDamageMult - 1 < Consts.FLOAT_ERROR );
 
             if (sender == nudProd)
             {

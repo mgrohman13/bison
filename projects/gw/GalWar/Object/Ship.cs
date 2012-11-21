@@ -562,6 +562,7 @@ namespace GalWar
             AssertException.Assert(tile.SpaceObject == null);
 
             this.Player.Game.PushMoveShip(this);
+
             Move(tile, false);
         }
         internal Tile UndoMove(object[] args)

@@ -280,7 +280,7 @@ namespace GalWarWin
             if (tile == this.selectedTile)
                 size = 3f;
             else if (planet != null || ( this.isDialog ? ValidDialogTile(tile) : ship != null &&
-                    ( ( ship.AutoRepair == 0 && ship.HP < ship.MaxHP ) || ship.CurSpeed > 0 ) && ship.Player.IsTurn ))
+                    ship.Player.IsTurn && ( ( ship.AutoRepair == 0 && ship.HP < ship.MaxHP ) || ship.CurSpeed > 0 ) ))
                 size = 2f;
             else
                 size = 1f;
@@ -1062,24 +1062,8 @@ namespace GalWarWin
 
         private void TargetTile(Tile targetTile, Ship ship)
         {
-            bool move = ( ship.CurSpeed > 0 );
-            if (move && ship.Colony && ship.Population == 0)
-                foreach (Tile neighbor in Tile.GetNeighbors(ship.Tile))
-                {
-                    Planet planet = neighbor.SpaceObject as Planet;
-                    if (planet != null)
-                    {
-                        if (planet.Colony != null && planet.Colony.Player.IsTurn && !Tile.IsNeighbor(planet.Tile, targetTile))
-                            move = ShowOption("Are you sure you want to move away with no troops?");
-                        break;
-                    }
-                }
-
-            if (move)
-            {
-                ship.Move(this, targetTile);
-                this.selectedTile = targetTile;
-            }
+            ship.Move(this, targetTile);
+            this.selectedTile = targetTile;
         }
 
         private bool TargetShip(Ship targetShip, Ship ship, bool switchTroops)
