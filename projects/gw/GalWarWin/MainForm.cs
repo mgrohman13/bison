@@ -13,6 +13,8 @@ namespace GalWarWin
 {
     public partial class MainForm : Form, IEventHandler
     {
+        #region fields and constructors
+
         private static string initialAutoSave;
 
         private static Game _game;
@@ -28,8 +30,6 @@ namespace GalWarWin
                 _game.AutoSavePath = initialAutoSave;
             }
         }
-
-        #region fields and constructors
 
         private bool isDialog;
         private bool isBuild;
@@ -392,22 +392,20 @@ namespace GalWarWin
 
             if (showAtt)
             {
-                Dictionary<float, float> statFromValue = new Dictionary<float, float>(totals.Count);
+                Dictionary<int, float> statFromValue = new Dictionary<int, float>(totals.Count);
                 Dictionary<Tile, float> retVal = new Dictionary<Tile, float>(totals.Count);
                 foreach (KeyValuePair<Tile, float> pair in totals)
                 {
                     Tile tile = pair.Key;
-                    if (ShowMove(tile, Game.CurrentPlayer))
+                    float statValue = pair.Value;
+                    float value;
+                    int key = (int)Math.Round(statValue * 3f);
+                    if (!statFromValue.TryGetValue(key, out value))
                     {
-                        float statValue = pair.Value;
-                        float value;
-                        if (!statFromValue.TryGetValue(statValue, out value))
-                        {
-                            value = GetStatFromValue(statValue);
-                            statFromValue.Add(statValue, value);
-                        }
-                        retVal.Add(tile, value);
+                        value = GetStatFromValue(statValue);
+                        statFromValue.Add(key, value);
                     }
+                    retVal.Add(tile, value);
                 }
                 totals = retVal;
             }
@@ -417,24 +415,26 @@ namespace GalWarWin
 
         private static float GetStatFromValue(float value)
         {
-            if (value < .5)
-                return 0;
-            float min = 1, max = (float)Math.Round(Math.Sqrt(value) + .1, 1);
-            while (true)
+            if (value < 1.5f)
+                return value;
+
+            const float digit = .1f, div = 1f / digit;
+            int min = (int)Math.Floor(Math.Pow(value, 1f / 3f) * div) + 3, max = (int)Math.Ceiling(Math.Sqrt(value) * div);
+            float stat = MattUtil.TBSUtil.FindValue(delegate(int test)
             {
-                float diff = max - min;
-                float mid = min + diff / 2.0f;
-                if (diff < .15f)
-                    if (ShipDesign.GetStatValue(mid) < value)
-                        return max;
-                    else
-                        return min;
-                mid = (float)Math.Round(mid, 1, MidpointRounding.AwayFromZero);
-                if (ShipDesign.GetStatValue(mid) < value)
-                    min = mid;
+                return ( ShipDesign.GetStatValue(test / div) > value );
+            }, min, max, true) / div;
+            if (( ShipDesign.GetStatValue(stat) - value ) > ( value - ShipDesign.GetStatValue(stat - digit) ))
+                stat -= digit;
+
+            const float adj = digit / 10f, half = .5f;
+            if (Math.Abs(stat % 1f - half) < Consts.FLOAT_ERROR)
+                if (( ShipDesign.GetStatValue(stat + half) - value ) > ( value - ShipDesign.GetStatValue(stat - half) ))
+                    stat -= adj;
                 else
-                    max = mid;
-            }
+                    stat += adj;
+
+            return stat;
         }
 
         private void AddShip(Dictionary<Tile, float> totals, Dictionary<Tile, Point> temp, Player enemy, Combatant combatant, int speed)
@@ -452,24 +452,27 @@ namespace GalWarWin
                 Tile tile = pair.Key;
                 Point point = pair.Value;
 
-                float add;
+                float add = float.NaN;
+                Player showPlayer = null;
                 if (showAtt)
+                {
                     add = point.X * statValue;
-                else if (point.Y > 0 && ShowMove(tile, combatant.Player))
+                    showPlayer = Game.CurrentPlayer;
+                }
+                else if (point.Y > 0)
+                {
                     add = 1;
-                else
-                    continue;
+                    showPlayer = combatant.Player;
+                }
 
-                float val;
-                totals.TryGetValue(tile, out val);
-                totals[tile] = val + add;
+                Ship ship = tile.SpaceObject as Ship;
+                if (showPlayer != null && ( tile.SpaceObject == null || ( ship != null && ship.Player == showPlayer ) ))
+                {
+                    float val;
+                    totals.TryGetValue(tile, out val);
+                    totals[tile] = val + add;
+                }
             }
-        }
-
-        private static bool ShowMove(Tile tile, Player player)
-        {
-            Ship ship;
-            return tile.SpaceObject == null || ( ( ship = tile.SpaceObject as Ship ) != null && ship.Player == player );
         }
 
         private void AddTiles(Dictionary<Tile, Point> retVal, Player enemy, Tile tile, int speed, bool ignoreZoc)
@@ -1819,7 +1822,7 @@ namespace GalWarWin
 
         #endregion //Refresh
 
-        #region IEventHandler Members
+        #region IEventHandler
 
         Tile IEventHandler.getBuildTile(Colony colony)
         {
@@ -1884,6 +1887,8 @@ namespace GalWarWin
 
         #endregion
 
+        #region Log
+
         private int flushed = 0;
         private string log = string.Empty;
 
@@ -1914,5 +1919,7 @@ namespace GalWarWin
         {
             return this.saveFileDialog1.InitialDirectory + "\\gw.log";
         }
+
+        #endregion //Log
     }
 }

@@ -22,6 +22,7 @@ repair micromanagement
 	cost incentive
 		certain specific value?
 		pct you have been doing?
+refactor planet defense into separate class
 split planetary defense between building attack or defense
 	att/def:hp ratio
 randomize planet colonization cost

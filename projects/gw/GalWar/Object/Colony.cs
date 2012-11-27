@@ -167,7 +167,7 @@ namespace GalWar
 
             ResetRounding();
 
-            //build planet defences first so they can attack this turn
+            //build planet defenses first so they can attack this turn
             bool buildFirst = ( this.Buildable is PlanetDefense );
             if (buildFirst)
                 this.DoBuild(handler, production, ref gold);
