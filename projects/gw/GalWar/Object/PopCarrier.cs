@@ -133,27 +133,65 @@ namespace GalWar
 
         public void MovePop(IEventHandler handler, int population, PopCarrier destination)
         {
-            handler = new HandlerWrapper(handler, this.Player.Game);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(Player);
+            AssertException.Assert(destination != null);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);
             AssertException.Assert(population <= destination.FreeSpace);
-            AssertException.Assert(destination != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
-            double actual, rounded;
-            GetGoldCost(population, out actual, out rounded);
-            AssertException.Assert(rounded < this.Player.Gold);
-
-            this.Player.SpendGold(actual, rounded);
 
             double soldiers = MoveSoldiers(this.Population, this.soldiers, population);
-            this.soldiers -= soldiers;
+            MovePop(this, destination, population, soldiers, false);
+
+            if (this.Population > 0 && destination.Population > 0)
+                this.Player.Game.ClearStack();
+            else
+                this.Player.Game.PushMovePop(this, destination, population, soldiers);
+        }
+        internal Tile UndoMovePop(object[] args)
+        {
+            AssertException.Assert(args.Length == 3);
+            PopCarrier destination = args[0] as PopCarrier;
+            int population = (int)args[0];
+            double soldiers = (double)args[0];
+
+            TurnException.CheckTurn(Player);
+            AssertException.Assert(destination != null);
+            AssertException.Assert(population > 0);
+            AssertException.Assert(population <= destination.Population);
+            AssertException.Assert(population <= this.FreeSpace);
+            AssertException.Assert(soldiers <= destination.Soldiers);
+            AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
+            AssertException.Assert(this.Player == destination.Player);
+
+            MovePop(destination, this, population, soldiers, true);
+
+            return this.Tile;
+        }
+        private static void MovePop(PopCarrier source, PopCarrier destination, int population, double soldiers, bool undo)
+        {
+            double actual, rounded;
+            GetGoldCost(population, out actual, out rounded);
+            if (!undo)
+            {
+                AssertException.Assert(rounded < source.Player.Gold);
+                actual *= -1;
+                rounded *= -1;
+            }
+            source.Player.AddGold(actual, rounded);
+
+            source.soldiers -= soldiers;
             destination.soldiers += soldiers;
 
-            destination.movedPop += population;
+            source.Population -= population;
             destination.Population += population;
-            this.Population -= population;
+
+            if (undo)
+                source.movedPop -= population;
+            else
+                destination.movedPop += population;
         }
 
         public double GetMoveSoldiers(int movePop)

@@ -3,11 +3,6 @@ main map improvements
 	ship speed/type
 	zooming, panning
 	minimap
-undo
-	PopCarrier.MovePop
-	Colony.StartBuilding
-	Ship.Disband?
-	Colony.DisbandPlanetDefense?
 management screens
 	colonies
 	ships
@@ -17,6 +12,11 @@ GetMoveSoldiers
 	use destination PopCarrier to ensure 1-at-a-time contract?
 		multiply SoldiersRndm by Sqrt(movePop)?
 		add together and re-rand entirely?
+undo
+	PopCarrier.MovePop
+	Colony.StartBuilding
+	Ship.Disband?
+	Colony.DisbandPlanetDefense?
 use player.ID (as byte) in graphs dictionary, cast GraphType to byte
 repair micromanagement
 	cost incentive

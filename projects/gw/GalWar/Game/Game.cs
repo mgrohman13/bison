@@ -603,6 +603,10 @@ next_planet:
         {
             PushUndoCommand(new UndoCommand(ship.UndoMove), ship.Tile);
         }
+        internal void PushMovePop(PopCarrier popCarrier, PopCarrier destination, int population, double soldiers)
+        {
+            PushUndoCommand(new UndoCommand(popCarrier.UndoMovePop), destination, population, soldiers);
+        }
         internal void PushGoldRepair(Ship ship, int hp)
         {
             PushUndoCommand(new UndoCommand(ship.UndoGoldRepair), hp);
