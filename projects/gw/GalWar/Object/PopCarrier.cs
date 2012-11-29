@@ -154,8 +154,8 @@ namespace GalWar
         {
             AssertException.Assert(args.Length == 3);
             PopCarrier destination = args[0] as PopCarrier;
-            int population = (int)args[0];
-            double soldiers = (double)args[0];
+            int population = (int)args[1];
+            double soldiers = (double)args[2];
 
             TurnException.CheckTurn(Player);
             AssertException.Assert(destination != null);

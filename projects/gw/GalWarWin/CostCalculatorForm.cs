@@ -94,7 +94,7 @@ namespace GalWarWin
                 bombardDamageMult = 1;
                 ClearDS();
             }
-            this.cbDS.Checked = ( bombardDamageMult - 1 < Consts.FLOAT_ERROR );
+            this.cbDS.Checked = ( bombardDamageMult - 1 > Consts.FLOAT_ERROR );
 
             if (sender == nudProd)
             {

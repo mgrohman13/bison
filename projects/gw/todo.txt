@@ -1,3 +1,5 @@
+log more stuff!
+enemy moves/attacks ignoring friendly ships
 test exact vs oversize dictionary capacity for combat performance
 main map improvements
 	ship speed/type
@@ -25,6 +27,7 @@ repair micromanagement
 refactor planet defense into separate class
 split planetary defense between building attack or defense
 	att/def:hp ratio
+sell planet def for gold floors total gold
 randomize planet colonization cost
 research display offset
 Death Stars
@@ -32,13 +35,14 @@ Death Stars
 	Ship.GetBombardLevelInc - div by att?
 		att inc randomises bombard?
 	ship design bombard min
-	PlanetDefensesDeathStarMult
-	PlanetDamageAvg
+	PlanetDefensesDeathStarMult (PopulationIncomeForGold)
+	DeathStarPlanetDamageMult/DeathStarFriendlyPopDamageMult
 	allow death stars to limit planet damage by pop left
 incorporate gaussian OEs
 transport exp for invasion?
 ExperienceConstDmgAmt
 extra combat exp for troops killed in transport, (troops get exp?)
+extra bombard/invade exp for planet death
 
 AI
 integrate AI-algorithm guesses into game for player to use as well

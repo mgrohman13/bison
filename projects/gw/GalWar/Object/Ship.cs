@@ -825,7 +825,7 @@ namespace GalWar
                 pct = AttackColony(handler, colony);
 
             if (pct > 0)
-                if (colony != null && colony.HP > 0)
+                if (!friendly && colony != null && colony.HP > 0)
                     this.Player.GoldIncome(GetUpkeepReturn(pct));
                 else
                     Bombard(handler, planet, friendly, pct);
@@ -869,18 +869,7 @@ namespace GalWar
             //bombard the colony second, if it exists
             double initPop = BombardColony(handler, planet.Colony, colonyDamage);
 
-            double popDmg;
-            if (friendly)
-            {
-                //when bombarding a friendly colony, you actually get overkill gold for population you do kill
-                popDmg = this.BombardDamage;
-                initPop = popDmg - Math.Min(colonyDamage, initPop);
-            }
-            else
-            {
-                popDmg = colonyDamage;
-            }
-            double move = GetBombardMoveLeft(planetDamage, initQuality, popDmg, initPop, pct);
+            double move = GetBombardMoveLeft(planetDamage, initQuality, colonyDamage, initPop, pct);
             if (move > 0)
                 this.Player.GoldIncome(GetUpkeepReturn(move));
         }
@@ -1186,7 +1175,6 @@ namespace GalWar
 
         #endregion //public
 
-        [Serializable]
         public enum ExpType : byte
         {
             HP,
