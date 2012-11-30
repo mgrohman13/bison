@@ -1,3 +1,5 @@
+52 att
+show decimal in ship costs
 bombard logging also needs prior DS
 log more stuff!
 show enemy moves/attacks ignoring friendly ships
@@ -10,6 +12,7 @@ management screens
 	colonies
 	ships
 
+revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
 GetMoveSoldiers
 	scrap randomness to allow undo?
 	use destination PopCarrier to ensure 1-at-a-time contract?

@@ -29,7 +29,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
 
                 return null;
             }
@@ -45,7 +45,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
 
                 retVal = colony.Buildable;
             }
@@ -70,7 +70,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
 
                 if (fromColony == null)
                     retVal = max;
@@ -91,7 +91,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
 
                 retVal = true;
             }
@@ -107,7 +107,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
             }
         }
 
@@ -119,7 +119,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
             }
         }
 
@@ -131,7 +131,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
             }
         }
 
@@ -143,7 +143,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
             }
         }
 
@@ -158,7 +158,7 @@ namespace GalWar
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
             }
         }
 

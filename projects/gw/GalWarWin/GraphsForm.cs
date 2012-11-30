@@ -344,7 +344,7 @@ namespace GalWarWin
             value = GetValue(y, ceil, div);
             if (height > 0)
             {
-                y = value;
+                y = (float)( value - Consts.FLOAT_ERROR );
                 yScale = height / (float)Math.Ceiling(y);
             }
 

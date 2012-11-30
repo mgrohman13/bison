@@ -739,7 +739,7 @@ namespace GalWar
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
+                    Console.WriteLine(e);
                 }
                 Game.EndTurn(handler, true);
             }

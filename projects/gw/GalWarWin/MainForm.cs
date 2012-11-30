@@ -105,7 +105,7 @@ namespace GalWarWin
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
                 savePath = null;
             }
 
@@ -914,10 +914,11 @@ namespace GalWarWin
 
         private void GameForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
-                e.Cancel = true;
-            else
-                CombatForm.FlushLog(this);
+            if (!isDialog)
+                if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
+                    e.Cancel = true;
+                else
+                    CombatForm.FlushLog(this);
         }
 
         private void GameForm_MouseClick(object sender, MouseEventArgs e)
@@ -1057,7 +1058,7 @@ namespace GalWarWin
                     }
                     catch (AssertException e)
                     {
-                        Console.WriteLine(e.ToString());
+                        Console.WriteLine(e);
                     }
                 }
             }
@@ -1230,7 +1231,7 @@ namespace GalWarWin
             }
             catch (ObjectDisposedException e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(e);
 
                 return;
             }
@@ -1904,9 +1905,16 @@ namespace GalWarWin
             Console.WriteLine();
             log += "\r\n";
 
-            using (StreamWriter streamWriter = new StreamWriter(GetLogPath(), true))
-                streamWriter.Write(log.Substring(flushed));
-            flushed = log.Length;
+            try
+            {
+                using (StreamWriter streamWriter = new StreamWriter(GetLogPath(), true))
+                    streamWriter.Write(log.Substring(flushed));
+                flushed = log.Length;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public string GetLog()
