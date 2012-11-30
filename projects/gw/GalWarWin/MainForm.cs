@@ -916,6 +916,8 @@ namespace GalWarWin
         {
             if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
                 e.Cancel = true;
+            else
+                CombatForm.FlushLog(this);
         }
 
         private void GameForm_MouseClick(object sender, MouseEventArgs e)
@@ -1138,7 +1140,6 @@ namespace GalWarWin
                 selectNext = false;
 
                 ship.Bombard(this, planet);
-                CombatForm.FlushLog(this);
             }
 
             return selectNext;
@@ -1154,7 +1155,6 @@ namespace GalWarWin
                 selectNext = false;
 
                 ship.Bombard(this, targetColony.Planet);
-                CombatForm.FlushLog(this);
             }
             return selectNext;
         }
@@ -1210,14 +1210,9 @@ namespace GalWarWin
             else if (ship.CurSpeed > 0 && ( colony.HP > 0 || ship.AvailablePop == 0 || ShowOption("Bombard planet?") ))
             {
                 if (colony.HP > 0 && ( !ship.DeathStar || !ShowOption("Bombard planet?") ))
-                {
                     CombatForm.ShowDialog(this, ship, colony);
-                }
                 else
-                {
                     ship.Bombard(this, colony.Planet);
-                    CombatForm.FlushLog(this);
-                }
 
                 if (ship.CurSpeed == 0 && !planet.Dead)
                     selectShip = false;
@@ -1867,12 +1862,17 @@ namespace GalWarWin
 
         void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss)
         {
-            CombatForm.Combat(attacker, defender, attack, defense, popLoss);
+            CombatForm.OnCombat(attacker, defender, attack, defense, popLoss);
         }
 
         void IEventHandler.OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
         {
-            CombatForm.LevelUp(ship, expType, pct, needExp, lastExp);
+            CombatForm.OnLevel(ship, expType, pct, needExp, lastExp);
+        }
+
+        void IEventHandler.OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        {
+            CombatForm.OnBombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
         }
 
         void IEventHandler.Event()
@@ -1895,9 +1895,8 @@ namespace GalWarWin
         public void LogMsg(string format, params object[] args)
         {
             string msg = string.Format(format, args);
-            Console.Write(msg);
-            log += msg;
-            LogMsg();
+            Console.WriteLine(msg);
+            log += msg + "\r\n";
         }
 
         public void LogMsg()

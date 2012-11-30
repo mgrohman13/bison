@@ -89,6 +89,11 @@ namespace GalWarAI
             //do nothing
         }
 
+        void IEventHandler.OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        {
+            //do nothing
+        }
+
         void IEventHandler.Event()
         {
             //propogate events back to the UI

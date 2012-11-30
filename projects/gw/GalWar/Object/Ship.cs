@@ -821,25 +821,29 @@ namespace GalWar
             --this.CurSpeed;
 
             double pct = 1;
-            if (!friendly && colony != null && colony.HP > 0)
-                pct = AttackColony(handler, colony);
+            int freeDmg = 0, colonyDamage = 0, planetDamage = 0, startExp = GetTotalExp();
+            bool enemy = ( !friendly && colony != null );
+            if (enemy && colony.HP > 0)
+                pct = AttackColony(handler, colony, out freeDmg);
 
             if (pct > 0)
-                if (!friendly && colony != null && colony.HP > 0)
+                if (enemy && colony.HP > 0)
                     this.Player.GoldIncome(GetUpkeepReturn(pct));
                 else
-                    Bombard(handler, planet, friendly, pct);
+                    Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage);
+
+            handler.OnBombard(this, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
 
             LevelUp(handler);
         }
 
-        private double AttackColony(IEventHandler handler, Colony colony)
+        private double AttackColony(IEventHandler handler, Colony colony, out int bombard)
         {
             double freeDmg = GetFreeDmg(colony), combatDmg, avgDef;
             Consts.GetDamageTable(this.Att, colony.Def, out combatDmg, out avgDef);
 
             double freePct = 0;
-            int bombard = GetBombardDamage(freeDmg);
+            bombard = GetBombardDamage(freeDmg);
             if (bombard > colony.HP)
             {
                 freePct = ( 1 - ( colony.HP / (double)bombard ) );
@@ -859,19 +863,24 @@ namespace GalWar
             return this.BombardDamage * Consts.PlanetDefensesDeathStarMult / colony.PlanetDefenseCost;
         }
 
-        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct)
+        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage)
         {
-            int colonyDamage = GetColonyDamage(friendly, pct);
-            int planetDamage = GetPlanetDamage(colonyDamage, pct);
+            colonyDamage = GetColonyDamage(friendly, pct);
+            planetDamage = GetPlanetDamage(colonyDamage, pct);
 
             //bombard the planet first, since it might get destroyed
             int initQuality = BombardPlanet(handler, planet, planetDamage);
             //bombard the colony second, if it exists
-            double initPop = BombardColony(handler, planet.Colony, colonyDamage);
+            int initPop = BombardColony(handler, planet.Colony, colonyDamage);
 
             double move = GetBombardMoveLeft(planetDamage, initQuality, colonyDamage, initPop, pct);
             if (move > 0)
                 this.Player.GoldIncome(GetUpkeepReturn(move));
+
+            if (colonyDamage > initPop)
+                colonyDamage = initPop;
+            if (planetDamage > initQuality)
+                planetDamage = initQuality;
         }
 
         private int GetColonyDamage(bool friendly, double pct)

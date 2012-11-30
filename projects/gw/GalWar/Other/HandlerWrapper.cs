@@ -17,7 +17,7 @@ namespace GalWar
             this.handler = handler;
             this.Event();
 
-            if(clearStack)
+            if (clearStack)
                 game.ClearStack();
         }
 
@@ -128,6 +128,18 @@ namespace GalWar
             try
             {
                 handler.OnLevel(ship, expType, pct, needExp, lastExp);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        void IEventHandler.OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        {
+            try
+            {
+                handler.OnBombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
             }
             catch (Exception e)
             {

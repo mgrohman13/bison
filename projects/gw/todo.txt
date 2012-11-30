@@ -1,5 +1,6 @@
+bombard logging also needs prior DS
 log more stuff!
-enemy moves/attacks ignoring friendly ships
+show enemy moves/attacks ignoring friendly ships
 test exact vs oversize dictionary capacity for combat performance
 main map improvements
 	ship speed/type
@@ -43,6 +44,7 @@ transport exp for invasion?
 ExperienceConstDmgAmt
 extra combat exp for troops killed in transport, (troops get exp?)
 extra bombard/invade exp for planet death
+exp for bombard free damage
 
 AI
 integrate AI-algorithm guesses into game for player to use as well

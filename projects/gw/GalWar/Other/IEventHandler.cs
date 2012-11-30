@@ -19,6 +19,8 @@ namespace GalWar
 
         void OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp);
 
+        void OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp);
+
         void Event();
     }
 }
