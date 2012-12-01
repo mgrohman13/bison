@@ -844,7 +844,7 @@ namespace GalWar
         {
             double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
             double cost = GetTotCost() - this.Upkeep * upkeepPayoff;
-            cost = cost + ( cost - this.Cost ) / Consts.ScalePct(1, Consts.RepairCostMult, GetNonColonyPct());
+            cost += ( cost - this.Cost ) / Consts.ScalePct(1, Consts.RepairCostMult, GetNonColonyPct());
             if (cost < upkeepPayoff * Consts.MinCostMult)
                 throw new Exception();
             return cost;

@@ -193,7 +193,7 @@ namespace GalWar
             if (colony)
             {
                 double retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamageMult, research)
-                    / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
                 return ( retVal * retVal );
             }
             return 1;
@@ -204,7 +204,7 @@ namespace GalWar
             if (trans > 0)
             {
                 double retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamageMult, research)
-                    / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
                 return ( retVal * retVal );
             }
             return 1;

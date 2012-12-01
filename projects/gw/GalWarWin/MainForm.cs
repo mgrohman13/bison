@@ -44,7 +44,7 @@ namespace GalWarWin
         private bool emphasisEvent = true;
 
         private Tile selectedTile = null;
-        private HashSet<Ship> hold;
+        private HashSet<Ship> hold, holdPersistent;
 
         private MainForm(bool isDialog)
         {
@@ -62,6 +62,7 @@ namespace GalWarWin
             }
 
             this.hold = new HashSet<Ship>();
+            this.holdPersistent = new HashSet<Ship>();
         }
 
         private void HideButtons(Control parent)
@@ -801,7 +802,10 @@ namespace GalWarWin
                 showMoves = false;
                 Game.EndTurn(this);
 
-                this.hold.Clear();
+                this.hold.RemoveWhere(delegate(Ship ship)
+                {
+                    return ( !holdPersistent.Contains(ship) );
+                });
                 SelectNextShip();
 
                 saved = false;
@@ -853,11 +857,6 @@ namespace GalWarWin
                 }
 
             return end;
-        }
-
-        private void HoldPosistion(Ship ship)
-        {
-            hold.Add(ship);
         }
 
         private void SelectNextShip()
@@ -921,7 +920,17 @@ namespace GalWarWin
                     CombatForm.FlushLog(this);
         }
 
+        private Point? clicked = null;
+        private void MainForm_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ClickMouse(e, true);
+        }
         private void GameForm_MouseClick(object sender, MouseEventArgs e)
+        {
+            this.clicked = null;
+            ClickMouse(e, false);
+        }
+        private void ClickMouse(MouseEventArgs e, bool doubleClick)
         {
             if (started)
             {
@@ -932,6 +941,7 @@ namespace GalWarWin
 
                 if (x >= 0 && y >= 0 && x < Game.Diameter && y < Game.Diameter)
                 {
+
                     Tile clickedTile = Game.GetMap()[x, y];
                     if (clickedTile != null)
                         if (e.Button == MouseButtons.Left)
@@ -939,7 +949,10 @@ namespace GalWarWin
                             this.selectedTile = clickedTile;
                             Ship ship = this.selectedTile.SpaceObject as Ship;
                             if (ship != null)
+                            {
                                 hold.Remove(ship);
+                                holdPersistent.Remove(ship);
+                            }
 
                             if (this.isDialog && ValidDialogTile(this.selectedTile))
                             {
@@ -950,8 +963,18 @@ namespace GalWarWin
                         }
                         else if (!this.isDialog && e.Button == MouseButtons.Right)
                         {
-                            Colony colony = GetSelectedColony();
                             Ship target = clickedTile.SpaceObject as Ship;
+
+                            Point clicked = new Point(x, y);
+                            if (doubleClick && target != null && this.clicked == clicked && hold.Contains(target))
+                            {
+                                holdPersistent.Add(target);
+                                this.clicked = null;
+                                return;
+                            }
+                            this.clicked = clicked;
+
+                            Colony colony = GetSelectedColony();
                             if (colony != null && target != null && colony.Player != target.Player && colony.HP > 0)
                             {
                                 CombatForm.ShowDialog(this, colony, target);
@@ -973,7 +996,7 @@ namespace GalWarWin
                                     if (Tile.IsNeighbor(clickedTile, this.selectedTile))
                                         selectNext &= RightClick(clickedTile);
                                     else if (clickedTile == this.selectedTile)
-                                        HoldPosistion(ship);
+                                        hold.Add(ship);
 
                                 if (ship != null)
                                 {
@@ -1347,8 +1370,10 @@ namespace GalWarWin
                     CostCalculatorForm.ShowForm(this);
                 else
                     CostCalculatorForm.ShowForm(this, this.selectedTile.SpaceObject as Ship);
-            else
+            else if (colony.Player.IsTurn)
                 CostCalculatorForm.ShowForm(this, colony.Buildable as ShipDesign);
+            else
+                CostCalculatorForm.ShowForm(this);
         }
 
         #endregion //Events
@@ -1861,9 +1886,9 @@ namespace GalWarWin
             ResearchForm.ShowDialog(this, newDesign, obsolete, oldDefense, newDefense);
         }
 
-        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss)
+        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
         {
-            CombatForm.OnCombat(attacker, defender, attack, defense, popLoss);
+            CombatForm.OnCombat(attacker, defender, attack, defense, startHP, popLoss);
         }
 
         void IEventHandler.OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)

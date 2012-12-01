@@ -44,18 +44,18 @@ namespace GalWar
                 if (pct != 0)
                     throw new Exception();
 
-                int at = this.Population, dt = defender.Population;
+                int at = this.Population, dt = defender.Population, startHP = -1;
                 int a = Game.Random.RangeInt(0, this.Att), d = Game.Random.RangeInt(0, defender.Def), damage = a - d;
                 if (damage > 0)
-                    pct = this.Damage(defender, damage, ref experience);
+                    pct = this.Damage(defender, damage, out startHP, ref experience);
                 else if (damage < 0)
-                    pct = defender.Damage(this, -damage, ref experience);
+                    pct = defender.Damage(this, -damage, out startHP, ref experience);
 
                 //a small constant exp is gained every round
                 experience += ( this.GetExpForDamage(Consts.ExperienceConstDmgAmt)
                         + defender.GetExpForDamage(Consts.ExperienceConstDmgAmt) ) / 2.0;
 
-                handler.OnCombat(this, defender, a, d, a < d ? at - this.Population : dt - defender.Population);
+                handler.OnCombat(this, defender, a, d, startHP, a < d ? at - this.Population : dt - defender.Population);
             }
 
             //add kill exp before destroying so the player gets paid off for the exp
@@ -87,18 +87,19 @@ namespace GalWar
             return 0;
         }
 
-        private double Damage(Combatant defender, int damage, ref double experience)
+        private double Damage(Combatant combatant, int damage, out int startHP, ref double experience)
         {
             double retVal = 0;
-            if (damage > defender.HP)
+            startHP = combatant.HP;
+            if (damage > startHP)
             {
-                retVal = 1 - ( defender.HP / (double)damage );
-                damage = defender.HP;
+                retVal = 1 - ( startHP / (double)damage );
+                damage = startHP;
             }
 
-            defender.HP -= damage;
+            combatant.HP -= damage;
 
-            experience += defender.GetExpForDamage(damage);
+            experience += combatant.GetExpForDamage(damage);
 
             return retVal;
         }

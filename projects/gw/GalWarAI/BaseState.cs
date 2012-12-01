@@ -79,7 +79,7 @@ namespace GalWarAI
             ai.OnResearch(newDesign);
         }
 
-        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss)
+        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
         {
             //do nothing
         }

@@ -206,7 +206,7 @@ namespace GalWarWin
             // 
             this.nudAttack.Location = new System.Drawing.Point(12, 32);
             this.nudAttack.Maximum = new decimal(new int[] {
-            50,
+            99,
             0,
             0,
             0});
@@ -281,7 +281,7 @@ namespace GalWarWin
             // 
             this.nudDefense.Location = new System.Drawing.Point(121, 32);
             this.nudDefense.Maximum = new decimal(new int[] {
-            50,
+            99,
             0,
             0,
             0});

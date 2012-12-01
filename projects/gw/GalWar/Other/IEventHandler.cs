@@ -15,7 +15,7 @@ namespace GalWar
 
         void OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense);
 
-        void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss);
+        void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss);
 
         void OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp);
 

@@ -713,7 +713,11 @@ namespace GalWar
                 double minCost = basePayoff * Consts.MinCostMult;
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
-                this.Upkeep += Game.Random.Round(costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
+                double upkeepInc = costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
+                if (upkeepInc > .1)
+                {
+                }
+                this.Upkeep += Game.Random.Round(upkeepInc);
                 //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
                 this.cost += costInc - this.Upkeep * multPayoff;
 
@@ -879,8 +883,6 @@ namespace GalWar
 
             if (colonyDamage > initPop)
                 colonyDamage = initPop;
-            if (planetDamage > initQuality)
-                planetDamage = initQuality;
         }
 
         private int GetColonyDamage(bool friendly, double pct)

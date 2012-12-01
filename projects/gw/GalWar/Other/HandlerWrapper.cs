@@ -111,11 +111,11 @@ namespace GalWar
             }
         }
 
-        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int popLoss)
+        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
         {
             try
             {
-                handler.OnCombat(attacker, defender, attack, defense, popLoss);
+                handler.OnCombat(attacker, defender, attack, defense, startHP, popLoss);
             }
             catch (Exception e)
             {

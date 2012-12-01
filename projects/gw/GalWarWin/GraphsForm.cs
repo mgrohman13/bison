@@ -80,7 +80,7 @@ namespace GalWarWin
                 x += 106;
                 labels[5, i] = NewLabel(x, y, MainForm.FormatDouble(players[i].GetTotalIncome()), players[i].Color);
                 x += 106;
-                labels[6, i] = NewLabel(x, y, GetString(GetValue(players[i].GetArmadaStrength(), false, div), div, place), players[i].Color);
+                labels[6, i] = NewLabel(x, y, GetStringDec(players[i].GetArmadaStrength(), div, place), players[i].Color);
                 x += 106;
                 labels[7, i] = NewLabel(x, y, GetResearch(research[players[i]]), players[i].Color);
                 y += 26;
@@ -96,7 +96,7 @@ namespace GalWarWin
                 maxArmada = Math.Max(maxArmada, player.GetArmadaStrength());
             int place = GetPlace(maxArmada);
             long div = GetDiv(place);
-            return GetString(GetValue(value, false, div), div, place);
+            return GetStringDec(value, div, place);
         }
 
         private static int GetPlace(double max)
@@ -120,10 +120,36 @@ namespace GalWarWin
 
         private static string GetString(long value, long div, int place)
         {
-            if (value == 0)
-                return "0";
-            value /= div;
-            return value.ToString() + abbr[place];
+            return GetString(value, div, place, false);
+        }
+
+        private static string GetStringDec(double value, long div, int place)
+        {
+            bool dec = ( Math.Round(value / div) < 100 );
+            if (div > 1)
+            {
+                if (dec)
+                    div /= 10;
+                value = GetValue(value, false, div);
+                if (dec)
+                    value /= 10.0;
+            }
+            return GetString(value, div, place, dec);
+        }
+
+        private static string GetString(double value, long div, int place, bool dec)
+        {
+            if (value > Consts.FLOAT_ERROR)
+            {
+                value /= div;
+                string retVal;
+                if (dec)
+                    retVal = MainForm.FormatDouble(value);
+                else
+                    retVal = MainForm.FormatInt(value);
+                return retVal + abbr[place];
+            }
+            return "0";
         }
 
         private string GetResearch(double research)
@@ -344,7 +370,7 @@ namespace GalWarWin
             value = GetValue(y, ceil, div);
             if (height > 0)
             {
-                y = (float)( value - Consts.FLOAT_ERROR );
+                y = (float)( value - value * Consts.FLOAT_ERROR );
                 yScale = height / (float)Math.Ceiling(y);
             }
 

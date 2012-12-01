@@ -1,7 +1,7 @@
-52 att
-show decimal in ship costs
-bombard logging also needs prior DS
+enemy ship calculated upkeep less than 1 overflows cost calc
+repair all show ship count
 log more stuff!
+	invasion
 show enemy moves/attacks ignoring friendly ships
 test exact vs oversize dictionary capacity for combat performance
 main map improvements
@@ -12,6 +12,7 @@ management screens
 	colonies
 	ships
 
+alternate strength formula counting less speed?
 revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
 GetMoveSoldiers
 	scrap randomness to allow undo?

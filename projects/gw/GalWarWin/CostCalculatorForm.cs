@@ -26,6 +26,7 @@ namespace GalWarWin
 
         private void SetShip(Ship ship)
         {
+            this.lblOverflow.Visible = false;
             events = false;
 
             SetValue(this.nudResearch, MainForm.Game.CurrentPlayer.GetLastResearched());
@@ -58,6 +59,7 @@ namespace GalWarWin
 
         private void SetShipDesign(ShipDesign shipDesign)
         {
+            this.lblOverflow.Visible = false;
             events = false;
 
             SetValue(this.nudProd, shipDesign.Cost);
@@ -76,8 +78,9 @@ namespace GalWarWin
 
         private double Update(object sender)
         {
-            this.lblOverflow.Visible = false;
             events = false;
+            if (sender != null)
+                this.lblOverflow.Visible = false;
 
             double research = (double)this.nudResearch.Value;
             int att = (int)this.nudAtt.Value;
@@ -148,15 +151,23 @@ namespace GalWarWin
 
         private void MaintainDS(bool deathStar)
         {
+            events = false;
+
             if (events)
                 if (deathStar)
                     SetValue(this.nudTrans, 0);
                 else
                     ClearDS();
+
+            events = true;
         }
         private void ClearDS()
         {
+            events = false;
+
             SetValue(this.nudDS, GetBombardDamage(1));
+
+            events = true;
         }
 
         private double GetBombardDamageMult(decimal att)
@@ -249,7 +260,7 @@ namespace GalWarWin
             else if (shipDesign != null)
                 form.SetShipDesign(shipDesign);
 
-            form.Show();
+            form.ShowDialog();
         }
     }
 }
