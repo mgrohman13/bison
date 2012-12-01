@@ -948,7 +948,7 @@ namespace GalWarWin
                         {
                             this.selectedTile = clickedTile;
                             Ship ship = this.selectedTile.SpaceObject as Ship;
-                            if (ship != null)
+                            if (ship != null && ship.Player.IsTurn)
                             {
                                 hold.Remove(ship);
                                 holdPersistent.Remove(ship);

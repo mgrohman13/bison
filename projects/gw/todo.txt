@@ -5,7 +5,7 @@ enemy ship calculated upkeep less than 1 overflows cost calc
 repair all show ship count
 log more stuff!
 	invasion
-show enemy moves/attacks ignoring friendly ships
+show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
 main map improvements
 	ship speed/type
@@ -15,6 +15,7 @@ management screens
 	colonies
 	ships
 
+losepopulation addgold?
 alternate strength formula counting less speed?
 revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
 GetMoveSoldiers
