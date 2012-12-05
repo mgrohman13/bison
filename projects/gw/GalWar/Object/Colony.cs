@@ -740,15 +740,13 @@ namespace GalWar
             AssertException.Assert(production > 0);
             AssertException.Assert(production <= this.production);
 
-            this.Player.Game.PushSellProduction(this, production);
+            Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
+                    new Game.UndoMethod<int>(UndoSellProduction), production));
 
             TradeProduction(-production, 1 / Consts.ProductionForGold);
         }
-        internal Tile UndoSellProduction(object[] args)
+        internal Tile UndoSellProduction(int production)
         {
-            AssertException.Assert(args.Length == 1);
-            int production = (int)args[0];
-
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production * Consts.ProductionForGold < this.Player.Gold);
@@ -764,15 +762,13 @@ namespace GalWar
             AssertException.Assert(production > 0);
             AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
 
-            this.Player.Game.PushBuyProduction(this, production);
+            Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
+                    new Game.UndoMethod<int>(UndoBuyProduction), production));
 
             TradeProduction(production, Consts.GoldForProduction);
         }
-        internal Tile UndoBuyProduction(object[] args)
+        internal Tile UndoBuyProduction(int production)
         {
-            AssertException.Assert(args.Length == 1);
-            int production = (int)args[0];
-
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production <= this.production);

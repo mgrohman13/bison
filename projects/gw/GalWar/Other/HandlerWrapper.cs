@@ -18,7 +18,7 @@ namespace GalWar
             this.Event();
 
             if (clearStack)
-                game.ClearStack();
+                game.ClearUndoStack();
         }
 
         Tile IEventHandler.getBuildTile(Colony colony)

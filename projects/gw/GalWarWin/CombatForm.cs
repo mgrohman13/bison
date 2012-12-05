@@ -70,7 +70,7 @@ namespace GalWarWin
             RefreshShips();
         }
 
-        public void RefreshShips()
+        private void RefreshShips()
         {
             Ship attShip = attacker as Ship;
             Ship defShip = defender as Ship;
@@ -148,7 +148,7 @@ namespace GalWarWin
             }
         }
 
-        public void InitializeWorker()
+        private void InitializeWorker()
         {
             if (worker != null)
                 worker.Dispose();
@@ -165,7 +165,7 @@ namespace GalWarWin
                 worker.CancelAsync();
         }
 
-        public void worker_DoWork(object sender, DoWorkEventArgs e)
+        private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = (BackgroundWorker)sender;
             Dictionary<int, double> damageTable = (Dictionary<int, double>)e.Argument;
@@ -381,27 +381,6 @@ end:
             CancelWorker();
         }
 
-        public static void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
-        {
-            Form.Combat(attacker, defender, attack, defense, startHP, popLoss);
-        }
-
-        public static void OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
-        {
-            Form.Level(ship, expType, pct, needExp, lastExp);
-        }
-
-        public static void OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
-        {
-            Form.Bombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
-        }
-
-        public static void FlushLog(MainForm gameForm)
-        {
-            Form.gameForm = gameForm;
-            Form.FlushLog();
-        }
-
         public static bool ShowDialog(MainForm gameForm)
         {
             return ShowDialog(gameForm, null, null);
@@ -476,15 +455,46 @@ end:
 
         #region Logging
 
-        private void btnLog_Click(object sender, EventArgs e)
+        public static void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
         {
-            ShowLog();
+            Form.Combat(attacker, defender, attack, defense, startHP, popLoss);
         }
 
-        private void ShowLog()
+        public static void OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
         {
-            FlushLog();
-            TextForm.ShowDialog(gameForm);
+            Form.Level(ship, expType, pct, needExp, lastExp);
+        }
+
+        public static void OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        {
+            Form.Bombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
+        }
+
+        public static void FlushLog(MainForm gameForm)
+        {
+            Form.gameForm = gameForm;
+            Form.FlushLog();
+        }
+
+        public static void ShowLog(MainForm gameForm)
+        {
+            if (Form.chkLog.Checked)
+            {
+                Form.gameForm = gameForm;
+                Form.ShowLog(false);
+            }
+        }
+
+        private void btnLog_Click(object sender, EventArgs e)
+        {
+            ShowLog(true);
+        }
+
+        private void ShowLog(bool alwaysShow)
+        {
+            bool show = FlushLog();
+            if (alwaysShow || show)
+                TextForm.ShowDialog(gameForm);
         }
 
         private int logAtt = -1, logAttCurHP, logAttMaxHP, logAttExp, logDef, logDefCurHP, logDefMaxHP, logDefExp;
@@ -541,7 +551,7 @@ end:
             list.Add(new BombardType(colony, freeDmg, colonyDamage, planetDamage, ship.BombardDamage, startExp));
         }
 
-        private void FlushLog()
+        private bool FlushLog()
         {
             bool show = false;
 
@@ -564,8 +574,7 @@ end:
                     LogShip(pair.Key);
             }
 
-            if (show && this.chkLog.Checked)
-                ShowLog();
+            return show;
         }
 
         private void LogCombat()

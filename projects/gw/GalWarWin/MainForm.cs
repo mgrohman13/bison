@@ -799,15 +799,25 @@ namespace GalWarWin
         {
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
-                showMoves = false;
+                CombatForm.FlushLog(this);
+
+                HashSet<Ship> check = new HashSet<Ship>();
+                foreach (Ship ship in Game.CurrentPlayer.GetShips())
+                    if (ship.GetRepairedFrom() != null)
+                        check.Add(ship);
+
                 Game.EndTurn(this);
 
+                foreach (Ship ship in check)
+                    if (ship.HP == ship.MaxHP)
+                        this.holdPersistent.Remove(ship);
                 this.hold.RemoveWhere(delegate(Ship ship)
                 {
                     return ( !holdPersistent.Contains(ship) );
                 });
                 SelectNextShip();
 
+                showMoves = false;
                 saved = false;
                 this.RefreshAll();
 
@@ -1394,6 +1404,8 @@ namespace GalWarWin
             InvalidateMap();
 
             this.btnUndo.Enabled = Game.CanUndo();
+
+            CombatForm.ShowLog(this);
         }
 
         private void InvalidateMap()

@@ -517,7 +517,7 @@ next_planet:
             Graphs.StartTurn(CurrentPlayer);
             CurrentPlayer.StartTurn(handler);
 
-            ClearStack();
+            ClearUndoStack();
         }
 
         public void SaveGame(string filePath)
@@ -562,18 +562,16 @@ next_planet:
         #region Undo
 
         [NonSerialized]
-        private Stack<Tuple<UndoCommand, object[]>> _undoStack;
-        private Stack<Tuple<UndoCommand, object[]>> undoStack
+        private Stack<IUndoCommand> _undoStack;
+        private Stack<IUndoCommand> undoStack
         {
             get
             {
                 if (this._undoStack == null)
-                    this._undoStack = new Stack<Tuple<UndoCommand, object[]>>();
+                    this._undoStack = new Stack<IUndoCommand>();
                 return this._undoStack;
             }
         }
-
-        private delegate Tile UndoCommand(object[] args);
 
         public bool CanUndo()
         {
@@ -585,39 +583,65 @@ next_planet:
             handler = new HandlerWrapper(handler, this, false);
             AssertException.Assert(CanUndo());
 
-            Tuple<UndoCommand, object[]> tuple = undoStack.Pop();
-            return tuple.Item1(tuple.Item2);
+            return undoStack.Pop().Undo();
         }
 
-        internal void ClearStack()
+        internal void ClearUndoStack()
         {
             undoStack.Clear();
         }
 
-        private void PushUndoCommand(UndoCommand command, params object[] args)
+        internal void PushUndoCommand(IUndoCommand undoCommand)
         {
-            undoStack.Push(new Tuple<UndoCommand, object[]>(command, args));
+            undoStack.Push(undoCommand);
         }
 
-        internal void PushMoveShip(Ship ship)
+        internal delegate Tile UndoMethod<T>(T arg);
+        internal delegate Tile UndoMethod<T1, T2>(T1 arg1, T2 arg2);
+        internal delegate Tile UndoMethod<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3);
+
+        internal interface IUndoCommand
         {
-            PushUndoCommand(new UndoCommand(ship.UndoMove), ship.Tile);
+            Tile Undo();
         }
-        internal void PushMovePop(PopCarrier popCarrier, PopCarrier destination, int population, double soldiers)
+
+        internal class UndoCommand<T> : IUndoCommand
         {
-            PushUndoCommand(new UndoCommand(popCarrier.UndoMovePop), destination, population, soldiers);
+            private readonly UndoMethod<T> UndoMethod;
+            private readonly T arg;
+
+            public UndoCommand(UndoMethod<T> UndoMethod, T arg)
+            {
+                this.UndoMethod = UndoMethod;
+                this.arg = arg;
+            }
+
+            public Tile Undo()
+            {
+                return UndoMethod(arg);
+            }
         }
-        internal void PushGoldRepair(Ship ship, int hp)
+
+        internal class UndoCommand<T1, T2> : UndoCommand<Tuple<T1, T2>>
         {
-            PushUndoCommand(new UndoCommand(ship.UndoGoldRepair), hp);
+            public UndoCommand(UndoMethod<T1, T2> UndoMethod, T1 arg1, T2 arg2)
+                : base(delegate(Tuple<T1, T2> args)
+                {
+                    return UndoMethod(args.Item1, args.Item2);
+                }, new Tuple<T1, T2>(arg1, arg2))
+            {
+            }
         }
-        internal void PushSellProduction(Colony colony, int production)
+
+        internal class UndoCommand<T1, T2, T3> : UndoCommand<Tuple<T1, T2, T3>>
         {
-            PushUndoCommand(new UndoCommand(colony.UndoSellProduction), production);
-        }
-        internal void PushBuyProduction(Colony colony, int production)
-        {
-            PushUndoCommand(new UndoCommand(colony.UndoBuyProduction), production);
+            public UndoCommand(UndoMethod<T1, T2, T3> UndoMethod, T1 arg1, T2 arg2, T3 arg3)
+                : base(delegate(Tuple<T1, T2, T3> args)
+                {
+                    return UndoMethod(args.Item1, args.Item2, args.Item3);
+                }, new Tuple<T1, T2, T3>(arg1, arg2, arg3))
+            {
+            }
         }
 
         #endregion Undo

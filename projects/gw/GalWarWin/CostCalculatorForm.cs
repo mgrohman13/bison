@@ -29,7 +29,8 @@ namespace GalWarWin
             this.lblOverflow.Visible = false;
             events = false;
 
-            SetValue(this.nudResearch, MainForm.Game.CurrentPlayer.GetLastResearched());
+            double research = MainForm.Game.CurrentPlayer.GetLastResearched();
+            SetValue(this.nudResearch, research);
             SetValue(this.nudAtt, ship.Att);
             SetValue(this.nudDef, ship.Def);
             SetValue(this.nudHP, ship.MaxHP);
@@ -48,10 +49,13 @@ namespace GalWarWin
             }
             else
             {
-                SetValue(this.nudProd, totCost * ( 1 - Consts.CostUpkeepPct ));
-                SetValue(this.nudUpk, totCost * Consts.CostUpkeepPct /
-                        GetUpkeepPayoff(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony,
-                        GetBombardDamageMult(ship.Att), MainForm.Game.CurrentPlayer.GetLastResearched()));
+                double upkeepPayoff = GetUpkeepPayoff(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony,
+                        GetBombardDamageMult(ship.Att), research);
+                double upkeep = Math.Round(totCost / upkeepPayoff * Consts.CostUpkeepPct);
+                if (upkeep < 1)
+                    upkeep = 1;
+                SetValue(this.nudProd, totCost - upkeep * upkeepPayoff);
+                SetValue(this.nudUpk, upkeep);
             }
 
             events = true;

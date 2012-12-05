@@ -1,8 +1,4 @@
 combat calc show probability table
-auto show not showing last combat
-perma hold ships un-perm when fully prod repaired?
-enemy ship calculated upkeep less than 1 overflows cost calc
-repair all show ship count
 log more stuff!
 	invasion
 show enemy moves/attacks ignoring friendly ships, weight for HP?

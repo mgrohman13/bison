@@ -557,20 +557,20 @@ namespace GalWar
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
+            AssertException.Assert(tile != null);
             AssertException.Assert(this.CurSpeed > 0);
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
 
-            this.Player.Game.PushMoveShip(this);
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Tile>(
+                    new Game.UndoMethod<Tile>(UndoMove), this.Tile));
 
             Move(tile, false);
         }
-        internal Tile UndoMove(object[] args)
+        internal Tile UndoMove(Tile tile)
         {
-            AssertException.Assert(args.Length == 1);
-            Tile tile = args[0] as Tile;
-
             TurnException.CheckTurn(this.Player);
+            AssertException.Assert(tile != null);
             AssertException.Assert(this.CurSpeed < this.MaxSpeed);
             AssertException.Assert(CheckZOC(this.Player, this.Tile, tile));
             AssertException.Assert(tile.SpaceObject == null);
@@ -1028,15 +1028,13 @@ namespace GalWar
             AssertException.Assert(!this.HasRepaired);
             AssertException.Assert(GetGoldForHP(hp) < Player.Gold);
 
-            this.Player.Game.PushGoldRepair(this, hp);
+            Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
+                    new Game.UndoMethod<int>(UndoGoldRepair), hp));
 
             GoldRepair(hp, false);
         }
-        internal Tile UndoGoldRepair(object[] args)
+        internal Tile UndoGoldRepair(int hp)
         {
-            AssertException.Assert(args.Length == 1);
-            int hp = (int)args[0];
-
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(this.HP - hp > 0);
@@ -1066,6 +1064,8 @@ namespace GalWar
 
         public Colony GetRepairedFrom()
         {
+            TurnException.CheckTurn(this.Player);
+
             foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
             {
                 Planet planet = ( neighbor.SpaceObject as Planet );

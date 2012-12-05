@@ -142,21 +142,18 @@ namespace GalWar
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
 
-            double soldiers = MoveSoldiers(this.Population, this.soldiers, population);
+            bool canUndo;
+            double soldiers = MoveSoldiers(this.Population, this.soldiers, population, out canUndo);
             MovePop(this, destination, population, soldiers, false);
 
-            if (this.Population > 0 && destination.Population > 0)
-                this.Player.Game.ClearStack();
+            if (canUndo)
+                Player.Game.PushUndoCommand(new Game.UndoCommand<PopCarrier, int, double>(
+                        new Game.UndoMethod<PopCarrier, int, double>(UndoMovePop), destination, population, soldiers));
             else
-                this.Player.Game.PushMovePop(this, destination, population, soldiers);
+                Player.Game.ClearUndoStack();
         }
-        internal Tile UndoMovePop(object[] args)
+        internal Tile UndoMovePop(PopCarrier destination, int population, double soldiers)
         {
-            AssertException.Assert(args.Length == 3);
-            PopCarrier destination = args[0] as PopCarrier;
-            int population = (int)args[1];
-            double soldiers = (double)args[2];
-
             TurnException.CheckTurn(Player);
             AssertException.Assert(destination != null);
             AssertException.Assert(population > 0);
@@ -177,8 +174,8 @@ namespace GalWar
             if (!undo)
             {
                 AssertException.Assert(rounded < source.Player.Gold);
-                actual *= -1;
-                rounded *= -1;
+                actual = -actual;
+                rounded = -rounded;
             }
             source.Player.AddGold(actual, rounded);
 
@@ -198,21 +195,27 @@ namespace GalWar
         {
             return GetMoveSoldiers(this.Population, this.soldiers, movePop);
         }
-
         public static double GetMoveSoldiers(int population, double soldiers, int movePop)
         {
-            return GetMoveSoldiers(population, soldiers, movePop, false);
+            bool canUndo;
+            return GetMoveSoldiers(population, soldiers, movePop, false, out canUndo);
         }
 
         protected static double MoveSoldiers(int population, double soldiers, int movePop)
         {
-            return GetMoveSoldiers(population, soldiers, movePop, true);
+            bool canUndo;
+            return MoveSoldiers(population, soldiers, movePop, out canUndo);
+        }
+        private static double MoveSoldiers(int population, double soldiers, int movePop, out bool canUndo)
+        {
+            return GetMoveSoldiers(population, soldiers, movePop, true, out canUndo);
         }
 
-        private static float GetMoveSoldiers(int population, double soldiers, int movePop, bool doMove)
+        private static float GetMoveSoldiers(int population, double soldiers, int movePop, bool doMove, out bool canUndo)
         {
+            canUndo = true;
             float moveSoldiers = 0;
-            if (soldiers > 0)
+            if (soldiers > Consts.FLOAT_ERROR)
             {
                 if (population == movePop)
                     moveSoldiers = (float)soldiers;
@@ -222,7 +225,10 @@ namespace GalWar
                         float available = (float)( soldiers - moveSoldiers );
                         float chunk = available * Consts.MoveSoldiersMult / ( Consts.MoveSoldiersMult + population - mov );
                         if (doMove)
+                        {
+                            canUndo = false;
                             chunk = Game.Random.GaussianCapped(chunk, Consts.SoldiersRndm, Math.Max(0, 2 * chunk - available));
+                        }
                         moveSoldiers += chunk;
                     }
             }

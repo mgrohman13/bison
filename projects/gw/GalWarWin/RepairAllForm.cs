@@ -54,6 +54,7 @@ namespace GalWarWin
 
         private void Recalculate()
         {
+            int ships = 0;
             double cost = 0, value = GetValue();
             if (!double.IsNaN(value))
                 foreach (Ship ship in MainForm.Game.CurrentPlayer.GetShips())
@@ -61,8 +62,12 @@ namespace GalWarWin
                     {
                         double autoRepair = GetAutoRepair(ship, value);
                         if (autoRepair > 0)
+                        {
+                            ++ships;
                             cost += ship.GetGoldForHP(ship.GetAutoRepairHP(autoRepair));
+                        }
                     }
+            this.lblShips.Text = ships.ToString();
             MainForm.FormatIncome(this.lblRepairs, -cost, true);
         }
 
