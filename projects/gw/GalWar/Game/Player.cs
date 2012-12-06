@@ -23,9 +23,10 @@ namespace GalWar
 
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
         private byte _id;
-        private ushort _research, _newResearch, _lastResearched;
+        public ushort _newResearch;
         private float _incomeTotal, _rKey, _rChance, _rMult, _rDispSkew;
         private uint _goldValue;
+        private uint _research, _lastResearched;
         private double _goldOffset;
 
         private PlanetDefense planetDefense;
@@ -137,13 +138,13 @@ namespace GalWar
         {
             get
             {
-                return this._research;
+                return (int)this._research;
             }
             private set
             {
                 checked
                 {
-                    this._research = (ushort)value;
+                    this._research = (uint)value;
                 }
             }
         }
@@ -402,13 +403,13 @@ namespace GalWar
         {
             get
             {
-                return this._lastResearched;
+                return (int)this._lastResearched;
             }
             private set
             {
                 checked
                 {
-                    this._lastResearched = (ushort)value;
+                    this._lastResearched = (uint)value;
                 }
             }
         }

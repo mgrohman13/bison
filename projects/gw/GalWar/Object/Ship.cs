@@ -714,7 +714,7 @@ namespace GalWar
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
                 double upkeepInc = costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
-                if (upkeepInc > .1)
+                if (upkeepInc > .2)
                 {
                 }
                 this.Upkeep += Game.Random.Round(upkeepInc);
@@ -856,7 +856,7 @@ namespace GalWar
             colony.HP -= bombard;
 
             double combatPct = 1;
-            if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
+            if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony, bombard) ))
                 combatPct = Combat(handler, colony);
 
             return ( ( freePct * freeDmg + combatPct * combatDmg ) / ( freeDmg + combatDmg ) );

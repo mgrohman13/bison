@@ -11,7 +11,7 @@ namespace GalWar
 
         int MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers);
 
-        bool ConfirmCombat(Combatant attacker, Combatant defender);
+        bool ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg);
 
         void OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense);
 

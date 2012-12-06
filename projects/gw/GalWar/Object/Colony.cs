@@ -175,7 +175,7 @@ namespace GalWar
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
                 {
                     Ship ship = tile.SpaceObject as Ship;
-                    if (ship != null && ship.Player != this.Player && handler.ConfirmCombat(this, ship))
+                    if (ship != null && ship.Player != this.Player && handler.ConfirmCombat(this, ship, 0))
                     {
                         AttackShip(ship, handler);
                         if (this.HP == 0)

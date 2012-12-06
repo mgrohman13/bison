@@ -1880,7 +1880,7 @@ namespace GalWarWin
             return SliderForm.ShowDialog(this, new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
         }
 
-        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
+        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
         {
             if (attacker is Ship)
                 this.selectedTile = attacker.Tile;
@@ -1888,7 +1888,7 @@ namespace GalWarWin
                 this.selectedTile = defender.Tile;
             this.RefreshAll();
 
-            return CombatForm.ShowDialog(this, attacker, defender, true);
+            return CombatForm.ShowDialog(this, attacker, defender, true, freeDmg);
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)

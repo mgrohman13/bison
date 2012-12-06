@@ -11,6 +11,8 @@ management screens
 	colonies
 	ships
 
+somehow pay to upgrade old designs?  manually weight what you want next?
+Player _research, _lastResearched
 losepopulation addgold?
 alternate strength formula counting less speed?
 revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
@@ -48,7 +50,7 @@ transport exp for invasion?
 ExperienceConstDmgAmt
 extra combat exp for troops killed in transport, (troops get exp?)
 extra bombard/invade exp for planet death
-exp for bombard free damage
+exp for bombard free damage (maintain startexp for logging...)
 
 AI
 integrate AI-algorithm guesses into game for player to use as well

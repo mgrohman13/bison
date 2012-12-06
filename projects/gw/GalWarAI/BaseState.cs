@@ -68,7 +68,7 @@ namespace GalWarAI
                 return max;
         }
 
-        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
+        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
         {
             //TODO
             return true;

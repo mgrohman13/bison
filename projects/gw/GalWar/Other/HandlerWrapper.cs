@@ -81,13 +81,13 @@ namespace GalWar
             return retVal;
         }
 
-        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
+        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
         {
             bool retVal;
 
             try
             {
-                retVal = handler.ConfirmCombat(attacker, defender);
+                retVal = handler.ConfirmCombat(attacker, defender, freeDmg);
             }
             catch (Exception e)
             {
