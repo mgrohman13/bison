@@ -63,8 +63,12 @@ namespace GalWarWin
                         double autoRepair = GetAutoRepair(ship, value);
                         if (autoRepair > 0)
                         {
-                            ++ships;
-                            cost += ship.GetGoldForHP(ship.GetAutoRepairHP(autoRepair));
+                            double hp = ship.GetAutoRepairHP(autoRepair);
+                            if (hp > 0)
+                            {
+                                ++ships;
+                                cost += ship.GetGoldForHP(hp);
+                            }
                         }
                     }
             this.lblShips.Text = ships.ToString();
