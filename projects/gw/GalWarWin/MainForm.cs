@@ -81,7 +81,7 @@ namespace GalWarWin
             : this(false)
         {
             this.dialog = new MainForm(true);
-            this.dialog.MouseMove += new MouseEventHandler(this.GameForm_MouseMove);
+            this.dialog.MouseMove += new MouseEventHandler(this.MainForm_MouseMove);
 
             this.pnlInfo.Hide();
 
@@ -646,7 +646,7 @@ namespace GalWarWin
             }
         }
 
-        private void GameForm_MouseMove(object sender, MouseEventArgs e)
+        private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
             if (sender == this.pnlInfo)
                 this.mouse = new Point(this.pnlInfo.Location.X + e.Location.X, this.pnlInfo.Location.Y + e.Location.Y);
@@ -921,7 +921,7 @@ namespace GalWarWin
             }
         }
 
-        private void GameForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!isDialog)
                 if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
@@ -935,7 +935,7 @@ namespace GalWarWin
         {
             ClickMouse(e, true);
         }
-        private void GameForm_MouseClick(object sender, MouseEventArgs e)
+        private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
             this.clicked = null;
             ClickMouse(e, false);
@@ -1454,17 +1454,16 @@ namespace GalWarWin
 
         public static void FormatIncome(Label label, double income, bool forceDouble)
         {
-            ColorForIncome(label, income < 0);
-
-            label.Text = FormatIncome(income, forceDouble);
+            ColorForIncome(label, FormatIncome(income, forceDouble));
 
             if (label.TextAlign == ContentAlignment.MiddleRight)
                 label.Width = ( label.Text.Contains(".") ? 46 : 35 );
         }
 
-        public static void ColorForIncome(Label label, bool negative)
+        public static void ColorForIncome(Label label, String text)
         {
-            label.ForeColor = ( negative ? Color.DarkRed : Color.Black );
+            label.ForeColor = ( text.StartsWith("-") ? Color.DarkRed : Color.Black );
+            label.Text = text;
         }
 
         public static string FormatIncome(double income)

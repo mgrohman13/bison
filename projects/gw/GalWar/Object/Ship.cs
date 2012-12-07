@@ -1007,7 +1007,8 @@ namespace GalWar
             AssertException.Assert(this.Population > 0);
             AssertException.Assert(planet.ColonizationCost < Player.Gold);
 
-            this.Player.SpendGold(GetActualGoldCost(this.Population) + planet.ColonizationCost, Player.RoundGold(planet.ColonizationCost));
+            this.Player.SpendGold(planet.ColonizationCost);
+            this.Player.GoldIncome(-GetActualGoldCost(this.Population));
 
             int production = Game.Random.Round(ColonizationValue);
             this.Player.NewColony(handler, planet, this.Population, this.soldiers, production);

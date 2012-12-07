@@ -127,7 +127,7 @@ namespace GalWarWin
             this.pnlInfo.Name = "pnlInfo";
             this.pnlInfo.Size = new System.Drawing.Size(200, 862);
             this.pnlInfo.TabIndex = 2;
-            this.pnlInfo.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GameForm_MouseMove);
+            this.pnlInfo.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
             // 
             // btnCostCalc
             // 
@@ -684,10 +684,10 @@ namespace GalWarWin
             this.Controls.Add(this.pnlInfo);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GameForm_FormClosing);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.GameForm_MouseClick);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseClick);
             this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseDoubleClick);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GameForm_MouseMove);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
             this.pnlInfo.ResumeLayout(false);
             this.pnlInfo.PerformLayout();
             this.panel1.ResumeLayout(false);

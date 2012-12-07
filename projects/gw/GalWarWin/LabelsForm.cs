@@ -46,8 +46,7 @@ namespace GalWarWin
 
                 lbl = this.labels[++a];
                 text = data[a];
-                MainForm.ColorForIncome(lbl, text.StartsWith("-"));
-                lbl.Text = text;
+                MainForm.ColorForIncome(lbl, text);
                 lbl.Show();
             }
 

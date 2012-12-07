@@ -578,7 +578,7 @@ end:
                 list = new List<BombardType>();
                 bombard.Add(planet, list);
             }
-            list.Add(new BombardType(colony, freeDmg, colonyDamage, planetDamage, ship.BombardDamage, startExp));
+            list.Add(new BombardType(planet, freeDmg, colonyDamage, planetDamage, ship.BombardDamage, startExp));
         }
 
         private bool FlushLog()
@@ -736,7 +736,7 @@ end:
                 gameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", ship.Player.Name, ship.ToString(),
                         MainForm.FormatDouble(first.bombardDamage), first.startExp,
                         colony == null ? "Uncolonized" : colony.Player.Name + " Colony",
-                        colony == null ? "" : colony.HP + ", ", startQuality,
+                        colony == null ? "" : first.startHP + ", ", startQuality,
                         colony == null ? "" : ", " + startPopulation);
 
                 foreach (BombardType bombardType in list)
@@ -747,7 +747,7 @@ end:
                         logMsg = LogBombardDamage(string.Empty, bombardType.freeDmg, " HP");
                         logMsg = LogBombardDamage(logMsg, bombardType.planetDamage, " Quality");
                         logMsg = LogBombardDamage(logMsg, bombardType.colonyDamage, " Population");
-                        if (planet.Dead)
+                        if (bombardType.planetDead)
                             logMsg += ".  Planet Destroyed!";
                     }
                     else
@@ -838,17 +838,23 @@ end:
         private struct BombardType
         {
             public readonly Colony colony;
-            public readonly int freeDmg, colonyDamage, planetDamage, startExp;
+            public readonly int freeDmg, colonyDamage, planetDamage, startExp, startHP;
             public readonly double bombardDamage;
+            public readonly bool planetDead;
 
-            public BombardType(Colony colony, int freeDmg, int colonyDamage, int planetDamage, double bombardDamage, int startExp)
+            public BombardType(Planet planet, int freeDmg, int colonyDamage, int planetDamage, double bombardDamage, int startExp)
             {
-                this.colony = colony;
+                this.colony = planet.Colony;
                 this.freeDmg = freeDmg;
                 this.colonyDamage = colonyDamage;
                 this.planetDamage = planetDamage;
                 this.bombardDamage = bombardDamage;
+                this.planetDead = planet.Dead;
                 this.startExp = startExp;
+                if (colony == null)
+                    this.startHP = -1;
+                else
+                    this.startHP = colony.HP + freeDmg;
             }
         }
 

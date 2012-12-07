@@ -98,9 +98,10 @@ namespace GalWar
         internal readonly byte _name, _mark;
 
         private readonly byte _upkeep, _att, _def, _speed;
-        private readonly ushort _cost, _research, _trans;
+        private readonly ushort _cost, _trans;
         private readonly ushort _hp;
         private readonly float _bombardDamageMult;
+        private readonly uint _research;
 
         internal static int GetStartDesigns(int mapSize, List<int> research, Player player, List<ShipDesign> designs, ShipNames shipNames)
         {
@@ -153,7 +154,7 @@ namespace GalWar
             checked
             {
                 //  ------  Research          ------
-                this._research = (ushort)research;
+                this._research = (uint)research;
 
                 //get pcts for existing designs
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
@@ -744,7 +745,7 @@ namespace GalWar
         {
             get
             {
-                return this._research;
+                return (int)this._research;
             }
         }
 

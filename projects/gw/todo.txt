@@ -1,3 +1,4 @@
+cannot uncheck DS in cost calc
 combat calc show probability table
 log more stuff!
 	invasion
@@ -12,7 +13,7 @@ management screens
 	ships
 
 somehow pay to upgrade old designs?  manually weight what you want next?
-Player _research, _lastResearched
+Player._research, Player._lastResearched, ShipDesign._research
 losepopulation addgold?
 alternate strength formula counting less speed?
 revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
@@ -21,6 +22,7 @@ GetMoveSoldiers
 	use destination PopCarrier to ensure 1-at-a-time contract?
 		multiply SoldiersRndm by Sqrt(movePop)?
 		add together and re-rand entirely?
+			be wary of abuse via doing 1-at-a-time until favorable roll
 undo
 	PopCarrier.MovePop
 	Colony.StartBuilding
