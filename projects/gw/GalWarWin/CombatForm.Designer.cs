@@ -48,6 +48,7 @@ namespace GalWarWin
             this.nudDefense = new System.Windows.Forms.NumericUpDown();
             this.btnLog = new System.Windows.Forms.Button();
             this.chkLog = new System.Windows.Forms.CheckBox();
+            this.btnDetails = new System.Windows.Forms.Button();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttack ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttHP ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudDefHP ) ).BeginInit();
@@ -57,7 +58,7 @@ namespace GalWarWin
             // btnAttack
             // 
             this.btnAttack.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.btnAttack.Location = new System.Drawing.Point(12, 218);
+            this.btnAttack.Location = new System.Drawing.Point(12, 247);
             this.btnAttack.Name = "btnAttack";
             this.btnAttack.Size = new System.Drawing.Size(100, 23);
             this.btnAttack.TabIndex = 0;
@@ -69,7 +70,7 @@ namespace GalWarWin
             // 
             this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(118, 218);
+            this.btnCancel.Location = new System.Drawing.Point(118, 247);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 23);
             this.btnCancel.TabIndex = 1;
@@ -122,7 +123,7 @@ namespace GalWarWin
             // 
             this.btnSwap.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.btnSwap.Location = new System.Drawing.Point(118, 150);
+            this.btnSwap.Location = new System.Drawing.Point(118, 179);
             this.btnSwap.Name = "btnSwap";
             this.btnSwap.Size = new System.Drawing.Size(100, 23);
             this.btnSwap.TabIndex = 2;
@@ -194,7 +195,7 @@ namespace GalWarWin
             // 
             this.btnEdit.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.btnEdit.Location = new System.Drawing.Point(12, 150);
+            this.btnEdit.Location = new System.Drawing.Point(12, 179);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(100, 23);
             this.btnEdit.TabIndex = 3;
@@ -307,7 +308,7 @@ namespace GalWarWin
             this.btnLog.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnLog.AutoSize = true;
-            this.btnLog.Location = new System.Drawing.Point(60, 179);
+            this.btnLog.Location = new System.Drawing.Point(60, 208);
             this.btnLog.Name = "btnLog";
             this.btnLog.Size = new System.Drawing.Size(74, 23);
             this.btnLog.TabIndex = 8;
@@ -317,13 +318,29 @@ namespace GalWarWin
             // 
             // chkLog
             // 
+            this.chkLog.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
+                        | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.chkLog.AutoSize = true;
-            this.chkLog.Location = new System.Drawing.Point(140, 183);
+            this.chkLog.Location = new System.Drawing.Point(140, 212);
             this.chkLog.Name = "chkLog";
             this.chkLog.Size = new System.Drawing.Size(78, 17);
             this.chkLog.TabIndex = 9;
             this.chkLog.Text = "Auto Show";
             this.chkLog.UseVisualStyleBackColor = true;
+            // 
+            // btnDetails
+            // 
+            this.btnDetails.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
+                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnDetails.AutoSize = true;
+            this.btnDetails.Location = new System.Drawing.Point(78, 150);
+            this.btnDetails.Name = "btnDetails";
+            this.btnDetails.Size = new System.Drawing.Size(74, 23);
+            this.btnDetails.TabIndex = 16;
+            this.btnDetails.Text = "Details";
+            this.btnDetails.UseVisualStyleBackColor = true;
+            this.btnDetails.Visible = false;
+            this.btnDetails.Click += new System.EventHandler(this.btnDetails_Click);
             // 
             // CombatForm
             // 
@@ -331,7 +348,8 @@ namespace GalWarWin
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(230, 253);
+            this.ClientSize = new System.Drawing.Size(230, 282);
+            this.Controls.Add(this.btnDetails);
             this.Controls.Add(this.chkLog);
             this.Controls.Add(this.btnLog);
             this.Controls.Add(this.nudDefense);
@@ -387,5 +405,6 @@ namespace GalWarWin
         private System.Windows.Forms.NumericUpDown nudDefense;
         private System.Windows.Forms.Button btnLog;
         private System.Windows.Forms.CheckBox chkLog;
+        private System.Windows.Forms.Button btnDetails;
     }
 }

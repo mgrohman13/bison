@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using GalWar;
+using ResultPoint = GalWarWin.CombatForm.ResultPoint;
 
 namespace GalWarWin
 {
@@ -34,6 +35,47 @@ namespace GalWarWin
         {
             form.textBox1.Text = gameForm.GetLog();
             form.textBox1.Select(form.textBox1.Text.Length, 0);
+
+            form.ShowDialog();
+        }
+
+        internal static void ShowDialog(MainForm mainForm, Dictionary<ResultPoint, double> combatResults)
+        {
+            var att = new SortedDictionary<int, double>();
+            var def = new SortedDictionary<int, double>();
+
+            foreach (var pair in combatResults)
+            {
+                double value;
+
+                att.TryGetValue(pair.Key.AttHP, out value);
+                att[pair.Key.AttHP] = value + pair.Value;
+
+                def.TryGetValue(pair.Key.DefHP, out value);
+                def[pair.Key.DefHP] = value + pair.Value;
+            }
+
+            double maxAtt = 0, maxDef = 0;
+            foreach (double v in att.Values)
+                maxAtt = Math.Max(maxAtt, v);
+            foreach (double v in def.Values)
+                maxDef = Math.Max(maxDef, v);
+
+            form.textBox1.Text = "Attacker:\r\n";
+            foreach (var pair in att)
+            {
+                int val = (int)Math.Ceiling(pair.Value / maxAtt * 1000 - 1 - GalWar.Consts.FLOAT_ERROR);
+                if (val > 0)
+                    form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+            }
+
+            form.textBox1.Text += "\r\nDefender:\r\n";
+            foreach (var pair in def)
+            {
+                int val = (int)Math.Ceiling(pair.Value / maxDef * 1000 - 1 - GalWar.Consts.FLOAT_ERROR);
+                if (val > 0)
+                    form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+            }
 
             form.ShowDialog();
         }

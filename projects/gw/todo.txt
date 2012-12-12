@@ -1,4 +1,3 @@
-cannot uncheck DS in cost calc
 combat calc show probability table
 log more stuff!
 	invasion

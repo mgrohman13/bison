@@ -121,6 +121,7 @@ namespace GalWarWin
 
         private void CalculateOdds()
         {
+            btnDetails.Visible = false;
             CancelWorker();
 
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
@@ -181,7 +182,7 @@ namespace GalWarWin
             var oldChances = new Dictionary<ResultPoint, double>(targetCap);
 
             ResultPoint rp = new ResultPoint(attHP, defHP);
-            chances.Add(rp, 1);
+            chances.Add(rp, double.Epsilon);
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
@@ -256,26 +257,7 @@ namespace GalWarWin
                 Console.WriteLine();
             }
 
-            double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
-            foreach (KeyValuePair<ResultPoint, double> pair in chances)
-            {
-                ResultPoint res = pair.Key;
-                double chance = pair.Value;
-                total += chance;
-                int ahp = res.AttHP;
-                int dhp = res.DefHP;
-                if (dhp == 0)
-                    defDead += chance;
-                else if (ahp == 0)
-                    attDead += chance;
-                attDmg += ( attHP - ahp ) * chance;
-                defDmg += ( defHP - dhp ) * chance;
-            }
-            attDead /= total;
-            defDead /= total;
-            attDmg /= total;
-            defDmg /= total;
-            e.Result = new WorkerResult(attDead, defDead, attDmg, defDmg);
+            e.Result = chances;
 
 end:
             if (worker.CancellationPending)
@@ -302,14 +284,42 @@ end:
         {
             if (!e.Cancelled)
             {
-                WorkerResult result = (WorkerResult)e.Result;
+                Dictionary<ResultPoint, double> result = (Dictionary<ResultPoint, double>)e.Result;
+                btnDetails.Tag = result;
+                btnDetails.Visible = true;
 
-                this.lblAttDmg.Text = FormatDmg(result.AttDmg);
-                this.lblDefDmg.Text = FormatDmg(result.DefDmg);
+                int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
+                double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
+                foreach (KeyValuePair<ResultPoint, double> pair in result)
+                {
+                    ResultPoint res = pair.Key;
+                    double chance = pair.Value;
+                    total += chance;
+                    int ahp = res.AttHP;
+                    int dhp = res.DefHP;
+                    if (dhp == 0)
+                        defDead += chance;
+                    else if (ahp == 0)
+                        attDead += chance;
+                    attDmg += ( attHP - ahp ) * chance;
+                    defDmg += ( defHP - dhp ) * chance;
+                }
+                attDead /= total;
+                defDead /= total;
+                attDmg /= total;
+                defDmg /= total;
 
-                this.lblAttKill.Text = MainForm.FormatPct(result.AttDead);
-                this.lblDefKill.Text = MainForm.FormatPct(result.DefDead);
+                this.lblAttDmg.Text = FormatDmg(attDmg);
+                this.lblDefDmg.Text = FormatDmg(defDmg);
+
+                this.lblAttKill.Text = MainForm.FormatPct(attDead);
+                this.lblDefKill.Text = MainForm.FormatPct(defDead);
             }
+        }
+
+        private void btnDetails_Click(object sender, EventArgs e)
+        {
+            TextForm.ShowDialog(this.gameForm, (Dictionary<ResultPoint, double>)btnDetails.Tag);
         }
 
         private string FormatDmg(double dmg)
@@ -419,7 +429,7 @@ end:
             }
         }
 
-        private struct ResultPoint
+        public struct ResultPoint
         {
             public int AttHP;
             public int DefHP;
@@ -438,25 +448,12 @@ end:
 
             public override int GetHashCode()
             {
-                return ( AttHP ^ ( DefHP << 15 ) );
+                return ( AttHP | ( DefHP << 15 ) );
             }
 
             public override string ToString()
             {
                 return string.Format("( {0} , {1} )", AttHP, DefHP);
-            }
-        }
-
-        private class WorkerResult
-        {
-            public readonly double AttDead, DefDead, AttDmg, DefDmg;
-
-            public WorkerResult(double attDead, double defDead, double attDmg, double defDmg)
-            {
-                this.AttDead = attDead;
-                this.DefDead = defDead;
-                this.AttDmg = attDmg;
-                this.DefDmg = defDmg;
             }
         }
 
