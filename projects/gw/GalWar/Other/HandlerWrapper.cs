@@ -81,13 +81,13 @@ namespace GalWar
             return retVal;
         }
 
-        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
+        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
             bool retVal;
 
             try
             {
-                retVal = handler.ConfirmCombat(attacker, defender, freeDmg);
+                retVal = handler.ConfirmCombat(attacker, defender);
             }
             catch (Exception e)
             {
@@ -111,11 +111,11 @@ namespace GalWar
             }
         }
 
-        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
+        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense)
         {
             try
             {
-                handler.OnCombat(attacker, defender, attack, defense, startHP, popLoss);
+                handler.OnCombat(attacker, defender, attack, defense);
             }
             catch (Exception e)
             {
@@ -123,11 +123,11 @@ namespace GalWar
             }
         }
 
-        void IEventHandler.OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
+        void IEventHandler.OnLevel(Ship ship, double pct, int last, int needed)
         {
             try
             {
-                handler.OnLevel(ship, expType, pct, needExp, lastExp);
+                handler.OnLevel(ship, pct, last, needed);
             }
             catch (Exception e)
             {
@@ -135,11 +135,11 @@ namespace GalWar
             }
         }
 
-        void IEventHandler.OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        void IEventHandler.OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
         {
             try
             {
-                handler.OnBombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
+                handler.OnBombard(ship, planet, freeDmg, colonyDamage, planetDamage);
             }
             catch (Exception e)
             {
@@ -147,8 +147,17 @@ namespace GalWar
             }
         }
 
-        #region IEventHandler Members
-
+        void IEventHandler.OnInvade(Ship ship, Colony colony)
+        {
+            try
+            {
+                handler.OnInvade(ship, colony);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
 
         public void Event()
         {
@@ -161,7 +170,5 @@ namespace GalWar
                 Console.WriteLine(e);
             }
         }
-
-        #endregion
     }
 }

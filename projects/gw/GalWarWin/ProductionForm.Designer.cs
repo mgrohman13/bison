@@ -52,6 +52,7 @@ namespace GalWarWin
             // 
             // lblProdLoss
             // 
+            this.lblProdLoss.AutoEllipsis = true;
             this.lblProdLoss.Location = new System.Drawing.Point(230, 23);
             this.lblProdLoss.Name = "lblProdLoss";
             this.lblProdLoss.Size = new System.Drawing.Size(100, 23);
@@ -83,6 +84,7 @@ namespace GalWarWin
             // 
             // lblProd
             // 
+            this.lblProd.AutoEllipsis = true;
             this.lblProd.Location = new System.Drawing.Point(130, 23);
             this.lblProd.Name = "lblProd";
             this.lblProd.Size = new System.Drawing.Size(100, 23);

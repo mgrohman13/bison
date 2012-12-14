@@ -11,6 +11,7 @@ namespace GalWarWin.Sliders
         static MoveTroops()
         {
             lblProd = new Label();
+            lblProd.AutoEllipsis = true;
             lblProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
         }
 

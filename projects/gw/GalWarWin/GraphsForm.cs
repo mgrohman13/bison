@@ -160,6 +160,7 @@ namespace GalWarWin
         private Label NewLabel(int x, int y, string text, Color? backColor)
         {
             Label label = new Label();
+            label.AutoEllipsis = true;
             label.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             label.Location = new System.Drawing.Point(x, y);
             label.Size = new System.Drawing.Size(100, 23);

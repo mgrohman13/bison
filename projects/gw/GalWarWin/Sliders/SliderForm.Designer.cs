@@ -56,6 +56,7 @@ namespace GalWarWin.Sliders
             // 
             this.lblTitle.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblTitle.AutoEllipsis = true;
             this.lblTitle.Location = new System.Drawing.Point(0, 0);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(250, 23);
@@ -74,6 +75,7 @@ namespace GalWarWin.Sliders
             // 
             // lblAmt
             // 
+            this.lblAmt.AutoEllipsis = true;
             this.lblAmt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAmt.Location = new System.Drawing.Point(0, 85);
             this.lblAmt.Name = "lblAmt";
@@ -86,6 +88,7 @@ namespace GalWarWin.Sliders
             // lblEffcnt
             // 
             this.lblEffcnt.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblEffcnt.AutoEllipsis = true;
             this.lblEffcnt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblEffcnt.Location = new System.Drawing.Point(138, 85);
             this.lblEffcnt.Name = "lblEffcnt";
@@ -97,6 +100,7 @@ namespace GalWarWin.Sliders
             // 
             // lblResultType
             // 
+            this.lblResultType.AutoEllipsis = true;
             this.lblResultType.AutoSize = true;
             this.lblResultType.Location = new System.Drawing.Point(106, 90);
             this.lblResultType.Name = "lblResultType";
@@ -130,6 +134,7 @@ namespace GalWarWin.Sliders
             // lblExtra
             // 
             this.lblExtra.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblExtra.AutoEllipsis = true;
             this.lblExtra.Location = new System.Drawing.Point(138, 63);
             this.lblExtra.Name = "lblExtra";
             this.lblExtra.Size = new System.Drawing.Size(100, 23);
@@ -140,6 +145,7 @@ namespace GalWarWin.Sliders
             // 
             // lblSlideType
             // 
+            this.lblSlideType.AutoEllipsis = true;
             this.lblSlideType.AutoSize = true;
             this.lblSlideType.Location = new System.Drawing.Point(106, 68);
             this.lblSlideType.Name = "lblSlideType";

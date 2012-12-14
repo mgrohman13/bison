@@ -34,6 +34,8 @@ namespace GalWar
 
         protected double Combat(IEventHandler handler, Combatant defender)
         {
+            handler.OnCombat(this, defender, 0, 0);
+
             double pct = 0;
             double experience = 0;
 
@@ -44,18 +46,17 @@ namespace GalWar
                 if (pct != 0)
                     throw new Exception();
 
-                int at = this.Population, dt = defender.Population, startHP = -1;
-                int a = Game.Random.RangeInt(0, this.Att), d = Game.Random.RangeInt(0, defender.Def), damage = a - d;
+                int attack = Game.Random.RangeInt(0, this.Att), defense = Game.Random.RangeInt(0, defender.Def), damage = attack - defense;
                 if (damage > 0)
-                    pct = this.Damage(defender, damage, out startHP, ref experience);
+                    pct = this.Damage(defender, damage, ref experience);
                 else if (damage < 0)
-                    pct = defender.Damage(this, -damage, out startHP, ref experience);
+                    pct = defender.Damage(this, -damage, ref experience);
 
                 //a small constant exp is gained every round
                 experience += ( this.GetExpForDamage(Consts.ExperienceConstDmgAmt)
                         + defender.GetExpForDamage(Consts.ExperienceConstDmgAmt) ) / 2.0;
 
-                handler.OnCombat(this, defender, a, d, startHP, a < d ? at - this.Population : dt - defender.Population);
+                handler.OnCombat(this, defender, attack, defense);
             }
 
             //add kill exp before destroying so the player gets paid off for the exp
@@ -87,10 +88,10 @@ namespace GalWar
             return 0;
         }
 
-        private double Damage(Combatant combatant, int damage, out int startHP, ref double experience)
+        private double Damage(Combatant combatant, int damage, ref double experience)
         {
             double retVal = 0;
-            startHP = combatant.HP;
+            int startHP = combatant.HP;
             if (damage > startHP)
             {
                 retVal = 1 - ( startHP / (double)damage );

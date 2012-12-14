@@ -49,6 +49,7 @@
             // 
             // lblUpkeepL
             // 
+            this.lblUpkeepL.AutoEllipsis = true;
             this.lblUpkeepL.Location = new System.Drawing.Point(67, 129);
             this.lblUpkeepL.Name = "lblUpkeepL";
             this.lblUpkeepL.Size = new System.Drawing.Size(59, 13);
@@ -58,6 +59,7 @@
             // 
             // lblUpkeep
             // 
+            this.lblUpkeep.AutoEllipsis = true;
             this.lblUpkeep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblUpkeep.Location = new System.Drawing.Point(132, 124);
             this.lblUpkeep.Name = "lblUpkeep";
@@ -68,6 +70,7 @@
             // 
             // lblHPL
             // 
+            this.lblHPL.AutoEllipsis = true;
             this.lblHPL.Location = new System.Drawing.Point(90, 83);
             this.lblHPL.Name = "lblHPL";
             this.lblHPL.Size = new System.Drawing.Size(36, 13);
@@ -77,6 +80,7 @@
             // 
             // lblHP
             // 
+            this.lblHP.AutoEllipsis = true;
             this.lblHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblHP.Location = new System.Drawing.Point(132, 78);
             this.lblHP.Name = "lblHP";
@@ -87,6 +91,7 @@
             // 
             // label3
             // 
+            this.label3.AutoEllipsis = true;
             this.label3.Location = new System.Drawing.Point(65, 60);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(61, 13);
@@ -96,6 +101,7 @@
             // 
             // lblDef
             // 
+            this.lblDef.AutoEllipsis = true;
             this.lblDef.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDef.Location = new System.Drawing.Point(132, 55);
             this.lblDef.Name = "lblDef";
@@ -106,6 +112,7 @@
             // 
             // label2
             // 
+            this.label2.AutoEllipsis = true;
             this.label2.Location = new System.Drawing.Point(74, 37);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(52, 13);
@@ -115,6 +122,7 @@
             // 
             // lblAtt
             // 
+            this.lblAtt.AutoEllipsis = true;
             this.lblAtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAtt.Location = new System.Drawing.Point(132, 32);
             this.lblAtt.Name = "lblAtt";
@@ -125,6 +133,7 @@
             // 
             // lblSoldiersL
             // 
+            this.lblSoldiersL.AutoEllipsis = true;
             this.lblSoldiersL.Location = new System.Drawing.Point(54, 106);
             this.lblSoldiersL.Name = "lblSoldiersL";
             this.lblSoldiersL.Size = new System.Drawing.Size(72, 13);
@@ -134,6 +143,7 @@
             // 
             // lblSoldiers
             // 
+            this.lblSoldiers.AutoEllipsis = true;
             this.lblSoldiers.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblSoldiers.Location = new System.Drawing.Point(132, 101);
             this.lblSoldiers.Name = "lblSoldiers";
@@ -144,6 +154,7 @@
             // 
             // lblName
             // 
+            this.lblName.AutoEllipsis = true;
             this.lblName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblName.Location = new System.Drawing.Point(58, 9);
             this.lblName.Name = "lblName";
@@ -154,6 +165,7 @@
             // 
             // lblIncL
             // 
+            this.lblIncL.AutoEllipsis = true;
             this.lblIncL.Location = new System.Drawing.Point(67, 152);
             this.lblIncL.Name = "lblIncL";
             this.lblIncL.Size = new System.Drawing.Size(59, 13);
@@ -163,6 +175,7 @@
             // 
             // lblInc
             // 
+            this.lblInc.AutoEllipsis = true;
             this.lblInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblInc.Location = new System.Drawing.Point(132, 147);
             this.lblInc.Name = "lblInc";

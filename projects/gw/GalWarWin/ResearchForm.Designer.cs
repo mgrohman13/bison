@@ -39,6 +39,7 @@ namespace GalWarWin
             // 
             // label1
             // 
+            this.label1.AutoEllipsis = true;
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(200, 23);
@@ -59,6 +60,7 @@ namespace GalWarWin
             // 
             // label2
             // 
+            this.label2.AutoEllipsis = true;
             this.label2.Location = new System.Drawing.Point(200, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(130, 23);

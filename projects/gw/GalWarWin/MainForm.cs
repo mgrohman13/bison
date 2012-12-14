@@ -812,8 +812,6 @@ namespace GalWarWin
         {
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
-                CombatForm.FlushLog();
-
                 HashSet<Ship> check = new HashSet<Ship>();
                 foreach (Ship ship in Game.CurrentPlayer.GetShips())
                     if (ship.GetRepairedFrom() != null)
@@ -833,8 +831,6 @@ namespace GalWarWin
                 showMoves = false;
                 saved = false;
                 this.RefreshAll();
-
-                CombatForm.FlushLog();
             }
         }
 
@@ -1418,7 +1414,7 @@ namespace GalWarWin
 
             this.btnUndo.Enabled = Game.CanUndo();
 
-            CombatForm.ShowLog();
+            CombatForm.OnRefresh();
         }
 
         private void InvalidateMap()
@@ -1892,7 +1888,7 @@ namespace GalWarWin
             return SliderForm.ShowForm(new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
         }
 
-        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
+        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
             if (attacker is Ship)
                 this.selectedTile = attacker.Tile;
@@ -1900,7 +1896,7 @@ namespace GalWarWin
                 this.selectedTile = defender.Tile;
             this.RefreshAll();
 
-            return CombatForm.ShowForm(attacker, defender, true, freeDmg);
+            return CombatForm.ShowForm(attacker, defender, true);
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
@@ -1910,19 +1906,24 @@ namespace GalWarWin
             ResearchForm.ShowForm(newDesign, obsolete, oldDefense, newDefense);
         }
 
-        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
+        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense)
         {
-            CombatForm.OnCombat(attacker, defender, attack, defense, startHP, popLoss);
+            CombatForm.OnCombat(attacker, defender, attack, defense);
         }
 
-        void IEventHandler.OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
+        void IEventHandler.OnLevel(Ship ship, double pct, int last, int needed)
         {
-            CombatForm.OnLevel(ship, expType, pct, needExp, lastExp);
+            CombatForm.OnLevel(ship, pct, last, needed);
         }
 
-        void IEventHandler.OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        void IEventHandler.OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
         {
-            CombatForm.OnBombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
+            CombatForm.OnBombard(ship, planet, freeDmg, colonyDamage, planetDamage);
+        }
+
+        void IEventHandler.OnInvade(Ship ship, Colony colony)
+        {
+            CombatForm.OnInvade(ship, colony);
         }
 
         void IEventHandler.Event()

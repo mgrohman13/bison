@@ -68,7 +68,7 @@ namespace GalWarAI
                 return max;
         }
 
-        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
+        bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
             //TODO
             return true;
@@ -79,17 +79,22 @@ namespace GalWarAI
             ai.OnResearch(newDesign);
         }
 
-        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)
+        void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense)
         {
             //do nothing
         }
 
-        void IEventHandler.OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp)
+        void IEventHandler.OnLevel(Ship ship, double pct, int last, int needed)
         {
             //do nothing
         }
 
-        void IEventHandler.OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp)
+        void IEventHandler.OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
+        {
+            //do nothing
+        }
+
+        void IEventHandler.OnInvade(Ship ship, Colony colony)
         {
             //do nothing
         }

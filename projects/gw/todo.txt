@@ -1,6 +1,4 @@
-labels wrapping
 compare two ships with cost calc
-ShipDesign.GetIncrease evens things out?
 combat calc show probability table
 log more stuff!
 	invasion
@@ -14,6 +12,7 @@ management screens
 	colonies
 	ships
 
+ShipDesign.GetIncrease even stats out?
 somehow pay to upgrade old designs?  manually weight what you want next?
 Player._research, Player._lastResearched, ShipDesign._research
 losepopulation addgold?

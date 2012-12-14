@@ -130,6 +130,7 @@
             // 
             // lblDefPlayer
             // 
+            this.lblDefPlayer.AutoEllipsis = true;
             this.lblDefPlayer.Location = new System.Drawing.Point(133, 9);
             this.lblDefPlayer.Name = "lblDefPlayer";
             this.lblDefPlayer.Size = new System.Drawing.Size(100, 23);
@@ -139,6 +140,7 @@
             // 
             // lblAttPlayer
             // 
+            this.lblAttPlayer.AutoEllipsis = true;
             this.lblAttPlayer.Location = new System.Drawing.Point(9, 9);
             this.lblAttPlayer.Name = "lblAttPlayer";
             this.lblAttPlayer.Size = new System.Drawing.Size(100, 23);

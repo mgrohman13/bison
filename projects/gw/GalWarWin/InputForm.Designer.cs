@@ -45,6 +45,7 @@
             // 
             // lblPrompt
             // 
+            this.lblPrompt.AutoEllipsis = true;
             this.lblPrompt.AutoSize = true;
             this.lblPrompt.Location = new System.Drawing.Point(12, 9);
             this.lblPrompt.Name = "lblPrompt";

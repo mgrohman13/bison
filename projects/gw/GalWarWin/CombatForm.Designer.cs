@@ -133,6 +133,7 @@ namespace GalWarWin
             // 
             // lblAttKill
             // 
+            this.lblAttKill.AutoEllipsis = true;
             this.lblAttKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAttKill.Location = new System.Drawing.Point(12, 124);
             this.lblAttKill.Name = "lblAttKill";
@@ -143,6 +144,7 @@ namespace GalWarWin
             // 
             // lblAttDmg
             // 
+            this.lblAttDmg.AutoEllipsis = true;
             this.lblAttDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAttDmg.Location = new System.Drawing.Point(12, 101);
             this.lblAttDmg.Name = "lblAttDmg";
@@ -154,6 +156,7 @@ namespace GalWarWin
             // lblDefKill
             // 
             this.lblDefKill.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblDefKill.AutoEllipsis = true;
             this.lblDefKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDefKill.Location = new System.Drawing.Point(121, 124);
             this.lblDefKill.Name = "lblDefKill";
@@ -165,6 +168,7 @@ namespace GalWarWin
             // lblDefDmg
             // 
             this.lblDefDmg.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblDefDmg.AutoEllipsis = true;
             this.lblDefDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDefDmg.Location = new System.Drawing.Point(121, 101);
             this.lblDefDmg.Name = "lblDefDmg";
@@ -175,6 +179,7 @@ namespace GalWarWin
             // 
             // lblAttPlayer
             // 
+            this.lblAttPlayer.AutoEllipsis = true;
             this.lblAttPlayer.Location = new System.Drawing.Point(12, 9);
             this.lblAttPlayer.Name = "lblAttPlayer";
             this.lblAttPlayer.Size = new System.Drawing.Size(97, 23);
@@ -184,6 +189,7 @@ namespace GalWarWin
             // 
             // lblDefPlayer
             // 
+            this.lblDefPlayer.AutoEllipsis = true;
             this.lblDefPlayer.Location = new System.Drawing.Point(121, 9);
             this.lblDefPlayer.Name = "lblDefPlayer";
             this.lblDefPlayer.Size = new System.Drawing.Size(97, 23);

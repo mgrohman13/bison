@@ -668,8 +668,10 @@ namespace GalWar
 
         internal void LevelUp(IEventHandler handler)
         {
+            handler.OnLevel(this, 0, GetExp(0), 0);
+
             float needExp;
-            if (this.HP > 0 && !this.Dead && this.curExp > ( needExp = (float)( this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ) ))
+            while (this.HP > 0 && !this.Dead && this.curExp > ( needExp = (float)( this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ) ))
             {
                 double costInc = this.GetCostLastResearched();
 
@@ -729,12 +731,12 @@ namespace GalWar
                 if (this.Upkeep < 1)
                     throw new Exception();
 
-                handler.OnLevel(this, this.NextExpType, pct, GetExp(needExp), GetExp(0));
-
                 this.totalExp += needExp;
                 this.curExp -= needExp;
 
                 GetNextLevel(handler);
+
+                handler.OnLevel(this, pct, 0, GetExp(0));
             }
         }
 
@@ -795,8 +797,6 @@ namespace GalWar
             stats.Add(ExpType.Speed, Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9));
 
             this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
-
-            LevelUp(handler);
         }
 
         private int GetStatExpChance(int stat, int other)
@@ -826,6 +826,8 @@ namespace GalWar
             bool enemy = ( !friendly && colony != null );
             if (enemy && colony.HP > 0)
                 pct = AttackColony(handler, colony, out freeDmg);
+            else
+                handler.OnBombard(this, planet, 0, 0, 0);
 
             if (pct > 0)
                 if (enemy && colony.HP > 0)
@@ -833,7 +835,7 @@ namespace GalWar
                 else
                     Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage);
 
-            handler.OnBombard(this, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
+            handler.OnBombard(this, planet, 0, colonyDamage, planetDamage);
 
             LevelUp(handler);
         }
@@ -850,10 +852,11 @@ namespace GalWar
                 freePct = ( 1 - ( colony.HP / (double)bombard ) );
                 bombard = colony.HP;
             }
+            handler.OnBombard(this, colony.Planet, bombard, 0, 0);
             colony.HP -= bombard;
 
             double combatPct = 1;
-            if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony, bombard) ))
+            if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
                 combatPct = Combat(handler, colony);
 
             return ( ( freePct * freeDmg + combatPct * combatDmg ) / ( freeDmg + combatDmg ) );
@@ -981,6 +984,8 @@ namespace GalWar
                 gold = 0;
             }
 
+            handler.OnInvade(this, target);
+
             //all attackers cost gold to move regardless of where they end up
             this.Player.SpendGold(GetActualGoldCost(population) + gold, gold);
 
@@ -994,6 +999,8 @@ namespace GalWar
             this.movedPop += population;
 
             this.soldiers += soldiers;
+
+            handler.OnInvade(this, target);
         }
 
         public void Colonize(IEventHandler handler, Planet planet)

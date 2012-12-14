@@ -74,6 +74,7 @@
             // 
             // lblRepairs
             // 
+            this.lblRepairs.AutoEllipsis = true;
             this.lblRepairs.Location = new System.Drawing.Point(96, 55);
             this.lblRepairs.Name = "lblRepairs";
             this.lblRepairs.Size = new System.Drawing.Size(40, 23);
@@ -83,6 +84,7 @@
             // 
             // label
             // 
+            this.label.AutoEllipsis = true;
             this.label.Location = new System.Drawing.Point(0, 55);
             this.label.Name = "label";
             this.label.Size = new System.Drawing.Size(90, 23);
@@ -92,6 +94,7 @@
             // 
             // lblIncome
             // 
+            this.lblIncome.AutoEllipsis = true;
             this.lblIncome.Location = new System.Drawing.Point(96, 32);
             this.lblIncome.Name = "lblIncome";
             this.lblIncome.Size = new System.Drawing.Size(40, 23);
@@ -101,6 +104,7 @@
             // 
             // label4
             // 
+            this.label4.AutoEllipsis = true;
             this.label4.Location = new System.Drawing.Point(0, 32);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(90, 23);
@@ -110,6 +114,7 @@
             // 
             // lblGold
             // 
+            this.lblGold.AutoEllipsis = true;
             this.lblGold.Location = new System.Drawing.Point(96, 9);
             this.lblGold.Name = "lblGold";
             this.lblGold.Size = new System.Drawing.Size(40, 23);
@@ -119,6 +124,7 @@
             // 
             // label2
             // 
+            this.label2.AutoEllipsis = true;
             this.label2.Location = new System.Drawing.Point(0, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(90, 23);
@@ -195,6 +201,7 @@
             // 
             // label1
             // 
+            this.label1.AutoEllipsis = true;
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(14, 182);
             this.label1.Name = "label1";
@@ -215,6 +222,7 @@
             // 
             // label3
             // 
+            this.label3.AutoEllipsis = true;
             this.label3.Location = new System.Drawing.Point(0, 101);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(90, 23);
@@ -232,6 +240,7 @@
             // 
             // lblShips
             // 
+            this.lblShips.AutoEllipsis = true;
             this.lblShips.Location = new System.Drawing.Point(96, 78);
             this.lblShips.Name = "lblShips";
             this.lblShips.Size = new System.Drawing.Size(40, 23);
@@ -241,6 +250,7 @@
             // 
             // label6
             // 
+            this.label6.AutoEllipsis = true;
             this.label6.Location = new System.Drawing.Point(0, 78);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(90, 23);

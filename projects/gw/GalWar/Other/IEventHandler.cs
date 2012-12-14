@@ -11,15 +11,17 @@ namespace GalWar
 
         int MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers);
 
-        bool ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg);
+        bool ConfirmCombat(Combatant attacker, Combatant defender);
 
         void OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense);
 
-        void OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss);
+        void OnCombat(Combatant attacker, Combatant defender, int attack, int defense);
 
-        void OnLevel(Ship ship, Ship.ExpType expType, double pct, int needExp, int lastExp);
+        void OnLevel(Ship ship, double pct, int last, int needed);
 
-        void OnBombard(Ship ship, Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, int startExp);
+        void OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage);
+
+        void OnInvade(Ship ship, Colony colony);
 
         void Event();
     }

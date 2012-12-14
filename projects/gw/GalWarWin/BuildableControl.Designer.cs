@@ -50,6 +50,7 @@ namespace GalWarWin
             // 
             // lblCost
             // 
+            this.lblCost.AutoEllipsis = true;
             this.lblCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblCost.Location = new System.Drawing.Point(100, 23);
             this.lblCost.Name = "lblCost";
@@ -61,6 +62,7 @@ namespace GalWarWin
             // 
             // lblName
             // 
+            this.lblName.AutoEllipsis = true;
             this.lblName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblName.Location = new System.Drawing.Point(0, 0);
             this.lblName.Name = "lblName";
@@ -72,6 +74,7 @@ namespace GalWarWin
             // 
             // label1
             // 
+            this.label1.AutoEllipsis = true;
             this.label1.Location = new System.Drawing.Point(3, 28);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(91, 13);
@@ -82,6 +85,7 @@ namespace GalWarWin
             // 
             // label2
             // 
+            this.label2.AutoEllipsis = true;
             this.label2.Location = new System.Drawing.Point(23, 74);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(71, 13);
@@ -92,6 +96,7 @@ namespace GalWarWin
             // 
             // lblAtt
             // 
+            this.lblAtt.AutoEllipsis = true;
             this.lblAtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAtt.Location = new System.Drawing.Point(100, 69);
             this.lblAtt.Name = "lblAtt";
@@ -103,6 +108,7 @@ namespace GalWarWin
             // 
             // label3
             // 
+            this.label3.AutoEllipsis = true;
             this.label3.Location = new System.Drawing.Point(14, 97);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(80, 13);
@@ -113,6 +119,7 @@ namespace GalWarWin
             // 
             // lblDef
             // 
+            this.lblDef.AutoEllipsis = true;
             this.lblDef.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDef.Location = new System.Drawing.Point(100, 92);
             this.lblDef.Name = "lblDef";
@@ -124,6 +131,7 @@ namespace GalWarWin
             // 
             // label4
             // 
+            this.label4.AutoEllipsis = true;
             this.label4.Location = new System.Drawing.Point(39, 120);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(55, 13);
@@ -134,6 +142,7 @@ namespace GalWarWin
             // 
             // lblHP
             // 
+            this.lblHP.AutoEllipsis = true;
             this.lblHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblHP.Location = new System.Drawing.Point(100, 115);
             this.lblHP.Name = "lblHP";
@@ -145,6 +154,7 @@ namespace GalWarWin
             // 
             // label5
             // 
+            this.label5.AutoEllipsis = true;
             this.label5.Location = new System.Drawing.Point(23, 143);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(71, 13);
@@ -155,6 +165,7 @@ namespace GalWarWin
             // 
             // lblSpeed
             // 
+            this.lblSpeed.AutoEllipsis = true;
             this.lblSpeed.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblSpeed.Location = new System.Drawing.Point(100, 138);
             this.lblSpeed.Name = "lblSpeed";
@@ -166,6 +177,7 @@ namespace GalWarWin
             // 
             // label6
             // 
+            this.label6.AutoEllipsis = true;
             this.label6.Location = new System.Drawing.Point(9, 189);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(85, 13);
@@ -176,6 +188,7 @@ namespace GalWarWin
             // 
             // lblTrans
             // 
+            this.lblTrans.AutoEllipsis = true;
             this.lblTrans.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblTrans.Location = new System.Drawing.Point(100, 184);
             this.lblTrans.Name = "lblTrans";
@@ -187,6 +200,7 @@ namespace GalWarWin
             // 
             // lblColony
             // 
+            this.lblColony.AutoEllipsis = true;
             this.lblColony.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblColony.Location = new System.Drawing.Point(0, 207);
             this.lblColony.Name = "lblColony";
@@ -198,6 +212,7 @@ namespace GalWarWin
             // 
             // label7
             // 
+            this.label7.AutoEllipsis = true;
             this.label7.Location = new System.Drawing.Point(16, 166);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(78, 13);
@@ -208,6 +223,7 @@ namespace GalWarWin
             // 
             // lblUpkeep
             // 
+            this.lblUpkeep.AutoEllipsis = true;
             this.lblUpkeep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblUpkeep.Location = new System.Drawing.Point(100, 161);
             this.lblUpkeep.Name = "lblUpkeep";
@@ -219,6 +235,7 @@ namespace GalWarWin
             // 
             // label8
             // 
+            this.label8.AutoEllipsis = true;
             this.label8.Location = new System.Drawing.Point(8, 51);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(86, 13);
@@ -229,6 +246,7 @@ namespace GalWarWin
             // 
             // lblResearch
             // 
+            this.lblResearch.AutoEllipsis = true;
             this.lblResearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblResearch.Location = new System.Drawing.Point(100, 46);
             this.lblResearch.Name = "lblResearch";

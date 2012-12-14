@@ -35,6 +35,7 @@
             // 
             // label
             // 
+            this.label.AutoEllipsis = true;
             this.label.Location = new System.Drawing.Point(3, 0);
             this.label.Name = "label";
             this.label.Size = new System.Drawing.Size(65, 23);
@@ -44,6 +45,7 @@
             // 
             // info
             // 
+            this.info.AutoEllipsis = true;
             this.info.Location = new System.Drawing.Point(69, 0);
             this.info.Name = "info";
             this.info.Size = new System.Drawing.Size(40, 23);

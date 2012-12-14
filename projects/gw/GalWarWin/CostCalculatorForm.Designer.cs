@@ -235,6 +235,7 @@
             // 
             // label10
             // 
+            this.label10.AutoEllipsis = true;
             this.label10.Location = new System.Drawing.Point(25, 170);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(78, 13);
@@ -244,6 +245,7 @@
             // 
             // label11
             // 
+            this.label11.AutoEllipsis = true;
             this.label11.Location = new System.Drawing.Point(18, 196);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(85, 13);
@@ -253,6 +255,7 @@
             // 
             // label12
             // 
+            this.label12.AutoEllipsis = true;
             this.label12.Location = new System.Drawing.Point(32, 144);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(71, 13);
@@ -262,6 +265,7 @@
             // 
             // label13
             // 
+            this.label13.AutoEllipsis = true;
             this.label13.Location = new System.Drawing.Point(48, 118);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(55, 13);
@@ -271,6 +275,7 @@
             // 
             // label14
             // 
+            this.label14.AutoEllipsis = true;
             this.label14.Location = new System.Drawing.Point(23, 92);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(80, 13);
@@ -280,6 +285,7 @@
             // 
             // label15
             // 
+            this.label15.AutoEllipsis = true;
             this.label15.Location = new System.Drawing.Point(32, 66);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(71, 13);
@@ -289,6 +295,7 @@
             // 
             // label16
             // 
+            this.label16.AutoEllipsis = true;
             this.label16.Location = new System.Drawing.Point(12, 14);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(91, 13);
@@ -298,6 +305,7 @@
             // 
             // label9
             // 
+            this.label9.AutoEllipsis = true;
             this.label9.Location = new System.Drawing.Point(17, 40);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(86, 13);
@@ -307,6 +315,7 @@
             // 
             // label1
             // 
+            this.label1.AutoEllipsis = true;
             this.label1.Location = new System.Drawing.Point(18, 222);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(85, 13);
@@ -330,6 +339,7 @@
             // 
             // label2
             // 
+            this.label2.AutoEllipsis = true;
             this.label2.Location = new System.Drawing.Point(18, 248);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(85, 13);
@@ -360,6 +370,7 @@
             // 
             // label3
             // 
+            this.label3.AutoEllipsis = true;
             this.label3.Location = new System.Drawing.Point(18, 326);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(85, 13);
@@ -369,6 +380,7 @@
             // 
             // label4
             // 
+            this.label4.AutoEllipsis = true;
             this.label4.Location = new System.Drawing.Point(18, 300);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(85, 13);
@@ -378,6 +390,7 @@
             // 
             // label5
             // 
+            this.label5.AutoEllipsis = true;
             this.label5.Location = new System.Drawing.Point(18, 274);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(85, 13);
@@ -411,6 +424,7 @@
             // 
             // lblOverflow
             // 
+            this.lblOverflow.AutoEllipsis = true;
             this.lblOverflow.ForeColor = System.Drawing.Color.Red;
             this.lblOverflow.Location = new System.Drawing.Point(12, 350);
             this.lblOverflow.Name = "lblOverflow";

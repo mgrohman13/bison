@@ -103,6 +103,7 @@ namespace GalWarWin
         {
             Label label = new Label();
 
+            label.AutoEllipsis = true;
             label.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 
             label.Location = new System.Drawing.Point(( text ? 3 : 69 ), this.labels[this.labels.Count - 1].Location.Y + 23);
