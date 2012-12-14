@@ -341,7 +341,17 @@ namespace GalWar
             return MakeStatStr(research, 26, .65);
         }
 
-        private void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
+        public static void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research,
+                ref double transStr, out bool colony, out int trans, out double bombardDamageMult)
+        {
+            ushort t;
+            float b;
+            DoColonyTrans(forceColony, forceTrans, forceNeither, research, double.NaN, double.NaN, double.NaN, ref transStr, out colony, out t, out b);
+            trans = t;
+            bombardDamageMult = b;
+        }
+
+        private static void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
                 ref double transStr, out bool colony, out ushort trans, out float bombardDamageMult)
         {
             bool transport;
@@ -380,7 +390,7 @@ namespace GalWar
             }
         }
 
-        private bool CreateDeathStar(int research, double actual)
+        private static bool CreateDeathStar(int research, double actual)
         {
             //target pct of ships that should be death stars increases with research
             double target = research / ( Math.PI * 1040.0 + research );
@@ -389,11 +399,13 @@ namespace GalWar
             return CreateType(target, actual);
         }
 
-        private bool CreateType(double target, double actual)
+        private static bool CreateType(double target, double actual)
         {
             double chance;
             //chance is higher when target > actual and lower when target < actual
-            if (target > actual)
+            if (double.IsNaN(actual))
+                chance = target;
+            else if (target > actual)
                 chance = Math.Sqrt(target - actual) + target;
             else
                 chance = ( 1 + ( target - actual ) / actual ) * target;
@@ -450,7 +462,7 @@ namespace GalWar
 
         #region Speed
 
-        private static double GetSpeedStr(int research)
+        public static double GetSpeedStr(int research)
         {
             return MakeStatStr(research, .65, .39);
         }

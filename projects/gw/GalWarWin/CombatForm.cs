@@ -26,14 +26,17 @@ namespace GalWarWin
 
         private BackgroundWorker worker;
 
-        private MainForm gameForm;
         private Combatant attacker, defender;
         private bool isConfirmation, showConfirmation;
 
         private CombatForm()
         {
             InitializeComponent();
+            InitRand();
+        }
 
+        private void InitRand()
+        {
             SetRand(this.nudAttack, false);
             SetRand(this.nudAttHP, true);
             SetRand(this.nudDefense, false);
@@ -319,7 +322,7 @@ end:
 
         private void btnDetails_Click(object sender, EventArgs e)
         {
-            TextForm.ShowDialog(this.gameForm, (Dictionary<ResultPoint, double>)btnDetails.Tag);
+            TextForm.ShowForm((Dictionary<ResultPoint, double>)btnDetails.Tag);
         }
 
         private string FormatDmg(double dmg)
@@ -337,17 +340,17 @@ end:
                 FlushLog();
                 if (defShip == null)
                 {
-                    attShip.Bombard(gameForm, ( (Colony)defender ).Planet);
+                    attShip.Bombard(MainForm.GameForm, ( (Colony)defender ).Planet);
                     if (!attShip.DeathStar)
                         FlushLog();
                 }
                 else
                 {
-                    attShip.AttackShip(gameForm, defShip);
+                    attShip.AttackShip(MainForm.GameForm, defShip);
                 }
 
                 RefreshShips();
-                gameForm.RefreshAll();
+                MainForm.GameForm.RefreshAll();
 
                 if (( (Ship)attShip ).CurSpeed < 1 || attShip.HP < 1 || defender.HP < 1)
                     this.DialogResult = DialogResult.OK;
@@ -397,20 +400,19 @@ end:
             CancelWorker();
         }
 
-        public static bool ShowDialog(MainForm gameForm)
+        public static bool ShowForm()
         {
-            return ShowDialog(gameForm, null, null);
+            return ShowForm(null, null);
         }
 
-        public static bool ShowDialog(MainForm gameForm, Combatant attacker, Combatant defender)
+        public static bool ShowForm(Combatant attacker, Combatant defender)
         {
-            return ShowDialog(gameForm, attacker, defender, false, 0);
+            return ShowForm(attacker, defender, false, 0);
         }
 
-        public static bool ShowDialog(MainForm gameForm, Combatant attacker, Combatant defender, bool isConfirmation, int freeDmg)
+        public static bool ShowForm(Combatant attacker, Combatant defender, bool isConfirmation, int freeDmg)
         {
-            Form.gameForm = gameForm;
-            gameForm.SetLocation(Form);
+            MainForm.GameForm.SetLocation(Form);
 
             Form.SetCombatants(attacker, defender, isConfirmation);
 
@@ -476,17 +478,15 @@ end:
             Form.Bombard(ship, planet, colony, freeDmg, colonyDamage, planetDamage, startExp);
         }
 
-        public static void FlushLog(MainForm gameForm)
+        public static void FlushLog()
         {
-            Form.gameForm = gameForm;
-            Form.FlushLog();
+            Form.Flush();
         }
 
-        public static void ShowLog(MainForm gameForm)
+        public static void ShowLog()
         {
             if (Form.chkLog.Checked)
             {
-                Form.gameForm = gameForm;
                 Form.ShowLog(false);
             }
         }
@@ -498,9 +498,9 @@ end:
 
         private void ShowLog(bool alwaysShow)
         {
-            bool show = FlushLog();
+            bool show = Flush();
             if (alwaysShow || show)
-                TextForm.ShowDialog(gameForm);
+                TextForm.ShowForm();
         }
 
         private int logAtt = -1, logAttCurHP, logAttMaxHP, logAttExp, logDef, logDefCurHP, logDefMaxHP, logDefExp, confirmFreeDmg = -1;
@@ -575,10 +575,10 @@ end:
                 list = new List<BombardType>();
                 bombard.Add(planet, list);
             }
-            list.Add(new BombardType(planet, freeDmg, colonyDamage, planetDamage, ship.BombardDamage, startExp));
+            list.Add(new BombardType(planet, colony, freeDmg, colonyDamage, planetDamage, ship.BombardDamage, startExp));
         }
 
-        private bool FlushLog()
+        private bool Flush()
         {
             bool show = false;
 
@@ -612,10 +612,10 @@ end:
 
             CheckNonDSBombard(attacker as Ship, defender as Colony);
 
-            gameForm.LogMsg("{10} {0} ({1}, {2}{3}{8}) : {11} {4} ({5}, {6}{7}{9})", attacker.ToString(), logAtt, logAttCurHP,
-                    attShip ? string.Empty : ( "/" + logAttMaxHP ), defender.ToString(), logDef, logDefCurHP,
-                    defShip ? string.Empty : ( "/" + logDefMaxHP ), attShip ? string.Empty : ( ", " + logAttExp ),
-                    defShip ? string.Empty : ( ", " + logDefExp ), attacker.Player.Name, defender.Player.Name);
+            MainForm.GameForm.LogMsg("{10} {0} ({1}, {2}{3}{8}) : {11} {4} ({5}, {6}{7}{9})", attacker.ToString(), logAtt, logAttCurHP,
+                       attShip ? string.Empty : ( "/" + logAttMaxHP ), defender.ToString(), logDef, logDefCurHP,
+                       defShip ? string.Empty : ( "/" + logDefMaxHP ), attShip ? string.Empty : ( ", " + logAttExp ),
+                       defShip ? string.Empty : ( ", " + logDefExp ), attacker.Player.Name, defender.Player.Name);
 
             int rounds = combat.Count;
             int attDmg = 0, defDmg = 0, attTot = 0, defTot = 0;
@@ -633,15 +633,15 @@ end:
                 attTot += attack;
                 defTot += defense;
 
-                gameForm.LogMsg("{3}={0} :{1} ({2}){4}", Format(attack, 3), Format(defense, 4), Format(damage, true),
+                MainForm.GameForm.LogMsg("{3}={0} :{1} ({2}){4}", Format(attack, 3), Format(defense, 4), Format(damage, true),
                         Format(round), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : string.Empty);
             }
 
             double attAdv = attTot - logAtt * rounds / 2.0;
             double defAdv = defTot - logDef * rounds / 2.0;
-            gameForm.LogMsg("{0} :{1} ({2} : {3})", Format(attTot, 6), Format(defTot, 4), Format(attDmg, 3, true), Format(defDmg, 3, true));
-            gameForm.LogMsg(" {0} : {1} ({2})", Format(attAdv), Format(defAdv), Format(attAdv - defAdv));
-            gameForm.LogMsg();
+            MainForm.GameForm.LogMsg("{0} :{1} ({2} : {3})", Format(attTot, 6), Format(defTot, 4), Format(attDmg, 3, true), Format(defDmg, 3, true));
+            MainForm.GameForm.LogMsg(" {0} : {1} ({2})", Format(attAdv), Format(defAdv), Format(attAdv - defAdv));
+            MainForm.GameForm.LogMsg();
 
             LogShipLevelUp(attacker);
             LogShipLevelUp(defender);
@@ -702,14 +702,14 @@ end:
 
         private void LogLevelUp(Ship ship, List<LevelUpType> levels)
         {
-            gameForm.LogMsg("{2} {0} - {1}", ship.ToString(), MainForm.FormatInt(levels[0].lastExp), ship.Player.Name);
+            MainForm.GameForm.LogMsg("{2} {0} - {1}", ship.ToString(), MainForm.FormatInt(levels[0].lastExp), ship.Player.Name);
 
             foreach (LevelUpType level in levels)
-                gameForm.LogMsg(" {0} ({1}) - {2}", level.expType.ToString().PadRight(5, ' '),
+                MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", level.expType.ToString().PadRight(5, ' '),
                         MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needExp));
 
-            gameForm.LogMsg("({0}) {2}/{3} - {1}", ship.NextExpType.ToString().PadRight(5, ' '), ship.GetTotalExp(), ship.HP, ship.MaxHP);
-            gameForm.LogMsg();
+            MainForm.GameForm.LogMsg("({0}) {2}/{3} - {1}", ship.NextExpType.ToString().PadRight(5, ' '), ship.GetTotalExp(), ship.HP, ship.MaxHP);
+            MainForm.GameForm.LogMsg();
         }
 
         private void LogBombard(Ship ship, Dictionary<Planet, List<BombardType>> bombard)
@@ -723,14 +723,16 @@ end:
                 Colony colony = first.colony;
 
                 int startQuality = planet.Quality;
-                int startPopulation = colony.Population;
+                int startPopulation = 0;
+                if (colony != null)
+                    startPopulation = colony.Population;
                 foreach (BombardType bombardType in list)
                 {
                     startQuality += bombardType.planetDamage;
                     startPopulation += bombardType.colonyDamage;
                 }
 
-                gameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", ship.Player.Name, ship.ToString(),
+                MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", ship.Player.Name, ship.ToString(),
                         MainForm.FormatDouble(first.bombardDamage), first.startExp,
                         colony == null ? "Uncolonized" : colony.Player.Name + " Colony",
                         colony == null ? "" : first.startHP + ", ", startQuality,
@@ -751,10 +753,10 @@ end:
                     {
                         logMsg = "No Damage";
                     }
-                    gameForm.LogMsg(logMsg);
+                    MainForm.GameForm.LogMsg(logMsg);
                 }
 
-                gameForm.LogMsg();
+                MainForm.GameForm.LogMsg();
             }
         }
         private static string LogBombardDamage(string logMsg, int amt, string type)
@@ -839,9 +841,9 @@ end:
             public readonly double bombardDamage;
             public readonly bool planetDead;
 
-            public BombardType(Planet planet, int freeDmg, int colonyDamage, int planetDamage, double bombardDamage, int startExp)
+            public BombardType(Planet planet, Colony colony, int freeDmg, int colonyDamage, int planetDamage, double bombardDamage, int startExp)
             {
-                this.colony = planet.Colony;
+                this.colony = colony;
                 this.freeDmg = freeDmg;
                 this.colonyDamage = colonyDamage;
                 this.planetDamage = planetDamage;

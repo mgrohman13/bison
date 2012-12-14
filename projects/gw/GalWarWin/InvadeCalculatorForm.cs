@@ -13,8 +13,6 @@ namespace GalWarWin
     {
         private static InvadeCalculatorForm form;
 
-        private MainForm gameForm;
-
         private InvadeCalculatorForm()
         {
             InitializeComponent();
@@ -102,7 +100,7 @@ namespace GalWarWin
         {
             int troops = (int)this.nudTroops.Value;
             int pop = (int)this.nudPop.Value;
-            if (Sliders.SliderForm.ShowDialog(gameForm, new Sliders.Invade(troops, pop,
+            if (Sliders.SliderForm.ShowForm(new Sliders.Invade(troops, pop,
                     GetSoldiers(troops, this.nudAttSoldiers.Value), GetSoldiers(pop, this.nudDefSoldiers.Value))) > 0)
                 this.DialogResult = DialogResult.OK;
         }
@@ -112,18 +110,17 @@ namespace GalWarWin
             return (double)( pop * soldPct / 100 );
         }
 
-        public static void ShowDialog(MainForm gameForm)
+        public static void ShowForm()
         {
-            ShowDialog(gameForm, null, null);
+            ShowForm(null, null);
         }
 
-        internal static void ShowDialog(MainForm gameForm, Ship ship, Colony colony)
+        internal static void ShowForm(Ship ship, Colony colony)
         {
             if (form == null)
                 form = new InvadeCalculatorForm();
 
-            form.gameForm = gameForm;
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             form.SetValues(ship, colony);
 

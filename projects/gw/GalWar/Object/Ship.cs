@@ -714,9 +714,6 @@ namespace GalWar
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
                 double upkeepInc = costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
-                if (upkeepInc > .2)
-                {
-                }
                 this.Upkeep += Game.Random.Round(upkeepInc);
                 //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
                 this.cost += costInc - this.Upkeep * multPayoff;
@@ -872,6 +869,8 @@ namespace GalWar
             colonyDamage = GetColonyDamage(friendly, pct);
             planetDamage = GetPlanetDamage(colonyDamage, pct);
 
+            int tempPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
+
             //bombard the planet first, since it might get destroyed
             int initQuality = BombardPlanet(handler, planet, planetDamage);
             //bombard the colony second, if it exists
@@ -881,7 +880,9 @@ namespace GalWar
             if (move > 0)
                 this.Player.GoldIncome(GetUpkeepReturn(move));
 
-            if (colonyDamage > initPop)
+            if (planet.Dead)
+                colonyDamage = tempPop;
+            else if (colonyDamage > initPop)
                 colonyDamage = initPop;
         }
 

@@ -31,15 +31,15 @@ namespace GalWarWin
                 textBox1.SelectAll();
         }
 
-        public static void ShowDialog(MainForm gameForm)
+        public static void ShowForm()
         {
-            form.textBox1.Text = gameForm.GetLog();
+            form.textBox1.Text = MainForm.GameForm.GetLog();
             form.textBox1.Select(form.textBox1.Text.Length, 0);
 
             form.ShowDialog();
         }
 
-        internal static void ShowDialog(MainForm mainForm, Dictionary<ResultPoint, double> combatResults)
+        internal static void ShowForm(Dictionary<ResultPoint, double> combatResults)
         {
             var att = new SortedDictionary<int, double>();
             var def = new SortedDictionary<int, double>();
@@ -80,7 +80,7 @@ namespace GalWarWin
             form.ShowDialog();
         }
 
-        public static void ShowDialog(MainForm gameForm, List<Game.Result> results)
+        public static void ShowForm(List<Game.Result> results)
         {
             form.textBox1.Text = string.Empty;
             foreach (Game.Result result in results)
@@ -88,7 +88,7 @@ namespace GalWarWin
             form.textBox1.SelectAll();
 
             form.Size = new Size(300, 300);
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
             form.ShowDialog();
         }
 

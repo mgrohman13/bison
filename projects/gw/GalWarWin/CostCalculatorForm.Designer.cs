@@ -73,7 +73,7 @@
             this.nudProd.DecimalPlaces = 1;
             this.nudProd.Location = new System.Drawing.Point(109, 12);
             this.nudProd.Maximum = new decimal(new int[] {
-            5000,
+            4999,
             0,
             0,
             0});
@@ -96,7 +96,7 @@
             // 
             this.nudResearch.Location = new System.Drawing.Point(109, 38);
             this.nudResearch.Maximum = new decimal(new int[] {
-            65535,
+            99999,
             0,
             0,
             0});
@@ -155,7 +155,7 @@
             // 
             this.nudHP.Location = new System.Drawing.Point(109, 116);
             this.nudHP.Maximum = new decimal(new int[] {
-            5000,
+            4999,
             0,
             0,
             0});
@@ -178,7 +178,7 @@
             // 
             this.nudSpeed.Location = new System.Drawing.Point(109, 142);
             this.nudSpeed.Maximum = new decimal(new int[] {
-            25,
+            29,
             0,
             0,
             0});
@@ -200,6 +200,11 @@
             // nudUpk
             // 
             this.nudUpk.Location = new System.Drawing.Point(109, 168);
+            this.nudUpk.Maximum = new decimal(new int[] {
+            99,
+            0,
+            0,
+            0});
             this.nudUpk.Minimum = new decimal(new int[] {
             1,
             0,
@@ -219,7 +224,7 @@
             // 
             this.nudTrans.Location = new System.Drawing.Point(109, 194);
             this.nudTrans.Maximum = new decimal(new int[] {
-            5000,
+            4999,
             0,
             0,
             0});
@@ -314,7 +319,7 @@
             this.nudDS.DecimalPlaces = 1;
             this.nudDS.Location = new System.Drawing.Point(130, 246);
             this.nudDS.Maximum = new decimal(new int[] {
-            1000,
+            999,
             0,
             0,
             0});
@@ -352,7 +357,6 @@
             this.btnDone.TabIndex = 59;
             this.btnDone.Text = "Done";
             this.btnDone.UseVisualStyleBackColor = true;
-            this.btnDone.Click += new System.EventHandler(this.btnDone_Click);
             // 
             // label3
             // 

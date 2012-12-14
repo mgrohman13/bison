@@ -138,15 +138,14 @@ namespace GalWarWin.Sliders
             return -1;
         }
 
-        public static int ShowDialog(MainForm gameForm, SliderController controller)
+        public static int ShowForm(SliderController controller)
         {
             //GoldRepair gr = controller as GoldRepair;
             //if (gr != null)
             //    gr.SetSetValueDelegate(new GoldRepair.SetValueDelegate(form.SetValue));
 
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
-            controller.SetGameForm(gameForm);
             form.SetController(controller);
             if (form.ShowDialog() == DialogResult.OK)
                 return form.GetValue();

@@ -31,6 +31,15 @@ namespace GalWarWin
             }
         }
 
+        private static MainForm gameForm;
+        public static MainForm GameForm
+        {
+            get
+            {
+                return gameForm;
+            }
+        }
+
         private bool isDialog;
         private bool isBuild;
         private Tile dialogTile = null;
@@ -59,6 +68,10 @@ namespace GalWarWin
                 HideButtons(this);
                 StartGame();
                 this.AcceptButton = btnCancel;
+            }
+            else
+            {
+                gameForm = this;
             }
 
             this.hold = new HashSet<Ship>();
@@ -514,7 +527,7 @@ namespace GalWarWin
 
         private void btnGraphs_Click(object sender, EventArgs e)
         {
-            GraphsForm.ShowDialog(this, Game);
+            GraphsForm.ShowForm(Game);
         }
 
         private void btnNewGame_Click(object sender, EventArgs e)
@@ -668,7 +681,7 @@ namespace GalWarWin
             this.selectedTile = colony.Tile;
             this.RefreshAll();
 
-            return ProductionForm.ShowDialog(this, colony, accountForIncome, switchLoss, additionalLosses);
+            return ProductionForm.ShowForm(colony, accountForIncome, switchLoss, additionalLosses);
         }
 
         private void btnProdRepair_Click(object sender, EventArgs eventArgs)
@@ -727,7 +740,7 @@ namespace GalWarWin
 
             if (ship.HP < ship.MaxHP && !ship.HasRepaired)
             {
-                int HP = SliderForm.ShowDialog(this, new GoldRepair(ship));
+                int HP = SliderForm.ShowForm(new GoldRepair(ship));
 
                 if (HP > 0)
                     ship.GoldRepair(this, HP);
@@ -735,7 +748,7 @@ namespace GalWarWin
                 saved = false;
                 this.RefreshAll();
             }
-            else if (AutoRepairForm.ShowDialog(ship))
+            else if (AutoRepairForm.ShowForm(ship))
             {
                 saved = false;
                 this.RefreshAll();
@@ -744,7 +757,7 @@ namespace GalWarWin
 
         private void btnAutoRepairShips_Click(object sender, EventArgs e)
         {
-            if (RepairAllForm.ShowDialog(this))
+            if (RepairAllForm.ShowForm())
             {
                 CheckRepairedShips();
 
@@ -799,7 +812,7 @@ namespace GalWarWin
         {
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
-                CombatForm.FlushLog(this);
+                CombatForm.FlushLog();
 
                 HashSet<Ship> check = new HashSet<Ship>();
                 foreach (Ship ship in Game.CurrentPlayer.GetShips())
@@ -821,7 +834,7 @@ namespace GalWarWin
                 saved = false;
                 this.RefreshAll();
 
-                CombatForm.FlushLog(this);
+                CombatForm.FlushLog();
             }
         }
 
@@ -857,7 +870,7 @@ namespace GalWarWin
                     selectedTile = ship.Tile;
                     RefreshAll();
 
-                    int hp = SliderForm.ShowDialog(this, new GoldRepair(ship));
+                    int hp = SliderForm.ShowForm(new GoldRepair(ship));
                     if (hp > 0)
                         ship.GoldRepair(this, hp);
 
@@ -927,7 +940,7 @@ namespace GalWarWin
                 if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
                     e.Cancel = true;
                 else
-                    CombatForm.FlushLog(this);
+                    CombatForm.FlushLog();
         }
 
         private Point? clicked = null;
@@ -987,7 +1000,7 @@ namespace GalWarWin
                             Colony colony = GetSelectedColony();
                             if (colony != null && target != null && colony.Player != target.Player && colony.HP > 0)
                             {
-                                CombatForm.ShowDialog(this, colony, target);
+                                CombatForm.ShowForm(colony, target);
                             }
                             else
                             {
@@ -1021,7 +1034,7 @@ namespace GalWarWin
                                     {
                                         Colony defCol = defender as Colony;
                                         if (defCol != null && ship.Population > 0)
-                                            InvadeCalculatorForm.ShowDialog(this, ship, defCol);
+                                            InvadeCalculatorForm.ShowForm(ship, defCol);
                                         else if (defender.HP > 0)
                                             selectNext &= Attack(ship, defender);
                                     }
@@ -1117,7 +1130,7 @@ namespace GalWarWin
 
         private bool Attack(Ship attacker, Combatant defender)
         {
-            return CombatForm.ShowDialog(this, attacker, defender);
+            return CombatForm.ShowForm(attacker, defender);
         }
 
         private bool TargetPlanet(Planet targetPlanet, Ship ship, bool switchTroops)
@@ -1208,7 +1221,7 @@ namespace GalWarWin
         {
             if (from.MaxPop > 0 && to.MaxPop > 0)
             {
-                int troops = SliderForm.ShowDialog(this, new MoveTroops(Game, from, to));
+                int troops = SliderForm.ShowForm(new MoveTroops(Game, from, to));
                 if (troops > 0)
                 {
                     this.selectedTile = to.Tile;
@@ -1229,9 +1242,9 @@ namespace GalWarWin
             int gold = 0, troops = ship.AvailablePop;
             if (troops > 0)
                 if (colony.Population > 0)
-                    gold = SliderForm.ShowDialog(this, new Invade(ship, colony));
+                    gold = SliderForm.ShowForm(new Invade(ship, colony));
                 else
-                    troops = SliderForm.ShowDialog(this, new MoveTroops(Game, ship, colony));
+                    troops = SliderForm.ShowForm(new MoveTroops(Game, ship, colony));
 
             bool selectShip = true;
             if (troops > 0 && gold > -1)
@@ -1244,7 +1257,7 @@ namespace GalWarWin
             else if (ship.CurSpeed > 0 && ( colony.HP > 0 || ship.AvailablePop == 0 || ShowOption("Bombard planet?") ))
             {
                 if (colony.HP > 0 && ( !ship.DeathStar || !ShowOption("Bombard planet?") ))
-                    CombatForm.ShowDialog(this, ship, colony);
+                    CombatForm.ShowForm(ship, colony);
                 else
                     ship.Bombard(this, colony.Planet);
 
@@ -1309,7 +1322,7 @@ namespace GalWarWin
             upkeep = Player.RoundGold(upkeep);
             total = Player.RoundGold(total);
 
-            LabelsForm.ShowDialog(this, "Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(), "Ship Upk", ships.ToString(),
+            LabelsForm.ShowForm("Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(), "Ship Upk", ships.ToString(),
                     "Repairs", FormatIncome(-Game.CurrentPlayer.GetAutoRepairCost()), string.Empty, string.Empty,
                     "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
                     "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total),
@@ -1320,7 +1333,7 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
             if (colony != null)
-                PlanetDefenseForm.ShowDialog(this, colony);
+                PlanetDefenseForm.ShowForm(colony);
         }
 
         private void lbl5_Click(object sender, EventArgs e)
@@ -1335,7 +1348,7 @@ namespace GalWarWin
                 gold = Player.RoundGold(gold);
                 production = Player.RoundGold(production);
 
-                LabelsForm.ShowDialog(this, "Income", ShowOrig(colony.GetTotalIncome(), production + gold + research), "Upkeep", FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
+                LabelsForm.ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research), "Upkeep", FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
                         "Gold", ShowOrig(origGold, gold), "Research", FormatDouble(research), "Production", ShowOrig(origProd, production));
             }
         }
@@ -1364,12 +1377,12 @@ namespace GalWarWin
 
         private void btnCombat_Click(object sender, EventArgs e)
         {
-            CombatForm.ShowDialog(this);
+            CombatForm.ShowForm();
         }
 
         private void btnInvasion_Click(object sender, EventArgs e)
         {
-            InvadeCalculatorForm.ShowDialog(this);
+            InvadeCalculatorForm.ShowForm();
         }
 
         private void btnCostCalc_Click(object sender, EventArgs e)
@@ -1377,13 +1390,13 @@ namespace GalWarWin
             Colony colony = GetSelectedColony();
             if (colony == null)
                 if (this.selectedTile == null)
-                    CostCalculatorForm.ShowForm(this);
+                    CostCalculatorForm.ShowForm();
                 else
-                    CostCalculatorForm.ShowForm(this, this.selectedTile.SpaceObject as Ship);
+                    CostCalculatorForm.ShowForm(this.selectedTile.SpaceObject as Ship);
             else if (colony.Player.IsTurn)
-                CostCalculatorForm.ShowForm(this, colony.Buildable as ShipDesign);
+                CostCalculatorForm.ShowForm(colony.Buildable as ShipDesign);
             else
-                CostCalculatorForm.ShowForm(this);
+                CostCalculatorForm.ShowForm();
         }
 
         #endregion //Events
@@ -1395,7 +1408,7 @@ namespace GalWarWin
             if (!ended && Game.GetPlayers().Length < 2)
             {
                 ended = true;
-                TextForm.ShowDialog(this, Game.GetGameResult());
+                TextForm.ShowForm(Game.GetGameResult());
                 Game.AutoSave();
             }
 
@@ -1405,7 +1418,7 @@ namespace GalWarWin
 
             this.btnUndo.Enabled = Game.CanUndo();
 
-            CombatForm.ShowLog(this);
+            CombatForm.ShowLog();
         }
 
         private void InvalidateMap()
@@ -1876,7 +1889,7 @@ namespace GalWarWin
                 this.selectedTile = fromColony.Tile;
             this.RefreshAll();
 
-            return SliderForm.ShowDialog(this, new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
+            return SliderForm.ShowForm(new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender, int freeDmg)
@@ -1887,14 +1900,14 @@ namespace GalWarWin
                 this.selectedTile = defender.Tile;
             this.RefreshAll();
 
-            return CombatForm.ShowDialog(this, attacker, defender, true, freeDmg);
+            return CombatForm.ShowForm(attacker, defender, true, freeDmg);
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
         {
             this.RefreshAll();
 
-            ResearchForm.ShowDialog(this, newDesign, obsolete, oldDefense, newDefense);
+            ResearchForm.ShowForm(newDesign, obsolete, oldDefense, newDefense);
         }
 
         void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense, int startHP, int popLoss)

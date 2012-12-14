@@ -13,8 +13,6 @@ namespace GalWarWin
     {
         private static ProductionForm form = new ProductionForm();
 
-        private MainForm gameForm;
-
         private Colony colony;
 
         private bool accountForIncome;
@@ -116,16 +114,16 @@ namespace GalWarWin
             {
                 bool switchFirst = ( switchLoss && buildable != colony.Buildable );
                 int initial = GetInitialBuy(buildable, switchFirst);
-                int prod = SliderForm.ShowDialog(gameForm, new BuyProd(colony.Player, initial));
+                int prod = SliderForm.ShowForm(new BuyProd(colony.Player, initial));
                 if (prod > 0)
                 {
                     if (switchFirst)
                     {
-                        colony.StartBuilding(gameForm, buildable);
+                        colony.StartBuilding(MainForm.GameForm, buildable);
                         if (prod == initial)
                             prod = GetInitialBuy(buildable, false);
                     }
-                    colony.BuyProduction(gameForm, prod);
+                    colony.BuyProduction(MainForm.GameForm, prod);
                     RefreshBuild();
                 }
             }
@@ -202,10 +200,10 @@ namespace GalWarWin
 
         private void btnSell_Click(object sender, EventArgs e)
         {
-            int prod = SliderForm.ShowDialog(gameForm, new SellProd(colony));
+            int prod = SliderForm.ShowForm(new SellProd(colony));
             if (prod > 0)
             {
-                colony.SellProduction(gameForm, prod);
+                colony.SellProduction(MainForm.GameForm, prod);
                 RefreshBuild();
             }
         }
@@ -221,10 +219,9 @@ namespace GalWarWin
             }
         }
 
-        public static Buildable ShowDialog(MainForm gameForm, Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        public static Buildable ShowForm(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
         {
-            form.gameForm = gameForm;
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             form.SetColony(colony, accountForIncome, switchLoss, additionalLosses);
             DialogResult result = form.ShowDialog();
@@ -232,7 +229,7 @@ namespace GalWarWin
             if (result == DialogResult.OK)
                 return form.GetSelectedDesign();
             else if (result == DialogResult.Abort)
-                MainForm.Game.CurrentPlayer.MarkObsolete(gameForm, (ShipDesign)form.GetSelectedDesign(), accountForIncome, additionalLosses);
+                MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, (ShipDesign)form.GetSelectedDesign(), accountForIncome, additionalLosses);
 
             if (colony.CanBuild(colony.Buildable))
                 return colony.Buildable;

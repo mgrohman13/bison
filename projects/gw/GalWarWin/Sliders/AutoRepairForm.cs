@@ -112,7 +112,7 @@ namespace GalWarWin.Sliders
             return "0.".PadRight((int)Math.Ceiling(-Math.Log10(Consts.FLOAT_ERROR)) + 2, '0');
         }
 
-        public static bool ShowDialog(Ship ship)
+        public static bool ShowForm(Ship ship)
         {
             double result = -1;
             form.SetShip(ship);

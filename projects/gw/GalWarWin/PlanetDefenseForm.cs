@@ -14,7 +14,6 @@ namespace GalWarWin
     {
         private static PlanetDefenseForm form = new PlanetDefenseForm();
 
-        private MainForm gameForm;
         private Colony colony;
 
         private PlanetDefenseForm()
@@ -80,10 +79,9 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowDialog(MainForm gameForm, Colony colony)
+        public static void ShowForm(Colony colony)
         {
-            form.gameForm = gameForm;
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             form.SetColony(colony);
             form.ShowDialog();
@@ -91,11 +89,11 @@ namespace GalWarWin
 
         private void btnDisband_Click(object sender, EventArgs e)
         {
-            int sell = Sliders.SliderForm.ShowDialog(gameForm, new Sliders.SellPlanetDefense(colony));
+            int sell = Sliders.SliderForm.ShowForm(new Sliders.SellPlanetDefense(colony));
             if (sell > 0)
             {
-                colony.DisbandPlanetDefense(gameForm, sell, Sliders.SellPlanetDefense.Gold);
-                gameForm.RefreshAll();
+                colony.DisbandPlanetDefense(MainForm.GameForm, sell, Sliders.SellPlanetDefense.Gold);
+                MainForm.GameForm.RefreshAll();
                 SetColony(colony);
             }
         }

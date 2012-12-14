@@ -515,7 +515,7 @@ namespace GalWar
             {
                 if (this._repairShip != value)
                 {
-                    if (this._repairShip != null)
+                    if (this._repairShip != null && this._repairShip.AutoRepair == 0)
                         this._repairShip.AutoRepair = double.NaN;
                     if (value != null)
                         value.AutoRepair = 0;

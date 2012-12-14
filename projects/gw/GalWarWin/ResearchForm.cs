@@ -54,12 +54,12 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowDialog(MainForm gameForm, ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
+        public static void ShowForm(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
         {
             if (form.Width > 400)
                 form.Width -= 200;
 
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             form.shipDesignForm1.SetBuildable(newDesign);
             form.SetObsolete(obsolete, oldDefense, newDefense);

@@ -84,7 +84,7 @@ namespace GalWarWin.Sliders
 
         internal override double lblExtra_Click()
         {
-            double target = InputForm.ShowDialog(this.gameForm, "Enter maximum gold per troop left:");
+            double target = InputForm.ShowForm("Enter maximum gold per troop left:");
             if (double.IsNaN(target) || target < 0)
                 return GetValue();
 
@@ -111,7 +111,7 @@ namespace GalWarWin.Sliders
 
         internal override double lblEffcnt_Click()
         {
-            double target = InputForm.ShowDialog(this.gameForm, "Enter target percent chance of winning (0-100):");
+            double target = InputForm.ShowForm("Enter target percent chance of winning (0-100):");
             if (double.IsNaN(target) || target < 0 || target > 100)
                 return GetValue();
 

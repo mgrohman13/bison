@@ -112,11 +112,11 @@ namespace GalWarWin
             return label;
         }
 
-        public static void ShowDialog(MainForm gameForm, params string[] info)
+        public static void ShowForm(params string[] info)
         {
             form.SetData(info);
 
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
             form.ShowDialog();
         }
     }

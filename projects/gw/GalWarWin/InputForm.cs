@@ -23,9 +23,9 @@ namespace GalWarWin
             this.lblPrompt.Text = prompt;
         }
 
-        public static double ShowDialog(MainForm gameForm, string prompt)
+        public static double ShowForm(string prompt)
         {
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             form.SetPrompt(prompt);
 

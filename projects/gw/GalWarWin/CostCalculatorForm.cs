@@ -15,13 +15,46 @@ namespace GalWarWin
     {
         private static CostCalculatorForm form = new CostCalculatorForm();
 
-        private bool events = true;
+        private bool events;
 
         public CostCalculatorForm()
         {
             InitializeComponent();
+            InitRand();
+        }
 
-            Update(null);
+        private void InitRand()
+        {
+            events = false;
+
+            this.lblOverflow.Visible = false;
+
+            int research = MainForm.Game.CurrentPlayer.GetLastResearched();
+            SetValue(this.nudResearch, Game.Random.GaussianCappedInt(research,
+                    Consts.ResearchRndm, (int)Math.Min(research, Consts.StartResearch)));
+
+            double str = ShipDesign.GetAttDefStr(research);
+            SetValue(this.nudAtt, ShipDesign.MakeStat(str));
+            SetValue(this.nudDef, ShipDesign.MakeStat(str));
+            SetValue(this.nudHP, ShipDesign.MakeStat(ShipDesign.GetHPStr(ShipDesign.MakeStat(str), ShipDesign.MakeStat(str))));
+            SetValue(this.nudSpeed, ShipDesign.MakeStat(ShipDesign.GetSpeedStr(research)));
+
+            bool colony;
+            int trans;
+            double bombardDamageMult, transStr = ShipDesign.GetTransStr(research);
+            ShipDesign.DoColonyTrans(false, false, false, research, ref transStr, out colony, out trans, out bombardDamageMult);
+
+            SetValue(this.nudTrans, trans);
+            this.cbCol.Checked = colony;
+
+            SetValue(this.nudDS, GetBombardDamage(bombardDamageMult));
+
+            double totCost = Update(null);
+            events = false;
+
+            CalcCost(research, totCost);
+
+            events = true;
         }
 
         private void SetShip(Ship ship)
@@ -50,16 +83,27 @@ namespace GalWarWin
             }
             else
             {
-                double upkeepPayoff = GetUpkeepPayoff(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony,
-                        GetBombardDamageMult(ship.Att), research);
-                double upkeep = Math.Round(totCost / upkeepPayoff * Consts.CostUpkeepPct);
-                if (upkeep < 1)
-                    upkeep = 1;
-                SetValue(this.nudProd, totCost - upkeep * upkeepPayoff);
-                SetValue(this.nudUpk, upkeep);
+                CalcCost(research, totCost);
             }
 
             events = true;
+        }
+
+        private void CalcCost(double research, double totCost)
+        {
+            int att = (int)this.nudAtt.Value;
+            int def = (int)this.nudDef.Value;
+            int hp = (int)this.nudHP.Value;
+            int speed = (int)this.nudSpeed.Value;
+            int trans = (int)this.nudTrans.Value;
+            bool colony = (bool)this.cbCol.Checked;
+
+            double upkeepPayoff = GetUpkeepPayoff(att, def, hp, speed, trans, colony, GetBombardDamageMult(att), research);
+            double upkeep = Math.Round(totCost / upkeepPayoff * Consts.CostUpkeepPct);
+            if (upkeep < 1)
+                upkeep = 1;
+            SetValue(this.nudProd, totCost - upkeep * upkeepPayoff);
+            SetValue(this.nudUpk, upkeep);
         }
 
         private void SetShipDesign(ShipDesign shipDesign)
@@ -103,7 +147,7 @@ namespace GalWarWin
                 bombardDamageMult = 1;
                 ClearDS();
             }
-            this.cbDS.Checked = ( bombardDamageMult - 1 > Consts.FLOAT_ERROR );
+            this.cbDS.Checked = ( bombardDamageMult > 1 + Consts.FLOAT_ERROR );
 
             if (sender == nudProd)
             {
@@ -182,13 +226,16 @@ namespace GalWarWin
         {
             return (double)( this.nudDS.Value / att / (decimal)Consts.BombardAttackMult );
         }
-        private double GetBombardDamage(decimal bombardDamageMult)
+        private double GetBombardDamage(double bombardDamageMult)
         {
-            return (double)( this.nudAtt.Value * bombardDamageMult * (decimal)Consts.BombardAttackMult );
+            return (double)( this.nudAtt.Value * (decimal)bombardDamageMult * (decimal)Consts.BombardAttackMult );
         }
 
         private void SetValue(NumericUpDown nud, double value)
         {
+            if (nud.DecimalPlaces == 0 && (int)value != value)
+                throw new Exception();
+
             decimal setValue = (decimal)value;
             if (setValue < nud.Minimum)
             {
@@ -225,7 +272,7 @@ namespace GalWarWin
         private void cbDS_CheckedChanged(object sender, EventArgs e)
         {
             if (events && this.cbDS.Checked)
-                SetValue(this.nudDS, GetBombardDamage((decimal)ShipDesign.DeathStarAvg));
+                SetValue(this.nudDS, GetBombardDamage(ShipDesign.DeathStarAvg));
             MaintainDS(this.cbDS.Checked);
             cb_CheckedChanged(sender, e);
         }
@@ -242,26 +289,21 @@ namespace GalWarWin
                 Update(sender);
         }
 
-        private void btnDone_Click(object sender, EventArgs e)
+        public static void ShowForm()
         {
-            this.Hide();
+            ShowForm(null, null);
         }
-
-        public static void ShowForm(MainForm gameForm)
+        public static void ShowForm(Ship selected)
         {
-            ShowForm(gameForm, null, null);
+            ShowForm(selected, null);
         }
-        public static void ShowForm(MainForm gameForm, Ship selected)
+        public static void ShowForm(ShipDesign selected)
         {
-            ShowForm(gameForm, selected, null);
+            ShowForm(null, selected);
         }
-        public static void ShowForm(MainForm gameForm, ShipDesign selected)
+        private static void ShowForm(Ship ship, ShipDesign shipDesign)
         {
-            ShowForm(gameForm, null, selected);
-        }
-        private static void ShowForm(MainForm gameForm, Ship ship, ShipDesign shipDesign)
-        {
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             if (ship != null)
                 form.SetShip(ship);

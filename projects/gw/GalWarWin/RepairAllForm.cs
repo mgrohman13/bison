@@ -136,9 +136,9 @@ namespace GalWarWin
                 Recalculate();
         }
 
-        public static bool ShowDialog(MainForm gameForm)
+        public static bool ShowForm()
         {
-            gameForm.SetLocation(form);
+            MainForm.GameForm.SetLocation(form);
 
             form.Init();
 
@@ -151,7 +151,7 @@ namespace GalWarWin
                         ship.AutoRepair = form.GetAutoRepair(ship, value);
 
                 if (dialogResult == DialogResult.Yes)
-                    MainForm.Game.CurrentPlayer.AutoRepairShips(gameForm);
+                    MainForm.Game.CurrentPlayer.AutoRepairShips(MainForm.GameForm);
 
                 return true;
             }

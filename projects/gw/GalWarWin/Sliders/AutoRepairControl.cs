@@ -26,7 +26,7 @@ namespace GalWarWin.Sliders
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (AutoRepairForm.ShowDialog(ship) && this.Parent is SliderForm)
+            if (AutoRepairForm.ShowForm(ship) && this.Parent is SliderForm)
                 ( (Form)this.Parent ).DialogResult = DialogResult.Cancel;
         }
 

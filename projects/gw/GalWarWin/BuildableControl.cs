@@ -10,6 +10,8 @@ namespace GalWarWin
 {
     public partial class BuildableControl : UserControl
     {
+        private ShipDesign design;
+
         public BuildableControl()
         {
             InitializeComponent();
@@ -20,7 +22,7 @@ namespace GalWarWin
             foreach (Control control in this.Controls)
                 control.Visible = false;
 
-            ShipDesign design = buildable as ShipDesign;
+            design = buildable as ShipDesign;
             if (design != null)
             {
                 foreach (Control control in this.Controls)
@@ -70,6 +72,12 @@ namespace GalWarWin
         {
             return ( design.Colony ? "Colony Ship (" + MainForm.FormatDouble(design.GetColonizationValue(MainForm.Game.MapSize)) + ")"
                     : ( design.DeathStar ? "Death Star (" + MainForm.FormatDouble(design.BombardDamage) + ")" : string.Empty ) );
+        }
+
+        private void label_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (design != null && e.Button == MouseButtons.Right)
+                CostCalculatorForm.ShowForm(design);
         }
     }
 }

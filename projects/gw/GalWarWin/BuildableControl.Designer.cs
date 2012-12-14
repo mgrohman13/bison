@@ -57,6 +57,7 @@ namespace GalWarWin
             this.lblCost.TabIndex = 18;
             this.lblCost.Text = "lblCost";
             this.lblCost.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblCost.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblName
             // 
@@ -67,6 +68,7 @@ namespace GalWarWin
             this.lblName.TabIndex = 17;
             this.lblName.Text = "lblName";
             this.lblName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblName.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label1
             // 
@@ -76,6 +78,7 @@ namespace GalWarWin
             this.label1.TabIndex = 20;
             this.label1.Text = "Production";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label2
             // 
@@ -85,6 +88,7 @@ namespace GalWarWin
             this.label2.TabIndex = 22;
             this.label2.Text = "Attack";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblAtt
             // 
@@ -95,6 +99,7 @@ namespace GalWarWin
             this.lblAtt.TabIndex = 21;
             this.lblAtt.Text = "lblAtt";
             this.lblAtt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblAtt.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label3
             // 
@@ -104,6 +109,7 @@ namespace GalWarWin
             this.label3.TabIndex = 24;
             this.label3.Text = "Defense";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label3.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblDef
             // 
@@ -114,6 +120,7 @@ namespace GalWarWin
             this.lblDef.TabIndex = 23;
             this.lblDef.Text = "lblDef";
             this.lblDef.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblDef.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label4
             // 
@@ -123,6 +130,7 @@ namespace GalWarWin
             this.label4.TabIndex = 26;
             this.label4.Text = "HP";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label4.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblHP
             // 
@@ -133,6 +141,7 @@ namespace GalWarWin
             this.lblHP.TabIndex = 25;
             this.lblHP.Text = "lblHP";
             this.lblHP.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblHP.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label5
             // 
@@ -142,6 +151,7 @@ namespace GalWarWin
             this.label5.TabIndex = 28;
             this.label5.Text = "Speed";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label5.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblSpeed
             // 
@@ -152,6 +162,7 @@ namespace GalWarWin
             this.lblSpeed.TabIndex = 27;
             this.lblSpeed.Text = "lblSpeed";
             this.lblSpeed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblSpeed.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label6
             // 
@@ -161,6 +172,7 @@ namespace GalWarWin
             this.label6.TabIndex = 30;
             this.label6.Text = "Transport";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label6.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblTrans
             // 
@@ -171,6 +183,7 @@ namespace GalWarWin
             this.lblTrans.TabIndex = 29;
             this.lblTrans.Text = "lblTrans";
             this.lblTrans.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblTrans.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblColony
             // 
@@ -181,6 +194,7 @@ namespace GalWarWin
             this.lblColony.TabIndex = 31;
             this.lblColony.Text = "lblColony";
             this.lblColony.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblColony.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label7
             // 
@@ -190,6 +204,7 @@ namespace GalWarWin
             this.label7.TabIndex = 33;
             this.label7.Text = "Upkeep";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label7.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblUpkeep
             // 
@@ -200,6 +215,7 @@ namespace GalWarWin
             this.lblUpkeep.TabIndex = 32;
             this.lblUpkeep.Text = "lblUpkeep";
             this.lblUpkeep.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblUpkeep.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // label8
             // 
@@ -209,6 +225,7 @@ namespace GalWarWin
             this.label8.TabIndex = 35;
             this.label8.Text = "Research";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label8.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // lblResearch
             // 
@@ -219,6 +236,7 @@ namespace GalWarWin
             this.lblResearch.TabIndex = 34;
             this.lblResearch.Text = "lblResearch";
             this.lblResearch.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblResearch.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             // 
             // BuildableControl
             // 
@@ -244,6 +262,7 @@ namespace GalWarWin
             this.Controls.Add(this.lblName);
             this.Name = "BuildableControl";
             this.Size = new System.Drawing.Size(200, 230);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.label_MouseClick);
             this.ResumeLayout(false);
 
 		}

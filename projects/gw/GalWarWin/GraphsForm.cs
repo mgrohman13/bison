@@ -444,16 +444,16 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowDialog(MainForm gameForm, Game game)
+        public static void ShowForm(Game game)
         {
-            form.Location = gameForm.Location;
-            form.Size = gameForm.Size;
+            form.Location = MainForm.GameForm.Location;
+            form.Size = MainForm.GameForm.Size;
 
             form.LoadData(game);
             form.ShowDialog();
 
-            gameForm.Location = form.Location;
-            gameForm.Size = form.Size;
+            MainForm.GameForm.Location = form.Location;
+            MainForm.GameForm.Size = form.Size;
         }
 
         private void GraphsForm_SizeChanged(object sender, EventArgs e)
