@@ -145,7 +145,7 @@ namespace GalWar
         public const double PlanetDefensesSoldiersMult = DisbandPct / ProductionForSoldiers * 1.3;
         public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
 
-        public const double FLOAT_ERROR = 0.0000015050172805786133;
+        public const double FLOAT_ERROR = 0.0000024092823878163472;
 
         public static double GetMoveOrderGold(int numPlayers)
         {
