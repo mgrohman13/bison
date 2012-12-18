@@ -744,26 +744,23 @@ namespace GalWarWin
 
                 if (HP > 0)
                     ship.GoldRepair(this, HP);
-
-                saved = false;
-                this.RefreshAll();
             }
-            else if (AutoRepairForm.ShowForm(ship))
+            else
             {
-                saved = false;
-                this.RefreshAll();
+                AutoRepairForm.ShowForm(ship);
             }
+
+            saved = false;
+            this.RefreshAll();
         }
 
         private void btnAutoRepairShips_Click(object sender, EventArgs e)
         {
             if (RepairAllForm.ShowForm())
-            {
                 CheckRepairedShips();
 
-                saved = false;
-                this.RefreshAll();
-            }
+            saved = false;
+            this.RefreshAll();
         }
 
         private void btnDisband_Click(object sender, EventArgs e)
@@ -864,7 +861,7 @@ namespace GalWarWin
                 if (!ship.HasRepaired && ship.HP < ship.MaxHP && double.IsNaN(ship.AutoRepair))
                 {
                     selectedTile = ship.Tile;
-                    RefreshAll();
+                    this.RefreshAll();
 
                     int hp = SliderForm.ShowForm(new GoldRepair(ship));
                     if (hp > 0)
@@ -875,6 +872,8 @@ namespace GalWarWin
                         break;
                 }
 
+            saved = false;
+            this.RefreshAll();
             return end;
         }
 

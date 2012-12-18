@@ -668,11 +668,16 @@ namespace GalWar
 
         internal void LevelUp(IEventHandler handler)
         {
-            handler.OnLevel(this, 0, GetExp(0), 0);
-
+            bool first = true;
             float needExp;
             while (this.HP > 0 && !this.Dead && this.curExp > ( needExp = (float)( this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ) ))
             {
+                if (first)
+                {
+                    handler.OnLevel(this, 0, GetExp(0), 0);
+                    first = false;
+                }
+
                 double costInc = this.GetCostLastResearched();
 
                 //temporarily add upkeep to cost, using pre-level payoff and mult

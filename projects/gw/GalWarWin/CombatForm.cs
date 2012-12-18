@@ -337,17 +337,10 @@ end:
 
             if (btnAttack.DialogResult == DialogResult.None)
             {
-                Flush();
                 if (defShip == null)
-                {
                     attShip.Bombard(MainForm.GameForm, ( (Colony)defender ).Planet);
-                    if (!attShip.DeathStar)
-                        Flush();
-                }
                 else
-                {
                     attShip.AttackShip(MainForm.GameForm, defShip);
-                }
 
                 RefreshShips();
                 MainForm.GameForm.RefreshAll();
@@ -419,10 +412,7 @@ end:
             if (isConfirmation)
             {
                 Form.btnAttack.DialogResult = DialogResult.Yes;
-                bool retVal = ( Form.ShowDialog() == DialogResult.Yes );
-                if (retVal)
-                    Form.ConfirmCombat(attacker, defender);
-                return retVal;
+                return ( Form.ShowDialog() == DialogResult.Yes );
             }
             else
             {
@@ -463,26 +453,32 @@ end:
 
         #region Logging
 
-        private Queue<ILogType> log = new Queue<ILogType>();
+        private List<ILogType> log = new List<ILogType>();
 
         public static void OnCombat(Combatant attacker, Combatant defender, int attack, int defense)
         {
-            Form.log.Enqueue(new CombatType(attacker, defender, attack, defense));
+            Form.Enqueue(new CombatType(attacker, defender, attack, defense));
         }
 
         public static void OnLevel(Ship ship, double pct, int last, int needed)
         {
-            Form.log.Enqueue(new LevelUpType(ship, pct, last, needed));
+            Form.Enqueue(new LevelUpType(ship, pct, last, needed));
         }
 
         public static void OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
         {
-            Form.log.Enqueue(new BombardType(ship, planet, freeDmg, colonyDamage, planetDamage));
+            Form.Enqueue(new BombardType(ship, planet, freeDmg, colonyDamage, planetDamage));
         }
 
         public static void OnInvade(Ship ship, Colony colony)
         {
-            Form.log.Enqueue(new InvadeType(ship, colony));
+            Form.Enqueue(new InvadeType(ship, colony));
+        }
+
+        private void Enqueue(ILogType entry)
+        {
+            if (!( log.Count > 0 && log[log.Count - 1].Combine(entry) ))
+                log.Add(entry);
         }
 
         public static void FlushLog()
@@ -494,20 +490,6 @@ end:
         {
             if (Form.chkLog.Checked && Form.log.Count > 0)
                 Form.ShowLog();
-        }
-
-        private void ConfirmCombat(Combatant attacker, Combatant defender)
-        {
-            if (log.Count > 0 && attacker is Ship)
-            {
-                ILogType[] array = log.ToArray();
-                BombardType bombardType = array[array.Length - 1] as BombardType;
-                if (bombardType != null && attacker == bombardType.Ship)
-                {
-                    Flush();
-                    BombardType.ConfirmCombat = true;
-                }
-            }
         }
 
         private void btnLog_Click(object sender, EventArgs e)
@@ -523,44 +505,9 @@ end:
 
         private void Flush()
         {
-            if (log.Count > 0)
-            {
-                Type previous = null;
-                List<ILogType> list = new List<ILogType>();
-                foreach (ILogType type in log)
-                {
-                    Type current = type.GetType();
-                    if (previous != null && previous != current)
-                    {
-                        list[0].Log(list);
-                        list.Clear();
-                    }
-                    previous = current;
-                    list.Add(type);
-                }
-                list[0].Log(list);
-                log.Clear();
-            }
-        }
-
-        private delegate Ship GetShipDelegate(ILogType logType);
-        private static List<int[]> SplitShips(List<ILogType> log, GetShipDelegate GetShip)
-        {
-            List<int[]> partitions = new List<int[]>();
-            Ship previous = null;
-            int start = 0;
-            for (int index = 0 ; index < log.Count ; ++index)
-            {
-                Ship current = GetShip(log[index]);
-                if (previous != null && previous != current)
-                {
-                    partitions.Add(new int[] { start, index - 1 });
-                    start = index;
-                }
-                previous = current;
-            }
-            partitions.Add(new int[] { start, log.Count - 1 });
-            return partitions;
+            foreach (ILogType type in log)
+                type.Log();
+            log.Clear();
         }
 
         private static string Format(int value)
@@ -593,7 +540,7 @@ end:
             return ( isNeg ? '-' : value > 0 ? '+' : ' ' ) + MainForm.FormatDouble(value).PadLeft(4);
         }
 
-        private class CombatType : ILogType
+        private class CombatType : BaseLogType<CombatType>
         {
             private readonly Combatant attacker, defender;
             private readonly int attack, defense;
@@ -628,40 +575,45 @@ end:
                 }
             }
 
-            public void Log(List<ILogType> log)
+            protected override bool CanCombine(CombatType other)
+            {
+                return ( this.attacker == other.attacker && this.defender == other.defender && base.others.Count < this.att );
+            }
+
+            public override void Log()
             {
                 bool attShip = !( this.attacker is Ship ), defShip = !( this.defender is Ship );
 
                 MainForm.GameForm.LogMsg("{10} {0} ({1}, {2}{3}{8}) : {11} {4} ({5}, {6}{7}{9})", this.attacker.ToString(), this.att, this.attCurHP,
-                           attShip ? string.Empty : ( "/" + this.attMaxHP ), this.defender.ToString(), this.def, this.defCurHP,
-                           defShip ? string.Empty : ( "/" + this.defMaxHP ), attShip ? string.Empty : ( ", " + this.attExp ),
-                           defShip ? string.Empty : ( ", " + this.defExp ), this.attacker.Player.Name, this.defender.Player.Name);
+                        attShip ? string.Empty : ( "/" + this.attMaxHP ), this.defender.ToString(), this.def, this.defCurHP,
+                        defShip ? string.Empty : ( "/" + this.defMaxHP ), attShip ? string.Empty : ( ", " + this.attExp ),
+                        defShip ? string.Empty : ( ", " + this.defExp ), this.attacker.Player.Name, this.defender.Player.Name);
 
-                int rounds = log.Count - 1;
+                int rounds = base.others.Count;
                 int attDmg = 0, defDmg = 0, attTot = 0, defTot = 0, attPop = this.attPop, defPop = this.defPop;
-                for (int round = 1 ; round <= rounds ; ++round)
+                for (int round = 0 ; round < rounds ; )
                 {
-                    CombatType combatType = (CombatType)log[round];
+                    CombatType combatType = base.others[round];
                     int attack = combatType.attack, defense = combatType.defense;
 
                     int damage = attack - defense, popLoss = 0;
                     if (damage > 0)
                     {
                         attDmg += damage;
-                        popLoss = combatType.defPop - defPop;
+                        popLoss = defPop - combatType.defPop;
                         defPop = combatType.defPop;
                     }
                     else if (damage < 0)
                     {
                         defDmg += damage;
-                        popLoss = combatType.attPop - attPop;
+                        popLoss = attPop - combatType.attPop;
                         attPop = combatType.attPop;
                     }
                     attTot += attack;
                     defTot += defense;
 
                     MainForm.GameForm.LogMsg("{3}={0} :{1} ({2}){4}", Format(attack, 3), Format(defense, 4), Format(damage, true),
-                            Format(round), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : string.Empty);
+                            Format(++round), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : string.Empty);
                 }
 
                 double attAdv = attTot - this.att * rounds / 2.0;
@@ -672,7 +624,7 @@ end:
             }
         }
 
-        private class LevelUpType : ILogType
+        private class LevelUpType : BaseLogType<LevelUpType>
         {
             private readonly Ship ship;
             private readonly double pct;
@@ -694,42 +646,32 @@ end:
                 maxHP = this.ship.MaxHP;
             }
 
-            public void Log(List<ILogType> log)
+            protected override bool CanCombine(LevelUpType other)
             {
-                foreach (int[] partitions in SplitShips(log, delegate(ILogType logType)
-                {
-                    return ( (LevelUpType)logType ).ship;
-                }))
-                    LogShip(log, partitions[0], partitions[1]);
+                return ( this.ship == other.ship );
             }
-            private static void LogShip(List<ILogType> log, int start, int end)
+
+            public override void Log()
             {
-                if (end - start > 0)
+                MainForm.GameForm.LogMsg("{2} {0} - {1}", this.ship.ToString(), MainForm.FormatInt(this.last), this.ship.Player.Name);
+
+                Ship.ExpType expType = this.expType;
+                foreach (LevelUpType level in base.others)
                 {
-                    LevelUpType first = (LevelUpType)log[start];
-                    LevelUpType last = (LevelUpType)log[end];
-
-                    MainForm.GameForm.LogMsg("{2} {0} - {1}", first.ship.ToString(), MainForm.FormatInt(first.last), first.ship.Player.Name);
-
-                    Ship.ExpType expType = first.expType;
-                    for (int index = start ; ++index <= end ; )
-                    {
-                        LevelUpType level = (LevelUpType)log[index];
-                        MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", expType.ToString().PadRight(5, ' '),
-                                MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
-                        expType = level.expType;
-                    }
-
-                    MainForm.GameForm.LogMsg("({0}) {2}/{3} - {1}", last.expType.ToString().PadRight(5, ' '), last.totalExp, last.curHP, last.maxHP);
-                    MainForm.GameForm.LogMsg();
+                    MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", expType.ToString().PadRight(5, ' '),
+                            MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
+                    expType = level.expType;
                 }
+
+                LevelUpType last = base.others[base.others.Count - 1];
+
+                MainForm.GameForm.LogMsg("({0}) {2}/{3} - {1}", last.expType.ToString().PadRight(5, ' '), last.totalExp, last.curHP, last.maxHP);
+                MainForm.GameForm.LogMsg();
             }
         }
 
-        private class BombardType : ILogType
+        private class BombardType : BaseLogType<BombardType>
         {
-            public static bool ConfirmCombat = false;
-
             public readonly Ship Ship;
 
             private readonly Planet planet;
@@ -760,47 +702,36 @@ end:
                 }
             }
 
-            public void Log(List<ILogType> log)
+            protected override bool CanCombine(BombardType other)
             {
-                foreach (int[] partitions in SplitShips(log, delegate(ILogType logType)
-                {
-                    return ( (BombardType)logType ).Ship;
-                }))
-                    LogShip(log, partitions[0], partitions[1]);
+                return ( this.Ship == other.Ship && this.planet == other.planet );
             }
-            private static void LogShip(List<ILogType> log, int start, int end)
+
+            public override void Log()
             {
-                BombardType first = (BombardType)log[start];
+                MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
+                        MainForm.FormatDouble(this.bombardDamage), this.totalExp,
+                        this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
+                        this.colony == null ? "" : this.colonyHP + ", ", this.quality,
+                        this.colony == null ? "" : ", " + this.colonyPopulation);
 
-                Colony colony = first.colony;
-
-                MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", first.Ship.Player.Name, first.Ship.ToString(),
-                        MainForm.FormatDouble(first.bombardDamage), first.totalExp,
-                        colony == null ? "Uncolonized" : colony.Player.Name + " Colony",
-                        colony == null ? "" : first.colonyHP + ", ", first.quality,
-                        colony == null ? "" : ", " + first.colonyPopulation);
-
-                for (int index = start ; index < end ; index += 2)
+                for (int index = -1 ; index < base.others.Count ; index += 2)
                 {
-                    BombardType prev = (BombardType)log[index];
+                    BombardType prev = this;
+                    if (index >= 0)
+                        prev = base.others[index];
                     BombardType next = null;
-                    if (ConfirmCombat)
-                    {
-                        ConfirmCombat = false;
-                        --index;
-                        next = prev;
-                    }
-                    else if (index + 1 <= end)
-                    {
-                        next = (BombardType)log[index + 1];
-                    }
-                    int freeDmg = prev.freeDmg, colonyDamage = 0, planetDamage = 0;
-                    bool planetDead = false;
+                    if (index + 1 < base.others.Count)
+                        next = base.others[index + 1];
+
+                    int freeDmg = prev.freeDmg, colonyDamage = prev.colonyDamage, planetDamage = prev.planetDamage;
+                    bool planetDead = prev.planetDead;
                     if (next != null)
                     {
-                        colonyDamage = next.colonyDamage;
-                        planetDamage = next.planetDamage;
-                        planetDead = next.planetDead;
+                        freeDmg += next.freeDmg;
+                        colonyDamage += next.colonyDamage;
+                        planetDamage += next.planetDamage;
+                        planetDead |= next.planetDead;
                     }
 
                     string logMsg;
@@ -820,8 +751,6 @@ end:
                 }
 
                 MainForm.GameForm.LogMsg();
-
-
             }
             private static string LogBombardDamage(string logMsg, int amt, string type)
             {
@@ -835,7 +764,7 @@ end:
             }
         }
 
-        private class InvadeType : ILogType
+        private class InvadeType : BaseLogType<InvadeType>
         {
             private readonly Ship ship;
             private readonly Colony colony;
@@ -846,14 +775,38 @@ end:
                 this.colony = colony;
             }
 
-            public void Log(List<ILogType> log)
+            protected override bool CanCombine(InvadeType other)
+            {
+                return false;
+            }
+
+            public override void Log()
             {
             }
         }
 
+        private abstract class BaseLogType<T> : ILogType where T : class, ILogType
+        {
+            protected List<T> others = new List<T>();
+
+            public bool Combine(ILogType other)
+            {
+                T combine = ( other as T );
+                bool combined = ( combine != null && this.CanCombine(combine) );
+                if (combined)
+                    others.Add(combine);
+                return combined;
+            }
+
+            protected abstract bool CanCombine(T other);
+
+            public abstract void Log();
+        }
+
         private interface ILogType
         {
-            void Log(List<ILogType> log);
+            bool Combine(ILogType other);
+            void Log();
         }
 
         #endregion //Logging

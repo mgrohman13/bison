@@ -1,3 +1,4 @@
+logging bombard broken up by combat
 compare two ships with cost calc
 combat calc show probability table
 log more stuff!
