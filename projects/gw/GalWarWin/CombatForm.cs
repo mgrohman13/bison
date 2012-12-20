@@ -470,9 +470,9 @@ end:
             Form.Enqueue(new BombardType(ship, planet, freeDmg, colonyDamage, planetDamage));
         }
 
-        public static void OnInvade(Ship ship, Colony colony)
+        public static void OnInvade(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
         {
-            Form.Enqueue(new InvadeType(ship, colony));
+            Form.Enqueue(new InvadeType(ship, colony, attackers, attSoldiers, gold, attack, defense));
         }
 
         private void Enqueue(ILogType entry)
@@ -696,12 +696,12 @@ end:
                 colony = planet.Colony;
                 bombardDamage = ship.BombardDamage;
                 totalExp = ship.GetTotalExp();
-                quality = planet.Quality;
+                quality = planet.Quality + planetDamage;
                 planetDead = planet.Dead;
                 if (colony != null)
                 {
-                    colonyHP = colony.HP;
-                    colonyPopulation = colony.Population;
+                    colonyHP = colony.HP + freeDmg;
+                    colonyPopulation = colony.Population + colonyDamage;
                 }
             }
 
@@ -715,8 +715,8 @@ end:
                 MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
                         MainForm.FormatDouble(this.bombardDamage), this.totalExp,
                         this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
-                        this.colony == null ? "" : this.colonyHP + ", ", this.quality,
-                        this.colony == null ? "" : ", " + this.colonyPopulation);
+                        this.colony == null ? string.Empty : this.colonyHP + ", ", this.quality,
+                        this.colony == null ? string.Empty : ", " + this.colonyPopulation);
 
                 Log(this);
                 for (int index = 0 ; index < base.others.Count ; ++index)
@@ -758,20 +758,76 @@ end:
         {
             private readonly Ship ship;
             private readonly Colony colony;
+            private readonly int attackers;
+            private readonly double attSoldiers, gold, attack, defense;
 
-            public InvadeType(Ship ship, Colony colony)
+            private readonly int quality, defenders, att, def, hp;
+            private readonly double defSoldiers;
+
+            public InvadeType(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
             {
                 this.ship = ship;
                 this.colony = colony;
+                this.attackers = attackers;
+                this.attSoldiers = attSoldiers;
+                this.gold = gold;
+                this.attack = attack;
+                this.defense = defense;
+
+                quality = colony.Planet.Quality;
+                defenders = colony.Population;
+                defSoldiers = colony.TotalSoldiers;
+                att = colony.Att;
+                def = colony.Def;
+                hp = colony.HP;
             }
 
             protected override bool CanCombine(InvadeType other)
             {
-                return false;
+                return ( base.others.Count < 2 );
             }
 
             public override void Log()
             {
+                InvadeType mid = base.others[0];
+                InvadeType after = base.others[1];
+
+                MainForm.GameForm.LogMsg("{0} {1} ({2}) : {3} Colony ({4})", this.ship.Player.Name, this.ship.ToString(),
+                        MainForm.FormatPct(after.attack, true), this.colony.Player.Name, MainForm.FormatPct(after.defense, true));
+                this.LogLine();
+
+                if (this.defenders > 0)
+                {
+                    mid.LogLine();
+                    after.LogLine();
+
+                    if (after.gold > Consts.FLOAT_ERROR)
+                        MainForm.GameForm.LogMsg("Gold -{0}{1}", MainForm.FormatUsuallyInt(after.gold),
+                                after.gold > this.gold - Consts.FLOAT_ERROR ? string.Empty : "/" + MainForm.FormatInt(this.gold));
+                    if (this.quality != after.quality)
+                        MainForm.GameForm.LogMsg("Quality {0} -> {1}{2}", this.quality,
+                                after.quality < 0 ? "Destroyed" : after.quality.ToString(),
+                                after.quality < 0 ? string.Empty : " (" + ( after.quality - this.quality ) + ")");
+                    if (( this.att != after.att || this.def != after.def || this.hp != after.hp )
+                            && after.attackers == 0 && after.quality >= 0)
+                        MainForm.GameForm.LogMsg("Defenses  {0} : {1} ({2})  ->  {3} : {4} ({5})",
+                                this.att, this.def, this.hp, after.att, after.def, after.hp);
+                }
+
+                MainForm.GameForm.LogMsg();
+            }
+            private void LogLine()
+            {
+                MainForm.GameForm.LogMsg("{0} ({1}) : {2} ({3})", GetPop(this.attackers), GetSoldiers(this.attackers, this.attSoldiers),
+                        GetPop(this.defenders), GetSoldiers(this.defenders, this.defSoldiers));
+            }
+            private static string GetPop(int pop)
+            {
+                return pop.ToString().PadLeft(4, ' ');
+            }
+            private static string GetSoldiers(int pop, double soldiers)
+            {
+                return MainForm.FormatPct(PopCarrier.GetSoldiers(pop, soldiers, 1), true).PadLeft(6, ' ');
             }
         }
 

@@ -321,9 +321,14 @@ namespace GalWar
 
         internal void AddGold(double gold)
         {
-            AddGold(gold, RoundGold(gold));
+            double rounded;
+            AddGold(gold, out rounded);
         }
-
+        internal void AddGold(double gold, out double rounded)
+        {
+            rounded = RoundGold(gold);
+            AddGold(gold, rounded);
+        }
         internal void AddGold(double gold, double rounded)
         {
             if (rounded < -this.goldValue)
@@ -347,7 +352,6 @@ namespace GalWar
         {
             AddGold(-gold);
         }
-
         internal void SpendGold(double gold, double rounded)
         {
             AddGold(-gold, -rounded);

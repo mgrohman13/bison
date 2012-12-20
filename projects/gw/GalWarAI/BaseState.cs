@@ -94,7 +94,7 @@ namespace GalWarAI
             //do nothing
         }
 
-        void IEventHandler.OnInvade(Ship ship, Colony colony)
+        void IEventHandler.OnInvade(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
         {
             //do nothing
         }

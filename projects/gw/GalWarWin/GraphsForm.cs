@@ -173,54 +173,59 @@ namespace GalWarWin
             return label;
         }
 
-        private void groupBox1_Paint(object sender, PaintEventArgs e)
+        private void groupBox1_Paint(object sender, PaintEventArgs paintEventArgs)
         {
-            //try
-            //{
-            Graphs.GraphType type = (Graphs.GraphType)cbxType.SelectedItem;
-            if (checkBox1.Checked)
-                if (type == Graphs.GraphType.Armada)
-                {
-                    type = Graphs.GraphType.ArmadaDamaged;
-                }
-                else if (type == Graphs.GraphType.Population)
-                {
-                    type = Graphs.GraphType.PopulationTrans;
-                    checks[type][0] = checkBox1.Checked;
-                    checks[type][1] = chkSmooth.Checked;
-                }
-                else if (type == Graphs.GraphType.Research)
-                {
-                    type = Graphs.GraphType.TotalIncome;
-                }
-
-            Graphs.GraphType popType = Graphs.GraphType.Population;
-            if (checks[popType][0])
-                popType = Graphs.GraphType.PopulationTrans;
-
-            float[, ,] d1 = null;
-            float[, ,] d2 = null;
-            Dictionary<int, Player> p1 = null;
-            Dictionary<int, Player> p2 = null;
-            float? maxY = null;
-            if (checkBox1.Checked && type == Graphs.GraphType.Quality)
+            Graphics g = paintEventArgs.Graphics;
+            try
             {
-                d1 = game.Graphs.Get(type, out p1);
-                d2 = game.Graphs.Get(popType, out p2);
-                maxY = (float)Math.Ceiling(Math.Max(GetMaxY(d1), GetMaxY(d2)));
+                Graphs.GraphType type = (Graphs.GraphType)cbxType.SelectedItem;
+                if (checkBox1.Checked)
+                    if (type == Graphs.GraphType.Armada)
+                    {
+                        type = Graphs.GraphType.ArmadaDamaged;
+                    }
+                    else if (type == Graphs.GraphType.Population)
+                    {
+                        type = Graphs.GraphType.PopulationTrans;
+                        checks[type][0] = checkBox1.Checked;
+                        checks[type][1] = chkSmooth.Checked;
+                    }
+                    else if (type == Graphs.GraphType.Research)
+                    {
+                        type = Graphs.GraphType.TotalIncome;
+                    }
+
+                Graphs.GraphType popType = Graphs.GraphType.Population;
+                if (checks[popType][0])
+                    popType = Graphs.GraphType.PopulationTrans;
+
+                float[, ,] d1 = null;
+                float[, ,] d2 = null;
+                Dictionary<int, Player> p1 = null;
+                Dictionary<int, Player> p2 = null;
+                float? maxY = null;
+                if (checkBox1.Checked && type == Graphs.GraphType.Quality)
+                {
+                    d1 = game.Graphs.Get(type, out p1);
+                    d2 = game.Graphs.Get(popType, out p2);
+                    maxY = (float)Math.Ceiling(Math.Max(GetMaxY(d1), GetMaxY(d2)));
+                }
+
+                DrawGraph(g, type, d1, p1, maxY);
+
+                if (checkBox1.Checked && type == Graphs.GraphType.Quality)
+                    DrawGraph(g, popType, d2, p2, maxY);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
 
-            DrawGraph(e, type, d1, p1, maxY);
-
-            if (checkBox1.Checked && type == Graphs.GraphType.Quality)
-                DrawGraph(e, popType, d2, p2, maxY);
-            //}
-            //catch (Exception exception)
-            //{
-            //}
+                using (Font font = new Font("arial", 13f))
+                    g.DrawString(e.ToString(), font, Brushes.White, 0, 0);
+            }
         }
 
-        private void DrawGraph(PaintEventArgs e, Graphs.GraphType type, float[, ,] data, Dictionary<int, Player> playerIndexes, float? maxY)
+        private void DrawGraph(Graphics g, Graphs.GraphType type, float[, ,] data, Dictionary<int, Player> playerIndexes, float? maxY)
         {
             float width = cbxType.Location.X - 3 * padding;
             float height = groupBox1.ClientSize.Height - 2 * padding;
@@ -243,7 +248,7 @@ namespace GalWarWin
 
                 if (xScale > 0 && yScale > 0)
                 {
-                    DrawGrid(e, height, maxX, maxY.Value, xScale, ref yScale);
+                    DrawGrid(g, height, maxX, maxY.Value, xScale, ref yScale);
 
                     Dictionary<int, List<PointF>> points = new Dictionary<int, List<PointF>>();
                     int yLen = data.GetLength(1);
@@ -264,7 +269,7 @@ namespace GalWarWin
                         }
 
                     foreach (int y in Game.Random.Iterate(yLen))
-                        e.Graphics.DrawLines(pens[y], points[y].ToArray());
+                        g.DrawLines(pens[y], points[y].ToArray());
                 }
             }
         }
@@ -333,39 +338,39 @@ namespace GalWarWin
             return (float)Math.Floor(maxY) + 1f;
         }
 
-        private void DrawGrid(PaintEventArgs e, float height, float maxX, float maxY, float xScale, ref float yScale)
+        private void DrawGrid(Graphics g, float height, float maxX, float maxY, float xScale, ref float yScale)
         {
             int place = GetPlace(maxY);
             long value;
 
-            DrawYLine(e, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
+            DrawYLine(g, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
 
-            DrawYLine(e, maxX, xScale, yScale, 0, place);
-            DrawYLine(e, maxX, xScale, yScale, maxY * 1 / 4f, place);
-            DrawYLine(e, maxX, xScale, yScale, maxY * 2 / 4f, place);
-            DrawYLine(e, maxX, xScale, yScale, maxY * 3 / 4f, place);
+            DrawYLine(g, maxX, xScale, yScale, 0, place);
+            DrawYLine(g, maxX, xScale, yScale, maxY * 1 / 4f, place);
+            DrawYLine(g, maxX, xScale, yScale, maxY * 2 / 4f, place);
+            DrawYLine(g, maxX, xScale, yScale, maxY * 3 / 4f, place);
 
-            DrawXLine(e, value, xScale, yScale, 0);
-            DrawXLine(e, value, xScale, yScale, (int)Math.Round(maxX * 1 / 4f));
-            DrawXLine(e, value, xScale, yScale, (int)Math.Round(maxX * 2 / 4f));
-            DrawXLine(e, value, xScale, yScale, (int)Math.Round(maxX * 3 / 4f));
-            DrawXLine(e, value, xScale, yScale, (int)Math.Ceiling(maxX));
+            DrawXLine(g, value, xScale, yScale, 0);
+            DrawXLine(g, value, xScale, yScale, (int)Math.Round(maxX * 1 / 4f));
+            DrawXLine(g, value, xScale, yScale, (int)Math.Round(maxX * 2 / 4f));
+            DrawXLine(g, value, xScale, yScale, (int)Math.Round(maxX * 3 / 4f));
+            DrawXLine(g, value, xScale, yScale, (int)Math.Ceiling(maxX));
         }
 
-        private void DrawXLine(PaintEventArgs e, long maxY, float xScale, float yScale, int x)
+        private void DrawXLine(Graphics g, long maxY, float xScale, float yScale, int x)
         {
             PointF startPoint = GetPoint(x, 0, xScale, yScale);
-            DrawString(e, x.ToString(), startPoint, true);
-            e.Graphics.DrawLine(Pens.Black, startPoint, GetPoint(x, maxY, xScale, yScale));
+            DrawString(g, x.ToString(), startPoint, true);
+            g.DrawLine(Pens.Black, startPoint, GetPoint(x, maxY, xScale, yScale));
         }
 
-        private void DrawYLine(PaintEventArgs e, float maxX, float xScale, float yScale, float y, int place)
+        private void DrawYLine(Graphics g, float maxX, float xScale, float yScale, float y, int place)
         {
             long value;
-            DrawYLine(e, -1, maxX, xScale, ref yScale, ref y, place, false, out value);
+            DrawYLine(g, -1, maxX, xScale, ref yScale, ref y, place, false, out value);
         }
 
-        private void DrawYLine(PaintEventArgs e, float height, float maxX, float xScale, ref float yScale, ref float y, int place, bool ceil, out long value)
+        private void DrawYLine(Graphics g, float height, float maxX, float xScale, ref float yScale, ref float y, int place, bool ceil, out long value)
         {
             long div = GetDiv(place);
             value = GetValue(y, ceil, div);
@@ -376,15 +381,15 @@ namespace GalWarWin
             }
 
             PointF startPoint = GetPoint(0, value, xScale, yScale);
-            DrawString(e, GetString(value, div, place), startPoint, false);
-            e.Graphics.DrawLine(Pens.Black, startPoint, GetPoint((float)Math.Ceiling(maxX), value, xScale, yScale));
+            DrawString(g, GetString(value, div, place), startPoint, false);
+            g.DrawLine(Pens.Black, startPoint, GetPoint((float)Math.Ceiling(maxX), value, xScale, yScale));
         }
 
-        private void DrawString(PaintEventArgs e, string text, PointF point, bool xLine)
+        private void DrawString(Graphics g, string text, PointF point, bool xLine)
         {
             const float padding = 6;
             Font font = checkBox1.Font;
-            SizeF textSize = e.Graphics.MeasureString(text, font);
+            SizeF textSize = g.MeasureString(text, font);
             float x = point.X;
             float y = point.Y;
             if (xLine)
@@ -397,7 +402,7 @@ namespace GalWarWin
                 x -= textSize.Width + padding;
                 y -= textSize.Height / 2f;
             }
-            e.Graphics.DrawString(text, font, Brushes.Black, x, y);
+            g.DrawString(text, font, Brushes.Black, x, y);
         }
 
         private PointF GetPoint(float x, float y, float xScale, float yScale)

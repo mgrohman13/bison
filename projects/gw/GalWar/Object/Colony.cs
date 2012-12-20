@@ -267,14 +267,22 @@ namespace GalWar
             return exp;
         }
 
-        internal void Invasion(IEventHandler handler, Player attackPlayer, ref int attackers, ref double soldiers, int gold)
+        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double soldiers, int gold)
         {
+            handler.OnInvade(ship, this, attackers, soldiers, gold, 0, 0);
+
+            Player attackPlayer = ship.Player;
+
             double initAttackers = attackers;
             double initPop = this.Population;
 
             double planetDamageMult = Consts.GetPlanetDamageMult();
 
-            TroopBattle(attackPlayer, ref attackers, ref soldiers, gold, planetDamageMult);
+            double goldSpent = gold, attack = 1, defense = 0;
+            if (this.Population > 0)
+                TroopBattle(attackPlayer, ref attackers, ref soldiers, gold, planetDamageMult, out goldSpent, out attack, out defense);
+
+            handler.OnInvade(ship, this, attackers, soldiers, goldSpent, attack, defense);
 
             //damage planet for every dead troop
             double deadPop = ( initAttackers - attackers + initPop - this.Population );
@@ -289,6 +297,8 @@ namespace GalWar
             deadPop *= Consts.TroopExperienceMult;
             this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, deadPop);
             soldiers += GetExperienceSoldiers(attackPlayer, attackers, initAttackers, deadPop);
+
+            handler.OnInvade(ship, this, attackers, soldiers, goldSpent, attack, defense);
 
             //in the event of a tie, the defender keeps the planet with the remaining population of 0
             if (attackers > 0 && !Planet.Dead)
@@ -305,57 +315,60 @@ namespace GalWar
             return Game.Random.GaussianCapped((float)( mult / Consts.ProductionForSoldiers ), Consts.SoldiersRndm);
         }
 
-        private void TroopBattle(Player attackPlayer, ref int attackers, ref double soldiers, int gold, double planetDamageMult)
+        private void TroopBattle(Player attackPlayer, ref int attackers, ref double soldiers, int gold, double planetDamageMult,
+                out double goldSpent, out double attack, out double defense)
         {
+            goldSpent = gold;
+
             double initAttackers = attackers;
             double initDefenders = this.Population;
 
-            if (initDefenders > 0)
+            defense = Consts.GetPlanetDefenseStrength(this.Population, this.TotalSoldiers);
+            attack = Consts.GetInvasionStrength(attackers, soldiers, gold, initDefenders * defense);
+            double attMult = attack / defense;
+
+            double attStr = attMult * initAttackers;
+
+            double attackersLeft = ( attStr - initDefenders ) / attMult;
+            double defendersLeft = initDefenders - attStr;
+
+            double deadPop = initAttackers + initDefenders;
+            if (attStr > initDefenders)
+                deadPop -= attackersLeft;
+            else
+                deadPop -= defendersLeft;
+
+            if (Math.Floor(Math.Floor(deadPop) * planetDamageMult) > Planet.Quality)
             {
-                double defense = Consts.GetPlanetDefenseStrength(this.Population, this.TotalSoldiers);
-                double attMult = Consts.GetInvasionStrength(attackers, soldiers, gold, initDefenders * defense) / defense;
+                double deadAttackers = (int)Math.Ceiling(( Planet.Quality + 1 ) / planetDamageMult) / ( attMult + 1 );
+                deadAttackers = Math.Min(Math.Ceiling(deadAttackers), Math.Ceiling(deadAttackers * attMult) / attMult);
+                double deadDefenders = attMult * deadAttackers;
 
-                double attStr = attMult * initAttackers;
+                //only pay for the portion of gold spent until the planet is destroyed
+                double addGold;
+                attackPlayer.AddGold(gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers, ( initDefenders - deadDefenders ) / initDefenders), out addGold);
+                goldSpent -= addGold;
 
-                double attackersLeft = ( attStr - initDefenders ) / attMult;
-                double defendersLeft = initDefenders - attStr;
-
-                double deadPop = initAttackers + initDefenders;
-                if (attStr > initDefenders)
-                    deadPop -= attackersLeft;
-                else
-                    deadPop -= defendersLeft;
-
-                if (Math.Floor(Math.Floor(deadPop) * planetDamageMult) > Planet.Quality)
-                {
-                    double deadAttackers = (int)Math.Ceiling(( Planet.Quality + 1 ) / planetDamageMult) / ( attMult + 1 );
-                    deadAttackers = Math.Min(Math.Ceiling(deadAttackers), Math.Ceiling(deadAttackers * attMult) / attMult);
-                    double deadDefenders = attMult * deadAttackers;
-
-                    //only pay for the portion of gold spent until the planet is destroyed
-                    attackPlayer.AddGold(gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers, ( initDefenders - deadDefenders ) / initDefenders));
-
-                    attackers -= Game.Random.Round(deadAttackers);
-                    this.Population -= Game.Random.Round(deadDefenders);
-                }
-                else if (attStr > initDefenders)
-                {
-                    attackers = Game.Random.Round(attackersLeft);
-                    this.Population = 0;
-                }
-                else
-                {
-                    attackers = 0;
-                    this.Population = Game.Random.Round(defendersLeft);
-                }
-
-                soldiers *= attackers / initAttackers;
-
-                double defLeftMult = this.Population / initDefenders;
-                this.soldiers *= defLeftMult;
-                //will reduce defendingSoldiers
-                ReduceDefenses(defLeftMult);
+                attackers -= Game.Random.Round(deadAttackers);
+                this.Population -= Game.Random.Round(deadDefenders);
             }
+            else if (attStr > initDefenders)
+            {
+                attackers = Game.Random.Round(attackersLeft);
+                this.Population = 0;
+            }
+            else
+            {
+                attackers = 0;
+                this.Population = Game.Random.Round(defendersLeft);
+            }
+
+            soldiers *= attackers / initAttackers;
+
+            double defLeftMult = this.Population / initDefenders;
+            this.soldiers *= defLeftMult;
+            //will reduce defendingSoldiers
+            ReduceDefenses(defLeftMult);
         }
 
         private static void OccupyPlanet(IEventHandler handler, Planet planet, Player occupyingPlayer, ref int attackers, ref double soldiers, double initPop)
@@ -1045,8 +1058,8 @@ namespace GalWar
 
         private void ReduceDefenses(double mult)
         {
-            if (mult < 1)
-                if (mult > 0)
+            if (mult < 1 - Consts.FLOAT_ERROR)
+                if (mult > Consts.FLOAT_ERROR)
                 {
                     if (!this.MinDefenses)
                     {

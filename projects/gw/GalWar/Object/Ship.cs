@@ -1003,8 +1003,6 @@ namespace GalWar
                 gold = 0;
             }
 
-            handler.OnInvade(this, target);
-
             //all attackers cost gold to move regardless of where they end up
             this.Player.SpendGold(GetActualGoldCost(population) + gold, gold);
 
@@ -1013,13 +1011,11 @@ namespace GalWar
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
-            target.Invasion(handler, this.Player, ref population, ref soldiers, gold);
+            target.Invasion(handler, this, ref population, ref soldiers, gold);
             this.Population += population;
             this.movedPop += population;
 
             this.soldiers += soldiers;
-
-            handler.OnInvade(this, target);
         }
 
         public void Colonize(IEventHandler handler, Planet planet)

@@ -147,11 +147,11 @@ namespace GalWar
             }
         }
 
-        void IEventHandler.OnInvade(Ship ship, Colony colony)
+        void IEventHandler.OnInvade(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
         {
             try
             {
-                handler.OnInvade(ship, colony);
+                handler.OnInvade(ship, colony, attackers, attSoldiers, gold, attack, defense);
             }
             catch (Exception e)
             {

@@ -1,7 +1,5 @@
 compare two ships with cost calc
 combat calc show probability table
-log more stuff!
-	invasion
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
 main map improvements
@@ -12,6 +10,7 @@ management screens
 	colonies
 	ships
 
+Colony.GetExperienceSoldiers gold vs soldiers trade rate (SoldiersForGold and other disband rates?)
 ShipDesign.GetIncrease even stats out?
 somehow pay to upgrade old designs?  manually weight what you want next?
 Player._research, Player._lastResearched, ShipDesign._research

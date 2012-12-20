@@ -120,6 +120,7 @@ namespace GalWarWin
             catch (Exception e)
             {
                 Console.WriteLine(e);
+
                 savePath = null;
             }
 
@@ -180,18 +181,20 @@ namespace GalWarWin
 
         #region Drawing
 
-        protected override void OnPaint(PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs paintEventArgs)
         {
-            try
-            {
-                base.OnPaint(e);
+            base.OnPaint(paintEventArgs);
 
-                if (started)
+            if (started)
+            {
+                Graphics g = paintEventArgs.Graphics;
+
+                try
                 {
                     float height = this.ClientHeight;
                     float width = this.ClientSize.Width - this.pnlInfo.Width;
 
-                    e.Graphics.FillRectangle(Brushes.Black, 0, 0, width, height);
+                    g.FillRectangle(Brushes.Black, 0, 0, width, height);
 
                     float scale = GetScale();
 
@@ -209,7 +212,7 @@ namespace GalWarWin
                         foreach (Ship ship in player.GetShips())
                             GetVals(ref minStr, ref maxStr, (float)ship.GetStrength() * ship.HP / (float)ship.MaxHP);
 
-                    float newSize = font.Size * scale / e.Graphics.MeasureString("99%", font).Width;
+                    float newSize = font.Size * scale / g.MeasureString("99%", font).Width;
                     if (newSize > 13f)
                         newSize = 13f;
                     else if (newSize < 1f)
@@ -236,11 +239,11 @@ namespace GalWarWin
                                 Ship ship;
                                 Planet planet;
                                 if (( planet = ( tile.SpaceObject as Planet ) ) != null)
-                                    DrawPlanet(e, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
+                                    DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
                                 else if (( ship = ( tile.SpaceObject as Ship ) ) != null)
-                                    DrawShip(e, scale, rect, ship, minStr, maxStr);
+                                    DrawShip(g, scale, rect, ship, minStr, maxStr);
 
-                                DrawBorder(e, tile, rect);
+                                DrawBorder(g, tile, rect);
 
                                 if (moves != null)
                                 {
@@ -258,19 +261,20 @@ namespace GalWarWin
                                                     break;
                                                 }
                                             }
-                                        SizeF strSize = e.Graphics.MeasureString(s, font);
-                                        e.Graphics.DrawString(s, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
+                                        SizeF strSize = g.MeasureString(s, font);
+                                        g.DrawString(s, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
                                     }
                                 }
                             }
                         }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                using (Font font = new Font("arial", 13f))
-                    e.Graphics.DrawString(ex.ToString(), font, Brushes.White, 0, 0);
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+
+                    using (Font font = new Font("arial", 13f))
+                        g.DrawString(e.ToString(), font, Brushes.White, 0, 0);
+                }
             }
         }
 
@@ -280,7 +284,7 @@ namespace GalWarWin
             max = (float)Math.Max(max, Math.Sqrt(value));
         }
 
-        private void DrawBorder(PaintEventArgs e, Tile tile, RectangleF rect)
+        private void DrawBorder(Graphics g, Tile tile, RectangleF rect)
         {
             Planet planet = null;
             Ship ship = null;
@@ -301,10 +305,10 @@ namespace GalWarWin
             if (tile == this.dialogTile)
                 ++size;
 
-            e.Graphics.DrawRectangle(new Pen(Color.White, size), rect.X, rect.Y, rect.Width, rect.Height);
+            g.DrawRectangle(new Pen(Color.White, size), rect.X, rect.Y, rect.Width, rect.Height);
         }
 
-        private void DrawPlanet(PaintEventArgs e, float scale, RectangleF rect, Planet planet,
+        private void DrawPlanet(Graphics g, float scale, RectangleF rect, Planet planet,
                 float minQuality, float maxQuality, float minPop, float maxPop)
         {
             Colony colony = planet.Colony;
@@ -320,29 +324,29 @@ namespace GalWarWin
                 planetRect = Inflate(scale, rect, colony.Population, minPop, maxPop, .735f, .169f);
                 brush = new SolidBrush(colony.Player.Color);
             }
-            e.Graphics.FillEllipse(brush, planetRect);
+            g.FillEllipse(brush, planetRect);
 
             if (colony != null)
             {
                 if (colony.HP > 0)
-                    e.Graphics.DrawEllipse(Pens.White, planetRect);
+                    g.DrawEllipse(Pens.White, planetRect);
                 double pct = colony.Population / (double)planet.Quality;
                 if (pct < 1)
                 {
                     string str = FormatPctWithCheck(pct);
-                    SizeF strSize = e.Graphics.MeasureString(str, font);
-                    e.Graphics.DrawString(str, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
+                    SizeF strSize = g.MeasureString(str, font);
+                    g.DrawString(str, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
                 }
             }
         }
 
-        private void DrawShip(PaintEventArgs e, float scale, RectangleF rect, Ship ship, float minStr, float maxStr)
+        private void DrawShip(Graphics g, float scale, RectangleF rect, Ship ship, float minStr, float maxStr)
         {
             rect = Inflate(scale, rect, ship.GetStrength() * ship.HP / (float)ship.MaxHP, minStr, maxStr, .666f, .13f);
-            e.Graphics.FillRectangle(new SolidBrush(ship.Player.Color), rect);
+            g.FillRectangle(new SolidBrush(ship.Player.Color), rect);
 
             if (ship.DeathStar || ship.Population > 0)
-                e.Graphics.DrawRectangle(Pens.White, rect.X, rect.Y, rect.Width, rect.Height);
+                g.DrawRectangle(Pens.White, rect.X, rect.Y, rect.Width, rect.Height);
 
             double pct = ship.HP / (double)ship.MaxHP;
             if (pct < 1)
@@ -352,7 +356,7 @@ namespace GalWarWin
                     endPoint = new PointF(rect.Right, rect.Bottom);
                 else
                     endPoint = GetMid(rect);
-                e.Graphics.DrawLine(Pens.Black, rect.Location, endPoint);
+                g.DrawLine(Pens.Black, rect.Location, endPoint);
 
                 if (pct < .5f)
                 {
@@ -360,7 +364,7 @@ namespace GalWarWin
                         endPoint = new PointF(rect.Right, rect.Top);
                     else
                         endPoint = GetMid(rect);
-                    e.Graphics.DrawLine(Pens.Black, new PointF(rect.Left, rect.Bottom), endPoint);
+                    g.DrawLine(Pens.Black, new PointF(rect.Left, rect.Bottom), endPoint);
                 }
             }
         }
@@ -809,6 +813,8 @@ namespace GalWarWin
         {
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
+                CombatForm.FlushLog();
+
                 HashSet<Ship> check = new HashSet<Ship>();
                 foreach (Ship ship in Game.CurrentPlayer.GetShips())
                     if (ship.GetRepairedFrom() != null)
@@ -1796,7 +1802,6 @@ namespace GalWarWin
             colony.GetPlanetDefenseInc(production, out newAtt, out newDef, out newHP);
             return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
         }
-
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)
         {
             if (colony.MinDefenses)
@@ -1920,9 +1925,9 @@ namespace GalWarWin
             CombatForm.OnBombard(ship, planet, freeDmg, colonyDamage, planetDamage);
         }
 
-        void IEventHandler.OnInvade(Ship ship, Colony colony)
+        void IEventHandler.OnInvade(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
         {
-            CombatForm.OnInvade(ship, colony);
+            CombatForm.OnInvade(ship, colony, attackers, attSoldiers, gold, attack, defense);
         }
 
         void IEventHandler.Event()
@@ -1944,14 +1949,11 @@ namespace GalWarWin
 
         public void LogMsg(string format, params object[] args)
         {
-            string msg = string.Format(format, args);
-            Console.WriteLine(msg);
-            log += msg + "\r\n";
+            log += string.Format(format, args) + "\r\n";
         }
 
         public void LogMsg()
         {
-            Console.WriteLine();
             log += "\r\n";
 
             try
