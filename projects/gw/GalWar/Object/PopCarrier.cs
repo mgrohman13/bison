@@ -260,11 +260,9 @@ namespace GalWar
 
         public static double GetSoldiers(int population, double soldiers, int attPop)
         {
-            if (soldiers < Consts.FLOAT_ERROR || attPop <= 0)
-                return 0;
-            if (population <= 0)
-                throw new Exception();
-            return ( ( soldiers * attPop ) / population );
+            if (population > 0)
+                return ( ( soldiers * attPop ) / population );
+            return soldiers;
         }
 
         public double GetTotalSoldierPct()
@@ -281,11 +279,7 @@ namespace GalWar
 
         protected double GetSoldierPct(double soldiers)
         {
-            if (soldiers <= Consts.FLOAT_ERROR)
-                return soldiers;
-            if (this.Population <= 0)
-                throw new Exception();
-            return soldiers / this.Population;
+            return GetSoldiers(this.Population, soldiers, 1);
         }
 
         public virtual double Soldiers

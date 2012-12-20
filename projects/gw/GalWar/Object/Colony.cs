@@ -294,7 +294,7 @@ namespace GalWar
             if (attackers > 0 && !Planet.Dead)
             {
                 Destroy();
-                OccupyPlanet(handler, attackPlayer, ref attackers, ref soldiers, initPop);
+                OccupyPlanet(handler, Planet, attackPlayer, ref attackers, ref soldiers, initPop);
             }
         }
 
@@ -356,13 +356,9 @@ namespace GalWar
                 //will reduce defendingSoldiers
                 ReduceDefenses(defLeftMult);
             }
-            else if (this.soldiers > Consts.FLOAT_ERROR)
-            {
-                throw new Exception();
-            }
         }
 
-        private void OccupyPlanet(IEventHandler handler, Player occupyingPlayer, ref int attackers, ref double soldiers, double initPop)
+        private static void OccupyPlanet(IEventHandler handler, Planet planet, Player occupyingPlayer, ref int attackers, ref double soldiers, double initPop)
         {
             int occupy = attackers;
             if (initPop > 0 && attackers > 1)
@@ -373,7 +369,7 @@ namespace GalWar
             }
 
             double moveSoldiers = MoveSoldiers(attackers, soldiers, occupy);
-            occupyingPlayer.NewColony(handler, Planet, occupy, moveSoldiers, 0);
+            occupyingPlayer.NewColony(handler, planet, occupy, moveSoldiers, 0);
 
             attackers -= occupy;
             soldiers -= moveSoldiers;
@@ -384,9 +380,20 @@ namespace GalWar
             if (this.Dead)
                 throw new Exception();
 
-            this.Player.AddGold(( this.Population / Consts.PopulationForGold ) + ( this.soldiers / Consts.SoldiersForGold )
+            double gold = ( this.Population / Consts.PopulationForGold )
+                    + ( this.soldiers / Consts.SoldiersForGold )
                     + ( this.production / Consts.ProductionForGold )
-                    + ( this.TotalDisbandValue ) + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold ));
+                    + ( this.TotalDisbandValue )
+                    + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold );
+            this.Player.AddGold(gold);
+
+            Console.WriteLine("Destroy Gold:  " + gold);
+            Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGold);
+            Console.WriteLine("Soldiers:  " + this.soldiers / Consts.SoldiersForGold);
+            Console.WriteLine("Production:  " + this.production / Consts.ProductionForGold);
+            Console.WriteLine("Planet Defense:  " + this.TotalDisbandValue);
+            Console.WriteLine("Defense Soldiers:  " + this.defenseSoldiers / Consts.DefendingSoldiersForGold);
+            Console.WriteLine();
 
             this.Population = 0;
             this.soldiers = 0;

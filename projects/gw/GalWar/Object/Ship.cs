@@ -524,16 +524,18 @@ namespace GalWar
 
         public double GetDestroyGold()
         {
-            double gold = this.Population / Consts.PopulationForGold + this.soldiers / Consts.SoldiersForGold
-                    + GetCostExperience(this.curExp) / Consts.ExpForGold;
-            if (this.Player.IsTurn)
-                gold += GetUpkeepReturn();
+            double gold = ( this.Population / Consts.PopulationForGold )
+                    + ( this.soldiers / Consts.SoldiersForGold )
+                    + ( GetCostExperience(this.curExp) / Consts.ExpForGold )
+                    + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 );
+
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGold);
             Console.WriteLine("Soldiers:  " + this.soldiers / Consts.SoldiersForGold);
             Console.WriteLine("Experience:  " + GetCostExperience(this.curExp) / Consts.ExpForGold);
             Console.WriteLine("Upkeep:  " + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 ));
             Console.WriteLine();
+
             return gold;
         }
 
@@ -827,44 +829,56 @@ namespace GalWar
             --this.CurSpeed;
 
             double pct = 1;
-            int freeDmg = 0, colonyDamage = 0, planetDamage = 0, startExp = GetTotalExp();
+            int freeDmg = 0;
             bool enemy = ( !friendly && colony != null );
             if (enemy && colony.HP > 0)
                 pct = AttackColony(handler, colony, out freeDmg);
-            else
-                handler.OnBombard(this, planet, 0, 0, 0);
 
             if (pct > 0)
                 if (enemy && colony.HP > 0)
+                {
                     this.Player.GoldIncome(GetUpkeepReturn(pct));
+                }
                 else
+                {
+                    int colonyDamage, planetDamage;
                     Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage);
+                    handler.OnBombard(this, planet, freeDmg, colonyDamage, planetDamage);
+                    freeDmg = 0;
+                }
 
-            handler.OnBombard(this, planet, 0, colonyDamage, planetDamage);
+            if (freeDmg > 0)
+                handler.OnBombard(this, planet, freeDmg, 0, 0);
 
             LevelUp(handler);
         }
 
-        private double AttackColony(IEventHandler handler, Colony colony, out int bombard)
+        private double AttackColony(IEventHandler handler, Colony colony, out int freeDmg)
         {
-            double freeDmg = GetFreeDmg(colony), combatDmg, avgDef;
-            Consts.GetDamageTable(this.Att, colony.Def, out combatDmg, out avgDef);
+            double freeAvg = GetFreeDmg(colony), combatAvg, avgDef;
+            Consts.GetDamageTable(this.Att, colony.Def, out combatAvg, out avgDef);
 
             double freePct = 0;
-            bombard = GetBombardDamage(freeDmg);
-            if (bombard > colony.HP)
+            freeDmg = GetBombardDamage(freeAvg);
+            if (freeDmg > colony.HP)
             {
-                freePct = ( 1 - ( colony.HP / (double)bombard ) );
-                bombard = colony.HP;
+                freePct = ( 1 - ( colony.HP / (double)freeDmg ) );
+                freeDmg = colony.HP;
             }
-            handler.OnBombard(this, colony.Planet, bombard, 0, 0);
-            colony.HP -= bombard;
+            colony.HP -= freeDmg;
 
             double combatPct = 1;
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
+            {
+                if (freeDmg > 0)
+                {
+                    handler.OnBombard(this, colony.Planet, freeDmg, 0, 0);
+                    freeDmg = 0;
+                }
                 combatPct = Combat(handler, colony);
+            }
 
-            return ( ( freePct * freeDmg + combatPct * combatDmg ) / ( freeDmg + combatDmg ) );
+            return ( ( freePct * freeAvg + combatPct * combatAvg ) / ( freeAvg + combatAvg ) );
         }
 
         private double GetFreeDmg(Colony colony)

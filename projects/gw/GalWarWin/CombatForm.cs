@@ -591,36 +591,37 @@ end:
 
                 int rounds = base.others.Count;
                 int attDmg = 0, defDmg = 0, attTot = 0, defTot = 0, attPop = this.attPop, defPop = this.defPop;
-                for (int round = 0 ; round < rounds ; )
-                {
-                    CombatType combatType = base.others[round];
-                    int attack = combatType.attack, defense = combatType.defense;
-
-                    int damage = attack - defense, popLoss = 0;
-                    if (damage > 0)
-                    {
-                        attDmg += damage;
-                        popLoss = defPop - combatType.defPop;
-                        defPop = combatType.defPop;
-                    }
-                    else if (damage < 0)
-                    {
-                        defDmg += damage;
-                        popLoss = attPop - combatType.attPop;
-                        attPop = combatType.attPop;
-                    }
-                    attTot += attack;
-                    defTot += defense;
-
-                    MainForm.GameForm.LogMsg("{3}={0} :{1} ({2}){4}", Format(attack, 3), Format(defense, 4), Format(damage, true),
-                            Format(++round), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : string.Empty);
-                }
+                for (int round = 0 ; round < rounds ; ++round)
+                    Log(base.others[round], round, ref attDmg, ref defDmg, ref attTot, ref defTot, ref attPop, ref defPop);
 
                 double attAdv = attTot - this.att * rounds / 2.0;
                 double defAdv = defTot - this.def * rounds / 2.0;
                 MainForm.GameForm.LogMsg("{0} :{1} ({2} : {3})", Format(attTot, 6), Format(defTot, 4), Format(attDmg, 3, true), Format(defDmg, 3, true));
                 MainForm.GameForm.LogMsg(" {0} : {1} ({2})", Format(attAdv), Format(defAdv), Format(attAdv - defAdv));
                 MainForm.GameForm.LogMsg();
+            }
+            private static void Log(CombatType combatType, int round, ref int attDmg, ref int defDmg, ref int attTot, ref int defTot, ref int attPop, ref int defPop)
+            {
+                int attack = combatType.attack, defense = combatType.defense;
+
+                int damage = attack - defense, popLoss = 0;
+                if (damage > 0)
+                {
+                    attDmg += damage;
+                    popLoss = defPop - combatType.defPop;
+                    defPop = combatType.defPop;
+                }
+                else if (damage < 0)
+                {
+                    defDmg += damage;
+                    popLoss = attPop - combatType.attPop;
+                    attPop = combatType.attPop;
+                }
+                attTot += attack;
+                defTot += defense;
+
+                MainForm.GameForm.LogMsg("{3}={0} :{1} ({2}){4}", Format(attack, 3), Format(defense, 4), Format(damage, true),
+                        Format(round + 1), popLoss > 0 ? ( -popLoss ).ToString().PadLeft(5) : string.Empty);
             }
         }
 
@@ -657,16 +658,18 @@ end:
 
                 Ship.ExpType expType = this.expType;
                 foreach (LevelUpType level in base.others)
-                {
-                    MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", expType.ToString().PadRight(5, ' '),
-                            MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
-                    expType = level.expType;
-                }
+                    Log(level, ref expType);
 
                 LevelUpType last = base.others[base.others.Count - 1];
 
                 MainForm.GameForm.LogMsg("({0}) {2}/{3} - {1}", last.expType.ToString().PadRight(5, ' '), last.totalExp, last.curHP, last.maxHP);
                 MainForm.GameForm.LogMsg();
+            }
+            private static void Log(LevelUpType level, ref Ship.ExpType expType)
+            {
+                MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", expType.ToString().PadRight(5, ' '),
+                        MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
+                expType = level.expType;
             }
         }
 
@@ -715,44 +718,31 @@ end:
                         this.colony == null ? "" : this.colonyHP + ", ", this.quality,
                         this.colony == null ? "" : ", " + this.colonyPopulation);
 
-                for (int index = -1 ; index < base.others.Count ; index += 2)
-                {
-                    BombardType prev = this;
-                    if (index >= 0)
-                        prev = base.others[index];
-                    BombardType next = null;
-                    if (index + 1 < base.others.Count)
-                        next = base.others[index + 1];
-
-                    int freeDmg = prev.freeDmg, colonyDamage = prev.colonyDamage, planetDamage = prev.planetDamage;
-                    bool planetDead = prev.planetDead;
-                    if (next != null)
-                    {
-                        freeDmg += next.freeDmg;
-                        colonyDamage += next.colonyDamage;
-                        planetDamage += next.planetDamage;
-                        planetDead |= next.planetDead;
-                    }
-
-                    string logMsg;
-                    if (freeDmg > 0 || colonyDamage > 0 || planetDamage > 0)
-                    {
-                        logMsg = LogBombardDamage(string.Empty, freeDmg, " HP");
-                        logMsg = LogBombardDamage(logMsg, planetDamage, " Quality");
-                        logMsg = LogBombardDamage(logMsg, colonyDamage, " Population");
-                        if (planetDead)
-                            logMsg += ".  Planet Destroyed!";
-                    }
-                    else
-                    {
-                        logMsg = "No Damage";
-                    }
-                    MainForm.GameForm.LogMsg(logMsg);
-                }
+                Log(this);
+                for (int index = 0 ; index < base.others.Count ; ++index)
+                    Log(base.others[index]);
 
                 MainForm.GameForm.LogMsg();
             }
-            private static string LogBombardDamage(string logMsg, int amt, string type)
+            private static BombardType Log(BombardType bombardType)
+            {
+                string logMsg;
+                if (bombardType.freeDmg > 0 || bombardType.colonyDamage > 0 || bombardType.planetDamage > 0)
+                {
+                    logMsg = Log(string.Empty, bombardType.freeDmg, " HP");
+                    logMsg = Log(logMsg, bombardType.planetDamage, " Quality");
+                    logMsg = Log(logMsg, bombardType.colonyDamage, " Population");
+                    if (bombardType.planetDead)
+                        logMsg += ".  Planet Destroyed!";
+                }
+                else
+                {
+                    logMsg = "No Damage";
+                }
+                MainForm.GameForm.LogMsg(logMsg);
+                return bombardType;
+            }
+            private static string Log(string logMsg, int amt, string type)
             {
                 if (amt > 0)
                 {

@@ -1,4 +1,3 @@
-logging bombard broken up by combat
 compare two ships with cost calc
 combat calc show probability table
 log more stuff!
@@ -36,13 +35,19 @@ repair micromanagement
 	cost incentive
 		certain specific value?
 		pct you have been doing?
+no one builds soldiers...
 refactor planet defense into separate class
 split planetary defense between building attack or defense
-	att/def:hp ratio
+	att/def:hp ratio?
+	combine with solders?
+	disband vs destory defensesoldiers payoff
+switch prod to def/soldiers sells all?
 sell planet def for gold floors total gold
 randomize planet colonization cost
 research display offset
 Death Stars
+	reduce with speed increase?
+		round up
 	keep DS whole numbers?
 	Ship.GetBombardLevelInc - div by att?
 		att inc randomises bombard?

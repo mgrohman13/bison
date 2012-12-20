@@ -145,7 +145,7 @@ namespace GalWar
         public const double PlanetDefensesSoldiersMult = DisbandPct / ProductionForSoldiers * 1.3;
         public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
 
-        public const double FLOAT_ERROR = 0.0000024092823878163472;
+        public const double FLOAT_ERROR = 0.00000013;
 
         public static double GetMoveOrderGold(int numPlayers)
         {
@@ -254,12 +254,9 @@ namespace GalWar
 
         private static double GetStrengthBase(int troops, double soldiers, double strength, double power)
         {
-            double retVal = strength * Math.Pow(troops, power);
             if (troops > 0)
-                retVal *= Math.Pow(1 + soldiers / troops, 1 + power);
-            else if (soldiers > FLOAT_ERROR)
-                throw new Exception();
-            return retVal;
+                return strength * Math.Pow(troops, power) * Math.Pow(1 + soldiers / troops, 1 + power);
+            throw new Exception();
         }
 
         public static double GetPlanetDamageMult()
