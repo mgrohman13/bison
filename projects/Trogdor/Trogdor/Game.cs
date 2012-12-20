@@ -304,8 +304,8 @@ namespace Trogdor
             GameOver = false;
             Paused = true;
 
-            Width = Random.GaussianCappedInt(750, .078, 500);
-            Height = Random.GaussianCappedInt(750, .078, 500);
+            Width = Random.GaussianCappedInt(900, .078, 550);
+            Height = Random.GaussianCappedInt(650, .078, 450);
 
             Score = 0;
 
