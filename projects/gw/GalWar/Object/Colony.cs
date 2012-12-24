@@ -269,7 +269,7 @@ namespace GalWar
 
         internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double soldiers, int gold)
         {
-            handler.OnInvade(ship, this, attackers, soldiers, gold, 0, 0);
+            handler.OnInvade(ship, this, attackers, soldiers, gold, double.NaN, double.NaN);
 
             Player attackPlayer = ship.Player;
 

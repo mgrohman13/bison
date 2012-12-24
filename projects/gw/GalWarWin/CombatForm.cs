@@ -662,14 +662,18 @@ end:
 
                 LevelUpType last = base.others[base.others.Count - 1];
 
-                MainForm.GameForm.LogMsg("({0}) {2}/{3} - {1}", last.expType.ToString().PadRight(5, ' '), last.totalExp, last.curHP, last.maxHP);
+                MainForm.GameForm.LogMsg("({0}) {2}/{3} - {1}", GetExpType(last.expType), last.totalExp, last.curHP, last.maxHP);
                 MainForm.GameForm.LogMsg();
             }
             private static void Log(LevelUpType level, ref Ship.ExpType expType)
             {
-                MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", expType.ToString().PadRight(5, ' '),
+                MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", GetExpType(expType),
                         MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
                 expType = level.expType;
+            }
+            private static string GetExpType(Ship.ExpType expType)
+            {
+                return expType.ToString().PadRight(5, ' ');
             }
         }
 
@@ -682,8 +686,8 @@ end:
 
             private readonly Colony colony;
             private readonly double bombardDamage;
-            private readonly int totalExp, quality, colonyHP, colonyPopulation;
-            private readonly bool planetDead;
+            private readonly int totalExp, quality, hp, population;
+            private readonly bool dead;
 
             public BombardType(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
             {
@@ -696,12 +700,12 @@ end:
                 colony = planet.Colony;
                 bombardDamage = ship.BombardDamage;
                 totalExp = ship.GetTotalExp();
-                quality = planet.Quality + planetDamage;
-                planetDead = planet.Dead;
+                quality = planet.Quality;
+                dead = planet.Dead;
                 if (colony != null)
                 {
-                    colonyHP = colony.HP + freeDmg;
-                    colonyPopulation = colony.Population + colonyDamage;
+                    hp = colony.HP;
+                    population = colony.Population;
                 }
             }
 
@@ -712,39 +716,42 @@ end:
 
             public override void Log()
             {
-                MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
-                        MainForm.FormatDouble(this.bombardDamage), this.totalExp,
-                        this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
-                        this.colony == null ? string.Empty : this.colonyHP + ", ", this.quality,
-                        this.colony == null ? string.Empty : ", " + this.colonyPopulation);
+                if (this.colonyDamage != int.MinValue)
+                    throw new Exception();
 
-                Log(this);
-                for (int index = 0 ; index < base.others.Count ; ++index)
-                    Log(base.others[index]);
+                if (base.others.Count > 0)
+                {
+                    MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
+                            MainForm.FormatDouble(this.bombardDamage), this.totalExp,
+                            this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
+                            this.colony == null ? string.Empty : this.hp + ", ", this.quality,
+                            this.colony == null ? string.Empty : ", " + this.population);
 
-                MainForm.GameForm.LogMsg();
+                    for (int index = 0 ; index < base.others.Count ; ++index)
+                        Log(base.others[index]);
+
+                    MainForm.GameForm.LogMsg();
+                }
             }
-            private static BombardType Log(BombardType bombardType)
+            private static void Log(BombardType bombardType)
             {
-                string logMsg;
-                if (bombardType.freeDmg > 0 || bombardType.colonyDamage > 0 || bombardType.planetDamage > 0)
+                if (bombardType.colonyDamage != int.MinValue)
                 {
-                    logMsg = Log(string.Empty, bombardType.freeDmg, " HP");
-                    logMsg = Log(logMsg, bombardType.planetDamage, " Quality");
-                    logMsg = Log(logMsg, bombardType.colonyDamage, " Population");
-                    if (bombardType.planetDead)
-                        logMsg += ".  Planet Destroyed!";
+                    string logMsg = "No Damage";
+                    if (bombardType.freeDmg != 0 || bombardType.colonyDamage != 0 || bombardType.planetDamage != 0)
+                    {
+                        logMsg = Log(string.Empty, bombardType.freeDmg, " HP");
+                        logMsg = Log(logMsg, bombardType.planetDamage, " Quality");
+                        logMsg = Log(logMsg, bombardType.colonyDamage, " Population");
+                        if (bombardType.dead)
+                            logMsg += ".  Planet Destroyed!";
+                    }
+                    MainForm.GameForm.LogMsg(logMsg);
                 }
-                else
-                {
-                    logMsg = "No Damage";
-                }
-                MainForm.GameForm.LogMsg(logMsg);
-                return bombardType;
             }
             private static string Log(string logMsg, int amt, string type)
             {
-                if (amt > 0)
+                if (amt != 0)
                 {
                     if (logMsg.Length > 0)
                         logMsg += ", ";

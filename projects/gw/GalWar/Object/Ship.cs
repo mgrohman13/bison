@@ -676,7 +676,7 @@ namespace GalWar
             {
                 if (first)
                 {
-                    handler.OnLevel(this, 0, GetExp(0), 0);
+                    handler.OnLevel(this, double.NaN, GetExp(0), GetExp(needExp));
                     first = false;
                 }
 
@@ -743,7 +743,7 @@ namespace GalWar
 
                 GetNextLevel(handler);
 
-                handler.OnLevel(this, pct, 0, GetExp(0));
+                handler.OnLevel(this, pct, int.MinValue, GetExp(0));
             }
         }
 
@@ -826,10 +826,15 @@ namespace GalWar
             if (friendly)
                 AssertException.Assert(this.DeathStar);
 
+            //log initial state
+            handler.OnBombard(this, colony.Planet, int.MinValue, int.MinValue, int.MinValue);
+
             --this.CurSpeed;
 
-            double pct = 1;
+            //set freeDmg to 0 initially to ensure we log something, even if it is just "No Damage"
             int freeDmg = 0;
+
+            double pct = 1;
             bool enemy = ( !friendly && colony != null );
             if (enemy && colony.HP > 0)
                 pct = AttackColony(handler, colony, out freeDmg);
@@ -843,11 +848,16 @@ namespace GalWar
                 {
                     int colonyDamage, planetDamage;
                     Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage);
-                    handler.OnBombard(this, planet, freeDmg, colonyDamage, planetDamage);
-                    freeDmg = 0;
-                }
 
-            if (freeDmg > 0)
+                    //log actual damage to planet
+                    if (freeDmg == -1)
+                        freeDmg = 0;
+                    handler.OnBombard(this, planet, freeDmg, colonyDamage, planetDamage);
+                    //freeDmg of -1 means we have logged something
+                    freeDmg = -1;
+                }
+            //freeDmg will only be -1 if we have already logged something
+            if (freeDmg != -1)
                 handler.OnBombard(this, planet, freeDmg, 0, 0);
 
             LevelUp(handler);
@@ -870,12 +880,17 @@ namespace GalWar
             double combatPct = 1;
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
             {
+
+                //log free damage, if any, before combat
                 if (freeDmg > 0)
-                {
                     handler.OnBombard(this, colony.Planet, freeDmg, 0, 0);
-                    freeDmg = 0;
-                }
+
                 combatPct = Combat(handler, colony);
+
+                //re-log intial state, since combat has broken up our logging
+                handler.OnBombard(this, colony.Planet, int.MinValue, int.MinValue, int.MinValue);
+                //we have at least logged combat, so we do not need to ensure we log anything else
+                freeDmg = -1;
             }
 
             return ( ( freePct * freeAvg + combatPct * combatAvg ) / ( freeAvg + combatAvg ) );

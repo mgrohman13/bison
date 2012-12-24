@@ -34,7 +34,7 @@ namespace GalWar
 
         protected double Combat(IEventHandler handler, Combatant defender)
         {
-            handler.OnCombat(this, defender, 0, 0);
+            handler.OnCombat(this, defender, int.MinValue, int.MinValue);
 
             double pct = 0;
             double experience = 0;
