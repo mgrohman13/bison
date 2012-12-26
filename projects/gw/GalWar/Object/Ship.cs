@@ -827,7 +827,7 @@ namespace GalWar
                 AssertException.Assert(this.DeathStar);
 
             //log initial state
-            handler.OnBombard(this, colony.Planet, int.MinValue, int.MinValue, int.MinValue);
+            handler.OnBombard(this, planet, int.MinValue, int.MinValue, int.MinValue);
 
             --this.CurSpeed;
 

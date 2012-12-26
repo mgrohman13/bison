@@ -96,7 +96,7 @@
             // 
             this.nudResearch.Location = new System.Drawing.Point(109, 38);
             this.nudResearch.Maximum = new decimal(new int[] {
-            99999,
+            199999,
             0,
             0,
             0});

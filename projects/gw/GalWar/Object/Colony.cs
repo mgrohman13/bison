@@ -345,8 +345,8 @@ namespace GalWar
                 double deadDefenders = attMult * deadAttackers;
 
                 //only pay for the portion of gold spent until the planet is destroyed
-                double addGold;
-                attackPlayer.AddGold(gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers, ( initDefenders - deadDefenders ) / initDefenders), out addGold);
+                double addGold = gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers, ( initDefenders - deadDefenders ) / initDefenders);
+                attackPlayer.AddGold(addGold);
                 goldSpent -= addGold;
 
                 attackers -= Game.Random.Round(deadAttackers);

@@ -229,6 +229,8 @@ namespace GalWar
 
         internal void EndTurn(IEventHandler handler)
         {
+            bool neg = MinGoldNegative();
+
             AutoRepairShips(handler, true);
 
             //income happens at turn end so that it always matches what was expected
@@ -241,6 +243,9 @@ namespace GalWar
 
             foreach (Ship ship in this.ships)
                 SpendGold(ship.EndTurn());
+
+            if (!neg && NegativeGold())
+                throw new Exception();
 
             CheckGold(handler);
         }
@@ -321,13 +326,7 @@ namespace GalWar
 
         internal void AddGold(double gold)
         {
-            double rounded;
-            AddGold(gold, out rounded);
-        }
-        internal void AddGold(double gold, out double rounded)
-        {
-            rounded = RoundGold(gold);
-            AddGold(gold, rounded);
+            AddGold(gold, RoundGold(gold));
         }
         internal void AddGold(double gold, double rounded)
         {
@@ -700,7 +699,7 @@ namespace GalWar
                         ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(ship.GetGoldForHP(ship.GetAutoRepairHP()) * cost));
 
                     int hp = Game.Random.Round(ship.GetAutoRepairHP());
-                    while (ship.GetGoldForHP(hp) > this.Gold + RoundGold(goldLoss))
+                    while (hp > 0 && ship.GetGoldForHP(hp) > this.Gold + RoundGold(goldLoss))
                         --hp;
                     if (hp > 0)
                         ship.GoldRepair(handler, hp);
