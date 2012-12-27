@@ -16,6 +16,12 @@ namespace randTest
         {
             rand.StartTick();
 
+            uint v = rand.NextUInt();
+            MTRandom r1 = new MTRandom(new uint[] { v });
+            MTRandom r2 = new MTRandom(new uint[] { v, v });
+            Console.WriteLine(r1.NextBits(64));
+            Console.WriteLine(r2.NextBits(64));
+
             //Console.BufferHeight *= 2;
             //Console.BufferWidth *= 2;
             //const double AvgSeedSize = 390;
@@ -138,10 +144,10 @@ namespace randTest
         //    Console.WriteLine();
         //}
 
-        private static void Write(uint seed)
-        {
-            Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
-        }
+        //private static void Write(uint seed)
+        //{
+        //    Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
+        //}
 
         //private static void DrawTerrain(float height, float temp, float rain)
         //{

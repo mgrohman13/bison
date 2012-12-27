@@ -687,7 +687,7 @@ namespace GalWar
         {
             double gold = 0;
             ShipDesign shipDesign = this.Buildable as ShipDesign;
-            if (minGold ? ( shipDesign != null && shipDesign.Trans > 0 ) : ( this.Buildable != null && this.Buildable.Cost > 0 ))
+            if (this.Buildable != null && this.Buildable.Cost > 0)
             {
                 double totalProd = this.production + prodInc;
                 while (totalProd > this.Buildable.Cost)

@@ -222,15 +222,15 @@ namespace MattUtil
 
         public static uint[] TimeSeed()
         {
-            uint c = ShiftVal((uint)Environment.TickCount);
-
-            Thread.Sleep(0);
-
-            long ticks = DateTime.Now.Ticks;
-            uint b = ShiftVal((uint)ticks);
-            uint f = ShiftVal((uint)( ticks >> 32 ));
+            uint b = ShiftVal((uint)Environment.TickCount);
 
             Thread.Sleep(1);
+
+            long ticks = DateTime.Now.Ticks;
+            uint c = ShiftVal((uint)ticks);
+            uint f = ShiftVal((uint)( ticks >> 32 ));
+
+            Thread.Sleep(0);
 
             ticks = Environment.WorkingSet;
             uint d = ShiftVal((uint)ticks);
@@ -326,64 +326,62 @@ namespace MattUtil
                 throw new ArgumentOutOfRangeException("seedSize", seedSize,
                         "seedSize must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ).ToString());
 
+            int timeSeedLength = timeSeed.Length;
             uint[] seed = new uint[seedSize];
 
             //pick up some initial system-based entropy, both in the seed and in the ShiftVal counter
             int a = 0;
             Process process = Process.GetCurrentProcess();
-            AddSeedValue(seed, ref a, seedSize, process.PagedMemorySize64);
-            AddSeedValue(seed, ref a, seedSize, new object());
-            AddSeedValue(seed, ref a, seedSize, process.TotalProcessorTime.Ticks);
-            AddSeedValue(seed, ref a, seedSize, Environment.CommandLine);
-            AddSeedValue(seed, ref a, seedSize, Guid.NewGuid());
-            AddSeedValue(seed, ref a, seedSize, Environment.StackTrace);
-            AddSeedValue(seed, ref a, seedSize, process.StartTime.Ticks);
-            AddSeedValue(seed, ref a, seedSize, Environment.MachineName);
-            AddSeedValue(seed, ref a, seedSize, process.Handle);
-            AddSeedValue(seed, ref a, seedSize, process.ProcessorAffinity);
-            AddSeedValue(seed, ref a, seedSize, process.Id);
-            AddSeedValue(seed, ref a, seedSize, Environment.UserName);
-            AddSeedValue(seed, ref a, seedSize, process.NonpagedSystemMemorySize64);
+            AddShiftedSeed(seed, ref a, process.PagedMemorySize64);
+            AddShiftedSeed(seed, ref a, new object());
+            AddShiftedSeed(seed, ref a, Guid.NewGuid());
+            AddShiftedSeed(seed, ref a, Environment.CommandLine);
+            AddShiftedSeed(seed, ref a, process.TotalProcessorTime.Ticks);
+            AddShiftedSeed(seed, ref a, Environment.StackTrace);
+            AddShiftedSeed(seed, ref a, process.StartTime.Ticks);
+            AddShiftedSeed(seed, ref a, Environment.MachineName);
+            AddShiftedSeed(seed, ref a, process.Handle);
+            AddShiftedSeed(seed, ref a, process.ProcessorAffinity);
+            AddShiftedSeed(seed, ref a, process.Id);
+            AddShiftedSeed(seed, ref a, Environment.UserName);
+            AddShiftedSeed(seed, ref a, process.NonpagedSystemMemorySize64);
 
             //fill in the entirety of the seed length with time-based entropy
-            int b = timeSeed.Length;
-            a = b - 1;
-            for (int c = seedSize ; --c > -1 ; )
+            int b = 0;
+            for (a = 0 ; a < seedSize ; ++b)
             {
-                if (--b < 0)
+                if (b >= timeSeedLength)
                 {
                     timeSeed = TimeSeed();
-                    b = a;
+                    b = 0;
                 }
-                seed[c] += timeSeed[b];
+                AddSeed(seed, ref a, timeSeed[b]);
             }
 
             //use any remaining uints left over in the timeSeed array 
-            for (a = 0 ; --b > -1 ; )
-            {
-                seed[a] += timeSeed[b];
-                if (++a == seedSize)
-                    a = 0;
-            }
+            for ( ; b < timeSeedLength ; ++b)
+                AddSeed(seed, ref a, timeSeed[b]);
 
             //provide a second time seed if we have only used one so far
             //so that the total time taken to execute this method provides minor entropy
-            b = timeSeed.Length;
-            if (seedSize <= b)
-                for (timeSeed = TimeSeed() ; --b > -1 ; )
-                {
-                    seed[a] += timeSeed[b];
-                    if (++a == seedSize)
-                        a = 0;
-                }
+            if (seedSize <= timeSeedLength)
+            {
+                b = 0;
+                for (timeSeed = TimeSeed() ; b < timeSeedLength ; ++b)
+                    AddSeed(seed, ref a, timeSeed[b]);
+            }
             return seed;
         }
-        private static void AddSeedValue(uint[] seed, ref int a, int seedSize, object value)
+        private static void AddShiftedSeed(uint[] seed, ref int a, object value)
         {
             //shift value to help randomize time or memory signatures
-            seed[a] += ShiftVal((uint)value.GetHashCode());
-            if (++a == seedSize)
+            AddSeed(seed, ref a, ShiftVal((uint)value.GetHashCode()));
+        }
+        private static void AddSeed(uint[] seed, ref int a, uint value)
+        {
+            if (a >= seed.Length)
                 a = 0;
+            seed[a++] += value;
         }
 
         /// <summary>
@@ -393,10 +391,10 @@ namespace MattUtil
         {
             lock (this)
             {
-                int length = seed.Length;
-                if (length <= 0 || length > MAX_SEED_SIZE)
+                uint seedSize = (uint)seed.Length;
+                if (seedSize <= 0 || seedSize > MAX_SEED_SIZE)
                     throw new ArgumentOutOfRangeException("seed", seed,
-                       "seed array length must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ).ToString());
+                        "seedSize must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ));
 
                 //reset fields
                 if (storeSeed)
@@ -404,65 +402,61 @@ namespace MattUtil
                 else
                     seedVals = null;
                 mt = new uint[LENGTH];
-                mti = 0;
+                mti = ushort.MaxValue;
                 bitCount = 0;
                 bits = 0;
                 gaussian = double.NaN;
                 gaussianFloat = float.NaN;
 
-                //seed KISS
-                uint a = (uint)length - 1;
-                mwc2 = MWC_2_SEED + GetSeed(seed, ref a);
-                lfsr = LFSR_SEED + GetSeed(seed, ref a);
-                lcg = LCG_SEED + GetSeed(seed, ref a);
-                mwc1 = MWC_1_SEED + GetSeed(seed, ref a);
+                uint a = 0, b = ( seedSize % 2 );
+
+                //seed KISS and re-use same seed values within MT
+                mwc2 = MWC_2_SEED + ( mt[b++] += GetSeed(seed, ref a) );
+                lcg = LCG_SEED + ( mt[b++] += GetSeed(seed, ref a) );
+                mwc1 = MWC_1_SEED + ( mt[b++] += GetSeed(seed, ref a) );
+                lfsr = LFSR_SEED + ( mt[b++] += GetSeed(seed, ref a) );
 
                 //initialize MT with a constant PRNG
-                for (mt[0] = INIT_SEED ; ++mti < LENGTH ; )
-                    mt[mti] = ( SEED_FACTOR_1 * ( mt[mti - 1] ^ ( mt[mti - 1] >> 30 ) ) + mti );
-                //combine the seed values with the results of another (different) PRNG pass
-                uint b = 0;
-                for (uint c = LENGTH ; --c > 0 ; )
-                    mt[++b] = ( mt[b] ^ ( ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) * SEED_FACTOR_2 ) ) + GetSeed(seed, ref a) - a + b - c;
+                mt[0] += INIT_SEED;
+                for (b = 1 ; b < LENGTH ; ++b)
+                    mt[b] = ( ( SEED_FACTOR_1 * ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) ) ^ mt[b] ) + b;
+
+                //use all seed values in combination with the results of another (different) PRNG pass
+                mt[0] -= seedSize + 13;
+                for (b = 1 ; b < LENGTH ; ++b)
+                    mt[b] = ( ( SEED_FACTOR_2 * ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) ) ^ mt[b] ) + GetSeed(seed, ref a) + b + b - a;
+
                 //run a third and final pass to ensure all seed values are represented in all MT state values
-                mt[0] = mt[LENGTH - 1];
-                b = 0;
-                for (uint c = LENGTH ; --c > 0 ; )
-                    mt[++b] = ( mt[b] ^ ( ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) * SEED_FACTOR_3 ) ) - c;
+                mt[0] += mt[LENGTH - 1];
+                for (b = 1 ; b < LENGTH ; ++b)
+                    mt[b] = ( ( SEED_FACTOR_3 * ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) ) ^ mt[b] ) + b;
 
                 //ensure all seed values are represented in KISS as well
-                mwc2 += mt[b--];
-                lfsr += mt[b--];
-                lcg += mt[b--];
-                mwc1 += mt[b--];
+                lfsr += mt[--b];
+                lcg += mt[--b];
+                mwc2 += mt[--b];
+                mwc1 += mt[--b];
 
-                //choose an arbitrary position of the mt to ensure (other than mt[0])
-                b = 1 + ( mt[LENGTH - 1 - ( GetSeed(seed, ref a) % LENGTH )] % ( LENGTH - 1 ) );
                 //ensure non-zero MT, LFSR, and MWCs (LCG can be zero)
-                mt[b] = EnsureNonZero(mt[b], seed, ref a);
-                lfsr = EnsureNonZero(lfsr, seed, ref a);
-                mwc1 = EnsureNonZero(mwc1, seed, ref a);
-                mwc2 = EnsureNonZero(mwc2, seed, ref a);
+                mt[1] = EnsureNonZero(mt[1]);
+                lfsr = EnsureNonZero(lfsr);
+                mwc1 = EnsureNonZero(mwc1);
+                mwc2 = EnsureNonZero(mwc2);
 
                 NextUInt();
             }
         }
-        private uint EnsureNonZero(uint value, uint[] seed, ref uint a)
+        private uint EnsureNonZero(uint value)
         {
             if (value == 0)
-            {
-                value = GetSeed(seed, ref a);
-                //use a constant in case the seed value is 0
-                if (value == 0)
-                    value = SHIFT_FACTOR;
-            }
+                value = SEED_FACTOR_3;
             return value;
         }
         private uint GetSeed(uint[] seed, ref uint a)
         {
-            if (++a == seed.Length)
+            if (a >= seed.Length)
                 a = 0;
-            return seed[a];
+            return seed[a++];
         }
 
         #endregion
