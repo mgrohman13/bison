@@ -780,7 +780,7 @@ namespace GalWar
             handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
-            AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
+            AssertException.Assert(production / Consts.GoldForProduction < this.Player.Gold);
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
                     new Game.UndoMethod<int>(UndoBuyProduction), production));

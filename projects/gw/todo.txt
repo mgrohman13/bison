@@ -1,3 +1,6 @@
+when planet is destroyed on invasion, retroactively give back gold/troops so that we don't have negative quality fudge factor of -2
+show friendly building design in main form control
+building tile select dialog cuts off bottom of design control
 compare two ships with cost calc
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
@@ -10,6 +13,7 @@ management screens
 	colonies
 	ships
 
+dont pay upkeep turn you build ship
 Colony.GetExperienceSoldiers gold vs soldiers trade rate (SoldiersForGold and other disband rates?)
 ShipDesign.GetIncrease even stats out?
 somehow pay to upgrade old designs?  manually weight what you want next?
