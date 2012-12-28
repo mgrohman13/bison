@@ -478,6 +478,11 @@ next_planet:
             }
         }
 
+        internal Planet CreatePlanet()
+        {
+            throw new NotImplementedException();
+        }
+
         private void CreatePlanets()
         {
             int planets = Game.Random.OEInt(this._planetPct);

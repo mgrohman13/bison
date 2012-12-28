@@ -78,15 +78,16 @@ namespace GalWarWin
             this.holdPersistent = new HashSet<Ship>();
         }
 
-        private void HideButtons(Control parent)
+        private void HideButtons(Control control)
         {
-            if (parent is CheckBox)
-                parent.Enabled = false;
-            else if (parent is Button && parent != this.btnCancel && parent != this.btnCombat
-                    && parent != this.btnInvasion && parent != this.btnShowMoves && parent != this.btnGraphs)
-                parent.Hide();
+            if (control is CheckBox)
+                control.Enabled = false;
+            else if (control is Button && control != this.btnCancel && control != this.btnCombat
+                    && control != this.btnInvasion && control != this.btnShowMoves
+                    && control != this.btnGraphs && control != this.btnCostCalc)
+                control.Hide();
             else
-                foreach (Control child in parent.Controls)
+                foreach (Control child in control.Controls)
                     HideButtons(child);
         }
 
@@ -1512,6 +1513,9 @@ namespace GalWarWin
 
         private void ClearSelectedInfo()
         {
+            if (!isDialog)
+                this.pnlBuild.Visible = false;
+
             this.lblTop.BackColor = SystemColors.Control;
             this.lbl2Inf.ForeColor = Color.Black;
             this.lbl5Inf.ForeColor = Color.Black;
@@ -1633,6 +1637,9 @@ namespace GalWarWin
                 {
                     this.btnProduction.Visible = true;
                     this.btnProdRepair.Visible = true;
+
+                    this.pnlBuild.Visible = true;
+                    this.pnlBuild.SetBuildable(colony.Buildable);
                 }
 
                 if (colony.RepairShip == null)
@@ -1901,6 +1908,11 @@ namespace GalWarWin
             this.RefreshAll();
 
             return CombatForm.ShowForm(attacker, defender, true);
+        }
+
+        bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
+        {
+            throw new NotImplementedException();
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)

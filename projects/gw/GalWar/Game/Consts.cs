@@ -147,6 +147,11 @@ namespace GalWar
 
         public const double FLOAT_ERROR = 0.00000013;
 
+        internal static int NewPlanetQuality()
+        {
+            return Game.Random.OEInt(Consts.PlanetQualityOE) + Game.Random.RangeInt(Consts.PlanetQualityMin, Consts.PlanetQualityMax);
+        }
+
         public static double GetMoveOrderGold(int numPlayers)
         {
             return MoveOrderGold / ( numPlayers - 1 );

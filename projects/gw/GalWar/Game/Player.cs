@@ -178,6 +178,11 @@ namespace GalWar
             this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
         }
 
+        internal void FreeResearch(double research)
+        {
+            throw new NotImplementedException();
+        }
+
         private void CheckResearch(IEventHandler handler)
         {
             if (this.newResearch > 0)

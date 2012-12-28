@@ -306,6 +306,17 @@ namespace GalWar
             this.Tile.SpaceObject = null;
         }
 
+        internal void AddSoldiers(double soldiers)
+        {
+            this.soldiers += soldiers;
+        }
+
+        internal void AddPopulation(int pop)
+        {
+            this.Population += pop;
+            this.movedPop += pop;
+        }
+
         #endregion //internal
 
         #region public
@@ -647,6 +658,14 @@ namespace GalWar
             this.curExp += Game.Random.GaussianCapped((float)experience, Consts.ExperienceRndm);
         }
 
+        internal void AddAnomalyExperience(IEventHandler handler, double cost, bool funky, bool noChange)
+        {
+            AddCostExperience(cost);
+            if (funky)
+                GetNextLevel(handler, funky, false);
+            LevelUp(handler, funky, noChange);
+        }
+
         private void AddCostExperience(double experience)
         {
             AddExperience(experience / GetCostExpForExp());
@@ -669,6 +688,11 @@ namespace GalWar
         }
 
         internal void LevelUp(IEventHandler handler)
+        {
+            LevelUp(handler, false, false);
+        }
+
+        private void LevelUp(IEventHandler handler, bool funky, bool noChange)
         {
             bool first = true;
             float needExp;
@@ -741,7 +765,7 @@ namespace GalWar
                 this.totalExp += needExp;
                 this.curExp -= needExp;
 
-                GetNextLevel(handler);
+                GetNextLevel(handler, funky, noChange);
 
                 handler.OnLevel(this, pct, int.MinValue, GetExp(0));
             }
@@ -774,44 +798,73 @@ namespace GalWar
 
         private void GetNextLevel(IEventHandler handler)
         {
+            GetNextLevel(handler, false, false);
+        }
+        private void GetNextLevel(IEventHandler handler, bool funky, bool noChange)
+        {
             this.needExpMult = Game.Random.GaussianCapped(1f, Consts.ExperienceRndm, (float)Consts.FLOAT_ERROR);
 
-            //randomly select a stat to increase next based on the current ratios
-            Dictionary<ExpType, int> stats = new Dictionary<ExpType, int>();
-
-            int att = GetStatExpChance(Att, Def);
-            int total = att;
-            stats.Add(ExpType.Att, att);
-            int def = GetStatExpChance(Def, Att);
-            total += def;
-            stats.Add(ExpType.Def, def);
-            int hp = this.MaxHP;
-            total += hp;
-            stats.Add(ExpType.HP, hp);
-
-            if (this.DeathStar)
+            if (!noChange)
             {
-                int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 39.0);
-                total += ds;
-                stats.Add(ExpType.DS, ds);
-            }
-            else
-            {
-                int trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / Math.PI);
-                total += trans;
-                stats.Add(ExpType.Trans, trans);
-            }
-            stats.Add(ExpType.Speed, Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9));
+                //randomly select a stat to increase next based on the current ratios
+                Dictionary<ExpType, int> stats = new Dictionary<ExpType, int>();
 
-            this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
+                int att = GetStatExpChance(Att, Def);
+                int total = att;
+                stats.Add(ExpType.Att, att);
+                int def = GetStatExpChance(Def, Att);
+                total += def;
+                stats.Add(ExpType.Def, def);
+                int hp = this.MaxHP;
+                total += hp;
+                stats.Add(ExpType.HP, hp);
+
+                if (this.DeathStar)
+                {
+                    int ds = Game.Random.Round(Math.Sqrt(total * this.bombardDamageMult) / 39.0);
+                    total += ds;
+                    stats.Add(ExpType.DS, ds);
+                }
+                else
+                {
+                    int trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / Math.PI);
+                    total += trans;
+                    stats.Add(ExpType.Trans, trans);
+                }
+
+                int speed = Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9);
+                total += speed;
+                stats.Add(ExpType.Speed, speed);
+
+                if (funky)
+                {
+                    FunkyChance(stats, ExpType.HP, total);
+                    FunkyChance(stats, ExpType.Att, total);
+                    FunkyChance(stats, ExpType.Def, total);
+                    if (this.MaxPop == 0)
+                        FunkyChance(stats, ExpType.DS, total);
+                    FunkyChance(stats, ExpType.Speed, total);
+                    if (!this.DeathStar)
+                        FunkyChance(stats, ExpType.Trans, total);
+                }
+
+                this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
+            }
         }
-
         private int GetStatExpChance(int stat, int other)
         {
             double hpStr = ShipDesign.GetHPStr(stat, other);
             hpStr /= ShipDesign.GetHPStr(stat + 1, other) - hpStr;
             hpStr *= stat / (double)( stat + other );
             return Game.Random.Round(hpStr);
+        }
+        private void FunkyChance(Dictionary<ExpType, int> stats, ExpType expType, int total)
+        {
+            int value;
+            stats.TryGetValue(expType, out value);
+            double inv = ( total + 1f ) / ( value + 1f );
+            double opp = 6f * ( total - value ) / total;
+            stats[expType] = Game.Random.Round(inv + opp);
         }
 
         public void Bombard(IEventHandler handler, Planet planet)
@@ -1031,6 +1084,19 @@ namespace GalWar
             this.movedPop += population;
 
             this.soldiers += soldiers;
+        }
+
+        public void Explore(IEventHandler handler, Anomaly anomaly)
+        {
+            handler = new HandlerWrapper(handler, this.Player.Game);
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(anomaly != null);
+            AssertException.Assert(Tile.IsNeighbor(this.Tile, anomaly.Tile));
+            AssertException.Assert(this.CurSpeed > 0);
+
+            --this.CurSpeed;
+
+            anomaly.Explore(handler, this);
         }
 
         public void Colonize(IEventHandler handler, Planet planet)

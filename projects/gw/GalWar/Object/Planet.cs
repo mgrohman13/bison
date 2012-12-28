@@ -21,16 +21,18 @@ namespace GalWar
 
             this._colony = null;
 
-            this.Quality = Game.Random.OEInt(Consts.PlanetQualityOE) + Game.Random.RangeInt(Consts.PlanetQualityMin, Consts.PlanetQualityMax);
+            this.Quality = Consts.NewPlanetQuality();
         }
 
         #endregion //fields and constructors
 
         #region internal
 
-        internal void DamageVictory()
+        internal int DamageVictory()
         {
-            ReduceQuality(Game.Random.RangeInt(0, this.Quality));
+            int reduce = Game.Random.RangeInt(0, this.Quality);
+            ReduceQuality(reduce);
+            return reduce;
         }
 
         internal void ReduceQuality(int damage)

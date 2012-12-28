@@ -44,6 +44,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Object\Anomaly.cs" />
     <Compile Include="Object\Combatant.cs" />
     <Compile Include="Buildable\PlanetDefense.cs" />
     <Compile Include="Buildable\Soldiering.cs" />

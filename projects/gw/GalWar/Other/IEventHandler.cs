@@ -13,6 +13,8 @@ namespace GalWar
 
         bool ConfirmCombat(Combatant attacker, Combatant defender);
 
+        bool Explore(Anomaly.AnomalyType anomalyType, params object[] info);
+
         void OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense);
 
         void OnCombat(Combatant attacker, Combatant defender, int attack, int defense);

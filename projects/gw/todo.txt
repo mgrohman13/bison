@@ -1,7 +1,7 @@
+ShipDesign constructor can get some info off player
+right click main form ship info
 when planet is destroyed on invasion, retroactively give back gold/troops so that we don't have negative quality fudge factor of -2
-show friendly building design in main form control
-building tile select dialog cuts off bottom of design control
-compare two ships with cost calc
+sort ship designs
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
@@ -13,7 +13,7 @@ management screens
 	colonies
 	ships
 
-dont pay upkeep turn you build ship
+dont pay upkeep for turn you build ship?
 Colony.GetExperienceSoldiers gold vs soldiers trade rate (SoldiersForGold and other disband rates?)
 ShipDesign.GetIncrease even stats out?
 somehow pay to upgrade old designs?  manually weight what you want next?
@@ -64,6 +64,23 @@ extra bombard/invade exp for planet death
 exp for bombard free damage (maintain startexp for logging...)
 
 anomalies
+	instead of planets
+		if not too close
+		planet chance is _planetPct/_anomalyPct
+		pcts randomize slightly each turn
+	research +value
+		new design
+			research based on current player (pre-add) total research and average player research
+	wormhole
+		this ship -> random tile
+			chance to add cur speed?
+		random ship -> this tile
+		random planet -> this tile?
+			cannot cause planets to be too close
+		semi-permanent teleporter?
+			cannot cause planets to be too close
+	move anomaly? create more?
+
 known enemy designs
 AI
 	integrate AI-algorithm guesses into game for player to use as well

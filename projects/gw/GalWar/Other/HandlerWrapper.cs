@@ -5,6 +5,7 @@ namespace GalWar
 {
     internal class HandlerWrapper : IEventHandler
     {
+        private static bool callback = false;
         private IEventHandler handler;
 
         internal HandlerWrapper(IEventHandler handler, Game game)
@@ -14,8 +15,10 @@ namespace GalWar
         internal HandlerWrapper(IEventHandler handler, Game game, bool clearStack)
         {
             AssertException.Assert(handler != null);
+            AssertException.Assert(!callback);
+
             this.handler = handler;
-            this.Event();
+            ( (IEventHandler)this ).Event();
 
             if (clearStack)
                 game.ClearUndoStack();
@@ -23,6 +26,8 @@ namespace GalWar
 
         Tile IEventHandler.getBuildTile(Colony colony)
         {
+            callback = true;
+
             try
             {
                 return handler.getBuildTile(colony);
@@ -33,10 +38,16 @@ namespace GalWar
 
                 return null;
             }
+            finally
+            {
+                callback = false;
+            }
         }
 
         Buildable IEventHandler.getNewBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
         {
+            callback = true;
+
             Buildable retVal;
 
             try
@@ -49,6 +60,10 @@ namespace GalWar
 
                 retVal = colony.Buildable;
             }
+            finally
+            {
+                callback = false;
+            }
 
             if (colony.CanBuild(retVal))
                 return retVal;
@@ -57,6 +72,8 @@ namespace GalWar
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
         {
+            callback = true;
+
             int retVal;
 
             try
@@ -77,12 +94,18 @@ namespace GalWar
                 else
                     retVal = 0;
             }
+            finally
+            {
+                callback = false;
+            }
 
             return retVal;
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
+            callback = true;
+
             bool retVal;
 
             try
@@ -95,12 +118,42 @@ namespace GalWar
 
                 retVal = true;
             }
+            finally
+            {
+                callback = false;
+            }
+
+            return retVal;
+        }
+
+        bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
+        {
+            callback = true;
+
+            bool retVal;
+
+            try
+            {
+                retVal = handler.Explore(anomalyType, info);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                retVal = true;
+            }
+            finally
+            {
+                callback = false;
+            }
 
             return retVal;
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
         {
+            callback = true;
+
             try
             {
                 handler.OnResearch(newDesign, obsolete, oldDefense, newDefense);
@@ -109,10 +162,16 @@ namespace GalWar
             {
                 Console.WriteLine(e);
             }
+            finally
+            {
+                callback = false;
+            }
         }
 
         void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense)
         {
+            callback = true;
+
             try
             {
                 handler.OnCombat(attacker, defender, attack, defense);
@@ -121,10 +180,16 @@ namespace GalWar
             {
                 Console.WriteLine(e);
             }
+            finally
+            {
+                callback = false;
+            }
         }
 
         void IEventHandler.OnLevel(Ship ship, double pct, int last, int needed)
         {
+            callback = true;
+
             try
             {
                 handler.OnLevel(ship, pct, last, needed);
@@ -133,10 +198,16 @@ namespace GalWar
             {
                 Console.WriteLine(e);
             }
+            finally
+            {
+                callback = false;
+            }
         }
 
         void IEventHandler.OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
         {
+            callback = true;
+
             try
             {
                 handler.OnBombard(ship, planet, freeDmg, colonyDamage, planetDamage);
@@ -145,10 +216,16 @@ namespace GalWar
             {
                 Console.WriteLine(e);
             }
+            finally
+            {
+                callback = false;
+            }
         }
 
         void IEventHandler.OnInvade(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
         {
+            callback = true;
+
             try
             {
                 handler.OnInvade(ship, colony, attackers, attSoldiers, gold, attack, defense);
@@ -157,10 +234,16 @@ namespace GalWar
             {
                 Console.WriteLine(e);
             }
+            finally
+            {
+                callback = false;
+            }
         }
 
-        public void Event()
+        void IEventHandler.Event()
         {
+            callback = true;
+
             try
             {
                 handler.Event();
@@ -168,6 +251,10 @@ namespace GalWar
             catch (Exception e)
             {
                 Console.WriteLine(e);
+            }
+            finally
+            {
+                callback = false;
             }
         }
     }

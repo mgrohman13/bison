@@ -74,6 +74,12 @@ namespace GalWarAI
             return true;
         }
 
+        bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
+        {
+            //TODO
+            return true;
+        }
+
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
         {
             ai.OnResearch(newDesign);
