@@ -1,7 +1,4 @@
-ShipDesign constructor can get some info off player
-right click main form ship info
 when planet is destroyed on invasion, retroactively give back gold/troops so that we don't have negative quality fudge factor of -2
-sort ship designs
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
@@ -56,6 +53,7 @@ Death Stars
 		scale friendly damage with pop %
 	allow death stars to limit planet damage by pop left
 	name separately
+	design sorting requires attack of at least 1
 incorporate gaussian OEs
 transport exp for invasion?
 ExperienceConstDmgAmt

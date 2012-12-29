@@ -9,7 +9,7 @@ using GalWarWin.Sliders;
 
 namespace GalWarWin
 {
-    public partial class ProductionForm : Form
+    public partial class ProductionForm : Form, IComparer<ShipDesign>
     {
         private static ProductionForm form = new ProductionForm();
 
@@ -32,13 +32,23 @@ namespace GalWarWin
             this.switchLoss = switchLoss;
             this.additionalLosses = additionalLosses;
 
+            this.rbValue.Checked = true;
+            RefreshDesigns();
+            RefreshBuild();
+        }
+
+        private void RefreshDesigns()
+        {
             this.lbxDesigns.Items.Clear();
+
             this.lbxDesigns.Items.Add("Gold");
             this.lbxDesigns.Items.Add(colony.Player.Game.StoreProd);
             this.lbxDesigns.Items.Add(colony.Player.Game.Soldiering);
             this.lbxDesigns.Items.Add(colony.Player.PlanetDefense);
             this.lbxDesigns.Items.Add(string.Empty);
-            foreach (ShipDesign shipDesign in colony.Player.GetShipDesigns())
+
+            SortedSet<ShipDesign> designs = new SortedSet<ShipDesign>(colony.Player.GetShipDesigns(), this);
+            foreach (ShipDesign shipDesign in designs)
                 this.lbxDesigns.Items.Add(shipDesign);
 
             if (colony.Buildable == null)
@@ -47,8 +57,45 @@ namespace GalWarWin
                 this.lbxDesigns.SelectedItem = colony.Buildable;
             else
                 this.lbxDesigns.SelectedItem = colony.Player.Game.StoreProd;
+        }
 
-            RefreshBuild();
+        int IComparer<ShipDesign>.Compare(ShipDesign x, ShipDesign y)
+        {
+            double xVal = 0, yVal = 0;
+
+            if (this.rbCustom.Checked)
+            {
+                xVal = ShipDesignSortForm.GetValue(x);
+                yVal = ShipDesignSortForm.GetValue(y);
+            }
+            else if (this.rbStr.Checked)
+            {
+                xVal = GetStrength(x);
+                yVal = GetStrength(y);
+            }
+            else if (this.rbTrans.Checked)
+            {
+                xVal = GetTrans(x);
+                yVal = GetTrans(y);
+            }
+
+            double value = yVal - xVal;
+            if (Math.Abs(value) > Consts.FLOAT_ERROR)
+                return Math.Sign(value);
+            else
+                return y.Research - x.Research;
+        }
+        private double GetStrength(ShipDesign x)
+        {
+            return ( x.GetStrength() / GetTotalCost(x) );
+        }
+        private double GetTrans(ShipDesign x)
+        {
+            return ( x.Trans * x.Speed / GetTotalCost(x) );
+        }
+        private double GetTotalCost(ShipDesign x)
+        {
+            return ( x.Cost + x.Upkeep * x.GetUpkeepPayoff(colony.Player.Game.MapSize) );
         }
 
         private Buildable GetSelectedDesign()
@@ -239,6 +286,19 @@ namespace GalWarWin
         private void lbxDesigns_DoubleClick(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.OK;
+        }
+
+        private void rb_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!this.rbCustom.Checked)
+                this.RefreshDesigns();
+        }
+
+        private void rbCustom_Click(object sender, EventArgs e)
+        {
+            if (!ShipDesignSortForm.ShowForm())
+                this.rbValue.Checked = true;
+            this.RefreshDesigns();
         }
     }
 }

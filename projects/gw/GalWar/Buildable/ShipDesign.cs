@@ -103,53 +103,27 @@ namespace GalWar
         private readonly float _bombardDamageMult;
         private readonly uint _research;
 
-        internal static int GetStartDesigns(int mapSize, List<int> research, Player player, List<ShipDesign> designs, ShipNames shipNames)
+        internal static ShipDesign[] GetStartDesigns(List<int> research, Player player)
         {
-            int retVal = int.MaxValue;
+            ShipDesign[] retVal = new ShipDesign[3];
 
             //randomize which of the starting research values go to which design type
-            int rsrchIndx = -1;
-            foreach (int i in Game.Random.Iterate(3))
+            int idx = 0;
+            foreach (int type in Game.Random.Iterate(3))
             {
-                bool forceColony, forceTrans, forceNeither;
-                switch (i)
-                {
-                case 0:
-                    forceColony = true;
-                    forceTrans = false;
-                    forceNeither = false;
-                    break;
-                case 1:
-                    forceColony = false;
-                    forceTrans = true;
-                    forceNeither = false;
-                    break;
-                case 2:
-                    forceColony = false;
-                    forceTrans = false;
-                    forceNeither = true;
-                    break;
-                default:
-                    throw new Exception();
-                }
-
-                ShipDesign design = new ShipDesign(mapSize, research[++rsrchIndx], player, null, shipNames, forceColony, forceTrans, forceNeither);
-                designs.Add(design);
-
-                //the game will need to know the colony ship cost to determine starting production
-                if (forceColony)
-                    retVal = design.Cost;
+                retVal[idx] = new ShipDesign(research[idx], player, ( type == 0 ), ( type == 1 ), ( type == 2 ));
+                ++idx;
             }
 
             return retVal;
         }
 
-        internal ShipDesign(int mapSize, int research, Player player, List<ShipDesign> designs, ShipNames shipNames)
-            : this(mapSize, research, player, designs, shipNames, false, false, false)
+        internal ShipDesign(int research, Player player)
+            : this(research, player, false, false, false)
         {
         }
 
-        private ShipDesign(int mapSize, int research, Player player, List<ShipDesign> designs, ShipNames shipNames, bool forceColony, bool forceTrans, bool forceNeither)
+        private ShipDesign(int research, Player player, bool forceColony, bool forceTrans, bool forceNeither)
         {
             checked
             {
@@ -158,7 +132,7 @@ namespace GalWar
 
                 //get pcts for existing designs
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
-                GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
+                GetPcts(player.GetShipDesigns(), player.Game.MapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
 
                 //  ------  Colony/Trans      ------
                 double transStr = GetTransStr(research);
@@ -193,9 +167,9 @@ namespace GalWar
                 //  ------  Cost/Upkeep       ------
                 double cost = -1;
                 int upkeep = -1;
-                GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
+                GetCost(player.Game.MapSize, upkeepPct, ref cost, ref upkeep);
                 double maxCost = GetMaxCost(research);
-                maxCost = GetMaxCost(GetMinCost(mapSize, maxCost), maxCost);
+                maxCost = GetMaxCost(GetMinCost(player.Game.MapSize, maxCost), maxCost);
                 while (cost > maxCost)
                 {
                     switch (GetReduce(cost, hpMult))
@@ -227,9 +201,9 @@ namespace GalWar
                     default:
                         throw new Exception();
                     }
-                    GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
+                    GetCost(player.Game.MapSize, upkeepPct, ref cost, ref upkeep);
                 }
-                while (cost < GetMinCost(mapSize, maxCost))
+                while (cost < GetMinCost(player.Game.MapSize, maxCost))
                 {
                     switch (GetIncrease(hpMult))
                     {
@@ -245,19 +219,19 @@ namespace GalWar
                     default:
                         throw new Exception();
                     }
-                    GetCost(mapSize, upkeepPct, ref cost, ref upkeep);
+                    GetCost(player.Game.MapSize, upkeepPct, ref cost, ref upkeep);
                 }
                 this._cost = (ushort)Game.Random.Round(cost);
                 this._upkeep = (byte)upkeep;
 
                 //  ------  Name              ------
-                this._name = shipNames.GetName(this, GetTransStr(research), GetSpeedStr(research));
-                this._mark = shipNames.GetMark(player, this._name);
+                this._name = player.Game.ShipNames.GetName(this, GetTransStr(research), GetSpeedStr(research));
+                this._mark = player.Game.ShipNames.GetMark(player, this._name);
             }
         }
 
         public const double DeathStarAvg = 130;
-        private static void GetPcts(List<ShipDesign> designs, int mapSize, int research,
+        private static void GetPcts(ICollection<ShipDesign> designs, int mapSize, int research,
                 out double colony, out double upkeep, out double att, out double speed, out double trans, out double ds)
         {
             upkeep = 1;
@@ -265,7 +239,7 @@ namespace GalWar
             speed = 1;
 
             int numDesigns;
-            if (designs != null && ( numDesigns = designs.Count ) > 0)
+            if (( numDesigns = designs.Count ) > 0)
             {
                 colony = 0;
                 trans = 0;

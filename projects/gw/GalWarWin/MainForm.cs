@@ -97,7 +97,7 @@ namespace GalWarWin
             this.dialog = new MainForm(true);
             this.dialog.MouseMove += new MouseEventHandler(this.MainForm_MouseMove);
 
-            this.pnlInfo.Hide();
+            this.pnlHUD.Hide();
 
             string initialDirectory = GetInitialDirectory();
             MainForm.initialAutoSave = GetInitialAutoSave(initialDirectory);
@@ -193,7 +193,7 @@ namespace GalWarWin
                 try
                 {
                     float height = this.ClientHeight;
-                    float width = this.ClientSize.Width - this.pnlInfo.Width;
+                    float width = this.ClientSize.Width - this.pnlHUD.Width;
 
                     g.FillRectangle(Brushes.Black, 0, 0, width, height);
 
@@ -287,13 +287,8 @@ namespace GalWarWin
 
         private void DrawBorder(Graphics g, Tile tile, RectangleF rect)
         {
-            Planet planet = null;
-            Ship ship = null;
-            if (tile != null)
-            {
-                planet = tile.SpaceObject as Planet;
-                ship = tile.SpaceObject as Ship;
-            }
+            Planet planet = tile.SpaceObject as Planet;
+            Ship ship = tile.SpaceObject as Ship;
 
             float size;
             if (tile == this.selectedTile)
@@ -385,13 +380,13 @@ namespace GalWarWin
         private float GetScale()
         {
             float height = this.ClientHeight - 5;
-            float width = this.ClientSize.Width - this.pnlInfo.Width - 5;
+            float width = this.ClientSize.Width - this.pnlHUD.Width - 5;
             return (float)Math.Min(height / (double)Game.Diameter, width / (double)( Game.Diameter + .5 ));
         }
 
         private float GetStartX()
         {
-            float width = this.ClientSize.Width - this.pnlInfo.Width;
+            float width = this.ClientSize.Width - this.pnlHUD.Width;
             float scale = GetScale();
             return width - scale * ( Game.Diameter + .5f ) - 3;
         }
@@ -645,7 +640,7 @@ namespace GalWarWin
         private void StartGame()
         {
             this.started = true;
-            this.pnlInfo.Show();
+            this.pnlHUD.Show();
             this.btnNewGame.Hide();
             this.btnLoadGame.Hide();
             this.btnAutosaveView.Hide();
@@ -666,15 +661,15 @@ namespace GalWarWin
 
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
-            if (sender == this.pnlInfo)
-                this.mouse = new Point(this.pnlInfo.Location.X + e.Location.X, this.pnlInfo.Location.Y + e.Location.Y);
+            if (sender == this.pnlHUD)
+                this.mouse = new Point(this.pnlHUD.Location.X + e.Location.X, this.pnlHUD.Location.Y + e.Location.Y);
             else
                 this.mouse = e.Location;
         }
 
         private void btnProduction_Click(object sender, EventArgs e)
         {
-            Colony colony = ( (Planet)this.selectedTile.SpaceObject ).Colony;
+            Colony colony = GetSelectedColony();
             colony.StartBuilding(this, ChangeBuild(colony, true, true));
 
             saved = false;
@@ -691,7 +686,7 @@ namespace GalWarWin
 
         private void btnProdRepair_Click(object sender, EventArgs eventArgs)
         {
-            Colony colony = ( (Planet)this.selectedTile.SpaceObject ).Colony;
+            Colony colony = GetSelectedColony();
             if (colony.RepairShip == null)
             {
                 Tile tile = SelectTile(this.selectedTile, false);
@@ -741,7 +736,7 @@ namespace GalWarWin
 
         private void btnGoldRepair_Click(object sender, EventArgs e)
         {
-            Ship ship = (Ship)this.selectedTile.SpaceObject;
+            Ship ship = GetSelectedShip();
 
             if (ship.HP < ship.MaxHP && !ship.HasRepaired)
             {
@@ -761,8 +756,7 @@ namespace GalWarWin
 
         private void btnAutoRepairShips_Click(object sender, EventArgs e)
         {
-            if (RepairAllForm.ShowForm())
-                CheckRepairedShips();
+            RepairAllForm.ShowForm();
 
             saved = false;
             this.RefreshAll();
@@ -770,7 +764,7 @@ namespace GalWarWin
 
         private void btnDisband_Click(object sender, EventArgs e)
         {
-            Ship ship = (Ship)this.selectedTile.SpaceObject;
+            Ship ship = GetSelectedShip();
 
             Colony colony = null;
             foreach (Tile neighbor in Tile.GetNeighbors(this.selectedTile))
@@ -805,6 +799,7 @@ namespace GalWarWin
         private void btnUndo_Click(object sender, EventArgs e)
         {
             this.selectedTile = Game.Undo(this);
+            UnHold(GetSelectedShip());
 
             saved = false;
             this.RefreshAll();
@@ -862,8 +857,6 @@ namespace GalWarWin
 
         private bool CheckRepairedShips()
         {
-            bool end = true;
-
             foreach (Ship ship in Game.CurrentPlayer.GetShips())
                 if (!ship.HasRepaired && ship.HP < ship.MaxHP && double.IsNaN(ship.AutoRepair))
                 {
@@ -872,16 +865,19 @@ namespace GalWarWin
 
                     int hp = SliderForm.ShowForm(new GoldRepair(ship));
                     if (hp > 0)
+                    {
                         ship.GoldRepair(this, hp);
 
-                    end = ( hp > -1 );
-                    if (!end)
-                        break;
+                        saved = false;
+                        this.RefreshAll();
+                    }
+                    else if (hp == -1 && double.IsNaN(ship.AutoRepair))
+                    {
+                        return false;
+                    }
                 }
 
-            saved = false;
-            this.RefreshAll();
-            return end;
+            return true;
         }
 
         private void SelectNextShip()
@@ -889,7 +885,7 @@ namespace GalWarWin
             ReadOnlyCollection<Ship> ships = Game.CurrentPlayer.GetShips();
             if (ships.Count > 0)
             {
-                int start = ships.IndexOf(this.selectedTile == null ? null : this.selectedTile.SpaceObject as Ship);
+                int start = ships.IndexOf(GetSelectedShip());
                 int index = start + 1;
                 if (start < 0)
                 {
@@ -938,7 +934,7 @@ namespace GalWarWin
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!isDialog)
+            if (!isDialog && Game != null)
                 if (!saved && !ShowOption("Are you sure you want to quit without saving?", true))
                     e.Cancel = true;
                 else
@@ -972,12 +968,7 @@ namespace GalWarWin
                         if (e.Button == MouseButtons.Left)
                         {
                             this.selectedTile = clickedTile;
-                            Ship ship = this.selectedTile.SpaceObject as Ship;
-                            if (ship != null && ship.Player.IsTurn)
-                            {
-                                hold.Remove(ship);
-                                holdPersistent.Remove(ship);
-                            }
+                            UnHold(GetSelectedShip());
 
                             if (this.isDialog && ValidDialogTile(this.selectedTile))
                             {
@@ -1006,14 +997,10 @@ namespace GalWarWin
                             }
                             else
                             {
-                                Ship ship = null;
+                                Ship ship = GetSelectedShip();
                                 int oldSpeed = -1;
-                                if (this.selectedTile != null)
-                                {
-                                    ship = this.selectedTile.SpaceObject as Ship;
-                                    if (ship != null)
-                                        oldSpeed = ship.CurSpeed;
-                                }
+                                if (ship != null)
+                                    oldSpeed = ship.CurSpeed;
 
                                 bool selectNext = true;
 
@@ -1055,17 +1042,26 @@ namespace GalWarWin
             }
         }
 
+        private void UnHold(Ship ship)
+        {
+            if (ship != null && ship.Player.IsTurn)
+            {
+                hold.Remove(ship);
+                holdPersistent.Remove(ship);
+            }
+        }
+
         private bool ValidDialogTile(Tile tile)
         {
             if (!Tile.IsNeighbor(dialogTile, tile))
                 return false;
             if (this.isBuild)
             {
-                return tile.SpaceObject == null;
+                return ( tile.SpaceObject == null );
             }
             else
             {
-                Ship ship = tile.SpaceObject as Ship;
+                Ship ship = ( tile.SpaceObject as Ship );
                 return ( ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn );
             }
         }
@@ -1074,7 +1070,7 @@ namespace GalWarWin
         {
             bool selectNext = true;
 
-            ISpaceObject spaceObject = this.selectedTile.SpaceObject;
+            ISpaceObject spaceObject = GetSelectedSpaceObject();
 
             bool switchTroops = false;
             Planet planet;
@@ -1364,16 +1360,28 @@ namespace GalWarWin
             return retVal;
         }
 
-        private Colony GetSelectedColony()
+        private ISpaceObject GetSelectedSpaceObject()
         {
             if (this.selectedTile != null)
-            {
-                Planet planet = this.selectedTile.SpaceObject as Planet;
-                if (planet != null)
-                {
-                    return planet.Colony;
-                }
-            }
+                return this.selectedTile.SpaceObject;
+            return null;
+        }
+
+        private Ship GetSelectedShip()
+        {
+            return ( GetSelectedSpaceObject() as Ship );
+        }
+
+        private Planet GetSelectedPlanet()
+        {
+            return ( GetSelectedSpaceObject() as Planet );
+        }
+
+        private Colony GetSelectedColony()
+        {
+            Planet planet = GetSelectedPlanet();
+            if (planet != null)
+                return planet.Colony;
             return null;
         }
 
@@ -1390,15 +1398,16 @@ namespace GalWarWin
         private void btnCostCalc_Click(object sender, EventArgs e)
         {
             Colony colony = GetSelectedColony();
-            if (colony == null)
-                if (this.selectedTile == null)
-                    CostCalculatorForm.ShowForm();
-                else
-                    CostCalculatorForm.ShowForm(this.selectedTile.SpaceObject as Ship);
-            else if (colony.Player.IsTurn)
+            if (colony != null && colony.Player.IsTurn)
                 CostCalculatorForm.ShowForm(colony.Buildable as ShipDesign);
             else
-                CostCalculatorForm.ShowForm();
+                CostCalculatorForm.ShowForm(GetSelectedShip());
+        }
+
+        private void pnlInfo_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (GetSelectedShip() != null && e.Button == MouseButtons.Right)
+                CostCalculatorForm.ShowForm(GetSelectedShip());
         }
 
         #endregion //Events
@@ -1425,7 +1434,7 @@ namespace GalWarWin
 
         private void InvalidateMap()
         {
-            this.Invalidate(GetInvalidateRectangle(this.ClientRectangle, this.pnlInfo.Location.X));
+            this.Invalidate(GetInvalidateRectangle(this.ClientRectangle, this.pnlHUD.Location.X));
         }
 
         public static Rectangle GetInvalidateRectangle(Rectangle client, int width)
@@ -1499,11 +1508,11 @@ namespace GalWarWin
             {
                 Player player = null;
 
-                Ship ship;
-                Planet planet;
-                if (( ship = ( this.selectedTile.SpaceObject as Ship ) ) != null)
+                Ship ship = GetSelectedShip();
+                Planet planet = GetSelectedPlanet();
+                if (ship != null)
                     player = ShipInfo(ship);
-                else if (( planet = ( this.selectedTile.SpaceObject as Planet ) ) != null)
+                else if (planet != null)
                     player = PlanetInfo(planet);
 
                 if (player != null)

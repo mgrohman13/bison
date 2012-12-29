@@ -36,16 +36,20 @@ namespace GalWarWin
             this.btnBuy = new System.Windows.Forms.Button();
             this.btnSell = new System.Windows.Forms.Button();
             this.chkObsolete = new System.Windows.Forms.CheckBox();
+            this.rbStr = new System.Windows.Forms.RadioButton();
+            this.rbValue = new System.Windows.Forms.RadioButton();
+            this.rbTrans = new System.Windows.Forms.RadioButton();
+            this.rbCustom = new System.Windows.Forms.RadioButton();
             this.sdForm = new GalWarWin.BuildableControl();
             this.SuspendLayout();
             // 
             // lbxDesigns
             // 
-            this.lbxDesigns.Dock = System.Windows.Forms.DockStyle.Left;
+            this.lbxDesigns.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.lbxDesigns.FormattingEnabled = true;
-            this.lbxDesigns.Location = new System.Drawing.Point(0, 0);
+            this.lbxDesigns.Location = new System.Drawing.Point(0, 39);
             this.lbxDesigns.Name = "lbxDesigns";
-            this.lbxDesigns.Size = new System.Drawing.Size(130, 300);
+            this.lbxDesigns.Size = new System.Drawing.Size(130, 251);
             this.lbxDesigns.TabIndex = 2;
             this.lbxDesigns.SelectedIndexChanged += new System.EventHandler(this.lbxDesigns_SelectedIndexChanged);
             this.lbxDesigns.DoubleClick += new System.EventHandler(this.lbxDesigns_DoubleClick);
@@ -126,6 +130,55 @@ namespace GalWarWin
             this.chkObsolete.UseVisualStyleBackColor = true;
             this.chkObsolete.CheckedChanged += new System.EventHandler(this.chkObsolete_CheckedChanged);
             // 
+            // rbStr
+            // 
+            this.rbStr.AutoSize = true;
+            this.rbStr.Location = new System.Drawing.Point(61, 1);
+            this.rbStr.Name = "rbStr";
+            this.rbStr.Size = new System.Drawing.Size(65, 17);
+            this.rbStr.TabIndex = 11;
+            this.rbStr.TabStop = true;
+            this.rbStr.Text = "Strength";
+            this.rbStr.UseVisualStyleBackColor = true;
+            this.rbStr.CheckedChanged += new System.EventHandler(this.rb_CheckedChanged);
+            // 
+            // rbValue
+            // 
+            this.rbValue.AutoSize = true;
+            this.rbValue.Location = new System.Drawing.Point(3, 1);
+            this.rbValue.Name = "rbValue";
+            this.rbValue.Size = new System.Drawing.Size(52, 17);
+            this.rbValue.TabIndex = 12;
+            this.rbValue.TabStop = true;
+            this.rbValue.Text = "Value";
+            this.rbValue.UseVisualStyleBackColor = true;
+            this.rbValue.CheckedChanged += new System.EventHandler(this.rb_CheckedChanged);
+            // 
+            // rbTrans
+            // 
+            this.rbTrans.AutoSize = true;
+            this.rbTrans.Location = new System.Drawing.Point(3, 20);
+            this.rbTrans.Name = "rbTrans";
+            this.rbTrans.Size = new System.Drawing.Size(70, 17);
+            this.rbTrans.TabIndex = 13;
+            this.rbTrans.TabStop = true;
+            this.rbTrans.Text = "Transport";
+            this.rbTrans.UseVisualStyleBackColor = true;
+            this.rbTrans.CheckedChanged += new System.EventHandler(this.rb_CheckedChanged);
+            // 
+            // rbCustom
+            // 
+            this.rbCustom.AutoSize = true;
+            this.rbCustom.Location = new System.Drawing.Point(75, 20);
+            this.rbCustom.Name = "rbCustom";
+            this.rbCustom.Size = new System.Drawing.Size(51, 17);
+            this.rbCustom.TabIndex = 14;
+            this.rbCustom.TabStop = true;
+            this.rbCustom.Text = "Other";
+            this.rbCustom.UseVisualStyleBackColor = true;
+            this.rbCustom.CheckedChanged += new System.EventHandler(this.rb_CheckedChanged);
+            this.rbCustom.Click += new System.EventHandler(this.rbCustom_Click);
+            // 
             // sdForm
             // 
             this.sdForm.Location = new System.Drawing.Point(130, 46);
@@ -139,6 +192,10 @@ namespace GalWarWin
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(330, 300);
+            this.Controls.Add(this.rbCustom);
+            this.Controls.Add(this.rbTrans);
+            this.Controls.Add(this.rbValue);
+            this.Controls.Add(this.rbStr);
             this.Controls.Add(this.chkObsolete);
             this.Controls.Add(this.btnBuy);
             this.Controls.Add(this.btnSell);
@@ -167,5 +224,9 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnBuy;
         private System.Windows.Forms.Button btnSell;
         private System.Windows.Forms.CheckBox chkObsolete;
+        private System.Windows.Forms.RadioButton rbStr;
+        private System.Windows.Forms.RadioButton rbValue;
+        private System.Windows.Forms.RadioButton rbTrans;
+        private System.Windows.Forms.RadioButton rbCustom;
     }
 }

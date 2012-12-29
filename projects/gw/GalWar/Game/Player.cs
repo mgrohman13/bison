@@ -39,7 +39,7 @@ namespace GalWar
         }
 
         internal Player(int id, Game Game, Player player, Planet planet,
-                int population, double soldiers, double gold, List<int> research, out int needProd)
+                int population, double soldiers, double gold, List<int> research)
         {
             this.Game = Game;
 
@@ -66,7 +66,7 @@ namespace GalWar
             this.LastResearched = research[2];
 
             this.designs = new List<ShipDesign>();
-            needProd = ShipDesign.GetStartDesigns(Game.MapSize, research, this, this.designs, Game.ShipNames);
+            this.designs.AddRange(ShipDesign.GetStartDesigns(research, this));
             this.planetDefense = new PlanetDefense(this, this.designs);
 
             this.colonies = new List<Colony>();
@@ -206,7 +206,7 @@ namespace GalWar
                 designResearch = Game.Random.RangeInt(1, designResearch);
             designResearch += this.LastResearched;
 
-            ShipDesign newDesign = new ShipDesign(Game.MapSize, designResearch, this, this.designs, this.Game.ShipNames);
+            ShipDesign newDesign = new ShipDesign(designResearch, this);
 
             HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)

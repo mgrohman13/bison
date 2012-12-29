@@ -106,10 +106,14 @@ namespace GalWar
             {
                 Planet homeworld = GetHomeworld(startPop);
                 double gold = startGold / homeworld.Quality + index * Consts.GetMoveOrderGold(numPlayers);
-                int needProd;
-                this.players[index] = new Player(index, this, player, homeworld, startPop, soldiers, gold, research, out needProd);
-                //all players start with the highest colony ship design production
-                startProd = Math.Max(startProd, needProd);
+                this.players[index] = new Player(index, this, player, homeworld, startPop, soldiers, gold, research);
+                //allstarting production is based on the highest colony ship design cost
+                foreach (ShipDesign design in this.players[index].GetShipDesigns())
+                    if (design.Colony)
+                    {
+                        startProd = Math.Max(startProd, design.Cost);
+                        break;
+                    }
                 ++index;
             }
             this.ShipNames.EndSetup();
