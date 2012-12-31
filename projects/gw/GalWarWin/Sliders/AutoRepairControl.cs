@@ -12,8 +12,6 @@ namespace GalWarWin.Sliders
     {
         private Ship ship;
 
-        //private GoldRepair.SetValueDelegate SetValue;
-
         public AutoRepairControl()
         {
             InitializeComponent();
@@ -22,17 +20,19 @@ namespace GalWarWin.Sliders
         public void SetShip(Ship ship)
         {
             this.ship = ship;
+            RefreshChecked();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             if (AutoRepairForm.ShowForm(ship) && this.Parent is SliderForm)
                 ( (Form)this.Parent ).DialogResult = DialogResult.Cancel;
+            RefreshChecked();
         }
 
-        //internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
-        //{
-        //    this.SetValue = SetValue;
-        //}
+        private void RefreshChecked()
+        {
+            this.cbAuto.Checked = ( ship.AutoRepair > 0 );
+        }
     }
 }

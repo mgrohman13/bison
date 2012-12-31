@@ -28,36 +28,36 @@ namespace GalWarWin.Sliders
         /// </summary>
         private void InitializeComponent()
         {
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.cbAuto = new System.Windows.Forms.CheckBox();
+            this.btnAuto = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // checkBox1
+            // cbAuto
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(3, 5);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(15, 14);
-            this.checkBox1.TabIndex = 0;
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.Click += new System.EventHandler(this.button1_Click);
+            this.cbAuto.AutoSize = true;
+            this.cbAuto.Location = new System.Drawing.Point(3, 5);
+            this.cbAuto.Name = "cbAuto";
+            this.cbAuto.Size = new System.Drawing.Size(15, 14);
+            this.cbAuto.TabIndex = 0;
+            this.cbAuto.UseVisualStyleBackColor = true;
+            this.cbAuto.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button1
+            // btnAuto
             // 
-            this.button1.Location = new System.Drawing.Point(24, 0);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Auto";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnAuto.Location = new System.Drawing.Point(24, 0);
+            this.btnAuto.Name = "btnAuto";
+            this.btnAuto.Size = new System.Drawing.Size(75, 23);
+            this.btnAuto.TabIndex = 1;
+            this.btnAuto.Text = "Auto";
+            this.btnAuto.UseVisualStyleBackColor = true;
+            this.btnAuto.Click += new System.EventHandler(this.button1_Click);
             // 
             // AutoRepairControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.btnAuto);
+            this.Controls.Add(this.cbAuto);
             this.Name = "AutoRepairControl";
             this.Size = new System.Drawing.Size(150, 23);
             this.ResumeLayout(false);
@@ -67,7 +67,7 @@ namespace GalWarWin.Sliders
 
         #endregion
 
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.CheckBox cbAuto;
+        private System.Windows.Forms.Button btnAuto;
     }
 }
