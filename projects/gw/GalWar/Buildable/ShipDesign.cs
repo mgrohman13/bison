@@ -98,10 +98,9 @@ namespace GalWar
         internal readonly byte _name, _mark;
 
         private readonly byte _upkeep, _att, _def, _speed;
-        private readonly ushort _cost, _trans;
-        private readonly ushort _hp;
-        private readonly float _bombardDamageMult;
+        private readonly ushort _hp, _cost, _trans;
         private readonly uint _research;
+        private readonly float _bombardDamageMult;
 
         internal static ShipDesign[] GetStartDesigns(List<int> research, Player player)
         {

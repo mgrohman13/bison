@@ -216,17 +216,15 @@ namespace GalWar
 
         #region internal
 
-        internal double EndTurn()
+        internal void EndTurn()
         {
             //must be calculated before speed is restored
-            double upkeep = ( this.Upkeep - this.GetUpkeepReturn() );
+            Player.SpendGold(this.Upkeep - this.GetUpkeepReturn());
 
             ResetMoved();
 
             this.CurSpeed = MaxSpeed;
             this.HasRepaired = false;
-
-            return upkeep;
         }
 
         public double GetUpkeepReturn()

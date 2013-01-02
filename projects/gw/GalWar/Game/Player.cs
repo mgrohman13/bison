@@ -17,19 +17,18 @@ namespace GalWar
 
         public readonly IGalWarAI AI;
 
+        private PlanetDefense planetDefense;
+
         private readonly List<ShipDesign> designs;
         private readonly List<Ship> ships;
         private readonly List<Colony> colonies;
 
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
         private byte _id;
-        public ushort _newResearch;
+        private ushort _newResearch;
+        private uint _research, _lastResearched, _goldValue;
         private float _incomeTotal, _rKey, _rChance, _rMult, _rDispSkew;
-        private uint _goldValue;
-        private uint _research, _lastResearched;
         private double _goldOffset;
-
-        private PlanetDefense planetDefense;
 
         public Player(string name, Color color, IGalWarAI AI)
         {
@@ -241,13 +240,13 @@ namespace GalWar
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
 
+            foreach (Ship ship in this.ships)
+                ship.EndTurn();
+
             int research = 0;
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
                 colony.EndTurn(handler, ref this._goldOffset, ref research);
             this.newResearch += research;
-
-            foreach (Ship ship in this.ships)
-                SpendGold(ship.EndTurn());
 
             if (!neg && NegativeGold())
                 throw new Exception();
