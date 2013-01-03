@@ -75,9 +75,11 @@ namespace GalWar
         public const double ProductionForGold = 10.0 / 3.0;
         public const double GoldProductionForGold = ProductionForGold / 1.3;
         public const double GoldForProduction = 2;
-        public const double PopulationForGold = 1 / Income / 2.1;
-        public const double PopulationIncomeForGold = 1 / Income / 13.0;
-        public const float ProductionForSoldiers = .91f;
+        public const double PopulationForGoldLow = 1 / Income / 2.1;
+        public const double PopulationForGoldMid = 1 / Income / 5.2;
+        public const double PopulationForGoldHigh = 1 / Income / 13.0;
+        public const float ProductionForSoldiers = .65f;
+        public const double ExpForSoldiers = ProductionForSoldiers / 1.3f;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers * 1.3;
         public const double DefendingSoldiersForGold = SoldiersForGold * 1.3;
         //ExpForGold will be increased by the players most recent research
@@ -89,14 +91,14 @@ namespace GalWar
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
         public const double TransLossMult = .65;
-        public const double TransLossRndm = .39;
+        public const double TransLossRndm = Math.PI / 13;
 
         //value of exp gained as a pct of ship value
         public const double ExperienceMult = .13;
         //extra bonus for destroying a ship, as a pct of HP
         public const double ExperienceDestroyMult = .091;
         //damage amount for constant exp every combat round, in addition to standard exp for actual damage
-        public const double ExperienceConstDmgAmt = 1;
+        public const double ExperienceConstDmgAmt = .65;
         //randomness for exp gained and needed
         public const float ExperienceRndm = .21f;
         //modifier to upkeep payoff when gaining levels
@@ -112,6 +114,7 @@ namespace GalWar
         public const double DisbandPct = RepairCostMult;
         public const double DisbandHitPctPower = 1;
         public const double ColonizationValueGoldCost = Math.E / 3.9;
+        public const float ColonizationCostRndm = .078f;
         //extra bonus to the production of a new colony, in addition to standard disband amount
         public const double ColonizationBonusPct = ( 1 + ColonizationBonusMoveFactor ) * ( .65 - DisbandPct );
         //a lower ColonizationBonusMoveFactor means a greater bonus reduction for faster colony ships
@@ -122,20 +125,17 @@ namespace GalWar
         public const double AttackNumbersPower = 0.091;
         public const double DefenseStrength = 1.13;
         public const double DefenseNumbersPower = 0.03;
-        public const double TroopExperienceMult = 1 / PopulationForGold / Math.E;
+        public const double TroopExperienceMult = 1 / PopulationForGoldMid / Math.E;
         //maximum for random pct bonus to troop combat strength
         public const double InvadeMultRandMax = Math.PI * .13;
         //payoff power for gold used to boost a planetary invasion
         public const double InvadeGoldIncPower = .3;
         //average planet quality lost as a percentage of total troops killed in the battle
-        public const double PlanetDamageAvg = .3;
+        public const double PlanetDamage = .3;
 
-        public const float BombardAttackMult = .039f;
         public const double DeathStarDamageRndm = .13;
         //multiplyer to planet quality lost when bombarded by a death star
-        public const double DeathStarPlanetDamageMult = .5 / PlanetDamageAvg;
-        //multiplyer to population lost when bombarding a friendly planet with a death star
-        public const double DeathStarFriendlyPopDamageMult = Math.PI / 13;
+        public const double DeathStarPlanetDamage = .5;
 
         public const float PlanetDefensesRndm = .169f;
         public const double PlanetDefensesCostMult = 1.3;
@@ -143,7 +143,7 @@ namespace GalWar
         public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const double PlanetDefensesSoldiersMult = DisbandPct / ProductionForSoldiers * 1.3;
-        public const double PlanetDefensesDeathStarMult = 1 / PopulationForGold / 1.3;
+        public const double PlanetDefensesDeathStarMult = 1 / PopulationForGoldMid / 1.3;
 
         public const double FLOAT_ERROR = 0.00000013;
 
@@ -193,23 +193,23 @@ namespace GalWar
             return ( zero + ( one - zero ) * pct );
         }
 
-        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
+        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             if (colony)
             {
-                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamageMult, research)
-                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamage, research)
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
                 return ( retVal * retVal );
             }
             return 1;
         }
 
-        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
+        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             if (trans > 0)
             {
-                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamageMult, research)
-                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamage, research)
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
                 return ( retVal * retVal );
             }
             return 1;
@@ -266,17 +266,22 @@ namespace GalWar
 
         public static double GetPlanetDamageMult()
         {
-            return Game.Random.Weighted(Consts.PlanetDamageAvg);
+            return Game.Random.Weighted(Consts.PlanetDamage);
         }
 
         public static int GetPlanetDamage(int population)
         {
-            return Game.Random.WeightedInt(population, (float)Consts.PlanetDamageAvg);
+            return Game.Random.WeightedInt(population, (float)Consts.PlanetDamage);
         }
 
         private static double RandomizeInvasionStr(double str)
         {
             return str * ( 1 + Game.Random.DoubleHalf(Consts.InvadeMultRandMax) );
+        }
+
+        public static double GetBombardDamage(double att)
+        {
+            return Math.Pow(att, 1.69) * 0.0091;
         }
 
         public static Dictionary<int, double> GetDamageTable(int att, int def, out double avgAtt, out double avgDef)

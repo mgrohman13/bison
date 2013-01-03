@@ -68,6 +68,12 @@ namespace GalWarAI
                 return max;
         }
 
+        bool IEventHandler.Continue()
+        {
+            //TODO
+            return false;
+        }
+
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
             //TODO

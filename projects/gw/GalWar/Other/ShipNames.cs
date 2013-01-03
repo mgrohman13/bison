@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 namespace GalWar
@@ -12,6 +13,7 @@ namespace GalWar
         private static readonly ShipClass[] defense;
         private static readonly ShipClass[] speed;
         private static readonly ShipClass[] transport;
+        private static readonly ShipClass[] deathStar;
 
         static ShipNames()
         {
@@ -20,6 +22,7 @@ namespace GalWar
             defense = new ShipClass[] { ShipClass.Warrior, ShipClass.Defender, ShipClass.Ironclad, ShipClass.Armor, ShipClass.Guardian, ShipClass.Avatar };
             speed = new ShipClass[] { ShipClass.Scout, ShipClass.Fighter, ShipClass.Corvette, ShipClass.Frigate, ShipClass.Ranger, ShipClass.Phoenix };
             transport = new ShipClass[] { ShipClass.Galley, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Invader, ShipClass.Reaper };
+            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Exterminator, ShipClass.Demon };
         }
 
         private int[] divisions;
@@ -60,9 +63,9 @@ namespace GalWar
             SetDivision(1, this._total / (double)this._count);
         }
 
-        internal byte GetName(ShipDesign design, double transStr, double speedStr)
+        internal byte GetName(ShipDesign design, double attDefStr, double transStr, double speedStr)
         {
-            return (byte)GetNameType(design, transStr, speedStr);
+            return (byte)GetNameType(design, attDefStr, transStr, speedStr);
         }
 
         internal byte GetMark(Player player, byte name)
@@ -73,15 +76,17 @@ namespace GalWar
             }
         }
 
-        private ShipClass GetNameType(ShipDesign design, double transStr, double speedStr)
+        private ShipClass GetNameType(ShipDesign design, double attDefStr, double transStr, double speedStr)
         {
             if (design.Colony)
                 return ShipClass.Colony;
 
             //determine which array to use
             ShipClass[] type;
-            if (design.Trans > RandMult(transStr * .3))
+            if (design.Trans * design.Speed > RandMult(transStr * speedStr * .3))
                 type = transport;
+            else if (design.BombardDamage * design.Speed > RandMult(Consts.GetBombardDamage(attDefStr) * speedStr * 26))
+                type = deathStar;
             else if (design.Speed > RandMult(speedStr * 1.3))
                 type = speed;
             else if (design.Def > RandMult(design.Att * 1.3))
@@ -89,7 +94,7 @@ namespace GalWar
             else
                 type = attack;
 
-            int value = RandValue(ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamageMult, 0), 1);
+            int value = RandValue(ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage, 0), 1);
 
             if (this._setup)
                 return DoSetup(type, value);
@@ -132,7 +137,8 @@ namespace GalWar
 
         internal static string GetName(byte name, byte mark)
         {
-            return ( (ShipClass)name ).ToString() + " " + NumberToRoman(mark);
+            Regex r = new Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])");
+            return r.Replace(( (ShipClass)name ).ToString(), " ${x}") + " " + NumberToRoman(mark);
         }
 
         private static readonly byte[] values = new byte[] { 90, 50, 40, 10, 9, 5, 4, 1 };
@@ -155,6 +161,7 @@ namespace GalWar
 
         private enum ShipClass : byte
         {
+            Salvage,
             Colony,
             Destroyer,
             Cruiser,
@@ -180,6 +187,12 @@ namespace GalWar
             Transport,
             Invader,
             Reaper,
+            Catapult,
+            Trebuchet,
+            Cannon,
+            DeathStar,
+            Exterminator,
+            Demon,
             MAX
         }
     }

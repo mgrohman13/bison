@@ -140,7 +140,7 @@ namespace GalWar
             foreach (double gold in addGold.Values)
                 min = Math.Min(min, gold);
             foreach (var pair in addGold)
-                pair.Key.AddGold(pair.Value - min);
+                pair.Key.AddGold(pair.Value - min, true);
 
             return true;
         }
@@ -306,7 +306,7 @@ namespace GalWar
             double value = GetValue();
 
             //rate?
-            int pop = Game.Random.Round(value * Consts.PopulationIncomeForGold);
+            int pop = Game.Random.Round(value * Consts.PopulationForGoldHigh);
             //rate?
             double soldiers = value / Consts.ProductionForSoldiers;
 
@@ -347,7 +347,7 @@ namespace GalWar
             else
             {
                 handler.Explore(AnomalyType.Gold, value);
-                ship.Player.AddGold(value);
+                ship.Player.AddGold(value, true);
             }
 
             return true;

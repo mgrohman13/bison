@@ -6,15 +6,15 @@ namespace GalWar
     [Serializable]
     public class Graphs
     {
-        private readonly List<Dictionary<GraphType, Dictionary<Player, float>>> data;
-        private readonly Dictionary<GraphType, Dictionary<Player, float>> turnVals;
+        private readonly List<Dictionary<byte, Dictionary<byte, float>>> data;
+        private readonly Dictionary<byte, Dictionary<byte, float>> turnVals;
 
         private readonly Player[] players;
 
         internal Graphs(Game game)
         {
-            this.data = new List<Dictionary<GraphType, Dictionary<Player, float>>>();
-            this.turnVals = new Dictionary<GraphType, Dictionary<Player, float>>();
+            this.data = new List<Dictionary<byte, Dictionary<byte, float>>>();
+            this.turnVals = new Dictionary<byte, Dictionary<byte, float>>();
             this.players = game.GetPlayers();
         }
 
@@ -29,15 +29,15 @@ namespace GalWar
             AddNested(turnVals, GraphType.ArmadaDamaged, player, damaged);
         }
 
-        private static void AddNested(Dictionary<GraphType, Dictionary<Player, float>> dictionary, GraphType graphType, Player player, float amount)
+        private static void AddNested(Dictionary<byte, Dictionary<byte, float>> dictionary, GraphType graphType, Player player, float amount)
         {
-            Dictionary<Player, float> playerVals;
-            if (!dictionary.TryGetValue(graphType, out playerVals))
+            Dictionary<byte, float> playerVals;
+            if (!dictionary.TryGetValue((byte)graphType, out playerVals))
             {
-                playerVals = new Dictionary<Player, float>();
-                dictionary.Add(graphType, playerVals);
+                playerVals = new Dictionary<byte, float>();
+                dictionary.Add((byte)graphType, playerVals);
             }
-            playerVals.Add(player, amount);
+            playerVals.Add(player.ID, amount);
         }
 
         internal void EndTurn(Player player)
@@ -54,7 +54,7 @@ namespace GalWar
 
         private void EndTurn(GraphType graphType, Player player, float amount)
         {
-            turnVals[graphType][player] = ( turnVals[graphType][player] + amount ) / 2f;
+            turnVals[(byte)graphType][player.ID] = ( turnVals[(byte)graphType][player.ID] + amount ) / 2f;
         }
 
         internal void Increment(Game game)
@@ -62,14 +62,14 @@ namespace GalWar
             Player[] players = game.GetPlayers();
             Dictionary<Player, double> research = game.GetResearch();
 
-            Dictionary<GraphType, Dictionary<Player, float>> playerGraphs = new Dictionary<GraphType, Dictionary<Player, float>>();
+            Dictionary<byte, Dictionary<byte, float>> playerGraphs = new Dictionary<byte, Dictionary<byte, float>>();
 
             foreach (Player player in this.players)
                 if (Array.IndexOf(players, player) > -1)
                 {
-                    Add(playerGraphs, GraphType.Quality, player, turnVals[GraphType.Quality][player]);
-                    Add(playerGraphs, GraphType.Armada, player, turnVals[GraphType.Armada][player]);
-                    Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[GraphType.ArmadaDamaged][player]);
+                    Add(playerGraphs, GraphType.Quality, player, turnVals[(byte)GraphType.Quality][player.ID]);
+                    Add(playerGraphs, GraphType.Armada, player, turnVals[(byte)GraphType.Armada][player.ID]);
+                    Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[(byte)GraphType.ArmadaDamaged][player.ID]);
 
                     Add(playerGraphs, GraphType.Research, player, (float)research[player]);
                     Add(playerGraphs, GraphType.TotalIncome, player, (float)player.IncomeTotal);
@@ -97,16 +97,16 @@ namespace GalWar
             turnVals.Clear();
         }
 
-        private void Add(Dictionary<GraphType, Dictionary<Player, float>> playerGraphs, GraphType graphType, Player player, float value)
+        private void Add(Dictionary<byte, Dictionary<byte, float>> playerGraphs, GraphType graphType, Player player, float value)
         {
             float last = -2;
             for (int x = this.data.Count ; --x > -1 ; )
             {
-                Dictionary<Player, float> prevGraphs;
-                if (this.data[x].TryGetValue(graphType, out prevGraphs))
+                Dictionary<byte, float> prevGraphs;
+                if (this.data[x].TryGetValue((byte)graphType, out prevGraphs))
                 {
                     float lastVal;
-                    if (prevGraphs.TryGetValue(player, out lastVal))
+                    if (prevGraphs.TryGetValue(player.ID, out lastVal))
                     {
                         last = lastVal;
                         break;
@@ -154,13 +154,13 @@ namespace GalWar
 
             for (int a = 0 ; a < this.data.Count ; ++a)
             {
-                Dictionary<Player, float> graphs = null;
-                data[a].TryGetValue(type, out graphs);
+                Dictionary<byte, float> graphs = null;
+                data[a].TryGetValue((byte)type, out graphs);
 
                 for (int b = 0 ; b < this.players.Length ; ++b)
                 {
                     float value;
-                    if (graphs == null || !graphs.TryGetValue(playerIndexes[b], out value))
+                    if (graphs == null || !graphs.TryGetValue(playerIndexes[b].ID, out value))
                         value = retVal[a - 1, b, 1];
 
                     retVal[a, b, 0] = a;

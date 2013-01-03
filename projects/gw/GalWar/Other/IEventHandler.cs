@@ -11,6 +11,8 @@ namespace GalWar
 
         int MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers);
 
+        bool Continue();
+
         bool ConfirmCombat(Combatant attacker, Combatant defender);
 
         bool Explore(Anomaly.AnomalyType anomalyType, params object[] info);

@@ -722,7 +722,7 @@ end:
                 if (base.others.Count > 0)
                 {
                     MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
-                            MainForm.FormatDouble(this.bombardDamage), this.totalExp,
+                            MainForm.FormatUsuallyInt(this.bombardDamage), this.totalExp,
                             this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
                             this.colony == null ? string.Empty : this.hp + ", ", this.quality,
                             this.colony == null ? string.Empty : ", " + this.population);

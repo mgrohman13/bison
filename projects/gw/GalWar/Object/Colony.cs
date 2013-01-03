@@ -163,7 +163,7 @@ namespace GalWar
             double population = 0, production = 0;
             TurnStuff(ref population, ref production, ref gold, ref research, true, false);
 
-            this.Population += RoundValue(population, ref gold, Consts.PopulationIncomeForGold);
+            this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
 
             ResetRounding();
 
@@ -267,7 +267,7 @@ namespace GalWar
             return exp;
         }
 
-        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double soldiers, int gold)
+        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double soldiers, int gold, out double exp)
         {
             handler.OnInvade(ship, this, attackers, soldiers, gold, double.NaN, double.NaN);
 
@@ -294,9 +294,13 @@ namespace GalWar
             if (attackers > 0 && this.Population > 0)
                 throw new Exception();
 
+            deadPop += reduceQuality;
+            if (Planet.Dead)
+                deadPop += Planet.ConstValue;
             deadPop *= Consts.TroopExperienceMult;
+
             this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, deadPop);
-            soldiers += GetExperienceSoldiers(attackPlayer, attackers, initAttackers, deadPop);
+            soldiers += GetExperienceSoldiers(attackers, initAttackers, deadPop, out exp);
 
             handler.OnInvade(ship, this, attackers, soldiers, goldSpent, attack, defense);
 
@@ -310,9 +314,17 @@ namespace GalWar
 
         private static float GetExperienceSoldiers(Player player, int curPop, double initPop, double exp)
         {
+            double other;
+            float soldiers = GetExperienceSoldiers(curPop, initPop, exp, out other);
+            player.GoldIncome(other);
+            return soldiers;
+        }
+        private static float GetExperienceSoldiers(int curPop, double initPop, double exp, out double other)
+        {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
-            player.GoldIncome(exp - mult);
-            return Game.Random.GaussianCapped((float)( mult / Consts.ProductionForSoldiers ), Consts.SoldiersRndm);
+            other = ( exp - mult );
+            mult /= Consts.ExpForSoldiers;
+            return Game.Random.GaussianCapped((float)mult, Consts.ExperienceRndm);
         }
 
         private void TroopBattle(Player attackPlayer, ref int attackers, ref double soldiers, int gold, double planetDamageMult,
@@ -345,9 +357,10 @@ namespace GalWar
                 double deadDefenders = attMult * deadAttackers;
 
                 //only pay for the portion of gold spent until the planet is destroyed
-                double addGold = gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers, ( initDefenders - deadDefenders ) / initDefenders);
-                attackPlayer.AddGold(addGold);
-                goldSpent -= addGold;
+                double rounded;
+                attackPlayer.AddGold(gold * Math.Min(( initAttackers - deadAttackers ) / initAttackers,
+                        ( initDefenders - deadDefenders ) / initDefenders), true, out rounded);
+                goldSpent -= rounded;
 
                 attackers -= Game.Random.Round(deadAttackers);
                 this.Population -= Game.Random.Round(deadDefenders);
@@ -393,18 +406,18 @@ namespace GalWar
             if (this.Dead)
                 throw new Exception();
 
-            double gold = ( this.Population / Consts.PopulationForGold )
+            double gold = ( this.Population / Consts.PopulationForGoldLow )
                     + ( this.soldiers / Consts.SoldiersForGold )
                     + ( this.production / Consts.ProductionForGold )
-                    + ( this.TotalDisbandValue )
+                    + ( this.GetActualDisbandValue(this.HP) )
                     + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold );
-            this.Player.AddGold(gold);
+            this.Player.AddGold(gold, true);
 
             Console.WriteLine("Destroy Gold:  " + gold);
-            Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGold);
+            Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
             Console.WriteLine("Soldiers:  " + this.soldiers / Consts.SoldiersForGold);
             Console.WriteLine("Production:  " + this.production / Consts.ProductionForGold);
-            Console.WriteLine("Planet Defense:  " + this.TotalDisbandValue);
+            Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP));
             Console.WriteLine("Defense Soldiers:  " + this.defenseSoldiers / Consts.DefendingSoldiersForGold);
             Console.WriteLine();
 
@@ -661,8 +674,8 @@ namespace GalWar
             if (minGold)
             {
                 //pop/prod rounding
-                MinGold(popInc, ref gold, Consts.PopulationIncomeForGold);
-                if (this.Buildable == null || !this.Buildable.HandlesFraction)
+                MinGold(popInc, ref gold, Consts.PopulationForGoldHigh);
+                if (this.Buildable != null && !this.Buildable.HandlesFraction)
                     MinGold(prodInc, ref gold, 1);
 
                 //planet defense attack cost
@@ -676,6 +689,7 @@ namespace GalWar
                             gold -= GetPlanetDefenseAttackCost(att, def, hp, ship.Def);
                     }
             }
+
             gold += BuildingShipTurnIncome(prodInc, minGold);
 
             //modify parameter values
@@ -904,41 +918,42 @@ namespace GalWar
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
 
-            double actualValue = GetDisbandValue(hp);
             if (gold)
-                this.Player.AddGold(actualValue, GetPlanetDefenseDisbandValue(hp, gold));
+            {
+                double actual, rounded;
+                GetDisbandGoldValue(hp, out actual, out rounded);
+                Player.AddGold(actual, rounded);
+            }
             else
-                AddProduction(actualValue);
+            {
+                AddProduction(GetActualDisbandValue(hp));
+            }
 
             this.HP -= hp;
         }
-
         public double GetPlanetDefenseDisbandValue(int hp, bool gold)
         {
             TurnException.CheckTurn(this.Player);
 
-            double disbandValue = GetDisbandValue(1);
             if (gold)
             {
-                disbandValue = Player.RoundGold(disbandValue);
-                if (disbandValue < .1)
-                    disbandValue = .1;
+                double actual, rounded;
+                GetDisbandGoldValue(hp, out actual, out rounded);
+                return rounded;
             }
-
-            return ( hp * disbandValue );
-        }
-
-        private double TotalDisbandValue
-        {
-            get
+            else
             {
-                return GetDisbandValue(this.HP);
+                return GetActualDisbandValue(hp);
             }
         }
-
-        private double GetDisbandValue(int hp)
+        internal double GetActualDisbandValue(int hp)
         {
             return hp * PlanetDefenseCost * Consts.DisbandPct;
+        }
+        private void GetDisbandGoldValue(int hp, out double actual, out double rounded)
+        {
+            actual = GetActualDisbandValue(hp);
+            rounded = Player.FloorGold(actual);
         }
 
         public double PlanetDefenseTotalUpkeep
@@ -999,7 +1014,7 @@ namespace GalWar
             this.Player.SpendGold(cost * ( 1 - pct ));
         }
 
-        protected override double GetExpForDamage(double damage)
+        internal override double GetExpForDamage(double damage)
         {
             return damage * PlanetDefenseStrength * Consts.ExperienceMult;
         }
@@ -1009,9 +1024,13 @@ namespace GalWar
             return GetExpForDamage(1 / PlanetDefenseCost);
         }
 
-        protected override void AddExperience(double experience)
+        internal override void AddExperience(double experience)
         {
-            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, experience * this.PlanetDefenseCost / this.PlanetDefenseStrength);
+            AddCostExperience(experience * this.PlanetDefenseCost / this.PlanetDefenseStrength);
+        }
+        internal override void AddCostExperience(double cost)
+        {
+            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, cost);
         }
 
         internal void BuildPlanetDefense(double prodInc)

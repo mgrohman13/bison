@@ -57,7 +57,7 @@ namespace GalWar
                 Player.GoldIncome(soldiers / Consts.SoldiersForGold);
                 this.soldiers -= soldiers;
 
-                Player.GoldIncome(population / Consts.PopulationForGold);
+                Player.GoldIncome(population / Consts.PopulationForGoldLow);
                 this.Population -= population;
             }
         }
@@ -224,11 +224,11 @@ namespace GalWar
                     {
                         float available = (float)( soldiers - moveSoldiers );
                         float chunk = available * Consts.MoveSoldiersMult / ( Consts.MoveSoldiersMult + population - mov );
-                        if (doMove)
-                        {
-                            canUndo = false;
-                            chunk = Game.Random.GaussianCapped(chunk, Consts.SoldiersRndm, Math.Max(0, 2 * chunk - available));
-                        }
+                        //if (doMove)
+                        //{
+                        //    canUndo = false;
+                        //    chunk = Game.Random.GaussianCapped(chunk, Consts.SoldiersRndm, Math.Max(0, 2 * chunk - available));
+                        //}
                         moveSoldiers += chunk;
                     }
             }

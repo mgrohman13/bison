@@ -1612,7 +1612,7 @@ namespace GalWarWin
             }
             else if (ship.DeathStar)
             {
-                this.lblBottom.Text = "Death Star (" + FormatDouble(ship.BombardDamage) + ")";
+                this.lblBottom.Text = "Death Star (" + FormatInt(ship.BombardDamage) + ")";
             }
 
             return ship.Player;
@@ -1906,6 +1906,11 @@ namespace GalWarWin
             this.RefreshAll();
 
             return SliderForm.ShowForm(new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
+        }
+
+        bool IEventHandler.Continue()
+        {
+            return ShowOption("Planet population has been killed off.  Continue attacking?");
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)

@@ -34,21 +34,17 @@ namespace GalWarWin
 
             if (( str ^ tr ^ ds ) ? ( str && tr && ds ) : ( str || tr || ds ))
             {
-                int att = form.cbAttack.Checked ? shipDesign.Att : 1;
-                int def = form.cbDefense.Checked ? shipDesign.Def : 1;
+                int att = form.cbAttack.Checked ? shipDesign.Att : 0;
+                int def = form.cbDefense.Checked ? shipDesign.Def : 0;
                 int hp = str ? shipDesign.HP : 0;
                 int speed = form.cbSpeed.Checked ? shipDesign.Speed : 2;
                 int trans = form.cbTransport.Checked ? shipDesign.Trans : 0;
                 bool colony = form.cbColony.Checked ? shipDesign.Colony : false;
-                double bombardDamage = ds ? shipDesign.BombardDamage / att / Consts.BombardAttackMult : 0;
+                double bombardDamage = ds ? shipDesign.BombardDamage : 0;
                 if (!form.cbSpeed.Checked)
                 {
                     trans *= Game.Random.Round(shipDesign.Speed / 2.0);
                     bombardDamage *= shipDesign.Speed / 2.0;
-                }
-                if (!form.cbAttack.Checked)
-                {
-                    bombardDamage *= shipDesign.Att;
                 }
                 value = ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, shipDesign.Research);
             }

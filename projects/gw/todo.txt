@@ -16,9 +16,6 @@ management screens
 	colonies
 	ships
 
-AddGold randomly rounds in cases
-end turn gold loss before too many shenanigans?
-Colony.GetExperienceSoldiers gold vs soldiers trade rate (SoldiersForGold and other disband rates?)
 ShipDesign.GetIncrease?
 somehow pay to upgrade old designs?  manually weight what you want next?
 alternate strength formula counting less speed?
@@ -35,7 +32,6 @@ undo
 	Colony.StartBuilding
 	Ship.Disband?
 	Colony.DisbandPlanetDefense?
-use player.ID (as byte) in graphs dictionary, cast GraphType to byte
 repair micromanagement
 	cost incentive
 		certain specific value?
@@ -47,24 +43,7 @@ split planetary defense between building attack or defense
 	combine with solders?
 	disband vs destory defensesoldiers payoff
 switch prod to def/soldiers sells all?
-sell planet def for gold floors total gold
-randomize planet colonization cost
 research display offset
-Death Stars
-	keep DS whole numbers, not dependent on attack
-	reduce with speed increase - round up
-	PlanetDefensesDeathStarMult (PopulationForGold/PopulationIncomeForGold)
-	DeathStarPlanetDamageMult/DeathStarFriendlyPopDamageMult
-		scale friendly damage with pop %
-	allow death stars to limit planet damage by pop left
-	name separately
-	design sorting requires attack of at least 1
-incorporate gaussian OEs
-transport exp for invasion?
-ExperienceConstDmgAmt
-extra combat exp for troops killed in transport, (troops get exp?)
-extra bombard/invade exp for planet death
-exp for bombard free damage (maintain startexp for logging...)
 
 anomalies
 	instead of planets
@@ -83,6 +62,7 @@ anomalies
 		semi-permanent teleporter?
 			cannot cause planets to be too close
 	move anomaly? create more?
+	additive ship cost for speed
 
 known enemy designs
 AI

@@ -18,10 +18,10 @@ namespace GalWar
             return GetPlanetDefenseCost(att, def, 0);
         }
 
-        public static double GetValue(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
+        public static double GetValue(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             double researchMult = GetResearchMult(research);
-            return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, 1 / researchMult);
+            return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, 1 / researchMult);
         }
 
         internal static double GetPlanetDefenseCost(int att, int def, int research)
@@ -31,14 +31,14 @@ namespace GalWar
             return GetTotCost(att, def, 1, attDiv - speedAdd, 0, false, 0, researchMult, researchMult) * speedAdd / attDiv * Consts.PlanetDefensesCostMult;
         }
 
-        public static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
+        public static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             double researchMult = GetResearchMult(research);
-            return GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, researchMult, researchMult);
+            return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, researchMult);
         }
 
         private const double speedAdd = 2.1, attDiv = 3.9;
-        private static double GetTotCost(int att, int def, int hp, double speed, int trans, bool colony, double bombardDamageMult, double statResearchMult, double totalResearchMult)
+        private static double GetTotCost(int att, int def, int hp, double speed, int trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
         {
             double speedValue = speed + speedAdd;
             double statMult = statResearchMult * hp;
@@ -56,7 +56,7 @@ namespace GalWar
                                 (
                                     ( Math.Pow(trans, 1 + Consts.AttackNumbersPower) )
                                     +
-                                    ( 13.0 * GetBombardDamage(att, bombardDamageMult) )
+                                    ( 13.0 * bombardDamage )
                                 )
                                 *
                                 speed
@@ -79,11 +79,6 @@ namespace GalWar
             return ( sqr * stat + 6.0 * sqr + 2.0 * stat ) / 9.0;
         }
 
-        internal static double GetBombardDamage(double att, double bombardDamageMult)
-        {
-            return att * bombardDamageMult * Consts.BombardAttackMult;
-        }
-
         private static double GetResearchMult(double research)
         {
             return Consts.ResearchFactor / ( research + Consts.ResearchFactor );
@@ -98,9 +93,8 @@ namespace GalWar
         internal readonly byte _name, _mark;
 
         private readonly byte _upkeep, _att, _def, _speed;
-        private readonly ushort _hp, _cost, _trans;
+        private readonly ushort _hp, _cost, _trans, _bombardDamage;
         private readonly uint _research;
-        private readonly float _bombardDamageMult;
 
         internal static ShipDesign[] GetStartDesigns(List<int> research, Player player)
         {
@@ -133,35 +127,35 @@ namespace GalWar
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
                 GetPcts(player.GetShipDesigns(), player.Game.MapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
 
-                //  ------  Colony/Trans      ------
-                double transStr = GetTransStr(research);
-                DoColonyTrans(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
-                        ref transStr, out this.Colony, out this._trans, out this._bombardDamageMult);
+                //  ------  Colony/Trans/DS   ------
+                this._bombardDamage = 0;
+                double transStr = GetTransStr(research), bombardDamageMult;
+                DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
+                        ref transStr, out this.Colony, out this._trans, out bombardDamageMult);
+                bool deathStar = ( bombardDamageMult > 0 );
 
                 //  ------  Att/Def           ------
                 //being a colony ship/transport/death star makes att and def lower
                 double strMultOffset = Math.PI * transStr;
-                double strMult = strMultOffset / ( strMultOffset + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + this.BombardDamageMult );
+                double strMult = strMultOffset / ( strMultOffset + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + bombardDamageMult );
                 double str = GetAttDefStr(research, strMult);
                 DoAttDef(transStr, str, attPct, out this._att, out this._def);
 
                 //  ------  HP                ------
                 //being a colony ship/transport/death star makes hp higher
-                double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, this.DeathStar ? 1.3 : ( this.Colony ? 1.69 : Math.E ));
+                double hpMult = Consts.BaseDesignHPMult / Math.Pow(strMult, deathStar ? 1.3 : ( this.Colony ? 1.69 : Math.E ));
                 //hp is relative to actual randomized stats
                 this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
-                double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, true), GetSpeedMult(str, hpMult, speedPct));
+                double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, true), GetSpeedMult(str, hpMult, speedPct));
                 this._speed = (byte)MakeStat(speedStr);
 
-                //  ------  BombardDamageMult ------
+                //  ------  BombardDamage     ------
                 //modify bombard mult based on speed and att
-                if (this.DeathStar)
-                {
-                    this._bombardDamageMult *= (float)Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att);
-                    this._bombardDamageMult = CheckBombardDamage(true);
-                }
+                if (deathStar)
+                    this._bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * this.BombardDamage
+                            * (float)Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att)), this.Att, true);
 
                 //  ------  Cost/Upkeep       ------
                 double cost = -1;
@@ -175,8 +169,6 @@ namespace GalWar
                     {
                     case ModifyStat.Att:
                         --this._att;
-                        if (this.DeathStar)
-                            this._bombardDamageMult = CheckBombardDamage(true);
                         break;
                     case ModifyStat.Def:
                         --this._def;
@@ -190,9 +182,8 @@ namespace GalWar
                     case ModifyStat.Trans:
                         --this._trans;
                         break;
-                    case ModifyStat.BombardDamageMult:
-                        this._bombardDamageMult -= ( 1 - Game.Random.NextFloat() );
-                        this._bombardDamageMult = CheckBombardDamage(false);
+                    case ModifyStat.DS:
+                        this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage - 1, this.Att, false);
                         break;
                     case ModifyStat.None:
                         maxCost = cost;
@@ -208,6 +199,7 @@ namespace GalWar
                     {
                     case ModifyStat.Att:
                         ++this._att;
+                        this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage, this.Att, this.DeathStar);
                         break;
                     case ModifyStat.Def:
                         ++this._def;
@@ -224,12 +216,11 @@ namespace GalWar
                 this._upkeep = (byte)upkeep;
 
                 //  ------  Name              ------
-                this._name = player.Game.ShipNames.GetName(this, GetTransStr(research), GetSpeedStr(research));
+                this._name = player.Game.ShipNames.GetName(this, GetAttDefStr(research), GetTransStr(research), GetSpeedStr(research));
                 this._mark = player.Game.ShipNames.GetMark(player, this._name);
             }
         }
 
-        public const double DeathStarAvg = 130;
         private static void GetPcts(ICollection<ShipDesign> designs, int mapSize, int research,
                 out double colony, out double upkeep, out double att, out double speed, out double trans, out double ds)
         {
@@ -252,7 +243,7 @@ namespace GalWar
 
                     upkeep *= design.Upkeep / ( totalCost / upkeepPayoff * Consts.CostUpkeepPct );
                     att *= design.Att / (double)design.Def;
-                    speed *= design.Speed / design.ModSpeedStr(GetSpeedStr(design.Research), GetTransStr(design.Research), false);
+                    speed *= design.Speed / design.ModSpeedStr(GetSpeedStr(design.Research), GetTransStr(design.Research), design.DeathStar, false);
 
                     costMult += totalCost;
                     double mult = design.Research + 260;
@@ -275,7 +266,7 @@ namespace GalWar
                 ds *= costMult;
                 double speedStr = GetSpeedStr(research);
                 trans /= speedStr * GetTransStr(research);
-                ds /= speedStr * GetBombardDamage(GetAttDefStr(research), DeathStarAvg);
+                ds /= speedStr * Consts.GetBombardDamage(GetAttDefStr(research)) * DeathStarAvg;
             }
             else
             {
@@ -318,14 +309,13 @@ namespace GalWar
                 ref double transStr, out bool colony, out int trans, out double bombardDamageMult)
         {
             ushort t;
-            float b;
-            DoColonyTrans(forceColony, forceTrans, forceNeither, research, double.NaN, double.NaN, double.NaN, ref transStr, out colony, out t, out b);
+            DoColonyTransDS(forceColony, forceTrans, forceNeither, research, double.NaN, double.NaN, double.NaN, ref transStr, out colony, out t, out bombardDamageMult);
             trans = t;
-            bombardDamageMult = b;
         }
 
-        private static void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
-                ref double transStr, out bool colony, out ushort trans, out float bombardDamageMult)
+        private const float DeathStarMin = 3f, DeathStarAvg = 91f;
+        private static void DoColonyTransDS(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
+                ref double transStr, out bool colony, out ushort trans, out double bombardDamageMult)
         {
             bool transport;
             if (forceTrans)
@@ -346,7 +336,7 @@ namespace GalWar
             if (colony && !transport)
                 transStr = MultStr(transStr, .39);
 
-            bombardDamageMult = 1;
+            bombardDamageMult = 0;
             if (colony || transport)
             {
                 trans = (ushort)MakeStat(transStr);
@@ -356,10 +346,7 @@ namespace GalWar
                 trans = 0;
 
                 if (!forceNeither && CreateDeathStar(research, dsPct))
-                {
-                    float min = 1 / Consts.BombardAttackMult - .5f;
-                    bombardDamageMult = MakeStat(DeathStarAvg - min) + min + Game.Random.FloatHalf() - .5f;
-                }
+                    bombardDamageMult = MakeStat(DeathStarAvg - DeathStarMin) + DeathStarMin + Game.Random.FloatHalf() - .5f;
             }
         }
 
@@ -440,11 +427,11 @@ namespace GalWar
             return MakeStatStr(research, .65, .39);
         }
 
-        private double ModSpeedStr(double speedStr, double transStr, bool doColAndTrans)
+        private double ModSpeedStr(double speedStr, double transStr, bool deathStar, bool doColAndTrans)
         {
             if (this.Colony)
                 speedStr = MultStr(speedStr, .39);
-            else if (this.DeathStar)
+            else if (deathStar)
                 speedStr = MultStr(speedStr, .65);
             if (( doColAndTrans || !this.Colony ) && this.Trans > 0)
             {
@@ -476,15 +463,14 @@ namespace GalWar
         private double GetMinCost(int mapSize, double maxCost)
         {
             double minCost = this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + 1 / Consts.RepairCostMult;
-            //randomized increase to absolute min
-            return minCost + Game.Random.OE(maxCost / 39);
+            return Game.Random.GaussianOE(minCost * 1.3, 0.026, 0.021, minCost);
         }
 
         private static double GetMaxCost(double minCost, double maxCost)
         {
             //max is more of a guideline than actual rule
             if (maxCost > minCost)
-                maxCost = Game.Random.GaussianCapped(maxCost, .26, minCost);
+                maxCost = Game.Random.GaussianOE(maxCost, .21, .039, minCost);
             else
                 maxCost = minCost;
             return maxCost;
@@ -523,7 +509,7 @@ namespace GalWar
 
         private double GetTotCost()
         {
-            return GetTotCost(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamageMult, this.Research);
+            return GetTotCost(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
         }
 
         private ModifyStat GetReduce(double cost, double hpMult)
@@ -535,10 +521,10 @@ namespace GalWar
             stats.Add(ModifyStat.HP, ( this.HP > 1 ? this.HP : 0 ));
             if (this.Speed > 1)
                 stats.Add(ModifyStat.Speed, Game.Random.Round(this.Speed * .39f));
-            if (this.Trans > 1)
-                stats.Add(ModifyStat.Trans, Game.Random.Round(this.Trans * 1.3f));
+            if (this.Trans > 0)
+                stats.Add(ModifyStat.Trans, Game.Random.Round(( this.Trans - 1f ) * 1.3f + .52f));
             if (this.DeathStar)
-                stats.Add(ModifyStat.BombardDamageMult, Game.Random.Round(this.BombardDamage * this.Speed * 13 + 78));
+                stats.Add(ModifyStat.DS, Game.Random.Round(this.BombardDamage * 2.1));
 
             bool none = true;
             foreach (int value in stats.Values)
@@ -587,15 +573,36 @@ namespace GalWar
             return mult * stat / (double)( this.Att + this.Def );
         }
 
-        private float CheckBombardDamage(bool keepDeathStar)
+        internal static double SetBombardDamage(double bombardDamage, int att)
         {
-            const float minDamage = 1f;
-            if (this.BombardDamageMult < 1 || this.BombardDamage < minDamage)
+            return SetBombardDamage(bombardDamage, att, true);
+        }
+        private static double SetBombardDamage(double bombardDamage, int att, bool keepDeathStar)
+        {
+            int minDamage = GetDeathStarMin(att);
+            if (bombardDamage < minDamage)
                 if (keepDeathStar)
-                    return Math.Max(1, minDamage / Consts.BombardAttackMult / this.Att);
+                    bombardDamage = minDamage;
                 else
-                    return 1;
-            return this.BombardDamageMult;
+                    bombardDamage = 0;
+            if (bombardDamage != (ushort)bombardDamage)
+                throw new Exception();
+            return bombardDamage;
+        }
+        internal static double GetBombardDamage(ushort bombardDamage, int att)
+        {
+            int minDamage = GetDeathStarMin(att);
+            if (bombardDamage > 0)
+                if (bombardDamage < minDamage)
+                    throw new Exception();
+                else
+                    return bombardDamage;
+            else
+                return Consts.GetBombardDamage(att);
+        }
+        private static int GetDeathStarMin(int att)
+        {
+            return (int)Math.Ceiling(DeathStarMin * Consts.GetBombardDamage(att));
         }
 
         #endregion //Cost/Upkeep
@@ -617,14 +624,6 @@ namespace GalWar
         public double GetUpkeepPayoff(int mapSize)
         {
             return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(), GetNonTransPct(), this.Speed);
-        }
-
-        internal float BombardDamageMult
-        {
-            get
-            {
-                return this._bombardDamageMult;
-            }
         }
 
         internal override bool NeedsTile
@@ -675,8 +674,8 @@ namespace GalWar
             double colonyStr = ( this.Colony ? 1 : 0 );
             double oldColonyStr = ( oldDesign.Colony ? 1 : 0 );
 
-            double deathStr = this.Att * this.Speed * this.BombardDamageMult;
-            double oldDeathStr = oldDesign.Att * oldDesign.Speed * oldDesign.BombardDamageMult;
+            double deathStr = this.BombardDamage * this.Speed;
+            double oldDeathStr = oldDesign.BombardDamage * oldDesign.Speed;
 
             return (
                 //must be at least as fast, and either
@@ -786,15 +785,14 @@ namespace GalWar
         {
             get
             {
-                return GetBombardDamage(this.Att, this.BombardDamageMult);
+                return GetBombardDamage(this._bombardDamage, this.Att);
             }
         }
-
         public bool DeathStar
         {
             get
             {
-                return ( this.BombardDamageMult > 1 );
+                return ( this._bombardDamage > 0 );
             }
         }
 
@@ -838,12 +836,12 @@ namespace GalWar
 
         private double GetNonColonyPct()
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamageMult, this.Research);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
         }
 
         private double GetNonTransPct()
         {
-            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamageMult, this.Research);
+            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
         }
 
         public override string GetProdText(string curProd)
@@ -865,7 +863,7 @@ namespace GalWar
             HP,
             Speed,
             Trans,
-            BombardDamageMult,
+            DS,
             None,
         }
     }

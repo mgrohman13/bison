@@ -125,7 +125,7 @@ namespace GalWar
 
         #region internal
 
-        internal int ID
+        internal byte ID
         {
             get
             {
@@ -169,12 +169,13 @@ namespace GalWar
             double gold = this.goldValue + this.goldOffset;
             this.goldValue = 0;
             this.goldOffset = 0;
-            AddGold(gold, Game.Random.Round(gold * 10) / 10.0);
+            AddGold(gold, true);
         }
 
         internal void NewRound()
         {
-            this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
+            if (this.newResearch > 0)
+                this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
         }
 
         internal void FreeResearch(double research)
@@ -330,7 +331,20 @@ namespace GalWar
 
         internal void AddGold(double gold)
         {
-            AddGold(gold, RoundGold(gold));
+            AddGold(gold, false);
+        }
+        internal void AddGold(double gold, bool random)
+        {
+            double rounded;
+            AddGold(gold, random, out rounded);
+        }
+        internal void AddGold(double gold, bool random, out double rounded)
+        {
+            if (random)
+                rounded = Game.Random.Round(gold * 10) / 10.0;
+            else
+                rounded = RoundGold(gold);
+            AddGold(gold, rounded);
         }
         internal void AddGold(double gold, double rounded)
         {
@@ -363,6 +377,11 @@ namespace GalWar
         public static double RoundGold(double gold)
         {
             return Math.Round(gold, 1);
+        }
+
+        public static double FloorGold(double gold)
+        {
+            return Math.Floor(gold * 10 + Consts.FLOAT_ERROR) / 10;
         }
 
         public static double CeilGold(double gold)

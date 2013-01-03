@@ -76,7 +76,7 @@ namespace GalWar
 
             planetPct *= MapSize;
             int planets = Random.GaussianCappedInt(planetPct, .21);
-            this._planetPct = Random.GaussianCapped(planetPct * Consts.PlanetCreationRate, .169);
+            this._planetPct = Random.GaussianCapped(planetPct * Consts.PlanetCreationRate, .169, Consts.FLOAT_ERROR);
             this.planets = new List<Planet>(planets + numPlayers);
             //first create enough planets for homeworlds
             while (this.planets.Count < numPlayers)

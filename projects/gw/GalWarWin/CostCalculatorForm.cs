@@ -47,7 +47,10 @@ namespace GalWarWin
             SetValue(this.nudTrans, trans);
             this.cbCol.Checked = colony;
 
-            SetValue(this.nudDS, GetBombardDamage(bombardDamageMult));
+            if (bombardDamageMult > 0)
+                SetValue(this.nudDS, Game.Random.Round(bombardDamageMult * GetBombardDamage()));
+            else
+                ClearDS();
 
             double totCost = Update(null);
             events = false;
@@ -97,8 +100,9 @@ namespace GalWarWin
             int speed = (int)this.nudSpeed.Value;
             int trans = (int)this.nudTrans.Value;
             bool colony = (bool)this.cbCol.Checked;
+            double BombardDamage = (double)this.nudDS.Value;
 
-            double upkeepPayoff = GetUpkeepPayoff(att, def, hp, speed, trans, colony, GetBombardDamageMult(att), research);
+            double upkeepPayoff = GetUpkeepPayoff(att, def, hp, speed, trans, colony, BombardDamage, research);
             double upkeep = Math.Round(totCost / upkeepPayoff * Consts.CostUpkeepPct);
             if (upkeep < 1)
                 upkeep = 1;
@@ -140,63 +144,63 @@ namespace GalWarWin
             int upk = (int)this.nudUpk.Value;
             int trans = (int)this.nudTrans.Value;
             bool colony = (bool)this.cbCol.Checked;
-            double bombardDamageMult = GetBombardDamageMult(att);
+            double bombardDamage = (double)this.nudDS.Value;
 
-            if (bombardDamageMult < 1)
+            this.cbDS.Checked = !( bombardDamage < GetBombardDamage() + Consts.FLOAT_ERROR );
+            if (!cbDS.Checked)
             {
-                bombardDamageMult = 1;
+                bombardDamage = GetBombardDamage();
                 ClearDS();
             }
-            this.cbDS.Checked = ( bombardDamageMult > 1 + Consts.FLOAT_ERROR );
 
             if (sender == nudProd)
             {
-                research = CalcResearch(att, def, hp, speed, trans, colony, bombardDamageMult, (double)this.nudProd.Value, upk);
+                research = CalcResearch(att, def, hp, speed, trans, colony, bombardDamage, (double)this.nudProd.Value, upk);
                 SetValue(this.nudResearch, research);
             }
 
-            double totCost = ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research);
+            double totCost = ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
 
             if (sender != null && sender != nudProd)
-                SetValue(this.nudProd, GetProd(att, def, hp, speed, trans, colony, bombardDamageMult, research, upk, totCost));
+                SetValue(this.nudProd, GetProd(att, def, hp, speed, trans, colony, bombardDamage, research, upk, totCost));
 
             this.txtStr.Text = GraphsForm.GetArmadaString(ShipDesign.GetStrength(att, def, hp, speed));
             this.txtCost.Text = MainForm.FormatDouble(totCost);
-            this.txtValue.Text = GraphsForm.GetArmadaString(ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamageMult, research));
+            this.txtValue.Text = GraphsForm.GetArmadaString(ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, research));
 
             events = true;
             return totCost;
         }
 
-        private int CalcResearch(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double prod, int upk)
+        private int CalcResearch(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double prod, int upk)
         {
             int research = TBSUtil.FindValue(delegate(int r)
             {
-                return ( GetProd(att, def, hp, speed, trans, colony, bombardDamageMult, r, upk) < prod );
+                return ( GetProd(att, def, hp, speed, trans, colony, bombardDamage, r, upk) < prod );
             }, (int)this.nudResearch.Minimum, (int)this.nudResearch.Maximum, true);
 
-            if (( prod - GetProd(att, def, hp, speed, trans, colony, bombardDamageMult, research, upk) ) >
-                    ( GetProd(att, def, hp, speed, trans, colony, bombardDamageMult, research - 1, upk) - prod ))
+            if (( prod - GetProd(att, def, hp, speed, trans, colony, bombardDamage, research, upk) ) >
+                    ( GetProd(att, def, hp, speed, trans, colony, bombardDamage, research - 1, upk) - prod ))
                 --research;
 
             return research;
         }
 
-        private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, int research, int upk)
+        private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int research, int upk)
         {
-            return GetProd(att, def, hp, speed, trans, colony, bombardDamageMult, research, upk,
-                    ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamageMult, research));
+            return GetProd(att, def, hp, speed, trans, colony, bombardDamage, research, upk,
+                    ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research));
         }
-        private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research, int upk, double totCost)
+        private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research, int upk, double totCost)
         {
-            return ( totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamageMult, research) );
+            return ( totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamage, research) );
         }
 
-        private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamageMult, double research)
+        private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             return Consts.GetUpkeepPayoff(MainForm.Game.MapSize,
-                    Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamageMult, research),
-                    Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamageMult, research), speed);
+                    Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, research),
+                    Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamage, research), speed);
         }
 
         private void MaintainDS(bool deathStar)
@@ -217,18 +221,14 @@ namespace GalWarWin
         {
             events = false;
 
-            SetValue(this.nudDS, GetBombardDamage(1));
+            SetValue(this.nudDS, GetBombardDamage());
 
             events = true;
         }
 
-        private double GetBombardDamageMult(decimal att)
+        private double GetBombardDamage()
         {
-            return (double)( this.nudDS.Value / att / (decimal)Consts.BombardAttackMult );
-        }
-        private double GetBombardDamage(double bombardDamageMult)
-        {
-            return (double)( this.nudAtt.Value * (decimal)bombardDamageMult * (decimal)Consts.BombardAttackMult );
+            return Consts.GetBombardDamage((double)this.nudAtt.Value);
         }
 
         private void SetValue(NumericUpDown nud, double value)
@@ -272,7 +272,7 @@ namespace GalWarWin
         private void cbDS_CheckedChanged(object sender, EventArgs e)
         {
             if (events && this.cbDS.Checked)
-                SetValue(this.nudDS, GetBombardDamage(ShipDesign.DeathStarAvg));
+                SetValue(this.nudDS, Game.Random.Round(GetBombardDamage() * 91));
             MaintainDS(this.cbDS.Checked);
             cb_CheckedChanged(sender, e);
         }

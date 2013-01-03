@@ -102,6 +102,30 @@ namespace GalWar
             return retVal;
         }
 
+        bool IEventHandler.Continue()
+        {
+            callback = true;
+
+            bool retVal;
+
+            try
+            {
+                retVal = handler.Continue();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                retVal = true;
+            }
+            finally
+            {
+                callback = false;
+            }
+
+            return retVal;
+        }
+
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
             callback = true;

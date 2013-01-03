@@ -71,7 +71,7 @@ namespace GalWarWin
         private static string GetColonyText(ShipDesign design)
         {
             return ( design.Colony ? "Colony Ship (" + MainForm.FormatDouble(design.GetColonizationValue(MainForm.Game.MapSize)) + ")"
-                    : ( design.DeathStar ? "Death Star (" + MainForm.FormatDouble(design.BombardDamage) + ")" : string.Empty ) );
+                    : ( design.DeathStar ? "Death Star (" + MainForm.FormatInt(design.BombardDamage) + ")" : string.Empty ) );
         }
 
         private void label_MouseClick(object sender, MouseEventArgs e)

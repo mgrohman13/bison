@@ -13,6 +13,7 @@ namespace GalWar
         private Colony _colony;
 
         private short _quality;
+        private readonly float _colonizationCostMult;
 
         internal Planet(Tile tile)
         {
@@ -22,6 +23,8 @@ namespace GalWar
             this._colony = null;
 
             this.Quality = Consts.NewPlanetQuality();
+
+            this._colonizationCostMult = Game.Random.GaussianOE(1f, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, .39f);
         }
 
         #endregion //fields and constructors
@@ -69,7 +72,14 @@ namespace GalWar
         {
             get
             {
-                return Quality + .65 / Consts.PopulationGrowth;
+                return Quality + ConstValue;
+            }
+        }
+        public static double ConstValue
+        {
+            get
+            {
+                return .65 / Consts.PopulationGrowth;
             }
         }
 
@@ -77,7 +87,7 @@ namespace GalWar
         {
             get
             {
-                return ( PlanetValue * Consts.ColonizationValueGoldCost );
+                return _colonizationCostMult * PlanetValue * Consts.ColonizationValueGoldCost;
             }
         }
 
