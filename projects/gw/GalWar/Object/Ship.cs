@@ -776,7 +776,7 @@ namespace GalWar
                 {
                 case ExpType.Att:
                     ++att;
-                    if (ds > 0)
+                    if (this.DeathStar)
                         ds = ShipDesign.SetBombardDamage(ds, att);
                     break;
                 case ExpType.Def:
@@ -791,7 +791,7 @@ namespace GalWar
                     break;
                 case ExpType.Speed:
                     ++speed;
-                    if (ds > 0)
+                    if (this.DeathStar)
                         ds = ReduceDS(ds, speed);
                     break;
                 case ExpType.Trans:

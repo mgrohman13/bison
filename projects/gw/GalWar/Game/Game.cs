@@ -337,61 +337,27 @@ next_planet:
         public Dictionary<Player, double> GetResearch()
         {
             Player[] players = GetResearchOrder();
-            double[] rawValues = new double[players.Length];
+            Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
             for (int a = 0 ; a < players.Length ; ++a)
             {
                 Player player = players[a];
                 double research;
                 if (players.Length > 1)
-                    research = player.Research / (double)players[1].Research / Consts.ResearchVictoryMult;
+                    research = player.ResearchDisplay / players[1].ResearchDisplay;
                 else
-                    research = 1 / Consts.ResearchVictoryMult;
-                rawValues[a] = research;
-            }
-            Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
-            for (int b = 0 ; b < players.Length ; ++b)
-            {
-                double value = rawValues[b];
-                if (b != 1)
-                {
-                    double skew = players[b].ResearchDisplaySkew;
-                    double low, high;
-                    if (b == 0)
-                    {
-                        low = 1 / Consts.ResearchVictoryMult;
-                        high = 1 - Consts.FLOAT_ERROR;
-                        if (value < high)
-                            skew *= ( 1 - value ) / ( 2 - value ) * ( 2 - low ) / ( 1 - low );
-                        else
-                            skew = 0;
-                    }
-                    else
-                    {
-                        if (b + 1 < rawValues.Length)
-                            low = rawValues[b + 1];
-                        else
-                            low = 0;
-                        high = rawValues[b - 1];
-                    }
-                    double s2 = Math.Min(high - value, value - low);
-                    if (skew < 0)
-                        value = value + -s2 * ( skew / ( skew - 1 ) );
-                    else
-                        value = value + s2 * ( skew / ( skew + 1 ) );
-                }
-                retVal.Add(players[b], value * 100);
-                rawValues[b] = value;
+                    research = 1;
+                retVal.Add(player, research * 100);
             }
             return retVal;
         }
 
-        private Player[] GetResearchOrder()
+        internal Player[] GetResearchOrder()
         {
             Player[] players = (Player[])this.players.Clone();
             Array.Sort<Player>(players, delegate(Player p1, Player p2)
             {
                 //descending sort
-                return p2.Research - p1.Research;
+                return Math.Sign(p2.ResearchDisplay - p1.ResearchDisplay);
             });
             return players;
         }
@@ -457,7 +423,8 @@ next_planet:
         {
             Player[] researchOrder = GetResearchOrder();
             //research victory happens when the top player exceeds a certain multiple of the second place player
-            if (researchOrder.Length > 1 && researchOrder[0].Research > researchOrder[1].Research * Consts.ResearchVictoryMult)
+            if (researchOrder.Length > 1 && researchOrder[0].Research >
+                    Game.Random.GaussianInt(researchOrder[1].Research * Consts.ResearchVictoryMult, Consts.ResearchVictoryRndm))
             {
                 researchOrder[0].Destroy();
                 RemovePlayer(researchOrder[0]);

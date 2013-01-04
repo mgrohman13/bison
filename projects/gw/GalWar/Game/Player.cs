@@ -27,7 +27,7 @@ namespace GalWar
         private byte _id;
         private ushort _newResearch;
         private uint _research, _lastResearched, _goldValue;
-        private float _incomeTotal, _rKey, _rChance, _rMult, _rDispSkew;
+        private float _incomeTotal, _rKey, _rChance, _rMult, _rDisp, _rDispTrg;
         private double _goldOffset;
 
         public Player(string name, Color color, IGalWarAI AI)
@@ -76,6 +76,8 @@ namespace GalWar
             this.IncomeTotal = gold + Consts.StartResearch;
 
             ResetResearchChance();
+            _rDisp = 1;
+            _rDispTrg = 1;
         }
 
         private int newResearch
@@ -194,8 +196,27 @@ namespace GalWar
 
             //re-randomize research chance and display skew
             ResetResearchChance();
-            ResearchDisplaySkew += Game.Random.Gaussian(.039f);
-            ResearchDisplaySkew *= 1 - .0078f;
+
+            Player[] research = Game.GetResearchOrder();
+            if (research.Length > 1)
+            {
+                double totalIncome = GetTotalIncome();
+                double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
+                double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
+                float diff = (float)( ( high - low ) / research[1].ResearchDisplay );
+
+                float add = Game.Random.GaussianCapped(diff, Consts.ResearchRndm);
+                bool sign = ( _rDisp > _rDispTrg );
+                if (sign)
+                    _rDisp -= add;
+                else
+                    _rDisp += add;
+                if (sign != ( _rDisp > _rDispTrg ) || _rDisp == _rDispTrg)
+                {
+                    _rDisp = _rDispTrg;
+                    _rDispTrg = Game.Random.GaussianCapped(1f, .091f);
+                }
+            }
         }
 
         private void NewShipDesign(IEventHandler handler)
@@ -471,15 +492,11 @@ namespace GalWar
             }
         }
 
-        internal float ResearchDisplaySkew
+        internal double ResearchDisplay
         {
             get
             {
-                return this._rDispSkew;
-            }
-            private set
-            {
-                this._rDispSkew = value;
+                return this.Research * this._rDisp;
             }
         }
 

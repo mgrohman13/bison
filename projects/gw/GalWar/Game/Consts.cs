@@ -12,6 +12,8 @@ namespace GalWar
         //as a multiple of the second place players research
         public const double ResearchVictoryMult = 1.5;
 
+        public const double ResearchVictoryRndm = .0065f;
+
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each players homeworld quality
         public const double StartGold = 2 * AverageQuality * 260;
@@ -86,7 +88,7 @@ namespace GalWar
         public const double ExpForGold = 1 / DisbandPct;
 
         public const double MovePopulationGoldCost = Income / 2;
-        public const float MoveSoldiersMult = 3.9f;
+        public const float MoveSoldiersMult = 2.6f;
         public const float SoldiersRndm = .26f;
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;

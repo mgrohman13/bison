@@ -558,14 +558,14 @@ namespace GalWar
 
             stats.Add(ModifyStat.Att, IncreaseAttDef(this.Att, this.Def, hpMult));
             stats.Add(ModifyStat.Def, IncreaseAttDef(this.Def, this.Att, hpMult));
-            stats.Add(ModifyStat.HP, Game.Random.Round(GetHPStr(this.Att, this.Def, hpMult)));
+            stats.Add(ModifyStat.HP, Game.Random.Round(byte.MaxValue * GetHPStr(this.Att, this.Def, hpMult)));
 
             return Game.Random.SelectValue<ModifyStat>(stats);
         }
 
         private int IncreaseAttDef(int stat, int other, double hpMult)
         {
-            return Game.Random.Round(GetStatChance(this.HP, stat) / ( GetHPStr(stat + 1, other, hpMult) - GetHPStr(stat, other, hpMult) ));
+            return Game.Random.Round(byte.MaxValue * GetStatChance(this.HP, stat) / ( GetHPStr(stat + 1, other, hpMult) - GetHPStr(stat, other, hpMult) ));
         }
 
         private double GetStatChance(double mult, int stat)
