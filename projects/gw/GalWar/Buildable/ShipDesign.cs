@@ -104,19 +104,19 @@ namespace GalWar
             int idx = 0;
             foreach (int type in Game.Random.Iterate(3))
             {
-                retVal[idx] = new ShipDesign(research[idx], player, ( type == 0 ), ( type == 1 ), ( type == 2 ));
+                retVal[idx] = new ShipDesign(research[idx], player, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None);
                 ++idx;
             }
 
             return retVal;
         }
 
-        internal ShipDesign(int research, Player player)
-            : this(research, player, false, false, false)
+        internal ShipDesign(int research, Player player, FocusStat focus)
+            : this(research, player, false, false, false, focus)
         {
         }
 
-        private ShipDesign(int research, Player player, bool forceColony, bool forceTrans, bool forceNeither)
+        private ShipDesign(int research, Player player, bool forceColony, bool forceTrans, bool forceNeither, FocusStat focus)
         {
             checked
             {
@@ -131,7 +131,7 @@ namespace GalWar
                 this._bombardDamage = 0;
                 double transStr = GetTransStr(research), bombardDamageMult;
                 DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
-                        ref transStr, out this.Colony, out this._trans, out bombardDamageMult);
+                        ref transStr, out this.Colony, out this._trans, out bombardDamageMult, focus);
                 bool deathStar = ( bombardDamageMult > 0 );
 
                 //  ------  Att/Def           ------
@@ -139,7 +139,7 @@ namespace GalWar
                 double strMultOffset = Math.PI * transStr;
                 double strMult = strMultOffset / ( strMultOffset + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + bombardDamageMult );
                 double str = GetAttDefStr(research, strMult);
-                DoAttDef(transStr, str, attPct, out this._att, out this._def);
+                DoAttDef(transStr, str, attPct, out this._att, out this._def, focus);
 
                 //  ------  HP                ------
                 //being a colony ship/transport/death star makes hp higher
@@ -309,14 +309,22 @@ namespace GalWar
                 ref double transStr, out bool colony, out int trans, out double bombardDamageMult)
         {
             ushort t;
-            DoColonyTransDS(forceColony, forceTrans, forceNeither, research, double.NaN, double.NaN, double.NaN, ref transStr, out colony, out t, out bombardDamageMult);
+            DoColonyTransDS(forceColony, forceTrans, forceNeither, research, double.NaN, double.NaN, double.NaN,
+                    ref transStr, out colony, out t, out bombardDamageMult, FocusStat.None);
             trans = t;
         }
 
         private const float DeathStarMin = 3f, DeathStarAvg = 91f;
         private static void DoColonyTransDS(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
-                ref double transStr, out bool colony, out ushort trans, out double bombardDamageMult)
+                ref double transStr, out bool colony, out ushort trans, out double bombardDamageMult, FocusStat focus)
         {
+            if (( focus & FocusStat.Colony ) == FocusStat.Colony)
+                FocusPcts(ref colonyPct, ref transPct, ref dsPct);
+            else if (( focus & FocusStat.DS ) == FocusStat.DS)
+                FocusPcts(ref dsPct, ref colonyPct, ref transPct);
+            else if (( focus & FocusStat.Trans ) == FocusStat.Trans)
+                FocusPcts(ref transPct, ref colonyPct, ref dsPct);
+
             bool transport;
             if (forceTrans)
                 transport = true;
@@ -348,6 +356,10 @@ namespace GalWar
                 if (!forceNeither && CreateDeathStar(research, dsPct))
                     bombardDamageMult = MakeStat(DeathStarAvg - DeathStarMin) + DeathStarMin + Game.Random.FloatHalf() - .5f;
             }
+        }
+
+        private static void FocusPcts(ref double colonyPct, ref double transPct, ref double dsPct)
+        {
         }
 
         private static bool CreateDeathStar(int research, double actual)
@@ -386,7 +398,7 @@ namespace GalWar
             return MakeStatStr(research, 1.69 * strMult, .65);
         }
 
-        private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def)
+        private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def, FocusStat focus)
         {
             int s1 = MakeStat(str);
             //second stat is adjusted to compensate for the first
@@ -865,6 +877,19 @@ namespace GalWar
             Trans,
             DS,
             None,
+        }
+
+        public enum FocusStat
+        {
+            None = 0,
+            Trans = 4,
+            DS = 6,
+            Colony = 7,
+            Def = 16,
+            Att = 24,
+            Speed = 32,
+            //Cost?
+            //Upkeep?
         }
     }
 }

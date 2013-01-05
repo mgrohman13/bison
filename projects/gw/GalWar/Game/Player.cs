@@ -27,7 +27,7 @@ namespace GalWar
         private byte _id;
         private ushort _newResearch;
         private uint _research, _lastResearched, _goldValue;
-        private float _incomeTotal, _rKey, _rChance, _rMult, _rDisp, _rDispTrg;
+        private float _incomeTotal, _rKey, _rChance, _rMult, _rDisp, _rDispTrg, _rDispChange;
         private double _goldOffset;
 
         public Player(string name, Color color, IGalWarAI AI)
@@ -78,6 +78,7 @@ namespace GalWar
             ResetResearchChance();
             _rDisp = 1;
             _rDispTrg = 1;
+            _rDispChange = 1;
         }
 
         private int newResearch
@@ -196,27 +197,7 @@ namespace GalWar
 
             //re-randomize research chance and display skew
             ResetResearchChance();
-
-            Player[] research = Game.GetResearchOrder();
-            if (research.Length > 1)
-            {
-                double totalIncome = GetTotalIncome();
-                double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
-                double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
-                float diff = (float)( ( high - low ) / research[1].ResearchDisplay );
-
-                float add = Game.Random.GaussianCapped(diff, Consts.ResearchRndm);
-                bool sign = ( _rDisp > _rDispTrg );
-                if (sign)
-                    _rDisp -= add;
-                else
-                    _rDisp += add;
-                if (sign != ( _rDisp > _rDispTrg ) || _rDisp == _rDispTrg)
-                {
-                    _rDisp = _rDispTrg;
-                    _rDispTrg = Game.Random.GaussianCapped(1f, .091f);
-                }
-            }
+            RandResearchDisplay();
         }
 
         private void NewShipDesign(IEventHandler handler)
@@ -227,7 +208,7 @@ namespace GalWar
                 designResearch = Game.Random.RangeInt(1, designResearch);
             designResearch += this.LastResearched;
 
-            ShipDesign newDesign = new ShipDesign(designResearch, this);
+            ShipDesign newDesign = new ShipDesign(designResearch, this, ShipDesign.FocusStat.None);
 
             HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)
@@ -251,6 +232,33 @@ namespace GalWar
             this._rKey = Game.Random.FloatHalf();
             this._rChance = Game.Random.NextFloat();
             this._rMult = Game.Random.FloatHalf();
+        }
+
+        private void RandResearchDisplay()
+        {
+            Player[] research = Game.GetResearchOrder();
+            if (research.Length > 1)
+            {
+                double totalIncome = GetTotalIncome();
+                double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
+                double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
+                float diff = (float)( ( high - low ) / research[1].ResearchDisplay );
+
+                float add = Game.Random.Gaussian(_rDispChange * diff, Consts.ResearchDisplayRndm);
+                bool sign = ( _rDisp > _rDispTrg );
+                if (sign)
+                    _rDisp -= add;
+                else
+                    _rDisp += add;
+
+                if (sign != ( _rDisp > _rDispTrg ) || _rDisp == _rDispTrg)
+                {
+                    _rDisp = _rDispTrg;
+                    _rDispTrg = ( _rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm) + 1 ) / 3;
+                    _rDispChange = (float)Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
+                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + Math.Abs(_rDisp - _rDispTrg) * 3 ));
+                }
+            }
         }
 
         internal void EndTurn(IEventHandler handler)

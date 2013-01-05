@@ -72,6 +72,7 @@ namespace GalWar
         public const double NumDesignsPower = .21;
         //turn research income randomness
         public const float ResearchRndm = .3f;
+        public const float ResearchDisplayRndm = (float)( Math.E / 13 );
 
         //trade rates
         public const double ProductionForGold = 10.0 / 3.0;

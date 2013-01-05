@@ -17,6 +17,10 @@ management screens
 	ships
 
 somehow pay to upgrade old designs?  manually weight what you want next?
+	HP?
+	Cost?
+		total str?
+		vs Upkeep?
 alternate strength formula counting less speed?
 revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
 undo
@@ -36,7 +40,6 @@ split planetary defense between building attack or defense
 soldiers tied to planet defense
 	transport combats in order to invade?
 switch prod to def/soldiers sells all?
-research display offset
 
 anomalies
 	instead of planets
