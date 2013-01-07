@@ -88,7 +88,7 @@ namespace MattUtil
         private const double DOUBLE_DIV_1 = 0x20000000000000;
 
         private static readonly double OE_INT_LIMIT; //int.MaxValue/36.7368005696771 (=58455924)
-        private static readonly double GAUSSIAN_MAX; //=12.007273360612251
+        public static readonly double GAUSSIAN_MAX; //=12.007273360612251
 
         private static readonly double LN_2 = Math.Log(2);
 
@@ -128,10 +128,10 @@ namespace MattUtil
         private const uint SEED_FACTOR_2 = 0x0019660D;  //00000000000110010110011000001101
         private const uint SEED_FACTOR_3 = 0x5D588B65;  //01011101010110001000101101100101
 
-        private const uint LCG_SEED = 0x075BCD15;       //00000111010110111100110100010101
+        private const uint LCGN_SEED = 0x075BCD15;       //00000111010110111100110100010101
         private const uint LFSR_SEED = 0x159A55E5;      //00010101100110100101010111100101
-        private const uint MWC_1_SEED = 0x1F123BB5;     //00011111000100100011101110110101
-        private const uint MWC_2_SEED = 0x369BF75D;     //00110110100110111111011101011101
+        private const uint MWC1_SEED = 0x1F123BB5;     //00011111000100100011101110110101
+        private const uint MWC2_SEED = 0x369BF75D;     //00110110100110111111011101011101
 
         private const uint SHIFT_FACTOR = 0x816B8DF8;   //10000001011010111000110111111000
 
@@ -152,11 +152,11 @@ namespace MattUtil
         private bool storeSeed = false;
 
         // MT state
-        private uint[] mt;
-        private ushort mti;
+        private uint[] m;
+        private ushort t;
 
         // KISS state
-        private uint lcg;
+        private uint lcgn;
         private uint lfsr;
         private uint mwc1;
         private uint mwc2;
@@ -401,50 +401,66 @@ namespace MattUtil
                     seedVals = (uint[])seed.Clone();
                 else
                     seedVals = null;
-                mt = new uint[LENGTH];
-                mti = ushort.MaxValue;
+                m = new uint[LENGTH];
+                t = ushort.MaxValue;
                 bitCount = 0;
                 bits = 0;
                 gaussian = double.NaN;
                 gaussianFloat = float.NaN;
 
-                uint a = 0, b = ( seedSize % 2 );
-
                 //seed KISS and re-use same seed values within MT
-                mwc2 = MWC_2_SEED + ( mt[b++] += GetSeed(seed, ref a) );
-                lcg = LCG_SEED + ( mt[b++] += GetSeed(seed, ref a) );
-                mwc1 = MWC_1_SEED + ( mt[b++] += GetSeed(seed, ref a) );
-                lfsr = LFSR_SEED + ( mt[b++] += GetSeed(seed, ref a) );
+                uint a = 0, b = ( seedSize & 1 );
+                lcgn = SeedKISS(LCGN_SEED, b++, seed, ref a);
+                mwc2 = SeedKISS(MWC2_SEED, b++, seed, ref a);
+                mwc1 = SeedKISS(MWC1_SEED, b++, seed, ref a);
+                lfsr = SeedKISS(LFSR_SEED, b++, seed, ref a);
 
                 //initialize MT with a constant PRNG
-                mt[0] += INIT_SEED;
-                for (b = 1 ; b < LENGTH ; ++b)
-                    mt[b] = ( ( SEED_FACTOR_1 * ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) ) ^ mt[b] ) + b;
-
+                SeedMT(SEED_FACTOR_1, INIT_SEED);
                 //use all seed values in combination with the results of another (different) PRNG pass
-                mt[0] -= seedSize + 13;
-                for (b = 1 ; b < LENGTH ; ++b)
-                    mt[b] = ( ( SEED_FACTOR_2 * ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) ) ^ mt[b] ) + GetSeed(seed, ref a) + b + b - a;
-
+                SeedMT(SEED_FACTOR_2, ( 5 - seedSize ) << 1, seed, ref a);
                 //run a third and final pass to ensure all seed values are represented in all MT state values
-                mt[0] += mt[LENGTH - 1];
-                for (b = 1 ; b < LENGTH ; ++b)
-                    mt[b] = ( ( SEED_FACTOR_3 * ( mt[b - 1] ^ ( mt[b - 1] >> 30 ) ) ) ^ mt[b] ) + b;
+                SeedMT(SEED_FACTOR_3, m[LENGTH - 1]);
 
                 //ensure all seed values are represented in KISS as well
-                lfsr += mt[--b];
-                lcg += mt[--b];
-                mwc2 += mt[--b];
-                mwc1 += mt[--b];
+                a = ( a << 1 ) + LENGTH - 3;
+                b = m[LENGTH - 1];
+                lfsr = b = SeedAlg(lfsr, b, SEED_FACTOR_3, ++a);
+                lcgn = b = SeedAlg(lcgn, b, SEED_FACTOR_3, ++a);
+                mwc2 = b = SeedAlg(mwc2, b, SEED_FACTOR_3, ++a);
+                mwc1 = b = SeedAlg(mwc1, b, SEED_FACTOR_3, ++a);
 
                 //ensure non-zero MT, LFSR, and MWCs (LCG can be zero)
-                mt[1] = EnsureNonZero(mt[1]);
+                m[1] = EnsureNonZero(m[1]);
                 lfsr = EnsureNonZero(lfsr);
                 mwc1 = EnsureNonZero(mwc1);
                 mwc2 = EnsureNonZero(mwc2);
 
                 NextUInt();
             }
+        }
+        private uint SeedKISS(uint initSeed, uint b, uint[] seed, ref uint a)
+        {
+            return ( m[b] = GetSeed(seed, ref a) ) + initSeed;
+        }
+        private void SeedMT(uint seedFactor, uint initSeed)
+        {
+            uint a = 0;
+            SeedMT(seedFactor, initSeed, null, ref a);
+        }
+        private void SeedMT(uint seedFactor, uint initSeed, uint[] seed, ref uint a)
+        {
+            m[0] += initSeed;
+            for (uint b = 1 ; b < LENGTH ; ++b)
+            {
+                m[b] = SeedAlg(m[b], m[b - 1], seedFactor, b);
+                if (seed != null)
+                    m[b] += GetSeed(seed, ref a) + ( ( 4 + b - a ) << 1 );
+            }
+        }
+        private uint SeedAlg(uint cur, uint prev, uint seedFactor, uint add)
+        {
+            return ( ( ( ( prev >> 30 ) ^ prev ) * seedFactor ) ^ cur ) + add;
         }
         private uint EnsureNonZero(uint value)
         {
@@ -503,7 +519,7 @@ namespace MattUtil
         private uint LCG()
         {
             lock (this)
-                return ( lcg = ( LCG_MULTIPLIER * lcg + LCG_INCREMENT ) );
+                return ( lcgn = ( LCG_MULTIPLIER * lcgn + LCG_INCREMENT ) );
         }
 
         //A 3-shift shift-register generator, period 2^32-1,
@@ -545,27 +561,27 @@ namespace MattUtil
 
             lock (this)
             {
-                if (mti >= LENGTH)
+                if (t >= LENGTH)
                 {
                     //Console.WriteLine(++asdf);
                     //generate the next state of N 32-bit uints
                     uint b;
                     for (b = 0 ; b < LENGTH - STEP ; ++b)
                     {
-                        a = ( mt[b] & UPPER_MASK ) | ( mt[b + 1] & LOWER_MASK );
-                        mt[b] = mt[b + STEP] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 0x1];
+                        a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
+                        m[b] = m[b + STEP] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
                     }
                     for ( ; b < LENGTH - 1 ; ++b)
                     {
-                        a = ( mt[b] & UPPER_MASK ) | ( mt[b + 1] & LOWER_MASK );
-                        mt[b] = mt[b + STEP - LENGTH] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 0x1];
+                        a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
+                        m[b] = m[b + STEP - LENGTH] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
                     }
-                    a = ( mt[LENGTH - 1] & UPPER_MASK ) | ( mt[0] & LOWER_MASK );
-                    mt[LENGTH - 1] = mt[STEP - 1] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 0x1];
-                    mti = 0;
+                    a = ( m[LENGTH - 1] & UPPER_MASK ) | ( m[0] & LOWER_MASK );
+                    m[LENGTH - 1] = m[STEP - 1] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
+                    t = 0;
                 }
 
-                a = mt[mti++];
+                a = m[t++];
             }
 
             //tempering

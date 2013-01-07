@@ -22,7 +22,6 @@ somehow pay to upgrade old designs?  manually weight what you want next?
 		total str?
 		vs Upkeep?
 alternate strength formula counting less speed?
-revisit colony ship costs once more - maybe amount lost is constant?  related to planet?
 undo
 	Colony.StartBuilding
 	Ship.Disband?

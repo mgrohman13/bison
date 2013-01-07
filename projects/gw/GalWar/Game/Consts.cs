@@ -115,14 +115,8 @@ namespace GalWar
         public const double RepairGoldHPPct = 1 / 16.9;
 
         public const double DisbandPct = RepairCostMult;
-        public const double DisbandHitPctPower = 1;
         public const double ColonizationValueGoldCost = Math.E / 3.9;
         public const float ColonizationCostRndm = .078f;
-        //extra bonus to the production of a new colony, in addition to standard disband amount
-        public const double ColonizationBonusPct = ( 1 + ColonizationBonusMoveFactor ) * ( .65 - DisbandPct );
-        //a lower ColonizationBonusMoveFactor means a greater bonus reduction for faster colony ships
-        public const double ColonizationBonusMoveFactor = 2.1;
-        public const double ColonizationHitPctPower = .91;
 
         public const double AttackStrength = 1;
         public const double AttackNumbersPower = 0.091;
@@ -188,7 +182,7 @@ namespace GalWar
         //upkeep payoff is the number of turns the ship is expected to live
         private static double GetUpkeepPayoff(int mapSize, double nonColonyPct, double nonTransPct, double speed)
         {
-            return ( .65 * Math.Sqrt(mapSize) * ScalePct(.52, 1, nonColonyPct) * ScalePct(1.3, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
+            return ( .65 * Math.Sqrt(mapSize) * ScalePct(.39, 1, nonColonyPct) * ScalePct(1.69, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
         }
 
         internal static double ScalePct(double zero, double one, double pct)
@@ -196,15 +190,17 @@ namespace GalWar
             return ( zero + ( one - zero ) * pct );
         }
 
-        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
+        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research, bool sqr)
         {
+            double retVal = 1;
             if (colony)
             {
-                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamage, research)
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamage, research)
                         / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
-                return ( retVal * retVal );
+                if (sqr)
+                    retVal *= retVal;
             }
-            return 1;
+            return retVal;
         }
 
         public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)

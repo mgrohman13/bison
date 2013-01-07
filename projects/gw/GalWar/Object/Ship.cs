@@ -461,7 +461,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return ShipDesign.GetDisbandValue(this.cost, this.HP, this.MaxHP);
+                return Consts.DisbandPct * this.cost * this.HP / this.MaxHP;
             }
         }
 
@@ -505,7 +505,8 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            return ShipDesign.GetColonizationValue(this.MaxSpeed, this.cost, this.HP + repair, this.MaxHP);
+            return ShipDesign.GetColonizationValue(this.cost, this.Att, this.Def, this.HP + repair, this.MaxHP,
+                    this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched);
         }
 
         public int GetTotalExp()
@@ -818,7 +819,7 @@ namespace GalWar
 
         private double GetNonColonyPct()
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch, true);
         }
 
         private double GetNonTransPct()

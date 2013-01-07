@@ -199,7 +199,7 @@ namespace GalWarWin
         private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             return Consts.GetUpkeepPayoff(MainForm.Game.MapSize,
-                    Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, research),
+                    Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, research, true),
                     Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamage, research), speed);
         }
 

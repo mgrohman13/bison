@@ -148,7 +148,7 @@ namespace GalWar
                 this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
-                double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, true), GetSpeedMult(str, hpMult, speedPct));
+                double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, true), GetSpeedMult(str, hpMult, speedPct, focus));
                 this._speed = (byte)MakeStat(speedStr);
 
                 //  ------  BombardDamage     ------
@@ -300,6 +300,8 @@ namespace GalWar
 
         #region Colony/Trans
 
+        private const float DeathStarMin = 3f, DeathStarAvg = 91f;
+
         public static double GetTransStr(double research)
         {
             return MakeStatStr(research, 26, .65);
@@ -313,17 +315,21 @@ namespace GalWar
                     ref transStr, out colony, out t, out bombardDamageMult, FocusStat.None);
             trans = t;
         }
-
-        private const float DeathStarMin = 3f, DeathStarAvg = 91f;
         private static void DoColonyTransDS(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
                 ref double transStr, out bool colony, out ushort trans, out double bombardDamageMult, FocusStat focus)
         {
+            double transTrg = .169;
+            double colTrg = .104;
+            //target pct of ships that should be death stars increases with research
+            double dsTrg = research / ( 3000 + research );
+            dsTrg *= dsTrg * dsTrg * .169;
+
             if (( focus & FocusStat.Colony ) == FocusStat.Colony)
-                FocusPcts(ref colonyPct, ref transPct, ref dsPct);
+                FocusPcts(ref colTrg, ref transTrg, ref dsTrg);
             else if (( focus & FocusStat.DS ) == FocusStat.DS)
-                FocusPcts(ref dsPct, ref colonyPct, ref transPct);
+                FocusPcts(ref dsTrg, ref colTrg, ref transTrg);
             else if (( focus & FocusStat.Trans ) == FocusStat.Trans)
-                FocusPcts(ref transPct, ref colonyPct, ref dsPct);
+                FocusPcts(ref transTrg, ref colTrg, ref dsTrg);
 
             bool transport;
             if (forceTrans)
@@ -331,14 +337,14 @@ namespace GalWar
             else if (forceNeither || forceColony)
                 transport = false;
             else
-                transport = CreateType(.169, transPct);
+                transport = CreateType(transTrg, transPct);
 
             if (forceColony)
                 colony = true;
             else if (forceNeither || forceTrans)
                 colony = false;
             else
-                colony = CreateType(.104, colonyPct);
+                colony = CreateType(colTrg, colonyPct);
 
             //pure colony ships transport a reduced amount
             if (colony && !transport)
@@ -353,24 +359,18 @@ namespace GalWar
             {
                 trans = 0;
 
-                if (!forceNeither && CreateDeathStar(research, dsPct))
+                if (!forceNeither && CreateType(dsTrg, dsPct))
                     bombardDamageMult = MakeStat(DeathStarAvg - DeathStarMin) + DeathStarMin + Game.Random.FloatHalf() - .5f;
             }
         }
 
-        private static void FocusPcts(ref double colonyPct, ref double transPct, ref double dsPct)
+        private static void FocusPcts(ref double focus, ref double oth1, ref double oth2)
         {
+            const double mult = 2.1;
+            focus *= mult;
+            oth1 /= mult;
+            oth2 /= mult;
         }
-
-        private static bool CreateDeathStar(int research, double actual)
-        {
-            //target pct of ships that should be death stars increases with research
-            double target = research / ( Math.PI * 1040.0 + research );
-            target *= target * target * .169;
-
-            return CreateType(target, actual);
-        }
-
         private static bool CreateType(double target, double actual)
         {
             double chance;
@@ -400,6 +400,9 @@ namespace GalWar
 
         private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def, FocusStat focus)
         {
+            if (( focus & FocusStat.Speed ) == FocusStat.Speed)
+                str /= 1.3;
+
             int s1 = MakeStat(str);
             //second stat is adjusted to compensate for the first
             int s2 = MakeStat(MultStr(str, Math.Sqrt(str / s1)));
@@ -410,9 +413,14 @@ namespace GalWar
                 s2 = temp;
             }
 
+            attPct = Math.Sqrt(attPct);
+            if (( focus & FocusStat.Att ) == FocusStat.Att)
+                attPct /= 3.9;
+            else if (( focus & FocusStat.Def ) == FocusStat.Def)
+                attPct *= 3.9;
+
             //colony ships and transports are more likely to be defensive
             double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .52, .39) ) ? .26 : .65 );
-            attPct = Math.Sqrt(attPct);
             if (attPct < 1)
                 chance = ( 1 - ( ( 1 - chance ) * attPct ) );
             else
@@ -454,13 +462,16 @@ namespace GalWar
             return speedStr;
         }
 
-        private double GetSpeedMult(double str, double hpMult, double speedPct)
+        private double GetSpeedMult(double str, double hpMult, double speedPct, FocusStat focus)
         {
+            double focusFactor = 1;
+            if (( focus & FocusStat.Speed ) == FocusStat.Speed)
+                focusFactor = 1.3;
             //speed is higher for more offensive and weaker ships
             double offenseFactor = this.Att / (double)this.Def;
             double strengthFactor = 2 * GetStatValue(str) * MultStr(4 * str * str, hpMult)
                     / (double)( ( GetStatValue(this.Att) + GetStatValue(this.Def) ) * this.HP );
-            return Math.Pow(offenseFactor * strengthFactor / speedPct, .21);
+            return Math.Pow(offenseFactor * strengthFactor / speedPct, .21) * focusFactor;
         }
 
         #endregion //Speed
@@ -621,16 +632,13 @@ namespace GalWar
 
         #region internal
 
-        internal static double GetColonizationValue(int maxSpeed, double cost, int curHP, int maxHP)
+        internal static double GetColonizationValue(double cost, int att, int def, int curHP, int maxHP, int speed, int trans, bool colony, double bombardDamage, double research)
         {
-            //higher speed reduces bonus
-            return GetDisbandValue(cost, curHP, maxHP) + Consts.ColonizationBonusPct / ( Consts.ColonizationBonusMoveFactor + maxSpeed )
-                    * cost * Math.Pow(curHP / (double)maxHP, Consts.ColonizationHitPctPower);
-        }
-
-        internal static double GetDisbandValue(double cost, int curHP, int maxHP)
-        {
-            return Consts.DisbandPct * cost * Math.Pow(curHP / (double)maxHP, Consts.DisbandHitPctPower);
+            if (!colony)
+                throw new Exception();
+            if (curHP > maxHP)
+                curHP = maxHP;
+            return cost * curHP / maxHP * Consts.GetNonColonyPct(att, def, maxHP, speed, trans, colony, bombardDamage, research, false);
         }
 
         public double GetUpkeepPayoff(int mapSize)
@@ -831,9 +839,10 @@ namespace GalWar
             return MultStr(( s1 + s2 ) * ( s1 + s2 ), hpMult);
         }
 
-        public double GetColonizationValue(int mapSize)
+        public double GetColonizationValue(int mapSize, int research)
         {
-            return GetColonizationValue(this.Speed, AdjustCost(mapSize), this.HP, this.HP);
+            return GetColonizationValue(AdjustCost(mapSize), this.Att, this.Def, this.HP, this.HP,
+                    this.Speed, this.Trans, this.Colony, this.BombardDamage, research);
         }
 
         internal double AdjustCost(int mapSize)
@@ -848,7 +857,7 @@ namespace GalWar
 
         private double GetNonColonyPct()
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research, true);
         }
 
         private double GetNonTransPct()

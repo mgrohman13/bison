@@ -16,11 +16,11 @@ namespace randTest
         {
             rand.StartTick();
 
-            uint v = rand.NextUInt();
-            MTRandom r1 = new MTRandom(new uint[] { v });
-            MTRandom r2 = new MTRandom(new uint[] { v, v });
-            Console.WriteLine(r1.NextBits(64));
-            Console.WriteLine(r2.NextBits(64));
+            //uint v = rand.NextUInt();
+            //MTRandom r1 = new MTRandom(new uint[] { v, v, v, v });
+            //MTRandom r2 = new MTRandom(new uint[] { v, v, v, v, v + 8, v + 8, v + 8, v + 8 });
+            //Console.WriteLine(r1.NextBits(64));
+            //Console.WriteLine(r2.NextBits(64));
 
             //Console.BufferHeight *= 2;
             //Console.BufferWidth *= 2;
@@ -31,25 +31,29 @@ namespace randTest
             //seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
             //Write(new MTRandom(true, seed));
 
-            //double sum = 0;
-            //int[] val = new int[MTRandom.MAX_SEED_SIZE + 2];
-            //for (int x = 0 ; x < 999999 ; ++x)
-            //{
-            //    const float AvgSeedSize = 13;
-            //    const int max = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
-            //    int l = rand.WeightedInt(max, ( AvgSeedSize - 1f ) / max) + 1;
-            //    sum += l;
-            //    val[l]++;
-            //}
+            int digits = 9;
+            int max = int.Parse("".PadLeft(digits, '9'));
+            string format = "".PadLeft(digits, '0');
+            double sum = 0;
+            int[] val = new int[MTRandom.MAX_SEED_SIZE + 2];
+            for (int x = 0 ; x < max ; ++x)
+            {
+                const float AvgSeedSize = 13;
+                const int wmax = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
+                int l = rand.WeightedInt(wmax, ( AvgSeedSize - 1f ) / wmax) + 1;
+                sum += l;
+                val[l]++;
+            }
 
-            //Console.BufferHeight = MTRandom.MAX_SEED_SIZE + 13;
+            Console.BufferHeight = MTRandom.MAX_SEED_SIZE + 13;
 
-            //int runtot = 0;
-            //for (int x = 0 ; x < MTRandom.MAX_SEED_SIZE + 2 ; ++x)
-            //    Console.WriteLine("{0} - {1} - {2}", x.ToString("000"), val[x].ToString("000000"), ( runtot += val[x] ).ToString("000000"));
-            //Console.WriteLine();
-            //Console.WriteLine(MTRandom.MAX_SEED_SIZE);
-            //Console.WriteLine(sum / 999999);
+            int runtot = 0;
+            for (int x = 0 ; x < MTRandom.MAX_SEED_SIZE + 2 ; ++x)
+                Console.WriteLine("{0} - {1} - {3} - {2}", x.ToString("000"), val[x].ToString(format),
+                        ( ( max - runtot ) / ( 1.0 + MTRandom.MAX_SEED_SIZE - x ) ).ToString(format.Substring(0, digits - 2)), ( runtot += val[x] ).ToString(format));
+            Console.WriteLine();
+            Console.WriteLine(MTRandom.MAX_SEED_SIZE);
+            Console.WriteLine(sum / max);
 
             Console.ReadKey();
 
