@@ -165,7 +165,7 @@ namespace GalWar
                 maxCost = GetMaxCost(GetMinCost(player.Game.MapSize, maxCost), maxCost);
                 while (cost > maxCost)
                 {
-                    switch (GetReduce(cost, hpMult))
+                    switch (GetReduce(cost, hpMult, forceColony, forceTrans))
                     {
                     case ModifyStat.Att:
                         --this._att;
@@ -535,7 +535,7 @@ namespace GalWar
             return GetTotCost(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
         }
 
-        private ModifyStat GetReduce(double cost, double hpMult)
+        private ModifyStat GetReduce(double cost, double hpMult, bool forceColony, bool forceTrans)
         {
             Dictionary<ModifyStat, int> stats = new Dictionary<ModifyStat, int>();
 
@@ -544,21 +544,23 @@ namespace GalWar
             stats.Add(ModifyStat.HP, ( this.HP > 1 ? this.HP : 0 ));
             if (this.Speed > 1)
                 stats.Add(ModifyStat.Speed, Game.Random.Round(this.Speed * .39f));
-            if (this.Trans > 0)
-                stats.Add(ModifyStat.Trans, Game.Random.Round(( this.Trans - 1f ) * 1.3f + .52f));
+            if (this.Trans > ( forceTrans ? 1 : 0 ))
+                stats.Add(ModifyStat.Trans, Game.Random.Round(this.Trans * 1.3f + .52f));
             if (this.DeathStar)
                 stats.Add(ModifyStat.DS, Game.Random.Round(this.BombardDamage * 2.1));
 
-            bool none = true;
+            int total = 0;
             foreach (int value in stats.Values)
-                if (value > 0)
-                {
-                    none = false;
-                    break;
-                }
-            if (none)
-                return ModifyStat.None;
+                total += value;
+            if (this.Colony && !forceColony)
+            {
+                int colony = Game.Random.Round(Math.Sqrt(total) / 13.0);
+                total += colony;
+                stats.Add(ModifyStat.Colony, colony);
+            }
 
+            if (total == 0)
+                return ModifyStat.None;
             return Game.Random.SelectValue<ModifyStat>(stats);
         }
 
@@ -883,6 +885,7 @@ namespace GalWar
             Def,
             HP,
             Speed,
+            Colony,
             Trans,
             DS,
             None,

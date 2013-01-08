@@ -106,7 +106,7 @@ namespace GalWar
         {
             //other chance to damage/destroy/improve planets?
 
-            double terraform = Consts.AverageQuality;
+            double terraform = Consts.AverageQuality + Planet.ConstValue;
             double apocalypse = 0;
             foreach (Planet p in Tile.Game.GetPlanets())
                 apocalypse += p.Quality / 2.0;
@@ -125,9 +125,9 @@ namespace GalWar
             {
                 double gold = 0;
                 if (p.Colony != null)
-                    gold = Math.Sqrt(( p.Colony.Population + 1.0 ) / ( p.Quality + 1.0 ) * .21) * Consts.ColonizationValueGoldCost;
+                    gold = Math.Sqrt(( p.Colony.Population + 1.0 ) / ( p.Quality + 1.0 )) * .26;
 
-                gold *= p.DamageVictory();
+                gold = Consts.GetColonizationCost(p.DamageVictory(), gold);
 
                 if (p.Colony != null)
                 {
@@ -161,15 +161,15 @@ namespace GalWar
             while (colonies.Count > 0)
             {
                 //dont rand each time?
-                int quality = Consts.NewPlanetQuality();
-                double cost = quality * .39 * Consts.ColonizationValueGoldCost;
+                int quality = Consts.NewPlanetQuality() + Game.Random.GaussianCappedInt(Planet.ConstValue, 1, 1);
+                double cost = Game.Random.GaussianOE(Consts.GetColonizationCost(quality, .39), Consts.ColonizationCostRndm, Consts.ColonizationCostRndm);
 
                 Colony colony = Game.Random.SelectValue(colonies);
                 if (handler.Explore(AnomalyType.Terraform, colony, quality, cost))
                 {
                     colony.Planet.ReduceQuality(-quality);
-                    //AddGold?
-                    colony.Player.GoldIncome(-cost);
+                    //GoldIncome?
+                    colony.Player.AddGold(-cost);
                     break;
                 }
                 else

@@ -115,7 +115,6 @@ namespace GalWar
         public const double RepairGoldHPPct = 1 / 16.9;
 
         public const double DisbandPct = RepairCostMult;
-        public const double ColonizationValueGoldCost = Math.E / 3.9;
         public const float ColonizationCostRndm = .078f;
 
         public const double AttackStrength = 1;
@@ -166,6 +165,11 @@ namespace GalWar
             //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
             //and to make even pitiful planets have a small carrying capacity
             return ( 1 + growth * Consts.PopulationGrowth );
+        }
+
+        internal static double GetColonizationCost(double value, double mult)
+        {
+            return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + Planet.ConstValue ), .65);
         }
 
         public static double GetProductionUpkeepMult(int mapSize)

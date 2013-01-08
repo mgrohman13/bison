@@ -87,7 +87,7 @@ namespace GalWar
         {
             get
             {
-                return _colonizationCostMult * PlanetValue * Consts.ColonizationValueGoldCost;
+                return Consts.GetColonizationCost(PlanetValue, _colonizationCostMult);
             }
         }
 

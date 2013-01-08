@@ -68,10 +68,20 @@ namespace MattUtil
             MTRandom.watch = new Stopwatch();
             watch.Start();
 
-            //find int limits for Geometric and Gaussian distributions with current double conversion implementation
+            //find 32-bit signed integer limits for the Geometric distribution with current float/double conversion implementation
             MTRandom.OE_INT_LIMIT = (int)Math.Floor(int.MaxValue / GetOEMax());
-            double absMin = ( DOUBLE_DIV_1 / 2.0 + 1.0 ) / DOUBLE_DIV_1 * 2.0 - 1.0;
-            MTRandom.GAUSSIAN_MAX = absMin * Math.Sqrt(-2.0 * Math.Log(absMin * absMin) / ( absMin * absMin ));
+            MTRandom.OE_INT_FLOAT_LIMIT = (int)Math.Floor(int.MaxValue / GetOEFlaotMax()) - 4; //fudge factor
+
+            //find the maximum value for the Gaussian distribution with current float/double conversion implementation
+            MTRandom.GAUSSIAN_MAX = GetGaussianMax(DOUBLE_DIV);
+            MTRandom.GAUSSIAN_FLOAT_MAX = (float)GetGaussianMax(FLOAT_DIV);
+        }
+        private static double GetGaussianMax(double div)
+        {
+            double a = ( div - 1 ) / 2 / div;
+            double b = a;
+            double c = GetC(ref a, ref b);
+            return Math.Abs(a * DoGaussian(c));
         }
 
         //the maximum number of seed values that can be incorporated into the generator's initial state
@@ -87,8 +97,10 @@ namespace MattUtil
         private const double DOUBLE_DIV = 0x1FFFFFFFFFFFFF;
         private const double DOUBLE_DIV_1 = 0x20000000000000;
 
-        private static readonly double OE_INT_LIMIT; //int.MaxValue/36.7368005696771 (=58455924)
-        public static readonly double GAUSSIAN_MAX; //=12.007273360612251
+        private static readonly int OE_INT_LIMIT;           // 58,455,924 (36.7368005696771)
+        private static readonly int OE_INT_FLOAT_LIMIT;     //129,090,164 (16.6355324      )
+        public static readonly double GAUSSIAN_MAX;         //8.531146110505567
+        public static readonly float GAUSSIAN_FLOAT_MAX;    //5.707707
 
         private static readonly double LN_2 = Math.Log(2);
 
@@ -892,15 +904,28 @@ namespace MattUtil
         {
             return OEInt(1);
         }
-
+        /// <summary>
+        /// Returns an open-ended random integer starting at 0 with a mean of 'average'.  Geometric distribution.
+        /// </summary>
+        public int OEInt(float average)
+        {
+            return DoOEInt(average, OEFloat(), true);
+        }
         /// <summary>
         /// Returns an open-ended random integer starting at 0 with a mean of 'average'.  Geometric distribution.
         /// </summary>
         public int OEInt(double average)
         {
-            return DoOEInt(average, OE());
+            return DoOEInt(average, OE(), false);
         }
 
+        /// <summary>
+        /// Returns an open-ended random number starting at 0.0 with a mean of 1.0.  Exponential distribution.
+        /// </summary>
+        public float OEFloat()
+        {
+            return (float)DoOE(NextFloat());
+        }
         /// <summary>
         /// Returns an open-ended random number starting at 0.0 with a mean of 1.0.  Exponential distribution.
         /// </summary>
@@ -908,7 +933,13 @@ namespace MattUtil
         {
             return DoOE(NextDouble());
         }
-
+        /// <summary>
+        /// Returns an open-ended random number starting at 0.0 with a mean of 'average'.  Exponential distribution.
+        /// </summary>
+        public float OE(float average)
+        {
+            return OEFloat() * average;
+        }
         /// <summary>
         /// Returns an open-ended random number starting at 0.0 with a mean of 'average'.  Exponential distribution.
         /// </summary>
@@ -917,31 +948,15 @@ namespace MattUtil
             return OE() * average;
         }
 
-        /// <summary>
-        /// Returns an open-ended random number starting at 0.0 with a mean of 'average'.  Exponential distribution.
-        /// </summary>
-        public float OE(float average)
-        {
-            return (float)( OE((double)average) );
-        }
-
-        public static int GetOEIntMax()
-        {
-            return GetOEIntMax(1);
-        }
-
-        public static int GetOEIntMax(double average)
-        {
-            return DoOEInt(average, GetOEMax());
-        }
-
-        private static int DoOEInt(double average, double oe)
+        private static int DoOEInt(double average, double oe, bool isFloat)
         {
             if (average == 0)
                 return 0;
             //ensure that our result will be able to fit within the range of int
-            if (average > OE_INT_LIMIT || average < -OE_INT_LIMIT)
-                throw new ArgumentOutOfRangeException("average", average, "average must be from -" + OE_INT_LIMIT + " through " + OE_INT_LIMIT);
+            int limit = ( isFloat ? OE_INT_FLOAT_LIMIT : OE_INT_LIMIT );
+            if (average > limit || average < -limit)
+                throw new ArgumentOutOfRangeException("average", average, "average must be from -" + limit + " through " + limit);
+
             bool neg = ( average < 0 );
             if (neg)
                 average = -average;
@@ -952,21 +967,39 @@ namespace MattUtil
                 retVal = -retVal;
             return retVal;
         }
+        private static double DoOE(double nextDouble)
+        {
+            //we cannot take the log of 0.0, so use 1-NextDouble() to exclude it
+            return -Math.Log(1 - nextDouble);
+        }
 
+        public static int GetOEIntMax()
+        {
+            return GetOEIntMax(1);
+        }
+        public static int GetOEIntMax(float average)
+        {
+            return DoOEInt(average, GetOEFlaotMax(), true);
+        }
+        public static int GetOEIntMax(double average)
+        {
+            return DoOEInt(average, GetOEMax(), false);
+        }
+        public static float GetOEFlaotMax()
+        {
+            return (float)DoOE(FLOAT_DIV / FLOAT_DIV_1);
+        }
         public static double GetOEMax()
         {
             return DoOE(DOUBLE_DIV / DOUBLE_DIV_1);
         }
-
+        public static float GetOEMax(float average)
+        {
+            return GetOEFlaotMax() * average;
+        }
         public static double GetOEMax(double average)
         {
             return GetOEMax() * average;
-        }
-
-        private static double DoOE(double nextDouble)
-        {
-            //we cannot take the log of 0.0, so use 1-NextDouble() to exclude it
-            return -Math.Log(1.0 - nextDouble);
         }
 
         //Old quasi-Geometric-Exponential hybrid code:
@@ -1041,7 +1074,8 @@ namespace MattUtil
                 return lowerCap;
             if (average < lowerCap)
                 throw new ArgumentOutOfRangeException("lowerCap", lowerCap, "lowerCap must be less than or equal to average");
-            CheckGaussianInt(average, average * devPct);
+            if (2 * average - lowerCap > int.MaxValue)
+                CheckGaussianInt(average, average * devPct, isFloat);
 
             if (average - lowerCap <= .5)
             {
@@ -1144,6 +1178,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(double average, double devPct)
         {
+            CheckGaussianInt(average, average * devPct, false);
             return Round(Gaussian(average, devPct));
         }
 
@@ -1152,6 +1187,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(float average, float devPct)
         {
+            CheckGaussianInt(average, average * devPct, true);
             return Round(Gaussian(average, devPct));
         }
 
@@ -1176,7 +1212,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(double stdDev)
         {
-            CheckGaussianInt(0, stdDev);
+            CheckGaussianInt(0, stdDev, false);
             return Round(Gaussian(stdDev));
         }
 
@@ -1185,16 +1221,18 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(float stdDev)
         {
-            CheckGaussianInt(0, stdDev);
+            CheckGaussianInt(0, stdDev, true);
             return Round(Gaussian(stdDev));
         }
 
-        private void CheckGaussianInt(double average, double stdDev)
+        private void CheckGaussianInt(double average, double stdDev, bool isFloat)
         {
+            double gaussianMax = ( isFloat ? GAUSSIAN_FLOAT_MAX : GAUSSIAN_MAX );
             //ensure that our result will be able to fit within the range of int
-            double max = Math.Abs(average) + Math.Abs(GAUSSIAN_MAX * stdDev);
+            double max = Math.Abs(average) + Math.Abs(gaussianMax * stdDev);
             if (max >= int.MaxValue)
-                throw new ArgumentOutOfRangeException("", max, "|average|+|" + GAUSSIAN_MAX + "*stdDev| must be less than 2147483647");
+                throw new ArgumentOutOfRangeException("stdDev", max,
+                    "|average|+|" + gaussianMax + "*stdDev| (average=" + average + ", stdDev=" + stdDev + ") must be less than " + int.MaxValue);
         }
 
         /// <summary>
@@ -1249,25 +1287,20 @@ namespace MattUtil
                     //(expected retries ~0.273)
                     do
                     {
-                        //we use NextDouble()*2 instead of DoubleFull() for two reasons:
-                        //1) any 2.0's would just be tossed out for a retry
-                        //2) DoubleFull() can never return exactly 1.0, so Gaussian() would never return exactly 0.0
                         if (isFloat)
                         {
-                            a = NextFloat();
-                            b = NextFloat();
+                            a = FloatHalf();
+                            b = FloatHalf();
                         }
                         else
                         {
-                            a = NextDouble();
-                            b = NextDouble();
+                            a = DoubleHalf();
+                            b = DoubleHalf();
                         }
-                        a = a * 2 - 1;
-                        b = b * 2 - 1;
-                        c = a * a + b * b;
-                    } while (c >= 1);
-                    if (c != 0)
-                        c = Math.Sqrt(( -2 * Math.Log(c) ) / c);
+                        c = GetC(ref a, ref b);
+                    } while (c > 1 || c == 0);
+                    c = DoGaussian(c);
+
                     //generates two at a time, so store one off and return the other
                     if (isFloat)
                         this.gaussianFloat = (float)( a * c );
@@ -1289,6 +1322,16 @@ namespace MattUtil
                     this.gaussian = double.NaN;
                     return retVal;
                 }
+        }
+        private static double GetC(ref double a, ref double b)
+        {
+            a = a * 2 - 1;
+            b = b * 2 - 1;
+            return a * a + b * b;
+        }
+        private static double DoGaussian(double c)
+        {
+            return Math.Sqrt(( -2 * Math.Log(c) ) / c);
         }
 
         /// <summary>
@@ -1547,13 +1590,17 @@ namespace MattUtil
                 if (!dictionary.TryGetValue(obj, out chance))
                 {
                     chance = GetChance(obj);
+                    CheckChance(chance);
                     dictionary.Add(obj, chance);
                 }
                 //when the same object appears in 'choices' multiple times, its probability of being selected increases appropriately
                 //so we must also increase the total
-                total += chance;
+                checked
+                {
+                    total += chance;
+                }
             }
-            return SelectValue<T>(dictionary, choices, total);
+            return SelectValue<T>(dictionary, total);
         }
         /// <summary>
         /// Returns a random key from 'choices', where the value is the probability of selecting that key.
@@ -1563,18 +1610,23 @@ namespace MattUtil
             if (choices == null)
                 throw new ArgumentNullException("choices");
 
-            int idx = -1;
-            //build up an array of the keys so we dont end up requesting them from the dictionary twice
-            T[] enumerable = new T[choices.Count];
             int total = 0;
-            foreach (KeyValuePair<T, int> obj in choices)
+            foreach (int chance in choices.Values)
             {
-                enumerable[++idx] = obj.Key;
-                total += obj.Value;
+                CheckChance(chance);
+                checked
+                {
+                    total += chance;
+                }
             }
-            return SelectValue<T>(choices, enumerable, total);
+            return SelectValue<T>(choices, total);
         }
-        private T SelectValue<T>(Dictionary<T, int> dictionary, IEnumerable<T> enumerable, int total)
+        private void CheckChance(int chance)
+        {
+            if (chance < 0)
+                throw new ArgumentOutOfRangeException("choices", "each individual chance must be greater than or equal to 0");
+        }
+        private T SelectValue<T>(Dictionary<T, int> dictionary, int total)
         {
             if (total <= 0)
                 throw new ArgumentOutOfRangeException("choices", "the sum total of the chances must be greater than 0");
@@ -1582,11 +1634,11 @@ namespace MattUtil
             //select a random number within the total
             total = Next(total);
             //find the object within whose probability range the selection resides
-            foreach (T value in enumerable)
+            foreach (KeyValuePair<T, int> pair in dictionary)
             {
-                int curChance = dictionary[value];
+                int curChance = pair.Value;
                 if (total < curChance)
-                    return value;
+                    return pair.Key;
                 else
                     total -= curChance;
             }

@@ -38,6 +38,7 @@ namespace randTest
             int[] val = new int[MTRandom.MAX_SEED_SIZE + 2];
             for (int x = 0 ; x < max ; ++x)
             {
+                rand.Gaussian();
                 const float AvgSeedSize = 13;
                 const int wmax = MattUtil.MTRandom.MAX_SEED_SIZE - 1;
                 int l = rand.WeightedInt(wmax, ( AvgSeedSize - 1f ) / wmax) + 1;
