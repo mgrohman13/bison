@@ -5,6 +5,7 @@ using System.Text;
 
 namespace GalWar
 {
+    [Serializable]
     public class Anomaly : ISpaceObject
     {
         private readonly Tile tile;
@@ -12,6 +13,7 @@ namespace GalWar
         internal Anomaly(Tile tile)
         {
             this.tile = tile;
+            tile.SpaceObject = this;
         }
 
         public Tile Tile
@@ -24,16 +26,37 @@ namespace GalWar
 
         private double GetValue()
         {
-            //value based on income
-            //    incorporate armada, quality?
-            throw new NotImplementedException();
+            double quality = 0, pop = 0, armada = 0;
+            foreach (Planet p in Tile.Game.GetPlanets())
+            {
+                if (p.Colony == null)
+                {
+                    quality += p.Quality / 1.3;
+                }
+                else
+                {
+                    quality += p.Quality;
+                    pop += p.Colony.Population;
+                    armada += p.Colony.GetCostAvgResearch() / 1.69 + p.Colony.production / 2.1;
+                }
+            }
+            foreach (Player p in Tile.Game.GetPlayers())
+                foreach (Ship ship in p.GetShips())
+                {
+                    pop += ship.Population / 1.3;
+                    armada += ship.GetCostAvgResearch();
+                }
+
+            double value = ( 3 * ( Consts.Income * Math.PI * ( 5 * pop + 2 * quality ) / 7.0 )
+                    + 2 * ( armada ) ) / 5.0 / Tile.Game.GetPlayers().Length;
+            return Game.Random.GaussianOE(value, .39, .26, 1);
         }
 
         internal void Explore(IEventHandler handler, Ship ship)
         {
             Tile.SpaceObject = null;
 
-            Planet planet = Tile.Game.CreatePlanet();
+            Planet planet = Tile.Game.CreatePlanet(this.Tile);
             if (planet != null)
             {
                 handler.Explore(AnomalyType.NewPlanet, planet);
@@ -41,15 +64,15 @@ namespace GalWar
             }
 
             Dictionary<AnomalyType, int> options = new Dictionary<AnomalyType, int>();
-            options.Add(AnomalyType.Colony, 2);
+            //options.Add(AnomalyType.Colony, 2);
             options.Add(AnomalyType.Apocalypse, 3);
-            options.Add(AnomalyType.Death, 5);
-            options.Add(AnomalyType.PlanetDefense, 20);
-            options.Add(AnomalyType.Wormhole, 39);
+            //options.Add(AnomalyType.Death, 5);
+            //options.Add(AnomalyType.PlanetDefense, 20);
+            //options.Add(AnomalyType.Wormhole, 39);
             options.Add(AnomalyType.Experience, 40);
-            options.Add(AnomalyType.Ship, 44);
+            //options.Add(AnomalyType.Ship, 44);
             options.Add(AnomalyType.Population, 52);
-            options.Add(AnomalyType.Gold, 78);
+            options.Add(AnomalyType.Gold, 65);
 
             while (true)
             {
@@ -241,6 +264,13 @@ namespace GalWar
 
         private bool Wormhole(IEventHandler handler, Ship ship)
         {
+            //this ship -> random tile
+            //    chance to add cur speed?
+            //random ship -> this tile
+            //random planet -> this tile?
+            //    cannot cause planets to be too close
+            //semi-permanent teleporter?
+            //    cannot cause planets to be too close
             //move anomaly? create more?
 
             handler.Explore(AnomalyType.Wormhole);
@@ -339,10 +369,27 @@ namespace GalWar
         {
             double value = GetValue();
 
-            if (Game.Random.Bool(.39))
+            bool research;
+            switch (Game.Random.Next(13))
+            {
+            case 1:
+            case 2:
+                research = handler.Explore(AnomalyType.GoldResearch, value);
+                break;
+            case 3:
+            case 4:
+            case 5:
+                research = true;
+                break;
+            default:
+                research = false;
+                break;
+            }
+
+            if (research)
             {
                 handler.Explore(AnomalyType.Research, value);
-                ship.Player.FreeResearch(value);
+                ship.Player.FreeResearch(handler, value);
             }
             else
             {
@@ -358,6 +405,7 @@ namespace GalWar
             NewPlanet,
             Gold,
             Research,
+            GoldResearch,
             Production,
             Ship,
             Experience,

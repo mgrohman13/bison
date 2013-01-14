@@ -506,13 +506,13 @@ namespace GalWar
                 return this.production;
             }
         }
-        private int production
+        internal int production
         {
             get
             {
                 return this._production;
             }
-            set
+            private set
             {
                 checked
                 {
@@ -980,6 +980,11 @@ namespace GalWar
         private double GetPlanetDefenseUpkeep(int hp, int att, int def, double mult)
         {
             return hp * mult * ShipDesign.GetPlanetDefenseCost(att, def, this.Player.LastResearched) * Consts.GetProductionUpkeepMult(Player.Game.MapSize);
+        }
+
+        internal double GetCostAvgResearch()
+        {
+            return HP * ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, this.Player.Game.AvgResearch);
         }
 
         internal double PlanetDefenseCost

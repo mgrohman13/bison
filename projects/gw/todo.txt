@@ -1,10 +1,34 @@
+Yellow Destroyer II (4, 17/17, 0) : Red Warrior I (4, 7/7, 0)
+ 1=  4 :   0 (+ 4)
+ 2=  0 :   2 (- 2)
+ 3=  2 :   4 (- 2)
+ 4=  3 :   1 (+ 2)
+     9 :   7 (+  6 : -  4)
+ + 1.0 : - 1.0 (+ 2.0)
+
+Yellow Destroyer II - 0
+ Trans ( 76%) - 2
+ HP    (100%) - 7
+ HP    (100%) - 12
+ Trans ( 79%) - 13
+(HP   ) 15/19 - 16
+
+Red Warrior I - 0
+ HP    (  0%) - 17
+ HP    (NaN%) - 77
+ Speed ( 13%) - 77
+ Att   ( 13%) - 140
+ Trans ( 13%) - 147
+ Trans ( 13%) - 156
+(Speed) 1/8 - 244
+
+
 non DS bombard combat screen take into account free damage
 autorepair off map indicator is worthless
 clear enemy moves
 	dialog
 	undo
 repair cost calculations using decimal places not rounded?
-when planet is destroyed on invasion, retroactively give back gold/troops so that we don't have negative quality fudge factor of -2
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
@@ -16,16 +40,12 @@ management screens
 	colonies
 	ships
 
-somehow pay to upgrade old designs?  manually weight what you want next?
-	HP?
-	Cost?
-		total str?
-		vs Upkeep?
-alternate strength formula counting less speed?
+when planet is destroyed on invasion, retroactively give back gold/troops so that we don't have negative quality fudge factor of -2
 undo
 	Colony.StartBuilding
-	Ship.Disband?
-	Colony.DisbandPlanetDefense?
+		manual change always rounds down?
+	Colony.DisbandPlanetDefense
+		prod rounds constantly, like gold?
 repair micromanagement
 	cost incentive
 		certain specific value?
@@ -38,26 +58,6 @@ split planetary defense between building attack or defense
 	disband vs destory defensesoldiers payoff
 soldiers tied to planet defense
 	transport combats in order to invade?
-switch prod to def/soldiers sells all?
-
-anomalies
-	instead of planets
-		if not too close
-		planet chance is _planetPct/_anomalyPct
-		pcts randomize slightly each turn
-	research +value
-		new design
-			research based on current player (pre-add) total research and average player research
-	wormhole
-		this ship -> random tile
-			chance to add cur speed?
-		random ship -> this tile
-		random planet -> this tile?
-			cannot cause planets to be too close
-		semi-permanent teleporter?
-			cannot cause planets to be too close
-	move anomaly? create more?
-	additive ship cost for speed
 
 known enemy designs
 AI

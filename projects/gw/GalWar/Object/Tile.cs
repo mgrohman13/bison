@@ -13,8 +13,8 @@ namespace GalWar
             HashSet<Tile> neighbors = new HashSet<Tile>();
             Tile[,] map = tile.Game.GetMap();
             //loop through the nine regional tiles in the square grid
-            for (int x = -1 ; x < 2 ; ++x)
-                for (int y = -1 ; y < 2 ; ++y)
+            for (int x = -2 ; ++x < 2 ; )
+                for (int y = -2 ; ++y < 2 ; )
                 {
                     int x2 = tile.X + x;
                     int y2 = tile.Y + y;

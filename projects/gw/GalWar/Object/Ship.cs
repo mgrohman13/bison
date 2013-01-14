@@ -31,8 +31,8 @@ namespace GalWar
             this.tile = tile;
             tile.SpaceObject = this;
 
-            this._name = design._name;
-            this._mark = design._mark;
+            this._name = design.Name;
+            this._mark = design.Mark;
             checked
             {
                 this.MaxSpeed = (byte)design.Speed;
@@ -82,6 +82,10 @@ namespace GalWar
         internal double GetCostLastResearched()
         {
             return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched);
+        }
+        internal double GetCostAvgResearch()
+        {
+            return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
         }
 
         private Tile tile
@@ -725,7 +729,7 @@ namespace GalWar
                     if (this.BombardDamage != ds)
                         throw new Exception();
                 }
-                else
+                else if (this.NextExpType != ExpType.Att)
                 {
                     this.BombardDamage = ds;
                 }
@@ -819,12 +823,12 @@ namespace GalWar
 
         private double GetNonColonyPct()
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch, true);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched, true);
         }
 
         private double GetNonTransPct()
         {
-            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
+            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched);
         }
 
         private void GetNextLevel(IEventHandler handler)

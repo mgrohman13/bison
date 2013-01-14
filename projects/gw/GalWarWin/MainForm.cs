@@ -301,6 +301,8 @@ namespace GalWarWin
             if (tile == this.dialogTile)
                 ++size;
 
+            if (tile.SpaceObject is Anomaly)
+                g.FillRectangle(Brushes.Gray, rect.X, rect.Y, rect.Width, rect.Height);
             g.DrawRectangle(new Pen(Color.White, size), rect.X, rect.Y, rect.Width, rect.Height);
         }
 
@@ -1093,12 +1095,15 @@ namespace GalWarWin
                     {
                         Planet trgPlanet;
                         Ship trgShip;
+                        Anomaly trgAnomaly;
                         if (adjacentTile.SpaceObject == null)
                             TargetTile(adjacentTile, ship);
                         else if (( trgShip = ( adjacentTile.SpaceObject as Ship ) ) != null)
                             selectNext &= TargetShip(trgShip, ship, switchTroops);
                         else if (( trgPlanet = ( adjacentTile.SpaceObject as Planet ) ) != null)
                             selectNext &= TargetPlanet(trgPlanet, ship, switchTroops);
+                        else if (( trgAnomaly = ( adjacentTile.SpaceObject as Anomaly ) ) != null)
+                            ship.Explore(this, trgAnomaly);
                     }
                     catch (AssertException e)
                     {
@@ -1325,6 +1330,16 @@ namespace GalWarWin
                     "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
                     "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total),
                     "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
+        }
+
+        private void lblResearch_Click(object sender, EventArgs e)
+        {
+            ShowResearchFocus();
+        }
+
+        private void ShowResearchFocus()
+        {
+            ResearchFocusForm.ShowForm();
         }
 
         private void lbl4_Click(object sender, EventArgs e)
@@ -1926,7 +1941,21 @@ namespace GalWarWin
 
         bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
         {
-            throw new NotImplementedException();
+            string str = anomalyType.ToString() + ":\r\n";
+            bool show = false;
+            foreach (object o in info)
+            {
+                str += o.GetType().ToString() + " - " + o.ToString() + "\r\n";
+                if (o is ISpaceObject)
+                {
+                    if (show)
+                        MessageBox.Show("");
+                    this.selectedTile = ( (ISpaceObject)o ).Tile;
+                    this.RefreshAll();
+                    show = true;
+                }
+            }
+            return ( MessageBox.Show(str, "Explore", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes );
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
@@ -1934,6 +1963,8 @@ namespace GalWarWin
             this.RefreshAll();
 
             ResearchForm.ShowForm(newDesign, obsolete, oldDefense, newDefense);
+
+            ShowResearchFocus();
         }
 
         void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense)

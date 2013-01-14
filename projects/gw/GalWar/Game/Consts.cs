@@ -23,8 +23,6 @@ namespace GalWar
         public const double MoveOrderGold = AverageQuality * Income;
         //a higher MoveOrderShuffle makes the move order change faster
         public const double MoveOrderShuffle = .13;
-        //multiplied by the starting planet percent
-        public const double PlanetCreationRate = 1.0 / 104;
 
         public const int PlanetQualityMin = 0;
         public const int PlanetQualityMax = 390;
@@ -186,7 +184,7 @@ namespace GalWar
         //upkeep payoff is the number of turns the ship is expected to live
         private static double GetUpkeepPayoff(int mapSize, double nonColonyPct, double nonTransPct, double speed)
         {
-            return ( .65 * Math.Sqrt(mapSize) * ScalePct(.39, 1, nonColonyPct) * ScalePct(1.69, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
+            return ( .78 * Math.Sqrt(mapSize) * ScalePct(.39, 1, nonColonyPct) * ScalePct(1.69, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
         }
 
         internal static double ScalePct(double zero, double one, double pct)

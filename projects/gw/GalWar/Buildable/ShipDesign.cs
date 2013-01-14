@@ -24,11 +24,10 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, 1 / researchMult);
         }
 
-        internal static double GetPlanetDefenseCost(int att, int def, int research)
+        internal static double GetPlanetDefenseCost(int att, int def, double research)
         {
             double researchMult = GetResearchMult(research);
-            //pass a speed value such that att cost=def cost and then adjust total cost as though speed were 0
-            return GetTotCost(att, def, 1, attDiv - speedAdd, 0, false, 0, researchMult, researchMult) * speedAdd / attDiv * Consts.PlanetDefensesCostMult;
+            return GetTotCost(att, def, 1, -1, 0, false, 0, researchMult, researchMult) * Consts.PlanetDefensesCostMult;
         }
 
         public static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
@@ -37,20 +36,30 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, researchMult);
         }
 
-        private const double speedAdd = 2.1, attDiv = 3.9;
         private static double GetTotCost(int att, int def, int hp, double speed, int trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
         {
+            const double speedAdd = 2.1, attDiv = 3.9;
             double speedValue = speed + speedAdd;
+            if (speed < 1)
+                speedValue = attDiv;
+
             double statMult = statResearchMult * hp;
             double attValue = GetStatValue(att) * statMult * speedValue / attDiv;
             double defValue = GetStatValue(def) * statMult;
-            return Consts.CostMult * (
+
+            if (speed < 1)
+            {
+                speed = 1;
+                speedValue = speedAdd;
+            }
+
+            return Consts.CostMult * totalResearchMult * (
                 (
                     ( attValue + defValue )
                     +
                     (
                         (
-                            ( colony ? 30.0 * speedValue : 0.0 )
+                            ( colony ? 39.0 * speedValue : 0 )
                             +
                             (
                                 (
@@ -63,13 +72,13 @@ namespace GalWar
                             )
                         )
                         *
-                        ( ( defValue + 9000.0 ) / 3000.0 )
+                        ( ( defValue + 13000.0 ) / 3900.0 )
                     )
                 )
                 *
                 ( speedValue )
-                *
-                ( totalResearchMult )
+                +
+                ( 39.0 * Math.Pow(speed - 1, 1.3) )
             );
         }
 
@@ -90,7 +99,7 @@ namespace GalWar
 
         public readonly bool Colony;
 
-        internal readonly byte _name, _mark;
+        private byte _name, _mark;
 
         private readonly byte _upkeep, _att, _def, _speed;
         private readonly ushort _hp, _cost, _trans, _bombardDamage;
@@ -104,28 +113,32 @@ namespace GalWar
             int idx = 0;
             foreach (int type in Game.Random.Iterate(3))
             {
-                retVal[idx] = new ShipDesign(research[idx], player, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None);
+                ShipDesign design = new ShipDesign(research[idx], player.GetShipDesigns(), player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None);
+                design.NameShip(player);
+                retVal[idx] = design;
                 ++idx;
             }
 
             return retVal;
         }
 
-        internal ShipDesign(int research, Player player, FocusStat focus)
-            : this(research, player, false, false, false, focus)
+        internal ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize, FocusStat focus)
+            : this(research, designs, mapSize, false, false, false, focus)
         {
         }
 
-        private ShipDesign(int research, Player player, bool forceColony, bool forceTrans, bool forceNeither, FocusStat focus)
+        private ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize, bool forceColony, bool forceTrans, bool forceNeither, FocusStat focus)
         {
             checked
             {
+                this.Name = this.Mark = byte.MaxValue;
+
                 //  ------  Research          ------
                 this._research = (uint)research;
 
                 //get pcts for existing designs
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
-                GetPcts(player.GetShipDesigns(), player.Game.MapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
+                GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
 
                 //  ------  Colony/Trans/DS   ------
                 this._bombardDamage = 0;
@@ -136,9 +149,8 @@ namespace GalWar
 
                 //  ------  Att/Def           ------
                 //being a colony ship/transport/death star makes att and def lower
-                double strMultOffset = Math.PI * transStr;
-                double strMult = strMultOffset / ( strMultOffset + ( this.Colony ? 65 : 0 ) + this.Trans ) * 601 / ( 600 + bombardDamageMult );
-                double str = GetAttDefStr(research, strMult);
+                double strMult = GetAttDefStrMult(transStr, bombardDamageMult);
+                double str = GetAttDefStr(research, strMult, focus);
                 DoAttDef(transStr, str, attPct, out this._att, out this._def, focus);
 
                 //  ------  HP                ------
@@ -158,11 +170,11 @@ namespace GalWar
                             * (float)Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att)), this.Att, true);
 
                 //  ------  Cost/Upkeep       ------
-                double cost = -1;
+                double cost = -1, upkRnd = double.NaN;
                 int upkeep = -1;
-                GetCost(player.Game.MapSize, upkeepPct, ref cost, ref upkeep);
-                double maxCost = GetMaxCost(research);
-                maxCost = GetMaxCost(GetMinCost(player.Game.MapSize, maxCost), maxCost);
+                GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
+                double minCost = GetMinCost(mapSize);
+                double maxCost = GetMaxCost(research, minCost);
                 while (cost > maxCost)
                 {
                     switch (GetReduce(cost, hpMult, forceColony, forceTrans))
@@ -185,15 +197,18 @@ namespace GalWar
                     case ModifyStat.DS:
                         this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage - 1, this.Att, false);
                         break;
+                    case ModifyStat.Colony:
+                        this.Colony = false;
+                        break;
                     case ModifyStat.None:
                         maxCost = cost;
                         break;
                     default:
                         throw new Exception();
                     }
-                    GetCost(player.Game.MapSize, upkeepPct, ref cost, ref upkeep);
+                    GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                 }
-                while (cost < GetMinCost(player.Game.MapSize, maxCost))
+                while (cost < minCost)
                 {
                     switch (GetIncrease(hpMult))
                     {
@@ -210,14 +225,20 @@ namespace GalWar
                     default:
                         throw new Exception();
                     }
-                    GetCost(player.Game.MapSize, upkeepPct, ref cost, ref upkeep);
+                    GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                 }
                 this._cost = (ushort)Game.Random.Round(cost);
                 this._upkeep = (byte)upkeep;
+            }
+        }
 
+        internal void NameShip(Player player)
+        {
+            checked
+            {
                 //  ------  Name              ------
-                this._name = player.Game.ShipNames.GetName(this, GetAttDefStr(research), GetTransStr(research), GetSpeedStr(research));
-                this._mark = player.Game.ShipNames.GetMark(player, this._name);
+                this.Name = player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research));
+                this.Mark = player.Game.ShipNames.GetMark(player, this.Name);
             }
         }
 
@@ -229,7 +250,7 @@ namespace GalWar
             speed = 1;
 
             int numDesigns;
-            if (( numDesigns = designs.Count ) > 0)
+            if (designs != null && ( numDesigns = designs.Count ) > 0)
             {
                 colony = 0;
                 trans = 0;
@@ -307,7 +328,7 @@ namespace GalWar
             return MakeStatStr(research, 26, .65);
         }
 
-        public static void DoColonyTrans(bool forceColony, bool forceTrans, bool forceNeither, int research,
+        public static void DoColonyTransDS(bool forceColony, bool forceTrans, bool forceNeither, int research,
                 ref double transStr, out bool colony, out int trans, out double bombardDamageMult)
         {
             ushort t;
@@ -324,11 +345,11 @@ namespace GalWar
             double dsTrg = research / ( 3000 + research );
             dsTrg *= dsTrg * dsTrg * .169;
 
-            if (( focus & FocusStat.Colony ) == FocusStat.Colony)
+            if (IsFocusing(focus, FocusStat.Colony))
                 FocusPcts(ref colTrg, ref transTrg, ref dsTrg);
-            else if (( focus & FocusStat.DS ) == FocusStat.DS)
+            else if (IsFocusing(focus, FocusStat.DS))
                 FocusPcts(ref dsTrg, ref colTrg, ref transTrg);
-            else if (( focus & FocusStat.Trans ) == FocusStat.Trans)
+            else if (IsFocusing(focus, FocusStat.Trans))
                 FocusPcts(ref transTrg, ref colTrg, ref dsTrg);
 
             bool transport;
@@ -366,10 +387,9 @@ namespace GalWar
 
         private static void FocusPcts(ref double focus, ref double oth1, ref double oth2)
         {
-            const double mult = 2.1;
-            focus *= mult;
-            oth1 /= mult;
-            oth2 /= mult;
+            focus *= FocusTypeMult;
+            oth1 /= FocusTypeMult;
+            oth2 /= FocusTypeMult;
         }
         private static bool CreateType(double target, double actual)
         {
@@ -388,20 +408,28 @@ namespace GalWar
 
         #region Att/Def
 
-        public static double GetAttDefStr(double research)
+        private double GetAttDefStrMult(double transStr, double bombardDamageMult)
         {
-            return GetAttDefStr(research, 1);
+            double strMultOffset = Math.PI * transStr;
+            return strMultOffset / ( strMultOffset + ( this.Colony ? 65 : 0 ) + this.Trans ) * 520 / ( 520 + bombardDamageMult );
         }
 
-        private static double GetAttDefStr(double research, double strMult)
+        public static double GetAttDefStr(double research)
         {
-            return MakeStatStr(research, 1.69 * strMult, .65);
+            return GetAttDefStr(research, 1, FocusStat.None);
+        }
+
+        private static double GetAttDefStr(double research, double strMult, FocusStat focus)
+        {
+            if (IsFocusing(focus, FocusStat.Cost))
+                strMult *= FocusCostMult;
+            return MakeStatStr(research, 1.69 * strMult, .52);
         }
 
         private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def, FocusStat focus)
         {
-            if (( focus & FocusStat.Speed ) == FocusStat.Speed)
-                str /= 1.3;
+            if (IsFocusing(focus, FocusStat.Speed))
+                str /= FocusSpeedMult;
 
             int s1 = MakeStat(str);
             //second stat is adjusted to compensate for the first
@@ -414,10 +442,10 @@ namespace GalWar
             }
 
             attPct = Math.Sqrt(attPct);
-            if (( focus & FocusStat.Att ) == FocusStat.Att)
-                attPct /= 3.9;
-            else if (( focus & FocusStat.Def ) == FocusStat.Def)
-                attPct *= 3.9;
+            if (IsFocusing(focus, FocusStat.Att))
+                attPct /= FocusAttMult;
+            else if (IsFocusing(focus, FocusStat.Def))
+                attPct *= FocusAttMult;
 
             //colony ships and transports are more likely to be defensive
             double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .52, .39) ) ? .26 : .65 );
@@ -450,14 +478,14 @@ namespace GalWar
         private double ModSpeedStr(double speedStr, double transStr, bool deathStar, bool doColAndTrans)
         {
             if (this.Colony)
-                speedStr = MultStr(speedStr, .39);
+                speedStr = MultStr(speedStr, .52);
             else if (deathStar)
-                speedStr = MultStr(speedStr, .65);
+                speedStr = MultStr(speedStr, .78);
             if (( doColAndTrans || !this.Colony ) && this.Trans > 0)
             {
                 double transFactor = transStr / this.Trans;
                 if (transFactor < 1)
-                    speedStr = MultStr(speedStr, Math.Pow(transFactor, .3));
+                    speedStr = MultStr(speedStr, Math.Pow(transFactor, .26));
             }
             return speedStr;
         }
@@ -465,8 +493,8 @@ namespace GalWar
         private double GetSpeedMult(double str, double hpMult, double speedPct, FocusStat focus)
         {
             double focusFactor = 1;
-            if (( focus & FocusStat.Speed ) == FocusStat.Speed)
-                focusFactor = 1.3;
+            if (IsFocusing(focus, FocusStat.Speed))
+                focusFactor = FocusSpeedMult;
             //speed is higher for more offensive and weaker ships
             double offenseFactor = this.Att / (double)this.Def;
             double strengthFactor = 2 * GetStatValue(str) * MultStr(4 * str * str, hpMult)
@@ -478,19 +506,15 @@ namespace GalWar
 
         #region Cost/Upkeep
 
-        private static double GetMaxCost(int research)
-        {
-            return Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
-        }
-
-        private double GetMinCost(int mapSize, double maxCost)
+        private double GetMinCost(int mapSize)
         {
             double minCost = this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + 1 / Consts.RepairCostMult;
             return Game.Random.GaussianOE(minCost * 1.3, 0.026, 0.021, minCost);
         }
 
-        private static double GetMaxCost(double minCost, double maxCost)
+        private static double GetMaxCost(int research, double minCost)
         {
+            double maxCost = Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
             //max is more of a guideline than actual rule
             if (maxCost > minCost)
                 maxCost = Game.Random.GaussianOE(maxCost, .21, .039, minCost);
@@ -499,26 +523,32 @@ namespace GalWar
             return maxCost;
         }
 
-        private void GetCost(int mapSize, double upkeepPct, ref double cost, ref int upkeep)
+        private void GetCost(int mapSize, double upkeepPct, out double cost, out int upkeep, ref double upkRnd, FocusStat focus)
         {
             double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
             double totCost = GetTotCost();
 
-            if (cost > 0)
+            if (double.IsNaN(upkRnd))
             {
-                //cost has been previously calculated, so maintain upkeep pct
-                double avgUpk = totCost * upkeep / ( cost + upkeep * upkeepPayoff );
+                //calculating for the first time, so randomize upkeep
+                double avgUpk = totCost / upkeepPayoff * Consts.CostUpkeepPct / Math.Sqrt(upkeepPct);
+
+                if (IsFocusing(focus, FocusStat.Upkeep))
+                    avgUpk *= FocusUpkeepMult;
+                else if (IsFocusing(focus, FocusStat.Cost))
+                    avgUpk /= FocusUpkeepMult;
+
                 if (avgUpk > 1)
-                    upkeep = Game.Random.Round(avgUpk);
+                    upkeep = Game.Random.GaussianCappedInt(avgUpk, 1, 1);
                 else
                     upkeep = 1;
             }
             else
             {
-                //calculating for the first time, so randomize upkeep
-                double avgUpk = totCost / upkeepPayoff * Consts.CostUpkeepPct / Math.Sqrt(upkeepPct);
+                //cost has been previously calculated, so maintain upkeep pct
+                double avgUpk = totCost * upkRnd;
                 if (avgUpk > 1)
-                    upkeep = Game.Random.GaussianCappedInt(avgUpk, 1, 1);
+                    upkeep = Game.Random.Round(avgUpk);
                 else
                     upkeep = 1;
             }
@@ -528,6 +558,7 @@ namespace GalWar
                 --upkeep;
 
             cost = ( totCost - upkeep * upkeepPayoff );
+            upkRnd = ( upkeep / totCost );
         }
 
         private double GetTotCost()
@@ -634,6 +665,35 @@ namespace GalWar
 
         #region internal
 
+        internal byte Name
+        {
+            get
+            {
+                return this._name;
+            }
+            private set
+            {
+                checked
+                {
+                    this._name = value;
+                }
+            }
+        }
+        internal byte Mark
+        {
+            get
+            {
+                return this._mark;
+            }
+            private set
+            {
+                checked
+                {
+                    this._mark = value;
+                }
+            }
+        }
+
         internal static double GetColonizationValue(double cost, int att, int def, int curHP, int maxHP, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             if (!colony)
@@ -679,7 +739,7 @@ namespace GalWar
             return retVal;
         }
 
-        private bool MakesObsolete(int mapSize, ShipDesign oldDesign)
+        internal bool MakesObsolete(int mapSize, ShipDesign oldDesign)
         {
             double totCost = this.Cost + this.Upkeep * this.GetUpkeepPayoff(mapSize);
             double oldTotCost = oldDesign.Cost + oldDesign.Upkeep * oldDesign.GetUpkeepPayoff(mapSize);
@@ -874,10 +934,24 @@ namespace GalWar
 
         public override string ToString()
         {
-            return ShipNames.GetName(this._name, this._mark);
+            return ShipNames.GetName(this.Name, this.Mark);
         }
 
         #endregion //public
+
+        #region enum
+
+        private const double FocusCostMult = 1.69;
+        private const double FocusUpkeepMult = Math.E / 1.3;
+        private const double FocusAttMult = 2.6;
+        private const double FocusSpeedMult = 1.3;
+        //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
+        private const double FocusTypeMult = 2.1;
+
+        internal static bool IsFocusing(FocusStat focus, FocusStat check)
+        {
+            return ( ( focus & check ) == check );
+        }
 
         private enum ModifyStat
         {
@@ -891,17 +965,19 @@ namespace GalWar
             None,
         }
 
-        public enum FocusStat
+        public enum FocusStat : byte
         {
-            None = 0,
-            Trans = 4,
-            DS = 6,
-            Colony = 7,
-            Def = 16,
-            Att = 24,
-            Speed = 32,
-            //Cost?
-            //Upkeep?
+            None = 0x00,
+            Trans = 0x04,
+            DS = 0x06,
+            Colony = 0x07,
+            Def = 0x10,
+            Att = 0x18,
+            Speed = 0x20,
+            Cost = 0x80,
+            Upkeep = 0xC0,
         }
+
+        #endregion //enum
     }
 }

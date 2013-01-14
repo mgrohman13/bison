@@ -23,6 +23,9 @@ namespace GalWar
         private readonly List<Ship> ships;
         private readonly List<Colony> colonies;
 
+        private ShipDesign.FocusStat _researchFocus;
+        private ShipDesign _researchFocusDesign;
+
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
         private byte _id;
         private ushort _newResearch;
@@ -48,6 +51,9 @@ namespace GalWar
             this.AI = player.AI;
 
             this.ships = new List<Ship>();
+
+            this._researchFocus = ShipDesign.FocusStat.None;
+            this._researchFocusDesign = null;
 
             this._goldEmphasis = false;
             this._researchEmphasis = false;
@@ -181,36 +187,89 @@ namespace GalWar
                 this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
         }
 
-        internal void FreeResearch(double research)
+        internal void FreeResearch(IEventHandler handler, double research)
         {
-            throw new NotImplementedException();
+            double avg = ( 1 * ( ( 1 * this.ResearchDisplay + 2 * this.Research ) / 3.0 )
+                    + 2 * ( this.LastResearched + research ) + 3 * ( this.Game.AvgResearch ) ) / 6.0;
+            this.Research += Game.Random.Round(research);
+            int designResearch = Game.Random.GaussianOEInt(avg, .13, .013);
+            NewShipDesign(handler, designResearch, ShipDesign.FocusStat.None);
         }
 
         private void CheckResearch(IEventHandler handler)
         {
-            if (this.newResearch > 0)
-            {
-                if (Game.Random.Bool(GetResearchChance(this.newResearch)))
-                    NewShipDesign(handler);
-                this.newResearch = 0;
-            }
+            if (this.ResearchFocusDesign == null)
+                ResearchWithFocus(handler);
+            else
+                ResearchWithDesign(handler);
+            this.newResearch = 0;
 
             //re-randomize research chance and display skew
             ResetResearchChance();
             RandResearchDisplay();
         }
 
-        private void NewShipDesign(IEventHandler handler)
+        private void ResearchWithFocus(IEventHandler handler)
         {
-            //only a random portion of total research can be used in the new design
-            int designResearch = this.Research - this.LastResearched;
-            if (designResearch > 1)
-                designResearch = Game.Random.RangeInt(1, designResearch);
-            designResearch += this.LastResearched;
+            if (Game.Random.Bool(GetResearchChance(this.newResearch)))
+            {
+                //only a random portion of total research can be used in the new design
+                int designResearch = this.Research - this.LastResearched;
+                if (designResearch > 1)
+                    designResearch = Game.Random.RangeInt(1, designResearch);
+                designResearch += this.LastResearched;
+                NewShipDesign(handler, designResearch, ResearchFocus);
+            }
+        }
 
-            ShipDesign newDesign = new ShipDesign(designResearch, this, ShipDesign.FocusStat.None);
+        private void ResearchWithDesign(IEventHandler handler)
+        {
+            int chances = Game.Random.OEInt(GetResearchChance(this.newResearch) * 13);
+            if (chances > 0)
+            {
+                SortedSet<int> tries = new SortedSet<int>();
+                for (int a = 0 ; a < chances ; ++a)
+                {
+                    int designResearch = this.Research;
+                    while (true)
+                    {
+                        designResearch = Game.Random.RangeInt(designResearch, ResearchFocusDesign.Research);
+                        while (tries.Contains(designResearch))
+                            --designResearch;
+                        if (designResearch > ResearchFocusDesign.Research)
+                            tries.Add(designResearch);
+                        else
+                            break;
+                    }
+                }
+
+                foreach (int designResearch in tries.Reverse())
+                {
+                    ShipDesign tryDesign = new ShipDesign(designResearch, null, this.Game.MapSize, ShipDesign.FocusStat.None);
+                    if (tryDesign.MakesObsolete(Game.MapSize, ResearchFocusDesign))
+                    {
+                        NewShipDesign(handler, tryDesign, true);
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void NewShipDesign(IEventHandler handler, int designResearch, ShipDesign.FocusStat focus)
+        {
+            NewShipDesign(handler, new ShipDesign(designResearch, this.GetShipDesigns(), this.Game.MapSize, focus));
+        }
+        private void NewShipDesign(IEventHandler handler, ShipDesign newDesign)
+        {
+            NewShipDesign(handler, newDesign, false);
+        }
+        private void NewShipDesign(IEventHandler handler, ShipDesign newDesign, bool doObsolete)
+        {
+            newDesign.NameShip(this);
 
             HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
+            if (doObsolete)
+                obsoleteDesigns.Add(ResearchFocusDesign);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)
                 this.designs.Remove(obsoleteDesign);
             //switch to the new production at AutomaticObsoleteLossPct
@@ -222,8 +281,10 @@ namespace GalWar
             PlanetDefense old = new PlanetDefense(this.planetDefense);
             this.planetDefense.GetStats(newDesign);
 
-            this.LastResearched = designResearch;
+            this.LastResearched = Math.Max(LastResearched, newDesign.Research);
 
+            if (doObsolete)
+                ResearchFocusDesign = newDesign;
             handler.OnResearch(newDesign, obsoleteDesigns, old, this.planetDefense);
         }
 
@@ -508,6 +569,45 @@ namespace GalWar
             }
         }
 
+        public bool IsFocusing(ShipDesign.FocusStat check)
+        {
+            return ShipDesign.IsFocusing(ResearchFocus, check);
+        }
+        public ShipDesign.FocusStat ResearchFocus
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this._researchFocus;
+            }
+            set
+            {
+                TurnException.CheckTurn(this);
+                if (value != ShipDesign.FocusStat.None)
+                    AssertException.Assert(this.ResearchFocusDesign == null);
+
+                this._researchFocus = value;
+            }
+        }
+        public ShipDesign ResearchFocusDesign
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this._researchFocusDesign;
+            }
+            set
+            {
+                TurnException.CheckTurn(this);
+                if (value != null)
+                    AssertException.Assert(this.ResearchFocus == ShipDesign.FocusStat.None);
+
+                this._researchFocusDesign = value;
+            }
+        }
+
         public bool GoldEmphasis
         {
             get
@@ -710,6 +810,7 @@ namespace GalWar
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));
+            AssertException.Assert(this.designs.Count > 1);
 
             double[] losses = new double[additionalLosses.Length + 1];
             losses[0] = Consts.ManualObsoleteLossPct;

@@ -419,7 +419,8 @@ namespace GalWarAI
                     research[p] = currentReseach[p] * mult;
 
                 //personality		
-                int maxTurns = (int)Math.Round(1.3 / Consts.PlanetCreationRate);
+                //PlanetCreationRate
+                int maxTurns = (int)Math.Round(1.3 / 104);
                 for (int a = 0 ; a <= maxTurns ; ++a)
                 {
                     Player top = null;

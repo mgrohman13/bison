@@ -42,7 +42,7 @@ namespace GalWarWin
             bool colony;
             int trans;
             double bombardDamageMult, transStr = ShipDesign.GetTransStr(research);
-            ShipDesign.DoColonyTrans(false, false, false, research, ref transStr, out colony, out trans, out bombardDamageMult);
+            ShipDesign.DoColonyTransDS(false, false, false, research, ref transStr, out colony, out trans, out bombardDamageMult);
 
             SetValue(this.nudTrans, trans);
             this.cbCol.Checked = colony;

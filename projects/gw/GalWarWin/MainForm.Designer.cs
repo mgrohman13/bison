@@ -53,7 +53,7 @@ namespace GalWarWin
             this.lblGoldInc = new System.Windows.Forms.Label();
             this.lblPopInc = new System.Windows.Forms.Label();
             this.lblRsrchPct = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
+            this.lblPlayerResearch = new System.Windows.Forms.Label();
             this.lblResearch = new System.Windows.Forms.Label();
             this.chkProduction = new System.Windows.Forms.CheckBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -329,7 +329,7 @@ namespace GalWarWin
             this.pnlEconomy.Controls.Add(this.lblGoldInc);
             this.pnlEconomy.Controls.Add(this.lblPopInc);
             this.pnlEconomy.Controls.Add(this.lblRsrchPct);
-            this.pnlEconomy.Controls.Add(this.label9);
+            this.pnlEconomy.Controls.Add(this.lblPlayerResearch);
             this.pnlEconomy.Controls.Add(this.lblResearch);
             this.pnlEconomy.Controls.Add(this.chkProduction);
             this.pnlEconomy.Controls.Add(this.label11);
@@ -418,16 +418,19 @@ namespace GalWarWin
             this.lblRsrchPct.TabIndex = 38;
             this.lblRsrchPct.Text = "99%";
             this.lblRsrchPct.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblRsrchPct.Click += new System.EventHandler(this.lblResearch_Click);
             // 
-            // label9
+            // lblPlayerResearch
             // 
-            this.label9.AutoEllipsis = true;
-            this.label9.Location = new System.Drawing.Point(24, 46);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(58, 23);
-            this.label9.TabIndex = 30;
-            this.label9.Text = "Research";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblPlayerResearch.AutoEllipsis = true;
+            this.lblPlayerResearch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblPlayerResearch.Location = new System.Drawing.Point(24, 46);
+            this.lblPlayerResearch.Name = "lblPlayerResearch";
+            this.lblPlayerResearch.Size = new System.Drawing.Size(58, 23);
+            this.lblPlayerResearch.TabIndex = 30;
+            this.lblPlayerResearch.Text = "Research";
+            this.lblPlayerResearch.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblPlayerResearch.Click += new System.EventHandler(this.lblResearch_Click);
             // 
             // lblResearch
             // 
@@ -439,6 +442,7 @@ namespace GalWarWin
             this.lblResearch.TabIndex = 31;
             this.lblResearch.Text = "+999";
             this.lblResearch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblResearch.Click += new System.EventHandler(this.lblResearch_Click);
             // 
             // chkProduction
             // 
@@ -780,7 +784,7 @@ namespace GalWarWin
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label lblGoldInc;
         private System.Windows.Forms.Label lblPopInc;
-        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label lblPlayerResearch;
         private System.Windows.Forms.Label lblResearch;
         private System.Windows.Forms.Label lblProduction;
         private System.Windows.Forms.Label label11;

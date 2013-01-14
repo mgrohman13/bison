@@ -133,10 +133,8 @@ namespace GalWarWin
             this.btnBuy.Enabled = !( !switchLoss && additionalLosses.Length > 0 && accountForIncome && newBuild != colony.Buildable );
 
             //this stops you from marking another ship as obsolete during the event for marking a first one 
-            this.chkObsolete.Enabled = colony.CanBuild(colony.Buildable);
-
-            ////this prevents cancel from switching to gold and wasting production on new colony or manual obsolete
-            //this.btnCancel.Enabled = !( !switchLoss && colony.Production > 0 && !colony.CanBuild(colony.Buildable) );
+            //or from marking your last deisgn as obsolete
+            this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 && colony.CanBuild(colony.Buildable) );
         }
 
         private double GetLossPct(Buildable buildable)

@@ -40,7 +40,7 @@ namespace GalWar
 
         private byte _currentPlayer;
         private ushort _turn;
-        private readonly double _planetPct;
+        private float _planetPct, _anomalyPct;
 
         public Game(Player[] players, int radius, double planetPct)
         {
@@ -51,8 +51,8 @@ namespace GalWar
             AssertException.Assert(numPlayers > 1);
             AssertException.Assert(numPlayers * 78 < MapSize);
             AssertException.Assert(radius < 70);
-            AssertException.Assert(planetPct >= 0);
-            AssertException.Assert(planetPct < 0.13);
+            AssertException.Assert(planetPct > Consts.FLOAT_ERROR);
+            AssertException.Assert(planetPct < 0.065);
 
             this.StoreProd = new StoreProd();
             this.Soldiering = new Soldiering();
@@ -75,15 +75,22 @@ namespace GalWar
             }
 
             planetPct *= MapSize;
-            int planets = Random.GaussianCappedInt(planetPct, .21);
-            this._planetPct = Random.GaussianCapped(planetPct * Consts.PlanetCreationRate, .169, Consts.FLOAT_ERROR);
+            int planets = Random.GaussianCappedInt((float)planetPct, .21f);
+            this.planetPct = Random.GaussianCapped((float)( planetPct / 104 ), .091f, (float)Consts.FLOAT_ERROR);
+            this.anomalyPct = Random.GaussianCapped((float)( this.planetPct + MapSize * .000039 + ( players.Length + 6.5 ) * 0.0052 ),
+                    .21f, (float)( this.planetPct + Consts.FLOAT_ERROR ));
+
             this.planets = new List<Planet>(planets + numPlayers);
             //first create enough planets for homeworlds
             while (this.planets.Count < numPlayers)
                 NewPlanet();
             //each additional starting planet is just a chance of creating one
-            for (int i = 0 ; i < planets ; ++i)
+            for (int a = 0 ; a < planets ; ++a)
                 NewPlanet();
+
+            int anomalies = Random.GaussianOEInt(this.anomalyPct * 13, 1, .13);
+            for (int a = 0 ; a < anomalyPct ; ++a)
+                CreateAnomaly();
 
             int startPop = GetStartInt(Consts.StartPopulation);
             double soldiers = GetStartDouble(startPop);
@@ -224,6 +231,56 @@ namespace GalWar
             return retVal;
         }
 
+        private Planet NewPlanet()
+        {
+            Tile tile;
+            do
+            {
+                int x = Random.Next(Diameter), y = Random.Next(Diameter);
+                tile = this.map[x, y];
+                //planets cannot be right on the map edge so tile must have 6 neighbors
+            } while (tile == null || Tile.GetNeighbors(tile).Count < 6);
+
+            if (tile.SpaceObject == null)
+            {
+                int distance = int.MaxValue;
+                foreach (Planet planet in this.planets)
+                    distance = Math.Min(distance, Tile.GetDistance(tile.X, tile.Y, planet.Tile.X, planet.Tile.Y));
+
+                if (distance > Consts.PlanetDistance)
+                {
+                    Planet planet = new Planet(tile);
+                    this.planets.Add(planet);
+                    return planet;
+                }
+            }
+            //dont retry if it cant be placed because of occupied space or existing planet proximity
+            return null;
+        }
+
+        private float planetPct
+        {
+            get
+            {
+                return this._planetPct;
+            }
+            set
+            {
+                this._planetPct = (float)value;
+            }
+        }
+        private float anomalyPct
+        {
+            get
+            {
+                return this._anomalyPct;
+            }
+            set
+            {
+                this._anomalyPct = (float)value;
+            }
+        }
+
         #endregion //fields and constructors
 
         #region internal
@@ -234,8 +291,8 @@ namespace GalWar
             {
                 double avgResearch = 0;
                 foreach (Player player in this.players)
-                    avgResearch += player.ResearchDisplay + 2 * player.Research + 4 * player.LastResearched;
-                return avgResearch / this.players.Length / 7;
+                    avgResearch += 1 * player.ResearchDisplay + 2 * player.Research + 4 * player.LastResearched;
+                return avgResearch / this.players.Length / 7.0;
             }
         }
 
@@ -279,7 +336,7 @@ namespace GalWar
 
         #endregion //internal
 
-        #region    public
+        #region public
 
         public int MapSize
         {
@@ -406,7 +463,7 @@ namespace GalWar
 
             CheckResearchVictory();
             RandMoveOrder();
-            CreatePlanets();
+            CreateAnomalies();
 
             foreach (Player player in players)
                 player.NewRound();
@@ -447,42 +504,42 @@ namespace GalWar
             }
         }
 
-        internal Planet CreatePlanet()
+        internal Planet CreatePlanet(Tile tile)
         {
-            throw new NotImplementedException();
+            if (Random.Bool((float)( this.planetPct / this.anomalyPct )))
+                if (Tile.GetNeighbors(tile).Count >= 6)
+                {
+                    int distance = int.MaxValue;
+                    foreach (Planet planet in this.planets)
+                        distance = Math.Min(distance, Tile.GetDistance(tile.X, tile.Y, planet.Tile.X, planet.Tile.Y));
+                    if (distance > Consts.PlanetDistance)
+                    {
+                        Planet planet = new Planet(tile);
+                        this.planets.Add(planet);
+                        return planet;
+                    }
+                }
+            return null;
         }
 
-        private void CreatePlanets()
+        private void CreateAnomalies()
         {
-            int planets = Game.Random.OEInt(this._planetPct);
-            for (int i = 0 ; i < planets ; ++i)
-                NewPlanet();
+            int create = Game.Random.OEInt(this.anomalyPct);
+            for (int a = 0 ; a < create ; ++a)
+                CreateAnomaly();
+            this.planetPct = Random.GaussianCapped(this.planetPct, .0052f,
+                    (float)( Math.Max(0, 2 * this.planetPct - this.anomalyPct) + Consts.FLOAT_ERROR ));
+            this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065f, .0091f, (float)( this.planetPct + Consts.FLOAT_ERROR ));
         }
 
-        private Planet NewPlanet()
+        private Anomaly CreateAnomaly()
         {
             Tile tile;
             do
-            {
-                int x = Random.Next(Diameter), y = Random.Next(Diameter);
-                tile = this.map[x, y];
-                //planets cannot be right on the map edge so tile must have 6 neighbors
-            } while (tile == null || Tile.GetNeighbors(tile).Count < 6);
-
+                tile = this.map[Random.Next(Diameter), Random.Next(Diameter)];
+            while (tile == null);
             if (tile.SpaceObject == null)
-            {
-                int distance = int.MaxValue;
-                foreach (Planet planet in this.planets)
-                    distance = Math.Min(distance, Tile.GetDistance(tile.X, tile.Y, planet.Tile.X, planet.Tile.Y));
-
-                if (distance > Consts.PlanetDistance)
-                {
-                    Planet planet = new Planet(tile);
-                    this.planets.Add(planet);
-                    return planet;
-                }
-            }
-            //dont retry if it cant be placed because of occupied space or existing planet proximity
+                return new Anomaly(tile);
             return null;
         }
 
