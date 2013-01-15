@@ -37,7 +37,7 @@ namespace GalWar
                 {
                     quality += p.Quality;
                     pop += p.Colony.Population;
-                    armada += p.Colony.GetCostAvgResearch() / 1.69 + p.Colony.production / 2.1;
+                    armada += p.Colony.ArmadaCost / 1.69 + p.Colony.production / 2.1;
                 }
             }
             foreach (Player p in Tile.Game.GetPlayers())
@@ -343,7 +343,7 @@ namespace GalWar
             bool canPop = ( pop <= ship.FreeSpace );
             if (ship.Population > 0)
             {
-                double soldierChance = ship.GetTotalSoldierPct() / 1.69;
+                double soldierChance = ship.GetSoldierPct() / 1.69;
                 soldierChance = 2.1 / ( 2.1 + soldiers / ship.Population + soldierChance * soldierChance );
                 if (canPop)
                     soldierChance /= 2.6;

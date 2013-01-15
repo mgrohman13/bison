@@ -13,7 +13,7 @@ namespace GalWarWin.Sliders
         private readonly int initial;
 
         public Invade(Ship ship, Colony colony)
-            : this(ship.AvailablePop, ship.Population, colony.Population, ship.TotalSoldiers, colony.TotalSoldiers, (int)MainForm.Game.CurrentPlayer.Gold)
+            : this(ship.AvailablePop, ship.Population, colony.Population, ship.Soldiers, colony.Soldiers, (int)MainForm.Game.CurrentPlayer.Gold)
         {
         }
 

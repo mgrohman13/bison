@@ -17,7 +17,7 @@ namespace GalWar
 
         bool Explore(Anomaly.AnomalyType anomalyType, params object[] info);
 
-        void OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense);
+        void OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete);
 
         void OnCombat(Combatant attacker, Combatant defender, int attack, int defense);
 

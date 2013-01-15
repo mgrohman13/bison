@@ -13,9 +13,9 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, 0, false, 0, 0);
         }
 
-        public static double GetPlanetDefenseStrength(int att, int def)
+        public static double GetPlanetDefenseStrength(int stat1, int stat2)
         {
-            return GetPlanetDefenseCost(att, def, 0);
+            return GetPlanetDefenseCost(stat1, stat2, 0);
         }
 
         public static double GetValue(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
@@ -24,10 +24,10 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, 1 / researchMult);
         }
 
-        internal static double GetPlanetDefenseCost(int att, int def, double research)
+        internal static double GetPlanetDefenseCost(double stat1, double stat2, double research)
         {
             double researchMult = GetResearchMult(research);
-            return GetTotCost(att, def, 1, -1, 0, false, 0, researchMult, researchMult) * Consts.PlanetDefensesCostMult;
+            return GetTotCost(stat1, stat2, 1, -1, 0, false, 0, researchMult, researchMult) * Consts.PlanetDefensesCostMult;
         }
 
         public static double GetTotCost(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
@@ -36,7 +36,7 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, researchMult);
         }
 
-        private static double GetTotCost(int att, int def, int hp, double speed, int trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
+        private static double GetTotCost(double att, double def, int hp, double speed, int trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
         {
             const double speedAdd = 2.1, attDiv = 3.9;
             double speedValue = speed + speedAdd;
@@ -105,18 +105,17 @@ namespace GalWar
         private readonly ushort _hp, _cost, _trans, _bombardDamage;
         private readonly uint _research;
 
-        internal static ShipDesign[] GetStartDesigns(List<int> research, Player player)
+        internal static List<ShipDesign> GetStartDesigns(List<int> research, Player player)
         {
-            ShipDesign[] retVal = new ShipDesign[3];
+            List<ShipDesign> retVal = new List<ShipDesign>(3);
 
             //randomize which of the starting research values go to which design type
-            int idx = 0;
+            int idx = -1;
             foreach (int type in Game.Random.Iterate(3))
             {
-                ShipDesign design = new ShipDesign(research[idx], player.GetShipDesigns(), player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None);
+                ShipDesign design = new ShipDesign(research[++idx], null, player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None);
                 design.NameShip(player);
-                retVal[idx] = design;
-                ++idx;
+                retVal.Add(design);
             }
 
             return retVal;
@@ -891,12 +890,12 @@ namespace GalWar
             return GetStrength(this.Att, this.Def, this.HP, this.Speed);
         }
 
-        public static double GetHPStr(int s1, int s2)
+        public static double GetHPStr(double s1, double s2)
         {
             return GetHPStr(s1, s2, Consts.BaseDesignHPMult);
         }
 
-        private static double GetHPStr(int s1, int s2, double hpMult)
+        private static double GetHPStr(double s1, double s2, double hpMult)
         {
             return MultStr(( s1 + s2 ) * ( s1 + s2 ), hpMult);
         }

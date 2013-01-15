@@ -174,13 +174,13 @@ namespace GalWar
             return retVal;
         }
 
-        void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
+        void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)
         {
             callback = true;
 
             try
             {
-                handler.OnResearch(newDesign, obsolete, oldDefense, newDefense);
+                handler.OnResearch(newDesign, obsolete);
             }
             catch (Exception e)
             {

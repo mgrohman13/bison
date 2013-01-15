@@ -25,7 +25,8 @@ namespace GalWar
         public readonly Graphs Graphs;
 
         public readonly StoreProd StoreProd;
-        public readonly Soldiering Soldiering;
+        public readonly Attack Attack;
+        public readonly Defense Defense;
 
         public readonly int Diameter;
 
@@ -55,7 +56,8 @@ namespace GalWar
             AssertException.Assert(planetPct < 0.065);
 
             this.StoreProd = new StoreProd();
-            this.Soldiering = new Soldiering();
+            this.Attack = new Attack();
+            this.Defense = new Defense();
 
             //set up map hexagon
             this.map = new Tile[Diameter, Diameter];

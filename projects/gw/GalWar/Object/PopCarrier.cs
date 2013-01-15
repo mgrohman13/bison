@@ -11,11 +11,11 @@ namespace GalWar
         private float _soldiers;
         private ushort _population, _movedPop;
 
-        protected PopCarrier()
+        protected PopCarrier(int population, double soldiers)
         {
-            this.soldiers = 0;
-            this.Population = 0;
-            this.movedPop = 0;
+            this.Soldiers = soldiers;
+            this.Population = population;
+            this.movedPop = population;
         }
 
         #endregion //fields and constructors
@@ -26,7 +26,6 @@ namespace GalWar
         {
             get;
         }
-
         public abstract Tile Tile
         {
             get;
@@ -39,47 +38,16 @@ namespace GalWar
 
         #endregion //abstract
 
-        #region private
+        #region internal
 
         internal void ResetMoved()
         {
             this.movedPop = 0;
         }
 
-        protected void LosePopulation(int population)
-        {
-            if (population > this.Population)
-                population = this.Population;
-
-            if (population > 0)
-            {
-                double soldiers = GetSoldiers(population, this.soldiers);
-                Player.GoldIncome(soldiers / Consts.SoldiersForGold);
-                this.soldiers -= soldiers;
-
-                Player.GoldIncome(population / Consts.PopulationForGoldLow);
-                this.Population -= population;
-            }
-        }
-
-        #endregion //private
+        #endregion //internal
 
         #region protected
-
-        protected double soldiers
-        {
-            get
-            {
-                return this._soldiers;
-            }
-            set
-            {
-                checked
-                {
-                    this._soldiers = (float)value;
-                }
-            }
-        }
 
         protected int movedPop
         {
@@ -93,6 +61,22 @@ namespace GalWar
                 {
                     this._movedPop = (ushort)value;
                 }
+            }
+        }
+
+        protected void LosePopulation(int population)
+        {
+            if (population > this.Population)
+                population = this.Population;
+
+            if (population > 0)
+            {
+                double soldiers = GetSoldiers(population);
+                Player.GoldIncome(soldiers / Consts.SoldiersForGold);
+                this.Soldiers -= soldiers;
+
+                Player.GoldIncome(population / Consts.PopulationForGoldLow);
+                this.Population -= population;
             }
         }
 
@@ -114,7 +98,6 @@ namespace GalWar
                 }
             }
         }
-
         public int AvailablePop
         {
             get
@@ -122,7 +105,6 @@ namespace GalWar
                 return this.Population - this.movedPop;
             }
         }
-
         public int FreeSpace
         {
             get
@@ -142,7 +124,7 @@ namespace GalWar
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
 
-            double soldiers = MoveSoldiers(this.Population, this.soldiers, population);
+            double soldiers = GetSoldiers(population);
             MovePop(this, destination, population, soldiers, false);
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<PopCarrier, int, double>(
@@ -175,8 +157,8 @@ namespace GalWar
             }
             source.Player.AddGold(actual, rounded);
 
-            source.soldiers -= soldiers;
-            destination.soldiers += soldiers;
+            source.Soldiers -= soldiers;
+            destination.Soldiers += soldiers;
 
             source.Population -= population;
             destination.Population += population;
@@ -187,96 +169,49 @@ namespace GalWar
                 destination.movedPop += population;
         }
 
-        public double GetMoveSoldiers(int movePop)
-        {
-            return GetMoveSoldiers(this.Population, this.soldiers, movePop);
-        }
-        public static double GetMoveSoldiers(int population, double soldiers, int movePop)
-        {
-            return GetMoveSoldiers(population, soldiers, movePop, false);
-        }
-
-        protected static double MoveSoldiers(int population, double soldiers, int movePop)
-        {
-            return GetMoveSoldiers(population, soldiers, movePop, true);
-        }
-
-        private static float GetMoveSoldiers(int population, double soldiers, int movePop, bool doMove)
-        {
-            float moveSoldiers = 0;
-            if (soldiers > Consts.FLOAT_ERROR)
-            {
-                if (population == movePop)
-                    moveSoldiers = (float)soldiers;
-                else
-                    for (int mov = 1 ; mov <= movePop ; ++mov)
-                        moveSoldiers += ( (float)soldiers - moveSoldiers ) * Consts.MoveSoldiersMult / ( Consts.MoveSoldiersMult + population - mov );
-            }
-            return moveSoldiers;
-        }
-
         internal static double GetActualGoldCost(int population)
         {
             return population * Consts.MovePopulationGoldCost;
         }
-
         public static double GetGoldCost(int population)
         {
             double actual, rounded;
             GetGoldCost(population, out actual, out rounded);
             return rounded;
         }
-
         private static void GetGoldCost(int population, out double actual, out double rounded)
         {
             actual = GetActualGoldCost(population);
             rounded = Player.CeilGold(actual);
         }
 
-        protected double GetSoldiers(int troops, double soldiers)
+        public double GetSoldiers(int troops)
         {
-            return GetSoldiers(this.Population, soldiers, troops);
+            return GetSoldiers(this.Population, this.Soldiers, troops);
         }
-
-        public static double GetSoldiers(int population, double soldiers, int attPop)
+        public static double GetSoldiers(int population, double soldiers, int troops)
         {
             if (population > 0)
-                return ( ( soldiers * attPop ) / population );
+                return ( ( soldiers * troops ) / population );
             return soldiers;
         }
-
-        public double GetTotalSoldierPct()
-        {
-            return GetSoldierPct(this.TotalSoldiers);
-        }
-
         public double GetSoldierPct()
         {
-            TurnException.CheckTurn(this.Player);
-
-            return GetSoldierPct(this.soldiers);
+            return GetSoldiers(1);
         }
 
-        protected double GetSoldierPct(double soldiers)
-        {
-            return GetSoldiers(this.Population, soldiers, 1);
-        }
-
-        public virtual double Soldiers
+        public double Soldiers
         {
             get
             {
-                TurnException.CheckTurn(this.Player);
-
-                return this.soldiers;
+                return this._soldiers;
             }
-        }
-
-        public virtual double TotalSoldiers
-        {
-            get
+            protected set
             {
-                return this.soldiers;
+                checked
+                {
+                    this._soldiers = (float)value;
+                }
             }
         }
 

@@ -23,6 +23,7 @@ namespace GalWar
         private double _cost;
 
         internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
+            : base(design.Att, design.Def, design.HP, 0, 0)
         {
             this.Colony = design.Colony;
 
@@ -45,11 +46,6 @@ namespace GalWar
             this.Upkeep = design.Upkeep;
             this.CurSpeed = this.MaxSpeed;
             this.MaxHP = design.HP;
-
-            this.Att = design.Att;
-            this.Def = design.Def;
-
-            this.HP = this.MaxHP;
 
             this.AutoRepair = double.NaN;
 
@@ -280,7 +276,7 @@ namespace GalWar
                 this.Player.GoldIncome(destroyGold);
 
             this.Population = 0;
-            this.soldiers = 0;
+            this.Soldiers = 0;
             this.curExp = 0;
             this.CurSpeed = 0;
 
@@ -290,7 +286,7 @@ namespace GalWar
 
         internal void AddSoldiers(double soldiers)
         {
-            this.soldiers += soldiers;
+            this.Soldiers += soldiers;
         }
 
         internal void AddPopulation(int pop)
@@ -525,13 +521,13 @@ namespace GalWar
         public double GetDestroyGold()
         {
             double gold = ( this.Population / Consts.PopulationForGoldLow )
-                    + ( this.soldiers / Consts.SoldiersForGold )
+                    + ( this.Soldiers / Consts.SoldiersForGold )
                     + ( GetCostExperience(this.curExp) / Consts.ExpForGold )
                     + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 );
 
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
-            Console.WriteLine("Soldiers:  " + this.soldiers / Consts.SoldiersForGold);
+            Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
             Console.WriteLine("Experience:  " + GetCostExperience(this.curExp) / Consts.ExpForGold);
             Console.WriteLine("Upkeep:  " + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 ));
             Console.WriteLine();
@@ -650,7 +646,7 @@ namespace GalWar
                 soldiers *= experience / ( soldiers + this.GetCurrentCost() ) / 1.69;
                 experience -= soldiers;
                 soldiers *= GetCostExpForExp() / Consts.ExpForSoldiers;
-                this.soldiers += Game.Random.GaussianCapped((float)soldiers, Consts.ExperienceRndm);
+                this.Soldiers += Game.Random.GaussianCapped((float)soldiers, Consts.ExperienceRndm);
             }
 
             this.curExp += Game.Random.GaussianCapped((float)experience, Consts.ExperienceRndm);
@@ -990,7 +986,7 @@ namespace GalWar
 
         private double GetFreeDmg(Colony colony)
         {
-            return this.BombardDamage * Consts.PlanetDefensesDeathStarMult / colony.PlanetDefenseCost;
+            return this.BombardDamage * Consts.BombardFreeDmgMult / colony.PlanetDefenseCostPerHP;
         }
 
         private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage)
@@ -1126,8 +1122,8 @@ namespace GalWar
 
             double exp;
 
-            double soldiers = GetSoldiers(population, this.soldiers);
-            this.soldiers -= soldiers;
+            double soldiers = GetSoldiers(population);
+            this.Soldiers -= soldiers;
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
@@ -1135,7 +1131,7 @@ namespace GalWar
             this.Population += population;
             this.movedPop += population;
 
-            this.soldiers += soldiers;
+            this.Soldiers += soldiers;
 
             this.AddCostExperience(exp);
         }
@@ -1169,11 +1165,11 @@ namespace GalWar
             this.Player.GoldIncome(-GetActualGoldCost(this.Population));
 
             int production = Game.Random.Round(ColonizationValue);
-            this.Player.NewColony(handler, planet, this.Population, this.soldiers, production);
+            this.Player.NewColony(handler, planet, this.Population, this.Soldiers, production);
             this.Player.GoldIncome(ColonizationValue - production);
 
             this.Population = 0;
-            this.soldiers = 0;
+            this.Soldiers = 0;
 
             Destroy(false);
         }

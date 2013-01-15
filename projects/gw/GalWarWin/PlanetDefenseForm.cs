@@ -26,8 +26,6 @@ namespace GalWarWin
             this.colony = colony;
 
             this.btnDisband.Visible = false;
-            this.lblSoldiers.Visible = false;
-            this.lblSoldiersL.Visible = false;
             this.lblUpkeep.Visible = false;
             this.lblUpkeepL.Visible = false;
             this.lblInc.Visible = false;
@@ -48,15 +46,11 @@ namespace GalWarWin
             if (colony.Player.IsTurn)
             {
                 this.btnDisband.Visible = true;
-                this.lblSoldiers.Visible = true;
-                this.lblSoldiersL.Visible = true;
                 this.lblUpkeep.Visible = true;
                 this.lblUpkeepL.Visible = true;
 
-                this.lblSoldiers.Text = MainForm.FormatPct(colony.PlanetDefenseSoldiers / Math.Max(1, colony.Population));
-
                 this.lblUpkeepL.Text = "Upkeep";
-                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PlanetDefenseTotalUpkeep);
+                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PlanetDefenseUpkeep);
 
                 if (colony.Buildable is PlanetDefense)
                 {
@@ -66,7 +60,7 @@ namespace GalWarWin
                     double d1 = 0, production = 0, d2 = 0;
                     int i = 0;
                     colony.GetTurnIncome(ref d1, ref production, ref d2, ref i, false);
-                    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.Production + production);
+                    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.Buildable, colony.Production + production);
                 }
             }
             else if (colony.DefenseAttChange != 0 || colony.DefenseDefChange != 0 || colony.DefenseHPChange != 0)

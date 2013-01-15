@@ -11,11 +11,12 @@ namespace GalWar
         private byte _att, _def;
         private ushort _hp;
 
-        protected Combatant()
+        protected Combatant(int att, int def, int hp, int population, double soldiers)
+            : base(population, soldiers)
         {
-            this._att = 1;
-            this._def = 1;
-            this._hp = 0;
+            this.Att = att;
+            this.Def = def;
+            this.HP = hp;
         }
 
         #endregion //fields and constructors
@@ -125,15 +126,10 @@ namespace GalWar
             }
             protected set
             {
-                SetAtt(value);
-            }
-        }
-
-        protected virtual void SetAtt(int value)
-        {
-            checked
-            {
-                this._att = (byte)value;
+                checked
+                {
+                    this._att = (byte)value;
+                }
             }
         }
 
@@ -145,15 +141,10 @@ namespace GalWar
             }
             protected set
             {
-                SetDef(value);
-            }
-        }
-
-        protected virtual void SetDef(int value)
-        {
-            checked
-            {
-                this._def = (byte)value;
+                checked
+                {
+                    this._def = (byte)value;
+                }
             }
         }
 
@@ -168,7 +159,6 @@ namespace GalWar
                 SetHP(value);
             }
         }
-
         protected virtual void SetHP(int value)
         {
             checked

@@ -19,21 +19,12 @@ namespace GalWarWin
             InitializeComponent();
         }
 
-        private void SetObsolete(HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
+        private void SetObsolete(HashSet<ShipDesign> obsolete)
         {
             ShipDesign[] items = new ShipDesign[obsolete.Count];
             obsolete.CopyTo(items, 0);
             this.lbxDesigns.Items.Clear();
-            if (!CompareDefense(oldDefense, newDefense))
-                this.lbxDesigns.Items.Add(oldDefense);
             this.lbxDesigns.Items.AddRange(items);
-            this.newDefense = newDefense;
-        }
-
-        private bool CompareDefense(PlanetDefense oldDefense, PlanetDefense newDefense)
-        {
-            return ( oldDefense.Att == newDefense.Att && oldDefense.Def == newDefense.Def
-                    && MainForm.FormatDouble(oldDefense.HPCost) == MainForm.FormatDouble(newDefense.HPCost) );
         }
 
         private void lbxDesigns_SelectedIndexChanged(object sender, EventArgs e)
@@ -54,7 +45,7 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowForm(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
+        public static void ShowForm(ShipDesign newDesign, HashSet<ShipDesign> obsolete)
         {
             if (form.Width > 400)
                 form.Width -= 200;
@@ -62,7 +53,7 @@ namespace GalWarWin
             MainForm.GameForm.SetLocation(form);
 
             form.shipDesignForm1.SetBuildable(newDesign);
-            form.SetObsolete(obsolete, oldDefense, newDefense);
+            form.SetObsolete(obsolete);
             form.ShowDialog();
         }
     }

@@ -44,10 +44,11 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buildable\Attack.cs" />
+    <Compile Include="Buildable\Defense.cs" />
+    <Compile Include="Buildable\PlanetDefense.cs" />
     <Compile Include="Object\Anomaly.cs" />
     <Compile Include="Object\Combatant.cs" />
-    <Compile Include="Buildable\PlanetDefense.cs" />
-    <Compile Include="Buildable\Soldiering.cs" />
     <Compile Include="Buildable\StoreProd.cs" />
     <Compile Include="Exception\AssertException.cs" />
     <Compile Include="Object\Colony.cs" />

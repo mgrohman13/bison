@@ -108,14 +108,14 @@ namespace GalWarWin.Sliders
                 double soldiers = 0;
                 if (max.HasValue)
                 {
-                    soldiers = PopCarrier.GetMoveSoldiers(this.totalPop, this.soldiers, value) / value;
+                    soldiers = PopCarrier.GetSoldiers(this.totalPop, this.soldiers, value) / value;
                 }
                 else if (from != null)
                 {
                     if (to == null || !to.Player.IsTurn)
-                        soldiers = from.GetMoveSoldiers(value) / value;
+                        soldiers = from.GetSoldiers(value) / value;
                     else
-                        soldiers = ( from.GetMoveSoldiers(value) + to.Soldiers ) / ( value + to.Population ) - to.GetSoldierPct();
+                        soldiers = ( from.GetSoldiers(value) + to.Soldiers ) / ( value + to.Population ) - to.GetSoldierPct();
                 }
                 if (soldiers != 0)
                 {

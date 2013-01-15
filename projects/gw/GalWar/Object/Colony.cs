@@ -18,9 +18,10 @@ namespace GalWar
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
         private ushort _production, _repair;
-        private float _defenseSoldiers, _researchRounding, _productionRounding, _soldierChange;
+        private float _researchRounding, _productionRounding, _soldierChange;
 
         internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
+            : base(1, 1, 0, population, soldiers)
         {
             this.player = player;
             this.Planet = planet;
@@ -31,11 +32,6 @@ namespace GalWar
             this._repairShip = null;
 
             this.production = production;
-            this.defenseSoldiers = 0;
-
-            this.Population = population;
-            this.movedPop = population;
-            this.soldiers = soldiers;
 
             ResetRounding();
 
@@ -54,18 +50,6 @@ namespace GalWar
             set
             {
                 this._built = value;
-            }
-        }
-
-        private float defenseSoldiers
-        {
-            get
-            {
-                return this._defenseSoldiers;
-            }
-            set
-            {
-                this._defenseSoldiers = value;
             }
         }
 
@@ -127,14 +111,9 @@ namespace GalWar
 
         private void DoChange(double soldierChange, int defenseAttChange, int defenseDefChange, int defenseHPChange)
         {
-            this._soldierChange = (float)( this.GetTotalSoldierPct() - soldierChange );
+            this._soldierChange = (float)( this.GetSoldierPct() - soldierChange );
             int att = this.Att;
             int def = this.Def;
-            if (this.MinDefenses)
-            {
-                --att;
-                --def;
-            }
             checked
             {
                 this._defenseAttChange = (sbyte)( att - defenseAttChange );
@@ -263,7 +242,7 @@ namespace GalWar
             LosePopulation(damage);
 
             double exp = Math.Min(initPop, damage) * Consts.TroopExperienceMult;
-            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
             return exp;
         }
 
@@ -299,7 +278,7 @@ namespace GalWar
                 deadPop += Planet.ConstValue;
             deadPop *= Consts.TroopExperienceMult;
 
-            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, deadPop);
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, deadPop);
             soldiers += GetExperienceSoldiers(attackers, initAttackers, deadPop, out exp);
 
             handler.OnInvade(ship, this, attackers, soldiers, goldSpent, attack, defense);
@@ -335,7 +314,7 @@ namespace GalWar
             double initAttackers = attackers;
             double initDefenders = this.Population;
 
-            defense = Consts.GetPlanetDefenseStrength(this.Population, this.TotalSoldiers);
+            defense = Consts.GetPlanetDefenseStrength(this.Population, this.Soldiers);
             attack = Consts.GetInvasionStrength(attackers, soldiers, gold, initDefenders * defense);
             double attMult = attack / defense;
 
@@ -379,8 +358,7 @@ namespace GalWar
             soldiers *= attackers / initAttackers;
 
             double defLeftMult = this.Population / initDefenders;
-            this.soldiers *= defLeftMult;
-            //will reduce defendingSoldiers
+            this.Soldiers *= defLeftMult;
             ReduceDefenses(defLeftMult);
         }
 
@@ -394,7 +372,7 @@ namespace GalWar
                     occupy = 1;
             }
 
-            double moveSoldiers = MoveSoldiers(attackers, soldiers, occupy);
+            double moveSoldiers = GetSoldiers(attackers, soldiers, occupy);
             occupyingPlayer.NewColony(handler, planet, occupy, moveSoldiers, 0);
 
             attackers -= occupy;
@@ -407,25 +385,22 @@ namespace GalWar
                 throw new Exception();
 
             double gold = ( this.Population / Consts.PopulationForGoldLow )
-                    + ( this.soldiers / Consts.SoldiersForGold )
+                    + ( this.Soldiers / Consts.SoldiersForGold )
                     + ( this.production / Consts.ProductionForGold )
-                    + ( this.GetActualDisbandValue(this.HP) )
-                    + ( this.defenseSoldiers / Consts.DefendingSoldiersForGold );
+                    + ( this.GetActualDisbandValue(this.HP) );
             this.Player.AddGold(gold, true);
 
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
-            Console.WriteLine("Soldiers:  " + this.soldiers / Consts.SoldiersForGold);
+            Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
             Console.WriteLine("Production:  " + this.production / Consts.ProductionForGold);
             Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP));
-            Console.WriteLine("Defense Soldiers:  " + this.defenseSoldiers / Consts.DefendingSoldiersForGold);
             Console.WriteLine();
 
             this.Population = 0;
-            this.soldiers = 0;
+            this.Soldiers = 0;
             this.production = 0;
-            base.SetHP(0);
-            this.defenseSoldiers = 0;
+            this.HP = 0;
 
             this.Player.RemoveColony(this);
             this.Player.DeathCheck();
@@ -440,15 +415,6 @@ namespace GalWar
             this.production += RoundValue(production, ref addGold);
 
             Player.GoldIncome(addGold);
-        }
-
-        internal void BuildSoldiers(double prodInc)
-        {
-            if (this.production + prodInc > 0)
-            {
-                this.soldiers += Game.Random.GaussianCapped(( this.production + prodInc ) / Consts.ProductionForSoldiers, Consts.SoldiersRndm);
-                this.production = 0;
-            }
         }
 
         #endregion //internal
@@ -527,7 +493,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return PlanetDefenseTotalUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production;
+                return PlanetDefenseUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production;
             }
         }
 
@@ -686,7 +652,7 @@ namespace GalWar
                     {
                         Ship ship = tile.SpaceObject as Ship;
                         if (ship != null && ship.Player != this.Player)
-                            gold -= GetPlanetDefenseAttackCost(att, def, hp, ship.Def);
+                            gold -= GetAttackCost(att, def, hp, ship.Def);
                     }
             }
 
@@ -730,13 +696,20 @@ namespace GalWar
 
         private void GetPlanetDefenseIncMinGold(double production, out int newAtt, out int newDef, out int newHP)
         {
-            if (!( this.Buildable is PlanetDefense ))
-                production = 0;
-            double att, def, hp;
-            GetPlanetDefenseInc(production, out att, out def, out hp);
-            newAtt = (int)Math.Ceiling(att);
-            newDef = (int)Math.Ceiling(def);
-            newHP = (int)Math.Ceiling(hp);
+            if (this.Buildable is PlanetDefense)
+            {
+                double att, def, hp, soldiers;
+                GetPlanetDefenseInc(this.Buildable, production, out att, out def, out hp, out soldiers);
+                newAtt = (int)Math.Ceiling(att);
+                newDef = (int)Math.Ceiling(def);
+                newHP = (int)Math.Ceiling(hp);
+            }
+            else
+            {
+                newAtt = this.Att;
+                newDef = this.Def;
+                newHP = this.HP;
+            }
         }
 
         private void LoseProduction(double loseProduction)
@@ -859,56 +832,54 @@ namespace GalWar
 
         #region planet defense
 
-        private void SetPlanetDefense(int att, int def, int hp)
-        {
-            double oldCost = this.PlanetDefenseTotalCost;
-            base.SetAtt(att);
-            base.SetDef(def);
-            base.SetHP(hp);
-            ModDefenseSoldiers(oldCost);
-        }
-        //should only be setting att and def through SetPlanetDefense()
-        protected override void SetAtt(int value)
-        {
-            throw new Exception();
-        }
-        protected override void SetDef(int value)
-        {
-            throw new Exception();
-        }
-        protected override void SetHP(int value)
-        {
-            double oldCost = this.PlanetDefenseTotalCost;
-            base.SetHP(value);
-            ModDefenseSoldiers(oldCost);
-        }
-        private void ModDefenseSoldiers(double oldCost)
-        {
-            float diff = (float)( ( this.PlanetDefenseTotalCost - oldCost ) * Consts.PlanetDefensesSoldiersMult );
-            this.defenseSoldiers += Game.Random.Gaussian(diff, Consts.SoldiersRndm);
-            if (this.defenseSoldiers < 0 || this.HP == 0)
-            {
-                Player.GoldIncome(this.defenseSoldiers / Consts.DefendingSoldiersForGold);
-                this.defenseSoldiers = 0;
-            }
-        }
-
-        public double PlanetDefenseSoldiers
+        public double PlanetDefenseUpkeep
         {
             get
             {
                 TurnException.CheckTurn(this.Player);
 
-                return this.defenseSoldiers;
+                return GetPDUpkeep(this.HP, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
             }
         }
-
-        public override double TotalSoldiers
+        internal double ArmadaCost
         {
             get
             {
-                return base.TotalSoldiers + this.defenseSoldiers;
+                return HP * ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, this.Player.Game.AvgResearch);
             }
+        }
+        internal double PlanetDefenseCostPerHP
+        {
+            get
+            {
+                return GetPDCost(this.Att, this.Def);
+            }
+        }
+        private double PlanetDefenseCost
+        {
+            get
+            {
+                return this.HP * PlanetDefenseCostPerHP;
+            }
+        }
+        public double PlanetDefenseStrengthPerHP
+        {
+            get
+            {
+                return ShipDesign.GetPlanetDefenseStrength(this.Att, this.Def);
+            }
+        }
+        public double PlanetDefenseStrength
+        {
+            get
+            {
+                return this.HP * PlanetDefenseStrengthPerHP;
+            }
+        }
+
+        private double GetPDCost(double att, double def)
+        {
+            return ShipDesign.GetPlanetDefenseCost(att, def, this.Player.LastResearched);
         }
 
         public void DisbandPlanetDefense(IEventHandler handler, int hp, bool gold)
@@ -948,7 +919,7 @@ namespace GalWar
         }
         internal double GetActualDisbandValue(int hp)
         {
-            return hp * PlanetDefenseCost * Consts.DisbandPct;
+            return hp * PlanetDefenseCostPerHP * Consts.DisbandPct;
         }
         private void GetDisbandGoldValue(int hp, out double actual, out double rounded)
         {
@@ -956,218 +927,195 @@ namespace GalWar
             rounded = Player.FloorGold(actual);
         }
 
-        public double PlanetDefenseTotalUpkeep
+        private double GetAttackCost(int shipDef)
         {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                return GetPlanetDefenseUpkeep(this.HP, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
-            }
+            return GetAttackCost(this.Att, this.Def, this.HP, shipDef);
         }
-
-        private double GetPlanetDefenseAttackCost(int shipDef)
-        {
-            return GetPlanetDefenseAttackCost(this.Att, this.Def, this.HP, shipDef);
-        }
-
-        private double GetPlanetDefenseAttackCost(int att, int def, int hp, int shipDef)
+        private double GetAttackCost(int att, int def, int hp, int shipDef)
         {
             //only pay for the maximum HP you could possibly use
-            return GetPlanetDefenseUpkeep(Math.Min(hp, ( att - 1 ) * shipDef + 1), att, def, Consts.PlanetDefensesAttackCostMult);
+            return GetPDUpkeep(Math.Min(hp, ( att - 1 ) * shipDef + 1), att, def, Consts.PlanetDefensesAttackCostMult);
         }
 
-        private double GetPlanetDefenseUpkeep(int hp, int att, int def, double mult)
+        private double GetPDUpkeep(int hp, int att, int def, double mult)
         {
-            return hp * mult * ShipDesign.GetPlanetDefenseCost(att, def, this.Player.LastResearched) * Consts.GetProductionUpkeepMult(Player.Game.MapSize);
-        }
-
-        internal double GetCostAvgResearch()
-        {
-            return HP * ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, this.Player.Game.AvgResearch);
-        }
-
-        internal double PlanetDefenseCost
-        {
-            get
-            {
-                return ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, this.Player.LastResearched);
-            }
-        }
-
-        private double PlanetDefenseTotalCost
-        {
-            get
-            {
-                return this.HP * PlanetDefenseCost;
-            }
-        }
-
-        public double PlanetDefenseStrength
-        {
-            get
-            {
-                return ShipDesign.GetPlanetDefenseStrength(this.Att, this.Def);
-            }
+            return hp * mult * GetPDCost(att, def) * Consts.GetProductionUpkeepMult(Player.Game.MapSize);
         }
 
         private void AttackShip(Ship ship, IEventHandler handler)
         {
             //get the attack cost before possibly being injured
-            double cost = GetPlanetDefenseAttackCost(ship.Def);
+            double cost = GetAttackCost(ship.Def);
             double pct = Combat(handler, ship);
             this.Player.SpendGold(cost * ( 1 - pct ));
         }
 
         internal override double GetExpForDamage(double damage)
         {
-            return damage * PlanetDefenseStrength * Consts.ExperienceMult;
+            return damage * PlanetDefenseStrengthPerHP * Consts.ExperienceMult;
         }
-
         protected override double GetKillExp()
         {
-            return GetExpForDamage(1 / PlanetDefenseCost);
+            return GetExpForDamage(1 / PlanetDefenseCostPerHP);
         }
 
         internal override void AddExperience(double experience)
         {
-            AddCostExperience(experience * this.PlanetDefenseCost / this.PlanetDefenseStrength);
+            AddCostExperience(experience * this.PlanetDefenseCostPerHP / this.PlanetDefenseStrengthPerHP);
         }
         internal override void AddCostExperience(double cost)
         {
-            this.soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, cost);
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, cost);
         }
 
         internal void BuildPlanetDefense(double prodInc)
         {
-            double newAtt, newDef, newHP;
-            int att, def, hp;
-            GetPlanetDefenseInc(this.production + prodInc, out att, out def, out hp, out newAtt, out newDef, out newHP, true);
+            double prod = ( this.production + prodInc );
+            if (prod > Consts.FLOAT_ERROR)
+            {
+                prod /= 2;
 
-            SetPlanetDefense(att, def, hp);
+                double newAtt, newDef, newHP;
+                GetPlanetDefenseInc(this.Buildable, prod, out newAtt, out newDef, out newHP);
+                ModPD(this.PlanetDefenseCost + prod, newAtt, newDef);
+
+                BuildSoldiers(prod);
+            }
+
             this.production = 0;
         }
-
-        public void GetPlanetDefenseInc(double production, out double newAtt, out double newDef, out double newHP)
+        private void BuildSoldiers(double prod)
         {
-            int newAttInt, newDefInt, newHPInt;
-            GetPlanetDefenseInc(production, out newAttInt, out newDefInt, out newHPInt, out newAtt, out newDef, out newHP, false);
+            this.Soldiers += Game.Random.GaussianCapped(prod / Consts.ProductionForSoldiers, Consts.ExperienceRndm);
         }
 
-        private void GetPlanetDefenseInc(double production, out int newAttInt, out int newDefInt, out int newHPInt, out double newAtt, out double newDef, out double newHP, bool doRound)
+        public void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP, out double newSoldiers)
         {
-            if (production > 0)
+            if (prod > Consts.FLOAT_ERROR)
             {
-                double oldCost = PlanetDefenseCost;
-                newHP = production / oldCost;
+                prod /= 2;
 
-                ModStat(this.Player.PlanetDefense.Att, this.Att, newHP, oldCost, out newAtt, out newAttInt);
-                ModStat(this.Player.PlanetDefense.Def, this.Def, newHP, oldCost, out newDef, out newDefInt);
+                GetPlanetDefenseInc(buildable, prod, out newAtt, out newDef, out newHP);
 
-                newHP += this.HP;
-                newHP *= oldCost;
-                if (doRound)
-                    newHP /= ShipDesign.GetPlanetDefenseCost(newAttInt, newDefInt, this.Player.LastResearched);
-                else
-                    newHP /= GetCost(newAtt, newDef, this.Player.LastResearched);
-                newHPInt = GetStat(newHP, this.HP);
+                newSoldiers = this.Soldiers + prod / Consts.ProductionForSoldiers;
             }
             else
             {
-                newAtt = newAttInt = this.Att;
-                newDef = newDefInt = this.Def;
-                newHP = newHPInt = this.HP;
+                newAtt = this.Att;
+                newDef = this.Def;
+                newHP = this.HP;
+
+                newSoldiers = this.Soldiers;
             }
+        }
+        private void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP)
+        {
+            if (buildable is Attack)
+                ModPD(this.PlanetDefenseCost + prod, this.Att, this.Player.PDAtt,
+                        this.Def, this.Def, out newAtt, out newDef, out newHP);
+            else if (buildable is Defense)
+                ModPD(this.PlanetDefenseCost + prod, this.Att, this.Att,
+                        this.Def, this.Player.PDDef, out newAtt, out newDef, out newHP);
+            else
+                throw new Exception();
         }
 
         private void ReduceDefenses(double mult)
         {
-            if (mult < 1 - Consts.FLOAT_ERROR)
-                if (mult > Consts.FLOAT_ERROR)
+            double totalCost = this.PlanetDefenseCost;
+
+            if (this.HP == 0 || mult < Consts.FLOAT_ERROR)
+            {
+                this.Att = 1;
+                this.Def = 1;
+                this.HP = 0;
+            }
+            else if (mult < 1 - Consts.FLOAT_ERROR)
+            {
+                double newAtt, newDef, newHP;
+                ModPD(totalCost * mult, this.Att, 1, this.Def, 1, out newAtt, out newDef, out newHP);
+                ModPD(totalCost * mult, newAtt, newDef);
+            }
+
+            this.player.AddGold(( totalCost - this.PlanetDefenseCost ) * Consts.DisbandPct);
+        }
+
+        private void ModPD(double trgCost, int att, int trgAtt, int def, int trgDef,
+                out double newAtt, out double newDef, out double newHP)
+        {
+            if (( trgAtt > att && trgDef < def ) || ( trgAtt < att && trgDef > def ))
+                throw new Exception();
+
+            if (trgAtt == att && trgDef == def)
+            {
+                newAtt = att;
+                newDef = def;
+            }
+            else
+            {
+                double minAtt = Math.Min(trgAtt, att), maxAtt = Math.Max(trgAtt, att), minDef = Math.Min(trgDef, def), maxDef = Math.Max(trgDef, def);
+                if (TestPD(trgCost, maxAtt, maxDef))
                 {
-                    if (!this.MinDefenses)
+                    newAtt = maxAtt;
+                    newDef = maxDef;
+                }
+                else if (!TestPD(trgCost, minAtt, minDef))
+                {
+                    newAtt = minAtt;
+                    newDef = minDef;
+                }
+                else
+                {
+                    bool inc = ( trgAtt > att || trgDef > def );
+                    double min = 0, max = 1;
+                    do
                     {
-                        double oldCost = PlanetDefenseCost;
-                        double newHP = GetCurHpAdj(oldCost) * ( 1 / mult - 1 );
-
-                        double d;
-                        int newAtt, newDef;
-                        ModStat(1, this.Att, newHP, oldCost, out d, out newAtt);
-                        ModStat(1, this.Def, newHP, oldCost, out d, out newDef);
-
-                        SetPlanetDefense(newAtt, newDef, GetStat(mult * this.HP * oldCost /
-                                ShipDesign.GetPlanetDefenseCost(newAtt, newDef, this.Player.LastResearched), this.HP));
-                    }
+                        double mult = ( min + max ) / 2;
+                        newAtt = att + mult * ( trgAtt - att );
+                        newDef = def + mult * ( trgDef - def );
+                        if (inc == TestPD(trgCost, newAtt, newDef))
+                            min = mult;
+                        else
+                            max = mult;
+                    } while (max - min > Consts.FLOAT_ERROR);
                 }
-                else
-                {
-                    SetPlanetDefense(1, 1, 0);
-                }
+            }
+
+            newHP = GetPDHP(trgCost, newAtt, newDef);
+        }
+        private bool TestPD(double trgCost, double minAtt, double minDef)
+        {
+            return ( GetPDHP(trgCost, minAtt, minDef) > ShipDesign.GetHPStr(minAtt, minDef) );
+        }
+        private double GetPDHP(double trgCost, double s1, double s2)
+        {
+            return trgCost / GetPDCost(s1, s2);
         }
 
-        private void ModStat(int stat, int current, double newHP, double cost, out double newStat, out int newStatInt)
+        private void ModPD(double newCost, double newAtt, double newDef)
         {
-            if (stat == current || newHP == 0)
-            {
-                newStat = current;
-                newStatInt = current;
-            }
+            this.Att = GetPDStat(newAtt, this.Att, this.player.PDAtt);
+            this.Def = GetPDStat(newDef, this.Def, this.player.PDDef);
+            this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, ushort.MaxValue);
+
+            if (Math.Abs(GetPDCost(Att, Def) - GetPDCost(Def, Att)) > Consts.FLOAT_ERROR)
+                throw new Exception();
+        }
+        private static int GetPDStat(double target, int current, int max)
+        {
+            float add = (float)( target - current );
+
+            int min = 1;
+            if (target > current)
+                min = current;
             else
-            {
-                //higher power causes more of a bias towards lower values
-                const double power = 3.9;
+                max = current;
+            int lowerCap = Math.Max(min - current, (int)Math.Ceiling(2.0 * add - max + current));
 
-                newHP = Math.Sqrt(newHP);
-                double curHP = Math.Sqrt(GetCurHpAdj(cost));
-                double value = ( Math.Pow(current, 1 / power) * curHP + Math.Pow(stat, 1 / power) * newHP ) / ( curHP + newHP );
-
-                newStat = Math.Pow(value, power);
-                newStatInt = GetStat(newStat, current);
-            }
-        }
-
-        private double GetCurHpAdj(double cost)
-        {
-            return ( this.HP + ( Consts.MoveOrderGold / Math.E / cost ) );
-        }
-
-        private static int GetStat(double stat, int current)
-        {
-            int lowerCap = 0;
-            if (current > 2 * stat - 1)
-                lowerCap = 1 + (int)Math.Ceiling(current - 2 * stat);
-            double average = Math.Abs(stat - current);
-            int randed;
-            if (average > lowerCap)
-            {
-                randed = Game.Random.GaussianCappedInt(average, Consts.PlanetDefensesRndm, lowerCap);
-                if (current > stat)
-                    randed = current - randed;
-                else
-                    randed = current + randed;
-            }
+            if (add > lowerCap)
+                return current + Game.Random.GaussianCappedInt(add, Consts.PlanetDefensesRndm, lowerCap);
             else
-            {
-                randed = Game.Random.Round(stat);
-            }
-
-            return randed;
-        }
-
-        private static double GetCost(double newAtt, double newDef, int research)
-        {
-            int attLow = (int)newAtt;
-            int defLow = (int)newDef;
-            int attHigh = attLow + 1;
-            int defHigh = defLow + 1;
-            double attHighMult = newAtt - attLow;
-            double defHighMult = newDef - defLow;
-            double attLowMult = 1 - attHighMult;
-            double defLowMult = 1 - defHighMult;
-            return ShipDesign.GetPlanetDefenseCost(attLow, defLow, research) * attLowMult * defLowMult
-                    + ShipDesign.GetPlanetDefenseCost(attHigh, defLow, research) * attHighMult * defLowMult
-                    + ShipDesign.GetPlanetDefenseCost(attLow, defHigh, research) * attLowMult * defHighMult
-                    + ShipDesign.GetPlanetDefenseCost(attHigh, defHigh, research) * attHighMult * defHighMult;
+                return Game.Random.Round((float)target);
         }
 
         #endregion //planet defense

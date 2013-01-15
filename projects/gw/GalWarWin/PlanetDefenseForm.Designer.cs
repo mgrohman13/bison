@@ -36,8 +36,6 @@
             this.lblDef = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.lblAtt = new System.Windows.Forms.Label();
-            this.lblSoldiersL = new System.Windows.Forms.Label();
-            this.lblSoldiers = new System.Windows.Forms.Label();
             this.lblName = new System.Windows.Forms.Label();
             this.lblIncL = new System.Windows.Forms.Label();
             this.lblInc = new System.Windows.Forms.Label();
@@ -50,7 +48,7 @@
             // lblUpkeepL
             // 
             this.lblUpkeepL.AutoEllipsis = true;
-            this.lblUpkeepL.Location = new System.Drawing.Point(67, 129);
+            this.lblUpkeepL.Location = new System.Drawing.Point(69, 106);
             this.lblUpkeepL.Name = "lblUpkeepL";
             this.lblUpkeepL.Size = new System.Drawing.Size(59, 13);
             this.lblUpkeepL.TabIndex = 51;
@@ -61,7 +59,7 @@
             // 
             this.lblUpkeep.AutoEllipsis = true;
             this.lblUpkeep.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblUpkeep.Location = new System.Drawing.Point(132, 124);
+            this.lblUpkeep.Location = new System.Drawing.Point(134, 101);
             this.lblUpkeep.Name = "lblUpkeep";
             this.lblUpkeep.Size = new System.Drawing.Size(126, 23);
             this.lblUpkeep.TabIndex = 50;
@@ -131,27 +129,6 @@
             this.lblAtt.Text = "lblAtt";
             this.lblAtt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // lblSoldiersL
-            // 
-            this.lblSoldiersL.AutoEllipsis = true;
-            this.lblSoldiersL.Location = new System.Drawing.Point(54, 106);
-            this.lblSoldiersL.Name = "lblSoldiersL";
-            this.lblSoldiersL.Size = new System.Drawing.Size(72, 13);
-            this.lblSoldiersL.TabIndex = 38;
-            this.lblSoldiersL.Text = "Soldiers";
-            this.lblSoldiersL.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // lblSoldiers
-            // 
-            this.lblSoldiers.AutoEllipsis = true;
-            this.lblSoldiers.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblSoldiers.Location = new System.Drawing.Point(132, 101);
-            this.lblSoldiers.Name = "lblSoldiers";
-            this.lblSoldiers.Size = new System.Drawing.Size(126, 23);
-            this.lblSoldiers.TabIndex = 37;
-            this.lblSoldiers.Text = "lblSoldiers";
-            this.lblSoldiers.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // lblName
             // 
             this.lblName.AutoEllipsis = true;
@@ -166,7 +143,7 @@
             // lblIncL
             // 
             this.lblIncL.AutoEllipsis = true;
-            this.lblIncL.Location = new System.Drawing.Point(67, 152);
+            this.lblIncL.Location = new System.Drawing.Point(69, 129);
             this.lblIncL.Name = "lblIncL";
             this.lblIncL.Size = new System.Drawing.Size(59, 13);
             this.lblIncL.TabIndex = 53;
@@ -177,7 +154,7 @@
             // 
             this.lblInc.AutoEllipsis = true;
             this.lblInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblInc.Location = new System.Drawing.Point(132, 147);
+            this.lblInc.Location = new System.Drawing.Point(134, 124);
             this.lblInc.Name = "lblInc";
             this.lblInc.Size = new System.Drawing.Size(126, 23);
             this.lblInc.TabIndex = 52;
@@ -186,7 +163,7 @@
             // 
             // btnDisband
             // 
-            this.btnDisband.Location = new System.Drawing.Point(137, 173);
+            this.btnDisband.Location = new System.Drawing.Point(137, 150);
             this.btnDisband.Name = "btnDisband";
             this.btnDisband.Size = new System.Drawing.Size(75, 23);
             this.btnDisband.TabIndex = 54;
@@ -197,7 +174,7 @@
             // btnOK
             // 
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(61, 202);
+            this.btnOK.Location = new System.Drawing.Point(61, 179);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 55;
@@ -230,7 +207,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnOK;
-            this.ClientSize = new System.Drawing.Size(270, 237);
+            this.ClientSize = new System.Drawing.Size(270, 214);
             this.Controls.Add(this.lblAttacking);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnOK);
@@ -245,8 +222,6 @@
             this.Controls.Add(this.lblDef);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lblAtt);
-            this.Controls.Add(this.lblSoldiersL);
-            this.Controls.Add(this.lblSoldiers);
             this.Controls.Add(this.lblName);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "PlanetDefenseForm";
@@ -265,8 +240,6 @@
         private System.Windows.Forms.Label lblDef;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblAtt;
-        private System.Windows.Forms.Label lblSoldiersL;
-        private System.Windows.Forms.Label lblSoldiers;
         private System.Windows.Forms.Label lblName;
         private System.Windows.Forms.Label lblIncL;
         private System.Windows.Forms.Label lblInc;

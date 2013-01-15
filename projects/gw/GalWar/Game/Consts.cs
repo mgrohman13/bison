@@ -79,16 +79,14 @@ namespace GalWar
         public const double PopulationForGoldLow = 1 / Income / 2.1;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
-        public const float ProductionForSoldiers = .65f;
+        public const float ProductionForSoldiers = .39f;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3f;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers * 1.3;
-        public const double DefendingSoldiersForGold = SoldiersForGold * 1.3;
         //ExpForGold will be increased by the players most recent research
         public const double ExpForGold = 1 / DisbandPct;
 
         public const double MovePopulationGoldCost = Income / 2;
-        public const float MoveSoldiersMult = 2.6f;
-        public const float SoldiersRndm = .26f;
+        public const double MoveSoldiersMult = 2.6;
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
         public const double TransLossMult = .65;
@@ -131,13 +129,12 @@ namespace GalWar
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
-        public const float PlanetDefensesRndm = .169f;
-        public const double PlanetDefensesCostMult = 1.3;
-        //will be multiplied by ProductionUpkeepMult
+        public const float PlanetDefensesRndm = .39f;
+        public const double PlanetDefensesCostMult = .91;
+        //PlanetDefensesUpkeepMult will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
-        public const double PlanetDefensesSoldiersMult = DisbandPct / ProductionForSoldiers * 1.3;
-        public const double PlanetDefensesDeathStarMult = 1 / PopulationForGoldMid / 1.3;
+        public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
 
         public const double FLOAT_ERROR = 0.00000013;
 

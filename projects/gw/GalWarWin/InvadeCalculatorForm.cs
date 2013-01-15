@@ -30,7 +30,7 @@ namespace GalWarWin
                     ++count;
                     shipTrans += s.MaxPop;
                     totPop += s.Population;
-                    totSoldiers += (float)s.TotalSoldiers;
+                    totSoldiers += (float)s.Soldiers;
                 }
             if (count > 0)
                 shipTrans /= count;
@@ -43,7 +43,7 @@ namespace GalWarWin
                 {
                     ++count;
                     totPop += p.Colony.Population;
-                    totSoldiers += (float)p.Colony.TotalSoldiers;
+                    totSoldiers += (float)p.Colony.Soldiers;
                 }
                 planetQuality += (float)( p.PlanetValue * 2 );
             }
@@ -60,7 +60,7 @@ namespace GalWarWin
 
             SetRand(this.nudTroops, shipTrans, true);
             SetRand(this.nudPop, totPop, true);
-            SetRand(this.nudAttSoldiers, GetSoldiers((float)PopCarrier.GetMoveSoldiers(
+            SetRand(this.nudAttSoldiers, GetSoldiers((float)PopCarrier.GetSoldiers(
                     Game.Random.Round(totPop), totSoldiers, Game.Random.Round(shipTrans)), this.nudTroops), false);
             SetRand(this.nudDefSoldiers, GetSoldiers(totSoldiers, this.nudPop), false);
         }
@@ -93,7 +93,7 @@ namespace GalWarWin
 
         private decimal GetSoldiers(PopCarrier popCarrier)
         {
-            return Game.Random.Round((float)( popCarrier.GetTotalSoldierPct() * 1000 )) / 10m;
+            return Game.Random.Round((float)( popCarrier.GetSoldierPct() * 1000 )) / 10m;
         }
 
         private void btnTest_Click(object sender, EventArgs e)

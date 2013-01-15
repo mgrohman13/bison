@@ -1616,7 +1616,7 @@ namespace GalWarWin
                 this.lbl7.Text = "Troops";
                 this.lbl7Inf.Text = ship.Population.ToString() + " / " + ship.MaxPop.ToString();
                 if (ship.Population > 0)
-                    this.lbl7Inf.Text += " (" + FormatPct(ship.GetTotalSoldierPct()) + ")";
+                    this.lbl7Inf.Text += " (" + FormatPct(ship.GetSoldierPct()) + ")";
             }
 
             if (ship.Colony)
@@ -1693,7 +1693,7 @@ namespace GalWarWin
             this.lbl2Inf.Text = colony.Population.ToString() + " " + lbl2Inf.Text;
 
             this.lbl3.Text = "Soldiers";
-            this.lbl3Inf.Text = FormatPct(colony.Player.IsTurn ? colony.GetSoldierPct() : colony.GetTotalSoldierPct());
+            this.lbl3Inf.Text = FormatPct(colony.Player.IsTurn ? colony.GetSoldierPct() : colony.GetSoldierPct());
 
             this.lbl4.Text = "Defense";
             if (!colony.MinDefenses)
@@ -1710,7 +1710,7 @@ namespace GalWarWin
                     --attChange;
                 if (defChange == colony.Def)
                     --defChange;
-                double pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrength
+                double pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrengthPerHP
                         * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
                 string strChange = FormatUsuallyInt(pdChange);
                 if (strChange != "0")
@@ -1790,20 +1790,10 @@ namespace GalWarWin
 
                 inc = FormatDouble(prodInc);
             }
-            else if (build is Soldiering)
-            {
-                prodInc += production;
-                prodInc /= Consts.ProductionForSoldiers;
-                prodInc += colony.Soldiers;
-                prodInc /= colony.Population + colony.GetPopulationGrowth();
-                prodInc -= colony.GetSoldierPct();
-
-                inc = FormatPct(prodInc, true);
-            }
             else if (build is PlanetDefense)
             {
                 prodInc += production;
-                inc = GetBuildingDefense(colony, prodInc);
+                inc = GetBuildingDefense(colony, build, prodInc);
                 if (prodInc > 0)
                     prodInc = -1;
             }
@@ -1827,10 +1817,10 @@ namespace GalWarWin
             return retVal;
         }
 
-        public static string GetBuildingDefense(Colony colony, double production)
+        public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
         {
-            double newAtt, newDef, newHP;
-            colony.GetPlanetDefenseInc(production, out newAtt, out newDef, out newHP);
+            double newAtt, newDef, newHP, soldiers;
+            colony.GetPlanetDefenseInc(buildable, production, out newAtt, out newDef, out newHP, out soldiers);
             return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
         }
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)
@@ -1958,11 +1948,11 @@ namespace GalWarWin
             return ( MessageBox.Show(str, "Explore", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes );
         }
 
-        void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
+        void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)
         {
             this.RefreshAll();
 
-            ResearchForm.ShowForm(newDesign, obsolete, oldDefense, newDefense);
+            ResearchForm.ShowForm(newDesign, obsolete);
 
             ShowResearchFocus();
         }

@@ -86,7 +86,7 @@ namespace GalWarAI
             return true;
         }
 
-        void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete, PlanetDefense oldDefense, PlanetDefense newDefense)
+        void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)
         {
             ai.OnResearch(newDesign);
         }

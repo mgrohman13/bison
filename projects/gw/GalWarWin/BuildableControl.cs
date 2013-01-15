@@ -61,9 +61,9 @@ namespace GalWarWin
                     this.label2.Text = "Defense";
 
                     this.lblName.Text = "Planetary Defenses";
-                    this.lblCost.Text = MainForm.FormatDouble(planetDefense.HPCost);
-                    this.lblResearch.Text = planetDefense.Att.ToString();
-                    this.lblAtt.Text = planetDefense.Def.ToString();
+                    this.lblCost.Text = MainForm.FormatDouble(MainForm.Game.CurrentPlayer.PlanetDefenseCostPerHP);
+                    this.lblResearch.Text = MainForm.Game.CurrentPlayer.PDAtt.ToString();
+                    this.lblAtt.Text = MainForm.Game.CurrentPlayer.PDDef.ToString();
                 }
             }
         }

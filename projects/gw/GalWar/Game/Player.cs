@@ -17,8 +17,6 @@ namespace GalWar
 
         public readonly IGalWarAI AI;
 
-        private PlanetDefense planetDefense;
-
         private readonly List<ShipDesign> designs;
         private readonly List<Ship> ships;
         private readonly List<Colony> colonies;
@@ -27,7 +25,7 @@ namespace GalWar
         private ShipDesign _researchFocusDesign;
 
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
-        private byte _id;
+        private byte _id, _att, _def;
         private ushort _newResearch;
         private uint _research, _lastResearched, _goldValue;
         private float _incomeTotal, _rKey, _rChance, _rMult, _rDisp, _rDispTrg, _rDispChange;
@@ -70,9 +68,9 @@ namespace GalWar
             this.newResearch = 0;
             this.LastResearched = research[2];
 
-            this.designs = new List<ShipDesign>();
-            this.designs.AddRange(ShipDesign.GetStartDesigns(research, this));
-            this.planetDefense = new PlanetDefense(this, this.designs);
+            this.designs = ShipDesign.GetStartDesigns(research, this);
+            foreach (ShipDesign design in this.designs)
+                SetPlanetDefense(design);
 
             this.colonies = new List<Colony>();
             //starting production is handled after all players have been created
@@ -85,6 +83,40 @@ namespace GalWar
             _rDisp = 1;
             _rDispTrg = 1;
             _rDispChange = 1;
+        }
+
+        private void SetPlanetDefense(ShipDesign design)
+        {
+            checked
+            {
+                this._att = (byte)Math.Max(_att, design.Att);
+                this._def = (byte)Math.Max(_def, design.Def);
+            }
+        }
+        public int PDAtt
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this._att;
+            }
+        }
+        public int PDDef
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this._def;
+            }
+        }
+        public double PlanetDefenseCostPerHP
+        {
+            get
+            {
+                return ShipDesign.GetPlanetDefenseCost(PDAtt, PDDef, this.LastResearched);
+            }
         }
 
         private int newResearch
@@ -266,6 +298,7 @@ namespace GalWar
         private void NewShipDesign(IEventHandler handler, ShipDesign newDesign, bool doObsolete)
         {
             newDesign.NameShip(this);
+            this.designs.Add(newDesign);
 
             HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
             if (doObsolete)
@@ -277,15 +310,12 @@ namespace GalWar
                 if (obsoleteDesigns.Contains(colony.Buildable as ShipDesign))
                     colony.SetBuildable(newDesign, Consts.AutomaticObsoleteLossPct);
 
-            this.designs.Add(newDesign);
-            PlanetDefense old = new PlanetDefense(this.planetDefense);
-            this.planetDefense.GetStats(newDesign);
-
+            SetPlanetDefense(newDesign);
             this.LastResearched = Math.Max(LastResearched, newDesign.Research);
 
             if (doObsolete)
                 ResearchFocusDesign = newDesign;
-            handler.OnResearch(newDesign, obsoleteDesigns, old, this.planetDefense);
+            handler.OnResearch(newDesign, obsoleteDesigns);
         }
 
         private void ResetResearchChance()
@@ -656,16 +686,6 @@ namespace GalWar
             TurnException.CheckTurn(this);
 
             this._productionEmphasis = value;
-        }
-
-        public PlanetDefense PlanetDefense
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return this.planetDefense;
-            }
         }
 
         public double GetArmadaStrength()

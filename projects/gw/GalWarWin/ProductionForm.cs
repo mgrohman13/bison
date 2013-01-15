@@ -43,8 +43,8 @@ namespace GalWarWin
 
             this.lbxDesigns.Items.Add("Gold");
             this.lbxDesigns.Items.Add(colony.Player.Game.StoreProd);
-            this.lbxDesigns.Items.Add(colony.Player.Game.Soldiering);
-            this.lbxDesigns.Items.Add(colony.Player.PlanetDefense);
+            this.lbxDesigns.Items.Add(colony.Player.Game.Attack);
+            this.lbxDesigns.Items.Add(colony.Player.Game.Defense);
             this.lbxDesigns.Items.Add(string.Empty);
 
             SortedSet<ShipDesign> designs = new SortedSet<ShipDesign>(colony.Player.GetShipDesigns(), this);

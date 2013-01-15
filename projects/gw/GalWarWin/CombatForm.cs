@@ -783,7 +783,7 @@ end:
 
                 quality = colony.Planet.Quality;
                 defenders = colony.Population;
-                defSoldiers = colony.TotalSoldiers;
+                defSoldiers = colony.Soldiers;
                 att = colony.Att;
                 def = colony.Def;
                 hp = colony.HP;
