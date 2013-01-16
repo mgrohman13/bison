@@ -113,7 +113,7 @@ namespace GalWar
             int idx = -1;
             foreach (int type in Game.Random.Iterate(3))
             {
-                ShipDesign design = new ShipDesign(research[++idx], null, player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None);
+                ShipDesign design = new ShipDesign(research[++idx], null, player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None, double.NaN, double.NaN);
                 design.NameShip(player);
                 retVal.Add(design);
             }
@@ -122,11 +122,18 @@ namespace GalWar
         }
 
         internal ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize, FocusStat focus)
-            : this(research, designs, mapSize, false, false, false, focus)
+            : this(research, designs, mapSize, false, false, false, focus, double.NaN, double.NaN)
         {
         }
 
-        private ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize, bool forceColony, bool forceTrans, bool forceNeither, FocusStat focus)
+        internal ShipDesign(Player player, int research, int mapSize, double minCost, double maxCost)
+            : this(research, null, mapSize, false, false, false, FocusStat.None, minCost, maxCost)
+        {
+            this.NameShip(player, true);
+        }
+
+        private ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize,
+                bool forceColony, bool forceTrans, bool forceNeither, FocusStat focus, double minCost, double maxCost)
         {
             checked
             {
@@ -172,8 +179,10 @@ namespace GalWar
                 double cost = -1, upkRnd = double.NaN;
                 int upkeep = -1;
                 GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
-                double minCost = GetMinCost(mapSize);
-                double maxCost = GetMaxCost(research, minCost);
+                if (double.IsNaN(minCost))
+                    minCost = GetMinCost(mapSize);
+                if (double.IsNaN(maxCost))
+                    maxCost = GetMaxCost(research, minCost);
                 while (cost > maxCost)
                 {
                     switch (GetReduce(cost, hpMult, forceColony, forceTrans))
@@ -233,10 +242,14 @@ namespace GalWar
 
         internal void NameShip(Player player)
         {
+            NameShip(player, false);
+        }
+        private void NameShip(Player player, bool anomalyShip)
+        {
             checked
             {
                 //  ------  Name              ------
-                this.Name = player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research));
+                this.Name = player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
                 this.Mark = player.Game.ShipNames.GetMark(player, this.Name);
             }
         }
@@ -341,7 +354,7 @@ namespace GalWar
             double transTrg = .169;
             double colTrg = .104;
             //target pct of ships that should be death stars increases with research
-            double dsTrg = research / ( 3000 + research );
+            double dsTrg = research / ( 3000.0 + research );
             dsTrg *= dsTrg * dsTrg * .169;
 
             if (IsFocusing(focus, FocusStat.Colony))
@@ -693,7 +706,7 @@ namespace GalWar
             }
         }
 
-        internal static double GetColonizationValue(double cost, int att, int def, int curHP, int maxHP, int speed, int trans, bool colony, double bombardDamage, double research)
+        internal static double GetColonizationValue(double cost, int att, int def, double curHP, int maxHP, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             if (!colony)
                 throw new Exception();

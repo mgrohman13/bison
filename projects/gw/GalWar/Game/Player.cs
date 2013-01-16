@@ -68,6 +68,7 @@ namespace GalWar
             this.newResearch = 0;
             this.LastResearched = research[2];
 
+            this._att = this._def = 1;
             this.designs = ShipDesign.GetStartDesigns(research, this);
             foreach (ShipDesign design in this.designs)
                 SetPlanetDefense(design);
@@ -89,10 +90,24 @@ namespace GalWar
         {
             checked
             {
-                this._att = (byte)Math.Max(_att, design.Att);
-                this._def = (byte)Math.Max(_def, design.Def);
+                this._att = (byte)GetPDStat(this._att, design.Att);
+                this._def = (byte)GetPDStat(this._def, design.Def);
             }
         }
+        private int GetPDStat(int cur, int add)
+        {
+            double newStat;
+            if (cur == add)
+                newStat = add;
+            else
+                newStat = ( cur + add * Consts.PlanetDefensesRndm ) / ( 1 + Consts.PlanetDefensesRndm );
+            return Math.Max(GetPDStat(newStat), GetPDStat(add));
+        }
+        private static int GetPDStat(double stat)
+        {
+            return Game.Random.GaussianCappedInt(stat, Consts.PlanetDefensesRndm, 1);
+        }
+
         public int PDAtt
         {
             get
@@ -219,12 +234,9 @@ namespace GalWar
                 this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
         }
 
-        internal void FreeResearch(IEventHandler handler, double research)
+        internal void FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
         {
-            double avg = ( 1 * ( ( 1 * this.ResearchDisplay + 2 * this.Research ) / 3.0 )
-                    + 2 * ( this.LastResearched + research ) + 3 * ( this.Game.AvgResearch ) ) / 6.0;
-            this.Research += Game.Random.Round(research);
-            int designResearch = Game.Random.GaussianOEInt(avg, .13, .013);
+            this.Research += freeResearch;
             NewShipDesign(handler, designResearch, ShipDesign.FocusStat.None);
         }
 
@@ -244,14 +256,7 @@ namespace GalWar
         private void ResearchWithFocus(IEventHandler handler)
         {
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
-            {
-                //only a random portion of total research can be used in the new design
-                int designResearch = this.Research - this.LastResearched;
-                if (designResearch > 1)
-                    designResearch = Game.Random.RangeInt(1, designResearch);
-                designResearch += this.LastResearched;
-                NewShipDesign(handler, designResearch, ResearchFocus);
-            }
+                NewShipDesign(handler, Game.Random.RangeInt(this.LastResearched, this.Research), ResearchFocus);
         }
 
         private void ResearchWithDesign(IEventHandler handler)
@@ -330,6 +335,7 @@ namespace GalWar
             Player[] research = Game.GetResearchOrder();
             if (research.Length > 1)
             {
+                //the maximum possible skew change can plausibly be accounted for by economy emphasis choices
                 double totalIncome = GetTotalIncome();
                 double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
                 double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
@@ -345,9 +351,10 @@ namespace GalWar
                 if (sign != ( _rDisp > _rDispTrg ) || _rDisp == _rDispTrg)
                 {
                     _rDisp = _rDispTrg;
-                    _rDispTrg = ( _rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm) + 1 ) / 3;
+                    _rDispTrg = ( _rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm) + 1 ) / 3f;
+                    //rate is based on distance to new value
                     _rDispChange = (float)Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
-                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + Math.Abs(_rDisp - _rDispTrg) * 3 ));
+                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3f * Math.Abs(_rDisp - _rDispTrg) ));
                 }
             }
         }
@@ -389,7 +396,7 @@ namespace GalWar
                 {
                     Colony colony = Game.Random.SelectValue<Colony>(production);
 
-                    AddGold(Consts.GetProductionUpkeepMult(Game.MapSize));
+                    GoldIncome(Consts.GetProductionUpkeepMult(Game.MapSize));
                     colony.SellProduction(handler, 1);
 
                     if (colony.Production > 0)
@@ -404,7 +411,7 @@ namespace GalWar
                     Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
 
                     //the upkeep that was just paid for the ship this turn is re-added
-                    AddGold(ship.Upkeep);
+                    GoldIncome(ship.Upkeep);
                     ship.Disband(handler, null);
                 }
             }
@@ -458,7 +465,11 @@ namespace GalWar
             double rounded;
             AddGold(gold, random, out rounded);
         }
-        internal void AddGold(double gold, bool random, out double rounded)
+        internal void AddGold(double gold, out double rounded)
+        {
+            AddGold(gold, true, out rounded);
+        }
+        private void AddGold(double gold, bool random, out double rounded)
         {
             if (random)
                 rounded = Game.Random.Round(gold * 10) / 10.0;
@@ -845,7 +856,7 @@ namespace GalWar
 
         public void AutoRepairShips(IEventHandler handler)
         {
-            handler = new HandlerWrapper(handler, this.Game);
+            handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
             AutoRepairShips(handler, false);

@@ -9,11 +9,12 @@ namespace GalWar
         public const double WinPointsMult = 130;
         public const double LosePointsMult = -6.5;
         public const double PointsTilesPower = .39;
-        //as a multiple of the second place players research
-        public const double ResearchVictoryMult = 1.5;
+        //ResearchVictoryMult is a multiple of the second place players research
+        public const float ResearchVictoryMult = 1.69f;
+        public const float ResearchVictoryRndm = 0.065f;
 
-        public const double ResearchVictoryRndm = .0065f;
-
+        //StartAnomalies is the number of turn-rounds for which we immediately create anomalies
+        public const float StartAnomalies = 21f;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each players homeworld quality
         public const double StartGold = 2 * AverageQuality * 260;
@@ -70,7 +71,7 @@ namespace GalWar
         public const double NumDesignsPower = .21;
         //turn research income randomness
         public const float ResearchRndm = .3f;
-        public const float ResearchDisplayRndm = (float)( Math.E / 13 );
+        public const float ResearchDisplayRndm = .169f;
 
         //trade rates
         public const double ProductionForGold = 10.0 / 3.0;
@@ -80,8 +81,8 @@ namespace GalWar
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
         public const float ProductionForSoldiers = .39f;
-        public const double ExpForSoldiers = ProductionForSoldiers / 1.3f;
-        public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers * 1.3;
+        public const double ExpForSoldiers = ProductionForSoldiers / 1.69;
+        public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
         public const double ExpForGold = 1 / DisbandPct;
 
@@ -123,9 +124,9 @@ namespace GalWar
         //payoff power for gold used to boost a planetary invasion
         public const double InvadeGoldIncPower = .3;
         //average planet quality lost as a percentage of total troops killed in the battle
-        public const double PlanetDamage = .3;
+        public const float PlanetDamage = .3f;
 
-        public const double DeathStarDamageRndm = .13;
+        public const double DeathStarDamageRndm = Math.E / 13;
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
@@ -160,6 +161,11 @@ namespace GalWar
             //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
             //and to make even pitiful planets have a small carrying capacity
             return ( 1 + growth * Consts.PopulationGrowth );
+        }
+
+        internal static float GetColonizationMult()
+        {
+            return Game.Random.GaussianOE(1f, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, .39f);
         }
 
         internal static double GetColonizationCost(double value, double mult)
@@ -262,14 +268,9 @@ namespace GalWar
             throw new Exception();
         }
 
-        public static double GetPlanetDamageMult()
-        {
-            return Game.Random.Weighted(Consts.PlanetDamage);
-        }
-
         public static int GetPlanetDamage(int population)
         {
-            return Game.Random.WeightedInt(population, (float)Consts.PlanetDamage);
+            return Game.Random.WeightedInt(population, Consts.PlanetDamage);
         }
 
         private static double RandomizeInvasionStr(double str)

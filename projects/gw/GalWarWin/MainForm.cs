@@ -1529,6 +1529,8 @@ namespace GalWarWin
                     player = ShipInfo(ship);
                 else if (planet != null)
                     player = PlanetInfo(planet);
+                else if (GetSelectedSpaceObject() is Anomaly)
+                    this.lblTop.Text = "Anomaly";
 
                 if (player != null)
                     PlayerInfo(player);
@@ -1933,16 +1935,29 @@ namespace GalWarWin
         {
             string str = anomalyType.ToString() + ":\r\n";
             bool show = false;
-            foreach (object o in info)
+            foreach (object j in info)
             {
-                str += o.GetType().ToString() + " - " + o.ToString() + "\r\n";
-                if (o is ISpaceObject)
+                System.Collections.IEnumerable v = j as System.Collections.IEnumerable;
+                if (v == null || v is string)
+                    v = new object[] { j };
+                foreach (object o in v)
                 {
-                    if (show)
-                        MessageBox.Show("");
-                    this.selectedTile = ( (ISpaceObject)o ).Tile;
-                    this.RefreshAll();
-                    show = true;
+                    str += o.GetType().ToString() + " - " + o.ToString() + "\r\n";
+                    ISpaceObject s = o as ISpaceObject;
+                    Colony c = o as Colony;
+                    if (s != null || c != null)
+                    {
+                        if (show)
+                            MessageBox.Show("");
+                        Tile t;
+                        if (s != null)
+                            t = s.Tile;
+                        else
+                            t = c.Tile;
+                        this.selectedTile = t;
+                        this.RefreshAll();
+                        show = true;
+                    }
                 }
             }
             return ( MessageBox.Show(str, "Explore", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes );

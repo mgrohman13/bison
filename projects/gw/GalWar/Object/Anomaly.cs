@@ -10,6 +10,9 @@ namespace GalWar
     {
         private readonly Tile tile;
 
+        [NonSerialized]
+        private double _value;
+
         internal Anomaly(Tile tile)
         {
             this.tile = tile;
@@ -24,7 +27,17 @@ namespace GalWar
             }
         }
 
-        private double GetValue()
+        private double Value
+        {
+            get
+            {
+                if (double.IsNaN(this._value))
+                    this._value = GenerateValue();
+                return this._value;
+            }
+        }
+
+        private double GenerateValue()
         {
             double quality = 0, pop = 0, armada = 0;
             foreach (Planet p in Tile.Game.GetPlanets())
@@ -54,23 +67,25 @@ namespace GalWar
 
         internal void Explore(IEventHandler handler, Ship ship)
         {
+            this._value = double.NaN;
             Tile.SpaceObject = null;
 
-            Planet planet = Tile.Game.CreatePlanet(this.Tile);
+            Planet planet = Tile.Game.CreateAnomalyPlanet(this.Tile);
             if (planet != null)
             {
+                ship.Player.GoldIncome(Value * .26);
                 handler.Explore(AnomalyType.NewPlanet, planet);
                 return;
             }
 
             Dictionary<AnomalyType, int> options = new Dictionary<AnomalyType, int>();
-            //options.Add(AnomalyType.Colony, 2);
-            options.Add(AnomalyType.Apocalypse, 3);
-            //options.Add(AnomalyType.Death, 5);
+            options.Add(AnomalyType.Apocalypse, 4);
+            options.Add(AnomalyType.Colony, 5);
+            //options.Add(AnomalyType.Death, 6);
             //options.Add(AnomalyType.PlanetDefense, 20);
             //options.Add(AnomalyType.Wormhole, 39);
             options.Add(AnomalyType.Experience, 40);
-            //options.Add(AnomalyType.Ship, 44);
+            options.Add(AnomalyType.Ship, 44);
             options.Add(AnomalyType.Population, 52);
             options.Add(AnomalyType.Gold, 65);
 
@@ -113,21 +128,45 @@ namespace GalWar
 
         private bool Colony(IEventHandler handler, Ship ship)
         {
-            //if not too close
-            //2/3 friendly, 1/3 hostile
-            //0 pop
-            //defense? prod? soldiers?
-            //quality based on gold/prod cost of colonizing from nearest planet as compared to default anomaly value
+            if (!Tile.Game.CheckPlanetDistance(this.Tile))
+                return false;
 
-            Colony colony = null;
-            handler.Explore(AnomalyType.Colony, colony);
+            Player player = GetRandomPlayer(ship);
 
-            throw new NotImplementedException();
+            int distance = int.MaxValue;
+            foreach (Colony colony in player.GetColonies())
+                distance = Math.Min(distance, Tile.GetDistance(this.Tile, colony.Tile));
+            double cost = int.MaxValue;
+            foreach (ShipDesign design in player.GetShipDesigns())
+                if (design.Colony)
+                    cost = Math.Min(cost, design.Upkeep * distance / (double)design.Speed
+                            + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));
+
+            double amount = Value - cost;
+            double mult = Consts.GetColonizationMult();
+            if (amount < Consts.GetColonizationCost(Planet.ConstValue, mult))
+                return false;
+
+            if (player != ship.Player)
+                ship.Player.GoldIncome(Value * .39);
+
+            Planet planet = Tile.Game.CreatePlanet(this.Tile);
+            planet.ReduceQuality(planet.Quality - MattUtil.TBSUtil.FindValue(delegate(int value)
+            {
+                return ( amount > Consts.GetColonizationCost(Planet.ConstValue + value, mult) );
+            }, 0, Consts.NewPlanetQuality(), false));
+            int production = Game.Random.Round(amount - Consts.GetColonizationCost(Planet.ConstValue + planet.Quality, mult));
+            Colony newColony = player.NewColony(handler, planet, 0, 0, production);
+
+            handler.Explore(AnomalyType.Colony, newColony);
+
+            return true;
         }
 
         private bool ApocalypseTerraform(IEventHandler handler, Ship ship)
         {
             //other chance to damage/destroy/improve planets?
+            //chance to do something to pop instead of quality?
 
             double terraform = Consts.AverageQuality + Planet.ConstValue;
             double apocalypse = 0;
@@ -135,20 +174,21 @@ namespace GalWar
                 apocalypse += p.Quality / 2.0;
 
             if (Game.Random.Bool(terraform / ( terraform + apocalypse )))
-                return Apocalypse(handler);
+                return Apocalypse(handler, ship);
             else
                 return Terraform(handler, ship);
         }
-        private bool Apocalypse(IEventHandler handler)
+        private bool Apocalypse(IEventHandler handler, Ship ship)
         {
             handler.Explore(AnomalyType.Apocalypse);
 
             Dictionary<Player, double> addGold = new Dictionary<Player, double>();
+            addGold[ship.Player] = Value * .52;
             foreach (Planet p in Tile.Game.GetPlanets())
             {
                 double gold = 0;
                 if (p.Colony != null)
-                    gold = Math.Sqrt(( p.Colony.Population + 1.0 ) / ( p.Quality + 1.0 )) * .26;
+                    gold = Math.Sqrt(( p.Colony.Population + 1.0 ) / ( p.Quality + 1.0 )) * .52;
 
                 gold = Consts.GetColonizationCost(p.DamageVictory(), gold);
 
@@ -159,6 +199,7 @@ namespace GalWar
                     addGold[p.Colony.Player] = amt + gold;
                 }
             }
+
             double min = double.MaxValue;
             foreach (double gold in addGold.Values)
                 min = Math.Min(min, gold);
@@ -169,31 +210,34 @@ namespace GalWar
         }
         private bool Terraform(IEventHandler handler, Ship ship)
         {
+            //adds module to ship that can be attached to a planet?
+
             Dictionary<Colony, int> colonies = new Dictionary<Colony, int>();
+            double[] start = new double[ship.Player.GetColonies().Count];
+            int a = -1;
             foreach (Colony c in ship.Player.GetColonies())
             {
-                int amt = GetTerraformAmt(.26 * Tile.Game.Diameter / Tile.GetDistance(c.Tile, Tile));
+                start[++a] = .26 * Tile.Game.Diameter / Tile.GetDistance(c.Tile, Tile);
+                int amt = GetTerraformAmt(start[a]);
                 if (amt > 0)
                     colonies.Add(c, amt);
             }
             if (colonies.Count == 0)
                 return false;
 
-            //adds module to ship that can be attached to a planet?
-
             while (colonies.Count > 0)
             {
-                //dont rand each time?
-                int quality = Consts.NewPlanetQuality() + Game.Random.GaussianCappedInt(Planet.ConstValue, 1, 1);
-                double cost = Game.Random.GaussianOE(Consts.GetColonizationCost(quality, .39), Consts.ColonizationCostRndm, Consts.ColonizationCostRndm);
+                int quality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Planet.ConstValue, .65, .39, 1);
+                double avg = Consts.GetColonizationCost(quality, 1.69);
+                double bonus = Value * .13;
+                double cost = Game.Random.GaussianOE(avg - bonus, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, -bonus);
 
                 Colony colony = Game.Random.SelectValue(colonies);
-                if (handler.Explore(AnomalyType.Terraform, colony, quality, cost))
+                if (handler.Explore(AnomalyType.Terraform, colony, "quality:", quality, "cost:", cost, "avg:", avg, "start:", start))
                 {
                     colony.Planet.ReduceQuality(-quality);
-                    //GoldIncome?
                     colony.Player.AddGold(-cost);
-                    break;
+                    return true;
                 }
                 else
                 {
@@ -231,8 +275,6 @@ namespace GalWar
         {
             //ship design upgrade/switch?
 
-            double value = GetValue();
-
             AnomalyType type;
             switch (Game.Random.Next(7))
             {
@@ -246,7 +288,7 @@ namespace GalWar
             case 5:
                 type = AnomalyType.RemoteSoldiers;
                 //rate?
-                value /= Consts.ProductionForSoldiers;
+                //value /= Consts.ProductionForSoldiers;
                 break;
             case 6:
                 type = AnomalyType.Production;
@@ -255,7 +297,7 @@ namespace GalWar
                 throw new Exception();
             }
 
-            handler.Explore(type, value);
+            handler.Explore(type);
 
             //added randomly to some/all friendly planets
 
@@ -286,9 +328,9 @@ namespace GalWar
             //chance to reduce cost/upk?
             //repair?
 
-            handler.Explore(AnomalyType.Experience, this);
+            handler.Explore(AnomalyType.Experience);
 
-            ship.AddAnomalyExperience(handler, GetValue(), Game.Random.Bool(), Game.Random.Bool());
+            ship.AddAnomalyExperience(handler, Value, Game.Random.Bool(), Game.Random.Bool());
 
             return true;
         }
@@ -296,15 +338,11 @@ namespace GalWar
         private bool Ship(IEventHandler handler, Ship ship)
         {
             //neutral ships?
+            //chance to add cur speed?
 
-            Player player = ship.Player;
-            if (Game.Random.Next(3) == 0)
-                do
-                {
-                    player = Tile.Game.GetPlayers()[Game.Random.Next(Tile.Game.GetPlayers().Length)];
-                } while (player == ship.Player);
+            Player player = GetRandomPlayer(ship);
 
-            double min = GetShipCost(), max = GetShipCost();
+            double min = Value, max = GenerateValue();
             if (min > max)
             {
                 double temp = min;
@@ -312,33 +350,51 @@ namespace GalWar
                 max = temp;
             }
 
-            //random 1-time design, research based on LastResearched
-            //    special name?
+            Ship newShip = player.NewShip(handler, tile, new ShipDesign(player, GetDesignResearch(player), Tile.Game.MapSize, min, max));
 
-            //Ship newShip = ShipDesign.GetAnomalyShip(this.Tile, player, min, max);
+            handler.Explore(AnomalyType.Ship, newShip);
 
-            //handler.Explore(AnomalyType.Ship, newShip);
+            if (ship.Player != player)
+            {
+                Ship s1 = ship, s2 = newShip;
+                if (Game.Random.Bool())
+                {
+                    s1 = newShip;
+                    s2 = ship;
+                }
+                double pct = AttackShip(handler, s1, s2);
+                pct += AttackShip(handler, s2, s1);
+                const double free = .52;
+                pct += free;
+                ship.Player.GoldIncome(Value * .65 * pct / ( 2 + free ));
+            }
 
-            //randomly chance of auto attack/defend hostile, sometimes option to confirm
-            //    chance to add cur speed?
-
-            throw new NotImplementedException();
+            return true;
         }
-        private double GetShipCost()
+        private double AttackShip(IEventHandler handler, Ship att, Ship def)
         {
-            return GetValue() * 1.69;
+            if (!att.Dead && !def.Dead && Game.Random.Bool() && ( Game.Random.Bool() || handler.ConfirmCombat(att, def) ))
+                return att.AttackAnomalyShip(handler, def);
+            return 1;
+        }
+
+        private Player GetRandomPlayer(Ship ship)
+        {
+            Player player = ship.Player;
+            if (Game.Random.Next(3) == 0)
+                do
+                    player = Tile.Game.GetPlayers()[Game.Random.Next(Tile.Game.GetPlayers().Length)];
+                while (player == ship.Player);
+            return player;
         }
 
         private bool PopulationThisSoldiers(IEventHandler handler, Ship ship)
         {
             //chance to add cur speed?
+            //pop can move?
 
-            double value = GetValue();
-
-            //rate?
-            int pop = Game.Random.Round(value * Consts.PopulationForGoldHigh);
-            //rate?
-            double soldiers = value / Consts.ProductionForSoldiers;
+            int pop = Game.Random.Round(Value * Consts.PopulationForGoldHigh);
+            double soldiers = Value / Consts.ExpForSoldiers;
 
             bool canPop = ( pop <= ship.FreeSpace );
             if (ship.Population > 0)
@@ -367,14 +423,12 @@ namespace GalWar
 
         private bool GoldResearch(IEventHandler handler, Ship ship)
         {
-            double value = GetValue();
-
             bool research;
             switch (Game.Random.Next(13))
             {
             case 1:
             case 2:
-                research = handler.Explore(AnomalyType.GoldResearch, value);
+                research = handler.Explore(AnomalyType.GoldResearch, Value);
                 break;
             case 3:
             case 4:
@@ -383,21 +437,22 @@ namespace GalWar
                 break;
             default:
                 research = false;
+                handler.Explore(AnomalyType.Gold, Value);
                 break;
             }
 
             if (research)
-            {
-                handler.Explore(AnomalyType.Research, value);
-                ship.Player.FreeResearch(handler, value);
-            }
+                ship.Player.FreeResearch(handler, Game.Random.Round(Value), GetDesignResearch(ship.Player));
             else
-            {
-                handler.Explore(AnomalyType.Gold, value);
-                ship.Player.AddGold(value, true);
-            }
+                ship.Player.AddGold(Value, true);
 
             return true;
+        }
+        private int GetDesignResearch(Player player)
+        {
+            double avg = ( 1 * ( ( 1 * player.ResearchDisplay + 2 * player.Research ) / 3.0 )
+                    + 2 * ( player.LastResearched + Value ) + 4 * ( Tile.Game.AvgResearch ) ) / 7.0;
+            return Game.Random.GaussianOEInt(avg, .13, .013);
         }
 
         public enum AnomalyType

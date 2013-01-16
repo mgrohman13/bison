@@ -188,7 +188,7 @@ namespace GalWarWin.Sliders
 
                 return result;
             }
-            return -1;
+            throw new Exception();
         }
 
         private double GetDefense()

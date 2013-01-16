@@ -24,7 +24,7 @@ namespace GalWar
 
             this.Quality = Consts.NewPlanetQuality();
 
-            this._colonizationCostMult = Game.Random.GaussianOE(1f, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, .39f);
+            this._colonizationCostMult = Consts.GetColonizationMult( );
         }
 
         #endregion //fields and constructors

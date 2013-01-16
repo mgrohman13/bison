@@ -1449,9 +1449,9 @@ namespace MattUtil
         }
         private static void SplitAvg(ref float average, ref float oePct)
         {
-            SplitAvg(ref average, ref oePct, null);
+            SplitAvg(ref average, ref oePct, 0);
         }
-        private static void SplitAvg(ref float average, ref float oePct, double? lowerCap)
+        private static void SplitAvg(ref float average, ref float oePct, double lowerCap)
         {
             double averageDouble = average, oePctDouble = oePct;
             SplitAvg(ref averageDouble, ref oePctDouble, lowerCap);
@@ -1460,16 +1460,16 @@ namespace MattUtil
         }
         private static void SplitAvg(ref double average, ref double oePct)
         {
-            SplitAvg(ref average, ref oePct, null);
+            SplitAvg(ref average, ref oePct, 0);
         }
-        private static void SplitAvg(ref double average, ref double oePct, double? lowerCap)
+        private static void SplitAvg(ref double average, ref double oePct, double lowerCap)
         {
             oePct *= average;
             average -= oePct;
-            if (lowerCap.HasValue && lowerCap > average)
+            if (lowerCap > average)
             {
-                oePct += average - lowerCap.Value;
-                average = lowerCap.Value;
+                oePct += average - lowerCap;
+                average = lowerCap;
                 if (oePct < 0)
                     throw new ArgumentOutOfRangeException("lowerCap", lowerCap, "lowerCap must be less than or equal to average");
             }

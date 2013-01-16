@@ -23,6 +23,8 @@ Red Warrior I - 0
 (Speed) 1/8 - 244
 
 
+callback prevention choking out obsolete, maybe others (buy/sell prod?)
+make sure all setters use checked context
 GetBuildingDefense
 see free damage enemy will get vs friendly colony
 non DS bombard combat screen take into account free damage
@@ -42,10 +44,9 @@ management screens
 	colonies
 	ships
 
-create anomalies at turn start
-when planet is destroyed on invasion, retroactively give back gold/troops so that we don't have negative quality fudge factor of -2
-exp soldiers during planet combat can add gold instead of income
 undo
+	Ship.Disband
+	Ship.Colonize
 	Colony.StartBuilding
 		manual change always rounds down?
 	Colony.DisbandPlanetDefense
@@ -54,7 +55,6 @@ repair micromanagement
 	cost incentive
 		certain specific value?
 		pct you have been doing?
-disband vs destory defensesoldiers payoff
 transport combats in order to invade?
 
 known enemy designs

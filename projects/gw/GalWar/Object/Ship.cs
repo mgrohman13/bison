@@ -209,8 +209,7 @@ namespace GalWar
 
             return GetUpkeepReturn(this.CurSpeed);
         }
-
-        private double GetUpkeepReturn(double speedLeft)
+        internal double GetUpkeepReturn(double speedLeft)
         {
             return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.Upkeep;
         }
@@ -626,6 +625,13 @@ namespace GalWar
 
             //only the ship whose turn it is can immediately gain levels from the exp
             this.LevelUp(handler);
+        }
+        internal double AttackAnomalyShip(IEventHandler handler, Ship ship)
+        {
+            double pct = Combat(handler, ship);
+            this.LevelUp(handler);
+            ship.LevelUp(handler);
+            return pct;
         }
 
         internal override double GetExpForDamage(double damage)
@@ -1057,9 +1063,10 @@ namespace GalWar
             {
                 planet.ReduceQuality(planetDamage);
 
-                double exp = Math.Min(initQuality, planetDamage) * Consts.TroopExperienceMult;
+                double exp = Math.Min(initQuality, planetDamage);
                 if (planet.Dead)
                     exp += Planet.ConstValue;
+                exp *= Consts.TroopExperienceMult;
 
                 this.AddCostExperience(exp);
                 if (!planet.Dead && planet.Colony != null)

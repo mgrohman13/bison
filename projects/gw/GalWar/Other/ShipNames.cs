@@ -63,9 +63,9 @@ namespace GalWar
             SetDivision(1, this._total / (double)this._count);
         }
 
-        internal byte GetName(ShipDesign design, double attDefStr, double transStr, double speedStr)
+        internal byte GetName(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
         {
-            return (byte)GetNameType(design, attDefStr, transStr, speedStr);
+            return (byte)GetNameType(design, attDefStr, transStr, speedStr, anomalyShip);
         }
 
         internal byte GetMark(Player player, byte name)
@@ -76,8 +76,10 @@ namespace GalWar
             }
         }
 
-        private ShipClass GetNameType(ShipDesign design, double attDefStr, double transStr, double speedStr)
+        private ShipClass GetNameType(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
         {
+            if (anomalyShip)
+                return ShipClass.Salvage;
             if (design.Colony)
                 return ShipClass.Colony;
 
