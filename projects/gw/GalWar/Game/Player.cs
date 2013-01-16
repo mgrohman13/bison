@@ -237,7 +237,7 @@ namespace GalWar
         internal void FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
         {
             this.Research += freeResearch;
-            NewShipDesign(handler, designResearch, ShipDesign.FocusStat.None);
+            NewShipDesign(handler, designResearch);
         }
 
         private void CheckResearch(IEventHandler handler)
@@ -256,7 +256,7 @@ namespace GalWar
         private void ResearchWithFocus(IEventHandler handler)
         {
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
-                NewShipDesign(handler, Game.Random.RangeInt(this.LastResearched, this.Research), ResearchFocus);
+                NewShipDesign(handler, Game.Random.RangeInt(this.LastResearched, this.Research));
         }
 
         private void ResearchWithDesign(IEventHandler handler)
@@ -292,9 +292,9 @@ namespace GalWar
             }
         }
 
-        private void NewShipDesign(IEventHandler handler, int designResearch, ShipDesign.FocusStat focus)
+        private void NewShipDesign(IEventHandler handler, int designResearch)
         {
-            NewShipDesign(handler, new ShipDesign(designResearch, this.GetShipDesigns(), this.Game.MapSize, focus));
+            NewShipDesign(handler, new ShipDesign(designResearch, this.GetShipDesigns(), this.Game.MapSize, this.ResearchFocus));
         }
         private void NewShipDesign(IEventHandler handler, ShipDesign newDesign)
         {
@@ -587,6 +587,13 @@ namespace GalWar
                 TurnException.CheckTurn(this);
 
                 return this.goldValue + .05 - Consts.FLOAT_ERROR;
+            }
+        }
+        internal double TotalGold
+        {
+            get
+            {
+                return this.goldValue + this.goldOffset;
             }
         }
 

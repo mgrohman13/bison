@@ -44,6 +44,11 @@ management screens
 	colonies
 	ships
 
+ship AddExperience 1.69?
+ships obsolete themselves
+colony ship enemy player more likely to be closer player
+salvage ships curMove
+starting anomalies turning into planets
 undo
 	Ship.Disband
 	Ship.Colonize

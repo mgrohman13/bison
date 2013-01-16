@@ -113,7 +113,7 @@ namespace GalWar
             int idx = -1;
             foreach (int type in Game.Random.Iterate(3))
             {
-                ShipDesign design = new ShipDesign(research[++idx], null, player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None, double.NaN, double.NaN);
+                ShipDesign design = new ShipDesign(research[++idx], retVal, player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None, double.NaN, double.NaN);
                 design.NameShip(player);
                 retVal.Add(design);
             }
@@ -127,7 +127,7 @@ namespace GalWar
         }
 
         internal ShipDesign(Player player, int research, int mapSize, double minCost, double maxCost)
-            : this(research, null, mapSize, false, false, false, FocusStat.None, minCost, maxCost)
+            : this(research, player.GetShipDesigns(), mapSize, false, false, false, player.ResearchFocus, minCost, maxCost)
         {
             this.NameShip(player, true);
         }

@@ -44,25 +44,28 @@ namespace GalWar
             {
                 if (p.Colony == null)
                 {
-                    quality += p.Quality / 1.3;
+                    quality += p.Quality / 2.1;
                 }
                 else
                 {
                     quality += p.Quality;
                     pop += p.Colony.Population;
-                    armada += p.Colony.ArmadaCost / 1.69 + p.Colony.production / 2.1;
+                    armada += p.Colony.ArmadaCost / 1.69 + p.Colony.production / 2.6;
                 }
             }
             foreach (Player p in Tile.Game.GetPlayers())
+            {
                 foreach (Ship ship in p.GetShips())
                 {
                     pop += ship.Population / 1.3;
                     armada += ship.GetCostAvgResearch();
                 }
+                armada += p.TotalGold / 3.0;
+            }
 
-            double value = ( 3 * ( Consts.Income * Math.PI * ( 5 * pop + 2 * quality ) / 7.0 )
-                    + 2 * ( armada ) ) / 5.0 / Tile.Game.GetPlayers().Length;
-            return Game.Random.GaussianOE(value, .39, .26, 1);
+            double income = 1.69 * Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
+            double assets = .13 * armada;
+            return Game.Random.GaussianOE(( income + assets ) / Tile.Game.GetPlayers().Length, .39, .26, 1);
         }
 
         internal void Explore(IEventHandler handler, Ship ship)
@@ -342,15 +345,9 @@ namespace GalWar
 
             Player player = GetRandomPlayer(ship);
 
-            double min = Value, max = GenerateValue();
-            if (min > max)
-            {
-                double temp = min;
-                min = max;
-                max = temp;
-            }
-
-            Ship newShip = player.NewShip(handler, tile, new ShipDesign(player, GetDesignResearch(player), Tile.Game.MapSize, min, max));
+            ShipDesign design = new ShipDesign(player, GetDesignResearch(player), Tile.Game.MapSize, Value, Value);
+            Ship newShip = player.NewShip(handler, tile, design);
+            player.GoldIncome(Value - design.Cost);
 
             handler.Explore(AnomalyType.Ship, newShip);
 
