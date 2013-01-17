@@ -52,6 +52,8 @@ namespace GalWarWin
             //    Console.WriteLine("{0:0.00}\t{1:00.0}\t{2:0.000}", d, e, e / d);
             //}
 
+            ShipDesign.DoCostTable();
+
             if (Consts.ResearchVictoryMult * ( 1 - Consts.ResearchVictoryRndm * MattUtil.MTRandom.GAUSSIAN_FLOAT_MAX ) <= 1)
                 throw new Exception();
 

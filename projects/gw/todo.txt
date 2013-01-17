@@ -1,28 +1,4 @@
-Yellow Destroyer II (4, 17/17, 0) : Red Warrior I (4, 7/7, 0)
- 1=  4 :   0 (+ 4)
- 2=  0 :   2 (- 2)
- 3=  2 :   4 (- 2)
- 4=  3 :   1 (+ 2)
-     9 :   7 (+  6 : -  4)
- + 1.0 : - 1.0 (+ 2.0)
-
-Yellow Destroyer II - 0
- Trans ( 76%) - 2
- HP    (100%) - 7
- HP    (100%) - 12
- Trans ( 79%) - 13
-(HP   ) 15/19 - 16
-
-Red Warrior I - 0
- HP    (  0%) - 17
- HP    (NaN%) - 77
- Speed ( 13%) - 77
- Att   ( 13%) - 140
- Trans ( 13%) - 147
- Trans ( 13%) - 156
-(Speed) 1/8 - 244
-
-
+tooo many floats
 callback prevention choking out obsolete, maybe others (buy/sell prod?)
 make sure all setters use checked context
 GetBuildingDefense
@@ -44,11 +20,7 @@ management screens
 	colonies
 	ships
 
-ship AddExperience 1.69?
-ships obsolete themselves
 colony ship enemy player more likely to be closer player
-salvage ships curMove
-starting anomalies turning into planets
 undo
 	Ship.Disband
 	Ship.Colonize
@@ -60,7 +32,6 @@ repair micromanagement
 	cost incentive
 		certain specific value?
 		pct you have been doing?
-transport combats in order to invade?
 
 known enemy designs
 AI

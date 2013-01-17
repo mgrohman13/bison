@@ -308,7 +308,7 @@ namespace GalWar
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
             other = ( exp - mult );
             mult /= Consts.ExpForSoldiers;
-            return Game.Random.GaussianCapped((float)mult, Consts.ExperienceRndm);
+            return Consts.GetExperience(mult);
         }
 
         private void TroopBattle(ref int attackers, double attSoldiers, int gold, out double attack, out double defense)
@@ -975,7 +975,7 @@ namespace GalWar
         }
         private void BuildSoldiers(double prod)
         {
-            this.Soldiers += Game.Random.GaussianCapped(prod / Consts.ProductionForSoldiers, Consts.ExperienceRndm);
+            this.Soldiers += Consts.GetExperience(prod / Consts.ProductionForSoldiers);
         }
 
         public void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP, out double newSoldiers)

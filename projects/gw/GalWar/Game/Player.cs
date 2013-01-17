@@ -101,11 +101,11 @@ namespace GalWar
                 newStat = add;
             else
                 newStat = ( cur + add * Consts.PlanetDefensesRndm ) / ( 1 + Consts.PlanetDefensesRndm );
-            return Math.Max(GetPDStat(newStat), GetPDStat(add));
+            return Math.Max(GetPDStat(newStat), GetPDStat(1 + ( add - 1 ) * ( 1 - Consts.PlanetDefensesRndm )));
         }
         private static int GetPDStat(double stat)
         {
-            return Game.Random.GaussianCappedInt(stat, Consts.PlanetDefensesRndm, 1);
+            return Game.Random.GaussianOEInt((float)stat, Consts.PlanetDefensesRndm, Consts.PlanetDefensesRndm, 1);
         }
 
         public int PDAtt
@@ -231,7 +231,7 @@ namespace GalWar
         internal void NewRound()
         {
             if (this.newResearch > 0)
-                this.Research += Game.Random.GaussianCappedInt(this.newResearch, Consts.ResearchRndm, 1);
+                this.Research += Game.Random.GaussianOEInt(this.newResearch, Consts.ResearchRndm, Consts.ResearchRndm, 1);
         }
 
         internal void FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
@@ -302,9 +302,6 @@ namespace GalWar
         }
         private void NewShipDesign(IEventHandler handler, ShipDesign newDesign, bool doObsolete)
         {
-            newDesign.NameShip(this);
-            this.designs.Add(newDesign);
-
             HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
             if (doObsolete)
                 obsoleteDesigns.Add(ResearchFocusDesign);
@@ -314,6 +311,9 @@ namespace GalWar
             foreach (Colony colony in this.colonies)
                 if (obsoleteDesigns.Contains(colony.Buildable as ShipDesign))
                     colony.SetBuildable(newDesign, Consts.AutomaticObsoleteLossPct);
+
+            newDesign.NameShip(this);
+            this.designs.Add(newDesign);
 
             SetPlanetDefense(newDesign);
             this.LastResearched = Math.Max(LastResearched, newDesign.Research);
@@ -438,9 +438,9 @@ namespace GalWar
             return colony;
         }
 
-        internal Ship NewShip(IEventHandler handler, Tile tile, ShipDesign design)
+        internal Ship NewShip(IEventHandler handler, Tile tile, ShipDesign design, bool hasMove)
         {
-            Ship ship = new Ship(handler, this, tile, design);
+            Ship ship = new Ship(handler, this, tile, design, hasMove);
             this.ships.Add(ship);
             return ship;
         }

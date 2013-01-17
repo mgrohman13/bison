@@ -233,7 +233,7 @@ namespace GalWar
                 int quality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Planet.ConstValue, .65, .39, 1);
                 double avg = Consts.GetColonizationCost(quality, 1.69);
                 double bonus = Value * .13;
-                double cost = Game.Random.GaussianOE(avg - bonus, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, -bonus);
+                double cost = Game.Random.GaussianOE((float)( avg - bonus ), Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, (float)-bonus);
 
                 Colony colony = Game.Random.SelectValue(colonies);
                 if (handler.Explore(AnomalyType.Terraform, colony, "quality:", quality, "cost:", cost, "avg:", avg, "start:", start))
@@ -346,7 +346,7 @@ namespace GalWar
             Player player = GetRandomPlayer(ship);
 
             ShipDesign design = new ShipDesign(player, GetDesignResearch(player), Tile.Game.MapSize, Value, Value);
-            Ship newShip = player.NewShip(handler, tile, design);
+            Ship newShip = player.NewShip(handler, tile, design, false);
             player.GoldIncome(Value - design.Cost);
 
             handler.Explore(AnomalyType.Ship, newShip);

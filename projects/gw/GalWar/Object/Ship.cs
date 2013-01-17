@@ -22,7 +22,7 @@ namespace GalWar
         private float _curExp, _totalExp, _needExpMult, _expDiv, _autoRepair;
         private double _cost;
 
-        internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
+        internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design, bool hasMove)
             : base(design.Att, design.Def, design.HP, 0, 0)
         {
             this.Colony = design.Colony;
@@ -44,7 +44,10 @@ namespace GalWar
 
             this.HasRepaired = false;
             this.Upkeep = design.Upkeep;
-            this.CurSpeed = this.MaxSpeed;
+            if (hasMove)
+                this.CurSpeed = this.MaxSpeed;
+            else
+                this.CurSpeed = 0;
             this.MaxHP = design.HP;
 
             this.AutoRepair = double.NaN;
@@ -494,9 +497,9 @@ namespace GalWar
             base.SetHP(value);
         }
 
-        private double GetTransLoss(int damage)
+        private float GetTransLoss(int damage)
         {
-            return ( damage / (double)this.MaxHP * this.MaxPop * Consts.TransLossMult
+            return (float)( damage / (double)this.MaxHP * this.MaxPop * Consts.TransLossMult
                     * Math.Pow(this.Population / (double)this.MaxPop, Consts.TransLossPctPower) );
         }
 
@@ -649,13 +652,13 @@ namespace GalWar
             if (this.Population > 0 && this.HP > 0)
             {
                 double soldiers = this.Population / Consts.PopulationForGoldMid;
-                soldiers *= experience / ( soldiers + this.GetCurrentCost() ) / 1.69;
+                soldiers *= experience / ( soldiers + this.GetCurrentCost() );
                 experience -= soldiers;
                 soldiers *= GetCostExpForExp() / Consts.ExpForSoldiers;
-                this.Soldiers += Game.Random.GaussianCapped((float)soldiers, Consts.ExperienceRndm);
+                this.Soldiers += Consts.GetExperience(soldiers);
             }
 
-            this.curExp += Game.Random.GaussianCapped((float)experience, Consts.ExperienceRndm);
+            this.curExp += Consts.GetExperience(experience);
         }
 
         internal void AddAnomalyExperience(IEventHandler handler, double cost, bool funky, bool noChange)
@@ -1051,7 +1054,7 @@ namespace GalWar
 
         private static int GetDeathStarDamage(double damage)
         {
-            return Game.Random.GaussianCappedInt(damage, Consts.DeathStarDamageRndm);
+            return Game.Random.GaussianCappedInt((float)damage, Consts.DeathStarDamageRndm);
         }
 
         private int BombardPlanet(IEventHandler handler, Planet planet, int planetDamage)

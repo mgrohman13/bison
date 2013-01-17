@@ -51,7 +51,7 @@ namespace GalWar
             AssertException.Assert(players != null);
             AssertException.Assert(numPlayers > 1);
             AssertException.Assert(numPlayers * 78 < MapSize);
-            AssertException.Assert(radius < 70);
+            AssertException.Assert(radius < 78);
             AssertException.Assert(planetPct > 0.00013);
             AssertException.Assert(planetPct < 0.039);
 
@@ -59,8 +59,27 @@ namespace GalWar
             this.Attack = new Attack();
             this.Defense = new Defense();
 
-            //set up map hexagon
             this.map = new Tile[Diameter, Diameter];
+            InitMap(radius);
+
+            this.planets = new List<Planet>();
+            double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
+
+            this.ShipNames = new ShipNames(numPlayers);
+            InitPlayers(players, numPlanets);
+
+            this.currentPlayer = byte.MaxValue;
+            this.turn = 0;
+
+            this.deadPlayers = new List<Result>(numPlayers - 1);
+            this.winningPlayers = new List<Result>(numPlayers - 1);
+
+            this.Graphs = new Graphs(this);
+        }
+
+        private void InitMap(int radius)
+        {
+            //set up map hexagon
             int nullTiles = Diameter - radius;
             for (int y = 0 ; y < Diameter ; ++y)
             {
@@ -75,49 +94,76 @@ namespace GalWar
                 else
                     ++nullTiles;
             }
+        }
 
+        private double CreateSpaceObjects(int numPlayers, double planetPct)
+        {
             planetPct *= MapSize;
-            int planets = Random.GaussianCappedInt((float)planetPct, .169f);
+
             this.planetPct = Random.GaussianCapped((float)( planetPct / 91 ), .091f, (float)Consts.FLOAT_ERROR);
-            this.anomalyPct = Random.GaussianCapped((float)( this.planetPct + MapSize * .000039 + ( players.Length + 6.5 ) * 0.0052 ),
+            this.anomalyPct = Random.GaussianCapped((float)( this.planetPct + MapSize * .000039 + ( numPlayers + 6.5 ) * 0.0052 ),
                     .21f, (float)( this.planetPct + Consts.FLOAT_ERROR ));
 
-            this.planets = new List<Planet>(planets + numPlayers);
             //first create enough planets for homeworlds
             while (this.planets.Count < numPlayers)
                 NewPlanet();
-            //each additional starting planet is just a chance of creating one
-            for (int a = 0 ; a < planets ; ++a)
-                NewPlanet();
 
+            double anomPlanets = 0;
+            double anomPlanetRate = ( this.planetPct / this.anomalyPct ) / 1.3;
             int startAnomalies = Random.GaussianOEInt(this.anomalyPct * Consts.StartAnomalies, .39f, .13f,
                     ( this.anomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0);
             for (int a = 0 ; a < startAnomalies ; ++a)
-                CreateAnomaly();
+            {
+                Anomaly anomaly = CreateAnomaly();
+                if (anomaly != null && CheckPlanetDistance(anomaly.Tile) && ( anomPlanets += anomPlanetRate ) > planetPct)
+                {
+                    planetPct = anomPlanets;
+                    break;
+                }
+            }
+
+            planetPct -= anomPlanets;
+            int startPlanets = Random.GaussianOEInt((float)planetPct, .13f, .091f, ( planetPct > 1 ) ? 1 : 0);
+            for (int a = 0 ; a < startPlanets ; ++a)
+                NewPlanet();
+
+            return this.planets.Count + anomPlanets;
+        }
+        private Planet NewPlanet()
+        {
+            Tile tile;
+            do
+            {
+                int x = Random.Next(Diameter), y = Random.Next(Diameter);
+                tile = this.map[x, y];
+                //planets cannot be right on the map edge so tile must have 6 neighbors
+            } while (tile == null || Tile.GetNeighbors(tile).Count < 6);
+
+            if (tile.SpaceObject == null && CheckPlanetDistance(tile))
+                return CreatePlanet(tile);
+            //dont retry if it cant be placed because of occupied space or existing planet proximity
+            return null;
+        }
+
+        private void InitPlayers(Player[] players, double numPlanets)
+        {
+            int numPlayers = players.Length;
 
             int startPop = GetStartInt(Consts.StartPopulation);
-            double soldiers = GetStartDouble(startPop);
-            double startGold = GetStartDouble(Consts.StartGold * numPlayers / (double)this.planets.Count);
+            double startSoldiers = GetStartDouble(startPop);
+            double startGold = GetStartDouble(Consts.StartGold * numPlayers / numPlanets);
+            List<int> startResearch = GetStartResearch();
             //set later based on colony ship costs
             double startProd = -1;
 
-            List<int> research = new List<int>(4);
-            research.Add(GetStartInt(Consts.StartResearch * 1 / 4.0));
-            research.Add(GetStartInt(Consts.StartResearch * 2 / 4.0));
-            research.Add(GetStartInt(Consts.StartResearch * 3 / 4.0));
-            research.Add(GetStartInt(Consts.StartResearch * 4 / 4.0));
-            //ensure the List is in order despite randomness
-            research.Sort();
-
             this.players = new Player[numPlayers];
             int index = 0;
-            this.ShipNames = new ShipNames(numPlayers);
             foreach (Player player in Random.Iterate<Player>(players))
             {
                 Planet homeworld = GetHomeworld(startPop);
                 double gold = startGold / homeworld.Quality + index * Consts.GetMoveOrderGold(numPlayers);
-                this.players[index] = new Player(index, this, player, homeworld, startPop, soldiers, gold, research);
-                //allstarting production is based on the highest colony ship design cost
+                this.players[index] = new Player(index, this, player, homeworld, startPop, startSoldiers, gold, startResearch);
+                //starting production is based on the highest colony ship design cost
                 foreach (ShipDesign design in this.players[index].GetShipDesigns())
                     if (design.Colony)
                     {
@@ -138,14 +184,67 @@ namespace GalWar
                 CurrentPlayer.SpendGold(spendGold);
                 CurrentPlayer.IncomeTotal += startProd;
             }
+        }
+        private static List<int> GetStartResearch()
+        {
+            List<int> research = new List<int>(4);
+            research.Add(GetStartInt(Consts.StartResearch * 1 / 4.0));
+            research.Add(GetStartInt(Consts.StartResearch * 2 / 4.0));
+            research.Add(GetStartInt(Consts.StartResearch * 3 / 4.0));
+            research.Add(GetStartInt(Consts.StartResearch * 4 / 4.0));
+            //ensure the List is in order despite randomness
+            research.Sort();
+            return research;
+        }
+        private Planet GetHomeworld(int startPop)
+        {
+            List<Planet> homeworlds;
+            int homeworldCount;
 
-            this.currentPlayer = byte.MaxValue;
-            this.turn = 0;
+            //we may need to add another valid homeworld
+            while (( homeworldCount = ( homeworlds = GetAvailableHomeworlds(startPop) ).Count ) == 0)
+            {
+                //we dont want to change the number of planets, so take one out first
+                Planet removePlanet;
+                do
+                {
+                    removePlanet = this.planets[Random.Next(this.planets.Count)];
+                } while (removePlanet.Colony != null);
+                this.RemovePlanet(removePlanet);
 
-            this.deadPlayers = new List<Result>(numPlayers - 1);
-            this.winningPlayers = new List<Result>(numPlayers - 1);
+                //try until we add a new one
+                while (NewPlanet() == null)
+                    ;
+            }
 
-            this.Graphs = new Graphs(this);
+            return homeworlds[Random.Next(homeworldCount)];
+        }
+        private List<Planet> GetAvailableHomeworlds(int startPop)
+        {
+            //planets can only be used as homeworlds if they have enough quality to support the initial population
+            List<Planet> retVal = new List<Planet>(this.planets.Count);
+            foreach (Planet planet in this.planets)
+                if (planet.Quality > startPop && planet.Colony == null)
+                {
+                    foreach (Player player in this.players)
+                        if (player != null)
+                            foreach (Colony colony in player.GetColonies())
+                                if (Tile.GetDistance(planet.Tile, colony.Tile) <= Consts.HomeworldDistance)
+                                    goto next_planet;
+                    retVal.Add(planet);
+next_planet:
+                    ;
+                }
+            return retVal;
+        }
+
+        private static int GetStartInt(double avg)
+        {
+            return Random.Round(GetStartDouble(avg));
+        }
+        private static double GetStartDouble(double avg)
+        {
+            return Random.GaussianCapped(avg, Consts.StartRndm, avg * Consts.StartMinMult);
         }
 
         private int currentPlayer
@@ -175,81 +274,6 @@ namespace GalWar
                     this._turn = (ushort)value;
                 }
             }
-        }
-
-        private static int GetStartInt(double avg)
-        {
-            return Random.Round(GetStartDouble(avg));
-        }
-
-        private static double GetStartDouble(double avg)
-        {
-            return Random.GaussianCapped(avg, Consts.StartRndm, avg * Consts.StartMinMult);
-        }
-
-        private Planet GetHomeworld(int startPop)
-        {
-            List<Planet> homeworlds;
-            int homeworldCount;
-
-            //we may need to add another valid homeworld
-            while (( homeworldCount = ( homeworlds = GetAvailableHomeworlds(startPop) ).Count ) == 0)
-            {
-                //we dont want to change the number of planets, so take one out first
-                Planet removePlanet;
-                do
-                {
-                    removePlanet = this.planets[Random.Next(this.planets.Count)];
-                } while (removePlanet.Colony != null);
-                this.RemovePlanet(removePlanet);
-
-                //try until we add a new one
-                while (NewPlanet() == null)
-                    ;
-            }
-
-            Planet homeworld;
-            if (homeworldCount == 1)
-                homeworld = homeworlds[0];
-            else
-                homeworld = homeworlds[Random.Next(homeworldCount)];
-
-            return homeworld;
-        }
-
-        private List<Planet> GetAvailableHomeworlds(int startPop)
-        {
-            //planets can only be used as homeworlds if they have enough quality to support the initial population
-            List<Planet> retVal = new List<Planet>(this.planets.Count);
-            foreach (Planet planet in this.planets)
-                if (planet.Quality > startPop && planet.Colony == null)
-                {
-                    foreach (Player player in this.players)
-                        if (player != null)
-                            foreach (Colony colony in player.GetColonies())
-                                if (Tile.GetDistance(planet.Tile, colony.Tile) <= Consts.HomeworldDistance)
-                                    goto next_planet;
-                    retVal.Add(planet);
-next_planet:
-                    ;
-                }
-            return retVal;
-        }
-
-        private Planet NewPlanet()
-        {
-            Tile tile;
-            do
-            {
-                int x = Random.Next(Diameter), y = Random.Next(Diameter);
-                tile = this.map[x, y];
-                //planets cannot be right on the map edge so tile must have 6 neighbors
-            } while (tile == null || Tile.GetNeighbors(tile).Count < 6);
-
-            if (tile.SpaceObject == null && CheckPlanetDistance(tile))
-                return CreatePlanet(tile);
-            //dont retry if it cant be placed because of occupied space or existing planet proximity
-            return null;
         }
 
         private float planetPct
@@ -502,12 +526,14 @@ next_planet:
         internal Planet CreateAnomalyPlanet(Tile tile)
         {
             if (Random.Bool((float)( this.planetPct / this.anomalyPct )))
-                if (Tile.GetNeighbors(tile).Count >= 6 && CheckPlanetDistance(tile))
+                if (CheckPlanetDistance(tile))
                     return CreatePlanet(tile);
             return null;
         }
         internal bool CheckPlanetDistance(Tile tile)
         {
+            if (Tile.GetNeighbors(tile).Count < 6)
+                return false;
             foreach (Planet planet in this.planets)
                 if (Tile.GetDistance(tile.X, tile.Y, planet.Tile.X, planet.Tile.Y) <= Consts.PlanetDistance)
                     return false;
@@ -522,15 +548,14 @@ next_planet:
 
         private void CreateAnomalies()
         {
-            if (Random.Next(this.players.Length) == 0)
-            {
-                int create = Game.Random.OEInt(this.anomalyPct);
-                for (int a = 0 ; a < create ; ++a)
-                    CreateAnomaly();
-                this.planetPct = Random.GaussianCapped(this.planetPct, .0052f,
-                        (float)( Math.Max(0, 2 * this.planetPct - this.anomalyPct) + Consts.FLOAT_ERROR ));
-                this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065f, .0091f, (float)( this.planetPct + Consts.FLOAT_ERROR ));
-            }
+            float numPlayers = this.players.Length;
+            int create = Game.Random.OEInt(this.anomalyPct / numPlayers);
+            for (int a = 0 ; a < create ; ++a)
+                CreateAnomaly();
+            this.planetPct = Random.GaussianCapped(this.planetPct, .0052f / numPlayers,
+                    (float)( Math.Max(0, 2 * this.planetPct - this.anomalyPct) + Consts.FLOAT_ERROR ));
+            this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065f / numPlayers,
+                    .0091f / numPlayers, (float)( this.planetPct + Consts.FLOAT_ERROR ));
         }
 
         private Anomaly CreateAnomaly()

@@ -17,9 +17,9 @@ namespace GalWar
         public const float StartAnomalies = 21f;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each players homeworld quality
-        public const double StartGold = 2 * AverageQuality * 260;
+        public const double StartGold = AverageQuality * 650;
         public const double StartResearch = 390;
-        public const double StartRndm = .091;
+        public const double StartRndm = .13;
         public const double StartMinMult = .65;
         public const double MoveOrderGold = AverageQuality * Income;
         //a higher MoveOrderShuffle makes the move order change faster
@@ -47,7 +47,7 @@ namespace GalWar
         public const double CarryProductionLossPct = 1.0 / 13;   // .08
         public const double AutomaticObsoleteLossPct = 1.0 / 21; // .05
 
-        public const double CostMult = .13;
+        public const double CostMult = .104;
         public const double CostUpkeepPct = .21;
         public const double ProdUpkeepMult = 1 / ( 1 / Consts.CostUpkeepPct - 1 ) / 1.3;
         public const double BaseDesignHPMult = .3;
@@ -60,7 +60,7 @@ namespace GalWar
         public const double MaxCostPower = 0.21;
 
         //higher value makes research less useful
-        public const double ResearchFactor = 1300;
+        public const double ResearchFactor = 1690;
         //how often new designs are researched
         public const double NewResearchFactor = 390;
         //mult and power of turn research income
@@ -70,7 +70,7 @@ namespace GalWar
         public const double NumDesignsFactor = 3.9;
         public const double NumDesignsPower = .21;
         //turn research income randomness
-        public const float ResearchRndm = .3f;
+        public const float ResearchRndm = .39f;
         public const float ResearchDisplayRndm = .169f;
 
         //trade rates
@@ -91,7 +91,7 @@ namespace GalWar
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
         public const double TransLossMult = .65;
-        public const double TransLossRndm = Math.PI / 13;
+        public const float TransLossRndm = (float)( Math.PI / 13 );
 
         //value of exp gained as a pct of ship value
         public const double ExperienceMult = .13;
@@ -112,7 +112,7 @@ namespace GalWar
         public const double RepairGoldHPPct = 1 / 16.9;
 
         public const double DisbandPct = RepairCostMult;
-        public const float ColonizationCostRndm = .078f;
+        public const float ColonizationCostRndm = .091f;
 
         public const double AttackStrength = 1;
         public const double AttackNumbersPower = 0.091;
@@ -126,11 +126,11 @@ namespace GalWar
         //average planet quality lost as a percentage of total troops killed in the battle
         public const float PlanetDamage = .3f;
 
-        public const double DeathStarDamageRndm = Math.E / 13;
+        public const float DeathStarDamageRndm = (float)( Math.E / 13 );
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
-        public const float PlanetDefensesRndm = .39f;
+        public const float PlanetDefensesRndm = .26f;
         public const double PlanetDefensesCostMult = .91;
         //PlanetDefensesUpkeepMult will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
@@ -147,6 +147,11 @@ namespace GalWar
         public static double GetMoveOrderGold(int numPlayers)
         {
             return MoveOrderGold / ( numPlayers - 1 );
+        }
+
+        internal static float GetExperience(double experience)
+        {
+            return Game.Random.GaussianOE((float)experience, Consts.ExperienceRndm, Consts.ExperienceRndm);
         }
 
         public static double GetPopulationGrowth(double population, int quality)
@@ -200,7 +205,7 @@ namespace GalWar
             double retVal = 1;
             if (colony)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans, false, bombardDamage, research)
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 26.0 / trans + 1 ), false, bombardDamage, research)
                         / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
                 if (sqr)
                     retVal *= retVal;

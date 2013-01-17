@@ -28,8 +28,11 @@ namespace GalWar
         private int[] divisions;
         private byte[,] _marks;
 
+        [NonSerialized]
         private bool _setup;
+        [NonSerialized]
         private ushort _total;
+        [NonSerialized]
         private byte _count;
 
         internal ShipNames(int numPlayers)
@@ -87,7 +90,7 @@ namespace GalWar
             ShipClass[] type;
             if (design.Trans * design.Speed > RandMult(transStr * speedStr * .3))
                 type = transport;
-            else if (design.BombardDamage * design.Speed > RandMult(Consts.GetBombardDamage(attDefStr) * speedStr * 26))
+            else if (design.BombardDamage * design.Speed > RandMult(Consts.GetBombardDamage(attDefStr) * speedStr * ShipDesign.DeathStarAvg * .3))
                 type = deathStar;
             else if (design.Speed > RandMult(speedStr * 1.3))
                 type = speed;

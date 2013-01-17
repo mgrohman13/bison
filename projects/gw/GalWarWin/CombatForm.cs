@@ -658,7 +658,8 @@ end:
 
                 Ship.ExpType expType = this.expType;
                 foreach (LevelUpType level in base.others)
-                    Log(level, ref expType);
+                    if (!double.IsNaN(level.pct))
+                        Log(level, ref expType);
 
                 LevelUpType last = base.others[base.others.Count - 1];
 
