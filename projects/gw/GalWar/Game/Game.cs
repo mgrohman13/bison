@@ -34,6 +34,7 @@ namespace GalWar
 
         private readonly Tile[,] map;
         private readonly List<Planet> planets;
+        private readonly List<Tuple<Tile, Tile>> teleporters;
         private Player[] players;
 
         private readonly List<Result> deadPlayers;
@@ -58,6 +59,8 @@ namespace GalWar
             this.StoreProd = new StoreProd();
             this.Attack = new Attack();
             this.Defense = new Defense();
+
+            this.teleporters = new List<Tuple<Tile, Tile>>();
 
             this.map = new Tile[Diameter, Diameter];
             InitMap(radius);
@@ -134,10 +137,9 @@ namespace GalWar
             Tile tile;
             do
             {
-                int x = Random.Next(Diameter), y = Random.Next(Diameter);
-                tile = this.map[x, y];
+                tile = GetRandomTile();
                 //planets cannot be right on the map edge so tile must have 6 neighbors
-            } while (tile == null || Tile.GetNeighbors(tile).Count < 6);
+            } while (Tile.GetNeighbors(tile).Count < 6);
 
             if (tile.SpaceObject == null && CheckPlanetDistance(tile))
                 return CreatePlanet(tile);
@@ -462,6 +464,7 @@ next_planet:
                 NewRound();
 
             CreateAnomalies();
+            RemoveTeleporters();
 
             StartPlayerTurn(handler);
 
@@ -523,14 +526,23 @@ next_planet:
             }
         }
 
+        private void RemoveTeleporters()
+        {
+            if (teleporters.Count > 0)
+            {
+                double chance = Math.Pow(teleporters.Count - 1.0, 1.69) + 1.0;
+                if (Game.Random.Bool(chance / ( chance + 52.0 ) / players.Length))
+                    RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
+            }
+        }
+
         internal bool CreateTeleporter(Tile tile)
         {
-            //incorporate some chance based on number of pre-existing teleporters
-            //    instead of null checking space objects?
-            if (tile.SpaceObject == null)
+            double chance = Math.Pow(teleporters.Count + 1.3, 1.3);
+            if (Game.Random.Bool(1.0 / chance))
             {
-                Tile target = map[Random.Next(Diameter), Random.Next(Diameter)];
-                if (target.SpaceObject == null && Tile.GetDistance(tile, target) > 1)
+                Tile target = GetRandomTile();
+                if (Tile.GetDistance(tile, target) > 1)
                 {
                     int closeThis = int.MaxValue, closTrg = int.MaxValue;
                     foreach (Planet planet in this.planets)
@@ -538,13 +550,42 @@ next_planet:
                         closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
                         closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
                     }
+                    //check and make sure enemies cannot be attacked/invaded
                     if (closeThis + closTrg + 1 > Consts.PlanetDistance)
-                    {
-                        //check and make sure enemies cannot be attacked/invaded
-                    }
+                        foreach (Player p in this.players)
+                        {
+                            foreach (Colony c in p.GetColonies())
+                                if (!CheckAttInvPlayers(c.Tile, true, tile, target))
+                                    return false;
+                            foreach (Ship s in p.GetShips())
+                                if (!CheckAttInvPlayers(s.Tile, false, tile, target))
+                                    return false;
+
+                            CreateTeleporter(tile, target);
+                            return true;
+                        }
                 }
             }
             return false;
+        }
+        private bool CheckAttInvPlayers(Tile objTile, bool inv, Tile t1, Tile t2)
+        {
+            HashSet<ISpaceObject> before = Anomaly.GetAttInv(objTile, null, inv);
+            Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
+            HashSet<ISpaceObject> after = Anomaly.GetAttInv(objTile, null, inv);
+            RemoveTeleporter(teleporter);
+            return ( !after.IsSubsetOf(before) );
+        }
+        private Tuple<Tile, Tile> CreateTeleporter(Tile t1, Tile t2)
+        {
+            Tuple<Tile, Tile> teleporter = new Tuple<Tile, Tile>(t1, t2);
+            this.teleporters.Add(teleporter);
+            return teleporter;
+        }
+
+        private void RemoveTeleporter(Tuple<Tile, Tile> teleporter)
+        {
+            this.teleporters.Remove(teleporter);
         }
 
         internal Planet CreateAnomalyPlanet(Tile tile)
@@ -581,16 +622,21 @@ next_planet:
             this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065f / numPlayers,
                     .0091f / numPlayers, (float)( this.planetPct + Consts.FLOAT_ERROR ));
         }
-
         private Anomaly CreateAnomaly()
+        {
+            Tile tile = GetRandomTile();
+            if (tile.SpaceObject == null)
+                return new Anomaly(tile);
+            return null;
+        }
+
+        internal Tile GetRandomTile()
         {
             Tile tile;
             do
                 tile = this.map[Random.Next(Diameter), Random.Next(Diameter)];
             while (tile == null);
-            if (tile.SpaceObject == null)
-                return new Anomaly(tile);
-            return null;
+            return tile;
         }
 
         private void StartPlayerTurn(IEventHandler handler)

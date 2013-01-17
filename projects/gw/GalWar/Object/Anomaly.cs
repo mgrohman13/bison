@@ -27,6 +27,14 @@ namespace GalWar
             }
         }
 
+        public Player Player
+        {
+            get
+            {
+                return null;
+            }
+        }
+
         private double Value
         {
             get
@@ -73,6 +81,9 @@ namespace GalWar
             this._value = double.NaN;
             Tile.SpaceObject = null;
 
+            if (Wormhole(handler, ship))
+                return;
+
             Planet planet = Tile.Game.CreateAnomalyPlanet(this.Tile);
             if (planet != null)
             {
@@ -86,7 +97,7 @@ namespace GalWar
             options.Add(AnomalyType.Colony, 5);
             //options.Add(AnomalyType.Death, 6);
             //options.Add(AnomalyType.PlanetDefense, 20);
-            //options.Add(AnomalyType.Wormhole, 39);
+            options.Add(AnomalyType.Wormhole, 39);
             options.Add(AnomalyType.Experience, 40);
             options.Add(AnomalyType.Ship, 44);
             options.Add(AnomalyType.Population, 52);
@@ -309,46 +320,89 @@ namespace GalWar
 
         private bool Wormhole(IEventHandler handler, Ship ship)
         {
-            //this ship -> random tile
-            //    chance to add cur speed?
-            //random ship -> this tile
-            //random planet -> this tile?
-            //    cannot cause planets to be too close
-            //semi-permanent teleporter?
-            //    cannot cause planets to be too close
-            //move anomaly? create more?
-
             handler.Explore(AnomalyType.Wormhole);
 
             bool any = false;
-            if (Game.Random.Bool())
-                any |= PullIn(ship);
+
             if (Game.Random.Bool())
                 any |= PushShip(ship);
             if (Game.Random.Bool())
-                any |= CreateAnomalies(ship);
+                any |= PullIn(ship);
             if (Game.Random.Bool())
-                any |= CreateTeleporter();
+                any |= CreateAnomalies(ship);
 
             if (any)
                 ship.LoseMove();
+            else
+                any = CreateTeleporter();
 
             return any;
         }
-        private bool PullIn(Ship ship)
-        {
-            //check and make sure enemies cannot be attacked/invaded
-            throw new NotImplementedException();
-        }
         private bool PushShip(Ship ship)
         {
-            Tile tile = Tile.Game.GetMap()[Game.Random.Next(Tile.Game.Diameter), Game.Random.Next(Tile.Game.Diameter)];
+            Tile tile = Tile.Game.GetRandomTile();
             if (tile.SpaceObject == null)
             {
-                ship.Teleport(tile);
-                return true;
+                Player oneInv, oneAtt;
+                bool twoInv, twoAtt;
+                GetAttInvPlayers(tile, ship, out oneInv, out twoInv, out oneAtt, out twoAtt);
+                if (oneAtt != ship.Player && !twoAtt)
+                {
+                    ship.Teleport(tile);
+                    return true;
+                }
             }
             return false;
+        }
+        private bool PullIn(Ship ship)
+        {
+            Player oneInv, oneAtt;
+            bool twoInv, twoAtt;
+            GetAttInvPlayers(Tile, ship, out oneInv, out twoInv, out oneAtt, out twoAtt);
+
+            Dictionary<ISpaceObject, int> objects = new Dictionary<ISpaceObject, int>();
+            foreach (Planet p in Tile.Game.GetPlanets())
+            {
+                bool colony = ( p.Colony != null );
+                if (!twoInv || !colony)
+                    AddPullChance(objects, oneInv, p, colony ? p.Colony.Player : null,
+                            ( colony ? 16.9 : 13.0 ) * ( twoAtt ? 1.69 : ( ( oneInv == null ) ? 1.0 : 1.3 ) ));
+            }
+            if (!twoAtt)
+                foreach (Player p in Game.Random.Iterate(Tile.Game.GetPlayers()))
+                    foreach (Ship s in Game.Random.Iterate(p.GetShips()))
+                        AddPullChance(objects, oneAtt, s, s.Player, ( ( objects.Count > 0 ) ? 7.8 : 11.7 ));
+
+            if (objects.Count > 0)
+            {
+                ISpaceObject teleport = Game.Random.SelectValue(objects);
+                Ship s = teleport as Ship;
+                Planet p;
+                if (s != null)
+                {
+                    s.LoseMove();
+                    s.Teleport(Tile);
+                }
+                else if (( p = teleport as Planet ) != null)
+                {
+                    p.Teleport(Tile);
+                }
+                return true;
+            }
+
+            return false;
+        }
+        private void AddPullChance(Dictionary<ISpaceObject, int> objects, Player can, ISpaceObject o, Player p, double div)
+        {
+            if (can == null || p == null || p == can)
+            {
+                double avg = Tile.Game.Diameter / div / ( Tile.GetDistance(Tile, o.Tile) + 3.9 ) * 2.6;
+                if (avg < 1)
+                    avg *= avg;
+                int amt = Game.Random.OEInt(avg);
+                if (amt > 0)
+                    objects.Add(o, amt);
+            }
         }
         private bool CreateAnomalies(Ship ship)
         {
@@ -382,6 +436,91 @@ namespace GalWar
             return Tile.Game.CreateTeleporter(Tile);
         }
 
+        private static void GetAttInvPlayers(Tile tile, Ship ship, out Player oneInv, out bool twoInv, out Player oneAtt, out bool twoAtt)
+        {
+            GetAttInvPlayers(GetAttInv(tile, ship, true), out oneInv, out twoInv);
+            GetAttInvPlayers(GetAttInv(tile, ship, false), out oneAtt, out twoAtt);
+        }
+        private static void GetAttInvPlayers(HashSet<ISpaceObject> objs, out Player one, out bool two)
+        {
+            one = null;
+            two = false;
+            foreach (ISpaceObject o in objs)
+                if (one == null)
+                {
+                    one = o.Player;
+                }
+                else if (one != o.Player)
+                {
+                    two = true;
+                    break;
+                }
+        }
+        internal static HashSet<ISpaceObject> GetAttInv(Tile tile, Ship ship, bool inv)
+        {
+            HashSet<ISpaceObject> retVal = new HashSet<ISpaceObject>();
+
+            //check for attacks from Planet Defenses
+            if (!inv)
+                foreach (Tile t in Tile.GetNeighbors(tile))
+                {
+                    Planet p = t.SpaceObject as Planet;
+                    if (p != null)
+                    {
+                        if (p.Colony != null)
+                            retVal.Add(p);
+                        break;
+                    }
+                }
+
+            foreach (Player p in tile.Game.GetPlayers())
+                foreach (Ship s in p.GetShips())
+                {
+                    bool add = false;
+
+                    int diff = GetSpeed(ship, s) - Tile.GetDistance(tile, s.Tile);
+                    if (inv)
+                    {
+                        if (diff > -2)
+                            if (s.Population > 0 || s.DeathStar)
+                            {
+                                add = true;
+                                goto _add;
+                            }
+                            else if (s.FreeSpace > 0)
+                            {
+                                //check if the ship could conceivably pick up some population
+                                foreach (Colony c in p.GetColonies())
+                                    if (c.AvailablePop > 0 && GetSpeed(ship, s) > Tile.GetDistance(s.Tile, c.Tile) - 2)
+                                    {
+                                        add = true;
+                                        goto _add;
+                                    }
+                                foreach (Ship s2 in p.GetShips())
+                                    if (s2.AvailablePop > 0 && GetSpeed(ship, s) + GetSpeed(ship, s2) > Tile.GetDistance(s.Tile, s2.Tile) - 2)
+                                    {
+                                        add = true;
+                                        goto _add;
+                                    }
+                            }
+                    }
+                    else if (diff > -1)
+                    {
+                        add = true;
+                        goto _add;
+                    }
+_add:
+                    if (add)
+                        retVal.Add(s);
+                }
+
+            return retVal;
+        }
+        private static int GetSpeed(Ship ship, Ship s)
+        {
+            return ( ship == s ? 0 : s.CurSpeed );
+        }
+
         private bool Experience(IEventHandler handler, Ship ship)
         {
             //other ships?
@@ -400,7 +539,6 @@ namespace GalWar
         private bool Ship(IEventHandler handler, Ship ship)
         {
             //neutral ships?
-            //chance to add cur speed?
 
             Player player = ship.Player;
             if (Game.Random.Bool())
@@ -476,9 +614,6 @@ namespace GalWar
 
         private bool PopulationThisSoldiers(IEventHandler handler, Ship ship)
         {
-            //chance to add cur speed?
-            //pop can move?
-
             int pop = Game.Random.Round(Value * Consts.PopulationForGoldHigh);
             double soldiers = Value / Consts.ExpForSoldiers;
 

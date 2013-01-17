@@ -34,7 +34,6 @@ namespace GalWar
         {
             return IsNeighbor(tile1.X, tile1.Y, tile2.X, tile2.Y);
         }
-
         public static bool IsNeighbor(int x1, int y1, int x2, int y2)
         {
             return ( GetDistance(x1, y1, x2, y2) == 1 );
@@ -44,7 +43,6 @@ namespace GalWar
         {
             return GetDistance(tile1.X, tile1.Y, tile2.X, tile2.Y);
         }
-
         public static int GetDistance(int x1, int y1, int x2, int y2)
         {
             int yDist = Math.Abs(y2 - y1);

@@ -9,5 +9,9 @@ namespace GalWar
         {
             get;
         }
+        Player Player
+        {
+            get;
+        }
     }
 }

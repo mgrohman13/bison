@@ -8,7 +8,7 @@ namespace GalWar
     {
         #region fields and constructors
 
-        private readonly Tile tile;
+        private Tile _tile;
 
         private Colony _colony;
 
@@ -17,14 +17,22 @@ namespace GalWar
 
         internal Planet(Tile tile)
         {
-            this.tile = tile;
+            this._tile = tile;
             tile.SpaceObject = this;
 
             this._colony = null;
 
             this.Quality = Consts.NewPlanetQuality();
 
-            this._colonizationCostMult = Consts.GetColonizationMult( );
+            this._colonizationCostMult = Consts.GetColonizationMult();
+        }
+
+        private Tile tile
+        {
+            get
+            {
+                return this._tile;
+            }
         }
 
         #endregion //fields and constructors
@@ -54,6 +62,13 @@ namespace GalWar
                 this.Colony.Destroy();
 
             this.tile.Game.RemovePlanet(this);
+        }
+
+        internal void Teleport(Tile tile)
+        {
+            this.Tile.SpaceObject = null;
+            this._tile = tile;
+            this.Tile.SpaceObject = this;
         }
 
         #endregion //internal
@@ -111,6 +126,16 @@ namespace GalWar
             get
             {
                 return this.tile;
+            }
+        }
+
+        public Player Player
+        {
+            get
+            {
+                if (Colony != null)
+                    return Colony.Player;
+                return null;
             }
         }
 

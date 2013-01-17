@@ -205,9 +205,6 @@ namespace GalWar
 
         internal void LoseMove()
         {
-            if (!Player.IsTurn)
-                throw new Exception();
-
             Player.GoldIncome(this.GetUpkeepReturn());
             this.CurSpeed = 0;
         }
