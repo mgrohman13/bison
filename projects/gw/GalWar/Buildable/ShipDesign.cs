@@ -799,7 +799,7 @@ namespace GalWar
 
         internal override void Build(IEventHandler handler, Colony colony, Tile tile)
         {
-            Ship ship = colony.Player.NewShip(handler, tile, this, true);
+            Ship ship = colony.Player.NewShip(handler, tile, this);
 
             int max = Math.Min(colony.AvailablePop, ship.FreeSpace);
             if (max > 0)

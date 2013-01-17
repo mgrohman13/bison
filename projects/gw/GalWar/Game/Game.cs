@@ -523,6 +523,30 @@ next_planet:
             }
         }
 
+        internal bool CreateTeleporter(Tile tile)
+        {
+            //incorporate some chance based on number of pre-existing teleporters
+            //    instead of null checking space objects?
+            if (tile.SpaceObject == null)
+            {
+                Tile target = map[Random.Next(Diameter), Random.Next(Diameter)];
+                if (target.SpaceObject == null && Tile.GetDistance(tile, target) > 1)
+                {
+                    int closeThis = int.MaxValue, closTrg = int.MaxValue;
+                    foreach (Planet planet in this.planets)
+                    {
+                        closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
+                        closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
+                    }
+                    if (closeThis + closTrg + 1 > Consts.PlanetDistance)
+                    {
+                        //check and make sure enemies cannot be attacked/invaded
+                    }
+                }
+            }
+            return false;
+        }
+
         internal Planet CreateAnomalyPlanet(Tile tile)
         {
             if (Random.Bool((float)( this.planetPct / this.anomalyPct )))

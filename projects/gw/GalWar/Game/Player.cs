@@ -438,9 +438,9 @@ namespace GalWar
             return colony;
         }
 
-        internal Ship NewShip(IEventHandler handler, Tile tile, ShipDesign design, bool hasMove)
+        internal Ship NewShip(IEventHandler handler, Tile tile, ShipDesign design)
         {
-            Ship ship = new Ship(handler, this, tile, design, hasMove);
+            Ship ship = new Ship(handler, this, tile, design);
             this.ships.Add(ship);
             return ship;
         }

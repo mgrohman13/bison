@@ -22,7 +22,7 @@ namespace GalWar
         private float _curExp, _totalExp, _needExpMult, _expDiv, _autoRepair;
         private double _cost;
 
-        internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design, bool hasMove)
+        internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
             : base(design.Att, design.Def, design.HP, 0, 0)
         {
             this.Colony = design.Colony;
@@ -44,10 +44,7 @@ namespace GalWar
 
             this.HasRepaired = false;
             this.Upkeep = design.Upkeep;
-            if (hasMove)
-                this.CurSpeed = this.MaxSpeed;
-            else
-                this.CurSpeed = 0;
+            this.CurSpeed = this.MaxSpeed;
             this.MaxHP = design.HP;
 
             this.AutoRepair = double.NaN;
@@ -204,6 +201,15 @@ namespace GalWar
 
             this.CurSpeed = MaxSpeed;
             this.HasRepaired = false;
+        }
+
+        internal void LoseMove()
+        {
+            if (!Player.IsTurn)
+                throw new Exception();
+
+            Player.GoldIncome(this.GetUpkeepReturn());
+            this.CurSpeed = 0;
         }
 
         public double GetUpkeepReturn()
@@ -553,6 +559,13 @@ namespace GalWar
             Destroy(gold);
         }
 
+        internal void Teleport(Tile tile)
+        {
+            this.Tile.SpaceObject = null;
+            this.tile = tile;
+            this.Tile.SpaceObject = this;
+        }
+
         public void Move(IEventHandler handler, Tile tile)
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
@@ -585,10 +598,7 @@ namespace GalWar
                 ++this.CurSpeed;
             else
                 --this.CurSpeed;
-
-            this.Tile.SpaceObject = null;
-            this.tile = tile;
-            this.Tile.SpaceObject = this;
+            Teleport(tile);
         }
 
         public static bool CheckZOC(Player player, Tile from, Tile to)

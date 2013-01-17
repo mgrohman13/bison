@@ -20,6 +20,8 @@ management screens
 	colonies
 	ships
 
+random tile helper method
+anomaly colony make sure cant be invaded, weights enemy player choice
 colony ship enemy player more likely to be closer player
 undo
 	Ship.Disband
