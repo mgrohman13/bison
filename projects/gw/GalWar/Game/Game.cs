@@ -565,9 +565,10 @@ next_planet:
                             foreach (Colony c in p.GetColonies())
                                 if (!CheckAttInvPlayers(c.Tile, true, tile, target))
                                     return false;
-                            foreach (Ship s in p.GetShips())
-                                if (!CheckAttInvPlayers(s.Tile, false, tile, target))
-                                    return false;
+                            if (!p.IsTurn)
+                                foreach (Ship s in p.GetShips())
+                                    if (!CheckAttInvPlayers(s.Tile, false, tile, target))
+                                        return false;
 
                             CreateTeleporter(tile, target);
                             return true;

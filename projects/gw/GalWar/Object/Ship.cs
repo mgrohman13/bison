@@ -205,7 +205,10 @@ namespace GalWar
 
         internal void LoseMove()
         {
-            Player.GoldIncome(GetUpkeepReturn(CurSpeed));
+            if (!Player.IsTurn)
+                throw new Exception();
+
+            Player.GoldIncome(GetUpkeepReturn());
             this.CurSpeed = 0;
         }
 
@@ -217,7 +220,7 @@ namespace GalWar
         }
         internal double GetUpkeepReturn(double speedLeft)
         {
-            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this._upkeep;
+            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.Upkeep;
         }
 
         internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)

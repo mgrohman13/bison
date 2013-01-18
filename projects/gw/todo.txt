@@ -22,14 +22,13 @@ management screens
 	colonies
 	ships
 
-rethink pull/push checks - someone always has to get jump if land next to each other
 exploring ship cannot get sucked in by wormhole
 colony ships can have trans drop to 0
 anomaly always gives something to explorer
 	wormhole
 	pct of value as income is lame
 anomaly colony make sure cant be invaded, weights enemy player choice
-colony ship enemy player more likely to be closer player
+anomaly colony go through possible players in order of proximity
 undo
 	Ship.Disband
 	Ship.Colonize
