@@ -19,7 +19,7 @@ namespace GalWar
                     int x2 = tile.X + x;
                     int y2 = tile.Y + y;
                     //check this is inside map bounds and truly a neighbor in the hexagonal grid
-                    if (x2 >= 0 && y2 >= 0 && x2 < tile.Game.Diameter && y2 < tile.Game.Diameter && IsNeighbor(tile.X, tile.Y, x2, y2))
+                    if (x2 >= 0 && y2 >= 0 && x2 < tile.Game.Diameter && y2 < tile.Game.Diameter && IsNeighbor(tile, x2, y2))
                     {
                         Tile t = map[x2, y2];
                         //coordinates may be outside the playing area, represented by a null tile
@@ -27,23 +27,42 @@ namespace GalWar
                             neighbors.Add(t);
                     }
                 }
+            //add teleport destination if there is one
+            Tile teleporter = tile.Teleporter;
+            if (teleporter != null)
+                neighbors.Add(teleporter);
             return neighbors;
         }
 
         public static bool IsNeighbor(Tile tile1, Tile tile2)
         {
-            return IsNeighbor(tile1.X, tile1.Y, tile2.X, tile2.Y);
-        }
-        public static bool IsNeighbor(int x1, int y1, int x2, int y2)
-        {
-            return ( GetDistance(x1, y1, x2, y2) == 1 );
+            return IsNeighbor(tile1, tile2.X, tile2.Y);
         }
 
         public static int GetDistance(Tile tile1, Tile tile2)
         {
-            return GetDistance(tile1.X, tile1.Y, tile2.X, tile2.Y);
+            return GetDistance(tile1, tile2.X, tile2.Y);
         }
-        public static int GetDistance(int x1, int y1, int x2, int y2)
+
+        private static bool IsNeighbor(Tile tile, int x, int y)
+        {
+            return ( GetDistance(tile, x, y) == 1 );
+        }
+        private static int GetDistance(Tile tile, int x, int y)
+        {
+            int dist = GetRawDistance(tile.X, tile.Y, x, y);
+            if (dist > 1)
+                foreach (Tuple<Tile, Tile> teleporter in tile.Game.GetTeleporters())
+                    dist = Math.Min(dist, Math.Min(GetTeleporterDistance(tile.X, tile.Y, x, y, teleporter),
+                            GetTeleporterDistance(x, y, tile.X, tile.Y, teleporter)));
+            return dist;
+        }
+        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Tile, Tile> teleporter)
+        {
+            return 1 + GetRawDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y)
+                    + GetRawDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y);
+        }
+        private static int GetRawDistance(int x1, int y1, int x2, int y2)
         {
             int yDist = Math.Abs(y2 - y1);
             int xDist = Math.Abs(x2 - x1) - yDist / 2;
@@ -110,6 +129,29 @@ namespace GalWar
 
                 this._spaceObject = value;
             }
+        }
+
+        public Tile Teleporter
+        {
+            get
+            {
+                int index;
+                return GetTeleporter(out index);
+            }
+        }
+        public Tile GetTeleporter(out int index)
+        {
+            index = 0;
+            foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
+            {
+                ++index;
+                if (teleporter.Item1 == this)
+                    return teleporter.Item2;
+                else if (teleporter.Item2 == this)
+                    return teleporter.Item1;
+            }
+            index = -1;
+            return null;
         }
 
         public override string ToString()

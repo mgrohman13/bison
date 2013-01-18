@@ -1,3 +1,5 @@
+wormhole teleport enemy to target tile brought up combat form
+Planet.Player
 tooo many floats
 callback prevention choking out obsolete, maybe others (buy/sell prod?)
 make sure all setters use checked context
@@ -20,7 +22,12 @@ management screens
 	colonies
 	ships
 
-random tile helper method
+rethink pull/push checks - someone always has to get jump if land next to each other
+exploring ship cannot get sucked in by wormhole
+colony ships can have trans drop to 0
+anomaly always gives something to explorer
+	wormhole
+	pct of value as income is lame
 anomaly colony make sure cant be invaded, weights enemy player choice
 colony ship enemy player more likely to be closer player
 undo

@@ -346,7 +346,7 @@ namespace GalWar
                 Player oneInv, oneAtt;
                 bool twoInv, twoAtt;
                 GetAttInvPlayers(tile, ship, out oneInv, out twoInv, out oneAtt, out twoAtt);
-                if (oneAtt != ship.Player && !twoAtt)
+                if (!twoAtt && ( oneAtt == null || oneAtt == ship.Player ))
                 {
                     ship.Teleport(tile);
                     return true;
@@ -366,7 +366,7 @@ namespace GalWar
                 bool colony = ( p.Colony != null );
                 if (!twoInv || !colony)
                     AddPullChance(objects, oneInv, p, colony ? p.Colony.Player : null,
-                            ( colony ? 16.9 : 13.0 ) * ( twoAtt ? 1.69 : ( ( oneInv == null ) ? 1.0 : 1.3 ) ));
+                            ( colony ? 16.9 : 13.0 ) * ( twoAtt ? 1.69 : ( ( twoInv || ( oneInv != null ) || ( oneAtt != null ) ) ? 1.3 : 1.0 ) ));
             }
             if (!twoAtt)
                 foreach (Player p in Game.Random.Iterate(Tile.Game.GetPlayers()))
@@ -377,15 +377,14 @@ namespace GalWar
             {
                 ISpaceObject teleport = Game.Random.SelectValue(objects);
                 Ship s = teleport as Ship;
-                Planet p;
                 if (s != null)
                 {
                     s.LoseMove();
                     s.Teleport(Tile);
                 }
-                else if (( p = teleport as Planet ) != null)
+                else
                 {
-                    p.Teleport(Tile);
+                    ( (Planet)teleport ).Teleport(Tile);
                 }
                 return true;
             }
@@ -397,7 +396,9 @@ namespace GalWar
             if (can == null || p == null || p == can)
             {
                 double avg = Tile.Game.Diameter / div / ( Tile.GetDistance(Tile, o.Tile) + 3.9 ) * 2.6;
-                if (avg < 1)
+                if (avg > 1)
+                    avg = Math.Sqrt(avg);
+                else
                     avg *= avg;
                 int amt = Game.Random.OEInt(avg);
                 if (amt > 0)
@@ -452,8 +453,9 @@ namespace GalWar
                 }
                 else if (one != o.Player)
                 {
+                    one = null;
                     two = true;
-                    break;
+                    return;
                 }
         }
         internal static HashSet<ISpaceObject> GetAttInv(Tile tile, Ship ship, bool inv)
@@ -475,44 +477,45 @@ namespace GalWar
 
             foreach (Player p in tile.Game.GetPlayers())
                 foreach (Ship s in p.GetShips())
-                {
-                    bool add = false;
+                    if (s.Tile != tile)
+                    {
+                        bool add = false;
 
-                    int diff = GetSpeed(ship, s) - Tile.GetDistance(tile, s.Tile);
-                    if (inv)
-                    {
-                        if (diff > -2)
-                            if (s.Population > 0 || s.DeathStar)
-                            {
-                                add = true;
-                                goto _add;
-                            }
-                            else if (s.FreeSpace > 0)
-                            {
-                                //check if the ship could conceivably pick up some population
-                                foreach (Colony c in p.GetColonies())
-                                    if (c.AvailablePop > 0 && GetSpeed(ship, s) > Tile.GetDistance(s.Tile, c.Tile) - 2)
-                                    {
-                                        add = true;
-                                        goto _add;
-                                    }
-                                foreach (Ship s2 in p.GetShips())
-                                    if (s2.AvailablePop > 0 && GetSpeed(ship, s) + GetSpeed(ship, s2) > Tile.GetDistance(s.Tile, s2.Tile) - 2)
-                                    {
-                                        add = true;
-                                        goto _add;
-                                    }
-                            }
-                    }
-                    else if (diff > -1)
-                    {
-                        add = true;
-                        goto _add;
-                    }
+                        int diff = GetSpeed(ship, s) - Tile.GetDistance(tile, s.Tile);
+                        if (inv)
+                        {
+                            if (diff > -2)
+                                if (s.Population > 0 || s.DeathStar)
+                                {
+                                    add = true;
+                                    goto _add;
+                                }
+                                else if (s.FreeSpace > 0)
+                                {
+                                    //check if the ship could conceivably pick up some population
+                                    foreach (Colony c in p.GetColonies())
+                                        if (c.AvailablePop > 0 && GetSpeed(ship, s) > Tile.GetDistance(s.Tile, c.Tile) - 2)
+                                        {
+                                            add = true;
+                                            goto _add;
+                                        }
+                                    foreach (Ship s2 in p.GetShips())
+                                        if (s2.AvailablePop > 0 && GetSpeed(ship, s) + GetSpeed(ship, s2) > Tile.GetDistance(s.Tile, s2.Tile) - 2)
+                                        {
+                                            add = true;
+                                            goto _add;
+                                        }
+                                }
+                        }
+                        else if (diff > -1)
+                        {
+                            add = true;
+                            goto _add;
+                        }
 _add:
-                    if (add)
-                        retVal.Add(s);
-                }
+                        if (add)
+                            retVal.Add(s);
+                    }
 
             return retVal;
         }

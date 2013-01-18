@@ -237,14 +237,14 @@ namespace GalWarWin
                             {
                                 RectangleF rect = new RectangleF(startX + scale * x + ( y % 2 == 0 ? 0 : scale / 2f ), 2 + scale * y, scale, scale);
 
+                                DrawBorder(g, tile, rect, scale);
+
                                 Ship ship;
                                 Planet planet;
                                 if (( planet = ( tile.SpaceObject as Planet ) ) != null)
                                     DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
                                 else if (( ship = ( tile.SpaceObject as Ship ) ) != null)
                                     DrawShip(g, scale, rect, ship, minStr, maxStr);
-
-                                DrawBorder(g, tile, rect);
 
                                 if (moves != null)
                                 {
@@ -285,7 +285,7 @@ namespace GalWarWin
             max = (float)Math.Max(max, Math.Sqrt(value));
         }
 
-        private void DrawBorder(Graphics g, Tile tile, RectangleF rect)
+        private void DrawBorder(Graphics g, Tile tile, RectangleF rect, float scale)
         {
             Planet planet = tile.SpaceObject as Planet;
             Ship ship = tile.SpaceObject as Ship;
@@ -301,8 +301,10 @@ namespace GalWarWin
             if (tile == this.dialogTile)
                 ++size;
 
+            if (tile.Teleporter != null)
+                g.FillRectangle(Brushes.DarkGray, rect);
             if (tile.SpaceObject is Anomaly)
-                g.FillRectangle(Brushes.Gray, rect.X, rect.Y, rect.Width, rect.Height);
+                g.FillRectangle(Brushes.White, Inflate(scale, rect, 1, 1, 1, .6f, .13f));
             g.DrawRectangle(new Pen(Color.White, size), rect.X, rect.Y, rect.Width, rect.Height);
         }
 
@@ -1531,6 +1533,11 @@ namespace GalWarWin
                     player = PlanetInfo(planet);
                 else if (GetSelectedSpaceObject() is Anomaly)
                     this.lblTop.Text = "Anomaly";
+
+                int telNum;
+                Tile teleporter = this.selectedTile.GetTeleporter(out telNum);
+                if (teleporter != null)
+                    this.lblTop.Text = "Wormhole " + telNum + ( this.lblTop.Text.Length > 0 ? " - " + this.lblTop.Text : "" );
 
                 if (player != null)
                     PlayerInfo(player);

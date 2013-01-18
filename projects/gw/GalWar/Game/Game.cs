@@ -408,6 +408,11 @@ next_planet:
             return (Tile[,])this.map.Clone();
         }
 
+        public ReadOnlyCollection<Tuple<Tile, Tile>> GetTeleporters()
+        {
+            return this.teleporters.AsReadOnly();
+        }
+
         //research is given only as a percentage of the amount needed to win the game
         public Dictionary<Player, double> GetResearch()
         {
@@ -542,14 +547,17 @@ next_planet:
             if (Game.Random.Bool(1.0 / chance))
             {
                 Tile target = GetRandomTile();
-                if (Tile.GetDistance(tile, target) > 1)
+                //check if the tiles are too close to be useful or if either tile already has a teleporter
+                if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null)
                 {
+                    //check this will not make any planets be too close
                     int closeThis = int.MaxValue, closTrg = int.MaxValue;
                     foreach (Planet planet in this.planets)
                     {
                         closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
                         closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
                     }
+
                     //check and make sure enemies cannot be attacked/invaded
                     if (closeThis + closTrg + 1 > Consts.PlanetDistance)
                         foreach (Player p in this.players)
@@ -574,7 +582,7 @@ next_planet:
             Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
             HashSet<ISpaceObject> after = Anomaly.GetAttInv(objTile, null, inv);
             RemoveTeleporter(teleporter);
-            return ( !after.IsSubsetOf(before) );
+            return ( after.IsSubsetOf(before) );
         }
         private Tuple<Tile, Tile> CreateTeleporter(Tile t1, Tile t2)
         {
@@ -600,7 +608,7 @@ next_planet:
             if (Tile.GetNeighbors(tile).Count < 6)
                 return false;
             foreach (Planet planet in this.planets)
-                if (Tile.GetDistance(tile.X, tile.Y, planet.Tile.X, planet.Tile.Y) <= Consts.PlanetDistance)
+                if (Tile.GetDistance(tile, planet.Tile) <= Consts.PlanetDistance)
                     return false;
             return true;
         }
