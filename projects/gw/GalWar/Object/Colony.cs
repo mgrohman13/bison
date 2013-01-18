@@ -731,7 +731,7 @@ namespace GalWar
 
         public void SellProduction(IEventHandler handler, int production)
         {
-            handler = new HandlerWrapper(handler, this.Player.Game, false);
+            handler = new HandlerWrapper(handler, this.Player.Game, false, true);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production <= this.production);
@@ -753,7 +753,7 @@ namespace GalWar
         }
         public void BuyProduction(IEventHandler handler, int production)
         {
-            handler = new HandlerWrapper(handler, this.Player.Game, false);
+            handler = new HandlerWrapper(handler, this.Player.Game, false, true);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
             AssertException.Assert(production / Consts.GoldForProduction < this.Player.Gold);
@@ -957,23 +957,42 @@ namespace GalWar
             this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, cost);
         }
 
+
         internal void BuildPlanetDefense(double prodInc)
+        {
+            BuildPlanetDefense(prodInc, false);
+        }
+        internal void BuildPlanetDefense(double prodInc, bool attAndDef)
         {
             double prod = ( this.production + prodInc );
             if (prod > Consts.FLOAT_ERROR)
             {
                 prod /= 2;
 
-                double newAtt, newDef, newHP;
-                GetPlanetDefenseInc(this.Buildable, prod, out newAtt, out newDef, out newHP);
-                ModPD(this.PlanetDefenseCost + prod, newAtt, newDef);
+                if (attAndDef)
+                    BuildAttAndDef(prod);
+                else
+                    BuildPlanetDefense(prod, this.Buildable);
 
                 BuildSoldiers(prod);
             }
 
             this.production = 0;
         }
-        private void BuildSoldiers(double prod)
+        internal void BuildAttAndDef(double prod)
+        {
+            bool b = Game.Random.Bool();
+            BuildPlanetDefense(prod / 2.0, b ? (Buildable)new Attack() : new Defense());
+            BuildPlanetDefense(prod / 2.0, b ? (Buildable)new Defense() : new Attack());
+        }
+        private void BuildPlanetDefense(double prod, Buildable build)
+        {
+            double newAtt, newDef, newHP;
+            GetPlanetDefenseInc(build, prod, out newAtt, out newDef, out newHP);
+            ModPD(this.PlanetDefenseCost + prod, newAtt, newDef);
+        }
+
+        internal void BuildSoldiers(double prod)
         {
             this.Soldiers += Consts.GetExperience(prod / Consts.ProductionForSoldiers);
         }

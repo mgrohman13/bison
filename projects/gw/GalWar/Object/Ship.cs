@@ -469,8 +469,13 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return Consts.DisbandPct * this.cost * this.HP / this.MaxHP;
+                return GetDisbandValue(this.HP);
             }
+        }
+
+        internal double GetDisbandValue(double hp)
+        {
+            return ( Consts.DisbandPct * this.cost * hp / this.MaxHP );
         }
 
         public double ColonizationValue

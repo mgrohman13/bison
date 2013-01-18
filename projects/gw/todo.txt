@@ -1,7 +1,7 @@
+clean up anomaly methods
 wormhole teleport enemy to target tile brought up combat form
 Planet.Player
 tooo many floats
-callback prevention choking out obsolete, maybe others (buy/sell prod?)
 make sure all setters use checked context
 GetBuildingDefense
 see free damage enemy will get vs friendly colony
@@ -22,13 +22,13 @@ management screens
 	colonies
 	ships
 
-exploring ship cannot get sucked in by wormhole
-colony ships can have trans drop to 0
-anomaly always gives something to explorer
-	wormhole
-	pct of value as income is lame
-anomaly colony make sure cant be invaded, weights enemy player choice
-anomaly colony go through possible players in order of proximity
+anomaly comments
+	apocterra
+	death
+	exp
+	new ones
+clean up Explore notifications
+bring back move soldiers but make value smaller
 undo
 	Ship.Disband
 	Ship.Colonize
@@ -36,10 +36,8 @@ undo
 		manual change always rounds down?
 	Colony.DisbandPlanetDefense
 		prod rounds constantly, like gold?
-repair micromanagement
-	cost incentive
-		certain specific value?
-		pct you have been doing?
+
+anomaly neutral ships?
 
 known enemy designs
 AI

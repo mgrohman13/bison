@@ -844,7 +844,7 @@ namespace GalWar
         //additionalLossPct and accountForIncome are only there to be passed back into the handler; they do not affect the call itself
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign, bool accountForIncome, params double[] additionalLosses)
         {
-            handler = new HandlerWrapper(handler, this.Game, false);
+            handler = new HandlerWrapper(handler, this.Game, false, true);
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));

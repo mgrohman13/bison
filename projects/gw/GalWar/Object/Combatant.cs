@@ -107,11 +107,18 @@ namespace GalWar
                 damage = startHP;
             }
 
-            combatant.HP -= damage;
-
-            experience += combatant.GetExpForDamage(damage);
+            experience += combatant.Damage(damage);
 
             return retVal;
+        }
+        internal double Damage(int damage)
+        {
+            if (damage > HP)
+                throw new Exception();
+
+            HP -= damage;
+
+            return GetExpForDamage(damage);
         }
 
         #endregion //protected

@@ -5,7 +5,7 @@ namespace GalWar
 {
     internal class HandlerWrapper : IEventHandler
     {
-        private static bool callback = false;
+        private static bool callback = false, special = false;
         private IEventHandler handler;
 
         internal HandlerWrapper(IEventHandler handler, Game game)
@@ -13,9 +13,13 @@ namespace GalWar
         {
         }
         internal HandlerWrapper(IEventHandler handler, Game game, bool clearStack)
+            : this(handler, game, clearStack, false)
+        {
+        }
+        internal HandlerWrapper(IEventHandler handler, Game game, bool clearStack, bool special)
         {
             AssertException.Assert(handler != null);
-            AssertException.Assert(!callback);
+            AssertException.Assert(!callback || ( HandlerWrapper.special && special ));
 
             this.handler = handler;
             ( (IEventHandler)this ).Event();
@@ -47,6 +51,7 @@ namespace GalWar
         Buildable IEventHandler.getNewBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
         {
             callback = true;
+            special = true;
 
             Buildable retVal;
 
@@ -63,6 +68,7 @@ namespace GalWar
             finally
             {
                 callback = false;
+                special = false;
             }
 
             if (colony.CanBuild(retVal))

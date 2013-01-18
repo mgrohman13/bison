@@ -72,7 +72,7 @@ namespace GalWar
                 *
                 ( speedValue )
                 +
-                ( 52.0 * Math.Pow(speed - 1.0, 1.69) )
+                ( 78.0 * Math.Pow(speed - 1.0, 1.69) )
             );
         }
 
@@ -591,7 +591,7 @@ namespace GalWar
             stats.Add(ModifyStat.HP, ( this.HP > 1 ? this.HP : 0 ));
             if (this.Speed > 1)
                 stats.Add(ModifyStat.Speed, Game.Random.Round(this.Speed * .39f));
-            if (this.Trans > ( forceTrans ? 1 : 0 ))
+            if (this.Trans > ( forceTrans || this.Colony ? 1 : 0 ))
                 stats.Add(ModifyStat.Trans, Game.Random.Round(this.Trans * 1.3f + .52f));
             if (this.DeathStar)
                 stats.Add(ModifyStat.DS, Game.Random.Round(this.BombardDamage * 2.1));
