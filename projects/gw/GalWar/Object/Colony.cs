@@ -1026,7 +1026,6 @@ namespace GalWar
             this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, cost);
         }
 
-
         internal void BuildPlanetDefense(double prodInc)
         {
             BuildPlanetDefense(prodInc, false);
