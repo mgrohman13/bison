@@ -1,3 +1,4 @@
+ResearchForm.newDefense
 clean up anomaly methods
 wormhole teleport enemy to target tile brought up combat form
 Planet.Player
@@ -26,16 +27,13 @@ anomaly comments
 	apocterra
 	death
 	exp
-	new ones
 clean up Explore notifications
-bring back move soldiers but make value smaller
 undo
 	Ship.Disband
-	Ship.Colonize
 	Colony.StartBuilding
 		manual change always rounds down?
-	Colony.DisbandPlanetDefense
-		prod rounds constantly, like gold?
+	Ship.Colonize
+		  Colony.ResetRounding();
 
 anomaly neutral ships?
 

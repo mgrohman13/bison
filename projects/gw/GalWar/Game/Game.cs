@@ -735,6 +735,7 @@ next_planet:
         internal delegate Tile UndoMethod<T>(T arg);
         internal delegate Tile UndoMethod<T1, T2>(T1 arg1, T2 arg2);
         internal delegate Tile UndoMethod<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3);
+        internal delegate Tile UndoMethod<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
 
         internal interface IUndoCommand
         {
@@ -768,7 +769,6 @@ next_planet:
             {
             }
         }
-
         internal class UndoCommand<T1, T2, T3> : UndoCommand<Tuple<T1, T2, T3>>
         {
             public UndoCommand(UndoMethod<T1, T2, T3> UndoMethod, T1 arg1, T2 arg2, T3 arg3)
@@ -776,6 +776,16 @@ next_planet:
                 {
                     return UndoMethod(args.Item1, args.Item2, args.Item3);
                 }, new Tuple<T1, T2, T3>(arg1, arg2, arg3))
+            {
+            }
+        }
+        internal class UndoCommand<T1, T2, T3, T4> : UndoCommand<Tuple<T1, T2, T3, T4>>
+        {
+            public UndoCommand(UndoMethod<T1, T2, T3, T4> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+                : base(delegate(Tuple<T1, T2, T3, T4> args)
+                {
+                    return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4);
+                }, new Tuple<T1, T2, T3, T4>(arg1, arg2, arg3, arg4))
             {
             }
         }

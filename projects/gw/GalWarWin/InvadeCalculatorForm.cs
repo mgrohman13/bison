@@ -60,7 +60,7 @@ namespace GalWarWin
 
             SetRand(this.nudTroops, shipTrans, true);
             SetRand(this.nudPop, totPop, true);
-            SetRand(this.nudAttSoldiers, GetSoldiers((float)PopCarrier.GetSoldiers(
+            SetRand(this.nudAttSoldiers, GetSoldiers((float)PopCarrier.GetMoveSoldiers(
                     Game.Random.Round(totPop), totSoldiers, Game.Random.Round(shipTrans)), this.nudTroops), false);
             SetRand(this.nudDefSoldiers, GetSoldiers(totSoldiers, this.nudPop), false);
         }

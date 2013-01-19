@@ -87,7 +87,7 @@ namespace GalWar
         public const double ExpForGold = 1 / DisbandPct;
 
         public const double MovePopulationGoldCost = Income / 2;
-        public const double MoveSoldiersMult = 2.6;
+        public const double MoveSoldiersMult = 2.1;
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
         public const double TransLossMult = .65;

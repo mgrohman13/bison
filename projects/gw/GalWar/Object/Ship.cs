@@ -556,10 +556,13 @@ namespace GalWar
 
             bool gold = ( colony == null );
 
+            double goldAdded;
+            int prodAdded;
+
             if (gold)
                 this.Player.AddGold(DisbandValue);
             else
-                colony.AddProduction(DisbandValue);
+                colony.AddProduction(DisbandValue, false, out goldAdded, out prodAdded);
 
             Destroy(gold);
         }
@@ -585,7 +588,7 @@ namespace GalWar
 
             Move(tile, false);
         }
-        internal Tile UndoMove(Tile tile)
+        private Tile UndoMove(Tile tile)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(tile != null);
@@ -1213,7 +1216,7 @@ namespace GalWar
 
             GoldRepair(hp, false);
         }
-        internal Tile UndoGoldRepair(int hp)
+        private Tile UndoGoldRepair(int hp)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
@@ -1229,7 +1232,7 @@ namespace GalWar
             double spend = GetGoldForHP(hp);
             if (undo)
             {
-                this.HP -= hp;
+                base.SetHP(this.HP - hp);
                 this.Repair -= hp;
             }
             else

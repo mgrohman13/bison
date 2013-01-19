@@ -782,16 +782,17 @@ namespace GalWarWin
                 }
             }
 
-            double production = ship.DisbandValue;
-            double gold = Player.RoundGold(production) + Player.RoundGold(ship.GetDestroyGold());
+            int production = -1;
+            double gold = Player.RoundGold(ship.DisbandValue) + Player.RoundGold(ship.GetDestroyGold());
 
             Buildable buildable = null;
             if (colony != null && colony.Player.IsTurn)
+            {
                 buildable = colony.Buildable;
-            if (buildable is StoreProd)
-                production -= production * Consts.StoreProdLossPct;
+                production = colony.GetAddProduction(ship.DisbandValue);
+            }
 
-            if (buildable != null && ShowOption("Disband for " + FormatDouble(production) + " production?"))
+            if (buildable != null && ShowOption("Disband for " + production + " production?"))
                 ship.Disband(this, colony);
             else if (ShowOption("Disband for " + FormatDouble(gold) + " gold?"))
                 ship.Disband(this, null);

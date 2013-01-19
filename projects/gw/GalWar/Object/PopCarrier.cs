@@ -124,13 +124,13 @@ namespace GalWar
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
 
-            double soldiers = GetSoldiers(population);
+            double soldiers = GetMoveSoldiers(this.Population, this.Soldiers, population);
             MovePop(this, destination, population, soldiers, false);
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<PopCarrier, int, double>(
                     new Game.UndoMethod<PopCarrier, int, double>(UndoMovePop), destination, population, soldiers));
         }
-        internal Tile UndoMovePop(PopCarrier destination, int population, double soldiers)
+        private Tile UndoMovePop(PopCarrier destination, int population, double soldiers)
         {
             TurnException.CheckTurn(Player);
             AssertException.Assert(destination != null);
@@ -167,6 +167,22 @@ namespace GalWar
                 source.movedPop -= population;
             else
                 destination.movedPop += population;
+        }
+
+        public double GetMoveSoldiers(int movePop)
+        {
+            return GetMoveSoldiers(this.Population, this.Soldiers, movePop);
+        }
+        public static double GetMoveSoldiers(int population, double soldiers, int movePop)
+        {
+            double moveSoldiers = 0;
+            if (soldiers > Consts.FLOAT_ERROR)
+                if (population == movePop)
+                    moveSoldiers = soldiers;
+                else
+                    for (int mov = 1 ; mov <= movePop ; ++mov)
+                        moveSoldiers += ( soldiers - moveSoldiers ) * Consts.MoveSoldiersMult / ( Consts.MoveSoldiersMult + population - mov );
+            return moveSoldiers;
         }
 
         internal static double GetActualGoldCost(int population)
