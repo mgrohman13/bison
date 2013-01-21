@@ -50,7 +50,7 @@ namespace GalWarWin
 
         private MainForm dialog;
 
-        private bool emphasisEvent = true;
+        private bool emphasisEvent = true, anomExp = false;
 
         private Tile selectedTile = null;
         private HashSet<Ship> hold, holdPersistent;
@@ -1011,7 +1011,7 @@ namespace GalWarWin
 
                                 if (this.selectedTile != null && ( ship == null || ship.Player.IsTurn ))
                                     if (Tile.IsNeighbor(clickedTile, this.selectedTile))
-                                        selectNext &= RightClick(clickedTile);
+                                        selectNext &= RightClick(clickedTile, ref ship);
                                     else if (clickedTile == this.selectedTile)
                                         hold.Add(ship);
 
@@ -1071,7 +1071,7 @@ namespace GalWarWin
             }
         }
 
-        private bool RightClick(Tile adjacentTile)
+        private bool RightClick(Tile adjacentTile, ref Ship refShip)
         {
             bool selectNext = true;
 
@@ -1106,7 +1106,10 @@ namespace GalWarWin
                         else if (( trgPlanet = ( adjacentTile.SpaceObject as Planet ) ) != null)
                             selectNext &= TargetPlanet(trgPlanet, ship, switchTroops);
                         else if (( trgAnomaly = ( adjacentTile.SpaceObject as Anomaly ) ) != null)
+                        {
                             ship.Explore(this, trgAnomaly);
+                            refShip = null;
+                        }
                     }
                     catch (AssertException e)
                     {
@@ -1447,7 +1450,8 @@ namespace GalWarWin
 
             this.btnUndo.Enabled = Game.CanUndo();
 
-            CombatForm.OnRefresh();
+            CombatForm.OnRefresh(anomExp);
+            anomExp = false;
         }
 
         private void InvalidateMap()
@@ -1941,34 +1945,90 @@ namespace GalWarWin
 
         bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
         {
-            string str = anomalyType.ToString() + ":\r\n";
-            bool show = false;
-            foreach (object j in info)
+            switch (anomalyType)
             {
-                System.Collections.IEnumerable v = j as System.Collections.IEnumerable;
-                if (v == null || v is string)
-                    v = new object[] { j };
-                foreach (object o in v)
+
+            case Anomaly.AnomalyType.AskProductionOrDefense:
+                this.selectedTile = ( (Colony)info[0] ).Tile;
+                this.RefreshAll();
+                return ShowOption("Take +" + FormatDouble((double)info[1]) + " producton or build defenses?");
+
+            case Anomaly.AnomalyType.AskResearchOrGold:
+                return ShowOption("Take research or +" + FormatDouble((double)info[0]) + " gold?");
+
+            case Anomaly.AnomalyType.AskTerraform:
+                this.selectedTile = ( (Colony)info[0] ).Tile;
+                this.RefreshAll();
+                string inf = "Terraform planet?\r\n+" + info[1] + " Quality\r\n-" +
+                        FormatDouble((double)info[2]) + " Gold (" + FormatDouble((double)info[3]) + ")\r\nChances: ";
+                double[] chances = (double[])info[4];
+                Array.Sort(chances);
+                for (int a = chances.Length ; --a >= 0 ; )
                 {
-                    str += o.GetType().ToString() + " - " + o.ToString() + "\r\n";
-                    ISpaceObject s = o as ISpaceObject;
-                    Colony c = o as Colony;
-                    if (s != null || c != null)
-                    {
-                        if (show)
-                            MessageBox.Show("");
-                        Tile t;
-                        if (s != null)
-                            t = s.Tile;
-                        else
-                            t = c.Tile;
-                        this.selectedTile = t;
-                        this.RefreshAll();
-                        show = true;
-                    }
+                    inf += FormatDouble(chances[a]);
+                    if (a > 0)
+                        inf += ", ";
                 }
+                return ShowOption(inf);
+
+            case Anomaly.AnomalyType.Soldiers:
+            case Anomaly.AnomalyType.PlanetDefenses:
+            case Anomaly.AnomalyType.Production:
+            case Anomaly.AnomalyType.SoldiersAndDefense:
+                string msg = "";
+                if (info.Length > 0)
+                {
+                    this.selectedTile = ( (Colony)info[0] ).Tile;
+                    this.RefreshAll();
+                    msg = "+" + FormatDouble((double)info[1]) + " ";
+                }
+                MessageBox.Show(msg + Game.CamelToSpaces(anomalyType.ToString()) + "!");
+                return true;
+
+            case Anomaly.AnomalyType.Death:
+                MessageBox.Show("-" + info[0] + " HP!");
+                return true;
+
+            case Anomaly.AnomalyType.Gold:
+                MessageBox.Show("+" + FormatDouble((double)info[0]) + " Gold!");
+                return true;
+
+            case Anomaly.AnomalyType.LostColony:
+                string str = "Hostile";
+                if (( (Player)info[0] ).IsTurn)
+                    str = "Friendly";
+                MessageBox.Show(str + " Colony!");
+                return true;
+
+            case Anomaly.AnomalyType.PickupPopulation:
+                MessageBox.Show("Picked up " + info[0] + " population!");
+                return true;
+
+            case Anomaly.AnomalyType.PickupSoldiers:
+                MessageBox.Show("Picked up " + FormatDouble((double)info[0]) + " soldiers!");
+                return true;
+
+            case Anomaly.AnomalyType.SalvageShip:
+                string player = "Hostile";
+                if (( (Player)info[0] ).IsTurn)
+                    player = "Friendly";
+                MessageBox.Show(player + " Ship!");
+                return true;
+
+            case Anomaly.AnomalyType.Experience:
+                this.anomExp = true;
+                MessageBox.Show(Game.CamelToSpaces(anomalyType.ToString()) + "!");
+                return true;
+
+            case Anomaly.AnomalyType.Apocalypse:
+            case Anomaly.AnomalyType.NewPlanet:
+            case Anomaly.AnomalyType.PopulationGrowth:
+            case Anomaly.AnomalyType.Wormhole:
+                MessageBox.Show(Game.CamelToSpaces(anomalyType.ToString()) + "!");
+                return true;
+            default:
+                throw new Exception();
             }
-            return ( MessageBox.Show(str, "Explore", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes );
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)

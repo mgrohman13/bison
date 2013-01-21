@@ -64,7 +64,7 @@ namespace GalWar
             }
         }
 
-        protected void LosePopulation(int population)
+        internal void LosePopulation(int population)
         {
             if (population > this.Population)
                 population = this.Population;

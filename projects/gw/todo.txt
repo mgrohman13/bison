@@ -1,6 +1,5 @@
 ResearchForm.newDefense
 clean up anomaly methods
-wormhole teleport enemy to target tile brought up combat form
 Planet.Player
 tooo many floats
 make sure all setters use checked context
@@ -23,17 +22,10 @@ management screens
 	colonies
 	ships
 
-anomaly comments
-	apocterra
-	death
-	exp
-clean up Explore notifications
 undo
 	Ship.Disband
 	Colony.StartBuilding
 		manual change always rounds down?
-	Ship.Colonize
-		  Colony.ResetRounding();
 
 anomaly neutral ships?
 

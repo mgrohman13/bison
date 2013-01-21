@@ -486,9 +486,9 @@ end:
             Form.Flush();
         }
 
-        public static void OnRefresh()
+        public static void OnRefresh(bool show)
         {
-            if (Form.chkLog.Checked && Form.log.Count > 0)
+            if (( show || Form.chkLog.Checked ) && Form.log.Count > 0)
                 Form.ShowLog();
         }
 

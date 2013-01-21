@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using MattUtil;
 
 namespace GalWar
@@ -14,6 +15,11 @@ namespace GalWar
         #region static
 
         public static readonly MTRandom Random = new MTRandom();
+
+        public static string CamelToSpaces(string str)
+        {
+            return new Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])").Replace(str, " ${x}");
+        }
 
         #endregion //static
 
@@ -541,7 +547,7 @@ next_planet:
             }
         }
 
-        internal bool CreateTeleporter(Tile tile)
+        internal bool CreateTeleporter(IEventHandler handler, Tile tile)
         {
             double chance = Math.Pow(teleporters.Count + 1.3, 1.3);
             if (Game.Random.Bool(1.0 / chance))
@@ -563,12 +569,14 @@ next_planet:
                         foreach (Player p in this.players)
                         {
                             foreach (Colony c in p.GetColonies())
-                                if (!CheckAttInvPlayers(c.Tile, true, tile, target))
+                                if (!CheckAttInvPlayers(c.Planet, true, tile, target))
                                     return false;
                             if (!p.IsTurn)
                                 foreach (Ship s in p.GetShips())
-                                    if (!CheckAttInvPlayers(s.Tile, false, tile, target))
+                                    if (!CheckAttInvPlayers(s, false, tile, target))
                                         return false;
+
+                            handler.Explore(Anomaly.AnomalyType.Wormhole);
 
                             CreateTeleporter(tile, target);
                             return true;
@@ -577,13 +585,16 @@ next_planet:
             }
             return false;
         }
-        private bool CheckAttInvPlayers(Tile objTile, bool inv, Tile t1, Tile t2)
+        private bool CheckAttInvPlayers(ISpaceObject obj, bool inv, Tile t1, Tile t2)
         {
-            HashSet<ISpaceObject> before = Anomaly.GetAttInv(objTile, null, inv);
+            HashSet<ISpaceObject> before = Anomaly.GetAttInv(obj.Tile, null, inv);
             Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
-            HashSet<ISpaceObject> after = Anomaly.GetAttInv(objTile, null, inv);
+            HashSet<ISpaceObject> after = Anomaly.GetAttInv(obj.Tile, null, inv);
             RemoveTeleporter(teleporter);
-            return ( after.IsSubsetOf(before) );
+            foreach (ISpaceObject other in after)
+                if (other.Player != obj.Player && !before.Contains(other))
+                    return false;
+            return true;
         }
         private Tuple<Tile, Tile> CreateTeleporter(Tile t1, Tile t2)
         {
@@ -597,11 +608,14 @@ next_planet:
             this.teleporters.Remove(teleporter);
         }
 
-        internal Planet CreateAnomalyPlanet(Tile tile)
+        internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
         {
             if (Random.Bool((float)( this.planetPct / this.anomalyPct )))
                 if (CheckPlanetDistance(tile))
+                {
+                    handler.Explore(Anomaly.AnomalyType.NewPlanet);
                     return CreatePlanet(tile);
+                }
             return null;
         }
         internal bool CheckPlanetDistance(Tile tile)

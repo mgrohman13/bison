@@ -121,7 +121,7 @@ namespace GalWar
         }
 
         internal ShipDesign(Player player, int research, int mapSize, double minCost, double maxCost)
-            : this(research, player.GetShipDesigns(), mapSize, false, false, false, player.ResearchFocus, minCost, maxCost)
+            : this(research, player.GetShipDesigns(), mapSize, false, false, false, player.GetResearchFocus(), minCost, maxCost)
         {
             this.NameShip(player, true);
         }

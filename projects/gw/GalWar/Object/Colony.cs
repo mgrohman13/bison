@@ -1179,6 +1179,9 @@ namespace GalWar
         }
         private static int GetPDStat(double target, int current, int max)
         {
+            if (target == current)
+                return current;
+
             float add = (float)( target - current );
 
             int min = 1;

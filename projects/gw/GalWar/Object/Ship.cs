@@ -272,14 +272,27 @@ namespace GalWar
         {
             Destroy(addGold, false);
         }
+        internal void Destroy(bool addGold, out double goldAdded)
+        {
+            Destroy(addGold, true, out goldAdded);
+        }
         internal void Destroy(bool addGold, bool random)
+        {
+            double goldAdded;
+            Destroy(addGold, random, out goldAdded);
+        }
+        internal void Destroy(bool addGold, bool random, out double goldAdded)
         {
             if (this.Dead)
                 throw new Exception();
 
             double destroyGold = GetDestroyGold();
+            goldAdded = 0;
             if (addGold)
-                this.Player.AddGold(destroyGold, random);
+                if (random)
+                    this.Player.AddGold(destroyGold, out goldAdded);
+                else
+                    this.Player.AddGold(destroyGold);
             else
                 this.Player.GoldIncome(destroyGold);
 
@@ -550,21 +563,46 @@ namespace GalWar
 
         public void Disband(IEventHandler handler, Colony colony)
         {
-            handler = new HandlerWrapper(handler, this.Player.Game);
+            handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
             bool gold = ( colony == null );
 
-            double goldAdded;
-            int prodAdded;
+            int population = this.Population;
+            double soldiers = this.Soldiers;
+            float curExp = this.curExp;
+            int curSpeed = this.CurSpeed;
+            int production = 0;
+            double addGold, goldIncome = GetDestroyGold();
+
+            Destroy(gold, out addGold);
+
+            goldIncome -= addGold;
 
             if (gold)
-                this.Player.AddGold(DisbandValue);
+            {
+                addGold += DisbandValue;
+                this.Player.AddGold(addGold);
+            }
             else
-                colony.AddProduction(DisbandValue, false, out goldAdded, out prodAdded);
+            {
+                double moreGoldIncome;
+                colony.AddProduction(DisbandValue, false, out moreGoldIncome, out production);
+                goldIncome += moreGoldIncome;
+            }
 
-            Destroy(gold);
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony>(
+                    new Game.UndoMethod<Colony>(UndoDisband), colony));
+        }
+        private Tile UndoDisband(Colony colony)
+        {
+            throw new NotImplementedException();
+
+            this.Player.AddShip(this);
+            this.Tile.SpaceObject = this;
+
+            return this.Tile;
         }
 
         internal void Teleport(Tile tile)

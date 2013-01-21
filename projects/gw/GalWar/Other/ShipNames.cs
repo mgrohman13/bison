@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 namespace GalWar
@@ -142,8 +141,7 @@ namespace GalWar
 
         internal static string GetName(byte name, byte mark)
         {
-            Regex r = new Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])");
-            return r.Replace(( (ShipClass)name ).ToString(), " ${x}") + " " + NumberToRoman(mark);
+            return Game.CamelToSpaces(( (ShipClass)name ).ToString()) + " " + NumberToRoman(mark);
         }
 
         private static readonly byte[] values = new byte[] { 90, 50, 40, 10, 9, 5, 4, 1 };

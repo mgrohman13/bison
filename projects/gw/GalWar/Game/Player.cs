@@ -294,7 +294,7 @@ namespace GalWar
 
         private void NewShipDesign(IEventHandler handler, int designResearch)
         {
-            NewShipDesign(handler, new ShipDesign(designResearch, this.GetShipDesigns(), this.Game.MapSize, this.ResearchFocus));
+            NewShipDesign(handler, new ShipDesign(designResearch, this.GetShipDesigns(), this.Game.MapSize, GetResearchFocus()));
         }
         private void NewShipDesign(IEventHandler handler, ShipDesign newDesign)
         {
@@ -441,7 +441,7 @@ namespace GalWar
         internal Ship NewShip(IEventHandler handler, Tile tile, ShipDesign design)
         {
             Ship ship = new Ship(handler, this, tile, design);
-            this.ships.Add(ship);
+            AddShip(ship);
             return ship;
         }
 
@@ -454,6 +454,10 @@ namespace GalWar
         internal void RemoveShip(Ship ship)
         {
             this.ships.Remove(ship);
+        }
+        internal void AddShip(Ship ship)
+        {
+            this.ships.Add(ship);
         }
 
         internal void AddGold(double gold)
@@ -619,6 +623,8 @@ namespace GalWar
 
         public bool IsFocusing(ShipDesign.FocusStat check)
         {
+            TurnException.CheckTurn(this);
+
             return ShipDesign.IsFocusing(ResearchFocus, check);
         }
         public ShipDesign.FocusStat ResearchFocus
@@ -627,7 +633,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return this._researchFocus;
+                return GetResearchFocus();
             }
             set
             {
@@ -637,6 +643,10 @@ namespace GalWar
 
                 this._researchFocus = value;
             }
+        }
+        internal ShipDesign.FocusStat GetResearchFocus()
+        {
+            return this._researchFocus;
         }
         public ShipDesign ResearchFocusDesign
         {
