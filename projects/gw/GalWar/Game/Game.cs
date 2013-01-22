@@ -750,6 +750,7 @@ next_planet:
         internal delegate Tile UndoMethod<T1, T2>(T1 arg1, T2 arg2);
         internal delegate Tile UndoMethod<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3);
         internal delegate Tile UndoMethod<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+        internal delegate Tile UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8);
 
         internal interface IUndoCommand
         {
@@ -777,9 +778,9 @@ next_planet:
         {
             public UndoCommand(UndoMethod<T1, T2> UndoMethod, T1 arg1, T2 arg2)
                 : base(delegate(Tuple<T1, T2> args)
-                {
-                    return UndoMethod(args.Item1, args.Item2);
-                }, new Tuple<T1, T2>(arg1, arg2))
+                    {
+                        return UndoMethod(args.Item1, args.Item2);
+                    }, new Tuple<T1, T2>(arg1, arg2))
             {
             }
         }
@@ -787,9 +788,9 @@ next_planet:
         {
             public UndoCommand(UndoMethod<T1, T2, T3> UndoMethod, T1 arg1, T2 arg2, T3 arg3)
                 : base(delegate(Tuple<T1, T2, T3> args)
-                {
-                    return UndoMethod(args.Item1, args.Item2, args.Item3);
-                }, new Tuple<T1, T2, T3>(arg1, arg2, arg3))
+                    {
+                        return UndoMethod(args.Item1, args.Item2, args.Item3);
+                    }, new Tuple<T1, T2, T3>(arg1, arg2, arg3))
             {
             }
         }
@@ -797,9 +798,19 @@ next_planet:
         {
             public UndoCommand(UndoMethod<T1, T2, T3, T4> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
                 : base(delegate(Tuple<T1, T2, T3, T4> args)
-                {
-                    return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4);
-                }, new Tuple<T1, T2, T3, T4>(arg1, arg2, arg3, arg4))
+                    {
+                        return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4);
+                    }, new Tuple<T1, T2, T3, T4>(arg1, arg2, arg3, arg4))
+            {
+            }
+        }
+        internal class UndoCommand<T1, T2, T3, T4, T5, T6, T7, T8> : UndoCommand<Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>>>
+        {
+            public UndoCommand(UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
+                : base(delegate(Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>> args)
+                    {
+                        return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4, args.Item5, args.Item6, args.Item7, args.Rest.Item1);
+                    }, new Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>>(arg1, arg2, arg3, arg4, arg5, arg6, arg7, new Tuple<T8>(arg8)))
             {
             }
         }

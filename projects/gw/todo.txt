@@ -22,11 +22,6 @@ management screens
 	colonies
 	ships
 
-undo
-	Ship.Disband
-	Colony.StartBuilding
-		manual change always rounds down?
-
 anomaly neutral ships?
 
 known enemy designs

@@ -137,7 +137,7 @@ namespace GalWar
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= destination.Population);
             AssertException.Assert(population <= this.FreeSpace);
-            AssertException.Assert(soldiers <= destination.Soldiers);
+            AssertException.Assert(soldiers < destination.Soldiers + Consts.FLOAT_ERROR );
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
 

@@ -832,7 +832,20 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
-            SetBuildable(newBuild, GetLossPct(newBuild));
+            double loss = Math.Ceiling(this.production * GetLossPct(newBuild));
+
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int>(
+                    new Game.UndoMethod<Buildable, int>(UndoStartBuilding), this.Buildable, (int)loss));
+
+            SetBuildable(newBuild, loss / this.Production);
+        }
+        private Tile UndoStartBuilding(Buildable oldBuild, int loss)
+        {
+            this._buildable = oldBuild;
+            this.production += loss;
+            this.Player.AddGold(-loss / Consts.ProductionForGold);
+
+            return this.Tile;
         }
 
         public double GetLossPct(Buildable newBuild)

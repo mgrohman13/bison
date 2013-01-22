@@ -137,7 +137,7 @@ namespace GalWar
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
 
-        public const double FLOAT_ERROR = 0.00000013;
+        public const double FLOAT_ERROR = 0.00000095367431640625;
 
         internal static int NewPlanetQuality()
         {

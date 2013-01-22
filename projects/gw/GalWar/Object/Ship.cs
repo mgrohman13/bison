@@ -272,27 +272,14 @@ namespace GalWar
         {
             Destroy(addGold, false);
         }
-        internal void Destroy(bool addGold, out double goldAdded)
-        {
-            Destroy(addGold, true, out goldAdded);
-        }
         internal void Destroy(bool addGold, bool random)
-        {
-            double goldAdded;
-            Destroy(addGold, random, out goldAdded);
-        }
-        internal void Destroy(bool addGold, bool random, out double goldAdded)
         {
             if (this.Dead)
                 throw new Exception();
 
             double destroyGold = GetDestroyGold();
-            goldAdded = 0;
             if (addGold)
-                if (random)
-                    this.Player.AddGold(destroyGold, out goldAdded);
-                else
-                    this.Player.AddGold(destroyGold);
+                this.Player.AddGold(destroyGold, random);
             else
                 this.Player.GoldIncome(destroyGold);
 
@@ -567,37 +554,66 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
-            bool gold = ( colony == null );
+            bool isGold = ( colony == null );
 
             int population = this.Population;
             double soldiers = this.Soldiers;
             float curExp = this.curExp;
             int curSpeed = this.CurSpeed;
             int production = 0;
-            double addGold, goldIncome = GetDestroyGold();
+            double addGold = 0, goldIncome;
 
-            Destroy(gold, out addGold);
-
-            goldIncome -= addGold;
-
-            if (gold)
+            if (isGold)
             {
-                addGold += DisbandValue;
-                this.Player.AddGold(addGold);
+                addGold = Player.RoundGold(DisbandValue) + Player.RoundGold(GetDestroyGold());
+                goldIncome = DisbandValue - addGold;
+
+                this.Player.AddGold(DisbandValue);
             }
             else
             {
-                double moreGoldIncome;
-                colony.AddProduction(DisbandValue, false, out moreGoldIncome, out production);
-                goldIncome += moreGoldIncome;
+                colony.AddProduction(DisbandValue, false, out goldIncome, out production);
             }
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony>(
-                    new Game.UndoMethod<Colony>(UndoDisband), colony));
+            goldIncome += GetDestroyGold();
+
+            Destroy(isGold);
+
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony, int, double, float, int, int, double, double>(
+                    new Game.UndoMethod<Colony, int, double, float, int, int, double, double>(UndoDisband),
+                    colony, population, soldiers, curExp, curSpeed, production, addGold, goldIncome));
         }
-        private Tile UndoDisband(Colony colony)
+        private Tile UndoDisband(Colony colony, int population, double soldiers, float curExp, int curSpeed, int production, double addGold, double goldIncome)
         {
-            throw new NotImplementedException();
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(population >= 0);
+            AssertException.Assert(population <= this.MaxPop);
+            AssertException.Assert(soldiers >= 0);
+            AssertException.Assert(curExp >= 0);
+            AssertException.Assert(curSpeed >= 0);
+            AssertException.Assert(curSpeed <= this.MaxSpeed);
+            AssertException.Assert(addGold >= 0);
+            AssertException.Assert(goldIncome > -.2);
+            if (colony == null)
+            {
+                AssertException.Assert(production == 0);
+                AssertException.Assert(addGold < this.Player.Gold);
+            }
+            else
+            {
+                AssertException.Assert(production >= 0);
+                AssertException.Assert(addGold == 0);
+            }
+
+            this.Population = population;
+            this.Soldiers = soldiers;
+            this.curExp = curExp;
+            this.CurSpeed = curSpeed;
+
+            if (colony != null)
+                colony.UndoAddProduction(production);
+            this.Player.AddGold(-addGold);
+            this.Player.GoldIncome(-goldIncome);
 
             this.Player.AddShip(this);
             this.Tile.SpaceObject = this;

@@ -122,9 +122,9 @@ namespace GalWarWin
             this.sdForm.SetBuildable(newBuild);
             this.chkObsolete.Checked = true;
 
-            double lossAmt = GetLossPct(newBuild) * colony.Production;
+            int lossAmt = (int)Math.Ceiling(GetLossPct(newBuild) * colony.Production);
             if (lossAmt > 0)
-                this.lblProdLoss.Text = "-" + MainForm.FormatDouble(lossAmt) + " production";
+                this.lblProdLoss.Text = "-" + lossAmt + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
             this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Production - lossAmt);
