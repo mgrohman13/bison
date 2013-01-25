@@ -832,12 +832,15 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
-            double loss = Math.Ceiling(this.production * GetLossPct(newBuild));
+            if (this.Buildable != newBuild)
+            {
+                double loss = Math.Ceiling(this.production * GetLossPct(newBuild));
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int>(
-                    new Game.UndoMethod<Buildable, int>(UndoStartBuilding), this.Buildable, (int)loss));
+                Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int>(
+                        new Game.UndoMethod<Buildable, int>(UndoStartBuilding), this.Buildable, (int)loss));
 
-            SetBuildable(newBuild, loss / this.Production);
+                SetBuildable(newBuild, loss / ( this.Production == 0 ? 1 : this.Production ));
+            }
         }
         private Tile UndoStartBuilding(Buildable oldBuild, int loss)
         {
@@ -1041,24 +1044,22 @@ namespace GalWar
 
         internal void BuildPlanetDefense(double prodInc)
         {
-            BuildPlanetDefense(prodInc, false);
+            BuildPlanetDefense(this.production + prodInc, false);
+            this.production = 0;
         }
         internal void BuildPlanetDefense(double prodInc, bool attAndDef)
         {
-            double prod = ( this.production + prodInc );
-            if (prod > Consts.FLOAT_ERROR)
+            if (prodInc > Consts.FLOAT_ERROR)
             {
-                prod /= 2;
+                prodInc /= 2;
 
                 if (attAndDef)
-                    BuildAttAndDef(prod);
+                    BuildAttAndDef(prodInc);
                 else
-                    BuildPlanetDefense(prod, this.Buildable);
+                    BuildPlanetDefense(prodInc, this.Buildable);
 
-                BuildSoldiers(prod);
+                BuildSoldiers(prodInc);
             }
-
-            this.production = 0;
         }
         internal void BuildAttAndDef(double prod)
         {
@@ -1126,7 +1127,7 @@ namespace GalWar
                 ModPD(totalCost * mult, newAtt, newDef);
             }
 
-            this.player.GoldIncome(( totalCost - this.PlanetDefenseCost ) * Consts.DisbandPct);
+            this.Player.GoldIncome(( totalCost - this.PlanetDefenseCost ) * Consts.DisbandPct);
         }
 
         private void ModPD(double trgCost, int att, int trgAtt, int def, int trgDef,
@@ -1183,8 +1184,8 @@ namespace GalWar
 
         private void ModPD(double newCost, double newAtt, double newDef)
         {
-            this.Att = GetPDStat(newAtt, this.Att, this.player.PDAtt);
-            this.Def = GetPDStat(newDef, this.Def, this.player.PDDef);
+            this.Att = GetPDStat(newAtt, this.Att, this.Player.PDAtt);
+            this.Def = GetPDStat(newDef, this.Def, this.Player.PDDef);
             this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, ushort.MaxValue);
 
             if (Math.Abs(GetPDCost(Att, Def) - GetPDCost(Def, Att)) > Consts.FLOAT_ERROR)

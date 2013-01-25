@@ -9,7 +9,6 @@ namespace GalWar
         #region fields and constructors
 
         private Tile _tile;
-
         private Colony _colony;
 
         private short _quality;
@@ -17,21 +16,68 @@ namespace GalWar
 
         internal Planet(Tile tile)
         {
-            this._tile = tile;
-            tile.SpaceObject = this;
+            checked
+            {
+                this.Tile = tile;
+                tile.SpaceObject = this;
 
-            this._colony = null;
+                this.Quality = Consts.NewPlanetQuality();
 
-            this.Quality = Consts.NewPlanetQuality();
-
-            this._colonizationCostMult = Consts.GetColonizationMult();
+                this._colonizationCostMult = (float)Consts.GetColonizationMult();
+            }
         }
 
-        private Tile tile
+        public Tile Tile
         {
             get
             {
                 return this._tile;
+            }
+            private set
+            {
+                checked
+                {
+                    this._tile = value;
+                }
+            }
+        }
+        public Colony Colony
+        {
+            get
+            {
+                return this._colony;
+            }
+            internal set
+            {
+                checked
+                {
+                    if (( value == null ) == ( this.Colony == null ))
+                        throw new Exception();
+
+                    this._colony = value;
+                }
+            }
+        }
+
+        public int Quality
+        {
+            get
+            {
+                return this._quality;
+            }
+            private set
+            {
+                checked
+                {
+                    this._quality = (short)value;
+                }
+            }
+        }
+        private double colonizationCostMult
+        {
+            get
+            {
+                return this._colonizationCostMult;
             }
         }
 
@@ -61,13 +107,13 @@ namespace GalWar
             if (this.Colony != null)
                 this.Colony.Destroy();
 
-            this.tile.Game.RemovePlanet(this);
+            this.Tile.Game.RemovePlanet(this);
         }
 
         internal void Teleport(Tile tile)
         {
             this.Tile.SpaceObject = null;
-            this._tile = tile;
+            this.Tile = tile;
             this.Tile.SpaceObject = this;
         }
 
@@ -102,30 +148,7 @@ namespace GalWar
         {
             get
             {
-                return Consts.GetColonizationCost(PlanetValue, _colonizationCostMult);
-            }
-        }
-
-        public Colony Colony
-        {
-            get
-            {
-                return this._colony;
-            }
-            internal set
-            {
-                if (( value == null ) == ( this._colony == null ))
-                    throw new Exception();
-
-                this._colony = value;
-            }
-        }
-
-        public Tile Tile
-        {
-            get
-            {
-                return this.tile;
+                return Consts.GetColonizationCost(PlanetValue, colonizationCostMult);
             }
         }
 
@@ -136,21 +159,6 @@ namespace GalWar
                 if (Colony != null)
                     return Colony.Player;
                 return null;
-            }
-        }
-
-        public int Quality
-        {
-            get
-            {
-                return this._quality;
-            }
-            private set
-            {
-                checked
-                {
-                    this._quality = (short)value;
-                }
             }
         }
 

@@ -1,9 +1,25 @@
+clean up fields
+	make sure using checked
+		constructors
+		setters
+	remove casts
+		pervasive float usage
+	revisit fields
+		data types
+		readonly
+	consistent ordering
+		fields
+		properties
+	make sure all fields set in constructors
+		use actual fields?
+			all checked
+
+double click research obsolete target design
 ResearchForm.newDefense
 clean up anomaly methods
-Planet.Player
-tooo many floats
-make sure all setters use checked context
-GetBuildingDefense
+clean up planet defense interface
+	GetBuildingDefense
+	when buying PD show expected values
 see free damage enemy will get vs friendly colony
 non DS bombard combat screen take into account free damage
 autorepair off map indicator is worthless
@@ -22,7 +38,14 @@ management screens
 	colonies
 	ships
 
+wormhole numbers continually increment?
+	at least not change when higher ones disappear
+visibly code wormholes
+	colors?
+	shapes/symbols?
+	numbers on main map?
 anomaly neutral ships?
+Graphs fields
 
 known enemy designs
 AI

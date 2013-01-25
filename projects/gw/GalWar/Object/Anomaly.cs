@@ -15,8 +15,28 @@ namespace GalWar
 
         internal Anomaly(Tile tile)
         {
-            this._tile = tile;
-            tile.SpaceObject = this;
+            checked
+            {
+                this._tile = tile;
+                tile.SpaceObject = this;
+            }
+        }
+
+        private double value
+        {
+            get
+            {
+                if (double.IsNaN(this._value))
+                    this.value = GenerateValue();
+                return this._value;
+            }
+            set
+            {
+                checked
+                {
+                    this._value = value;
+                }
+            }
         }
 
         public Tile Tile
@@ -32,16 +52,6 @@ namespace GalWar
             get
             {
                 return null;
-            }
-        }
-
-        private double Value
-        {
-            get
-            {
-                if (double.IsNaN(this._value))
-                    this._value = GenerateValue();
-                return this._value;
             }
         }
 
@@ -78,7 +88,7 @@ namespace GalWar
 
         internal void Explore(IEventHandler handler, Ship ship)
         {
-            this._value = double.NaN;
+            this.value = double.NaN;
             this.Tile.SpaceObject = null;
 
             Planet planet = Tile.Game.CreateAnomalyPlanet(handler, this.Tile);
@@ -183,7 +193,7 @@ namespace GalWar
                     cost = Math.Min(cost, design.Upkeep * distance / (double)design.Speed
                             + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));
 
-            double amount = this.Value - cost;
+            double amount = this.value - cost;
             double mult = Consts.GetColonizationMult();
             if (amount < Consts.GetColonizationCost(Planet.ConstValue, mult))
                 return false;
@@ -232,7 +242,7 @@ namespace GalWar
                 foreach (Player player in Tile.Game.GetPlayers())
                     foreach (Ship ship in player.GetShips())
                         pop += ship.Population;
-                double forExplorer = this.Value * Consts.PopulationForGoldHigh;
+                double forExplorer = this.value * Consts.PopulationForGoldHigh;
                 double diePct = Game.Random.GaussianCapped(.3, 0.091, .13);
 
                 double addAmt = forExplorer + ( forExplorer * ( 2 *
@@ -364,7 +374,7 @@ namespace GalWar
 
         private double ConsolationValue()
         {
-            return Math.Pow(this.Value, .78);
+            return Math.Pow(this.value, .78);
         }
 
         private bool Death(IEventHandler handler, Ship ship)
@@ -387,7 +397,7 @@ namespace GalWar
             }
             else
             {
-                ship.Player.AddGold(Value + ship.DisbandValue, true);
+                ship.Player.AddGold(value + ship.DisbandValue, true);
 
                 ship.Destroy(true, true);
             }
@@ -404,7 +414,7 @@ namespace GalWar
             if (colonies.Count == 1 || Game.Random.Bool())
                 single = Game.Random.SelectValue(colonies);
 
-            double value = this.Value;
+            double value = this.value;
             double production = value / 1.3;
 
             bool notify = true;
@@ -717,7 +727,7 @@ namespace GalWar
         {
             handler.Explore(AnomalyType.Experience);
 
-            ship.AddAnomalyExperience(handler, this.Value, Game.Random.Bool(), Game.Random.Bool());
+            ship.AddAnomalyExperience(handler, this.value, Game.Random.Bool(), Game.Random.Bool());
 
             return true;
         }
@@ -730,7 +740,7 @@ namespace GalWar
 
             handler.Explore(AnomalyType.SalvageShip, player);
 
-            double min = this.Value, max = GenerateValue();
+            double min = this.value, max = GenerateValue();
             if (min > max)
             {
                 double temp = min;
@@ -740,7 +750,7 @@ namespace GalWar
 
             ShipDesign design = new ShipDesign(player, GetDesignResearch(player), Tile.Game.MapSize, min, max);
             Ship newShip = player.NewShip(handler, this.Tile, design);
-            player.GoldIncome(this.Value - design.Cost);
+            player.GoldIncome(this.value - design.Cost);
             if (newShip.Player == anomShip.Player)
                 newShip.LoseMove();
 
@@ -759,7 +769,7 @@ namespace GalWar
                 pct = 2 - pct;
                 if (anomShip.Dead)
                     pct += 2;
-                double gold = ConsolationValue() + ( this.Value - ConsolationValue() ) * pct / 4.0;
+                double gold = ConsolationValue() + ( this.value - ConsolationValue() ) * pct / 4.0;
 
                 if (anomShip.Dead)
                     anomShip.Player.AddGold(gold, true);
@@ -796,8 +806,8 @@ namespace GalWar
 
         private bool Population(IEventHandler handler, Ship ship)
         {
-            int pop = Game.Random.Round(this.Value * Consts.PopulationForGoldHigh);
-            double soldiers = this.Value / Consts.ExpForSoldiers;
+            int pop = Game.Random.Round(this.value * Consts.PopulationForGoldHigh);
+            double soldiers = this.value / Consts.ExpForSoldiers;
 
             bool canPop = ( pop <= ship.FreeSpace );
             if (ship.Population > 0)
@@ -833,7 +843,7 @@ namespace GalWar
             {
             case 1:
             case 2:
-                research = handler.Explore(AnomalyType.AskResearchOrGold, this.Value);
+                research = handler.Explore(AnomalyType.AskResearchOrGold, this.value);
                 break;
             case 3:
             case 4:
@@ -842,21 +852,21 @@ namespace GalWar
                 break;
             default:
                 research = false;
-                handler.Explore(AnomalyType.Gold, this.Value);
+                handler.Explore(AnomalyType.Gold, this.value);
                 break;
             }
 
             if (research)
-                anomShip.Player.FreeResearch(handler, Game.Random.Round(this.Value), GetDesignResearch(anomShip.Player));
+                anomShip.Player.FreeResearch(handler, Game.Random.Round(this.value), GetDesignResearch(anomShip.Player));
             else
-                anomShip.Player.AddGold(this.Value, true);
+                anomShip.Player.AddGold(this.value, true);
 
             return true;
         }
         private int GetDesignResearch(Player player)
         {
             double avg = ( 1 * ( ( 1 * player.ResearchDisplay + 2 * player.Research ) / 3.0 )
-                    + 2 * ( player.LastResearched + this.Value ) + 4 * ( Tile.Game.AvgResearch ) ) / 7.0;
+                    + 2 * ( player.LastResearched + this.value ) + 4 * ( Tile.Game.AvgResearch ) ) / 7.0;
             return Game.Random.GaussianOEInt(avg, .13, .013);
         }
 

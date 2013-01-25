@@ -305,26 +305,26 @@ namespace GalWarWin
                 g.FillRectangle(Brushes.DarkGray, rect);
             if (tile.SpaceObject is Anomaly)
                 g.FillRectangle(Brushes.White, Inflate(scale, rect, 1, 1, 1, .6f, .13f));
-            g.DrawRectangle(new Pen(Color.White, size), rect.X, rect.Y, rect.Width, rect.Height);
+            using (Pen pen = new Pen(Color.White, size))
+                g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
         }
 
         private void DrawPlanet(Graphics g, float scale, RectangleF rect, Planet planet,
                 float minQuality, float maxQuality, float minPop, float maxPop)
         {
             Colony colony = planet.Colony;
-            Brush brush;
             RectangleF planetRect;
             if (colony == null)
             {
                 planetRect = Inflate(scale, rect, planet.Quality, minQuality, maxQuality, .735f, .169f);
-                brush = Brushes.White;
+                g.FillEllipse(Brushes.White, planetRect);
             }
             else
             {
                 planetRect = Inflate(scale, rect, colony.Population, minPop, maxPop, .735f, .169f);
-                brush = new SolidBrush(colony.Player.Color);
+                using (Brush brush = new SolidBrush(colony.Player.Color))
+                    g.FillEllipse(brush, planetRect);
             }
-            g.FillEllipse(brush, planetRect);
 
             if (colony != null)
             {
@@ -343,7 +343,8 @@ namespace GalWarWin
         private void DrawShip(Graphics g, float scale, RectangleF rect, Ship ship, float minStr, float maxStr)
         {
             rect = Inflate(scale, rect, ship.GetStrength() * ship.HP / (float)ship.MaxHP, minStr, maxStr, .666f, .13f);
-            g.FillRectangle(new SolidBrush(ship.Player.Color), rect);
+            using (Brush brush = new SolidBrush(ship.Player.Color))
+                g.FillRectangle(brush, rect);
 
             if (ship.DeathStar || ship.Population > 0)
                 g.DrawRectangle(Pens.White, rect.X, rect.Y, rect.Width, rect.Height);

@@ -42,7 +42,7 @@ namespace GalWarWin.Sliders
             }
             else
             {
-                this.free = GetMaxInternal();
+                this.free = GetMoveTroopsMax();
             }
         }
 
@@ -75,6 +75,10 @@ namespace GalWarWin.Sliders
         }
 
         protected override int GetMaxInternal()
+        {
+            return GetMoveTroopsMax();
+        }
+        private int GetMoveTroopsMax()
         {
             int max;
             if (this.max.HasValue)

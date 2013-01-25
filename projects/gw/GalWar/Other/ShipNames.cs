@@ -24,27 +24,100 @@ namespace GalWar
             deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Exterminator, ShipClass.Demon };
         }
 
-        private int[] divisions;
-        private byte[,] _marks;
+        private readonly uint[] _divisions;
+        private readonly byte[,] _marks;
 
         [NonSerialized]
         private bool _setup;
         [NonSerialized]
-        private ushort _total;
-        [NonSerialized]
-        private byte _count;
+        private int _total, _count;
 
         internal ShipNames(int numPlayers)
         {
-            this.divisions = new int[length];
-            for (int a = 2 ; a < length ; ++a)
-                this.divisions[a] = int.MaxValue;
+            checked
+            {
+                this._divisions = new uint[length];
+                for (int a = 2 ; a < length ; ++a)
+                    this.Divisions(a, int.MaxValue);
 
-            this._marks = new byte[numPlayers, (int)ShipClass.MAX];
+                this._marks = new byte[numPlayers, (int)ShipClass.MAX];
 
-            this._setup = true;
-            this._total = 0;
-            this._count = 0;
+                this.setup = true;
+                this.total = 0;
+                this.count = 0;
+            }
+        }
+
+        private int Divisions(int idx)
+        {
+            checked
+            {
+                return (int)this._divisions[idx];
+            }
+        }
+        private void Divisions(int idx, int value)
+        {
+            checked
+            {
+                this._divisions[idx] = (uint)value;
+            }
+        }
+        private int Marks(int idx1, int idx2)
+        {
+            checked
+            {
+                return (int)this._marks[idx1, idx2];
+            }
+        }
+        private void Marks(int idx1, int idx2, int value)
+        {
+            checked
+            {
+                this._marks[idx1, idx2] = (byte)value;
+            }
+        }
+
+        private bool setup
+        {
+            get
+            {
+                return this._setup;
+            }
+            set
+            {
+                checked
+                {
+                    this._setup = value;
+                }
+            }
+        }
+        private int total
+        {
+            get
+            {
+                return this._total;
+            }
+            set
+            {
+                checked
+                {
+                    this._total = value;
+                }
+            }
+        }
+        private int count
+        {
+            get
+            {
+                return this._count;
+            }
+            set
+            {
+                checked
+                {
+                    this._count = value;
+                }
+            }
         }
 
         private ShipClass DoSetup(ShipClass[] type, int value)
@@ -52,17 +125,17 @@ namespace GalWar
             //during setup phase, the first name is always used, and the average cost calculated
             checked
             {
-                this._total += (ushort)value;
-                ++this._count;
+                this.total += value;
+                ++this.count;
             }
             return type[0];
         }
 
         internal void EndSetup()
         {
-            this._setup = false;
+            this.setup = false;
             //first division is set using the average
-            SetDivision(1, this._total / (double)this._count);
+            SetDivision(1, this.total / (double)this.count);
         }
 
         internal byte GetName(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
@@ -70,11 +143,13 @@ namespace GalWar
             return (byte)GetNameType(design, attDefStr, transStr, speedStr, anomalyShip);
         }
 
-        internal byte GetMark(Player player, byte name)
+        internal int GetMark(Player player, int name)
         {
             checked
             {
-                return ++this._marks[player.ID, (int)name];
+                int value = this.Marks(player.ID, name) + 1;
+                this.Marks(player.ID, name, value);
+                return value;
             }
         }
 
@@ -100,7 +175,7 @@ namespace GalWar
 
             int value = RandValue(ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage, 0), 1);
 
-            if (this._setup)
+            if (this.setup)
                 return DoSetup(type, value);
 
             return GetName(type, value);
@@ -110,11 +185,11 @@ namespace GalWar
         {
             //find the highest division it matches
             for (int i = length ; --i > -1 ; )
-                if (value > this.divisions[i])
+                if (value > this.Divisions(i))
                 {
                     //check if this is a breakthrough design, and if so use its value for the next division
                     int next = i + 1;
-                    if (next < length && this.divisions[next] == int.MaxValue)
+                    if (next < length && this.Divisions(next) == int.MaxValue)
                         SetDivision(next, value);
                     return type[i];
                 }
@@ -123,7 +198,7 @@ namespace GalWar
 
         private void SetDivision(int index, double value)
         {
-            this.divisions[index] = RandValue(value * 3.0, Game.Random.Round(value * 1.3) + 13);
+            this.Divisions(index, RandValue(value * 3.0, Game.Random.Round(value * 1.3) + 13));
         }
 
         private static double RandMult(double mult)
@@ -139,7 +214,7 @@ namespace GalWar
                 return min;
         }
 
-        internal static string GetName(byte name, byte mark)
+        internal static string GetName(int name, int mark)
         {
             return Game.CamelToSpaces(( (ShipClass)name ).ToString()) + " " + NumberToRoman(mark);
         }
@@ -147,7 +222,7 @@ namespace GalWar
         private static readonly byte[] values = new byte[] { 90, 50, 40, 10, 9, 5, 4, 1 };
         private static readonly string[] numerals = new string[] { "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
-        private static string NumberToRoman(byte mark)
+        private static string NumberToRoman(int mark)
         {
             if (mark > 99)
                 return mark.ToString();

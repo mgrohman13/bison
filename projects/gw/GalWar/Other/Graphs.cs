@@ -37,7 +37,7 @@ namespace GalWar
                 playerVals = new Dictionary<byte, float>();
                 dictionary.Add((byte)graphType, playerVals);
             }
-            playerVals.Add(player.ID, amount);
+            playerVals.Add((byte)player.ID, amount);
         }
 
         internal void EndTurn(Player player)
@@ -54,7 +54,7 @@ namespace GalWar
 
         private void EndTurn(GraphType graphType, Player player, float amount)
         {
-            turnVals[(byte)graphType][player.ID] = ( turnVals[(byte)graphType][player.ID] + amount ) / 2f;
+            turnVals[(byte)graphType][(byte)player.ID] = ( turnVals[(byte)graphType][(byte)player.ID] + amount ) / 2f;
         }
 
         internal void Increment(Game game)
@@ -67,9 +67,9 @@ namespace GalWar
             foreach (Player player in this.players)
                 if (Array.IndexOf(players, player) > -1)
                 {
-                    Add(playerGraphs, GraphType.Quality, player, turnVals[(byte)GraphType.Quality][player.ID]);
-                    Add(playerGraphs, GraphType.Armada, player, turnVals[(byte)GraphType.Armada][player.ID]);
-                    Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[(byte)GraphType.ArmadaDamaged][player.ID]);
+                    Add(playerGraphs, GraphType.Quality, player, turnVals[(byte)GraphType.Quality][(byte)player.ID]);
+                    Add(playerGraphs, GraphType.Armada, player, turnVals[(byte)GraphType.Armada][(byte)player.ID]);
+                    Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[(byte)GraphType.ArmadaDamaged][(byte)player.ID]);
 
                     Add(playerGraphs, GraphType.Research, player, (float)research[player]);
                     Add(playerGraphs, GraphType.TotalIncome, player, (float)player.IncomeTotal);
@@ -106,7 +106,7 @@ namespace GalWar
                 if (this.data[x].TryGetValue((byte)graphType, out prevGraphs))
                 {
                     float lastVal;
-                    if (prevGraphs.TryGetValue(player.ID, out lastVal))
+                    if (prevGraphs.TryGetValue((byte)player.ID, out lastVal))
                     {
                         last = lastVal;
                         break;
@@ -160,7 +160,7 @@ namespace GalWar
                 for (int b = 0 ; b < this.players.Length ; ++b)
                 {
                     float value;
-                    if (graphs == null || !graphs.TryGetValue(playerIndexes[b].ID, out value))
+                    if (graphs == null || !graphs.TryGetValue((byte)playerIndexes[b].ID, out value))
                         value = retVal[a - 1, b, 1];
 
                     retVal[a, b, 0] = a;

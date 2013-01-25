@@ -76,8 +76,8 @@ namespace GalWar
                 this.Soldiers -= soldiers;
 
                 Player.GoldIncome(population / Consts.PopulationForGoldLow);
-                this.Population -= population;
             }
+            this.Population -= population;
         }
 
         #endregion //protected
@@ -137,7 +137,7 @@ namespace GalWar
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= destination.Population);
             AssertException.Assert(population <= this.FreeSpace);
-            AssertException.Assert(soldiers < destination.Soldiers + Consts.FLOAT_ERROR );
+            AssertException.Assert(soldiers < destination.Soldiers + Consts.FLOAT_ERROR);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
 

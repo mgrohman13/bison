@@ -10,11 +10,12 @@ namespace GalWar
         #region fields and constructors
 
         public readonly bool Colony;
-        private readonly Player player;
+
+        private readonly Player _player;
 
         private Tile _tile;
 
-        private byte _name, _mark;
+        private readonly byte _name, _mark;
 
         private bool _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
@@ -25,36 +26,59 @@ namespace GalWar
         internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
             : base(design.Att, design.Def, design.HP, 0, 0)
         {
-            this.Colony = design.Colony;
-
-            this.player = player;
-
-            this.tile = tile;
-            tile.SpaceObject = this;
-
-            this._name = design.Name;
-            this._mark = design.Mark;
             checked
             {
+                this.Colony = design.Colony;
+
+                this._player = player;
+
+                this.tile = tile;
+                tile.SpaceObject = this;
+
+                this._name = (byte)design.Name;
+                this._mark = (byte)design.Mark;
                 this.MaxSpeed = (byte)design.Speed;
                 this.maxPop = (ushort)design.Trans;
+                if (design.DeathStar)
+                    this.BombardDamage = design.BombardDamage;
+
+                this.HasRepaired = false;
+                this.Upkeep = design.Upkeep;
+                this.CurSpeed = this.MaxSpeed;
+                this.MaxHP = design.HP;
+
+                this.AutoRepair = double.NaN;
+
+                this.cost = design.AdjustCost(this.Player.Game.MapSize);
+
+                this.curExp = 0;
+                this.totalExp = 0;
+                this._expDiv = (float)GetValue();
+                GetNextLevel(handler);
             }
-            if (design.DeathStar)
-                this.BombardDamage = design.BombardDamage;
+        }
 
-            this.HasRepaired = false;
-            this.Upkeep = design.Upkeep;
-            this.CurSpeed = this.MaxSpeed;
-            this.MaxHP = design.HP;
+        private Tile tile
+        {
+            set
+            {
+                this._tile = value;
+            }
+        }
 
-            this.AutoRepair = double.NaN;
-
-            this.cost = design.AdjustCost(this.Player.Game.MapSize);
-
-            this.curExp = 0;
-            this.totalExp = 0;
-            this._expDiv = (float)GetValue();
-            GetNextLevel(handler);
+        private int name
+        {
+            get
+            {
+                return this._name;
+            }
+        }
+        private int mark
+        {
+            get
+            {
+                return this._mark;
+            }
         }
 
         public double GetStrength()
@@ -84,13 +108,6 @@ namespace GalWar
             return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
         }
 
-        private Tile tile
-        {
-            set
-            {
-                this._tile = value;
-            }
-        }
 
         private double RepairCost
         {
@@ -195,7 +212,7 @@ namespace GalWar
         internal void EndTurn()
         {
             //must be calculated before speed is restored
-            Player.SpendGold(this.Upkeep - this.GetUpkeepReturn());
+            this.Player.SpendGold(this.Upkeep - this.GetUpkeepReturn());
 
             ResetMoved();
 
@@ -205,10 +222,10 @@ namespace GalWar
 
         internal void LoseMove()
         {
-            if (!Player.IsTurn)
+            if (!this.Player.IsTurn)
                 throw new Exception();
 
-            Player.GoldIncome(GetUpkeepReturn());
+            this.Player.GoldIncome(GetUpkeepReturn());
             this.CurSpeed = 0;
         }
 
@@ -311,7 +328,7 @@ namespace GalWar
         {
             get
             {
-                return this.player;
+                return this._player;
             }
         }
 
@@ -459,7 +476,10 @@ namespace GalWar
             }
             private set
             {
-                this._hasRepaired = value;
+                checked
+                {
+                    this._hasRepaired = value;
+                }
             }
         }
 
@@ -814,7 +834,7 @@ namespace GalWar
                 costInc = this.GetCostLastResearched() - costInc;
 
                 //add/subtract gold for level randomness and percent of ship injured 
-                Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
+                this.Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
 
                 double basePayoff = GetUpkeepPayoff();
                 double minCost = basePayoff * Consts.MinCostMult;
@@ -986,8 +1006,7 @@ namespace GalWar
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
             AssertException.Assert(this.CurSpeed > 0);
-            Colony colony = planet.Colony;
-            bool friendly = ( colony != null && this.Player == colony.Player );
+            bool friendly = ( this.Player == planet.Player );
             if (friendly)
                 AssertException.Assert(this.DeathStar);
 
@@ -999,6 +1018,7 @@ namespace GalWar
             //set freeDmg to 0 initially to ensure we log something, even if it is just "No Damage"
             int freeDmg = 0;
 
+            Colony colony = planet.Colony;
             double pct = 1;
             bool enemy = ( !friendly && colony != null );
             if (enemy && colony.HP > 0)
@@ -1101,7 +1121,7 @@ namespace GalWar
         private int GetColonyDamage(Planet planet, double pct)
         {
             double damage = this.BombardDamage * pct;
-            if (planet.Colony != null && planet.Colony.Player == this.player)
+            if (planet.Player == this.Player)
                 damage *= planet.Colony.Population / ( planet.Colony.Population + ( 3 * planet.Quality + 1 * Consts.AverageQuality ) / 4.0 );
             return GetBombardDamage(damage);
         }
@@ -1192,7 +1212,7 @@ namespace GalWar
             if (target.Population > 0)
             {
                 AssertException.Assert(gold > 0);
-                AssertException.Assert(gold < Player.Gold);
+                AssertException.Assert(gold < this.Player.Gold);
             }
             else
             {
@@ -1241,7 +1261,7 @@ namespace GalWar
             AssertException.Assert(planet.Colony == null);
             AssertException.Assert(this.AvailablePop == this.Population);
             AssertException.Assert(this.Population > 0);
-            AssertException.Assert(planet.ColonizationCost < Player.Gold);
+            AssertException.Assert(planet.ColonizationCost < this.Player.Gold);
 
             this.Player.SpendGold(planet.ColonizationCost);
             this.Player.GoldIncome(-GetActualGoldCost(this.Population));
@@ -1263,7 +1283,7 @@ namespace GalWar
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.MaxHP - HP);
             AssertException.Assert(!this.HasRepaired);
-            AssertException.Assert(GetGoldForHP(hp) < Player.Gold);
+            AssertException.Assert(GetGoldForHP(hp) < this.Player.Gold);
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
                     new Game.UndoMethod<int>(UndoGoldRepair), hp));
@@ -1295,7 +1315,7 @@ namespace GalWar
                 this.Repair += hp;
                 spend = -spend;
             }
-            Player.AddGold(spend);
+            this.Player.AddGold(spend);
             this.HasRepaired = !undo;
         }
 
@@ -1306,7 +1326,7 @@ namespace GalWar
             foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
             {
                 Planet planet = ( neighbor.SpaceObject as Planet );
-                if (planet != null && planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == this)
+                if (planet != null && planet.Player == this.Player && planet.Colony.RepairShip == this)
                     return planet.Colony;
             }
             return null;
@@ -1418,7 +1438,7 @@ namespace GalWar
 
         public override string ToString()
         {
-            return ShipNames.GetName(this._name, this._mark);
+            return ShipNames.GetName(this.name, this.mark);
         }
 
         #endregion //public

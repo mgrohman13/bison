@@ -93,11 +93,11 @@ namespace GalWar
 
         public readonly bool Colony;
 
-        private byte _name, _mark;
-
         private readonly byte _upkeep, _att, _def, _speed;
         private readonly ushort _hp, _cost, _trans, _bombardDamage;
         private readonly uint _research;
+
+        private byte _name, _mark;
 
         internal static List<ShipDesign> GetStartDesigns(List<int> research, Player player)
         {
@@ -681,7 +681,7 @@ namespace GalWar
 
         #region internal
 
-        internal byte Name
+        internal int Name
         {
             get
             {
@@ -691,11 +691,11 @@ namespace GalWar
             {
                 checked
                 {
-                    this._name = value;
+                    this._name = (byte)value;
                 }
             }
         }
-        internal byte Mark
+        internal int Mark
         {
             get
             {
@@ -705,7 +705,7 @@ namespace GalWar
             {
                 checked
                 {
-                    this._mark = value;
+                    this._mark = (byte)value;
                 }
             }
         }

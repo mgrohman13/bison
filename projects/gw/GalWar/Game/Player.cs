@@ -181,7 +181,7 @@ namespace GalWar
 
         #region internal
 
-        internal byte ID
+        internal int ID
         {
             get
             {

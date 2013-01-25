@@ -10,11 +10,11 @@ namespace GalWarWin.Sliders
 
         public delegate int GetValueDelegate();
 
-        public event GetValueDelegate DoSetText;
+        public event EventHandler DoSetText;
 
         protected void Refresh()
         {
-            DoSetText();
+            DoSetText(this, new EventArgs());
         }
 
         public void SetGetValueDelegate(GetValueDelegate GetValue)

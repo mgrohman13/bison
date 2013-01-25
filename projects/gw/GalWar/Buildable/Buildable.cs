@@ -7,7 +7,22 @@ namespace GalWar
     public abstract class Buildable
     {
         [NonSerialized]
-        internal double production;
+        private double _production;
+
+        protected internal double production
+        {
+            get
+            {
+                return this._production;
+            }
+            protected set
+            {
+                checked
+                {
+                    this._production = value;
+                }
+            }
+        }
 
         public abstract int Cost
         {

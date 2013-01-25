@@ -37,7 +37,7 @@ namespace GalWarWin.Sliders
         {
             this.controller = controller;
 
-            controller.DoSetText += new SliderController.GetValueDelegate(this.SetText);
+            controller.DoSetText += new EventHandler(this.SetText);
 
             this.Controls.Remove(custom);
             custom = controller.GetCustomControl();
@@ -132,10 +132,13 @@ namespace GalWarWin.Sliders
             this.trackBar.Value = value;
         }
 
-        private int SetText()
+        private void SetText()
+        {
+            SetText(null, null);
+        }
+        private void SetText(object sender, EventArgs eventArgs)
         {
             controller.SetText(txtAmt, lblExtra, lblTitle, lblSlideType, lblAmt, lblResultType, lblEffcnt);
-            return -1;
         }
 
         public static int ShowForm(SliderController controller)

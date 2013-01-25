@@ -86,15 +86,15 @@ namespace GalWar
 
         internal Tile(Game game, int x, int y)
         {
-            this.Game = game;
-
             checked
             {
+                this.Game = game;
+
+                this._spaceObject = null;
+
                 this._x = (byte)x;
                 this._y = (byte)y;
             }
-
-            this._spaceObject = null;
         }
 
         #endregion //fields and constructors
@@ -124,10 +124,13 @@ namespace GalWar
             }
             internal set
             {
-                if (( value == null ) == ( this._spaceObject == null ))
-                    throw new Exception();
+                checked
+                {
+                    if (( value == null ) == ( this.SpaceObject == null ))
+                        throw new Exception();
 
-                this._spaceObject = value;
+                    this._spaceObject = value;
+                }
             }
         }
 
