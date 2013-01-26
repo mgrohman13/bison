@@ -63,6 +63,7 @@ namespace GalWarWin
             this.lbxUpgrade.Size = new System.Drawing.Size(130, 277);
             this.lbxUpgrade.TabIndex = 1;
             this.lbxUpgrade.SelectedIndexChanged += new System.EventHandler(this.lbxUpgrade_SelectedIndexChanged);
+            this.lbxUpgrade.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lbxUpgrade_MouseDoubleClick);
             // 
             // cbColony
             // 

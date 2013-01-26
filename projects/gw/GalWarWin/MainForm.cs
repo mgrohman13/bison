@@ -294,15 +294,25 @@ namespace GalWarWin
             if (tile == this.selectedTile)
                 size = 3f;
             else if (planet != null || ( this.isDialog ? ValidDialogTile(tile) : ship != null &&
-                    ship.Player.IsTurn && ( ( ship.AutoRepair == 0 && ship.HP < ship.MaxHP ) || ship.CurSpeed > 0 ) ))
+                    ship.Player.IsTurn && ship.CurSpeed > 0 ))
                 size = 2f;
             else
                 size = 1f;
             if (tile == this.dialogTile)
                 ++size;
 
-            if (tile.Teleporter != null)
-                g.FillRectangle(Brushes.DarkGray, rect);
+            int telNum;
+            if (tile.GetTeleporter(out telNum) != null)
+            {
+                Brush brush = Brushes.DarkGray;
+                if (Game.GetTeleporters().Count > 1)
+                {
+                    int color = Game.Random.Round(130 + telNum * ( 260.0 - 130 ) / Game.GetTeleporters().Count);
+                    brush = new SolidBrush(Color.FromArgb(color, color, color));
+                }
+                g.FillRectangle(brush, rect);
+            }
+
             if (tile.SpaceObject is Anomaly)
                 g.FillRectangle(Brushes.White, Inflate(scale, rect, 1, 1, 1, .6f, .13f));
             using (Pen pen = new Pen(Color.White, size))
@@ -352,12 +362,16 @@ namespace GalWarWin
             double pct = ship.HP / (double)ship.MaxHP;
             if (pct < 1)
             {
+                Pen pen = Pens.Black;
+                if (ship.Player.IsTurn && ship.AutoRepair == 0)
+                    pen = new Pen(Color.White, 2);
+
                 PointF endPoint;
                 if (pct < .75f)
                     endPoint = new PointF(rect.Right, rect.Bottom);
                 else
                     endPoint = GetMid(rect);
-                g.DrawLine(Pens.Black, rect.Location, endPoint);
+                g.DrawLine(pen, rect.Location, endPoint);
 
                 if (pct < .5f)
                 {
@@ -365,7 +379,7 @@ namespace GalWarWin
                         endPoint = new PointF(rect.Right, rect.Top);
                     else
                         endPoint = GetMid(rect);
-                    g.DrawLine(Pens.Black, new PointF(rect.Left, rect.Bottom), endPoint);
+                    g.DrawLine(pen, new PointF(rect.Left, rect.Bottom), endPoint);
                 }
             }
         }
@@ -709,6 +723,9 @@ namespace GalWarWin
 
         private Tile SelectTile(Tile tile, bool build)
         {
+            this.showMoves = false;
+            dialog.showMoves = false;
+
             if (build)
                 dialog.pnlBuild.SetBuildable((Buildable)( (Planet)tile.SpaceObject ).Colony.Buildable);
             dialog.pnlBuild.Visible = build;
@@ -804,6 +821,7 @@ namespace GalWarWin
 
         private void btnUndo_Click(object sender, EventArgs e)
         {
+            this.showMoves = false;
             this.selectedTile = Game.Undo(this);
             UnHold(GetSelectedShip());
 
@@ -1451,7 +1469,8 @@ namespace GalWarWin
 
             this.btnUndo.Enabled = Game.CanUndo();
 
-            CombatForm.OnRefresh(anomExp);
+            if (!CombatForm.OnRefresh(anomExp) && anomExp)
+                ShowExploreMessage(Anomaly.AnomalyType.Experience);
             anomExp = false;
         }
 
@@ -1960,8 +1979,8 @@ namespace GalWarWin
             case Anomaly.AnomalyType.AskTerraform:
                 this.selectedTile = ( (Colony)info[0] ).Tile;
                 this.RefreshAll();
-                string inf = "Terraform planet?\r\n+" + info[1] + " Quality\r\n-" +
-                        FormatDouble((double)info[2]) + " Gold (" + FormatDouble((double)info[3]) + ")\r\nChances: ";
+                string inf = "Terraform planet?\r\n+" + info[1] + " Quality\r\n" +
+                        FormatIncome((double)info[2]) + " Gold (" + FormatIncome((double)info[3]) + ")\r\nChances: ";
                 double[] chances = (double[])info[4];
                 Array.Sort(chances);
                 for (int a = chances.Length ; --a >= 0 ; )
@@ -1972,22 +1991,13 @@ namespace GalWarWin
                 }
                 return ShowOption(inf);
 
-            case Anomaly.AnomalyType.Soldiers:
-            case Anomaly.AnomalyType.PlanetDefenses:
-            case Anomaly.AnomalyType.Production:
-            case Anomaly.AnomalyType.SoldiersAndDefense:
-                string msg = "";
-                if (info.Length > 0)
-                {
-                    this.selectedTile = ( (Colony)info[0] ).Tile;
-                    this.RefreshAll();
-                    msg = "+" + FormatDouble((double)info[1]) + " ";
-                }
-                MessageBox.Show(msg + Game.CamelToSpaces(anomalyType.ToString()) + "!");
-                return true;
 
             case Anomaly.AnomalyType.Death:
                 MessageBox.Show("-" + info[0] + " HP!");
+                return true;
+
+            case Anomaly.AnomalyType.Experience:
+                this.anomExp = true;
                 return true;
 
             case Anomaly.AnomalyType.Gold:
@@ -2006,7 +2016,7 @@ namespace GalWarWin
                 return true;
 
             case Anomaly.AnomalyType.PickupSoldiers:
-                MessageBox.Show("Picked up " + FormatDouble((double)info[0]) + " soldiers!");
+                MessageBox.Show("+" + FormatPct((double)info[0] / GetSelectedShip().Population) + " soldiers!");
                 return true;
 
             case Anomaly.AnomalyType.SalvageShip:
@@ -2016,20 +2026,39 @@ namespace GalWarWin
                 MessageBox.Show(player + " Ship!");
                 return true;
 
-            case Anomaly.AnomalyType.Experience:
-                this.anomExp = true;
-                MessageBox.Show(Game.CamelToSpaces(anomalyType.ToString()) + "!");
-                return true;
 
             case Anomaly.AnomalyType.Apocalypse:
             case Anomaly.AnomalyType.NewPlanet:
             case Anomaly.AnomalyType.PopulationGrowth:
             case Anomaly.AnomalyType.Wormhole:
-                MessageBox.Show(Game.CamelToSpaces(anomalyType.ToString()) + "!");
+                ShowExploreMessage(anomalyType);
                 return true;
+
+            case Anomaly.AnomalyType.PlanetDefenses:
+            case Anomaly.AnomalyType.Production:
+            case Anomaly.AnomalyType.Soldiers:
+            case Anomaly.AnomalyType.SoldiersAndDefense:
+                string msg = "";
+                if (info.Length > 0)
+                {
+                    this.selectedTile = ( (Colony)info[0] ).Tile;
+                    this.RefreshAll();
+                    msg = "+" + FormatDouble((double)info[1]) + " ";
+                }
+                ShowExploreMessage(anomalyType, msg);
+                return true;
+
             default:
                 throw new Exception();
             }
+        }
+        private static void ShowExploreMessage(Anomaly.AnomalyType anomalyType)
+        {
+            ShowExploreMessage(anomalyType, string.Empty);
+        }
+        private static void ShowExploreMessage(Anomaly.AnomalyType anomalyType, string msg)
+        {
+            MessageBox.Show(msg + Game.CamelToSpaces(anomalyType.ToString()) + "!");
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)

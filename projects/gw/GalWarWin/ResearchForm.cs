@@ -12,8 +12,6 @@ namespace GalWarWin
     {
         private static ResearchForm form = new ResearchForm();
 
-        private PlanetDefense newDefense;
-
         private ResearchForm()
         {
             InitializeComponent();
@@ -34,15 +32,6 @@ namespace GalWarWin
 
             Buildable buildable = (Buildable)this.lbxDesigns.SelectedItem;
             sdObsolete.SetBuildable(buildable);
-
-            newPlanetDefense.Visible = ( buildable is PlanetDefense );
-            if (newPlanetDefense.Visible)
-            {
-                sdObsolete.lblName.Text = "Old:";
-
-                newPlanetDefense.SetBuildable(newDefense);
-                newPlanetDefense.lblName.Text = "New:";
-            }
         }
 
         public static void ShowForm(ShipDesign newDesign, HashSet<ShipDesign> obsolete)

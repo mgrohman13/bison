@@ -351,7 +351,7 @@ namespace GalWar
                 if (sign != ( _rDisp > _rDispTrg ) || _rDisp == _rDispTrg)
                 {
                     _rDisp = _rDispTrg;
-                    _rDispTrg = ( _rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm) + 1 ) / 3f;
+                    _rDispTrg = ( _rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, -1f) + 1 ) / 3f;
                     //rate is based on distance to new value
                     _rDispChange = (float)Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
                             Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3f * Math.Abs(_rDisp - _rDispTrg) ));
@@ -915,7 +915,10 @@ namespace GalWar
                     double hp = ship.GetAutoRepairHP();
                     if (minGold)
                         hp = Math.Ceiling(hp);
-                    cost += ship.GetGoldForHP(hp);
+                    double gold = ship.GetGoldForHP(hp);
+                    if (Math.Abs(hp - Math.Round(hp)) < Consts.FLOAT_ERROR)
+                        gold = Player.RoundGold(gold);
+                    cost += gold;
                 }
             return cost;
         }

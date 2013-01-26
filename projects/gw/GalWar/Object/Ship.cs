@@ -55,6 +55,8 @@ namespace GalWar
                 this.totalExp = 0;
                 this._expDiv = (float)GetValue();
                 GetNextLevel(handler);
+
+                this.Player.GoldIncome(-this.GetUpkeepReturn());
             }
         }
 
@@ -744,7 +746,7 @@ namespace GalWar
             if (this.Population > 0 && this.HP > 0)
             {
                 double soldiers = this.Population / Consts.PopulationForGoldMid;
-                soldiers *= experience / ( soldiers + this.GetCurrentCost() );
+                soldiers *= experience / ( soldiers + this.GetCostLastResearched() );
                 experience -= soldiers;
                 soldiers *= GetCostExpForExp() / Consts.ExpForSoldiers;
                 this.Soldiers += Consts.GetExperience(soldiers);
@@ -888,13 +890,12 @@ namespace GalWar
                     ++hp;
                     break;
                 case ExpType.DS:
-                    ++ds;
-                    ds = ShipDesign.SetBombardDamage(ds, att);
+                    ds = ShipDesign.SetBombardDamage(ds + 1, att);
                     break;
                 case ExpType.Speed:
                     ++speed;
                     if (this.DeathStar)
-                        ds = ReduceDS(ds, speed);
+                        ds = ShipDesign.SetBombardDamage(Math.Ceiling(ds * ( speed - 1.0 ) / ( speed )), att);
                     break;
                 case ExpType.Trans:
                     ++trans;
@@ -902,10 +903,6 @@ namespace GalWar
                 default:
                     throw new Exception();
                 }
-        }
-        private static double ReduceDS(double bombardDamage, int speed)
-        {
-            return Math.Ceiling(bombardDamage * ( speed - 1.0 ) / ( speed ));
         }
 
         private double GetUpkeepPayoff()
@@ -1050,7 +1047,7 @@ namespace GalWar
 
         private double AttackColony(IEventHandler handler, Colony colony, out int freeDmg)
         {
-            double freeAvg = GetFreeDmg(colony), combatAvg, avgDef;
+            double freeAvg = GetFreeDmg(colony.PlanetDefenseCostPerHP), combatAvg, avgDef;
             Consts.GetDamageTable(this.Att, colony.Def, out combatAvg, out avgDef);
 
             double freePct = 0;
@@ -1085,9 +1082,15 @@ namespace GalWar
             return ( ( freePct * freeAvg + combatPct * combatAvg ) / ( freeAvg + combatAvg ) );
         }
 
-        private double GetFreeDmg(Colony colony)
+        public double GetFreeDmg(Colony colony)
         {
-            return this.BombardDamage * Consts.BombardFreeDmgMult / colony.PlanetDefenseCostPerHP;
+            TurnException.CheckTurn(colony.Player);
+
+            return GetFreeDmg(colony.PlanetDefenseCostPerHP);
+        }
+        private double GetFreeDmg(double costPerHP)
+        {
+            return this.BombardDamage * Consts.BombardFreeDmgMult / costPerHP;
         }
 
         private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage)

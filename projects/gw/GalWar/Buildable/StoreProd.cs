@@ -34,7 +34,7 @@ namespace GalWar
             }
         }
 
-        internal override void Build(IEventHandler handler, Colony colony, Tile tile )
+        internal override void Build(IEventHandler handler, Colony colony, Tile tile)
         {
         }
 

@@ -963,7 +963,7 @@ namespace GalWar
         #region enum
 
         private const double FocusCostMult = 1.69;
-        private const double FocusUpkeepMult = Math.E / 1.3;
+        private const double FocusUpkeepMult = 1.3;
         private const double FocusAttMult = 2.6;
         private const double FocusSpeedMult = 1.3;
         //note - cannot go much higher than 2.1, due to current CreateType logic overflow 

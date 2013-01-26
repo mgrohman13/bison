@@ -14,19 +14,10 @@ clean up fields
 		use actual fields?
 			all checked
 
-double click research obsolete target design
-ResearchForm.newDefense
-clean up anomaly methods
 clean up planet defense interface
 	GetBuildingDefense
 	when buying PD show expected values
-see free damage enemy will get vs friendly colony
-non DS bombard combat screen take into account free damage
-autorepair off map indicator is worthless
-clear enemy moves
-	dialog
-	undo
-repair cost calculations using decimal places not rounded?
+	see free damage enemy will get vs friendly colony
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
@@ -37,13 +28,7 @@ main map improvements
 management screens
 	colonies
 	ships
-
-wormhole numbers continually increment?
-	at least not change when higher ones disappear
-visibly code wormholes
-	colors?
-	shapes/symbols?
-	numbers on main map?
+	
 anomaly neutral ships?
 Graphs fields
 

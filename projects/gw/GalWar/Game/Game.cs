@@ -21,6 +21,23 @@ namespace GalWar
             return new Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])").Replace(str, " ${x}");
         }
 
+        private static readonly byte[] values = new byte[] { 90, 50, 40, 10, 9, 5, 4, 1 };
+        private static readonly string[] numerals = new string[] { "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+        public static string NumberToRoman(int mark)
+        {
+            if (mark > 99)
+                return mark.ToString();
+
+            string result = string.Empty;
+            for (int i = 0 ; i < values.Length ; ++i)
+                while (mark >= values[i])
+                {
+                    mark -= values[i];
+                    result += numerals[i];
+                }
+            return result;
+        }
+
         #endregion //static
 
         #region fields and constructors
@@ -40,7 +57,7 @@ namespace GalWar
 
         private readonly Tile[,] map;
         private readonly List<Planet> planets;
-        private readonly List<Tuple<Tile, Tile>> teleporters;
+        private readonly System.Collections.Generic.List<Tuple<Tile, Tile>> teleporters;
         private Player[] players;
 
         private readonly List<Result> deadPlayers;
@@ -587,9 +604,9 @@ next_planet:
         }
         private bool CheckAttInvPlayers(ISpaceObject obj, bool inv, Tile t1, Tile t2)
         {
-            HashSet<ISpaceObject> before = Anomaly.GetAttInv(obj.Tile, null, inv);
+            HashSet<ISpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv);
             Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
-            HashSet<ISpaceObject> after = Anomaly.GetAttInv(obj.Tile, null, inv);
+            HashSet<ISpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv);
             RemoveTeleporter(teleporter);
             foreach (ISpaceObject other in after)
                 if (other.Player != obj.Player && !before.Contains(other))

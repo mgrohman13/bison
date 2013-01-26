@@ -66,18 +66,29 @@ namespace GalWar
 
         internal void LosePopulation(int population)
         {
+            LosePopulation(population, false);
+        }
+        internal void LosePopulation(int population, bool addGold)
+        {
             if (population > this.Population)
                 population = this.Population;
+
+            double gold = 0;
 
             if (population > 0)
             {
                 double soldiers = GetSoldiers(population);
-                Player.GoldIncome(soldiers / Consts.SoldiersForGold);
+                gold += ( soldiers / Consts.SoldiersForGold );
                 this.Soldiers -= soldiers;
-
-                Player.GoldIncome(population / Consts.PopulationForGoldLow);
             }
+
+            gold += ( population / Consts.PopulationForGoldLow );
             this.Population -= population;
+
+            if (addGold)
+                this.Player.AddGold(gold, true);
+            else
+                this.Player.GoldIncome(gold);
         }
 
         #endregion //protected

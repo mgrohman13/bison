@@ -142,18 +142,18 @@ namespace GalWar
                 return GetTeleporter(out index);
             }
         }
-        public Tile GetTeleporter(out int index)
+        public Tile GetTeleporter(out int number)
         {
-            index = 0;
+            number = 0;
             foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
             {
-                ++index;
+                ++number;
                 if (teleporter.Item1 == this)
                     return teleporter.Item2;
                 else if (teleporter.Item2 == this)
                     return teleporter.Item1;
             }
-            index = -1;
+            number = -1;
             return null;
         }
 

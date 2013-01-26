@@ -708,7 +708,7 @@ namespace GalWar
                     if (minGold)
                         loss = Math.Floor(loss);
                     totalProd -= loss;
-                    gold += loss / Consts.ProductionForGold;
+                    gold += loss / Consts.ProductionForGold - shipDesign.Upkeep * Consts.UpkeepUnmovedReturn;
                     if (minGold)
                         gold -= GetActualGoldCost(shipDesign.Trans);
                     if (!this.Buildable.Multiple)
@@ -1064,8 +1064,8 @@ namespace GalWar
         internal void BuildAttAndDef(double prod)
         {
             bool b = Game.Random.Bool();
-            BuildPlanetDefense(prod / 2.0, b ? (Buildable)new Attack() : new Defense());
-            BuildPlanetDefense(prod / 2.0, b ? (Buildable)new Defense() : new Attack());
+            BuildPlanetDefense(prod / 2.0, b ? (Buildable)Player.Game.Attack : Player.Game.Defense);
+            BuildPlanetDefense(prod / 2.0, b ? (Buildable)Player.Game.Defense : Player.Game.Attack);
         }
         private void BuildPlanetDefense(double prod, Buildable build)
         {

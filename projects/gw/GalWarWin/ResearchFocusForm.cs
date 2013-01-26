@@ -85,6 +85,11 @@ namespace GalWarWin
             return y.Research - x.Research;
         }
 
+        private void lbxUpgrade_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+        }
+
         private void lbxUpgrade_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.sdUpgrade.SetBuildable((Buildable)this.lbxUpgrade.SelectedItem);

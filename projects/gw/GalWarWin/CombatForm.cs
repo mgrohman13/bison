@@ -84,6 +84,15 @@ namespace GalWarWin
 
             Form.btnEdit.Visible = !isConfirmation;
 
+            double freeDmg = 0;
+            bool showFree = ( attShip != null && defender is Colony && defender.Player.IsTurn );
+            if (showFree)
+                freeDmg = attShip.GetFreeDmg((Colony)defender);
+            showFree = ( freeDmg > .05 );
+            this.lblFree.Visible = showFree;
+            if (showFree)
+                this.lblFree.Text = MainForm.FormatDouble(-freeDmg);
+
             if (attacker == null)
             {
                 ShowEdit();
@@ -93,7 +102,7 @@ namespace GalWarWin
                 SetValue(this.nudAttack, attacker.Att);
                 SetValue(this.nudAttHP, attacker.HP);
                 SetValue(this.nudDefense, defender.Def);
-                SetValue(this.nudDefHP, defender.HP);
+                SetValue(this.nudDefHP, defender.HP - (decimal)freeDmg);
 
                 this.lblAttack.Text = attacker.Att.ToString();
                 this.lblAttHP.Text = attacker.HP.ToString();
@@ -128,7 +137,7 @@ namespace GalWarWin
             CancelWorker();
 
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
-            int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
+            int attHP = (int)this.nudAttHP.Value, defHP = (int)( (double)this.nudDefHP.Value + Consts.FLOAT_ERROR );
 
             double avgAtt, avgDef;
             Dictionary<int, double> damageTable = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
@@ -174,18 +183,46 @@ namespace GalWarWin
             BackgroundWorker worker = (BackgroundWorker)sender;
             Dictionary<int, double> damageTable = (Dictionary<int, double>)e.Argument;
 
-            int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
+            double mult = (double)( this.nudDefHP.Value - defHP );
+            if (mult > 1 - Consts.FLOAT_ERROR)
+            {
+                mult = 0;
+                ++defHP;
+            }
+
+            Dictionary<ResultPoint, double> chances = GetChances(worker, damageTable, defHP);
+
+            if (mult > Consts.FLOAT_ERROR)
+            {
+                mult /= ( 1 - mult );
+                Dictionary<ResultPoint, double> combine = GetChances(worker, damageTable, defHP + 1);
+                if (!worker.CancellationPending)
+                    foreach (var pair in combine)
+                    {
+                        double amt;
+                        chances.TryGetValue(pair.Key, out amt);
+                        chances[pair.Key] = pair.Value * mult + amt;
+                    }
+            }
+
+            e.Result = chances;
+
+            if (worker.CancellationPending)
+                e.Cancel = true;
+        }
+        private Dictionary<ResultPoint, double> GetChances(BackgroundWorker worker, Dictionary<int, double> damageTable, int defHP)
+        {
+            int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
+            int attHP = (int)this.nudAttHP.Value;
             double totalDmgChance = ( att + 1 ) * ( def + 1 );
 
-            //int chancesCap = GetCapacity(att, def, ( att / 2 ) * 2, attHP, defHP),
-            //        oldChancesCap = GetCapacity(att, def, ( ( ( att + 1 ) / 2 ) * 2 ) - 1, attHP, defHP);
             int targetCap = GetCapacity(att, def, att, attHP, defHP);
             var chances = new Dictionary<ResultPoint, double>(targetCap);
             var oldChances = new Dictionary<ResultPoint, double>(targetCap);
 
             ResultPoint rp = new ResultPoint(attHP, defHP);
-            chances.Add(rp, double.Epsilon);
+            chances.Add(rp, double.Epsilon / Consts.FLOAT_ERROR / Consts.FLOAT_ERROR);
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
@@ -194,8 +231,6 @@ namespace GalWarWin
                 oldChances = chances;
                 chances = temp;
                 chances.Clear();
-
-                //int capacity = GetCapacity(chances, buckets);
 
                 foreach (KeyValuePair<ResultPoint, double> chancePair in oldChances)
                 {
@@ -237,9 +272,6 @@ namespace GalWarWin
                     }
                 }
 
-                //if (capacity != GetCapacity(chances, buckets))
-                //    throw new Exception();
-
                 if (worker.CancellationPending)
                     goto end;
             }
@@ -260,11 +292,8 @@ namespace GalWarWin
                 Console.WriteLine();
             }
 
-            e.Result = chances;
-
 end:
-            if (worker.CancellationPending)
-                e.Cancel = true;
+            return chances;
         }
         private static int GetCapacity(int att, int def, int rounds, int attHP, int defHP)
         {
@@ -291,8 +320,8 @@ end:
                 btnDetails.Tag = result;
                 btnDetails.Visible = true;
 
-                int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
-                double total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
+                int attHP = (int)this.nudAttHP.Value;
+                double defHP = (double)this.nudDefHP.Value, total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
                 foreach (KeyValuePair<ResultPoint, double> pair in result)
                 {
                     ResultPoint res = pair.Key;
@@ -486,10 +515,12 @@ end:
             Form.Flush();
         }
 
-        public static void OnRefresh(bool show)
+        public static bool OnRefresh(bool show)
         {
-            if (( show || Form.chkLog.Checked ) && Form.log.Count > 0)
+            show = ( ( show || Form.chkLog.Checked ) && Form.log.Count > 0 );
+            if (show)
                 Form.ShowLog();
+            return show;
         }
 
         private void btnLog_Click(object sender, EventArgs e)

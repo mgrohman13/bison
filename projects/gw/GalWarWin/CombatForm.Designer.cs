@@ -49,6 +49,7 @@ namespace GalWarWin
             this.btnLog = new System.Windows.Forms.Button();
             this.chkLog = new System.Windows.Forms.CheckBox();
             this.btnDetails = new System.Windows.Forms.Button();
+            this.lblFree = new System.Windows.Forms.Label();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttack ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudAttHP ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudDefHP ) ).BeginInit();
@@ -348,6 +349,18 @@ namespace GalWarWin
             this.btnDetails.Visible = false;
             this.btnDetails.Click += new System.EventHandler(this.btnDetails_Click);
             // 
+            // lblFree
+            // 
+            this.lblFree.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblFree.AutoEllipsis = true;
+            this.lblFree.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblFree.Location = new System.Drawing.Point(121, 78);
+            this.lblFree.Name = "lblFree";
+            this.lblFree.Size = new System.Drawing.Size(97, 23);
+            this.lblFree.TabIndex = 17;
+            this.lblFree.Text = "label1";
+            this.lblFree.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // CombatForm
             // 
             this.AcceptButton = this.btnAttack;
@@ -355,6 +368,7 @@ namespace GalWarWin
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(230, 282);
+            this.Controls.Add(this.lblFree);
             this.Controls.Add(this.btnDetails);
             this.Controls.Add(this.chkLog);
             this.Controls.Add(this.btnLog);
@@ -412,5 +426,6 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnLog;
         private System.Windows.Forms.CheckBox chkLog;
         private System.Windows.Forms.Button btnDetails;
+        private System.Windows.Forms.Label lblFree;
     }
 }
