@@ -52,7 +52,7 @@ namespace GalWarAI
             return options.ToArray()[Game.Random.Next(options.Count)];
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        Buildable IEventHandler.getNewBuild(Colony colony)
         {
             //all buildable changes are handled explicitly
             return colony.Buildable;

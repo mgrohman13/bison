@@ -724,28 +724,6 @@ namespace GalWar
             return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(), GetNonTransPct(), this.Speed);
         }
 
-        internal override bool NeedsTile
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        internal override bool Multiple
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        internal override bool CanBeBuiltBy(Colony colony)
-        {
-            return colony.Player.GetShipDesigns().Contains(this);
-        }
-
-
         internal HashSet<ShipDesign> GetObsolete(int mapSize, List<ShipDesign> designs)
         {
             HashSet<ShipDesign> retVal = new HashSet<ShipDesign>();
@@ -754,7 +732,6 @@ namespace GalWar
                     retVal.Add(design);
             return retVal;
         }
-
         internal bool MakesObsolete(int mapSize, ShipDesign oldDesign)
         {
             double totCost = this.Cost + this.Upkeep * this.GetUpkeepPayoff(mapSize);
@@ -789,12 +766,38 @@ namespace GalWar
                 ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep) ) )
             );
         }
-
         private bool ObsoleteCost(double c1, double c2, double u1, double u2)
         {
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
             return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.E * .13));
+        }
+
+        #endregion //internal
+
+        #region Buildable
+
+        public override int Cost
+        {
+            get
+            {
+                return this._cost;
+            }
+        }
+
+        internal override bool NeedsTile
+        {
+            get
+            {
+                return true;
+            }
+        }
+        internal override bool Multiple
+        {
+            get
+            {
+                return true;
+            }
         }
 
         internal override void Build(IEventHandler handler, Colony colony, Tile tile)
@@ -819,7 +822,22 @@ namespace GalWar
             }
         }
 
-        #endregion //internal
+        internal override bool CanBeBuiltBy(Colony colony)
+        {
+            return colony.Player.GetShipDesigns().Contains(this);
+        }
+
+        public override string GetProdText(string curProd)
+        {
+            return curProd + " / " + this.Cost.ToString();
+        }
+
+        public override string ToString()
+        {
+            return ShipNames.GetName(this.Name, this.Mark);
+        }
+
+        #endregion //Buildable
 
         #region public
 
@@ -862,7 +880,6 @@ namespace GalWar
                 return this._att;
             }
         }
-
         public int Def
         {
             get
@@ -894,14 +911,6 @@ namespace GalWar
             }
         }
 
-        public override int Cost
-        {
-            get
-            {
-                return this._cost;
-            }
-        }
-
         public double GetStrength()
         {
             return GetStrength(this.Att, this.Def, this.HP, this.Speed);
@@ -916,7 +925,6 @@ namespace GalWar
         {
             return GetHPStr(s1, s2, Consts.BaseDesignHPMult);
         }
-
         private static double GetHPStr(double s1, double s2, double hpMult)
         {
             return MultStr(( s1 + s2 ) * ( s1 + s2 ), hpMult);
@@ -942,20 +950,9 @@ namespace GalWar
         {
             return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research, true);
         }
-
         private double GetNonTransPct()
         {
             return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
-        }
-
-        public override string GetProdText(string curProd)
-        {
-            return curProd + " / " + this.Cost.ToString();
-        }
-
-        public override string ToString()
-        {
-            return ShipNames.GetName(this.Name, this.Mark);
         }
 
         #endregion //public

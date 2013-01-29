@@ -48,7 +48,7 @@ namespace GalWar
             }
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        Buildable IEventHandler.getNewBuild(Colony colony)
         {
             callback = true;
             special = true;
@@ -57,7 +57,7 @@ namespace GalWar
 
             try
             {
-                retVal = handler.getNewBuild(colony, accountForIncome, switchLoss, additionalLosses);
+                retVal = handler.getNewBuild(colony);
             }
             catch (Exception e)
             {

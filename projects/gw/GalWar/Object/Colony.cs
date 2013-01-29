@@ -38,7 +38,7 @@ namespace GalWar
             if (handler == null)
                 this.built = true;
             else
-                StartBuilding(handler, handler.getNewBuild(this, true, false));
+                StartBuilding(handler, handler.getNewBuild(this));
         }
 
         private bool built
@@ -133,7 +133,7 @@ namespace GalWar
 
             if (this.built)
             {
-                StartBuilding(handler, handler.getNewBuild(this, true, true));
+                StartBuilding(handler, handler.getNewBuild(this));
                 this.built = false;
             }
         }
@@ -888,7 +888,7 @@ namespace GalWar
                 return GetPDUpkeep(this.HP, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
             }
         }
-        internal double ArmadaCost
+        internal double PlanetDefenseCostAvgResearch
         {
             get
             {

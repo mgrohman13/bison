@@ -15,22 +15,14 @@ namespace GalWarWin
 
         private Colony colony;
 
-        private bool accountForIncome;
-        private bool switchLoss;
-        private double[] additionalLosses;
-
         private ProductionForm()
         {
             InitializeComponent();
         }
 
-        private void SetColony(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        private void SetColony(Colony colony)
         {
             this.colony = colony;
-
-            this.accountForIncome = accountForIncome;
-            this.switchLoss = switchLoss;
-            this.additionalLosses = additionalLosses;
 
             this.rbValue.Checked = true;
             RefreshDesigns();
@@ -129,9 +121,6 @@ namespace GalWarWin
                 this.lblProdLoss.Text = string.Empty;
             this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Production - lossAmt);
 
-            //this makes sure you wont screw yourself over and pay too much for production
-            this.btnBuy.Enabled = !( !switchLoss && additionalLosses.Length > 0 && accountForIncome && newBuild != colony.Buildable );
-
             //this stops you from marking another ship as obsolete during the event for marking a first one 
             //or from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 && colony.CanBuild(colony.Buildable) );
@@ -139,17 +128,7 @@ namespace GalWarWin
 
         private double GetLossPct(Buildable buildable)
         {
-            double lossAmt = 0;
-            for (int i = this.switchLoss ? -1 : 0 ; i < this.additionalLosses.Length ; ++i)
-            {
-                double loss;
-                if (i > -1)
-                    loss = this.additionalLosses[i];
-                else
-                    loss = this.colony.GetLossPct(buildable);
-                lossAmt = 1 - ( ( 1 - loss ) * ( 1 - lossAmt ) );
-            }
-            return lossAmt;
+            return this.colony.GetLossPct(buildable);
         }
 
         private void btnBuy_Click(object sender, EventArgs e)
@@ -157,7 +136,7 @@ namespace GalWarWin
             Buildable buildable = GetSelectedDesign();
             if (buildable != null)
             {
-                bool switchFirst = ( switchLoss && buildable != colony.Buildable );
+                bool switchFirst = ( buildable != colony.Buildable );
                 int initial = GetInitialBuy(buildable, switchFirst);
                 int prod = SliderForm.ShowForm(new BuyProd(colony.Player, initial));
                 if (prod > 0)
@@ -208,17 +187,13 @@ namespace GalWarWin
 
         private int GetIncome()
         {
-            int income = 0;
-            if (accountForIncome)
+            int income = colony.GetProductionIncome();
+            Ship repairShip = colony.RepairShip;
+            if (repairShip != null)
             {
-                income = colony.GetProductionIncome();
-                Ship repairShip = colony.RepairShip;
-                if (repairShip != null)
-                {
-                    income -= (int)Math.Ceiling(repairShip.GetProdForHP(repairShip.MaxHP - repairShip.HP));
-                    if (income < 0)
-                        income = 0;
-                }
+                income -= (int)Math.Ceiling(repairShip.GetProdForHP(repairShip.MaxHP - repairShip.HP));
+                if (income < 0)
+                    income = 0;
             }
             return income;
         }
@@ -231,10 +206,6 @@ namespace GalWarWin
                 cost = MultForLossPct(cost, Consts.CarryProductionLossPct);
                 cost += buildable.Cost;
             }
-
-            for (int i = this.additionalLosses.Length ; --i > -1 ; )
-                cost = MultForLossPct(cost, this.additionalLosses[i]);
-
             return cost;
         }
 
@@ -264,17 +235,17 @@ namespace GalWarWin
             }
         }
 
-        public static Buildable ShowForm(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        public static Buildable ShowForm(Colony colony)
         {
             MainForm.GameForm.SetLocation(form);
 
-            form.SetColony(colony, accountForIncome, switchLoss, additionalLosses);
+            form.SetColony(colony);
             DialogResult result = form.ShowDialog();
 
             if (result == DialogResult.OK)
                 return form.GetSelectedDesign();
             else if (result == DialogResult.Abort)
-                MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, (ShipDesign)form.GetSelectedDesign(), accountForIncome, additionalLosses);
+                MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, (ShipDesign)form.GetSelectedDesign());
 
             if (colony.CanBuild(colony.Buildable))
                 return colony.Buildable;

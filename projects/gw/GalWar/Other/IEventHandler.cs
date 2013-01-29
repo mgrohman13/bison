@@ -7,7 +7,7 @@ namespace GalWar
     {
         Tile getBuildTile(Colony colony);
 
-        Buildable getNewBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses);
+        Buildable getNewBuild(Colony colony);
 
         int MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers);
 

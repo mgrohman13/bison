@@ -28,8 +28,6 @@ namespace GalWar
         {
             get
             {
-                if (double.IsNaN(this._value))
-                    this.value = GenerateValue();
                 return this._value;
             }
             set
@@ -58,7 +56,7 @@ namespace GalWar
 
         internal void Explore(IEventHandler handler, Ship ship)
         {
-            this.value = double.NaN;
+            this.value = GenerateValue(ship);
             this.Tile.SpaceObject = null;
 
             Planet planet = Tile.Game.CreateAnomalyPlanet(handler, this.Tile);
@@ -115,20 +113,20 @@ namespace GalWar
             }
         }
 
-        private double GenerateValue()
+        private double GenerateValue(Ship armadaShip)
         {
             double quality = 0, pop = 0, armada = 0;
             foreach (Planet planet in Tile.Game.GetPlanets())
             {
                 if (planet.Colony == null)
                 {
-                    quality += planet.Quality / 2.1;
+                    quality += planet.Quality / 2.6;
                 }
                 else
                 {
                     quality += planet.Quality;
                     pop += planet.Colony.Population;
-                    armada += planet.Colony.ArmadaCost / 1.69 + planet.Colony.production / 2.6;
+                    armada += planet.Colony.PlanetDefenseCostAvgResearch / 1.69 + planet.Colony.production / 2.1;
                 }
             }
             foreach (Player player in Tile.Game.GetPlayers())
@@ -141,8 +139,8 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double income = 2.1 * Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
-            double assets = .13 * armada;
+            double income = 2.6 * Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
+            double assets = 1 / 13.0 * armada;
             return Game.Random.GaussianOE(( income + assets ) / Tile.Game.GetPlayers().Length, .39, .26, 1);
         }
 
@@ -853,7 +851,7 @@ namespace GalWar
 
             handler.Explore(AnomalyType.SalvageShip, player);
 
-            double min = this.value, max = GenerateValue();
+            double min = this.value, max = GenerateValue(anomShip);
             if (min > max)
             {
                 double temp = min;

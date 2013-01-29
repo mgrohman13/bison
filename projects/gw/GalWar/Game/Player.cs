@@ -222,7 +222,7 @@ namespace GalWar
                 ship.StartTurn(handler);
 
             //consolidate all gold to start the turn
-            double gold = this.goldValue + this.goldOffset;
+            double gold = this.TotalGold;
             this.goldValue = 0;
             this.goldOffset = 0;
             AddGold(gold, true);
@@ -851,24 +851,22 @@ namespace GalWar
             return key;
         }
 
-        //additionalLossPct and accountForIncome are only there to be passed back into the handler; they do not affect the call itself
-        public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign, bool accountForIncome, params double[] additionalLosses)
+        public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
         {
-            handler = new HandlerWrapper(handler, this.Game, false, true);
+            handler = new HandlerWrapper(handler, this.Game, true, true);
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));
             AssertException.Assert(this.designs.Count > 1);
 
-            double[] losses = new double[additionalLosses.Length + 1];
-            losses[0] = Consts.ManualObsoleteLossPct;
-            Array.Copy(additionalLosses, 0, losses, 1, additionalLosses.Length);
-
             this.designs.Remove(obsoleteDesign);
             //manualy marking a design as obsolete allows build switching at ManualObsoleteLossPct
             foreach (Colony colony in this.colonies)
                 if (colony.Buildable == obsoleteDesign)
-                    colony.SetBuildable(handler.getNewBuild(colony, accountForIncome, false, losses), Consts.ManualObsoleteLossPct);
+                {
+                    colony.SetBuildable(Game.StoreProd, Consts.ManualObsoleteLossPct);
+                    colony.StartBuilding(handler, handler.getNewBuild(colony));
+                }
         }
 
         public void AutoRepairShips(IEventHandler handler)

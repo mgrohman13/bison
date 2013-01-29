@@ -689,18 +689,18 @@ namespace GalWarWin
         private void btnProduction_Click(object sender, EventArgs e)
         {
             Colony colony = GetSelectedColony();
-            colony.StartBuilding(this, ChangeBuild(colony, true, true));
+            colony.StartBuilding(this, ChangeBuild(colony));
 
             saved = false;
             this.RefreshAll();
         }
 
-        private Buildable ChangeBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        private Buildable ChangeBuild(Colony colony)
         {
             this.selectedTile = colony.Tile;
             this.RefreshAll();
 
-            return ProductionForm.ShowForm(colony, accountForIncome, switchLoss, additionalLosses);
+            return ProductionForm.ShowForm(colony);
         }
 
         private void btnProdRepair_Click(object sender, EventArgs eventArgs)
@@ -1931,11 +1931,11 @@ namespace GalWarWin
             return SelectTile(colony.Tile, true);
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, bool accountForIncome, bool switchLoss, params double[] additionalLosses)
+        Buildable IEventHandler.getNewBuild(Colony colony)
         {
             this.RefreshAll();
 
-            return ChangeBuild(colony, accountForIncome, switchLoss, additionalLosses);
+            return ChangeBuild(colony);
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
