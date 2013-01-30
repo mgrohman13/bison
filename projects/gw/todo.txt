@@ -4,7 +4,6 @@ clean up fields
 		Graphs
 		ShipDesign
 		Ship
-		Colony
 	consistent ordering
 	start with _ 
 	fields directly set in constructors
@@ -22,6 +21,8 @@ revisit fields
 	data types
 	[NonSerialized]
 
+no public setters
+remove other checked contexts
 check usage of public properties with TurnException.CheckTurn(this)
 check all field usage, and field property usage
 

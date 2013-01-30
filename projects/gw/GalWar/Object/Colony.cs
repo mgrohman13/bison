@@ -8,8 +8,9 @@ namespace GalWar
     {
         #region fields and constructors
 
-        private readonly Player player;
         public readonly Planet Planet;
+
+        private readonly Player _player;
 
         private Buildable _buildable;
         private Ship _repairShip;
@@ -17,28 +18,97 @@ namespace GalWar
         private bool _built;
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
-        private ushort _production, _repair;
-        private float _researchRounding, _productionRounding, _soldierChange;
+        private ushort _repair, _production;
+        private float _soldierChange, _researchRounding, _productionRounding;
 
         internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
             : base(1, 1, 0, population, soldiers)
         {
-            this.player = player;
-            this.Planet = planet;
-            planet.Colony = this;
+            checked
+            {
+                this.Planet = planet;
+                planet.Colony = this;
 
-            //set the build intially to StoreProd so it can be changed to anything with no production loss
-            this._buildable = player.Game.StoreProd;
-            this._repairShip = null;
+                this._player = player;
 
-            this.production = production;
+                //set the build intially to StoreProd so it can be changed to anything with no production loss
+                this._buildable = player.Game.StoreProd;
+                this._repairShip = null;
 
-            ResetRounding();
+                this._built = ( handler == null );
 
-            if (handler == null)
-                this.built = true;
-            else
-                StartBuilding(handler, handler.getNewBuild(this));
+                this._defenseAttChange = 0;
+                this._defenseDefChange = 0;
+                this._defenseHPChange = 0;
+                this._repair = 0;
+
+                this._production = (ushort)production;
+
+                this._soldierChange = 0;
+
+                this._researchRounding = float.NaN;
+                this._productionRounding = float.NaN;
+
+                ResetRounding();
+                if (handler != null)
+                    StartBuilding(handler, handler.getNewBuild(this));
+            }
+        }
+
+        public override Player Player
+        {
+            get
+            {
+                return this._player;
+            }
+        }
+
+        public Buildable Buildable
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return this._buildable;
+            }
+            private set
+            {
+                checked
+                {
+                    this._buildable = value;
+                }
+            }
+        }
+        public Ship RepairShip
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                Ship repairShip = this._repairShip;
+                if (repairShip != null &&
+                        ( repairShip.HP == repairShip.MaxHP || repairShip.Dead
+                        || !Tile.IsNeighbor(this.Tile, repairShip.Tile) ))
+                    this.RepairShip = repairShip = null;
+
+                return repairShip;
+            }
+            internal set
+            {
+                checked
+                {
+                    Ship repairShip = this._repairShip;
+                    if (repairShip != value)
+                    {
+                        if (repairShip != null && repairShip.AutoRepair == 0)
+                            repairShip.AutoRepair = double.NaN;
+                        if (value != null)
+                            value.AutoRepair = 0;
+
+                        this._repairShip = value;
+                    }
+                }
+            }
         }
 
         private bool built
@@ -49,7 +119,126 @@ namespace GalWar
             }
             set
             {
-                this._built = value;
+                checked
+                {
+                    this._built = value;
+                }
+            }
+        }
+
+        public int DefenseAttChange
+        {
+            get
+            {
+                return this._defenseAttChange;
+            }
+            private set
+            {
+                checked
+                {
+                    this._defenseAttChange = (sbyte)value;
+                }
+            }
+        }
+        public int DefenseDefChange
+        {
+            get
+            {
+                return this._defenseDefChange;
+            }
+            private set
+            {
+                checked
+                {
+                    this._defenseDefChange = (sbyte)value;
+                }
+            }
+        }
+        public int DefenseHPChange
+        {
+            get
+            {
+                return this._defenseHPChange;
+            }
+            private set
+            {
+                checked
+                {
+                    this._defenseHPChange = (sbyte)value;
+                }
+            }
+        }
+        public int Repair
+        {
+            get
+            {
+                return this._repair;
+            }
+            private set
+            {
+                checked
+                {
+                    this._repair = (ushort)value;
+                }
+            }
+        }
+
+        internal int production
+        {
+            get
+            {
+                return this._production;
+            }
+            private set
+            {
+                checked
+                {
+                    this._production = (ushort)value;
+                }
+            }
+        }
+
+        public double SoldierChange
+        {
+            get
+            {
+                return this._soldierChange;
+            }
+            private set
+            {
+                checked
+                {
+                    this._soldierChange = (float)value;
+                }
+            }
+        }
+
+        private double researchRounding
+        {
+            get
+            {
+                return this._researchRounding;
+            }
+            set
+            {
+                checked
+                {
+                    this._researchRounding = (float)value;
+                }
+            }
+        }
+        private double productionRounding
+        {
+            get
+            {
+                return this._productionRounding;
+            }
+            set
+            {
+                checked
+                {
+                    this._productionRounding = (float)value;
+                }
             }
         }
 
@@ -60,7 +249,7 @@ namespace GalWar
         internal void SetBuildable(Buildable newDesign, double losspct)
         {
             LoseProductionPct(losspct);
-            this._buildable = newDesign;
+            this.Buildable = newDesign;
         }
 
         internal void DoBuild(IEventHandler handler, double productionInc, ref double gold)
@@ -111,7 +300,8 @@ namespace GalWar
 
         private void DoChange(double soldierChange, int defenseAttChange, int defenseDefChange, int defenseHPChange)
         {
-            this._soldierChange = (float)( this.GetSoldierPct() - soldierChange );
+            this.SoldierChange = this.GetSoldierPct() - soldierChange;
+
             int att = this.Att;
             int def = this.Def;
             if (this.MinDefenses)
@@ -119,12 +309,10 @@ namespace GalWar
                 --att;
                 --def;
             }
-            checked
-            {
-                this._defenseAttChange = (sbyte)( att - defenseAttChange );
-                this._defenseDefChange = (sbyte)( def - defenseDefChange );
-                this._defenseHPChange = (short)( this.HP - defenseHPChange );
-            }
+
+            this.DefenseAttChange = att - defenseAttChange;
+            this.DefenseDefChange = def - defenseDefChange;
+            this.DefenseHPChange = this.HP - defenseHPChange;
         }
 
         internal void StartTurn(IEventHandler handler)
@@ -170,7 +358,7 @@ namespace GalWar
             if (!buildFirst)
                 this.DoBuild(handler, production, ref gold);
 
-            DoChange(this._soldierChange, this._defenseAttChange, this._defenseDefChange, this._defenseHPChange);
+            DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
         }
 
         private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn, bool minGold)
@@ -216,8 +404,8 @@ namespace GalWar
             researchPct /= totalPct;
             productionPct /= totalPct;
 
-            research = Round(researchPct * income, this._researchRounding);
-            production = Round(productionPct * income, this._productionRounding);
+            research = Round(researchPct * income, this.researchRounding);
+            production = Round(productionPct * income, this.productionRounding);
             gold = income - research - production;
         }
 
@@ -227,7 +415,7 @@ namespace GalWar
         }
 
         //analogous to MTRandom.Round, but using a constant for the random value
-        private int Round(double number, float round)
+        private int Round(double number, double round)
         {
             int result = (int)Math.Floor(number);
             if (round < number - result)
@@ -237,8 +425,8 @@ namespace GalWar
 
         private void ResetRounding()
         {
-            this._researchRounding = Game.Random.NextFloat();
-            this._productionRounding = Game.Random.NextFloat();
+            this.researchRounding = Game.Random.NextFloat();
+            this.productionRounding = Game.Random.NextFloat();
         }
 
         internal double Bombard(int damage)
@@ -468,29 +656,11 @@ namespace GalWar
             }
         }
 
-        public override Player Player
-        {
-            get
-            {
-                return this.player;
-            }
-        }
-
         public override Tile Tile
         {
             get
             {
                 return Planet.Tile;
-            }
-        }
-
-        public Buildable Buildable
-        {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                return this._buildable;
             }
         }
 
@@ -501,20 +671,6 @@ namespace GalWar
                 TurnException.CheckTurn(this.Player);
 
                 return this.production;
-            }
-        }
-        internal int production
-        {
-            get
-            {
-                return this._production;
-            }
-            private set
-            {
-                checked
-                {
-                    this._production = (ushort)value;
-                }
             }
         }
 
@@ -528,33 +684,6 @@ namespace GalWar
             }
         }
 
-        public Ship RepairShip
-        {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                if (this._repairShip != null &&
-                        ( this._repairShip.HP == this._repairShip.MaxHP || this._repairShip.Dead
-                        || !Tile.IsNeighbor(this.Tile, this._repairShip.Tile) ))
-                    this.RepairShip = null;
-
-                return this._repairShip;
-            }
-            internal set
-            {
-                if (this._repairShip != value)
-                {
-                    if (this._repairShip != null && this._repairShip.AutoRepair == 0)
-                        this._repairShip.AutoRepair = double.NaN;
-                    if (value != null)
-                        value.AutoRepair = 0;
-
-                    this._repairShip = value;
-                }
-            }
-        }
-
         public void SetRepairShip(IEventHandler handler, Ship value)
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
@@ -562,53 +691,6 @@ namespace GalWar
             AssertException.Assert(value == null || this.Player == value.Player);
 
             this.RepairShip = value;
-        }
-
-        public int Repair
-        {
-            get
-            {
-                return this._repair;
-            }
-            private set
-            {
-                checked
-                {
-                    this._repair = (ushort)value;
-                }
-            }
-        }
-
-        public double SoldierChange
-        {
-            get
-            {
-                return this._soldierChange;
-            }
-        }
-
-        public int DefenseAttChange
-        {
-            get
-            {
-                return this._defenseAttChange;
-            }
-        }
-
-        public int DefenseDefChange
-        {
-            get
-            {
-                return this._defenseDefChange;
-            }
-        }
-
-        public int DefenseHPChange
-        {
-            get
-            {
-                return this._defenseHPChange;
-            }
         }
 
         public bool MinDefenses
@@ -844,7 +926,7 @@ namespace GalWar
         }
         private Tile UndoStartBuilding(Buildable oldBuild, int loss)
         {
-            this._buildable = oldBuild;
+            this.Buildable = oldBuild;
             this.production += loss;
             this.Player.AddGold(-loss / Consts.ProductionForGold);
 
