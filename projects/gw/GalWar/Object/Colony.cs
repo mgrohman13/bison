@@ -1101,11 +1101,11 @@ namespace GalWar
         private void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP)
         {
             if (buildable is Attack)
-                ModPD(this.PlanetDefenseCost + prod, this.Att, this.Player.PDAtt,
+                ModPD(this.PlanetDefenseCost + prod, this.Att, this.Player.PlanetDefenseAtt,
                         this.Def, this.Def, out newAtt, out newDef, out newHP);
             else if (buildable is Defense)
                 ModPD(this.PlanetDefenseCost + prod, this.Att, this.Att,
-                        this.Def, this.Player.PDDef, out newAtt, out newDef, out newHP);
+                        this.Def, this.Player.PlanetDefenseDef, out newAtt, out newDef, out newHP);
             else
                 throw new Exception();
         }
@@ -1184,8 +1184,8 @@ namespace GalWar
 
         private void ModPD(double newCost, double newAtt, double newDef)
         {
-            this.Att = GetPDStat(newAtt, this.Att, this.Player.PDAtt);
-            this.Def = GetPDStat(newDef, this.Def, this.Player.PDDef);
+            this.Att = GetPDStat(newAtt, this.Att, this.Player.PlanetDefenseAtt);
+            this.Def = GetPDStat(newDef, this.Def, this.Player.PlanetDefenseDef);
             this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, ushort.MaxValue);
 
             if (Math.Abs(GetPDCost(Att, Def) - GetPDCost(Def, Att)) > Consts.FLOAT_ERROR)

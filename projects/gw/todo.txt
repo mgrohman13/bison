@@ -1,18 +1,29 @@
 clean up fields
-	make sure using checked
-		constructors
-		setters
-	remove casts
-		pervasive float usage
-	revisit fields
-		data types
-		readonly
+	(except public/internal readonly <GalWar object>, private readonly IEnumerable<<GalWar object>>)
+	objs
+		Graphs
+		ShipDesign
+		Ship
+		Colony
 	consistent ordering
-		fields
-		properties
-	make sure all fields set in constructors
-		use actual fields?
-			all checked
+	start with _ 
+	fields directly set in constructors
+	have at least private getter/setters
+	checked context for setters/constructors
+	no field usage outside of properties/constructors
+
+remove casts
+	pervasive float usage
+revisit fields
+	all private
+		can do public/internal readonly <GalWar object>, private readonly IEnumerable<<GalWar object>>
+	readonly
+	property visibility
+	data types
+	[NonSerialized]
+
+check usage of public properties with TurnException.CheckTurn(this)
+check all field usage, and field property usage
 
 clean up planet defense interface
 	GetBuildingDefense
@@ -28,9 +39,11 @@ main map improvements
 management screens
 	colonies
 	ships
-	
+
+starting gold uses ColonyCost functionality with some high mult
 anomaly neutral ships?
-Graphs fields
+private Player[] players should be a readonly list
+public Player constructor should be a separate object
 
 known enemy designs
 AI

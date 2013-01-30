@@ -15,8 +15,6 @@ namespace GalWarWin
     {
         #region fields and constructors
 
-        private static string initialAutoSave;
-
         private static Game _game;
         public static Game Game
         {
@@ -27,7 +25,6 @@ namespace GalWarWin
             private set
             {
                 _game = value;
-                _game.AutoSavePath = initialAutoSave;
             }
         }
 
@@ -100,7 +97,7 @@ namespace GalWarWin
             this.pnlHUD.Hide();
 
             string initialDirectory = GetInitialDirectory();
-            MainForm.initialAutoSave = GetInitialAutoSave(initialDirectory);
+            Game.AutoSavePath = GetInitialAutoSave(initialDirectory);
 
             this.openFileDialog1.InitialDirectory = initialDirectory;
             this.openFileDialog1.FileName = "g.gws";
@@ -591,7 +588,7 @@ namespace GalWarWin
 
         private void btnAutosaveView_Click(object sender, EventArgs e)
         {
-            this.openFileDialog1.InitialDirectory = initialAutoSave;
+            this.openFileDialog1.InitialDirectory = Game.AutoSavePath;
             this.openFileDialog1.FileName = "1.gws";
 
             if (this.openFileDialog1.ShowDialog() == DialogResult.OK)

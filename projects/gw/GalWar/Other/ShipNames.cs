@@ -6,6 +6,8 @@ namespace GalWar
     [Serializable]
     internal class ShipNames
     {
+        #region static
+
         private const int length = 6;
 
         private static readonly ShipClass[] attack;
@@ -16,13 +18,24 @@ namespace GalWar
 
         static ShipNames()
         {
-            //these arrays all need to be the same length
             attack = new ShipClass[] { ShipClass.Destroyer, ShipClass.Cruiser, ShipClass.Battlecruiser, ShipClass.Battleship, ShipClass.Dreadnought, ShipClass.Excalibur };
             defense = new ShipClass[] { ShipClass.Warrior, ShipClass.Defender, ShipClass.Ironclad, ShipClass.Armor, ShipClass.Guardian, ShipClass.Avatar };
             speed = new ShipClass[] { ShipClass.Scout, ShipClass.Fighter, ShipClass.Corvette, ShipClass.Frigate, ShipClass.Ranger, ShipClass.Phoenix };
             transport = new ShipClass[] { ShipClass.Galley, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Invader, ShipClass.Reaper };
             deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Exterminator, ShipClass.Demon };
+
+            if (attack.Length != length || defense.Length != length || speed.Length != length || transport.Length != length || deathStar.Length != length)
+                throw new Exception();
         }
+
+        internal static string GetName(int name, int mark)
+        {
+            return Game.CamelToSpaces(( (ShipClass)name ).ToString()) + " " + Game.NumberToRoman(mark);
+        }
+
+        #endregion static
+
+        #region fields and constructors
 
         private readonly uint[] _divisions;
         private readonly byte[,] _marks;
@@ -36,15 +49,14 @@ namespace GalWar
         {
             checked
             {
+                this._marks = new byte[numPlayers, (int)ShipClass.MAX];
                 this._divisions = new uint[length];
                 for (int a = 2 ; a < length ; ++a)
                     this.Divisions(a, int.MaxValue);
 
-                this._marks = new byte[numPlayers, (int)ShipClass.MAX];
-
-                this.setup = true;
-                this.total = 0;
-                this.count = 0;
+                this._setup = true;
+                this._total = 0;
+                this._count = 0;
             }
         }
 
@@ -119,6 +131,8 @@ namespace GalWar
                 }
             }
         }
+
+        #endregion //fields and constructors
 
         private ShipClass DoSetup(ShipClass[] type, int value)
         {
@@ -212,11 +226,6 @@ namespace GalWar
                 return Game.Random.GaussianCappedInt(value, .06, min);
             else
                 return min;
-        }
-
-        internal static string GetName(int name, int mark)
-        {
-            return Game.CamelToSpaces(( (ShipClass)name ).ToString()) + " " + Game.NumberToRoman(mark);
         }
 
         private enum ShipClass : byte

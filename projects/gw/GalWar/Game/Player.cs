@@ -11,24 +11,24 @@ namespace GalWar
         #region fields and constructors
 
         public readonly Game Game;
-
         public readonly string Name;
         public readonly Color Color;
-
         public readonly IGalWarAI AI;
 
         private readonly List<ShipDesign> designs;
-        private readonly List<Ship> ships;
         private readonly List<Colony> colonies;
+        private readonly List<Ship> ships;
 
         private ShipDesign.FocusStat _researchFocus;
         private ShipDesign _researchFocusDesign;
 
+        private readonly byte _id;
+
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
-        private byte _id, _att, _def;
+        private byte _pdAtt, _pdDef;
         private ushort _newResearch;
         private uint _research, _lastResearched, _goldValue;
-        private float _incomeTotal, _rKey, _rChance, _rMult, _rDisp, _rDispTrg, _rDispChange;
+        private float _rKey, _rChance, _rMult, _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
         private double _goldOffset;
 
         public Player(string name, Color color, IGalWarAI AI)
@@ -41,96 +41,180 @@ namespace GalWar
         internal Player(int id, Game Game, Player player, Planet planet,
                 int population, double soldiers, double gold, List<int> research)
         {
-            this.Game = Game;
-
-            this.Name = player.Name;
-            this.Color = player.Color;
-
-            this.AI = player.AI;
-
-            this.ships = new List<Ship>();
-
-            this._researchFocus = ShipDesign.FocusStat.None;
-            this._researchFocusDesign = null;
-
-            this._goldEmphasis = false;
-            this._researchEmphasis = false;
-            this._productionEmphasis = false;
             checked
             {
+                this.Game = Game;
+                this.Name = player.Name;
+                this.Color = player.Color;
+                this.AI = player.AI;
+
+                this.designs = ShipDesign.GetStartDesigns(research, this);
+                this.colonies = new List<Colony>();
+                this.ships = new List<Ship>();
+
+                this._researchFocus = ShipDesign.FocusStat.None;
+                this._researchFocusDesign = null;
+
                 this._id = (byte)id;
+
+                this._goldEmphasis = false;
+                this._researchEmphasis = false;
+                this._productionEmphasis = false;
+
+                this._pdAtt = 1;
+                this._pdDef = 1;
+
+                this._newResearch = 0;
+                //the highest research value is the actual starting research
+                this._research = (uint)research[3];
+                this._lastResearched = (uint)research[2];
+
+                this._goldValue = 0;
+
+                this._rKey = float.NaN;
+                this._rChance = float.NaN;
+                this._rMult = float.NaN;
+
+                this._rDisp = 1;
+                this._rDispTrg = 1;
+                this._rDispChange = 1;
+                //production is added in later
+                this._incomeTotal = (float)( gold + this.Research );
+
+                this._goldOffset = gold;
+
+                foreach (ShipDesign design in this.designs)
+                    SetPlanetDefense(design);
+                ResetResearchChance();
+                //starting production is handled after all players have been created
+                NewColony(null, planet, population, soldiers, 0);
             }
-            this.goldValue = 0;
-            this.goldOffset = gold;
-
-            //the highest research value is the actual starting research
-            this.Research = research[3];
-            this.newResearch = 0;
-            this.LastResearched = research[2];
-
-            this._att = this._def = 1;
-            this.designs = ShipDesign.GetStartDesigns(research, this);
-            foreach (ShipDesign design in this.designs)
-                SetPlanetDefense(design);
-
-            this.colonies = new List<Colony>();
-            //starting production is handled after all players have been created
-            NewColony(null, planet, population, soldiers, 0);
-
-            //production is added in later
-            this.IncomeTotal = gold + Consts.StartResearch;
-
-            ResetResearchChance();
-            _rDisp = 1;
-            _rDispTrg = 1;
-            _rDispChange = 1;
         }
 
-        private void SetPlanetDefense(ShipDesign design)
-        {
-            checked
-            {
-                this._att = (byte)GetPDStat(this._att, design.Att);
-                this._def = (byte)GetPDStat(this._def, design.Def);
-            }
-        }
-        private int GetPDStat(int cur, int add)
-        {
-            double newStat;
-            if (cur == add)
-                newStat = add;
-            else
-                newStat = ( cur + add * Consts.PlanetDefensesRndm ) / ( 1 + Consts.PlanetDefensesRndm );
-            return Math.Max(GetPDStat(newStat), GetPDStat(1 + ( add - 1 ) * ( 1 - Consts.PlanetDefensesRndm )));
-        }
-        private static int GetPDStat(double stat)
-        {
-            return Game.Random.GaussianOEInt((float)stat, Consts.PlanetDefensesRndm, Consts.PlanetDefensesRndm, 1);
-        }
-
-        public int PDAtt
+        public ShipDesign.FocusStat ResearchFocus
         {
             get
             {
                 TurnException.CheckTurn(this);
 
-                return this._att;
+                return GetResearchFocus();
+            }
+            set
+            {
+                checked
+                {
+                    TurnException.CheckTurn(this);
+                    if (value != ShipDesign.FocusStat.None)
+                        AssertException.Assert(this.ResearchFocusDesign == null);
+
+                    this._researchFocus = value;
+                }
             }
         }
-        public int PDDef
+        public ShipDesign ResearchFocusDesign
         {
             get
             {
                 TurnException.CheckTurn(this);
 
-                return this._def;
+                return this._researchFocusDesign;
+            }
+            set
+            {
+                checked
+                {
+                    TurnException.CheckTurn(this);
+                    if (value != null)
+                        AssertException.Assert(this.ResearchFocus == ShipDesign.FocusStat.None);
+
+                    this._researchFocusDesign = value;
+                }
             }
         }
-        public double PlanetDefenseCostPerHP
+
+        internal int ID
         {
             get
             {
-                return ShipDesign.GetPlanetDefenseCost(PDAtt, PDDef, this.LastResearched);
+                return this._id;
+            }
+        }
+
+        public bool GoldEmphasis
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this._goldEmphasis;
+            }
+            private set
+            {
+                checked
+                {
+                    this._goldEmphasis = value;
+                }
+            }
+        }
+        public bool ResearchEmphasis
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return _researchEmphasis;
+            }
+            private set
+            {
+                checked
+                {
+                    this._researchEmphasis = value;
+                }
+            }
+        }
+        public bool ProductionEmphasis
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return _productionEmphasis;
+            }
+            private set
+            {
+                checked
+                {
+                    this._productionEmphasis = value;
+                }
+            }
+        }
+
+        private int pdAtt
+        {
+            get
+            {
+                return this._pdAtt;
+            }
+            set
+            {
+                checked
+                {
+                    this._pdAtt = (byte)value;
+                }
+            }
+        }
+        private int pdDef
+        {
+            get
+            {
+                return this._pdDef;
+            }
+            set
+            {
+                checked
+                {
+                    this._pdDef = (byte)value;
+                }
             }
         }
 
@@ -148,47 +232,6 @@ namespace GalWar
                 }
             }
         }
-
-        private double goldOffset
-        {
-            get
-            {
-                return this._goldOffset;
-            }
-            set
-            {
-                this._goldOffset = value;
-            }
-        }
-
-        private double goldValue
-        {
-            get
-            {
-                return this._goldValue / 10.0;
-            }
-            set
-            {
-                VerifyRounded(value);
-                checked
-                {
-                    this._goldValue = (uint)Math.Round(value * 10);
-                }
-            }
-        }
-
-        #endregion //fields and constructors
-
-        #region internal
-
-        internal int ID
-        {
-            get
-            {
-                return _id;
-            }
-        }
-
         internal int Research
         {
             get
@@ -203,6 +246,200 @@ namespace GalWar
                 }
             }
         }
+        internal int LastResearched
+        {
+            get
+            {
+                return (int)this._lastResearched;
+            }
+            private set
+            {
+                checked
+                {
+                    this._lastResearched = (uint)value;
+                }
+            }
+        }
+
+        private double goldValue
+        {
+            get
+            {
+                return this._goldValue / 10.0;
+            }
+            set
+            {
+                checked
+                {
+                    VerifyRounded(value);
+                    this._goldValue = (uint)Math.Round(value * 10);
+                }
+            }
+        }
+
+        private double rKey
+        {
+            get
+            {
+                return this._rKey;
+            }
+            set
+            {
+                checked
+                {
+                    this._rKey = (float)value;
+                }
+            }
+        }
+        private double rChance
+        {
+            get
+            {
+                return this._rChance;
+            }
+            set
+            {
+                checked
+                {
+                    this._rChance = (float)value;
+                }
+            }
+        }
+        private double rMult
+        {
+            get
+            {
+                return this._rMult;
+            }
+            set
+            {
+                checked
+                {
+                    this._rMult = (float)value;
+                }
+            }
+        }
+
+        private double rDisp
+        {
+            get
+            {
+                return this._rDisp;
+            }
+            set
+            {
+                checked
+                {
+                    this._rDisp = (float)value;
+                }
+            }
+        }
+        private double rDispTrg
+        {
+            get
+            {
+                return this._rDispTrg;
+            }
+            set
+            {
+                checked
+                {
+                    this._rDispTrg = (float)value;
+                }
+            }
+        }
+        private double rDispChange
+        {
+            get
+            {
+                return this._rDispChange;
+            }
+            set
+            {
+                checked
+                {
+                    this._rDispChange = (float)value;
+                }
+            }
+        }
+
+        public double IncomeTotal
+        {
+            get
+            {
+                return this._incomeTotal;
+            }
+            internal set
+            {
+                checked
+                {
+                    this._incomeTotal = (float)value;
+                }
+            }
+        }
+        private double goldOffset
+        {
+            get
+            {
+                return this._goldOffset;
+            }
+            set
+            {
+                checked
+                {
+                    this._goldOffset = value;
+                }
+            }
+        }
+
+        private void SetPlanetDefense(ShipDesign design)
+        {
+            checked
+            {
+                this.pdAtt = GetPDStat(this.pdAtt, design.Att);
+                this.pdDef = GetPDStat(this.pdDef, design.Def);
+            }
+        }
+        private int GetPDStat(int cur, int add)
+        {
+            double newStat;
+            if (cur == add)
+                newStat = add;
+            else
+                newStat = ( cur + add * Consts.PlanetDefensesRndm ) / ( 1 + Consts.PlanetDefensesRndm );
+            return Math.Max(GetPDStat(newStat), GetPDStat(1 + ( add - 1 ) * ( 1 - Consts.PlanetDefensesRndm )));
+        }
+        private static int GetPDStat(double stat)
+        {
+            return Game.Random.GaussianOEInt((float)stat, Consts.PlanetDefensesRndm, Consts.PlanetDefensesRndm, 1);
+        }
+
+        public int PlanetDefenseAtt
+        {
+            get
+            {
+                return this.pdAtt;
+            }
+        }
+        public int PlanetDefenseDef
+        {
+            get
+            {
+                return this.pdDef;
+            }
+        }
+
+        public double PlanetDefenseCostPerHP
+        {
+            get
+            {
+                return ShipDesign.GetPlanetDefenseCost(pdAtt, pdDef, this.LastResearched);
+            }
+        }
+
+        #endregion //fields and constructors
+
+        #region internal
 
         internal void SetGame(Game game)
         {
@@ -325,9 +562,9 @@ namespace GalWar
 
         private void ResetResearchChance()
         {
-            this._rKey = Game.Random.FloatHalf();
-            this._rChance = Game.Random.NextFloat();
-            this._rMult = Game.Random.FloatHalf();
+            this.rKey = Game.Random.FloatHalf();
+            this.rChance = Game.Random.NextFloat();
+            this.rMult = Game.Random.FloatHalf();
         }
 
         private void RandResearchDisplay()
@@ -341,20 +578,20 @@ namespace GalWar
                 double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
                 float diff = (float)( ( high - low ) / research[1].ResearchDisplay );
 
-                float add = Game.Random.Gaussian(_rDispChange * diff, Consts.ResearchDisplayRndm);
-                bool sign = ( _rDisp > _rDispTrg );
+                double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchDisplayRndm);
+                bool sign = ( rDisp > rDispTrg );
                 if (sign)
-                    _rDisp -= add;
+                    rDisp -= add;
                 else
-                    _rDisp += add;
+                    rDisp += add;
 
-                if (sign != ( _rDisp > _rDispTrg ) || _rDisp == _rDispTrg)
+                if (sign != ( rDisp > rDispTrg ) || rDisp == rDispTrg)
                 {
-                    _rDisp = _rDispTrg;
-                    _rDispTrg = ( _rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, -1f) + 1 ) / 3f;
+                    rDisp = rDispTrg;
+                    rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, -1f) + 1 ) / 3f;
                     //rate is based on distance to new value
-                    _rDispChange = (float)Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
-                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3f * Math.Abs(_rDisp - _rDispTrg) ));
+                    rDispChange = (float)Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
+                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3f * Math.Abs(rDisp - rDispTrg) ));
                 }
             }
         }
@@ -371,9 +608,11 @@ namespace GalWar
             foreach (Ship ship in this.ships)
                 ship.EndTurn();
 
+            double gold = 0;
             int research = 0;
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
-                colony.EndTurn(handler, ref this._goldOffset, ref research);
+                colony.EndTurn(handler, ref gold, ref research);
+            this.AddGold(gold);
             this.newResearch += research;
 
             if (!neg && NegativeGold())
@@ -557,21 +796,6 @@ namespace GalWar
             return LastResearched;
         }
 
-        internal int LastResearched
-        {
-            get
-            {
-                return (int)this._lastResearched;
-            }
-            private set
-            {
-                checked
-                {
-                    this._lastResearched = (uint)value;
-                }
-            }
-        }
-
         #endregion //internal
 
         #region public
@@ -601,23 +825,11 @@ namespace GalWar
             }
         }
 
-        public double IncomeTotal
-        {
-            get
-            {
-                return this._incomeTotal;
-            }
-            internal set
-            {
-                this._incomeTotal = (float)value;
-            }
-        }
-
         internal double ResearchDisplay
         {
             get
             {
-                return this.Research * this._rDisp;
+                return this.Research * this.rDisp;
             }
         }
 
@@ -627,71 +839,9 @@ namespace GalWar
 
             return ShipDesign.IsFocusing(ResearchFocus, check);
         }
-        public ShipDesign.FocusStat ResearchFocus
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return GetResearchFocus();
-            }
-            set
-            {
-                TurnException.CheckTurn(this);
-                if (value != ShipDesign.FocusStat.None)
-                    AssertException.Assert(this.ResearchFocusDesign == null);
-
-                this._researchFocus = value;
-            }
-        }
         internal ShipDesign.FocusStat GetResearchFocus()
         {
-            return this._researchFocus;
-        }
-        public ShipDesign ResearchFocusDesign
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return this._researchFocusDesign;
-            }
-            set
-            {
-                TurnException.CheckTurn(this);
-                if (value != null)
-                    AssertException.Assert(this.ResearchFocus == ShipDesign.FocusStat.None);
-
-                this._researchFocusDesign = value;
-            }
-        }
-
-        public bool GoldEmphasis
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return this._goldEmphasis;
-            }
-        }
-        public bool ResearchEmphasis
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return _researchEmphasis;
-            }
-        }
-        public bool ProductionEmphasis
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return _productionEmphasis;
-            }
+            return this.ResearchFocus;
         }
 
         public void SetGoldEmphasis(IEventHandler handler, bool value)
@@ -699,21 +849,21 @@ namespace GalWar
             handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
-            this._goldEmphasis = value;
+            this.GoldEmphasis = value;
         }
         public void SetResearchEmphasis(IEventHandler handler, bool value)
         {
             handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
-            this._researchEmphasis = value;
+            this.ResearchEmphasis = value;
         }
         public void SetProductionEmphasis(IEventHandler handler, bool value)
         {
             handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
-            this._productionEmphasis = value;
+            this.ProductionEmphasis = value;
         }
 
         public double GetArmadaStrength()
@@ -832,19 +982,19 @@ namespace GalWar
             return 0;
         }
 
-        //analogous to MTRandom.Weighted, but using constants for the random values
+        //mostly analogous to MTRandom.Weighted, but using constants for the random values
         private double RandResearch(double avg)
         {
             bool neg = avg > .5;
             if (neg)
                 avg = 1 - avg;
 
-            double key = _rKey * avg;
-            if (_rChance < ( avg - .5 ) / ( key - .5 ))
+            double key = rKey * avg;
+            if (rChance < ( avg - .5 ) / ( key - .5 ))
                 key *= 2;
             else
                 key = 1;
-            key *= _rMult;
+            key *= rMult;
 
             if (neg)
                 key = 1 - key;

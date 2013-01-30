@@ -9,7 +9,15 @@ namespace GalWar
         [NonSerialized]
         private double _production;
 
-        protected internal double production
+        protected Buildable()
+        {
+            checked
+            {
+                this._production = double.NaN;
+            }
+        }
+
+        internal protected double production
         {
             get
             {

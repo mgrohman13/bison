@@ -14,6 +14,8 @@ namespace GalWar
 
         [NonSerialized]
         private double _value;
+        [NonSerialized]
+        private bool _usedValue;
 
         internal Anomaly(Tile tile)
         {
@@ -21,6 +23,17 @@ namespace GalWar
             {
                 this._tile = tile;
                 tile.SpaceObject = this;
+
+                this._usedValue = false;
+                this._value = double.NaN;
+            }
+        }
+
+        public Tile Tile
+        {
+            get
+            {
+                return this._tile;
             }
         }
 
@@ -28,6 +41,7 @@ namespace GalWar
         {
             get
             {
+                this.usedValue = true;
                 return this._value;
             }
             set
@@ -38,14 +52,21 @@ namespace GalWar
                 }
             }
         }
-
-        public Tile Tile
+        private bool usedValue
         {
             get
             {
-                return _tile;
+                return this._usedValue;
+            }
+            set
+            {
+                checked
+                {
+                    this._usedValue = value;
+                }
             }
         }
+
         public Player Player
         {
             get
@@ -79,11 +100,20 @@ namespace GalWar
 
             while (true)
             {
+                this.usedValue = false;
+
                 ExploreType type = Game.Random.SelectValue(options);
                 if (Explore(handler, type, ship))
+                {
+                    if (!this.usedValue)
+                        throw new Exception();
+
                     return;
+                }
                 else
+                {
                     options.Remove(type);
+                }
             }
         }
         private bool Explore(IEventHandler handler, ExploreType type, Ship ship)
@@ -360,7 +390,7 @@ namespace GalWar
                             + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));
 
             double amount = this.value - cost;
-            double mult = Consts.GetColonizationMult();
+            double mult = Consts.GetColonizationMult() * 1.69;
             if (amount < Consts.GetColonizationCost(Planet.ConstValue, mult))
                 return false;
 
@@ -437,9 +467,11 @@ namespace GalWar
             {
                 double gold = 0;
                 if (planet.Colony != null)
-                    gold = Math.Sqrt(( planet.Colony.Population + 1.0 ) / ( planet.Quality + 1.0 )) * .52;
+                    gold = Math.Sqrt(( planet.Colony.Population + 1.0 ) / ( planet.Quality + 1.0 )) * .65;
 
-                gold = Consts.GetColonizationCost(planet.DamageVictory(), gold);
+                double before = Consts.GetColonizationCost(planet.Quality, Consts.GetColonizationMult());
+                planet.DamageVictory();
+                gold *= before - Consts.GetColonizationCost(planet.Quality, Consts.GetColonizationMult());
 
                 if (planet.Colony != null)
                 {
@@ -475,16 +507,19 @@ namespace GalWar
 
             while (colonies.Count > 0)
             {
-                int addQuality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Planet.ConstValue, .65, .39, 1);
-                double expectCost = Consts.GetColonizationCost(addQuality, 2.1);
-                double actualCost = Game.Random.GaussianOE((float)( expectCost - this.value ),
-                        Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, (float)-this.value);
-
                 Colony trgColony = Game.Random.SelectValue(colonies);
-                if (handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, -actualCost, -expectCost, colonyChances))
+
+                const double costMult = 2.1;
+                int addQuality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Planet.ConstValue, .65, .39, 1);
+                double before = Consts.GetColonizationCost(trgColony.Planet.Quality, costMult);
+                double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, costMult);
+                double expectCost = before - after;
+                double actualCost = this.value + Consts.GetColonizationMult() * before - Consts.GetColonizationMult() * after;
+
+                if (handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances))
                 {
                     trgColony.Planet.ReduceQuality(-addQuality);
-                    trgColony.Player.AddGold(-actualCost, true);
+                    trgColony.Player.AddGold(actualCost, true);
                     return true;
                 }
                 else

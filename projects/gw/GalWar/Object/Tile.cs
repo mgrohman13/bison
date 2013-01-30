@@ -80,9 +80,9 @@ namespace GalWar
 
         public readonly Game Game;
 
-        private ISpaceObject _spaceObject;
-
         private readonly byte _x, _y;
+
+        private ISpaceObject _spaceObject;
 
         internal Tile(Game game, int x, int y)
         {
@@ -90,16 +90,12 @@ namespace GalWar
             {
                 this.Game = game;
 
-                this._spaceObject = null;
-
                 this._x = (byte)x;
                 this._y = (byte)y;
+
+                this._spaceObject = null;
             }
         }
-
-        #endregion //fields and constructors
-
-        #region public
 
         public int X
         {
@@ -133,6 +129,10 @@ namespace GalWar
                 }
             }
         }
+
+        #endregion //fields and constructors
+
+        #region public
 
         public Tile Teleporter
         {

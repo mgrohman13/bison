@@ -14,9 +14,66 @@ namespace GalWar
         protected Combatant(int att, int def, int hp, int population, double soldiers)
             : base(population, soldiers)
         {
-            this.Att = att;
-            this.Def = def;
-            this.HP = hp;
+            checked
+            {
+                this._att = (byte)att;
+                this._def = (byte)def;
+                this._hp = (ushort)hp;
+            }
+        }
+
+        public int Att
+        {
+            get
+            {
+                return this._att;
+            }
+            protected set
+            {
+                checked
+                {
+                    this._att = (byte)value;
+                }
+            }
+        }
+        public int Def
+        {
+            get
+            {
+                return this._def;
+            }
+            protected set
+            {
+                checked
+                {
+                    this._def = (byte)value;
+                }
+            }
+        }
+
+        public int HP
+        {
+            get
+            {
+                return this._hp;
+            }
+            protected set
+            {
+                if (this.HP > value)
+                    OnDamaged(this.HP - value);
+
+                SetHP(value);
+            }
+        }
+        protected void SetHP(int value)
+        {
+            checked
+            {
+                this._hp = (ushort)value;
+            }
+        }
+        protected virtual void OnDamaged(int damage)
+        {
         }
 
         #endregion //fields and constructors
@@ -122,58 +179,5 @@ namespace GalWar
         }
 
         #endregion //protected
-
-        #region public
-
-        public int Att
-        {
-            get
-            {
-                return this._att;
-            }
-            protected set
-            {
-                checked
-                {
-                    this._att = (byte)value;
-                }
-            }
-        }
-
-        public int Def
-        {
-            get
-            {
-                return this._def;
-            }
-            protected set
-            {
-                checked
-                {
-                    this._def = (byte)value;
-                }
-            }
-        }
-
-        public int HP
-        {
-            get
-            {
-                return this._hp;
-            }
-            internal set
-            {
-                SetHP(value);
-            }
-        }
-        protected virtual void SetHP(int value)
-        {
-            checked
-            {
-                this._hp = (ushort)value;
-            }
-        }
-
-        #endregion //public
     }
 }

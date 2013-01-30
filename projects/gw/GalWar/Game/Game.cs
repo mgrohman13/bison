@@ -16,17 +16,20 @@ namespace GalWar
 
         public static readonly MTRandom Random = new MTRandom();
 
+        public static string AutoSavePath = "../../../auto";
+
         public static string CamelToSpaces(string str)
         {
             return new Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])").Replace(str, " ${x}");
         }
 
-        private static readonly byte[] values = new byte[] { 90, 50, 40, 10, 9, 5, 4, 1 };
-        private static readonly string[] numerals = new string[] { "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
         public static string NumberToRoman(int mark)
         {
             if (mark > 99)
                 return mark.ToString();
+
+            int[] values = new int[] { 90, 50, 40, 10, 9, 5, 4, 1 };
+            string[] numerals = new string[] { "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
             string result = string.Empty;
             for (int i = 0 ; i < values.Length ; ++i)
@@ -42,26 +45,21 @@ namespace GalWar
 
         #region fields and constructors
 
-        [NonSerialized]
-        public string AutoSavePath = "../../../auto";
-
         public readonly Graphs Graphs;
-
         public readonly StoreProd StoreProd;
         public readonly Attack Attack;
         public readonly Defense Defense;
-
-        public readonly int Diameter;
 
         internal readonly ShipNames ShipNames;
 
         private readonly Tile[,] map;
         private readonly List<Planet> planets;
-        private readonly System.Collections.Generic.List<Tuple<Tile, Tile>> teleporters;
+        private readonly List<Tuple<Tile, Tile>> teleporters;
+        private readonly List<Result> deadPlayers, winningPlayers;
+
         private Player[] players;
 
-        private readonly List<Result> deadPlayers;
-        private readonly List<Result> winningPlayers;
+        private readonly byte _diameter;
 
         private byte _currentPlayer;
         private ushort _turn;
@@ -69,38 +67,108 @@ namespace GalWar
 
         public Game(Player[] players, int radius, double planetPct)
         {
-            int numPlayers = players.Length;
-            this.Diameter = radius * 2 - 1;
+            checked
+            {
+                int numPlayers = players.Length;
 
-            AssertException.Assert(players != null);
-            AssertException.Assert(numPlayers > 1);
-            AssertException.Assert(numPlayers * 78 < MapSize);
-            AssertException.Assert(radius < 78);
-            AssertException.Assert(planetPct > 0.00013);
-            AssertException.Assert(planetPct < 0.039);
+                AssertException.Assert(players != null);
+                AssertException.Assert(numPlayers > 1);
+                AssertException.Assert(numPlayers * 78 < MapSize);
+                AssertException.Assert(radius < 78);
+                AssertException.Assert(planetPct > 0.00013);
+                AssertException.Assert(planetPct < 0.039);
 
-            this.StoreProd = new StoreProd();
-            this.Attack = new Attack();
-            this.Defense = new Defense();
+                this._diameter = (byte)( radius * 2 - 1 );
 
-            this.teleporters = new List<Tuple<Tile, Tile>>();
+                this.Graphs = new Graphs(this);
+                this.StoreProd = new StoreProd();
+                this.Attack = new Attack();
+                this.Defense = new Defense();
 
-            this.map = new Tile[Diameter, Diameter];
-            InitMap(radius);
+                this.ShipNames = new ShipNames(numPlayers);
 
-            this.planets = new List<Planet>();
-            double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
+                this.map = new Tile[Diameter, Diameter];
+                this.planets = new List<Planet>();
+                this.teleporters = new List<Tuple<Tile, Tile>>();
+                this.deadPlayers = new List<Result>(numPlayers - 1);
+                this.winningPlayers = new List<Result>(numPlayers - 1);
 
-            this.ShipNames = new ShipNames(numPlayers);
-            InitPlayers(players, numPlanets);
+                this.players = new Player[numPlayers];
 
-            this.currentPlayer = byte.MaxValue;
-            this.turn = 0;
+                this._currentPlayer = byte.MaxValue;
+                this._turn = 0;
+                this._planetPct = float.NaN;
+                this._anomalyPct = float.NaN;
 
-            this.deadPlayers = new List<Result>(numPlayers - 1);
-            this.winningPlayers = new List<Result>(numPlayers - 1);
+                InitMap(radius);
+                double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
+                InitPlayers(players, numPlanets);
+            }
+        }
 
-            this.Graphs = new Graphs(this);
+        public int Diameter
+        {
+            get
+            {
+                return this._diameter;
+            }
+        }
+
+        private int currentPlayer
+        {
+            get
+            {
+                return this._currentPlayer;
+            }
+            set
+            {
+                checked
+                {
+                    this._currentPlayer = (byte)value;
+                }
+            }
+        }
+        private int turn
+        {
+            get
+            {
+                return this._turn;
+            }
+            set
+            {
+                checked
+                {
+                    this._turn = (ushort)value;
+                }
+            }
+        }
+        private float planetPct
+        {
+            get
+            {
+                return this._planetPct;
+            }
+            set
+            {
+                checked
+                {
+                    this._planetPct = (float)value;
+                }
+            }
+        }
+        private float anomalyPct
+        {
+            get
+            {
+                return this._anomalyPct;
+            }
+            set
+            {
+                checked
+                {
+                    this._anomalyPct = (float)value;
+                }
+            }
         }
 
         private void InitMap(int radius)
@@ -181,7 +249,7 @@ namespace GalWar
             //set later based on colony ship costs
             double startProd = -1;
 
-            this.players = new Player[numPlayers];
+
             int index = 0;
             foreach (Player player in Random.Iterate<Player>(players))
             {
@@ -270,58 +338,6 @@ next_planet:
         private static double GetStartDouble(double avg)
         {
             return Random.GaussianCapped(avg, Consts.StartRndm, avg * Consts.StartMinMult);
-        }
-
-        private int currentPlayer
-        {
-            get
-            {
-                return this._currentPlayer;
-            }
-            set
-            {
-                checked
-                {
-                    this._currentPlayer = (byte)value;
-                }
-            }
-        }
-        private int turn
-        {
-            get
-            {
-                return this._turn;
-            }
-            set
-            {
-                checked
-                {
-                    this._turn = (ushort)value;
-                }
-            }
-        }
-
-        private float planetPct
-        {
-            get
-            {
-                return this._planetPct;
-            }
-            set
-            {
-                this._planetPct = (float)value;
-            }
-        }
-        private float anomalyPct
-        {
-            get
-            {
-                return this._anomalyPct;
-            }
-            set
-            {
-                this._anomalyPct = (float)value;
-            }
         }
 
         #endregion //fields and constructors

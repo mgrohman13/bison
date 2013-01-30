@@ -40,10 +40,10 @@ namespace GalWar
                 this.MaxSpeed = (byte)design.Speed;
                 this.maxPop = (ushort)design.Trans;
                 if (design.DeathStar)
-                    this.BombardDamage = design.BombardDamage;
+                    this._bombardDamage = (ushort)design.BombardDamage;
 
                 this.HasRepaired = false;
-                this.Upkeep = design.Upkeep;
+                this.upkeep = design.Upkeep;
                 this.CurSpeed = this.MaxSpeed;
                 this.MaxHP = design.HP;
 
@@ -56,7 +56,7 @@ namespace GalWar
                 this._expDiv = (float)GetValue();
                 GetNextLevel(handler);
 
-                this.Player.GoldIncome(-this.GetUpkeepReturn());
+                this.Player.GoldIncome(-this.GetUpkeepReturn(this.CurSpeed));
             }
         }
 
@@ -80,6 +80,21 @@ namespace GalWar
             get
             {
                 return this._mark;
+            }
+        }
+
+        private int upkeep
+        {
+            get
+            {
+                return this._upkeep;
+            }
+            set
+            {
+                checked
+                {
+                    this._upkeep = (byte)value;
+                }
             }
         }
 
@@ -214,7 +229,7 @@ namespace GalWar
         internal void EndTurn()
         {
             //must be calculated before speed is restored
-            this.Player.SpendGold(this.Upkeep - this.GetUpkeepReturn());
+            this.Player.SpendGold(this.upkeep - this.GetUpkeepReturn());
 
             ResetMoved();
 
@@ -239,7 +254,7 @@ namespace GalWar
         }
         internal double GetUpkeepReturn(double speedLeft)
         {
-            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.Upkeep;
+            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.upkeep;
         }
 
         internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
@@ -412,23 +427,6 @@ namespace GalWar
             }
         }
 
-        public int Upkeep
-        {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                return this._upkeep;
-            }
-            private set
-            {
-                checked
-                {
-                    this._upkeep = (byte)value;
-                }
-            }
-        }
-
         public int CurSpeed
         {
             get
@@ -459,6 +457,15 @@ namespace GalWar
             }
         }
 
+        public int Upkeep
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return this.upkeep;
+            }
+        }
 
         public bool Dead
         {
@@ -515,19 +522,15 @@ namespace GalWar
             return GetCostLastResearched();
         }
 
-        protected override void SetHP(int value)
+        protected override void OnDamaged(int damage)
         {
-            if (this.Population > 0 && value < this.HP)
-            {
-                int losePopulation;
-                if (value > 0)
-                    //if hp is lost for any reason, some transported population is killed off
-                    losePopulation = Game.Random.GaussianOEInt(GetTransLoss(this.HP - value), Consts.TransLossRndm, Consts.TransLossRndm);
-                else
-                    losePopulation = this.Population;
-                LosePopulation(losePopulation);
-            }
-            base.SetHP(value);
+            int losePopulation;
+            if (this.HP > damage)
+                //if hp is lost for any reason, some transported population is killed off
+                losePopulation = Game.Random.GaussianOEInt(GetTransLoss(damage), Consts.TransLossRndm, Consts.TransLossRndm);
+            else
+                losePopulation = this.Population;
+            LosePopulation(losePopulation);
         }
 
         private float GetTransLoss(int damage)
@@ -804,7 +807,7 @@ namespace GalWar
                 double costInc = this.GetCostLastResearched();
 
                 //temporarily add upkeep to cost, using pre-level payoff and mult
-                this.cost += this.Upkeep * GetUpkeepPayoff() * GetExperienceUpkeepPayoffMult();
+                this.cost += this.upkeep * GetUpkeepPayoff() * GetExperienceUpkeepPayoffMult();
 
                 double pct = this.HP / (double)this.MaxHP;
                 if (this.NextExpType == ExpType.HP)
@@ -842,20 +845,20 @@ namespace GalWar
                 double minCost = basePayoff * Consts.MinCostMult;
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
-                double upkeepInc = costInc * this.Upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
-                this.Upkeep += Game.Random.Round(upkeepInc);
+                double upkeepInc = costInc * this.upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
+                this.upkeep += Game.Random.Round(upkeepInc);
                 //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
-                this.cost += costInc - this.Upkeep * multPayoff;
+                this.cost += costInc - this.upkeep * multPayoff;
 
                 //upkeep should never account for more than half of the ship's cost
-                while (this.Upkeep > 1 && ( ( this.cost < minCost ) || ( this.Upkeep * basePayoff > this.cost ) ))
+                while (this.upkeep > 1 && ( ( this.cost < minCost ) || ( this.upkeep * basePayoff > this.cost ) ))
                 {
-                    --this.Upkeep;
+                    --this.upkeep;
                     this.cost += multPayoff;
                 }
                 if (this.cost < 1)
                     throw new Exception();
-                if (this.Upkeep < 1)
+                if (this.upkeep < 1)
                     throw new Exception();
 
                 this.totalExp += needExp;
@@ -1057,9 +1060,8 @@ namespace GalWar
                 freePct = ( 1 - ( colony.HP / (double)freeDmg ) );
                 freeDmg = colony.HP;
             }
-            colony.HP -= freeDmg;
 
-            double exp = colony.GetExpForDamage(freeDmg);
+            double exp = colony.Damage(freeDmg);
             this.AddExperience(exp);
             colony.AddExperience(exp);
 
@@ -1309,6 +1311,7 @@ namespace GalWar
             double spend = GetGoldForHP(hp);
             if (undo)
             {
+                //base.SetHP to avoid OnDamaged processing
                 base.SetHP(this.HP - hp);
                 this.Repair -= hp;
             }

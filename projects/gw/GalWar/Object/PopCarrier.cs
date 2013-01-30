@@ -8,14 +8,60 @@ namespace GalWar
     {
         #region fields and constructors
 
+        private ushort _movedPop, _population;
         private float _soldiers;
-        private ushort _population, _movedPop;
 
         protected PopCarrier(int population, double soldiers)
         {
-            this.Soldiers = soldiers;
-            this.Population = population;
-            this.movedPop = population;
+            checked
+            {
+                this._movedPop = (ushort)population;
+                this._population = (ushort)population;
+                this._soldiers = (float)soldiers;
+            }
+        }
+        protected int movedPop
+        {
+            get
+            {
+                return this._movedPop;
+            }
+            set
+            {
+                checked
+                {
+                    this._movedPop = (ushort)value;
+                }
+            }
+        }
+
+        public int Population
+        {
+            get
+            {
+                return this._population;
+            }
+            protected set
+            {
+                checked
+                {
+                    this._population = (ushort)value;
+                }
+            }
+        }
+        public double Soldiers
+        {
+            get
+            {
+                return this._soldiers;
+            }
+            protected set
+            {
+                checked
+                {
+                    this._soldiers = (float)value;
+                }
+            }
         }
 
         #endregion //fields and constructors
@@ -49,21 +95,6 @@ namespace GalWar
 
         #region protected
 
-        protected int movedPop
-        {
-            get
-            {
-                return this._movedPop;
-            }
-            set
-            {
-                checked
-                {
-                    this._movedPop = (ushort)value;
-                }
-            }
-        }
-
         internal void LosePopulation(int population)
         {
             LosePopulation(population, false);
@@ -95,20 +126,6 @@ namespace GalWar
 
         #region public
 
-        public int Population
-        {
-            get
-            {
-                return this._population;
-            }
-            protected set
-            {
-                checked
-                {
-                    this._population = (ushort)value;
-                }
-            }
-        }
         public int AvailablePop
         {
             get
@@ -225,21 +242,6 @@ namespace GalWar
         public double GetSoldierPct()
         {
             return GetSoldiers(1);
-        }
-
-        public double Soldiers
-        {
-            get
-            {
-                return this._soldiers;
-            }
-            protected set
-            {
-                checked
-                {
-                    this._soldiers = (float)value;
-                }
-            }
         }
 
         #endregion //public

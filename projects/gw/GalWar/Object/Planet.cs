@@ -18,11 +18,12 @@ namespace GalWar
         {
             checked
             {
-                this.Tile = tile;
+                this._tile = tile;
                 tile.SpaceObject = this;
 
-                this.Quality = Consts.NewPlanetQuality();
+                this._colony = null;
 
+                this._quality = (short)Consts.NewPlanetQuality();
                 this._colonizationCostMult = (float)Consts.GetColonizationMult();
             }
         }

@@ -6,6 +6,7 @@ namespace GalWar
     internal class HandlerWrapper : IEventHandler
     {
         private static bool callback = false, special = false;
+
         private IEventHandler handler;
 
         internal HandlerWrapper(IEventHandler handler, Game game)
