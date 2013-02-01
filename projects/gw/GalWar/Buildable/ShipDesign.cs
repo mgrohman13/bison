@@ -91,15 +91,12 @@ namespace GalWar
 
         #region fields and constructors
 
-        public readonly bool Colony;
+        private readonly bool __colony;
+        private readonly byte __name, __mark, __att, __def, __speed, __upkeep;
+        private readonly ushort __cost, __hp, __trans, __bombardDamage;
+        private readonly uint __research;
 
-        private readonly byte _upkeep, _att, _def, _speed;
-        private readonly ushort _hp, _cost, _trans, _bombardDamage;
-        private readonly uint _research;
-
-        private byte _name, _mark;
-
-        internal static List<ShipDesign> GetStartDesigns(List<int> research, Player player)
+        internal static List<ShipDesign> GetStartDesigns(Player player, List<int> research)
         {
             List<ShipDesign> retVal = new List<ShipDesign>(3);
 
@@ -107,67 +104,84 @@ namespace GalWar
             int idx = -1;
             foreach (int type in Game.Random.Iterate(3))
             {
-                ShipDesign design = new ShipDesign(research[++idx], retVal, player.Game.MapSize, ( type == 0 ), ( type == 1 ), ( type == 2 ), FocusStat.None, double.NaN, double.NaN);
-                design.NameShip(player);
+                ShipDesign design = new ShipDesign(player, research[++idx], retVal, FocusStat.None, ( type == 0 ), ( type == 1 ), ( type == 2 ), double.NaN, double.NaN, null, out unused);
                 retVal.Add(design);
             }
 
             return retVal;
         }
 
-        internal ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize, FocusStat focus)
-            : this(research, designs, mapSize, false, false, false, focus, double.NaN, double.NaN)
+        internal static ShipDesign TryUpgradeDesign(Player player, IEnumerable<int> tries, ShipDesign upgradeDesign)
+        {
+            foreach (int research in tries)
+            {
+                bool named;
+                ShipDesign design = new ShipDesign(player, research, null, FocusStat.None, false, false, false, double.NaN, double.NaN, upgradeDesign, out named);
+                if (named)
+                    return design;
+            }
+            return null;
+        }
+
+        internal ShipDesign(Player player, int research)
+            : this(player, research, double.NaN, double.NaN)
         {
         }
 
-        internal ShipDesign(Player player, int research, int mapSize, double minCost, double maxCost)
-            : this(research, player.GetShipDesigns(), mapSize, false, false, false, player.GetResearchFocus(), minCost, maxCost)
+        private static bool unused;
+        internal ShipDesign(Player player, int research, double minCost, double maxCost)
+            : this(player, research, player.GetShipDesigns(), player.GetResearchFocus(), false, false, false, minCost, maxCost, null, out unused)
         {
-            this.NameShip(player, true);
         }
 
-        private ShipDesign(int research, ICollection<ShipDesign> designs, int mapSize,
-                bool forceColony, bool forceTrans, bool forceNeither, FocusStat focus, double minCost, double maxCost)
+        private ShipDesign(Player player, int research, ICollection<ShipDesign> designs, FocusStat focus,
+                bool forceColony, bool forceTrans, bool forceNeither, double minCost, double maxCost, ShipDesign nameIf, out bool named)
         {
             checked
             {
-                this.Name = this.Mark = byte.MaxValue;
+                int mapSize = player.Game.MapSize;
 
-                //  ------  Research          ------
-                this._research = (uint)research;
+                this.__bombardDamage = 0;
+                this.__research = (uint)research;
 
                 //get pcts for existing designs
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
                 GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
 
                 //  ------  Colony/Trans/DS   ------
-                this._bombardDamage = 0;
                 double transStr = GetTransStr(research), bombardDamageMult;
+                bool colony;
+                int trans;
                 DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
-                        ref transStr, out this.Colony, out this._trans, out bombardDamageMult, focus);
+                        ref transStr, out colony, out trans, out bombardDamageMult, focus);
                 bool deathStar = ( bombardDamageMult > 0 );
+                this.__colony = colony;
+                this.__trans = (ushort)trans;
 
                 //  ------  Att/Def           ------
                 //being a colony ship/transport/death star makes att and def lower
                 double strMult = GetAttDefStrMult(transStr, bombardDamageMult, this.Colony, this.Trans);
                 double str = GetAttDefStr(research, strMult, focus);
-                DoAttDef(transStr, str, attPct, out this._att, out this._def, focus);
+                int att, def;
+                DoAttDef(transStr, str, attPct, out att, out def, focus);
+                this.__att = (byte)att;
+                this.__def = (byte)def;
 
                 //  ------  HP                ------
                 //being a colony ship/transport/death star makes hp higher
                 double hpMult = GetHPMult(strMult, deathStar, this.Colony);
                 //hp is relative to actual randomized stats
-                this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
+                this.__hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
                 double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, this.Colony, this.Trans, true),
                         GetSpeedMult(str, hpMult, speedPct, this.Att, this.Def, this.HP, focus));
-                this._speed = (byte)MakeStat(speedStr);
+                this.__speed = (byte)MakeStat(speedStr);
 
                 //  ------  BombardDamage     ------
                 //modify bombard mult based on speed and att
                 if (deathStar)
-                    this._bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * this.BombardDamage
+                    this.__bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * this.BombardDamage
                             * (float)Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att)), this.Att, true);
 
                 //  ------  Cost/Upkeep       ------
@@ -183,25 +197,25 @@ namespace GalWar
                     switch (GetReduce(cost, hpMult, forceColony, forceTrans))
                     {
                     case ModifyStat.Att:
-                        --this._att;
+                        --this.__att;
                         break;
                     case ModifyStat.Def:
-                        --this._def;
+                        --this.__def;
                         break;
                     case ModifyStat.HP:
-                        --this._hp;
+                        --this.__hp;
                         break;
                     case ModifyStat.Speed:
-                        --this._speed;
+                        --this.__speed;
                         break;
                     case ModifyStat.Trans:
-                        --this._trans;
+                        --this.__trans;
                         break;
                     case ModifyStat.DS:
-                        this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage - 1, this.Att, false);
+                        this.__bombardDamage = (ushort)SetBombardDamage(this.BombardDamage - 1, this.Att, false);
                         break;
                     case ModifyStat.Colony:
-                        this.Colony = false;
+                        this.__colony = false;
                         break;
                     case ModifyStat.None:
                         maxCost = cost;
@@ -216,36 +230,32 @@ namespace GalWar
                     switch (GetIncrease(hpMult))
                     {
                     case ModifyStat.Att:
-                        ++this._att;
-                        this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage, this.Att, this.DeathStar);
+                        ++this.__att;
+                        this.__bombardDamage = (ushort)SetBombardDamage(this.__bombardDamage, this.Att, this.DeathStar);
                         break;
                     case ModifyStat.Def:
-                        ++this._def;
+                        ++this.__def;
                         break;
                     case ModifyStat.HP:
-                        ++this._hp;
+                        ++this.__hp;
                         break;
                     default:
                         throw new Exception();
                     }
                     GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                 }
-                this._cost = (ushort)Game.Random.Round(cost);
-                this._upkeep = (byte)upkeep;
-            }
-        }
+                this.__cost = (ushort)Game.Random.Round(cost);
+                this.__upkeep = (byte)upkeep;
 
-        internal void NameShip(Player player)
-        {
-            NameShip(player, false);
-        }
-        private void NameShip(Player player, bool anomalyShip)
-        {
-            checked
-            {
-                //  ------  Name              ------
-                this.Name = player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
-                this.Mark = player.Game.ShipNames.GetMark(player, this.Name);
+                //  ------  Name   
+                this.__name = byte.MaxValue;
+                this.__mark = byte.MaxValue;
+                named = ( nameIf == null || this.MakesObsolete(mapSize, nameIf) );
+                if (named)
+                {
+                    this.__name = player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), !double.IsNaN(minCost));
+                    this.__mark = (byte)player.Game.ShipNames.GetMark(player, this.Name);
+                }
             }
         }
 
@@ -342,13 +352,13 @@ namespace GalWar
         public static void DoColonyTransDS(bool forceColony, bool forceTrans, bool forceNeither, int research,
                 ref double transStr, out bool colony, out int trans, out double bombardDamageMult)
         {
-            ushort t;
+            int t;
             DoColonyTransDS(forceColony, forceTrans, forceNeither, research, double.NaN, double.NaN, double.NaN,
                     ref transStr, out colony, out t, out bombardDamageMult, FocusStat.None);
             trans = t;
         }
         private static void DoColonyTransDS(bool forceColony, bool forceTrans, bool forceNeither, int research, double colonyPct, double transPct, double dsPct,
-                ref double transStr, out bool colony, out ushort trans, out double bombardDamageMult, FocusStat focus)
+                ref double transStr, out bool colony, out int trans, out double bombardDamageMult, FocusStat focus)
         {
             double transTrg = .169;
             double colTrg = .104;
@@ -442,7 +452,7 @@ namespace GalWar
             return MakeStatStr(research, 2.1 * strMult, .585);
         }
 
-        private void DoAttDef(double transStr, double str, double attPct, out byte att, out byte def, FocusStat focus)
+        private void DoAttDef(double transStr, double str, double attPct, out int att, out int def, FocusStat focus)
         {
             if (IsFocusing(focus, FocusStat.Speed))
                 str /= FocusSpeedMult;
@@ -687,26 +697,12 @@ namespace GalWar
             {
                 return this._name;
             }
-            private set
-            {
-                checked
-                {
-                    this._name = (byte)value;
-                }
-            }
         }
         internal int Mark
         {
             get
             {
                 return this._mark;
-            }
-            private set
-            {
-                checked
-                {
-                    this._mark = (byte)value;
-                }
             }
         }
 

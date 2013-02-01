@@ -894,7 +894,7 @@ namespace GalWar
                 max = temp;
             }
 
-            ShipDesign design = new ShipDesign(player, GetDesignResearch(player), Tile.Game.MapSize, min, max);
+            ShipDesign design = new ShipDesign(player, GetDesignResearch(player), min, max);
             Ship newShip = player.NewShip(handler, this.Tile, design);
             player.GoldIncome(this.value - design.Cost);
             if (newShip.Player == anomShip.Player)

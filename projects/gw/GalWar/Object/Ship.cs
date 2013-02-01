@@ -16,11 +16,12 @@ namespace GalWar
         private Tile _tile;
 
         private readonly byte _name, _mark;
+        private readonly float _expDiv;
 
         private bool _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
-        private ushort _maxTrans, _maxHP, _repair, _bombardDamage;
-        private float _curExp, _totalExp, _needExpMult, _expDiv, _autoRepair;
+        private ushort _maxHP, _maxTrans, _bombardDamage, _repair;
+        private float _autoRepair, _needExpMult, _curExp, _totalExp;
         private double _cost;
 
         internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
@@ -32,39 +33,63 @@ namespace GalWar
 
                 this._player = player;
 
-                this.tile = tile;
+                this._tile = tile;
                 tile.SpaceObject = this;
 
                 this._name = (byte)design.Name;
                 this._mark = (byte)design.Mark;
-                this.MaxSpeed = (byte)design.Speed;
-                this.maxPop = (ushort)design.Trans;
+
+                this._hasRepaired = false;
+
+                this._expType = byte.MaxValue;
+
+                this._upkeep = (byte)design.Upkeep;
+                this._curSpeed = (byte)design.Speed;
+                this._maxSpeed = (byte)design.Speed;
+                this._maxHP = (ushort)design.HP;
+                this._maxTrans = (ushort)design.Trans;
+
                 if (design.DeathStar)
-                    this._bombardDamage = (ushort)design.BombardDamage;
+                    this._bombardDamage = (ushort)ShipDesign.SetBombardDamage(design.BombardDamage, design.Att);
+                else
+                    this._bombardDamage = 0;
 
-                this.HasRepaired = false;
-                this.upkeep = design.Upkeep;
-                this.CurSpeed = this.MaxSpeed;
-                this.MaxHP = design.HP;
+                this._repair = 0;
 
-                this.AutoRepair = double.NaN;
+                this._autoRepair = float.NaN;
+                this._needExpMult = float.NaN;
 
-                this.cost = design.AdjustCost(this.Player.Game.MapSize);
+                this._curExp = 0;
+                this._totalExp = 0;
 
-                this.curExp = 0;
-                this.totalExp = 0;
+                this._cost = design.AdjustCost(this.Player.Game.MapSize);
+
                 this._expDiv = (float)GetValue();
-                GetNextLevel(handler);
 
-                this.Player.GoldIncome(-this.GetUpkeepReturn(this.CurSpeed));
+                GetNextLevel(handler);
+                Player.GoldIncome(-GetUpkeepReturn(this.CurSpeed));
             }
         }
 
+        public override Player Player
+        {
+            get
+            {
+                return this._player;
+            }
+        }
         private Tile tile
         {
+            get
+            {
+                return this._tile;
+            }
             set
             {
-                this._tile = value;
+                checked
+                {
+                    this._tile = value;
+                }
             }
         }
 
@@ -83,6 +108,46 @@ namespace GalWar
             }
         }
 
+        private double expDiv
+        {
+            get
+            {
+                return this._expDiv;
+            }
+        }
+
+        public bool HasRepaired
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return this._hasRepaired;
+            }
+            private set
+            {
+                checked
+                {
+                    this._hasRepaired = value;
+                }
+            }
+        }
+
+        public ExpType NextExpType
+        {
+            get
+            {
+                return (ExpType)this._expType;
+            }
+            private set
+            {
+                checked
+                {
+                    this._expType = (byte)value;
+                }
+            }
+        }
+
         private int upkeep
         {
             get
@@ -94,6 +159,184 @@ namespace GalWar
                 checked
                 {
                     this._upkeep = (byte)value;
+                }
+            }
+        }
+
+        public int CurSpeed
+        {
+            get
+            {
+                return this._curSpeed;
+            }
+            private set
+            {
+                checked
+                {
+                    this._curSpeed = (byte)value;
+                }
+            }
+        }
+        public int MaxSpeed
+        {
+            get
+            {
+                return this._maxSpeed;
+            }
+            private set
+            {
+                checked
+                {
+                    this._maxSpeed = (byte)value;
+                }
+            }
+        }
+        public int MaxHP
+        {
+            get
+            {
+                return this._maxHP;
+            }
+            private set
+            {
+                checked
+                {
+                    this._maxHP = (ushort)value;
+                }
+            }
+        }
+        private int maxPop
+        {
+            get
+            {
+                return this._maxTrans;
+            }
+            set
+            {
+                checked
+                {
+                    this._maxTrans = (ushort)value;
+                }
+            }
+        }
+
+        public double BombardDamage
+        {
+            get
+            {
+                return ShipDesign.GetBombardDamage(this._bombardDamage, this.Att);
+            }
+            private set
+            {
+                checked
+                {
+                    if (this.DeathStar)
+                        this._bombardDamage = (ushort)value;
+                    if (this.BombardDamage != value)
+                        throw new Exception();
+                }
+            }
+        }
+        public bool DeathStar
+        {
+            get
+            {
+                return ( this._bombardDamage > 0 );
+            }
+        }
+
+        public int Repair
+        {
+            get
+            {
+                return this._repair;
+            }
+            private set
+            {
+                checked
+                {
+                    this._repair = (ushort)value;
+                }
+            }
+        }
+        public double AutoRepair
+        {
+            get
+            {
+                double autoRepair = this._autoRepair;
+
+                if (autoRepair <= 0)
+                    this.AutoRepair = 0;
+                else if (this.HP == this.MaxHP)
+                    this.AutoRepair = float.NaN;
+                else if (autoRepair > 0)
+                    this.AutoRepair = GetAutoRepairForHP(GetAutoRepairHP(autoRepair));
+
+                return this._autoRepair;
+            }
+            set
+            {
+                checked
+                {
+                    this._autoRepair = (float)value;
+                }
+            }
+        }
+
+        private double needExpMult
+        {
+            get
+            {
+                return this._needExpMult;
+            }
+            set
+            {
+                checked
+                {
+                    this._needExpMult = (float)value;
+                }
+            }
+        }
+        private double curExp
+        {
+            get
+            {
+                return this._curExp;
+            }
+            set
+            {
+                checked
+                {
+                    this._curExp = (float)value;
+                }
+            }
+        }
+        private double totalExp
+        {
+            get
+            {
+                return this._totalExp;
+            }
+            set
+            {
+                checked
+                {
+                    this._totalExp = (float)value;
+                }
+            }
+        }
+
+        private double cost
+        {
+            get
+            {
+                return this._cost;
+            }
+            set
+            {
+                checked
+                {
+                    this._cost = value;
                 }
             }
         }
@@ -125,7 +368,6 @@ namespace GalWar
             return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
         }
 
-
         private double RepairCost
         {
             get
@@ -134,91 +376,11 @@ namespace GalWar
             }
         }
 
-        private double cost
-        {
-            get
-            {
-                return this._cost;
-            }
-            set
-            {
-                this._cost = value;
-            }
-        }
-
-        private float curExp
-        {
-            get
-            {
-                return this._curExp;
-            }
-            set
-            {
-                this._curExp = value;
-            }
-        }
-        private float needExpMult
-        {
-            get
-            {
-                return this._needExpMult;
-            }
-            set
-            {
-                this._needExpMult = value;
-            }
-        }
-        private double totalExp
-        {
-            get
-            {
-                return this._totalExp;
-            }
-            set
-            {
-                this._totalExp = (float)value;
-            }
-        }
-
-        public double AutoRepair
-        {
-            get
-            {
-                if (this._autoRepair <= 0)
-                    this.AutoRepair = 0;
-                else if (this.HP == this.MaxHP)
-                    this.AutoRepair = float.NaN;
-                else if (this._autoRepair > 0)
-                    this.AutoRepair = this.GetAutoRepairForHP(this.GetAutoRepairHP(this._autoRepair));
-
-                return this._autoRepair;
-            }
-            set
-            {
-                this._autoRepair = (float)value;
-            }
-        }
-
         public bool DoAutoRepair
         {
             get
             {
                 return ( !HasRepaired && AutoRepair > 0 );
-            }
-        }
-
-        public int Repair
-        {
-            get
-            {
-                return this._repair;
-            }
-            private set
-            {
-                checked
-                {
-                    this._repair = (ushort)value;
-                }
             }
         }
 
@@ -341,33 +503,11 @@ namespace GalWar
 
         #region public
 
-        public override Player Player
-        {
-            get
-            {
-                return this._player;
-            }
-        }
-
         public override Tile Tile
         {
             get
             {
-                return this._tile;
-            }
-        }
-        public int MaxSpeed
-        {
-            get
-            {
-                return this._maxSpeed;
-            }
-            private set
-            {
-                checked
-                {
-                    this._maxSpeed = (byte)value;
-                }
+                return this.tile;
             }
         }
 
@@ -375,85 +515,7 @@ namespace GalWar
         {
             get
             {
-                return this._maxTrans;
-            }
-        }
-        private int maxPop
-        {
-            get
-            {
-                return this.MaxPop;
-            }
-            set
-            {
-                checked
-                {
-                    this._maxTrans = (ushort)value;
-                }
-            }
-        }
-
-        public double BombardDamage
-        {
-            get
-            {
-                return ShipDesign.GetBombardDamage(this._bombardDamage, this.Att);
-            }
-            private set
-            {
-                if (this.DeathStar)
-                    this._bombardDamage = (ushort)value;
-                if (this.BombardDamage != value)
-                    throw new Exception();
-            }
-        }
-        public bool DeathStar
-        {
-            get
-            {
-                return ( this._bombardDamage > 0 );
-            }
-        }
-
-        public ExpType NextExpType
-        {
-            get
-            {
-                return (ExpType)this._expType;
-            }
-            private set
-            {
-                this._expType = (byte)value;
-            }
-        }
-
-        public int CurSpeed
-        {
-            get
-            {
-                return this._curSpeed;
-            }
-            private set
-            {
-                checked
-                {
-                    this._curSpeed = (byte)value;
-                }
-            }
-        }
-
-        public int MaxHP
-        {
-            get
-            {
-                return this._maxHP;
-            }
-            private set
-            {
-                checked
-                {
-                    this._maxHP = (ushort)value;
-                }
+                return this.maxPop;
             }
         }
 
@@ -472,23 +534,6 @@ namespace GalWar
             get
             {
                 return ( this.Tile.SpaceObject != this );
-            }
-        }
-
-        public bool HasRepaired
-        {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                return this._hasRepaired;
-            }
-            private set
-            {
-                checked
-                {
-                    this._hasRepaired = value;
-                }
             }
         }
 
@@ -551,9 +596,9 @@ namespace GalWar
         {
             return GetExp(this.curExp);
         }
-        private int GetExp(float exp)
+        private int GetExp(double exp)
         {
-            return (int)Math.Round(104 * ( this.totalExp + exp ) / this._expDiv);
+            return (int)Math.Round(104 * ( this.totalExp + exp ) / this.expDiv);
         }
 
         public double GetDestroyGold()
@@ -583,7 +628,7 @@ namespace GalWar
 
             int population = this.Population;
             double soldiers = this.Soldiers;
-            float curExp = this.curExp;
+            double curExp = this.curExp;
             int curSpeed = this.CurSpeed;
             int production = 0;
             double addGold = 0, goldIncome;
@@ -604,11 +649,11 @@ namespace GalWar
 
             Destroy(isGold);
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony, int, double, float, int, int, double, double>(
-                    new Game.UndoMethod<Colony, int, double, float, int, int, double, double>(UndoDisband),
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony, int, double, double, int, int, double, double>(
+                    new Game.UndoMethod<Colony, int, double, double, int, int, double, double>(UndoDisband),
                     colony, population, soldiers, curExp, curSpeed, production, addGold, goldIncome));
         }
-        private Tile UndoDisband(Colony colony, int population, double soldiers, float curExp, int curSpeed, int production, double addGold, double goldIncome)
+        private Tile UndoDisband(Colony colony, int population, double soldiers, double curExp, int curSpeed, int production, double addGold, double goldIncome)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(population >= 0);
@@ -827,9 +872,8 @@ namespace GalWar
                 this.maxPop = trans;
                 if (funky && this.NextExpType == ExpType.DS && !this.DeathStar)
                 {
-                    this._bombardDamage = (ushort)ds;
-                    if (this.BombardDamage != ds)
-                        throw new Exception();
+                    this._bombardDamage = 1;
+                    this.BombardDamage = ds;
                 }
                 else if (this.NextExpType != ExpType.Att)
                 {

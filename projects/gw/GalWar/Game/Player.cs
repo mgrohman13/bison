@@ -48,7 +48,7 @@ namespace GalWar
                 this.Color = player.Color;
                 this.AI = player.AI;
 
-                this.designs = ShipDesign.GetStartDesigns(research, this);
+                this.designs = ShipDesign.GetStartDesigns(this, research);
                 this.colonies = new List<Colony>();
                 this.ships = new List<Ship>();
 
@@ -517,21 +517,15 @@ namespace GalWar
                     }
                 }
 
-                foreach (int designResearch in tries.Reverse())
-                {
-                    ShipDesign tryDesign = new ShipDesign(designResearch, null, this.Game.MapSize, ShipDesign.FocusStat.None);
-                    if (tryDesign.MakesObsolete(Game.MapSize, ResearchFocusDesign))
-                    {
-                        NewShipDesign(handler, tryDesign, true);
-                        return;
-                    }
-                }
+                ShipDesign tryDesign = ShipDesign.TryUpgradeDesign(this, tries.Reverse(), ResearchFocusDesign);
+                if (tryDesign != null)
+                    NewShipDesign(handler, tryDesign, true);
             }
         }
 
         private void NewShipDesign(IEventHandler handler, int designResearch)
         {
-            NewShipDesign(handler, new ShipDesign(designResearch, this.GetShipDesigns(), this.Game.MapSize, GetResearchFocus()));
+            NewShipDesign(handler, new ShipDesign(this, designResearch));
         }
         private void NewShipDesign(IEventHandler handler, ShipDesign newDesign)
         {
@@ -549,7 +543,6 @@ namespace GalWar
                 if (obsoleteDesigns.Contains(colony.Buildable as ShipDesign))
                     colony.SetBuildable(newDesign, Consts.AutomaticObsoleteLossPct);
 
-            newDesign.NameShip(this);
             this.designs.Add(newDesign);
 
             SetPlanetDefense(newDesign);

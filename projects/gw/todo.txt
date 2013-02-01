@@ -3,7 +3,6 @@ clean up fields
 	objs
 		Graphs
 		ShipDesign
-		Ship
 	consistent ordering
 	start with _ 
 	fields directly set in constructors
