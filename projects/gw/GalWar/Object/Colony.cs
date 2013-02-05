@@ -93,7 +93,7 @@ namespace GalWar
 
                 return repairShip;
             }
-            internal set
+            private set
             {
                 checked
                 {
@@ -469,7 +469,7 @@ namespace GalWar
 
             double experience = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
             if (Planet.Dead)
-                experience += Planet.ConstValue;
+                experience += Consts.PlanetConstValue;
             experience *= Consts.TroopExperienceMult;
             this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, experience);
             attSoldiers += GetExperienceSoldiers(attackers, initAttackers, experience, out attExperience);
@@ -484,14 +484,14 @@ namespace GalWar
             }
         }
 
-        private static float GetExperienceSoldiers(Player player, int curPop, double initPop, double exp)
+        private static double GetExperienceSoldiers(Player player, int curPop, double initPop, double exp)
         {
             double other;
-            float soldiers = GetExperienceSoldiers(curPop, initPop, exp, out other);
+            double soldiers = GetExperienceSoldiers(curPop, initPop, exp, out other);
             player.GoldIncome(other);
             return soldiers;
         }
-        private static float GetExperienceSoldiers(int curPop, double initPop, double exp, out double other)
+        private static double GetExperienceSoldiers(int curPop, double initPop, double exp, out double other)
         {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
             other = ( exp - mult );
@@ -585,6 +585,8 @@ namespace GalWar
 
         public int GetAddProduction(double production)
         {
+            TurnException.CheckTurn(this.Player);
+
             return GetAddProduction(production, false);
         }
 
@@ -921,7 +923,7 @@ namespace GalWar
                 Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int>(
                         new Game.UndoMethod<Buildable, int>(UndoStartBuilding), this.Buildable, (int)loss));
 
-                SetBuildable(newBuild, loss / ( this.Production == 0 ? 1 : this.Production ));
+                SetBuildable(newBuild, loss / ( this.Production == 0 ? 1.0 : this.Production ));
             }
         }
         private Tile UndoStartBuilding(Buildable oldBuild, int loss)
@@ -1133,7 +1135,7 @@ namespace GalWar
         {
             if (prodInc > Consts.FLOAT_ERROR)
             {
-                prodInc /= 2;
+                prodInc /= 2.0;
 
                 if (attAndDef)
                     BuildAttAndDef(prodInc);
@@ -1165,7 +1167,7 @@ namespace GalWar
         {
             if (prod > Consts.FLOAT_ERROR)
             {
-                prod /= 2;
+                prod /= 2.0;
 
                 GetPlanetDefenseInc(buildable, prod, out newAtt, out newDef, out newHP);
 
@@ -1242,7 +1244,7 @@ namespace GalWar
                     double min = 0, max = 1;
                     do
                     {
-                        double mult = ( min + max ) / 2;
+                        double mult = ( min + max ) / 2.0;
                         newAtt = att + mult * ( trgAtt - att );
                         newDef = def + mult * ( trgDef - def );
                         if (inc == TestPD(trgCost, newAtt, newDef))
@@ -1268,7 +1270,7 @@ namespace GalWar
         {
             this.Att = GetPDStat(newAtt, this.Att, this.Player.PlanetDefenseAtt);
             this.Def = GetPDStat(newDef, this.Def, this.Player.PlanetDefenseDef);
-            this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, ushort.MaxValue);
+            this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, byte.MaxValue);
 
             if (Math.Abs(GetPDCost(Att, Def) - GetPDCost(Def, Att)) > Consts.FLOAT_ERROR)
                 throw new Exception();
@@ -1278,7 +1280,7 @@ namespace GalWar
             if (target == current)
                 return current;
 
-            float add = (float)( target - current );
+            double add = target - current;
 
             int min = 1;
             if (target > current)
@@ -1290,7 +1292,7 @@ namespace GalWar
             if (add > lowerCap)
                 return current + Game.Random.GaussianCappedInt(add, Consts.PlanetDefensesRndm, lowerCap);
             else
-                return Game.Random.Round((float)target);
+                return Game.Random.Round(target);
         }
 
         #endregion //planet defense

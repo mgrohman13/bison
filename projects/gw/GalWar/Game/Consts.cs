@@ -10,11 +10,11 @@ namespace GalWar
         public const double LosePointsMult = -6.5;
         public const double PointsTilesPower = .39;
         //ResearchVictoryMult is a multiple of the second place players research
-        public const float ResearchVictoryMult = 1.69f;
-        public const float ResearchVictoryRndm = 0.065f;
+        public const double ResearchVictoryMult = 1.69;
+        public const double ResearchVictoryRndm = 0.065;
 
         //StartAnomalies is the number of turn-rounds for which we immediately create anomalies
-        public const float StartAnomalies = 21f;
+        public const double StartAnomalies = 21;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each players homeworld quality
         public const double StartGold = AverageQuality * 650;
@@ -29,12 +29,13 @@ namespace GalWar
         public const int PlanetQualityMax = 390;
         public const double PlanetQualityOE = 65;
         public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
+        public const double PlanetConstValue = .5 / Consts.PopulationGrowth;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
         public const int HomeworldDistance = 6;
 
         //as pcts of population
-        public const double PopulationGrowth = Math.E / 130;
+        public const double PopulationGrowth = Math.E / 130.0;
         public const double Income = .13;
         //set up so that emphasising a single value allows double the income of when emphasising the other two
         public const double EmphasisValue = 1.6861406616345072; // = 8 / ( Math.Sqrt(33) - 1 )
@@ -70,8 +71,8 @@ namespace GalWar
         public const double NumDesignsFactor = 3.9;
         public const double NumDesignsPower = .21;
         //turn research income randomness
-        public const float ResearchRndm = .39f;
-        public const float ResearchDisplayRndm = .169f;
+        public const double ResearchRndm = .39;
+        public const double ResearchDisplayRndm = .169;
 
         //trade rates
         public const double ProductionForGold = 10.0 / 3.0;
@@ -80,18 +81,18 @@ namespace GalWar
         public const double PopulationForGoldLow = 1 / Income / 2.1;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
-        public const float ProductionForSoldiers = .39f;
+        public const double ProductionForSoldiers = .39;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.69;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
         public const double ExpForGold = 1 / DisbandPct;
 
-        public const double MovePopulationGoldCost = Income / 2;
+        public const double MovePopulationGoldCost = Income / 2.0;
         public const double MoveSoldiersMult = 2.1;
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
         public const double TransLossMult = .65;
-        public const float TransLossRndm = (float)( Math.PI / 13 );
+        public const double TransLossRndm = Math.PI / 13.0;
 
         //value of exp gained as a pct of ship value
         public const double ExperienceMult = .13;
@@ -100,7 +101,7 @@ namespace GalWar
         //damage amount for constant exp every combat round, in addition to standard exp for actual damage
         public const double ExperienceConstDmgAmt = .65;
         //randomness for exp gained and needed
-        public const float ExperienceRndm = .21f;
+        public const double ExperienceRndm = .21;
         //modifier to upkeep payoff when gaining levels
         public const double ExperienceUpkeepPayoffMult = 1 / RepairCostMult;
 
@@ -112,7 +113,7 @@ namespace GalWar
         public const double RepairGoldHPPct = 1 / 16.9;
 
         public const double DisbandPct = RepairCostMult;
-        public const float ColonizationCostRndm = .091f;
+        public const double ColonizationCostRndm = .091;
 
         public const double AttackStrength = 1;
         public const double AttackNumbersPower = 0.091;
@@ -124,13 +125,13 @@ namespace GalWar
         //payoff power for gold used to boost a planetary invasion
         public const double InvadeGoldIncPower = .3;
         //average planet quality lost as a percentage of total troops killed in the battle
-        public const float PlanetDamage = .3f;
+        public const double PlanetDamage = .3;
 
-        public const float DeathStarDamageRndm = (float)( Math.E / 13 );
+        public const double DeathStarDamageRndm = Math.E / 13.0;
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
-        public const float PlanetDefensesRndm = .26f;
+        public const double PlanetDefensesRndm = .26;
         public const double PlanetDefensesCostMult = .91;
         //PlanetDefensesUpkeepMult will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
@@ -146,12 +147,12 @@ namespace GalWar
 
         public static double GetMoveOrderGold(int numPlayers)
         {
-            return MoveOrderGold / ( numPlayers - 1 );
+            return MoveOrderGold / ( numPlayers - 1.0 );
         }
 
-        internal static float GetExperience(double experience)
+        internal static double GetExperience(double experience)
         {
-            return Game.Random.GaussianOE((float)experience, Consts.ExperienceRndm, Consts.ExperienceRndm);
+            return Game.Random.GaussianOE(experience, Consts.ExperienceRndm, Consts.ExperienceRndm);
         }
 
         public static double GetPopulationGrowth(double population, int quality)
@@ -168,14 +169,14 @@ namespace GalWar
             return ( 1 + growth * Consts.PopulationGrowth );
         }
 
-        internal static float GetColonizationMult()
+        internal static double GetColonizationMult()
         {
-            return Game.Random.GaussianOE(1f, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, .39f);
+            return Game.Random.GaussianOE(1, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, .39);
         }
 
         internal static double GetColonizationCost(double value, double mult)
         {
-            return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + Planet.ConstValue ), .65);
+            return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + Consts.PlanetConstValue ), .65);
         }
 
         public static double GetProductionUpkeepMult(int mapSize)
@@ -205,7 +206,7 @@ namespace GalWar
             double retVal = 1;
             if (colony)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 26.0 / trans + 1 ), false, bombardDamage, research)
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 26.0 / (double)trans + 1 ), false, bombardDamage, research)
                         / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
                 if (sqr)
                     retVal *= retVal;
@@ -251,7 +252,7 @@ namespace GalWar
         {
             if (gold == 0)
                 return attack;
-            return ( initialWave + gold * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) ) * attack / initialWave;
+            return ( initialWave + gold * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) ) * attack / (double)initialWave;
         }
 
         //randomized
@@ -269,7 +270,7 @@ namespace GalWar
         private static double GetStrengthBase(int troops, double soldiers, double strength, double power)
         {
             if (troops > 0)
-                return strength * Math.Pow(troops, power) * Math.Pow(1 + soldiers / troops, 1 + power);
+                return strength * Math.Pow(troops, power) * Math.Pow(1 + soldiers / (double)troops, 1 + power);
             throw new Exception();
         }
 

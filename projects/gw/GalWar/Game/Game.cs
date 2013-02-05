@@ -53,11 +53,14 @@ namespace GalWar
         internal readonly ShipNames ShipNames;
 
         private readonly Tile[,] map;
+        private readonly List<Player> players;
         private readonly List<Planet> planets;
         private readonly List<Tuple<Tile, Tile>> teleporters;
         private readonly List<Result> deadPlayers, winningPlayers;
 
-        private Player[] players;
+        [NonSerialized]
+        private Stack<IUndoCommand> _undoStack;
+
 
         private readonly byte _diameter;
 
@@ -65,11 +68,13 @@ namespace GalWar
         private ushort _turn;
         private float _planetPct, _anomalyPct;
 
-        public Game(Player[] players, int radius, double planetPct)
+        public Game(Player.StartingPlayer[] players, int radius, double planetPct)
         {
             checked
             {
                 int numPlayers = players.Length;
+
+                this._diameter = (byte)( radius * 2 - 1 );
 
                 AssertException.Assert(players != null);
                 AssertException.Assert(numPlayers > 1);
@@ -78,9 +83,6 @@ namespace GalWar
                 AssertException.Assert(planetPct > 0.00013);
                 AssertException.Assert(planetPct < 0.039);
 
-                this._diameter = (byte)( radius * 2 - 1 );
-
-                this.Graphs = new Graphs(this);
                 this.StoreProd = new StoreProd();
                 this.Attack = new Attack();
                 this.Defense = new Defense();
@@ -88,12 +90,11 @@ namespace GalWar
                 this.ShipNames = new ShipNames(numPlayers);
 
                 this.map = new Tile[Diameter, Diameter];
+                this.players = new List<Player>();
                 this.planets = new List<Planet>();
                 this.teleporters = new List<Tuple<Tile, Tile>>();
                 this.deadPlayers = new List<Result>(numPlayers - 1);
                 this.winningPlayers = new List<Result>(numPlayers - 1);
-
-                this.players = new Player[numPlayers];
 
                 this._currentPlayer = byte.MaxValue;
                 this._turn = 0;
@@ -103,6 +104,18 @@ namespace GalWar
                 InitMap(radius);
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);
+
+                this.Graphs = new Graphs(this);
+            }
+        }
+
+        private Stack<IUndoCommand> undoStack
+        {
+            get
+            {
+                if (this._undoStack == null)
+                    this._undoStack = new Stack<IUndoCommand>();
+                return this._undoStack;
             }
         }
 
@@ -142,7 +155,7 @@ namespace GalWar
                 }
             }
         }
-        private float planetPct
+        private double planetPct
         {
             get
             {
@@ -156,7 +169,7 @@ namespace GalWar
                 }
             }
         }
-        private float anomalyPct
+        private double anomalyPct
         {
             get
             {
@@ -194,9 +207,9 @@ namespace GalWar
         {
             planetPct *= MapSize;
 
-            this.planetPct = Random.GaussianCapped((float)( planetPct / 91 ), .091f, (float)Consts.FLOAT_ERROR);
-            this.anomalyPct = Random.GaussianCapped((float)( this.planetPct + MapSize * .000039 + ( numPlayers + 6.5 ) * 0.0052 ),
-                    .21f, (float)( this.planetPct + Consts.FLOAT_ERROR ));
+            this.planetPct = Random.GaussianCapped(planetPct / 91.0, .091, Consts.FLOAT_ERROR);
+            this.anomalyPct = Random.GaussianCapped(this.planetPct + MapSize * .000039 + ( numPlayers + 6.5 ) * 0.0052,
+                    .21, this.planetPct + Consts.FLOAT_ERROR);
 
             //first create enough planets for homeworlds
             while (this.planets.Count < numPlayers)
@@ -204,7 +217,7 @@ namespace GalWar
 
             double anomPlanets = 0;
             double anomPlanetRate = ( this.planetPct / this.anomalyPct ) / 1.3;
-            int startAnomalies = Random.GaussianOEInt(this.anomalyPct * Consts.StartAnomalies, .39f, .13f,
+            int startAnomalies = Random.GaussianOEInt(this.anomalyPct * Consts.StartAnomalies, .39, .13,
                     ( this.anomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0);
             for (int a = 0 ; a < startAnomalies ; ++a)
             {
@@ -217,7 +230,7 @@ namespace GalWar
             }
 
             planetPct -= anomPlanets;
-            int startPlanets = Random.GaussianOEInt((float)planetPct, .13f, .091f, ( planetPct > 1 ) ? 1 : 0);
+            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
             for (int a = 0 ; a < startPlanets ; ++a)
                 NewPlanet();
 
@@ -238,7 +251,7 @@ namespace GalWar
             return null;
         }
 
-        private void InitPlayers(Player[] players, double numPlanets)
+        private void InitPlayers(Player.StartingPlayer[] players, double numPlanets)
         {
             int numPlayers = players.Length;
 
@@ -251,11 +264,11 @@ namespace GalWar
 
 
             int index = 0;
-            foreach (Player player in Random.Iterate<Player>(players))
+            foreach (Player.StartingPlayer player in Random.Iterate<Player.StartingPlayer>(players))
             {
                 Planet homeworld = GetHomeworld(startPop);
-                double gold = startGold / homeworld.Quality + index * Consts.GetMoveOrderGold(numPlayers);
-                this.players[index] = new Player(index, this, player, homeworld, startPop, startSoldiers, gold, startResearch);
+                double gold = startGold / (double)homeworld.Quality + index * Consts.GetMoveOrderGold(numPlayers);
+                this.players.Add(new Player(index, this, player, homeworld, startPop, startSoldiers, gold, startResearch));
                 //starting production is based on the highest colony ship design cost
                 foreach (ShipDesign design in this.players[index].GetShipDesigns())
                     if (design.Colony)
@@ -351,7 +364,7 @@ next_planet:
                 double avgResearch = 0;
                 foreach (Player player in this.players)
                     avgResearch += 1 * player.ResearchDisplay + 2 * player.Research + 4 * player.LastResearched;
-                return avgResearch / this.players.Length / 7.0;
+                return avgResearch / (double)this.players.Count / 7.0;
             }
         }
 
@@ -366,31 +379,19 @@ next_planet:
             RemovePlayer(player);
             this.deadPlayers.Add(new Result(player, false));
             //if one player wipes out the other in a 1 vs 1 situation, they still get a victory bonus
-            if (this.players.Length == 1)
+            if (this.players.Count == 1)
                 this.winningPlayers.Add(new Result(this.players[0], true));
         }
 
         private void RemovePlayer(Player player)
         {
-            Player[] newPlayers = new Player[this.players.Length - 1];
-            bool found = false;
-            for (int i = 0 ; i < this.players.Length ; ++i)
-            {
-                if (this.players[i] == player)
-                {
-                    found = true;
-                    if (this.currentPlayer > i)
-                        --this.currentPlayer;
-                    else if (this.currentPlayer == i)
-                        throw new Exception();
-                }
-                else
-                {
-                    //players farther back move up in the order
-                    newPlayers[i - ( found ? 1 : 0 )] = this.players[i];
-                }
-            }
-            this.players = newPlayers;
+            int i = this.players.IndexOf(player);
+            if (this.currentPlayer > i)
+                --this.currentPlayer;
+            else if (this.currentPlayer == i)
+                throw new Exception();
+
+            this.players.Remove(player);
         }
 
         #endregion //internal
@@ -402,7 +403,7 @@ next_planet:
             get
             {
                 int radius = ( Diameter + 1 ) / 2;
-                return 3 * radius * radius - 3 * radius + 1;
+                return 3 * radius * ( radius - 1 ) + 1;
             }
         }
 
@@ -472,7 +473,7 @@ next_planet:
 
         internal Player[] GetResearchOrder()
         {
-            Player[] players = (Player[])this.players.Clone();
+            Player[] players = this.players.ToArray();
             Array.Sort<Player>(players, delegate(Player p1, Player p2)
             {
                 //descending sort
@@ -481,9 +482,9 @@ next_planet:
             return players;
         }
 
-        public Player[] GetPlayers()
+        public ReadOnlyCollection<Player> GetPlayers()
         {
-            return (Player[])this.players.Clone();
+            return this.players.AsReadOnly();
         }
 
         public ReadOnlyCollection<Planet> GetPlanets()
@@ -504,7 +505,7 @@ next_planet:
             CurrentPlayer.EndTurn(handler);
             Graphs.EndTurn(CurrentPlayer);
 
-            if (++this.currentPlayer >= this.players.Length)
+            if (++this.currentPlayer >= this.players.Count)
                 NewRound();
 
             CreateAnomalies();
@@ -558,7 +559,7 @@ next_planet:
             Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
             if (playerGold.Count > 0)
             {
-                double moveOrderGold = Consts.GetMoveOrderGold(this.players.Length);
+                double moveOrderGold = Consts.GetMoveOrderGold(this.players.Count);
                 foreach (KeyValuePair<Player, int> pair in playerGold)
                 {
                     Player player = pair.Key;
@@ -575,7 +576,7 @@ next_planet:
             if (teleporters.Count > 0)
             {
                 double chance = Math.Pow(teleporters.Count - 1.0, 1.69) + 1.0;
-                if (Game.Random.Bool(chance / ( chance + 52.0 ) / players.Length))
+                if (Game.Random.Bool(chance / ( chance + 52.0 ) / (double)players.Count))
                     RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
             }
         }
@@ -643,7 +644,7 @@ next_planet:
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
         {
-            if (Random.Bool((float)( this.planetPct / this.anomalyPct )))
+            if (Random.Bool(this.planetPct / this.anomalyPct))
                 if (CheckPlanetDistance(tile))
                 {
                     handler.Explore(Anomaly.AnomalyType.NewPlanet);
@@ -669,14 +670,14 @@ next_planet:
 
         private void CreateAnomalies()
         {
-            float numPlayers = this.players.Length;
+            double numPlayers = this.players.Count;
             int create = Game.Random.OEInt(this.anomalyPct / numPlayers);
             for (int a = 0 ; a < create ; ++a)
                 CreateAnomaly();
-            this.planetPct = Random.GaussianCapped(this.planetPct, .0052f / numPlayers,
-                    (float)( Math.Max(0, 2 * this.planetPct - this.anomalyPct) + Consts.FLOAT_ERROR ));
-            this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065f / numPlayers,
-                    .0091f / numPlayers, (float)( this.planetPct + Consts.FLOAT_ERROR ));
+            this.planetPct = Random.GaussianCapped(this.planetPct, .0052 / numPlayers,
+                     Math.Max(0, 2 * this.planetPct - this.anomalyPct) + Consts.FLOAT_ERROR);
+            this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065 / numPlayers,
+                    .0091 / numPlayers, this.planetPct + Consts.FLOAT_ERROR);
         }
         private Anomaly CreateAnomaly()
         {
@@ -716,7 +717,7 @@ next_planet:
 
         public List<Result> GetGameResult()
         {
-            AssertException.Assert(this.players.Length == 1);
+            AssertException.Assert(this.players.Count == 1);
 
             List<Result> result = new List<Result>(this.winningPlayers.Count + 1 + this.deadPlayers.Count);
 
@@ -743,18 +744,6 @@ next_planet:
         #endregion //   public
 
         #region Undo
-
-        [NonSerialized]
-        private Stack<IUndoCommand> _undoStack;
-        private Stack<IUndoCommand> undoStack
-        {
-            get
-            {
-                if (this._undoStack == null)
-                    this._undoStack = new Stack<IUndoCommand>();
-                return this._undoStack;
-            }
-        }
 
         public bool CanUndo()
         {
@@ -859,6 +848,16 @@ next_planet:
 
             private sbyte _points;
 
+            internal Result(Player player, bool won)
+            {
+                checked
+                {
+                    this.Player = player;
+                    //extra points are awarded for gaining a research victory as quickly as possible
+                    double mult = Math.Pow(player.Game.MapSize, Consts.PointsTilesPower) / (double)player.Game.Turn;
+                    this._points = (sbyte)Random.Round(mult * ( won ? Consts.WinPointsMult : Consts.LosePointsMult ));
+                }
+            }
             public int Points
             {
                 get
@@ -872,14 +871,6 @@ next_planet:
                         _points = (sbyte)value;
                     }
                 }
-            }
-
-            internal Result(Player player, bool won)
-            {
-                this.Player = player;
-                //extra points are awarded for gaining a research victory as quickly as possible
-                double mult = Math.Pow(player.Game.MapSize, Consts.PointsTilesPower) / (double)player.Game.Turn;
-                this.Points = Random.Round(mult * ( won ? Consts.WinPointsMult : Consts.LosePointsMult ));
             }
 
             internal static void Finalize(List<Result> results)

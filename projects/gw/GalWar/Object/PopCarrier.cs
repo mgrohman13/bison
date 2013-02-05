@@ -236,7 +236,7 @@ namespace GalWar
         public static double GetSoldiers(int population, double soldiers, int troops)
         {
             if (population > 0)
-                return ( ( soldiers * troops ) / population );
+                return ( ( soldiers * troops ) / (double)population );
             return soldiers;
         }
         public double GetSoldierPct()

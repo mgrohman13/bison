@@ -86,7 +86,7 @@ namespace GalWarAI
         private IState GetEmergencyState(IEventHandler humanHandler)
         {
             //finish game
-            if (game.GetPlayers().Length == 2)
+            if (game.GetPlayers().Count == 2)
             {
                 Player enemy = game.GetPlayers().First<Player>(delegate(Player p)
                 {

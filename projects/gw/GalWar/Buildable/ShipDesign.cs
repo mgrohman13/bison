@@ -91,10 +91,18 @@ namespace GalWar
 
         #region fields and constructors
 
-        private readonly bool __colony;
-        private readonly byte __name, __mark, __att, __def, __speed, __upkeep;
-        private readonly ushort __cost, __hp, __trans, __bombardDamage;
-        private readonly uint __research;
+        internal const double DeathStarAvg = 91;
+        private const double DeathStarMin = 3, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.6, FocusSpeedMult = 1.3;
+        //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
+        private const double FocusTypeMult = 2.1;
+
+        [NonSerialized]
+        private static bool unused;
+
+        private readonly bool _colony;
+        private readonly byte _name, _mark, _att, _def, _speed, _upkeep;
+        private readonly ushort _cost, _hp, _trans, _bombardDamage;
+        private readonly uint _research;
 
         internal static List<ShipDesign> GetStartDesigns(Player player, List<int> research)
         {
@@ -126,12 +134,17 @@ namespace GalWar
         internal ShipDesign(Player player, int research)
             : this(player, research, double.NaN, double.NaN)
         {
+            checked
+            {
+            }
         }
 
-        private static bool unused;
         internal ShipDesign(Player player, int research, double minCost, double maxCost)
             : this(player, research, player.GetShipDesigns(), player.GetResearchFocus(), false, false, false, minCost, maxCost, null, out unused)
         {
+            checked
+            {
+            }
         }
 
         private ShipDesign(Player player, int research, ICollection<ShipDesign> designs, FocusStat focus,
@@ -141,10 +154,10 @@ namespace GalWar
             {
                 int mapSize = player.Game.MapSize;
 
-                this.__bombardDamage = 0;
-                this.__research = (uint)research;
+                this._bombardDamage = 0;
+                this._research = (uint)research;
 
-                //get pcts for existing designs
+                //existing designs change probabilities for new research
                 double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
                 GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
 
@@ -155,8 +168,8 @@ namespace GalWar
                 DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
                         ref transStr, out colony, out trans, out bombardDamageMult, focus);
                 bool deathStar = ( bombardDamageMult > 0 );
-                this.__colony = colony;
-                this.__trans = (ushort)trans;
+                this._colony = colony;
+                this._trans = (ushort)trans;
 
                 //  ------  Att/Def           ------
                 //being a colony ship/transport/death star makes att and def lower
@@ -164,58 +177,60 @@ namespace GalWar
                 double str = GetAttDefStr(research, strMult, focus);
                 int att, def;
                 DoAttDef(transStr, str, attPct, out att, out def, focus);
-                this.__att = (byte)att;
-                this.__def = (byte)def;
+                this._att = (byte)att;
+                this._def = (byte)def;
 
                 //  ------  HP                ------
                 //being a colony ship/transport/death star makes hp higher
                 double hpMult = GetHPMult(strMult, deathStar, this.Colony);
                 //hp is relative to actual randomized stats
-                this.__hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
+                this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
 
                 //  ------  Speed             ------
                 double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, this.Colony, this.Trans, true),
                         GetSpeedMult(str, hpMult, speedPct, this.Att, this.Def, this.HP, focus));
-                this.__speed = (byte)MakeStat(speedStr);
+                this._speed = (byte)MakeStat(speedStr);
 
                 //  ------  BombardDamage     ------
                 //modify bombard mult based on speed and att
                 if (deathStar)
-                    this.__bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * this.BombardDamage
-                            * (float)Math.Sqrt(speedStr / this.Speed * Math.Sqrt(str * this.Def) / this.Att)), this.Att, true);
+                    this._bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * this.BombardDamage
+                            * Math.Sqrt(speedStr / (double)this.Speed * Math.Sqrt(str * this.Def) / (double)this.Att)), this.Att, true);
 
                 //  ------  Cost/Upkeep       ------
                 double cost = -1, upkRnd = double.NaN;
                 int upkeep = -1;
                 GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
-                if (double.IsNaN(minCost))
+                bool anomalyShip = !double.IsNaN(minCost);
+                if (!anomalyShip)
+                {
                     minCost = GetMinCost(mapSize);
-                if (double.IsNaN(maxCost))
                     maxCost = GetMaxCost(research, minCost);
+                }
                 while (cost > maxCost)
                 {
                     switch (GetReduce(cost, hpMult, forceColony, forceTrans))
                     {
                     case ModifyStat.Att:
-                        --this.__att;
+                        --this._att;
                         break;
                     case ModifyStat.Def:
-                        --this.__def;
+                        --this._def;
                         break;
                     case ModifyStat.HP:
-                        --this.__hp;
+                        --this._hp;
                         break;
                     case ModifyStat.Speed:
-                        --this.__speed;
+                        --this._speed;
                         break;
                     case ModifyStat.Trans:
-                        --this.__trans;
+                        --this._trans;
                         break;
                     case ModifyStat.DS:
-                        this.__bombardDamage = (ushort)SetBombardDamage(this.BombardDamage - 1, this.Att, false);
+                        this._bombardDamage = (ushort)SetBombardDamage(this.BombardDamage - 1, this.Att, false);
                         break;
                     case ModifyStat.Colony:
-                        this.__colony = false;
+                        this._colony = false;
                         break;
                     case ModifyStat.None:
                         maxCost = cost;
@@ -230,32 +245,134 @@ namespace GalWar
                     switch (GetIncrease(hpMult))
                     {
                     case ModifyStat.Att:
-                        ++this.__att;
-                        this.__bombardDamage = (ushort)SetBombardDamage(this.__bombardDamage, this.Att, this.DeathStar);
+                        ++this._att;
+                        this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage, this.Att, this.DeathStar);
                         break;
                     case ModifyStat.Def:
-                        ++this.__def;
+                        ++this._def;
                         break;
                     case ModifyStat.HP:
-                        ++this.__hp;
+                        ++this._hp;
                         break;
                     default:
                         throw new Exception();
                     }
                     GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                 }
-                this.__cost = (ushort)Game.Random.Round(cost);
-                this.__upkeep = (byte)upkeep;
+                this._cost = (ushort)Game.Random.Round(cost);
+                this._upkeep = (byte)upkeep;
 
                 //  ------  Name   
-                this.__name = byte.MaxValue;
-                this.__mark = byte.MaxValue;
+                this._name = byte.MaxValue;
+                this._mark = byte.MaxValue;
                 named = ( nameIf == null || this.MakesObsolete(mapSize, nameIf) );
                 if (named)
                 {
-                    this.__name = player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), !double.IsNaN(minCost));
-                    this.__mark = (byte)player.Game.ShipNames.GetMark(player, this.Name);
+                    this._name = (byte)player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
+                    this._mark = (byte)player.Game.ShipNames.GetMark(player, this.Name);
                 }
+            }
+        }
+
+        public bool Colony
+        {
+            get
+            {
+                return this._colony;
+            }
+        }
+
+        internal int Name
+        {
+            get
+            {
+                return this._name;
+            }
+        }
+        internal int Mark
+        {
+            get
+            {
+                return this._mark;
+            }
+        }
+
+        public int Att
+        {
+            get
+            {
+                return this._att;
+            }
+        }
+        public int Def
+        {
+            get
+            {
+                return this._def;
+            }
+        }
+
+        public int Speed
+        {
+            get
+            {
+                return this._speed;
+            }
+        }
+
+        public int Upkeep
+        {
+            get
+            {
+                return this._upkeep;
+            }
+        }
+
+        public override int Cost
+        {
+            get
+            {
+                return this._cost;
+            }
+        }
+
+        public int HP
+        {
+            get
+            {
+                return this._hp;
+            }
+        }
+
+        public int Trans
+        {
+            get
+            {
+                return this._trans;
+            }
+        }
+
+        public double BombardDamage
+        {
+            get
+            {
+                return GetBombardDamage(this._bombardDamage, this.Att);
+            }
+        }
+        public bool DeathStar
+        {
+            get
+            {
+                return ( this._bombardDamage > 0 );
+            }
+        }
+
+        public int Research
+        {
+            get
+            {
+
+                return (int)this._research;
             }
         }
 
@@ -285,7 +402,7 @@ namespace GalWar
 
                     costMult += totalCost;
                     double mult = design.Research + 260;
-                    mult = ( mult + ( Math.Pow(mult, .169) - 2.6 ) * 1300 ) / research / totalCost;
+                    mult = ( mult + ( Math.Pow(mult, .169) - 2.6 ) * 1300 ) / (double)research / totalCost;
 
                     if (design.Colony)
                         colony += mult;
@@ -293,12 +410,12 @@ namespace GalWar
                     ds += design.Speed * design.BombardDamage * mult;
                 }
 
-                double pow = 1.0 / numDesigns;
+                double pow = 1.0 / (double)numDesigns;
                 upkeep = Math.Pow(upkeep, pow);
                 att = Math.Pow(att, pow);
                 speed = Math.Pow(speed, pow);
 
-                costMult /= numDesigns * numDesigns;
+                costMult /= (double)numDesigns * numDesigns;
                 colony *= costMult;
                 trans *= costMult;
                 ds *= costMult;
@@ -341,8 +458,6 @@ namespace GalWar
         #endregion //fields and constructors
 
         #region Colony/Trans
-
-        internal const float DeathStarMin = 3f, DeathStarAvg = 91f;
 
         public static double GetTransStr(double research)
         {
@@ -395,7 +510,7 @@ namespace GalWar
             bombardDamageMult = 0;
             if (colony || transport)
             {
-                trans = (ushort)MakeStat(transStr);
+                trans = MakeStat(transStr);
             }
             else
             {
@@ -459,7 +574,7 @@ namespace GalWar
 
             int s1 = MakeStat(str);
             //second stat is adjusted to compensate for the first
-            int s2 = MakeStat(MultStr(str, Math.Sqrt(str / s1)));
+            int s2 = MakeStat(MultStr(str, Math.Sqrt(str / (double)s1)));
             if (s2 > s1)
             {
                 int temp = s1;
@@ -482,13 +597,13 @@ namespace GalWar
 
             if (Game.Random.Bool(chance))
             {
-                att = (byte)s1;
-                def = (byte)s2;
+                att = s1;
+                def = s2;
             }
             else
             {
-                att = (byte)s2;
-                def = (byte)s1;
+                att = s2;
+                def = s1;
             }
         }
 
@@ -522,9 +637,9 @@ namespace GalWar
             if (IsFocusing(focus, FocusStat.Speed))
                 focusFactor = FocusSpeedMult;
             //speed is higher for more offensive and weaker ships
-            double offenseFactor = att / (double)def;
+            double offenseFactor = att / def;
             double strengthFactor = 2 * GetStatValue(str) * MultStr(4 * str * str, hpMult)
-                    / (double)( ( GetStatValue(att) + GetStatValue(def) ) * hp );
+                    / ( ( GetStatValue(att) + GetStatValue(def) ) * hp );
             return Math.Pow(offenseFactor * strengthFactor / speedPct, .21) * focusFactor;
         }
 
@@ -600,9 +715,9 @@ namespace GalWar
             stats.Add(ModifyStat.Def, ReduceAttDef(this.Def, this.Att, hpMult));
             stats.Add(ModifyStat.HP, ( this.HP > 1 ? this.HP : 0 ));
             if (this.Speed > 1)
-                stats.Add(ModifyStat.Speed, Game.Random.Round(this.Speed * .39f));
+                stats.Add(ModifyStat.Speed, Game.Random.Round(this.Speed * .39));
             if (this.Trans > ( forceTrans || this.Colony ? 1 : 0 ))
-                stats.Add(ModifyStat.Trans, Game.Random.Round(this.Trans * 1.3f + .52f));
+                stats.Add(ModifyStat.Trans, Game.Random.Round(this.Trans * 1.3 + .52));
             if (this.DeathStar)
                 stats.Add(ModifyStat.DS, Game.Random.Round(this.BombardDamage * 2.1));
 
@@ -691,28 +806,13 @@ namespace GalWar
 
         #region internal
 
-        internal int Name
-        {
-            get
-            {
-                return this._name;
-            }
-        }
-        internal int Mark
-        {
-            get
-            {
-                return this._mark;
-            }
-        }
-
         internal static double GetColonizationValue(double cost, int att, int def, double curHP, int maxHP, int speed, int trans, bool colony, double bombardDamage, double research)
         {
             if (!colony)
                 throw new Exception();
             if (curHP > maxHP)
                 curHP = maxHP;
-            return cost * curHP / maxHP * Consts.GetNonColonyPct(att, def, maxHP, speed, trans, colony, bombardDamage, research, false);
+            return cost * curHP / (double)maxHP * Consts.GetNonColonyPct(att, def, maxHP, speed, trans, colony, bombardDamage, research, false);
         }
 
         public double GetUpkeepPayoff(int mapSize)
@@ -773,14 +873,6 @@ namespace GalWar
 
         #region Buildable
 
-        public override int Cost
-        {
-            get
-            {
-                return this._cost;
-            }
-        }
-
         internal override bool NeedsTile
         {
             get
@@ -837,76 +929,6 @@ namespace GalWar
 
         #region public
 
-        public int Research
-        {
-            get
-            {
-                return (int)this._research;
-            }
-        }
-
-        public int HP
-        {
-            get
-            {
-                return this._hp;
-            }
-        }
-
-        public int Trans
-        {
-            get
-            {
-                return this._trans;
-            }
-        }
-
-        public int Upkeep
-        {
-            get
-            {
-                return this._upkeep;
-            }
-        }
-
-        public int Att
-        {
-            get
-            {
-                return this._att;
-            }
-        }
-        public int Def
-        {
-            get
-            {
-                return this._def;
-            }
-        }
-
-        public int Speed
-        {
-            get
-            {
-                return this._speed;
-            }
-        }
-
-        public double BombardDamage
-        {
-            get
-            {
-                return GetBombardDamage(this._bombardDamage, this.Att);
-            }
-        }
-        public bool DeathStar
-        {
-            get
-            {
-                return ( this._bombardDamage > 0 );
-            }
-        }
-
         public double GetStrength()
         {
             return GetStrength(this.Att, this.Def, this.HP, this.Speed);
@@ -955,13 +977,6 @@ namespace GalWar
 
         #region enum
 
-        private const double FocusCostMult = 1.69;
-        private const double FocusUpkeepMult = 1.3;
-        private const double FocusAttMult = 2.6;
-        private const double FocusSpeedMult = 1.3;
-        //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
-        private const double FocusTypeMult = 2.1;
-
         internal static bool IsFocusing(FocusStat focus, FocusStat check)
         {
             return ( ( focus & check ) == check );
@@ -979,7 +994,7 @@ namespace GalWar
             None,
         }
 
-        public enum FocusStat : byte
+        public enum FocusStat
         {
             None = 0x00,
             Trans = 0x04,

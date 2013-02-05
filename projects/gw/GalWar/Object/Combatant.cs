@@ -59,10 +59,13 @@ namespace GalWar
             }
             protected set
             {
-                if (this.HP > value)
-                    OnDamaged(this.HP - value);
+                checked
+                {
+                    if (this.HP > value)
+                        OnDamaged(this.HP - value);
 
-                SetHP(value);
+                    SetHP(value);
+                }
             }
         }
         protected void SetHP(int value)

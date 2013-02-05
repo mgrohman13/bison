@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -54,7 +55,7 @@ namespace GalWarWin
                         labels[a, b] = null;
                     }
 
-            Player[] players = game.GetPlayers();
+            ReadOnlyCollection<Player> players = game.GetPlayers();
 
             double maxArmada = double.MinValue;
             foreach (Player player in players)
@@ -63,9 +64,9 @@ namespace GalWarWin
             long div = GetDiv(place);
 
             Dictionary<Player, double> research = game.GetResearch();
-            labels = new Label[8, players.Length];
+            labels = new Label[8, players.Count];
             y = 32;
-            for (int i = 0 ; i < players.Length ; ++i)
+            for (int i = 0 ; i < players.Count ; ++i)
             {
                 int x = 12;
                 labels[0, i] = NewLabel(x, y, players[i].Name, players[i].Color);

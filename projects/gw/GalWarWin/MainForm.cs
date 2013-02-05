@@ -548,13 +548,13 @@ namespace GalWarWin
 
         private void btnNewGame_Click(object sender, EventArgs e)
         {
-            Player black = new Player("Black", Color.Blue, null);//new GalWarAI.GalWarAI());
-            Player blue = new Player("Blue", Color.Cyan, null);//new GalWarAI.GalWarAI());
-            Player green = new Player("Green", Color.Green, null);//new GalWarAI.GalWarAI());
-            Player pink = new Player("Pink", Color.Magenta, null);//new GalWarAI.GalWarAI());
-            Player red = new Player("Red", Color.Red, null);//new GalWarAI.GalWarAI());
-            Player yellow = new Player("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
-            Game = new Game(new Player[] { black, blue, green, pink, red, yellow },
+            Player.StartingPlayer black = new Player.StartingPlayer("Black", Color.Blue, null);//new GalWarAI.GalWarAI());
+            Player.StartingPlayer blue = new Player.StartingPlayer("Blue", Color.Cyan, null);//new GalWarAI.GalWarAI());
+            Player.StartingPlayer green = new Player.StartingPlayer("Green", Color.Green, null);//new GalWarAI.GalWarAI());
+            Player.StartingPlayer pink = new Player.StartingPlayer("Pink", Color.Magenta, null);//new GalWarAI.GalWarAI());
+            Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
+            Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
+            Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
                     Game.Random.GaussianCapped(0.006, .52, 0.0021));
 
@@ -1453,7 +1453,7 @@ namespace GalWarWin
 
         public void RefreshAll()
         {
-            if (!ended && Game.GetPlayers().Length < 2)
+            if (!ended && Game.GetPlayers().Count < 2)
             {
                 ended = true;
                 TextForm.ShowForm(Game.GetGameResult());

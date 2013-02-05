@@ -19,26 +19,18 @@ namespace GalWar
         private readonly List<Colony> colonies;
         private readonly List<Ship> ships;
 
-        private ShipDesign.FocusStat _researchFocus;
-        private ShipDesign _researchFocusDesign;
-
         private readonly byte _id;
 
+        private ShipDesign _researchFocusDesign;
+
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
-        private byte _pdAtt, _pdDef;
+        private byte _researchFocus, _pdAtt, _pdDef;
         private ushort _newResearch;
         private uint _research, _lastResearched, _goldValue;
         private float _rKey, _rChance, _rMult, _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
         private double _goldOffset;
 
-        public Player(string name, Color color, IGalWarAI AI)
-        {
-            this.Name = name;
-            this.Color = color;
-            this.AI = AI;
-        }
-
-        internal Player(int id, Game Game, Player player, Planet planet,
+        internal Player(int id, Game Game, StartingPlayer player, Planet planet,
                 int population, double soldiers, double gold, List<int> research)
         {
             checked
@@ -48,11 +40,9 @@ namespace GalWar
                 this.Color = player.Color;
                 this.AI = player.AI;
 
-                this.designs = ShipDesign.GetStartDesigns(this, research);
                 this.colonies = new List<Colony>();
                 this.ships = new List<Ship>();
 
-                this._researchFocus = ShipDesign.FocusStat.None;
                 this._researchFocusDesign = null;
 
                 this._id = (byte)id;
@@ -60,6 +50,8 @@ namespace GalWar
                 this._goldEmphasis = false;
                 this._researchEmphasis = false;
                 this._productionEmphasis = false;
+
+                this._researchFocus = (byte)ShipDesign.FocusStat.None;
 
                 this._pdAtt = 1;
                 this._pdDef = 1;
@@ -83,34 +75,24 @@ namespace GalWar
 
                 this._goldOffset = gold;
 
+                this.designs = ShipDesign.GetStartDesigns(this, research);
                 foreach (ShipDesign design in this.designs)
                     SetPlanetDefense(design);
+
                 ResetResearchChance();
                 //starting production is handled after all players have been created
                 NewColony(null, planet, population, soldiers, 0);
             }
         }
 
-        public ShipDesign.FocusStat ResearchFocus
+        internal int ID
         {
             get
             {
-                TurnException.CheckTurn(this);
-
-                return GetResearchFocus();
-            }
-            set
-            {
-                checked
-                {
-                    TurnException.CheckTurn(this);
-                    if (value != ShipDesign.FocusStat.None)
-                        AssertException.Assert(this.ResearchFocusDesign == null);
-
-                    this._researchFocus = value;
-                }
+                return this._id;
             }
         }
+
         public ShipDesign ResearchFocusDesign
         {
             get
@@ -125,18 +107,10 @@ namespace GalWar
                 {
                     TurnException.CheckTurn(this);
                     if (value != null)
-                        AssertException.Assert(this.ResearchFocus == ShipDesign.FocusStat.None);
+                        AssertException.Assert(this.researchFocus == ShipDesign.FocusStat.None);
 
                     this._researchFocusDesign = value;
                 }
-            }
-        }
-
-        internal int ID
-        {
-            get
-            {
-                return this._id;
             }
         }
 
@@ -185,6 +159,21 @@ namespace GalWar
                 checked
                 {
                     this._productionEmphasis = value;
+                }
+            }
+        }
+
+        private ShipDesign.FocusStat researchFocus
+        {
+            get
+            {
+                return (ShipDesign.FocusStat)this._researchFocus;
+            }
+            set
+            {
+                checked
+                {
+                    this._researchFocus = (byte)value;
                 }
             }
         }
@@ -394,11 +383,8 @@ namespace GalWar
 
         private void SetPlanetDefense(ShipDesign design)
         {
-            checked
-            {
-                this.pdAtt = GetPDStat(this.pdAtt, design.Att);
-                this.pdDef = GetPDStat(this.pdDef, design.Def);
-            }
+            this.pdAtt = GetPDStat(this.pdAtt, design.Att);
+            this.pdDef = GetPDStat(this.pdDef, design.Def);
         }
         private int GetPDStat(int cur, int add)
         {
@@ -411,7 +397,7 @@ namespace GalWar
         }
         private static int GetPDStat(double stat)
         {
-            return Game.Random.GaussianOEInt((float)stat, Consts.PlanetDefensesRndm, Consts.PlanetDefensesRndm, 1);
+            return Game.Random.GaussianOEInt(stat, Consts.PlanetDefensesRndm, Consts.PlanetDefensesRndm, 1);
         }
 
         public int PlanetDefenseAtt
@@ -569,7 +555,7 @@ namespace GalWar
                 double totalIncome = GetTotalIncome();
                 double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
                 double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
-                float diff = (float)( ( high - low ) / research[1].ResearchDisplay );
+                double diff = ( high - low ) / research[1].ResearchDisplay;
 
                 double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchDisplayRndm);
                 bool sign = ( rDisp > rDispTrg );
@@ -581,10 +567,10 @@ namespace GalWar
                 if (sign != ( rDisp > rDispTrg ) || rDisp == rDispTrg)
                 {
                     rDisp = rDispTrg;
-                    rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, -1f) + 1 ) / 3f;
+                    rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, -1) + 1 ) / 3.0;
                     //rate is based on distance to new value
-                    rDispChange = (float)Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
-                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3f * Math.Abs(rDisp - rDispTrg) ));
+                    rDispChange = Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
+                            Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3 * Math.Abs(rDisp - rDispTrg) ));
                 }
             }
         }
@@ -748,12 +734,12 @@ namespace GalWar
 
         public static double FloorGold(double gold)
         {
-            return Math.Floor(gold * 10 + Consts.FLOAT_ERROR) / 10;
+            return Math.Floor(gold * 10 + Consts.FLOAT_ERROR) / 10.0;
         }
 
         public static double CeilGold(double gold)
         {
-            return Math.Ceiling(gold * 10 - Consts.FLOAT_ERROR) / 10;
+            return Math.Ceiling(gold * 10 - Consts.FLOAT_ERROR) / 10.0;
         }
 
         internal void DeathCheck()
@@ -826,15 +812,36 @@ namespace GalWar
             }
         }
 
+        public ShipDesign.FocusStat ResearchFocus
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this.researchFocus;
+            }
+            set
+            {
+                checked
+                {
+                    TurnException.CheckTurn(this);
+                    if (value != ShipDesign.FocusStat.None)
+                        AssertException.Assert(this.ResearchFocusDesign == null);
+
+                    this.researchFocus = value;
+                }
+            }
+        }
+
         public bool IsFocusing(ShipDesign.FocusStat check)
         {
             TurnException.CheckTurn(this);
 
-            return ShipDesign.IsFocusing(ResearchFocus, check);
+            return ShipDesign.IsFocusing(researchFocus, check);
         }
         internal ShipDesign.FocusStat GetResearchFocus()
         {
-            return this.ResearchFocus;
+            return this.researchFocus;
         }
 
         public void SetGoldEmphasis(IEventHandler handler, bool value)
@@ -960,14 +967,14 @@ namespace GalWar
         {
             TurnException.CheckTurn(this);
 
-            float newResearch = this.Research - this.LastResearched;
+            double newResearch = this.Research - this.LastResearched;
             if (researchInc > 0 && newResearch > 0)
             {
                 double chance = RandResearch(newResearch / ( newResearch + Consts.NewResearchFactor ));
 
                 //parameters that may be modified during a players turn are done after RandResearch
                 //so that a change in them doesnt have an inverse or exaggerated effect
-                double newResearchPct = Math.Pow(researchInc / (double)( researchInc + this.LastResearched / Consts.ResearchIncMult ), Consts.ResearchIncPower);
+                double newResearchPct = Math.Pow(researchInc / ( researchInc + this.LastResearched / Consts.ResearchIncMult ), Consts.ResearchIncPower);
                 double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / ( Consts.NumDesignsFactor + this.designs.Count ), Consts.NumDesignsPower);
 
                 return chance * newResearchPct * numDesignsPct;
@@ -1108,5 +1115,19 @@ namespace GalWar
         }
 
         #endregion //public
+
+        public class StartingPlayer
+        {
+            public readonly string Name;
+            public readonly Color Color;
+            public readonly IGalWarAI AI;
+
+            public StartingPlayer(string name, Color color, IGalWarAI AI)
+            {
+                this.Name = name;
+                this.Color = color;
+                this.AI = AI;
+            }
+        }
     }
 }

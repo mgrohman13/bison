@@ -134,14 +134,7 @@ namespace GalWar
         {
             get
             {
-                return Quality + ConstValue;
-            }
-        }
-        public static double ConstValue
-        {
-            get
-            {
-                return .65 / Consts.PopulationGrowth;
+                return Quality + Consts.PlanetConstValue;
             }
         }
 

@@ -78,7 +78,7 @@ namespace GalWar
         {
             checked
             {
-                return (int)this._marks[idx1, idx2];
+                return this._marks[idx1, idx2];
             }
         }
         private void Marks(int idx1, int idx2, int value)
@@ -137,11 +137,8 @@ namespace GalWar
         private ShipClass DoSetup(ShipClass[] type, int value)
         {
             //during setup phase, the first name is always used, and the average cost calculated
-            checked
-            {
-                this.total += value;
-                ++this.count;
-            }
+            this.total += value;
+            ++this.count;
             return type[0];
         }
 
@@ -152,19 +149,16 @@ namespace GalWar
             SetDivision(1, this.total / (double)this.count);
         }
 
-        internal byte GetName(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
+        internal ShipClass GetName(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
         {
-            return (byte)GetNameType(design, attDefStr, transStr, speedStr, anomalyShip);
+            return GetNameType(design, attDefStr, transStr, speedStr, anomalyShip);
         }
 
         internal int GetMark(Player player, int name)
         {
-            checked
-            {
-                int value = this.Marks(player.ID, name) + 1;
-                this.Marks(player.ID, name, value);
-                return value;
-            }
+            int value = this.Marks(player.ID, name) + 1;
+            this.Marks(player.ID, name, value);
+            return value;
         }
 
         private ShipClass GetNameType(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
@@ -228,7 +222,7 @@ namespace GalWar
                 return min;
         }
 
-        private enum ShipClass : byte
+        internal enum ShipClass
         {
             Salvage,
             Colony,

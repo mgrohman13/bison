@@ -1,30 +1,3 @@
-clean up fields
-	(except public/internal readonly <GalWar object>, private readonly IEnumerable<<GalWar object>>)
-	objs
-		Graphs
-		ShipDesign
-	consistent ordering
-	start with _ 
-	fields directly set in constructors
-	have at least private getter/setters
-	checked context for setters/constructors
-	no field usage outside of properties/constructors
-
-remove casts
-	pervasive float usage
-revisit fields
-	all private
-		can do public/internal readonly <GalWar object>, private readonly IEnumerable<<GalWar object>>
-	readonly
-	property visibility
-	data types
-	[NonSerialized]
-
-no public setters
-remove other checked contexts
-check usage of public properties with TurnException.CheckTurn(this)
-check all field usage, and field property usage
-
 clean up planet defense interface
 	GetBuildingDefense
 	when buying PD show expected values
@@ -39,11 +12,11 @@ main map improvements
 management screens
 	colonies
 	ships
+clean up code
+	member order
 
-starting gold uses ColonyCost functionality with some high mult
+more anomalies worth less??
 anomaly neutral ships?
-private Player[] players should be a readonly list
-public Player constructor should be a separate object
 
 known enemy designs
 AI

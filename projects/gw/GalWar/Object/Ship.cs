@@ -243,6 +243,12 @@ namespace GalWar
             {
                 return ( this._bombardDamage > 0 );
             }
+            private set
+            {
+                if (DeathStar || !value)
+                    throw new Exception();
+                this._bombardDamage = ushort.MaxValue;
+            }
         }
 
         public int Repair
@@ -263,6 +269,8 @@ namespace GalWar
         {
             get
             {
+                TurnException.CheckTurn(this.Player);
+
                 double autoRepair = this._autoRepair;
 
                 if (autoRepair <= 0)
@@ -276,6 +284,8 @@ namespace GalWar
             }
             set
             {
+                TurnException.CheckTurn(this.Player);
+
                 checked
                 {
                     this._autoRepair = (float)value;
@@ -372,7 +382,7 @@ namespace GalWar
         {
             get
             {
-                return ( Consts.RepairCostMult * this.cost / this.MaxHP );
+                return ( Consts.RepairCostMult * this.cost / (double)this.MaxHP );
             }
         }
 
@@ -549,7 +559,7 @@ namespace GalWar
 
         internal double GetDisbandValue(double hp)
         {
-            return ( Consts.DisbandPct * this.cost * hp / this.MaxHP );
+            return ( Consts.DisbandPct * this.cost * hp / (double)this.MaxHP );
         }
 
         public double ColonizationValue
@@ -569,18 +579,21 @@ namespace GalWar
 
         protected override void OnDamaged(int damage)
         {
-            int losePopulation;
-            if (this.HP > damage)
-                //if hp is lost for any reason, some transported population is killed off
-                losePopulation = Game.Random.GaussianOEInt(GetTransLoss(damage), Consts.TransLossRndm, Consts.TransLossRndm);
-            else
-                losePopulation = this.Population;
-            LosePopulation(losePopulation);
+            if (this.Population > 0)
+            {
+                int losePopulation;
+                if (this.HP > damage)
+                    //if hp is lost for any reason, some transported population is killed off
+                    losePopulation = Game.Random.GaussianOEInt(GetTransLoss(damage), Consts.TransLossRndm, Consts.TransLossRndm);
+                else
+                    losePopulation = this.Population;
+                LosePopulation(losePopulation);
+            }
         }
 
-        private float GetTransLoss(int damage)
+        private double GetTransLoss(int damage)
         {
-            return (float)( damage / (double)this.MaxHP * this.MaxPop * Consts.TransLossMult
+            return ( damage / (double)this.MaxHP * this.MaxPop * Consts.TransLossMult
                     * Math.Pow(this.Population / (double)this.MaxPop, Consts.TransLossPctPower) );
         }
 
@@ -598,7 +611,7 @@ namespace GalWar
         }
         private int GetExp(double exp)
         {
-            return (int)Math.Round(104 * ( this.totalExp + exp ) / this.expDiv);
+            return (int)Math.Round(100 * ( this.totalExp + exp ) / this.expDiv);
         }
 
         public double GetDestroyGold()
@@ -840,8 +853,8 @@ namespace GalWar
         private void LevelUp(IEventHandler handler, bool funky, bool noChange)
         {
             bool first = true;
-            float needExp;
-            while (this.HP > 0 && !this.Dead && this.curExp > ( needExp = (float)( this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ) ))
+            double needExp;
+            while (this.HP > 0 && !this.Dead && this.curExp > ( needExp = this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ))
             {
                 if (first)
                 {
@@ -857,7 +870,7 @@ namespace GalWar
                 double pct = this.HP / (double)this.MaxHP;
                 if (this.NextExpType == ExpType.HP)
                 {
-                    int inc = Game.Random.Round((float)pct);
+                    int inc = Game.Random.Round(pct);
                     pct = inc;
                     this.HP += inc;
                 }
@@ -872,7 +885,7 @@ namespace GalWar
                 this.maxPop = trans;
                 if (funky && this.NextExpType == ExpType.DS && !this.DeathStar)
                 {
-                    this._bombardDamage = 1;
+                    this.DeathStar = true;
                     this.BombardDamage = ds;
                 }
                 else if (this.NextExpType != ExpType.Att)
@@ -942,7 +955,7 @@ namespace GalWar
                 case ExpType.Speed:
                     ++speed;
                     if (this.DeathStar)
-                        ds = ShipDesign.SetBombardDamage(Math.Ceiling(ds * ( speed - 1.0 ) / ( speed )), att);
+                        ds = ShipDesign.SetBombardDamage(Math.Ceiling(ds * ( speed - 1.0 ) / (double)speed), att);
                     break;
                 case ExpType.Trans:
                     ++trans;
@@ -978,7 +991,7 @@ namespace GalWar
         }
         private void GetNextLevel(IEventHandler handler, bool funky, bool noChange)
         {
-            this.needExpMult = Game.Random.GaussianCapped(1f, Consts.ExperienceRndm, (float)Consts.FLOAT_ERROR);
+            this.needExpMult = Game.Random.GaussianCapped(1, Consts.ExperienceRndm, Consts.FLOAT_ERROR);
 
             if (!noChange)
             {
@@ -1038,8 +1051,8 @@ namespace GalWar
         {
             int value;
             stats.TryGetValue(expType, out value);
-            double inv = ( total + 1f ) / ( value + 1f );
-            double opp = 6f * ( total - value ) / total;
+            double inv = ( total + 1 ) / ( value + 1.0 );
+            double opp = 6 * ( total - value ) / (double)total;
             stats[expType] = Game.Random.Round(inv + opp);
         }
 
@@ -1147,7 +1160,7 @@ namespace GalWar
             double dmgMult = pct;
             if (!friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue())
                 if (this.DeathStar)
-                    dmgMult *= tempPop / colonyDamage;
+                    dmgMult *= tempPop / (double)colonyDamage;
                 else
                     dmgBase = tempPop;
             planetDamage = GetPlanetDamage(dmgBase, dmgMult);
@@ -1171,7 +1184,7 @@ namespace GalWar
         {
             double damage = this.BombardDamage * pct;
             if (planet.Player == this.Player)
-                damage *= planet.Colony.Population / ( planet.Colony.Population + ( 3 * planet.Quality + 1 * Consts.AverageQuality ) / 4.0 );
+                damage *= planet.Colony.Population / (double)( planet.Colony.Population + ( 3 * planet.Quality + 1 * Consts.AverageQuality ) / 4.0 );
             return GetBombardDamage(damage);
         }
 
@@ -1195,7 +1208,7 @@ namespace GalWar
 
         private static int GetDeathStarDamage(double damage)
         {
-            return Game.Random.GaussianCappedInt((float)damage, Consts.DeathStarDamageRndm);
+            return Game.Random.GaussianCappedInt(damage, Consts.DeathStarDamageRndm);
         }
 
         private int BombardPlanet(IEventHandler handler, Planet planet, int planetDamage)
@@ -1209,7 +1222,7 @@ namespace GalWar
 
                 double exp = Math.Min(initQuality, planetDamage);
                 if (planet.Dead)
-                    exp += Planet.ConstValue;
+                    exp += Consts.PlanetConstValue;
                 exp *= Consts.TroopExperienceMult;
 
                 this.AddCostExperience(exp);
@@ -1246,7 +1259,7 @@ namespace GalWar
             //colony population overkill
             if (colonyDamage > pop)
                 move += ( 1 - ( pop / colonyDamage ) );
-            return move / 2 * pct;
+            return move / 2.0 * pct;
         }
 
         public void Invade(IEventHandler handler, Colony target, int population, int gold)
@@ -1428,7 +1441,7 @@ namespace GalWar
                             high = mid;
                         else
                             low = mid;
-                        mid = ( low + high ) / 2;
+                        mid = ( low + high ) / 2.0;
                     }
                     return mid;
                 }
@@ -1483,7 +1496,7 @@ namespace GalWar
 
         private double GetGoldRepairTarget()
         {
-            return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / this.MaxHP );
+            return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
         }
 
         public override string ToString()
@@ -1493,7 +1506,7 @@ namespace GalWar
 
         #endregion //public
 
-        public enum ExpType : byte
+        public enum ExpType
         {
             HP,
             Att,

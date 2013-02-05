@@ -171,7 +171,7 @@ namespace GalWar
 
             double income = 2.6 * Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
             double assets = 1 / 13.0 * armada;
-            return Game.Random.GaussianOE(( income + assets ) / Tile.Game.GetPlayers().Length, .39, .26, 1);
+            return Game.Random.GaussianOE(( income + assets ) / (double)Tile.Game.GetPlayers().Count, .39, .26, 1);
         }
 
         private double ConsolationValue()
@@ -212,7 +212,7 @@ namespace GalWar
             foreach (Colony colony in player.GetColonies())
             {
                 int weight = Game.Random.Round(( colony.Planet.Quality + colony.Population + 1 )
-                        * Tile.Game.Diameter / Tile.GetDistance(this.Tile, colony.Tile));
+                        * Tile.Game.Diameter / (double)Tile.GetDistance(this.Tile, colony.Tile));
                 colonies.Add(colony, weight);
                 total += weight;
             }
@@ -391,7 +391,7 @@ namespace GalWar
 
             double amount = this.value - cost;
             double mult = Consts.GetColonizationMult() * 1.69;
-            if (amount < Consts.GetColonizationCost(Planet.ConstValue, mult))
+            if (amount < Consts.GetColonizationCost(Consts.PlanetConstValue, mult))
                 return false;
 
             handler.Explore(AnomalyType.LostColony, player);
@@ -402,9 +402,9 @@ namespace GalWar
             Planet planet = Tile.Game.CreatePlanet(this.Tile);
             planet.ReduceQuality(planet.Quality - MattUtil.TBSUtil.FindValue(delegate(int value)
             {
-                return ( amount > Consts.GetColonizationCost(Planet.ConstValue + value, mult) );
+                return ( amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult) );
             }, 0, Consts.NewPlanetQuality(), false));
-            int production = Game.Random.Round(amount - Consts.GetColonizationCost(Planet.ConstValue + planet.Quality, mult));
+            int production = Game.Random.Round(amount - Consts.GetColonizationCost(Consts.PlanetConstValue + planet.Quality, mult));
             Colony newColony = player.NewColony(handler, planet, 0, 0, production);
 
             return true;
@@ -429,7 +429,7 @@ namespace GalWar
 
             if (Game.Random.Bool())
             {
-                double terraformAmt = Consts.AverageQuality + Planet.ConstValue;
+                double terraformAmt = Consts.AverageQuality + Consts.PlanetConstValue;
                 double apocalypseAmt = quality / 2.0;
 
                 if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
@@ -497,7 +497,7 @@ namespace GalWar
             int idx = -1;
             foreach (Colony colony in anomShip.Player.GetColonies())
             {
-                colonyChances[++idx] = .26 * Tile.Game.Diameter / Tile.GetDistance(colony.Tile, this.Tile);
+                colonyChances[++idx] = .26 * Tile.Game.Diameter / (double)Tile.GetDistance(colony.Tile, this.Tile);
                 int amt = GetTerraformAmt(colonyChances[idx]);
                 if (amt > 0)
                     colonies.Add(colony, amt);
@@ -510,7 +510,7 @@ namespace GalWar
                 Colony trgColony = Game.Random.SelectValue(colonies);
 
                 const double costMult = 2.1;
-                int addQuality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Planet.ConstValue, .65, .39, 1);
+                int addQuality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Consts.PlanetConstValue, .65, .39, 1);
                 double before = Consts.GetColonizationCost(trgColony.Planet.Quality, costMult);
                 double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, costMult);
                 double expectCost = before - after;
@@ -566,7 +566,7 @@ namespace GalWar
 
             foreach (Player player in Tile.Game.GetPlayers())
             {
-                double amt = ( addAmt - forExplorer ) / Tile.Game.GetPlayers().Length;
+                double amt = ( addAmt - forExplorer ) / (double)Tile.Game.GetPlayers().Count;
                 if (anomShip.Player == player)
                     amt += forExplorer;
 
@@ -947,7 +947,7 @@ namespace GalWar
             if (ship.Population > 0)
             {
                 double soldierChance = ship.GetSoldierPct() / 1.69;
-                soldierChance = 2.1 / ( 2.1 + soldiers / ship.Population + soldierChance * soldierChance );
+                soldierChance = 2.1 / ( 2.1 + soldiers / (double)ship.Population + soldierChance * soldierChance );
                 if (canPop)
                     soldierChance /= 2.6;
 

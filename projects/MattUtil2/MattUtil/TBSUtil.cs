@@ -9,11 +9,11 @@ namespace MattUtil
     public static class TBSUtil
     {
 
-        public static Dictionary<Player, int> RandMoveOrder<Player>(MTRandom random, Player[] players, double shuffle)
+        public static Dictionary<Player, int> RandMoveOrder<Player>(MTRandom random, IList<Player> players, double shuffle)
         {
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
 
-            int playerLength = players.Length;
+            int playerLength = players.Count;
             int numShuffles = random.OEInt(playerLength * shuffle);
             bool[] affected = new bool[playerLength];
             for (int a = 0 ; a < numShuffles ; ++a)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace GalWar
 {
@@ -15,7 +16,10 @@ namespace GalWar
         {
             this.data = new List<Dictionary<byte, Dictionary<byte, float>>>();
             this.turnVals = new Dictionary<byte, Dictionary<byte, float>>();
-            this.players = game.GetPlayers();
+
+            ReadOnlyCollection<Player> players = game.GetPlayers();
+            this.players = new Player[players.Count];
+            players.CopyTo(this.players, 0);
         }
 
         internal void StartTurn(Player player)
@@ -59,13 +63,13 @@ namespace GalWar
 
         internal void Increment(Game game)
         {
-            Player[] players = game.GetPlayers();
+            ReadOnlyCollection<Player> players = game.GetPlayers();
             Dictionary<Player, double> research = game.GetResearch();
 
             Dictionary<byte, Dictionary<byte, float>> playerGraphs = new Dictionary<byte, Dictionary<byte, float>>();
 
             foreach (Player player in this.players)
-                if (Array.IndexOf(players, player) > -1)
+                if (players.IndexOf(player) > -1)
                 {
                     Add(playerGraphs, GraphType.Quality, player, turnVals[(byte)GraphType.Quality][(byte)player.ID]);
                     Add(playerGraphs, GraphType.Armada, player, turnVals[(byte)GraphType.Armada][(byte)player.ID]);
@@ -171,7 +175,7 @@ namespace GalWar
             return retVal;
         }
 
-        public enum GraphType : byte
+        public enum GraphType
         {
             Population,
             PopulationTrans,
