@@ -122,10 +122,12 @@ namespace GalWar
 
                 return this._goldEmphasis;
             }
-            private set
+            set
             {
                 checked
                 {
+                    TurnException.CheckTurn(this);
+
                     this._goldEmphasis = value;
                 }
             }
@@ -138,10 +140,12 @@ namespace GalWar
 
                 return _researchEmphasis;
             }
-            private set
+            set
             {
                 checked
                 {
+                    TurnException.CheckTurn(this);
+
                     this._researchEmphasis = value;
                 }
             }
@@ -154,10 +158,12 @@ namespace GalWar
 
                 return _productionEmphasis;
             }
-            private set
+            set
             {
                 checked
                 {
+                    TurnException.CheckTurn(this);
+
                     this._productionEmphasis = value;
                 }
             }
@@ -844,28 +850,6 @@ namespace GalWar
             return this.researchFocus;
         }
 
-        public void SetGoldEmphasis(IEventHandler handler, bool value)
-        {
-            handler = new HandlerWrapper(handler, this.Game, false);
-            TurnException.CheckTurn(this);
-
-            this.GoldEmphasis = value;
-        }
-        public void SetResearchEmphasis(IEventHandler handler, bool value)
-        {
-            handler = new HandlerWrapper(handler, this.Game, false);
-            TurnException.CheckTurn(this);
-
-            this.ResearchEmphasis = value;
-        }
-        public void SetProductionEmphasis(IEventHandler handler, bool value)
-        {
-            handler = new HandlerWrapper(handler, this.Game, false);
-            TurnException.CheckTurn(this);
-
-            this.ProductionEmphasis = value;
-        }
-
         public double GetArmadaStrength()
         {
             double retVal = 0;
@@ -1041,10 +1025,10 @@ namespace GalWar
                 {
                     double cost = ( this.goldValue + goldLoss ) / GetAutoRepairCost();
                     if (cost < 1)
-                        ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(ship.GetGoldForHP(ship.GetAutoRepairHP()) * cost));
+                        ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(cost * ship.GetGoldForHP(ship.GetAutoRepairHP())));
 
                     int hp = Game.Random.Round(ship.GetAutoRepairHP());
-                    while (hp > 0 && ship.GetGoldForHP(hp) > this.Gold + RoundGold(goldLoss))
+                    while (hp > 0 && ship.GetGoldForHP(hp) > this.Gold + FloorGold(goldLoss))
                         --hp;
                     if (hp > 0)
                         ship.GoldRepair(handler, hp);

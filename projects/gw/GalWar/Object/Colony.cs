@@ -93,10 +93,13 @@ namespace GalWar
 
                 return repairShip;
             }
-            private set
+            set
             {
                 checked
                 {
+                    TurnException.CheckTurn(this.Player);
+                    AssertException.Assert(value == null || this.Player == value.Player);
+
                     Ship repairShip = this._repairShip;
                     if (repairShip != value)
                     {
@@ -293,7 +296,7 @@ namespace GalWar
                         break;
                 }
 
-                if (this.Buildable.production != 0)
+                if (!double.IsNaN(this.Buildable.production) && this.Buildable.production != 0)
                     throw new Exception();
             }
         }
@@ -684,15 +687,6 @@ namespace GalWar
 
                 return PlanetDefenseUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production;
             }
-        }
-
-        public void SetRepairShip(IEventHandler handler, Ship value)
-        {
-            handler = new HandlerWrapper(handler, this.Player.Game, false);
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(value == null || this.Player == value.Player);
-
-            this.RepairShip = value;
         }
 
         public bool MinDefenses

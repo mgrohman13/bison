@@ -272,22 +272,25 @@ namespace GalWar
                 TurnException.CheckTurn(this.Player);
 
                 double autoRepair = this._autoRepair;
+                if (!double.IsNaN(autoRepair))
+                {
+                    if (autoRepair <= 0)
+                        autoRepair = 0;
+                    else if (this.HP == this.MaxHP)
+                        autoRepair = double.NaN;
+                    else
+                        autoRepair = GetAutoRepairForHP(GetAutoRepairHP(autoRepair));
+                    this.AutoRepair = autoRepair;
+                }
 
-                if (autoRepair <= 0)
-                    this.AutoRepair = 0;
-                else if (this.HP == this.MaxHP)
-                    this.AutoRepair = float.NaN;
-                else if (autoRepair > 0)
-                    this.AutoRepair = GetAutoRepairForHP(GetAutoRepairHP(autoRepair));
-
-                return this._autoRepair;
+                return autoRepair;
             }
             set
             {
-                TurnException.CheckTurn(this.Player);
-
                 checked
                 {
+                    TurnException.CheckTurn(this.Player);
+
                     this._autoRepair = (float)value;
                 }
             }
@@ -756,11 +759,10 @@ namespace GalWar
                 return false;
 
             //check ZOC: cannot move from and to tiles that are both adjacent to the same enemy ship
-            HashSet<Tile> neighbors = null;
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
                 Ship ship = neighbor.SpaceObject as Ship;
-                if (ship != null && ship.Player != player && ( neighbors == null ? neighbors = Tile.GetNeighbors(from) : neighbors ).Contains(neighbor))
+                if (ship != null && ship.Player != player && Tile.IsNeighbor(from, neighbor))
                     return false;
             }
 
@@ -1226,7 +1228,7 @@ namespace GalWar
                 exp *= Consts.TroopExperienceMult;
 
                 this.AddCostExperience(exp);
-                if (!planet.Dead && planet.Colony != null)
+                if (planet.Colony != null)
                     planet.Colony.AddCostExperience(exp);
                 else
                     this.Player.GoldIncome(-exp);
@@ -1397,23 +1399,24 @@ namespace GalWar
 
         public double GetGoldForHP(double hp)
         {
+            TurnException.CheckTurn(this.Player);
+
             return GetGoldForHP(hp, true);
         }
         private double GetGoldForHP(double hp, bool isTotal)
         {
-            TurnException.CheckTurn(this.Player);
-
             int floor = (int)Math.Floor(hp);
-            double lower = CalcGoldForHP(floor, isTotal);
-            if (floor == hp)
-                return lower;
+            double gold = CalcGoldForHP(floor);
+            if (floor != hp)
+                gold += ( CalcGoldForHP(floor + 1) - gold ) * ( hp - floor );
 
-            double upper = CalcGoldForHP(floor + 1, isTotal);
-            return ( lower + ( upper - lower ) * ( hp - floor ) );
+            if (!isTotal)
+                gold /= hp;
+            return gold;
         }
-        private double CalcGoldForHP(int hp, bool isTotal)
+        private double CalcGoldForHP(int hp)
         {
-            return ( isTotal ? hp : 1 ) * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
+            return hp * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
         }
 
         public double GetHPForGold(double gold)
@@ -1434,16 +1437,16 @@ namespace GalWar
 
                 if (upper > 0 && GetGoldForHP(upper, isTotal) > gold)
                 {
-                    double actual, low = upper - 1, high = upper, mid = Game.Random.Range(low, high);
-                    while (Math.Abs(( actual = GetGoldForHP(mid, isTotal) ) - gold) > Consts.FLOAT_ERROR)
-                    {
-                        if (actual > gold)
-                            high = mid;
-                        else
-                            low = mid;
-                        mid = ( low + high ) / 2.0;
-                    }
-                    return mid;
+                    double hp, low = CalcGoldForHP(upper - 1), high = CalcGoldForHP(upper);
+
+                    if (isTotal)
+                        hp = upper - 1 + ( gold - low ) / ( high - low );
+                    else
+                        hp = ( upper * ( low - high ) + high ) / ( ( low - high ) + gold );
+
+                    if (Math.Abs(GetGoldForHP(hp, isTotal) - gold) > Consts.FLOAT_ERROR)
+                        throw new Exception();
+                    return hp;
                 }
 
             }

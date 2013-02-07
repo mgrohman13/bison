@@ -707,11 +707,11 @@ namespace GalWarWin
             {
                 Tile tile = SelectTile(this.selectedTile, false);
                 if (tile != null)
-                    colony.SetRepairShip(this, tile.SpaceObject as Ship);
+                    colony.RepairShip = ( tile.SpaceObject as Ship );
             }
             else
             {
-                colony.SetRepairShip(this, null);
+                colony.RepairShip = null;
             }
 
             saved = false;
@@ -842,10 +842,7 @@ namespace GalWarWin
                 foreach (Ship ship in check)
                     if (ship.HP == ship.MaxHP)
                         this.holdPersistent.Remove(ship);
-                this.hold.RemoveWhere(delegate(Ship ship)
-                {
-                    return ( !holdPersistent.Contains(ship) );
-                });
+                this.hold.IntersectWith(holdPersistent);
                 SelectNextShip();
 
                 showMoves = false;
@@ -945,9 +942,9 @@ namespace GalWarWin
         {
             if (emphasisEvent)
             {
-                Game.CurrentPlayer.SetGoldEmphasis(this, chkGold.Checked);
-                Game.CurrentPlayer.SetResearchEmphasis(this, chkResearch.Checked);
-                Game.CurrentPlayer.SetProductionEmphasis(this, chkProduction.Checked);
+                Game.CurrentPlayer.GoldEmphasis = chkGold.Checked;
+                Game.CurrentPlayer.ResearchEmphasis = chkResearch.Checked;
+                Game.CurrentPlayer.ProductionEmphasis = chkProduction.Checked;
 
                 RefreshAll();
             }
@@ -1609,8 +1606,9 @@ namespace GalWarWin
 
                 this.btnGoldRepair.Visible = true;
                 this.btnGoldRepair.Text = ( ship.HP < ship.MaxHP && !ship.HasRepaired ? "Repair Ship" : "Auto Repair" );
-                if (ship.AutoRepair != 0)
-                    this.btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(ship.AutoRepair) ? "M" : FormatDouble(ship.AutoRepair));
+                double autoRepair = ship.AutoRepair;
+                if (autoRepair != 0)
+                    this.btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : FormatDouble(autoRepair));
             }
 
             this.lblTop.Text = ship.ToString();

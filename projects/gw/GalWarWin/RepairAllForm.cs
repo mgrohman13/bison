@@ -97,9 +97,10 @@ namespace GalWarWin
 
         private bool DoAutoRepair(Ship ship)
         {
-            return ( ship.AutoRepair > 0 || ( this.rbSet.Checked &&
-                    ( ( this.cbManual.Checked && double.IsNaN(ship.AutoRepair) )
-                    || ( this.cbOff.Checked && ship.AutoRepair == 0 ) ) ) );
+            double autoRepair = ship.AutoRepair;
+            return ( autoRepair > 0 || ( this.rbSet.Checked &&
+                    ( ( this.cbManual.Checked && double.IsNaN(autoRepair) )
+                    || ( this.cbOff.Checked && autoRepair == 0 ) ) ) );
         }
 
         private double GetAutoRepair(Ship ship, double value)
