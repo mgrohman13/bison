@@ -460,7 +460,9 @@ namespace GalWar
 
             double mult = attackers / (double)initAttackers;
             attSoldiers *= mult;
-            mult = this.Population / (double)initPop;
+            mult = 0;
+            if (initPop > 0)
+                mult = this.Population / (double)initPop;
             this.Soldiers *= mult;
             ReduceDefenses(mult);
 

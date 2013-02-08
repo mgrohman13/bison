@@ -766,18 +766,21 @@ namespace GalWar
             GetAttInvPlayers(this.Tile, anomShip, out oneInv, out twoInv, out oneAtt, out twoAtt);
 
             Dictionary<ISpaceObject, int> objects = new Dictionary<ISpaceObject, int>();
-            double mult = ( twoAtt ? 1.69 : ( ( twoInv || ( oneInv != null ) || ( oneAtt != null ) ) ? 1.3 : 1.0 ) );
-            foreach (Planet planet in Tile.Game.GetPlanets())
+            if (Tile.Game.CheckPlanetDistance(this.Tile))
             {
-                bool colony = ( planet.Colony != null );
-                if (!twoInv || !colony)
-                    AddPullChance(objects, oneInv, planet, ( colony ? 16.9 : 13.0 ) * mult, anomShip);
+                double mult = ( twoAtt ? 1.69 : ( ( twoInv || ( oneInv != null ) || ( oneAtt != null ) ) ? 1.3 : 1.0 ) );
+                foreach (Planet planet in Tile.Game.GetPlanets())
+                {
+                    bool colony = ( planet.Colony != null );
+                    if (!twoInv || !colony)
+                        AddPullChance(objects, oneInv, planet, ( colony ? 1.3 : 1 ) * mult, anomShip);
+                }
             }
 
             foreach (Player player in Game.Random.Iterate(Tile.Game.GetPlayers()))
                 if (!twoAtt || player == anomShip.Player)
                     foreach (Ship ship in Game.Random.Iterate(player.GetShips()))
-                        AddPullChance(objects, player == anomShip.Player ? null : oneAtt, ship, ( objects.Count > 0 ) ? 7.8 : 11.7, anomShip);
+                        AddPullChance(objects, player == anomShip.Player ? null : oneAtt, ship, ( objects.Count > 0 ) ? .13 : .39, anomShip);
 
             if (objects.Count > 0)
             {
@@ -799,7 +802,8 @@ namespace GalWar
         {
             if (spaceObj != anomShip && ( can == null || spaceObj.Player == null || spaceObj.Player == can ))
             {
-                double avg = Tile.Game.Diameter / div / ( Tile.GetDistance(this.Tile, spaceObj.Tile) + 3.9 ) * 2.6;
+                double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * div;
+                avg = ( Tile.Game.Diameter + 6.5 ) / ( avg * avg + 13 );
                 if (avg > 1)
                     avg = Math.Sqrt(avg);
                 else

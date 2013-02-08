@@ -16,6 +16,11 @@ management screens
 clean up code
 	member order
 
+marking upgrade design as obsolete
+switch between attack and defence loss
+upgrading ship produces identical
+invalde always uses full available pop
+occupying soldiers should follow move soldiers amount
 colony with defense has ZOC?
 more anomalies, worth less??
 anomaly neutral ships?
