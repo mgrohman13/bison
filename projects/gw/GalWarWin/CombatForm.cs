@@ -137,7 +137,7 @@ namespace GalWarWin
             CancelWorker();
 
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
-            int attHP = (int)this.nudAttHP.Value, defHP = (int)( (double)this.nudDefHP.Value + Consts.FLOAT_ERROR );
+            int attHP = (int)this.nudAttHP.Value, defHP = (int)( this.nudDefHP.Value + this.nudDefHP.Value * (decimal)Consts.FLOAT_ERROR );
 
             double avgAtt, avgDef;
             Dictionary<int, double> damageTable = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
@@ -842,7 +842,7 @@ end:
 
                     if (after.gold > Consts.FLOAT_ERROR)
                         MainForm.GameForm.LogMsg("Gold -{0}{1}", MainForm.FormatUsuallyInt(after.gold),
-                                after.gold > this.gold - Consts.FLOAT_ERROR ? string.Empty : "/" + MainForm.FormatInt(this.gold));
+                                after.gold > this.gold - this.gold * Consts.FLOAT_ERROR ? string.Empty : "/" + MainForm.FormatInt(this.gold));
                     if (this.quality != after.quality)
                         MainForm.GameForm.LogMsg("Quality {0} -> {1}{2}", this.quality,
                                 after.quality < 0 ? "Destroyed" : after.quality.ToString(),

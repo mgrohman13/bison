@@ -170,7 +170,7 @@ namespace GalWarWin.Sliders
                     chance = 1 - chance;
                 return chance;
             }
-            return 0;
+            throw new Exception();
         }
 
         private Dictionary<int, double> getAttackCache = new Dictionary<int, double>();

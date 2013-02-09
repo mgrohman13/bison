@@ -37,16 +37,15 @@ namespace GalWar
         //as pcts of population
         public const double PopulationGrowth = Math.E / 130.0;
         public const double Income = .13;
-        //set up so that emphasising a single value allows double the income of when emphasising the other two
-        public const double EmphasisValue = 1.6861406616345072; // = 8 / ( Math.Sqrt(33) - 1 )
+        //emphasising a single value gives on average precisely double the income of when emphasising the other two
+        public static readonly double EmphasisValue = 8.0 / ( Math.Sqrt(33.0) - 1.0 );
 
-        //pcts of production lost
-        public const double SwitchBuildTypeLossPct = 1.0 / 2;    // .50
-        public const double SwitchBuildLossPct = 1.0 / 3;        // .33
-        public const double ManualObsoleteLossPct = 1.0 / 6;     // .17
-        public const double StoreProdLossPct = 1.0 / 7;          // .14
-        public const double CarryProductionLossPct = 1.0 / 13;   // .08
-        public const double AutomaticObsoleteLossPct = 1.0 / 21; // .05
+        public const double SwitchBuildTypeLossPct = .39;
+        public const double SwitchBuildLossPct = .3;
+        public const double ManualObsoleteLossPct = .21;
+        public const double StoreProdLossPct = .169;
+        public const double CarryProductionLossPct = .091;
+        public const double AutomaticObsoleteLossPct = .039;
 
         public const double CostMult = .104;
         public const double CostUpkeepPct = .21;

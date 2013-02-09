@@ -265,7 +265,7 @@ namespace GalWar
                 //  ------  Name   
                 this._name = byte.MaxValue;
                 this._mark = byte.MaxValue;
-                named = ( nameIf == null || this.MakesObsolete(mapSize, nameIf) );
+                named = ( nameIf == null || ( !StatsIdentical(this, nameIf) && this.MakesObsolete(mapSize, nameIf) ) );
                 if (named)
                 {
                     this._name = (byte)player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
@@ -867,6 +867,13 @@ namespace GalWar
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
             return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.E * .13));
+        }
+
+        internal bool StatsIdentical(ShipDesign d1, ShipDesign d2)
+        {
+            return ( d1.Colony == d2.Colony && d1.Att == d2.Att && d1.Def == d2.Def && d1.Speed == d2.Speed
+                    && d1.Upkeep == d2.Upkeep && d1.Cost == d2.Cost
+                    && d1.HP == d2.HP && d1.Trans == d2.Trans && d1.BombardDamage == d2.BombardDamage );
         }
 
         #endregion //internal

@@ -758,11 +758,13 @@ namespace GalWar
             if (!Tile.IsNeighbor(from, to))
                 return false;
 
-            //check ZOC: cannot move from and to tiles that are both adjacent to the same enemy ship
+            //Zone of Control: cannot move from and to tiles that are both adjacent to the same enemy
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
-                Ship ship = neighbor.SpaceObject as Ship;
-                if (ship != null && ship.Player != player && Tile.IsNeighbor(from, neighbor))
+                ISpaceObject spaceObject = neighbor.SpaceObject;
+                Colony colony = spaceObject as Colony;
+                if (( spaceObject is Ship || ( colony != null && colony.HP > 0 ) )
+                        && spaceObject.Player != player && Tile.IsNeighbor(from, neighbor))
                     return false;
             }
 
@@ -1269,18 +1271,20 @@ namespace GalWar
             handler = new HandlerWrapper(handler, this.Player.Game);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(target != null);
-            AssertException.Assert(population > 0);
-            AssertException.Assert(population <= this.AvailablePop);
+            AssertException.Assert(this.AvailablePop > 0);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, target.Tile));
             AssertException.Assert(this.Player != target.Player);
             if (target.Population > 0)
             {
+                AssertException.Assert(population == this.AvailablePop);
                 AssertException.Assert(gold > 0);
                 AssertException.Assert(gold < this.Player.Gold);
             }
             else
             {
-                gold = 0;
+                AssertException.Assert(population > 0);
+                AssertException.Assert(population <= this.AvailablePop);
+                AssertException.Assert(gold == 0);
             }
 
             //all attackers cost gold to move regardless of where they end up
@@ -1288,7 +1292,11 @@ namespace GalWar
 
             double exp;
 
-            double soldiers = GetSoldiers(population);
+            double soldiers;
+            if (target.Population > 0)
+                soldiers = GetSoldiers(population);
+            else
+                soldiers = GetMoveSoldiers(population);
             this.Soldiers -= soldiers;
 
             //all attackers cannot be moved again regardless of where they end up

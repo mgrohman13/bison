@@ -780,7 +780,7 @@ namespace GalWar
             foreach (Player player in Game.Random.Iterate(Tile.Game.GetPlayers()))
                 if (!twoAtt || player == anomShip.Player)
                     foreach (Ship ship in Game.Random.Iterate(player.GetShips()))
-                        AddPullChance(objects, player == anomShip.Player ? null : oneAtt, ship, ( objects.Count > 0 ) ? .13 : .39, anomShip);
+                        AddPullChance(objects, player == anomShip.Player ? null : oneAtt, ship, ( objects.Count > 0 ) ? .21 : .52, anomShip);
 
             if (objects.Count > 0)
             {

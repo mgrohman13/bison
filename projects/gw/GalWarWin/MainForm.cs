@@ -496,7 +496,8 @@ namespace GalWarWin
                 }
 
                 Ship ship = tile.SpaceObject as Ship;
-                if (showPlayer != null && ( tile.SpaceObject == null || ( ship != null && ship.Player == showPlayer ) ))
+                if (showPlayer != null && ( tile.SpaceObject == null ||
+                        ( !showAtt && tile.SpaceObject is Anomaly ) || ( ship != null && ship.Player == showPlayer ) ))
                 {
                     float val;
                     totals.TryGetValue(tile, out val);
@@ -1136,8 +1137,11 @@ namespace GalWarWin
 
         private void TargetTile(Tile targetTile, Ship ship)
         {
-            ship.Move(this, targetTile);
-            this.selectedTile = targetTile;
+            if (ship.CurSpeed > 0 && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
+            {
+                ship.Move(this, targetTile);
+                this.selectedTile = targetTile;
+            }
         }
 
         private bool TargetShip(Ship targetShip, Ship ship, bool switchTroops)
@@ -1152,6 +1156,8 @@ namespace GalWarWin
 
         private bool Attack(Ship attacker, Combatant defender)
         {
+            UnHold(attacker);
+            UnHold(defender as Ship);
             return CombatForm.ShowForm(attacker, defender);
         }
 

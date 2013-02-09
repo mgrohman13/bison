@@ -933,16 +933,23 @@ namespace GalWar
 
         public double GetLossPct(Buildable newBuild)
         {
-            Buildable oldBuild = this.Buildable;
-            if (oldBuild == null || newBuild == null)
-                return 1;
-            if (oldBuild is StoreProd)
-                return 0;
-            if (oldBuild.GetType() != newBuild.GetType())
-                return Consts.SwitchBuildTypeLossPct;
-            if (oldBuild != newBuild)
-                return Consts.SwitchBuildLossPct;
-            return 0;
+            double lossPct;
+
+            if (Buildable == newBuild)
+                lossPct = 0;
+            else if (Buildable == null || newBuild == null)
+                lossPct = 1;
+            else if (Buildable is ShipDesign != newBuild is ShipDesign)
+                lossPct = Consts.SwitchBuildTypeLossPct;
+            else
+                lossPct = Consts.SwitchBuildLossPct;
+
+            if (Buildable is StoreProd)
+                lossPct = 0;
+            else if (newBuild is StoreProd)
+                lossPct = 1 - ( 1 - lossPct ) * ( 1 - Consts.StoreProdLossPct );
+
+            return lossPct;
         }
 
         private void LoseProductionPct(double pct)
@@ -1237,21 +1244,26 @@ namespace GalWar
                 else
                 {
                     bool inc = ( trgAtt > att || trgDef > def );
-                    double min = 0, max = 1;
+                    double min = 0, max = 1, mult = Game.Random.Range(min, max);
                     do
                     {
-                        double mult = ( min + max ) / 2.0;
                         newAtt = att + mult * ( trgAtt - att );
                         newDef = def + mult * ( trgDef - def );
                         if (inc == TestPD(trgCost, newAtt, newDef))
                             min = mult;
                         else
                             max = mult;
+                        mult = ( min + max ) / 2.0;
                     } while (max - min > Consts.FLOAT_ERROR);
                 }
             }
 
             newHP = GetPDHP(trgCost, newAtt, newDef);
+
+            if (att < trgAtt && def > 1 && att == newAtt)
+                ModPD(trgCost, att, att, def, 1, out newAtt, out newDef, out newHP);
+            else if (def < trgDef && att > 1 && def == newDef)
+                ModPD(trgCost, att, 1, def, def, out newAtt, out newDef, out newHP);
         }
         private bool TestPD(double trgCost, double minAtt, double minDef)
         {

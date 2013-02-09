@@ -1,4 +1,6 @@
-Consts.FLOAT_ERROR uses may need to multiply by check value
+test occupying amount vs occupying 1 then moving amount
+	equal soldiers
+	superior cost
 clean up planet defense interface
 	GetBuildingDefense
 	when buying PD show expected values
@@ -15,15 +17,16 @@ management screens
 	ships
 clean up code
 	member order
+pre-check to avoid catching AssertException
 
-marking upgrade design as obsolete
-switch between attack and defence loss
-upgrading ship produces identical
-invalde always uses full available pop
-occupying soldiers should follow move soldiers amount
-colony with defense has ZOC?
-more anomalies, worth less??
+more anomalies, worth less?
 anomaly neutral ships?
+anomalies affect other anomalies
+	Wormhole
+		PushShip - likely to push next to remote anomaly?
+		PullIn - can pull another anomaly?
+		CreateAnomalies - remote anomalies can spawn?
+		CreateTeleporter - likely to create target tile on remote anomaly (remove remote anomaly?)
 
 known enemy designs
 AI

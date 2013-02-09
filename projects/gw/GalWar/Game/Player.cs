@@ -1001,6 +1001,9 @@ namespace GalWar
                     colony.SetBuildable(Game.StoreProd, Consts.ManualObsoleteLossPct);
                     colony.StartBuilding(handler, handler.getNewBuild(colony));
                 }
+
+            if (this.ResearchFocusDesign == obsoleteDesign)
+                this.ResearchFocusDesign = null;
         }
 
         public void AutoRepairShips(IEventHandler handler)
