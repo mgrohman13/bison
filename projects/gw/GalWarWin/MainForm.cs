@@ -1784,20 +1784,11 @@ namespace GalWarWin
                 this.lbl6.Text = "Building";
                 Ship repairShip = colony.RepairShip;
                 if (repairShip != null)
-                {
-                    double hp = repairShip.GetHPForProd(colony.GetProductionIncome());
-                    if (hp > repairShip.MaxHP - repairShip.HP)
-                        hp = repairShip.MaxHP - repairShip.HP;
-                    this.lbl6Inf.Text = "Repair +" + FormatDouble(hp);
-                }
+                    this.lbl6Inf.Text = "Repair +" + FormatDouble(repairShip.GetHPForProd(colony.GetProductionIncome()));
                 else if (colony.Buildable != null)
-                {
                     this.lbl6Inf.Text = colony.Buildable.ToString();
-                }
                 else
-                {
                     this.lbl6Inf.Text = "Gold";
-                }
 
                 this.lbl7Inf.Text = GetProdText(colony);
             }

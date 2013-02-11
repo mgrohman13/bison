@@ -435,13 +435,7 @@ namespace GalWar
         internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
         {
             int retVal = 0;
-
-            double hp = GetHPForProd(production);
-            double max = this.MaxHP - HP;
-            if (!doRepair && DoAutoRepair)
-                max -= GetAutoRepairHP();
-            if (hp > max)
-                hp = max;
+            double hp = GetHPForProd(production, doRepair);
 
             if (doRepair)
             {
@@ -762,8 +756,8 @@ namespace GalWar
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
                 ISpaceObject spaceObject = neighbor.SpaceObject;
-                Colony colony = spaceObject as Colony;
-                if (( spaceObject is Ship || ( colony != null && colony.HP > 0 ) )
+                Planet planet = spaceObject as Planet;
+                if (( spaceObject is Ship || ( planet != null && planet.Colony != null && planet.Colony.HP > 0 ) )
                         && spaceObject.Player != player && Tile.IsNeighbor(from, neighbor))
                     return false;
             }
@@ -1470,9 +1464,19 @@ namespace GalWar
 
         public double GetHPForProd(double production)
         {
+            return GetHPForProd(production, false);
+        }
+        private double GetHPForProd(double production, bool doRepair)
+        {
             TurnException.CheckTurn(this.Player);
 
-            return production / RepairCost;
+            double hp = production / RepairCost;
+            double max = this.MaxHP - HP;
+            if (!doRepair && DoAutoRepair)
+                max -= GetAutoRepairHP();
+            if (hp > max)
+                hp = max;
+            return hp;
         }
 
         public double GetAutoRepairHP()

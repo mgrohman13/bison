@@ -867,7 +867,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
-            AssertException.Assert(production * Consts.ProductionForGold < this.Player.Gold);
+            AssertException.Assert(production / Consts.ProductionForGold < this.Player.Gold);
 
             TradeProduction(production, 1 / Consts.ProductionForGold);
 

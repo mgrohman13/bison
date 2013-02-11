@@ -1,3 +1,5 @@
+undo unholds
+production repair while auto repairing
 test occupying amount vs occupying 1 then moving amount
 	equal soldiers
 	superior cost
@@ -18,7 +20,9 @@ management screens
 clean up code
 	member order
 pre-check to avoid catching AssertException
+not auto repair indicator doesnt show if already repaired
 
+research graph anchored on top
 more anomalies, worth less?
 anomaly neutral ships?
 anomalies affect other anomalies
