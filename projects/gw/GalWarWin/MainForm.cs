@@ -360,7 +360,7 @@ namespace GalWarWin
             if (pct < 1)
             {
                 Pen pen = Pens.Black;
-                if (ship.Player.IsTurn && ship.AutoRepair == 0)
+                if (ship.Player.IsTurn && !ship.HasRepaired && ship.AutoRepair == 0)
                     pen = new Pen(Color.White, 2);
 
                 PointF endPoint;

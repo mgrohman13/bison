@@ -1407,6 +1407,9 @@ namespace GalWar
         }
         private double GetGoldForHP(double hp, bool isTotal)
         {
+            //the rounding logic here is reversed by:
+            //private double GetHPForGold(double gold, bool isTotal)
+
             int floor = (int)Math.Floor(hp);
             double gold = CalcGoldForHP(floor);
             if (floor != hp)
@@ -1432,6 +1435,7 @@ namespace GalWar
             int upper = this.MaxHP - this.HP;
             if (upper > 0)
             {
+                //brute force algorithm to find the integer bounds
                 upper = TBSUtil.FindValue(delegate(int hp)
                 {
                     return ( GetGoldForHP(hp, isTotal) >= gold );
@@ -1439,6 +1443,9 @@ namespace GalWar
 
                 if (upper > 0 && GetGoldForHP(upper, isTotal) > gold)
                 {
+                    //this reverses the rounding logic in:
+                    //private double GetGoldForHP(double hp, bool isTotal)
+
                     double hp, low = CalcGoldForHP(upper - 1), high = CalcGoldForHP(upper);
 
                     if (isTotal)

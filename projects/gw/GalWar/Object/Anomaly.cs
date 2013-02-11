@@ -169,8 +169,8 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double income = 2.6 * Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
-            double assets = 1 / 13.0 * armada;
+            double income = Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
+            double assets = armada / 30.0;
             return Game.Random.GaussianOE(( income + assets ) / (double)Tile.Game.GetPlayers().Count, .39, .26, 1);
         }
 
@@ -185,6 +185,19 @@ namespace GalWar
             double avg = ( 1 * ( ( 1 * player.ResearchDisplay + 2 * player.Research ) / 3.0 )
                     + 2 * ( player.LastResearched + this.value ) + 4 * ( Tile.Game.AvgResearch ) ) / 7.0;
             return Game.Random.GaussianOEInt(avg, .13, .013);
+        }
+
+        private Tile GetRandomTile()
+        {
+            Tile tile = Tile.Game.GetRandomTile();
+            while (!( tile.SpaceObject is Anomaly ) && Game.Random.Bool(1 - 0.078))
+            {
+                foreach (Tile neighbor in Tile.GetNeighbors(tile))
+                    if (neighbor.SpaceObject is Anomaly)
+                        return tile;
+                tile = Tile.Game.GetRandomTile();
+            }
+            return tile;
         }
 
         private static Dictionary<Player, int> GetPlayerProximity(Tile tile)
@@ -741,7 +754,9 @@ namespace GalWar
 
         private bool PushShip(IEventHandler handler, bool notify, Ship ship)
         {
-            Tile tile = Tile.Game.GetRandomTile();
+            Tile tile = GetRandomTile();
+            while (tile.SpaceObject is Anomaly)
+                tile = MoveTile(tile);
             if (tile.SpaceObject == null)
             {
                 Player oneInv, oneAtt;
@@ -784,15 +799,29 @@ namespace GalWar
 
             if (objects.Count > 0)
             {
+                foreach (Tile tile in Tile.Game.GetMap())
+                    if (tile.SpaceObject is Anomaly)
+                        AddPullChance(objects, null, tile.SpaceObject, .91, null);
+
                 if (notify)
                     handler.Explore(Anomaly.AnomalyType.Wormhole);
 
                 ISpaceObject teleport = Game.Random.SelectValue(objects);
                 Ship ship = teleport as Ship;
                 if (ship != null)
+                {
                     ship.Teleport(this.Tile);
+                }
+                else if (teleport is Anomaly)
+                {
+                    teleport.Tile.SpaceObject = null;
+                    new Anomaly(this.Tile);
+                }
                 else
-                    ( (Planet)teleport ).Teleport(this.Tile);
+                {
+                    Planet planet = (Planet)teleport;
+                    planet.Teleport(this.Tile);
+                }
                 return true;
             }
 
@@ -862,7 +891,7 @@ namespace GalWar
 
         private bool CreateTeleporter(IEventHandler handler)
         {
-            return Tile.Game.CreateTeleporter(handler, this.Tile);
+            return Tile.Game.CreateTeleporter(handler, this.Tile, GetRandomTile());
         }
 
         #endregion //Wormhole

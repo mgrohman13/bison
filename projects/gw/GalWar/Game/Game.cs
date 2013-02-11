@@ -208,7 +208,7 @@ namespace GalWar
             planetPct *= MapSize;
 
             this.planetPct = Random.GaussianCapped(planetPct / 91.0, .091, Consts.FLOAT_ERROR);
-            this.anomalyPct = Random.GaussianCapped(this.planetPct + MapSize * .000039 + ( numPlayers + 6.5 ) * 0.0052,
+            this.anomalyPct = Random.GaussianCapped(this.planetPct + MapSize * .00013 + ( numPlayers + 6.5 ) * .013,
                     .21, this.planetPct + Consts.FLOAT_ERROR);
 
             //first create enough planets for homeworlds
@@ -581,41 +581,37 @@ next_planet:
             }
         }
 
-        internal bool CreateTeleporter(IEventHandler handler, Tile tile)
+        internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target)
         {
             double chance = Math.Pow(teleporters.Count + 1.3, 1.3);
-            if (Game.Random.Bool(1.0 / chance))
+            //check if the tiles are too close to be useful or if either tile already has a teleporter
+            if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Game.Random.Bool(1.0 / chance))
             {
-                Tile target = GetRandomTile();
-                //check if the tiles are too close to be useful or if either tile already has a teleporter
-                if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null)
+                //check this will not make any planets be too close
+                int closeThis = int.MaxValue, closTrg = int.MaxValue;
+                foreach (Planet planet in this.planets)
                 {
-                    //check this will not make any planets be too close
-                    int closeThis = int.MaxValue, closTrg = int.MaxValue;
-                    foreach (Planet planet in this.planets)
-                    {
-                        closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
-                        closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
-                    }
-
-                    //check and make sure enemies cannot be attacked/invaded
-                    if (closeThis + closTrg + 1 > Consts.PlanetDistance)
-                        foreach (Player p in this.players)
-                        {
-                            foreach (Colony c in p.GetColonies())
-                                if (!CheckAttInvPlayers(c.Planet, true, tile, target))
-                                    return false;
-                            if (!p.IsTurn)
-                                foreach (Ship s in p.GetShips())
-                                    if (!CheckAttInvPlayers(s, false, tile, target))
-                                        return false;
-
-                            handler.Explore(Anomaly.AnomalyType.Wormhole);
-
-                            CreateTeleporter(tile, target);
-                            return true;
-                        }
+                    closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
+                    closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
                 }
+
+                //check and make sure enemies cannot be attacked/invaded
+                if (closeThis + closTrg + 1 > Consts.PlanetDistance)
+                    foreach (Player p in this.players)
+                    {
+                        foreach (Colony c in p.GetColonies())
+                            if (!CheckAttInvPlayers(c.Planet, true, tile, target))
+                                return false;
+                        if (!p.IsTurn)
+                            foreach (Ship s in p.GetShips())
+                                if (!CheckAttInvPlayers(s, false, tile, target))
+                                    return false;
+
+                        handler.Explore(Anomaly.AnomalyType.Wormhole);
+
+                        CreateTeleporter(tile, target);
+                        return true;
+                    }
             }
             return false;
         }
@@ -711,8 +707,7 @@ next_planet:
 
         public static Game LoadGame(string filePath)
         {
-            Game game = TBSUtil.LoadGame<Game>(filePath);
-            return game;
+            return TBSUtil.LoadGame<Game>(filePath);
         }
 
         public List<Result> GetGameResult()
