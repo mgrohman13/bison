@@ -83,7 +83,7 @@ namespace GalWarWin
                 x += 106;
                 labels[6, i] = NewLabel(x, y, GetStringDec(players[i].GetArmadaStrength(), div, place), players[i].Color);
                 x += 106;
-                labels[7, i] = NewLabel(x, y, GetResearch(research[players[i]]), players[i].Color);
+                labels[7, i] = NewLabel(x, y, GetResearch(research, players[i]), players[i].Color);
                 y += 26;
             }
 
@@ -153,9 +153,9 @@ namespace GalWarWin
             return "0";
         }
 
-        private string GetResearch(double research)
+        private string GetResearch(Dictionary<Player, double> research, Player player)
         {
-            return MainForm.FormatPctWithCheck(research / 100.0);
+            return MainForm.FormatInt(research[player] / research[game.CurrentPlayer] * game.CurrentPlayer.ResearchGuess);
         }
 
         private Label NewLabel(int x, int y, string text, Color? backColor)

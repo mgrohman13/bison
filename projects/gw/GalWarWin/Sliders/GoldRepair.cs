@@ -23,11 +23,6 @@ namespace GalWarWin.Sliders
             }, 0, ship.MaxHP - ship.HP, false);
         }
 
-        //internal void SetSetValueDelegate(GoldRepair.SetValueDelegate SetValue)
-        //{
-        //    control.SetSetValueDelegate(SetValue);
-        //}
-
         public override Control GetCustomControl()
         {
             control.SetShip(ship);

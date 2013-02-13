@@ -48,9 +48,8 @@ namespace GalWarWin.Sliders
             else
             {
                 this.Controls.Add(custom);
-                custom.Location = new Point(( this.ClientSize.Width - custom.Width ) / 2, custom.Location.Y);
                 this.Height = baseHeight + custom.Height + 6;
-                custom.Location = new Point(0, this.btnOK.Location.Y - custom.Height - 3);
+                custom.Location = new Point(( this.ClientSize.Width - custom.Width ) / 2, this.btnOK.Location.Y - custom.Height - 3);
                 customMouseEventHandler = new MouseEventHandler(control_MouseWheel);
                 custom.MouseWheel += customMouseEventHandler;
             }

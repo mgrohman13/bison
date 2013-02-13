@@ -453,21 +453,12 @@ next_planet:
             return this.teleporters.AsReadOnly();
         }
 
-        //research is given only as a percentage of the amount needed to win the game
         public Dictionary<Player, double> GetResearch()
         {
             Player[] players = GetResearchOrder();
             Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
             for (int a = 0 ; a < players.Length ; ++a)
-            {
-                Player player = players[a];
-                double research;
-                if (players.Length > 1)
-                    research = player.ResearchDisplay / players[1].ResearchDisplay;
-                else
-                    research = 1;
-                retVal.Add(player, research * 100);
-            }
+                retVal.Add(players[a], players[a].ResearchDisplay / players[0].ResearchDisplay * 100);
             return retVal;
         }
 

@@ -91,7 +91,7 @@ namespace GalWar
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
         public const double TransLossMult = .65;
-        public const double TransLossRndm = Math.PI / 13.0;
+        public const double TransLossRndm = .3;
 
         //value of exp gained as a pct of ship value
         public const double ExperienceMult = .13;
@@ -112,7 +112,7 @@ namespace GalWar
         public const double RepairGoldHPPct = 1 / 16.9;
 
         public const double DisbandPct = RepairCostMult;
-        public const double ColonizationCostRndm = .091;
+        public const double ColonizationCostRndm = .104;
 
         public const double AttackStrength = 1;
         public const double AttackNumbersPower = 0.091;
@@ -126,11 +126,12 @@ namespace GalWar
         //average planet quality lost as a percentage of total troops killed in the battle
         public const double PlanetDamage = .3;
 
-        public const double DeathStarDamageRndm = Math.E / 13.0;
+        public const double DeathStarDamageRndm = .26;
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
-        public const double PlanetDefensesRndm = .26;
+        public const double PlanetDefenseStatRndm = .091;
+        public const double PlanetDefenseBuildRndm = Math.PI / 13.0;
         public const double PlanetDefensesCostMult = .91;
         //PlanetDefensesUpkeepMult will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;

@@ -6,16 +6,31 @@ namespace GalWarWin.Sliders
 {
     public class BuyProd : SliderController
     {
-        private readonly Player player;
-        private readonly int initial;
+        private static BuildableControl control = new BuildableControl();
 
-        public BuyProd(Player player, int initial)
+        private readonly Colony colony;
+        private readonly Buildable buildable;
+        private readonly int prodLoss, initial;
+
+        public BuyProd(Colony colony, Buildable buildable, int prodLoss, int initial)
         {
-            this.player = player;
+            this.colony = colony;
+            this.buildable = buildable;
+            this.prodLoss = prodLoss;
             this.initial = initial;
 
             if (initial > GetMax())
                 MessageBox.Show("You need " + initial * Consts.GoldForProduction + " gold to complete this ship.");
+        }
+
+        public override Control GetCustomControl()
+        {
+            if (buildable is PlanetDefense)
+            {
+                control.SetColony(colony, buildable, prodLoss);
+                return control;
+            }
+            return null;
         }
 
         public override double GetInitial()
@@ -25,11 +40,12 @@ namespace GalWarWin.Sliders
 
         protected override int GetMaxInternal()
         {
-            return (int)( player.Gold / Consts.GoldForProduction );
+            return (int)( colony.Player.Gold / Consts.GoldForProduction );
         }
 
         protected override double GetResult()
         {
+            control.RefreshBuildable(GetValue());
             return GetValue() * Consts.GoldForProduction;
         }
 

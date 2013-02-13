@@ -1,9 +1,6 @@
 test occupying amount vs occupying 1 then moving amount
 	equal soldiers
 	superior cost
-clean up planet defense interface
-	GetBuildingDefense
-	when buying PD show expected values
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
@@ -17,7 +14,6 @@ management screens
 clean up code
 	member order
 
-research graph anchored on top?
 anomaly neutral ships?
 
 known enemy designs

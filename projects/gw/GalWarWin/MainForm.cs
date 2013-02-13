@@ -725,7 +725,7 @@ namespace GalWarWin
             dialog.showMoves = false;
 
             if (build)
-                dialog.pnlBuild.SetBuildable((Buildable)( (Planet)tile.SpaceObject ).Colony.Buildable);
+                dialog.pnlBuild.SetColony(( (Planet)tile.SpaceObject ).Colony);
             dialog.pnlBuild.Visible = build;
             dialog.btnCancel.Visible = true;
 
@@ -1698,7 +1698,7 @@ namespace GalWarWin
                     this.btnProdRepair.Visible = true;
 
                     this.pnlBuild.Visible = true;
-                    this.pnlBuild.SetBuildable(colony.Buildable);
+                    this.pnlBuild.SetColony(colony);
                 }
 
                 if (colony.RepairShip == null)

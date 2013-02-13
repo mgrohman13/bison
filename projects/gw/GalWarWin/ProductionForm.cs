@@ -111,10 +111,11 @@ namespace GalWarWin
             //this.sdForm.Visible = newBuild is ShipDesign;
             this.chkObsolete.Visible = newBuild is ShipDesign;
 
-            this.sdForm.SetBuildable(newBuild);
+            int lossAmt = GetLossAmt(newBuild);
+
+            this.sdForm.SetColony(colony, newBuild, lossAmt);
             this.chkObsolete.Checked = true;
 
-            int lossAmt = (int)Math.Ceiling(GetLossPct(newBuild) * colony.Production);
             if (lossAmt > 0)
                 this.lblProdLoss.Text = "-" + lossAmt + " production";
             else
@@ -124,6 +125,12 @@ namespace GalWarWin
             //this stops you from marking another ship as obsolete during the event for marking a first one 
             //or from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 && colony.CanBuild(colony.Buildable) );
+        }
+
+        private int GetLossAmt(Buildable newBuild)
+        {
+            int lossAmt = (int)Math.Ceiling(GetLossPct(newBuild) * colony.Production);
+            return lossAmt;
         }
 
         private double GetLossPct(Buildable buildable)
@@ -138,7 +145,7 @@ namespace GalWarWin
             {
                 bool switchFirst = ( buildable != colony.Buildable );
                 int initial = GetInitialBuy(buildable, switchFirst);
-                int prod = SliderForm.ShowForm(new BuyProd(colony.Player, initial));
+                int prod = SliderForm.ShowForm(new BuyProd(colony, buildable, GetLossAmt(buildable), initial));
                 if (prod > 0)
                 {
                     if (switchFirst)
