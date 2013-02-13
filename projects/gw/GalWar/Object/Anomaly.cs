@@ -190,7 +190,7 @@ namespace GalWar
         private Tile GetRandomTile()
         {
             Tile tile = Tile.Game.GetRandomTile();
-            while (!( tile.SpaceObject is Anomaly ) && Game.Random.Bool(1 - 0.078))
+            while (!( tile.SpaceObject is Anomaly ) && Game.Random.Bool(1 - 1 / ( 13.0 + Math.Sqrt(Tile.Game.MapSize) / 16.9 )))
             {
                 foreach (Tile neighbor in Tile.GetNeighbors(tile))
                     if (neighbor.SpaceObject is Anomaly)

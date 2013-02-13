@@ -17,7 +17,7 @@ management screens
 clean up code
 	member order
 
-research graph anchored on top
+research graph anchored on top?
 anomaly neutral ships?
 
 known enemy designs
