@@ -15,8 +15,6 @@ namespace GalWarWin.Sliders
             lblProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
         }
 
-        private readonly Game game;
-
         private readonly PopCarrier from;
         private readonly PopCarrier to;
 
@@ -28,10 +26,8 @@ namespace GalWarWin.Sliders
         private readonly int totalPop;
         private readonly double soldiers;
 
-        public MoveTroops(Game game, PopCarrier from, PopCarrier to)
+        public MoveTroops(PopCarrier from, PopCarrier to)
         {
-            this.game = game;
-
             this.from = from;
             this.to = to;
 
@@ -46,10 +42,8 @@ namespace GalWarWin.Sliders
             }
         }
 
-        public MoveTroops(Game game, Colony from, int max, int free, int totalPop, double soldiers)
+        public MoveTroops(Colony from, int max, int free, int totalPop, double soldiers)
         {
-            this.game = game;
-
             this.from = from;
             this.colony = from;
 
@@ -85,7 +79,7 @@ namespace GalWarWin.Sliders
                 max = this.max.Value;
             else
                 max = Math.Min(from.AvailablePop, to.FreeSpace);
-            return Math.Min(max, free + GetMaxMovePop(game.CurrentPlayer.Gold));
+            return Math.Min(max, free + GetMaxMovePop(MainForm.Game.CurrentPlayer.Gold));
         }
 
         public static int GetMaxMovePop(double gold)

@@ -715,10 +715,7 @@ namespace GalWar
         }
         private void AddGold(double gold, bool random, out double rounded)
         {
-            if (random)
-                rounded = Game.Random.Round(gold * 10) / 10.0;
-            else
-                rounded = RoundGold(gold);
+            rounded = RoundGold(gold, random);
             AddGold(gold, rounded);
         }
         internal void AddGold(double gold, double rounded)
@@ -751,7 +748,14 @@ namespace GalWar
 
         public static double RoundGold(double gold)
         {
-            return Math.Round(gold, 1);
+            return RoundGold(gold, false);
+        }
+        public static double RoundGold(double gold, bool random)
+        {
+            if (random)
+                return Game.Random.Round(gold * 10) / 10.0;
+            else
+                return Math.Round(gold, 1);
         }
 
         public static double FloorGold(double gold)

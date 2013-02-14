@@ -900,8 +900,8 @@ namespace GalWar
                 double minCost = basePayoff * Consts.MinCostMult;
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
-                double upkeepInc = costInc * this.upkeep / this.cost * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct());
-                this.upkeep += Game.Random.Round(upkeepInc);
+                this.upkeep += Game.Random.Round(costInc * this.upkeep / this.cost
+                        * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
                 //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
                 this.cost += costInc - this.upkeep * multPayoff;
 
@@ -1089,10 +1089,11 @@ namespace GalWar
                     int colonyDamage, planetDamage;
                     Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage);
 
-                    //log actual damage to planet
-                    if (freeDmg == -1)
+                    if (freeDmg == -1 && ( colonyDamage != 0 || planetDamage != 0 ))
                         freeDmg = 0;
-                    handler.OnBombard(this, planet, freeDmg, colonyDamage, planetDamage);
+                    //log actual damage to planet
+                    if (freeDmg != -1)
+                        handler.OnBombard(this, planet, freeDmg, colonyDamage, planetDamage);
                     //freeDmg of -1 means we have logged something
                     freeDmg = -1;
                 }
@@ -1302,6 +1303,8 @@ namespace GalWar
             this.Soldiers += soldiers;
 
             this.AddCostExperience(exp);
+
+            LevelUp(handler);
         }
 
         public void Explore(IEventHandler handler, Anomaly anomaly)

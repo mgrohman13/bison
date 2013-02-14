@@ -544,7 +544,7 @@ namespace GalWarWin
 
         private void btnGraphs_Click(object sender, EventArgs e)
         {
-            GraphsForm.ShowForm(Game);
+            GraphsForm.ShowForm();
         }
 
         private void btnNewGame_Click(object sender, EventArgs e)
@@ -844,6 +844,7 @@ namespace GalWarWin
                     if (ship.HP == ship.MaxHP)
                         this.holdPersistent.Remove(ship);
                 this.hold.IntersectWith(holdPersistent);
+
                 SelectNextShip();
 
                 showMoves = false;
@@ -1249,7 +1250,7 @@ namespace GalWarWin
         {
             if (from.MaxPop > 0 && to.MaxPop > 0)
             {
-                int troops = SliderForm.ShowForm(new MoveTroops(Game, from, to));
+                int troops = SliderForm.ShowForm(new MoveTroops(from, to));
                 if (troops > 0)
                 {
                     this.selectedTile = to.Tile;
@@ -1272,7 +1273,7 @@ namespace GalWarWin
                 if (colony.Population > 0)
                     gold = SliderForm.ShowForm(new Invade(ship, colony));
                 else
-                    troops = SliderForm.ShowForm(new MoveTroops(Game, ship, colony));
+                    troops = SliderForm.ShowForm(new MoveTroops(ship, colony));
 
             bool selectShip = true;
             if (troops > 0 && gold > -1)
@@ -1317,8 +1318,8 @@ namespace GalWarWin
 
             if (x < bounds.X)
                 x = bounds.X;
-            else if (x + form.Width > bounds.X + bounds.Width)
-                x = bounds.X + bounds.Width - form.Width;
+            else if (x + form.Width > bounds.X + bounds.Width - this.pnlHUD.Width)
+                x = bounds.X + bounds.Width - this.pnlHUD.Width - form.Width;
 
             if (y < bounds.Y)
                 y = bounds.Y;
@@ -1936,7 +1937,7 @@ namespace GalWarWin
                 this.selectedTile = fromColony.Tile;
             this.RefreshAll();
 
-            return SliderForm.ShowForm(new MoveTroops(Game, fromColony, max, free, totalPop, soldiers));
+            return SliderForm.ShowForm(new MoveTroops(fromColony, max, free, totalPop, soldiers));
         }
 
         bool IEventHandler.Continue()

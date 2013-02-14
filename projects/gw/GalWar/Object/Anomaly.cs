@@ -527,12 +527,12 @@ namespace GalWar
                 double before = Consts.GetColonizationCost(trgColony.Planet.Quality, costMult);
                 double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, costMult);
                 double expectCost = before - after;
-                double actualCost = this.value + Consts.GetColonizationMult() * before - Consts.GetColonizationMult() * after;
+                double actualCost = Player.RoundGold(this.value + Consts.GetColonizationMult() * before - Consts.GetColonizationMult() * after, true);
 
                 if (handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances))
                 {
                     trgColony.Planet.ReduceQuality(-addQuality);
-                    trgColony.Player.AddGold(actualCost, true);
+                    trgColony.Player.AddGold(actualCost);
                     return true;
                 }
                 else
@@ -1009,12 +1009,14 @@ namespace GalWar
 
         private bool Valuables(IEventHandler handler, Ship anomShip)
         {
+            int amt = Game.Random.Round(this.value);
+
             bool research;
             switch (Game.Random.Next(13))
             {
             case 1:
             case 2:
-                research = handler.Explore(AnomalyType.AskResearchOrGold, this.value);
+                research = handler.Explore(AnomalyType.AskResearchOrGold, amt);
                 break;
             case 3:
             case 4:
@@ -1023,14 +1025,24 @@ namespace GalWar
                 break;
             default:
                 research = false;
-                handler.Explore(AnomalyType.Gold, this.value);
+                amt = -1;
                 break;
             }
 
             if (research)
-                anomShip.Player.FreeResearch(handler, Game.Random.Round(this.value), GetDesignResearch(anomShip.Player));
+            {
+                anomShip.Player.FreeResearch(handler, amt, GetDesignResearch(anomShip.Player));
+            }
             else
-                anomShip.Player.AddGold(this.value, true);
+            {
+                double addGold = amt;
+                if (amt == -1)
+                    addGold = Player.RoundGold(this.value, true);
+
+                handler.Explore(AnomalyType.Gold, addGold);
+
+                anomShip.Player.AddGold(addGold);
+            }
 
             return true;
         }

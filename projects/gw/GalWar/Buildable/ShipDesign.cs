@@ -92,7 +92,7 @@ namespace GalWar
         #region fields and constructors
 
         internal const double DeathStarAvg = 91;
-        private const double DeathStarMin = 3, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.6, FocusSpeedMult = 1.3;
+        private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.6, FocusSpeedMult = 1.3;
         //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
         private const double FocusTypeMult = 2.1;
 

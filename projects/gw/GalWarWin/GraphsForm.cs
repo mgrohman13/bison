@@ -15,8 +15,6 @@ namespace GalWarWin
 
         private static readonly String[] abbr = new string[] { string.Empty, "k", "M", "G" };
 
-        private Game game;
-
         private Label[,] labels;
 
         private bool checkEvents = false;
@@ -43,10 +41,8 @@ namespace GalWarWin
             cbxType.SelectedItem = Graphs.GraphType.Population;
         }
 
-        private void LoadData(Game game)
+        private void LoadData()
         {
-            this.game = game;
-
             if (labels != null)
                 for (int a = 0 ; a < labels.GetLength(0) ; ++a)
                     for (int b = 0 ; b < labels.GetLength(1) ; ++b)
@@ -55,7 +51,7 @@ namespace GalWarWin
                         labels[a, b] = null;
                     }
 
-            ReadOnlyCollection<Player> players = game.GetPlayers();
+            ReadOnlyCollection<Player> players = MainForm.Game.GetPlayers();
 
             double maxArmada = double.MinValue;
             foreach (Player player in players)
@@ -63,7 +59,7 @@ namespace GalWarWin
             int place = GetPlace(maxArmada);
             long div = GetDiv(place);
 
-            Dictionary<Player, double> research = game.GetResearch();
+            Dictionary<Player, double> research = MainForm.Game.GetResearch();
             labels = new Label[8, players.Count];
             y = 32;
             for (int i = 0 ; i < players.Count ; ++i)
@@ -155,7 +151,7 @@ namespace GalWarWin
 
         private string GetResearch(Dictionary<Player, double> research, Player player)
         {
-            return MainForm.FormatInt(research[player] / research[game.CurrentPlayer] * game.CurrentPlayer.ResearchGuess);
+            return MainForm.FormatInt(research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.ResearchGuess);
         }
 
         private Label NewLabel(int x, int y, string text, Color? backColor)
@@ -207,8 +203,8 @@ namespace GalWarWin
                 float? maxY = null;
                 if (checkBox1.Checked && type == Graphs.GraphType.Quality)
                 {
-                    d1 = game.Graphs.Get(type, out p1);
-                    d2 = game.Graphs.Get(popType, out p2);
+                    d1 = MainForm.Game.Graphs.Get(type, out p1);
+                    d2 = MainForm.Game.Graphs.Get(popType, out p2);
                     maxY = (float)Math.Ceiling(Math.Max(GetMaxY(d1), GetMaxY(d2)));
                 }
 
@@ -232,7 +228,7 @@ namespace GalWarWin
             float height = groupBox1.ClientSize.Height - 2 * padding;
 
             if (data == null)
-                data = game.Graphs.Get(type, out playerIndexes);
+                data = MainForm.Game.Graphs.Get(type, out playerIndexes);
             int xLen = data.GetLength(0);
             if (xLen > 1)
             {
@@ -451,12 +447,12 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowForm(Game game)
+        public static void ShowForm()
         {
             form.Location = MainForm.GameForm.Location;
             form.Size = MainForm.GameForm.Size;
 
-            form.LoadData(game);
+            form.LoadData();
             form.ShowDialog();
 
             MainForm.GameForm.Location = form.Location;

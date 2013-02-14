@@ -465,6 +465,7 @@ namespace GalWar
                 mult = this.Population / (double)initPop;
             this.Soldiers *= mult;
             ReduceDefenses(mult);
+            double experience = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
 
@@ -472,7 +473,6 @@ namespace GalWar
             if (attackers > 0 && this.Population > 0)
                 throw new Exception();
 
-            double experience = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
             if (Planet.Dead)
                 experience += Consts.PlanetConstValue;
             experience *= Consts.TroopExperienceMult;
@@ -878,7 +878,7 @@ namespace GalWar
             handler = new HandlerWrapper(handler, this.Player.Game, false, true);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
-            AssertException.Assert(production / Consts.GoldForProduction < this.Player.Gold);
+            AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
                     new Game.UndoMethod<int>(UndoBuyProduction), production));
