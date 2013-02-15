@@ -751,19 +751,22 @@ end:
                 if (this.colonyDamage != int.MinValue)
                     throw new Exception();
 
-                if (base.others.Count > 0)
-                {
-                    MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
-                            MainForm.FormatUsuallyInt(this.bombardDamage), this.totalExp,
-                            this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
-                            this.colony == null ? string.Empty : this.hp + ", ", this.quality,
-                            this.colony == null ? string.Empty : ", " + this.population);
+                for (int a = 0 ; a < base.others.Count ; ++a)
+                    if (base.others[a].colonyDamage != int.MinValue)
+                    {
+                        MainForm.GameForm.LogMsg("{0} {1} ({2}, {3}) : {4} ({5}{6}{7})", this.Ship.Player.Name, this.Ship.ToString(),
+                                MainForm.FormatUsuallyInt(this.bombardDamage), this.totalExp,
+                                this.colony == null ? "Uncolonized" : this.colony.Player.Name + " Colony",
+                                this.colony == null ? string.Empty : this.hp + ", ", this.quality,
+                                this.colony == null ? string.Empty : ", " + this.population);
 
-                    for (int index = 0 ; index < base.others.Count ; ++index)
-                        Log(base.others[index]);
+                        for (int b = 0 ; b < base.others.Count ; ++b)
+                            Log(base.others[b]);
 
-                    MainForm.GameForm.LogMsg();
-                }
+                        MainForm.GameForm.LogMsg();
+
+                        break;
+                    }
             }
             private static void Log(BombardType bombardType)
             {

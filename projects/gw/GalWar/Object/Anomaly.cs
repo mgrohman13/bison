@@ -77,7 +77,7 @@ namespace GalWar
 
         internal void Explore(IEventHandler handler, Ship ship)
         {
-            this.value = GenerateValue(ship);
+            this.value = GenerateValue();
             this.Tile.SpaceObject = null;
 
             Planet planet = Tile.Game.CreateAnomalyPlanet(handler, this.Tile);
@@ -143,7 +143,7 @@ namespace GalWar
             }
         }
 
-        private double GenerateValue(Ship armadaShip)
+        private double GenerateValue()
         {
             double quality = 0, pop = 0, armada = 0;
             foreach (Planet planet in Tile.Game.GetPlanets())
@@ -169,15 +169,18 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double income = Consts.Income * ( 5 * pop + 2 * quality ) / 7.0;
-            double assets = armada / 30.0;
-            return Game.Random.GaussianOE(( income + assets ) / (double)Tile.Game.GetPlayers().Count, .39, .26, 1);
+            double value = 1 + ( armada / 26.0 + Consts.Income * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
+            return Game.Random.GaussianOE(value, .3, .3, GenerateConsolationValue(value));
+        }
+        private static double GenerateConsolationValue(double value)
+        {
+            double avg = Math.Pow(value, .65);
+            return Game.Random.GaussianCapped(avg, .21, Math.Max(1, 2 * avg - value));
         }
 
         private double ConsolationValue()
         {
-            double avg = Math.Pow(this.value, .78);
-            return Game.Random.GaussianCapped(avg, .13, Math.Max(1, 2 * avg - this.value));
+            return GenerateConsolationValue(this.value);
         }
 
         private int GetDesignResearch(Player player)
@@ -403,7 +406,7 @@ namespace GalWar
                             + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));
 
             double amount = this.value - cost;
-            double mult = Consts.GetColonizationMult() * 1.69;
+            double mult = Consts.GetColonizationMult() * 1.3;
             if (amount < Consts.GetColonizationCost(Consts.PlanetConstValue, mult))
                 return false;
 
@@ -522,7 +525,7 @@ namespace GalWar
             {
                 Colony trgColony = Game.Random.SelectValue(colonies);
 
-                const double costMult = 2.1;
+                const double costMult = 1.69;
                 int addQuality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Consts.PlanetConstValue, .65, .39, 1);
                 double before = Consts.GetColonizationCost(trgColony.Planet.Quality, costMult);
                 double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, costMult);
@@ -919,7 +922,7 @@ namespace GalWar
 
             handler.Explore(AnomalyType.SalvageShip, player);
 
-            double min = this.value, max = GenerateValue(anomShip);
+            double min = this.value, max = GenerateValue();
             if (min > max)
             {
                 double temp = min;

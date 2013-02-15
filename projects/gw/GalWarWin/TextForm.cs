@@ -64,17 +64,15 @@ namespace GalWarWin
             form.textBox1.Text = "Attacker:\r\n";
             foreach (var pair in att)
             {
-                int val = (int)Math.Ceiling(pair.Value / maxAtt * 1000 - 1 - GalWar.Consts.FLOAT_ERROR);
-                if (val > 0)
-                    form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+                int val = (int)Math.Ceiling(pair.Value / maxAtt * 999 * ( 1 - GalWar.Consts.FLOAT_ERROR ));
+                form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
             }
 
             form.textBox1.Text += "\r\nDefender:\r\n";
             foreach (var pair in def)
             {
-                int val = (int)Math.Ceiling(pair.Value / maxDef * 1000 - 1 - GalWar.Consts.FLOAT_ERROR);
-                if (val > 0)
-                    form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+                int val = (int)Math.Ceiling(pair.Value / maxDef * 999 * ( 1 - GalWar.Consts.FLOAT_ERROR ));
+                form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
             }
 
             form.ShowDialog();

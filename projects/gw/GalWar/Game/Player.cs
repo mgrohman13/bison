@@ -493,7 +493,6 @@ namespace GalWar
                 ResearchWithFocus(handler);
             else
                 ResearchWithDesign(handler);
-            this.newResearch = 0;
 
             //re-randomize research chance and display skew
             ResetResearchChance();
@@ -508,7 +507,7 @@ namespace GalWar
 
         private void ResearchWithDesign(IEventHandler handler)
         {
-            int chances = Game.Random.OEInt(GetResearchChance(this.newResearch) * 13);
+            int chances = Game.Random.OEInt(GetResearchChance(this.newResearch) * 21);
             if (chances > 0)
             {
                 SortedSet<int> tries = new SortedSet<int>();
@@ -613,7 +612,7 @@ namespace GalWar
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
                 colony.EndTurn(handler, ref gold, ref research);
             this.AddGold(gold);
-            this.newResearch += research;
+            this.newResearch = research;
             this.ResearchGuess += research;
 
             if (!neg && NegativeGold())

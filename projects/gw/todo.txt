@@ -13,7 +13,9 @@ management screens
 	ships
 clean up code
 	member order
+undo MarkObsolete
 
+ShipNames._divisions always has 0 at first index
 anomaly neutral ships?
 
 known enemy designs

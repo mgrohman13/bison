@@ -882,14 +882,8 @@ namespace GalWar
                 this.MaxSpeed = speed;
                 this.maxPop = trans;
                 if (funky && this.NextExpType == ExpType.DS && !this.DeathStar)
-                {
                     this.DeathStar = true;
-                    this.BombardDamage = ds;
-                }
-                else if (this.NextExpType != ExpType.Att)
-                {
-                    this.BombardDamage = ds;
-                }
+                this.BombardDamage = ds;
 
                 costInc = this.GetCostLastResearched() - costInc;
 
@@ -940,6 +934,8 @@ namespace GalWar
                     ++att;
                     if (this.DeathStar)
                         ds = ShipDesign.SetBombardDamage(ds, att);
+                    else
+                        ds = ShipDesign.GetBombardDamage(0, att);
                     break;
                 case ExpType.Def:
                     ++def;
@@ -948,7 +944,10 @@ namespace GalWar
                     ++hp;
                     break;
                 case ExpType.DS:
-                    ds = ShipDesign.SetBombardDamage(ds + 1, att);
+                    if (this.DeathStar)
+                        ++ds;
+                    else
+                        ds = ShipDesign.SetBombardDamage(0, att);
                     break;
                 case ExpType.Speed:
                     ++speed;
