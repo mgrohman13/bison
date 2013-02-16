@@ -1967,7 +1967,7 @@ namespace GalWarWin
                 return ShowOption("Take +" + FormatDouble((double)info[1]) + " producton or build defenses?");
 
             case Anomaly.AnomalyType.AskResearchOrGold:
-                return ShowOption("Take research or +" + FormatDouble((double)info[0]) + " gold?");
+                return ShowOption("Take research or +" + info[0] + " gold?");
 
             case Anomaly.AnomalyType.AskTerraform:
                 this.selectedTile = ( (Colony)info[0] ).Tile;

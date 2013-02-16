@@ -15,6 +15,9 @@ clean up code
 	member order
 undo MarkObsolete
 
+wormholes count as anomalies for tile likelyhood
+anomaly heal ship
+smaller planets easier to anomaly move
 ShipNames._divisions always has 0 at first index
 anomaly neutral ships?
 

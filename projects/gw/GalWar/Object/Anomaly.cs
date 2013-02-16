@@ -803,7 +803,7 @@ namespace GalWar
             if (objects.Count > 0)
             {
                 foreach (Tile tile in Tile.Game.GetMap())
-                    if (tile.SpaceObject is Anomaly)
+                    if (tile != null && tile.SpaceObject is Anomaly)
                         AddPullChance(objects, null, tile.SpaceObject, .91, null);
 
                 if (notify)
