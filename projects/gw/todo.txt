@@ -1,3 +1,4 @@
+show moves on anomaly tile
 test occupying amount vs occupying 1 then moving amount
 	equal soldiers
 	superior cost
@@ -14,7 +15,9 @@ management screens
 clean up code
 	member order
 undo MarkObsolete
+cost calc DS decimal
 
+funky too much speed
 wormholes count as anomalies for tile likelyhood
 anomaly heal ship
 smaller planets easier to anomaly move
