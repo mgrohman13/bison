@@ -262,7 +262,6 @@ namespace GalWar
             //set later based on colony ship costs
             double startProd = -1;
 
-
             int index = 0;
             foreach (Player.StartingPlayer player in Random.Iterate<Player.StartingPlayer>(players))
             {

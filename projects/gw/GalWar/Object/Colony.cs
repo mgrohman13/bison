@@ -500,8 +500,7 @@ namespace GalWar
         {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
             other = ( exp - mult );
-            mult /= Consts.ExpForSoldiers;
-            return Consts.GetExperience(mult);
+            return Consts.GetExperience(mult / Consts.ExpForSoldiers);
         }
 
         private void TroopBattle(ref int attackers, double attSoldiers, int gold, out double attack, out double defense)

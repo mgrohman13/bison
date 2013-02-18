@@ -55,7 +55,7 @@ namespace GalWarWin
                 int speed = form.cbSpeed.Checked ? shipDesign.Speed : 1;
                 int trans = form.cbTransport.Checked ? shipDesign.Trans * speed : 0;
                 if (form.cbColony.Checked && shipDesign.Colony)
-                    trans += Game.Random.Round(30.0 * ( speed + 2.1 ));
+                    trans += Game.Random.Round(130 * ( speed + 2.1 ));
                 value = trans;
             }
             else if (ds)

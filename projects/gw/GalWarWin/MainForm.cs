@@ -518,8 +518,9 @@ namespace GalWarWin
                 int newMove = speed - ( showAtt ? 1 : 0 );
 
                 Ship ship;
-                if (newMove > move && ( neighbor.SpaceObject == null || ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
-                            && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
+                if (newMove > move && ( neighbor.SpaceObject == null || neighbor.SpaceObject is Anomaly ||
+                        ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
+                        && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
                 {
                     retVal[neighbor] = new Point(newDamage, newMove);
                     AddTiles(retVal, enemy, neighbor, newMove - ( showAtt ? 0 : 1 ), ignoreZoc);
@@ -1157,9 +1158,10 @@ namespace GalWarWin
 
         private bool Attack(Ship attacker, Combatant defender)
         {
-            UnHold(attacker);
-            UnHold(defender as Ship);
-            return CombatForm.ShowForm(attacker, defender);
+            bool selectNext = CombatForm.ShowForm(attacker, defender);
+            if (selectNext)
+                holdPersistent.Remove(defender as Ship);
+            return selectNext;
         }
 
         private bool TargetPlanet(Planet targetPlanet, Ship ship, bool switchTroops)
@@ -1457,6 +1459,9 @@ namespace GalWarWin
 
         public void RefreshAll()
         {
+            if (anomExp)
+                OnRefresh();
+
             if (!ended && Game.GetPlayers().Count < 2)
             {
                 ended = true;
@@ -1470,6 +1475,11 @@ namespace GalWarWin
 
             this.btnUndo.Enabled = Game.CanUndo();
 
+            OnRefresh();
+        }
+
+        private void OnRefresh()
+        {
             if (!CombatForm.OnRefresh(anomExp) && anomExp)
                 ShowExploreMessage(Anomaly.AnomalyType.Experience);
             anomExp = false;
@@ -1986,7 +1996,8 @@ namespace GalWarWin
 
 
             case Anomaly.AnomalyType.Death:
-                MessageBox.Show("-" + info[0] + " HP!");
+            case Anomaly.AnomalyType.Heal:
+                MessageBox.Show(FormatIncome((double)info[0]) + " HP!");
                 return true;
 
             case Anomaly.AnomalyType.Experience:

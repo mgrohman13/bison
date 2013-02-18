@@ -22,7 +22,7 @@ namespace GalWar
             defense = new ShipClass[] { ShipClass.Warrior, ShipClass.Defender, ShipClass.Ironclad, ShipClass.Armor, ShipClass.Guardian, ShipClass.Avatar };
             speed = new ShipClass[] { ShipClass.Scout, ShipClass.Fighter, ShipClass.Corvette, ShipClass.Frigate, ShipClass.Ranger, ShipClass.Phoenix };
             transport = new ShipClass[] { ShipClass.Galley, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Invader, ShipClass.Reaper };
-            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Exterminator, ShipClass.Demon };
+            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.Deathstar, ShipClass.Exterminator, ShipClass.Demon };
 
             if (attack.Length != length || defense.Length != length || speed.Length != length || transport.Length != length || deathStar.Length != length)
                 throw new Exception();
@@ -253,7 +253,7 @@ namespace GalWar
             Catapult,
             Trebuchet,
             Cannon,
-            DeathStar,
+            Deathstar,
             Exterminator,
             Demon,
             MAX

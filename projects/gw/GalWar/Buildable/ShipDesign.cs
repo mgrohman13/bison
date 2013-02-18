@@ -91,7 +91,7 @@ namespace GalWar
 
         #region fields and constructors
 
-        internal const double DeathStarAvg = 91;
+        public const double DeathStarAvg = 91;
         private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.6, FocusSpeedMult = 1.3;
         //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
         private const double FocusTypeMult = 2.1;
@@ -112,7 +112,8 @@ namespace GalWar
             int idx = -1;
             foreach (int type in Game.Random.Iterate(3))
             {
-                ShipDesign design = new ShipDesign(player, research[++idx], retVal, FocusStat.None, ( type == 0 ), ( type == 1 ), ( type == 2 ), double.NaN, double.NaN, null, out unused);
+                ShipDesign design = new ShipDesign(player, research[++idx], retVal, FocusStat.None,
+                        ( type == 0 ), ( type == 1 ), ( type == 2 ), double.NaN, double.NaN, null, out unused);
                 retVal.Add(design);
             }
 
@@ -124,7 +125,8 @@ namespace GalWar
             foreach (int research in tries)
             {
                 bool named;
-                ShipDesign design = new ShipDesign(player, research, null, FocusStat.None, false, false, false, double.NaN, double.NaN, upgradeDesign, out named);
+                ShipDesign design = new ShipDesign(player, research, null, FocusStat.None,
+                        false, false, false, double.NaN, double.NaN, upgradeDesign, out named);
                 if (named)
                     return design;
             }
@@ -806,7 +808,8 @@ namespace GalWar
 
         #region internal
 
-        internal static double GetColonizationValue(double cost, int att, int def, double curHP, int maxHP, int speed, int trans, bool colony, double bombardDamage, double research)
+        internal static double GetColonizationValue(double cost, int att, int def, double curHP, int maxHP,
+                int speed, int trans, bool colony, double bombardDamage, double research)
         {
             if (!colony)
                 throw new Exception();

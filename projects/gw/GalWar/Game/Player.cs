@@ -966,18 +966,18 @@ namespace GalWar
             return designs.AsReadOnly();
         }
 
-        public double GetResearchChance(int researchInc)
+        public double GetResearchChance(int newResearch)
         {
             TurnException.CheckTurn(this);
 
-            double newResearch = this.Research - this.LastResearched;
-            if (researchInc > 0 && newResearch > 0)
+            double storedResearch = this.Research - this.LastResearched;
+            if (newResearch > 0 && storedResearch > 0)
             {
-                double chance = RandResearch(newResearch / ( newResearch + Consts.NewResearchFactor ));
+                double chance = RandResearch(storedResearch / ( storedResearch + Consts.NewResearchFactor ));
 
                 //parameters that may be modified during a players turn are done after RandResearch
                 //so that a change in them doesnt have an inverse or exaggerated effect
-                double newResearchPct = Math.Pow(researchInc / ( researchInc + this.LastResearched / Consts.ResearchIncMult ), Consts.ResearchIncPower);
+                double newResearchPct = Math.Pow(newResearch / ( newResearch + this.LastResearched / Consts.ResearchIncMult ), Consts.ResearchIncPower);
                 double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / ( Consts.NumDesignsFactor + this.designs.Count ), Consts.NumDesignsPower);
 
                 return chance * newResearchPct * numDesignsPct;

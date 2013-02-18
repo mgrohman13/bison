@@ -245,9 +245,12 @@ namespace GalWar
             }
             private set
             {
-                if (DeathStar || !value)
-                    throw new Exception();
-                this._bombardDamage = ushort.MaxValue;
+                checked
+                {
+                    if (DeathStar || !value)
+                        throw new Exception();
+                    this._bombardDamage = ushort.MaxValue;
+                }
             }
         }
 
@@ -435,7 +438,7 @@ namespace GalWar
         internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
         {
             int retVal = 0;
-            double hp = GetHPForProd(production, doRepair);
+            double hp = GetHPForProd(production, !doRepair);
 
             if (doRepair)
             {
@@ -1018,39 +1021,40 @@ namespace GalWar
                     stats.Add(ExpType.Trans, trans);
                 }
 
-                int speed = Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9);
-                total += speed;
-                stats.Add(ExpType.Speed, speed);
-
                 if (funky)
                 {
-                    FunkyChance(stats, ExpType.HP, total);
-                    FunkyChance(stats, ExpType.Att, total);
-                    FunkyChance(stats, ExpType.Def, total);
-                    if (this.MaxPop == 0)
-                        FunkyChance(stats, ExpType.DS, total);
-                    FunkyChance(stats, ExpType.Speed, total);
-                    if (!this.DeathStar)
-                        FunkyChance(stats, ExpType.Trans, total);
+                    int oldTotal = total;
+                    total = 0;
+                    total += FunkyChance(stats, ExpType.HP, oldTotal);
+                    total += FunkyChance(stats, ExpType.Att, oldTotal);
+                    total += FunkyChance(stats, ExpType.Def, oldTotal);
+                    if (this.MaxPop == 0 && ( this.DeathStar || Game.Random.Bool() ))
+                        total += FunkyChance(stats, ExpType.DS, oldTotal);
+                    if (!this.DeathStar && ( this.MaxPop > 0 || Game.Random.Bool() ))
+                        total += FunkyChance(stats, ExpType.Trans, oldTotal);
                 }
+
+                int speed = Game.Random.Round(Math.Sqrt(total * ( funky ? 5.2 / this.MaxSpeed : this.MaxSpeed )) / 16.9);
+                total += speed;
+                stats.Add(ExpType.Speed, speed);
 
                 this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
             }
         }
-        private int GetStatExpChance(int stat, int other)
+        private static int GetStatExpChance(int stat, int other)
         {
             double hpStr = ShipDesign.GetHPStr(stat, other);
             hpStr /= ShipDesign.GetHPStr(stat + 1, other) - hpStr;
             hpStr *= stat / (double)( stat + other );
             return Game.Random.Round(hpStr);
         }
-        private void FunkyChance(Dictionary<ExpType, int> stats, ExpType expType, int total)
+        private static int FunkyChance(Dictionary<ExpType, int> stats, ExpType expType, int total)
         {
             int value;
             stats.TryGetValue(expType, out value);
-            double inv = ( total + 1 ) / ( value + 1.0 );
-            double opp = 6 * ( total - value ) / (double)total;
-            stats[expType] = Game.Random.Round(inv + opp);
+            value = Game.Random.Round(( total + 1 ) / ( value + 1.0 ) + 6 * ( total - value ) / (double)total);
+            stats[expType] = value;
+            return value;
         }
 
         public void Bombard(IEventHandler handler, Planet planet)
@@ -1473,15 +1477,15 @@ namespace GalWar
 
         public double GetHPForProd(double production)
         {
-            return GetHPForProd(production, false);
+            return GetHPForProd(production, true);
         }
-        private double GetHPForProd(double production, bool doRepair)
+        internal double GetHPForProd(double production, bool checkAutoRepair)
         {
             TurnException.CheckTurn(this.Player);
 
             double hp = production / RepairCost;
             double max = this.MaxHP - HP;
-            if (!doRepair && DoAutoRepair)
+            if (checkAutoRepair && DoAutoRepair)
                 max -= GetAutoRepairHP();
             if (hp > max)
                 hp = max;

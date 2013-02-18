@@ -146,7 +146,7 @@ namespace GalWarWin
             bool colony = (bool)this.cbCol.Checked;
             double bombardDamage = (double)this.nudDS.Value;
 
-            this.cbDS.Checked = !( bombardDamage < GetBombardDamage() + GetBombardDamage() * Consts.FLOAT_ERROR );
+            this.cbDS.Checked = ( bombardDamage > GetBombardDamage() + GetBombardDamage() * Consts.FLOAT_ERROR );
             if (!cbDS.Checked)
             {
                 bombardDamage = GetBombardDamage();
@@ -271,8 +271,9 @@ namespace GalWarWin
 
         private void cbDS_CheckedChanged(object sender, EventArgs e)
         {
+            this.nudDS.DecimalPlaces = ( this.cbDS.Checked ? 0 : 1 );
             if (events && this.cbDS.Checked)
-                SetValue(this.nudDS, Game.Random.Round(GetBombardDamage() * 91));
+                SetValue(this.nudDS, Game.Random.Round(GetBombardDamage() * ShipDesign.DeathStarAvg));
             MaintainDS(this.cbDS.Checked);
             cb_CheckedChanged(sender, e);
         }

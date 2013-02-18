@@ -93,10 +93,10 @@ namespace GalWar
             options.Add(ExploreType.LostColony, 4);
             options.Add(ExploreType.Production, 5);
             options.Add(ExploreType.SalvageShip, 9);
-            options.Add(ExploreType.Wormhole, 10);
+            options.Add(ExploreType.Valuables, 10);
             options.Add(ExploreType.Experience, 11);
-            options.Add(ExploreType.Population, 12);
-            options.Add(ExploreType.Valuables, 13);
+            options.Add(ExploreType.Wormhole, 12);
+            options.Add(ExploreType.Pickup, 13);
 
             while (true)
             {
@@ -134,8 +134,8 @@ namespace GalWar
                 return Experience(handler, ship);
             case ExploreType.SalvageShip:
                 return SalvageShip(handler, ship);
-            case ExploreType.Population:
-                return Population(handler, ship);
+            case ExploreType.Pickup:
+                return Pickup(handler, ship);
             case ExploreType.Valuables:
                 return Valuables(handler, ship);
             default:
@@ -193,14 +193,18 @@ namespace GalWar
         private Tile GetRandomTile()
         {
             Tile tile = Tile.Game.GetRandomTile();
-            while (!( tile.SpaceObject is Anomaly ) && Game.Random.Bool(1 - 1 / ( 13.0 + Math.Sqrt(Tile.Game.MapSize) / 16.9 )))
+            while (!AnomalousTile(tile) && Game.Random.Bool(1 - 1 / ( 13.0 + Math.Sqrt(Tile.Game.MapSize) / 16.9 )))
             {
                 foreach (Tile neighbor in Tile.GetNeighbors(tile))
-                    if (neighbor.SpaceObject is Anomaly)
+                    if (AnomalousTile(neighbor))
                         return tile;
                 tile = Tile.Game.GetRandomTile();
             }
             return tile;
+        }
+        private bool AnomalousTile(Tile tile)
+        {
+            return ( tile.SpaceObject is Anomaly || tile.Teleporter != null );
         }
 
         private static Dictionary<Player, int> GetPlayerProximity(Tile tile)
@@ -325,7 +329,7 @@ namespace GalWar
             Experience,
             GlobalEvent,
             LostColony,
-            Population,
+            Pickup,
             Production,
             SalvageShip,
             Valuables,
@@ -341,6 +345,7 @@ namespace GalWar
             Death,
             Experience,
             Gold,
+            Heal,
             LostColony,
             NewPlanet,
             PickupPopulation,
@@ -614,7 +619,7 @@ namespace GalWar
         {
             int damage = ( ( ship.MaxHP < 2 || Game.Random.Bool() ) ? ( ship.MaxHP ) : ( 1 + Game.Random.WeightedInt(ship.MaxHP - 2, .26) ) );
 
-            handler.Explore(AnomalyType.Death, damage);
+            handler.Explore(AnomalyType.Death, -damage);
 
             if (damage < ship.HP)
             {
@@ -656,17 +661,17 @@ namespace GalWar
             switch (Game.Random.Next(13))
             {
             case 0:
-            case 1:
                 type = AnomalyType.Soldiers;
                 break;
+            case 1:
             case 2:
             case 3:
                 type = AnomalyType.PlanetDefenses;
                 break;
             case 4:
-            case 5:
                 type = AnomalyType.Production;
                 break;
+            case 5:
             case 6:
             case 7:
             case 8:
@@ -791,20 +796,23 @@ namespace GalWar
                 {
                     bool colony = ( planet.Colony != null );
                     if (!twoInv || !colony)
-                        AddPullChance(objects, oneInv, planet, ( colony ? 1.3 : 1 ) * mult, anomShip);
+                    {
+                        AddPullChance(objects, oneInv, planet, ( colony ? 1.3 : 1 ) * mult *
+                                Math.Sqrt(( Consts.AverageQuality + planet.Quality ) / Consts.AverageQuality / 2), anomShip);
+                    }
                 }
             }
 
             foreach (Player player in Game.Random.Iterate(Tile.Game.GetPlayers()))
                 if (!twoAtt || player == anomShip.Player)
                     foreach (Ship ship in Game.Random.Iterate(player.GetShips()))
-                        AddPullChance(objects, player == anomShip.Player ? null : oneAtt, ship, ( objects.Count > 0 ) ? .21 : .52, anomShip);
+                        AddPullChance(objects, player == anomShip.Player ? null : oneAtt, ship, ( objects.Count > 0 ) ? .39 : 1, anomShip);
 
             if (objects.Count > 0)
             {
                 foreach (Tile tile in Tile.Game.GetMap())
                     if (tile != null && tile.SpaceObject is Anomaly)
-                        AddPullChance(objects, null, tile.SpaceObject, .91, null);
+                        AddPullChance(objects, null, tile.SpaceObject, 1, null);
 
                 if (notify)
                     handler.Explore(Anomaly.AnomalyType.Wormhole);
@@ -972,20 +980,24 @@ namespace GalWar
 
         #endregion //SalvageShip
 
-        #region Population
+        #region Pickup
 
-        private bool Population(IEventHandler handler, Ship ship)
+        private bool Pickup(IEventHandler handler, Ship ship)
         {
             int pop = Game.Random.Round(this.value * Consts.PopulationForGoldHigh);
             double soldiers = this.value / Consts.ExpForSoldiers;
 
-            bool canPop = ( pop <= ship.FreeSpace );
-            if (ship.Population > 0)
+            bool canPop = ( pop > 0 && pop <= ship.FreeSpace );
+            bool canHeal = ( ship.HP < ship.MaxHP && ship.GetProdForHP(1) < this.value
+                    && ship.GetProdForHP(ship.MaxHP - ship.HP + 1) > this.value );
+            if (ship.Population > 0 && soldiers / ship.Population > .01)
             {
                 double soldierChance = ship.GetSoldierPct() / 1.69;
                 soldierChance = 2.1 / ( 2.1 + soldiers / (double)ship.Population + soldierChance * soldierChance );
                 if (canPop)
-                    soldierChance /= 2.6;
+                    soldierChance /= 2.1;
+                if (canHeal)
+                    soldierChance /= 2.1;
 
                 if (Game.Random.Bool(soldierChance))
                 {
@@ -995,11 +1007,29 @@ namespace GalWar
                     return true;
                 }
             }
+
+            if (canPop && canHeal)
+            {
+                canPop = Game.Random.Bool();
+                canHeal = !canPop;
+            }
+
             if (canPop)
             {
                 handler.Explore(AnomalyType.PickupPopulation, pop);
 
                 ship.AddPopulation(pop);
+                return true;
+            }
+            else if (canHeal)
+            {
+                int hp = Game.Random.Round(ship.GetHPForProd(this.value, false));
+                handler.Explore(AnomalyType.Heal, hp);
+
+                double prod = ship.GetProdForHP(hp), gold = this.value - prod;
+                if (ship.ProductionRepair(ref prod, ref gold, true, false) != hp)
+                    throw new Exception();
+                ship.Player.GoldIncome(prod + gold);
                 return true;
             }
 
@@ -1019,11 +1049,13 @@ namespace GalWar
             {
             case 1:
             case 2:
+            case 3:
                 research = handler.Explore(AnomalyType.AskResearchOrGold, amt);
                 break;
-            case 3:
             case 4:
             case 5:
+            case 6:
+            case 7:
                 research = true;
                 break;
             default:

@@ -1,4 +1,3 @@
-show moves on anomaly tile
 test occupying amount vs occupying 1 then moving amount
 	equal soldiers
 	superior cost
@@ -15,15 +14,14 @@ management screens
 clean up code
 	member order
 undo MarkObsolete
+
+combine exp and cost exp into single random roll
 cost calc DS decimal
 
-funky too much speed
-wormholes count as anomalies for tile likelyhood
-anomaly heal ship
-smaller planets easier to anomaly move
+increase ShipNames mult?
 ShipNames._divisions always has 0 at first index
-anomaly neutral ships?
 
+anomaly neutral ships?
 known enemy designs
 AI
 	integrate AI-algorithm guesses into game for player to use as well
