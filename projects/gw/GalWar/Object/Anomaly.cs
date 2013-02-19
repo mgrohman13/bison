@@ -623,12 +623,14 @@ namespace GalWar
 
             if (damage < ship.HP)
             {
-                ship.Player.GoldIncome(ConsolationValue() + ship.GetDisbandValue(damage));
+                double rawExp = 0, valueExp = 0;
 
-                int pop = ship.Population;
-                ship.AddExperience(ship.Damage(damage));
-                if (pop > 0)
-                    ship.AddCostExperience(( pop - ship.Population ) * Consts.TroopExperienceMult);
+                ship.Damage(damage, ref rawExp, ref valueExp);
+
+                ship.Player.GoldIncome(ConsolationValue() + ship.GetDisbandValue(damage) - ship.GetValueExpForRawExp(rawExp) - valueExp);
+
+                ship.AddExperience(rawExp, valueExp);
+                ship.LevelUp(handler);
             }
             else
             {

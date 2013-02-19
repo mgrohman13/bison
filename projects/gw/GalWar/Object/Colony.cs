@@ -437,9 +437,7 @@ namespace GalWar
             int initPop = this.Population;
             LosePopulation(damage);
 
-            double exp = Math.Min(initPop, damage) * Consts.TroopExperienceMult;
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
-            return exp;
+            return Math.Min(initPop, damage) * Consts.TroopExperienceMult;
         }
 
         internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double attSoldiers, int gold, out double attExperience)
@@ -1119,13 +1117,10 @@ namespace GalWar
             return GetExpForDamage(1 / PlanetDefenseCostPerHP);
         }
 
-        internal override void AddExperience(double experience)
+        internal override void AddExperience(double rawExp, double valueExp)
         {
-            AddCostExperience(experience * this.PlanetDefenseCostPerHP / this.PlanetDefenseStrengthPerHP);
-        }
-        internal override void AddCostExperience(double cost)
-        {
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, cost);
+            valueExp += rawExp * this.PlanetDefenseCostPerHP / this.PlanetDefenseStrengthPerHP;
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, valueExp);
         }
 
         internal void BuildPlanetDefense(double prodInc)

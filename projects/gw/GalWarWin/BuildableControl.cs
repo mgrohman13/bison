@@ -41,6 +41,8 @@ namespace GalWarWin
         }
         public void RefreshBuildable(double buyProd)
         {
+            SetVisibility(false);
+
             ShipDesign design = buildable as ShipDesign;
             if (design != null)
             {
@@ -104,8 +106,6 @@ namespace GalWarWin
                     }
                     else
                     {
-                        SetVisibility(false);
-
                         this.label1.Visible = true;
                         this.label1.Text = "Cost / HP";
                         this.label2.Visible = true;

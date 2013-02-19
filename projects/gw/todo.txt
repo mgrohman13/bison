@@ -15,9 +15,6 @@ clean up code
 	member order
 undo MarkObsolete
 
-combine exp and cost exp into single random roll
-cost calc DS decimal
-
 increase ShipNames mult?
 ShipNames._divisions always has 0 at first index
 

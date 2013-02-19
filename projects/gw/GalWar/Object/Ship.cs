@@ -618,13 +618,13 @@ namespace GalWar
         {
             double gold = ( this.Population / Consts.PopulationForGoldLow )
                     + ( this.Soldiers / Consts.SoldiersForGold )
-                    + ( GetCostExperience(this.curExp) / Consts.ExpForGold )
+                    + ( GetValueExpForRawExp(this.curExp) / Consts.ExpForGold )
                     + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 );
 
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
             Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
-            Console.WriteLine("Experience:  " + GetCostExperience(this.curExp) / Consts.ExpForGold);
+            Console.WriteLine("Experience:  " + GetValueExpForRawExp(this.curExp) / Consts.ExpForGold);
             Console.WriteLine("Upkeep:  " + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 ));
             Console.WriteLine();
 
@@ -803,41 +803,33 @@ namespace GalWar
             return this.GetExpForDamage(this.MaxHP) * Consts.ExperienceDestroyMult;
         }
 
-        internal override void AddExperience(double experience)
+        internal override void AddExperience(double rawExp, double valueExp)
         {
+            rawExp += valueExp / GetValueExpForRawExp(1);
+
             if (this.Population > 0 && this.HP > 0)
             {
                 double soldiers = this.Population / Consts.PopulationForGoldMid;
-                soldiers *= experience / ( soldiers + this.GetCostLastResearched() );
-                experience -= soldiers;
-                soldiers *= GetCostExpForExp() / Consts.ExpForSoldiers;
+                soldiers *= rawExp / ( soldiers + this.GetCostLastResearched() );
+                rawExp -= soldiers;
+                soldiers = GetValueExpForRawExp(soldiers) / Consts.ExpForSoldiers;
                 this.Soldiers += Consts.GetExperience(soldiers);
             }
 
-            this.curExp += Consts.GetExperience(experience);
+            this.curExp += Consts.GetExperience(rawExp);
         }
 
         internal void AddAnomalyExperience(IEventHandler handler, double cost, bool funky, bool noChange)
         {
-            AddCostExperience(cost);
+            AddExperience(0, cost);
             if (funky)
                 GetNextLevel(handler, funky, false);
             LevelUp(handler, funky, noChange);
         }
 
-        internal override void AddCostExperience(double cost)
+        internal double GetValueExpForRawExp(double experience)
         {
-            AddExperience(cost / GetCostExpForExp());
-        }
-
-        private double GetCostExperience(double experience)
-        {
-            return experience * GetCostExpForExp();
-        }
-
-        private double GetCostExpForExp()
-        {
-            return GetCostLastResearched() / GetValue();
+            return experience * GetCostLastResearched() / GetValue();
         }
 
         internal void StartTurn(IEventHandler handler)
@@ -1077,10 +1069,10 @@ namespace GalWar
             int freeDmg = 0;
 
             Colony colony = planet.Colony;
-            double pct = 1;
+            double pct = 1, rawExp = 0, valueExp = 0;
             bool enemy = ( !friendly && colony != null );
             if (enemy && colony.HP > 0)
-                pct = AttackColony(handler, colony, out freeDmg);
+                pct = AttackColony(handler, colony, out freeDmg, ref rawExp, ref valueExp);
 
             if (pct > 0)
                 if (enemy && colony.HP > 0)
@@ -1090,7 +1082,7 @@ namespace GalWar
                 else
                 {
                     int colonyDamage, planetDamage;
-                    Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage);
+                    Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage, ref rawExp, ref valueExp);
 
                     if (freeDmg == -1 && ( colonyDamage != 0 || planetDamage != 0 ))
                         freeDmg = 0;
@@ -1104,10 +1096,16 @@ namespace GalWar
             if (freeDmg != -1)
                 handler.OnBombard(this, planet, freeDmg, 0, 0);
 
+            this.AddExperience(rawExp, valueExp);
+            if (planet.Colony != null)
+                planet.Colony.AddExperience(rawExp, valueExp);
+            else
+                this.Player.GoldIncome(-this.GetValueExpForRawExp(rawExp) - valueExp);
+
             LevelUp(handler);
         }
 
-        private double AttackColony(IEventHandler handler, Colony colony, out int freeDmg)
+        private double AttackColony(IEventHandler handler, Colony colony, out int freeDmg, ref double rawExp, ref double valueExp)
         {
             double freeAvg = GetFreeDmg(colony.PlanetDefenseCostPerHP), combatAvg, avgDef;
             Consts.GetDamageTable(this.Att, colony.Def, out combatAvg, out avgDef);
@@ -1120,9 +1118,7 @@ namespace GalWar
                 freeDmg = colony.HP;
             }
 
-            double exp = colony.Damage(freeDmg);
-            this.AddExperience(exp);
-            colony.AddExperience(exp);
+            colony.Damage(freeDmg, ref rawExp, ref valueExp);
 
             double combatPct = 1;
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
@@ -1154,7 +1150,7 @@ namespace GalWar
             return this.BombardDamage * Consts.BombardFreeDmgMult / costPerHP;
         }
 
-        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage)
+        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage, ref double rawExp, ref double valueExp)
         {
             colonyDamage = GetColonyDamage(planet, pct);
 
@@ -1168,9 +1164,9 @@ namespace GalWar
             planetDamage = GetPlanetDamage(dmgBase, dmgMult);
 
             //bombard the planet first, since it might get destroyed
-            int initQuality = BombardPlanet(handler, planet, planetDamage);
+            int initQuality = BombardPlanet(handler, planet, planetDamage, ref rawExp, ref valueExp);
             //bombard the colony second, if it exists
-            int initPop = BombardColony(handler, planet.Colony, colonyDamage);
+            int initPop = BombardColony(handler, planet.Colony, colonyDamage, ref rawExp, ref valueExp);
 
             double move = GetBombardMoveLeft(planetDamage, initQuality, friendly ? 0 : colonyDamage, initPop, pct);
             if (move > 0)
@@ -1213,7 +1209,7 @@ namespace GalWar
             return Game.Random.GaussianCappedInt(damage, Consts.DeathStarDamageRndm);
         }
 
-        private int BombardPlanet(IEventHandler handler, Planet planet, int planetDamage)
+        private int BombardPlanet(IEventHandler handler, Planet planet, int planetDamage, ref double rawExp, ref double valueExp)
         {
             //quality has to drop to -1 to destroy planet
             int initQuality = planet.Quality + 1;
@@ -1225,19 +1221,13 @@ namespace GalWar
                 double exp = Math.Min(initQuality, planetDamage);
                 if (planet.Dead)
                     exp += Consts.PlanetConstValue;
-                exp *= Consts.TroopExperienceMult;
-
-                this.AddCostExperience(exp);
-                if (planet.Colony != null)
-                    planet.Colony.AddCostExperience(exp);
-                else
-                    this.Player.GoldIncome(-exp);
+                valueExp += exp * Consts.TroopExperienceMult;
             }
 
             return initQuality;
         }
 
-        private int BombardColony(IEventHandler handler, Colony colony, int colonyDamage)
+        private int BombardColony(IEventHandler handler, Colony colony, int colonyDamage, ref double rawExp, ref double valueExp)
         {
             int initPop = 0;
             if (colony != null)
@@ -1245,7 +1235,7 @@ namespace GalWar
                 initPop = colony.Population;
 
                 if (colonyDamage > 0)
-                    AddCostExperience(colony.Bombard(colonyDamage));
+                    valueExp += colony.Bombard(colonyDamage);
             }
 
             return initPop;
@@ -1305,7 +1295,7 @@ namespace GalWar
 
             this.Soldiers += soldiers;
 
-            this.AddCostExperience(exp);
+            this.AddExperience(0, exp);
 
             LevelUp(handler);
         }

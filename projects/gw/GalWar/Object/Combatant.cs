@@ -87,9 +87,7 @@ namespace GalWar
 
         protected abstract double GetKillExp();
 
-        internal abstract void AddExperience(double experience);
-
-        internal abstract void AddCostExperience(double cost);
+        internal abstract void AddExperience(double rawExp, double valueExp);
 
         #endregion //abstract
 
@@ -99,7 +97,7 @@ namespace GalWar
         {
             handler.OnCombat(this, defender, int.MinValue, int.MinValue);
 
-            double pct = 0, experience = 0, costExperience = 0;
+            double pct = 0, rawExp = 0, valueExp = 0;
 
             int round = -1, rounds = this.Att;
             while (++round < rounds && this.HP > 0 && defender.HP > 0)
@@ -108,33 +106,25 @@ namespace GalWar
                     throw new Exception();
 
                 int attack = Game.Random.RangeInt(0, this.Att), defense = Game.Random.RangeInt(0, defender.Def),
-                        damage = attack - defense, pop = ( this.Population + defender.Population );
+                        damage = attack - defense;
                 if (damage > 0)
-                    pct = this.Damage(defender, damage, ref experience);
+                    pct = this.Damage(defender, damage, ref rawExp, ref valueExp);
                 else if (damage < 0)
-                    pct = defender.Damage(this, -damage, ref experience);
+                    pct = defender.Damage(this, -damage, ref rawExp, ref valueExp);
 
                 //a small constant exp is gained every round
-                experience += this.GetExpForDamage(Consts.ExperienceConstDmgAmt) + defender.GetExpForDamage(Consts.ExperienceConstDmgAmt);
-
-                if (pop > 0)
-                    costExperience += ( pop - ( this.Population + defender.Population ) ) * Consts.TroopExperienceMult;
+                rawExp += this.GetExpForDamage(Consts.ExperienceConstDmgAmt) + defender.GetExpForDamage(Consts.ExperienceConstDmgAmt);
 
                 handler.OnCombat(this, defender, attack, defense);
             }
 
             //add kill exp before destroying so the player gets paid off for the exp
-            experience += this.AddKillExp();
-            experience += defender.AddKillExp();
+            rawExp += this.AddKillExp();
+            rawExp += defender.AddKillExp();
 
             //exp is always added in equal amount to both ships
-            this.AddExperience(experience);
-            defender.AddExperience(experience);
-            if (costExperience > 0)
-            {
-                this.AddCostExperience(costExperience);
-                defender.AddCostExperience(costExperience);
-            }
+            this.AddExperience(rawExp, valueExp);
+            defender.AddExperience(rawExp, valueExp);
 
             CheckDestroy(this);
             CheckDestroy(defender);
@@ -157,7 +147,7 @@ namespace GalWar
             return 0;
         }
 
-        private double Damage(Combatant combatant, int damage, ref double experience)
+        private double Damage(Combatant combatant, int damage, ref double rawExp, ref double valueExp)
         {
             double retVal = 0;
             int startHP = combatant.HP;
@@ -167,18 +157,20 @@ namespace GalWar
                 damage = startHP;
             }
 
-            experience += combatant.Damage(damage);
+            combatant.Damage(damage, ref rawExp, ref valueExp);
 
             return retVal;
         }
-        internal double Damage(int damage)
+        internal void Damage(int damage, ref double rawExp, ref double valueExp)
         {
             if (damage > HP)
                 throw new Exception();
+            int pop = this.Population;
 
             HP -= damage;
 
-            return GetExpForDamage(damage);
+            rawExp += GetExpForDamage(damage);
+            valueExp += ( pop - this.Population ) * Consts.TroopExperienceMult;
         }
 
         #endregion //protected
