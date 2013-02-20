@@ -15,6 +15,10 @@ clean up code
 	member order
 undo MarkObsolete
 
+MTRandom needs to use unchecked context
+standardize dead checks
+DisbandPD
+
 increase ShipNames mult?
 ShipNames._divisions always has 0 at first index
 

@@ -625,35 +625,50 @@ namespace GalWar
         {
             if (NegativeGold())
             {
-                Dictionary<Colony, int> production = new Dictionary<Colony, int>();
-                foreach (Colony colony in this.colonies)
-                    if (colony.Production > 0)
-                        production.Add(colony, colony.Production);
-
-                //first any production is sold
-                while (NegativeGold() && production.Count > 0)
-                {
-                    Colony colony = Game.Random.SelectValue<Colony>(production);
-
-                    GoldIncome(Consts.GetProductionUpkeepMult(Game.MapSize));
-                    colony.SellProduction(handler, 1);
-
-                    if (colony.Production > 0)
-                        production[colony] = colony.Production;
-                    else
-                        production.Remove(colony);
-                }
-
-                //then random ships are disbanded for gold
-                while (NegativeGold() && this.ships.Count > 0)
-                {
-                    Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
-
-                    //the upkeep that was just paid for the ship this turn is re-added
-                    GoldIncome(ship.Upkeep);
-                    ship.Disband(handler, null);
-                }
+                SellProduction(handler);
+                DisbandShips(handler);
+                if (NegativeGold())
+                    DisbandPD(handler);
             }
+        }
+        private void SellProduction(IEventHandler handler)
+        {
+            Dictionary<Colony, int> production = new Dictionary<Colony, int>();
+            foreach (Colony colony in this.colonies)
+                if (colony.Production > 0)
+                    production.Add(colony, colony.Production);
+
+            int sold = 0;
+            //first any production is sold
+            while (NegativeGold() && production.Count > 0)
+            {
+                ++sold;
+                Colony colony = Game.Random.SelectValue<Colony>(production);
+
+                GoldIncome(Consts.GetProductionUpkeepMult(Game.MapSize));
+                colony.SellProduction(handler, 1);
+
+                if (colony.Production > 0)
+                    production[colony] = colony.Production;
+                else
+                    production.Remove(colony);
+            }
+            Console.WriteLine("sold: " + sold);
+        }
+        private void DisbandShips(IEventHandler handler)
+        {
+            //then random ships are disbanded for gold
+            while (NegativeGold() && this.ships.Count > 0)
+            {
+                Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
+
+                //the upkeep that was just paid for the ship this turn is re-added
+                GoldIncome(ship.Upkeep);
+                ship.Disband(handler, null);
+            }
+        }
+        private void DisbandPD(IEventHandler handler)
+        {
         }
 
         public bool MinGoldNegative()

@@ -219,11 +219,7 @@ namespace GalWarWin
         }
         private void ClearDS()
         {
-            events = false;
-
             SetValue(this.nudDS, GetBombardDamage());
-
-            events = true;
         }
 
         private double GetBombardDamage()
@@ -253,7 +249,11 @@ namespace GalWarWin
         private void nudAtt_ValueChanged(object sender, EventArgs e)
         {
             if (events && !this.cbDS.Checked)
+            {
+                events = false;
                 ClearDS();
+                events = true;
+            }
             nud_ValueChanged(sender, e);
         }
 

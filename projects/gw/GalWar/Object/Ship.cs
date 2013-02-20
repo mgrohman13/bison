@@ -1235,7 +1235,10 @@ namespace GalWar
                 initPop = colony.Population;
 
                 if (colonyDamage > 0)
-                    valueExp += colony.Bombard(colonyDamage);
+                {
+                    valueExp += Math.Min(colony.Population, colonyDamage) * Consts.TroopExperienceMult;
+                    colony.LosePopulation(colonyDamage);
+                }
             }
 
             return initPop;

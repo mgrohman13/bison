@@ -432,15 +432,7 @@ namespace GalWar
             this.productionRounding = Game.Random.NextFloat();
         }
 
-        internal double Bombard(int damage)
-        {
-            int initPop = this.Population;
-            LosePopulation(damage);
-
-            return Math.Min(initPop, damage) * Consts.TroopExperienceMult;
-        }
-
-        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double attSoldiers, int gold, out double attExperience)
+        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double attSoldiers, int gold, out double shipValueExp)
         {
             handler.OnInvade(ship, this, attackers, attSoldiers, gold, double.NaN, double.NaN);
 
@@ -463,7 +455,7 @@ namespace GalWar
                 mult = this.Population / (double)initPop;
             this.Soldiers *= mult;
             ReduceDefenses(mult);
-            double experience = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
+            double exp = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
 
@@ -472,10 +464,10 @@ namespace GalWar
                 throw new Exception();
 
             if (Planet.Dead)
-                experience += Consts.PlanetConstValue;
-            experience *= Consts.TroopExperienceMult;
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, experience);
-            attSoldiers += GetExperienceSoldiers(attackers, initAttackers, experience, out attExperience);
+                exp += Consts.PlanetConstValue;
+            exp *= Consts.TroopExperienceMult;
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
+            attSoldiers += GetExperienceSoldiers(attackers, initAttackers, exp, out shipValueExp);
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
 
