@@ -15,7 +15,7 @@ clean up code
 	member order
 undo MarkObsolete
 
-MTRandom needs to use unchecked context
+invade still brings up attack dialog when PD
 standardize dead checks
 DisbandPD
 

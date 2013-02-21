@@ -1997,7 +1997,7 @@ namespace GalWarWin
 
             case Anomaly.AnomalyType.Death:
             case Anomaly.AnomalyType.Heal:
-                MessageBox.Show(FormatIncome((double)info[0]) + " HP!");
+                MessageBox.Show(FormatIncome((int)info[0]) + " HP!");
                 return true;
 
             case Anomaly.AnomalyType.Experience:

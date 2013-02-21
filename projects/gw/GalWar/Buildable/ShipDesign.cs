@@ -92,7 +92,7 @@ namespace GalWar
         #region fields and constructors
 
         public const double DeathStarAvg = 91;
-        private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.6, FocusSpeedMult = 1.3;
+        private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.1, FocusSpeedMult = 1.3;
         //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
         private const double FocusTypeMult = 2.1;
 
@@ -574,15 +574,9 @@ namespace GalWar
             if (IsFocusing(focus, FocusStat.Speed))
                 str /= FocusSpeedMult;
 
-            int s1 = MakeStat(str);
-            //second stat is adjusted to compensate for the first
-            int s2 = MakeStat(MultStr(str, Math.Sqrt(str / (double)s1)));
-            if (s2 > s1)
-            {
-                int temp = s1;
-                s1 = s2;
-                s2 = temp;
-            }
+            int s1;
+            int s2;
+            MakeAttDef(str, out s1, out s2);
 
             attPct = Math.Sqrt(attPct);
             if (IsFocusing(focus, FocusStat.Att))
@@ -606,6 +600,29 @@ namespace GalWar
             {
                 att = s2;
                 def = s1;
+            }
+
+            if (IsFocusing(focus, FocusStat.Att))
+                CheckFocusStat(str, ref att, ref def);
+            else if (IsFocusing(focus, FocusStat.Def))
+                CheckFocusStat(str, ref def, ref att);
+        }
+        private void CheckFocusStat(double str, ref int s1, ref int s2)
+        {
+            if (s1 >= s2)
+                while (s1 < Game.Random.Gaussian(s2 * FocusAttMult, .52))
+                    MakeAttDef(str, out s1, out s2);
+        }
+        private static void MakeAttDef(double str, out int s1, out int s2)
+        {
+            s1 = MakeStat(str);
+            //second stat is adjusted to compensate for the first
+            s2 = MakeStat(MultStr(str, Math.Sqrt(str / (double)s1)));
+            if (s2 > s1)
+            {
+                int temp = s1;
+                s1 = s2;
+                s2 = temp;
             }
         }
 

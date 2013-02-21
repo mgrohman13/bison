@@ -262,15 +262,16 @@ namespace MattUtil
         public static uint ShiftVal(uint value)
         {
             lock (typeof(MTRandom))
-            {
-                value += ( counter + SHIFT_FACTOR );
-                //determine a shift and negation based on the less-predictable low-order bits 
-                int shift = (int)( value % 124 );
-                int neg = shift / 31;
-                shift = ( shift % 31 ) + 1;
-                //shift to both sides to retain a full 32 bits in the shifted value
-                return ( counter = ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) ) );
-            }
+                unchecked
+                {
+                    value += ( counter + SHIFT_FACTOR );
+                    //determine a shift and negation based on the less-predictable low-order bits
+                    int shift = (int)( value % 124 );
+                    int neg = shift / 31;
+                    shift = ( shift % 31 ) + 1;
+                    //shift to both sides to retain a full 32 bits in the shifted value
+                    return ( counter = ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) ) );
+                }
         }
 
         #endregion
@@ -391,9 +392,12 @@ namespace MattUtil
         }
         private static void AddSeed(uint[] seed, ref int a, uint value)
         {
-            if (a >= seed.Length)
-                a = 0;
-            seed[a++] += value;
+            unchecked
+            {
+                if (a >= seed.Length)
+                    a = 0;
+                seed[a++] += value;
+            }
         }
 
         /// <summary>
@@ -453,7 +457,10 @@ namespace MattUtil
         }
         private uint SeedKISS(uint initSeed, uint b, uint[] seed, ref uint a)
         {
-            return ( m[b] = GetSeed(seed, ref a) ) + initSeed;
+            unchecked
+            {
+                return ( m[b] = GetSeed(seed, ref a) ) + initSeed;
+            }
         }
         private void SeedMT(uint seedFactor, uint initSeed)
         {
@@ -462,17 +469,23 @@ namespace MattUtil
         }
         private void SeedMT(uint seedFactor, uint initSeed, uint[] seed, ref uint a)
         {
-            m[0] += initSeed;
-            for (uint b = 1 ; b < LENGTH ; ++b)
+            unchecked
             {
-                m[b] = SeedAlg(m[b], m[b - 1], seedFactor, b);
-                if (seed != null)
-                    m[b] += GetSeed(seed, ref a) + ( ( 4 + b - a ) << 1 );
+                m[0] += initSeed;
+                for (uint b = 1 ; b < LENGTH ; ++b)
+                {
+                    m[b] = SeedAlg(m[b], m[b - 1], seedFactor, b);
+                    if (seed != null)
+                        m[b] += GetSeed(seed, ref a) + ( ( 4 + b - a ) << 1 );
+                }
             }
         }
         private uint SeedAlg(uint cur, uint prev, uint seedFactor, uint add)
         {
-            return ( ( ( ( prev >> 30 ) ^ prev ) * seedFactor ) ^ cur ) + add;
+            unchecked
+            {
+                return ( ( ( ( prev >> 30 ) ^ prev ) * seedFactor ) ^ cur ) + add;
+            }
         }
         private uint EnsureNonZero(uint value)
         {
@@ -498,40 +511,52 @@ namespace MattUtil
         /// </summary>
         public uint NextUInt()
         {
-            //combining Marsaglia's KISS with the Mersenne Twister provdes higher quality random numbers with an obscene period>2^20060
-            uint value = ( MersenneTwister() + MarsagliaKISS() );
-
-            uint timeVal;
-            lock (typeof(MTRandom))
+            unchecked
             {
-                //combine in a value based off of the timing of calls
-                timeVal = GetShiftedTicks();
-                counter += value;
-            }
+                //combining Marsaglia's KISS with the Mersenne Twister provdes higher quality random numbers with an obscene period>2^20060
+                uint value = ( MersenneTwister() + MarsagliaKISS() );
 
-            return ( value + timeVal );
+                uint timeVal;
+                lock (typeof(MTRandom))
+                {
+                    //combine in a value based off of the timing of calls
+                    timeVal = GetShiftedTicks();
+                    counter += value;
+                }
+
+                return ( value + timeVal );
+            }
         }
 
         private uint GetShiftedTicks()
         {
-            long ticks = watch.ElapsedTicks;
-            uint retVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
-            if (this.thread == null)
-                retVal = 0;
-            return retVal;
+            unchecked
+            {
+                long ticks = watch.ElapsedTicks;
+                uint retVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
+                if (this.thread == null)
+                    retVal = 0;
+                return retVal;
+            }
         }
 
         //Marsaglia's KISS (Keep It Simple Stupid) pseudorandom number generator, overall period>2^123.
         private uint MarsagliaKISS()
         {
-            return ( LCG() + LFSR() + ( MWC1() << MWC_SHIFT ) + MWC2() );
+            unchecked
+            {
+                return ( LCG() + LFSR() + ( MWC1() << MWC_SHIFT ) + MWC2() );
+            }
         }
 
         //The congruential generator x(n)=69069*x(n-1)+1327217885, period 2^32.
         private uint LCG()
         {
             lock (this)
-                return ( lcgn = ( LCG_MULTIPLIER * lcgn + LCG_INCREMENT ) );
+                unchecked
+                {
+                    return ( lcgn = ( LCG_MULTIPLIER * lcgn + LCG_INCREMENT ) );
+                }
         }
 
         //A 3-shift shift-register generator, period 2^32-1,
@@ -562,7 +587,10 @@ namespace MattUtil
         }
         private uint MWC(uint mult, uint value)
         {
-            return ( mult * ( value & MWC_MASK ) + ( value >> MWC_SHIFT ) );
+            unchecked
+            {
+                return ( mult * ( value & MWC_MASK ) + ( value >> MWC_SHIFT ) );
+            }
         }
 
         //int asdf = 0;
