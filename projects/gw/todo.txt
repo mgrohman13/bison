@@ -15,6 +15,7 @@ clean up code
 	member order
 undo MarkObsolete
 
+move invade ship exp in front of last OnInvade
 invade still brings up attack dialog when PD
 standardize dead checks
 DisbandPD

@@ -125,6 +125,7 @@ namespace GalWarWin
             SetValue(this.nudUpk, shipDesign.Upkeep);
             SetValue(this.nudTrans, shipDesign.Trans);
             this.cbCol.Checked = shipDesign.Colony;
+            this.cbDS.Checked = shipDesign.DeathStar;
             SetValue(this.nudDS, shipDesign.BombardDamage);
 
             Update(null);
