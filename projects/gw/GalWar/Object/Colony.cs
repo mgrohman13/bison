@@ -961,7 +961,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return GetPDUpkeep(this.HP, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
+                return GetPDUpkeep(this.HP);
             }
         }
         internal double PlanetDefenseCostAvgResearch
@@ -1087,6 +1087,10 @@ namespace GalWar
             return GetPDUpkeep(Math.Min(hp, ( att - 1 ) * shipDef + 1), att, def, Consts.PlanetDefensesAttackCostMult);
         }
 
+        internal double GetPDUpkeep(int hp)
+        {
+            return GetPDUpkeep(hp, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
+        }
         private double GetPDUpkeep(int hp, int att, int def, double mult)
         {
             return hp * mult * GetPDCost(att, def) * Consts.GetProductionUpkeepMult(Player.Game.MapSize);
@@ -1202,7 +1206,7 @@ namespace GalWar
                 ModPD(totalCost * mult, newAtt, newDef);
             }
 
-            this.Player.GoldIncome(( totalCost - this.PlanetDefenseCost ) * Consts.DisbandPct);
+            this.Player.AddGold(( totalCost - this.PlanetDefenseCost ) * Consts.DisbandPct);
         }
 
         private void ModPD(double trgCost, int att, int trgAtt, int def, int trgDef,

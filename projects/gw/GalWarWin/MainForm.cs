@@ -1112,9 +1112,9 @@ namespace GalWarWin
                 {
                     try
                     {
-                        Planet trgPlanet;
-                        Ship trgShip;
-                        Anomaly trgAnomaly;
+                        Planet trgPlanet = null;
+                        Ship trgShip = null;
+                        Anomaly trgAnomaly = null;
                         if (adjacentTile.SpaceObject == null)
                             TargetTile(adjacentTile, ship);
                         else if (( trgShip = ( adjacentTile.SpaceObject as Ship ) ) != null)
@@ -1122,10 +1122,10 @@ namespace GalWarWin
                         else if (( trgPlanet = ( adjacentTile.SpaceObject as Planet ) ) != null)
                             selectNext &= TargetPlanet(trgPlanet, ship, switchTroops);
                         else if (( trgAnomaly = ( adjacentTile.SpaceObject as Anomaly ) ) != null)
-                        {
-                            ship.Explore(this, trgAnomaly);
+                            selectNext &= targetAnomaly(selectNext, ship, trgAnomaly);
+
+                        if (trgShip == null && !selectNext && !( trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0 ))
                             refShip = null;
-                        }
                     }
                     catch (AssertException e)
                     {
@@ -1135,6 +1135,12 @@ namespace GalWarWin
             }
 
             return selectNext;
+        }
+
+        private bool targetAnomaly(bool selectNext, Ship ship, Anomaly trgAnomaly)
+        {
+            ship.Explore(this, trgAnomaly);
+            return false;
         }
 
         private void TargetTile(Tile targetTile, Ship ship)

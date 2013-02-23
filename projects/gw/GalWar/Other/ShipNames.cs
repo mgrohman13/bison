@@ -134,6 +134,8 @@ namespace GalWar
 
         #endregion //fields and constructors
 
+        #region logic
+
         private ShipClass DoSetup(ShipClass[] type, int value)
         {
             //during setup phase, the first name is always used, and the average cost calculated
@@ -258,5 +260,7 @@ namespace GalWar
             Demon,
             MAX
         }
+
+        #endregion //logic
     }
 }

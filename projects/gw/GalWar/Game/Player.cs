@@ -626,9 +626,8 @@ namespace GalWar
             if (NegativeGold())
             {
                 SellProduction(handler);
+                DisbandPD(handler);
                 DisbandShips(handler);
-                if (NegativeGold())
-                    DisbandPD(handler);
             }
         }
         private void SellProduction(IEventHandler handler)
@@ -639,13 +638,12 @@ namespace GalWar
                     production.Add(colony, colony.Production);
 
             int sold = 0;
-            //first any production is sold
             while (NegativeGold() && production.Count > 0)
             {
                 ++sold;
                 Colony colony = Game.Random.SelectValue<Colony>(production);
 
-                GoldIncome(Consts.GetProductionUpkeepMult(Game.MapSize));
+                AddGold(Consts.GetProductionUpkeepMult(Game.MapSize));
                 colony.SellProduction(handler, 1);
 
                 if (colony.Production > 0)
@@ -653,22 +651,42 @@ namespace GalWar
                 else
                     production.Remove(colony);
             }
-            Console.WriteLine("sold: " + sold);
-        }
-        private void DisbandShips(IEventHandler handler)
-        {
-            //then random ships are disbanded for gold
-            while (NegativeGold() && this.ships.Count > 0)
-            {
-                Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
-
-                //the upkeep that was just paid for the ship this turn is re-added
-                GoldIncome(ship.Upkeep);
-                ship.Disband(handler, null);
-            }
+            Console.WriteLine("Sold " + sold + " production");
         }
         private void DisbandPD(IEventHandler handler)
         {
+            foreach (Colony colony in Game.Random.Iterate(this.colonies))
+                if (NegativeGold())
+                {
+                    if (colony.HP > 0)
+                    {
+                        double target = GetNegativeGold();
+                        int sell = MattUtil.TBSUtil.FindValue(delegate(int hp)
+                        {
+                            return ( colony.GetPDUpkeep(hp) + colony.GetActualDisbandValue(hp) + target >= 0 );
+                        }, 1, colony.HP, true);
+
+                        Console.WriteLine("Sold " + sell + " hp from " + colony + " (" + colony.Tile + ")");
+
+                        AddGold(colony.GetPDUpkeep(sell));
+                        colony.DisbandPlanetDefense(handler, sell, true);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+        }
+        private void DisbandShips(IEventHandler handler)
+        {
+            while (NegativeGold() && this.ships.Count > 0)
+            {
+                Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
+                Console.WriteLine("Disbanded ship: " + ship);
+
+                AddGold(ship.Upkeep);
+                ship.Disband(handler, null);
+            }
         }
 
         public bool MinGoldNegative()
@@ -677,12 +695,20 @@ namespace GalWar
         }
         private bool NegativeGold()
         {
+            return ( GetNegativeGold() < 0 );
+        }
+        private double GetNegativeGold()
+        {
             //fudge factor of half-rounding so that NegativeGold will never return true when MinGoldNegative returned false
-            return NegativeGold(this.goldOffset + .05);
+            return GetNegativeGold(this.goldOffset + .05);
         }
         private bool NegativeGold(double add)
         {
-            return ( this.goldValue + add < -Consts.FLOAT_ERROR );
+            return ( GetNegativeGold(add) < 0 );
+        }
+        private double GetNegativeGold(double add)
+        {
+            return this.goldValue + add + Consts.FLOAT_ERROR;
         }
 
         internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, int production)
