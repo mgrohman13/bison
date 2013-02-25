@@ -16,6 +16,7 @@ clean up code
 undo MarkObsolete
 standardize dead checks
 
+increase soldier cost decrease PD
 increase ShipNames mult?
 ShipNames._divisions always has 0 at first index
 
