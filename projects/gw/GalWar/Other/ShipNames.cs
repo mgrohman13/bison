@@ -208,7 +208,7 @@ namespace GalWar
 
         private void SetDivision(int index, double value)
         {
-            this.Divisions(index, RandValue(value * 3.0, Game.Random.Round(value * 1.3) + 13));
+            this.Divisions(index, RandValue(value * Math.PI, Game.Random.Round(value * 1.3) + 13));
         }
 
         private static double RandMult(double mult)

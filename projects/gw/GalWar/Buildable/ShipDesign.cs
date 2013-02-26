@@ -870,23 +870,28 @@ namespace GalWar
 
             return (
                 //must be at least as fast, and either
-                this.Speed >= oldDesign.Speed &&
+                CompareForObsolete(this.Speed, oldDesign.Speed) &&
                 //be better in each stat category and have a lower cost and upkeep, or
-                ( ( attStr >= oldAttStr && defStr >= oldDefStr && transStr >= oldTransStr &&
-                colonyStr >= oldColonyStr && deathStr >= oldDeathStr &&
-                this.Cost <= oldDesign.Cost && this.Upkeep <= oldDesign.Upkeep ) ||
+                ( ( CompareForObsolete(attStr, oldAttStr) && CompareForObsolete(defStr, oldDefStr) && CompareForObsolete(transStr, oldTransStr) &&
+                CompareForObsolete(colonyStr, oldColonyStr) && CompareForObsolete(deathStr, oldDeathStr) &&
+                CompareForObsolete(oldDesign.Cost, this.Cost) && CompareForObsolete(oldDesign.Upkeep, this.Upkeep) ) ||
                 //have a better value per total cost in each category and a similar cost and upkeep
-                ( attStr / totCost >= oldAttStr / oldTotCost && defStr / totCost >= oldDefStr / oldTotCost &&
-                transStr / totCost >= oldTransStr / oldTotCost && colonyStr / totCost >= oldColonyStr / oldTotCost &&
-                deathStr / totCost >= oldDeathStr / oldTotCost &&
+                ( CompareForObsolete(attStr / totCost, oldAttStr / oldTotCost) && CompareForObsolete(defStr / totCost, oldDefStr / oldTotCost) &&
+                CompareForObsolete(transStr / totCost, oldTransStr / oldTotCost) && CompareForObsolete(colonyStr / totCost, oldColonyStr / oldTotCost) &&
+                CompareForObsolete(deathStr / totCost, oldDeathStr / oldTotCost) &&
                 ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep) ) )
             );
+        }
+        private bool CompareForObsolete(double s1, double s2)
+        {
+            bool retVal = ( ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.26, .21) );
+            return retVal;
         }
         private bool ObsoleteCost(double c1, double c2, double u1, double u2)
         {
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
-            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, Math.E * .13));
+            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, .3));
         }
 
         internal bool StatsIdentical(ShipDesign d1, ShipDesign d2)

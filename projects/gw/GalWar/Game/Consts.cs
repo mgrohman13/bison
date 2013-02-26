@@ -80,7 +80,7 @@ namespace GalWar
         public const double PopulationForGoldLow = 1 / Income / 2.1;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
-        public const double ProductionForSoldiers = .39;
+        public const double ProductionForSoldiers = .52;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
@@ -132,7 +132,7 @@ namespace GalWar
 
         public const double PlanetDefenseStatRndm = .091;
         public const double PlanetDefenseBuildRndm = Math.PI / 13.0;
-        public const double PlanetDefensesCostMult = .91;
+        public const double PlanetDefensesCostMult = .78;
         //PlanetDefensesUpkeepMult will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
