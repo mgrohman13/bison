@@ -131,6 +131,14 @@ namespace SpaceRunner
             }
         }
 
+        internal float Area
+        {
+            get
+            {
+                return Game.GetArea(this.Size);
+            }
+        }
+
         internal abstract decimal Score
         {
             get;
@@ -142,7 +150,7 @@ namespace SpaceRunner
             graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2 - 1, size * 2 - 1);
 #endif
-            DrawImage(graphics, image, centerX, centerY, speed, x, y, size, curAngle);
+            DrawImage(graphics, image, centerX, centerY, speed, x, y, Size, curAngle);
         }
 
         internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float size, float curAngle)
@@ -195,7 +203,7 @@ namespace SpaceRunner
             //do stuff in child classes
             OnStep();
 
-            float dist = Game.GetDistance(x, y), edgeDist = dist - size, checkDist, damage = 0;
+            float dist = Game.GetDistance(x, y), edgeDist = dist - Size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
                     Game.GameRand.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed)))
                 Game.RemoveObject(this);
@@ -245,7 +253,7 @@ namespace SpaceRunner
 
         protected void BumpCollision(GameObject obj, bool adjustOther)
         {
-            float moveDist = ( size + obj.size - Game.GetDistance(x, y, obj.x, obj.y) ) / ( adjustOther ? 2 : 1 );
+            float moveDist = ( Size + obj.Size - Game.GetDistance(x, y, obj.x, obj.y) ) / ( adjustOther ? 2 : 1 );
             float xDif = x - obj.x, yDif = y - obj.y;
             Game.NormalizeDirs(ref xDif, ref yDif, moveDist);
 
@@ -265,7 +273,7 @@ namespace SpaceRunner
 
         internal void CheckCollision(GameObject obj)
         {
-            float sizes = this.size + obj.size;
+            float sizes = this.Size + obj.Size;
             if (Game.GetDistanceSqr(this.x, this.y, obj.x, obj.y) < sizes * sizes)
                 Collide(this, obj);
         }

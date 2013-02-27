@@ -120,9 +120,9 @@ namespace SpaceRunner
             bool isLifeDust = ( lifeDust != null );
             if (isLifeDust)
             {
-                float sizes = ( this.size + obj.Size );
-                lifeDust.xDir = xDir = ( xDir * this.size + lifeDust.xDir * obj.Size ) / sizes;
-                lifeDust.yDir = yDir = ( yDir * this.size + lifeDust.yDir * obj.Size ) / sizes;
+                float areas = ( this.Area + obj.Area );
+                lifeDust.xDir = xDir = ( xDir * this.Area + lifeDust.xDir * obj.Area ) / areas;
+                lifeDust.yDir = yDir = ( yDir * this.Area + lifeDust.yDir * obj.Area ) / areas;
             }
             else
             {
@@ -145,7 +145,7 @@ namespace SpaceRunner
 
         internal static float GetSizePct(GameObject lifeDust)
         {
-            return ( lifeDust.Size / Game.LifeDustSize );
+            return ( lifeDust.Area / Game.GetArea(Game.LifeDustSize) );
         }
     }
 }

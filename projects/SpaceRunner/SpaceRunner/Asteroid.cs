@@ -61,14 +61,6 @@ namespace SpaceRunner
             }
         }
 
-        internal float Area
-        {
-            get
-            {
-                return (float)( Math.PI * size * size );
-            }
-        }
-
         internal override void Die()
         {
             base.Die();
@@ -84,7 +76,7 @@ namespace SpaceRunner
             float spacing = Game.GetRingSpacing(numPieces, pieceSize);
             for (int idx = 0 ; idx < numPieces ; idx++)
             {
-                if (Game.GameRand.Bool(Math.Pow(size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
+                if (Game.GameRand.Bool(Math.Pow(Size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
                 {
                     float addX, addY;
                     Game.GetDirs(out addX, out addY, angle);
@@ -114,7 +106,7 @@ namespace SpaceRunner
 
         private void HitPowerUp(GameObject obj)
         {
-            if (size > Game.PowerUpSize)
+            if (Size > Game.PowerUpSize)
             {
                 obj.Die();
                 this.Die();
@@ -149,7 +141,7 @@ namespace SpaceRunner
                 else
                 {
                     //destroy the smaller one
-                    if (this.size < asteroid.size)
+                    if (this.Size < asteroid.Size)
                         Game.RemoveObject(this);
                     else
                         Game.RemoveObject(asteroid);

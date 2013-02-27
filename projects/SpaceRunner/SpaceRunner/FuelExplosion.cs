@@ -73,12 +73,12 @@ namespace SpaceRunner
         protected override void Collide(GameObject obj)
         {
             //only hit objects whose center is within the explosion
-            if (!( obj is FuelExplosion ) && Game.GetDistanceSqr(this.x, this.y, obj.X, obj.Y) < this.size * this.size)
+            if (!( obj is FuelExplosion ) && Game.GetDistanceSqr(this.x, this.y, obj.X, obj.Y) < this.Size * this.Size)
             {
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
                 {
-                    if (obj.Size > Game.GameRand.OE(Game.ExplosionSize))
+                    if (obj.Area > Game.GameRand.OE(Game.GetArea(Game.ExplosionSize)))
                         Explosion.NewExplosion(Game, obj);
                     obj.Die();
                 }
@@ -93,14 +93,14 @@ namespace SpaceRunner
         internal float GetDamage(float x, float y)
         {
             //do more damage closer to center
-            return Game.FuelExplosionDamage * this.size / ( Game.GetDistance(this.x, this.y, x, y) + Game.FuelExplosionDamageStartDist );
+            return Game.FuelExplosionDamage * this.Size / ( Game.GetDistance(this.x, this.y, x, y) + Game.FuelExplosionDamageStartDist );
         }
 
         int Game.IChecksExtraSectors.CheckSectors
         {
             get
             {
-                return (int)Math.Ceiling(( size + Game.AsteroidMaxSize ) / Game.SectorSize);
+                return (int)Math.Ceiling(( Size + Game.AsteroidMaxSize ) / Game.SectorSize);
             }
         }
     }

@@ -13,5 +13,3 @@ mines
 difficulty increase with time
 	alien ship appearance
 	alien speed?
-lifedust (and asteroid) size calculations based on area, not size
-explosion size?

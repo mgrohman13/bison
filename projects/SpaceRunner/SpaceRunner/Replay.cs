@@ -10,18 +10,20 @@ namespace SpaceRunner
     internal class Replay
     {
         [NonSerialized]
-        private const int NoLength = -1;
+        private const int NoLength = default(int);
 
         internal readonly uint[] Seed;
 
         private Dictionary<int, float> input = null;
         private HashSet<int> turbo = null;
-        private Dictionary<int, Point?> fire = null;
+        private Dictionary<int, float> fire = null;
 
+        [NonSerialized]
         private int length = NoLength;
 
         [NonSerialized]
         private float lastInput;
+        [NonSerialized]
         private bool lastTurbo;
 
         internal Replay(uint[] Seed)
@@ -30,7 +32,7 @@ namespace SpaceRunner
 
             this.input = new Dictionary<int, float>();
             this.turbo = new HashSet<int>();
-            this.fire = new Dictionary<int, Point?>();
+            this.fire = new Dictionary<int, float>();
 
             this.length = NoLength;
         }
@@ -54,7 +56,7 @@ namespace SpaceRunner
                 this.length = Math.Max(length, shortTick);
         }
 
-        internal void Record(int tickCount, float inputAngle, bool turbo, Point? fire)
+        internal void Record(int tickCount, float inputAngle, bool turbo, float? fire)
         {
             float input = inputAngle;
             if (this.lastInput != input)
@@ -66,7 +68,7 @@ namespace SpaceRunner
             RecordBool(tickCount, this.turbo, ref lastTurbo, turbo);
 
             if (fire.HasValue)
-                this.fire.Add(tickCount, fire);
+                this.fire.Add(tickCount, fire.Value);
         }
 
         internal void EndRecord(int tickCount)
@@ -74,7 +76,7 @@ namespace SpaceRunner
             this.length = tickCount;
         }
 
-        internal void Play(int tickCount, ref float inputAngle, ref bool turbo, ref Point? fire)
+        internal void Play(int tickCount, ref float inputAngle, ref bool turbo, ref float? fire)
         {
             float saved;
             if (this.input.TryGetValue(tickCount, out saved))
@@ -82,7 +84,10 @@ namespace SpaceRunner
 
             PlayBool(tickCount, this.turbo, ref turbo);
 
-            this.fire.TryGetValue(tickCount, out fire);
+            if (this.fire.ContainsKey(tickCount))
+                fire = this.fire[tickCount];
+            else
+                fire = null;
         }
 
         private static void RecordBool(int tickCount, HashSet<int> save, ref bool last, bool incoming)

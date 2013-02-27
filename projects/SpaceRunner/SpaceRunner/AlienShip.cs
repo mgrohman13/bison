@@ -87,7 +87,7 @@ namespace SpaceRunner
 
             //fire at the player
             if (Game.GameRand.Bool(fireRate))
-                Game.ShootAtPlayer(speed, x, y, size);
+                Game.ShootAtPlayer(speed, x, y, Size);
         }
 
         protected override void Collide(GameObject obj)

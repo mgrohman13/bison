@@ -241,7 +241,7 @@ namespace SpaceRunner
                     GetTotalMove(out xMove, out yMove);
                     towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
                 }
-                Game.ShootAtPlayer(towardsPlayer, x, y, size);
+                Game.ShootAtPlayer(towardsPlayer, x, y, Size);
             }
         }
 

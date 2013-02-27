@@ -150,7 +150,7 @@ namespace SpaceRunner
         internal const float PlayerDamageRandomness = .065f;
 
         internal const float StartFuel = FuelMult * 15;
-        //average fuel per power up
+        //fuel per power up
         internal const float IncFuel = FuelMult * 3;
         //how many extra pixels each fuel point will take you
         internal const float FuelMult = 130f;
@@ -219,7 +219,7 @@ namespace SpaceRunner
         //lower cap as a percentage of the average value
         internal const float AsteroidSizeCap = .52f;
         //damage to player and alien ship
-        internal const float AsteroidAreaToDamageRatio = (float)( Math.PI * PlayerSize * PlayerSize / PlayerLife ) / 1.3f;
+        internal readonly float AsteroidAreaToDamageRatio = GetArea(PlayerSize) / PlayerLife / 1.3f;
         //alien life is actually its speed in pixels, so this damage is in pixels
         internal const float AsteroidAreaToAlienDamageRatio = 1 / GameSpeed * 169f;
         //drift speed for new asteroids
@@ -344,7 +344,7 @@ namespace SpaceRunner
         private int ammo;
         private int deadCounter, fireCounter, alienCount;
         private bool turbo;
-        private Point? fire;
+        private float? fire;
 
         #endregion //fields
 
@@ -440,7 +440,7 @@ namespace SpaceRunner
         {
             get
             {
-                return turbo;
+                return ( turbo && !Dead && fuel > 0 );
             }
             set
             {
@@ -505,7 +505,7 @@ namespace SpaceRunner
             //not drawing when deadCounter is within a certain range causes the player to blink when dead
             if (pauseDraw || !Dead || GameOver() || !Started || ( deadCounter % DeadBlinkDiv > DeadBlinkWindow ))
             {
-                bool turbo = ( !pauseDraw && Turbo && !Dead && fuel > 0 );
+                bool turbo = ( !pauseDraw && Turbo );
                 bool canFire = ( pauseDraw || fireCounter < 0 || GameOver() );
                 Image image = ( canFire ? ( turbo ? TurboImage : PlayerImage ) : ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
                 GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, AdjustImageAngle(moveAngle));
@@ -653,8 +653,8 @@ namespace SpaceRunner
         {
             if (!IsReplay)
                 lock (gameTicker)
-                    if (x != 0 || y != 0)
-                        fire = new Point(x, y);
+                    if (x != 0 || y != 0 && CanFire())
+                        fire = GetAngle(x, y);
         }
 
         internal void SetMouseCoordinates(int x, int y)
@@ -801,11 +801,6 @@ namespace SpaceRunner
         private void GetMoveDirs(out float moveX, out float moveY)
         {
             GetDirs(out moveX, out moveY, moveAngle, TotalSpeed);
-        }
-
-        private float GetFireAngle()
-        {
-            return GetAngle(fire.Value.X, fire.Value.Y);
         }
 
         internal static float GetRingSpacing(int numPieces, double size)
@@ -1036,6 +1031,11 @@ namespace SpaceRunner
             return (int)Math.Round(value);
         }
 
+        internal static float GetArea(float size)
+        {
+            return (float)( Math.PI * size * size );
+        }
+
         #endregion //internal abstraction methods
 
         #region game logic
@@ -1153,11 +1153,11 @@ namespace SpaceRunner
                     replay.Record(tickCount, inputAngle, turbo, fire);
             }
 
-            TurnPlayer();
-
             if (Dead && ++deadCounter > DeathTime)
                 deadCounter = -1;
+            --fireCounter;
 
+            TurnPlayer();
             MovePlayer();
             PlayerFiring();
 
@@ -1172,7 +1172,7 @@ namespace SpaceRunner
         {
             float input;
             if (IsFiring())
-                input = GetFireAngle();
+                input = fire.Value;
             else
                 input = inputAngle;
 
@@ -1202,7 +1202,7 @@ namespace SpaceRunner
 
         private void MovePlayer()
         {
-            if (Turbo && !Dead)
+            if (Turbo)
                 fuel -= TurboSpeed;
 
             AddScore((decimal)TotalSpeed * DistanceScore);
@@ -1210,18 +1210,18 @@ namespace SpaceRunner
 
         private void PlayerFiring()
         {
-            //check that the player is firing and can fire
-            --fireCounter;
-
             if (IsFiring())
             {
-                if (Math.Abs(GetFireAngle() - moveAngle) < GetTurnSpeed())
+                if (Math.Abs(fire.Value - moveAngle) < GetTurnSpeed())
                 {
                     if (--ammo < 1)
                         fireCounter = -1;
                     else
                         fireCounter = GameRand.Round(GetCoolDown());
-                    Bullet.NewBullet(this, 0, 0, fire.Value.X, fire.Value.Y, TotalSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
+                    float dirX, dirY;
+                    GetDirs(out dirX, out dirY, fire.Value);
+                    Bullet.NewBullet(this, 0, 0, dirX, dirY, TotalSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
+                    fire = null;
                 }
             }
             else if (fire.HasValue)
@@ -1232,7 +1232,11 @@ namespace SpaceRunner
 
         private bool IsFiring()
         {
-            return ( fire.HasValue && !Dead && fireCounter < 0 && ammo > 0 );
+            return ( fire.HasValue && CanFire() );
+        }
+        private bool CanFire()
+        {
+            return ( !Dead && fireCounter < 0 && ammo > 0 );
         }
 
         private float GetCoolDown()
