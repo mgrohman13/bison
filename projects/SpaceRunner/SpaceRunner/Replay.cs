@@ -9,9 +9,6 @@ namespace SpaceRunner
     [Serializable]
     internal class Replay
     {
-        [NonSerialized]
-        private const int NoLength = default(int);
-
         internal readonly uint[] Seed;
 
         private Dictionary<int, float> input = null;
@@ -19,7 +16,7 @@ namespace SpaceRunner
         private Dictionary<int, float> fire = null;
 
         [NonSerialized]
-        private int length = NoLength;
+        private int length;
 
         [NonSerialized]
         private float lastInput;
@@ -33,15 +30,13 @@ namespace SpaceRunner
             this.input = new Dictionary<int, float>();
             this.turbo = new HashSet<int>();
             this.fire = new Dictionary<int, float>();
-
-            this.length = NoLength;
         }
 
         internal int Length
         {
             get
             {
-                if (length == NoLength)
+                if (length == default(int))
                     GetLength();
                 return length;
             }

@@ -781,15 +781,23 @@ namespace SpaceRunner
 
         public void Dispose()
         {
-            foreach (GameObject obj in this.objects)
+            Running = false;
+            SleepTick();
+
+            GameObject[] array;
+            lock (gameTicker)
+            {
+                array = new GameObject[this.objects.Count];
+                this.objects.CopyTo(array, 0);
+                this.objects.Clear();
+            }
+            foreach (GameObject obj in array)
             {
                 IDisposable disposable = obj as IDisposable;
                 if (disposable != null)
                     disposable.Dispose();
             }
-            this.objects.Clear();
 
-            Running = false;
             SleepTick();
         }
 
@@ -860,7 +868,7 @@ namespace SpaceRunner
             float scale = twoSize / temp.Width;
 
             graphics.TranslateTransform(trans, trans);
-            graphics.RotateTransform(GetRandomAngle(Game.Random) * RadToDeg);
+            graphics.RotateTransform(GetImageAngle() * RadToDeg);
             graphics.TranslateTransform(-size, -size);
             graphics.ScaleTransform(scale, scale);
 
@@ -939,7 +947,7 @@ namespace SpaceRunner
             speedRatio *= speedRatio;
             //make sure a zero will not be in the denominator
             if (speedRatio == 1.0)
-                speedRatio = 1.0 + ( ( GameRand.Bool() ? -1.1 : 1.1 ) / ( 1L << 53 ) );
+                speedRatio += ( ( GameRand.Bool() ? -1.1 : 1.1 ) / ( 1L << 53 ) );
             yDist *= yDist;
             double sqrt = ( xDist * xDist + yDist ) * speedRatio - yDist;
             //handle negative square root

@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace SpaceRunner.Images
 {
-    class Generator
+    internal static class Generator
     {
         internal static void Generate()
         {

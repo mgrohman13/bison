@@ -88,7 +88,6 @@ namespace MattUtil.RealTimeGame
             }
         }
 
-
         public void Start()
         {
             Thread refresh = new Thread(RefreshGame);

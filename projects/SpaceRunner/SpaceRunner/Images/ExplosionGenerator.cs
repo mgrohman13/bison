@@ -4,9 +4,9 @@ using Point = MattUtil.Point;
 
 namespace SpaceRunner.Images
 {
-    public class ExplosionGenerator
+    internal static class ExplosionGenerator
     {
-        public static Bitmap[] GenerateExplosion(int width, int length, float size)
+        internal static Bitmap[] GenerateExplosion(int width, int length, float size)
         {
             Bitmap[] result = new Bitmap[length * 2 - 1];
 

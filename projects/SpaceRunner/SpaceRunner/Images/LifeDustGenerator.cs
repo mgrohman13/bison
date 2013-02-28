@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace SpaceRunner.Images
 {
-    class LifeDustGenerator
+    internal static class LifeDustGenerator
     {
         internal static Bitmap GenerateLifeDust()
         {
@@ -20,10 +20,10 @@ namespace SpaceRunner.Images
             switch (corner)
             {
             case 0:
-                r = new Rectangle(-1, 5, 6, -1);
+                r = new Rectangle(-2, 5, 6, 14);
                 break;
             case 1:
-                r = new Rectangle(-2, 5, 6, 14);
+                r = new Rectangle(-1, 5, 6, -1);
                 break;
             case 2:
                 r = new Rectangle(15, 5, 6, 14);

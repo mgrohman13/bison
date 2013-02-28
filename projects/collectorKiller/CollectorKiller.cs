@@ -165,15 +165,11 @@ namespace CollectorKiller
             _invalid = new List<Point>();
 
             float size = width * height - 1;
-            float sizeFactor = (float)Math.Sqrt(( startWidth * startHeight - 1 ) / size);
+            float sizeFactor = (float)Math.Pow(( startWidth * startHeight - 1 ) / size, .26);
+            float pickupMult = startPickup * sizeFactor;
 
-            int numEnemies, numPickups;
-            do
-            {
-                float gaussian = 1 + rand.Gaussian(startRand);
-                numEnemies = rand.Round(startEnemy * size * gaussian);
-                numPickups = rand.Round(startPickup * sizeFactor * numEnemies * gaussian);
-            } while (numEnemies + numPickups > size || numPickups < 1 || numEnemies < 1);
+            int numEnemies = rand.GaussianCappedInt(startEnemy * size, startRand, (int)Math.Ceiling(1 / pickupMult));
+            int numPickups = rand.Round(pickupMult * numEnemies);
 
             for (int e = 0 ; e < numEnemies ; ++e)
                 CreateStart(Piece.Enemy);

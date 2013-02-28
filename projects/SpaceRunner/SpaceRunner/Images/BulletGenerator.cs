@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace SpaceRunner.Images
 {
-    class BulletGenerator
+    internal static class BulletGenerator
     {
         internal static Bitmap GenerateBullet()
         {

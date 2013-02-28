@@ -90,49 +90,49 @@ namespace SpaceRunner.Forms
             {
 #endif
 #if !TRACE
-            e.Graphics.Clip = clip;
+                e.Graphics.Clip = clip;
 #endif
-            e.Graphics.Clear(Color.Black);
+                e.Graphics.Clear(Color.Black);
 
-            base.OnPaint(e);
+                base.OnPaint(e);
 
-            int ammo = Game.Ammo, fuel = Game.FuelInt, lives = Game.Lives, score = Game.Round((float)Game.Score);
-            if (this.ammo != ammo)
-            {
-                this.ammo = ammo;
-                this.lblAmmo.Text = this.ammo.ToString();
-            }
-            if (this.fuel != fuel)
-            {
-                this.fuel = fuel;
-                this.lblFuel.Text = fuel.ToString();
-            }
-            if (this.lives != lives)
-            {
-                this.lives = lives;
-                this.lblLife.Text = lives.ToString();
-            }
-            if (this.score != score)
-            {
-                this.score = score;
-                this.lblScore.Text = score.ToString("0");
-            }
+                int ammo = Game.Ammo, fuel = Game.FuelInt, lives = Game.Lives, score = Game.Round((float)Game.Score);
+                if (this.ammo != ammo)
+                {
+                    this.ammo = ammo;
+                    this.lblAmmo.Text = this.ammo.ToString();
+                }
+                if (this.fuel != fuel)
+                {
+                    this.fuel = fuel;
+                    this.lblFuel.Text = fuel.ToString();
+                }
+                if (this.lives != lives)
+                {
+                    this.lives = lives;
+                    this.lblLife.Text = lives.ToString();
+                }
+                if (this.score != score)
+                {
+                    this.score = score;
+                    this.lblScore.Text = score.ToString("0");
+                }
 
-            bool enabled = ( ( Game.Replay != null ) && ( Game.IsReplay || Game.GameOver() ) );
-            if (this.enabled != enabled)
-            {
-                this.enabled = enabled;
-                this.replayShow.Enabled = enabled;
-                this.replaySave.Enabled = enabled;
-            }
+                bool enabled = ( ( Game.Replay != null ) && ( Game.IsReplay || Game.GameOver() ) );
+                if (this.enabled != enabled)
+                {
+                    this.enabled = enabled;
+                    this.replayShow.Enabled = enabled;
+                    this.replaySave.Enabled = enabled;
+                }
 
-            if (Game.IsReplay && timeScroll == null && !Game.Paused)
-            {
-                int value = Game.TickCount;
-                if (value > this.tbTime.Maximum)
-                    value = this.tbTime.Maximum;
-                this.tbTime.Value = value;
-            }
+                if (Game.IsReplay && timeScroll == null && !Game.Paused)
+                {
+                    int value = Game.TickCount;
+                    if (value > this.tbTime.Maximum)
+                        value = this.tbTime.Maximum;
+                    this.tbTime.Value = value;
+                }
 #if DEBUG
             }
             catch (Exception exception)
@@ -308,12 +308,9 @@ namespace SpaceRunner.Forms
         {
             Thread.Sleep(1000);
 
-            lock (this.tbTime)
-            {
-                timeScroll = null;
-                base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
-                SetReplaySpeed(InvokeGetValue(this.tbSpeed));
-            }
+            base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
+            SetReplaySpeed(InvokeGetValue(this.tbSpeed));
+            timeScroll = null;
         }
         private static int InvokeGetValue(TrackBar tb)
         {
