@@ -13,3 +13,5 @@ mines
 difficulty increase with time
 	alien ship appearance
 	alien speed?
+broken replay drag slider past end
+debug/raw replay difference?

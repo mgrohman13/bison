@@ -505,8 +505,8 @@ namespace SpaceRunner
             //not drawing when deadCounter is within a certain range causes the player to blink when dead
             if (pauseDraw || !Dead || GameOver() || !Started || ( deadCounter % DeadBlinkDiv > DeadBlinkWindow ))
             {
-                bool turbo = ( !pauseDraw && Turbo );
-                bool canFire = ( pauseDraw || fireCounter < 0 || GameOver() );
+                bool turbo = ( !pauseDraw && Turbo && !GameOver() );
+                bool canFire = ( pauseDraw || CanFire() || Dead || GameOver() );
                 Image image = ( canFire ? ( turbo ? TurboImage : PlayerImage ) : ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
                 GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, AdjustImageAngle(moveAngle));
             }
@@ -592,7 +592,7 @@ namespace SpaceRunner
             if (obj is FuelExplosion)
                 return 7 * ushort.MaxValue;
             if (obj is LifeDust)
-                return 3 * ushort.MaxValue - GetDrawPriority(LifeDust.GetSizePct(obj) / 2);
+                return 3 * ushort.MaxValue - GetDrawPriority(LifeDust.GetSizePct(obj) / 4);
             if (obj is PowerUp)
                 return 2 * ushort.MaxValue;
 #if DEBUG
@@ -607,7 +607,7 @@ namespace SpaceRunner
             if (priority < -1 || priority > 1)
                 throw new Exception();
 #endif
-            return Round(( ushort.MaxValue / 2 - 1 ) * priority);
+            return Round(( ushort.MaxValue / 2f - 1 ) * priority);
         }
 
         internal void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
@@ -707,15 +707,15 @@ namespace SpaceRunner
             if (isReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-            Paused = true;
-            SleepTick();
-            Refresh();
-            SleepTick();
-            lock (gameTicker)
-                while (tickCount < position)
-                    this.Step();
-            SleepTick();
-            Paused = false;
+                Paused = true;
+                SleepTick();
+                Refresh();
+                SleepTick();
+                lock (gameTicker)
+                    while (tickCount < position)
+                        this.Step();
+                SleepTick();
+                Paused = false;
 #if DEBUG
             }
             else
