@@ -1,6 +1,11 @@
+better math for funky chance
+undo MarkObsolete
+standardize dead checks
 test occupying amount vs occupying 1 then moving amount
 	equal soldiers
 	superior cost
+sell PD also sells att/def?
+
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
@@ -13,8 +18,6 @@ management screens
 	ships
 clean up code
 	member order
-undo MarkObsolete
-standardize dead checks
 
 ShipNames._divisions always has 0 at first index
 

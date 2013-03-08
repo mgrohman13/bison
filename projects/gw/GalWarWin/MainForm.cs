@@ -1465,7 +1465,11 @@ namespace GalWarWin
 
         public void RefreshAll()
         {
-            if (anomExp)
+            RefreshAll(false);
+        }
+        public void RefreshAll(bool suppressLog)
+        {
+            if (!suppressLog && anomExp)
                 OnRefresh();
 
             if (!ended && Game.GetPlayers().Count < 2)
@@ -1481,7 +1485,8 @@ namespace GalWarWin
 
             this.btnUndo.Enabled = Game.CanUndo();
 
-            OnRefresh();
+            if (!suppressLog)
+                OnRefresh();
         }
 
         private void OnRefresh()
@@ -1967,7 +1972,7 @@ namespace GalWarWin
                 this.selectedTile = attacker.Tile;
             else
                 this.selectedTile = defender.Tile;
-            this.RefreshAll();
+            this.RefreshAll(true);
 
             return CombatForm.ShowForm(attacker, defender, true);
         }

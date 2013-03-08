@@ -74,6 +74,7 @@ namespace GalWarWin
             SetValue(this.nudSpeed, ship.MaxSpeed);
             SetValue(this.nudTrans, ship.MaxPop);
             this.cbCol.Checked = ship.Colony;
+            this.cbDS.Checked = ship.DeathStar;
             SetValue(this.nudDS, ship.BombardDamage);
 
             double totCost = Update(null);

@@ -169,13 +169,15 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double value = 1 + ( armada / 26.0 + Consts.Income * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
-            return Game.Random.GaussianOE(value, .3, .3, GenerateConsolationValue(value));
+            double value = ( armada / 26.0 + Consts.Income * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
+            return Game.Random.GaussianOE(value, .26, .3, GenerateConsolationValue(value));
         }
         private static double GenerateConsolationValue(double value)
         {
-            double avg = Math.Pow(value, .65);
-            return Game.Random.GaussianCapped(avg, .21, Math.Max(1, 2 * avg - value));
+            double avg = ( Math.Pow(value + 1, .78) - 1 ) * .52;
+            if (avg > 1)
+                avg = Game.Random.GaussianCapped(avg, .21, 1);
+            return avg;
         }
 
         private double ConsolationValue()
