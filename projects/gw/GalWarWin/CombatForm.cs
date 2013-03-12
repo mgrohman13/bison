@@ -119,7 +119,7 @@ namespace GalWarWin
                 this.lblDefPlayer.Text = defender.Player.Name;
             }
 
-            CalculateOdds();
+            CalculateOdds(freeDmg > defender.HP);
         }
 
         public static void SetValue(NumericUpDown nud, decimal value)
@@ -133,8 +133,15 @@ namespace GalWarWin
 
         private void CalculateOdds()
         {
+            CalculateOdds(false);
+        }
+        private void CalculateOdds(bool noDefHP)
+        {
             btnDetails.Visible = false;
             CancelWorker();
+
+            if (defender != null && defender.HP == 0)
+                noDefHP = true;
 
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
             int attHP = (int)this.nudAttHP.Value, defHP = (int)( this.nudDefHP.Value + this.nudDefHP.Value * (decimal)Consts.FLOAT_ERROR );
@@ -146,7 +153,7 @@ namespace GalWarWin
             this.lblDefDmg.Text = FormatDmg(avgAtt);
 
             if (( att * att >= defHP || att * def >= attHP ) &&
-                    ( !( attacker != null && ( attacker.HP == 0 || defender.HP == 0 ) ) || this.nudAttack.Visible ))
+                    ( !( attacker != null && ( attacker.HP == 0 || noDefHP ) ) || this.nudAttack.Visible ))
             {
                 this.lblAttKill.Text = "...";
                 this.lblDefKill.Text = "...";
@@ -157,7 +164,7 @@ namespace GalWarWin
             else
             {
                 this.lblAttKill.Text = MainForm.FormatPct(attacker != null && attacker.HP == 0 ? 1 : 0);
-                this.lblDefKill.Text = MainForm.FormatPct(defender != null && defender.HP == 0 ? 1 : 0);
+                this.lblDefKill.Text = MainForm.FormatPct(noDefHP ? 1 : 0);
             }
         }
 
@@ -279,7 +286,7 @@ namespace GalWarWin
             int max = Math.Max(chances.Count, oldChances.Count);
             double p3 = 100.0 * max / targetCap;
             const double trgPct = 21, pctError = .3;
-            if (Math.Abs(p3 - trgPct) / trgPct > pctError)
+            if (max > 169 && Math.Abs(p3 - trgPct) / trgPct > pctError)
             {
                 FieldInfo buckets = chances.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance);
                 int chCap = GetCapacity(chances, buckets), oldCap = GetCapacity(oldChances, buckets);

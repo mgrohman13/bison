@@ -991,44 +991,33 @@ namespace GalWar
                 Dictionary<ExpType, int> stats = new Dictionary<ExpType, int>();
 
                 int att = GetStatExpChance(Att, Def);
-                int total = att;
-                stats.Add(ExpType.Att, att);
                 int def = GetStatExpChance(Def, Att);
-                total += def;
-                stats.Add(ExpType.Def, def);
                 int hp = this.MaxHP;
-                total += hp;
+                stats.Add(ExpType.Att, att);
+                stats.Add(ExpType.Def, def);
                 stats.Add(ExpType.HP, hp);
+                int total = att + def + hp;
 
+                int ds = 0, trans = 0;
                 if (this.DeathStar)
                 {
-                    int ds = Game.Random.Round(this.BombardDamage * Math.E);
+                    ds = Game.Random.Round(this.BombardDamage * Math.E);
                     total += ds;
                     stats.Add(ExpType.DS, ds);
                 }
                 else if (this.MaxPop > 0)
                 {
-                    int trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / Math.PI);
+                    trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / Math.PI);
                     total += trans;
                     stats.Add(ExpType.Trans, trans);
                 }
 
-                if (funky)
-                {
-                    int oldTotal = total;
-                    total = 0;
-                    total += FunkyChance(stats, ExpType.HP, oldTotal);
-                    total += FunkyChance(stats, ExpType.Att, oldTotal);
-                    total += FunkyChance(stats, ExpType.Def, oldTotal);
-                    if (this.MaxPop == 0 && ( this.DeathStar || Game.Random.Bool() ))
-                        total += FunkyChance(stats, ExpType.DS, oldTotal);
-                    if (!this.DeathStar && ( this.MaxPop > 0 || Game.Random.Bool() ))
-                        total += FunkyChance(stats, ExpType.Trans, oldTotal);
-                }
-
-                int speed = Game.Random.Round(Math.Sqrt(total * ( funky ? 5.2 / this.MaxSpeed : this.MaxSpeed )) / 16.9);
+                int speed = Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9);
                 total += speed;
                 stats.Add(ExpType.Speed, speed);
+
+                if (funky)
+                    stats = FunkyChance(total, ds, trans, speed);
 
                 this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
             }
@@ -1040,13 +1029,45 @@ namespace GalWar
             hpStr *= stat / (double)( stat + other );
             return Game.Random.Round(hpStr);
         }
-        private static int FunkyChance(Dictionary<ExpType, int> stats, ExpType expType, int total)
+        private Dictionary<ExpType, int> FunkyChance(int oldTotal, int ds, int trans, int speed)
         {
-            int value;
-            stats.TryGetValue(expType, out value);
-            value = Game.Random.Round(( total + 1 ) / ( value + 1.0 ) + 6 * ( total - value ) / (double)total);
-            stats[expType] = value;
-            return value;
+            int newTotal;
+            Dictionary<ExpType, int> stats = ShipDesign.IncreaseAttDef(Att, Def, MaxHP, out newTotal);
+            double mult = oldTotal / (double)newTotal;
+            newTotal = 0;
+
+            int def = stats[ExpType.Att];
+            int att = Game.Random.Round(mult * stats[ExpType.Def]);
+            def = Game.Random.Round(mult * def);
+            int hp = Game.Random.Round(mult * stats[ExpType.HP]);
+            stats[ExpType.Att] = att;
+            stats[ExpType.Def] = def;
+            stats[ExpType.HP] = hp;
+            newTotal += att + def + hp;
+
+            speed = Game.Random.Round(speed * 2.6 / (double)this.MaxSpeed);
+            newTotal += speed;
+            stats.Add(ExpType.Speed, speed);
+
+            if (this.DeathStar)
+            {
+                stats.Add(ExpType.DS, FunkyChance(ds, oldTotal, newTotal));
+            }
+            else if (this.MaxPop > 0)
+            {
+                stats.Add(ExpType.Trans, FunkyChance(trans, oldTotal, newTotal));
+            }
+            else
+            {
+                double amt = newTotal * .078;
+                stats.Add(ExpType.DS, Game.Random.Round(amt));
+                stats.Add(ExpType.Trans, Game.Random.Round(amt));
+            }
+            return stats;
+        }
+        private static int FunkyChance(int value, int oldTotal, int newTotal)
+        {
+            return Game.Random.Round(newTotal * .065 * ( 3.9 + oldTotal - value ) / ( 1.0 + value ));
         }
 
         public void Bombard(IEventHandler handler, Planet planet)
@@ -1156,7 +1177,8 @@ namespace GalWar
 
             int dmgBase = colonyDamage, tempPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
             double dmgMult = pct;
-            if (!friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue())
+            bool stopBombard = ( !friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue() );
+            if (stopBombard)
                 if (this.DeathStar)
                     dmgMult *= tempPop / (double)colonyDamage;
                 else
@@ -1168,9 +1190,14 @@ namespace GalWar
             //bombard the colony second, if it exists
             int initPop = BombardColony(handler, planet.Colony, colonyDamage, ref rawExp, ref valueExp);
 
-            double move = GetBombardMoveLeft(planetDamage, initQuality, friendly ? 0 : colonyDamage, initPop, pct);
-            if (move > 0)
-                this.Player.GoldIncome(GetUpkeepReturn(move));
+            if (friendly)
+                colonyDamage = initPop - colonyDamage;
+            if (stopBombard)
+            {
+                initQuality = Math.Min(initQuality, planetDamage);
+                planetDamage = Game.Random.Round(planetDamage * colonyDamage / (double)tempPop);
+            }
+            this.Player.GoldIncome(GetUpkeepReturn(GetBombardMoveLeft(planetDamage, initQuality, colonyDamage, initPop, pct)));
 
             if (planet.Dead)
                 colonyDamage = tempPop;

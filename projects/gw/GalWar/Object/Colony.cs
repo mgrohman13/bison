@@ -167,7 +167,7 @@ namespace GalWar
             {
                 checked
                 {
-                    this._defenseHPChange = (sbyte)value;
+                    this._defenseHPChange = (short)value;
                 }
             }
         }
@@ -603,6 +603,9 @@ namespace GalWar
 
         private void AddProduction(double production, bool floor, bool random, out double goldAdded, out int prodAdded)
         {
+            if (this.Buildable == null)
+                throw new Exception();
+
             double loss = GetAddProductionLoss(production);
             goldAdded = 0;
             if (!random)
@@ -1011,6 +1014,7 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
+            AssertException.Assert(gold || this.Buildable != null);
 
             int production;
             double addGold, goldIncome;

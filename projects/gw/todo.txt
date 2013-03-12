@@ -1,4 +1,3 @@
-better math for funky chance
 undo MarkObsolete
 standardize dead checks
 test occupying amount vs occupying 1 then moving amount

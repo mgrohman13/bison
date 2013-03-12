@@ -762,31 +762,49 @@ namespace GalWar
                 double hpStr = GetHPStr(stat, other, hpMult);
                 hpStr /= hpStr - GetHPStr(stat - 1, other, hpMult);
                 if (other > 1)
-                    hpStr = GetStatChance(hpStr, stat);
+                    hpStr = GetStatChance(hpStr, stat, other);
                 return Game.Random.Round(hpStr);
             }
             return 0;
         }
 
+        internal static Dictionary<Ship.ExpType, int> IncreaseAttDef(int att, int def, int hp, out int total)
+        {
+            Dictionary<Ship.ExpType, int> stats = new Dictionary<Ship.ExpType, int>();
+            total = 0;
+            Dictionary<ModifyStat, int> modifyStats = BalanceAttDef(att, def, hp, Consts.BaseDesignHPMult);
+            foreach (ModifyStat stat in modifyStats.Keys)
+            {
+                int amt = modifyStats[stat];
+                stats[(Ship.ExpType)Enum.Parse(typeof(Ship.ExpType), stat.ToString())] = amt;
+                total += amt;
+            }
+            return stats;
+        }
+
         private ModifyStat GetIncrease(double hpMult)
         {
-            Dictionary<ModifyStat, int> stats = new Dictionary<ModifyStat, int>();
-
-            stats.Add(ModifyStat.Att, IncreaseAttDef(this.Att, this.Def, hpMult));
-            stats.Add(ModifyStat.Def, IncreaseAttDef(this.Def, this.Att, hpMult));
-            stats.Add(ModifyStat.HP, Game.Random.Round(byte.MaxValue * GetHPStr(this.Att, this.Def, hpMult)));
-
+            Dictionary<ModifyStat, int> stats = BalanceAttDef(this.Att, this.Def, this.HP, hpMult);
             return Game.Random.SelectValue<ModifyStat>(stats);
         }
 
-        private int IncreaseAttDef(int stat, int other, double hpMult)
+        private static Dictionary<ModifyStat, int> BalanceAttDef(int att, int def, int hp, double hpMult)
         {
-            return Game.Random.Round(byte.MaxValue * GetStatChance(this.HP, stat) / ( GetHPStr(stat + 1, other, hpMult) - GetHPStr(stat, other, hpMult) ));
+            Dictionary<ModifyStat, int> stats = new Dictionary<ModifyStat, int>();
+            stats.Add(ModifyStat.Att, IncreaseAttDef(att, def, hp, hpMult));
+            stats.Add(ModifyStat.Def, IncreaseAttDef(def, att, hp, hpMult));
+            stats.Add(ModifyStat.HP, Game.Random.Round(byte.MaxValue * GetHPStr(att, def, hpMult)));
+            return stats;
         }
 
-        private double GetStatChance(double mult, int stat)
+        private static int IncreaseAttDef(int stat, int other, int hp, double hpMult)
         {
-            return mult * stat / (double)( this.Att + this.Def );
+            return Game.Random.Round(byte.MaxValue * GetStatChance(hp, stat, other) / ( GetHPStr(stat + 1, other, hpMult) - GetHPStr(stat, other, hpMult) ));
+        }
+
+        private static double GetStatChance(double mult, int stat, int other)
+        {
+            return mult * stat / (double)( stat + other );
         }
 
         internal static double SetBombardDamage(double bombardDamage, int att)
