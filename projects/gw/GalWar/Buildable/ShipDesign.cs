@@ -142,7 +142,7 @@ namespace GalWar
         }
 
         internal ShipDesign(Player player, int research, double minCost, double maxCost)
-            : this(player, research, player.GetShipDesigns(), player.GetResearchFocus(), false, false, false, minCost, maxCost, null, out unused)
+            : this(player, research, player.GetDesigns(), player.GetResearchFocus(), false, false, false, minCost, maxCost, null, out unused)
         {
             checked
             {
@@ -858,7 +858,7 @@ namespace GalWar
             return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(), GetNonTransPct(), this.Speed);
         }
 
-        internal HashSet<ShipDesign> GetObsolete(int mapSize, List<ShipDesign> designs)
+        internal HashSet<ShipDesign> GetObsolete(int mapSize, IEnumerable<ShipDesign> designs)
         {
             HashSet<ShipDesign> retVal = new HashSet<ShipDesign>();
             foreach (ShipDesign design in designs)
@@ -868,6 +868,9 @@ namespace GalWar
         }
         internal bool MakesObsolete(int mapSize, ShipDesign oldDesign)
         {
+            if (this.Research <= oldDesign.Research)
+                return false;
+
             double totCost = this.Cost + this.Upkeep * this.GetUpkeepPayoff(mapSize);
             double oldTotCost = oldDesign.Cost + oldDesign.Upkeep * oldDesign.GetUpkeepPayoff(mapSize);
 
@@ -902,8 +905,7 @@ namespace GalWar
         }
         private bool CompareForObsolete(double s1, double s2)
         {
-            bool retVal = ( ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.26, .21) );
-            return retVal;
+            return ( s2 == 0 || ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.26, .21) );
         }
         private bool ObsoleteCost(double c1, double c2, double u1, double u2)
         {
@@ -962,7 +964,7 @@ namespace GalWar
 
         internal override bool CanBeBuiltBy(Colony colony)
         {
-            return colony.Player.GetShipDesigns().Contains(this);
+            return colony.Player.GetDesigns().Contains(this);
         }
 
         public override string GetProdText(string curProd)

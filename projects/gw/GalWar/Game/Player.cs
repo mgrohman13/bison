@@ -1004,6 +1004,13 @@ namespace GalWar
 
         public ReadOnlyCollection<ShipDesign> GetShipDesigns()
         {
+            TurnException.CheckTurn(this);
+
+            return GetDesigns();
+        }
+
+        internal ReadOnlyCollection<ShipDesign> GetDesigns()
+        {
             return designs.AsReadOnly();
         }
 

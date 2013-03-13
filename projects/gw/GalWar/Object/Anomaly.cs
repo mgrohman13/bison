@@ -407,7 +407,7 @@ namespace GalWar
             foreach (Colony colony in player.GetColonies())
                 distance = Math.Min(distance, Tile.GetDistance(this.Tile, colony.Tile));
             double cost = int.MaxValue;
-            foreach (ShipDesign design in player.GetShipDesigns())
+            foreach (ShipDesign design in player.GetDesigns())
                 if (design.Colony)
                     cost = Math.Min(cost, design.Upkeep * distance / (double)design.Speed
                             + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));

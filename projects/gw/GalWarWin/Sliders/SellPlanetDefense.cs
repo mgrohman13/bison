@@ -32,16 +32,12 @@ namespace GalWarWin.Sliders
         {
             this.colony = colony;
 
+            chkProd.Checked = chkProd.Enabled = ( colony.Buildable != null );
+
             if (eventHandler != null)
                 chkProd.CheckedChanged -= eventHandler;
             eventHandler = new EventHandler(this.sellForProd_CheckedChanged);
             chkProd.CheckedChanged += eventHandler;
-
-            if (colony.Buildable == null)
-            {
-                chkProd.Enabled = false;
-                chkProd.Checked = false;
-            }
         }
 
         private void sellForProd_CheckedChanged(object sender, EventArgs e)
