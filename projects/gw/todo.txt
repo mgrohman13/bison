@@ -1,4 +1,3 @@
-bring up ship calc with known cost auto calcs research
 undo MarkObsolete
 standardize dead checks
 test occupying amount vs occupying 1 then moving amount

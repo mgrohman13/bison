@@ -82,8 +82,10 @@ namespace GalWarWin
 
             if (ship.Player.IsTurn)
             {
-                SetValue(this.nudProd, ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult);
+                double cost = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
+                SetValue(this.nudProd, cost);
                 SetValue(this.nudUpk, ship.Upkeep);
+                SetValue(this.nudResearch, CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.Upkeep));
             }
             else
             {
