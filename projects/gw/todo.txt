@@ -1,9 +1,9 @@
+anomoly designs/ships should not use player focus at all
+rework obsolete research
 undo MarkObsolete
 standardize dead checks
-test occupying amount vs occupying 1 then moving amount
-	equal soldiers
-	superior cost
 sell PD also sells att/def?
+ShipNames._divisions always has 0 at first index
 
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
@@ -17,8 +17,6 @@ management screens
 	ships
 clean up code
 	member order
-
-ShipNames._divisions always has 0 at first index
 
 anomaly neutral ships?
 known enemy designs

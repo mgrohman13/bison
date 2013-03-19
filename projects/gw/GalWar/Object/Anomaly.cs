@@ -619,7 +619,7 @@ namespace GalWar
 
         private bool Death(IEventHandler handler, Ship ship)
         {
-            int damage = ( ( ship.MaxHP < 2 || Game.Random.Bool() ) ? ( ship.MaxHP ) : ( 1 + Game.Random.WeightedInt(ship.MaxHP - 2, .26) ) );
+            int damage = ( ( ship.MaxHP < 2 || Game.Random.Bool() ) ? ( ship.MaxHP ) : ( 1 + Game.Random.WeightedInt(ship.MaxHP - 2, .21) ) );
 
             handler.Explore(AnomalyType.Death, -damage);
 

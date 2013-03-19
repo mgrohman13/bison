@@ -535,8 +535,8 @@ next_planet:
         {
             Player[] researchOrder = GetResearchOrder();
             //research victory happens when the top player exceeds a certain multiple of the second place player
-            if (researchOrder.Length > 1 && researchOrder[0].Research >
-                    Game.Random.Gaussian(researchOrder[1].Research * Consts.ResearchVictoryMult, Consts.ResearchVictoryRndm))
+            if (researchOrder.Length > 1 && researchOrder[0].Research > researchOrder[1].Research *
+                    Game.Random.GaussianCapped(Consts.ResearchVictoryMult, Consts.ResearchVictoryRndm, Consts.ResearchVictoryMinMult))
             {
                 researchOrder[0].Destroy();
                 RemovePlayer(researchOrder[0]);

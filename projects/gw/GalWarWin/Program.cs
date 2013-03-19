@@ -54,9 +54,6 @@ namespace GalWarWin
 
             ShipDesign.DoCostTable();
 
-            if (Consts.ResearchVictoryMult * ( 1 - Consts.ResearchVictoryRndm * MattUtil.MTRandom.GAUSSIAN_FLOAT_MAX ) <= 1)
-                throw new Exception();
-
             Player.VerifyRounded(1 / Consts.ProductionForGold);
             Player.VerifyRounded(Consts.GoldForProduction);
 

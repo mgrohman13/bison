@@ -432,7 +432,7 @@ namespace GalWar
             this.productionRounding = Game.Random.NextFloat();
         }
 
-        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double attSoldiers, int gold, out double shipValueExp)
+        internal void Invasion(IEventHandler handler, Ship ship, ref int attackers, ref double attSoldiers, int gold)
         {
             handler.OnInvade(ship, this, attackers, attSoldiers, gold, double.NaN, double.NaN);
 
@@ -467,7 +467,9 @@ namespace GalWar
                 exp += Consts.PlanetConstValue;
             exp *= Consts.TroopExperienceMult;
             this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
+            double shipValueExp;
             attSoldiers += GetExperienceSoldiers(attackers, initAttackers, exp, out shipValueExp);
+            ship.AddExperience(0, shipValueExp);
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
 

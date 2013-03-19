@@ -1308,24 +1308,19 @@ namespace GalWar
             //all attackers cost gold to move regardless of where they end up
             this.Player.SpendGold(GetActualGoldCost(population) + gold, gold);
 
-            double exp;
-
             double soldiers;
             if (target.Population > 0)
                 soldiers = GetSoldiers(population);
             else
                 soldiers = GetMoveSoldiers(population);
-            this.Soldiers -= soldiers;
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
-            target.Invasion(handler, this, ref population, ref soldiers, gold, out exp);
-            this.Population += population;
+            this.Soldiers -= soldiers;
+            target.Invasion(handler, this, ref population, ref soldiers, gold);
             this.movedPop += population;
-
+            this.Population += population;
             this.Soldiers += soldiers;
-
-            this.AddExperience(0, exp);
 
             LevelUp(handler);
         }

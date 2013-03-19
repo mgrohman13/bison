@@ -900,18 +900,18 @@ namespace GalWar
                 ( CompareForObsolete(attStr / totCost, oldAttStr / oldTotCost) && CompareForObsolete(defStr / totCost, oldDefStr / oldTotCost) &&
                 CompareForObsolete(transStr / totCost, oldTransStr / oldTotCost) && CompareForObsolete(colonyStr / totCost, oldColonyStr / oldTotCost) &&
                 CompareForObsolete(deathStr / totCost, oldDeathStr / oldTotCost) &&
-                ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep) ) )
+                ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep, this.Research, oldDesign.Research) ) )
             );
         }
         private bool CompareForObsolete(double s1, double s2)
         {
-            return ( s2 == 0 || ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.26, .21) );
+            return ( s2 == 0 || ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.21, .26) );
         }
-        private bool ObsoleteCost(double c1, double c2, double u1, double u2)
+        private bool ObsoleteCost(double c1, double c2, double u1, double u2, double r1, double r2)
         {
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
-            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, .3));
+            return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, 780 / ( 260 + r1 - r2 )));
         }
 
         internal bool StatsIdentical(ShipDesign d1, ShipDesign d2)
