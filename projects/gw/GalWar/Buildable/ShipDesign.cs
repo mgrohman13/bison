@@ -96,9 +96,6 @@ namespace GalWar
         //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
         private const double FocusTypeMult = 2.1;
 
-        [NonSerialized]
-        private static bool unused;
-
         private readonly bool _colony;
         private readonly byte _name, _mark, _att, _def, _speed, _upkeep;
         private readonly ushort _cost, _hp, _trans, _bombardDamage;
@@ -112,168 +109,244 @@ namespace GalWar
             int idx = -1;
             foreach (int type in Game.Random.Iterate(3))
             {
-                ShipDesign design = new ShipDesign(player, research[++idx], retVal, FocusStat.None,
-                        ( type == 0 ), ( type == 1 ), ( type == 2 ), double.NaN, double.NaN, null, out unused);
+                ShipDesign design = new ShipDesign(player, false, research[++idx],
+                        ( type == 0 ), ( type == 1 ), ( type == 2 ), double.NaN, double.NaN);
                 retVal.Add(design);
             }
 
             return retVal;
         }
 
-        internal static ShipDesign TryUpgradeDesign(Player player, IEnumerable<int> tries, ShipDesign upgradeDesign)
-        {
-            foreach (int research in tries)
-            {
-                bool named;
-                ShipDesign design = new ShipDesign(player, research, null, FocusStat.None,
-                        false, false, false, double.NaN, double.NaN, upgradeDesign, out named);
-                if (named)
-                    return design;
-            }
-            return null;
-        }
-
-        internal ShipDesign(Player player, int research)
-            : this(player, research, double.NaN, double.NaN)
+        internal ShipDesign(Player player, bool useFocus, int research)
+            : this(player, useFocus, research, double.NaN, double.NaN)
         {
             checked
             {
             }
         }
-
         internal ShipDesign(Player player, int research, double minCost, double maxCost)
-            : this(player, research, player.GetDesigns(), player.GetResearchFocus(), false, false, false, minCost, maxCost, null, out unused)
+            : this(player, false, research, minCost, maxCost)
         {
             checked
             {
             }
         }
 
-        private ShipDesign(Player player, int research, ICollection<ShipDesign> designs, FocusStat focus,
-                bool forceColony, bool forceTrans, bool forceNeither, double minCost, double maxCost, ShipDesign nameIf, out bool named)
+        private ShipDesign(Player player, bool useFocus, int research, double minCost, double maxCost)
+            : this(player, useFocus, research, false, false, false, minCost, maxCost)
+        {
+            checked
+            {
+            }
+        }
+        private ShipDesign(Player player, bool useFocus, int research, bool forceColony, bool forceTrans, bool forceNeither, double minCost, double maxCost)
         {
             checked
             {
                 int mapSize = player.Game.MapSize;
 
-                this._bombardDamage = 0;
-                this._research = (uint)research;
+                ICollection<ShipDesign> designs = null;
+                FocusStat focus = FocusStat.None;
+                ShipDesign design = null;
+                if (useFocus)
+                {
+                    design = player.ResearchFocusDesign;
+                    if (design == null)
+                    {
+                        designs = player.GetShipDesigns();
+                        focus = player.ResearchFocus;
+                    }
+                }
 
-                //existing designs change probabilities for new research
-                double colonyPct, upkeepPct, attPct, speedPct, transPct, dsPct;
-                GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
-
-                //  ------  Colony/Trans/DS   ------
-                double transStr = GetTransStr(research), bombardDamageMult;
-                bool colony;
-                int trans;
-                DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
-                        ref transStr, out colony, out trans, out bombardDamageMult, focus);
-                bool deathStar = ( bombardDamageMult > 0 );
-                this._colony = colony;
-                this._trans = (ushort)trans;
-
-                //  ------  Att/Def           ------
-                //being a colony ship/transport/death star makes att and def lower
-                double strMult = GetAttDefStrMult(transStr, bombardDamageMult, this.Colony, this.Trans);
-                double str = GetAttDefStr(research, strMult, focus);
-                int att, def;
-                DoAttDef(transStr, str, attPct, out att, out def, focus);
-                this._att = (byte)att;
-                this._def = (byte)def;
-
-                //  ------  HP                ------
-                //being a colony ship/transport/death star makes hp higher
-                double hpMult = GetHPMult(strMult, deathStar, this.Colony);
-                //hp is relative to actual randomized stats
-                this._hp = (ushort)MakeStat(GetHPStr(this.Att, this.Def, hpMult));
-
-                //  ------  Speed             ------
-                double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, this.Colony, this.Trans, true),
-                        GetSpeedMult(str, hpMult, speedPct, this.Att, this.Def, this.HP, focus));
-                this._speed = (byte)MakeStat(speedStr);
-
-                //  ------  BombardDamage     ------
-                //modify bombard mult based on speed and att
-                if (deathStar)
-                    this._bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * this.BombardDamage
-                            * Math.Sqrt(speedStr / (double)this.Speed * Math.Sqrt(str * this.Def) / (double)this.Att)), this.Att, true);
-
-                //  ------  Cost/Upkeep       ------
-                double cost = -1, upkRnd = double.NaN;
-                int upkeep = -1;
-                GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                 bool anomalyShip = !double.IsNaN(minCost);
                 if (!anomalyShip)
                 {
                     minCost = GetMinCost(mapSize);
                     maxCost = GetMaxCost(research, minCost);
                 }
-                while (cost > maxCost)
+
+                this._research = (ushort)research;
+                do
                 {
-                    switch (GetReduce(cost, hpMult, forceColony, forceTrans))
-                    {
-                    case ModifyStat.Att:
-                        --this._att;
-                        break;
-                    case ModifyStat.Def:
-                        --this._def;
-                        break;
-                    case ModifyStat.HP:
-                        --this._hp;
-                        break;
-                    case ModifyStat.Speed:
-                        --this._speed;
-                        break;
-                    case ModifyStat.Trans:
-                        --this._trans;
-                        break;
-                    case ModifyStat.DS:
-                        this._bombardDamage = (ushort)SetBombardDamage(this.BombardDamage - 1, this.Att, false);
-                        break;
-                    case ModifyStat.Colony:
-                        this._colony = false;
-                        break;
-                    case ModifyStat.None:
-                        maxCost = cost;
-                        break;
-                    default:
-                        throw new Exception();
-                    }
+                    this._bombardDamage = 0;
+                    double upkeepPct, hpMult;
+
+                    bool colony;
+                    int att, def, hp, speed, trans, bombardDamage;
+
+                    if (design == null)
+                        NewDesign(mapSize, research, designs, focus, forceColony, forceTrans, forceNeither,
+                                out upkeepPct, out hpMult, out att, out def, out hp, out speed, out colony, out trans, out bombardDamage);
+                    else
+                        UpgradeDesign(mapSize, research, design,
+                                out upkeepPct, out hpMult, out att, out def, out hp, out speed, out colony, out trans, out bombardDamage);
+
+                    this._colony = colony;
+                    this._trans = (ushort)( trans );
+                    this._att = (byte)att;
+                    this._def = (byte)def;
+                    this._hp = (ushort)hp;
+                    this._speed = (byte)speed;
+                    this._bombardDamage = (ushort)bombardDamage;
+
+                    //  ------  Cost/Upkeep       ------
+                    double cost = -1, upkRnd = double.NaN;
+                    int upkeep = -1;
                     GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
-                }
-                while (cost < minCost)
-                {
-                    switch (GetIncrease(hpMult))
+                    while (cost > maxCost)
                     {
-                    case ModifyStat.Att:
-                        ++this._att;
-                        this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage, this.Att, this.DeathStar);
-                        break;
-                    case ModifyStat.Def:
-                        ++this._def;
-                        break;
-                    case ModifyStat.HP:
-                        ++this._hp;
-                        break;
-                    default:
-                        throw new Exception();
+                        switch (GetReduce(cost, hpMult, forceColony, forceTrans))
+                        {
+                        case ModifyStat.Att:
+                            --this._att;
+                            break;
+                        case ModifyStat.Def:
+                            --this._def;
+                            break;
+                        case ModifyStat.HP:
+                            --this._hp;
+                            break;
+                        case ModifyStat.Speed:
+                            --this._speed;
+                            break;
+                        case ModifyStat.Trans:
+                            --this._trans;
+                            break;
+                        case ModifyStat.DS:
+                            this._bombardDamage = (ushort)SetBombardDamage(this.BombardDamage - 1, this.Att, false);
+                            break;
+                        case ModifyStat.Colony:
+                            this._colony = false;
+                            break;
+                        case ModifyStat.None:
+                            maxCost = cost;
+                            break;
+                        default:
+                            throw new Exception();
+                        }
+                        GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                     }
-                    GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
-                }
-                this._cost = (ushort)Game.Random.Round(cost);
-                this._upkeep = (byte)upkeep;
+                    while (cost < minCost)
+                    {
+                        switch (GetIncrease(hpMult))
+                        {
+                        case ModifyStat.Att:
+                            ++this._att;
+                            this._bombardDamage = (ushort)SetBombardDamage(this._bombardDamage, this.Att, this.DeathStar);
+                            break;
+                        case ModifyStat.Def:
+                            ++this._def;
+                            break;
+                        case ModifyStat.HP:
+                            ++this._hp;
+                            break;
+                        default:
+                            throw new Exception();
+                        }
+                        GetCost(mapSize, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
+                    }
+                    this._cost = (ushort)Game.Random.Round(cost);
+                    this._upkeep = (byte)upkeep;
+                } while (design != null && !this.MakesObsolete(mapSize, design));
 
                 //  ------  Name   
-                this._name = byte.MaxValue;
-                this._mark = byte.MaxValue;
-                named = ( nameIf == null || ( !StatsIdentical(this, nameIf) && this.MakesObsolete(mapSize, nameIf) ) );
-                if (named)
+                this._name = (byte)player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
+                this._mark = (byte)player.Game.ShipNames.GetMark(player, this.Name);
+            }
+        }
+
+        private static void NewDesign(int mapSize, int research, ICollection<ShipDesign> designs, FocusStat focus, bool forceColony, bool forceTrans, bool forceNeither,
+                out double upkeepPct, out double hpMult, out int att, out int def, out int hp,
+                out int speed, out bool colony, out int trans, out int bombardDamage)
+        {
+            //existing designs change probabilities for new research
+            double colonyPct, attPct, speedPct, transPct, dsPct;
+            GetPcts(designs, mapSize, research, out colonyPct, out upkeepPct, out attPct, out speedPct, out transPct, out dsPct);
+
+            //  ------  Colony/Trans/DS   ------
+            double transStr = GetTransStr(research), bombardDamageMult;
+            DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
+                    ref transStr, out colony, out trans, out bombardDamageMult, focus);
+            bool deathStar = ( bombardDamageMult > 0 );
+            trans = (ushort)trans;
+
+            //  ------  Att/Def           ------
+            //being a colony ship/transport/death star makes att and def lower
+            double strMult = GetAttDefStrMult(transStr, bombardDamageMult, colony, trans);
+            double str = GetAttDefStr(research, strMult, focus);
+            DoAttDef(str, attPct, ( colony || trans > Game.Random.Gaussian(transStr * .52, .39) ), out att, out def, focus);
+            att = (byte)att;
+            def = (byte)def;
+
+            //  ------  HP                ------
+            //being a colony ship/transport/death star makes hp higher
+            hpMult = GetHPMult(strMult, deathStar, colony);
+            //hp is relative to actual randomized stats
+            hp = (ushort)MakeStat(GetHPStr(att, def, hpMult));
+
+            //  ------  Speed             ------
+            double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, colony, trans, true),
+                    GetSpeedMult(str, hpMult, speedPct, att, def, hp, focus));
+            speed = (byte)MakeStat(speedStr);
+
+            //  ------  BombardDamage     ------
+            //modify bombard mult based on speed and att
+            if (deathStar)
+                bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * Consts.GetBombardDamage(att)
+                        * Math.Sqrt(speedStr / (double)speed * Math.Sqrt(str * def) / (double)att)), att, true);
+            else
+                bombardDamage = 0;
+        }
+
+        private static void UpgradeDesign(int mapSize, int research, ShipDesign design,
+                out double upkeepPct, out double hpMult, out int att, out int def, out int hp,
+                out int speed, out bool colony, out int trans, out int bombardDamage)
+        {
+            upkeepPct = ( design.Cost / (double)design.Upkeep / design.GetUpkeepPayoff(mapSize) + 1 ) * Consts.CostUpkeepPct;
+            hpMult = design.HP / GetHPStr(design.Att, design.Def, 1);
+
+            double attStr = design.Att;
+            double defStr = design.Def;
+            double hpStr = design.HP;
+            double speedStr = design.Speed;
+            bool colonyStr = design.Colony;
+            double transStr = design.Trans;
+            bool deathStarStr = design.DeathStar;
+            double bombardDamageStr = design.BombardDamage;
+
+            if (Game.Random.Bool())
+            {
+                double attDefStr = GetAttDefStr(research);
+                if (Game.Random.Bool())
+                    attStr += Game.Random.Range(0, 1 + attDefStr);
+                if (Game.Random.Bool())
+                    defStr += Game.Random.Range(0, 1 + attDefStr);
+                if (Game.Random.Bool())
+                    hpStr += Game.Random.Range(0, 1 + GetHPStr(attDefStr, attDefStr));
+                if (Game.Random.Bool())
                 {
-                    this._name = (byte)player.Game.ShipNames.GetName(this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
-                    this._mark = (byte)player.Game.ShipNames.GetMark(player, this.Name);
+                    if (Game.Random.Bool())
+                        speedStr += Game.Random.Range(0, 1 + GetSpeedStr(research));
+                    if (Game.Random.Bool() && ( deathStarStr || transStr > 0 || Game.Random.Bool() ))
+                    {
+                        if (!deathStarStr)
+                            if (transStr > 0 || Game.Random.Bool())
+                                transStr += Game.Random.Range(1, GetTransStr(research));
+                            else
+                                deathStarStr = true;
+                        bombardDamageStr += Game.Random.Range(1, Consts.GetBombardDamage(attDefStr) * DeathStarAvg);
+                    }
+                    colonyStr |= ( transStr > 0 && Game.Random.Bool() );
                 }
             }
+
+            att = (byte)MakeStat(attStr);
+            def = (byte)MakeStat(defStr);
+            hp = (ushort)MakeStat(hpStr);
+            speed = (byte)MakeStat(speedStr);
+            colony = colonyStr;
+            trans = (ushort)( transStr > 0 ? MakeStat(transStr) : 0 );
+            bombardDamage = (ushort)( deathStarStr ? MakeStat(bombardDamageStr) : 0 );
         }
 
         public bool Colony
@@ -373,7 +446,6 @@ namespace GalWar
         {
             get
             {
-
                 return (int)this._research;
             }
         }
@@ -569,7 +641,7 @@ namespace GalWar
             return MakeStatStr(research, 2.1 * strMult, .585);
         }
 
-        private void DoAttDef(double transStr, double str, double attPct, out int att, out int def, FocusStat focus)
+        private static void DoAttDef(double str, double attPct, bool defensive, out int att, out int def, FocusStat focus)
         {
             if (IsFocusing(focus, FocusStat.Speed))
                 str /= FocusSpeedMult;
@@ -585,7 +657,7 @@ namespace GalWar
                 attPct *= FocusAttMult;
 
             //colony ships and transports are more likely to be defensive
-            double chance = ( ( this.Colony || this.Trans > Game.Random.Gaussian(transStr * .52, .39) ) ? .26 : .65 );
+            double chance = ( defensive ? .26 : .65 );
             if (attPct < 1)
                 chance = ( 1 - ( ( 1 - chance ) * attPct ) );
             else
@@ -607,7 +679,7 @@ namespace GalWar
             else if (IsFocusing(focus, FocusStat.Def))
                 CheckFocusStat(str, ref def, ref att);
         }
-        private void CheckFocusStat(double str, ref int s1, ref int s2)
+        private static void CheckFocusStat(double str, ref int s1, ref int s2)
         {
             if (s1 >= s2)
                 while (s1 < Game.Random.Gaussian(s2 * FocusAttMult, .39))
@@ -825,9 +897,8 @@ namespace GalWar
         }
         internal static double GetBombardDamage(ushort bombardDamage, int att)
         {
-            int minDamage = GetDeathStarMin(att);
             if (bombardDamage > 0)
-                if (bombardDamage < minDamage)
+                if (bombardDamage < GetDeathStarMin(att))
                     throw new Exception();
                 else
                     return bombardDamage;
@@ -912,13 +983,6 @@ namespace GalWar
             double c = Math.Min(c1, c2) / Math.Max(c1, c2);
             double u = Math.Min(u1, u2) / Math.Max(u1, u2);
             return Game.Random.Bool(Math.Pow(c * c * c * c * c * u * u * u, 780 / ( 260 + r1 - r2 )));
-        }
-
-        internal bool StatsIdentical(ShipDesign d1, ShipDesign d2)
-        {
-            return ( d1.Colony == d2.Colony && d1.Att == d2.Att && d1.Def == d2.Def && d1.Speed == d2.Speed
-                    && d1.Upkeep == d2.Upkeep && d1.Cost == d2.Cost
-                    && d1.HP == d2.HP && d1.Trans == d2.Trans && d1.BombardDamage == d2.BombardDamage );
         }
 
         #endregion //internal

@@ -41,13 +41,14 @@ namespace GalWarWin
             this.cbTransport = new System.Windows.Forms.CheckBox();
             this.btnOK = new System.Windows.Forms.Button();
             this.sdUpgrade = new GalWarWin.BuildableControl();
+            this.lblChance = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(330, 242);
+            this.btnCancel.Location = new System.Drawing.Point(330, 267);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(88, 23);
             this.btnCancel.TabIndex = 0;
@@ -56,9 +57,10 @@ namespace GalWarWin
             // 
             // lbxUpgrade
             // 
+            this.lbxUpgrade.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.lbxUpgrade.Enabled = false;
             this.lbxUpgrade.FormattingEnabled = true;
-            this.lbxUpgrade.Location = new System.Drawing.Point(100, 0);
+            this.lbxUpgrade.Location = new System.Drawing.Point(100, 25);
             this.lbxUpgrade.Name = "lbxUpgrade";
             this.lbxUpgrade.Size = new System.Drawing.Size(130, 277);
             this.lbxUpgrade.TabIndex = 1;
@@ -67,8 +69,9 @@ namespace GalWarWin
             // 
             // cbColony
             // 
+            this.cbColony.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbColony.AutoSize = true;
-            this.cbColony.Location = new System.Drawing.Point(12, 35);
+            this.cbColony.Location = new System.Drawing.Point(12, 60);
             this.cbColony.Name = "cbColony";
             this.cbColony.Size = new System.Drawing.Size(82, 17);
             this.cbColony.TabIndex = 7;
@@ -78,8 +81,9 @@ namespace GalWarWin
             // 
             // cbUpgrade
             // 
+            this.cbUpgrade.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbUpgrade.AutoSize = true;
-            this.cbUpgrade.Location = new System.Drawing.Point(12, 248);
+            this.cbUpgrade.Location = new System.Drawing.Point(12, 273);
             this.cbUpgrade.Name = "cbUpgrade";
             this.cbUpgrade.Size = new System.Drawing.Size(67, 17);
             this.cbUpgrade.TabIndex = 8;
@@ -89,8 +93,9 @@ namespace GalWarWin
             // 
             // cbUpkeep
             // 
+            this.cbUpkeep.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbUpkeep.AutoSize = true;
-            this.cbUpkeep.Location = new System.Drawing.Point(12, 212);
+            this.cbUpkeep.Location = new System.Drawing.Point(12, 237);
             this.cbUpkeep.Name = "cbUpkeep";
             this.cbUpkeep.Size = new System.Drawing.Size(64, 17);
             this.cbUpkeep.TabIndex = 9;
@@ -100,8 +105,9 @@ namespace GalWarWin
             // 
             // cbCost
             // 
+            this.cbCost.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbCost.AutoSize = true;
-            this.cbCost.Location = new System.Drawing.Point(12, 189);
+            this.cbCost.Location = new System.Drawing.Point(12, 214);
             this.cbCost.Name = "cbCost";
             this.cbCost.Size = new System.Drawing.Size(67, 17);
             this.cbCost.TabIndex = 10;
@@ -111,8 +117,9 @@ namespace GalWarWin
             // 
             // cbSpeed
             // 
+            this.cbSpeed.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbSpeed.AutoSize = true;
-            this.cbSpeed.Location = new System.Drawing.Point(12, 153);
+            this.cbSpeed.Location = new System.Drawing.Point(12, 178);
             this.cbSpeed.Name = "cbSpeed";
             this.cbSpeed.Size = new System.Drawing.Size(46, 17);
             this.cbSpeed.TabIndex = 11;
@@ -122,8 +129,9 @@ namespace GalWarWin
             // 
             // cbDefense
             // 
+            this.cbDefense.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbDefense.AutoSize = true;
-            this.cbDefense.Location = new System.Drawing.Point(12, 117);
+            this.cbDefense.Location = new System.Drawing.Point(12, 142);
             this.cbDefense.Name = "cbDefense";
             this.cbDefense.Size = new System.Drawing.Size(66, 17);
             this.cbDefense.TabIndex = 12;
@@ -133,8 +141,9 @@ namespace GalWarWin
             // 
             // cbAttack
             // 
+            this.cbAttack.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbAttack.AutoSize = true;
-            this.cbAttack.Location = new System.Drawing.Point(12, 94);
+            this.cbAttack.Location = new System.Drawing.Point(12, 119);
             this.cbAttack.Name = "cbAttack";
             this.cbAttack.Size = new System.Drawing.Size(57, 17);
             this.cbAttack.TabIndex = 13;
@@ -144,8 +153,9 @@ namespace GalWarWin
             // 
             // cbDS
             // 
+            this.cbDS.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbDS.AutoSize = true;
-            this.cbDS.Location = new System.Drawing.Point(12, 58);
+            this.cbDS.Location = new System.Drawing.Point(12, 83);
             this.cbDS.Name = "cbDS";
             this.cbDS.Size = new System.Drawing.Size(77, 17);
             this.cbDS.TabIndex = 14;
@@ -155,8 +165,9 @@ namespace GalWarWin
             // 
             // cbTransport
             // 
+            this.cbTransport.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.cbTransport.AutoSize = true;
-            this.cbTransport.Location = new System.Drawing.Point(12, 12);
+            this.cbTransport.Location = new System.Drawing.Point(12, 37);
             this.cbTransport.Name = "cbTransport";
             this.cbTransport.Size = new System.Drawing.Size(71, 17);
             this.cbTransport.TabIndex = 15;
@@ -166,9 +177,9 @@ namespace GalWarWin
             // 
             // btnOK
             // 
-            this.btnOK.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnOK.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(236, 242);
+            this.btnOK.Location = new System.Drawing.Point(236, 267);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(88, 23);
             this.btnOK.TabIndex = 16;
@@ -177,11 +188,22 @@ namespace GalWarWin
             // 
             // sdUpgrade
             // 
+            this.sdUpgrade.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.sdUpgrade.Enabled = false;
-            this.sdUpgrade.Location = new System.Drawing.Point(230, 0);
+            this.sdUpgrade.Location = new System.Drawing.Point(230, 25);
             this.sdUpgrade.Name = "sdUpgrade";
             this.sdUpgrade.Size = new System.Drawing.Size(200, 230);
             this.sdUpgrade.TabIndex = 5;
+            // 
+            // lblChance
+            // 
+            this.lblChance.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblChance.Location = new System.Drawing.Point(0, 0);
+            this.lblChance.Name = "lblChance";
+            this.lblChance.Size = new System.Drawing.Size(430, 25);
+            this.lblChance.TabIndex = 17;
+            this.lblChance.Text = "lblChance";
+            this.lblChance.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // ResearchFocusForm
             // 
@@ -189,7 +211,8 @@ namespace GalWarWin
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(430, 277);
+            this.ClientSize = new System.Drawing.Size(430, 302);
+            this.Controls.Add(this.lblChance);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.cbTransport);
             this.Controls.Add(this.cbDS);
@@ -226,5 +249,6 @@ namespace GalWarWin
         private System.Windows.Forms.CheckBox cbDS;
         private System.Windows.Forms.CheckBox cbTransport;
         private System.Windows.Forms.Button btnOK;
+        private System.Windows.Forms.Label lblChance;
 	}
 }

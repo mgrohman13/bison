@@ -1374,6 +1374,7 @@ namespace GalWarWin
         private void ShowResearchFocus()
         {
             ResearchFocusForm.ShowForm();
+            RefreshAll();
         }
 
         private void lbl4_Click(object sender, EventArgs e)

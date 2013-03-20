@@ -1,5 +1,3 @@
-anomoly designs/ships should not use player focus at all
-rework obsolete research
 undo MarkObsolete
 standardize dead checks
 sell PD also sells att/def?

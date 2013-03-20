@@ -27,7 +27,7 @@ namespace GalWar
         private byte _researchFocus, _pdAtt, _pdDef;
         private ushort _newResearch;
         private uint _research, _lastResearched, _researchGuess, _goldValue;
-        private float _rKey, _rChance, _rMult, _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
+        private float _rChance, _rDesignMult, _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
         private double _goldOffset;
 
         internal Player(int id, Game Game, StartingPlayer player, Planet planet,
@@ -64,9 +64,8 @@ namespace GalWar
 
                 this._goldValue = 0;
 
-                this._rKey = float.NaN;
                 this._rChance = float.NaN;
-                this._rMult = float.NaN;
+                this._rDesignMult = float.NaN;
 
                 this._rDisp = 1;
                 this._rDispTrg = 1;
@@ -289,20 +288,6 @@ namespace GalWar
             }
         }
 
-        private double rKey
-        {
-            get
-            {
-                return this._rKey;
-            }
-            set
-            {
-                checked
-                {
-                    this._rKey = (float)value;
-                }
-            }
-        }
         private double rChance
         {
             get
@@ -317,17 +302,17 @@ namespace GalWar
                 }
             }
         }
-        private double rMult
+        private double rDesignMult
         {
             get
             {
-                return this._rMult;
+                return this._rDesignMult;
             }
             set
             {
                 checked
                 {
-                    this._rMult = (float)value;
+                    this._rDesignMult = (float)value;
                 }
             }
         }
@@ -459,7 +444,8 @@ namespace GalWar
         internal void StartTurn(IEventHandler handler)
         {
             //actual researching happens at turn start
-            CheckResearch(handler);
+            HashSet<ShipDesign> obsoleteDesigns;
+            ShipDesign newDesign = CheckResearch(out obsoleteDesigns);
 
             foreach (Colony colony in this.colonies)
                 colony.StartTurn(handler);
@@ -472,6 +458,13 @@ namespace GalWar
             this.goldValue = 0;
             this.goldOffset = 0;
             AddGold(gold, true);
+
+            //re-randomize research chance and display skew
+            ResetResearchChance();
+            RandResearchDisplay();
+
+            if (newDesign != null)
+                handler.OnResearch(newDesign, obsoleteDesigns);
         }
 
         internal void NewRound()
@@ -484,61 +477,41 @@ namespace GalWar
         {
             this.ResearchGuess += freeResearch;
             this.Research += freeResearch;
-            NewShipDesign(handler, designResearch, false);
+            HashSet<ShipDesign> obsoleteDesigns;
+            ShipDesign newDesign = NewShipDesign(false, designResearch, false, out obsoleteDesigns);
+            handler.OnResearch(newDesign, obsoleteDesigns);
         }
 
-        private void CheckResearch(IEventHandler handler)
+        private ShipDesign CheckResearch(out HashSet<ShipDesign> obsoleteDesigns)
         {
-            if (this.ResearchFocusDesign == null)
-                ResearchWithFocus(handler);
-            else
-                ResearchWithDesign(handler);
+            ShipDesign newDesign = null;
+            obsoleteDesigns = null;
 
-            //re-randomize research chance and display skew
-            ResetResearchChance();
-            RandResearchDisplay();
-        }
-
-        private void ResearchWithFocus(IEventHandler handler)
-        {
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
-                NewShipDesign(handler, Game.Random.RangeInt(this.LastResearched, this.Research), true);
-        }
-
-        private void ResearchWithDesign(IEventHandler handler)
-        {
-            int chances = Game.Random.OEInt(GetResearchChance(this.newResearch) * 21);
-            if (chances > 0)
             {
-                SortedSet<int> tries = new SortedSet<int>();
-                for (int a = 0 ; a < chances ; ++a)
+                bool doObsolete = ( this.ResearchFocusDesign != null );
+                int minResearch = this.LastResearched;
+                if (doObsolete)
+                    minResearch = this.ResearchFocusDesign.Research
+                            + Game.Random.GaussianCappedInt(Consts.UpgDesignResearch, Consts.UpgDesignRndm, Consts.UpgDesignMin);
+                int designResearch = Game.Random.RangeInt(minResearch, this.Research);
+                if (doObsolete)
                 {
-                    int designResearch = this.Research;
-                    while (true)
-                    {
-                        designResearch = Game.Random.RangeInt(designResearch, ResearchFocusDesign.Research);
-                        while (tries.Contains(designResearch))
-                            --designResearch;
-                        if (designResearch > ResearchFocusDesign.Research)
-                            tries.Add(designResearch);
-                        else
-                            break;
-                    }
+                    minResearch = this.ResearchFocusDesign.Research
+                            + Game.Random.GaussianCappedInt(Consts.UpgDesignMin, Consts.UpgDesignRndm, Consts.UpgDesignAbsMin);
+                    if (designResearch < minResearch)
+                        designResearch = minResearch;
                 }
-
-                ShipDesign tryDesign = ShipDesign.TryUpgradeDesign(this, tries.Reverse(), ResearchFocusDesign);
-                if (tryDesign != null)
-                    NewShipDesign(handler, tryDesign, true, true);
+                newDesign = NewShipDesign(true, designResearch, doObsolete, out obsoleteDesigns);
             }
+
+            return newDesign;
         }
 
-        private void NewShipDesign(IEventHandler handler, int designResearch, bool checkGuess)
+        private ShipDesign NewShipDesign(bool useFocus, int designResearch, bool doObsolete, out HashSet<ShipDesign> obsoleteDesigns)
         {
-            NewShipDesign(handler, new ShipDesign(this, designResearch), checkGuess, false);
-        }
-        private void NewShipDesign(IEventHandler handler, ShipDesign newDesign, bool checkGuess, bool doObsolete)
-        {
-            HashSet<ShipDesign> obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
+            ShipDesign newDesign = new ShipDesign(this, useFocus, designResearch);
+            obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
             if (doObsolete)
                 obsoleteDesigns.Add(ResearchFocusDesign);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)
@@ -552,19 +525,29 @@ namespace GalWar
 
             SetPlanetDefense(newDesign);
             this.LastResearched = Math.Max(LastResearched, newDesign.Research);
-            if (checkGuess && newDesign.Research > ResearchGuess)
+            if (useFocus && newDesign.Research > ResearchGuess)
                 ResearchGuess = newDesign.Research;
 
             if (doObsolete)
                 ResearchFocusDesign = newDesign;
-            handler.OnResearch(newDesign, obsoleteDesigns);
+            return newDesign;
         }
 
         private void ResetResearchChance()
         {
-            this.rKey = Game.Random.FloatHalf();
-            this.rChance = Game.Random.NextFloat();
-            this.rMult = Game.Random.FloatHalf();
+            double storedResearch = this.Research - this.LastResearched;
+            if (storedResearch < Consts.UpgDesignAbsMin)
+                storedResearch = Consts.UpgDesignAbsMin / ( Math.Pow(Consts.UpgDesignAbsMin - storedResearch + 1, .3) );
+
+            this.rChance = ResetResearchChance(storedResearch, Consts.ResearchFactor);
+
+            this.rDesignMult = ResetResearchChance(storedResearch, Consts.UpgDesignResearch);
+            if (storedResearch < Consts.UpgDesignMin)
+                this.rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin);
+        }
+        private double ResetResearchChance(double storedResearch, double factor)
+        {
+            return Game.Random.Weighted(storedResearch / ( storedResearch + factor ));
         }
 
         private void RandResearchDisplay()
@@ -905,10 +888,6 @@ namespace GalWar
 
             return ShipDesign.IsFocusing(researchFocus, check);
         }
-        internal ShipDesign.FocusStat GetResearchFocus()
-        {
-            return this.researchFocus;
-        }
 
         public double GetArmadaStrength()
         {
@@ -1018,38 +997,33 @@ namespace GalWar
         {
             TurnException.CheckTurn(this);
 
-            double storedResearch = this.Research - this.LastResearched;
-            if (newResearch > 0 && storedResearch > 0)
-            {
-                double chance = RandResearch(storedResearch / ( storedResearch + Consts.NewResearchFactor ));
-
-                //parameters that may be modified during a players turn are done after RandResearch
-                //so that a change in them doesnt have an inverse or exaggerated effect
-                double newResearchPct = Math.Pow(newResearch / ( newResearch + this.LastResearched / Consts.ResearchIncMult ), Consts.ResearchIncPower);
-                double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / ( Consts.NumDesignsFactor + this.designs.Count ), Consts.NumDesignsPower);
-
-                return chance * newResearchPct * numDesignsPct;
-            }
-            return 0;
+            return GetResearchChance(newResearch, this.ResearchFocusDesign);
         }
-
-        //mostly analogous to MTRandom.Weighted, but using constants for the random values
-        private double RandResearch(double avg)
+        public double GetResearchChance(int newResearch, ShipDesign researchFocusDesign)
         {
-            bool neg = avg > .5;
-            if (neg)
-                avg = 1 - avg;
+            TurnException.CheckTurn(this);
 
-            double key = rKey * avg;
-            if (rChance < ( avg - .5 ) / ( key - .5 ))
-                key *= 2;
-            else
-                key = 1;
-            key *= rMult;
+            return GetResearchChance(newResearch, researchFocusDesign, this.rChance, this.rDesignMult);
+        }
+        public double GetMaxResearchChance(int newResearch, ShipDesign researchFocusDesign)
+        {
+            TurnException.CheckTurn(this);
 
-            if (neg)
-                key = 1 - key;
-            return key;
+            return GetResearchChance(newResearch, researchFocusDesign, 1, 1);
+        }
+        private double GetResearchChance(int newResearch, ShipDesign researchFocusDesign, double rChance, double rDesignMult)
+        {
+            double newResearchPct = Math.Pow(newResearch / ( newResearch + Math.Sqrt(this.LastResearched) / Consts.NewResearchMult ), Consts.NewResearchPower);
+            double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / ( Consts.NumDesignsFactor + this.designs.Count ), Consts.NumDesignsPower);
+
+            double chance = rChance * newResearchPct * numDesignsPct;
+
+            if (researchFocusDesign != null)
+                chance *= rDesignMult * Math.Sqrt(this.LastResearched / ( Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research ));
+
+            if (chance > .5)
+                chance /= ( chance + .5 );
+            return chance;
         }
 
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)

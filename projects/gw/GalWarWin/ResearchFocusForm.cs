@@ -46,6 +46,18 @@ namespace GalWarWin
                 this.cbUpgrade.Checked = true;
                 this.lbxUpgrade.SelectedItem = MainForm.Game.CurrentPlayer.ResearchFocusDesign;
             }
+
+            RefreshChance();
+        }
+
+        private void RefreshChance()
+        {
+            int research;
+            double population, production, gold;
+            MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
+
+            this.lblChance.Text = string.Format("{0} ( {1} )", MainForm.FormatPct(MainForm.Game.CurrentPlayer.GetResearchChance(research, GetResearchFocusDesign())),
+                    MainForm.FormatPct(MainForm.Game.CurrentPlayer.GetMaxResearchChance(research, GetResearchFocusDesign())));
         }
 
         private ShipDesign GetResearchFocusDesign()
@@ -93,6 +105,8 @@ namespace GalWarWin
         private void lbxUpgrade_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.sdUpgrade.SetBuildable((Buildable)this.lbxUpgrade.SelectedItem);
+
+            RefreshChance();
         }
 
         private void cbTransport_CheckedChanged(object sender, EventArgs e)
@@ -178,6 +192,8 @@ namespace GalWarWin
 
             lbxUpgrade.Enabled = cbUpgrade.Checked;
             sdUpgrade.Enabled = cbUpgrade.Checked;
+
+            RefreshChance();
         }
 
         public static void ShowForm()

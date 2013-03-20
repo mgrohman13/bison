@@ -62,15 +62,18 @@ namespace GalWar
 
         //higher value makes research less useful
         public const double ResearchFactor = 1690;
-        //how often new designs are researched
-        public const double NewResearchFactor = 390;
         //mult and power of turn research income
-        public const double ResearchIncMult = Math.E;
-        public const double ResearchIncPower = .39;
+        public const double NewResearchMult = 1.3;
+        public const double NewResearchPower = .52;
         //mult and power of number of existing designs
-        public const double NumDesignsFactor = 3.9;
-        public const double NumDesignsPower = .21;
-        //turn research income randomness
+        public const double NumDesignsFactor = 13;
+        public const double NumDesignsPower = .65;
+        //research for upgrading a design
+        public const int UpgDesignResearch = 520;
+        public const double UpgDesignRndm = .117;
+        public const int UpgDesignMin = 260;
+        public const int UpgDesignAbsMin = 169;
+        //research income and display randomness
         public const double ResearchRndm = .39;
         public const double ResearchDisplayRndm = .169;
 

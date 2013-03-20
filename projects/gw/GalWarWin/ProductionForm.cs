@@ -122,9 +122,8 @@ namespace GalWarWin
                 this.lblProdLoss.Text = string.Empty;
             this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Production - lossAmt);
 
-            //this stops you from marking another ship as obsolete during the event for marking a first one 
-            //or from marking your last deisgn as obsolete
-            this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 && colony.CanBuild(colony.Buildable) );
+            //this stops you from marking your last deisgn as obsolete
+            this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 );
         }
 
         private int GetLossAmt(Buildable newBuild)
