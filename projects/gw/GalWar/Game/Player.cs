@@ -446,6 +446,8 @@ namespace GalWar
             //actual researching happens at turn start
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = CheckResearch(out obsoleteDesigns);
+            if (newDesign != null)
+                handler.OnResearch(newDesign, obsoleteDesigns);
 
             foreach (Colony colony in this.colonies)
                 colony.StartTurn(handler);
@@ -462,9 +464,6 @@ namespace GalWar
             //re-randomize research chance and display skew
             ResetResearchChance();
             RandResearchDisplay();
-
-            if (newDesign != null)
-                handler.OnResearch(newDesign, obsoleteDesigns);
         }
 
         internal void NewRound()

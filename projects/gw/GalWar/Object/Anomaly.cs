@@ -214,15 +214,16 @@ namespace GalWar
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
             foreach (Player player in tile.Game.GetPlayers())
             {
-                double distance = 0, tot = 0;
+                double avgDist = 0, totDist = 0;
                 foreach (Colony colony in player.GetColonies())
                 {
                     double weight = colony.Planet.Quality + colony.Population + 1;
-                    distance += weight * Tile.GetDistance(tile, colony.Tile);
-                    tot += weight;
+                    double distance = Tile.GetDistance(tile, colony.Tile);
+                    avgDist += weight * distance * distance;
+                    totDist += weight;
                 }
-                distance /= tot;
-                retVal.Add(player, Game.Random.Round(tile.Game.Diameter / distance));
+                avgDist /= totDist;
+                retVal.Add(player, Game.Random.Round(tile.Game.Diameter * tile.Game.Diameter / avgDist));
             }
             return retVal;
         }
