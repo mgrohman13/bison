@@ -538,7 +538,7 @@ namespace GalWar
             if (storedResearch < Consts.UpgDesignAbsMin)
                 storedResearch = Consts.UpgDesignAbsMin / ( Math.Pow(Consts.UpgDesignAbsMin - storedResearch + 1, .3) );
 
-            this.rChance = ResetResearchChance(storedResearch, Consts.ResearchFactor);
+            this.rChance = ResetResearchChance(storedResearch, Math.Sqrt(this.LastResearched) * Consts.NewDesignFactor);
 
             this.rDesignMult = ResetResearchChance(storedResearch, Consts.UpgDesignResearch);
             if (storedResearch < Consts.UpgDesignMin)
@@ -546,7 +546,11 @@ namespace GalWar
         }
         private double ResetResearchChance(double storedResearch, double factor)
         {
-            return Game.Random.Weighted(storedResearch / ( storedResearch + factor ));
+            factor = storedResearch / ( storedResearch + factor );
+            factor *= factor;
+            if (Game.Random.Bool())
+                return Game.Random.DoubleFull(factor);
+            return Game.Random.Weighted(factor);
         }
 
         private void RandResearchDisplay()

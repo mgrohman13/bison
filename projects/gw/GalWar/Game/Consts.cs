@@ -41,12 +41,12 @@ namespace GalWar
         //emphasising a single value gives on average precisely double the income of when emphasising the other two
         public static readonly double EmphasisValue = 8.0 / ( Math.Sqrt(33.0) - 1.0 );
 
-        public const double SwitchBuildTypeLossPct = .39;
-        public const double SwitchBuildLossPct = .3;
-        public const double ManualObsoleteLossPct = .21;
-        public const double StoreProdLossPct = .169;
-        public const double CarryProductionLossPct = .091;
-        public const double AutomaticObsoleteLossPct = .039;
+        public const double SwitchBuildTypeLossPct = .39;       //  2.6
+        public const double SwitchBuildLossPct = .3;            //  3.3
+        public const double ManualObsoleteLossPct = .21;        //  4.8
+        public const double StoreProdLossPct = .169;            //  5.9
+        public const double CarryProductionLossPct = .091;      // 11.0
+        public const double AutomaticObsoleteLossPct = .065;    // 15.4
 
         public const double CostMult = .104;
         public const double CostUpkeepPct = .21;
@@ -62,6 +62,8 @@ namespace GalWar
 
         //higher value makes research less useful
         public const double ResearchFactor = 1690;
+        //inverse chance of a new design
+        public const double NewDesignFactor = 13;
         //mult and power of turn research income
         public const double NewResearchMult = 1.3;
         public const double NewResearchPower = .52;

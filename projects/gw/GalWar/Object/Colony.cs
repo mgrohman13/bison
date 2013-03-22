@@ -927,21 +927,22 @@ namespace GalWar
 
         public double GetLossPct(Buildable newBuild)
         {
+            if (Buildable == newBuild)
+                return 0;
+            if (Buildable == null || newBuild == null)
+                return 1;
+
             double lossPct;
 
-            if (Buildable == newBuild)
-                lossPct = 0;
-            else if (Buildable == null || newBuild == null)
-                lossPct = 1;
-            else if (Buildable is ShipDesign != newBuild is ShipDesign)
-                lossPct = Consts.SwitchBuildTypeLossPct;
-            else
+            if (( Buildable is ShipDesign ) == ( newBuild is ShipDesign ))
                 lossPct = Consts.SwitchBuildLossPct;
+            else
+                lossPct = Consts.SwitchBuildTypeLossPct;
 
             if (Buildable is StoreProd)
                 lossPct = 0;
             else if (newBuild is StoreProd)
-                lossPct = 1 - ( 1 - lossPct ) * ( 1 - Consts.StoreProdLossPct );
+                lossPct = 1 - ( ( 1 - lossPct ) * ( 1 - Consts.StoreProdLossPct ) );
 
             return lossPct;
         }
