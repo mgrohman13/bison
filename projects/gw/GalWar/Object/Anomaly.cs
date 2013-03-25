@@ -175,9 +175,7 @@ namespace GalWar
         private static double GenerateConsolationValue(double value)
         {
             double avg = ( Math.Pow(value + 1, .78) - 1 ) * .52;
-            if (avg > 1)
-                avg = Game.Random.GaussianCapped(avg, .21, 1);
-            return avg;
+            return Game.Random.GaussianCapped(avg, .21, avg > 1 ? 1 : 0);
         }
 
         private double ConsolationValue()

@@ -544,7 +544,7 @@ namespace GalWar
             if (storedResearch < Consts.UpgDesignMin)
                 this.rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin);
         }
-        private double ResetResearchChance(double storedResearch, double factor)
+        private static double ResetResearchChance(double storedResearch, double factor)
         {
             factor = storedResearch / ( storedResearch + factor );
             factor *= factor;
@@ -562,7 +562,7 @@ namespace GalWar
             double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
             double diff = ( high - low ) / research[0].ResearchDisplay;
 
-            double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchDisplayRndm);
+            double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchRndm);
             bool sign = ( rDisp > rDispTrg );
             if (sign)
                 rDisp -= add;
@@ -1031,23 +1031,49 @@ namespace GalWar
 
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
         {
-            handler = new HandlerWrapper(handler, this.Game, true, true);
+            handler = new HandlerWrapper(handler, this.Game, false, true);
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));
             AssertException.Assert(this.designs.Count > 1);
 
+            //remove design
             this.designs.Remove(obsoleteDesign);
-            //manualy marking a design as obsolete allows build switching at ManualObsoleteLossPct
+            //manualy marking a design as obsolete switches build to StoreProd at ManualObsoleteLossPct
+            Dictionary<Colony, int> colonies = new Dictionary<Colony, int>();
             foreach (Colony colony in this.colonies)
                 if (colony.Buildable == obsoleteDesign)
-                {
-                    colony.SetBuildable(Game.StoreProd, Consts.ManualObsoleteLossPct);
-                    colony.StartBuilding(handler, handler.getNewBuild(colony));
-                }
-
-            if (this.ResearchFocusDesign == obsoleteDesign)
+                    colonies.Add(colony, colony.SetBuildableCeilLoss(Game.StoreProd, Consts.ManualObsoleteLossPct));
+            //can no longer focus research on upgrading design
+            bool researchFocus = ( this.ResearchFocusDesign == obsoleteDesign );
+            if (researchFocus)
                 this.ResearchFocusDesign = null;
+
+            Game.PushUndoCommand(new Game.UndoCommand<ShipDesign, Dictionary<Colony, int>, bool>(
+                     new Game.UndoMethod<ShipDesign, Dictionary<Colony, int>, bool>(UndoMarkObsolete), obsoleteDesign, colonies, researchFocus));
+
+            foreach (Colony colony in colonies.Keys)
+                colony.StartBuilding(handler, handler.getNewBuild(colony));
+        }
+        private Tile UndoMarkObsolete(ShipDesign obsoleteDesign, Dictionary<Colony, int> colonies, bool researchFocus)
+        {
+            AssertException.Assert(!this.designs.Contains(obsoleteDesign));
+            AssertException.Assert(obsoleteDesign != null);
+            AssertException.Assert(colonies != null);
+
+            this.designs.Add(obsoleteDesign);
+            foreach (var pair in colonies)
+            {
+                AssertException.Assert(pair.Key.Buildable is StoreProd);
+                pair.Key.UndoStartBuilding(obsoleteDesign, pair.Value);
+            }
+            if (researchFocus)
+                this.ResearchFocusDesign = obsoleteDesign;
+
+            if (colonies.Count == 1)
+                foreach (Colony colony in colonies.Keys)
+                    return colony.Tile;
+            return null;
         }
 
         public void AutoRepairShips(IEventHandler handler)

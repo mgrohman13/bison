@@ -66,8 +66,6 @@ namespace GalWarWin
 
             this.lblOverflow.Visible = false;
 
-            double research = MainForm.Game.CurrentPlayer.GetLastResearched();
-            SetValue(this.nudResearch, research);
             SetValue(this.nudAtt, ship.Att);
             SetValue(this.nudDef, ship.Def);
             SetValue(this.nudHP, ship.MaxHP);
@@ -80,17 +78,21 @@ namespace GalWarWin
             double totCost = Update(null);
             events = false;
 
+            double research;
             if (ship.Player.IsTurn)
             {
                 double cost = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
                 SetValue(this.nudProd, cost);
                 SetValue(this.nudUpk, ship.Upkeep);
-                SetValue(this.nudResearch, CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.Upkeep));
+                research = CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.Upkeep);
             }
             else
             {
+                Dictionary<Player, double> playerResearch = MainForm.Game.GetResearch();
+                research = playerResearch[ship.Player] / playerResearch[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
                 CalcCost(research, totCost);
             }
+            SetValue(this.nudResearch, research);
 
             events = true;
         }

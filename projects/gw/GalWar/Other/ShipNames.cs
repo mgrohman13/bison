@@ -194,7 +194,7 @@ namespace GalWar
         private ShipClass GetName(ShipClass[] type, int value)
         {
             //find the highest division it matches
-            for (int i = length ; --i > -1 ; )
+            for (int i = length ; --i > 0 ; )
                 if (value > this.Divisions(i))
                 {
                     //check if this is a breakthrough design, and if so use its value for the next division
@@ -203,12 +203,12 @@ namespace GalWar
                         SetDivision(next, value);
                     return type[i];
                 }
-            throw new Exception();
+            return type[0];
         }
 
         private void SetDivision(int index, double value)
         {
-            this.Divisions(index, RandValue(value * Math.PI, Game.Random.Round(value * 1.3) + 13));
+            this.Divisions(index, RandValue(value * 3.9, Game.Random.Round(value * 3) + 13));
         }
 
         private static double RandMult(double mult)

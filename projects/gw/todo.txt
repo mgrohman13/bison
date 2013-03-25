@@ -1,4 +1,3 @@
-undo MarkObsolete
 standardize dead checks
 sell PD also sells att/def?
 ShipNames._divisions always has 0 at first index

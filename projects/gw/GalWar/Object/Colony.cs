@@ -249,10 +249,19 @@ namespace GalWar
 
         #region internal
 
-        internal void SetBuildable(Buildable newDesign, double losspct)
+        internal void SetBuildable(Buildable newBuild, double losspct)
         {
+            this.Buildable = newBuild;
+
             LoseProductionPct(losspct);
-            this.Buildable = newDesign;
+        }
+        internal int SetBuildableCeilLoss(Buildable newBuild, double losspct)
+        {
+            this.Buildable = newBuild;
+
+            int loss = (int)Math.Ceiling(this.production * losspct);
+            LoseProduction(loss);
+            return loss;
         }
 
         internal void DoBuild(IEventHandler handler, double productionInc, ref double gold)
@@ -908,19 +917,23 @@ namespace GalWar
 
             if (this.Buildable != newBuild)
             {
-                double loss = Math.Ceiling(this.production * GetLossPct(newBuild));
-
+                Buildable oldBuild = this.Buildable;
+                int loss = SetBuildableCeilLoss(newBuild, GetLossPct(newBuild));
                 Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int>(
-                        new Game.UndoMethod<Buildable, int>(UndoStartBuilding), this.Buildable, (int)loss));
-
-                SetBuildable(newBuild, loss / ( this.Production == 0 ? 1.0 : this.Production ));
+                        new Game.UndoMethod<Buildable, int>(UndoStartBuilding), oldBuild, loss));
             }
         }
-        private Tile UndoStartBuilding(Buildable oldBuild, int loss)
+        internal Tile UndoStartBuilding(Buildable oldBuild, int loss)
         {
+            AssertException.Assert(CanBuild(oldBuild));
+            AssertException.Assert(this.Buildable != oldBuild);
+            AssertException.Assert(loss >= 0);
+            double gold = loss / Consts.ProductionForGold;
+            AssertException.Assert(this.Player.Gold > gold);
+
             this.Buildable = oldBuild;
             this.production += loss;
-            this.Player.AddGold(-loss / Consts.ProductionForGold);
+            this.Player.SpendGold(gold);
 
             return this.Tile;
         }
