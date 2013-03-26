@@ -91,6 +91,7 @@ namespace GalWarWin
                 Dictionary<Player, double> playerResearch = MainForm.Game.GetResearch();
                 research = playerResearch[ship.Player] / playerResearch[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
                 CalcCost(research, totCost);
+                research = Math.Round(research);
             }
             SetValue(this.nudResearch, research);
 
