@@ -264,14 +264,21 @@ namespace MattUtil
             lock (typeof(MTRandom))
                 unchecked
                 {
-                    value += ( counter + SHIFT_FACTOR );
-                    //determine a shift and negation based on the less-predictable low-order bits
-                    int shift = (int)( value % 124 );
-                    int neg = shift / 31;
-                    shift = ( shift % 31 ) + 1;
-                    //shift to both sides to retain a full 32 bits in the shifted value
-                    return ( counter = ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) ) );
+                    return ( counter = ShiftVal(value, counter + SHIFT_FACTOR) );
                 }
+        }
+        public static uint ShiftVal(uint value, uint seed)
+        {
+            unchecked
+            {
+                value += seed;
+                //determine a shift and negation based on the less-predictable low-order bits
+                int shift = (int)( value % 124 );
+                int neg = shift / 31;
+                shift = ( shift % 31 ) + 1;
+                //shift to both sides to retain a full 32 bits in the shifted value
+                return ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) );
+            }
         }
 
         #endregion
@@ -545,7 +552,7 @@ namespace MattUtil
         {
             unchecked
             {
-                return ( LCG() + LFSR() + ( MWC1() << MWC_SHIFT ) + MWC2() );
+                return ( LCG() + LFSR() + MWC() );
             }
         }
 
@@ -555,37 +562,52 @@ namespace MattUtil
             lock (this)
                 unchecked
                 {
-                    return ( lcgn = ( LCG_MULTIPLIER * lcgn + LCG_INCREMENT ) );
+                    return ( lcgn = LCG(lcgn) );
                 }
+        }
+        public static uint LCG(uint lcgn)
+        {
+            return LCG_MULTIPLIER * lcgn + LCG_INCREMENT;
         }
 
         //A 3-shift shift-register generator, period 2^32-1,
         private uint LFSR()
         {
             lock (this)
-                return ( lfsr = XorLShift(XorRShift(XorLShift(lfsr, LFSR_1), LFSR_2), LFSR_3) );
+                return ( lfsr = LFSR(lfsr) );
         }
-        private uint XorLShift(uint value, int shift)
+        public static uint LFSR(uint lfsr)
+        {
+            return XorLShift(XorRShift(XorLShift(lfsr, LFSR_1), LFSR_2), LFSR_3);
+        }
+        private static uint XorLShift(uint value, int shift)
         {
             return ( value ^ ( value << shift ) );
         }
-        private uint XorRShift(uint value, int shift)
+        private static uint XorRShift(uint value, int shift)
         {
             return ( value ^ ( value >> shift ) );
         }
 
         //Two 16-bit multiply-with-carry generators, period 597273182964842497(>2^59)
-        private uint MWC1()
+        private uint MWC()
         {
             lock (this)
-                return ( mwc1 = MWC(MWC_1_MULT, mwc1) );
+                return MWCs(ref mwc1, ref mwc2);
         }
-        private uint MWC2()
+        public static uint MWCs(ref uint mwc1, ref uint mwc2)
         {
-            lock (this)
-                return ( mwc2 = MWC(MWC_2_MULT, mwc2) );
+            return ( MWC1(ref mwc1) << MWC_SHIFT ) + MWC2(ref mwc2);
         }
-        private uint MWC(uint mult, uint value)
+        private static uint MWC1(ref uint mwc1)
+        {
+            return ( mwc1 = MWC(MWC_1_MULT, mwc1) );
+        }
+        private static uint MWC2(ref uint mwc2)
+        {
+            return ( mwc2 = MWC(MWC_2_MULT, mwc2) );
+        }
+        private static uint MWC(uint mult, uint value)
         {
             unchecked
             {
@@ -1388,7 +1410,7 @@ namespace MattUtil
             return ( NextFloat() < chance );
         }
 
-        private void CheckBool(double chance)
+        private static void CheckBool(double chance)
         {
             if (chance < 0 || chance > 1)
                 throw new ArgumentOutOfRangeException("chance", chance, "chance must be between 0 and 1, inclusive");
@@ -1417,19 +1439,28 @@ namespace MattUtil
             if (result == number)
                 return result;
 
+            double rand;
+            if (isFloat)
+                rand = NextFloat();
+            else
+                rand = NextDouble();
+            return Round(number, rand);
+        }
+        public static int Round(double number, double rand)
+        {
+            //the parameter already being an integer is a common situation in real world use
+            int result = (int)number;
+            if (result == number)
+                return result;
+
             if (number > int.MaxValue || number < int.MinValue)
                 throw new ArgumentOutOfRangeException("number", number, "number must be within the range of possible int values");
 
             result = (int)Math.Floor(number);
             number -= result;
 
-            bool rand;
-            if (isFloat)
-                rand = Bool((float)number);
-            else
-                rand = Bool(number);
-
-            if (rand)
+            CheckBool(number);
+            if (rand < number)
                 ++result;
 
             return result;
@@ -1866,10 +1897,10 @@ namespace MattUtil
                     LFSR();
                     break;
                 case 14:
-                    MWC1();
+                    MWC1(ref mwc1);
                     break;
                 case 15:
-                    MWC2();
+                    MWC2(ref mwc2);
                     break;
                 default:
                     throw new Exception("internal error");

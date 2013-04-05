@@ -2,35 +2,91 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MattUtil;
 
 namespace z2
 {
     public class Noise
     {
-        private const double Smooth = 1.3, SmoothDist = 2.6;
+        private readonly uint s1, s2;
 
-        private const double DOUBLE_DIV = 0xFFFFFFFF;
-        public static double GetNoise(uint seed, double value, double amp)
+        public Noise()
         {
-            int min = Game.Random.Round(value - SmoothDist);
-            int max = Game.Random.Round(value + SmoothDist);
-            double retVal = 0, div = 0;
-            for (int a = min ; a <= max ; ++a)
-            {
-                double dist = Math.Abs(a - value);
-                dist = 1 / ( dist * dist + Smooth );
-                retVal += ShiftVal((uint)a + seed) / DOUBLE_DIV * dist;
-                div += dist;
-            }
-            return retVal / div * amp;
+            this.s1 = Game.Random.NextUInt();
+            this.s2 = Game.Random.NextUInt();
         }
 
-        private static uint ShiftVal(uint value)
+        public double GetNoise(double value, uint seed)
         {
-            int shift = (int)( value % 124 );
-            int neg = shift / 31;
-            shift = ( shift % 31 ) + 1;
-            return ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) );
+            uint roundVal = Combine(value, seed);
+            int min = MTRandom.Round(value - Consts.NoiseSmoothDist, GetDouble(roundVal, s1));
+            int max = MTRandom.Round(value + Consts.NoiseSmoothDist, GetDouble(roundVal, s2));
+
+            double retVal = 0, div = 0;
+
+            for (int valInt = min ; valInt <= max ; ++valInt)
+            {
+                double dist = Math.Abs(valInt - value);
+                dist = 1 / ( dist * dist + Consts.NoiseSmooth );
+
+                retVal += GetDoubleFull((uint)valInt, seed) * dist;
+                div += dist;
+            }
+
+            return retVal / div;
+        }
+
+        private static uint Combine(double value, uint seed)
+        {
+            ulong valULong = (ulong)BitConverter.DoubleToInt64Bits(value);
+            return ( seed + (uint)valULong + (uint)( valULong >> 32 ) );
+        }
+
+        private static double GetDouble(uint value, uint seed)
+        {
+            return GetDouble(value, seed, 0x100000000);
+        }
+        private static double GetDoubleFull(uint value, uint seed)
+        {
+            return GetDouble(value, seed, 0xFFFFFFFF);
+        }
+
+        private static double GetDouble(uint value, uint seed, double div)
+        {
+            uint ret1, ret2;
+            if (CheckBit(value + seed, 1))
+            {
+                ret1 = LCG(value, ref seed);
+                ret2 = LFSR(value, ref seed);
+            }
+            else
+            {
+                ret1 = LFSR(value, ref seed);
+                ret2 = LCG(value, ref seed);
+            }
+            if (CheckBit(value + seed, 2))
+            {
+                uint temp = ret1;
+                ret1 = ret2;
+                ret2 = temp;
+            }
+            ret1 = MTRandom.ShiftVal(ret1, seed);
+            ret2 = MTRandom.ShiftVal(ret2, seed);
+            seed = ret1 + ret2;
+            return MTRandom.ShiftVal(MTRandom.MWCs(ref ret1, ref ret2), seed) / div;
+        }
+        private static bool CheckBit(uint value, uint bit)
+        {
+            return ( ( value & bit ) == bit );
+        }
+
+        private static uint LCG(uint value, ref uint seed)
+        {
+            return MTRandom.LCG(seed = MTRandom.ShiftVal(value, seed));
+        }
+        private static uint LFSR(uint value, ref uint seed)
+        {
+            return MTRandom.LFSR(seed = MTRandom.ShiftVal(value, seed));
         }
     }
 }

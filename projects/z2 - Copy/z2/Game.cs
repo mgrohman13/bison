@@ -9,24 +9,52 @@ namespace z2
     public class Game
     {
         public static MTRandom Random;
-        public static void Main(string[] args)
+        static Game()
         {
             Random = new MTRandom();
             Random.StartTick();
-            do
-            {
-                Game game = new Game();
-                game.Run();
-            } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+        }
 
-            Random.Dispose();
+        public static void Main(string[] args)
+        {
+            //Console.Write(Convert.ToChar(19));
+            //Console.BufferWidth = Console.LargestWindowWidth;
+            //for (int a = 0 ; a < short.MaxValue ; ++a)
+            //    Console.Write(Convert.ToChar(a));
+            //Console.ReadKey();
+
+            try
+            {
+                do
+                {
+                    Game game = new Game();
+                    game.Run();
+                } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+            }
+            finally
+            {
+                if (Random != null)
+                    Random.Dispose();
+            }
         }
 
         private Map map;
 
         private Game()
         {
-            map = new Map();
+            do
+                map = new Map();
+            while (!ValidStart(map.Get(new Point(0, 0)).Terrain));
+        }
+        private static bool ValidStart(Terrain terrain)
+        {
+            return ( terrain == Terrain.Cliff || terrain == Terrain.SteepCliff );
+            //switch (terrain)
+            //{
+            //case Terrain.Grass:
+            //    return true;
+            //}
+            //return false;
         }
 
         private void Run()
@@ -84,7 +112,7 @@ namespace z2
                         int vx = x + mx - r;
                         int vy = y + my - r;
                         if (( vx - x ) * ( vx - x ) + ( vy - y ) * ( vy - y ) < range)
-                            map.Explore(new Point(vx, vy));
+                            map.Get(new Point(vx, vy));
                     }
                 map.DrawAll(new Point(x - width / 2, y - height / 2), width, height);
             }

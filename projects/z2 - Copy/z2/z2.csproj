@@ -34,7 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MattUtil">
+    <Reference Include="MattUtil, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\MattUtil2\MattUtil\bin\Debug\MattUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
