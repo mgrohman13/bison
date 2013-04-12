@@ -22,30 +22,34 @@ namespace Daemons
             Random.StartTick();
         }
 
-        private readonly int width, height;
         private readonly Tile[,] map;
         private readonly List<ProductionCenter> production;
 
         private int currentPlayer, turn;
         private Player[] players;
         private readonly Player independent;
-        private bool independentsTurn;
 
         private readonly List<Player> lost;
-        public string log;
+
+        [NonSerialized]
+        private int _width, _height;
+        [NonSerialized]
+        private bool independentsTurn;
+        [NonSerialized]
+        public string _log;
 
         public Game(Player[] newPlayers, int newWidth, int newHeight)
         {
-            this.width = newWidth;
-            this.height = newHeight;
+            this._width = newWidth;
+            this._height = newHeight;
 
             this.map = new Tile[width, height];
             for (int x = 0 ; x < width ; x++)
                 for (int y = 0 ; y < height ; y++)
                     map[x, y] = new Tile(this, x, y);
-            Tile.CreateNeighborReferences(map, width, height);
+            CreateNeighborReferences();
 
-            const float rand = .0666f;
+            const float rand = .078f;
             const int min = 1;
             this.production = new List<ProductionCenter>();
             int[] num = new int[3];
@@ -77,7 +81,7 @@ namespace Daemons
             this.turn = 1;
 
             this.lost = new List<Player>();
-            this.log = string.Empty;
+            this.CombatLog = null;
 
             Dictionary<UnitType, int> startUnits = new Dictionary<UnitType, int>();
             startUnits.Add(UnitType.Knight, 1);
@@ -100,7 +104,45 @@ namespace Daemons
                 player.ResetMoves();
             this.currentPlayer = 0;
         }
+        internal void CreateNeighborReferences()
+        {
+            Tile.CreateNeighborReferences(map, width, height);
+        }
 
+        private int width
+        {
+            get
+            {
+                if (_width == default(int))
+                    _width = map.GetLength(0);
+                return _width;
+            }
+        }
+        private int height
+        {
+            get
+            {
+                if (_height == default(int))
+                    _height = map.GetLength(1);
+                return _height;
+            }
+        }
+
+        public string CombatLog
+        {
+            get
+            {
+                if (_log == default(string))
+                    _log = string.Empty;
+                return _log;
+            }
+            private set
+            {
+                if (_log == default(string))
+                    _log = string.Empty;
+                _log = value;
+            }
+        }
         public string Turn
         {
             get
@@ -146,9 +188,9 @@ namespace Daemons
             return players[currentPlayer];
         }
 
-        public void Log(String message)
+        internal void Log(String message)
         {
-            log = message + "\r\n" + log;
+            CombatLog = message + "\r\n" + CombatLog;
         }
 
         private void AddUnit(Player player, UnitType type)
@@ -240,9 +282,7 @@ namespace Daemons
                         unit.Move(moveTo);
             }
 
-            float mult = production.Count;
-            independent.AddSouls(Random.GaussianInt(2.6f * mult * ( turn + 16.9f ), .13f));
-            independent.AddSouls(Random.OEInt(3.0 * mult * turn));
+            independent.AddSouls(Random.GaussianOEInt(production.Count * ( 5.2 * turn + 39 ), .26f, .52 * turn / ( turn + 7.8 )));
 
             int amt = independent.RoundSouls();
             if (amt > 0)
@@ -261,9 +301,10 @@ namespace Daemons
 
         private void ChangeMap()
         {
-            for (int a = 0 ; a < production.Count ; a++)
-                if (Random.Bool(.3f))
-                    MoveRand(ref production[a].x, ref production[a].y);
+            if (Random.Bool())
+                for (int a = 0 ; a < production.Count ; a++)
+                    if (Random.Bool())
+                        MoveRand(ref production[a].x, ref production[a].y);
         }
 
         public void MoveRand(ref int x, ref int y)

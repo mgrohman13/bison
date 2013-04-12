@@ -13,8 +13,8 @@ namespace Daemons
 
         private readonly List<Unit> units = new List<Unit>(), attackers = new List<Unit>();
 
-        private HashSet<Tile> sideNeighbors = new HashSet<Tile>();
-        private HashSet<Tile> cornerNeighbors = new HashSet<Tile>();
+        [NonSerialized]
+        private HashSet<Tile> sideNeighbors, cornerNeighbors;
 
         public Tile(Game game, int x, int y)
         {
@@ -251,8 +251,7 @@ namespace Daemons
 
         public static int UnitDamageComparison(Unit unit1, Unit unit2)
         {
-            double damage1 = unit1.Tile.GetDamage(unit1), damage2 = unit2.Tile.GetDamage(unit2);
-            return ( damage2 > damage1 ? 1 : ( damage1 > damage2 ? -1 : 0 ) );
+            return Math.Sign(unit2.Tile.GetDamage(unit2) - unit1.Tile.GetDamage(unit1));
         }
 
         private void AddUnits(List<Unit> fightList, List<Unit> available, double damTot)
@@ -293,7 +292,7 @@ namespace Daemons
 
         internal Unit GetTarget(Unit attacker, bool archery)
         {
-            return GetTarget(attacker, archery ? .2 : ( attacker.Type == UnitType.Archer ? .3 : .5 ));
+            return GetTarget(attacker, archery ? .21 : ( attacker.Type == UnitType.Archer ? .26 : .52 ));
         }
 
         private Unit GetTarget(Unit attacker, double deviation)
@@ -345,11 +344,15 @@ namespace Daemons
 
         public bool IsSideNeighbor(Tile tile)
         {
+            if (sideNeighbors == null)
+                Game.CreateNeighborReferences();
             return sideNeighbors.Contains(tile);
         }
 
         public bool IsCornerNeighbor(Tile tile)
         {
+            if (cornerNeighbors == null)
+                Game.CreateNeighborReferences();
             return cornerNeighbors.Contains(tile);
         }
 
@@ -367,6 +370,8 @@ namespace Daemons
 
         private void SetupNeighbors(Tile[,] map, int width, int height)
         {
+            sideNeighbors = new HashSet<Tile>();
+            cornerNeighbors = new HashSet<Tile>();
             for (int a = 0 ; a < 8 ; a++)
             {
                 HashSet<Tile> neighbors = ( a < 4 ? sideNeighbors : cornerNeighbors );

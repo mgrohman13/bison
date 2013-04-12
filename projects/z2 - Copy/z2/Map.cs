@@ -9,7 +9,6 @@ namespace z2
     public class Map
     {
         private TileValue[] types;
-        private Noise noise;
 
         private Dictionary<Point, Tile> final;
 
@@ -17,41 +16,41 @@ namespace z2
         {
             this.final = new Dictionary<Point, Tile>();
 
-            this.types = new TileValue[4];
-            this.types[0] = new Height(this);
-            this.types[1] = new Temperature(this);
-            this.types[2] = new Rainfall(this);
-            this.types[3] = new Population(this);
+            Noise noise = new Noise();
 
-            noise = new Noise();
+            this.types = new TileValue[4];
+            this.types[0] = new Height(noise);
+            this.types[1] = new Temperature(noise);
+            this.types[2] = new Rainfall(noise);
+            this.types[3] = new Population(noise);
         }
 
         public Tile Get(Point p)
         {
             if (!this.final.ContainsKey(p))
-            {
-                double height = types[0].Get(p);
-                double temp = types[1].Get(p);
-                double rain = types[2].Get(p);
-                double pop = types[3].Get(p);
-
-                if (height < .5)
-                {
-                    rain = Math.Pow(rain, height * 2);
-                }
-                else
-                {
-                    rain = Math.Pow(rain, 2 - height * 2);
-                    temp = Math.Pow(temp, height * 2);
-                }
-                rain *= rain;
-                temp = Math.Pow(temp, .91);
-
-                Tile tile = new Tile(height, temp, rain, pop, p);
-                this.final[p] = tile;
-            }
+                this.final[p] = new Tile(this,GetHeight(p), GetTemp(p), GetRain(p), GetPop(p), p);
 
             return this.final[p];
+        }
+        public double GetPop(Point p)
+        {
+            double pop = types[3].Get(p);
+            return pop;
+        }
+        public double GetRain(Point p)
+        {
+            double rain = types[2].Get(p);
+            return rain;
+        }
+        public double GetTemp(Point p)
+        {
+            double temp = types[1].Get(p);
+            return temp;
+        }
+        public double GetHeight(Point p)
+        {
+            double height = types[0].Get(p);
+            return height;
         }
 
         private Point GetNeighbor(Point p, int dir)
@@ -260,28 +259,29 @@ namespace z2
             Console.SetCursorPosition(0, 0);
         }
 
-        internal bool Unfinished(int x, int y)
+        internal void ClearCache()
         {
-            return ( !final.ContainsKey(new Point(x, y)) );
+            foreach (TileValue value in this.types)
+                value.ClearCache();
         }
 
         public abstract class TileValue
         {
-            private byte numLevels, smoothDist;
-            private double freqMult, ampMult, smooth;
-            private double avg;
-            private double topLevel;
+            private byte numLevels;
+            private double freqMult, ampMult, smooth, smoothDist;
 
-            private uint[] seeds;
+            private uint[] xSeeds;
+            private uint[] ySeeds;
             private double[] rotate;
 
-            private Dictionary<Point, double> values;
+            private Noise noise;
 
-            private Map map;
+            [NonSerialized]
+            private Dictionary<Point, double> cache;
 
-            protected TileValue(byte numLevels, double freqMult, double ampMult, double smooth, byte smoothDist, Map map)
+            protected TileValue(byte numLevels, double freqMult, double ampMult, double smooth, double smoothDist, Noise noise)
             {
-                this.map = map;
+                this.noise = noise;
 
                 this.numLevels = numLevels;
                 this.smoothDist = smoothDist;
@@ -289,129 +289,116 @@ namespace z2
                 this.ampMult = ampMult;
                 this.smooth = smooth;
 
-                this.seeds = new uint[numLevels];
+                this.xSeeds = new uint[numLevels];
+                this.ySeeds = new uint[numLevels];
                 this.rotate = new double[numLevels];
 
-                this.values = new Dictionary<Point, double>();
-
-                double amp = 1, avg = amp;
                 for (int level = 0 ; level < numLevels ; ++level)
                 {
-                    this.seeds[level] = Game.Random.NextUInt();
+                    this.xSeeds[level] = Game.Random.NextUInt();
+                    this.ySeeds[level] = Game.Random.NextUInt();
                     this.rotate[level] = ( Game.Random.NextDouble() * 2 * Math.PI );
-                    avg += ( amp *= ampMult );
                 }
 
-                this.avg = avg;
-                this.topLevel = Math.Pow(ampMult, numLevels);
+                this.cache = null;
             }
 
-            private void Set(Point p)
+            private double GetRaw(Point p)
             {
-                double amp = 1;
-                double freq = 1;
-                double value = Game.Random.DoubleHalf(amp);
-                for (int level = 0 ; level < numLevels ; ++level)
+                double retVal;
+
+                if (cache == null)
+                    cache = new Dictionary<Point, double>();
+                if (!cache.TryGetValue(p, out retVal))
                 {
-                    amp *= ampMult;
-                    freq *= freqMult;
-                    double s = Math.Sin(this.rotate[level]);
-                    double c = Math.Cos(this.rotate[level]);
-                    value += map.noise.GetNoise(( p.X * c - p.Y * s ) / freq, this.seeds[level]) * amp;
-                    value += map.noise.GetNoise(( p.X * s + p.Y * c ) / freq, this.seeds[level]) * amp;
+
+                    uint xSeed = 0, ySeed = 0;
+                    double amp = 1, freq = 1, value = 0, avg = 0;
+                    for (int level = 0 ; level < numLevels ; ++level)
+                    {
+                        amp *= ampMult;
+                        freq *= freqMult;
+
+                        double s = Math.Sin(this.rotate[level]);
+                        double c = Math.Cos(this.rotate[level]);
+                        xSeed += Noise.Combine(this.rotate[level], this.xSeeds[level]);
+                        ySeed += Noise.Combine(this.rotate[level], this.ySeeds[level]);
+
+                        value += noise.GetNoise(( p.X * c - p.Y * Consts.YMult * s ) / freq, this.xSeeds[level]) * amp;
+                        value += noise.GetNoise(( p.X * s + p.Y * Consts.YMult * c ) / freq, this.ySeeds[level]) * amp;
+                        avg += amp;
+                    }
+
+                    value += noise.GetNoise(p.X, xSeed) + noise.GetNoise(p.Y * Consts.YMult, ySeed);
+                    ++avg;
+
+                    retVal = value / avg;
+
+                    cache[p] = retVal;
                 }
 
-                value -= ( this.avg - topLevel );
-                value /= this.topLevel * 2;
-
-                this.values[p] = value;
+                return retVal;
             }
 
             public double Get(Point p1)
             {
-                int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
-
                 double tot = 0, div = 0;
-                for (int x = p1.X - smoothDist ; x <= p1.X + smoothDist ; ++x)
-                    for (int y = p1.Y - smoothDist ; y <= p1.Y + smoothDist ; ++y)
+                int dif = (int)( smoothDist );
+                for (int x = p1.X - dif ; x <= p1.X + dif ; ++x)
+                    for (int y = p1.Y - dif ; y <= p1.Y + dif ; ++y)
                     {
-                        Point p2 = new Point(x, y);
-                        if (!this.values.ContainsKey(p2))
+                        double yDist = ( p1.Y - y ) * Consts.YMult;
+                        double dist = ( p1.X - x ) * ( p1.X - x ) + yDist * yDist;
+                        if (Math.Round(dist) < smoothDist * smoothDist)
                         {
-                            Set(p2);
-                            minX = Math.Min(minX, p2.X);
-                            maxX = Math.Max(maxX, p2.X);
-                            minY = Math.Min(minY, p2.Y);
-                            maxY = Math.Max(maxY, p2.Y);
+                            dist = 1 / ( dist + smooth );
+                            tot += GetRaw(new Point(x, y)) * dist;
+                            div += dist;
                         }
-
-                        double dist = 1 / ( ( p1.X - x ) * ( p1.X - x ) + ( p1.Y - y ) * ( p1.Y - y ) + smooth );
-                        tot += this.values[p2] * dist;
-                        div += dist;
                     }
 
-                Remove(minX - smoothDist, maxX + smoothDist, minY - smoothDist, maxY + smoothDist);
-
-                double temp = tot / div;
-                tot *= 2 / div;
-                bool neg = ( tot > 1 );
+                double value = tot / div;
+                bool neg = ( value > 1 );
                 if (neg)
-                    tot = 2 - tot;
-                tot = Math.Pow(tot, Math.Sqrt(numLevels));
+                    value = 2 - value;
+                value *= value;
                 if (neg)
-                    tot = 2 - tot;
-                tot /= 2;
-                if (tot < .0001)
-                    tot = .0001;
-                else if (tot > .9999)
-                    tot = .9999;
-                return tot;
+                    value = 2 - value;
+                return value / 2;
             }
 
-            private void Remove(int minX, int maxX, int minY, int maxY)
+            internal void ClearCache()
             {
-                for (int x = minX ; x <= maxX ; ++x)
-                    for (int y = minY ; y <= maxY ; ++y)
-                    {
-                        bool all = true;
-                        for (int x2 = x - smoothDist ; x2 <= x + smoothDist ; ++x2)
-                            for (int y2 = y - smoothDist ; y2 <= y + smoothDist ; ++y2)
-                                if (map.Unfinished(x2, y2))
-                                {
-                                    all = false;
-                                    break;
-                                }
-                        if (all)
-                            this.values.Remove(new Point(x, y));
-                    }
+                if (cache != null)
+                    cache.Clear();
             }
         }
 
         private class Height : TileValue
         {
-            public Height(Map map)
-                : base(3, 5.2f, 3.9f, 2.10f, 4, map)
+            public Height(Noise noise)
+                : base(3, 5.2f, 3.9f, 1.69f, 3.9f, noise)
             {
             }
         }
         private class Temperature : TileValue
         {
-            public Temperature(Map map)
-                : base(4, 3.9f, 3.0f, 0.78f, 3, map)
+            public Temperature(Noise noise)
+                : base(4, 3.9f, 3.0f, 0.78f, 2.6f, noise)
             {
             }
         }
         private class Rainfall : TileValue
         {
-            public Rainfall(Map map)
-                : base(6, 2.1f, 1.8f, 0.52f, 2, map)
+            public Rainfall(Noise noise)
+                : base(6, 2.1f, 1.8f, 0.52f, 2.1f, noise)
             {
             }
         }
         private class Population : TileValue
         {
-            public Population(Map map)
-                : base(5, 2.6f, 2.1f, 0.13f, 1, map)
+            public Population(Noise noise)
+                : base(5, 2.6f, 2.1f, 0.13f, 1.69f, noise)
             {
             }
         }

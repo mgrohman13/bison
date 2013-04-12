@@ -15,12 +15,13 @@ namespace Daemons
         public readonly string Name;
         public readonly bool Independent = false;
 
-        private readonly Dictionary<UnitType, Bitmap> pics;
+        [NonSerialized]
+        private Dictionary<UnitType, Bitmap> _pics;
 
         private readonly List<Unit> units;
 
         private int souls;
-        private float arrows;
+        private int arrows;
 
         public Player(Color color, string Name)
             : this(null, color, Name, false, 0)
@@ -42,7 +43,6 @@ namespace Daemons
             this.Name = Name;
             this.Independent = independent;
 
-            this.pics = new Dictionary<UnitType, Bitmap>();
             this.units = new List<Unit>();
 
             this.souls = souls;
@@ -51,8 +51,19 @@ namespace Daemons
             LoadImages();
         }
 
+        private Dictionary<UnitType, Bitmap> pics
+        {
+            get
+            {
+                if (_pics == null)
+                    LoadImages();
+                return _pics;
+            }
+        }
+
         private void LoadImages()
         {
+            this._pics = new Dictionary<UnitType, Bitmap>();
             if (this.Independent)
             {
                 this.pics.Add(UnitType.Indy, new System.Drawing.Bitmap(@"pics\Indy.bmp"));
@@ -127,7 +138,7 @@ namespace Daemons
         {
             get
             {
-                return (int)arrows;
+                return arrows;
             }
         }
 
@@ -189,11 +200,10 @@ namespace Daemons
 
         internal void MakeArrow(float arrows)
         {
-            arrows = Game.Random.Gaussian(arrows, .09f);
             if (Independent)
-                AddSouls(arrows * 6.66f);
+                AddSouls(arrows * 6.5f);
             else
-                this.arrows += arrows;
+                this.arrows += Game.Random.GaussianCappedInt(arrows, .09f);
         }
 
         internal void UseArrows(int needed)

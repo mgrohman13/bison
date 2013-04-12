@@ -16,6 +16,7 @@ namespace Daemons
         private readonly int damage;
         public readonly int Souls;
 
+        [NonSerialized]
         private bool dead;
 
         public Unit(UnitType type, Tile tile, Player owner)
@@ -75,8 +76,8 @@ namespace Daemons
             }
 
             this.hits = MaxHits;
-            souls = Math.Pow(hits * damage, 0.666) * ( 3.9 + Regen * MaxMove ) * souls / 7.5;
-            this.Souls = Game.Random.GaussianCappedInt(souls, .06, Game.Random.Round(souls * .666));
+            souls = Math.Pow(hits * damage, .65) * ( 3.9 + Regen * MaxMove ) * souls / 7.5;
+            this.Souls = Game.Random.GaussianCappedInt(souls, .06, Game.Random.Round(souls * .65));
         }
 
         public double Damage
@@ -157,7 +158,7 @@ namespace Daemons
             {
                 return Math.Pow(Hits * Math.Pow(Damage
                         + ( Type == UnitType.Daemon ? Damage / 13.0 : Type == UnitType.Archer ? Damage / 39.0 : 0 )
-                        , 0.96) / 7.0, 0.666);
+                        , 24 / 25.0) / 7.0, 2 / 3.0);
             }
         }
 
@@ -330,7 +331,7 @@ namespace Daemons
         {
             if (this.movement <= 0)
                 return;
-            this.Owner.MakeArrow(amt / ( this.Type == UnitType.Archer ? 1.3f : 6.66f ));
+            this.Owner.MakeArrow(amt / ( this.Type == UnitType.Archer ? 1.3f : 6.5f ));
             this.movement--;
         }
 

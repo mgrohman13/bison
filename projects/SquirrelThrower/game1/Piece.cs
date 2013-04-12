@@ -11,7 +11,7 @@ namespace game1
             InitStuff(Program.RandX(), Program.RandY(), character, foreColor, ConsoleColor.White, false);
         }
 
-        protected Piece( char character, ConsoleColor foreColor, ConsoleColor backColor)
+        protected Piece(char character, ConsoleColor foreColor, ConsoleColor backColor)
         {
             InitStuff(Program.RandX(), Program.RandY(), character, foreColor, backColor, true);
         }
@@ -86,5 +86,42 @@ namespace game1
         }
 
         public abstract void Move();
+
+        internal void MovePiece()
+        {
+            Move();
+
+            foreach (Piece p in Program.rand.Iterate(Program.getPieces(X, Y)))
+            {
+                Collision(this, p);
+                Collision(p, this);
+            }
+        }
+
+        private void Collision(Piece p1, Piece p2)
+        {
+            if (p1 is Player)
+            {
+                Player player = ( (Player)p1 );
+                if (p2 is Squirrel)
+                    player.GetSquirrel((Squirrel)p2);
+                else if (p2 is SquirrelEater)
+                    player.HitEater((SquirrelEater)p2);
+            }
+            else if (p1 is ThrownSquirrel)
+            {
+                ThrownSquirrel ts = ( (ThrownSquirrel)p1 );
+                if (p2 is Squirrel)
+                    ts.HitSquirrel((Squirrel)p2);
+                else if (p2 is SquirrelEater)
+                    ts.HitEater((SquirrelEater)p2);
+            }
+            else if (p1 is SquirrelEater)
+            {
+                SquirrelEater se = ( (SquirrelEater)p1 );
+                if (p2 is Squirrel)
+                    se.Eat((Squirrel)p2);
+            }
+        }
     }
 }

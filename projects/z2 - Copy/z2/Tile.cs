@@ -24,13 +24,38 @@ namespace z2
             }
         }
 
-        public Tile(double height, double temp, double rain, double pop, Point p)
+        public Tile(Map map, double height, double temp, double rain, double pop, Point p)
         {
             this.Point = p;
 
+            if (height < .5)
+            {
+                rain = Math.Pow(rain, height * 2);
+            }
+            else
+            {
+                rain = Math.Pow(rain, 2 - height * 2);
+                temp = Math.Pow(temp, height * 2);
+            }
+            rain = Math.Pow(rain, 2.1);
+            temp = Math.Pow(temp, .78);
+
             temp *= 500;
             rain *= temp;
-            this.Class = GetClassification(height, temp, rain);
+
+            double min = 1, max = 0;
+            if (height > .387)
+                for (int x = p.X - 3 ; x <= p.X + 3 ; ++x)
+                    for (int y = p.Y - 3 ; y <= p.Y + 3 ; ++y)
+                        if (Math.Round(( x - p.X ) * ( x - p.X ) + ( y - p.Y ) * Consts.YMult * ( y - p.Y ) * Consts.YMult) <= 9)
+                        {
+                            min = Math.Min(min, map.GetHeight(new Point(x, y)));
+                            max = Math.Max(max, map.GetHeight(new Point(x, y)));
+                        }
+            if (max - min > .026)
+                this.Class = Classification.Mountain;
+            else
+                this.Class = GetClassification(height, temp, rain);
 
             Terrain terrain;
             double popMult;
@@ -194,7 +219,7 @@ namespace z2
         {
             Classification t;
 
-            if (height % .006f < ( height - .8f ) / 52f)
+            if (height % .009f < ( height - .8f ) / 39f)
                 t = Classification.Mountain;
             else if (temp < 39)
                 t = Classification.Glacier;
@@ -202,7 +227,7 @@ namespace z2
                 t = Classification.DeepSea;
             else if (height < .39)
                 t = Classification.Sea;
-            else if (height < .392)
+            else if (height < .393)
                 t = Classification.Beach;
             else if (height > .97)
                 t = Classification.AlpineGlacier;

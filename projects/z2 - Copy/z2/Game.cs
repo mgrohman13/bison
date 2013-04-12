@@ -42,19 +42,15 @@ namespace z2
 
         private Game()
         {
+            Tile start;
             do
-                map = new Map();
-            while (!ValidStart(map.Get(new Point(0, 0)).Terrain));
+                start = ( map = new Map() ).Get(new Point(0, 0));
+            while (!ValidStart(start));
+            map.ClearCache();
         }
-        private static bool ValidStart(Terrain terrain)
+        private static bool ValidStart(Tile terrain)
         {
-            return ( terrain == Terrain.Cliff || terrain == Terrain.SteepCliff );
-            //switch (terrain)
-            //{
-            //case Terrain.Grass:
-            //    return true;
-            //}
-            //return false;
+            return ( terrain.Terrain == Terrain.Grass && terrain.Feature == Feature.None );
         }
 
         private void Run()
@@ -86,7 +82,11 @@ namespace z2
 
                 if (k.HasValue)
                 {
-                    int amt = Random.GaussianCappedInt(21, .26, 1);
+                    double a = 21;
+                    if (k.Value.Key == ConsoleKey.DownArrow || k.Value.Key == ConsoleKey.UpArrow)
+                        a /= 1.5;
+
+                    int amt = Random.GaussianCappedInt(a, .26, 1);
                     switch (k.Value.Key)
                     {
                     case ConsoleKey.DownArrow:
@@ -104,16 +104,16 @@ namespace z2
                     }
                 }
                 double range = Random.GaussianCapped(26, .13);
-                int r = (int)range;
+                int r = (int)range + 1;
                 range *= range;
-                foreach (int mx in Random.Iterate(2 * r + 1))
-                    foreach (int my in Random.Iterate(2 * r + 1))
-                    {
-                        int vx = x + mx - r;
-                        int vy = y + my - r;
-                        if (( vx - x ) * ( vx - x ) + ( vy - y ) * ( vy - y ) < range)
-                            map.Get(new Point(vx, vy));
-                    }
+                foreach (Point p in Random.Iterate(x - r, x + r, y - r, y + r))
+                {
+                    int vx = p.X, vy = p.Y;
+                    double yDist = ( vy - y ) * Consts.YMult;
+                    if (( vx - x ) * ( vx - x ) + yDist * yDist < range)
+                        map.Get(new Point(vx, vy));
+                }
+                map.ClearCache();
                 map.DrawAll(new Point(x - width / 2, y - height / 2), width, height);
             }
             while (( k = Console.ReadKey(true) ).Value.Key != ConsoleKey.Q);

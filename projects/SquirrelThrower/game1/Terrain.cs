@@ -7,12 +7,17 @@ namespace game1
     abstract class Terrain
     {
         public Terrain(ConsoleColor color, int X, int Y)
+            : this(color, X, Y, false)
+        {
+        }
+        public Terrain(ConsoleColor color, int X, int Y, bool visible)
         {
             this.color = color;
             x = X;
             y = Y;
 
             this.foreGround = false;
+            this.visible = visible;
         }
 
         public Terrain(ConsoleColor color, int X, int Y, char character, ConsoleColor foreColor)

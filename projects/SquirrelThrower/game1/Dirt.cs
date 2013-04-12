@@ -7,6 +7,12 @@ namespace game1
     class Dirt : Terrain
     {
         public Dirt(int X, int Y)
-            : base(ConsoleColor.White, X, Y) { }
+            : this(X, Y, false)
+        {
+        }
+        public Dirt(int X, int Y, bool visible)
+            : base(ConsoleColor.White, X, Y, visible)
+        {
+        }
     }
 }

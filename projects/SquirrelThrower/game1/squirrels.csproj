@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Grass.cs" />
     <Compile Include="Dirt.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="Player.cs" />

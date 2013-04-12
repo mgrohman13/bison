@@ -8,9 +8,9 @@ namespace game1
 {
     class Program
     {
-        public const int extraHeight = 3, framerate = 20, startTime = 10000;
+        public const int extraHeight = 3, framerate = 20, startTime = 13000;
 
-        static int size = 33;
+        const int size = 33;
         public static int Height
         {
             get
@@ -32,7 +32,7 @@ namespace game1
         {
             get
             {
-                return (double)time / (double)startTime;
+                return Math.Sqrt((double)time / (double)startTime);
             }
         }
 
@@ -41,7 +41,7 @@ namespace game1
         static Terrain[,] map;
         public static Player player;
         public static bool OutPutValid = false;
-        static bool pause = false;
+        static bool pause, started;
 
         public static Piece[] Pieces
         {
@@ -59,6 +59,11 @@ namespace game1
         public static Terrain getTerrain(int X, int Y)
         {
             return map[X, Y];
+        }
+        public static void setTerrain(int X, int Y, Terrain t)
+        {
+            map[X, Y] = t;
+            Invalidate(X, Y);
         }
 
         public static void MovePiece(Piece p, int X, int Y)
@@ -108,6 +113,10 @@ namespace game1
 
         private static void NewGame()
         {
+            Console.BackgroundColor = ConsoleColor.DarkGray;
+            Console.SetCursorPosition(0, 0);
+            Console.Clear();
+
             time = startTime;
 
             valid = new bool[Width, Height];
@@ -116,6 +125,9 @@ namespace game1
             pieces = new List<Piece>();
 
             player = new Player(ConsoleColor.DarkMagenta);
+
+            pause = true;
+            started = false;
 
             for (int X = 0 ; X < Width ; X++)
                 for (int Y = 0 ; Y < Height ; Y++)
@@ -130,11 +142,13 @@ namespace game1
 
             for (int i = 0 ; i < 13 ; i++)
             {
+                CreateGrass(1);
                 AddPiece(new SquirrelEater());
                 AddPiece(new Squirrel());
             }
 
             Scout();
+            Draw();
 
             Thread gameThread = new Thread(InputStuff);
             gameThread.Start();
@@ -156,16 +170,11 @@ namespace game1
 
                     pieces = RandomSort(pieces);
 
-                    foreach (Piece p in Pieces)
-                        p.Move();
+                    foreach (Piece p in rand.Iterate(Pieces))
+                        p.MovePiece();
 
-                    player.MoveHere();
                     Scout();
-
-                    for (int X = 0 ; X < Width ; X++)
-                        for (int Y = 0 ; Y < Height ; Y++)
-                            if (!valid[X, Y])//&& map[X, Y].Visible)
-                                Draw(X, Y);
+                    Draw();
 
                     time++;
                 }
@@ -180,6 +189,37 @@ namespace game1
             }
 
             GameOverStuff();
+        }
+        private static void CreateGrass(double avg)
+        {
+            int amt = rand.OEInt(avg);
+            int x = rand.Next(Width), y = rand.Next(Height);
+            while (--amt >= 0)
+            {
+                setTerrain(x, y, new Grass(x, y, getTerrain(x, y).Visible));
+                RandCoords(ref x, ref y);
+            }
+        }
+        public static void RandCoords(ref int x, ref int y)
+        {
+            x += rand.GaussianInt(1);
+            y += rand.GaussianInt(1);
+            if (x < 0)
+                x = 0;
+            else if (x >= Width)
+                x = Width - 1;
+            if (y < 0)
+                y = 0;
+            else if (y >= Height)
+                y = Height - 1;
+        }
+
+        private static void Draw()
+        {
+            for (int X = 0 ; X < Width ; X++)
+                for (int Y = 0 ; Y < Height ; Y++)
+                    if (!valid[X, Y])//&& map[X, Y].Visible)
+                        Draw(X, Y);
         }
 
         private static void GameOverStuff()
@@ -203,7 +243,8 @@ namespace game1
             output = string.Format("{0}Play Again? (y/n)", output.PadRight(Width * 2));
 
             Console.SetCursorPosition(0, Height);
-            Console.ResetColor();
+            Console.BackgroundColor = ConsoleColor.DarkGray;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Write(output.PadRight(Width * ( extraHeight - 1 )));
         }
 
@@ -253,10 +294,14 @@ namespace game1
 
         private static void CreateStuff()
         {
-            if (rand.Bool(TimeMult * .00075))
+            if (rand.Bool(.0013))
             {
-                AddPiece(new Squirrel(rand.Next(Width), rand.Next(Height)));
-                AddPiece(new SquirrelEater(rand.Next(Width), rand.Next(Height)));
+                CreateGrass(26);
+                if (rand.Bool(TimeMult))
+                {
+                    AddPiece(new Squirrel(rand.Next(Width), rand.Next(Height)));
+                    AddPiece(new SquirrelEater(rand.Next(Width), rand.Next(Height)));
+                }
             }
         }
 
@@ -269,38 +314,47 @@ namespace game1
                 {
                 case ConsoleKey.W:
                     player.MoveUp();
+                    Start();
                     break;
 
                 case ConsoleKey.A:
                     player.MoveLeft();
+                    Start();
                     break;
 
                 case ConsoleKey.S:
                     player.MoveDown();
+                    Start();
                     break;
 
                 case ConsoleKey.D:
                     player.MoveRight();
+                    Start();
                     break;
 
                 case ConsoleKey.UpArrow:
                     player.fire(0);
+                    Start();
                     break;
 
                 case ConsoleKey.LeftArrow:
                     player.fire(1);
+                    Start();
                     break;
 
                 case ConsoleKey.DownArrow:
                     player.fire(2);
+                    Start();
                     break;
 
                 case ConsoleKey.RightArrow:
                     player.fire(3);
+                    Start();
                     break;
 
                 case ConsoleKey.Spacebar:
                     player.Stop();
+                    Start();
                     break;
 
                 //case ConsoleKey.Enter:
@@ -325,8 +379,18 @@ namespace game1
 
                 case ConsoleKey.P:
                     pause = !pause;
+                    Start();
                     break;
                 }
+            }
+        }
+
+        private static void Start()
+        {
+            if (!started)
+            {
+                started = true;
+                pause = false;
             }
         }
 
@@ -337,28 +401,19 @@ namespace game1
                 string output = string.Format("Life: {0}   Squirrles: {1}   Score: {2}", player.Health, player.Squirrels, player.Score.ToString("0"));
 
                 Console.SetCursorPosition(0, Height);
-                Console.ResetColor();
+                Console.BackgroundColor = ConsoleColor.DarkGray;
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(output.PadRight(Width * 3 - 1));
                 OutPutValid = true;
             }
 
-            const double viewSize = 4.5;
+            const double viewSize = 5.2;
 
             for (int X = player.X - (int)Math.Ceiling(viewSize) ; X <= player.X + (int)Math.Ceiling(viewSize) ; X++)
                 for (int Y = player.Y - (int)Math.Ceiling(viewSize) ; Y <= player.Y + (int)Math.Ceiling(viewSize) ; Y++)
                     if (GetDist(X, Y, player.X, player.Y) < viewSize)
                         if (X >= 0 && X < Width && Y >= 0 && Y < Height)
                             map[X, Y].Visible = true;
-        }
-
-        public static int GetCornerDist(int x1, int y1, int x2, int y2)
-        {
-            return Math.Max(Math.Abs(x1 - x2), Math.Abs(y1 - y2));
-        }
-
-        public static int GetDistXAndY(int x1, int y1, int x2, int y2)
-        {
-            return Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
         }
 
         public static double GetDist(int x1, int y1, int x2, int y2)
@@ -381,7 +436,7 @@ namespace game1
         public static void Invalidate(int X, int Y)
         {
             if (map[X, Y].Visible)
-                valid[X, Y] = false;
+                ForceInvalidate(X, Y);
         }
 
         public static void ForceInvalidate(int X, int Y)
@@ -397,8 +452,7 @@ namespace game1
             {
                 Console.SetCursorPosition(X, Y);
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.Write('*');
+                Console.Write(' ');
 
                 return;
             }
@@ -409,7 +463,7 @@ namespace game1
                 return;
             }
 
-            foreach (Piece p in Pieces)
+            foreach (Piece p in rand.Iterate(Pieces))
                 if (p.X == X && p.Y == Y)
                 {
                     p.Draw(map[X, Y].Color);
@@ -424,7 +478,9 @@ namespace game1
                 Console.Write(map[X, Y].Character);
             }
             else
+            {
                 Console.Write(' ');
+            }
         }
 
         public static int[] RandXY()

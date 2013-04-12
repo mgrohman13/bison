@@ -6,7 +6,7 @@ namespace game1
 {
     class Player : Piece
     {
-        int hea, squ, movement, moveSpeed, direction, fireCount;
+        private int _hp, _squirrels, movement, moveSpeed, direction, fireCount;
         double sco;
 
         public int Health
@@ -27,7 +27,7 @@ namespace game1
         {
             get
             {
-                return score / 1000.0;
+                return score / 300.0;
             }
         }
 
@@ -35,11 +35,11 @@ namespace game1
         {
             get
             {
-                return hea;
+                return _hp;
             }
             set
             {
-                hea = value;
+                _hp = value;
                 Program.OutPutValid = false;
             }
         }
@@ -47,11 +47,11 @@ namespace game1
         {
             get
             {
-                return squ;
+                return _squirrels;
             }
             set
             {
-                squ = value;
+                _squirrels = value;
                 Program.OutPutValid = false;
             }
         }
@@ -71,13 +71,13 @@ namespace game1
         public Player(ConsoleColor color)
             : base(Convert.ToChar(2), color)
         {
-            health = 6;
-            squirrels = 3;
+            health = 5;
+            squirrels = 5;
             movement = 0;
             moveSpeed = 9;
             direction = -1;
             score = 0;
-            fireCount = 0;
+            fireCount = -1;
         }
 
         public void MoveUp()
@@ -169,35 +169,30 @@ namespace game1
             this.score += score;
         }
 
-        public void MoveHere()
-        {
-            foreach (Piece p in Program.getPieces(X, Y))
-                if (p is Squirrel)
-                {
-                    squirrels++;
-                    if (Program.rand.OE(squirrels) > health * 10)
-                    {
-                        health++;
-                        squirrels -= 10;
-                    }
-                    Program.RemovePiece(p);
-                }
-                else if (p is SquirrelEater)
-                {
-                    SquirrelEater se = (SquirrelEater)p;
-                    score += se.Score;
-                    health -= Program.rand.Round(se.Size);
-                    Program.RemovePiece(p);
-                }
-        }
-
         public override void Move()
         {
             fireCount--;
             if (movement-- < 0)
-            {
                 move(direction);
+        }
+
+        internal void GetSquirrel(Squirrel s)
+        {
+            Program.RemovePiece(s);
+
+            squirrels++;
+            if (squirrels > 9 && Program.rand.Bool(squirrels / ( squirrels + health * health * 3.9 )))
+            {
+                health++;
+                squirrels -= 5;
             }
+        }
+        internal void HitEater(SquirrelEater squirrelEater)
+        {
+            Program.RemovePiece(squirrelEater);
+
+            AddScore(squirrelEater.Score);
+            health--;
         }
     }
 }

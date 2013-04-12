@@ -279,7 +279,7 @@ namespace DaemonsWinApp
 
         private void RefreshLog()
         {
-            string log = game.log;
+            string log = game.CombatLog;
             if (log.Length > 300)
                 log = log.Substring(0, 300);
             this.lblLog.Text = log;

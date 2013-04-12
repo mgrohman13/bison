@@ -23,7 +23,7 @@ namespace DaemonsWinApp
             if (log)
             {
                 this.Text = "Combat Log";
-                this.textBox1.Text = game.log;
+                this.textBox1.Text = game.CombatLog;
 
                 this.textBox1.Select(0, 0);
             }

@@ -19,9 +19,7 @@ namespace game1
         public override void Move()
         {
             if (movement-- < 0)
-            {
                 move(direction);
-            }
         }
 
         public void move(int dir)
@@ -30,50 +28,48 @@ namespace game1
 
             switch (dir)
             {
-                case 0:
-                    if (Y == 0)
-                        Program.RemovePiece(this);
-                    Y--;
-                    break;
+            case 0:
+                if (Y == 0)
+                    Program.RemovePiece(this);
+                Y--;
+                break;
 
-                case 1:
-                    if (X == 0)
-                        Program.RemovePiece(this);
-                    X--;
-                    break;
+            case 1:
+                if (X == 0)
+                    Program.RemovePiece(this);
+                X--;
+                break;
 
-                case 2:
-                    if (Y == Program.Height - 1)
-                        Program.RemovePiece(this);
-                    Y++;
-                    break;
+            case 2:
+                if (Y == Program.Height - 1)
+                    Program.RemovePiece(this);
+                Y++;
+                break;
 
-                case 3:
-                    if (X == Program.Width - 1)
-                        Program.RemovePiece(this);
-                    X++;
-                    break;
+            case 3:
+                if (X == Program.Width - 1)
+                    Program.RemovePiece(this);
+                X++;
+                break;
             }
-
-            MoveHere();
-        }
-
-        private void MoveHere()
-        {
-            foreach (Piece p in Program.getPieces(X, Y))
-                if (p is Squirrel)
-                {
-                    Program.AddPiece(new ThrownSquirrel(X, Y, Program.rand.Next(4)));
-                    Program.RemovePiece(p);
-                }
-                else if (p is SquirrelEater)
-                    HitEater((SquirrelEater)p);
         }
 
         public void HitEater(SquirrelEater se)
         {
-            Program.player.AddScore(se.Score);
             Program.RemovePiece(se);
+
+            Program.player.AddScore(se.Score);
+        }
+        public void HitSquirrel(Squirrel s)
+        {
+            Program.RemovePiece(s);
+
+            int dir;
+            do
+            {
+                dir = Program.rand.Next(4);
+            } while (dir == this.direction);
+            Program.AddPiece(new ThrownSquirrel(X, Y, dir));
         }
     }
 }

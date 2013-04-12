@@ -60,8 +60,13 @@ namespace game1
                 break;
             }
 
-            if (Program.rand.Bool(0.0005))
+            bool grass = ( Program.getTerrain(X, Y) is Grass );
+            if (Program.rand.Bool(grass ? 0.0039 : 0.000013))
+            {
                 Program.AddPiece(new Squirrel(X, Y));
+                if (grass)
+                    Program.setTerrain(X, Y, new Dirt(X, Y, Program.getTerrain(X, Y).Visible));
+            }
         }
     }
 }

@@ -7,7 +7,9 @@ namespace z2
 {
     class Consts
     {
-        public const double NoiseSmooth = 1.3;
+        public const double NoiseSmooth = 0.65;
         public const double NoiseSmoothDist = 2.6;
+
+        public const double YMult = 12 / 8.0;
     }
 }
