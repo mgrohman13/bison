@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Marsaglia.cs" />
     <Compile Include="PointD.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="TestRand.cs" />

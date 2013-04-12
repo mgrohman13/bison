@@ -14,6 +14,9 @@ namespace randTest
 
         public static void Main(string[] args)
         {
+            MattUtil._15.main();
+            MattUtil._16.main();
+
             rand.StartTick();
 
             //uint v = rand.NextUInt();
