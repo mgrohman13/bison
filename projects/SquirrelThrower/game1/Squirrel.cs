@@ -61,7 +61,8 @@ namespace game1
             }
 
             bool grass = ( Program.getTerrain(X, Y) is Grass );
-            if (Program.rand.Bool(grass ? 0.0039 : 0.000013))
+            const double chance = 0.0052;
+            if (Program.rand.Bool(grass ? chance : chance * chance))
             {
                 Program.AddPiece(new Squirrel(X, Y));
                 if (grass)

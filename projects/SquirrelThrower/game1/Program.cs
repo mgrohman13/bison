@@ -140,7 +140,8 @@ namespace game1
 
             AddPiece(player);
 
-            for (int i = 0 ; i < 13 ; i++)
+            int amt = rand.GaussianOEInt(13, .065, .078, 6);
+            for (int i = 0 ; i < amt ; i++)
             {
                 CreateGrass(1);
                 AddPiece(new SquirrelEater());
@@ -294,14 +295,12 @@ namespace game1
 
         private static void CreateStuff()
         {
-            if (rand.Bool(.0013))
+            if (rand.Bool(TimeMult * .0013))
             {
-                CreateGrass(26);
-                if (rand.Bool(TimeMult))
-                {
-                    AddPiece(new Squirrel(rand.Next(Width), rand.Next(Height)));
-                    AddPiece(new SquirrelEater(rand.Next(Width), rand.Next(Height)));
-                }
+                if (rand.Bool(1 / TimeMult))
+                    CreateGrass(13);
+                AddPiece(new Squirrel(rand.Next(Width), rand.Next(Height)));
+                AddPiece(new SquirrelEater(rand.Next(Width), rand.Next(Height)));
             }
         }
 
