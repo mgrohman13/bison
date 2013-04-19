@@ -14,10 +14,27 @@ namespace randTest
 
         public static void Main(string[] args)
         {
-            MattUtil._15.main();
-            MattUtil._16.main();
-
             rand.StartTick();
+
+            //Console.WriteLine("idx=" + rand.NextBits(16));
+            //Console.WriteLine("xs=" + rand.NextUInt());
+            //Console.WriteLine("lcg=" + rand.NextUInt());
+            //Console.WriteLine("carry=" + rand.NextUInt());
+
+            _14 _14 = new _14(null);
+            Console.WriteLine(_14.Next());
+            _14 = new _14();
+            Console.WriteLine(_14.Next());
+            _14 = new _14(0);
+            Console.WriteLine(_14.Next());
+            _14 = new _14(0, 0);
+            Console.WriteLine(_14.Next());
+
+            MattUtil._15.test();
+            MattUtil._16.test();
+
+            Console.ReadKey();
+            return;
 
             //uint v = rand.NextUInt();
             //MTRandom r1 = new MTRandom(new uint[] { v, v, v, v });

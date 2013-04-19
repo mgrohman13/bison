@@ -160,14 +160,16 @@ namespace MattUtil
     /* Super KISS based on Usenet posting by G. Marsaglia - Period 54767 * 2^1337279 */
     class _8
     {
-        static uint[] Q = new uint[41790];
-        static uint indx = 41790, carry = 362436, xcng = 1236789, xs = 521288629;
+        const uint len = 41790;
+
+        static uint[] Q = new uint[len];
+        static uint indx = len, carry = 362436, xcng = 1236789, xs = 521288629;
         /* Fill Q array with random u32-bit ints and return first element */
         uint refill()
         {
             int i;
             ulong t;
-            for (i = 0 ; i < 41790 ; i++)
+            for (i = 0 ; i < len ; i++)
             {
                 t = 7010176 * Q[i] + carry;
                 carry = (uint)( t >> 32 );
@@ -183,7 +185,7 @@ namespace MattUtil
             xs ^= xs << 13;
             xs ^= xs >> 17;
             xs ^= xs >> 5;
-            return ( indx < 41790 ? Q[indx++] : refill() ) + xcng + xs;
+            return ( indx < len ? Q[indx++] : refill() ) + xcng + xs;
         }
     }
 
@@ -318,122 +320,184 @@ namespace MattUtil
 
     class _13
     {
-        //seed
         //y can be any 32-bit integer not 0, 
         //z and w any 31-bit integers not multiples of 7559 
         //c can be 0 or 1. 
-        static ulong x = 123456789, y = 362436069, z = 21288629, w = 14921776, c = 0;
-
-        static ulong t;
+        static uint x = 123456789, y = 362436069, z = 21288629, w = 14921776;
+        bool c = false;
         ulong KISS()
         {
-            x += 545925293;
+            x += 0x208A28AD;
             y ^= ( y << 13 );
             y ^= ( y >> 17 );
             y ^= ( y << 5 );
-            t = z + w + c;
+            uint t = z + w + (uint)( c ? 1 : 0 );
             z = w;
-            c = ( t >> 31 );
-            w = t & 2147483647;
+            c = ( ( t >> 31 ) == 1 );
+            w = t & 0x7FFFFFFF;
             return ( x + y + w );
         }
     }
 
     public class _14
     {
-        uint[] Q = new uint[41790];
-        uint indx;
-        uint carry;
-        uint xcng;
-        uint xs;
-        uint refill()
+        private const int len = 41790;
+        private const ulong mlt = 7010176;
+
+        private uint[] mwc;
+        private ushort idx;
+        private uint xs, lcg, carry;
+
+        public _14(params uint[] seed)
         {
-            int i;
-            ulong t;
-            for (i = 0 ; i < 41790 ; i++)
+            Seed(seed);
+        }
+
+        //Marsaglia's KISS (Keep It Simple, Stupid)
+        public uint Next()
+        {
+            return MWC() + XS() + LCG();
+        }
+
+        public void Seed(params uint[] seed)
+        {
+            //re-init fields
+            mwc = new uint[len];
+            idx = 32940;
+            xs = 3366698789;
+            lcg = 1025196070;
+            carry = 1213447760;
+
+            //null, empty, and 0 are all handled as different seeds
+            uint a = 0;
+            if (seed == null || seed.Length == 0)
             {
-                t = 7010176 * Q[i] + carry;
+                if (seed == null)
+                    carry += Next();
+                carry += Next();
+                seed = new uint[] { 0 };
+            }
+
+            //seed inital values
+            xs += GetSeed(seed, ref a);
+            lcg += GetSeed(seed, ref a);
+            carry += GetSeed(seed, ref a);
+            uint b = GetSeed(seed, ref a);
+            idx += (ushort)( b + ( b >> 16 ) );
+            Validate();
+
+            //seed a temporary MWC
+            for (b = 0 ; b < len ; b++)
+                mwc[b] = XS() + LCG() + GetSeed(seed, ref a) + a;
+            //use any remaining seed values
+            while (a != seed.Length)
+                mwc[Next() % len] += GetSeed(seed, ref a);
+
+            //seed real MWC using the temporary KISS so all seed values are represented in all state values
+            for (b = 0 ; b < len ; b++)
+                mwc[b] = Next();
+
+            //seed XS and LCG using MWC
+            xs += MWC();
+            lcg += MWC();
+            Validate();
+        }
+        private uint GetSeed(uint[] seed, ref uint a)
+        {
+            if (a == seed.Length)
+            {
+                a = 0;
+                XS();
+            }
+            return seed[a++];
+        }
+        private void Validate()
+        {
+            idx = (ushort)( idx % ( len + 1 ) );
+            if (xs == 0)
+                xs = uint.MaxValue;
+            carry = (uint)( carry % mlt );
+        }
+
+        //Marsaglia's Multiply-With-Carry
+        public uint MWC()
+        {
+            return ( idx < len ? mwc[idx++] : Refill() );
+        }
+        private uint Refill()
+        {
+            for (int i = 0 ; i < len ; i++)
+            {
+                ulong t = mlt * mwc[i] + carry;
                 carry = (uint)( t >> 32 );
-                Q[i] = (uint)~( t );
+                mwc[i] = (uint)( ~t );
             }
-            indx = 1;
-            return ( Q[0] );
+            idx = 1;
+            return mwc[0];
         }
-        public _14()
-        {
-            indx = 41790;
-            carry = 362436;
-            xcng = 1236789;
-            xs = 521288629;
-            for (int i = 0 ; i < 41790 ; i++)
-            {
-                xs ^= xs << 13;
-                xs ^= xs >> 17;
-                Q[i] = ( xcng = 69609 * xcng + 123 ) + ( xs ^= xs >> 5 );
-            }
-        }
-        // Collect next random number:    
-        uint SKRand()
+        //XorShift
+        public uint XS()
         {
             xs ^= xs << 13;
             xs ^= xs >> 17;
-            return ( indx < 41790 ? Q[indx++] : refill() ) + ( xcng = 69609 * xcng + 123 ) + ( xs ^= xs >> 5 );
+            return ( xs ^= xs >> 5 );
         }
-        public static void main()
+        //Linear Congruential Generator
+        public uint LCG()
         {
-            uint i;
-            int x = 0;
-            _14 sk = new _14();
-            for (i = 0 ; i < 1000000000 ; i++)
-                x = (int)sk.SKRand();
-            Console.WriteLine(" x = {0}\r\nDoes x=-872412446?", x);
+            return ( lcg = 69609 * lcg + 123 );
         }
-        /* Possible output:        x = -872412446        Does x=-872412446?        */
     }
 
     public class _15
     {
-        static uint[] Q = new uint[4194304];
-        static uint carry = 0;
+        private const uint len = 0x400000;
+        private const uint msk = len - 1;
 
-        static int j = 4194303;
-        static uint b32MWC()
+        private static uint[] Q = new uint[len];
+        private static uint carry = 0;
+        private static uint j = msk;
+
+        private static uint cng = 123456789, xs = 362436069;
+
+        public static uint b32MWC()
         {
             uint t, x;
-            j = ( j + 1 ) & 4194303;
+            j = ( j + 1 ) & msk;
             x = Q[j];
             t = ( x << 28 ) + carry;
             carry = ( x >> 4 ) - (uint)( t < x ? 1 : 0 );
             return ( Q[j] = t - x );
         }
 
-        static uint CNG()
+        public static uint CNG()
         {
             return ( cng = 69069 * cng + 13579 );
         }
-        static uint XS()
+        public static uint XS()
         {
             xs ^= ( xs << 13 );
             xs ^= ( xs >> 17 );
             return ( xs ^= ( xs << 5 ) );
         }
-        static uint KISS()
+
+        public static uint KISS()
         {
             return ( b32MWC() + CNG() + XS() );
         }
 
-        static uint i, x, cng = 123456789, xs = 362436069;
-        public static void main()
+        public static void test()
         {
             /* First seed Q[] with CNG+XS:    */
-            for (i = 0 ; i < 4194304 ; i++)
+            for (int i = 0 ; i < len ; i++)
                 Q[i] = CNG() + XS();
             /* Then generate 10^9 b32MWC()s */
-            for (i = 0 ; i < 1000000000 ; i++)
+            uint x = 0;
+            for (int i = 0 ; i < 1000000000 ; i++)
                 x = b32MWC();
             Console.WriteLine("Does x=2769813733 ?\n     x={0}\n", x);
             /* followed by 10^9 KISSes:   */
-            for (i = 0 ; i < 1000000000 ; i++)
+            for (int i = 0 ; i < 1000000000 ; i++)
                 x = KISS();
             Console.WriteLine("Does x=3545999299 ?\n     x={0}\n", x);
         }
@@ -441,47 +505,53 @@ namespace MattUtil
 
     public class _16
     {
-        static ulong[] Q = new ulong[2097152];
-        static ulong carry = 0;
+        private const ulong len = 0x200000;
+        private const ulong msk = len - 1;
 
-        static int j = 2097151;
-        static ulong B64MWC()
+        private static ulong[] Q = new ulong[len];
+        private static ulong carry = 0;
+        private static ulong j = msk;
+
+        private static ulong cng = 123456789987654321, xs = 362436069362436069;
+
+        public static ulong B64MWC()
         {
             ulong t, x;
-            j = ( j + 1 ) & 2097151;
+            j = ( j + 1 ) & msk;
             x = Q[j];
             t = ( x << 28 ) + carry;
             carry = ( x >> 36 ) - (ulong)( t < x ? 1 : 0 );
             return ( Q[j] = t - x );
         }
 
-        static ulong CNG()
+        public static ulong CNG()
         {
             return ( cng = 6906969069 * cng + 13579 );
         }
-        static ulong XS()
+        public static ulong XS()
         {
             xs ^= ( xs << 13 );
             xs ^= ( xs >> 17 );
             return ( xs ^= ( xs << 43 ) );
         }
-        static ulong KISS()
+
+        public static ulong KISS()
         {
             return ( B64MWC() + CNG() + XS() );
         }
 
-        static ulong i, x, cng = 123456789987654321, xs = 362436069362436069;
-        public static void main()
+        public static void test()
         {
             /* First seed Q[] with CNG+XS:    */
-            for (i = 0 ; i < 2097152 ; i++)
+            for (ulong i = 0 ; i < len ; i++)
                 Q[i] = CNG() + XS();
             /* Then generate 10^9 B64MWC()s */
-            for (i = 0 ; i < 1000000000 ; i++)
+            ulong x = 0;
+            for (int i = 0 ; i < 1000000000 ; i++)
                 x = B64MWC();
             Console.WriteLine("Does x=13596816608992115578 ?\n     x={0}\n", x);
             /* followed by 10^9 KISSes:   */
-            for (i = 0 ; i < 1000000000 ; i++)
+            for (int i = 0 ; i < 1000000000 ; i++)
                 x = KISS();
             Console.WriteLine("Does x=5033346742750153761 ?\n     x={0}\n", x);
         }
