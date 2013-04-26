@@ -448,10 +448,10 @@ namespace MattUtil
                 //ensure all seed values are represented in KISS as well
                 a = ( a << 1 ) + LENGTH - 3;
                 b = m[LENGTH - 1];
-                lfsr = b = SeedAlg(lfsr, b, SEED_FACTOR_3, ++a);
-                lcgn = b = SeedAlg(lcgn, b, SEED_FACTOR_3, ++a);
-                mwc2 = b = SeedAlg(mwc2, b, SEED_FACTOR_3, ++a);
-                mwc1 = b = SeedAlg(mwc1, b, SEED_FACTOR_3, ++a);
+                lfsr = b = SeedAlg(lfsr, b, SEED_FACTOR_2, ++a);
+                lcgn = b = SeedAlg(lcgn, b, SEED_FACTOR_2, ++a);
+                mwc2 = b = SeedAlg(mwc2, b, SEED_FACTOR_2, ++a);
+                mwc1 = b = SeedAlg(mwc1, b, SEED_FACTOR_2, ++a);
 
                 //ensure non-zero MT, LFSR, and MWCs (LCG can be zero)
                 m[1] = EnsureNonZero(m[1]);

@@ -83,10 +83,11 @@ namespace GalWarWin
 
         private void btnDisband_Click(object sender, EventArgs e)
         {
-            int sell = Sliders.SliderForm.ShowForm(new Sliders.SellPlanetDefense(colony));
+            Sliders.SellPlanetDefense slider = new Sliders.SellPlanetDefense(colony);
+            int sell = Sliders.SliderForm.ShowForm(slider);
             if (sell > 0)
             {
-                colony.DisbandPlanetDefense(MainForm.GameForm, sell, Sliders.SellPlanetDefense.Gold);
+                colony.DisbandPlanetDefense(MainForm.GameForm, sell, slider.Gold);
                 MainForm.GameForm.RefreshAll();
                 SetColony(colony);
             }

@@ -566,18 +566,25 @@ namespace GalWar
             if (this.Dead)
                 throw new Exception();
 
+            int newAtt, newDef;
             double gold = ( this.Population / Consts.PopulationForGoldLow )
                     + ( this.Soldiers / Consts.SoldiersForGold )
                     + ( this.production / Consts.ProductionForGold )
-                    + ( this.GetActualDisbandValue(this.HP) );
+                    + ( this.GetActualDisbandValue(this.HP, out newAtt, out newDef) );
             this.Player.AddGold(gold, true);
+
+            if (newAtt != 1 || newDef != 1)
+                throw new Exception();
 
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
             Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
             Console.WriteLine("Production:  " + this.production / Consts.ProductionForGold);
-            Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP));
+            Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP, out newAtt, out newDef));
             Console.WriteLine();
+
+            if (newAtt != 1 || newDef != 1)
+                throw new Exception();
 
             this.Population = 0;
             this.Soldiers = 0;
@@ -980,7 +987,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return GetPDUpkeep(this.HP);
+                return GetPDUpkeep(this.Att, this.Def, this.HP);
             }
         }
         internal double PlanetDefenseCostAvgResearch
@@ -1032,11 +1039,13 @@ namespace GalWar
             AssertException.Assert(hp <= this.HP);
             AssertException.Assert(gold || this.Buildable != null);
 
+            int newAtt, newDef;
+
             int production;
             double addGold, goldIncome;
             if (gold)
             {
-                GetDisbandGoldValue(hp, out goldIncome, out addGold);
+                GetDisbandGoldValue(hp, out goldIncome, out addGold, out newAtt, out newDef);
                 Player.AddGold(goldIncome, addGold);
 
                 production = 0;
@@ -1044,20 +1053,27 @@ namespace GalWar
             }
             else
             {
-                AddProduction(GetActualDisbandValue(hp), true, out goldIncome, out production);
+                AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, out goldIncome, out production);
 
                 addGold = 0;
             }
 
-            this.HP -= hp;
+            newAtt = this.Att - newAtt;
+            newDef = this.Def - newDef;
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<int, int, double, double>(
-                    new Game.UndoMethod<int, int, double, double>(UndoDisbandPlanetDefense), hp, production, addGold, goldIncome));
+            this.HP -= hp;
+            this.Att -= newAtt;
+            this.Def -= newDef;
+
+            Player.Game.PushUndoCommand(new Game.UndoCommand<int, int, int, int, double, double>(
+                    new Game.UndoMethod<int, int, int, int, double, double>(UndoDisbandPlanetDefense), hp, newAtt, newDef, production, addGold, goldIncome));
         }
-        private Tile UndoDisbandPlanetDefense(int hp, int production, double addGold, double goldIncome)
+        private Tile UndoDisbandPlanetDefense(int hp, int att, int def, int production, double addGold, double goldIncome)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
+            AssertException.Assert(att >= 0);
+            AssertException.Assert(def >= 0);
             AssertException.Assert(production >= 0);
             AssertException.Assert(production <= this.production);
             AssertException.Assert(addGold >= 0);
@@ -1065,6 +1081,8 @@ namespace GalWar
             AssertException.Assert(goldIncome > -.1);
 
             this.HP += hp;
+            this.Att += att;
+            this.Def += def;
             this.UndoAddProduction(production);
             this.Player.AddGold(-addGold);
             this.Player.GoldIncome(-goldIncome);
@@ -1072,28 +1090,44 @@ namespace GalWar
             return this.Tile;
         }
 
-        public double GetPlanetDefenseDisbandValue(int hp, bool gold)
+        public double GetPlanetDefenseDisbandValue(int hp, bool gold, out int newAtt, out int newDef)
         {
             TurnException.CheckTurn(this.Player);
 
             if (gold)
             {
                 double actual, rounded;
-                GetDisbandGoldValue(hp, out actual, out rounded);
+                GetDisbandGoldValue(hp, out actual, out rounded, out newAtt, out newDef);
                 return rounded;
             }
             else
             {
-                return GetAddProduction(GetActualDisbandValue(hp), true);
+                return GetAddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true);
             }
         }
-        internal double GetActualDisbandValue(int hp)
+        internal double GetActualDisbandValue(int hp, out int newAtt, out int newDef)
         {
-            return hp * PlanetDefenseCostPerHP * Consts.DisbandPct;
+            double oldCost = this.PlanetDefenseCost;
+
+            newAtt = this.Att;
+            newDef = this.Def;
+
+            int newHP = this.HP - hp;
+            double hpMult = HP / ShipDesign.GetHPStr(Att, Def);
+
+            double mult = 1, step = 1 / ( Consts.FLOAT_ERROR + Att * Def );
+            do
+            {
+                mult -= step;
+                newAtt = Math.Max(1, (int)Math.Floor(Att * mult));
+                newDef = Math.Max(1, (int)Math.Floor(Def * mult));
+            } while (mult > 0 && ShipDesign.GetHPStr(newAtt, newDef) * hpMult > newHP);
+
+            return ( oldCost - newHP * GetPDCost(newAtt, newDef) ) * Consts.DisbandPct;
         }
-        private void GetDisbandGoldValue(int hp, out double actual, out double rounded)
+        private void GetDisbandGoldValue(int hp, out double actual, out double rounded, out int newAtt, out int newDef)
         {
-            actual = GetActualDisbandValue(hp);
+            actual = GetActualDisbandValue(hp, out newAtt, out newDef);
             rounded = Player.FloorGold(actual);
         }
 
@@ -1107,9 +1141,9 @@ namespace GalWar
             return GetPDUpkeep(Math.Min(hp, ( att - 1 ) * shipDef + 1), att, def, Consts.PlanetDefensesAttackCostMult);
         }
 
-        internal double GetPDUpkeep(int hp)
+        internal double GetPDUpkeep(int hp, int att, int def)
         {
-            return GetPDUpkeep(hp, this.Att, this.Def, Consts.PlanetDefensesUpkeepMult);
+            return GetPDUpkeep(hp, att, def, Consts.PlanetDefensesUpkeepMult);
         }
         private double GetPDUpkeep(int hp, int att, int def, double mult)
         {

@@ -649,13 +649,18 @@ namespace GalWar
                         double target = GetNegativeGold();
                         int sell = MattUtil.TBSUtil.FindValue(delegate(int hp)
                         {
-                            return ( colony.GetPDUpkeep(hp) + colony.GetActualDisbandValue(hp) + target >= 0 );
+                            int newAtt, newDef;
+                            double gold = colony.Upkeep;
+                            gold += colony.GetActualDisbandValue(hp, out newAtt, out newDef);
+                            gold -= colony.GetPDUpkeep(colony.HP - hp, newAtt, newDef);
+                            return ( gold + target >= 0 );
                         }, 1, colony.HP, true);
 
                         Console.WriteLine("Sold " + sell + " hp from " + colony + " (" + colony.Tile + ")");
 
-                        AddGold(colony.GetPDUpkeep(sell));
+                        double upkeep = colony.Upkeep;
                         colony.DisbandPlanetDefense(handler, sell, true);
+                        AddGold(upkeep - colony.Upkeep);
                     }
                 }
                 else

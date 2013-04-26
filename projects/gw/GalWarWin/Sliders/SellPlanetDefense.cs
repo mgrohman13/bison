@@ -6,38 +6,23 @@ namespace GalWarWin.Sliders
 {
     public class SellPlanetDefense : SliderController
     {
-        private static CheckBox chkProd;
-        private static EventHandler eventHandler;
-
-        static SellPlanetDefense()
-        {
-            chkProd = new CheckBox();
-            chkProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            chkProd.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            chkProd.Text = "Production";
-            chkProd.Checked = true;
-        }
-
-        public static bool Gold
-        {
-            get
-            {
-                return !chkProd.Checked;
-            }
-        }
-
         private readonly Colony colony;
+        private readonly SellPlanetDefenseControl control;
 
         public SellPlanetDefense(Colony colony)
         {
             this.colony = colony;
 
-            chkProd.Checked = chkProd.Enabled = ( colony.Buildable != null );
+            this.control = new SellPlanetDefenseControl(this.sellForProd_CheckedChanged);
+            control.SetProdEnabled(colony.Buildable != null);
+        }
 
-            if (eventHandler != null)
-                chkProd.CheckedChanged -= eventHandler;
-            eventHandler = new EventHandler(this.sellForProd_CheckedChanged);
-            chkProd.CheckedChanged += eventHandler;
+        public bool Gold
+        {
+            get
+            {
+                return control.Gold;
+            }
         }
 
         private void sellForProd_CheckedChanged(object sender, EventArgs e)
@@ -47,7 +32,7 @@ namespace GalWarWin.Sliders
 
         public override Control GetCustomControl()
         {
-            return chkProd;
+            return control;
         }
 
         public override double GetInitial()
@@ -62,7 +47,10 @@ namespace GalWarWin.Sliders
 
         protected override double GetResult()
         {
-            return colony.GetPlanetDefenseDisbandValue(GetValue(), Gold);
+            int newAtt, newDef;
+            double result = colony.GetPlanetDefenseDisbandValue(GetValue(), Gold, out newAtt, out newDef);
+            control.SetAttDefDiff(newAtt - colony.Att, newDef - colony.Def);
+            return result;
         }
 
         protected override string GetResultType()

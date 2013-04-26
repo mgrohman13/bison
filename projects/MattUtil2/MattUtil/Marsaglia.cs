@@ -361,7 +361,7 @@ namespace MattUtil
 
         public void Seed(params uint[] seed)
         {
-            //re-init fields
+            //init fields
             mwc = new uint[len];
             idx = 32940;
             xs = 3366698789;
@@ -377,12 +377,13 @@ namespace MattUtil
                 carry += Next();
                 seed = new uint[] { 0 };
             }
+            lcg += (uint)seed.Length;
 
             //seed inital values
             xs += GetSeed(seed, ref a);
             lcg += GetSeed(seed, ref a);
-            carry += GetSeed(seed, ref a);
             uint b = GetSeed(seed, ref a);
+            carry += b;
             idx += (ushort)( b + ( b >> 16 ) );
             Validate();
 
@@ -394,8 +395,12 @@ namespace MattUtil
                 mwc[Next() % len] += GetSeed(seed, ref a);
 
             //seed real MWC using the temporary KISS so all seed values are represented in all state values
+            ushort c = idx;
+            idx = len;
+            Refill();
             for (b = 0 ; b < len ; b++)
                 mwc[b] = Next();
+            idx = c;
 
             //seed XS and LCG using MWC
             xs += MWC();

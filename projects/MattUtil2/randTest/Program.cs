@@ -21,13 +21,11 @@ namespace randTest
             //Console.WriteLine("lcg=" + rand.NextUInt());
             //Console.WriteLine("carry=" + rand.NextUInt());
 
-            _14 _14 = new _14(null);
+            uint[] s = new uint[41793];
+            _14 _14 = new _14(s);
             Console.WriteLine(_14.Next());
-            _14 = new _14();
-            Console.WriteLine(_14.Next());
-            _14 = new _14(0);
-            Console.WriteLine(_14.Next());
-            _14 = new _14(0, 0);
+            s[s.Length - 1] = 613;
+            _14 = new _14(s);
             Console.WriteLine(_14.Next());
 
             MattUtil._15.test();

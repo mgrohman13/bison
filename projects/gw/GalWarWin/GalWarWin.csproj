@@ -165,6 +165,9 @@
     <EmbeddedResource Include="ShipDesignSortForm.resx">
       <DependentUpon>ShipDesignSortForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sliders\SellPlanetDefenseControl.resx">
+      <DependentUpon>SellPlanetDefenseControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TextForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>TextForm.cs</DependentUpon>
@@ -219,6 +222,12 @@
       <DependentUpon>ShipDesignSortForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Sliders\SellPlanetDefense.cs" />
+    <Compile Include="Sliders\SellPlanetDefenseControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Sliders\SellPlanetDefenseControl.Designer.cs">
+      <DependentUpon>SellPlanetDefenseControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="TextForm.cs">
       <SubType>Form</SubType>
     </Compile>
