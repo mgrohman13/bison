@@ -12,6 +12,8 @@ namespace balance
         [STAThread]
         static void Main()
         {
+            Console.WriteLine(CityWar.Attack.GetAverageDamage(CityWar.Balance.AverageDamage, CityWar.Balance.AverageAP, CityWar.Balance.AverageArmor, int.MaxValue));
+
             CityWar.Game.Random.ToString();
 
             Application.EnableVisualStyles();

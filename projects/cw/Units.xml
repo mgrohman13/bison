@@ -435,20 +435,6 @@
     <Race>Fae</Race>
   </Unit>
   <Unit>
-    <Name>Daemon</Name>
-    <Cost>403</Cost>
-    <Type>G</Type>
-    <Hits>86</Hits>
-    <Armor>4</Armor>
-    <Regen>11</Regen>
-    <Move>1</Move>
-    <CostType>D</CostType>
-    <IsThree>false</IsThree>
-    <Special />
-    <People>0</People>
-    <Race>Fae</Race>
-  </Unit>
-  <Unit>
     <Name>Spirit</Name>
     <Cost>286</Cost>
     <Type>A</Type>
@@ -713,6 +699,20 @@
     <Special />
     <People>40</People>
     <Race>Human</Race>
+  </Unit>
+  <Unit>
+    <Name>Daemon</Name>
+    <Cost>403</Cost>
+    <Type>G</Type>
+    <Hits>86</Hits>
+    <Armor>4</Armor>
+    <Regen>11</Regen>
+    <Move>1</Move>
+    <CostType>D</CostType>
+    <IsThree>false</IsThree>
+    <Special />
+    <People>0</People>
+    <Race>Fae</Race>
   </Unit>
   <Attack>
     <Target_x0020_Type>G</Target_x0020_Type>
@@ -1196,22 +1196,6 @@
   </Attack>
   <Attack>
     <Target_x0020_Type>GA</Target_x0020_Type>
-    <Length>1</Length>
-    <Damage>8</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Daemon</Unit>
-    <Name>Blade</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GA</Target_x0020_Type>
-    <Length>2</Length>
-    <Damage>6</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Daemon</Unit>
-    <Name>Flame</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GA</Target_x0020_Type>
     <Length>2</Length>
     <Damage>5</Damage>
     <Divide_x0020_By>2</Divide_x0020_By>
@@ -1457,6 +1441,22 @@
     <Divide_x0020_By>1</Divide_x0020_By>
     <Unit>Hydra</Unit>
     <Name>Bite</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GA</Target_x0020_Type>
+    <Length>1</Length>
+    <Damage>8</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Daemon</Unit>
+    <Name>Fire Blade</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GA</Target_x0020_Type>
+    <Length>2</Length>
+    <Damage>6</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Daemon</Unit>
+    <Name>Flame</Name>
   </Attack>
   <CostMult>
     <CostMult>5.3972426821410533</CostMult>
