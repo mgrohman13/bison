@@ -372,7 +372,7 @@ namespace CityWar
                     }
                     else
                     {
-                        _healthBrush = Brushes.Lime;
+                        _healthBrush = new SolidBrush(Color.FromArgb(0, 255, 0));
                     }
                 }
                 return _healthBrush;
