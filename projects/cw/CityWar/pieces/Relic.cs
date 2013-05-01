@@ -15,35 +15,67 @@ namespace CityWar
             ability = Abilities.AircraftCarrier;
             name = "Relic";
 
-            InitUnits(tile.Terrain);
+            this.units = InitUnits(tile.Terrain);
 
             tile.Add(this);
             owner.Add(this);
         }
 
-        private void InitUnits(Terrain terrain)
+        private const float matchChance = .6f, unmatchChance = .3f;
+        private static List<string> InitUnits(Terrain terrain)
         {
-            units = new List<string>();
+            List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
                 foreach (string u in race)
                 {
-                    //the chance of being able to build is based on the cost type
                     float val;
                     Unit unit = Unit.CreateTempUnit(u);
-                    if (unit.costType == CostType.Production) //7.67
-                        val = .3f;
-                    else if (unit.costType == CostType.Death) //1.67
+                    if (unit.costType == CostType.Production)
+                        val = .2f;
+                    else if (unit.costType == CostType.Death)
                         val = .7f;
-                    else if (( terrain == Terrain.Forest && unit.costType == CostType.Nature ) //1.92
+                    else if (( terrain == Terrain.Forest && unit.costType == CostType.Nature )
                         || ( terrain == Terrain.Mountain && unit.costType == CostType.Earth )
                         || ( terrain == Terrain.Plains && unit.costType == CostType.Air )
                         || ( terrain == Terrain.Water && unit.costType == CostType.Water ))
-                        val = .4f;
-                    else //5.75
-                        val = .2f;
+                        val = matchChance;
+                    else
+                        val = unmatchChance;
 
                     if (Game.Random.Bool(val))
                         units.Add(u);
+                }
+
+            if (units.Count == 0)
+                units = InitUnits(terrain);
+            return units;
+        }
+
+        internal void ChangedTerrain(Terrain newTerrain)
+        {
+            //chance to remove units matching the old terrain
+            foreach (string u in this.units.ToArray())
+            {
+                Unit unit = Unit.CreateTempUnit(u);
+                if (( ( tile.Terrain == Terrain.Forest && unit.costType == CostType.Nature )
+                    || ( tile.Terrain == Terrain.Mountain && unit.costType == CostType.Earth )
+                    || ( tile.Terrain == Terrain.Plains && unit.costType == CostType.Air )
+                    || ( tile.Terrain == Terrain.Water && unit.costType == CostType.Water ) ) &&
+                    Game.Random.Bool(1 - ( unmatchChance / matchChance )))
+                    this.units.Remove(u);
+            }
+            //chance to add units matching the new terrain
+            foreach (string[] race in Game.Races.Values)
+                foreach (string u in race)
+                {
+                    Unit unit = Unit.CreateTempUnit(u);
+                    if (!this.units.Contains(u) &&
+                        ( ( newTerrain == Terrain.Forest && unit.costType == CostType.Nature )
+                        || ( newTerrain == Terrain.Mountain && unit.costType == CostType.Earth )
+                        || ( newTerrain == Terrain.Plains && unit.costType == CostType.Air )
+                        || ( newTerrain == Terrain.Water && unit.costType == CostType.Water ) )
+                        && Game.Random.Bool(( matchChance - unmatchChance ) / ( 1 - unmatchChance )))
+                        this.units.Add(u);
                 }
         }
         #endregion //fields and constructors
@@ -51,10 +83,11 @@ namespace CityWar
         #region overrides
         public override bool CapableBuild(string name)
         {
-            if (!raceCheck(name))
-                return false;
             if (name == "Wizard")
                 return true;
+            if (!raceCheck(name))
+                return false;
+
             return ( units.Contains(name) );
         }
 

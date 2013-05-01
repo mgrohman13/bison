@@ -15,13 +15,13 @@ namespace CityWar
             ability = Abilities.AircraftCarrier;
             name = "City";
 
-            InitUnits(tile);
+            this.units = InitUnits(tile);
 
             tile.Add(this);
             owner.Add(this);
         }
 
-        private void InitUnits(Tile tile)
+        private static List<string> InitUnits(Tile tile)
         {
             double count = 3, watChance = 0;
             for (int i = 0 ; i < 6 ; ++i)
@@ -38,9 +38,9 @@ namespace CityWar
             watChance = 1 - 1 / ( 1 + Math.Pow(watChance + 1.3, tile.Terrain == Terrain.Water ? 1.5 : 1.3) / count * 10 );
 
             int watCount = 0, nonCount = 0;
-            units = new List<string>();
+            List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
-                foreach (string u in race)
+                foreach (string u in Game.Random.Iterate(race))
                 {
                     Unit unit = Unit.CreateTempUnit(u);
                     if (unit.costType == CostType.Production)
@@ -51,7 +51,9 @@ namespace CityWar
                             ++nonCount;
                     }
                     else if (Game.Random.Bool(avgChance))
+                    {
                         units.Add(u);
+                    }
                 }
 
             double nonChance;
@@ -70,8 +72,11 @@ namespace CityWar
                 nonChance = avgChance;
             }
 
+            int raceCount = 0;
             foreach (string[] race in Game.Races.Values)
-                foreach (string u in race)
+            {
+                bool anyProd = false;
+                foreach (string u in Game.Random.Iterate(race))
                 {
                     Unit unit = Unit.CreateTempUnit(u);
                     if (unit.costType == CostType.Production)
@@ -82,9 +87,20 @@ namespace CityWar
                         else
                             pct = nonChance;
                         if (Game.Random.Bool(pct))
+                        {
                             units.Add(u);
+                            anyProd = true;
+                        }
                     }
                 }
+                if (anyProd)
+                    ++raceCount;
+            }
+
+            if (raceCount != Game.Races.Count)
+                units = InitUnits(tile);
+
+            return units;
         }
 
         private static double GetTargetPct(double avgPct, double havePct, int haveCount, int targetCount)
@@ -106,51 +122,104 @@ namespace CityWar
         #region overrides
         public override bool CapableBuild(string name)
         {
+            return CapableBuild(name, false);
+        }
+        private bool CapableBuild(string name, bool raw)
+        {
+            Unit unit = Unit.CreateTempUnit(name);
+
             if (name == "Wizard")
                 return true;
+            if (!raceCheck(unit))
+                return false;
 
             if (!units.Contains(name))
                 return false;
 
             //can only build elemental units when on the correct terrain
-            Unit unit = Unit.CreateTempUnit(name);
-            if (!raceCheck(unit))
-                return false;
-            if (unit.costType != CostType.Production)
-            {
-                if (tile.Terrain == Terrain.Forest && unit.costType == CostType.Nature)
-                    return true;
-                else if (tile.Terrain == Terrain.Mountain && unit.costType == CostType.Earth)
-                    return true;
-                else if (tile.Terrain == Terrain.Plains && unit.costType == CostType.Air)
-                    return true;
-                else if (tile.Terrain == Terrain.Water && unit.costType == CostType.Water)
-                    return true;
-                else if (unit.costType == CostType.Death)
-                {
-                    //can only build death units if no other magic units can be built
-                    bool build = true;
-                    UnitSchema us = UnitTypes.GetSchema();
-                    foreach (UnitSchema.UnitRow r in us.Unit.Rows)
-                    {
-                        if (owner.Race == r.Race
-                            && ( ( tile.Terrain == Terrain.Forest && r.CostType == "N" )
-                            || ( tile.Terrain == Terrain.Mountain && r.CostType == "E" )
-                            || ( tile.Terrain == Terrain.Plains && r.CostType == "A" )
-                            || ( tile.Terrain == Terrain.Water && r.CostType == "W" ) )
-                            && ( units.Contains(r.Name) ))
-                        {
-                            build = false;
-                            break;
-                        }
-                    }
-                    return build;
-                }
+            CostType costType = unit.costType;
+            if (tile.Terrain == Terrain.Forest && costType == CostType.Nature)
+                return true;
+            if (tile.Terrain == Terrain.Mountain && costType == CostType.Earth)
+                return true;
+            if (tile.Terrain == Terrain.Plains && costType == CostType.Air)
+                return true;
+            if (tile.Terrain == Terrain.Water && costType == CostType.Water)
+                return true;
 
-                return false;
+            if (costType == CostType.Production)
+            {
+                bool ground = false, water = false;
+                for (int i = 0 ; i < 6 ; ++i)
+                {
+                    Tile neighbor = tile.GetNeighbor(i);
+                    if (neighbor != null)
+                    {
+                        if (neighbor.Terrain == Terrain.Water)
+                            water = true;
+                        else
+                            ground = true;
+                    }
+                }
+                bool can;
+                switch (unit.Type)
+                {
+                case UnitType.Air:
+                    //can only build air when on or next to ground
+                    can = ( ground || tile.Terrain != Terrain.Water );
+                    break;
+                case UnitType.Amphibious:
+                    //can only build amphibious when on or next to water
+                    can = ( water || tile.Terrain == Terrain.Water );
+                    break;
+                case UnitType.Ground:
+                    //can only build ground when next to ground
+                    can = ground;
+                    break;
+                case UnitType.Immobile:
+                    //can always build immobile
+                    can = true;
+                    break;
+                case UnitType.Water:
+                    //can only build water when next to water
+                    can = water;
+                    break;
+                default:
+                    throw new Exception();
+                }
+                if (can)
+                    return true;
             }
 
-            return true;
+            if (raw)
+                return false;
+
+            bool prod = true, death = true;
+            UnitSchema us = UnitTypes.GetSchema();
+            foreach (UnitSchema.UnitRow r in us.Unit.Rows)
+                if (CapableBuild(r.Name, true))
+                {
+                    if (costType == CostType.Production)
+                        prod = false;
+                    else
+                        death = false;
+                }
+
+            //if no production units could otherwise be built, a random half of those in the list can be built (rounded up)
+            if (prod && costType == CostType.Production)
+            {
+                bool can = true;
+                foreach (string available in units)
+                    if (raceCheck(unit) && Unit.CreateTempUnit(available).costType == CostType.Production)
+                    {
+                        if (can && available == name)
+                            return true;
+                        can = !can;
+                    }
+            }
+
+            //can only build death units if no other magic units can be built
+            return ( death && costType == CostType.Death );
         }
 
         protected override bool CanMoveChild(Tile t)

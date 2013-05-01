@@ -301,8 +301,18 @@ namespace CityWar
                 else
                 {
                     wizard.ChangeTerrain(terrain);
-                    UndoCommands.Push(UndoChangeTerrain);
-                    UndoArgs.Push(new object[] { wizard, movement, oldTerrain });
+                    bool canUndo = true;
+                    foreach (Piece p in wizard.Tile.GetAllPieces())
+                        if (p is Relic)
+                        {
+                            canUndo = false;
+                            break;
+                        }
+                    if (canUndo)
+                    {
+                        UndoCommands.Push(UndoChangeTerrain);
+                        UndoArgs.Push(new object[] { wizard, movement, oldTerrain });
+                    }
                 }
             }
         }

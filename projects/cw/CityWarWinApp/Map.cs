@@ -571,8 +571,15 @@ namespace CityWarWinApp
                         e.Graphics.DrawString(cp.ToString(), tileInfoFont, Brushes.Black,
                             xVal + zoom_4_5mid_2zoom_3, yVal + _zoom_9side2_3);
                     }
+                }
 
-                    //draw the unit picture
+            //draw the units
+            for (int X = minX ; ++X < maxX ; )
+                for (int Y = minY ; ++Y < maxY ; )
+                {
+                    Tile thisTile = game.GetTile(X, Y);
+                    float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
+                    float yVal = (float)Y * side3 - OffY;
                     Image pic = thisTile.GetPieceImage();
                     if (pic != null)
                         e.Graphics.DrawImage(pic, xVal + zoom_9, yVal - zoom_9zoom_6_m);

@@ -1,29 +1,26 @@
 balance
-	GC for 'all' should be left blank
-	rand costmult within range after balancing
 	bug when reading after saving a unit
 	separate out no attacks, no move, and 'all' to be used individualy
-	allow 1/3 hp to calc isthree
+	allow 1/3 heal to calc isthree
 
 city appearance balanced throughout map
 combat log/feedback
 add damage calculator
-undo portal/wiz/city after seeing units
+undo build portal/wiz/city?
+bonus to units on matching terrain type?
 
 score graphs
 better visibility of enabled buttons
 more space in buttons, labels
-draw units after map
-revisit air check, account for enemy units in the way
 pick up new/removed units in city, wizard, relic on load game
 
 clean up balance build summon form
 ensure player color differences
-terrain type change under relic, possibly city
 undo capturing
 allow attacking from multiple hexes at once
 graphic artifacts
 
+unit abilities
 exp
 hex
 teleporters

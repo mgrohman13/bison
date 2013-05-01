@@ -14,7 +14,7 @@ namespace CityWar
         {
             name = "Wizard";
 
-            InitUnits();
+            this.units = InitUnits();
 
             canUndo = tile.Add(this);
             owner.Add(this);
@@ -22,9 +22,9 @@ namespace CityWar
             canUndo = false;
         }
 
-        private void InitUnits()
+        private static List<string> InitUnits()
         {
-            units = new List<string>();
+            List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
                 foreach (string u in race)
                 {
@@ -32,36 +32,40 @@ namespace CityWar
                     switch (Unit.CreateTempUnit(u).costType)
                     {
                     case CostType.Death:
-                        chance = .7f;
-                        break;
-                    default:
                         chance = .5f;
                         break;
-                    case CostType.Production:
-                        chance = 0f;
+                    default:
+                        chance = .4f;
                         break;
+                    case CostType.Production:
+                        continue;
                     }
                     if (Game.Random.Bool(chance))
                         units.Add(u);
                 }
+
+            if (units.Count == 0)
+                units = InitUnits();
+            return units;
         }
         #endregion //fields and constructors
 
         #region overrides
         public override bool CapableBuild(string name)
         {
+            Unit unit = Unit.CreateTempUnit(name);
+
             if (name == "Wizard")
                 return true;
-
-            if (name.EndsWith(" Portal"))
-                return true;
-
-            Unit unit = Unit.CreateTempUnit(name);
             if (!raceCheck(unit))
                 return false;
 
+            if (name.EndsWith(" Portal"))
+                return true;
             if (units.Contains(name))
                 return true;
+
+            //can always build magic units when on the correct terrain
             CostType costType = unit.costType;
             return ( costType == CostType.Air && tile.Terrain == Terrain.Plains ||
                 costType == CostType.Earth && tile.Terrain == Terrain.Mountain ||

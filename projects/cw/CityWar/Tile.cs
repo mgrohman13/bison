@@ -78,7 +78,13 @@ namespace CityWar
             }
             internal set
             {
-                terrain = value;
+                if (terrain != value)
+                {
+                    foreach (Piece p in this.pieces)
+                        if (p is Relic)
+                            ( (Relic)p ).ChangedTerrain(value);
+                    terrain = value;
+                }
             }
         }
 
@@ -334,7 +340,7 @@ namespace CityWar
 
         public override string ToString()
         {
-            return terrain.ToString();
+            return Terrain.ToString();
         }
         public override int GetHashCode()
         {
@@ -348,16 +354,15 @@ namespace CityWar
             int armor = 0;
 
             bool city = false;
-
             foreach (Piece p in pieces)
                 if (p is Wizard)
                     armor += 1;
-                else if (!city && ( p is City ))
+                else if (p is City)
                     city = true;
 
             if (unitType == UnitType.Water)
             {
-                if (terrain != Terrain.Water)
+                if (Terrain != Terrain.Water)
                     armor -= 1;
             }
             else if (city)
@@ -366,11 +371,11 @@ namespace CityWar
             }
             else if (unitType == UnitType.Ground || unitType == UnitType.Amphibious)
             {
-                if (terrain == Terrain.Forest)
+                if (Terrain == Terrain.Forest)
                     armor += 1;
-                else if (terrain == Terrain.Mountain)
+                else if (Terrain == Terrain.Mountain)
                     armor += 2;
-                else if (terrain == Terrain.Water)
+                else if (Terrain == Terrain.Water)
                     if (unitType == UnitType.Amphibious)
                         armor += 1;
                     else
@@ -799,11 +804,10 @@ namespace CityWar
                 foreach (Piece piece in owner.GetPieces())
                     if (piece.Abilty == Abilities.AircraftCarrier)
                     {
-                        Unit unit = piece as Unit;
                         if (piece == MovedCarrier)
-                            AddTilesInRange(CanGetCarrier, unit, MovedToTile, piece.Movement - MoveModifier);
+                            AddTilesInRange(CanGetCarrier, piece, MovedToTile, piece.Movement - MoveModifier);
                         else
-                            AddTilesInRange(CanGetCarrier, unit, piece.Tile, piece.Movement);
+                            AddTilesInRange(CanGetCarrier, piece, piece.Tile, piece.Movement);
                     }
             }
 
@@ -843,7 +847,7 @@ namespace CityWar
                     }
                 }, move) );
         }
-        private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Unit unit, Tile tile, int move)
+        private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Piece piece, Tile tile, int move)
         {
             if (--move > -1)
             {
@@ -852,17 +856,17 @@ namespace CityWar
                     {
                         int newMove = move;
                         Player occupying;
-                        UnitType carrierType = unit == null ? UnitType.Air : unit.Type;
+                        UnitType carrierType = ( piece is Wizard ? UnitType.Air : ( (Unit)piece ).Type );
                         Terrain terrain = t.Terrain;
                         //check if the carrier can move onto the tile
-                        if (!( tile.OccupiedByUnit(out occupying) && occupying != unit.Owner ) &&
+                        if (!( tile.OccupiedByUnit(out occupying) && occupying != piece.Owner ) &&
                             ( carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
                             ( ( carrierType == UnitType.Water || carrierType == UnitType.Amphibious ) && terrain == Terrain.Water ) ||
                             ( ( carrierType == UnitType.Ground || carrierType == UnitType.Amphibious ) && ( terrain == Terrain.Plains ||
                             ( --newMove > -1 && ( terrain == Terrain.Forest ||
                             ( --newMove > -1 && terrain == Terrain.Mountain ) ) ) ) ) ))
                             //if so, add the tile and check its neighbors
-                            AddTilesInRange(CanGetCarrier, unit, t, newMove);
+                            AddTilesInRange(CanGetCarrier, piece, t, newMove);
                     }
             }
 

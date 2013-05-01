@@ -99,7 +99,9 @@ namespace CityWar
             double terrArm, cityArm;
             switch (Type)
             {
-            //typeVal is based on map domain, terrArm and cityArm on armor bonuses, movMult on terrain move cost
+            //typeVal is based on map domain (but not strictly a percentage; raw multiplyer to cost)
+            //terrArm and cityArm are based on armor bonuses
+            //movMult on terrain move cost (but not too low; also effects attack length cost calculation)
             case UnitType.Air:
             case UnitType.Immobile:
                 typeVal = 1.0;
@@ -109,6 +111,7 @@ namespace CityWar
                 break;
             case UnitType.Ground:
                 typeVal = 0.9;
+                //expected to spend more time in defensive terrain
                 terrArm = 1.3;
                 cityArm = 1.0;
                 movMult = 0.7;
@@ -116,6 +119,7 @@ namespace CityWar
             case UnitType.Amphibious:
                 //extra typeVal for ability to switch between ground and water targeted
                 typeVal = 1.1;
+                //compared to ground, +1 armor in water (for no move cost) vs. -1; considered a wash when average is +1.3
                 terrArm = 1.3;
                 cityArm = 1.0;
                 movMult = 0.8;
@@ -123,6 +127,7 @@ namespace CityWar
             case UnitType.Water:
                 typeVal = 0.7;
                 terrArm = -.1;
+                //-.75% rounded up; expected to spend more time in water cities
                 cityArm = -.7;
                 movMult = 1.0;
                 break;
@@ -182,7 +187,10 @@ namespace CityWar
                 weapon3 = weapon(a3Type, a3Damage, a3Divide, a3Length, movement, air, isThree, 3);
             }
 
-            gc = hitWorth / ( weapon1 + weapon2 + weapon3 ) * AverageDamage;
+            if (immobile)
+                gc = double.NaN;
+            else
+                gc = ( hitWorth + regen(regeneration, avgDmg) ) / ( weapon1 + weapon2 + weapon3 ) * AverageDamage;
 
             //total
             double result = unit(hitWorth, regeneration, weapon1, weapon2, weapon3, avgDmg);
@@ -242,7 +250,12 @@ namespace CityWar
         private static double unit(double hits, double regeneration, double a1Worth, double a2Worth, double a3Worth, double avgDmg)
         {
             // 3.9 =div for surviving attacks versus having attacks
-            return Math.Sqrt(hits * ( a1Worth + a2Worth + a3Worth + regeneration / avgDmg * AverageDamage / 3.9 ));
+            return Math.Sqrt(hits * ( a1Worth + a2Worth + a3Worth + regen(regeneration, avgDmg) ));
+        }
+
+        private static double regen(double regeneration, double avgDmg)
+        {
+            return regeneration / avgDmg * AverageDamage / 3.9;
         }
 
         private static double final(double unit, double move, double type)

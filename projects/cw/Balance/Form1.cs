@@ -136,21 +136,13 @@ namespace balance
                 this.txtRegRate.Text = ( ( hits / ( (double)regen * ( move == 0 ? 1 : move ) ) ) ).ToString("0.0");
                 CityWar.UnitType unitType = getType(this.txtType.Text);
                 double hitArmor = CityWar.Balance.getArmor(unitType, armor);
-                this.txtHitWorth.Text = ( (double)( CityWar.Balance.hitWorth(hits, hitArmor) / CityWar.Balance.hitWorth(1, CityWar.Balance.AverageArmor) ) ).ToString("0.0");
+                this.txtHitWorth.Tag = CityWar.Balance.hitWorth(hits, hitArmor) / CityWar.Balance.hitWorth(1, CityWar.Balance.AverageArmor);
+                this.txtHitWorth.Text = ( (double)this.txtHitWorth.Tag ).ToString("0.0");
                 double weaponMove = CityWar.Balance.getMove(unitType, move, air);
                 bool isThree = this.txtName.Text.Contains("*");
-                if (this.txtType1.Text == "-" || this.txtType1.Text == "")
-                    this.txtDamage1.Clear();
-                else
-                    this.txtDamage1.Text = ( (double)( CityWar.Balance.weapon(this.txtType1.Text.Length, damage1, divide1, length1, weaponMove, air, isThree, 1) ) ).ToString("0.0");
-                if (this.txtType2.Text == "-" || this.txtType2.Text == "")
-                    this.txtDamage2.Clear();
-                else
-                    this.txtDamage2.Text = ( (double)( CityWar.Balance.weapon(this.txtType2.Text.Length, damage2, divide2, length2, weaponMove, air, isThree, 2) ) ).ToString("0.0");
-                if (this.txtType3.Text == "-" || this.txtType2.Text == "")
-                    this.txtDamage3.Clear();
-                else
-                    this.txtDamage3.Text = ( (double)( CityWar.Balance.weapon(this.txtType3.Text.Length, damage3, divide3, length3, weaponMove, air, isThree, 3) ) ).ToString("0.0");
+                ShowWeaponValue(this.txtDamage1, this.txtType1, damage1, divide1, length1, weaponMove, air, isThree, 1);
+                ShowWeaponValue(this.txtDamage2, this.txtType2, damage2, divide2, length2, weaponMove, air, isThree, 2);
+                ShowWeaponValue(this.txtDamage3, this.txtType3, damage3, divide3, length3, weaponMove, air, isThree, 3);
 
                 Abilities ability;
                 if (air)
@@ -208,6 +200,29 @@ namespace balance
             catch (Exception exception)
             {
                 this.txtOutput.Text = exception.StackTrace;
+            }
+        }
+
+        private static void ShowWeaponValue(TextBox txtValue, TextBox txtType, int damage, int divide, int length, double weaponMove, bool air, bool isThree, int num)
+        {
+            double value;
+            if (txtType.Text == "-" || txtType.Text == "")
+                value = double.NaN;
+            else
+                value = CityWar.Balance.weapon(txtType.Text.Length, damage, divide, length, weaponMove, air, isThree, num);
+            ShowWeaponValue(txtValue, value);
+        }
+        private static void ShowWeaponValue(TextBox txtValue, double value)
+        {
+            if (double.IsNaN(value))
+            {
+                txtValue.Tag = "-";
+                txtValue.Text = string.Empty;
+            }
+            else
+            {
+                txtValue.Tag = value;
+                txtValue.Text = value.ToString("0.0");
             }
         }
 
@@ -277,17 +292,19 @@ namespace balance
             output.Append(a2Name + "\t");
             output.Append(a3Name + "\t");
             output.Append(GC() + "\t");
-            output.Append(txtHitWorth.Text + "\t");
-            output.Append(this.txtDamage1.Text + "\t");
-            output.Append(this.txtDamage2.Text + "\t");
-            output.Append(this.txtDamage3.Text + "\t");
+            output.Append(txtHitWorth.Tag + "\t");
+            output.Append(this.txtDamage1.Tag + "\t");
+            output.Append(this.txtDamage2.Tag + "\t");
+            output.Append(this.txtDamage3.Tag + "\t");
 
             return output.ToString().Trim();
         }
 
         private string GC()
         {
-            return gc.ToString("0.0");
+            if (double.IsNaN(gc))
+                return "-";
+            return gc.ToString();
         }
 
         private void textBox_TextChanged(object sender, EventArgs e)
