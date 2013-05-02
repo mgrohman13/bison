@@ -8,8 +8,9 @@ namespace CityWar
     {
         #region fields and constructors
         public const int AvgPortalCost = 1000;
-        const double UnitCostMult = .21;
+        private const double UnitCostMult = .21;
         public const double WorkPct = ( 1 - UnitCostMult );
+        public const float StartAmt = .21f;
 
         internal readonly int PortalCost, income;
         internal readonly CostType PortalType;
@@ -101,7 +102,7 @@ namespace CityWar
                 else
                 {
                     //start with a random amount towards each unit
-                    start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost, .21f);
+                    start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost - 1, StartAmt) + StartAmt;
                     totalStart += start;
                 }
                 have[i] = start;
@@ -137,13 +138,11 @@ namespace CityWar
         {
             PayUpkeep();
 
-            //pick a random unit
+            double inc = GetTurnInc();
             int index = Game.Random.Next(units.Length);
-
-            //add an amount based on the original cost of the portal
-            have[index] += Game.Random.GaussianCapped(GetTurnInc(), .13);
-
             int needed = Unit.CreateTempUnit(units[index]).BaseCost;
+            have[index] += Game.Random.GaussianOEInt(inc, .039 * units.Length, .065 * ( needed - have[index] ) / ( needed + inc ));
+
             while (have[index] >= needed)
             {
                 have[index] -= needed;

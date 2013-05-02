@@ -53,15 +53,12 @@ namespace CityWar
         #region overrides
         public override bool CapableBuild(string name)
         {
-            Unit unit = Unit.CreateTempUnit(name);
-
-            if (name == "Wizard")
+            if (name == "Wizard" || name.EndsWith(" Portal"))
                 return true;
+
+            Unit unit = Unit.CreateTempUnit(name);
             if (!raceCheck(unit))
                 return false;
-
-            if (name.EndsWith(" Portal"))
-                return true;
             if (units.Contains(name))
                 return true;
 

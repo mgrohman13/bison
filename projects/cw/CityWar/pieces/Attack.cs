@@ -195,7 +195,7 @@ namespace CityWar
                 damage = hits;
             }
 
-            double relicValue = ( GetAverageDamage(damage, divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
+            double relicValue = ( GetAverageDamage(this.damage, this.divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
             if (relicValue > 0)
                 owner.Owner.AddRelic(unit.RandedCost * relicValue);
             else

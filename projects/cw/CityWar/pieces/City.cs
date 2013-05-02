@@ -126,13 +126,12 @@ namespace CityWar
         }
         private bool CapableBuild(string name, bool raw)
         {
-            Unit unit = Unit.CreateTempUnit(name);
-
             if (name == "Wizard")
                 return true;
+
+            Unit unit = Unit.CreateTempUnit(name);
             if (!raceCheck(unit))
                 return false;
-
             if (!units.Contains(name))
                 return false;
 
@@ -199,7 +198,7 @@ namespace CityWar
             foreach (UnitSchema.UnitRow r in us.Unit.Rows)
                 if (CapableBuild(r.Name, true))
                 {
-                    if (costType == CostType.Production)
+                    if (r.CostType == string.Empty)
                         prod = false;
                     else
                         death = false;

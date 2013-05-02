@@ -85,9 +85,9 @@ namespace CityWar
         {
             if (name == "Wizard")
                 return true;
+
             if (!raceCheck(name))
                 return false;
-
             return ( units.Contains(name) );
         }
 

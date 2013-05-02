@@ -612,7 +612,6 @@ namespace CityWar
                 int idx = getCTIdx(unit.costType);
                 if (idx > -1)
                 {
-
                     elmDbl[idx] += unit.BaseCost + unit.BasePplCost / 2.0;
                     ++elmInt[idx];
 
@@ -654,7 +653,7 @@ namespace CityWar
         }
         public static int GetPortalElementCost(double percent, double totalCost)
         {
-            //the more population the units cost, the more magic the portal costs
+            //the more population the units cost, the less magic the portal costs
             return (int)Math.Ceiling(( 1 - ( percent * percent * .666 + .21 ) ) * totalCost);
         }
         private static int getCTIdx(CostType costType)
@@ -1110,11 +1109,14 @@ namespace CityWar
                 int elemental = 0;
 
                 Portal portal;
-                if (p is Wizard)//1300
+                if (p is Wizard)
                 {
+                    //cost 1300
+                    //roi 16.25-43.33
                     elemental += 30;
-                    //heal   10
-                    //find   50
+                    //rest: +10 (roi 32.50)
+                    //find: +50
+                    //88.10% collection needed for average portal roi
                 }
                 else if (p is City)
                 {
@@ -1124,24 +1126,18 @@ namespace CityWar
                     populationP += 3;
                     deathP += 1;
                 }
-                else if (p is Relic)//300
+                else if (p is Relic)
                 {
+                    //cost 300
                     //roi 23.08
                     magicP += 6;
                     elemental += 5;
                     populationP += 2;
                 }
-                //else if (p is Relic)//500
-                //{
-                //    //roi 23.81
-                //    magicP += 8;
-                //    elemental += 7;
-                //    populationP += 4;
-                //    deathP += 2;
-                //}
                 else if (( portal = p as Portal ) != null)
                 {
-                    //avg roi 17.76
+                    //avg cost 1000 (700-1502)
+                    //avg roi 17.56 (16.03-19.97)
                     int amt = portal.income;
 
                     int type = 0, position = 0;
@@ -1218,11 +1214,13 @@ namespace CityWar
         internal void RemoveCapturable(Type type, double portalAvg)
         {
             //pick a random piece of the right type
-            int count = 0;
             Piece remove = null;
-            foreach (Piece p in pieces)
-                if (type.IsInstanceOfType(p) && Game.Random.Next(++count) == 0)
+            foreach (Piece p in Game.Random.Iterate(pieces))
+                if (type.IsInstanceOfType(p))
+                {
                     remove = p;
+                    break;
+                }
 
             if (type == typeof(Portal))
             {

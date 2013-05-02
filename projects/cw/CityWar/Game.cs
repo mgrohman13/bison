@@ -1192,10 +1192,9 @@ next:
                     {
                         Unit u = Unit.CreateTempUnit(unit);
                         if (u.costType != CostType.Production)
-                            portalAvg += u.BaseCost / 2.6 * Portal.WorkPct;
+                            portalAvg += u.BaseCost * Portal.StartAmt * Portal.WorkPct;
                     }
                 portalAvg /= Races.Count * 5.0;
-
                 portalAvg += Portal.AvgPortalCost;
             }
 
