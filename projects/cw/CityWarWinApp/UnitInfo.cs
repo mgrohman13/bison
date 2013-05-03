@@ -55,10 +55,10 @@ namespace CityWarWinApp
                         this.txtCost.Text = portal.TotalCost.ToString();
 
                         this.lblHits.Text = "Pts / Turn";
-                        this.txtHits.Text = portal.GetTurnInc().ToString("0");
+                        this.txtHits.Text = portal.GetTurnInc().ToString("0.0");
 
                         this.lblRegen.Text = "Income";
-                        this.txtRegen.Text = portal.Income.ToString("0");
+                        this.txtRegen.Text = portal.Income.ToString();
 
                         Dictionary<string, double> units = portal.getUnitValues();
                         foreach (string name in units.Keys)
@@ -87,7 +87,7 @@ namespace CityWarWinApp
 
         private static string GetMoveString(int currentMove, int maxMove)
         {
-            return ( currentMove != -1 ) ? string.Format("{0} / {1}", currentMove, maxMove) : maxMove.ToString();
+            return (currentMove != -1) ? string.Format("{0} / {1}", currentMove, maxMove) : maxMove.ToString();
         }
     }
 }
