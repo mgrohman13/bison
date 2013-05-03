@@ -183,13 +183,13 @@ namespace balance
                     this.txtCost.Text = other.ToString();
                     this.txtPpl.Text = ppl.ToString();
 
-                    this.btnSave.Enabled = true;
+                    this.btnSave.Visible = true;
                 }
                 else
                 {
                     this.txtCost.Text = cost.ToString("0.0");
                     this.txtCost.Text = cost.ToString();
-                    this.btnSave.Enabled = false;
+                    this.btnSave.Visible = false;
 
                     this.txtOutput.Clear();
                 }

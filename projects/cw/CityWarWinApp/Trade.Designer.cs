@@ -250,7 +250,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWater.BackColor = System.Drawing.Color.Blue;
 			this.lblWater.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWater.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblWater.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblWater.ForeColor = System.Drawing.Color.Black;
 			this.lblWater.Location = new System.Drawing.Point(322, 9);
 			this.lblWater.Name = "lblWater";
@@ -262,7 +262,7 @@ namespace CityWarWinApp
 			// 
 			this.lblNature.BackColor = System.Drawing.Color.Green;
 			this.lblNature.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblNature.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblNature.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblNature.ForeColor = System.Drawing.Color.Black;
 			this.lblNature.Location = new System.Drawing.Point(383, 9);
 			this.lblNature.Name = "lblNature";
@@ -274,7 +274,7 @@ namespace CityWarWinApp
 			// 
 			this.lblAir.BackColor = System.Drawing.Color.Gray;
 			this.lblAir.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblAir.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblAir.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblAir.ForeColor = System.Drawing.Color.Black;
 			this.lblAir.Location = new System.Drawing.Point(444, 9);
 			this.lblAir.Name = "lblAir";
@@ -286,7 +286,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWizard.BackColor = System.Drawing.Color.DeepPink;
 			this.lblWizard.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWizard.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblWizard.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblWizard.ForeColor = System.Drawing.Color.Black;
 			this.lblWizard.Location = new System.Drawing.Point(505, 9);
 			this.lblWizard.Name = "lblWizard";
@@ -298,7 +298,7 @@ namespace CityWarWinApp
 			// 
 			this.lblEarth.BackColor = System.Drawing.Color.Gold;
 			this.lblEarth.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblEarth.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblEarth.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblEarth.ForeColor = System.Drawing.Color.Black;
 			this.lblEarth.Location = new System.Drawing.Point(261, 9);
 			this.lblEarth.Name = "lblEarth";
@@ -310,7 +310,7 @@ namespace CityWarWinApp
 			// 
 			this.lblDeath.BackColor = System.Drawing.Color.Black;
 			this.lblDeath.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblDeath.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblDeath.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblDeath.ForeColor = System.Drawing.Color.White;
 			this.lblDeath.Location = new System.Drawing.Point(200, 9);
 			this.lblDeath.Name = "lblDeath";
@@ -322,7 +322,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWork.BackColor = System.Drawing.Color.White;
 			this.lblWork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWork.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblWork.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblWork.ForeColor = System.Drawing.Color.Black;
 			this.lblWork.Location = new System.Drawing.Point(12, 9);
 			this.lblWork.Name = "lblWork";
@@ -334,7 +334,7 @@ namespace CityWarWinApp
 			// 
 			this.lblProd.BackColor = System.Drawing.Color.DarkOrange;
 			this.lblProd.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblProd.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblProd.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblProd.ForeColor = System.Drawing.Color.Black;
 			this.lblProd.Location = new System.Drawing.Point(139, 9);
 			this.lblProd.Name = "lblProd";
@@ -346,7 +346,7 @@ namespace CityWarWinApp
 			// 
 			this.lblRelic.BackColor = System.Drawing.Color.Cyan;
 			this.lblRelic.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblRelic.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblRelic.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblRelic.ForeColor = System.Drawing.Color.Black;
 			this.lblRelic.Location = new System.Drawing.Point(566, 9);
 			this.lblRelic.Name = "lblRelic";
@@ -358,7 +358,7 @@ namespace CityWarWinApp
 			// 
 			this.lblPpl.BackColor = System.Drawing.Color.Brown;
 			this.lblPpl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblPpl.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblPpl.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblPpl.ForeColor = System.Drawing.Color.Black;
 			this.lblPpl.Location = new System.Drawing.Point(78, 9);
 			this.lblPpl.Name = "lblPpl";
@@ -398,7 +398,7 @@ namespace CityWarWinApp
 			// 
 			this.lblPplInc.BackColor = System.Drawing.Color.Brown;
 			this.lblPplInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblPplInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblPplInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblPplInc.ForeColor = System.Drawing.Color.Black;
 			this.lblPplInc.Location = new System.Drawing.Point(78, 35);
 			this.lblPplInc.Name = "lblPplInc";
@@ -411,7 +411,7 @@ namespace CityWarWinApp
 			// 
 			this.lblRelicInc.BackColor = System.Drawing.Color.Cyan;
 			this.lblRelicInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblRelicInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblRelicInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblRelicInc.ForeColor = System.Drawing.Color.Black;
 			this.lblRelicInc.Location = new System.Drawing.Point(566, 35);
 			this.lblRelicInc.Name = "lblRelicInc";
@@ -425,7 +425,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWaterInc.BackColor = System.Drawing.Color.Blue;
 			this.lblWaterInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWaterInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblWaterInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblWaterInc.ForeColor = System.Drawing.Color.Black;
 			this.lblWaterInc.Location = new System.Drawing.Point(322, 35);
 			this.lblWaterInc.Name = "lblWaterInc";
@@ -438,7 +438,7 @@ namespace CityWarWinApp
 			// 
 			this.lblNatureInc.BackColor = System.Drawing.Color.Green;
 			this.lblNatureInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblNatureInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblNatureInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblNatureInc.ForeColor = System.Drawing.Color.Black;
 			this.lblNatureInc.Location = new System.Drawing.Point(383, 35);
 			this.lblNatureInc.Name = "lblNatureInc";
@@ -451,7 +451,7 @@ namespace CityWarWinApp
 			// 
 			this.lblAirInc.BackColor = System.Drawing.Color.Gray;
 			this.lblAirInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblAirInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblAirInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblAirInc.ForeColor = System.Drawing.Color.Black;
 			this.lblAirInc.Location = new System.Drawing.Point(444, 35);
 			this.lblAirInc.Name = "lblAirInc";
@@ -464,7 +464,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWizInc.BackColor = System.Drawing.Color.DeepPink;
 			this.lblWizInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWizInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblWizInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblWizInc.ForeColor = System.Drawing.Color.Black;
 			this.lblWizInc.Location = new System.Drawing.Point(505, 35);
 			this.lblWizInc.Name = "lblWizInc";
@@ -477,7 +477,7 @@ namespace CityWarWinApp
 			// 
 			this.lblEarthInc.BackColor = System.Drawing.Color.Gold;
 			this.lblEarthInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblEarthInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblEarthInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblEarthInc.ForeColor = System.Drawing.Color.Black;
 			this.lblEarthInc.Location = new System.Drawing.Point(261, 35);
 			this.lblEarthInc.Name = "lblEarthInc";
@@ -490,7 +490,7 @@ namespace CityWarWinApp
 			// 
 			this.lblDeathInc.BackColor = System.Drawing.Color.Black;
 			this.lblDeathInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblDeathInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblDeathInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblDeathInc.ForeColor = System.Drawing.Color.White;
 			this.lblDeathInc.Location = new System.Drawing.Point(200, 35);
 			this.lblDeathInc.Name = "lblDeathInc";
@@ -503,7 +503,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWorkInc.BackColor = System.Drawing.Color.White;
 			this.lblWorkInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWorkInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblWorkInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblWorkInc.ForeColor = System.Drawing.Color.Black;
 			this.lblWorkInc.Location = new System.Drawing.Point(12, 35);
 			this.lblWorkInc.Name = "lblWorkInc";
@@ -516,7 +516,7 @@ namespace CityWarWinApp
 			// 
 			this.lblProdInc.BackColor = System.Drawing.Color.DarkOrange;
 			this.lblProdInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblProdInc.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblProdInc.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblProdInc.ForeColor = System.Drawing.Color.Black;
 			this.lblProdInc.Location = new System.Drawing.Point(139, 35);
 			this.lblProdInc.Name = "lblProdInc";

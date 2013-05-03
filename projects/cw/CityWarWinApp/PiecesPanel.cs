@@ -57,7 +57,7 @@ namespace CityWarWinApp
         {
             get
             {
-                return sbPieces.Enabled;
+                return sbPieces.Visible;
             }
         }
 
@@ -135,12 +135,12 @@ namespace CityWarWinApp
             if (needed > Height)
             {
                 max = needed - Height + 1;
-                sbPieces.Enabled = true;
+                sbPieces.Visible = true;
             }
             else
             {
                 sbPieces.Value = 0;
-                sbPieces.Enabled = false;
+                sbPieces.Visible = false;
             }
 
             max += sbPieces.LargeChange - 2;
@@ -231,7 +231,7 @@ namespace CityWarWinApp
 
         public static void UseMouseWheel(ScrollBar scrollBar, MouseEventArgs e, ScrollEventHandler scrollEvent)
         {
-            if (!scrollBar.Enabled)
+            if (!scrollBar.Visible)
                 return;
 
             int newValue = scrollBar.Value - Math.Sign(e.Delta) * scrollBar.SmallChange;

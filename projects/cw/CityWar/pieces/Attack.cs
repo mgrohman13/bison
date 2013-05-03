@@ -216,9 +216,10 @@ namespace CityWar
             this.owner = unit;
         }
 
-        internal void RandStats()
+        internal Attack RandStats()
         {
             damage = Unit.RandStat(damage, true);
+            return this;
         }
         #endregion //internal methods
 

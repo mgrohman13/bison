@@ -1,27 +1,36 @@
+pics
+	battleship laser
+	golem fingers?
+
 balance
-	bug when reading after saving a unit
 	separate out no attacks, no move, and 'all' to be used individualy
+	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
 
-city appearance balanced throughout map
-combat log/feedback
-add damage calculator
-undo build portal/wiz/city?
-bonus to units on matching terrain type?
+gameplay
+	aircraft cannot capture?
+	disband amount
+	loading a game with different unit set
+		support?
+		error?
+		save units with game?
+	city appearance balanced throughout map?
+	hex
+	teleporters
+	exp?
+requiring rebalance
+	transport units?
+	bonus to element units on terrain?
+	unit abilities
 
-score graphs
-better visibility of enabled buttons
-more space in buttons, labels
-pick up new/removed units in city, wizard, relic on load game
-
-clean up balance build summon form
-ensure player color differences
-undo capturing
-allow attacking from multiple hexes at once
-graphic artifacts
-
-unit abilities
-exp
-hex
-teleporters
-ai
+interface
+	disband button visibility
+	add damage calculator
+	more space in buttons, labels
+	combat log/feedback
+	undo build portal/wiz/city?	
+	score graphs
+	clean up balance build summon form
+	ensure player color differences
+	undo capturing
+	graphic artifacts

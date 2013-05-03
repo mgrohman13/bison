@@ -147,7 +147,7 @@ namespace CityWarWinApp
 			// lbxCities
 			// 
 			this.lbxCities.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.lbxCities.Font = new System.Drawing.Font("Elephant", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbxCities.Font = new System.Drawing.Font("Engravers", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbxCities.ForeColor = System.Drawing.Color.Black;
 			this.lbxCities.FormattingEnabled = true;
 			this.lbxCities.ItemHeight = 21;
@@ -160,7 +160,7 @@ namespace CityWarWinApp
 			// lbxRelics
 			// 
 			this.lbxRelics.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.lbxRelics.Font = new System.Drawing.Font("Elephant", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbxRelics.Font = new System.Drawing.Font("Engravers", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbxRelics.ForeColor = System.Drawing.Color.Black;
 			this.lbxRelics.FormattingEnabled = true;
 			this.lbxRelics.ItemHeight = 21;
@@ -173,7 +173,7 @@ namespace CityWarWinApp
 			// lbxWizards
 			// 
 			this.lbxWizards.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.lbxWizards.Font = new System.Drawing.Font("Elephant", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbxWizards.Font = new System.Drawing.Font("Engravers", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbxWizards.ForeColor = System.Drawing.Color.Black;
 			this.lbxWizards.FormattingEnabled = true;
 			this.lbxWizards.ItemHeight = 21;
@@ -186,7 +186,7 @@ namespace CityWarWinApp
 			// lbxPortals
 			// 
 			this.lbxPortals.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.lbxPortals.Font = new System.Drawing.Font("Elephant", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbxPortals.Font = new System.Drawing.Font("Engravers", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbxPortals.ForeColor = System.Drawing.Color.Black;
 			this.lbxPortals.FormattingEnabled = true;
 			this.lbxPortals.ItemHeight = 21;
@@ -235,7 +235,7 @@ namespace CityWarWinApp
 			// lbxUnits
 			// 
 			this.lbxUnits.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.lbxUnits.Font = new System.Drawing.Font("Elephant", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbxUnits.Font = new System.Drawing.Font("Engravers", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbxUnits.ForeColor = System.Drawing.Color.Black;
 			this.lbxUnits.FormattingEnabled = true;
 			this.lbxUnits.ItemHeight = 21;
@@ -260,7 +260,7 @@ namespace CityWarWinApp
 			// lbxResources
 			// 
 			this.lbxResources.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.lbxResources.Font = new System.Drawing.Font("Elephant", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbxResources.Font = new System.Drawing.Font("Engravers", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbxResources.ForeColor = System.Drawing.Color.Black;
 			this.lbxResources.FormattingEnabled = true;
 			this.lbxResources.ItemHeight = 21;

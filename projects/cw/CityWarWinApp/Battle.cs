@@ -44,6 +44,8 @@ namespace CityWarWinApp
                 else
                     selected = null;
             }
+
+            ClearTarget();
         }
 
         public Battle(CityWar.Battle b)
@@ -171,21 +173,18 @@ namespace CityWarWinApp
                 {
                 }
 
+            ClearTarget();
             Refresh();
         }
 
         private void panelDefenders_MouseLeave(object sender, EventArgs e)
         {
-            this.txtTarget.Clear();
-            this.txtArmor.Clear();
-            this.txtTargDmg.Clear();
-            this.txtChance.Clear();
-            this.txtRelic.Clear();
+            ClearTarget();
         }
 
-        private Unit showingFor = null;
         private void panelDefenders_MouseMove(object sender, MouseEventArgs e)
         {
+            bool clear = true;
             if (selected != null)
             {
                 Unit enemy = panelDefenders.GetClickedPiece(e) as Unit;
@@ -195,29 +194,28 @@ namespace CityWarWinApp
 
                     if (attack.CanAttack(enemy))
                     {
-                        if (showingFor != enemy)
-                        {
-                            showingFor = enemy;
-
-                            double killPct, avgRelic;
-                            double avgDamage = attack.GetAverageDamage(enemy, out killPct, out avgRelic);
-                            this.txtTarget.Text = enemy.Name;
-                            this.txtArmor.Text = enemy.Armor.ToString();
-                            this.txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(enemy));
-                            this.txtChance.Text = killPct.ToString("0") + "%";
-                            this.txtRelic.Text = avgRelic.ToString("0.0");
-                        }
-                    }
-                    else
-                    {
-                        this.txtTarget.Text = "-";
-                        this.txtArmor.Text = "-";
-                        this.txtTargDmg.Text = "-";
-                        this.txtChance.Text = "-";
-                        this.txtRelic.Text = "-";
+                        double killPct, avgRelic;
+                        double avgDamage = attack.GetAverageDamage(enemy, out killPct, out avgRelic);
+                        this.txtTarget.Text = enemy.Name;
+                        this.txtArmor.Text = enemy.Armor.ToString();
+                        this.txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(enemy));
+                        this.txtChance.Text = killPct.ToString("0") + "%";
+                        this.txtRelic.Text = avgRelic.ToString("0.0");
+                        clear = false;
                     }
                 }
             }
+            if (clear)
+                ClearTarget();
+        }
+
+        private void ClearTarget()
+        {
+            this.txtTarget.Clear();
+            this.txtArmor.Clear();
+            this.txtTargDmg.Clear();
+            this.txtChance.Clear();
+            this.txtRelic.Clear();
         }
 
         private void PanelDefender_MouseUp(object sender, MouseEventArgs e)
@@ -259,6 +257,8 @@ namespace CityWarWinApp
 
         private bool CheckUnits()
         {
+            ClearTarget();
+
             List<Unit> temp = new List<Unit>(b.GetDefenders());
             foreach (Unit def in temp)
             {
@@ -363,9 +363,9 @@ namespace CityWarWinApp
             this.txtDam.Text = ( (Attack)this.lbAttacks.SelectedItem ).Damage.ToString("0.0");
             this.txtTargets.Text = ( (Attack)this.lbAttacks.SelectedItem ).GetTargetString();
             this.txtLength.Text = ( (Attack)this.lbAttacks.SelectedItem ).Length.ToString();
-            panelDefenders.Refresh();
 
-            showingFor = null;
+            ClearTarget();
+            panelDefenders.Refresh();
         }
 
         private void panelAttackers_MouseDown(object sender, MouseEventArgs e)

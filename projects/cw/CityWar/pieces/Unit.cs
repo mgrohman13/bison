@@ -532,12 +532,18 @@ namespace CityWar
         #region unit stat randomization
         private void RandStats()
         {
-            foreach (Attack a in attacks)
-                a.RandStats();
-
-            Unit newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type,
-                    isThree ? 3 * RandStat(maxHits / 3.0, true) : RandStat(maxHits, true),
-                    RandStat(armor, false), RandStat(regen, true), MaxMove, attacks, regenPct);
+            Unit newUnit;
+            const double maxMult = 1.69;
+            do
+            {
+                Attack[] randedAttacks = new Attack[attacks.Length];
+                for (int a = 0 ; a < randedAttacks.Length ; ++a)
+                    randedAttacks[a] = attacks[a].Clone().RandStats();
+                newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type,
+                        isThree ? 3 * RandStat(maxHits / 3.0, true) : RandStat(maxHits, true),
+                        RandStat(armor, false), RandStat(regen, true), MaxMove, randedAttacks, regenPct);
+            }
+            while (newUnit.randedCostMult > maxMult || newUnit.randedCostMult < ( 1 / maxMult ));
 
             tile.Add(newUnit);
             owner.Add(newUnit);
@@ -552,17 +558,14 @@ namespace CityWar
             newUnit.randed = true;
             newUnit.ResetMoveIntern(false);
 
-            double maxMult = Math.Sqrt(Math.Min(Math.Min(Attack.DeathDivide, Attack.DisbandDivide), Attack.RelicDivide));
-            if (newUnit.randedCostMult > maxMult || newUnit.randedCostMult < ( 1 / maxMult ))
-                newUnit.RandStats();
-            else if (newUnit.Dead)
+            if (newUnit.Dead)
                 newUnit.Die();
 
             tile.hasCenterPiece = false;
         }
         internal static int RandStat(double stat, bool keepPositive)
         {
-            int lowerCap = Game.Random.Round(stat * 2 / 3.0);
+            int lowerCap = Game.Random.Round(stat * .65);
             if (keepPositive)
             {
                 if (lowerCap < 1)
@@ -572,7 +575,7 @@ namespace CityWar
             {
                 --lowerCap;
             }
-            return Game.Random.GaussianCappedInt(stat + 1, .0666, lowerCap + 1) - 1;
+            return Game.Random.GaussianCappedInt(stat + 1, .078, lowerCap + 1) - 1;
         }
         #endregion //unit stat randomization
 

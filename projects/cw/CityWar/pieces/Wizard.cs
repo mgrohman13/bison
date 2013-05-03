@@ -32,7 +32,7 @@ namespace CityWar
                     switch (Unit.CreateTempUnit(u).costType)
                     {
                     case CostType.Death:
-                        chance = .5f;
+                        chance = .6f;
                         break;
                     default:
                         chance = .4f;

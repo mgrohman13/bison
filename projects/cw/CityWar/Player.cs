@@ -1116,7 +1116,7 @@ namespace CityWar
                     elemental += 30;
                     //rest: +10 (roi 32.50)
                     //find: +50
-                    //88.10% collection needed for average portal roi
+                    //88.10% collection needed for average portal roi (52.67% for relic)
                 }
                 else if (p is City)
                 {

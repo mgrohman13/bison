@@ -200,8 +200,8 @@ namespace CityWarWinApp
         {
             if (selected.X == -1 && selected.Y == -1)
             {
-                btnBuild.Enabled = false;
-                btnBuildCity.Enabled = false;
+                btnBuild.Visible = false;
+                btnBuildCity.Visible = false;
                 return;
             }
 
@@ -225,22 +225,22 @@ namespace CityWarWinApp
                     break;
                 }
             }
-            btnBuild.Enabled = any;
+            btnBuild.Visible = any;
 
             //check if the tile can build a city and if any pieces have full move
-            btnBuildCity.Enabled = false;
+            btnBuildCity.Visible = false;
             if (selTile.CityTime != -1 && !selTile.MadeCity)
             {
                 foreach (Piece p in Selected)
                     if (p.MaxMove != 0 && p.Movement == p.MaxMove)
                     {
                         //if so, show the build button
-                        btnBuildCity.Enabled = true;
+                        btnBuildCity.Visible = true;
                         break;
                     }
             }
 
-            btnUndo.Enabled = Game.CanUndoCommand();
+            btnUndo.Visible = Game.CanUndoCommand();
         }
 
         private void RefreshZoom()
@@ -1327,87 +1327,6 @@ namespace CityWarWinApp
 
             return false;
         }
-
-        //private void SaveGame(string file)
-        //{
-        //    //open a new file stream and binary writer
-        //    FileStream fs = File.Open(file, FileMode.OpenOrCreate);
-        //    MyWriter bw = new MyWriter(fs);
-
-        //    //save game data
-        //    Game.SaveGame(bw);
-
-        //    //float
-        //    bw.Write(offX);
-        //    bw.Write(offY);
-        //    bw.Write(scrollSpeed);
-        //    bw.Write(Zoom);
-        //    bw.Write(topX);
-        //    bw.Write(topY);
-        //    bw.Write(side);
-        //    bw.Write(middle);
-
-        //    //point
-        //    bw.Write(selected.X);
-        //    bw.Write(selected.Y);
-
-        //    //rectangle
-        //    bw.Write(oldBounds.X);
-        //    bw.Write(oldBounds.Y);
-        //    bw.Write(oldBounds.Width);
-        //    bw.Write(oldBounds.Height);
-
-        //    bw.Close();
-        //    fs.Close();
-        //}
-
-        //  void LoadGame(string file)
-        //{
-        //    FileStream fs = File.OpenRead(file);
-        //    MyReader br = new MyReader(fs);
-
-        //    Game.LoadGame(br);
-
-        //    offX = br.ReadSingle();
-        //    offY = br.ReadSingle();
-        //    scrollSpeed = br.ReadSingle();
-        //    Zoom = br.ReadSingle();
-        //    topX = br.ReadSingle();
-        //    topY = br.ReadSingle();
-        //    side = br.ReadSingle();
-        //    middle = br.ReadSingle();
-
-        //    selected = new Point(br.ReadInt32(), br.ReadInt32());
-
-        //    oldBounds = new Rectangle(br.ReadInt32(), br.ReadInt32(), br.ReadInt32(), br.ReadInt32());
-
-        //    //clear the OKed aircraft
-        //    okToMove = new List<Piece>();
-
-        //    saved = true;
-
-        //    br.Close();
-        //    fs.Close();
-
-        //    //refresh stuff after loading
-        //    this.lblTurn.Text = Game.GetTurn().ToString();
-        //    this.lblPlayer.Text = Game.getCurrentPlayer().Name;
-        //    this.lblPlayer.BackColor = Game.getCurrentPlayer().color;
-        //    RefreshResources();
-        //    RefreshButtons();
-        //    RefreshZoom();
-
-        //    Player.CreatePics(true);
-
-        //    //center on the selected tile, if it exists
-        //    if (selected.X == -1 && selected.Y == -1)
-        //    {
-        //        this.Invalidate(invalidateRectangle, false);
-        //        this.panelUnits.Invalidate();
-        //    }
-        //    else
-        //        CenterOn(Game.getTile(selected.X, selected.Y));
-        //}
 
         private void SaveGame(string file)
         {

@@ -164,7 +164,7 @@ namespace CityWarWinApp
         private ListBox CreateListBox()
         {
             ListBox lbx = new ListBox();
-            lbx.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            lbx.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             lbx.ForeColor = System.Drawing.Color.Black;
             lbx.FormattingEnabled = true;
             lbx.ItemHeight = 17;

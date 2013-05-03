@@ -243,7 +243,7 @@ namespace CityWarWinApp
 			// 
 			this.btnBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnBuild.BackColor = System.Drawing.Color.Silver;
-			this.btnBuild.Enabled = false;
+            this.btnBuild.Visible = false;
 			this.btnBuild.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnBuild.ForeColor = System.Drawing.Color.Black;
 			this.btnBuild.Location = new System.Drawing.Point(554, 44);
@@ -286,7 +286,7 @@ namespace CityWarWinApp
 			// 
 			this.btnBuildCity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnBuildCity.BackColor = System.Drawing.Color.Silver;
-			this.btnBuildCity.Enabled = false;
+            this.btnBuildCity.Visible = false;
 			this.btnBuildCity.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnBuildCity.ForeColor = System.Drawing.Color.Black;
 			this.btnBuildCity.Location = new System.Drawing.Point(554, 12);

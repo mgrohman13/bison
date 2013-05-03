@@ -486,7 +486,7 @@ namespace balance
             // 
             // btnSave
             // 
-            this.btnSave.Enabled = false;
+            this.btnSave.Visible = false;
             this.btnSave.Location = new System.Drawing.Point(668, 127);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(69, 23);

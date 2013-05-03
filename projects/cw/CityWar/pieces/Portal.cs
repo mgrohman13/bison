@@ -101,8 +101,9 @@ namespace CityWar
                 }
                 else
                 {
+                    double inc = GetTurnInc();
                     //start with a random amount towards each unit
-                    start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost - 1, StartAmt) + StartAmt;
+                    start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost - inc, StartAmt) + inc * StartAmt;
                     totalStart += start;
                 }
                 have[i] = start;

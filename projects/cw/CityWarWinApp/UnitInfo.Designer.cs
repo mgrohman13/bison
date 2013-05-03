@@ -49,7 +49,7 @@ namespace CityWarWinApp
 			// txtUnit
 			// 
 			this.txtUnit.BackColor = System.Drawing.Color.Silver;
-			this.txtUnit.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtUnit.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtUnit.ForeColor = System.Drawing.Color.Black;
 			this.txtUnit.Location = new System.Drawing.Point(12, 29);
 			this.txtUnit.Name = "txtUnit";
@@ -60,7 +60,7 @@ namespace CityWarWinApp
 			// lbAttacks
 			// 
 			this.lbAttacks.BackColor = System.Drawing.Color.Silver;
-			this.lbAttacks.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lbAttacks.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lbAttacks.ForeColor = System.Drawing.Color.Black;
 			this.lbAttacks.FormattingEnabled = true;
 			this.lbAttacks.ItemHeight = 17;
@@ -73,7 +73,7 @@ namespace CityWarWinApp
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label1.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label1.ForeColor = System.Drawing.Color.Black;
 			this.label1.Location = new System.Drawing.Point(9, 9);
 			this.label1.Name = "label1";
@@ -84,7 +84,7 @@ namespace CityWarWinApp
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label2.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label2.ForeColor = System.Drawing.Color.Black;
 			this.label2.Location = new System.Drawing.Point(117, 9);
 			this.label2.Name = "label2";
@@ -95,7 +95,7 @@ namespace CityWarWinApp
 			// lblHits
 			// 
 			this.lblHits.AutoSize = true;
-			this.lblHits.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblHits.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblHits.ForeColor = System.Drawing.Color.Black;
 			this.lblHits.Location = new System.Drawing.Point(9, 56);
 			this.lblHits.Name = "lblHits";
@@ -106,7 +106,7 @@ namespace CityWarWinApp
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label4.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label4.ForeColor = System.Drawing.Color.Black;
 			this.label4.Location = new System.Drawing.Point(173, 9);
 			this.label4.Name = "label4";
@@ -117,7 +117,7 @@ namespace CityWarWinApp
 			// lblArmor
 			// 
 			this.lblArmor.AutoSize = true;
-			this.lblArmor.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblArmor.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblArmor.ForeColor = System.Drawing.Color.Black;
 			this.lblArmor.Location = new System.Drawing.Point(75, 56);
 			this.lblArmor.Name = "lblArmor";
@@ -128,7 +128,7 @@ namespace CityWarWinApp
 			// lblRegen
 			// 
 			this.lblRegen.AutoSize = true;
-			this.lblRegen.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblRegen.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblRegen.ForeColor = System.Drawing.Color.Black;
 			this.lblRegen.Location = new System.Drawing.Point(141, 56);
 			this.lblRegen.Name = "lblRegen";
@@ -139,7 +139,7 @@ namespace CityWarWinApp
 			// lblMove
 			// 
 			this.lblMove.AutoSize = true;
-			this.lblMove.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblMove.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblMove.ForeColor = System.Drawing.Color.Black;
 			this.lblMove.Location = new System.Drawing.Point(222, 56);
 			this.lblMove.Name = "lblMove";
@@ -150,7 +150,7 @@ namespace CityWarWinApp
 			// txtMove
 			// 
 			this.txtMove.BackColor = System.Drawing.Color.Silver;
-			this.txtMove.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtMove.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtMove.ForeColor = System.Drawing.Color.Black;
 			this.txtMove.Location = new System.Drawing.Point(225, 76);
 			this.txtMove.Name = "txtMove";
@@ -161,7 +161,7 @@ namespace CityWarWinApp
 			// txtRegen
 			// 
 			this.txtRegen.BackColor = System.Drawing.Color.Silver;
-			this.txtRegen.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtRegen.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtRegen.ForeColor = System.Drawing.Color.Black;
 			this.txtRegen.Location = new System.Drawing.Point(144, 76);
 			this.txtRegen.Name = "txtRegen";
@@ -172,7 +172,7 @@ namespace CityWarWinApp
 			// txtArmor
 			// 
 			this.txtArmor.BackColor = System.Drawing.Color.Silver;
-			this.txtArmor.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtArmor.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtArmor.ForeColor = System.Drawing.Color.Black;
 			this.txtArmor.Location = new System.Drawing.Point(78, 76);
 			this.txtArmor.Name = "txtArmor";
@@ -183,7 +183,7 @@ namespace CityWarWinApp
 			// txtType
 			// 
 			this.txtType.BackColor = System.Drawing.Color.Silver;
-			this.txtType.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtType.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtType.ForeColor = System.Drawing.Color.Black;
 			this.txtType.Location = new System.Drawing.Point(176, 29);
 			this.txtType.Name = "txtType";
@@ -195,7 +195,7 @@ namespace CityWarWinApp
 			// txtCost
 			// 
 			this.txtCost.BackColor = System.Drawing.Color.Silver;
-			this.txtCost.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtCost.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtCost.ForeColor = System.Drawing.Color.Black;
 			this.txtCost.Location = new System.Drawing.Point(120, 29);
 			this.txtCost.Name = "txtCost";
@@ -207,7 +207,7 @@ namespace CityWarWinApp
 			// txtHits
 			// 
 			this.txtHits.BackColor = System.Drawing.Color.Silver;
-			this.txtHits.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtHits.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtHits.ForeColor = System.Drawing.Color.Black;
 			this.txtHits.Location = new System.Drawing.Point(12, 76);
 			this.txtHits.Name = "txtHits";
@@ -218,7 +218,7 @@ namespace CityWarWinApp
 			// lblAttacks
 			// 
 			this.lblAttacks.AutoSize = true;
-			this.lblAttacks.Font = new System.Drawing.Font("Elephant", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblAttacks.Font = new System.Drawing.Font("Engravers", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblAttacks.ForeColor = System.Drawing.Color.Black;
 			this.lblAttacks.Location = new System.Drawing.Point(9, 103);
 			this.lblAttacks.Name = "lblAttacks";

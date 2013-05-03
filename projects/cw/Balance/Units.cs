@@ -352,7 +352,7 @@ namespace balance
             b.Click += eh;
             Controls.Add(b);
 
-            b.Enabled = enabled;
+            b.Visible = enabled;
         }
     }
 

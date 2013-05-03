@@ -21,7 +21,7 @@ namespace CityWar
             owner.Add(this);
         }
 
-        private const float matchChance = .6f, unmatchChance = .3f;
+        private const float matchChance = .5f, unmatchChance = .2f;
         private static List<string> InitUnits(Terrain terrain)
         {
             List<string> units = new List<string>();
@@ -31,7 +31,7 @@ namespace CityWar
                     float val;
                     Unit unit = Unit.CreateTempUnit(u);
                     if (unit.costType == CostType.Production)
-                        val = .2f;
+                        val = .3f;
                     else if (unit.costType == CostType.Death)
                         val = .7f;
                     else if (( terrain == Terrain.Forest && unit.costType == CostType.Nature )

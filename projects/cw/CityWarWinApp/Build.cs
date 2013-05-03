@@ -30,6 +30,7 @@ namespace CityWarWinApp
             this.Size = s;
 
             loadUnits();
+            RefreshButtons();
         }
 
         void Build_MouseWheel(object sender, MouseEventArgs e)
@@ -157,7 +158,7 @@ namespace CityWarWinApp
                     newBox(Xs[0], y, Ws[0], costType.ToString() + " Portal");
                     newBox(Xs[1], y, Ws[1], wizAmt.ToString(), this.lblWizard.BackColor, HorizontalAlignment.Right);
                     newBox(Xs[2], y, Ws[1], otherAmt.ToString(), backColor, HorizontalAlignment.Right);
-                    newButton(Xs[3], y, "Summon", costType.ToString() + " Portal", new EventHandler(build_Click), enabled, this.lblWizard.BackColor);
+                    newButton(Xs[3], y, "Summon", costType.ToString() + " Portal", new EventHandler(build_Click));
 
                     y += 29;
                 }
@@ -167,7 +168,7 @@ namespace CityWarWinApp
 
             newBox(Xs[0], y, Ws[0], "Wizard");
             newBox(Xs[1], y, ( Ws[1] * 3 ) / 2, Player.WizardCost.ToString(), lblWizard.BackColor);
-            newButton(Xs[3], y, "Summon", "Wizard", new EventHandler(build_Click), enabled, lblWizard.BackColor);
+            newButton(Xs[3], y, "Summon", "Wizard", new EventHandler(build_Click));
 
             y += 29;
 
@@ -180,9 +181,9 @@ namespace CityWarWinApp
                 y = maxY;
 
             newButton(( this.ClientSize.Width ) / 2 - new Button().Width - 6, y,
-                "Cancel", null, new EventHandler(close_Click), true, Color.Black);
+                "Cancel", null, new EventHandler(close_Click));
             btnTrade = newButton(( this.ClientSize.Width ) / 2 + 6, y,
-               "Trade", null, new EventHandler(trade_Click), true, Color.Black);
+               "Trade", null, new EventHandler(trade_Click));
 
             ShowResources();
 
@@ -281,16 +282,8 @@ namespace CityWarWinApp
                 ++x;
             }
 
-            bool enabled = false;
-            foreach (Capturable c2 in capts)
-                if (c2.CanBuild(r.Name))
-                {
-                    enabled = true;
-                    break;
-                }
-
             newButton(Xs[3], y, ( r.CostType != "" ? "Summon" : "Build" ),
-                r.Name, new EventHandler(build_Click), enabled, color);
+                r.Name, new EventHandler(build_Click));
         }
 
         private Color getColor(CostType costType)
@@ -378,7 +371,7 @@ namespace CityWarWinApp
             {
                 if (control is Button && ( control.Tag is string ) && ( (string)control.Tag != "" ))
                     if ((string)control.Tag == "Wizard")
-                        control.Enabled = ( capts[0].Owner.Magic >= Player.WizardCost );
+                        control.Visible = ( capts[0].Owner.Magic >= Player.WizardCost );
                     else if (( (string)control.Tag ).EndsWith(" Portal"))
                     {
                         CostType poralType = (CostType)Enum.Parse(typeof(CostType), ( (string)control.Tag ).Split(' ')[0]);
@@ -386,16 +379,16 @@ namespace CityWarWinApp
                         int wiz = cost[0];
                         int other = cost[1];
 
-                        control.Enabled = ( capts[0].Owner.Magic >= wiz ) &&
+                        control.Visible = ( capts[0].Owner.Magic >= wiz ) &&
                             ( (int)capts[0].Owner.GetResource(poralType.ToString()) >= other );
                     }
                     else
                     {
-                        control.Enabled = false;
+                        control.Visible = false;
                         foreach (Capturable c in capts)
                             if (c.CanBuild((string)control.Tag))
                             {
-                                control.Enabled = true;
+                                control.Visible = true;
                                 break;
                             }
                     }
@@ -452,7 +445,7 @@ namespace CityWarWinApp
         private void newBox(int x, int y, int width, string text, Color color, HorizontalAlignment textAlign)
         {
             TextBox b = new TextBox();
-            b.Font = new Font("Elephant", 10f);
+            b.Font = new Font("Engravers", 10f);
             b.Location = new Point(x, y);
             b.Width = width;
             b.ReadOnly = true;
@@ -466,21 +459,17 @@ namespace CityWarWinApp
             Controls.Add(b);
         }
 
-        private Button newButton(int x, int y, string text, object tag, EventHandler eh, bool enabled, Color c)
+        private Button newButton(int x, int y, string text, object tag, EventHandler eh)
         {
             Button b = new Button();
-            b.Font = new Font("Elephant", 9f);
+            b.Font = new Font("Engravers", 9f);
             b.Location = new Point(x, y);
             b.Text = text;
             b.BackColor = Color.Silver;
             b.TabIndex = ++tabOrder;
             b.Tag = tag;
             b.Click += eh;
-            b.ForeColor = c;
             Controls.Add(b);
-
-            b.Enabled = enabled;
-
             return b;
         }
 

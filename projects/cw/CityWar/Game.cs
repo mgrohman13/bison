@@ -261,7 +261,15 @@ namespace CityWar
             attacker.OccupiedByUnit(out player);
             if (player != players[currentPlayer])
                 return null;
-            return Unit.StartBattle(attacker.GetSelectedUnits(), defender);
+
+            List<Unit> attackers = new List<Unit>();
+            for (int a = 0 ; a < 6 ; ++a)
+                if (defender.GetNeighbor(a) != null)
+                    attackers.AddRange(defender.GetNeighbor(a).FindAllUnits(delegate(Unit u)
+                    {
+                        return ( u.Owner == CurrentPlayer && u.Movement > 0 );
+                    }));
+            return Unit.StartBattle(attackers.ToArray(), defender);
         }
 
         public bool EndBattle(Battle b)
