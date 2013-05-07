@@ -31,10 +31,11 @@ namespace CityWarWinApp
             {
                 this.txtArmor.Text = GetModString(unit.Armor.ToString(), unit.BaseArmor.ToString());
                 this.txtCost.Text = unit.RandedCost.ToString("0");
-                //this.txtCostType.Text = u.costType.ToString();
                 this.txtHits.Text = string.Format("{0} / {1}", unit.Hits, unit.maxHits);
                 this.txtMove.Text = GetMoveString(currentMove, unit.MaxMove);
                 this.txtRegen.Text = GetModString(unit.Regen.ToString(), unit.BaseRegen.ToString());
+                if (!unit.RegenRecover)
+                    this.txtRegen.Text += " -";
                 this.txtType.Text = unit.Type.ToString();
 
                 this.lbAttacks.Items.AddRange(unit.Attacks);
@@ -87,7 +88,7 @@ namespace CityWarWinApp
 
         private static string GetMoveString(int currentMove, int maxMove)
         {
-            return (currentMove != -1) ? string.Format("{0} / {1}", currentMove, maxMove) : maxMove.ToString();
+            return ( currentMove != -1 ) ? string.Format("{0} / {1}", currentMove, maxMove) : maxMove.ToString();
         }
     }
 }

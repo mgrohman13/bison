@@ -975,7 +975,6 @@ namespace CityWar
         {
             win = null;
 
-
             int numPlayers = players.Length;
             double[] values = new double[numPlayers];
             int[,] counts = new int[numPlayers, 5];

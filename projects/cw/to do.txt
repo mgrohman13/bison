@@ -8,8 +8,6 @@ balance
 	allow 1/3 heal to calc isthree
 
 gameplay
-	aircraft cannot capture?
-	disband amount
 	loading a game with different unit set
 		support?
 		error?
@@ -19,9 +17,13 @@ gameplay
 	teleporters
 	exp?
 requiring rebalance
+	unit abilities
+	better terrains
+		add new (e.g. hills)?
+		make forest more of an overlay
+		multiple on same tile?
 	transport units?
 	bonus to element units on terrain?
-	unit abilities
 
 interface
 	disband button visibility

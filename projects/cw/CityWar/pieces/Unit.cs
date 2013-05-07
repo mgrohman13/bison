@@ -14,6 +14,7 @@ namespace CityWar
         public readonly int regen, maxHits;
         public readonly string Race;
         private double _regenPct;
+        private bool recoverRegenPct;
 
         internal readonly CostType costType;
         internal readonly bool isThree;
@@ -26,7 +27,7 @@ namespace CityWar
         [NonSerialized]
         private double _randedCostMult;
         [NonSerialized]
-        internal int Length;
+        private int length;
 
         private Unit(string race, string name, Tile tile, Player owner, int cost, int pplCost, CostType costType, Abilities abil,
             bool isThree, UnitType Type, int hits, int armor, int regen, int movement, Attack[] attacks, double _regenPct)
@@ -44,6 +45,7 @@ namespace CityWar
             this.isThree = isThree;
             this.pplCost = pplCost;
             this._regenPct = _regenPct;
+            this.recoverRegenPct = true;
 
             this.randed = false;
 
@@ -187,6 +189,14 @@ namespace CityWar
             }
         }
 
+        public bool RegenRecover
+        {
+            get
+            {
+                return this.recoverRegenPct;
+            }
+        }
+
         public double GetDisbandAmount()
         {
             double low = Math.Min(Attack.DisbandDivide, Attack.DeathDivide),
@@ -202,8 +212,16 @@ namespace CityWar
         #endregion //public methods and properties
 
         #region internal methods
+        internal void Attacked(int length)
+        {
+            this.length = Math.Min(this.Length, length);
+            this.recoverRegenPct = false;
+        }
+
         internal void Wound(int damage)
         {
+            this.recoverRegenPct = false;
+
             hits -= damage;
             if (Dead)
             {
@@ -212,7 +230,7 @@ namespace CityWar
             }
             else
             {
-                SetRegenPct(regenPct * .97 * ( maxHits + 30.0 - Math.Pow(3.9 * damage, 0.74) ) / ( maxHits + 30.0 ));
+                SetRegenPct(regenPct * ( 1 - damage / (double)( damage + hits ) ));
                 if (isThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
@@ -311,7 +329,10 @@ namespace CityWar
 
                 while (movement > 0)
                     Heal();
-                SetRegenPct(( 1 - ( 1 - regenPct ) / 1.69 ));
+
+                if (this.recoverRegenPct)
+                    SetRegenPct(Math.Pow(regenPct, .39));
+                this.recoverRegenPct = true;
 
                 movement = MaxMove;
 
@@ -347,6 +368,14 @@ namespace CityWar
                 double intInfo = healInfo.Pop();
                 if (intInfo > -1)
                     UndoHeal(intInfo);
+            }
+        }
+
+        internal int Length
+        {
+            get
+            {
+                return length;
             }
         }
         #endregion //internal methods
@@ -423,7 +452,7 @@ namespace CityWar
 
         private void SetRegenPct(double value)
         {
-            _regenPct = value + Game.Random.GaussianCapped(1, Math.Abs(_regenPct - value) * .26, 1 - Math.Min(value, 1 - value)) - 1;
+            _regenPct = value + Game.Random.GaussianCapped(1, Math.Abs(_regenPct - value) * .21, 1 - Math.Min(value, 1 - value)) - 1;
         }
 
         private void CheckAttacks()
@@ -598,7 +627,7 @@ namespace CityWar
 
             //make all defenders targetable
             foreach (Unit u in defenders)
-                u.Length = -1;
+                u.length = -1;
 
             return new Battle(attackers, defenders);
         }
@@ -616,7 +645,7 @@ namespace CityWar
         private void EndBattle()
         {
             //reset length
-            Length = int.MaxValue;
+            length = int.MaxValue;
             int usedAttacks = 0;
             //reset attacks
             foreach (Attack a in attacks)
@@ -737,7 +766,8 @@ namespace CityWar
 
         protected override bool CanMoveChild(Tile t)
         {
-            return GetNeeded(t) > -1;
+            Player p;
+            return ( GetNeeded(t) > -1 && ( ability != Abilities.Aircraft || !t.Occupied(out p) || p == owner ) );
         }
 
         private int GetNeeded(Tile t)
@@ -807,7 +837,7 @@ namespace CityWar
         public void OnDeserialization(object sender)
         {
             this._randedCostMult = -1;
-            this.Length = int.MaxValue;
+            this.length = int.MaxValue;
             this._healthBrush = null;
         }
 

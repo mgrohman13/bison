@@ -569,7 +569,9 @@ namespace CityWar
         #endregion //internal methods
 
         #region piece sorting
+        [NonSerialized]
         private Piece _centerPiece = null;
+        [NonSerialized]
         internal bool hasCenterPiece = false;
         //this is the piece that is drawn on the map for the tile
         private Piece CenterPiece
@@ -818,33 +820,7 @@ namespace CityWar
             return ( move < FindDistance(delegate(Tile tile)
                 {
                     //check if a friendly carrier can move into the tile this turn
-                    if (CanGetCarrierCopy.ContainsKey(tile))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        //check to see if there is an enemy carrier but no defending units
-                        List<Piece> tilePieces = tile.pieces;
-                        int count = tilePieces.Count;
-                        if (count > 0)
-                        {
-                            Player occupying = tilePieces[0].Owner;
-                            if (occupying != owner)
-                            {
-                                bool hasCarrier = false;
-                                foreach (Piece p in tilePieces)
-                                {
-                                    if (p is Unit)
-                                        return false;
-                                    else if (p.Abilty == Abilities.AircraftCarrier)
-                                        hasCarrier = true;
-                                }
-                                return hasCarrier;
-                            }
-                        }
-                        return false;
-                    }
+                    return ( CanGetCarrierCopy.ContainsKey(tile) );
                 }, move) );
         }
         private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Piece piece, Tile tile, int move)
@@ -856,7 +832,7 @@ namespace CityWar
                     {
                         int newMove = move;
                         Player occupying;
-                        UnitType carrierType = ( piece is Wizard ? UnitType.Air : ( (Unit)piece ).Type );
+                        UnitType carrierType = ( piece is Unit ? ( (Unit)piece ).Type : UnitType.Immobile );
                         Terrain terrain = t.Terrain;
                         //check if the carrier can move onto the tile
                         if (!( tile.OccupiedByUnit(out occupying) && occupying != piece.Owner ) &&

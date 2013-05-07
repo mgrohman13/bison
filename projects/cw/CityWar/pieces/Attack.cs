@@ -15,11 +15,9 @@ namespace CityWar
         //unit cost : death when killed
         internal const double DeathDivide = 7;
         //unit cost : death for disband
-        internal const double DisbandDivide = 5;
+        internal const double DisbandDivide = 4;
         //unit cost : relic for wounding
-        internal const double RelicDivide = 6;//4
-        //unit cost : exp for wounding
-        internal const double ExpDivide = 4;
+        internal const double RelicDivide = 6;
 
         //percentage of unused attacks that adds to work
         internal const double OverkillPercent = .5;
@@ -176,10 +174,9 @@ namespace CityWar
         {
             if (!CanAttack(unit))
                 return -1;
-            //throw new Exception();
 
             Used = true;
-            owner.Length = Math.Min(owner.Length, length);
+            owner.Attacked(Length);
 
             int hits = unit.Hits;
             int armor = unit.Armor;

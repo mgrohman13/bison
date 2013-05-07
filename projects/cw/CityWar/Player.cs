@@ -288,9 +288,7 @@ namespace CityWar
             {
                 Unit u = p as Unit;
                 if (u != null)
-                {
                     retVal += u.RandedCost * u.GetHealthPct();
-                }
             }
             return retVal;
         }
@@ -1269,16 +1267,17 @@ namespace CityWar
         }
         private int RemoveResources()
         {
-            const double LoseAmt = 250 * WorkMult;
-            while (work < LoseAmt)
+            const double LoseAmt = 250;
+            const double LoseWork = LoseAmt * WorkMult;
+            while (work < LoseWork)
             {
                 double totalResources = GetTotalResources();
                 //check if you could get enough by trading; every loop in case of unlucky rounding
-                if (totalResources * WorkMult < LoseAmt)
+                if (totalResources * WorkMult < LoseWork)
                 {
-                    int loseUnits = Game.Random.Round(1 - totalResources / 250);
+                    int loseUnits = Game.Random.Round(1 - totalResources / LoseAmt);
                     if (loseUnits == 0)
-                        AddUpkeep(250 * UpkeepMult);
+                        AddUpkeep(LoseAmt * UpkeepMult);
                     return loseUnits;
                 }
                 else
@@ -1291,13 +1290,13 @@ namespace CityWar
                     death = TradePctAtAvgTrade(death);
                     production = TradePctAtAvgTrade(production);
                     population = TradePctAtAvgTrade(population);
-                    magic = TradePctAtAvgTrade(magic);
-                    relic = TradePctAtAvgTrade(relic);
+                    magic = TradePctAtRate(magic, 1, .091, 1.3);
+                    relic = TradePctAtRate(relic, 1, .091, 1.3);
                     //pass a negative rate so it decreases work
                     upkeep = TradePctAtRate(upkeep, 1 / -UpkeepMult);
                 }
             }
-            AddWork(-LoseAmt);
+            AddWork(-LoseWork);
             return 0;
         }
         private int TradePctAtAvgTrade(int amt)
@@ -1306,8 +1305,12 @@ namespace CityWar
         }
         private int TradePctAtRate(int amt, double rate)
         {
+            return TradePctAtRate(amt, rate, .169, 13);
+        }
+        private int TradePctAtRate(int amt, double rate, double pct, double add)
+        {
             //add a little bit to the percent so itll trade away the dregs
-            float tradeAmt = .13f * amt + 3f;
+            double tradeAmt = pct * amt + add;
             if (tradeAmt > amt)
                 tradeAmt = amt;
             AddWork(tradeAmt * WorkMult * rate);
