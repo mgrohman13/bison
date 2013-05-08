@@ -115,7 +115,7 @@ namespace CityWar
             }
 
             //create wizard points and possibly some starting city spots
-            int wizspots = 1 + Random.GaussianCappedInt(width * height / 66.6f, .09f);
+            int wizspots = 1 + Random.GaussianCappedInt(width * height / 65.0, .052);
             for (int a = -1 ; ++a < wizspots ; )
                 game.CreateWizardPts();
             for (int a = -1 ; ++a < numPlayers ; )
@@ -587,30 +587,30 @@ namespace CityWar
             return piece;
         }
 
-        public void ConvertCity(Piece p)
+        public void CaptureCity(Unit unit)
         {
-            if (players[currentPlayer] != p.Owner)
+            if (players[currentPlayer] != unit.Owner)
                 return;
 
-            if (p.GetCity())
+            if (unit.CaptureCity())
             {
-                UndoCommands.Push(UndoConvertCity);
-                UndoArgs.Push(new object[] { p });
+                UndoCommands.Push(UndoCaptureCity);
+                UndoArgs.Push(new object[] { unit });
             }
         }
-        private Piece UndoConvertCity(object[] args)
+        private Piece UndoCaptureCity(object[] args)
         {
-            Piece piece = (Piece)args[0];
+            Unit unit = (Unit)args[0];
 
-            piece.UndoGetCity();
+            unit.UndoCaptureCity();
 
-            if (piece.Owner.Population < 0)
+            if (unit.Owner.Population < 0)
             {
                 int stack = UndoCommands.Count;
-                ConvertCity(piece);
+                CaptureCity(unit);
                 RemoveUndos(stack);
             }
-            return piece;
+            return unit;
         }
 
         public void DisbandUnits(Unit[] units)
@@ -1050,7 +1050,7 @@ next:
                 do
                     addUnit = Races[race][Random.Next(Races[race].Length)];
                 while (unitsHave[addUnit] / 3.0f > Random.Gaussian(baseCost = Unit.CreateTempUnit(addUnit).BaseCost));
-                unitsHave[addUnit] += Random.GaussianInt(66.6f, 1f);
+                unitsHave[addUnit] += Random.GaussianInt(65, 1);
                 //dont place free units when someone has no capturables
                 if (!noCapts && unitsHave[addUnit] >= baseCost)
                     units.Add(addUnit);
@@ -1298,26 +1298,28 @@ next:
 
         private void CreateCitySpot()
         {
-            int amt = Random.OEInt(Width * Height / 666.0);
-            while (--amt > -1)
+            int amt = Random.OEInt(Width * Height / 780.0);
+            for (int a = 0 ; a < amt ; ++a)
             {
                 Tile tile = RandomTile();
 
-                //if it cant be placed, dont even try again with another tile
-                if (!( tile.HasCity() ))
+                if (!tile.HasCity())
                 {
                     bool can = true;
-                    for (int a = -1 ; ++a < 6 ; )
+                    for (int b = 0 ; b < 6 ; ++b)
                     {
-                        Tile neighbor = tile.GetNeighbor(a);
-                        if (neighbor != null && ( neighbor.HasCity() ))
+                        Tile neighbor = tile.GetNeighbor(b);
+                        if (neighbor == null || neighbor.HasCity())
                         {
+                            //only try again if the chosen tile is on the map edge
+                            if (neighbor == null)
+                                --a;
                             can = false;
                             break;
                         }
                     }
                     if (can)
-                        tile.MakeCitySpot(Random.GaussianCappedInt(6f, .26f, 1) + Random.OEInt(1.3));
+                        tile.MakeCitySpot(Random.GaussianOEInt(7.8, .39, .169, 1));
                 }
             }
         }

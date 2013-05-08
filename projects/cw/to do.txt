@@ -8,11 +8,14 @@ balance
 	allow 1/3 heal to calc isthree
 
 gameplay
+	gambling
+		trades
+		movement
+	wizard capturing neutral city?
 	loading a game with different unit set
 		support?
 		error?
 		save units with game?
-	city appearance balanced throughout map?
 	hex
 	teleporters
 	exp?
@@ -26,11 +29,8 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	disband button visibility
 	add damage calculator
-	more space in buttons, labels
 	combat log/feedback
-	undo build portal/wiz/city?	
 	score graphs
 	clean up balance build summon form
 	ensure player color differences

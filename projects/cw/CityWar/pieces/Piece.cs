@@ -98,22 +98,6 @@ namespace CityWar
         }
         #endregion //public methods and properties
 
-        #region internal methods
-        internal bool GetCity()
-        {
-            if (movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
-                return false;
-
-            movement = 0;
-            return tile.CaptureCity(this);
-        }
-        internal void UndoGetCity()
-        {
-            movement = MaxMove;
-            tile.UndoCaptureCity(this);
-        }
-        #endregion //internal methods
-
         #region moving
         internal bool Move(Tile t, out bool canUndo)
         {

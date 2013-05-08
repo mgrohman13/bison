@@ -32,7 +32,7 @@ namespace CityWarWinApp
 			this.btnMountain = new System.Windows.Forms.Button();
 			this.btnWater = new System.Windows.Forms.Button();
 			this.btnForest = new System.Windows.Forms.Button();
-			this.btnAir = new System.Windows.Forms.Button();
+			this.btnPlains = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnCancel
@@ -89,16 +89,16 @@ namespace CityWarWinApp
 			// 
 			// btnAir
 			// 
-			this.btnAir.BackColor = System.Drawing.Color.Gray;
-			this.btnAir.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnAir.ForeColor = System.Drawing.Color.Black;
-			this.btnAir.Location = new System.Drawing.Point(12, 41);
-			this.btnAir.Name = "btnAir";
-			this.btnAir.Size = new System.Drawing.Size(75, 23);
-			this.btnAir.TabIndex = 2;
-			this.btnAir.Text = "Plains";
-			this.btnAir.UseVisualStyleBackColor = false;
-			this.btnAir.Click += new System.EventHandler(this.btnAir_Click);
+			this.btnPlains.BackColor = System.Drawing.Color.Gray;
+			this.btnPlains.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnPlains.ForeColor = System.Drawing.Color.Black;
+			this.btnPlains.Location = new System.Drawing.Point(12, 41);
+			this.btnPlains.Name = "btnAir";
+			this.btnPlains.Size = new System.Drawing.Size(75, 23);
+			this.btnPlains.TabIndex = 2;
+			this.btnPlains.Text = "Plains";
+			this.btnPlains.UseVisualStyleBackColor = false;
+			this.btnPlains.Click += new System.EventHandler(this.btnPlains_Click);
 			// 
 			// ChangeTerrain
 			// 
@@ -106,7 +106,7 @@ namespace CityWarWinApp
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.Black;
 			this.ClientSize = new System.Drawing.Size(180, 105);
-			this.Controls.Add(this.btnAir);
+			this.Controls.Add(this.btnPlains);
 			this.Controls.Add(this.btnForest);
 			this.Controls.Add(this.btnWater);
 			this.Controls.Add(this.btnMountain);
@@ -126,6 +126,6 @@ namespace CityWarWinApp
         private System.Windows.Forms.Button btnMountain;
         private System.Windows.Forms.Button btnWater;
         private System.Windows.Forms.Button btnForest;
-        private System.Windows.Forms.Button btnAir;
+        private System.Windows.Forms.Button btnPlains;
     }
 }

@@ -23,6 +23,26 @@ namespace CityWarWinApp
             this.Location = location;
 
             this.wizard = wizard;
+
+            Button buttonHeal;
+            switch (wizard.Tile.Terrain)
+            {
+            case Terrain.Forest:
+                buttonHeal = this.btnForest;
+                break;
+            case Terrain.Mountain:
+                buttonHeal = this.btnMountain;
+                break;
+            case Terrain.Plains:
+                buttonHeal = this.btnPlains;
+                break;
+            case Terrain.Water:
+                buttonHeal = this.btnWater;
+                break;
+            default:
+                throw new Exception();
+            }
+            buttonHeal.Text = "+10";
         }
 
         private void btnMountain_Click(object sender, EventArgs e)
@@ -37,7 +57,7 @@ namespace CityWarWinApp
             this.Close();
         }
 
-        private void btnAir_Click(object sender, EventArgs e)
+        private void btnPlains_Click(object sender, EventArgs e)
         {
             Map.game.ChangeTerrain(wizard, Terrain.Plains);
             this.Close();

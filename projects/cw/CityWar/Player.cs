@@ -11,7 +11,7 @@ namespace CityWar
     public class Player : IDeserializationCallback
     {
         #region fields and constructors
-        public const int WizardCost = 1300, RelicCost = 300;//55
+        public const int WizardCost = 1300, RelicCost = 300;
         internal const int TradeDown = 9, TradeUp = 30;
         internal const double WorkMult = ( TradeDown + ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
         internal const double UpkeepMult = ( TradeUp - ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
@@ -329,6 +329,13 @@ namespace CityWar
                 for (int a = -1 ; ++a < 3 ; )
                 {
                     Tile t = RandomStartTile();
+                    for (int b = 0 ; b < 6 ; ++b)
+                        if (t.GetNeighbor(b) == null)
+                        {
+                            t = RandomStartTile();
+                            b = -1;
+                            continue;
+                        }
 
                     new City(this, t);
                     thisTotal += Unit.NewUnit(startUnits[a], t, this).BaseCost;
@@ -421,12 +428,12 @@ namespace CityWar
 
         internal void LostCapt(Capturable c, Player p)
         {
-            int wizards, portals, cities, relics, units;
-            GetCounts(out wizards, out portals, out cities, out relics, out units);
-            double transferAmt = Game.Random.Round(upkeep / ( wizards + portals + cities + relics + 1f ) * .6f);
             //the capturing player gets stuck with some of the other players upkeep
-            AddUpkeep(-transferAmt);
-            p.AddUpkeep(transferAmt);
+            int wizards, portals, cities, relics, units;
+            this.GetCounts(out wizards, out portals, out cities, out relics, out units);
+            double transferAmt = this.upkeep / ( wizards + portals + cities + relics - .13 ) * .65;
+            this.AddUpkeep(-Game.Random.GaussianCappedInt(transferAmt, .091));
+            p.AddUpkeep(Game.Random.GaussianCappedInt(transferAmt, .091));
 
             Remove(c, false);
         }
@@ -478,6 +485,7 @@ namespace CityWar
             int min = int.MaxValue;
             foreach (Player p in players)
                 min = Math.Min(min, p.upkeep);
+            min = Game.Random.WeightedInt(min, .78f);
             foreach (Player p in players)
                 p.upkeep -= min;
         }
@@ -509,7 +517,7 @@ namespace CityWar
             while (--amt > -1)
             {
                 double avg = 50 * ( amt == 0 ? amount : 1 );
-                int addAmt = Game.Random.GaussianCappedInt(avg, .13, Game.Random.Round(avg * .6));
+                int addAmt = Game.Random.GaussianCappedInt(avg, .26, Game.Random.Round(avg * .6));
 
                 if (Game.Random.Bool(.01f))
                     population += addAmt;		// 01.00%
@@ -707,27 +715,25 @@ namespace CityWar
         }
         private void GetRelic()
         {
-            if (relic < RelicCost)
-                return;
-
-            Capturable cur = RandomCapturable();
-            if (cur == null)
-                return;
-
-            relic -= RelicCost;
-            new Relic(this, cur.Tile);
+            if (relic >= RelicCost)
+            {
+                Capturable cur = RandomCapturable();
+                if (cur != null)
+                {
+                    relic -= RelicCost;
+                    new Relic(this, cur.Tile);
+                }
+            }
         }
         private Capturable RandomCapturable()
         {
-            int count = 0;
-            Capturable capturable = null;
-            foreach (Piece p in pieces)
+            foreach (Piece p in Game.Random.Iterate(pieces))
             {
-                Capturable piece = p as Capturable;
-                if (piece != null && Game.Random.Next(++count) == 0)
-                    capturable = piece;
+                Capturable piece = ( p as Capturable );
+                if (piece != null)
+                    return piece;
             }
-            return capturable;
+            return null;
         }
         #endregion //relic
 
@@ -842,10 +848,46 @@ namespace CityWar
         #endregion //piece images
 
         #region trading
-        public void TradeDeath(bool up)
+        public void GambleWork(int low, int high)
         {
-            death = Trade(up, death, "de");
+            work = Gamble(work, low, high);
         }
+        public void GambleDeath(int low, int high)
+        {
+            death = Gamble(death, low, high);
+        }
+        public void GambleProduction(int low, int high)
+        {
+            production = Gamble(production, low, high);
+        }
+        public void GambleNature(int low, int high)
+        {
+            nature = Gamble(nature, low, high);
+        }
+        public void GambleEarth(int low, int high)
+        {
+            earth = Gamble(earth, low, high);
+        }
+        public void GambleWater(int low, int high)
+        {
+            water = Gamble(water, low, high);
+        }
+        public void GambleAir(int low, int high)
+        {
+            air = Gamble(air, low, high);
+        }
+        public void GamblePopulation(int low, int high)
+        {
+            population = Gamble(population, low, high);
+        }
+        private int Gamble(int value, int low, int high)
+        {
+            if (low >= 0 && low < high)
+                while (value > low && value < high)
+                    value += ( Game.Random.Bool() ? -1 : 1 );
+            return value;
+        }
+
         private void TradeMagic(bool up)
         {
             magic = Trade(up, magic, "ma");
@@ -853,6 +895,10 @@ namespace CityWar
         private void TradeRelic(bool up)
         {
             relic = Trade(up, relic, "re");
+        }
+        public void TradeDeath(bool up)
+        {
+            death = Trade(up, death, "de");
         }
         public void TradeProduction(bool up)
         {
@@ -977,10 +1023,9 @@ namespace CityWar
             AddUpkeep(-payment);
 
             //when your work is negative, there is a chance you will lose some actual resources
-            float randVal = 1f;
-            while (Game.Random.OE(39f * randVal) < -work)
+            int amt = 10;
+            while (Game.Random.OE(39 * GetRandVal(amt)) < -work)
             {
-                int amt;
                 switch (Game.Random.NextBits(4))
                 {
                 case 0:
@@ -1023,42 +1068,45 @@ namespace CityWar
                 default:
                     throw new Exception();
                 }
-                randVal = GetRandVal(amt);
                 //if you did not have enough of the chosen standard resource, you may lose some magic or relic
-                if (Game.Random.Bool(1f - randVal))
-                {
-                    switch (Game.Random.NextBits(3))
+                while (Game.Random.Bool(1 - GetRandVal(amt)))
+                    if (magic > 0 || relic > 0)
                     {
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                        amt = magic;
-                        TradeMagic(false);
-                        break;
-                    case 5:
-                    case 6:
-                    case 7:
-                        amt = relic;
-                        TradeRelic(false);
-                        break;
-                    default:
-                        throw new Exception();
+                        switch (Game.Random.NextBits(3))
+                        {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                            amt = magic;
+                            TradeMagic(false);
+                            break;
+                        case 5:
+                        case 6:
+                        case 7:
+                            amt = relic;
+                            TradeRelic(false);
+                            break;
+                        default:
+                            throw new Exception();
+                        }
                     }
-                    randVal = GetRandVal(amt);
-                }
+                    else
+                    {
+                        amt = 0;
+                        break;
+                    }
             }
         }
-
-        private static float GetRandVal(int amt)
+        private static double GetRandVal(int amt)
         {
-            if (amt < 10)
-            {
-                const double add = 1.3;
-                return (float)Math.Pow(( amt + add ) / ( 10.0 + add ), 2.6);
-            }
-            return 1;
+            double retVal = amt / 10.0;
+            if (retVal > 1)
+                retVal = 1;
+            else if (retVal < 0)
+                retVal = 0;
+            return retVal;
         }
 
         internal int StartTurn()

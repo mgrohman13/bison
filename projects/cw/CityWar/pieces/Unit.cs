@@ -212,6 +212,20 @@ namespace CityWar
         #endregion //public methods and properties
 
         #region internal methods
+        internal bool CaptureCity()
+        {
+            if (movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
+                return false;
+
+            movement = 0;
+            return tile.CaptureCity(this);
+        }
+        internal void UndoCaptureCity()
+        {
+            movement = MaxMove;
+            tile.UndoCaptureCity(this);
+        }
+
         internal void Attacked(int length)
         {
             this.length = Math.Min(this.Length, length);

@@ -153,17 +153,15 @@ namespace CityWar
         }
         public Piece[] GetSelectedPieces()
         {
-            return Tile.FindAllPieces(pieces, delegate(Piece p)
-                {
-                    return ( p.Group == CurrentGroup );
-                });
+            return Tile.FindAllPieces(pieces, IsSelected);
         }
         public Unit[] GetSelectedUnits()
         {
-            return Tile.FindAllUnits(pieces, delegate(Unit unit)
-                {
-                    return ( unit.Group == CurrentGroup );
-                });
+            return Tile.FindAllUnits(pieces, IsSelected);
+        }
+        private bool IsSelected(Piece p)
+        {
+            return ( p.Group == CurrentGroup && p.Owner == game.CurrentPlayer );
         }
         public Unit[] GetAllUnits()
         {
@@ -409,56 +407,48 @@ namespace CityWar
             return canUndo;
         }
 
-        internal bool CaptureCity(Piece piece)
+        internal bool CaptureCity(Unit unit)
         {
             --cityTime;
             madeCity = true;
 
-            Player p = piece.Owner;
-            //get people based on the number of turns remaining
-            p.Spend(0, CostType.Production, Game.Random.Round(-Math.Sqrt(cityTime * 210)));
+            Player player = unit.Owner;
+            //get population based on the number of turns remaining
+            player.Spend(0, CostType.Production, -GetCaptureCityPop());
             //get a little bit of work as if the unit partially rested
-            p.AddWork(GetCaptureCityWork(piece));
+            player.AddWork(GetCaptureCityWork(unit));
 
             if (cityTime == 0)
             {
                 //get the city
-                p.AddUpkeep(390);
-                new City(p, this);
+                player.AddUpkeep(Game.Random.GaussianCappedInt(390, 0.065, 260));
+                new City(player, this);
 
                 cityTime = -1;
                 return false;
             }
             return true;
         }
-        internal void UndoCaptureCity(Piece piece)
+        internal void UndoCaptureCity(Unit unit)
         {
-            Player p = piece.Owner;
+            Player player = unit.Owner;
 
-            if (cityTime == -1)
-            {
-                p.AddUpkeep(-390);
-                foreach (Piece city in pieces)
-                    if (city is City)
-                    {
-                        Remove(city);
-                        p.Remove(city, false);
-                        break;
-                    }
+            if (cityTime < 1)
+                throw new Exception();
 
-                cityTime = 0;
-            }
-
-            p.Spend(0, CostType.Production, Game.Random.Round(Math.Sqrt(cityTime * 210)));
-            p.AddWork(-GetCaptureCityWork(piece));
+            player.Spend(0, CostType.Production, GetCaptureCityPop());
+            player.AddWork(-GetCaptureCityWork(unit));
 
             ++cityTime;
             madeCity = false;
         }
-        private double GetCaptureCityWork(Piece p)
+        private int GetCaptureCityPop()
         {
-            Unit u = p as Unit;
-            return ( u == null ? Player.WorkMult * 10 : u.WorkRegen ) * p.MaxMove * .5;
+            return Game.Random.GaussianCappedInt(Math.Sqrt(cityTime * 210), 0.078);
+        }
+        private static double GetCaptureCityWork(Unit u)
+        {
+            return u.WorkRegen * u.MaxMove * .52;
         }
 
         internal void SetupNeighbors()

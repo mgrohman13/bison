@@ -33,7 +33,7 @@ namespace CityWarWinApp
         float offX = 0, offY = 0, scrollSpeed;
 
         //zooming - set the starting zoom
-        float _zoom = Game.Random.GaussianCapped(startZoom, .01f, 30f), topX, topY, side, middle;
+        float _zoom = Game.Random.GaussianCapped(startZoom, .091f, 30f), topX, topY, side, middle;
         Font tileInfoFont;
         public float Zoom
         {
@@ -180,7 +180,6 @@ namespace CityWarWinApp
             this.lblPlayer.ForeColor = currentPlayer.InverseColor;
         }
 
-        //this method speaks for itself...
         private void RefreshResources()
         {
             Player currentPlayer = game.CurrentPlayer;
@@ -198,49 +197,53 @@ namespace CityWarWinApp
 
         private void RefreshButtons()
         {
-            if (selected.X == -1 && selected.Y == -1)
+            this.btnBuildPiece.Visible = false;
+            this.btnCaptureCity.Visible = false;
+            this.btnDisbandUnits.Visible = false;
+            this.btnRest.Visible = false;
+            this.btnGroup.Visible = false;
+            this.btnUngroup.Visible = false;
+
+            //unrelated to current selection
+            this.btnUndo.Visible = Game.CanUndoCommand();
+
+            if (selected.X != -1 && selected.Y != -1)
             {
-                btnBuild.Visible = false;
-                btnBuildCity.Visible = false;
-                return;
-            }
+                Tile selectedTile = game.GetTile(selected.X, selected.Y);
+                Piece[] selectedPieces = selectedTile.GetSelectedPieces();
+                Player owner;
+                selectedTile.Occupied(out owner);
 
-            //get the selected tile and its pieces
-            Tile selTile = game.GetTile(selected.X, selected.Y);
-            Piece[] Selected = selTile.GetSelectedPieces();
-
-            //check if the only selected piece is a wizard, in which case you can change the terrain
-            if (Selected.Length == 1 && Selected[0] is Wizard && Selected[0].Movement == Selected[0].MaxMove)
-                btnHeal.Text = "Map";
-            else
-                btnHeal.Text = "Rest";
-
-            //if any of the pieces are a Capturable, show the build button
-            bool any = false;
-            foreach (Piece p in Selected)
-            {
-                if (p is Capturable)
+                foreach (Piece p in selectedPieces)
                 {
-                    any = true;
-                    break;
+                    //if any of the pieces are a Capturable, show the build piece button
+                    if (p is Capturable)
+                        this.btnBuildPiece.Visible = true;
+
+                    //if the tile has a neutral city and any pieces have full move, show the capture city button
+                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p.MaxMove != 0 && p.Movement == p.MaxMove)
+                        this.btnCaptureCity.Visible = true;
+
+                    //if any selected pieces are units, show the disband units button
+                    if (p is Unit)
+                        this.btnDisbandUnits.Visible = true;
+
+                    //if any selected pieces have movement left, show the rest button
+                    if (p.Movement > 0)
+                        this.btnRest.Visible = true;
                 }
-            }
-            btnBuild.Visible = any;
 
-            //check if the tile can build a city and if any pieces have full move
-            btnBuildCity.Visible = false;
-            if (selTile.CityTime != -1 && !selTile.MadeCity)
-            {
-                foreach (Piece p in Selected)
-                    if (p.MaxMove != 0 && p.Movement == p.MaxMove)
-                    {
-                        //if so, show the build button
-                        btnBuildCity.Visible = true;
-                        break;
-                    }
-            }
+                //check if the only selected piece is a wizard with full move, in which case you can change the map terrain
+                if (selectedPieces.Length == 1 && selectedPieces[0] is Wizard && selectedPieces[0].Movement == selectedPieces[0].MaxMove)
+                    this.btnRest.Text = "Map";
+                else
+                    this.btnRest.Text = "Rest";
 
-            btnUndo.Visible = Game.CanUndoCommand();
+                //if the current player occupies the selected tile, show the grouping buttons
+                bool group = ( owner == game.CurrentPlayer );
+                this.btnGroup.Visible = group;
+                this.btnUngroup.Visible = group;
+            }
         }
 
         private void RefreshZoom()
@@ -331,27 +334,10 @@ namespace CityWarWinApp
 
         private void CenterUnit()
         {
-            Tile selectedTile = game.GetTile(selected.X, selected.Y);
-
             //select any pieces with movement left
-            selectedTile.Select();
-
+            game.GetTile(selected.X, selected.Y).Select();
             panelPieces.ScrollToSelected();
-
-            //int index = selectedTile.GetIndexOfSelected();
-            //if (index != -1)
-            //{
-            //    //if any units are selected, scroll appropriately
-            //    int val = (126 * index + 139 - this.sbUnits.Height) / unitScroll + 1;
-            //    if (val < sbUnits.Minimum)
-            //        val = sbUnits.Minimum;
-            //    if (val > sbUnits.Maximum)
-            //        val = sbUnits.Maximum;
-            //    this.sbUnits.Value = val;
-            //}
-
             RefreshButtons();
-            //panelPieces.Invalidate();
         }
 
         private void setOldBounds()
@@ -1027,7 +1013,7 @@ namespace CityWarWinApp
                 && selPieces[0].Movement == selPieces[0].MaxMove)
             {
                 //show the change terrain dialog
-                new ChangeTerrain((Wizard)selPieces[0], this.PointToScreen(btnHeal.Location)).ShowDialog();
+                new ChangeTerrain((Wizard)selPieces[0], this.PointToScreen(btnRest.Location)).ShowDialog();
                 RefreshResources();
                 RefreshButtons();
 
@@ -1081,82 +1067,61 @@ namespace CityWarWinApp
 
             saved = false;
 
-            //get currently selected pieces
+            //get currently selected units with move left
             Tile tile = game.GetTile(selected.X, selected.Y);
             int curGroup = tile.CurrentGroup;
-            Piece[] selPieces = tile.FindAllPieces(delegate(Piece p)
+            Unit[] availUnits = tile.FindAllUnits(delegate(Unit p)
             {
                 return ( p.Group == curGroup && p.MaxMove != 0 && p.Movement == p.MaxMove );
             });
 
-            //find the best piece to use
-            Piece piece = null;
+            //find the best unit to use
+            Unit unit = null;
             int minWork = int.MaxValue;
-            foreach (Piece p in selPieces)
+            foreach (Unit u in availUnits)
             {
-                const int captWork = 1000000000;
-                const int injdWork = 100000000;
-                Unit unit = p as Unit;
-                if (unit == null)
+                const int injdWork = int.MaxValue / 3;
+                int work = u.Regen * u.MaxMove;
+                if (u.Hits < u.maxHits)
                 {
-                    if (captWork < minWork)
-                    {
-                        piece = p;
-                        minWork = captWork;
-                    }
+                    if (injdWork < minWork)
+                        work += injdWork + (int)Math.Round(injdWork * ( 1 - u.Hits / (double)u.maxHits ));
+                    else
+                        continue;
                 }
-                else
-                {
-                    int work = unit.Regen * unit.MaxMove;
-                    if (unit.Hits < unit.maxHits)
-                    {
-                        if (injdWork < minWork)
-                            work += injdWork + (int)Math.Round(injdWork * ( 1 - unit.Hits / (double)unit.maxHits ));
-                        else
-                            continue;
-                    }
 
-                    if (work < minWork)
-                    {
-                        piece = p;
-                        minWork = work;
-                    }
+                if (work < minWork)
+                {
+                    unit = u;
+                    minWork = work;
                 }
             }
 
-            //check for a piece with move left
-            if (piece.MaxMove != 0 && piece.Movement == piece.MaxMove)
+            if (unit == null)
+                throw new Exception();
+
+            game.CaptureCity(unit);
+
+            bool nomoves = true;
+            foreach (Unit pp in availUnits)
+                if (pp.Movement > 0)
+                {
+                    nomoves = false;
+                    break;
+                }
+            if (nomoves)
             {
-                //build the city
-                game.ConvertCity(piece);
-
-                //check if any selected units have move left
-                bool nomoves = true;
-                foreach (Piece pp in selPieces)
-                    if (pp.Movement > 0)
-                    {
-                        nomoves = false;
-                        break;
-                    }
-                if (nomoves)
-                {
-                    //if no one has movement left, go to the next unit
-                    btnNext_Click(this, e);
-                }
-                else
-                {
-                    this.panelPieces.Invalidate();
-                    this.Invalidate(invalidateRectangle, false);
-                }
-
-                RefreshResources();
-                RefreshButtons();
-
-                return;
+                //if no one has movement left, go to the next unit
+                btnNext_Click(this, e);
+            }
+            else
+            {
+                this.panelPieces.Invalidate();
+                this.Invalidate(invalidateRectangle, false);
             }
 
-            //button shouldn't have been visible in the first place...
-            throw new Exception();
+            RefreshResources();
+            RefreshButtons();
         }
 
         private void btnEndTurn_Click(object sender, EventArgs e)

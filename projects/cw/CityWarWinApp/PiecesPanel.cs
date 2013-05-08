@@ -186,7 +186,6 @@ namespace CityWarWinApp
         public void PiecesPanel_MouseWheel(object sender, MouseEventArgs e)
         {
             UseMouseWheel(sbPieces, e, sbPieces_Scroll);
-            //this.Invalidate();
         }
 
         internal void ScrollToSelected()
