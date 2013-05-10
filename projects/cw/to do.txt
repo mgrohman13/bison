@@ -8,10 +8,16 @@ balance
 	allow 1/3 heal to calc isthree
 
 gameplay
-	gambling
-		trades
-		movement
-	wizard capturing neutral city?
+	slight upkeep cost to retalliate
+	multiple hex battles
+		maybe bring all potential units in, then filter out?
+		right click enemy owned hex brings up battle no matter what is selected, so long as any adjacent frienly units can attack
+		recursively bring in all adjacent friendly units, all potential retalliations, friendly adjacent to retalliators, etc.
+			filter out units each step to minimize battle size
+		only specific targeted player can retalliate and participate
+	end game scoring
+		model after GW
+	make portal amounts actually integers
 	loading a game with different unit set
 		support?
 		error?
@@ -19,6 +25,7 @@ gameplay
 	hex
 	teleporters
 	exp?
+	alliances?
 requiring rebalance
 	unit abilities
 	better terrains
@@ -29,7 +36,18 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	add damage calculator
+	improvements for multi-hex battles
+		which hex units are on
+		show all potentail retalliators and who they can target
+		current friendly unit lengths
+		easier ways to visualize player power at each length
+		damage calculator
+			also available outside combat
+		ability to look around main map during a battle, see info screen, etc?
+			highlight participating tiles
+			any attempted action re-opens battle window
+		instantly show earned relics?
+		save during battle?
 	combat log/feedback
 	score graphs
 	clean up balance build summon form

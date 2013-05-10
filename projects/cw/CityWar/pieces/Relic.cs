@@ -21,19 +21,19 @@ namespace CityWar
             owner.Add(this);
         }
 
-        private const float matchChance = .5f, unmatchChance = .2f;
+        private const double matchChance = .5, unmatchChance = .2;
         private static List<string> InitUnits(Terrain terrain)
         {
             List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
                 foreach (string u in race)
                 {
-                    float val;
+                    double val;
                     Unit unit = Unit.CreateTempUnit(u);
                     if (unit.costType == CostType.Production)
-                        val = .3f;
+                        val = .3;
                     else if (unit.costType == CostType.Death)
-                        val = .7f;
+                        val = .7;
                     else if (( terrain == Terrain.Forest && unit.costType == CostType.Nature )
                         || ( terrain == Terrain.Mountain && unit.costType == CostType.Earth )
                         || ( terrain == Terrain.Plains && unit.costType == CostType.Air )
@@ -96,7 +96,7 @@ namespace CityWar
             return false;
         }
 
-        protected override bool DoMove(Tile t, out bool canUndo)
+        protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
             canUndo = true;
             return false;

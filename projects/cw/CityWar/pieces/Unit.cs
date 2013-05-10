@@ -411,7 +411,7 @@ namespace CityWar
                         double sign = Math.Sign(pct - .5);
                         double greenPct = Math.Pow(( 2.0 * pct - 1.0 ) * sign, power) * sign / 2.0 + 1.0 / 2.0;
 
-                        _healthBrush = new SolidBrush(Color.FromArgb(255, Game.Random.Round(255f * (float)greenPct), 0));
+                        _healthBrush = new SolidBrush(Color.FromArgb(255, Game.Random.Round(255 * greenPct), 0));
                     }
                     else
                     {
@@ -473,7 +473,7 @@ namespace CityWar
         {
             if (isThree)
             {
-                float used = 0;
+                double used = 0;
                 foreach (Attack a in attacks)
                     if (a.Used)
                         ++used;
@@ -678,21 +678,29 @@ namespace CityWar
         #endregion //start and end battle
 
         #region moving
-        internal static bool UnitGroupMove(List<Unit> units, Tile t, Dictionary<Piece, bool> undoPieces)
+        internal static bool UnitGroupMove(List<Unit> units, Tile t, Dictionary<Piece, bool> undoPieces, bool gamble)
         {
             if (units.Count < 2)
             {
                 //no need to move by group
                 Piece move = units[0];
                 bool canUndo;
-                bool moved = move.Move(t, out canUndo);
+                bool moved = move.Move(t, gamble, out canUndo);
                 undoPieces.Add(move, canUndo);
                 return moved;
             }
 
-            int minMove = int.MaxValue;
-            foreach (Unit u in units)
-                minMove = Math.Min(minMove, u.movement);
+            int minMove;
+            if (gamble)
+            {
+                minMove = 1;
+            }
+            else
+            {
+                minMove = int.MaxValue;
+                foreach (Unit u in units)
+                    minMove = Math.Min(minMove, u.movement);
+            }
 
             //this method will only be called for forest or mountain moves
             int needed;
@@ -710,21 +718,15 @@ namespace CityWar
                     u.movement -= minMove;
 
                 //either move everyone or no one
-                if (Game.Random.Bool(minMove / (float)needed))
+                bool move = Game.Random.Bool(minMove / (double)needed);
+                foreach (Unit u in units)
                 {
-                    foreach (Unit u in units)
-                    {
+                    if (move)
                         u.ActualMove(t);
-                        //cant undo a random move
-                        undoPieces.Add(u, false);
-                    }
-
-                    return true;
+                    //cant undo a random move
+                    undoPieces.Add(u, false);
                 }
-                else
-                {
-                    return false;
-                }
+                return move;
             }
             else
             {
@@ -732,14 +734,14 @@ namespace CityWar
                 foreach (Unit u in Game.Random.Iterate<Unit>(units))
                 {
                     bool canUndo;
-                    u.Move(t, out canUndo);
+                    u.Move(t, gamble, out canUndo);
                     undoPieces.Add(u, canUndo);
                 }
                 return true;
             }
         }
 
-        protected override bool DoMove(Tile t, out bool canUndo)
+        protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
             canUndo = true;
             if (movement < 1)
@@ -749,13 +751,19 @@ namespace CityWar
             if (needed < 0)
                 return false;
 
+            int useMove;
+            if (gamble)
+                useMove = 1;
+            else
+                useMove = movement;
+
             bool move;
-            if (movement < needed)
+            if (useMove < needed)
             {
-                move = ( Game.Random.Bool(movement / (float)needed) );
+                move = ( Game.Random.Bool(useMove / (double)needed) );
                 //cant undo a random move
                 canUndo = false;
-                movement = 0;
+                movement -= useMove;
             }
             else
             {

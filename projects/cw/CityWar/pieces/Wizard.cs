@@ -28,14 +28,14 @@ namespace CityWar
             foreach (string[] race in Game.Races.Values)
                 foreach (string u in race)
                 {
-                    float chance;
+                    double chance;
                     switch (Unit.CreateTempUnit(u).costType)
                     {
                     case CostType.Death:
-                        chance = .6f;
+                        chance = .6;
                         break;
                     default:
-                        chance = .4f;
+                        chance = .4;
                         break;
                     case CostType.Production:
                         continue;
@@ -92,7 +92,7 @@ namespace CityWar
             return ( !( t.Occupied(out p) && p != owner ) );
         }
 
-        protected override bool DoMove(Tile t, out bool canUndo)
+        protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
             if (movement > 0)
             {
@@ -113,9 +113,7 @@ namespace CityWar
         internal override void ResetMove()
         {
             while (movement > 0)
-            {
                 Heal();
-            }
 
             movement = MaxMove;
         }

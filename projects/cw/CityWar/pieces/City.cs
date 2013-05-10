@@ -226,7 +226,7 @@ namespace CityWar
             return false;
         }
 
-        protected override bool DoMove(Tile t, out bool canUndo)
+        protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
             canUndo = true;
             return false;

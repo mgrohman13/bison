@@ -382,7 +382,7 @@ namespace CityWar
             foreach (int val in Game.Random.Iterate(numOthers))
             {
                 if (numOthers > 1)
-                    addAmt = Game.Random.RangeInt(0, Game.Random.Round(2f * totalAmt / numOthers--));
+                    addAmt = Game.Random.RangeInt(0, Game.Random.Round(2 * totalAmt / (double)( numOthers-- )));
                 else
                     addAmt = totalAmt;
                 retVal[val] = addAmt;
@@ -517,20 +517,20 @@ namespace CityWar
             while (--amt > -1)
             {
                 double avg = 50 * ( amt == 0 ? amount : 1 );
-                int addAmt = Game.Random.GaussianCappedInt(avg, .26, Game.Random.Round(avg * .6));
+                int addAmt = Game.Random.GaussianCappedInt(avg, .26, Game.Random.Round(avg * .52));
 
-                if (Game.Random.Bool(.01f))
-                    population += addAmt;		// 01.00%
-                else if (Game.Random.Bool(.013f))
-                    production += addAmt;		// 01.29%
-                else if (Game.Random.Bool(.03f))
-                    magic += addAmt;			// 02.93%
-                else if (Game.Random.Bool(.06f))
-                    relic += addAmt;			// 05.69%
-                else if (Game.Random.Bool(.169f))
-                    death += addAmt;			// 15.06%
+                if (Game.Random.Bool(.01))
+                    population += addAmt;	// 01.00%
+                else if (Game.Random.Bool(.013))
+                    production += addAmt;	// 01.29%
+                else if (Game.Random.Bool(.03))
+                    magic += addAmt;		// 02.93%
+                else if (Game.Random.Bool(.06))
+                    relic += addAmt;		// 05.69%
+                else if (Game.Random.Bool(.169))
+                    death += addAmt;		// 15.06%
                 else
-                    switch (Game.Random.NextBits(2))
+                    switch (Game.Random.Next(4))
                     {
                     case 0:
                         water += addAmt;	// 18.51%
@@ -935,7 +935,7 @@ namespace CityWar
                 {
                     if (work < TradeDown)
                     {
-                        amt += Game.Random.Round(10f * work / TradeDown);
+                        amt += Game.Random.Round(10 * work / (double)TradeDown);
                         work = 0;
                     }
                     else
@@ -950,7 +950,7 @@ namespace CityWar
                 {
                     if (work < TradeUp)
                     {
-                        amt += Game.Random.Round(10f * work / TradeUp);
+                        amt += Game.Random.Round(10 * work / (double)TradeUp);
                         work = 0;
                     }
                     else
@@ -968,7 +968,7 @@ namespace CityWar
                 {
                     if (amt < 10)
                     {
-                        work += Game.Random.Round(TradeUp * amt / 10f);
+                        work += Game.Random.Round(TradeUp * amt / 10.0);
                         amt = 0;
                     }
                     else
@@ -983,7 +983,7 @@ namespace CityWar
                 {
                     if (amt < 10)
                     {
-                        work += Game.Random.Round(TradeDown * amt / 10f);
+                        work += Game.Random.Round(TradeDown * amt / 10.0);
                         amt = 0;
                     }
                     else
@@ -1026,7 +1026,7 @@ namespace CityWar
             int amt = 10;
             while (Game.Random.OE(39 * GetRandVal(amt)) < -work)
             {
-                switch (Game.Random.NextBits(4))
+                switch (Game.Random.Next(16))
                 {
                 case 0:
                 case 1:
@@ -1072,7 +1072,7 @@ namespace CityWar
                 while (Game.Random.Bool(1 - GetRandVal(amt)))
                     if (magic > 0 || relic > 0)
                     {
-                        switch (Game.Random.NextBits(3))
+                        switch (Game.Random.Next(8))
                         {
                         case 0:
                         case 1:
@@ -1272,7 +1272,6 @@ namespace CityWar
             {
                 //if its a portal, receive or lose some compensation for the cost difference
                 Portal portal = (Portal)remove;
-                portal.PayUpkeep();
                 int m, e;
                 Player.SplitPortalCost(portal.Owner.Race, portal.PortalType, out m, out e);
                 double magicPct = m / (double)( m + e ), elementPct = e / (double)( m + e );
@@ -1309,23 +1308,23 @@ namespace CityWar
             }
             return loseUnits;
         }
+        private const double noCapLoseAmt = 1000 / 3.0;
         private double GetReimbursement(bool first, double cost, double healthPct)
         {
-            return ( cost * healthPct - ( first ? 250 : 0 ) );
+            return ( cost * healthPct - ( first ? noCapLoseAmt : 0 ) );
         }
         private int RemoveResources()
         {
-            const double LoseAmt = 250;
-            const double LoseWork = LoseAmt * WorkMult;
+            const double LoseWork = noCapLoseAmt * WorkMult;
             while (work < LoseWork)
             {
                 double totalResources = GetTotalResources();
                 //check if you could get enough by trading; every loop in case of unlucky rounding
-                if (totalResources * WorkMult < LoseWork)
+                if (totalResources < noCapLoseAmt)
                 {
-                    int loseUnits = Game.Random.Round(1 - totalResources / LoseAmt);
+                    int loseUnits = Game.Random.Round(1 - totalResources / noCapLoseAmt);
                     if (loseUnits == 0)
-                        AddUpkeep(LoseAmt * UpkeepMult);
+                        AddUpkeep(noCapLoseAmt * UpkeepMult);
                     return loseUnits;
                 }
                 else

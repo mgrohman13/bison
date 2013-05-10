@@ -62,6 +62,7 @@ namespace CityWarWinApp
             this.chbGroup = new System.Windows.Forms.CheckBox();
             this.panelPieces = new CityWarWinApp.PiecesPanel();
             this.btnUndo = new System.Windows.Forms.Button();
+            this.chbGamble = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // timerGraphics
@@ -239,14 +240,14 @@ namespace CityWarWinApp
             this.lblWater.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
             this.lblWater.MouseLeave += new System.EventHandler(this.lblResource_MouseLeave);
             // 
-            // btnBuild
+            // btnBuildPiece
             // 
             this.btnBuildPiece.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnBuildPiece.BackColor = System.Drawing.Color.Silver;
             this.btnBuildPiece.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnBuildPiece.ForeColor = System.Drawing.Color.Black;
             this.btnBuildPiece.Location = new System.Drawing.Point(554, 44);
-            this.btnBuildPiece.Name = "btnBuild";
+            this.btnBuildPiece.Name = "btnBuildPiece";
             this.btnBuildPiece.Size = new System.Drawing.Size(86, 26);
             this.btnBuildPiece.TabIndex = 1;
             this.btnBuildPiece.Text = "Build";
@@ -268,28 +269,28 @@ namespace CityWarWinApp
             this.btnNext.UseVisualStyleBackColor = false;
             this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             // 
-            // btnHeal
+            // btnRest
             // 
             this.btnRest.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnRest.BackColor = System.Drawing.Color.Silver;
             this.btnRest.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnRest.ForeColor = System.Drawing.Color.Black;
             this.btnRest.Location = new System.Drawing.Point(554, 76);
-            this.btnRest.Name = "btnHeal";
+            this.btnRest.Name = "btnRest";
             this.btnRest.Size = new System.Drawing.Size(86, 26);
             this.btnRest.TabIndex = 2;
             this.btnRest.Text = "Rest";
             this.btnRest.UseVisualStyleBackColor = false;
             this.btnRest.Click += new System.EventHandler(this.btnHeal_Click);
             // 
-            // btnBuildCity
+            // btnCaptureCity
             // 
             this.btnCaptureCity.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnCaptureCity.BackColor = System.Drawing.Color.Silver;
             this.btnCaptureCity.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnCaptureCity.ForeColor = System.Drawing.Color.Black;
             this.btnCaptureCity.Location = new System.Drawing.Point(554, 12);
-            this.btnCaptureCity.Name = "btnBuildCity";
+            this.btnCaptureCity.Name = "btnCaptureCity";
             this.btnCaptureCity.Size = new System.Drawing.Size(234, 26);
             this.btnCaptureCity.TabIndex = 0;
             this.btnCaptureCity.Text = "Capture City";
@@ -415,14 +416,14 @@ namespace CityWarWinApp
             this.lblPpl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblPpl.Click += new System.EventHandler(this.lblResource_Click);
             // 
-            // btnDisband
+            // btnDisbandUnits
             // 
             this.btnDisbandUnits.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnDisbandUnits.BackColor = System.Drawing.Color.Silver;
             this.btnDisbandUnits.Font = new System.Drawing.Font("Algerian", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDisbandUnits.ForeColor = System.Drawing.Color.Black;
             this.btnDisbandUnits.Location = new System.Drawing.Point(554, 263);
-            this.btnDisbandUnits.Name = "btnDisband";
+            this.btnDisbandUnits.Name = "btnDisbandUnits";
             this.btnDisbandUnits.Size = new System.Drawing.Size(86, 23);
             this.btnDisbandUnits.TabIndex = 7;
             this.btnDisbandUnits.Text = "Disband";
@@ -466,9 +467,9 @@ namespace CityWarWinApp
             this.chbGroup.ForeColor = System.Drawing.Color.White;
             this.chbGroup.Location = new System.Drawing.Point(554, 208);
             this.chbGroup.Name = "chbGroup";
-            this.chbGroup.Size = new System.Drawing.Size(86, 49);
+            this.chbGroup.Size = new System.Drawing.Size(86, 23);
             this.chbGroup.TabIndex = 6;
-            this.chbGroup.Text = "Move Group";
+            this.chbGroup.Text = "Group";
             this.chbGroup.UseVisualStyleBackColor = true;
             // 
             // panelPieces
@@ -501,12 +502,27 @@ namespace CityWarWinApp
             this.btnUndo.UseVisualStyleBackColor = false;
             this.btnUndo.Click += new System.EventHandler(this.btnUndo_Click);
             // 
+            // chbGamble
+            // 
+            this.chbGamble.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chbGamble.Checked = true;
+            this.chbGamble.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chbGamble.Font = new System.Drawing.Font("Algerian", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.chbGamble.ForeColor = System.Drawing.Color.White;
+            this.chbGamble.Location = new System.Drawing.Point(554, 234);
+            this.chbGamble.Name = "chbGamble";
+            this.chbGamble.Size = new System.Drawing.Size(86, 23);
+            this.chbGamble.TabIndex = 58;
+            this.chbGamble.Text = "Full";
+            this.chbGamble.UseVisualStyleBackColor = true;
+            // 
             // Map
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(800, 600);
+            this.Controls.Add(this.chbGamble);
             this.Controls.Add(this.btnUndo);
             this.Controls.Add(this.chbGroup);
             this.Controls.Add(this.btnUngroup);
@@ -591,5 +607,6 @@ namespace CityWarWinApp
 		private System.Windows.Forms.Button btnUngroup;
 		private System.Windows.Forms.CheckBox chbGroup;
 		private System.Windows.Forms.Button btnUndo;
+        private System.Windows.Forms.CheckBox chbGamble;
     }
 }

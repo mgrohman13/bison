@@ -99,15 +99,15 @@ namespace CityWar
         #endregion //public methods and properties
 
         #region moving
-        internal bool Move(Tile t, out bool canUndo)
+        internal bool Move(Tile t, bool gamble, out bool canUndo)
         {
             if (CanMove(t))
-                return DoMove(t, out canUndo);
+                return DoMove(t, gamble, out canUndo);
             canUndo = true;
             return false;
         }
 
-        internal static Dictionary<Piece, bool> GroupMove(List<Piece> pieces, Tile t)
+        internal static Dictionary<Piece, bool> GroupMove(List<Piece> pieces, Tile t, bool gamble)
         {
             Dictionary<Piece, bool> undoPieces = new Dictionary<Piece, bool>(pieces.Count);
 
@@ -115,7 +115,7 @@ namespace CityWar
             {
                 Piece move = pieces[0];
                 bool canUndo;
-                move.Move(t, out canUndo);
+                move.Move(t, gamble, out canUndo);
                 undoPieces.Add(move, canUndo);
                 return undoPieces;
             }
@@ -136,7 +136,7 @@ namespace CityWar
 
                 //move them, if any
                 anyUnits = units.Count > 0;
-                unitsMoved = ( anyUnits && Unit.UnitGroupMove(units, t, undoPieces) );
+                unitsMoved = ( anyUnits && Unit.UnitGroupMove(units, t, undoPieces, gamble) );
             }
 
             bool any = unitsMoved;
@@ -147,7 +147,7 @@ namespace CityWar
                     if (units == null || !units.Contains(p as Unit))
                     {
                         bool canUndo;
-                        p.Move(t, out canUndo);
+                        p.Move(t, gamble, out canUndo);
                         undoPieces.Add(p, canUndo);
                     }
 
@@ -175,7 +175,7 @@ namespace CityWar
 
         #region abstract members
         protected abstract bool CanMoveChild(Tile t);
-        protected abstract bool DoMove(Tile t, out bool canUndo);
+        protected abstract bool DoMove(Tile t, bool gamble, out bool canUndo);
         internal abstract void ResetMove();
         internal abstract double Heal();
         internal abstract void UndoHeal(double v);

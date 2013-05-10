@@ -38,7 +38,7 @@ namespace CityWarWinApp
                         next = p.Key;
                         turn = p.Value;
                     }
-                points.Add(next, Game.Random.Round(666.0 / turn) + ( cur += ( ++add ) ));
+                points.Add(next, Game.Random.Round(650.0 / turn) + ( cur += ( ++add ) ));
                 won.Remove(next);
             }
 

@@ -115,7 +115,8 @@ namespace CityWar
             }
 
             //create wizard points and possibly some starting city spots
-            int wizspots = 1 + Random.GaussianCappedInt(width * height / 65.0, .052);
+            double avg = width * height / 65.0;
+            int wizspots = 1 + Random.GaussianCappedInt(avg, .052, (int)( avg / 1.3 ));
             for (int a = -1 ; ++a < wizspots ; )
                 game.CreateWizardPts();
             for (int a = -1 ; ++a < numPlayers ; )
@@ -131,7 +132,7 @@ namespace CityWar
         private int GetInitUnitsHave(int needed)
         {
             //~1/28 will be outside [-needed,needed]
-            return Random.GaussianInt(needed / 2.1f);
+            return Random.GaussianInt(needed / 2.1);
         }
         private static void InitRaces()
         {
@@ -272,6 +273,40 @@ namespace CityWar
             return Unit.StartBattle(attackers.ToArray(), defender);
         }
 
+        //private Battle StartBattle(Tile target)
+        //{
+        //    Player enemy;
+        //    if (target.OccupiedByUnit(out enemy))
+        //    {
+        //        Battle battle = new Battle(enemy);
+        //        AddUnits(battle, target, enemy, target.GetAllUnits());
+        //        battle.Start();
+        //    }
+        //}
+        //private void AddUnits(Battle battle, Tile tile, Player player, Unit[] units)
+        //{
+        //    //adds units that are not already participating, returns true if any were added
+        //    if (battle.AddUnits(units))
+        //    {
+        //        player = ( player == CurrentPlayer ? battle.Enemy : CurrentPlayer );
+        //        for (int a = 0 ; a < 6 ; ++a)
+        //        {
+        //            Tile neighbor = tile.GetNeighbor(a);
+        //            if (neighbor != null)
+        //                AddUnits(battle, tile, player, tile.FindAllUnits(delegate(Unit u)
+        //                {
+        //                    return ( u.Owner == player && CanTarget(u, battle) );
+        //                }));
+        //        }
+        //    }
+        //}
+        //private bool CanTarget(Unit unit, Battle battle)
+        //{
+        //    //must be able to target a unit already in the battle
+        //    //check friendly unit movement, enemy unit length
+        //    throw new NotImplementedException();
+        //}
+
         public bool EndBattle(Battle b)
         {
             if (b.canRetalliate)
@@ -373,7 +408,7 @@ namespace CityWar
             return capt;
         }
 
-        public bool MovePieces(Tile from, int x, int y, bool group)
+        public bool MovePieces(Tile from, int x, int y, bool group, bool gamble)
         {
             Player player;
             from.Occupied(out player);
@@ -382,7 +417,7 @@ namespace CityWar
 
             if (group)
             {
-                return MovePiecesHelper(from, x, y, true);
+                return MovePiecesHelper(from, x, y, null, gamble);
             }
             else
             {
@@ -392,8 +427,8 @@ namespace CityWar
                 });
                 bool any = false;
                 //call the helper once for each piece as they will be moved individually
-                for (int amount = pieces.Length ; --amount >= 0 ; )
-                    if (MovePiecesHelper(from, x, y, false))
+                foreach (Piece p in Game.Random.Iterate(pieces))
+                    if (MovePiecesHelper(from, x, y, p, gamble))
                         any = true;
 
                 if (any)
@@ -402,7 +437,7 @@ namespace CityWar
                 return any;
             }
         }
-        private bool MovePiecesHelper(Tile from, int x, int y, bool group)
+        private bool MovePiecesHelper(Tile from, int x, int y, Piece singlePiece, bool gamble)
         {
             Player player;
             from.Occupied(out player);
@@ -414,8 +449,11 @@ namespace CityWar
             Dictionary<Piece, int> oldMoves = new Dictionary<Piece, int>();
             foreach (Piece p in from.GetSelectedPieces())
                 oldMoves.Add(p, p.Movement);
-            //passing a group of false will just move a single random unit
-            Dictionary<Piece, bool> undoPieces = from.MovePieces(to, group);
+            Dictionary<Piece, bool> undoPieces;
+            if (singlePiece == null)
+                undoPieces = from.MoveSelectedPieces(to, gamble);
+            else
+                undoPieces = from.MovePiece(singlePiece, to, gamble);
 
             bool any = false;
             if (undoPieces != null)
@@ -430,7 +468,7 @@ namespace CityWar
                 }
 
                 //non group move regrouping is done higher up in MovePieces
-                if (any && group)
+                if (any && singlePiece == null)
                     RegroupMoved(from, x, y, undoPieces.Keys);
 
                 foreach (Piece p in undoPieces.Keys)
@@ -1107,13 +1145,12 @@ next:
                         target = targetCost * 3 / 2.0;
                     retVal.Add(race, Random.SelectValue<string>(Races[race], delegate(string raceUnit)
                     {
+                        const double offset1 = .03, offset2 = .003, offset3 = .3;
                         double baseCost = Unit.CreateTempUnit(raceUnit).BaseCost;
 
                         double chance = Math.Abs(target - baseCost) / target;
-                        const double offset1 = .03;
                         chance = 1 / ( chance + offset1 );
 
-                        const double offset2 = .003, offset3 = .3;
                         double mult = offset2;
                         double pct = unitsHave[raceUnit] / baseCost;
                         if (pct > 0)
@@ -1217,16 +1254,11 @@ next:
                 //there are multiple dead players, so kill them off in order based on the amount of resources they died with
                 for (int j = deadPlayers.Count ; --j > -1 ; )
                 {
-                    //the odds of having a tie condition are absurdly low,
-                    //but we need to account for it nontheless and break it randomly
-                    int tieCount = 1;
                     Player loser = null;
                     double min = double.MaxValue;
-                    foreach (Player p in deadPlayers.Keys)
-                        if (deadPlayers[p] < min || ( deadPlayers[p] == min && Random.Next(++tieCount) == 0 ))
+                    foreach (Player p in Game.Random.Iterate(deadPlayers.Keys))
+                        if (deadPlayers[p] < min)
                         {
-                            if (deadPlayers[p] < min)
-                                tieCount = 1;
                             loser = p;
                             min = deadPlayers[p];
                         }
@@ -1253,7 +1285,7 @@ next:
 
         private void ChangeMap()
         {
-            if (Random.Bool(2 / 3f))
+            if (Random.Bool(.65))
             {
                 int amt = Random.OEInt(Width * Height / 39.0);
                 if (amt > 0)
@@ -1286,9 +1318,7 @@ next:
 
                         Tile nextTile;
                         do
-                        {
                             nextTile = tile.GetNeighbor(Random.Next(6));
-                        }
                         while (nextTile == null);
                         tile = nextTile;
                     }

@@ -10,13 +10,12 @@ namespace CityWar
         public const int AvgPortalCost = 1000;
         private const double UnitCostMult = .21;
         public const double WorkPct = ( 1 - UnitCostMult );
-        public const float StartAmt = .21f;
+        public const double StartAmt = .21;
 
         internal readonly int PortalCost, income;
         internal readonly CostType PortalType;
         private string[] units;
         private double[] have;
-        private double upkeep;
 
         internal Portal(Player owner, Tile tile, CostType type)
             : base(0, owner, tile)
@@ -34,7 +33,7 @@ namespace CityWar
             this.income = Game.Random.Round(income);
 
             SetStartValues();
-            upkeep += ( this.income - income ) * 21;
+            PayUpkeep(( this.income - income ) * 21);
 
             tile.Add(this);
             owner.Add(this);
@@ -44,14 +43,12 @@ namespace CityWar
         #region overrides
         internal override void Capture(Player newOwner)
         {
-            PayUpkeep();
-
             //reimburse the old owner for partially finished units
             int magic, element;
             Player.SplitPortalCost(owner.Race, PortalType, out magic, out element);
             double resourceValue = GetResourceValue();
-            magic = Game.Random.Round(resourceValue * ( magic / ( (double)magic + element ) ));
-            element = Game.Random.Round(resourceValue - magic);
+            magic = Game.Random.Round(resourceValue * magic / ( (double)magic + element ));
+            element = Game.Random.Round(resourceValue * element / ( (double)magic + element ));
 
             owner.SpendMagic(-magic);
             owner.Spend(-element, PortalType, 0);
@@ -68,16 +65,12 @@ namespace CityWar
             else
             {
                 //if not the same race, reset the values as though building a new portal
-                this.units = null;
                 SetStartValues();
             }
         }
 
         private void SetStartValues()
         {
-            if (this.units == null)
-                this.units = new string[0];
-
             List<string> unitsOfType = new List<string>();
             foreach (string unitName in Game.Races[this.owner.Race])
             {
@@ -92,29 +85,15 @@ namespace CityWar
             double totalStart = 0;
             while (--i > -1)
             {
-                double start;
-                int index;
-                if (( index = Array.IndexOf(this.units, units[i]) ) > -1)
-                {
-                    //for loading games
-                    start = this.have[index];
-                }
-                else
-                {
-                    double inc = GetTurnInc();
-                    //start with a random amount towards each unit
-                    start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost - inc, StartAmt) + inc * StartAmt;
-                    totalStart += start;
-                }
+                double inc = GetTurnInc();
+                //start with a random amount towards each unit
+                double start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost - inc, StartAmt) + inc * StartAmt;
+                totalStart += start;
                 have[i] = start;
             }
-            //if loading a game with a different set of units, reimburse the owner for old have values
-            for (i = 0 ; i < this.units.Length ; ++i)
-                if (Array.IndexOf(units, this.units[i]) < 0)
-                    totalStart -= this.have[i];
 
             //pay for starting amount
-            this.upkeep = totalStart * WorkPct;
+            PayUpkeep(totalStart * WorkPct);
             this.units = units;
             this.have = have;
         }
@@ -129,7 +108,7 @@ namespace CityWar
             return false;
         }
 
-        protected override bool DoMove(Tile t, out bool canUndo)
+        protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
             canUndo = true;
             return false;
@@ -137,8 +116,6 @@ namespace CityWar
 
         internal override void ResetMove()
         {
-            PayUpkeep();
-
             double inc = GetTurnInc();
             int index = Game.Random.Next(units.Length);
             int needed = Unit.CreateTempUnit(units[index]).BaseCost;
@@ -149,13 +126,12 @@ namespace CityWar
                 have[index] -= needed;
                 owner.FreeUnit(units[index], this);
 
-                upkeep += needed * UnitCostMult;
+                PayUpkeep(needed * UnitCostMult);
             }
         }
-        internal void PayUpkeep()
+        internal void PayUpkeep(double upkeep)
         {
             owner.BalanceForUnit(0, upkeep);
-            upkeep = 0;
         }
 
         internal override double Heal()

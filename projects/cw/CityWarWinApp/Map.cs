@@ -221,7 +221,7 @@ namespace CityWarWinApp
                         this.btnBuildPiece.Visible = true;
 
                     //if the tile has a neutral city and any pieces have full move, show the capture city button
-                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p.MaxMove != 0 && p.Movement == p.MaxMove)
+                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove)
                         this.btnCaptureCity.Visible = true;
 
                     //if any selected pieces are units, show the disband units button
@@ -710,7 +710,7 @@ namespace CityWarWinApp
                                             saved = false;
 
                                             //try to move the units
-                                            if (game.MovePieces(selectedTile, x, y, this.chbGroup.Checked))
+                                            if (game.MovePieces(selectedTile, x, y, this.chbGroup.Checked, !this.chbGamble.Checked))
                                             {
                                                 //if any were moved, select the destination tile
                                                 selected = new Point(x, y);

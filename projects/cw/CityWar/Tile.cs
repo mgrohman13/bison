@@ -32,7 +32,7 @@ namespace CityWar
             this.terrain = terrain;
         }
         internal Tile(Game game, int x, int y)
-            : this(game, x, y, (Terrain)Game.Random.NextBits(2))
+            : this(game, x, y, (Terrain)Game.Random.Next(4))
         {
         }
         #endregion //fields and constructors
@@ -509,47 +509,42 @@ namespace CityWar
             return false;
         }
 
-        internal Dictionary<Piece, bool> MovePieces(Tile tile, bool group)
+        public Dictionary<Piece, bool> MoveSelectedPieces(Tile tile, bool gamble)
         {
-            Piece[] selectedPieces;
-
-            Player thisP, tileP;
-            //check that there are any pieces selected and that the destination tile 
-            //is a neighbor and is not occupied by an enemy unit
-            if (!IsNeighbor(tile) || !Occupied(out thisP) || ( tile.OccupiedByUnit(out tileP) && thisP != tileP )
-                || ( (Piece[])( selectedPieces = this.GetSelectedPieces() ) ).Length < 1)
-                return null;
-
-            if (group)
+            if (CanMove(tile))
             {
+                Piece[] selectedPieces = this.GetSelectedPieces();
+                //only move pieces with move left
                 List<Piece> pieces = new List<Piece>(selectedPieces.Length);
                 foreach (Piece cur in selectedPieces)
                     if (cur.Movement > 0)
                         pieces.Add(cur);
 
-                //check if no one has any move left
-                if (pieces.Count < 1)
-                    return null;
-
-                //only move pieces with move left
-                return Piece.GroupMove(pieces, tile);
-            }
-            else
-            {
-                foreach (Piece p in Game.Random.Iterate<Piece>(pieces))
-                    if (p.Group == currentGroup && p.Movement > 0)
-                    {
-                        bool canUndo;
-                        if (p.Move(tile, out canUndo) || p.Movement == 0)
-                        {
-                            //just move a single piece
-                            Dictionary<Piece, bool> undoPieces = new Dictionary<Piece, bool>(1);
-                            undoPieces.Add(p, canUndo);
-                            return undoPieces;
-                        }
-                    }
+                if (pieces.Count > 0)
+                    return Piece.GroupMove(pieces, tile, gamble);
             }
             return null;
+        }
+        public Dictionary<Piece, bool> MovePiece(Piece p, Tile tile, bool gamble)
+        {
+            if (p.Group == currentGroup && p.Movement > 0 && CanMove(tile))
+            {
+                bool canUndo;
+                if (p.Move(tile, gamble, out canUndo) || p.Movement == 0)
+                {
+                    //just move a single piece
+                    Dictionary<Piece, bool> undoPieces = new Dictionary<Piece, bool>(1);
+                    undoPieces.Add(p, canUndo);
+                    return undoPieces;
+                }
+            }
+            return null;
+        }
+        private bool CanMove(Tile tile)
+        {
+            Player thisP, tileP;
+            return ( IsNeighbor(tile) && Occupied(out thisP) &&
+                    ( !tile.OccupiedByUnit(out tileP) || thisP == tileP ) && this.GetSelectedPieces().Length > 0 );
         }
 
         internal void Reset()
