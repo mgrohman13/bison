@@ -19,6 +19,8 @@ namespace CityWar
         }
 
         internal bool canRetalliate = true;
+        private Dictionary<Unit, int>.KeyCollection keyCollection;
+        private HashSet<Unit> defenders_2;
         public bool CanRetalliate
         {
             get

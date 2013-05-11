@@ -112,6 +112,10 @@ namespace CityWar
             if (u.Type == UnitType.Immobile)
                 return true;
 
+            return CanTarget(u);
+        }
+        internal bool CanTarget(Unit u)
+        {
             TargetType enemy;
             if (u.Type == UnitType.Air)
                 enemy = TargetType.Air;

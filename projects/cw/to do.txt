@@ -10,11 +10,8 @@ balance
 gameplay
 	slight upkeep cost to retalliate
 	multiple hex battles
-		maybe bring all potential units in, then filter out?
-		right click enemy owned hex brings up battle no matter what is selected, so long as any adjacent frienly units can attack
-		recursively bring in all adjacent friendly units, all potential retalliations, friendly adjacent to retalliators, etc.
-			filter out units each step to minimize battle size
-		only specific targeted player can retalliate and participate
+		commented code
+		what to do with immobile units?
 	end game scoring
 		model after GW
 	make portal amounts actually integers
@@ -37,6 +34,8 @@ requiring rebalance
 
 interface
 	improvements for multi-hex battles
+		right click enemy owned hex brings up battle no matter what is selected
+			if no participating units battle should end automatically
 		which hex units are on
 		show all potentail retalliators and who they can target
 		current friendly unit lengths
