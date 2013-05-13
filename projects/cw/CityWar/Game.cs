@@ -273,87 +273,115 @@ namespace CityWar
             return Unit.StartBattle(attackers.ToArray(), defender);
         }
 
-        //private Battle StartBattle(Tile target)
-        //{
-        //    Player enemy;
-        //    if (target.OccupiedByUnit(out enemy) && enemy != CurrentPlayer)
-        //    {
-        //        Dictionary<Unit, int> attackers = new Dictionary<Unit, int>();
-        //        HashSet<Unit> defenders = new HashSet<Unit>();
+        private Battle StartBattle(Tile target)
+        {
+            Player enemy;
+            if (target.OccupiedByUnit(out enemy) && enemy != CurrentPlayer)
+            {
+                Dictionary<Unit, int> attackers = new Dictionary<Unit, int>();
+                HashSet<Unit> defenders = new HashSet<Unit>();
 
-        //        //start collecting battle units by finding all attackers that can target any units in the target tile
-        //        foreach (Unit defender in target.GetAllUnits())
-        //            AddAttackers(attackers, defenders, enemy, defender);
+                defenders.UnionWith(target.FindAllUnits(delegate(Unit unit)
+                {
+                    return ( unit.Type == UnitType.Immobile );
+                }));
 
-        //        if (attackers.Count > 0 && defenders.Count > 0)
-        //            return new Battle(attackers, defenders);
-        //    }
-        //    return null;
-        //}
-        //private void AddAttackers(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit defender)
-        //{
-        //    //find all adjacent attackers that might be able to participate
-        //    foreach (Unit attacker in FindNeighborUnits(defender.Tile, delegate(Unit unit)
-        //            {
-        //                return ( unit.Owner == CurrentPlayer && unit.Movement > 0 );
-        //            }))
-        //    {
-        //        int minLength, hasLength;
-        //        //check if the potential attacker can target the defender and is not already in the battle with an equal or shorter length weapon
-        //        if (CanTarget(attacker, defender, out minLength) && !( attackers.TryGetValue(attacker, out hasLength) && hasLength <= minLength ))
-        //        {
-        //            //add the found attacker to the battle with the minimum length weapon it might use
-        //            attackers[attacker] = minLength;
-        //            //collect additional adjacent defenders
-        //            AddDefenders(attackers, defenders, enemy, attacker, minLength);
-        //        }
-        //    }
-        //}
-        //private void AddDefenders(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit attacker, int length)
-        //{
-        //    //find all adjacent defenders that can either retalliate against or be targeted by this attacker
-        //    foreach (Unit defender in FindNeighborUnits(attacker.Tile, delegate(Unit unit)
-        //            {
-        //                return ( unit.Owner == enemy && ( CanTarget(unit, attacker, length) || CanTarget(attacker, unit) ) && !defenders.Contains(unit) );
-        //            }))
-        //    {
-        //        //add the found defender to the battle
-        //        defenders.Add(defender);
-        //        //collect additional adjacent attackers
-        //        AddAttackers(attackers, defenders, enemy, defender);
-        //    }
-        //}
-        //private static IEnumerable<Unit> FindNeighborUnits(Tile tile, Predicate<Unit> match)
-        //{
-        //    for (int a = 0 ; a < 6 ; ++a)
-        //    {
-        //        Tile neighbor = tile.GetNeighbor(a);
-        //        if (neighbor != null)
-        //            foreach (Unit unit in neighbor.FindAllUnits(match))
-        //                yield return unit;
-        //    }
-        //}
-        //private static bool CanTarget(Unit unit, Unit target)
-        //{
-        //    return CanTarget(unit, target, int.MinValue);
-        //}
-        //private static bool CanTarget(Unit unit, Unit target, int length)
-        //{
-        //    int minLength;
-        //    return CanTarget(unit, target, length, out minLength);
-        //}
-        //private static bool CanTarget(Unit unit, Unit target, out int minLength)
-        //{
-        //    return CanTarget(unit, target, int.MinValue, out minLength);
-        //}
-        //private static bool CanTarget(Unit unit, Unit target, int length, out int minLength)
-        //{
-        //    minLength = int.MaxValue;
-        //    foreach (Attack attack in unit.Attacks)
-        //        if (attack.CanTarget(unit) && attack.Length >= length)
-        //            minLength = Math.Min(minLength, attack.Length);
-        //    return ( minLength != int.MaxValue );
-        //}
+                if (defenders.Count > 0)
+                {
+                    Unit defender = defenders.GetEnumerator().Current;
+                    foreach (Unit attacker in FindNeighborUnits(target, delegate(Unit unit)
+                            {
+                                return ( unit.Owner == CurrentPlayer && unit.Movement > 0 );
+                            }))
+                    {
+                        attackers[attacker] = 0;
+                    }
+                }
+                else
+                {
+                    //start collecting battle units by finding all attackers that can target any units in the target tile
+                    foreach (Unit defender in target.GetAllUnits())
+                        AddAttackers(attackers, defenders, enemy, defender);
+                }
+
+                if (attackers.Count > 0 && defenders.Count > 0)
+                    return new Battle(attackers, defenders);
+            }
+            return null;
+        }
+        private void AddAttackers(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit defender)
+        {
+            //find all adjacent attackers that might be able to participate
+            foreach (Unit attacker in FindNeighborUnits(defender.Tile, delegate(Unit unit)
+                    {
+                        return ( unit.Owner == CurrentPlayer && unit.Movement > 0 );
+                    }))
+            {
+                int minLength, hasLength;
+                //check if the potential attacker can target the defender and is not already in the battle with an equal or shorter length weapon
+                if (CanTarget(attacker, defender, out minLength) && !( attackers.TryGetValue(attacker, out hasLength) && hasLength <= minLength ))
+                {
+                    //add the found attacker to the battle with the minimum length weapon it might use
+                    attackers[attacker] = minLength;
+                    //collect additional adjacent defenders
+                    AddDefenders(attackers, defenders, enemy, attacker, minLength);
+                }
+            }
+        }
+        private void AddDefenders(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit attacker, int length)
+        {
+            //find all adjacent defenders that can either retalliate against or be targeted by this attacker
+            foreach (Unit defender in FindNeighborUnits(attacker.Tile, delegate(Unit unit)
+                    {
+                        return ( unit.Owner == enemy && ( CanTarget(unit, attacker, length) || CanTarget(attacker, unit) ) && !defenders.Contains(unit) );
+                    }))
+            {
+                //add the found defender to the battle
+                defenders.Add(defender);
+
+                //collect additional adjacent attackers, unless the defender is protected by an immobile unit
+                bool vulnerable = true;
+                foreach (Unit unit in defender.Tile.GetAllUnits())
+                    if (unit.Type == UnitType.Immobile)
+                    {
+                        vulnerable = false;
+                        break;
+                    }
+                if (vulnerable)
+                    AddAttackers(attackers, defenders, enemy, defender);
+            }
+        }
+        private static IEnumerable<Unit> FindNeighborUnits(Tile tile, Predicate<Unit> match)
+        {
+            for (int a = 0 ; a < 6 ; ++a)
+            {
+                Tile neighbor = tile.GetNeighbor(a);
+                if (neighbor != null)
+                    foreach (Unit unit in neighbor.FindAllUnits(match))
+                        yield return unit;
+            }
+        }
+        private static bool CanTarget(Unit unit, Unit target)
+        {
+            return CanTarget(unit, target, int.MinValue);
+        }
+        private static bool CanTarget(Unit unit, Unit target, int length)
+        {
+            int minLength;
+            return CanTarget(unit, target, length, out minLength);
+        }
+        private static bool CanTarget(Unit unit, Unit target, out int minLength)
+        {
+            return CanTarget(unit, target, int.MinValue, out minLength);
+        }
+        private static bool CanTarget(Unit unit, Unit target, int length, out int minLength)
+        {
+            minLength = int.MaxValue;
+            foreach (Attack attack in unit.Attacks)
+                if (attack.CanTarget(unit) && attack.Length >= length)
+                    minLength = Math.Min(minLength, attack.Length);
+            return ( minLength != int.MaxValue );
+        }
 
         public bool EndBattle(Battle b)
         {
