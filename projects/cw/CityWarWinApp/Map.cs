@@ -697,7 +697,10 @@ namespace CityWarWinApp
                             Unit[] selectedUnits = null;
                             if (Control.ModifierKeys != Keys.None && selectedTile != null && selectedTile.IsNeighbor(x, y))
                             {
-                                selectedUnits = selectedTile.GetSelectedUnits();
+                                selectedUnits = selectedTile.FindAllUnits(delegate(Unit unit)
+                                {
+                                    return ( unit.Group == selectedTile.CurrentGroup && unit.Owner == game.CurrentPlayer && unit.Movement > 0 );
+                                });
                                 if (selectedUnits.Length == 0)
                                     selectedUnits = null;
                             }

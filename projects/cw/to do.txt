@@ -31,20 +31,17 @@ requiring rebalance
 
 interface
 	battles
-		filter out untargetable units during retalliation
-		filter out dead units
-		show who retalliators can target
-		filter defenders by all/targetable/selected/retalliate
-		current friendly unit lengths
-		easier ways to visualize player power at each length
+		combat log/feedback
+			available outside combat
 		damage calculator
 			also available outside combat
+		show who retalliators can target
+		easier ways to visualize player power at each length
 		ability to look around main map during a battle, see info screen, etc?
 			highlight participating tiles
 			any attempted action re-opens battle window
 			instantly show earned relics?
 		save during battle?
-		combat log/feedback
 	score graphs
 	clean up balance build summon form
 	ensure player color differences

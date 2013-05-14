@@ -198,7 +198,7 @@ namespace CityWar
             foreach (UnitSchema.UnitRow r in us.Unit.Rows)
                 if (CapableBuild(r.Name, true))
                 {
-                    if (r.CostType == string.Empty)
+                    if (r.CostType == "")
                         prod = false;
                     else
                         death = false;

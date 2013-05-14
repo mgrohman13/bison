@@ -289,6 +289,10 @@ namespace CityWar
                         AddDefenders(null, defenders, enemy, attacker, int.MinValue, false);
                 }
 
+                foreach (Unit attacker in selected)
+                    if (attacker.Owner != CurrentPlayer && attacker.Movement <= 0)
+                        throw new Exception();
+
                 return Unit.StartBattle(selected, defenders);
             }
             return null;

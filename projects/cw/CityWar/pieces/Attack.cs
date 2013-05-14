@@ -106,7 +106,11 @@ namespace CityWar
 
         public bool CanAttack(Unit u)
         {
-            if (this.Used || this.length < u.Length || owner.Dead || u.Dead || !owner.Tile.IsNeighbor(u.Tile))
+            return CanAttack(u, u.Length);
+        }
+        public bool CanAttack(Unit u, int length)
+        {
+            if (this.Used || this.length < length || owner.Dead || u.Dead || !owner.Tile.IsNeighbor(u.Tile))
                 return false;
 
             //Immobile units protect on defense only
@@ -168,6 +172,11 @@ namespace CityWar
             return res;
         }
 
+        public string GetLogString()
+        {
+            return string.Format(name + " ({0},{1})", damage, divide);
+        }
+
         public static string GetString(string name, int damage, int divide, string targets, int length)
         {
             return string.Format(name + "({0}, {2}, {3}) - {1}", damage, targets, divide, length);
@@ -188,13 +197,12 @@ namespace CityWar
             Used = true;
             owner.Attacked(Length);
 
-            int hits = unit.Hits;
-            int armor = unit.Armor;
-            int damage = DoDamage(armor);
+            int hits = unit.Hits, armor = unit.Armor;
+            int damage = DoDamage(armor), retVal = damage;
             double overkill = 0;
             if (damage < 0)
             {
-                damage = 0;
+                damage = retVal = 0;
             }
             else if (damage > hits)
             {
@@ -216,7 +224,7 @@ namespace CityWar
 
             unit.Wound(damage);
 
-            return damage;
+            return retVal;
         }
 
         internal Attack Clone()
@@ -272,7 +280,7 @@ namespace CityWar
 
             int oeLimit = MattUtil.MTRandom.GetOEIntMax(damMult);
 
-            if (!doRelic && damStatic >= 0 && (int)Math.Ceiling(damStatic) + oeLimit <= targetHits)
+            if (!doRelic && damStatic >= 0 && (int)Math.Ceiling(damStatic) + oeLimit < targetHits)
                 return damage - targetArmor / divide;
 
             int baseDmg = (int)Math.Floor(damStatic);

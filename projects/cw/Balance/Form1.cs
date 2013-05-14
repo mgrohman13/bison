@@ -217,7 +217,7 @@ namespace balance
             if (double.IsNaN(value))
             {
                 txtValue.Tag = "-";
-                txtValue.Text = string.Empty;
+                txtValue.Text = "";
             }
             else
             {

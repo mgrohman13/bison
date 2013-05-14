@@ -141,7 +141,7 @@ namespace CityWar
         {
             get
             {
-                return hits < 1;
+                return ( hits <= 0 );
             }
         }
 
@@ -383,7 +383,7 @@ namespace CityWar
             }
         }
 
-        internal int Length
+        public int Length
         {
             get
             {
