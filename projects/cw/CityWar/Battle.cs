@@ -3,24 +3,28 @@ using System.Collections.Generic;
 
 namespace CityWar
 {
-    public class Battle
+    public class Battle : IComparer<Unit>
     {
-        internal List<Unit> attackers = new List<Unit>(), defenders = new List<Unit>(), extraDefenders = new List<Unit>();
-        private Dictionary<Attack, List<Unit>> attackTargets = new Dictionary<Attack, List<Unit>>();
-        private Dictionary<Unit, List<Attack>> targetAttackers = new Dictionary<Unit, List<Attack>>();
+        internal SortedSet<Unit> attackers, defenders;
+        //private Dictionary<Attack, List<Unit>> attackTargets = new Dictionary<Attack, List<Unit>>();
+        //private Dictionary<Unit, List<Attack>> targetAttackers = new Dictionary<Unit, List<Attack>>();
 
         public Unit[] GetAttackers()
         {
-            return attackers.ToArray();
+            Unit[] retVal = new Unit[attackers.Count];
+            attackers.CopyTo(retVal);
+            return retVal;
         }
         public Unit[] GetDefenders()
         {
-            return defenders.ToArray();
+            Unit[] retVal = new Unit[defenders.Count];
+            defenders.CopyTo(retVal);
+            return retVal;
         }
 
         internal bool canRetalliate = true;
-        private Dictionary<Unit, int>.KeyCollection keyCollection;
-        private HashSet<Unit> defenders_2;
+        //private Dictionary<Unit, int>.KeyCollection keyCollection;
+        //private HashSet<Unit> defenders_2;
         public bool CanRetalliate
         {
             get
@@ -29,26 +33,40 @@ namespace CityWar
             }
         }
 
-        private Battle()
+        internal Battle(IEnumerable<Unit> attackers, IEnumerable<Unit> defenders)
         {
-        }
-
-        internal Battle(Unit[] attackers, Unit[] defenders)
-        {
-            //Tile.SortPieces(attackers);
-            //Tile.SortPieces(defenders);
-            this.attackers.AddRange(attackers);
-            this.defenders.AddRange(defenders);
+            this.attackers = new SortedSet<Unit>(attackers, this);
+            this.defenders = new SortedSet<Unit>(defenders, this);
         }
 
         internal void StartRetalliation()
         {
-            canRetalliate = false;
-            List<Unit> temp = new List<Unit>(attackers);
-            attackers = new List<Unit>(defenders);
-            defenders = new List<Unit>(temp);
-            attackers.AddRange(extraDefenders);
-            extraDefenders.Clear();
+            if (canRetalliate)
+            {
+                canRetalliate = false;
+                SortedSet<Unit> temp = attackers;
+                attackers = defenders;
+                defenders = temp;
+            }
+            else
+            {
+                attackers.Clear();
+                defenders.Clear();
+            }
+        }
+
+        public int Compare(Unit x, Unit y)
+        {
+            int retVal = x.Tile.y - y.Tile.y;
+            if (retVal == 0)
+            {
+                retVal = x.Tile.x - y.Tile.x;
+                if (retVal == 0)
+                {
+                    retVal = Tile.ComparePieces(x, y);
+                }
+            }
+            return retVal;
         }
 
         //  bool AIattacker(out Attack attack, out Unit unit, out double result)
@@ -206,11 +224,5 @@ namespace CityWar
 
         //    return true;
         //}
-
-        public void MoveToExtraDefenders(Unit def)
-        {
-            defenders.Remove(def);
-            extraDefenders.Add(def);
-        }
     }
 }

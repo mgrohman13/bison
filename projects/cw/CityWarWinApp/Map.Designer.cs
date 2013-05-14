@@ -562,7 +562,6 @@ namespace CityWarWinApp
             this.Load += new System.EventHandler(this.MainMap_Load);
             this.LocationChanged += new System.EventHandler(this.MainMap_LocationChanged);
             this.SizeChanged += new System.EventHandler(this.MainMap_SizeChanged);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainMap_KeyDown);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MainMap_KeyPress);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainMap_KeyUp);
             this.MouseLeave += new System.EventHandler(this.MainMap_MouseLeave);

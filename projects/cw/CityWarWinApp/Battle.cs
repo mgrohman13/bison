@@ -200,7 +200,7 @@ namespace CityWarWinApp
                         this.txtArmor.Text = enemy.Armor.ToString();
                         this.txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(enemy));
                         this.txtChance.Text = killPct.ToString("0") + "%";
-                        this.txtRelic.Text = avgRelic.ToString("0.0");
+                        this.txtRelic.Text = avgRelic.ToString("0.00");
                         clear = false;
                     }
                 }
@@ -275,7 +275,7 @@ namespace CityWarWinApp
                             }
 
                 if (!needed)
-                    b.MoveToExtraDefenders(def);
+                    useless.Add(def);
             }
 
             if (b.GetDefenders().Length == 0)
@@ -284,12 +284,15 @@ namespace CityWarWinApp
                 return true;
             }
 
+            bool any = false;
             foreach (Unit u in b.GetAttackers())
                 if (!useless.Contains(u))
                     if (ValidAttacks(u) == 0)
                         useless.Add(u);
+                    else
+                        any = true;
 
-            if (b.GetAttackers().Length - useless.Count == 0)
+            if (!any)
             {
                 btnEnd_Click(null, null);
                 return true;
@@ -335,12 +338,15 @@ namespace CityWarWinApp
                 //pause p = new pause((( Unit)b.defenders[0]).Owner);
                 //p.ShowDialog();
 
+                selected = null;
                 foreach (Unit u in b.GetAttackers())
                     if (!useless.Contains(u))
                     {
                         selected = u;
                         break;
                     }
+                //if(selected==null)
+                //    btnEnd_Click(null, null);
                 RefreshSelected();
                 Refresh();
 

@@ -693,7 +693,7 @@ namespace CityWar
                 pieces.Add(p);
         }
 
-        private static int ComparePieces(Piece p1, Piece p2)
+        public static int ComparePieces(Piece p1, Piece p2)
         {
             Unit u1 = p1 as Unit, u2 = p2 as Unit;
             int value = GetTypeValue(p2, u2) - GetTypeValue(p1, u1);
@@ -703,9 +703,13 @@ namespace CityWar
                 value = u2.MaxMove - u1.MaxMove;
                 if (value == 0)
                 {
-                    value = (int)Math.Ceiling(u2.RandedCost - u1.RandedCost);
+                    value = Math.Sign(u2.RandedCost - u1.RandedCost);
                     if (value == 0)
-                        value = (int)Math.Ceiling(u2.GetHealthPct() - u1.GetHealthPct());
+                    {
+                        value = Math.Sign(u2.GetHealthPct() - u1.GetHealthPct());
+                        if (value == 0)
+                            value = p1.Owner.GetPieces().IndexOf(p1) - p2.Owner.GetPieces().IndexOf(p2);
+                    }
                 }
             }
             return value;

@@ -1012,9 +1012,13 @@ namespace CityWar
             {
                 Unit u = p as Unit;
                 if (u != null && u.Type != UnitType.Immobile)
-                    total += u.RandedCost / 210.0;
+                    total += GetUpkeep(u);
             }
             AddUpkeep(total * UpkeepMult / WorkMult);
+        }
+        internal static double GetUpkeep(Unit u)
+        {
+            return ( u.RandedCost / 210.0 );
         }
 
         private void PayUpkeep(double payment)

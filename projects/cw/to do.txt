@@ -8,13 +8,9 @@ balance
 	allow 1/3 heal to calc isthree
 
 gameplay
-	slight upkeep cost to retalliate
-	multiple hex battles
-		commented code
-		what to do with immobile units?
 	end game scoring
 		model after GW
-	make portal amounts actually integers
+	make portal amounts integers
 	loading a game with different unit set
 		support?
 		error?
@@ -23,6 +19,7 @@ gameplay
 	teleporters
 	exp?
 	alliances?
+		participate in each others battles
 requiring rebalance
 	unit abilities
 	better terrains
@@ -33,11 +30,11 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	improvements for multi-hex battles
-		right click enemy owned hex brings up battle no matter what is selected
-			if no participating units battle should end automatically
-		which hex units are on
-		show all potentail retalliators and who they can target
+	battles
+		filter out untargetable units during retalliation
+		filter out dead units
+		show who retalliators can target
+		filter defenders by all/targetable/selected/retalliate
 		current friendly unit lengths
 		easier ways to visualize player power at each length
 		damage calculator
@@ -45,9 +42,9 @@ interface
 		ability to look around main map during a battle, see info screen, etc?
 			highlight participating tiles
 			any attempted action re-opens battle window
-		instantly show earned relics?
+			instantly show earned relics?
 		save during battle?
-	combat log/feedback
+		combat log/feedback
 	score graphs
 	clean up balance build summon form
 	ensure player color differences

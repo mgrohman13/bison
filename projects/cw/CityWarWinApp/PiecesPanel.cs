@@ -85,6 +85,7 @@ namespace CityWarWinApp
                 int end = ( getYIndex(this.Height) + 1 ) * numColumns;
                 if (end > numPieces)
                     end = numPieces;
+                Piece lastPiece = null;
                 for (int a = getYIndex(0) * numColumns ; a < end ; ++a)
                 {
                     int x = 13 + 113 * ( a % numColumns );
@@ -93,6 +94,10 @@ namespace CityWarWinApp
                     Piece currentPiece = pieces[a];
 
                     MattUtil.EnumFlags<DrawFlags> drawFlags = GetDrawFlags(currentPiece);
+
+                    //delimit units on different tiles
+                    if (lastPiece != null && lastPiece.Tile != currentPiece.Tile)
+                        g.DrawLine(framePen, x - 6, y, x - 6, y + 100);
 
                     if (drawFlags.Contains(DrawFlags.Background))
                         g.FillRectangle(Brushes.LightGray, x, y, 100, 100);
@@ -113,6 +118,8 @@ namespace CityWarWinApp
                         g.DrawRectangle(framePen, x, y, 100f, 100f);
                     if (drawFlags.Contains(DrawFlags.Text))
                         g.DrawString(GetText(currentPiece), font, GetTextBrush(), x, y + 103);
+
+                    lastPiece = currentPiece;
                 }
                 base.OnPaint(e);
             }

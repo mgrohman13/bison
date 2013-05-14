@@ -199,10 +199,8 @@ namespace CityWar
 
         public double GetDisbandAmount()
         {
-            double low = Math.Min(Attack.DisbandDivide, Attack.DeathDivide),
-                    high = Math.Max(Attack.DisbandDivide, Attack.DeathDivide);
             double healthPct = GetHealthPct();
-            return InverseCost / high * ( 1 - healthPct ) + InverseCost / low * healthPct;
+            return InverseCost / Attack.DeathDivide * ( 1 - healthPct ) + InverseCost / Attack.DisbandDivide * healthPct;
         }
 
         public double GetHealthPct()
@@ -623,37 +621,36 @@ namespace CityWar
         #endregion //unit stat randomization
 
         #region start and end battle
-        internal static Battle StartBattle(Unit[] attackers, Tile t)
+        internal static Battle StartBattle(IEnumerable<Unit> attackers, IEnumerable<Unit> defenders)
         {
-            //only attack with units that have movement remaining
-            attackers = Tile.FindAllUnits(attackers, delegate(Unit unit)
+            bool any = false;
+            foreach (Unit u in attackers)
             {
-                return unit.movement > 0;
-            });
+                any = true;
+                //make all attackers untargetable
+                u.length = int.MaxValue;
+            }
+            if (!any)
+                return null;
 
-            //units of type all defend first, by themselves
-            Unit[] defenders = t.FindAllUnits(delegate(Unit unit)
-                {
-                    return ( unit.Type == UnitType.Immobile );
-                });
-            if (defenders.Length < 1)
-                defenders = t.GetAllUnits();
-
-            //make all defenders targetable
+            any = false;
             foreach (Unit u in defenders)
-                u.length = -1;
+            {
+                any = true;
+                //make all defenders targetable
+                u.length = int.MinValue;
+            }
+            if (!any)
+                return null;
 
             return new Battle(attackers, defenders);
         }
 
         internal static void EndBattle(Battle b)
         {
-            foreach (Unit u in b.defenders)
-                u.EndBattle();
-            foreach (Unit u in b.extraDefenders)
-                u.EndBattle();
-
             foreach (Unit u in b.attackers)
+                u.EndBattle();
+            foreach (Unit u in b.defenders)
                 u.EndBattle();
         }
         private void EndBattle()

@@ -256,31 +256,14 @@ namespace CityWar
             return retVal;
         }
 
-        public Battle StartBattle(Tile attacker, Tile defender)
-        {
-            Player player;
-            attacker.OccupiedByUnit(out player);
-            if (player != players[currentPlayer])
-                return null;
-
-            List<Unit> attackers = new List<Unit>();
-            for (int a = 0 ; a < 6 ; ++a)
-                if (defender.GetNeighbor(a) != null)
-                    attackers.AddRange(defender.GetNeighbor(a).FindAllUnits(delegate(Unit u)
-                    {
-                        return ( u.Owner == CurrentPlayer && u.Movement > 0 );
-                    }));
-            return Unit.StartBattle(attackers.ToArray(), defender);
-        }
-
-        private Battle StartBattle(Tile target)
+        public Battle StartBattle(Tile target, IEnumerable<Unit> selected)
         {
             Player enemy;
             if (target.OccupiedByUnit(out enemy) && enemy != CurrentPlayer)
             {
-                Dictionary<Unit, int> attackers = new Dictionary<Unit, int>();
                 HashSet<Unit> defenders = new HashSet<Unit>();
 
+                //'Immobile' units defend first, by themselves
                 defenders.UnionWith(target.FindAllUnits(delegate(Unit unit)
                 {
                     return ( unit.Type == UnitType.Immobile );
@@ -288,34 +271,32 @@ namespace CityWar
 
                 if (defenders.Count > 0)
                 {
-                    Unit defender = defenders.GetEnumerator().Current;
-                    foreach (Unit attacker in FindNeighborUnits(target, delegate(Unit unit)
-                            {
-                                return ( unit.Owner == CurrentPlayer && unit.Movement > 0 );
-                            }))
-                    {
-                        attackers[attacker] = 0;
-                    }
+                    if (selected == null)
+                        selected = GetAttackers(target);
+                }
+                else if (selected == null)
+                {
+                    Dictionary<Unit, int> attackers = new Dictionary<Unit, int>();
+                    //start collecting battle units by finding all attackers that can target any units in the target tile     
+                    foreach (Unit defender in target.GetAllUnits())
+                        AddAttackers(attackers, defenders, enemy, defender);
+                    selected = attackers.Keys;
                 }
                 else
                 {
-                    //start collecting battle units by finding all attackers that can target any units in the target tile
-                    foreach (Unit defender in target.GetAllUnits())
-                        AddAttackers(attackers, defenders, enemy, defender);
+                    //we want to limit attackers to just the selected units, but still include all relevant defenders
+                    foreach (Unit attacker in selected)
+                        AddDefenders(null, defenders, enemy, attacker, int.MinValue, false);
                 }
 
-                if (attackers.Count > 0 && defenders.Count > 0)
-                    return new Battle(attackers, defenders);
+                return Unit.StartBattle(selected, defenders);
             }
             return null;
         }
         private void AddAttackers(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit defender)
         {
             //find all adjacent attackers that might be able to participate
-            foreach (Unit attacker in FindNeighborUnits(defender.Tile, delegate(Unit unit)
-                    {
-                        return ( unit.Owner == CurrentPlayer && unit.Movement > 0 );
-                    }))
+            foreach (Unit attacker in GetAttackers(defender.Tile))
             {
                 int minLength, hasLength;
                 //check if the potential attacker can target the defender and is not already in the battle with an equal or shorter length weapon
@@ -324,11 +305,18 @@ namespace CityWar
                     //add the found attacker to the battle with the minimum length weapon it might use
                     attackers[attacker] = minLength;
                     //collect additional adjacent defenders
-                    AddDefenders(attackers, defenders, enemy, attacker, minLength);
+                    AddDefenders(attackers, defenders, enemy, attacker, minLength, true);
                 }
             }
         }
-        private void AddDefenders(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit attacker, int length)
+        private IEnumerable<Unit> GetAttackers(Tile target)
+        {
+            return FindNeighborUnits(target, delegate(Unit unit)
+            {
+                return ( unit.Owner == CurrentPlayer && unit.Movement > 0 );
+            });
+        }
+        private void AddDefenders(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit attacker, int length, bool addAttackers)
         {
             //find all adjacent defenders that can either retalliate against or be targeted by this attacker
             foreach (Unit defender in FindNeighborUnits(attacker.Tile, delegate(Unit unit)
@@ -339,16 +327,21 @@ namespace CityWar
                 //add the found defender to the battle
                 defenders.Add(defender);
 
-                //collect additional adjacent attackers, unless the defender is protected by an immobile unit
-                bool vulnerable = true;
-                foreach (Unit unit in defender.Tile.GetAllUnits())
-                    if (unit.Type == UnitType.Immobile)
-                    {
-                        vulnerable = false;
-                        break;
-                    }
-                if (vulnerable)
+                //collect additional adjacent attackers
+                if (addAttackers)
+                {
+                    ////unless the defender is protected by an immobile unit
+                    //bool vulnerable = true;
+                    //if (defender.Type != UnitType.Immobile)
+                    //    foreach (Unit unit in defender.Tile.GetAllUnits())
+                    //        if (unit.Type == UnitType.Immobile)
+                    //        {
+                    //            vulnerable = false;
+                    //            AddAttackers(attackers, defenders, enemy, unit);
+                    //        }
+                    //if (vulnerable)
                     AddAttackers(attackers, defenders, enemy, defender);
+                }
             }
         }
         private static IEnumerable<Unit> FindNeighborUnits(Tile tile, Predicate<Unit> match)
@@ -377,8 +370,14 @@ namespace CityWar
         private static bool CanTarget(Unit unit, Unit target, int length, out int minLength)
         {
             minLength = int.MaxValue;
+
+            //if (length == int.MinValue && unit.Type != UnitType.Immobile)
+            //    foreach (Unit immobile in unit.Tile.GetAllUnits())
+            //        if (immobile.Type == UnitType.Immobile)
+            //            return false;
+
             foreach (Attack attack in unit.Attacks)
-                if (attack.CanTarget(unit) && attack.Length >= length)
+                if (attack.CanTarget(target) && attack.Length >= length)
                     minLength = Math.Min(minLength, attack.Length);
             return ( minLength != int.MaxValue );
         }
@@ -390,13 +389,8 @@ namespace CityWar
                 b.StartRetalliation();
 
                 //consider the battle over if no one can retalliate
-                if (b.attackers.Count == 0)
-                {
-                    Unit.EndBattle(b);
-                    return false;
-                }
-
-                return true;
+                if (b.attackers.Count > 0)
+                    return true;
             }
 
             Unit.EndBattle(b);

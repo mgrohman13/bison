@@ -25,7 +25,7 @@ namespace CityWarWinApp
         Point selected = new Point(-1, -1);
         Rectangle oldBounds, invalidateRectangle;
         UnitInfo InfoForm;
-        bool shift = false, ctrl = false, alt = false, storeOld = true, saved = true, canClose = false;
+        bool storeOld = true, saved = true, canClose = false;
         int lastGroup = -1;
 
         //scrolling
@@ -371,12 +371,16 @@ namespace CityWarWinApp
                         Tile selectedTile = game.GetTile(selected.X, selected.Y);
                         lastGroup = selectedTile.CurrentGroup;
                         //click on the piece
-                        selectedTile.ClickOn(clicked, shift, ctrl, alt);
+                        selectedTile.ClickOn(clicked, CheckModifier(Keys.Shift), CheckModifier(Keys.Control), CheckModifier(Keys.Alt));
                         RefreshButtons();
                         panelPieces.Invalidate();
                     }
                 }
             }
+        }
+        private bool CheckModifier(Keys key)
+        {
+            return ( ( Control.ModifierKeys & key ) != Keys.None );
         }
 
         private void panelPieces_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -686,10 +690,26 @@ namespace CityWarWinApp
                             selectedTile = game.GetTile(selected.X, selected.Y);
                         Tile clicked = game.GetTile(x, y);
 
-                        //check that the selected tile exists
-                        if (selected.X != -1 && selected.Y != -1)
+                        //if there is an enemy at the destination, fight it
+                        Player occ, cur;
+                        if (clicked.OccupiedByUnit(out occ) && occ != game.CurrentPlayer)
                         {
-                            Player occ, cur;
+                            Unit[] selectedUnits = null;
+                            if (Control.ModifierKeys != Keys.None && selectedTile != null && selectedTile.IsNeighbor(x, y))
+                            {
+                                selectedUnits = selectedTile.GetSelectedUnits();
+                                if (selectedUnits.Length == 0)
+                                    selectedUnits = null;
+                            }
+                            CityWar.Battle b = game.StartBattle(clicked, selectedUnits);
+                            if (b != null)
+                                new Battle(b).ShowDialog();
+                            else
+                                return;
+                        }
+                        //check that the selected tile exists
+                        else if (selectedTile != null)
+                        {
                             if (!selectedTile.Occupied(out cur) || cur == game.CurrentPlayer)
                             {
                                 //check that the tiles are neighbors
@@ -733,11 +753,6 @@ namespace CityWarWinApp
                                         else
                                             return;
                                     }
-                                    else if (selectedTile.GetSelectedUnits().Length > 0)
-                                    {
-                                        //if there is an enemy at the destination, fight it
-                                        new Battle(game.StartBattle(selectedTile, clicked)).ShowDialog();
-                                    }
                                     else
                                         return;
                                 }
@@ -773,14 +788,6 @@ namespace CityWarWinApp
 
         #region Key Events
 
-        private void MainMap_KeyDown(object sender, KeyEventArgs e)
-        {
-            //always keep track of shift, alt, and control
-            shift = e.Shift;
-            ctrl = e.Control;
-            alt = e.Alt;
-        }
-
         private void MainMap_KeyUp(object sender, KeyEventArgs e)
         {
             //F11 to toggle fullscreen
@@ -804,11 +811,6 @@ namespace CityWarWinApp
                     storeOld = true;
                 }
             }
-
-            //always keep track of shift, alt, and control
-            shift = e.Shift;
-            ctrl = e.Control;
-            alt = e.Alt;
         }
 
         private void MainMap_KeyPress(object sender, KeyPressEventArgs e)
@@ -1202,11 +1204,14 @@ namespace CityWarWinApp
         private void btnDisband_Click(object sender, EventArgs e)
         {
             Unit[] units = game.GetTile(selected.X, selected.Y).GetSelectedUnits();
-            double deathValue = 0;
+            double disbandAmount = 0, deathValue = 0;
             foreach (Unit unit in units)
-                deathValue += (int)Math.Ceiling(unit.GetDisbandAmount());
-            if (MessageBox.Show(string.Format("Are you sure you want to disband the {0} selected units for {1} death?", units.Length,
-                deathValue.ToString("0")), "Disband", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                disbandAmount += unit.GetDisbandAmount();
+                deathValue += unit.InverseCost / Attack.DeathDivide;
+            }
+            if (MessageBox.Show(string.Format("Are you sure you want to disband the {0} selected units for {1} death? ({2})", units.Length,
+                    disbandAmount.ToString("0"), deathValue.ToString("0")), "Disband", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 saved = false;
 

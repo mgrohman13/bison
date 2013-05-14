@@ -13,14 +13,14 @@ namespace CityWar
         private const double DamMultPercent = .39;
 
         //unit cost : death when killed
-        internal const double DeathDivide = 7;
+        public const double DeathDivide = 7;
         //unit cost : death for disband
         internal const double DisbandDivide = 4;
         //unit cost : relic for wounding
         internal const double RelicDivide = 6;
 
         //percentage of unused attacks that adds to work
-        internal const double OverkillPercent = .5;
+        internal const double OverkillPercent = .87;
 
         //only used during a battle
         [NonSerialized]
@@ -106,8 +106,14 @@ namespace CityWar
 
         public bool CanAttack(Unit u)
         {
-            if (Used || length < u.Length)
+            if (this.Used || this.length < u.Length || owner.Dead || u.Dead || !owner.Tile.IsNeighbor(u.Tile))
                 return false;
+
+            //Immobile units protect on defense only
+            if (owner.Owner != owner.Owner.Game.CurrentPlayer && u.Type != UnitType.Immobile)
+                foreach (Unit u2 in u.Tile.GetAllUnits())
+                    if (u2.Type == UnitType.Immobile)
+                        return false;
 
             return CanTarget(u);
         }
@@ -185,16 +191,22 @@ namespace CityWar
             int hits = unit.Hits;
             int armor = unit.Armor;
             int damage = DoDamage(armor);
+            double overkill = 0;
             if (damage < 0)
             {
                 damage = 0;
             }
             else if (damage > hits)
             {
-                if (owner.Owner == owner.Owner.Game.CurrentPlayer)
-                    owner.Owner.AddWork(OverkillPercent * owner.WorkRegen * ( damage - hits ) / ( (double)damage * owner.Attacks.Length ));
+                overkill = ( damage - hits ) / (double)damage;
                 damage = hits;
             }
+
+            //attacking player gets work back for overkill, defender pays upkeep to retalliate
+            if (owner.Owner == owner.Owner.Game.CurrentPlayer)
+                owner.Owner.AddWork(owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length);
+            else
+                owner.Owner.AddUpkeep(Player.GetUpkeep(owner) * ( 1 - overkill ) * .52 / owner.Attacks.Length);
 
             double relicValue = ( GetAverageDamage(this.damage, this.divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
             if (relicValue > 0)
