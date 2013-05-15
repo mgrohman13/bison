@@ -269,7 +269,7 @@ namespace CityWarWinApp
                 topY = ( (float)game.Height + 1f / 3f ) * ( (float)Zoom * 3f * mult ) - (float)ClientSize.Height + 26f;
 
             //get the font for city and wizard numbers on a tile
-            tileInfoFont = new Font(new FontFamily("Arial"), Zoom / 9f, FontStyle.Bold);
+            tileInfoFont = new Font("Arial", Zoom / 9f);
 
             //reset the pics so they can be the proper size
             game.ResetPics(this._zoom);

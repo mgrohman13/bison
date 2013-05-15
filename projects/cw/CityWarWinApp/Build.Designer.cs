@@ -54,7 +54,7 @@ namespace CityWarWinApp
 			// 
 			this.label7.AutoSize = true;
 			this.label7.BackColor = System.Drawing.Color.Black;
-			this.label7.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label7.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label7.ForeColor = System.Drawing.Color.Silver;
 			this.label7.Location = new System.Drawing.Point(571, 39);
 			this.label7.Name = "label7";
@@ -67,7 +67,7 @@ namespace CityWarWinApp
 			// 
 			this.label6.AutoSize = true;
 			this.label6.BackColor = System.Drawing.Color.Black;
-			this.label6.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label6.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label6.ForeColor = System.Drawing.Color.Silver;
 			this.label6.Location = new System.Drawing.Point(506, 39);
 			this.label6.Name = "label6";
@@ -80,7 +80,7 @@ namespace CityWarWinApp
 			// 
 			this.label5.AutoSize = true;
 			this.label5.BackColor = System.Drawing.Color.Black;
-			this.label5.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label5.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label5.ForeColor = System.Drawing.Color.Silver;
 			this.label5.Location = new System.Drawing.Point(438, 39);
 			this.label5.Name = "label5";
@@ -93,7 +93,7 @@ namespace CityWarWinApp
 			// 
 			this.label4.AutoSize = true;
 			this.label4.BackColor = System.Drawing.Color.Black;
-			this.label4.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label4.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label4.ForeColor = System.Drawing.Color.Silver;
 			this.label4.Location = new System.Drawing.Point(276, 39);
 			this.label4.Name = "label4";
@@ -106,7 +106,7 @@ namespace CityWarWinApp
 			// 
 			this.label3.AutoSize = true;
 			this.label3.BackColor = System.Drawing.Color.Black;
-			this.label3.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label3.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label3.ForeColor = System.Drawing.Color.Silver;
 			this.label3.Location = new System.Drawing.Point(372, 39);
 			this.label3.Name = "label3";
@@ -119,7 +119,7 @@ namespace CityWarWinApp
 			// 
 			this.label2.AutoSize = true;
 			this.label2.BackColor = System.Drawing.Color.Black;
-			this.label2.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label2.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label2.ForeColor = System.Drawing.Color.Silver;
 			this.label2.Location = new System.Drawing.Point(105, 39);
 			this.label2.Name = "label2";
@@ -132,7 +132,7 @@ namespace CityWarWinApp
 			// 
 			this.label1.AutoSize = true;
 			this.label1.BackColor = System.Drawing.Color.Black;
-			this.label1.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label1.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label1.ForeColor = System.Drawing.Color.Silver;
 			this.label1.Location = new System.Drawing.Point(9, 39);
 			this.label1.Name = "label1";
@@ -144,7 +144,7 @@ namespace CityWarWinApp
 			// label11
 			// 
 			this.label11.BackColor = System.Drawing.Color.Black;
-			this.label11.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label11.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label11.ForeColor = System.Drawing.Color.Silver;
 			this.label11.Location = new System.Drawing.Point(627, 39);
 			this.label11.Name = "label11";
@@ -158,7 +158,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWater.BackColor = System.Drawing.Color.Blue;
 			this.lblWater.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWater.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblWater.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblWater.ForeColor = System.Drawing.Color.Black;
 			this.lblWater.Location = new System.Drawing.Point(267, 9);
 			this.lblWater.Name = "lblWater";
@@ -171,7 +171,7 @@ namespace CityWarWinApp
 			// 
 			this.lblNature.BackColor = System.Drawing.Color.Green;
 			this.lblNature.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblNature.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblNature.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblNature.ForeColor = System.Drawing.Color.Black;
 			this.lblNature.Location = new System.Drawing.Point(318, 9);
 			this.lblNature.Name = "lblNature";
@@ -184,7 +184,7 @@ namespace CityWarWinApp
 			// 
 			this.lblAir.BackColor = System.Drawing.Color.Gray;
 			this.lblAir.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblAir.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblAir.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblAir.ForeColor = System.Drawing.Color.Black;
 			this.lblAir.Location = new System.Drawing.Point(369, 9);
 			this.lblAir.Name = "lblAir";
@@ -197,7 +197,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWizard.BackColor = System.Drawing.Color.DeepPink;
 			this.lblWizard.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWizard.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblWizard.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblWizard.ForeColor = System.Drawing.Color.Black;
 			this.lblWizard.Location = new System.Drawing.Point(420, 9);
 			this.lblWizard.Name = "lblWizard";
@@ -210,7 +210,7 @@ namespace CityWarWinApp
 			// 
 			this.lblEarth.BackColor = System.Drawing.Color.Gold;
 			this.lblEarth.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblEarth.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblEarth.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblEarth.ForeColor = System.Drawing.Color.Black;
 			this.lblEarth.Location = new System.Drawing.Point(216, 9);
 			this.lblEarth.Name = "lblEarth";
@@ -223,7 +223,7 @@ namespace CityWarWinApp
 			// 
 			this.lblDeath.BackColor = System.Drawing.Color.Black;
 			this.lblDeath.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblDeath.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblDeath.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblDeath.ForeColor = System.Drawing.Color.White;
 			this.lblDeath.Location = new System.Drawing.Point(165, 9);
 			this.lblDeath.Name = "lblDeath";
@@ -236,7 +236,7 @@ namespace CityWarWinApp
 			// 
 			this.lblWork.BackColor = System.Drawing.Color.White;
 			this.lblWork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblWork.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblWork.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblWork.ForeColor = System.Drawing.Color.Black;
 			this.lblWork.Location = new System.Drawing.Point(12, 9);
 			this.lblWork.Name = "lblWork";
@@ -249,7 +249,7 @@ namespace CityWarWinApp
 			// 
 			this.lblProd.BackColor = System.Drawing.Color.DarkOrange;
 			this.lblProd.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblProd.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblProd.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblProd.ForeColor = System.Drawing.Color.Black;
 			this.lblProd.Location = new System.Drawing.Point(114, 9);
 			this.lblProd.Name = "lblProd";
@@ -262,7 +262,7 @@ namespace CityWarWinApp
 			// 
 			this.lblRelic.BackColor = System.Drawing.Color.Cyan;
 			this.lblRelic.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblRelic.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblRelic.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblRelic.ForeColor = System.Drawing.Color.Black;
 			this.lblRelic.Location = new System.Drawing.Point(471, 9);
 			this.lblRelic.Name = "lblRelic";
@@ -299,7 +299,7 @@ namespace CityWarWinApp
 			// 
 			this.lblPpl.BackColor = System.Drawing.Color.Brown;
 			this.lblPpl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.lblPpl.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+			this.lblPpl.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
 			this.lblPpl.ForeColor = System.Drawing.Color.Black;
 			this.lblPpl.Location = new System.Drawing.Point(63, 9);
 			this.lblPpl.Name = "lblPpl";

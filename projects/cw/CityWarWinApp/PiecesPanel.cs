@@ -9,7 +9,7 @@ namespace CityWarWinApp
 {
     class PiecesPanel : Panel
     {
-        private static Font font = new Font("Arial", 13);
+        private static Font font = new Font("Arial", 12F);
         Pen framePen = new Pen(Color.Black, 3);
 
         public enum DrawFlags

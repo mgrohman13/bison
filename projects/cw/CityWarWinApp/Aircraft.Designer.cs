@@ -46,7 +46,7 @@ namespace CityWarWinApp
 			// 
 			// lblText
 			// 
-			this.lblText.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblText.ForeColor = System.Drawing.Color.White;
 			this.lblText.Location = new System.Drawing.Point(118, 9);
 			this.lblText.Name = "lblText";
@@ -59,7 +59,7 @@ namespace CityWarWinApp
 			// 
 			this.button1.BackColor = System.Drawing.Color.Silver;
 			this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.button1.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.button1.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.button1.ForeColor = System.Drawing.Color.Black;
 			this.button1.Location = new System.Drawing.Point(12, 134);
 			this.button1.Name = "button1";
@@ -72,7 +72,7 @@ namespace CityWarWinApp
 			// 
 			this.button2.BackColor = System.Drawing.Color.Silver;
 			this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.button2.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.button2.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.button2.ForeColor = System.Drawing.Color.Black;
 			this.button2.Location = new System.Drawing.Point(173, 134);
 			this.button2.Name = "button2";

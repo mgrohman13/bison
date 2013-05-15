@@ -445,7 +445,7 @@ namespace CityWarWinApp
         private void newBox(int x, int y, int width, string text, Color color, HorizontalAlignment textAlign)
         {
             TextBox b = new TextBox();
-            b.Font = new Font("Engravers", 10f);
+            b.Font = new Font("Arial", 12f);
             b.Location = new Point(x, y);
             b.Width = width;
             b.ReadOnly = true;
@@ -462,7 +462,7 @@ namespace CityWarWinApp
         private Button newButton(int x, int y, string text, object tag, EventHandler eh)
         {
             Button b = new Button();
-            b.Font = new Font("Engravers", 9f);
+            b.Font = new Font("Arial", 9.75f);
             b.Location = new Point(x, y);
             b.Text = text;
             b.BackColor = Color.Silver;

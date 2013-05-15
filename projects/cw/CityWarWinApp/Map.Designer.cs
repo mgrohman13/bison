@@ -75,7 +75,7 @@ namespace CityWarWinApp
             this.lblDiv.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lblDiv.BackColor = System.Drawing.Color.White;
-            this.lblDiv.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDiv.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDiv.ForeColor = System.Drawing.Color.Black;
             this.lblDiv.Location = new System.Drawing.Point(545, 0);
             this.lblDiv.Name = "lblDiv";
@@ -85,7 +85,7 @@ namespace CityWarWinApp
             // lblMouse
             // 
             this.lblMouse.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.lblMouse.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblMouse.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblMouse.ForeColor = System.Drawing.Color.White;
             this.lblMouse.Location = new System.Drawing.Point(554, 210);
             this.lblMouse.Name = "lblMouse";
@@ -98,7 +98,7 @@ namespace CityWarWinApp
             // 
             this.btnEndTurn.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnEndTurn.BackColor = System.Drawing.Color.Silver;
-            this.btnEndTurn.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnEndTurn.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnEndTurn.ForeColor = System.Drawing.Color.Black;
             this.btnEndTurn.Location = new System.Drawing.Point(688, 549);
             this.btnEndTurn.Name = "btnEndTurn";
@@ -111,7 +111,7 @@ namespace CityWarWinApp
             // lblPlayer
             // 
             this.lblPlayer.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.lblPlayer.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblPlayer.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblPlayer.ForeColor = System.Drawing.Color.Black;
             this.lblPlayer.Location = new System.Drawing.Point(559, 549);
             this.lblPlayer.Name = "lblPlayer";
@@ -123,7 +123,7 @@ namespace CityWarWinApp
             // 
             this.lblProd.BackColor = System.Drawing.Color.DarkOrange;
             this.lblProd.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblProd.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblProd.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblProd.ForeColor = System.Drawing.Color.Black;
             this.lblProd.Location = new System.Drawing.Point(114, 9);
             this.lblProd.Name = "lblProd";
@@ -138,7 +138,7 @@ namespace CityWarWinApp
             // 
             this.lblWork.BackColor = System.Drawing.Color.White;
             this.lblWork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWork.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblWork.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblWork.ForeColor = System.Drawing.Color.Black;
             this.lblWork.Location = new System.Drawing.Point(12, 9);
             this.lblWork.Name = "lblWork";
@@ -154,7 +154,7 @@ namespace CityWarWinApp
             // 
             this.lblDeath.BackColor = System.Drawing.Color.Black;
             this.lblDeath.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblDeath.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblDeath.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblDeath.ForeColor = System.Drawing.Color.White;
             this.lblDeath.Location = new System.Drawing.Point(165, 9);
             this.lblDeath.Name = "lblDeath";
@@ -169,7 +169,7 @@ namespace CityWarWinApp
             // 
             this.lblEarth.BackColor = System.Drawing.Color.Gold;
             this.lblEarth.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblEarth.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblEarth.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblEarth.ForeColor = System.Drawing.Color.Black;
             this.lblEarth.Location = new System.Drawing.Point(216, 9);
             this.lblEarth.Name = "lblEarth";
@@ -184,7 +184,7 @@ namespace CityWarWinApp
             // 
             this.lblWizard.BackColor = System.Drawing.Color.DeepPink;
             this.lblWizard.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWizard.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblWizard.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblWizard.ForeColor = System.Drawing.Color.Black;
             this.lblWizard.Location = new System.Drawing.Point(420, 9);
             this.lblWizard.Name = "lblWizard";
@@ -199,7 +199,7 @@ namespace CityWarWinApp
             // 
             this.lblAir.BackColor = System.Drawing.Color.Gray;
             this.lblAir.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAir.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblAir.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblAir.ForeColor = System.Drawing.Color.Black;
             this.lblAir.Location = new System.Drawing.Point(369, 9);
             this.lblAir.Name = "lblAir";
@@ -214,7 +214,7 @@ namespace CityWarWinApp
             // 
             this.lblNature.BackColor = System.Drawing.Color.Green;
             this.lblNature.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblNature.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblNature.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblNature.ForeColor = System.Drawing.Color.Black;
             this.lblNature.Location = new System.Drawing.Point(318, 9);
             this.lblNature.Name = "lblNature";
@@ -229,7 +229,7 @@ namespace CityWarWinApp
             // 
             this.lblWater.BackColor = System.Drawing.Color.Blue;
             this.lblWater.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWater.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblWater.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblWater.ForeColor = System.Drawing.Color.Black;
             this.lblWater.Location = new System.Drawing.Point(267, 9);
             this.lblWater.Name = "lblWater";
@@ -244,7 +244,7 @@ namespace CityWarWinApp
             // 
             this.btnBuildPiece.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnBuildPiece.BackColor = System.Drawing.Color.Silver;
-            this.btnBuildPiece.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnBuildPiece.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnBuildPiece.ForeColor = System.Drawing.Color.Black;
             this.btnBuildPiece.Location = new System.Drawing.Point(554, 44);
             this.btnBuildPiece.Name = "btnBuildPiece";
@@ -259,7 +259,7 @@ namespace CityWarWinApp
             // 
             this.btnNext.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnNext.BackColor = System.Drawing.Color.Silver;
-            this.btnNext.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnNext.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnNext.ForeColor = System.Drawing.Color.Black;
             this.btnNext.Location = new System.Drawing.Point(554, 121);
             this.btnNext.Name = "btnNext";
@@ -273,7 +273,7 @@ namespace CityWarWinApp
             // 
             this.btnRest.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnRest.BackColor = System.Drawing.Color.Silver;
-            this.btnRest.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnRest.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnRest.ForeColor = System.Drawing.Color.Black;
             this.btnRest.Location = new System.Drawing.Point(554, 76);
             this.btnRest.Name = "btnRest";
@@ -287,7 +287,7 @@ namespace CityWarWinApp
             // 
             this.btnCaptureCity.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnCaptureCity.BackColor = System.Drawing.Color.Silver;
-            this.btnCaptureCity.Font = new System.Drawing.Font("Algerian", 12.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnCaptureCity.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnCaptureCity.ForeColor = System.Drawing.Color.Black;
             this.btnCaptureCity.Location = new System.Drawing.Point(554, 12);
             this.btnCaptureCity.Name = "btnCaptureCity";
@@ -301,7 +301,7 @@ namespace CityWarWinApp
             // lblTurn
             // 
             this.lblTurn.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.lblTurn.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblTurn.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblTurn.ForeColor = System.Drawing.Color.White;
             this.lblTurn.Location = new System.Drawing.Point(558, 379);
             this.lblTurn.Name = "lblTurn";
@@ -313,7 +313,7 @@ namespace CityWarWinApp
             // label3
             // 
             this.label3.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.label3.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.label3.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label3.ForeColor = System.Drawing.Color.White;
             this.label3.Location = new System.Drawing.Point(558, 361);
             this.label3.Name = "label3";
@@ -326,7 +326,7 @@ namespace CityWarWinApp
             // 
             this.btnInfo.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnInfo.BackColor = System.Drawing.Color.Silver;
-            this.btnInfo.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnInfo.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnInfo.ForeColor = System.Drawing.Color.Black;
             this.btnInfo.Location = new System.Drawing.Point(558, 400);
             this.btnInfo.Name = "btnInfo";
@@ -340,7 +340,7 @@ namespace CityWarWinApp
             // 
             this.lblRelic.BackColor = System.Drawing.Color.Cyan;
             this.lblRelic.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblRelic.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblRelic.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblRelic.ForeColor = System.Drawing.Color.Black;
             this.lblRelic.Location = new System.Drawing.Point(471, 9);
             this.lblRelic.Name = "lblRelic";
@@ -353,7 +353,7 @@ namespace CityWarWinApp
             // 
             this.btnLoad.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnLoad.BackColor = System.Drawing.Color.Silver;
-            this.btnLoad.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnLoad.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnLoad.ForeColor = System.Drawing.Color.Black;
             this.btnLoad.Location = new System.Drawing.Point(558, 491);
             this.btnLoad.Name = "btnLoad";
@@ -367,7 +367,7 @@ namespace CityWarWinApp
             // 
             this.btnSave.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnSave.BackColor = System.Drawing.Color.Silver;
-            this.btnSave.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnSave.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnSave.ForeColor = System.Drawing.Color.Black;
             this.btnSave.Location = new System.Drawing.Point(558, 462);
             this.btnSave.Name = "btnSave";
@@ -393,7 +393,7 @@ namespace CityWarWinApp
             // 
             this.btnQuit.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnQuit.BackColor = System.Drawing.Color.Silver;
-            this.btnQuit.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnQuit.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnQuit.ForeColor = System.Drawing.Color.Black;
             this.btnQuit.Location = new System.Drawing.Point(558, 520);
             this.btnQuit.Name = "btnQuit";
@@ -407,7 +407,7 @@ namespace CityWarWinApp
             // 
             this.lblPpl.BackColor = System.Drawing.Color.Brown;
             this.lblPpl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPpl.Font = new System.Drawing.Font("Engravers MT", 9.75F, System.Drawing.FontStyle.Bold);
+            this.lblPpl.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
             this.lblPpl.ForeColor = System.Drawing.Color.Black;
             this.lblPpl.Location = new System.Drawing.Point(63, 9);
             this.lblPpl.Name = "lblPpl";
@@ -420,7 +420,7 @@ namespace CityWarWinApp
             // 
             this.btnDisbandUnits.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnDisbandUnits.BackColor = System.Drawing.Color.Silver;
-            this.btnDisbandUnits.Font = new System.Drawing.Font("Algerian", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnDisbandUnits.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDisbandUnits.ForeColor = System.Drawing.Color.Black;
             this.btnDisbandUnits.Location = new System.Drawing.Point(554, 263);
             this.btnDisbandUnits.Name = "btnDisbandUnits";
@@ -434,7 +434,7 @@ namespace CityWarWinApp
             // 
             this.btnGroup.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnGroup.BackColor = System.Drawing.Color.Silver;
-            this.btnGroup.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnGroup.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnGroup.ForeColor = System.Drawing.Color.Black;
             this.btnGroup.Location = new System.Drawing.Point(554, 150);
             this.btnGroup.Name = "btnGroup";
@@ -448,7 +448,7 @@ namespace CityWarWinApp
             // 
             this.btnUngroup.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnUngroup.BackColor = System.Drawing.Color.Silver;
-            this.btnUngroup.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnUngroup.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnUngroup.ForeColor = System.Drawing.Color.Black;
             this.btnUngroup.Location = new System.Drawing.Point(554, 179);
             this.btnUngroup.Name = "btnUngroup";
@@ -463,7 +463,7 @@ namespace CityWarWinApp
             this.chbGroup.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.chbGroup.Checked = true;
             this.chbGroup.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chbGroup.Font = new System.Drawing.Font("Algerian", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.chbGroup.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.chbGroup.ForeColor = System.Drawing.Color.White;
             this.chbGroup.Location = new System.Drawing.Point(554, 208);
             this.chbGroup.Name = "chbGroup";
@@ -477,7 +477,7 @@ namespace CityWarWinApp
             this.panelPieces.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom )
                         | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.panelPieces.BackColor = System.Drawing.Color.White;
-            this.panelPieces.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.panelPieces.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.panelPieces.ForeColor = System.Drawing.Color.Black;
             this.panelPieces.Location = new System.Drawing.Point(646, 44);
             this.panelPieces.Name = "panelPieces";
@@ -492,7 +492,7 @@ namespace CityWarWinApp
             // 
             this.btnUndo.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnUndo.BackColor = System.Drawing.Color.Silver;
-            this.btnUndo.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnUndo.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnUndo.ForeColor = System.Drawing.Color.Black;
             this.btnUndo.Location = new System.Drawing.Point(554, 305);
             this.btnUndo.Name = "btnUndo";
@@ -507,7 +507,7 @@ namespace CityWarWinApp
             this.chbGamble.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.chbGamble.Checked = true;
             this.chbGamble.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chbGamble.Font = new System.Drawing.Font("Algerian", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.chbGamble.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.chbGamble.ForeColor = System.Drawing.Color.White;
             this.chbGamble.Location = new System.Drawing.Point(554, 234);
             this.chbGamble.Name = "chbGamble";

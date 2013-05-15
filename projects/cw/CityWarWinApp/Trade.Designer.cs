@@ -104,7 +104,7 @@ namespace CityWarWinApp
             // 
             this.btnProdU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnProdU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnProdU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnProdU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnProdU.ForeColor = System.Drawing.Color.Silver;
             this.btnProdU.Location = new System.Drawing.Point(139, 67);
             this.btnProdU.Name = "btnProdU";
@@ -119,7 +119,7 @@ namespace CityWarWinApp
             // 
             this.btnAirU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnAirU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAirU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnAirU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnAirU.ForeColor = System.Drawing.Color.Silver;
             this.btnAirU.Location = new System.Drawing.Point(444, 67);
             this.btnAirU.Name = "btnAirU";
@@ -134,7 +134,7 @@ namespace CityWarWinApp
             // 
             this.btnNatU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnNatU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNatU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnNatU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnNatU.ForeColor = System.Drawing.Color.Silver;
             this.btnNatU.Location = new System.Drawing.Point(383, 67);
             this.btnNatU.Name = "btnNatU";
@@ -149,7 +149,7 @@ namespace CityWarWinApp
             // 
             this.btnWaterU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnWaterU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnWaterU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnWaterU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnWaterU.ForeColor = System.Drawing.Color.Silver;
             this.btnWaterU.Location = new System.Drawing.Point(322, 67);
             this.btnWaterU.Name = "btnWaterU";
@@ -164,7 +164,7 @@ namespace CityWarWinApp
             // 
             this.btnEarthU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnEarthU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEarthU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnEarthU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnEarthU.ForeColor = System.Drawing.Color.Silver;
             this.btnEarthU.Location = new System.Drawing.Point(261, 67);
             this.btnEarthU.Name = "btnEarthU";
@@ -179,7 +179,7 @@ namespace CityWarWinApp
             // 
             this.btnDeathU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnDeathU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDeathU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnDeathU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDeathU.ForeColor = System.Drawing.Color.Silver;
             this.btnDeathU.Location = new System.Drawing.Point(200, 67);
             this.btnDeathU.Name = "btnDeathU";
@@ -194,7 +194,7 @@ namespace CityWarWinApp
             // 
             this.btnProdD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnProdD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnProdD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnProdD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnProdD.ForeColor = System.Drawing.Color.Silver;
             this.btnProdD.Location = new System.Drawing.Point(139, 96);
             this.btnProdD.Name = "btnProdD";
@@ -209,7 +209,7 @@ namespace CityWarWinApp
             // 
             this.btnDeathD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnDeathD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDeathD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnDeathD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDeathD.ForeColor = System.Drawing.Color.Silver;
             this.btnDeathD.Location = new System.Drawing.Point(200, 96);
             this.btnDeathD.Name = "btnDeathD";
@@ -224,7 +224,7 @@ namespace CityWarWinApp
             // 
             this.btnEarthD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnEarthD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEarthD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnEarthD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnEarthD.ForeColor = System.Drawing.Color.Silver;
             this.btnEarthD.Location = new System.Drawing.Point(261, 96);
             this.btnEarthD.Name = "btnEarthD";
@@ -239,7 +239,7 @@ namespace CityWarWinApp
             // 
             this.btnWaterD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnWaterD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnWaterD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnWaterD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnWaterD.ForeColor = System.Drawing.Color.Silver;
             this.btnWaterD.Location = new System.Drawing.Point(322, 96);
             this.btnWaterD.Name = "btnWaterD";
@@ -254,7 +254,7 @@ namespace CityWarWinApp
             // 
             this.btnNatD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnNatD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNatD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnNatD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnNatD.ForeColor = System.Drawing.Color.Silver;
             this.btnNatD.Location = new System.Drawing.Point(383, 96);
             this.btnNatD.Name = "btnNatD";
@@ -269,7 +269,7 @@ namespace CityWarWinApp
             // 
             this.btnAirD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnAirD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnAirD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnAirD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnAirD.ForeColor = System.Drawing.Color.Silver;
             this.btnAirD.Location = new System.Drawing.Point(444, 96);
             this.btnAirD.Name = "btnAirD";
@@ -283,7 +283,7 @@ namespace CityWarWinApp
             // btnDone
             // 
             this.btnDone.BackColor = System.Drawing.Color.Silver;
-            this.btnDone.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnDone.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDone.ForeColor = System.Drawing.Color.Black;
             this.btnDone.Location = new System.Drawing.Point(275, 125);
             this.btnDone.Name = "btnDone";
@@ -297,7 +297,7 @@ namespace CityWarWinApp
             // 
             this.lblWater.BackColor = System.Drawing.Color.Blue;
             this.lblWater.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWater.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblWater.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWater.ForeColor = System.Drawing.Color.Black;
             this.lblWater.Location = new System.Drawing.Point(322, 9);
             this.lblWater.Name = "lblWater";
@@ -309,7 +309,7 @@ namespace CityWarWinApp
             // 
             this.lblNature.BackColor = System.Drawing.Color.Green;
             this.lblNature.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblNature.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblNature.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblNature.ForeColor = System.Drawing.Color.Black;
             this.lblNature.Location = new System.Drawing.Point(383, 9);
             this.lblNature.Name = "lblNature";
@@ -321,7 +321,7 @@ namespace CityWarWinApp
             // 
             this.lblAir.BackColor = System.Drawing.Color.Gray;
             this.lblAir.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAir.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblAir.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAir.ForeColor = System.Drawing.Color.Black;
             this.lblAir.Location = new System.Drawing.Point(444, 9);
             this.lblAir.Name = "lblAir";
@@ -333,7 +333,7 @@ namespace CityWarWinApp
             // 
             this.lblWizard.BackColor = System.Drawing.Color.DeepPink;
             this.lblWizard.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWizard.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblWizard.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWizard.ForeColor = System.Drawing.Color.Black;
             this.lblWizard.Location = new System.Drawing.Point(505, 9);
             this.lblWizard.Name = "lblWizard";
@@ -345,7 +345,7 @@ namespace CityWarWinApp
             // 
             this.lblEarth.BackColor = System.Drawing.Color.Gold;
             this.lblEarth.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblEarth.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblEarth.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblEarth.ForeColor = System.Drawing.Color.Black;
             this.lblEarth.Location = new System.Drawing.Point(261, 9);
             this.lblEarth.Name = "lblEarth";
@@ -357,7 +357,7 @@ namespace CityWarWinApp
             // 
             this.lblDeath.BackColor = System.Drawing.Color.Black;
             this.lblDeath.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblDeath.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDeath.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDeath.ForeColor = System.Drawing.Color.White;
             this.lblDeath.Location = new System.Drawing.Point(200, 9);
             this.lblDeath.Name = "lblDeath";
@@ -369,7 +369,7 @@ namespace CityWarWinApp
             // 
             this.lblWork.BackColor = System.Drawing.Color.White;
             this.lblWork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWork.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblWork.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWork.ForeColor = System.Drawing.Color.Black;
             this.lblWork.Location = new System.Drawing.Point(12, 9);
             this.lblWork.Name = "lblWork";
@@ -381,7 +381,7 @@ namespace CityWarWinApp
             // 
             this.lblProd.BackColor = System.Drawing.Color.DarkOrange;
             this.lblProd.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblProd.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblProd.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblProd.ForeColor = System.Drawing.Color.Black;
             this.lblProd.Location = new System.Drawing.Point(139, 9);
             this.lblProd.Name = "lblProd";
@@ -393,7 +393,7 @@ namespace CityWarWinApp
             // 
             this.lblRelic.BackColor = System.Drawing.Color.Cyan;
             this.lblRelic.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblRelic.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblRelic.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblRelic.ForeColor = System.Drawing.Color.Black;
             this.lblRelic.Location = new System.Drawing.Point(566, 9);
             this.lblRelic.Name = "lblRelic";
@@ -405,7 +405,7 @@ namespace CityWarWinApp
             // 
             this.lblPpl.BackColor = System.Drawing.Color.Brown;
             this.lblPpl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPpl.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblPpl.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblPpl.ForeColor = System.Drawing.Color.Black;
             this.lblPpl.Location = new System.Drawing.Point(78, 9);
             this.lblPpl.Name = "lblPpl";
@@ -417,7 +417,7 @@ namespace CityWarWinApp
             // 
             this.btnPplD.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnPplD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPplD.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnPplD.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnPplD.ForeColor = System.Drawing.Color.Silver;
             this.btnPplD.Location = new System.Drawing.Point(78, 96);
             this.btnPplD.Name = "btnPplD";
@@ -432,7 +432,7 @@ namespace CityWarWinApp
             // 
             this.btnPplU.FlatAppearance.BorderColor = System.Drawing.Color.Silver;
             this.btnPplU.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnPplU.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnPplU.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnPplU.ForeColor = System.Drawing.Color.Silver;
             this.btnPplU.Location = new System.Drawing.Point(78, 67);
             this.btnPplU.Name = "btnPplU";
@@ -447,7 +447,7 @@ namespace CityWarWinApp
             // 
             this.lblPplInc.BackColor = System.Drawing.Color.Brown;
             this.lblPplInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPplInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblPplInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblPplInc.ForeColor = System.Drawing.Color.Black;
             this.lblPplInc.Location = new System.Drawing.Point(78, 35);
             this.lblPplInc.Name = "lblPplInc";
@@ -460,7 +460,7 @@ namespace CityWarWinApp
             // 
             this.lblRelicInc.BackColor = System.Drawing.Color.Cyan;
             this.lblRelicInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblRelicInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblRelicInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblRelicInc.ForeColor = System.Drawing.Color.Black;
             this.lblRelicInc.Location = new System.Drawing.Point(566, 35);
             this.lblRelicInc.Name = "lblRelicInc";
@@ -474,7 +474,7 @@ namespace CityWarWinApp
             // 
             this.lblWaterInc.BackColor = System.Drawing.Color.Blue;
             this.lblWaterInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWaterInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblWaterInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWaterInc.ForeColor = System.Drawing.Color.Black;
             this.lblWaterInc.Location = new System.Drawing.Point(322, 35);
             this.lblWaterInc.Name = "lblWaterInc";
@@ -487,7 +487,7 @@ namespace CityWarWinApp
             // 
             this.lblNatureInc.BackColor = System.Drawing.Color.Green;
             this.lblNatureInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblNatureInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblNatureInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblNatureInc.ForeColor = System.Drawing.Color.Black;
             this.lblNatureInc.Location = new System.Drawing.Point(383, 35);
             this.lblNatureInc.Name = "lblNatureInc";
@@ -500,7 +500,7 @@ namespace CityWarWinApp
             // 
             this.lblAirInc.BackColor = System.Drawing.Color.Gray;
             this.lblAirInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAirInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblAirInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblAirInc.ForeColor = System.Drawing.Color.Black;
             this.lblAirInc.Location = new System.Drawing.Point(444, 35);
             this.lblAirInc.Name = "lblAirInc";
@@ -513,7 +513,7 @@ namespace CityWarWinApp
             // 
             this.lblWizInc.BackColor = System.Drawing.Color.DeepPink;
             this.lblWizInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWizInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblWizInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWizInc.ForeColor = System.Drawing.Color.Black;
             this.lblWizInc.Location = new System.Drawing.Point(505, 35);
             this.lblWizInc.Name = "lblWizInc";
@@ -526,7 +526,7 @@ namespace CityWarWinApp
             // 
             this.lblEarthInc.BackColor = System.Drawing.Color.Gold;
             this.lblEarthInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblEarthInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblEarthInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblEarthInc.ForeColor = System.Drawing.Color.Black;
             this.lblEarthInc.Location = new System.Drawing.Point(261, 35);
             this.lblEarthInc.Name = "lblEarthInc";
@@ -539,7 +539,7 @@ namespace CityWarWinApp
             // 
             this.lblDeathInc.BackColor = System.Drawing.Color.Black;
             this.lblDeathInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblDeathInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDeathInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDeathInc.ForeColor = System.Drawing.Color.White;
             this.lblDeathInc.Location = new System.Drawing.Point(200, 35);
             this.lblDeathInc.Name = "lblDeathInc";
@@ -552,7 +552,7 @@ namespace CityWarWinApp
             // 
             this.lblWorkInc.BackColor = System.Drawing.Color.White;
             this.lblWorkInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWorkInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblWorkInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWorkInc.ForeColor = System.Drawing.Color.Black;
             this.lblWorkInc.Location = new System.Drawing.Point(12, 35);
             this.lblWorkInc.Name = "lblWorkInc";
@@ -565,7 +565,7 @@ namespace CityWarWinApp
             // 
             this.lblProdInc.BackColor = System.Drawing.Color.DarkOrange;
             this.lblProdInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblProdInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblProdInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblProdInc.ForeColor = System.Drawing.Color.Black;
             this.lblProdInc.Location = new System.Drawing.Point(139, 35);
             this.lblProdInc.Name = "lblProdInc";
@@ -576,7 +576,7 @@ namespace CityWarWinApp
             // 
             // nudWorkMin
             // 
-            this.nudWorkMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudWorkMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudWorkMin.Location = new System.Drawing.Point(12, 68);
             this.nudWorkMin.Name = "nudWorkMin";
             this.nudWorkMin.Size = new System.Drawing.Size(60, 22);
@@ -585,7 +585,7 @@ namespace CityWarWinApp
             // 
             // nudWorkMax
             // 
-            this.nudWorkMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudWorkMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudWorkMax.Location = new System.Drawing.Point(12, 97);
             this.nudWorkMax.Name = "nudWorkMax";
             this.nudWorkMax.Size = new System.Drawing.Size(60, 22);
@@ -594,7 +594,7 @@ namespace CityWarWinApp
             // 
             // nudPopMax
             // 
-            this.nudPopMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudPopMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudPopMax.Location = new System.Drawing.Point(78, 97);
             this.nudPopMax.Name = "nudPopMax";
             this.nudPopMax.Size = new System.Drawing.Size(55, 22);
@@ -603,7 +603,7 @@ namespace CityWarWinApp
             // 
             // nudPopMin
             // 
-            this.nudPopMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudPopMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudPopMin.Location = new System.Drawing.Point(78, 68);
             this.nudPopMin.Name = "nudPopMin";
             this.nudPopMin.Size = new System.Drawing.Size(55, 22);
@@ -612,7 +612,7 @@ namespace CityWarWinApp
             // 
             // nudProdMax
             // 
-            this.nudProdMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudProdMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudProdMax.Location = new System.Drawing.Point(139, 97);
             this.nudProdMax.Name = "nudProdMax";
             this.nudProdMax.Size = new System.Drawing.Size(55, 22);
@@ -621,7 +621,7 @@ namespace CityWarWinApp
             // 
             // nudProdMin
             // 
-            this.nudProdMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudProdMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudProdMin.Location = new System.Drawing.Point(139, 68);
             this.nudProdMin.Name = "nudProdMin";
             this.nudProdMin.Size = new System.Drawing.Size(55, 22);
@@ -630,7 +630,7 @@ namespace CityWarWinApp
             // 
             // nudDeathMax
             // 
-            this.nudDeathMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudDeathMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudDeathMax.Location = new System.Drawing.Point(200, 97);
             this.nudDeathMax.Name = "nudDeathMax";
             this.nudDeathMax.Size = new System.Drawing.Size(55, 22);
@@ -639,7 +639,7 @@ namespace CityWarWinApp
             // 
             // nudDeathMin
             // 
-            this.nudDeathMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudDeathMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudDeathMin.Location = new System.Drawing.Point(200, 68);
             this.nudDeathMin.Name = "nudDeathMin";
             this.nudDeathMin.Size = new System.Drawing.Size(55, 22);
@@ -648,7 +648,7 @@ namespace CityWarWinApp
             // 
             // nudEarthMax
             // 
-            this.nudEarthMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudEarthMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudEarthMax.Location = new System.Drawing.Point(261, 97);
             this.nudEarthMax.Name = "nudEarthMax";
             this.nudEarthMax.Size = new System.Drawing.Size(55, 22);
@@ -657,7 +657,7 @@ namespace CityWarWinApp
             // 
             // nudEarthMin
             // 
-            this.nudEarthMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudEarthMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudEarthMin.Location = new System.Drawing.Point(261, 68);
             this.nudEarthMin.Name = "nudEarthMin";
             this.nudEarthMin.Size = new System.Drawing.Size(55, 22);
@@ -666,7 +666,7 @@ namespace CityWarWinApp
             // 
             // nudWaterMax
             // 
-            this.nudWaterMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudWaterMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudWaterMax.Location = new System.Drawing.Point(322, 97);
             this.nudWaterMax.Name = "nudWaterMax";
             this.nudWaterMax.Size = new System.Drawing.Size(55, 22);
@@ -675,7 +675,7 @@ namespace CityWarWinApp
             // 
             // nudWaterMin
             // 
-            this.nudWaterMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudWaterMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudWaterMin.Location = new System.Drawing.Point(322, 68);
             this.nudWaterMin.Name = "nudWaterMin";
             this.nudWaterMin.Size = new System.Drawing.Size(55, 22);
@@ -684,7 +684,7 @@ namespace CityWarWinApp
             // 
             // nudNatureMax
             // 
-            this.nudNatureMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudNatureMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudNatureMax.Location = new System.Drawing.Point(383, 97);
             this.nudNatureMax.Name = "nudNatureMax";
             this.nudNatureMax.Size = new System.Drawing.Size(55, 22);
@@ -693,7 +693,7 @@ namespace CityWarWinApp
             // 
             // nudNatureMin
             // 
-            this.nudNatureMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudNatureMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudNatureMin.Location = new System.Drawing.Point(383, 68);
             this.nudNatureMin.Name = "nudNatureMin";
             this.nudNatureMin.Size = new System.Drawing.Size(55, 22);
@@ -702,7 +702,7 @@ namespace CityWarWinApp
             // 
             // nudAirMax
             // 
-            this.nudAirMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudAirMax.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudAirMax.Location = new System.Drawing.Point(444, 97);
             this.nudAirMax.Name = "nudAirMax";
             this.nudAirMax.Size = new System.Drawing.Size(55, 22);
@@ -711,7 +711,7 @@ namespace CityWarWinApp
             // 
             // nudAirMin
             // 
-            this.nudAirMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.nudAirMin.Font = new System.Drawing.Font("Arial", 9.75F);
             this.nudAirMin.Location = new System.Drawing.Point(444, 68);
             this.nudAirMin.Name = "nudAirMin";
             this.nudAirMin.Size = new System.Drawing.Size(55, 22);
@@ -721,7 +721,7 @@ namespace CityWarWinApp
             // btnGamble
             // 
             this.btnGamble.BackColor = System.Drawing.Color.Silver;
-            this.btnGamble.Font = new System.Drawing.Font("Algerian", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnGamble.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnGamble.ForeColor = System.Drawing.Color.Black;
             this.btnGamble.Location = new System.Drawing.Point(538, 125);
             this.btnGamble.Name = "btnGamble";
@@ -733,7 +733,7 @@ namespace CityWarWinApp
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Algerian", 12F);
+            this.label1.Font = new System.Drawing.Font("Arial", 12F);
             this.label1.ForeColor = System.Drawing.Color.White;
             this.label1.Location = new System.Drawing.Point(505, 69);
             this.label1.Name = "label1";
@@ -745,7 +745,7 @@ namespace CityWarWinApp
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Algerian", 12F);
+            this.label2.Font = new System.Drawing.Font("Arial", 12F);
             this.label2.ForeColor = System.Drawing.Color.White;
             this.label2.Location = new System.Drawing.Point(505, 98);
             this.label2.Name = "label2";

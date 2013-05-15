@@ -53,7 +53,7 @@ namespace CityWarWinApp
 			// 
 			this.lblCancel.BackColor = System.Drawing.Color.Black;
 			this.lblCancel.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblCancel.Font = new System.Drawing.Font("Algerian", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblCancel.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblCancel.ForeColor = System.Drawing.Color.White;
 			this.lblCancel.Location = new System.Drawing.Point(62, 439);
 			this.lblCancel.Name = "lblCancel";
@@ -69,7 +69,7 @@ namespace CityWarWinApp
 			// 
 			this.lblStart.BackColor = System.Drawing.Color.Black;
 			this.lblStart.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblStart.Font = new System.Drawing.Font("Algerian", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblStart.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblStart.ForeColor = System.Drawing.Color.White;
 			this.lblStart.Location = new System.Drawing.Point(62, 379);
 			this.lblStart.Name = "lblStart";
@@ -86,7 +86,7 @@ namespace CityWarWinApp
 			this.nudWidth.BackColor = System.Drawing.Color.Black;
 			this.nudWidth.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.nudWidth.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.nudWidth.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.nudWidth.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.nudWidth.ForeColor = System.Drawing.Color.LightCyan;
 			this.nudWidth.Location = new System.Drawing.Point(213, 9);
 			this.nudWidth.Maximum = new decimal(new int[] {
@@ -112,7 +112,7 @@ namespace CityWarWinApp
 			// label1
 			// 
 			this.label1.BackColor = System.Drawing.Color.Black;
-			this.label1.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.label1.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.label1.ForeColor = System.Drawing.Color.LightCyan;
 			this.label1.Location = new System.Drawing.Point(95, 9);
 			this.label1.Name = "label1";
@@ -125,7 +125,7 @@ namespace CityWarWinApp
 			this.nudHeight.BackColor = System.Drawing.Color.Black;
 			this.nudHeight.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.nudHeight.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.nudHeight.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.nudHeight.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.nudHeight.ForeColor = System.Drawing.Color.LightCyan;
 			this.nudHeight.Location = new System.Drawing.Point(289, 9);
 			this.nudHeight.Maximum = new decimal(new int[] {
@@ -151,7 +151,7 @@ namespace CityWarWinApp
 			// label2
 			// 
 			this.label2.BackColor = System.Drawing.Color.Black;
-			this.label2.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.label2.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.label2.ForeColor = System.Drawing.Color.LightCyan;
 			this.label2.Location = new System.Drawing.Point(263, 9);
 			this.label2.Name = "label2";
@@ -164,7 +164,7 @@ namespace CityWarWinApp
 			this.lbxPlayers.BackColor = System.Drawing.Color.Black;
 			this.lbxPlayers.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.lbxPlayers.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-			this.lbxPlayers.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.lbxPlayers.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.lbxPlayers.ForeColor = System.Drawing.Color.White;
 			this.lbxPlayers.FormattingEnabled = true;
 			this.lbxPlayers.ItemHeight = 26;
@@ -189,7 +189,7 @@ namespace CityWarWinApp
 			// label3
 			// 
 			this.label3.BackColor = System.Drawing.Color.Black;
-			this.label3.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.label3.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.label3.ForeColor = System.Drawing.Color.LightCyan;
 			this.label3.Location = new System.Drawing.Point(207, 177);
 			this.label3.Name = "label3";
@@ -202,7 +202,7 @@ namespace CityWarWinApp
 			// 
 			this.txtName.BackColor = System.Drawing.Color.Black;
 			this.txtName.Cursor = System.Windows.Forms.Cursors.IBeam;
-			this.txtName.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.txtName.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.txtName.ForeColor = System.Drawing.Color.White;
 			this.txtName.Location = new System.Drawing.Point(207, 139);
 			this.txtName.Name = "txtName";
@@ -213,7 +213,7 @@ namespace CityWarWinApp
 			// 
 			this.lblEdit.BackColor = System.Drawing.Color.Black;
 			this.lblEdit.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblEdit.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.lblEdit.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.lblEdit.ForeColor = System.Drawing.Color.White;
 			this.lblEdit.Location = new System.Drawing.Point(207, 243);
 			this.lblEdit.Name = "lblEdit";
@@ -227,7 +227,7 @@ namespace CityWarWinApp
 			// 
 			this.lblAddNew.BackColor = System.Drawing.Color.Black;
 			this.lblAddNew.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblAddNew.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.lblAddNew.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.lblAddNew.ForeColor = System.Drawing.Color.White;
 			this.lblAddNew.Location = new System.Drawing.Point(207, 302);
 			this.lblAddNew.Name = "lblAddNew";
@@ -241,7 +241,7 @@ namespace CityWarWinApp
 			// 
 			this.lblDelete.BackColor = System.Drawing.Color.Black;
 			this.lblDelete.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblDelete.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.lblDelete.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.lblDelete.ForeColor = System.Drawing.Color.White;
 			this.lblDelete.Location = new System.Drawing.Point(71, 302);
 			this.lblDelete.Name = "lblDelete";
@@ -254,7 +254,7 @@ namespace CityWarWinApp
 			// label5
 			// 
 			this.label5.BackColor = System.Drawing.Color.Black;
-			this.label5.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.label5.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.label5.ForeColor = System.Drawing.Color.LightCyan;
 			this.label5.Location = new System.Drawing.Point(71, 99);
 			this.label5.Name = "label5";
@@ -266,7 +266,7 @@ namespace CityWarWinApp
 			// label4
 			// 
 			this.label4.BackColor = System.Drawing.Color.Black;
-			this.label4.Font = new System.Drawing.Font("Algerian", 15.75F, System.Drawing.FontStyle.Bold);
+			this.label4.Font = new System.Drawing.Font("Arial", 15.75F, System.Drawing.FontStyle.Regular);
 			this.label4.ForeColor = System.Drawing.Color.LightCyan;
 			this.label4.Location = new System.Drawing.Point(207, 207);
 			this.label4.Name = "label4";

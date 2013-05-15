@@ -38,7 +38,7 @@ namespace CityWarWinApp
 			// 
 			this.lblNewGame.BackColor = System.Drawing.Color.Black;
 			this.lblNewGame.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblNewGame.Font = new System.Drawing.Font("Algerian", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblNewGame.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblNewGame.ForeColor = System.Drawing.Color.White;
 			this.lblNewGame.Location = new System.Drawing.Point(0, 0);
 			this.lblNewGame.Name = "lblNewGame";
@@ -54,7 +54,7 @@ namespace CityWarWinApp
 			// 
 			this.lblLoadGame.BackColor = System.Drawing.Color.Black;
 			this.lblLoadGame.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblLoadGame.Font = new System.Drawing.Font("Algerian", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblLoadGame.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblLoadGame.ForeColor = System.Drawing.Color.White;
 			this.lblLoadGame.Location = new System.Drawing.Point(0, 60);
 			this.lblLoadGame.Name = "lblLoadGame";
@@ -70,7 +70,7 @@ namespace CityWarWinApp
 			// 
 			this.lblOptions.BackColor = System.Drawing.Color.Black;
 			this.lblOptions.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblOptions.Font = new System.Drawing.Font("Algerian", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblOptions.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblOptions.ForeColor = System.Drawing.Color.White;
 			this.lblOptions.Location = new System.Drawing.Point(0, 120);
 			this.lblOptions.Name = "lblOptions";
@@ -86,7 +86,7 @@ namespace CityWarWinApp
 			// 
 			this.lblQuit.BackColor = System.Drawing.Color.Black;
 			this.lblQuit.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.lblQuit.Font = new System.Drawing.Font("Algerian", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblQuit.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblQuit.ForeColor = System.Drawing.Color.White;
 			this.lblQuit.Location = new System.Drawing.Point(0, 180);
 			this.lblQuit.Name = "lblQuit";

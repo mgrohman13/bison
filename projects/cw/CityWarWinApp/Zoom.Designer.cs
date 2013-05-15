@@ -36,7 +36,7 @@ namespace CityWarWinApp
 			// lblZoom
 			// 
 			this.lblZoom.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.lblZoom.Font = new System.Drawing.Font("Algerian", 30F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblZoom.Font = new System.Drawing.Font("Arial", 30F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblZoom.ForeColor = System.Drawing.Color.White;
 			this.lblZoom.Location = new System.Drawing.Point(0, 0);
 			this.lblZoom.Name = "lblZoom";
