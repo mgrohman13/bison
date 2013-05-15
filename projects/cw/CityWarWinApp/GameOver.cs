@@ -18,33 +18,18 @@ namespace CityWarWinApp
 
         private void gameOver_Load(object sender, EventArgs e)
         {
-            Dictionary<Player, int> won = Map.game.GetWon();
-            Player[] defeatedPlayers = Map.game.GetDefeatedPlayers();
-            Dictionary<Player, int> points = new Dictionary<Player, int>(won.Count + defeatedPlayers.Length);
+            Dictionary<Player, int> points = new Dictionary<Player, int>();
 
-            //adds in (x^2+x)/2 points, where x is the inverse index
+            SortedList<int, Player> lost = Map.game.GetLost(), won = Map.game.GetWon();
             int cur = 0, add = -1;
-            for (int b = defeatedPlayers.Length ; --b > -1 ; )
-            {
-                points.Add(defeatedPlayers[b], cur += ( ++add ));
-            }
-            while (won.Count > 0)
-            {
-                Player next = null;
-                int turn = Map.game.Turn;
-                foreach (KeyValuePair<Player, int> p in won)
-                    if (p.Value < turn)
-                    {
-                        next = p.Key;
-                        turn = p.Value;
-                    }
-                points.Add(next, Game.Random.Round(650.0 / turn) + ( cur += ( ++add ) ));
-                won.Remove(next);
-            }
+            foreach (var pair in lost)
+                points.Add(pair.Value, Game.Random.Round(-26.0 / pair.Key) + ( cur += ( ++add ) ));
+            for (int idx = won.Count - 1 ; idx >= 0 ; --idx)
+                points.Add(won.Values[idx], Game.Random.Round(780.0 / won.Keys[idx]) + ( cur += ( ++add ) ));
 
             this.textBox1.Clear();
-            foreach (KeyValuePair<Player, int> p in Game.Random.Iterate(points))
-                this.textBox1.Text += string.Format("{0} - {1}\r\n", p.Key.Name, p.Value);
+            foreach (var pair in Game.Random.Iterate(points))
+                this.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.Name, pair.Value);
         }
     }
 }

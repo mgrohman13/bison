@@ -174,7 +174,7 @@ namespace CityWar
 
         public string GetLogString()
         {
-            return string.Format(name + " ({0},{1})", damage, divide);
+            return string.Format(name + " ({0}, {1})", damage, divide);
         }
 
         public static string GetString(string name, int damage, int divide, string targets, int length)

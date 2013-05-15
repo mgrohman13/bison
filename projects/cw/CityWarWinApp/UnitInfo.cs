@@ -61,9 +61,9 @@ namespace CityWarWinApp
                         this.lblRegen.Text = "Income";
                         this.txtRegen.Text = portal.Income.ToString();
 
-                        Dictionary<string, double> units = portal.getUnitValues();
+                        Dictionary<string, int> units = portal.GetUnitValues();
                         foreach (string name in units.Keys)
-                            this.lbAttacks.Items.Add(name + "   " + Math.Floor(units[name]).ToString("0") + " / " + CityWar.Unit.CreateTempUnit(name).BaseCost);
+                            this.lbAttacks.Items.Add(name + "   " + units[name] + " / " + CityWar.Unit.CreateTempUnit(name).BaseCost);
 
                         this.lblArmor.Visible = false;
                         this.txtArmor.Visible = false;

@@ -10,7 +10,6 @@ balance
 gameplay
 	end game scoring
 		model after GW
-	make portal amounts integers
 	loading a game with different unit set
 		support?
 		error?

@@ -24,7 +24,7 @@ namespace CityWarWinApp
         public delegate Piece[] GetPiecesDelegate();
         public delegate MattUtil.EnumFlags<DrawFlags> GetDrawFlagsDelegate(Piece piece);
 
-        public delegate string GetTextDelegate(Piece piece);
+        public delegate Tuple<string, string> GetTextDelegate(Piece piece);
         public delegate Brush GetTextBrushDelegate();
 
         private GetPiecesDelegate GetPieces;
@@ -121,8 +121,21 @@ namespace CityWarWinApp
 
                     if (drawFlags.Contains(DrawFlags.Frame))
                         g.DrawRectangle(framePen, x, y, 100f, 100f);
+
                     if (drawFlags.Contains(DrawFlags.Text))
-                        g.DrawString(GetText(currentPiece), font, GetTextBrush(), x, y + 103);
+                    {
+                        Tuple<string, string> text = GetText(currentPiece);
+                        if (text != null)
+                        {
+                            if (text.Item1 != null)
+                                g.DrawString(text.Item1, font, GetTextBrush(), x, y + 104);
+                            if (text.Item2 != null)
+                            {
+                                float width = g.MeasureString(text.Item2, font).Width;
+                                g.DrawString(text.Item2, font, GetTextBrush(), x + 100 - width, y + 104);
+                            }
+                        }
+                    }
 
                     lastPiece = currentPiece;
                 }

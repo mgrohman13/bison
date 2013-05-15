@@ -369,7 +369,7 @@ namespace CityWar
             if (avg > 0)
                 AddWork(avg * WorkMult);
             else
-                AddUpkeep(avg * -UpkeepMult);
+                AddUpkeep(-avg * UpkeepMult);
         }
 
         private int[] AddStartResources(int totalAmt, ref int mainType, int minMain, int maxMain, int numOthers)
@@ -580,9 +580,6 @@ namespace CityWar
 
         internal void KillPlayer()
         {
-            if (pieces.Count > 0)
-                throw new Exception();
-
             game.DefeatPlayer(this);
 
             trades.Clear();
@@ -1014,11 +1011,11 @@ namespace CityWar
                 if (u != null && u.Type != UnitType.Immobile)
                     total += GetUpkeep(u);
             }
-            AddUpkeep(total * UpkeepMult / WorkMult);
+            AddUpkeep(Game.Random.GaussianCappedInt(total, .104));
         }
         internal static double GetUpkeep(Unit u)
         {
-            return ( u.RandedCost / 210.0 );
+            return ( u.RandedCost * UpkeepMult / 210.0 );
         }
 
         private void PayUpkeep(double payment)
@@ -1133,13 +1130,24 @@ namespace CityWar
             CheckNegativeResource(ref magic);
             CheckNegativeResource(ref _relic);
             CheckNegativeResource(ref population);
+
+            if (upkeep < 0)
+            {
+                AddWork(-upkeep / UpkeepMult * WorkMult);
+                upkeep = 0;
+            }
+            if (work < 0 && upkeep == 0)
+            {
+                AddUpkeep(-work / WorkMult * UpkeepMult);
+                work = 0;
+            }
         }
 
         private void CheckNegativeResource(ref int amt)
         {
             if (amt < 0)
             {
-                AddUpkeep(amt * -UpkeepMult);
+                AddUpkeep(-amt * UpkeepMult);
                 amt = 0;
             }
         }
@@ -1280,7 +1288,7 @@ namespace CityWar
                 Player.SplitPortalCost(portal.Owner.Race, portal.PortalType, out m, out e);
                 double magicPct = m / (double)( m + e ), elementPct = e / (double)( m + e );
                 double diff = portal.GetPortalValue() - portalAvg;
-                const double mult = .78;
+                const double mult = .87;
                 magic += Game.Random.Round(diff * mult * magicPct);
                 Spend(-Game.Random.Round(diff * mult * elementPct), portal.PortalType, 0);
             }
@@ -1319,6 +1327,7 @@ namespace CityWar
         }
         private int RemoveResources()
         {
+            int loseUnits = 0;
             const double LoseWork = noCapLoseAmt * WorkMult;
             while (work < LoseWork)
             {
@@ -1326,39 +1335,55 @@ namespace CityWar
                 //check if you could get enough by trading; every loop in case of unlucky rounding
                 if (totalResources < noCapLoseAmt)
                 {
-                    int loseUnits = Game.Random.Round(1 - totalResources / noCapLoseAmt);
+                    loseUnits = Game.Random.Round(1 - totalResources / noCapLoseAmt);
                     if (loseUnits == 0)
-                        AddUpkeep(noCapLoseAmt * UpkeepMult);
-                    return loseUnits;
+                    {
+                        TradeAll(ref air);
+                        TradeAll(ref earth);
+                        TradeAll(ref nature);
+                        TradeAll(ref water);
+                        TradeAll(ref death);
+                        TradeAll(ref production);
+                        TradeAll(ref population);
+                        TradeAll(ref magic);
+                        TradeAll(ref _relic);
+                        TradePct(ref upkeep, -1 / UpkeepMult, 1, 0);
+                    }
+                    break;
                 }
                 else
                 {
                     //trade a percantage of what you have of each resource
-                    air = TradePctAtAvgTrade(air);
-                    earth = TradePctAtAvgTrade(earth);
-                    nature = TradePctAtAvgTrade(nature);
-                    water = TradePctAtAvgTrade(water);
-                    death = TradePctAtAvgTrade(death);
-                    production = TradePctAtAvgTrade(production);
-                    population = TradePctAtAvgTrade(population);
-                    magic = TradePctAtRate(magic, 1, .091, 1.3);
-                    relic = TradePctAtRate(relic, 1, .091, 1.3);
+                    TradePct(ref air);
+                    TradePct(ref earth);
+                    TradePct(ref nature);
+                    TradePct(ref water);
+                    TradePct(ref death);
+                    TradePct(ref production);
+                    TradePct(ref population);
+                    TradePct(ref magic, 1, .091, 1.3);
+                    TradePct(ref _relic, 1, .091, 1.3);
                     //pass a negative rate so it decreases work
-                    upkeep = TradePctAtRate(upkeep, 1 / -UpkeepMult);
+                    TradePct(ref upkeep, -1 / UpkeepMult);
                 }
             }
-            AddWork(-LoseWork);
-            return 0;
+            if (loseUnits == 0)
+                AddWork(-LoseWork);
+            return loseUnits;
         }
-        private int TradePctAtAvgTrade(int amt)
+        private int TradeAll(ref int amt)
         {
-            return TradePctAtRate(amt, 1);
+            return TradePct(ref amt, 1, 1, 0);
         }
-        private int TradePctAtRate(int amt, double rate)
+        private int TradePct(ref int amt)
         {
-            return TradePctAtRate(amt, rate, .169, 13);
+            return TradePct(ref amt, 1);
         }
-        private int TradePctAtRate(int amt, double rate, double pct, double add)
+        private int TradePct(ref int amt, double rate)
+        {
+            return TradePct(ref amt, rate, .169, 13);
+        }
+        private int TradePct(ref int amt, double rate, double pct, double add)
         {
             //add a little bit to the percent so itll trade away the dregs
             double tradeAmt = pct * amt + add;

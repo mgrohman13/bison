@@ -451,9 +451,9 @@ namespace CityWarWinApp
             return result;
         }
 
-        private string GetTextForPiece(Piece piece)
+        private Tuple<string, string> GetTextForPiece(Piece piece)
         {
-            return string.Format("{0} / {1}", piece.Movement, piece.MaxMove);
+            return new Tuple<string, string>(string.Format("{0} / {1}", piece.Movement, piece.MaxMove), null);
         }
 
         #endregion

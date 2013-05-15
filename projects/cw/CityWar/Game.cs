@@ -24,8 +24,8 @@ namespace CityWar
         public static Dictionary<string, string[]> Races;
 
         private int turn, width, height, currentPlayer, startWork;
-        private Player[] players, defeatedPlayers;
-        private Dictionary<Player, int> winningPlayers;
+        private Player[] players;
+        private Dictionary<int, Player> winningPlayers, defeatedPlayers;
         private Tile[,] map;
         private Dictionary<string, int> unitsHave;
 
@@ -63,8 +63,8 @@ namespace CityWar
             game.turn = 1;
             game.Width = width;
             game.Height = height;
-            game.defeatedPlayers = new Player[0];
-            game.winningPlayers = new Dictionary<Player, int>();
+            game.defeatedPlayers = new Dictionary<int, Player>();
+            game.winningPlayers = new Dictionary<int, Player>();
 
             game.CreateMap(width, height);
 
@@ -895,17 +895,20 @@ namespace CityWar
             Player.ResetPics(this.players, zoom);
         }
 
-        public Player[] GetDefeatedPlayers()
+        public SortedList<int, Player> GetWon()
         {
-            return (Player[])defeatedPlayers.Clone();
+            return GetSortedList(winningPlayers);
         }
-
-        public Dictionary<Player, int> GetWon()
+        public SortedList<int, Player> GetLost()
         {
-            Dictionary<Player, int> r = new Dictionary<Player, int>();
-            foreach (KeyValuePair<Player, int> p in winningPlayers)
-                r.Add(p.Key, p.Value);
-            return r;
+            return GetSortedList(defeatedPlayers);
+        }
+        private static SortedList<int, Player> GetSortedList(Dictionary<int, Player> dictionary)
+        {
+            SortedList<int, Player> retVal = new SortedList<int, Player>();
+            foreach (var pair in dictionary)
+                retVal.Add(pair.Key, pair.Value);
+            return retVal;
         }
 
         public int GetUnitHas(string name)
@@ -1007,27 +1010,31 @@ namespace CityWar
         {
             if (win != null)
             {
-                winningPlayers.Add(win, turn - 1);
+                winningPlayers.Add(turn, win);
                 RemovePlayer(win);
 
                 if (players.Length == 1)
+                {
                     players[0].KillPlayer();
+                }
                 else if (players.Length > 1)
-                    foreach (Piece piece in win.GetPieces())
+                {
+                    Piece[] temp = new Piece[win.GetPieces().Count];
+                    win.GetPieces().CopyTo(temp, 0);
+                    foreach (Piece piece in temp)
                     {
                         piece.Tile.Remove(piece);
                         win.Remove(piece, true);
                     }
+                }
             }
         }
         internal void DefeatPlayer(Player player)
         {
-            //add the losing player to the defeatedPlayers array
-            Player[] newLost = new Player[defeatedPlayers.Length + 1];
-            newLost[0] = player;
-            for (int i = 1 ; i < newLost.Length ; ++i)
-                newLost[i] = defeatedPlayers[i - 1];
-            defeatedPlayers = newLost;
+            int turn = this.turn;
+            while (defeatedPlayers.ContainsKey(turn))
+                turn += ( Game.Random.Bool() ? -1 : 1 );
+            defeatedPlayers.Add(turn, player);
 
             RemovePlayer(player);
         }
@@ -1310,7 +1317,7 @@ next:
                     {
                         Unit u = Unit.CreateTempUnit(unit);
                         if (u.costType != CostType.Production)
-                            portalAvg += u.BaseCost * Portal.StartAmt * Portal.WorkPct;
+                            portalAvg += u.BaseCost * Portal.StartAmt * Portal.ValuePct;
                     }
                 portalAvg /= Races.Count * 5.0;
                 portalAvg += Portal.AvgPortalCost;
@@ -1441,7 +1448,7 @@ next:
             //total difference between first and last moving player is worth 300 resources
             double amount = 3 * diff / ( players.Length - 1.0 );
             player.CollectWizardPts(amount);
-            player.AddWork(50 * amount * Player.WorkMult);
+            player.BalanceForUnit(50 * amount, 0);
         }
         #endregion //increment turn
 

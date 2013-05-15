@@ -8,14 +8,14 @@ namespace CityWar
     {
         #region fields and constructors
         public const int AvgPortalCost = 1000;
-        private const double UnitCostMult = .21;
-        public const double WorkPct = ( 1 - UnitCostMult );
-        public const double StartAmt = .21;
+        public const double UnitCostPct = .21;
+        public const double ValuePct = ( 1 - UnitCostPct );
+        public const double StartAmt = .26;
 
         internal readonly int PortalCost, income;
         internal readonly CostType PortalType;
-        private string[] units;
-        private double[] have;
+
+        private Dictionary<string, int> unitsHave;
 
         internal Portal(Player owner, Tile tile, CostType type)
             : base(0, owner, tile)
@@ -29,7 +29,7 @@ namespace CityWar
             int mag, elm;
             Player.SplitPortalCost(owner.Race, type, out mag, out elm);
             this.PortalCost = mag + elm;
-            double income = mag / 66.6;
+            double income = mag / 65.0;
             this.income = Game.Random.Round(income);
 
             SetStartValues();
@@ -60,7 +60,7 @@ namespace CityWar
             if (oldRace == owner.Race)
             {
                 //if the new owner is the same race, he keeps the have values and pays upkeep for it
-                owner.BalanceForUnit(0, resourceValue);
+                PayUpkeep(resourceValue);
             }
             else
             {
@@ -71,31 +71,31 @@ namespace CityWar
 
         private void SetStartValues()
         {
-            List<string> unitsOfType = new List<string>();
+            this.unitsHave = new Dictionary<string, int>();
+
+            Dictionary<string, int> unitCosts = new Dictionary<string, int>();
             foreach (string unitName in Game.Races[this.owner.Race])
             {
                 Unit unit = Unit.CreateTempUnit(unitName);
                 if (unit.costType == this.PortalType)
-                    unitsOfType.Add(unitName);
+                    unitCosts.Add(unitName, unit.BaseCost);
             }
-            string[] units = (string[])unitsOfType.ToArray();
 
-            int i = units.Length;
-            double[] have = new double[i];
             double totalStart = 0;
-            while (--i > -1)
+            foreach (var pair in unitCosts)
             {
+                string unit = pair.Key;
+                double baseCost = pair.Value;
+
                 double inc = GetTurnInc();
-                //start with a random amount towards each unit
-                double start = Game.Random.Weighted(Unit.CreateTempUnit(units[i]).BaseCost - inc, StartAmt) + inc * StartAmt;
+                int start = Game.Random.Round(Game.Random.Weighted(baseCost - inc, StartAmt) + inc * StartAmt);
+
                 totalStart += start;
-                have[i] = start;
+                unitsHave.Add(unit, start);
             }
 
             //pay for starting amount
-            PayUpkeep(totalStart * WorkPct);
-            this.units = units;
-            this.have = have;
+            PayUpkeep(totalStart * ValuePct);
         }
 
         public override bool CapableBuild(string name)
@@ -116,17 +116,23 @@ namespace CityWar
 
         internal override void ResetMove()
         {
-            double inc = GetTurnInc();
-            int index = Game.Random.Next(units.Length);
-            int needed = Unit.CreateTempUnit(units[index]).BaseCost;
-            have[index] += Game.Random.GaussianOE(inc, .039 * units.Length, .065 * ( needed - have[index] ) / ( needed + inc ));
-
-            while (have[index] >= needed)
+            string unit = null;
+            foreach (string name in Game.Random.Iterate(unitsHave.Keys))
             {
-                have[index] -= needed;
-                owner.FreeUnit(units[index], this);
+                unit = name;
+                break;
+            }
 
-                PayUpkeep(needed * UnitCostMult);
+            double inc = GetTurnInc();
+            int needed = Unit.CreateTempUnit(unit).BaseCost;
+            unitsHave[unit] += Game.Random.GaussianOEInt(inc, .039 * unitsHave.Count, .065 * ( needed - unitsHave[unit] ) / ( needed + inc ));
+
+            while (unitsHave[unit] >= needed)
+            {
+                unitsHave[unit] -= needed;
+                owner.FreeUnit(unit, this);
+
+                PayUpkeep(needed * UnitCostPct);
             }
         }
         internal void PayUpkeep(double upkeep)
@@ -166,11 +172,11 @@ namespace CityWar
             return Math.Pow(PortalCost, Power) / Divisor / Math.Pow(AvgPortalCost, Power - 1);
         }
 
-        public Dictionary<string, double> getUnitValues()
+        public Dictionary<string, int> GetUnitValues()
         {
-            Dictionary<string, double> retVal = new Dictionary<string, double>();
-            for (int i = units.Length ; --i > -1 ; )
-                retVal.Add(units[i], have[i]);
+            Dictionary<string, int> retVal = new Dictionary<string, int>();
+            foreach (var pair in unitsHave)
+                retVal.Add(pair.Key, pair.Value);
             return retVal;
         }
         #endregion //public methods and properties
@@ -183,9 +189,9 @@ namespace CityWar
         internal double GetResourceValue()
         {
             double total = 0;
-            for (int i = units.Length ; --i > -1 ; )
-                total += have[i];
-            return total * WorkPct;
+            foreach (int value in unitsHave.Values)
+                total += value;
+            return total * ValuePct;
         }
         #endregion //internal methods
     }
