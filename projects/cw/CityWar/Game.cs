@@ -1010,7 +1010,7 @@ namespace CityWar
         {
             if (win != null)
             {
-                winningPlayers.Add(turn, win);
+                Addplayer(winningPlayers, turn, win);
                 RemovePlayer(win);
 
                 if (players.Length == 1)
@@ -1029,15 +1029,46 @@ namespace CityWar
                 }
             }
         }
+
         internal void DefeatPlayer(Player player)
         {
-            int turn = this.turn;
-            while (defeatedPlayers.ContainsKey(turn))
-                turn += ( Game.Random.Bool() ? -1 : 1 );
-            defeatedPlayers.Add(turn, player);
-
+            Addplayer(defeatedPlayers, turn, player);
             RemovePlayer(player);
         }
+
+        private static void Addplayer(Dictionary<int, Player> dict, int turn, Player p)
+        {
+            Addplayer(dict, turn, p, false);
+        }
+        private static void Addplayer(Dictionary<int, Player> dict, int turn, Player p, bool lower)
+        {
+            Player low;
+            if (dict.TryGetValue(turn, out low))
+            {
+                if (lower)
+                {
+                    Player temp = p;
+                    p = low;
+                    low = temp;
+                }
+
+                if (Game.Random.Bool())
+                {
+                    dict[turn] = low;
+                    Addplayer(dict, turn + 1, p, true);
+                }
+                else
+                {
+                    dict[turn] = p;
+                    Addplayer(dict, turn - 1, low, false);
+                }
+            }
+            else
+            {
+                dict.Add(turn, p);
+            }
+        }
+
         private void RemovePlayer(Player player)
         {
             //remove from the players array
@@ -1066,8 +1097,6 @@ namespace CityWar
         #region increment turn
         private void IncrementTurn()
         {
-            ++turn;
-
             //initialize variables
             Player deadPlayer = null, win;
             Dictionary<Player, double> deadPlayers = null;
@@ -1089,6 +1118,8 @@ namespace CityWar
                 ChangeMoveOrder();
                 Player.SubtractCommonUpkeep(this.players);
             }
+
+            ++turn;
         }
         private int[,] GetPlayerCounts(ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers, ref bool noCapts, out Player win)
         {
