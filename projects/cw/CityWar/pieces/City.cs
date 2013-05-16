@@ -137,13 +137,7 @@ namespace CityWar
 
             //can only build elemental units when on the correct terrain
             CostType costType = unit.costType;
-            if (tile.Terrain == Terrain.Forest && costType == CostType.Nature)
-                return true;
-            if (tile.Terrain == Terrain.Mountain && costType == CostType.Earth)
-                return true;
-            if (tile.Terrain == Terrain.Plains && costType == CostType.Air)
-                return true;
-            if (tile.Terrain == Terrain.Water && costType == CostType.Water)
+            if (tile.MatchesTerrain(costType))
                 return true;
 
             if (costType == CostType.Production)
@@ -153,12 +147,10 @@ namespace CityWar
                 {
                     Tile neighbor = tile.GetNeighbor(i);
                     if (neighbor != null)
-                    {
                         if (neighbor.Terrain == Terrain.Water)
                             water = true;
                         else
                             ground = true;
-                    }
                 }
                 bool can;
                 switch (unit.Type)

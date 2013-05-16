@@ -551,6 +551,18 @@ namespace CityWar
         {
             madeCity = false;
         }
+
+        internal bool MatchesTerrain(CostType costType)
+        {
+            return MatchesTerrain(costType, this.Terrain);
+        }
+        internal static bool MatchesTerrain(CostType costType, Terrain terrain)
+        {
+            return ( ( terrain == Terrain.Forest && costType == CostType.Nature )
+                    || ( terrain == Terrain.Mountain && costType == CostType.Earth )
+                    || ( terrain == Terrain.Plains && costType == CostType.Air )
+                    || ( terrain == Terrain.Water && costType == CostType.Water ) );
+        }
         #endregion //internal methods
 
         #region piece sorting

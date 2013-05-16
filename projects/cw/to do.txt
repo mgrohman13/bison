@@ -12,6 +12,7 @@ gameplay
 		support?
 		error?
 		save units with game?
+	undo capturing?
 	hex
 	teleporters
 	exp?
@@ -27,13 +28,9 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	damage calculator
 	battles
-		combat log/feedback
-			available outside combat
-		damage calculator
-			also available outside combat
-		show who retalliators can target
-		easier ways to visualize player power at each length
+		if only target dies, attacks still stick around?
 		ability to look around main map during a battle, see info screen, etc?
 			highlight participating tiles
 			any attempted action re-opens battle window
@@ -42,5 +39,4 @@ interface
 	score graphs
 	clean up balance build summon form
 	ensure player color differences
-	undo capturing
 	graphic artifacts

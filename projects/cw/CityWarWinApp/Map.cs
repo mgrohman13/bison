@@ -1259,6 +1259,16 @@ namespace CityWarWinApp
             }
         }
 
+        private void btnLog_Click(object sender, EventArgs e)
+        {
+            new Log().ShowDialog();
+        }
+
+        private void btnCalc_Click(object sender, EventArgs e)
+        {
+
+        }
+
         #endregion
 
         #region Load and Save

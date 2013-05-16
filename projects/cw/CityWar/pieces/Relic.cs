@@ -34,10 +34,7 @@ namespace CityWar
                         val = .3;
                     else if (unit.costType == CostType.Death)
                         val = .7;
-                    else if (( terrain == Terrain.Forest && unit.costType == CostType.Nature )
-                        || ( terrain == Terrain.Mountain && unit.costType == CostType.Earth )
-                        || ( terrain == Terrain.Plains && unit.costType == CostType.Air )
-                        || ( terrain == Terrain.Water && unit.costType == CostType.Water ))
+                    else if (Tile.MatchesTerrain(unit.costType, terrain))
                         val = matchChance;
                     else
                         val = unmatchChance;
@@ -57,11 +54,7 @@ namespace CityWar
             foreach (string u in this.units.ToArray())
             {
                 Unit unit = Unit.CreateTempUnit(u);
-                if (( ( tile.Terrain == Terrain.Forest && unit.costType == CostType.Nature )
-                    || ( tile.Terrain == Terrain.Mountain && unit.costType == CostType.Earth )
-                    || ( tile.Terrain == Terrain.Plains && unit.costType == CostType.Air )
-                    || ( tile.Terrain == Terrain.Water && unit.costType == CostType.Water ) ) &&
-                    Game.Random.Bool(1 - ( unmatchChance / matchChance )))
+                if (tile.MatchesTerrain(unit.costType) && Game.Random.Bool(1 - ( unmatchChance / matchChance )))
                     this.units.Remove(u);
             }
             //chance to add units matching the new terrain
@@ -69,12 +62,8 @@ namespace CityWar
                 foreach (string u in race)
                 {
                     Unit unit = Unit.CreateTempUnit(u);
-                    if (!this.units.Contains(u) &&
-                        ( ( newTerrain == Terrain.Forest && unit.costType == CostType.Nature )
-                        || ( newTerrain == Terrain.Mountain && unit.costType == CostType.Earth )
-                        || ( newTerrain == Terrain.Plains && unit.costType == CostType.Air )
-                        || ( newTerrain == Terrain.Water && unit.costType == CostType.Water ) )
-                        && Game.Random.Bool(( matchChance - unmatchChance ) / ( 1 - unmatchChance )))
+                    if (!this.units.Contains(u) && Tile.MatchesTerrain(unit.costType, newTerrain)
+                            && Game.Random.Bool(( matchChance - unmatchChance ) / ( 1 - unmatchChance )))
                         this.units.Add(u);
                 }
         }

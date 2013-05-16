@@ -63,11 +63,7 @@ namespace CityWar
                 return true;
 
             //can always build magic units when on the correct terrain
-            CostType costType = unit.costType;
-            return ( costType == CostType.Air && tile.Terrain == Terrain.Plains ||
-                costType == CostType.Earth && tile.Terrain == Terrain.Mountain ||
-                costType == CostType.Nature && tile.Terrain == Terrain.Forest ||
-                costType == CostType.Water && tile.Terrain == Terrain.Water );
+            return tile.MatchesTerrain(unit.costType);
         }
 
         internal override double Heal()

@@ -125,7 +125,7 @@ namespace CityWar
 
             double inc = GetTurnInc();
             int needed = Unit.CreateTempUnit(unit).BaseCost;
-            unitsHave[unit] += Game.Random.GaussianOEInt(inc, .039 * unitsHave.Count, .065 * ( needed - unitsHave[unit] ) / ( needed + inc ));
+            unitsHave[unit] += Game.Random.GaussianOEInt(inc, .13 / unitsHave.Count, .065 * ( needed - unitsHave[unit] ) / ( needed + inc ));
 
             while (unitsHave[unit] >= needed)
             {

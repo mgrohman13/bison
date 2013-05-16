@@ -110,7 +110,7 @@ namespace CityWar
         }
         public bool CanAttack(Unit u, int length)
         {
-            if (this.Used || this.length < length || owner.Dead || u.Dead || !owner.Tile.IsNeighbor(u.Tile))
+            if (this.Used || this.length < length)
                 return false;
 
             //Immobile units protect on defense only
@@ -123,6 +123,9 @@ namespace CityWar
         }
         internal bool CanTarget(Unit u)
         {
+            if (owner.Owner == u.Owner || !owner.Tile.IsNeighbor(u.Tile) || owner.Dead || u.Dead)
+                return false;
+
             if (u.Type == UnitType.Immobile)
                 return true;
 

@@ -1001,7 +1001,8 @@ namespace CityWar
         private void PayUpkeep()
         {
             double payment = GetTurnUpkeep();
-            PayUpkeep(payment);
+            AddWork(-payment);
+            AddUpkeep(-payment);
 
             //unit upkeep
             double total = 0;
@@ -1018,11 +1019,8 @@ namespace CityWar
             return ( u.RandedCost * UpkeepMult / 210.0 );
         }
 
-        private void PayUpkeep(double payment)
+        private void CheckNegativeWork()
         {
-            AddWork(-payment);
-            AddUpkeep(-payment);
-
             //when your work is negative, there is a chance you will lose some actual resources
             int amt = 10;
             while (Game.Random.OE(39 * GetRandVal(amt)) < -work)
@@ -1141,6 +1139,7 @@ namespace CityWar
                 AddUpkeep(-work / WorkMult * UpkeepMult);
                 work = 0;
             }
+            CheckNegativeWork();
         }
 
         private void CheckNegativeResource(ref int amt)

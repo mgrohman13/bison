@@ -63,6 +63,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Log.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Log.Designer.cs">
+      <DependentUpon>Log.cs</DependentUpon>
+    </Compile>
     <Compile Include="PiecesPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -151,6 +157,9 @@
     <EmbeddedResource Include="GameOver.resx">
       <SubType>Designer</SubType>
       <DependentUpon>GameOver.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Log.resx">
+      <DependentUpon>Log.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PiecesPanel.resx">
       <SubType>Designer</SubType>

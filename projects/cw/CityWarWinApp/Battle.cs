@@ -12,10 +12,10 @@ namespace CityWarWinApp
     partial class Battle : Form
     {
         private CityWar.Battle battle;
-        private Unit _selected = null, _mouseOver = null;
+        private Unit _selected = null, mouseOver = null;
         private UnitInfo unitInfo = null;
 
-        private HashSet<Unit> hideUnits = new HashSet<Unit>(), attackLeft = new HashSet<Unit>();
+        private HashSet<Unit> hideUnits = new HashSet<Unit>();
         private Dictionary<Unit, HashSet<Attack>> validAttacks = null;
 
         private Unit selected
@@ -33,29 +33,18 @@ namespace CityWarWinApp
                 }
             }
         }
-        private Unit mouseOver
-        {
-            get
-            {
-                return _mouseOver;
-            }
-            set
-            {
-                if (_mouseOver != value)
-                {
-                    _mouseOver = value;
-                    RefreshMouseOver();
-                }
-            }
-        }
 
         private void RefreshSelected()
         {
             if (selected != null)
             {
+                //lbAttacks.ClearSelected();
                 lbAttacks.Items.Clear();
-                foreach (Attack a in validAttacks[selected])
-                    lbAttacks.Items.Add(a);
+                ValidAttacks(selected, delegate(Attack attack)
+                {
+                    if (!attack.Used)
+                        lbAttacks.Items.Add(attack);
+                });
                 if (lbAttacks.Items.Count > 0)
                     lbAttacks.SelectedIndex = 0;
                 else
@@ -63,11 +52,16 @@ namespace CityWarWinApp
             }
 
             ClearTarget();
+            panelAttackers.Invalidate();
+            panelDefenders.Invalidate();
         }
 
-        public Battle(CityWar.Battle b)
+        public Battle(CityWar.Battle battle)
         {
+            this.battle = battle;
+
             InitializeComponent();
+
             panelAttackers.Initialize(
                 delegate()
                 {
@@ -98,19 +92,19 @@ namespace CityWarWinApp
                     return Brushes.DarkBlue;
                 }
             );
-            this.MouseWheel += new MouseEventHandler(Battle_MouseWheel);
-            this.lbAttacks.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
 
-            this.battle = b;
-
-            ShowLog();
+            MouseWheel += new MouseEventHandler(Battle_MouseWheel);
+            lbAttacks.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
+            lbAtt.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
+            lbDef.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
         }
 
         private void listBox_MouseWheel(object sender, MouseEventArgs e)
         {
             ListBox box = (ListBox)sender;
-            Battle_MouseWheel(this, new MouseEventArgs(e.Button, e.Clicks,
-                    e.X + box.Location.X, e.Y + box.Location.Y, e.Delta));
+            if (!box.HorizontalScrollbar)
+                Battle_MouseWheel(this, new MouseEventArgs(e.Button, e.Clicks,
+                        e.X + box.Location.X, e.Y + box.Location.Y, e.Delta));
         }
 
         private void Battle_MouseWheel(object sender, MouseEventArgs e)
@@ -134,24 +128,22 @@ namespace CityWarWinApp
         {
             Unit unit = (Unit)piece;
             MattUtil.EnumFlags<PiecesPanel.DrawFlags> result = new MattUtil.EnumFlags<PiecesPanel.DrawFlags>(PiecesPanel.DrawFlags.Text);
+
+            Attack retalliation = GetSelectedRetalliation();
+
             if (attacker)
             {
                 if (selected == unit)
                     result.Add(PiecesPanel.DrawFlags.Frame);
-                if (mouseOver == null)
-                {
-                    if (battle.CanRetalliate && attackLeft.Contains(unit))
-                        result.Add(PiecesPanel.DrawFlags.Background);
-                }
-                else
-                {
-                    foreach (Attack attack in mouseOver.Attacks)
-                        if (attack.CanAttack(unit))
-                            result.Add(PiecesPanel.DrawFlags.Background);
-                }
+
+                if (retalliation != null && retalliation.CanAttack(unit))
+                    result.Add(PiecesPanel.DrawFlags.Background);
             }
             else
             {
+                if (retalliation != null && retalliation.Owner == unit)
+                    result.Add(PiecesPanel.DrawFlags.Frame);
+
                 Attack selectedAttack = GetSelectedAttack();
                 if (selectedAttack != null && selectedAttack.CanAttack(unit))
                     result.Add(PiecesPanel.DrawFlags.Background);
@@ -162,12 +154,19 @@ namespace CityWarWinApp
         private Tuple<string, string> GetAttackerText(Piece piece)
         {
             Unit unit = (Unit)piece;
-            HashSet<Attack> attacks = validAttacks[unit];
-            int unused = 0;
-            foreach (Attack a in attacks)
-                if (!a.Used)
+
+            int unused = 0, total = 0;
+            HashSet<Attack> attacks;
+            validAttacks.TryGetValue(unit, out attacks);
+            foreach (Attack attack in unit.Attacks)
+            {
+                bool used = attack.Used, valid = ( attacks != null && attacks.Contains(attack) );
+                if (!used && valid)
                     ++unused;
-            string left = string.Format("{0} / {1}", unused, attacks.Count);
+                if (used || valid)
+                    ++total;
+            }
+            string left = string.Format("{0} / {1}", unused, total);
             string right = ( unit.Length != int.MinValue && unit.Length != int.MaxValue ? unit.Length.ToString() : null );
             return new Tuple<string, string>(left, right);
         }
@@ -196,9 +195,6 @@ namespace CityWarWinApp
                 {
                 }
             }
-
-            ClearTarget();
-            Refresh();
         }
 
         private void panelDefenders_MouseLeave(object sender, EventArgs e)
@@ -208,42 +204,35 @@ namespace CityWarWinApp
 
         private void panelDefenders_MouseMove(object sender, MouseEventArgs e)
         {
-            mouseOver = panelDefenders.GetClickedPiece(e) as Unit;
-        }
-
-        private void RefreshMouseOver()
-        {
-            this.panelAttackers.Refresh();
-
-            Attack attack = GetSelectedAttack();
-            if (selected != null && mouseOver != null && attack != null && attack.CanAttack(mouseOver))
+            Unit newMoused = panelDefenders.GetClickedPiece(e) as Unit;
+            if (newMoused != mouseOver)
             {
-                double killPct, avgRelic;
-                double avgDamage = attack.GetAverageDamage(mouseOver, out killPct, out avgRelic);
-                this.txtTarget.Text = mouseOver.Name;
-                this.txtArmor.Text = mouseOver.Armor.ToString();
-                this.txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(mouseOver));
-                this.txtChance.Text = killPct.ToString("0") + "%";
-                this.txtRelic.Text = avgRelic.ToString("0.00");
-            }
-            else
-            {
-                ClearTarget(false);
+                mouseOver = newMoused;
+                Attack attack = GetSelectedAttack();
+                if (selected != null && mouseOver != null && attack != null && attack.CanAttack(mouseOver))
+                {
+                    double killPct, avgRelic;
+                    double avgDamage = attack.GetAverageDamage(mouseOver, out killPct, out avgRelic);
+                    txtTarget.Text = mouseOver.Name;
+                    txtArmor.Text = mouseOver.Armor.ToString();
+                    txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(mouseOver));
+                    txtChance.Text = killPct.ToString("0") + "%";
+                    txtRelic.Text = avgRelic.ToString("0.00");
+                }
+                else
+                {
+                    ClearTarget();
+                }
             }
         }
         private void ClearTarget()
         {
-            ClearTarget(true);
-        }
-        private void ClearTarget(bool clearMouseOver)
-        {
-            if (clearMouseOver)
-                mouseOver = null;
-            this.txtTarget.Clear();
-            this.txtArmor.Clear();
-            this.txtTargDmg.Clear();
-            this.txtChance.Clear();
-            this.txtRelic.Clear();
+            mouseOver = null;
+            txtTarget.Clear();
+            txtArmor.Clear();
+            txtTargDmg.Clear();
+            txtChance.Clear();
+            txtRelic.Clear();
         }
 
         private void panelDefenders_MouseUp(object sender, MouseEventArgs e)
@@ -257,13 +246,14 @@ namespace CityWarWinApp
                     int oldHits = clicked.Hits;
                     int damage = Map.game.AttackUnit(battle, attack, clicked);
                     if (damage > -1)
-                        LogAttack(attack.Owner, attack, clicked, damage, oldHits);
+                        Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits);
 
                     if (CheckUnits())
                         return;
 
                     RefreshSelected();
-                    Refresh();
+                    panelAttackers.Invalidate();
+                    panelDefenders.Invalidate();
                 }
             }
             else if (e.Button == MouseButtons.Right && unitInfo != null)
@@ -278,18 +268,6 @@ namespace CityWarWinApp
             }
         }
 
-        private static string log = "";
-        private void LogAttack(Unit attacker, Attack attack, Unit defender, int damage, int oldHits)
-        {
-            log = string.Format("{6} {0}, {1} -> {7} {2} ({3}, {5}) : {4}{8}\r\n", attacker, attack.GetLogString(), defender,
-                oldHits, -damage, defender.Armor, attacker.Owner, defender.Owner, defender.Dead ? ", Killed!" : "") + log;
-            ShowLog();
-        }
-        private void ShowLog()
-        {
-            this.txtLog.Text = log;
-        }
-
         private bool CheckUnits()
         {
             ClearTarget();
@@ -301,7 +279,8 @@ namespace CityWarWinApp
             if (doAttacks)
                 validAttacks = new Dictionary<Unit, HashSet<Attack>>();
 
-            attackLeft.Clear();
+            bool anyHave = false, selectedHas = false;
+
             hideUnits.Clear();
             hideUnits.UnionWith(attackers);
             hideUnits.UnionWith(defenders);
@@ -313,58 +292,83 @@ namespace CityWarWinApp
                         {
                             if (!attAtt.Used)
                             {
+                                anyHave = true;
+                                if (attacker == selected)
+                                    selectedHas = true;
                                 hideUnits.Remove(attacker);
                                 hideUnits.Remove(defender);
-                                if (!attAtt.Used)
-                                {
-                                    attackLeft.Add(attacker);
-                                    if (!doAttacks)
-                                        break;
-                                }
+                                if (!doAttacks)
+                                    break;
                             }
-                            if (doAttacks)
-                            {
-                                HashSet<Attack> attacks;
-                                if (!validAttacks.TryGetValue(attacker, out attacks))
-                                    validAttacks[attacker] = attacks = new HashSet<Attack>();
-                                attacks.Add(attAtt);
-                            }
+                            AddValidAttack(doAttacks, attacker, attAtt);
                         }
 
-            if (battle.CanRetalliate)
-                foreach (Unit attacker in attackers)
+            foreach (Unit attacker in attackers)
+            {
+                int minLength = attacker.Length;
+                ValidAttacks(attacker, delegate(Attack attack)
                 {
-                    int minLength = int.MaxValue;
-                    foreach (Attack validAttack in validAttacks[attacker])
-                        minLength = Math.Min(minLength, validAttack.Length);
-                    foreach (Unit defender in defenders)
-                        foreach (Attack defAtt in defender.Attacks)
-                            if (defAtt.CanAttack(attacker, minLength))
+                    minLength = Math.Min(minLength, attack.Length);
+                });
+                foreach (Unit defender in defenders)
+                    foreach (Attack defAtt in defender.Attacks)
+                        if (defAtt.CanAttack(attacker, minLength))
+                        {
+                            if (battle.CanRetalliate)
                             {
                                 hideUnits.Remove(attacker);
                                 hideUnits.Remove(defender);
-                                break;
+                                if (!doAttacks)
+                                    break;
                             }
-                }
+                            AddValidAttack(doAttacks, defender, defAtt);
+                        }
+            }
 
-            if (attackLeft.Count == 0)
+            if (!anyHave)
             {
                 btnEnd_Click(null, null);
                 return true;
             }
 
-            if (selected == null || !attackLeft.Contains(selected))
-                foreach (Unit u in attackers)
-                    if (!hideUnits.Contains(u))
-                        foreach (Attack a in validAttacks[u])
-                        {
-                            selected = u;
-                            goto selectAttack;
-                        }
-selectAttack:
+            if (!selectedHas)
+                foreach (Unit attacker in attackers)
+                    ValidAttacks(attacker, delegate(Attack attack)
+                    {
+                        bool unused = !attack.Used;
+                        if (unused)
+                            selected = attacker;
+                        return unused;
+                    });
             lbAttacks.SelectedIndex = 0;
 
             return false;
+        }
+        private void AddValidAttack(bool doAttacks, Unit unit, Attack attack)
+        {
+            if (doAttacks)
+            {
+                HashSet<Attack> attacks;
+                if (!validAttacks.TryGetValue(unit, out attacks))
+                    validAttacks[unit] = attacks = new HashSet<Attack>();
+                attacks.Add(attack);
+            }
+        }
+        private void ValidAttacks(Unit unit, Action<Attack> Action)
+        {
+            ValidAttacks(unit, delegate(Attack attack)
+            {
+                Action(attack);
+                return false;
+            });
+        }
+        private void ValidAttacks(Unit unit, Func<Attack, bool> Func)
+        {
+            HashSet<Attack> attacks;
+            if (validAttacks.TryGetValue(unit, out attacks))
+                foreach (Attack validAttack in attacks)
+                    if (Func(validAttack))
+                        return;
         }
 
         private void btnEnd_Click(object sender, EventArgs e)
@@ -375,31 +379,118 @@ selectAttack:
                 if (CheckUnits())
                     return;
 
+                cbAttAll.Checked = true;
+                RefreshLBAtt();
+                lbDef.ClearSelected();
+
+                cbAttAll.Visible = false;
+                cbDefAll.Visible = false;
+                lbDef.Visible = false;
+
                 RefreshSelected();
-                Refresh();
+                panelAttackers.Invalidate();
+                panelDefenders.Invalidate();
             }
             else
             {
-                this.Close();
+                Close();
             }
         }
 
         private void lbAttacks_SelectedIndexChanged(object sender, EventArgs e)
         {
             Attack attack = GetSelectedAttack();
-            this.txtAP.Text = attack.ArmorPiercing.ToString();
-            this.txtDam.Text = attack.Damage.ToString("0.0");
-            this.txtTargets.Text = attack.GetTargetString();
-            this.txtLength.Text = attack.Length.ToString();
+            if (attack != null)
+            {
+                txtAP.Text = attack.ArmorPiercing.ToString();
+                txtDam.Text = attack.Damage.ToString("0.0");
+                txtTargets.Text = attack.GetTargetString();
+                txtLength.Text = attack.Length.ToString();
 
-            ClearTarget();
-            panelDefenders.Refresh();
+                if (!cbDefAll.Checked)
+                    RefreshLBDef();
+                ClearTarget();
+                panelDefenders.Invalidate();
+            }
+        }
+
+        private void cbDefAll_CheckedChanged(object sender, EventArgs e)
+        {
+            RefreshLBDef();
+        }
+        private void cbAttAll_CheckedChanged(object sender, EventArgs e)
+        {
+            RefreshLBAtt();
+        }
+
+        private void lbDef_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!cbAttAll.Checked)
+                RefreshLBAtt();
+            panelAttackers.Invalidate();
+            panelDefenders.Invalidate();
+        }
+        private void lbAtt_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Attack attack = GetSelectedLBAtt();
+            if (attack != null)
+            {
+                selected = attack.Owner;
+                lbAttacks.SelectedItem = attack;
+            }
+        }
+
+        private void RefreshLBDef()
+        {
+            object selectedItem = lbDef.SelectedItem;
+            //lbDef.ClearSelected();
+            lbDef.Items.Clear();
+
+            Unit attacker = selected;
+            Attack attack = GetSelectedAttack();
+
+            foreach (Unit defender in battle.GetDefenders())
+                ValidAttacks(defender, delegate(Attack retalliation)
+                {
+                    if (cbDefAll.Checked || ShowAttack(retalliation, attacker, attack))
+                        lbDef.Items.Add(retalliation);
+                });
+
+            lbDef.SelectedItem = selectedItem;
+        }
+        private void RefreshLBAtt()
+        {
+            object selectedItem = lbAtt.SelectedItem;
+            //lbAtt.ClearSelected();
+            lbAtt.Items.Clear();
+
+            Attack retalliation = GetSelectedRetalliation();
+            if (retalliation != null || cbAttAll.Checked)
+                foreach (Unit attacker in battle.GetAttackers())
+                    ValidAttacks(attacker, delegate(Attack attack)
+                    {
+                        if (!attack.Used && ( cbAttAll.Checked || ShowAttack(retalliation, attacker, attack) ))
+                            lbAtt.Items.Add(attack);
+                    });
+
+            lbAtt.SelectedItem = selectedItem;
+        }
+        private static bool ShowAttack(Attack retalliation, Unit attacker, Attack attack)
+        {
+            return ( !retalliation.CanAttack(attacker) && retalliation.CanAttack(attacker, attack.Length) );
         }
 
         private Attack GetSelectedAttack()
         {
-            Attack selectedAttack = lbAttacks.SelectedItem as Attack;
-            return selectedAttack;
+            return lbAttacks.SelectedItem as Attack;
+        }
+        private Attack GetSelectedRetalliation()
+        {
+            return lbDef.SelectedItem as Attack;
+        }
+        private Attack GetSelectedLBAtt()
+        {
+            return lbAtt.SelectedItem as Attack;
         }
 
         private void panelAttackers_MouseDown(object sender, MouseEventArgs e)
@@ -439,17 +530,27 @@ selectAttack:
 
         private void sbAttackers_Scroll(object sender, ScrollEventArgs e)
         {
-            this.panelAttackers.Refresh();
+            panelAttackers.Invalidate();
         }
 
         private void sbDefenders_Scroll(object sender, ScrollEventArgs e)
         {
-            this.panelDefenders.Refresh();
+            panelDefenders.Invalidate();
         }
 
         private void Battle_Load(object sender, EventArgs e)
         {
             CheckUnits();
+        }
+
+        private void btnLog_Click(object sender, EventArgs e)
+        {
+            new Log().ShowDialog();
+        }
+
+        private void btnCalc_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

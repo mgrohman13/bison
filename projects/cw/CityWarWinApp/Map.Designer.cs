@@ -63,6 +63,8 @@ namespace CityWarWinApp
             this.panelPieces = new CityWarWinApp.PiecesPanel();
             this.btnUndo = new System.Windows.Forms.Button();
             this.chbGamble = new System.Windows.Forms.CheckBox();
+            this.btnLog = new System.Windows.Forms.Button();
+            this.btnCalc = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // timerGraphics
@@ -123,7 +125,7 @@ namespace CityWarWinApp
             // 
             this.lblProd.BackColor = System.Drawing.Color.DarkOrange;
             this.lblProd.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblProd.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblProd.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblProd.ForeColor = System.Drawing.Color.Black;
             this.lblProd.Location = new System.Drawing.Point(114, 9);
             this.lblProd.Name = "lblProd";
@@ -138,7 +140,7 @@ namespace CityWarWinApp
             // 
             this.lblWork.BackColor = System.Drawing.Color.White;
             this.lblWork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWork.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblWork.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblWork.ForeColor = System.Drawing.Color.Black;
             this.lblWork.Location = new System.Drawing.Point(12, 9);
             this.lblWork.Name = "lblWork";
@@ -154,7 +156,7 @@ namespace CityWarWinApp
             // 
             this.lblDeath.BackColor = System.Drawing.Color.Black;
             this.lblDeath.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblDeath.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblDeath.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblDeath.ForeColor = System.Drawing.Color.White;
             this.lblDeath.Location = new System.Drawing.Point(165, 9);
             this.lblDeath.Name = "lblDeath";
@@ -169,7 +171,7 @@ namespace CityWarWinApp
             // 
             this.lblEarth.BackColor = System.Drawing.Color.Gold;
             this.lblEarth.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblEarth.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblEarth.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblEarth.ForeColor = System.Drawing.Color.Black;
             this.lblEarth.Location = new System.Drawing.Point(216, 9);
             this.lblEarth.Name = "lblEarth";
@@ -184,7 +186,7 @@ namespace CityWarWinApp
             // 
             this.lblWizard.BackColor = System.Drawing.Color.DeepPink;
             this.lblWizard.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWizard.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblWizard.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblWizard.ForeColor = System.Drawing.Color.Black;
             this.lblWizard.Location = new System.Drawing.Point(420, 9);
             this.lblWizard.Name = "lblWizard";
@@ -199,7 +201,7 @@ namespace CityWarWinApp
             // 
             this.lblAir.BackColor = System.Drawing.Color.Gray;
             this.lblAir.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblAir.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblAir.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblAir.ForeColor = System.Drawing.Color.Black;
             this.lblAir.Location = new System.Drawing.Point(369, 9);
             this.lblAir.Name = "lblAir";
@@ -214,7 +216,7 @@ namespace CityWarWinApp
             // 
             this.lblNature.BackColor = System.Drawing.Color.Green;
             this.lblNature.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblNature.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblNature.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblNature.ForeColor = System.Drawing.Color.Black;
             this.lblNature.Location = new System.Drawing.Point(318, 9);
             this.lblNature.Name = "lblNature";
@@ -229,7 +231,7 @@ namespace CityWarWinApp
             // 
             this.lblWater.BackColor = System.Drawing.Color.Blue;
             this.lblWater.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWater.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblWater.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblWater.ForeColor = System.Drawing.Color.Black;
             this.lblWater.Location = new System.Drawing.Point(267, 9);
             this.lblWater.Name = "lblWater";
@@ -303,9 +305,9 @@ namespace CityWarWinApp
             this.lblTurn.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lblTurn.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblTurn.ForeColor = System.Drawing.Color.White;
-            this.lblTurn.Location = new System.Drawing.Point(558, 379);
+            this.lblTurn.Location = new System.Drawing.Point(554, 349);
             this.lblTurn.Name = "lblTurn";
-            this.lblTurn.Size = new System.Drawing.Size(82, 18);
+            this.lblTurn.Size = new System.Drawing.Size(86, 18);
             this.lblTurn.TabIndex = 20;
             this.lblTurn.Text = "1";
             this.lblTurn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -315,9 +317,9 @@ namespace CityWarWinApp
             this.label3.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label3.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label3.ForeColor = System.Drawing.Color.White;
-            this.label3.Location = new System.Drawing.Point(558, 361);
+            this.label3.Location = new System.Drawing.Point(554, 331);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(82, 18);
+            this.label3.Size = new System.Drawing.Size(86, 18);
             this.label3.TabIndex = 22;
             this.label3.Text = "Turn";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -328,7 +330,7 @@ namespace CityWarWinApp
             this.btnInfo.BackColor = System.Drawing.Color.Silver;
             this.btnInfo.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnInfo.ForeColor = System.Drawing.Color.Black;
-            this.btnInfo.Location = new System.Drawing.Point(558, 400);
+            this.btnInfo.Location = new System.Drawing.Point(558, 370);
             this.btnInfo.Name = "btnInfo";
             this.btnInfo.Size = new System.Drawing.Size(82, 23);
             this.btnInfo.TabIndex = 9;
@@ -340,7 +342,7 @@ namespace CityWarWinApp
             // 
             this.lblRelic.BackColor = System.Drawing.Color.Cyan;
             this.lblRelic.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblRelic.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblRelic.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblRelic.ForeColor = System.Drawing.Color.Black;
             this.lblRelic.Location = new System.Drawing.Point(471, 9);
             this.lblRelic.Name = "lblRelic";
@@ -407,7 +409,7 @@ namespace CityWarWinApp
             // 
             this.lblPpl.BackColor = System.Drawing.Color.Brown;
             this.lblPpl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblPpl.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
+            this.lblPpl.Font = new System.Drawing.Font("Arial", 9.75F);
             this.lblPpl.ForeColor = System.Drawing.Color.Black;
             this.lblPpl.Location = new System.Drawing.Point(63, 9);
             this.lblPpl.Name = "lblPpl";
@@ -516,12 +518,42 @@ namespace CityWarWinApp
             this.chbGamble.Text = "Full";
             this.chbGamble.UseVisualStyleBackColor = true;
             // 
+            // btnLog
+            // 
+            this.btnLog.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnLog.BackColor = System.Drawing.Color.Silver;
+            this.btnLog.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnLog.ForeColor = System.Drawing.Color.Black;
+            this.btnLog.Location = new System.Drawing.Point(558, 399);
+            this.btnLog.Name = "btnLog";
+            this.btnLog.Size = new System.Drawing.Size(82, 23);
+            this.btnLog.TabIndex = 59;
+            this.btnLog.Text = "Log";
+            this.btnLog.UseVisualStyleBackColor = false;
+            this.btnLog.Click += new System.EventHandler(this.btnLog_Click);
+            // 
+            // btnCalc
+            // 
+            this.btnCalc.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnCalc.BackColor = System.Drawing.Color.Silver;
+            this.btnCalc.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnCalc.ForeColor = System.Drawing.Color.Black;
+            this.btnCalc.Location = new System.Drawing.Point(558, 428);
+            this.btnCalc.Name = "btnCalc";
+            this.btnCalc.Size = new System.Drawing.Size(82, 23);
+            this.btnCalc.TabIndex = 60;
+            this.btnCalc.Text = "Calc";
+            this.btnCalc.UseVisualStyleBackColor = false;
+            this.btnCalc.Click += new System.EventHandler(this.btnCalc_Click);
+            // 
             // Map
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(800, 600);
+            this.Controls.Add(this.btnCalc);
+            this.Controls.Add(this.btnLog);
             this.Controls.Add(this.chbGamble);
             this.Controls.Add(this.btnUndo);
             this.Controls.Add(this.chbGroup);
@@ -607,5 +639,7 @@ namespace CityWarWinApp
 		private System.Windows.Forms.CheckBox chbGroup;
 		private System.Windows.Forms.Button btnUndo;
         private System.Windows.Forms.CheckBox chbGamble;
+        private System.Windows.Forms.Button btnLog;
+        private System.Windows.Forms.Button btnCalc;
     }
 }

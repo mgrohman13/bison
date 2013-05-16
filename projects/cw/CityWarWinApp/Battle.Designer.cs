@@ -28,8 +28,6 @@ namespace CityWarWinApp
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.panelAttackers = new CityWarWinApp.PiecesPanel();
-            this.panelDefenders = new CityWarWinApp.PiecesPanel();
             this.lbAttacks = new System.Windows.Forms.ListBox();
             this.btnEnd = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -50,35 +48,15 @@ namespace CityWarWinApp
             this.label8 = new System.Windows.Forms.Label();
             this.txtRelic = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
-            this.txtLog = new System.Windows.Forms.TextBox();
             this.btnCalc = new System.Windows.Forms.Button();
+            this.btnLog = new System.Windows.Forms.Button();
+            this.panelDefenders = new CityWarWinApp.PiecesPanel();
+            this.panelAttackers = new CityWarWinApp.PiecesPanel();
+            this.lbAtt = new System.Windows.Forms.ListBox();
+            this.lbDef = new System.Windows.Forms.ListBox();
+            this.cbAttAll = new System.Windows.Forms.CheckBox();
+            this.cbDefAll = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
-            // 
-            // panelAttackers
-            // 
-            this.panelAttackers.BackColor = System.Drawing.Color.White;
-            this.panelAttackers.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelAttackers.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.panelAttackers.Location = new System.Drawing.Point(0, 0);
-            this.panelAttackers.Name = "panelAttackers";
-            this.panelAttackers.Size = new System.Drawing.Size(255, 600);
-            this.panelAttackers.TabIndex = 0;
-            this.panelAttackers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseDown);
-            this.panelAttackers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseUp);
-            // 
-            // panelDefenders
-            // 
-            this.panelDefenders.BackColor = System.Drawing.Color.White;
-            this.panelDefenders.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panelDefenders.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.panelDefenders.Location = new System.Drawing.Point(645, 0);
-            this.panelDefenders.Name = "panelDefenders";
-            this.panelDefenders.Size = new System.Drawing.Size(255, 600);
-            this.panelDefenders.TabIndex = 0;
-            this.panelDefenders.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseDown);
-            this.panelDefenders.MouseLeave += new System.EventHandler(this.panelDefenders_MouseLeave);
-            this.panelDefenders.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseMove);
-            this.panelDefenders.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseUp);
             // 
             // lbAttacks
             // 
@@ -89,7 +67,7 @@ namespace CityWarWinApp
             this.lbAttacks.ItemHeight = 16;
             this.lbAttacks.Location = new System.Drawing.Point(261, 12);
             this.lbAttacks.Name = "lbAttacks";
-            this.lbAttacks.Size = new System.Drawing.Size(296, 52);
+            this.lbAttacks.Size = new System.Drawing.Size(257, 52);
             this.lbAttacks.TabIndex = 1;
             this.lbAttacks.SelectedIndexChanged += new System.EventHandler(this.lbAttacks_SelectedIndexChanged);
             // 
@@ -98,7 +76,7 @@ namespace CityWarWinApp
             this.btnEnd.BackColor = System.Drawing.Color.White;
             this.btnEnd.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnEnd.ForeColor = System.Drawing.Color.Black;
-            this.btnEnd.Location = new System.Drawing.Point(261, 201);
+            this.btnEnd.Location = new System.Drawing.Point(261, 549);
             this.btnEnd.Name = "btnEnd";
             this.btnEnd.Size = new System.Drawing.Size(130, 39);
             this.btnEnd.TabIndex = 0;
@@ -331,29 +309,109 @@ namespace CityWarWinApp
             this.label9.Text = "Relic";
             this.label9.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
-            // txtLog
-            // 
-            this.txtLog.Font = new System.Drawing.Font("Arial", 9.75F);
-            this.txtLog.Location = new System.Drawing.Point(261, 246);
-            this.txtLog.Multiline = true;
-            this.txtLog.Name = "txtLog";
-            this.txtLog.ReadOnly = true;
-            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtLog.Size = new System.Drawing.Size(378, 342);
-            this.txtLog.TabIndex = 30;
-            // 
             // btnCalc
             // 
             this.btnCalc.AutoSize = true;
             this.btnCalc.BackColor = System.Drawing.Color.White;
             this.btnCalc.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnCalc.ForeColor = System.Drawing.Color.Black;
-            this.btnCalc.Location = new System.Drawing.Point(518, 210);
+            this.btnCalc.Location = new System.Drawing.Point(518, 558);
             this.btnCalc.Name = "btnCalc";
             this.btnCalc.Size = new System.Drawing.Size(121, 30);
             this.btnCalc.TabIndex = 31;
             this.btnCalc.Text = "Calculator";
             this.btnCalc.UseVisualStyleBackColor = false;
+            this.btnCalc.Click += new System.EventHandler(this.btnCalc_Click);
+            // 
+            // btnLog
+            // 
+            this.btnLog.AutoSize = true;
+            this.btnLog.BackColor = System.Drawing.Color.White;
+            this.btnLog.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.btnLog.ForeColor = System.Drawing.Color.Black;
+            this.btnLog.Location = new System.Drawing.Point(518, 522);
+            this.btnLog.Name = "btnLog";
+            this.btnLog.Size = new System.Drawing.Size(121, 30);
+            this.btnLog.TabIndex = 32;
+            this.btnLog.Text = "Log";
+            this.btnLog.UseVisualStyleBackColor = false;
+            this.btnLog.Click += new System.EventHandler(this.btnLog_Click);
+            // 
+            // panelDefenders
+            // 
+            this.panelDefenders.BackColor = System.Drawing.Color.White;
+            this.panelDefenders.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panelDefenders.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.panelDefenders.Location = new System.Drawing.Point(645, 0);
+            this.panelDefenders.Name = "panelDefenders";
+            this.panelDefenders.Size = new System.Drawing.Size(255, 600);
+            this.panelDefenders.TabIndex = 0;
+            this.panelDefenders.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseDown);
+            this.panelDefenders.MouseLeave += new System.EventHandler(this.panelDefenders_MouseLeave);
+            this.panelDefenders.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseMove);
+            this.panelDefenders.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseUp);
+            // 
+            // panelAttackers
+            // 
+            this.panelAttackers.BackColor = System.Drawing.Color.White;
+            this.panelAttackers.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelAttackers.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.panelAttackers.Location = new System.Drawing.Point(0, 0);
+            this.panelAttackers.Name = "panelAttackers";
+            this.panelAttackers.Size = new System.Drawing.Size(255, 600);
+            this.panelAttackers.TabIndex = 0;
+            this.panelAttackers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseDown);
+            this.panelAttackers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseUp);
+            // 
+            // lbAtt
+            // 
+            this.lbAtt.BackColor = System.Drawing.Color.White;
+            this.lbAtt.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbAtt.ForeColor = System.Drawing.Color.Black;
+            this.lbAtt.FormattingEnabled = true;
+            this.lbAtt.ItemHeight = 16;
+            this.lbAtt.Location = new System.Drawing.Point(261, 201);
+            this.lbAtt.Name = "lbAtt";
+            this.lbAtt.Size = new System.Drawing.Size(186, 276);
+            this.lbAtt.TabIndex = 33;
+            this.lbAtt.SelectedIndexChanged += new System.EventHandler(this.lbAtt_SelectedIndexChanged);
+            // 
+            // lbDef
+            // 
+            this.lbDef.BackColor = System.Drawing.Color.White;
+            this.lbDef.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbDef.ForeColor = System.Drawing.Color.Black;
+            this.lbDef.FormattingEnabled = true;
+            this.lbDef.ItemHeight = 16;
+            this.lbDef.Location = new System.Drawing.Point(453, 201);
+            this.lbDef.Name = "lbDef";
+            this.lbDef.Size = new System.Drawing.Size(186, 276);
+            this.lbDef.TabIndex = 34;
+            this.lbDef.SelectedIndexChanged += new System.EventHandler(this.lbDef_SelectedIndexChanged);
+            // 
+            // cbAttAll
+            // 
+            this.cbAttAll.AutoSize = true;
+            this.cbAttAll.ForeColor = System.Drawing.Color.White;
+            this.cbAttAll.Location = new System.Drawing.Point(320, 483);
+            this.cbAttAll.Name = "cbAttAll";
+            this.cbAttAll.Size = new System.Drawing.Size(67, 17);
+            this.cbAttAll.TabIndex = 35;
+            this.cbAttAll.Text = "Show All";
+            this.cbAttAll.UseVisualStyleBackColor = true;
+            this.cbAttAll.CheckedChanged += new System.EventHandler(this.cbAttAll_CheckedChanged);
+            // 
+            // cbDefAll
+            // 
+            this.cbDefAll.AutoSize = true;
+            this.cbDefAll.ForeColor = System.Drawing.Color.White;
+            this.cbDefAll.Location = new System.Drawing.Point(513, 483);
+            this.cbDefAll.Name = "cbDefAll";
+            this.cbDefAll.Size = new System.Drawing.Size(67, 17);
+            this.cbDefAll.TabIndex = 36;
+            this.cbDefAll.Text = "Show All";
+            this.cbDefAll.UseVisualStyleBackColor = true;
+            this.cbDefAll.CheckedChanged += new System.EventHandler(this.cbDefAll_CheckedChanged);
             // 
             // Battle
             // 
@@ -361,8 +419,12 @@ namespace CityWarWinApp
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(900, 600);
+            this.Controls.Add(this.cbDefAll);
+            this.Controls.Add(this.cbAttAll);
+            this.Controls.Add(this.lbDef);
+            this.Controls.Add(this.lbAtt);
+            this.Controls.Add(this.btnLog);
             this.Controls.Add(this.btnCalc);
-            this.Controls.Add(this.txtLog);
             this.Controls.Add(this.txtRelic);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.txtChance);
@@ -420,7 +482,11 @@ namespace CityWarWinApp
 		private System.Windows.Forms.Label label8;
 		private System.Windows.Forms.TextBox txtRelic;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Button btnCalc;
+        private System.Windows.Forms.Button btnLog;
+        private System.Windows.Forms.ListBox lbAtt;
+        private System.Windows.Forms.ListBox lbDef;
+        private System.Windows.Forms.CheckBox cbAttAll;
+        private System.Windows.Forms.CheckBox cbDefAll;
 	}
 }
