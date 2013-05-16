@@ -17,6 +17,7 @@ namespace CityWarWinApp
 
         private HashSet<Unit> hideUnits = new HashSet<Unit>();
         private Dictionary<Unit, HashSet<Attack>> validAttacks = null;
+        private Dictionary<Unit, int> totalCounts = null;
 
         private Unit selected
         {
@@ -155,17 +156,13 @@ namespace CityWarWinApp
         {
             Unit unit = (Unit)piece;
 
-            int unused = 0, total = 0;
-            HashSet<Attack> attacks;
-            validAttacks.TryGetValue(unit, out attacks);
-            foreach (Attack attack in unit.Attacks)
+            int unused = 0, total = totalCounts[unit];
+            ValidAttacks(unit, delegate(Attack attack)
             {
-                bool used = attack.Used, valid = ( attacks != null && attacks.Contains(attack) );
-                if (!used && valid)
+                if (!attack.Used)
                     ++unused;
-                if (used || valid)
-                    ++total;
-            }
+            });
+
             string left = string.Format("{0} / {1}", unused, total);
             string right = ( unit.Length != int.MinValue && unit.Length != int.MaxValue ? unit.Length.ToString() : null );
             return new Tuple<string, string>(left, right);
@@ -248,6 +245,8 @@ namespace CityWarWinApp
                     if (damage > -1)
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits);
 
+                    if (clicked.Dead)
+                        validAttacks = null;
                     if (CheckUnits())
                         return;
 
@@ -278,6 +277,9 @@ namespace CityWarWinApp
             bool doAttacks = ( validAttacks == null );
             if (doAttacks)
                 validAttacks = new Dictionary<Unit, HashSet<Attack>>();
+            bool doCounts = ( totalCounts == null );
+            if (doCounts)
+                totalCounts = new Dictionary<Unit, int>();
 
             bool anyHave = false, selectedHas = false;
 
@@ -297,10 +299,14 @@ namespace CityWarWinApp
                                     selectedHas = true;
                                 hideUnits.Remove(attacker);
                                 hideUnits.Remove(defender);
-                                if (!doAttacks)
-                                    break;
                             }
                             AddValidAttack(doAttacks, attacker, attAtt);
+                            if (doCounts)
+                            {
+                                int count;
+                                totalCounts.TryGetValue(attacker, out count);
+                                totalCounts[attacker] = count + 1;
+                            }
                         }
 
             foreach (Unit attacker in attackers)
@@ -318,8 +324,6 @@ namespace CityWarWinApp
                             {
                                 hideUnits.Remove(attacker);
                                 hideUnits.Remove(defender);
-                                if (!doAttacks)
-                                    break;
                             }
                             AddValidAttack(doAttacks, defender, defAtt);
                         }
@@ -376,6 +380,7 @@ namespace CityWarWinApp
             if (Map.game.EndBattle(battle))
             {
                 validAttacks = null;
+                totalCounts = null;
                 if (CheckUnits())
                     return;
 

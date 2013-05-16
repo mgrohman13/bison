@@ -30,7 +30,6 @@ requiring rebalance
 interface
 	damage calculator
 	battles
-		if only target dies, attacks still stick around?
 		ability to look around main map during a battle, see info screen, etc?
 			highlight participating tiles
 			any attempted action re-opens battle window
