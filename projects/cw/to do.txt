@@ -28,14 +28,12 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	log backwards
-	move log close button to right
+	space between next, undo, and other buttons
 	damage calculator
-	battles
-		ability to look around main map during a battle, see info screen, etc?
-			highlight participating tiles
-			any attempted action re-opens battle window
-			instantly show earned relics?
+	ability to look around main map during a battle, see info screen, etc?
+		highlight participating tiles
+		any attempted action re-opens battle window
+		instantly show earned relics?
 		save during battle?
 	score graphs
 	clean up balance build summon form

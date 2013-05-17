@@ -451,7 +451,7 @@ namespace CityWar
 
         private void GetRandedCostMult()
         {
-            _randedCostMult = Balance.getCost(MaxMove, regen, Abilty, BaseArmor, Type, Attacks, isThree, maxHits) / (double)( BaseCost );
+            _randedCostMult = Balance.getCost(MaxMove, regen, Abilty, armor, Type, Attacks, isThree, maxHits) / (double)( BaseCost );
         }
 
         public double regenPct

@@ -96,7 +96,7 @@ namespace CityWar
             }
         }
 
-        public double Damage
+        public int Damage
         {
             get
             {

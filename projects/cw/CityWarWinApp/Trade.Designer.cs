@@ -285,9 +285,9 @@ namespace CityWarWinApp
             this.btnDone.BackColor = System.Drawing.Color.Silver;
             this.btnDone.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDone.ForeColor = System.Drawing.Color.Black;
-            this.btnDone.Location = new System.Drawing.Point(275, 125);
+            this.btnDone.Location = new System.Drawing.Point(273, 125);
             this.btnDone.Name = "btnDone";
-            this.btnDone.Size = new System.Drawing.Size(83, 23);
+            this.btnDone.Size = new System.Drawing.Size(86, 25);
             this.btnDone.TabIndex = 0;
             this.btnDone.Text = "Done";
             this.btnDone.UseVisualStyleBackColor = false;
@@ -298,7 +298,7 @@ namespace CityWarWinApp
             this.lblWater.BackColor = System.Drawing.Color.Blue;
             this.lblWater.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblWater.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblWater.ForeColor = System.Drawing.Color.Black;
+            this.lblWater.ForeColor = System.Drawing.Color.Silver;
             this.lblWater.Location = new System.Drawing.Point(322, 9);
             this.lblWater.Name = "lblWater";
             this.lblWater.Size = new System.Drawing.Size(55, 23);
@@ -358,7 +358,7 @@ namespace CityWarWinApp
             this.lblDeath.BackColor = System.Drawing.Color.Black;
             this.lblDeath.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblDeath.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblDeath.ForeColor = System.Drawing.Color.White;
+            this.lblDeath.ForeColor = System.Drawing.Color.Silver;
             this.lblDeath.Location = new System.Drawing.Point(200, 9);
             this.lblDeath.Name = "lblDeath";
             this.lblDeath.Size = new System.Drawing.Size(55, 23);
@@ -475,7 +475,7 @@ namespace CityWarWinApp
             this.lblWaterInc.BackColor = System.Drawing.Color.Blue;
             this.lblWaterInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblWaterInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblWaterInc.ForeColor = System.Drawing.Color.Black;
+            this.lblWaterInc.ForeColor = System.Drawing.Color.Silver;
             this.lblWaterInc.Location = new System.Drawing.Point(322, 35);
             this.lblWaterInc.Name = "lblWaterInc";
             this.lblWaterInc.Size = new System.Drawing.Size(55, 23);
@@ -540,7 +540,7 @@ namespace CityWarWinApp
             this.lblDeathInc.BackColor = System.Drawing.Color.Black;
             this.lblDeathInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lblDeathInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblDeathInc.ForeColor = System.Drawing.Color.White;
+            this.lblDeathInc.ForeColor = System.Drawing.Color.Silver;
             this.lblDeathInc.Location = new System.Drawing.Point(200, 35);
             this.lblDeathInc.Name = "lblDeathInc";
             this.lblDeathInc.Size = new System.Drawing.Size(55, 23);
@@ -576,7 +576,9 @@ namespace CityWarWinApp
             // 
             // nudWorkMin
             // 
+            this.nudWorkMin.BackColor = System.Drawing.Color.White;
             this.nudWorkMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudWorkMin.ForeColor = System.Drawing.Color.Black;
             this.nudWorkMin.Location = new System.Drawing.Point(12, 68);
             this.nudWorkMin.Name = "nudWorkMin";
             this.nudWorkMin.Size = new System.Drawing.Size(60, 22);
@@ -585,7 +587,9 @@ namespace CityWarWinApp
             // 
             // nudWorkMax
             // 
+            this.nudWorkMax.BackColor = System.Drawing.Color.White;
             this.nudWorkMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudWorkMax.ForeColor = System.Drawing.Color.Black;
             this.nudWorkMax.Location = new System.Drawing.Point(12, 97);
             this.nudWorkMax.Name = "nudWorkMax";
             this.nudWorkMax.Size = new System.Drawing.Size(60, 22);
@@ -594,7 +598,9 @@ namespace CityWarWinApp
             // 
             // nudPopMax
             // 
+            this.nudPopMax.BackColor = System.Drawing.Color.White;
             this.nudPopMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudPopMax.ForeColor = System.Drawing.Color.Black;
             this.nudPopMax.Location = new System.Drawing.Point(78, 97);
             this.nudPopMax.Name = "nudPopMax";
             this.nudPopMax.Size = new System.Drawing.Size(55, 22);
@@ -603,7 +609,9 @@ namespace CityWarWinApp
             // 
             // nudPopMin
             // 
+            this.nudPopMin.BackColor = System.Drawing.Color.White;
             this.nudPopMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudPopMin.ForeColor = System.Drawing.Color.Black;
             this.nudPopMin.Location = new System.Drawing.Point(78, 68);
             this.nudPopMin.Name = "nudPopMin";
             this.nudPopMin.Size = new System.Drawing.Size(55, 22);
@@ -612,7 +620,9 @@ namespace CityWarWinApp
             // 
             // nudProdMax
             // 
+            this.nudProdMax.BackColor = System.Drawing.Color.White;
             this.nudProdMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudProdMax.ForeColor = System.Drawing.Color.Black;
             this.nudProdMax.Location = new System.Drawing.Point(139, 97);
             this.nudProdMax.Name = "nudProdMax";
             this.nudProdMax.Size = new System.Drawing.Size(55, 22);
@@ -621,7 +631,9 @@ namespace CityWarWinApp
             // 
             // nudProdMin
             // 
+            this.nudProdMin.BackColor = System.Drawing.Color.White;
             this.nudProdMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudProdMin.ForeColor = System.Drawing.Color.Black;
             this.nudProdMin.Location = new System.Drawing.Point(139, 68);
             this.nudProdMin.Name = "nudProdMin";
             this.nudProdMin.Size = new System.Drawing.Size(55, 22);
@@ -630,7 +642,9 @@ namespace CityWarWinApp
             // 
             // nudDeathMax
             // 
+            this.nudDeathMax.BackColor = System.Drawing.Color.White;
             this.nudDeathMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudDeathMax.ForeColor = System.Drawing.Color.Black;
             this.nudDeathMax.Location = new System.Drawing.Point(200, 97);
             this.nudDeathMax.Name = "nudDeathMax";
             this.nudDeathMax.Size = new System.Drawing.Size(55, 22);
@@ -639,7 +653,9 @@ namespace CityWarWinApp
             // 
             // nudDeathMin
             // 
+            this.nudDeathMin.BackColor = System.Drawing.Color.White;
             this.nudDeathMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudDeathMin.ForeColor = System.Drawing.Color.Black;
             this.nudDeathMin.Location = new System.Drawing.Point(200, 68);
             this.nudDeathMin.Name = "nudDeathMin";
             this.nudDeathMin.Size = new System.Drawing.Size(55, 22);
@@ -648,7 +664,9 @@ namespace CityWarWinApp
             // 
             // nudEarthMax
             // 
+            this.nudEarthMax.BackColor = System.Drawing.Color.White;
             this.nudEarthMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudEarthMax.ForeColor = System.Drawing.Color.Black;
             this.nudEarthMax.Location = new System.Drawing.Point(261, 97);
             this.nudEarthMax.Name = "nudEarthMax";
             this.nudEarthMax.Size = new System.Drawing.Size(55, 22);
@@ -657,7 +675,9 @@ namespace CityWarWinApp
             // 
             // nudEarthMin
             // 
+            this.nudEarthMin.BackColor = System.Drawing.Color.White;
             this.nudEarthMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudEarthMin.ForeColor = System.Drawing.Color.Black;
             this.nudEarthMin.Location = new System.Drawing.Point(261, 68);
             this.nudEarthMin.Name = "nudEarthMin";
             this.nudEarthMin.Size = new System.Drawing.Size(55, 22);
@@ -666,7 +686,9 @@ namespace CityWarWinApp
             // 
             // nudWaterMax
             // 
+            this.nudWaterMax.BackColor = System.Drawing.Color.White;
             this.nudWaterMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudWaterMax.ForeColor = System.Drawing.Color.Black;
             this.nudWaterMax.Location = new System.Drawing.Point(322, 97);
             this.nudWaterMax.Name = "nudWaterMax";
             this.nudWaterMax.Size = new System.Drawing.Size(55, 22);
@@ -675,7 +697,9 @@ namespace CityWarWinApp
             // 
             // nudWaterMin
             // 
+            this.nudWaterMin.BackColor = System.Drawing.Color.White;
             this.nudWaterMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudWaterMin.ForeColor = System.Drawing.Color.Black;
             this.nudWaterMin.Location = new System.Drawing.Point(322, 68);
             this.nudWaterMin.Name = "nudWaterMin";
             this.nudWaterMin.Size = new System.Drawing.Size(55, 22);
@@ -684,7 +708,9 @@ namespace CityWarWinApp
             // 
             // nudNatureMax
             // 
+            this.nudNatureMax.BackColor = System.Drawing.Color.White;
             this.nudNatureMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudNatureMax.ForeColor = System.Drawing.Color.Black;
             this.nudNatureMax.Location = new System.Drawing.Point(383, 97);
             this.nudNatureMax.Name = "nudNatureMax";
             this.nudNatureMax.Size = new System.Drawing.Size(55, 22);
@@ -693,7 +719,9 @@ namespace CityWarWinApp
             // 
             // nudNatureMin
             // 
+            this.nudNatureMin.BackColor = System.Drawing.Color.White;
             this.nudNatureMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudNatureMin.ForeColor = System.Drawing.Color.Black;
             this.nudNatureMin.Location = new System.Drawing.Point(383, 68);
             this.nudNatureMin.Name = "nudNatureMin";
             this.nudNatureMin.Size = new System.Drawing.Size(55, 22);
@@ -702,7 +730,9 @@ namespace CityWarWinApp
             // 
             // nudAirMax
             // 
+            this.nudAirMax.BackColor = System.Drawing.Color.White;
             this.nudAirMax.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudAirMax.ForeColor = System.Drawing.Color.Black;
             this.nudAirMax.Location = new System.Drawing.Point(444, 97);
             this.nudAirMax.Name = "nudAirMax";
             this.nudAirMax.Size = new System.Drawing.Size(55, 22);
@@ -711,7 +741,9 @@ namespace CityWarWinApp
             // 
             // nudAirMin
             // 
+            this.nudAirMin.BackColor = System.Drawing.Color.White;
             this.nudAirMin.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.nudAirMin.ForeColor = System.Drawing.Color.Black;
             this.nudAirMin.Location = new System.Drawing.Point(444, 68);
             this.nudAirMin.Name = "nudAirMin";
             this.nudAirMin.Size = new System.Drawing.Size(55, 22);
@@ -723,9 +755,9 @@ namespace CityWarWinApp
             this.btnGamble.BackColor = System.Drawing.Color.Silver;
             this.btnGamble.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnGamble.ForeColor = System.Drawing.Color.Black;
-            this.btnGamble.Location = new System.Drawing.Point(538, 125);
+            this.btnGamble.Location = new System.Drawing.Point(535, 125);
             this.btnGamble.Name = "btnGamble";
-            this.btnGamble.Size = new System.Drawing.Size(83, 23);
+            this.btnGamble.Size = new System.Drawing.Size(86, 25);
             this.btnGamble.TabIndex = 87;
             this.btnGamble.Text = "Gamble";
             this.btnGamble.UseVisualStyleBackColor = false;
@@ -733,8 +765,8 @@ namespace CityWarWinApp
             // 
             // label1
             // 
-            this.label1.Font = new System.Drawing.Font("Arial", 12F);
-            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.label1.ForeColor = System.Drawing.Color.Silver;
             this.label1.Location = new System.Drawing.Point(505, 69);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(116, 23);
@@ -745,8 +777,8 @@ namespace CityWarWinApp
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Arial", 12F);
-            this.label2.ForeColor = System.Drawing.Color.White;
+            this.label2.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.label2.ForeColor = System.Drawing.Color.Silver;
             this.label2.Location = new System.Drawing.Point(505, 98);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(116, 23);
@@ -760,7 +792,7 @@ namespace CityWarWinApp
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(633, 160);
+            this.ClientSize = new System.Drawing.Size(633, 162);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnGamble);

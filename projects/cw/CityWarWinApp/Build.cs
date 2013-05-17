@@ -454,8 +454,10 @@ namespace CityWarWinApp
             b.Text = text;
             b.TextAlign = textAlign;
             b.BackColor = color;
-            if (b.BackColor == Color.Black)
-                b.ForeColor = Color.White;
+            if (b.BackColor == Color.Black || b.BackColor == Color.Blue)
+                b.ForeColor = Color.Silver;
+            else
+                b.ForeColor = Color.Black;
             Controls.Add(b);
         }
 
@@ -466,6 +468,7 @@ namespace CityWarWinApp
             b.Location = new Point(x, y);
             b.Text = text;
             b.BackColor = Color.Silver;
+            b.ForeColor = Color.Black;
             b.TabIndex = ++tabOrder;
             b.Tag = tag;
             b.Click += eh;

@@ -152,19 +152,21 @@ namespace CityWarWinApp
 
         private Label CreateLabel()
         {
-            Label label1 = new Label();
-            label1.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            label1.ForeColor = System.Drawing.Color.White;
-            label1.TabIndex = 0;
-            label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.Controls.Add(label1);
-            return label1;
+            Label lbl = new Label();
+            lbl.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            lbl.BackColor = System.Drawing.Color.Black;
+            lbl.ForeColor = System.Drawing.Color.Silver;
+            lbl.TabIndex = 0;
+            lbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.Controls.Add(lbl);
+            return lbl;
         }
 
         private ListBox CreateListBox()
         {
             ListBox lbx = new ListBox();
             lbx.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            lbx.BackColor = System.Drawing.Color.Silver;
             lbx.ForeColor = System.Drawing.Color.Black;
             lbx.FormattingEnabled = true;
             lbx.ItemHeight = 17;

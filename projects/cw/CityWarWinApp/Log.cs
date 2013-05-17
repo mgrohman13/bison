@@ -26,7 +26,10 @@ namespace CityWarWinApp
 
         private void Log_Load(object sender, EventArgs e)
         {
-            this.textBox1.Text = log;
+            textBox1.Text = log;
+            textBox1.Select();
+            textBox1.Select(log.Length - 3, 1);
+            textBox1.ScrollToCaret();
         }
 
         private void btnEnd_Click(object sender, EventArgs e)

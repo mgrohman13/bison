@@ -1266,7 +1266,10 @@ namespace CityWarWinApp
 
         private void btnCalc_Click(object sender, EventArgs e)
         {
-
+            Unit[] units = null;
+            if (selected.X != -1 && selected.Y != -1)
+                units = game.GetTile(selected.X, selected.Y).GetAllUnits();
+            Calculator.ShowForm(units);
         }
 
         #endregion

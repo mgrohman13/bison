@@ -11,9 +11,11 @@ namespace CityWarWinApp
 {
     partial class Battle : Form
     {
-        private CityWar.Battle battle;
-        private Unit _selected = null, mouseOver = null;
         private UnitInfo unitInfo = null;
+
+        private CityWar.Battle battle;
+
+        private Unit _selected = null, mouseOver = null;
 
         private HashSet<Unit> hideUnits = new HashSet<Unit>();
         private Dictionary<Unit, HashSet<Attack>> validAttacks = null;
@@ -37,10 +39,10 @@ namespace CityWarWinApp
 
         private void RefreshSelected()
         {
+            lbAttacks.Items.Clear();
             if (selected != null)
             {
                 //lbAttacks.ClearSelected();
-                lbAttacks.Items.Clear();
                 ValidAttacks(selected, delegate(Attack attack)
                 {
                     if (!attack.Used)
@@ -206,13 +208,13 @@ namespace CityWarWinApp
             {
                 mouseOver = newMoused;
                 Attack attack = GetSelectedAttack();
-                if (selected != null && mouseOver != null && attack != null && attack.CanAttack(mouseOver))
+                if (selected != null && newMoused != null && attack != null && attack.CanAttack(newMoused))
                 {
                     double killPct, avgRelic;
-                    double avgDamage = attack.GetAverageDamage(mouseOver, out killPct, out avgRelic);
-                    txtTarget.Text = mouseOver.Name;
-                    txtArmor.Text = mouseOver.Armor.ToString();
-                    txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(mouseOver));
+                    double avgDamage = attack.GetAverageDamage(newMoused, out killPct, out avgRelic);
+                    txtTarget.Text = newMoused.Name;
+                    txtArmor.Text = newMoused.Armor.ToString();
+                    txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(newMoused));
                     txtChance.Text = killPct.ToString("0") + "%";
                     txtRelic.Text = avgRelic.ToString("0.00");
                 }
@@ -250,6 +252,8 @@ namespace CityWarWinApp
                     if (CheckUnits())
                         return;
 
+                    RefreshLBAtt();
+                    RefreshLBDef();
                     RefreshSelected();
                     panelAttackers.Invalidate();
                     panelDefenders.Invalidate();
@@ -288,10 +292,13 @@ namespace CityWarWinApp
             hideUnits.UnionWith(defenders);
 
             foreach (Unit attacker in attackers)
-                foreach (Unit defender in defenders)
-                    foreach (Attack attAtt in attacker.Attacks)
+                foreach (Attack attAtt in attacker.Attacks)
+                {
+                    bool validAttack = false;
+                    foreach (Unit defender in defenders)
                         if (attAtt.CanAttack(defender))
                         {
+                            validAttack = true;
                             if (!attAtt.Used)
                             {
                                 anyHave = true;
@@ -300,14 +307,24 @@ namespace CityWarWinApp
                                 hideUnits.Remove(attacker);
                                 hideUnits.Remove(defender);
                             }
-                            AddValidAttack(doAttacks, attacker, attAtt);
-                            if (doCounts)
-                            {
-                                int count;
-                                totalCounts.TryGetValue(attacker, out count);
-                                totalCounts[attacker] = count + 1;
-                            }
                         }
+                    if (validAttack)
+                    {
+                        AddValidAttack(doAttacks, attacker, attAtt);
+                        if (doCounts)
+                        {
+                            int count;
+                            totalCounts.TryGetValue(attacker, out count);
+                            totalCounts[attacker] = count + 1;
+                        }
+                    }
+                }
+
+            if (!anyHave)
+            {
+                btnEnd_Click(null, null);
+                return true;
+            }
 
             foreach (Unit attacker in attackers)
             {
@@ -327,12 +344,6 @@ namespace CityWarWinApp
                             }
                             AddValidAttack(doAttacks, defender, defAtt);
                         }
-            }
-
-            if (!anyHave)
-            {
-                btnEnd_Click(null, null);
-                return true;
             }
 
             if (!selectedHas)
@@ -408,7 +419,7 @@ namespace CityWarWinApp
             if (attack != null)
             {
                 txtAP.Text = attack.ArmorPiercing.ToString();
-                txtDam.Text = attack.Damage.ToString("0.0");
+                txtDam.Text = attack.Damage.ToString();
                 txtTargets.Text = attack.GetTargetString();
                 txtLength.Text = attack.Length.ToString();
 
@@ -555,7 +566,7 @@ namespace CityWarWinApp
 
         private void btnCalc_Click(object sender, EventArgs e)
         {
-
+            Calculator.ShowForm(this.battle);
         }
     }
 }
