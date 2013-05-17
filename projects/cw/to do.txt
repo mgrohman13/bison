@@ -28,6 +28,8 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	log backwards
+	move log close button to right
 	damage calculator
 	battles
 		ability to look around main map during a battle, see info screen, etc?
