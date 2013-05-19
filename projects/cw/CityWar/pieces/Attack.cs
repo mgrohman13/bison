@@ -114,7 +114,7 @@ namespace CityWar
                 return false;
 
             //Immobile units protect on defense only
-            if (owner.Owner != owner.Owner.Game.CurrentPlayer && u.Type != UnitType.Immobile)
+            if (u.Owner != u.Owner.Game.CurrentPlayer && u.Type != UnitType.Immobile)
                 foreach (Unit u2 in u.Tile.GetAllUnits())
                     if (u2.Type == UnitType.Immobile)
                         return false;
@@ -163,7 +163,12 @@ namespace CityWar
 
         public static double GetAverageDamage(double damage, double divide, double targetArmor, int targetHits)
         {
-            double kill, relic;
+            double kill;
+            return GetAverageDamage(damage, divide, targetArmor, targetHits, out kill);
+        }
+        public static double GetAverageDamage(double damage, double divide, double targetArmor, int targetHits, out double kill)
+        {
+            double relic;
             return DamageThrows(damage, divide, targetArmor, targetHits, out kill, out relic, false);
         }
 

@@ -46,22 +46,22 @@ namespace CityWarWinApp
 
         private void txtDamage_TextChanged(object sender, EventArgs e)
         {
-
+            RefreshResult();
         }
 
         private void txtPierce_TextChanged(object sender, EventArgs e)
         {
-
+            RefreshResult();
         }
 
         private void txtHits_TextChanged(object sender, EventArgs e)
         {
-
+            RefreshResult();
         }
 
         private void txtArmor_TextChanged(object sender, EventArgs e)
         {
-
+            RefreshResult();
         }
 
         private void listBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -77,6 +77,22 @@ namespace CityWarWinApp
         private void RefreshResult()
         {
             events = false;
+
+            try
+            {
+                int dmg = int.Parse(this.txtDamage.Text);
+                int ap = int.Parse(this.txtPierce.Text);
+                int hits = int.Parse(this.txtHits.Text);
+                int arm = int.Parse(this.txtArmor.Text);
+                double kill;
+                double avg = CityWar.Attack.GetAverageDamage(dmg, ap, arm, hits, out kill);
+                kill *= 100;
+                this.txtAverage.Text = avg.ToString("0.00");
+                this.txtKill.Text = kill.ToString("0") + "%";
+            }
+            catch
+            {
+            }
 
             events = true;
         }
@@ -121,8 +137,8 @@ namespace CityWarWinApp
 
             if (attack == null)
             {
-                this.txtDamage.Clear();
-                this.txtPierce.Clear();
+                //this.txtDamage.Clear();
+                //this.txtPierce.Clear();
             }
             else
             {
@@ -138,8 +154,8 @@ namespace CityWarWinApp
 
             if (defender == null)
             {
-                this.txtHits.Clear();
-                this.txtArmor.Clear();
+                //this.txtHits.Clear();
+                //this.txtArmor.Clear();
             }
             else
             {
@@ -239,6 +255,11 @@ namespace CityWarWinApp
                 retVal += string.Format("({0}, {1})", hits, armor);
                 return retVal;
             }
+        }
+
+        private void btnDone_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

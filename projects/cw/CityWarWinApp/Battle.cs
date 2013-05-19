@@ -464,13 +464,13 @@ namespace CityWarWinApp
 
             Unit attacker = selected;
             Attack attack = GetSelectedAttack();
-
-            foreach (Unit defender in battle.GetDefenders())
-                ValidAttacks(defender, delegate(Attack retalliation)
-                {
-                    if (cbDefAll.Checked || ShowAttack(retalliation, attacker, attack))
-                        lbDef.Items.Add(retalliation);
-                });
+            if (attacker != null && attack != null)
+                foreach (Unit defender in battle.GetDefenders())
+                    ValidAttacks(defender, delegate(Attack retalliation)
+                    {
+                        if (cbDefAll.Checked || ShowAttack(retalliation, attacker, attack))
+                            lbDef.Items.Add(retalliation);
+                    });
 
             lbDef.SelectedItem = selectedItem;
         }
