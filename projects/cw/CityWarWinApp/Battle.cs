@@ -9,7 +9,7 @@ using CityWar;
 
 namespace CityWarWinApp
 {
-    partial class Battle : Form
+    partial class Battle : Form, IComparer<Attack>
     {
         private UnitInfo unitInfo = null;
 
@@ -141,6 +141,15 @@ namespace CityWarWinApp
 
                 if (retalliation != null && retalliation.CanAttack(unit))
                     result.Add(PiecesPanel.DrawFlags.Background);
+
+                bool unused = false;
+                ValidAttacks(unit, delegate(Attack attack)
+                {
+                    unused = !attack.Used;
+                    return unused;
+                });
+                if (unused)
+                    result.Add(PiecesPanel.DrawFlags.Bold);
             }
             else
             {
@@ -347,7 +356,10 @@ namespace CityWarWinApp
             }
 
             if (!selectedHas)
+            {
+                selected = null;
                 foreach (Unit attacker in attackers)
+                {
                     ValidAttacks(attacker, delegate(Attack attack)
                     {
                         bool unused = !attack.Used;
@@ -355,6 +367,10 @@ namespace CityWarWinApp
                             selected = attacker;
                         return unused;
                     });
+                    if (selected != null)
+                        break;
+                }
+            }
             lbAttacks.SelectedIndex = 0;
 
             return false;
@@ -458,9 +474,7 @@ namespace CityWarWinApp
 
         private void RefreshLBDef()
         {
-            object selectedItem = lbDef.SelectedItem;
-            //lbDef.ClearSelected();
-            lbDef.Items.Clear();
+            SortedSet<Attack> showAttacks = new SortedSet<Attack>(this);
 
             Unit attacker = selected;
             Attack attack = GetSelectedAttack();
@@ -469,16 +483,14 @@ namespace CityWarWinApp
                     ValidAttacks(defender, delegate(Attack retalliation)
                     {
                         if (cbDefAll.Checked || ShowAttack(retalliation, attacker, attack))
-                            lbDef.Items.Add(retalliation);
+                            showAttacks.Add(retalliation);
                     });
 
-            lbDef.SelectedItem = selectedItem;
+            SetItems(lbDef, showAttacks);
         }
         private void RefreshLBAtt()
         {
-            object selectedItem = lbAtt.SelectedItem;
-            //lbAtt.ClearSelected();
-            lbAtt.Items.Clear();
+            SortedSet<Attack> showAttacks = new SortedSet<Attack>(this);
 
             Attack retalliation = GetSelectedRetalliation();
             if (retalliation != null || cbAttAll.Checked)
@@ -486,14 +498,27 @@ namespace CityWarWinApp
                     ValidAttacks(attacker, delegate(Attack attack)
                     {
                         if (!attack.Used && ( cbAttAll.Checked || ShowAttack(retalliation, attacker, attack) ))
-                            lbAtt.Items.Add(attack);
+                            showAttacks.Add(attack);
                     });
 
-            lbAtt.SelectedItem = selectedItem;
+            SetItems(lbAtt, showAttacks);
         }
         private static bool ShowAttack(Attack retalliation, Unit attacker, Attack attack)
         {
             return ( !retalliation.CanAttack(attacker) && retalliation.CanAttack(attacker, attack.Length) );
+        }
+        private static void SetItems(ListBox listBox, SortedSet<Attack> showAttacks)
+        {
+            Attack selectedItem = listBox.SelectedItem as Attack;
+            if (!showAttacks.Contains(selectedItem))
+                selectedItem = null;
+
+            listBox.Items.Clear();
+            foreach (Attack add in showAttacks)
+                listBox.Items.Add(add);
+
+            if (listBox.SelectedItem != selectedItem)
+                listBox.SelectedItem = selectedItem;
         }
 
         private Attack GetSelectedAttack()
@@ -568,5 +593,42 @@ namespace CityWarWinApp
         {
             Calculator.ShowForm(this.battle);
         }
+
+        #region IComparer<Attack> Members
+
+        int IComparer<Attack>.Compare(Attack x, Attack y)
+        {
+            if (x == null)
+            {
+                if (y == null)
+                    return 0;
+                return 1;
+            }
+            if (y == null)
+                return -1;
+
+            int retVal = ( y.Length - x.Length );
+            if (retVal == 0)
+            {
+                retVal = ( y.ArmorPiercing - x.ArmorPiercing );
+                if (retVal == 0)
+                {
+                    retVal = ( y.Damage - x.Damage );
+                    if (retVal == 0)
+                    {
+                        retVal = CityWar.Battle.CompareUnits(x.Owner, y.Owner);
+                        if (retVal == 0)
+                        {
+                            if (x.Owner != y.Owner)
+                                throw new Exception();
+                            retVal = ( Array.IndexOf(x.Owner.Attacks, x) - Array.IndexOf(y.Owner.Attacks, y) );
+                        }
+                    }
+                }
+            }
+            return retVal;
+        }
+
+        #endregion
     }
 }

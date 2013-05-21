@@ -85,13 +85,13 @@ namespace CityWarWinApp
             // 
             this.lbxOrder.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxOrder.BackColor = System.Drawing.Color.Silver;
-            this.lbxOrder.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxOrder.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lbxOrder.ForeColor = System.Drawing.Color.Black;
             this.lbxOrder.FormattingEnabled = true;
-            this.lbxOrder.ItemHeight = 18;
+            this.lbxOrder.ItemHeight = 17;
             this.lbxOrder.Location = new System.Drawing.Point(303, 30);
             this.lbxOrder.Name = "lbxOrder";
-            this.lbxOrder.Size = new System.Drawing.Size(130, 22);
+            this.lbxOrder.Size = new System.Drawing.Size(130, 21);
             this.lbxOrder.TabIndex = 7;
             this.lbxOrder.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxOrder_DrawItem);
             // 
@@ -149,13 +149,13 @@ namespace CityWarWinApp
             // 
             this.lbxCities.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxCities.BackColor = System.Drawing.Color.Silver;
-            this.lbxCities.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxCities.Font = new System.Drawing.Font("Arial", 11.25F);
             this.lbxCities.ForeColor = System.Drawing.Color.Black;
             this.lbxCities.FormattingEnabled = true;
-            this.lbxCities.ItemHeight = 16;
+            this.lbxCities.ItemHeight = 17;
             this.lbxCities.Location = new System.Drawing.Point(777, 30);
             this.lbxCities.Name = "lbxCities";
-            this.lbxCities.Size = new System.Drawing.Size(52, 20);
+            this.lbxCities.Size = new System.Drawing.Size(52, 21);
             this.lbxCities.TabIndex = 12;
             this.lbxCities.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
@@ -163,13 +163,13 @@ namespace CityWarWinApp
             // 
             this.lbxRelics.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxRelics.BackColor = System.Drawing.Color.Silver;
-            this.lbxRelics.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxRelics.Font = new System.Drawing.Font("Arial", 11.25F);
             this.lbxRelics.ForeColor = System.Drawing.Color.Black;
             this.lbxRelics.FormattingEnabled = true;
-            this.lbxRelics.ItemHeight = 16;
+            this.lbxRelics.ItemHeight = 17;
             this.lbxRelics.Location = new System.Drawing.Point(835, 30);
             this.lbxRelics.Name = "lbxRelics";
-            this.lbxRelics.Size = new System.Drawing.Size(57, 20);
+            this.lbxRelics.Size = new System.Drawing.Size(57, 21);
             this.lbxRelics.TabIndex = 9;
             this.lbxRelics.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
@@ -177,13 +177,13 @@ namespace CityWarWinApp
             // 
             this.lbxWizards.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxWizards.BackColor = System.Drawing.Color.Silver;
-            this.lbxWizards.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxWizards.Font = new System.Drawing.Font("Arial", 11.25F);
             this.lbxWizards.ForeColor = System.Drawing.Color.Black;
             this.lbxWizards.FormattingEnabled = true;
-            this.lbxWizards.ItemHeight = 16;
+            this.lbxWizards.ItemHeight = 17;
             this.lbxWizards.Location = new System.Drawing.Point(618, 30);
             this.lbxWizards.Name = "lbxWizards";
-            this.lbxWizards.Size = new System.Drawing.Size(74, 20);
+            this.lbxWizards.Size = new System.Drawing.Size(74, 21);
             this.lbxWizards.TabIndex = 13;
             this.lbxWizards.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
@@ -191,13 +191,13 @@ namespace CityWarWinApp
             // 
             this.lbxPortals.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxPortals.BackColor = System.Drawing.Color.Silver;
-            this.lbxPortals.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxPortals.Font = new System.Drawing.Font("Arial", 11.25F);
             this.lbxPortals.ForeColor = System.Drawing.Color.Black;
             this.lbxPortals.FormattingEnabled = true;
-            this.lbxPortals.ItemHeight = 16;
+            this.lbxPortals.ItemHeight = 17;
             this.lbxPortals.Location = new System.Drawing.Point(698, 30);
             this.lbxPortals.Name = "lbxPortals";
-            this.lbxPortals.Size = new System.Drawing.Size(73, 20);
+            this.lbxPortals.Size = new System.Drawing.Size(73, 21);
             this.lbxPortals.TabIndex = 14;
             this.lbxPortals.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
@@ -241,13 +241,13 @@ namespace CityWarWinApp
             // 
             this.lbxUnits.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxUnits.BackColor = System.Drawing.Color.Silver;
-            this.lbxUnits.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxUnits.Font = new System.Drawing.Font("Arial", 11.25F);
             this.lbxUnits.ForeColor = System.Drawing.Color.Black;
             this.lbxUnits.FormattingEnabled = true;
-            this.lbxUnits.ItemHeight = 16;
+            this.lbxUnits.ItemHeight = 17;
             this.lbxUnits.Location = new System.Drawing.Point(537, 30);
             this.lbxUnits.Name = "lbxUnits";
-            this.lbxUnits.Size = new System.Drawing.Size(75, 20);
+            this.lbxUnits.Size = new System.Drawing.Size(75, 21);
             this.lbxUnits.TabIndex = 17;
             this.lbxUnits.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
@@ -267,13 +267,13 @@ namespace CityWarWinApp
             // 
             this.lbxResources.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lbxResources.BackColor = System.Drawing.Color.Silver;
-            this.lbxResources.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbxResources.Font = new System.Drawing.Font("Arial", 11.25F);
             this.lbxResources.ForeColor = System.Drawing.Color.Black;
             this.lbxResources.FormattingEnabled = true;
-            this.lbxResources.ItemHeight = 16;
+            this.lbxResources.ItemHeight = 17;
             this.lbxResources.Location = new System.Drawing.Point(439, 30);
             this.lbxResources.Name = "lbxResources";
-            this.lbxResources.Size = new System.Drawing.Size(92, 20);
+            this.lbxResources.Size = new System.Drawing.Size(92, 21);
             this.lbxResources.TabIndex = 19;
             this.lbxResources.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 

@@ -5,15 +5,13 @@ using MattUtil;
 namespace GalWar
 {
     [Serializable]
-    public class Ship : Combatant, ISpaceObject
+    public class Ship : Combatant
     {
         #region fields and constructors
 
         public readonly bool Colony;
 
         private readonly Player _player;
-
-        private Tile _tile;
 
         private readonly byte _name, _mark;
         private readonly float _expDiv;
@@ -25,16 +23,13 @@ namespace GalWar
         private double _cost;
 
         internal Ship(IEventHandler handler, Player player, Tile tile, ShipDesign design)
-            : base(design.Att, design.Def, design.HP, 0, 0)
+            : base(tile, design.Att, design.Def, design.HP, 0, 0)
         {
             checked
             {
                 this.Colony = design.Colony;
 
                 this._player = player;
-
-                this._tile = tile;
-                tile.SpaceObject = this;
 
                 this._name = (byte)design.Name;
                 this._mark = (byte)design.Mark;
@@ -76,20 +71,6 @@ namespace GalWar
             get
             {
                 return this._player;
-            }
-        }
-        private Tile tile
-        {
-            get
-            {
-                return this._tile;
-            }
-            set
-            {
-                checked
-                {
-                    this._tile = value;
-                }
             }
         }
 
@@ -513,14 +494,6 @@ namespace GalWar
 
         #region public
 
-        public override Tile Tile
-        {
-            get
-            {
-                return this.tile;
-            }
-        }
-
         public override int MaxPop
         {
             get
@@ -706,9 +679,7 @@ namespace GalWar
 
         internal void Teleport(Tile tile)
         {
-            this.Tile.SpaceObject = null;
-            this.tile = tile;
-            this.Tile.SpaceObject = this;
+            this.Tile = tile;
         }
 
         public void Move(IEventHandler handler, Tile tile)

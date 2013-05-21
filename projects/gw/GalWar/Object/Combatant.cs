@@ -11,8 +11,8 @@ namespace GalWar
         private byte _att, _def;
         private ushort _hp;
 
-        protected Combatant(int att, int def, int hp, int population, double soldiers)
-            : base(population, soldiers)
+        protected Combatant(Tile tile, int att, int def, int hp, int population, double soldiers)
+            : base(tile, population, soldiers)
         {
             checked
             {

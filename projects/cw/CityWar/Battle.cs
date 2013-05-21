@@ -57,6 +57,10 @@ namespace CityWar
 
         public int Compare(Unit x, Unit y)
         {
+            return CompareUnits(x, y);
+        }
+        public static int CompareUnits(Unit x, Unit y)
+        {
             int retVal = x.Tile.y - y.Tile.y;
             if (retVal == 0)
             {

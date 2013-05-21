@@ -185,19 +185,19 @@ namespace GalWar
             return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + Consts.PlanetConstValue ), .65);
         }
 
-        public static double GetProductionUpkeepMult(int mapSize)
+        public static double GetProductionUpkeepMult(double mapSize)
         {
             return Consts.ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);
         }
 
         //upkeep payoff is the number of turns the ship is expected to live
-        public static double GetUpkeepPayoff(int mapSize, double nonColonyPct, double nonTransPct, int speed)
+        public static double GetUpkeepPayoff(double mapSize, double nonColonyPct, double nonTransPct, int speed)
         {
             return GetUpkeepPayoff(mapSize, nonColonyPct, nonTransPct, (double)speed);
         }
 
         //upkeep payoff is the number of turns the ship is expected to live
-        private static double GetUpkeepPayoff(int mapSize, double nonColonyPct, double nonTransPct, double speed)
+        private static double GetUpkeepPayoff(double mapSize, double nonColonyPct, double nonTransPct, double speed)
         {
             return ( .78 * Math.Sqrt(mapSize) * ScalePct(.39, 1, nonColonyPct) * ScalePct(1.69, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
         }

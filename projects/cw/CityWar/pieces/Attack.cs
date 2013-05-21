@@ -26,7 +26,7 @@ namespace CityWar
         [NonSerialized]
         private bool used = false;
 
-        private readonly string name;
+        public readonly string Name;
         private Unit owner;
         private int length, damage, divide;
         public readonly EnumFlags<TargetType> target;
@@ -46,7 +46,7 @@ namespace CityWar
         //constructor for cloning an attack	for isThree
         private Attack(string name, Unit owner, EnumFlags<TargetType> target, int length, int damage, int divide, bool used)
         {
-            this.name = name;
+            this.Name = name;
             this.owner = owner;
             this.target = target;
             this.length = length;
@@ -182,7 +182,7 @@ namespace CityWar
 
         public string GetLogString()
         {
-            return string.Format(name + " ({0}, {1})", damage, divide);
+            return string.Format(Name + " ({0}, {1})", damage, divide);
         }
 
         public static string GetString(string name, int damage, int divide, string targets, int length)
@@ -192,7 +192,7 @@ namespace CityWar
 
         public override string ToString()
         {
-            return GetString(name, damage, divide, GetTargetString(), length);
+            return GetString(Name, damage, divide, GetTargetString(), length);
         }
         #endregion //public methods and properties
 
@@ -237,7 +237,7 @@ namespace CityWar
 
         internal Attack Clone()
         {
-            return new Attack(name, owner, target.Clone(), length, damage, divide, used);
+            return new Attack(Name, owner, target.Clone(), length, damage, divide, used);
         }
 
         internal void SetOwner(Unit unit)

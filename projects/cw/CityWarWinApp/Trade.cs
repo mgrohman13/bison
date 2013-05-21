@@ -26,19 +26,19 @@ namespace CityWarWinApp
             RefVals();
 
             int air = 0, earth = 0, nature = 0, production = 0, death = 0,
-                water = 0, work = 0, wizard = 0, relic = 0, people = 0;
-            p.GenerateIncome(ref air, ref death, ref earth, ref nature, ref production, ref water, ref work, ref wizard, ref relic, ref people, false);
+                water = 0, wizard = 0, people = 0;
+            p.GenerateIncome(ref air, ref death, ref earth, ref nature, ref production, ref water, ref wizard, ref people);
 
             this.lblWorkInc.Text += Math.Ceiling(p.GetTurnUpkeep()).ToString("0");
-            this.lblAirInc.Text += ( (double)( (double)air ) ).ToString("0");
-            this.lblDeathInc.Text += ( (double)( (double)death ) ).ToString("0");
-            this.lblEarthInc.Text += ( (double)( (double)earth ) ).ToString("0");
-            this.lblWizInc.Text += ( (double)( (double)wizard ) ).ToString("0");
-            this.lblNatureInc.Text += ( (double)( (double)nature ) ).ToString("0");
-            this.lblProdInc.Text += ( (double)( (double)production ) ).ToString("0");
-            this.lblWaterInc.Text += ( (double)( (double)water ) ).ToString("0");
-            this.lblRelicInc.Text += ( (double)( (double)relic ) ).ToString("0");
-            this.lblPplInc.Text += ( (double)( (double)people ) ).ToString("0");
+
+            this.lblAirInc.Text += air.ToString();
+            this.lblDeathInc.Text += death.ToString();
+            this.lblEarthInc.Text += earth.ToString();
+            this.lblWizInc.Text += wizard.ToString();
+            this.lblNatureInc.Text += nature.ToString();
+            this.lblProdInc.Text += production.ToString();
+            this.lblWaterInc.Text += water.ToString();
+            this.lblPplInc.Text += people.ToString();
         }
 
         private void CheckDisplay()

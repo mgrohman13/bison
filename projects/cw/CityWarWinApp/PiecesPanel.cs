@@ -9,14 +9,18 @@ namespace CityWarWinApp
 {
     class PiecesPanel : Panel
     {
-        private static Font font = new Font("Arial", 12F);
+        private static Font font = new Font("Arial", 11.25F);
+        private static Font fontBold = new Font("Arial", 11.25F, FontStyle.Bold);
         Pen framePen = new Pen(Color.Black, 3);
 
+        [Flags]
         public enum DrawFlags
         {
+            None = 0x0,
             Frame = 0x1,
             Background = 0x2,
             Text = 0x4,
+            Bold = 0x8,
         }
 
         private System.Windows.Forms.VScrollBar sbPieces;
@@ -127,12 +131,13 @@ namespace CityWarWinApp
                         Tuple<string, string> text = GetText(currentPiece);
                         if (text != null)
                         {
+                            Font f = ( drawFlags.Contains(DrawFlags.Bold) ? fontBold : font );
                             if (text.Item1 != null)
-                                g.DrawString(text.Item1, font, GetTextBrush(), x, y + 104);
+                                g.DrawString(text.Item1, f, GetTextBrush(), x, y + 104);
                             if (text.Item2 != null)
                             {
-                                float width = g.MeasureString(text.Item2, font).Width;
-                                g.DrawString(text.Item2, font, GetTextBrush(), x + 100 - width, y + 104);
+                                float width = g.MeasureString(text.Item2, f).Width;
+                                g.DrawString(text.Item2, f, GetTextBrush(), x + 100 - width, y + 104);
                             }
                         }
                     }

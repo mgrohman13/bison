@@ -23,7 +23,7 @@ namespace CityWar
         public static string Path = "..\\..\\..\\";
         public static Dictionary<string, string[]> Races;
 
-        private int turn, width, height, currentPlayer, startWork;
+        private int turn, width, height, currentPlayer;
         private Player[] players;
         private Dictionary<int, Player> winningPlayers, defeatedPlayers;
         private Tile[,] map;
@@ -125,7 +125,7 @@ namespace CityWar
             //	Start the game!
             Player.SubtractCommonUpkeep(game.players);
             game.currentPlayer = 0;
-            game.startWork = game.players[0].StartTurn();
+            game.players[0].StartTurn();
 
             return game;
         }
@@ -213,20 +213,11 @@ namespace CityWar
                         ++currentPlayer;
                 }
 
-                if (players.Length > 0)
+                if (players.Length > 0 && currentPlayer >= players.Length)
                 {
-                    if (currentPlayer >= players.Length)
-                    {
-                        //a new round of turns
-                        IncrementTurn();
-                        currentPlayer = 0;
-                    }
-
-                    if (players.Length > 0)
-                    {
-                        //keep track of the amount of work the player started his turn with to determine when healing units can be undone
-                        startWork = players[currentPlayer].StartTurn();
-                    }
+                    //a new round of turns
+                    IncrementTurn();
+                    currentPlayer = 0;
                 }
             }
         }
@@ -436,19 +427,11 @@ namespace CityWar
             int oldMove = (int)args[1];
             Terrain oldTerrain = (Terrain)args[2];
 
-            if (oldMove > -1)
-            {
-                if (oldTerrain == wizard.Tile.Terrain)
-                    throw new Exception();
-                else
-                    wizard.UndoChangeTerrain(oldMove, oldTerrain);
+            if (oldMove < 1 || oldTerrain == wizard.Tile.Terrain)
+                throw new Exception();
 
-                return wizard;
-            }
-            else
-            {
-                return null;
-            }
+            wizard.UndoChangeTerrain(oldMove, oldTerrain);
+            return wizard;
         }
 
         public void BuildPiece(Capturable capt, string pieceName)
@@ -684,13 +667,15 @@ namespace CityWar
                     wizCheck = ( element < 0 );
                 }
 
-                if (wizCheck || piece.Owner.Work < startWork)
+                if (wizCheck || piece.Owner.Work < 0)
                 {
                     Piece[] units = new Piece[undoInfo.Keys.Count];
                     undoInfo.Keys.CopyTo(units, 0);
                     int stack = UndoCommands.Count;
                     HealPieces(units);
                     RemoveUndos(stack);
+
+                    piece.Owner.CheckNegativeResources();
                 }
             }
             return piece;
@@ -718,6 +703,8 @@ namespace CityWar
                 int stack = UndoCommands.Count;
                 CaptureCity(unit);
                 RemoveUndos(stack);
+
+                unit.Owner.CheckNegativeResources();
             }
             return unit;
         }
@@ -761,6 +748,8 @@ namespace CityWar
                 int stack = UndoCommands.Count;
                 DisbandUnits(units);
                 RemoveUndos(stack);
+
+                player.CheckNegativeResources();
             }
             return piece;
         }
@@ -861,7 +850,9 @@ namespace CityWar
             System.Collections.IDictionary dictionary;
             System.Collections.IEnumerable enumberable;
             if (( p = arg as Piece ) != null)
+            {
                 yield return p;
+            }
             else if (( dictionary = arg as System.Collections.IDictionary ) != null)
             {
                 foreach (Piece piece in FindAllPieces(dictionary.Keys))

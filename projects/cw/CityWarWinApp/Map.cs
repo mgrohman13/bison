@@ -193,6 +193,16 @@ namespace CityWarWinApp
             this.lblWater.Text = currentPlayer.Water.ToString();
             this.lblRelic.Text = currentPlayer.Relic.ToString();
             this.lblPpl.Text = currentPlayer.Population.ToString();
+
+            //bold work when you are broke and may lose some resources
+            bool small = ( currentPlayer.GetTurnUpkeep() < currentPlayer.Work );
+            this.lblWork.Font = new System.Drawing.Font("Arial", small ? 9.75F : 11.25F,
+                    small ? FontStyle.Regular : FontStyle.Bold);
+
+            //bold magic when you can afford a wizard
+            small = ( currentPlayer.Magic < Player.WizardCost );
+            this.lblWizard.Font = new System.Drawing.Font("Arial", small ? 9.75F : 11.25F,
+                    small ? FontStyle.Regular : FontStyle.Bold);
         }
 
         private void RefreshButtons()

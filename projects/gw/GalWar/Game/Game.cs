@@ -6,11 +6,12 @@ using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 using MattUtil;
+using System.Runtime.Serialization;
 
 namespace GalWar
 {
     [Serializable]
-    public class Game
+    public class Game : IDeserializationCallback
     {
         #region static
 
@@ -52,34 +53,32 @@ namespace GalWar
 
         internal readonly ShipNames ShipNames;
 
-        private readonly Tile[,] map;
+        private readonly Dictionary<Point, ISpaceObject> spaceObjects;
         private readonly List<Player> players;
-        private readonly List<Planet> planets;
-        private readonly List<Tuple<Tile, Tile>> teleporters;
+        private readonly List<Tuple<Point, Point>> teleporters;
         private readonly List<Result> deadPlayers, winningPlayers;
 
         [NonSerialized]
         private Stack<IUndoCommand> _undoStack;
-
-
-        private readonly byte _diameter;
+        [NonSerialized]
+        private Dictionary<Point, Tile> tileCache;
 
         private byte _currentPlayer;
         private ushort _turn;
-        private float _planetPct, _anomalyPct;
+        private readonly float _mapDeviation, _planetPct, _anomalyPct;
 
-        public Game(Player.StartingPlayer[] players, int radius, double planetPct)
+        public Game(Player.StartingPlayer[] players, double mapSize, double planetPct)
         {
             checked
             {
                 int numPlayers = players.Length;
 
-                this._diameter = (byte)( radius * 2 - 1 );
+                this._mapDeviation = (float)mapSize;
 
                 AssertException.Assert(players != null);
                 AssertException.Assert(numPlayers > 1);
                 AssertException.Assert(numPlayers * 78 < MapSize);
-                AssertException.Assert(radius < 78);
+                AssertException.Assert(mapSize < 39);
                 AssertException.Assert(planetPct > 0.00013);
                 AssertException.Assert(planetPct < 0.039);
 
@@ -89,10 +88,9 @@ namespace GalWar
 
                 this.ShipNames = new ShipNames(numPlayers);
 
-                this.map = new Tile[Diameter, Diameter];
+                this.spaceObjects = new Dictionary<Point, ISpaceObject>();
                 this.players = new List<Player>();
-                this.planets = new List<Planet>();
-                this.teleporters = new List<Tuple<Tile, Tile>>();
+                this.teleporters = new List<Tuple<Point, Point>>();
                 this.deadPlayers = new List<Result>(numPlayers - 1);
                 this.winningPlayers = new List<Result>(numPlayers - 1);
 
@@ -101,7 +99,11 @@ namespace GalWar
                 this._planetPct = float.NaN;
                 this._anomalyPct = float.NaN;
 
-                InitMap(radius);
+                planetPct *= MapSize;
+                this._planetPct = (float)Random.GaussianCapped(planetPct / 91.0, .091, planetPct / 169.0);
+                this._anomalyPct = (float)Random.GaussianCapped(this.planetPct + MapSize * .00013 + ( numPlayers + 6.5 ) * .013,
+                        .21, this.planetPct + 0.13);
+
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);
 
@@ -116,14 +118,6 @@ namespace GalWar
                 if (this._undoStack == null)
                     this._undoStack = new Stack<IUndoCommand>();
                 return this._undoStack;
-            }
-        }
-
-        public int Diameter
-        {
-            get
-            {
-                return this._diameter;
             }
         }
 
@@ -155,18 +149,18 @@ namespace GalWar
                 }
             }
         }
+        private double mapDeviation
+        {
+            get
+            {
+                return this._mapDeviation;
+            }
+        }
         private double planetPct
         {
             get
             {
                 return this._planetPct;
-            }
-            set
-            {
-                checked
-                {
-                    this._planetPct = (float)value;
-                }
             }
         }
         private double anomalyPct
@@ -175,44 +169,12 @@ namespace GalWar
             {
                 return this._anomalyPct;
             }
-            set
-            {
-                checked
-                {
-                    this._anomalyPct = (float)value;
-                }
-            }
-        }
-
-        private void InitMap(int radius)
-        {
-            //set up map hexagon
-            int nullTiles = Diameter - radius;
-            for (int y = 0 ; y < Diameter ; ++y)
-            {
-                for (int x = 0 ; x < Diameter ; ++x)
-                {
-                    int compX = x - ( radius % 2 == 0 && y % 2 == 0 ? 1 : 0 );
-                    if (compX >= nullTiles / 2 && compX < Diameter - ( nullTiles + 1 ) / 2)
-                        this.map[x, y] = new Tile(this, x, y);
-                }
-                if (y < Diameter / 2)
-                    --nullTiles;
-                else
-                    ++nullTiles;
-            }
         }
 
         private double CreateSpaceObjects(int numPlayers, double planetPct)
         {
-            planetPct *= MapSize;
-
-            this.planetPct = Random.GaussianCapped(planetPct / 91.0, .091, Consts.FLOAT_ERROR);
-            this.anomalyPct = Random.GaussianCapped(this.planetPct + MapSize * .00013 + ( numPlayers + 6.5 ) * .013,
-                    .21, this.planetPct + Consts.FLOAT_ERROR);
-
             //first create enough planets for homeworlds
-            while (this.planets.Count < numPlayers)
+            while (GetPlanets().Count < numPlayers)
                 NewPlanet();
 
             double anomPlanets = 0;
@@ -230,11 +192,14 @@ namespace GalWar
             }
 
             planetPct -= anomPlanets;
-            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
-            for (int a = 0 ; a < startPlanets ; ++a)
-                NewPlanet();
+            if (planetPct > 0)
+            {
+                int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
+                for (int a = 0 ; a < startPlanets ; ++a)
+                    NewPlanet();
+            }
 
-            return this.planets.Count + anomPlanets;
+            return GetPlanets().Count + anomPlanets;
         }
         private Planet NewPlanet()
         {
@@ -310,11 +275,15 @@ namespace GalWar
             while (( homeworldCount = ( homeworlds = GetAvailableHomeworlds(startPop) ).Count ) == 0)
             {
                 //we dont want to change the number of planets, so take one out first
-                Planet removePlanet;
-                do
+                Planet removePlanet = null;
+                foreach (Planet planet in Random.Iterate(GetPlanets()))
                 {
-                    removePlanet = this.planets[Random.Next(this.planets.Count)];
-                } while (removePlanet.Colony != null);
+                    removePlanet = planet;
+                    if (removePlanet.Colony == null)
+                        break;
+                }
+                if (removePlanet == null)
+                    throw new Exception();
                 this.RemovePlanet(removePlanet);
 
                 //try until we add a new one
@@ -327,8 +296,8 @@ namespace GalWar
         private List<Planet> GetAvailableHomeworlds(int startPop)
         {
             //planets can only be used as homeworlds if they have enough quality to support the initial population
-            List<Planet> retVal = new List<Planet>(this.planets.Count);
-            foreach (Planet planet in this.planets)
+            List<Planet> retVal = new List<Planet>(GetPlanets().Count);
+            foreach (Planet planet in GetPlanets())
                 if (planet.Quality > startPop && planet.Colony == null)
                 {
                     foreach (Player player in this.players)
@@ -370,7 +339,6 @@ next_planet:
         internal void RemovePlanet(Planet planet)
         {
             planet.Tile.SpaceObject = null;
-            this.planets.Remove(planet);
         }
 
         internal void KillPlayer(Player player)
@@ -397,12 +365,11 @@ next_planet:
 
         #region public
 
-        public int MapSize
+        public double MapSize
         {
             get
             {
-                int radius = ( Diameter + 1 ) / 2;
-                return 3 * radius * ( radius - 1 ) + 1;
+                return 13 * this.mapDeviation * this.mapDeviation;
             }
         }
 
@@ -442,12 +409,48 @@ next_planet:
             CurrentPlayer.PlayTurn(handler);
         }
 
-        public Tile[,] GetMap()
+        internal void SetSpaceObject(int x, int y, ISpaceObject spaceObject)
         {
-            return (Tile[,])this.map.Clone();
+            Point point = new Point(x, y);
+            if (spaceObject == null)
+            {
+                if (!this.spaceObjects.Remove(point))
+                    throw new Exception();
+            }
+            else
+            {
+                this.spaceObjects.Add(point, spaceObject);
+            }
         }
 
-        public ReadOnlyCollection<Tuple<Tile, Tile>> GetTeleporters()
+        public Tile GetTile(int x, int y)
+        {
+            return GetTile(new Point(x, y));
+        }
+        public Tile GetTile(Point point)
+        {
+            if (this.tileCache == null)
+                this.tileCache = new Dictionary<Point, Tile>();
+
+            Tile tile;
+            ISpaceObject spaceObject;
+            if (!this.tileCache.TryGetValue(point, out tile))
+            {
+                if (this.spaceObjects.TryGetValue(point, out spaceObject))
+                    tile = spaceObject.Tile;
+                else
+                    tile = new Tile(this, point);
+                this.tileCache.Add(point, tile);
+            }
+            return tile;
+        }
+
+        public HashSet<ISpaceObject> GetSpaceObjects()
+        {
+            return new HashSet<ISpaceObject>(this.spaceObjects.Values);
+        }
+
+        public ReadOnlyCollection<Tuple<Point, Point>> GetTeleporters()
         {
             return this.teleporters.AsReadOnly();
         }
@@ -477,9 +480,14 @@ next_planet:
             return this.players.AsReadOnly();
         }
 
-        public ReadOnlyCollection<Planet> GetPlanets()
+        public HashSet<Planet> GetPlanets()
         {
-            return this.planets.AsReadOnly();
+            HashSet<Planet> planets = new HashSet<Planet>();
+            Planet planet;
+            foreach (ISpaceObject spaceObject in this.spaceObjects.Values)
+                if (( planet = spaceObject as Planet ) != null)
+                    planets.Add(planet);
+            return planets;
         }
 
         public void EndTurn(IEventHandler handler)
@@ -579,7 +587,7 @@ next_planet:
             {
                 //check this will not make any planets be too close
                 int closeThis = int.MaxValue, closTrg = int.MaxValue;
-                foreach (Planet planet in this.planets)
+                foreach (Planet planet in GetPlanets())
                 {
                     closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
                     closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
@@ -608,7 +616,7 @@ next_planet:
         private bool CheckAttInvPlayers(ISpaceObject obj, bool inv, Tile t1, Tile t2)
         {
             HashSet<ISpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv);
-            Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
+            Tuple<Point, Point> teleporter = CreateTeleporter(t1, t2);
             HashSet<ISpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv);
             RemoveTeleporter(teleporter);
             foreach (ISpaceObject other in after)
@@ -616,14 +624,14 @@ next_planet:
                     return false;
             return true;
         }
-        private Tuple<Tile, Tile> CreateTeleporter(Tile t1, Tile t2)
+        private Tuple<Point, Point> CreateTeleporter(Tile t1, Tile t2)
         {
-            Tuple<Tile, Tile> teleporter = new Tuple<Tile, Tile>(t1, t2);
+            Tuple<Point, Point> teleporter = new Tuple<Point, Point>(t1.Point, t2.Point);
             this.teleporters.Add(teleporter);
             return teleporter;
         }
 
-        private void RemoveTeleporter(Tuple<Tile, Tile> teleporter)
+        private void RemoveTeleporter(Tuple<Point, Point> teleporter)
         {
             this.teleporters.Remove(teleporter);
         }
@@ -642,16 +650,14 @@ next_planet:
         {
             if (Tile.GetNeighbors(tile).Count < 6)
                 return false;
-            foreach (Planet planet in this.planets)
+            foreach (Planet planet in GetPlanets())
                 if (Tile.GetDistance(tile, planet.Tile) <= Consts.PlanetDistance)
                     return false;
             return true;
         }
         internal Planet CreatePlanet(Tile tile)
         {
-            Planet planet = new Planet(tile);
-            this.planets.Add(planet);
-            return planet;
+            return new Planet(tile);
         }
 
         private void CreateAnomalies()
@@ -660,10 +666,6 @@ next_planet:
             int create = Game.Random.OEInt(this.anomalyPct / numPlayers);
             for (int a = 0 ; a < create ; ++a)
                 CreateAnomaly();
-            this.planetPct = Random.GaussianCapped(this.planetPct, .0052 / numPlayers,
-                     Math.Max(0, 2 * this.planetPct - this.anomalyPct) + Consts.FLOAT_ERROR);
-            this.anomalyPct = Random.GaussianOE(this.anomalyPct, .0065 / numPlayers,
-                    .0091 / numPlayers, this.planetPct + Consts.FLOAT_ERROR);
         }
         private Anomaly CreateAnomaly()
         {
@@ -675,11 +677,11 @@ next_planet:
 
         internal Tile GetRandomTile()
         {
-            Tile tile;
-            do
-                tile = this.map[Random.Next(Diameter), Random.Next(Diameter)];
-            while (tile == null);
-            return tile;
+            int x = Random.GaussianInt(this.mapDeviation);
+            int y = Random.GaussianInt(this.mapDeviation);
+            if (y % 2 != 0)
+                x -= Random.RangeInt(0, 1);
+            return GetTile(x, y);
         }
 
         private void StartPlayerTurn(IEventHandler handler)
@@ -887,5 +889,23 @@ next_planet:
         }
 
         #endregion //Result
+
+        #region IDeserializationCallback Members
+
+        void IDeserializationCallback.OnDeserialization(object sender)
+        {
+            foreach (var pair in this.spaceObjects)
+            {
+                Tile tile = GetTile(pair.Key);
+                if (tile == null)
+                {
+                    tile = new Tile(this, pair.Key);
+                    this.tileCache.Add(pair.Key, tile);
+                }
+                pair.Value.OnDeserialization(tile);
+            }
+        }
+
+        #endregion
     }
 }

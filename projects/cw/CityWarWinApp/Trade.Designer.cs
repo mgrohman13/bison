@@ -13,7 +13,7 @@ namespace CityWarWinApp
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing && ( components != null ))
             {
                 components.Dispose();
             }
@@ -54,7 +54,6 @@ namespace CityWarWinApp
             this.btnPplD = new System.Windows.Forms.Button();
             this.btnPplU = new System.Windows.Forms.Button();
             this.lblPplInc = new System.Windows.Forms.Label();
-            this.lblRelicInc = new System.Windows.Forms.Label();
             this.lblWaterInc = new System.Windows.Forms.Label();
             this.lblNatureInc = new System.Windows.Forms.Label();
             this.lblAirInc = new System.Windows.Forms.Label();
@@ -456,20 +455,6 @@ namespace CityWarWinApp
             this.lblPplInc.Text = "+";
             this.lblPplInc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // lblRelicInc
-            // 
-            this.lblRelicInc.BackColor = System.Drawing.Color.Cyan;
-            this.lblRelicInc.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblRelicInc.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblRelicInc.ForeColor = System.Drawing.Color.Black;
-            this.lblRelicInc.Location = new System.Drawing.Point(566, 35);
-            this.lblRelicInc.Name = "lblRelicInc";
-            this.lblRelicInc.Size = new System.Drawing.Size(55, 23);
-            this.lblRelicInc.TabIndex = 68;
-            this.lblRelicInc.Text = "+";
-            this.lblRelicInc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblRelicInc.Visible = false;
-            // 
             // lblWaterInc
             // 
             this.lblWaterInc.BackColor = System.Drawing.Color.Blue;
@@ -813,7 +798,6 @@ namespace CityWarWinApp
             this.Controls.Add(this.nudWorkMax);
             this.Controls.Add(this.nudWorkMin);
             this.Controls.Add(this.lblPplInc);
-            this.Controls.Add(this.lblRelicInc);
             this.Controls.Add(this.lblWaterInc);
             this.Controls.Add(this.lblNatureInc);
             this.Controls.Add(this.lblAirInc);
@@ -874,7 +858,7 @@ namespace CityWarWinApp
 
         #endregion
 
-		private System.Windows.Forms.Button btnProdU;
+        private System.Windows.Forms.Button btnProdU;
         private System.Windows.Forms.Button btnAirU;
         private System.Windows.Forms.Button btnNatU;
         private System.Windows.Forms.Button btnWaterU;
@@ -885,7 +869,7 @@ namespace CityWarWinApp
         private System.Windows.Forms.Button btnEarthD;
         private System.Windows.Forms.Button btnWaterD;
         private System.Windows.Forms.Button btnNatD;
-		private System.Windows.Forms.Button btnAirD;
+        private System.Windows.Forms.Button btnAirD;
         private System.Windows.Forms.Button btnDone;
         private System.Windows.Forms.Label lblWater;
         private System.Windows.Forms.Label lblNature;
@@ -895,12 +879,11 @@ namespace CityWarWinApp
         private System.Windows.Forms.Label lblDeath;
         private System.Windows.Forms.Label lblWork;
         private System.Windows.Forms.Label lblProd;
-		private System.Windows.Forms.Label lblRelic;
+        private System.Windows.Forms.Label lblRelic;
         private System.Windows.Forms.Label lblPpl;
         private System.Windows.Forms.Button btnPplD;
         private System.Windows.Forms.Button btnPplU;
         private System.Windows.Forms.Label lblPplInc;
-        private System.Windows.Forms.Label lblRelicInc;
         private System.Windows.Forms.Label lblWaterInc;
         private System.Windows.Forms.Label lblNatureInc;
         private System.Windows.Forms.Label lblAirInc;

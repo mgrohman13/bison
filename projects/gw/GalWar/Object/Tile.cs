@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using MattUtil;
 
 namespace GalWar
 {
-    [Serializable]
     public class Tile
     {
         #region static
@@ -11,21 +11,15 @@ namespace GalWar
         public static HashSet<Tile> GetNeighbors(Tile tile)
         {
             HashSet<Tile> neighbors = new HashSet<Tile>();
-            Tile[,] map = tile.Game.GetMap();
             //loop through the nine regional tiles in the square grid
             for (int x = -2 ; ++x < 2 ; )
                 for (int y = -2 ; ++y < 2 ; )
                 {
                     int x2 = tile.X + x;
                     int y2 = tile.Y + y;
-                    //check this is inside map bounds and truly a neighbor in the hexagonal grid
-                    if (x2 >= 0 && y2 >= 0 && x2 < tile.Game.Diameter && y2 < tile.Game.Diameter && IsNeighbor(tile, x2, y2))
-                    {
-                        Tile t = map[x2, y2];
-                        //coordinates may be outside the playing area, represented by a null tile
-                        if (t != null)
-                            neighbors.Add(t);
-                    }
+                    //check this is truly a neighbor in the hexagonal grid
+                    if (IsNeighbor(tile, x2, y2))
+                        neighbors.Add(tile.Game.GetTile(x2, y2));
                 }
             //add teleport destination if there is one
             Tile teleporter = tile.Teleporter;
@@ -52,12 +46,12 @@ namespace GalWar
         {
             int dist = GetRawDistance(tile.X, tile.Y, x, y);
             if (dist > 1)
-                foreach (Tuple<Tile, Tile> teleporter in tile.Game.GetTeleporters())
+                foreach (Tuple<Point, Point> teleporter in tile.Game.GetTeleporters())
                     dist = Math.Min(dist, Math.Min(GetTeleporterDistance(tile.X, tile.Y, x, y, teleporter),
                             GetTeleporterDistance(x, y, tile.X, tile.Y, teleporter)));
             return dist;
         }
-        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Tile, Tile> teleporter)
+        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter)
         {
             return 1 + GetRawDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y)
                     + GetRawDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y);
@@ -80,18 +74,18 @@ namespace GalWar
 
         public readonly Game Game;
 
-        private readonly byte _x, _y;
+        private readonly short _x, _y;
 
         private ISpaceObject _spaceObject;
 
-        internal Tile(Game game, int x, int y)
+        internal Tile(Game game, Point point)
         {
             checked
             {
                 this.Game = game;
 
-                this._x = (byte)x;
-                this._y = (byte)y;
+                this._x = (short)point.X;
+                this._y = (short)point.Y;
 
                 this._spaceObject = null;
             }
@@ -126,6 +120,8 @@ namespace GalWar
                         throw new Exception();
 
                     this._spaceObject = value;
+
+                    this.Game.SetSpaceObject(X, Y, value);
                 }
             }
         }
@@ -133,6 +129,14 @@ namespace GalWar
         #endregion //fields and constructors
 
         #region public
+
+        public Point Point
+        {
+            get
+            {
+                return new Point(this.X, this.Y);
+            }
+        }
 
         public Tile Teleporter
         {
@@ -145,13 +149,13 @@ namespace GalWar
         public Tile GetTeleporter(out int number)
         {
             number = 0;
-            foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
+            foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
             {
                 ++number;
-                if (teleporter.Item1 == this)
-                    return teleporter.Item2;
-                else if (teleporter.Item2 == this)
-                    return teleporter.Item1;
+                if (teleporter.Item1 == this.Point)
+                    return Game.GetTile(teleporter.Item2);
+                else if (teleporter.Item2 == this.Point)
+                    return Game.GetTile(teleporter.Item1);
             }
             number = -1;
             return null;

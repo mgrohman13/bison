@@ -36,7 +36,7 @@ namespace GalWarWin
                 shipTrans /= count;
 
             count = 0;
-            ReadOnlyCollection<Planet> planets = MainForm.Game.GetPlanets();
+            HashSet<Planet> planets = MainForm.Game.GetPlanets();
             foreach (Planet p in planets)
             {
                 if (p.Colony != null)

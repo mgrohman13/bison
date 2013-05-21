@@ -8,19 +8,16 @@ namespace GalWar
     {
         #region fields and constructors
 
-        private Tile _tile;
         private Colony _colony;
 
         private short _quality;
         private readonly float _colonizationCostMult;
 
         internal Planet(Tile tile)
+            : base(tile)
         {
             checked
             {
-                this._tile = tile;
-                tile.SpaceObject = this;
-
                 this._colony = null;
 
                 this._quality = (short)Consts.NewPlanetQuality();
@@ -28,20 +25,6 @@ namespace GalWar
             }
         }
 
-        public Tile Tile
-        {
-            get
-            {
-                return this._tile;
-            }
-            private set
-            {
-                checked
-                {
-                    this._tile = value;
-                }
-            }
-        }
         public Colony Colony
         {
             get
@@ -113,9 +96,7 @@ namespace GalWar
 
         internal void Teleport(Tile tile)
         {
-            this.Tile.SpaceObject = null;
             this.Tile = tile;
-            this.Tile.SpaceObject = this;
         }
 
         #endregion //internal
@@ -146,7 +127,7 @@ namespace GalWar
             }
         }
 
-        public Player Player
+        public override Player Player
         {
             get
             {

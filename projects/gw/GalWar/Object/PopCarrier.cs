@@ -4,14 +4,15 @@ using System.Collections.Generic;
 namespace GalWar
 {
     [Serializable]
-    public abstract class PopCarrier
+    public abstract class PopCarrier : ISpaceObject
     {
         #region fields and constructors
 
         private ushort _movedPop, _population;
         private float _soldiers;
 
-        protected PopCarrier(int population, double soldiers)
+        protected PopCarrier(Tile tile, int population, double soldiers)
+            : base(tile)
         {
             checked
             {
@@ -67,15 +68,6 @@ namespace GalWar
         #endregion //fields and constructors
 
         #region abstract
-
-        public abstract Player Player
-        {
-            get;
-        }
-        public abstract Tile Tile
-        {
-            get;
-        }
 
         public abstract int MaxPop
         {

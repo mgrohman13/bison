@@ -1,3 +1,7 @@
+negative gold?
+infinite map
+	getTile/getNeighbor nullchecks
+
 standardize dead checks
 ShipNames._divisions always has 0 at first index
 

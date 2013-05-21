@@ -10,30 +10,18 @@ namespace GalWar
     {
         #region Explore
 
-        private readonly Tile _tile;
-
         [NonSerialized]
         private double _value;
         [NonSerialized]
         private bool _usedValue;
 
         internal Anomaly(Tile tile)
+            : base(tile)
         {
             checked
             {
-                this._tile = tile;
-                tile.SpaceObject = this;
-
                 this._usedValue = false;
                 this._value = double.NaN;
-            }
-        }
-
-        public Tile Tile
-        {
-            get
-            {
-                return this._tile;
             }
         }
 
@@ -67,7 +55,7 @@ namespace GalWar
             }
         }
 
-        public Player Player
+        public override Player Player
         {
             get
             {
@@ -169,7 +157,7 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double value = ( armada / 26.0 + Consts.Income * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
+            double value = ( armada / 52.0 + Consts.Income / 2.1 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
             return Game.Random.GaussianOE(value, .26, .3, GenerateConsolationValue(value));
         }
         private static double GenerateConsolationValue(double value)
@@ -221,7 +209,8 @@ namespace GalWar
                     totDist += weight;
                 }
                 avgDist /= totDist;
-                retVal.Add(player, Game.Random.Round(tile.Game.Diameter * tile.Game.Diameter / avgDist));
+
+                retVal.Add(player, Game.Random.Round(tile.Game.MapSize / avgDist));
             }
             return retVal;
         }
@@ -233,7 +222,7 @@ namespace GalWar
             foreach (Colony colony in player.GetColonies())
             {
                 int weight = Game.Random.Round(( colony.Planet.Quality + colony.Population + 1 )
-                        * Tile.Game.Diameter / (double)Tile.GetDistance(this.Tile, colony.Tile));
+                        * Tile.Game.MapSize / (double)Tile.GetDistance(this.Tile, colony.Tile));
                 colonies.Add(colony, weight);
                 total += weight;
             }
@@ -519,7 +508,7 @@ namespace GalWar
             int idx = -1;
             foreach (Colony colony in anomShip.Player.GetColonies())
             {
-                colonyChances[++idx] = .26 * Tile.Game.Diameter / (double)Tile.GetDistance(colony.Tile, this.Tile);
+                colonyChances[++idx] = 0.13 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
                 int amt = GetTerraformAmt(colonyChances[idx]);
                 if (amt > 0)
                     colonies.Add(colony, amt);
@@ -813,9 +802,9 @@ namespace GalWar
 
             if (objects.Count > 0)
             {
-                foreach (Tile tile in Tile.Game.GetMap())
-                    if (tile != null && tile.SpaceObject is Anomaly)
-                        AddPullChance(objects, null, tile.SpaceObject, 1, null);
+                foreach (ISpaceObject spaceObject in Tile.Game.GetSpaceObjects())
+                    if (spaceObject is Anomaly)
+                        AddPullChance(objects, null, spaceObject, 1, null);
 
                 if (notify)
                     handler.Explore(Anomaly.AnomalyType.Wormhole);
@@ -846,7 +835,7 @@ namespace GalWar
             if (spaceObj != anomShip && ( can == null || spaceObj.Player == null || spaceObj.Player == can ))
             {
                 double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * div;
-                avg = ( Tile.Game.Diameter + 6.5 ) / ( avg * avg + 13 );
+                avg = ( Math.Sqrt(Tile.Game.MapSize) / 3.9 + 6.5 ) / ( avg * avg + 13 );
                 if (avg > 1)
                     avg = Math.Sqrt(avg);
                 else
@@ -874,11 +863,11 @@ namespace GalWar
         private bool CreateAnomalies(IEventHandler handler, bool notify, Ship anomShip)
         {
             bool retVal = false;
-            int create = Game.Random.OEInt(2.1);
+            int create = Game.Random.OEInt(1.69);
             for (int a = 0 ; a < create ; ++a)
             {
                 Tile tile = this.Tile;
-                int move = Game.Random.OEInt(( anomShip.CurSpeed + anomShip.MaxSpeed ) / 5.2 + .91 + Tile.Game.Diameter / 21.0);
+                int move = Game.Random.OEInt(( anomShip.CurSpeed + anomShip.MaxSpeed ) / 5.2 + .91 + Math.Sqrt(Tile.Game.MapSize) / 78);
                 for (int b = 0 ; b < move ; ++b)
                     tile = MoveTile(tile);
                 if (tile.SpaceObject == null)

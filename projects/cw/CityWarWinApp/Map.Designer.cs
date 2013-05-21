@@ -13,7 +13,7 @@ namespace CityWarWinApp
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing && ( components != null ))
             {
                 components.Dispose();
             }
@@ -132,6 +132,7 @@ namespace CityWarWinApp
             this.lblProd.Name = "lblProd";
             this.lblProd.Size = new System.Drawing.Size(45, 23);
             this.lblProd.TabIndex = 7;
+            this.lblProd.Text = "1222";
             this.lblProd.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblProd.Click += new System.EventHandler(this.lblResource_Click);
             this.lblProd.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -141,7 +142,7 @@ namespace CityWarWinApp
             // 
             this.lblWork.BackColor = System.Drawing.Color.White;
             this.lblWork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWork.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.lblWork.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblWork.ForeColor = System.Drawing.Color.Black;
             this.lblWork.Location = new System.Drawing.Point(12, 9);
             this.lblWork.Name = "lblWork";
@@ -163,6 +164,7 @@ namespace CityWarWinApp
             this.lblDeath.Name = "lblDeath";
             this.lblDeath.Size = new System.Drawing.Size(45, 23);
             this.lblDeath.TabIndex = 9;
+            this.lblDeath.Text = "1222";
             this.lblDeath.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblDeath.Click += new System.EventHandler(this.lblResource_Click);
             this.lblDeath.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -178,6 +180,7 @@ namespace CityWarWinApp
             this.lblEarth.Name = "lblEarth";
             this.lblEarth.Size = new System.Drawing.Size(45, 23);
             this.lblEarth.TabIndex = 10;
+            this.lblEarth.Text = "1222";
             this.lblEarth.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblEarth.Click += new System.EventHandler(this.lblResource_Click);
             this.lblEarth.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -187,12 +190,13 @@ namespace CityWarWinApp
             // 
             this.lblWizard.BackColor = System.Drawing.Color.DeepPink;
             this.lblWizard.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lblWizard.Font = new System.Drawing.Font("Arial", 9.75F);
+            this.lblWizard.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblWizard.ForeColor = System.Drawing.Color.Black;
             this.lblWizard.Location = new System.Drawing.Point(420, 9);
             this.lblWizard.Name = "lblWizard";
             this.lblWizard.Size = new System.Drawing.Size(45, 23);
             this.lblWizard.TabIndex = 11;
+            this.lblWizard.Text = "1222";
             this.lblWizard.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblWizard.Click += new System.EventHandler(this.lblResource_Click);
             this.lblWizard.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -208,6 +212,7 @@ namespace CityWarWinApp
             this.lblAir.Name = "lblAir";
             this.lblAir.Size = new System.Drawing.Size(45, 23);
             this.lblAir.TabIndex = 12;
+            this.lblAir.Text = "1222";
             this.lblAir.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblAir.Click += new System.EventHandler(this.lblResource_Click);
             this.lblAir.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -223,6 +228,7 @@ namespace CityWarWinApp
             this.lblNature.Name = "lblNature";
             this.lblNature.Size = new System.Drawing.Size(45, 23);
             this.lblNature.TabIndex = 13;
+            this.lblNature.Text = "1222";
             this.lblNature.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblNature.Click += new System.EventHandler(this.lblResource_Click);
             this.lblNature.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -238,6 +244,7 @@ namespace CityWarWinApp
             this.lblWater.Name = "lblWater";
             this.lblWater.Size = new System.Drawing.Size(45, 23);
             this.lblWater.TabIndex = 14;
+            this.lblWater.Text = "1222";
             this.lblWater.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblWater.Click += new System.EventHandler(this.lblResource_Click);
             this.lblWater.MouseEnter += new System.EventHandler(this.lblResource_MouseEnter);
@@ -278,7 +285,7 @@ namespace CityWarWinApp
             this.btnRest.BackColor = System.Drawing.Color.Silver;
             this.btnRest.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnRest.ForeColor = System.Drawing.Color.Black;
-            this.btnRest.Location = new System.Drawing.Point(554, 80);
+            this.btnRest.Location = new System.Drawing.Point(554, 74);
             this.btnRest.Name = "btnRest";
             this.btnRest.Size = new System.Drawing.Size(86, 25);
             this.btnRest.TabIndex = 2;
@@ -349,6 +356,7 @@ namespace CityWarWinApp
             this.lblRelic.Name = "lblRelic";
             this.lblRelic.Size = new System.Drawing.Size(45, 23);
             this.lblRelic.TabIndex = 25;
+            this.lblRelic.Text = "1222";
             this.lblRelic.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblRelic.Click += new System.EventHandler(this.lblResource_Click);
             // 
@@ -416,6 +424,7 @@ namespace CityWarWinApp
             this.lblPpl.Name = "lblPpl";
             this.lblPpl.Size = new System.Drawing.Size(45, 23);
             this.lblPpl.TabIndex = 57;
+            this.lblPpl.Text = "1222";
             this.lblPpl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblPpl.Click += new System.EventHandler(this.lblResource_Click);
             // 
@@ -481,7 +490,7 @@ namespace CityWarWinApp
             this.btnUndo.BackColor = System.Drawing.Color.Silver;
             this.btnUndo.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnUndo.ForeColor = System.Drawing.Color.Black;
-            this.btnUndo.Location = new System.Drawing.Point(554, 148);
+            this.btnUndo.Location = new System.Drawing.Point(554, 142);
             this.btnUndo.Name = "btnUndo";
             this.btnUndo.Size = new System.Drawing.Size(86, 25);
             this.btnUndo.TabIndex = 8;
@@ -606,8 +615,8 @@ namespace CityWarWinApp
 
         #endregion
 
-		private CityWarWinApp.PiecesPanel panelPieces;
-		private System.Windows.Forms.Timer timerGraphics;
+        private CityWarWinApp.PiecesPanel panelPieces;
+        private System.Windows.Forms.Timer timerGraphics;
         private System.Windows.Forms.Label lblDiv;
         private System.Windows.Forms.Label lblMouse;
         private System.Windows.Forms.Button btnEndTurn;
@@ -634,11 +643,11 @@ namespace CityWarWinApp
         private System.Windows.Forms.Button btnQuit;
         private System.Windows.Forms.Label lblPpl;
         public System.Windows.Forms.OpenFileDialog loadGame;
-		private System.Windows.Forms.Button btnDisbandUnits;
-		private System.Windows.Forms.Button btnGroup;
-		private System.Windows.Forms.Button btnUngroup;
-		private System.Windows.Forms.CheckBox chbGroup;
-		private System.Windows.Forms.Button btnUndo;
+        private System.Windows.Forms.Button btnDisbandUnits;
+        private System.Windows.Forms.Button btnGroup;
+        private System.Windows.Forms.Button btnUngroup;
+        private System.Windows.Forms.CheckBox chbGroup;
+        private System.Windows.Forms.Button btnUndo;
         private System.Windows.Forms.CheckBox chbGamble;
         private System.Windows.Forms.Button btnLog;
         private System.Windows.Forms.Button btnCalc;

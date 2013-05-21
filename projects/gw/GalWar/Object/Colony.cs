@@ -22,7 +22,7 @@ namespace GalWar
         private float _soldierChange, _researchRounding, _productionRounding;
 
         internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
-            : base(1, 1, 0, population, soldiers)
+            : base(null, 1, 1, 0, population, soldiers)
         {
             checked
             {
@@ -679,6 +679,10 @@ namespace GalWar
             {
                 return Planet.Tile;
             }
+            protected set
+            {
+                throw new Exception();
+            }
         }
 
         public int Production
@@ -1066,9 +1070,9 @@ namespace GalWar
             this.Def -= newDef;
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<int, int, int, int, double, double>(
-                    new Game.UndoMethod<int, int, int, int, double, double>(UndoDisbandPlanetDefense), hp, newAtt, newDef, production, addGold, goldIncome));
+                    new Game.UndoMethod<int, int, int, int, double, double>(UndoDisbandPlanetDefense), newAtt, newDef, hp, production, addGold, goldIncome));
         }
-        private Tile UndoDisbandPlanetDefense(int hp, int att, int def, int production, double addGold, double goldIncome)
+        private Tile UndoDisbandPlanetDefense(int att, int def, int hp, int production, double addGold, double goldIncome)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp > 0);
@@ -1138,14 +1142,14 @@ namespace GalWar
         private double GetAttackCost(int att, int def, int hp, int shipDef)
         {
             //only pay for the maximum HP you could possibly use
-            return GetPDUpkeep(Math.Min(hp, ( att - 1 ) * shipDef + 1), att, def, Consts.PlanetDefensesAttackCostMult);
+            return GetPDUpkeep(att, def, Math.Min(hp, ( att - 1 ) * shipDef + 1), Consts.PlanetDefensesAttackCostMult);
         }
 
-        internal double GetPDUpkeep(int hp, int att, int def)
+        internal double GetPDUpkeep(int att, int def, int hp)
         {
-            return GetPDUpkeep(hp, att, def, Consts.PlanetDefensesUpkeepMult);
+            return GetPDUpkeep(att, def, hp, Consts.PlanetDefensesUpkeepMult);
         }
-        private double GetPDUpkeep(int hp, int att, int def, double mult)
+        private double GetPDUpkeep(int att, int def, int hp, double mult)
         {
             return hp * mult * GetPDCost(att, def) * Consts.GetProductionUpkeepMult(Player.Game.MapSize);
         }

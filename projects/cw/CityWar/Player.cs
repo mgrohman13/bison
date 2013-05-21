@@ -265,6 +265,10 @@ namespace CityWar
 
         public double GetTotalResources()
         {
+            return GetTotalResources(true);
+        }
+        private double GetTotalResources(bool all)
+        {
             double result = 0;
 
             result += air;
@@ -276,8 +280,11 @@ namespace CityWar
             result += magic;
             result += relic;
             result += population;
-            result += work / WorkMult;
-            result -= upkeep / UpkeepMult;
+            if (all)
+            {
+                result += work / WorkMult;
+                result -= upkeep / UpkeepMult;
+            }
 
             return result;
         }
@@ -552,14 +559,11 @@ namespace CityWar
 
         internal void EndTurn()
         {
-            int oldUpkeep = upkeep;
             foreach (Piece piece in pieces.ToArray())
                 piece.ResetMove();
-            int addUpkeep = upkeep - oldUpkeep;
 
-            upkeep = oldUpkeep;
+            GenerateIncome(ref air, ref death, ref earth, ref nature, ref production, ref water, ref magic, ref population);
             PayUpkeep();
-            upkeep += addUpkeep;
 
             healRound = Game.Random.NextDouble();
         }
@@ -1021,10 +1025,10 @@ namespace CityWar
 
         private void CheckNegativeWork()
         {
-            //when your work is negative, there is a chance you will lose some actual resources
-            int amt = 10;
-            while (Game.Random.OE(39 * GetRandVal(amt)) < -work)
+            //when your work is negative, you will lose some actual resources
+            while (work < 0 && GetTotalResources(false) > 0)
             {
+                int amt;
                 switch (Game.Random.Next(16))
                 {
                 case 0:
@@ -1103,21 +1107,16 @@ namespace CityWar
             double retVal = amt / 10.0;
             if (retVal > 1)
                 retVal = 1;
-            else if (retVal < 0)
-                retVal = 0;
             return retVal;
         }
 
-        internal int StartTurn()
+        internal void StartTurn()
         {
-            GenerateIncome(ref air, ref death, ref earth, ref nature, ref production, ref water, ref work, ref magic, ref _relic, ref population, true);
             CheckNegativeResources();
-            GetRelic();
             trades.Clear();
-            return Math.Min(work, 0);
         }
 
-        private void CheckNegativeResources()
+        internal void CheckNegativeResources()
         {
             CheckNegativeResource(ref air);
             CheckNegativeResource(ref death);
@@ -1134,12 +1133,15 @@ namespace CityWar
                 AddWork(-upkeep / UpkeepMult * WorkMult);
                 upkeep = 0;
             }
-            if (work < 0 && upkeep == 0)
+            else if (upkeep > 0)
+            {
+                CheckNegativeWork();
+            }
+            if (work < 0)
             {
                 AddUpkeep(-work / WorkMult * UpkeepMult);
                 work = 0;
             }
-            CheckNegativeWork();
         }
 
         private void CheckNegativeResource(ref int amt)
@@ -1152,7 +1154,7 @@ namespace CityWar
         }
 
         //this doesnt actually add the income to the player so it can be used to simply view the income
-        public void GenerateIncome(ref int airP, ref int deathP, ref int earthP, ref int natureP, ref int productionP, ref int waterP, ref int workP, ref int magicP, ref int relicP, ref int populationP, bool randRound)
+        public void GenerateIncome(ref int airP, ref int deathP, ref int earthP, ref int natureP, ref int productionP, ref int waterP, ref int magicP, ref int populationP)
         {
             populationP += 15;
             magicP += 10;

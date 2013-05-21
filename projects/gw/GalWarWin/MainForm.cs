@@ -196,8 +196,6 @@ namespace GalWarWin
 
                     float scale = GetScale();
 
-                    float startX = GetStartX();
-
                     float minQuality = int.MaxValue, maxQuality = int.MinValue,
                            minPop = int.MaxValue, maxPop = int.MinValue, minStr = int.MaxValue, maxStr = int.MinValue;
                     foreach (Planet planet in Game.GetPlanets())
@@ -225,43 +223,44 @@ namespace GalWarWin
                     if (showMoves)
                         moves = GetMoves();
 
-                    Tile[,] map = Game.GetMap();
-                    for (int x = 0 ; x < Game.Diameter ; ++x)
-                        for (int y = 0 ; y < Game.Diameter ; ++y)
+                    int minX, minY, maxX, maxY;
+                    GetMapSize(out minX, out minY, out maxX, out maxY);
+
+                    float startX = GetStartX(), startY = GetStartY();
+
+                    for (int x = minX ; x <= maxX ; ++x)
+                        for (int y = minY ; y <= maxY ; ++y)
                         {
-                            Tile tile = map[x, y];
-                            if (tile != null)
+                            Tile tile = Game.GetTile(x, y);
+                            RectangleF rect = new RectangleF(startX + scale * x + ( y % 2 == 0 ? 0 : scale / 2f ), startY + scale * y, scale, scale);
+
+                            DrawBorder(g, tile, rect, scale);
+
+                            Ship ship;
+                            Planet planet;
+                            if (( planet = ( tile.SpaceObject as Planet ) ) != null)
+                                DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
+                            else if (( ship = ( tile.SpaceObject as Ship ) ) != null)
+                                DrawShip(g, scale, rect, ship, minStr, maxStr);
+
+                            if (moves != null)
                             {
-                                RectangleF rect = new RectangleF(startX + scale * x + ( y % 2 == 0 ? 0 : scale / 2f ), 2 + scale * y, scale, scale);
-
-                                DrawBorder(g, tile, rect, scale);
-
-                                Ship ship;
-                                Planet planet;
-                                if (( planet = ( tile.SpaceObject as Planet ) ) != null)
-                                    DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
-                                else if (( ship = ( tile.SpaceObject as Ship ) ) != null)
-                                    DrawShip(g, scale, rect, ship, minStr, maxStr);
-
-                                if (moves != null)
+                                float move;
+                                if (moves.TryGetValue(tile, out move))
                                 {
-                                    float move;
-                                    if (moves.TryGetValue(tile, out move))
-                                    {
-                                        string s = ( showAtt ? FormatDouble(move) : FormatInt(move) );
-                                        if (showAtt)
-                                            foreach (Tile neighbor in Tile.GetNeighbors(tile))
+                                    string s = ( showAtt ? FormatDouble(move) : FormatInt(move) );
+                                    if (showAtt)
+                                        foreach (Tile neighbor in Tile.GetNeighbors(tile))
+                                        {
+                                            planet = neighbor.SpaceObject as Planet;
+                                            if (planet != null && planet.Colony != null && !planet.Colony.Player.IsTurn)
                                             {
-                                                planet = neighbor.SpaceObject as Planet;
-                                                if (planet != null && planet.Colony != null && !planet.Colony.Player.IsTurn)
-                                                {
-                                                    s = FormatInt(move) + "+";
-                                                    break;
-                                                }
+                                                s = FormatInt(move) + "+";
+                                                break;
                                             }
-                                        SizeF strSize = g.MeasureString(s, font);
-                                        g.DrawString(s, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
-                                    }
+                                        }
+                                    SizeF strSize = g.MeasureString(s, font);
+                                    g.DrawString(s, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
                                 }
                             }
                         }
@@ -397,14 +396,57 @@ namespace GalWarWin
         {
             float height = this.ClientHeight - 5;
             float width = this.ClientSize.Width - this.pnlHUD.Width - 5;
-            return (float)Math.Min(height / (double)Game.Diameter, width / (double)( Game.Diameter + .5 ));
+            return (float)Math.Min(height / GetYDiameter(), width / ( GetXDiameter() + .5 ));
         }
 
         private float GetStartX()
         {
+            int minX, minY, maxX, maxY;
+            GetMapSize(out minX, out minY, out maxX, out maxY);
             float width = this.ClientSize.Width - this.pnlHUD.Width;
             float scale = GetScale();
-            return width - scale * ( Game.Diameter + .5f ) - 3;
+            float diameter = GetXDiameter();
+
+            return width - scale * ( diameter + .5f ) - 3 - minX * scale;
+        }
+        private float GetStartY()
+        {
+            int minX, minY, maxX, maxY;
+            GetMapSize(out minX, out minY, out maxX, out maxY);
+            float scale = GetScale();
+
+            return -minY * scale + 2;
+        }
+
+        private static float GetXDiameter()
+        {
+            int minX, minY, maxX, maxY;
+            GetMapSize(out minX, out minY, out maxX, out maxY);
+            return maxX - minX + 1;
+        }
+        private static float GetYDiameter()
+        {
+            int minX, minY, maxX, maxY;
+            GetMapSize(out minX, out minY, out maxX, out maxY);
+            return maxY - minY + 1;
+        }
+        private static void GetMapSize(out int minX, out int minY, out int maxX, out int maxY)
+        {
+            minX = int.MaxValue;
+            minY = int.MaxValue;
+            maxX = int.MinValue;
+            maxY = int.MinValue;
+            foreach (ISpaceObject spaceObject in Game.GetSpaceObjects())
+            {
+                minX = Math.Min(minX, spaceObject.Tile.X);
+                minY = Math.Min(minY, spaceObject.Tile.Y);
+                maxX = Math.Max(maxX, spaceObject.Tile.X);
+                maxY = Math.Max(maxY, spaceObject.Tile.Y);
+            }
+            --minX;
+            --minY;
+            ++maxX;
+            ++maxY;
         }
 
         private Dictionary<Tile, float> GetMoves()
@@ -557,8 +599,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianCappedInt(16.5f, .21f, 13) + Game.Random.OEInt(1.3),
-                    Game.Random.GaussianCapped(0.006, .52, 0.0021));
+                    Game.Random.GaussianOE(10.4, .13, .065, 6.5), Game.Random.GaussianCapped(.006, .52, .0021));
 
             mouse = new Point(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -683,6 +724,14 @@ namespace GalWarWin
                 this.mouse = new Point(this.pnlHUD.Location.X + e.Location.X, this.pnlHUD.Location.Y + e.Location.Y);
             else
                 this.mouse = e.Location;
+
+            if (this.started)
+            {
+                float scale = GetScale();
+                int y = (int)Math.Floor(( e.Y - GetStartY() ) / scale);
+                int x = (int)Math.Floor(( ( e.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
+                this.Text = new Point(x, y).ToString();
+            }
         }
 
         private void btnProduction_Click(object sender, EventArgs e)
@@ -978,84 +1027,79 @@ namespace GalWarWin
             {
                 float scale = GetScale();
 
-                int y = (int)( e.Y / scale );
-                int x = (int)( ( ( e.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale );
+                int y = (int)Math.Floor(( e.Y - GetStartY() ) / scale);
+                int x = (int)Math.Floor(( ( e.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
 
-                if (x >= 0 && y >= 0 && x < Game.Diameter && y < Game.Diameter)
+                Tile clickedTile = Game.GetTile(x, y);
+                if (e.Button == MouseButtons.Left)
                 {
+                    this.selectedTile = clickedTile;
+                    UnHold(GetSelectedShip());
 
-                    Tile clickedTile = Game.GetMap()[x, y];
-                    if (clickedTile != null)
-                        if (e.Button == MouseButtons.Left)
+                    if (this.isDialog && ValidDialogTile(this.selectedTile))
+                    {
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
+                        return;
+                    }
+                }
+                else if (!this.isDialog && e.Button == MouseButtons.Right)
+                {
+                    Ship target = clickedTile.SpaceObject as Ship;
+
+                    Point clicked = new Point(x, y);
+                    if (doubleClick && target != null && this.clicked == clicked && hold.Contains(target))
+                    {
+                        holdPersistent.Add(target);
+                        this.clicked = null;
+                        return;
+                    }
+                    this.clicked = clicked;
+
+                    Colony colony = GetSelectedColony();
+                    if (colony != null && target != null && colony.Player != target.Player && colony.HP > 0)
+                    {
+                        CombatForm.ShowForm(colony, target);
+                    }
+                    else
+                    {
+                        Ship ship = GetSelectedShip();
+                        int oldSpeed = -1;
+                        if (ship != null)
+                            oldSpeed = ship.CurSpeed;
+
+                        bool selectNext = true;
+
+                        if (this.selectedTile != null && ( ship == null || ship.Player.IsTurn ))
+                            if (Tile.IsNeighbor(clickedTile, this.selectedTile))
+                                selectNext &= RightClick(clickedTile, ref ship);
+                            else if (clickedTile == this.selectedTile)
+                                hold.Add(ship);
+
+                        if (ship != null)
                         {
-                            this.selectedTile = clickedTile;
-                            UnHold(GetSelectedShip());
-
-                            if (this.isDialog && ValidDialogTile(this.selectedTile))
+                            Combatant defender = null;
+                            Planet planet = clickedTile.SpaceObject as Planet;
+                            if (planet == null)
+                                defender = clickedTile.SpaceObject as Combatant;
+                            else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
+                                defender = planet.Colony;
+                            if (defender != null && ship.Player != defender.Player &&
+                                    !( ship.Player.IsTurn && defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
                             {
-                                this.DialogResult = DialogResult.OK;
-                                this.Close();
-                                return;
+                                Colony defCol = defender as Colony;
+                                if (defCol != null && ship.Population > 0)
+                                    InvadeCalculatorForm.ShowForm(ship, defCol);
+                                else if (defender.HP > 0)
+                                    selectNext &= Attack(ship, defender);
                             }
                         }
-                        else if (!this.isDialog && e.Button == MouseButtons.Right)
-                        {
-                            Ship target = clickedTile.SpaceObject as Ship;
 
-                            Point clicked = new Point(x, y);
-                            if (doubleClick && target != null && this.clicked == clicked && hold.Contains(target))
-                            {
-                                holdPersistent.Add(target);
-                                this.clicked = null;
-                                return;
-                            }
-                            this.clicked = clicked;
+                        if (selectNext && ( this.selectedTile == null || ( ship == null || !ship.Player.IsTurn || ship.CurSpeed == 0 || ship.CurSpeed == oldSpeed ) ))
+                            SelectNextShip();
 
-                            Colony colony = GetSelectedColony();
-                            if (colony != null && target != null && colony.Player != target.Player && colony.HP > 0)
-                            {
-                                CombatForm.ShowForm(colony, target);
-                            }
-                            else
-                            {
-                                Ship ship = GetSelectedShip();
-                                int oldSpeed = -1;
-                                if (ship != null)
-                                    oldSpeed = ship.CurSpeed;
-
-                                bool selectNext = true;
-
-                                if (this.selectedTile != null && ( ship == null || ship.Player.IsTurn ))
-                                    if (Tile.IsNeighbor(clickedTile, this.selectedTile))
-                                        selectNext &= RightClick(clickedTile, ref ship);
-                                    else if (clickedTile == this.selectedTile)
-                                        hold.Add(ship);
-
-                                if (ship != null)
-                                {
-                                    Combatant defender = null;
-                                    Planet planet = clickedTile.SpaceObject as Planet;
-                                    if (planet == null)
-                                        defender = clickedTile.SpaceObject as Combatant;
-                                    else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
-                                        defender = planet.Colony;
-                                    if (defender != null && ship.Player != defender.Player &&
-                                            !( ship.Player.IsTurn && defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
-                                    {
-                                        Colony defCol = defender as Colony;
-                                        if (defCol != null && ship.Population > 0)
-                                            InvadeCalculatorForm.ShowForm(ship, defCol);
-                                        else if (defender.HP > 0)
-                                            selectNext &= Attack(ship, defender);
-                                    }
-                                }
-
-                                if (selectNext && ( this.selectedTile == null || ( ship == null || !ship.Player.IsTurn || ship.CurSpeed == 0 || ship.CurSpeed == oldSpeed ) ))
-                                    SelectNextShip();
-
-                                saved = false;
-                            }
-                        }
+                        saved = false;
+                    }
                 }
 
                 showMoves = false;
