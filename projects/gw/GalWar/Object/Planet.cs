@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace GalWar
 {
     [Serializable]
-    public class Planet : ISpaceObject
+    public class Planet : SpaceObject
     {
         #region fields and constructors
 

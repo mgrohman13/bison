@@ -53,7 +53,7 @@ namespace GalWar
 
         internal readonly ShipNames ShipNames;
 
-        private readonly Dictionary<Point, ISpaceObject> spaceObjects;
+        private readonly Dictionary<Point, SpaceObject> spaceObjects;
         private readonly List<Player> players;
         private readonly List<Tuple<Point, Point>> teleporters;
         private readonly List<Result> deadPlayers, winningPlayers;
@@ -88,7 +88,7 @@ namespace GalWar
 
                 this.ShipNames = new ShipNames(numPlayers);
 
-                this.spaceObjects = new Dictionary<Point, ISpaceObject>();
+                this.spaceObjects = new Dictionary<Point, SpaceObject>();
                 this.players = new List<Player>();
                 this.teleporters = new List<Tuple<Point, Point>>();
                 this.deadPlayers = new List<Result>(numPlayers - 1);
@@ -201,13 +201,7 @@ namespace GalWar
         }
         private Planet NewPlanet()
         {
-            Tile tile;
-            do
-            {
-                tile = GetRandomTile();
-                //planets cannot be right on the map edge so tile must have 6 neighbors
-            } while (Tile.GetNeighbors(tile).Count < 6);
-
+            Tile tile = GetRandomTile();
             if (tile.SpaceObject == null && CheckPlanetDistance(tile))
                 return CreatePlanet(tile);
             //dont retry if it cant be placed because of occupied space or existing planet proximity
@@ -294,7 +288,7 @@ namespace GalWar
         private List<Planet> GetAvailableHomeworlds(int startPop)
         {
             //planets can only be used as homeworlds if they have enough quality to support the initial population
-            List<Planet> retVal = new List<Planet>(GetPlanets().Count);
+            List<Planet> retVal = new List<Planet>();
             foreach (Planet planet in GetPlanets())
                 if (planet.Quality > startPop && planet.Colony == null)
                 {
@@ -407,7 +401,7 @@ next_planet:
             CurrentPlayer.PlayTurn(handler);
         }
 
-        internal void SetSpaceObject(int x, int y, ISpaceObject spaceObject)
+        internal void SetSpaceObject(int x, int y, SpaceObject spaceObject)
         {
             Point point = new Point(x, y);
             if (spaceObject == null)
@@ -431,7 +425,7 @@ next_planet:
                 this.tileCache = new Dictionary<Point, Tile>();
 
             Tile tile;
-            ISpaceObject spaceObject;
+            SpaceObject spaceObject;
             if (!this.tileCache.TryGetValue(point, out tile))
             {
                 if (this.spaceObjects.TryGetValue(point, out spaceObject))
@@ -443,11 +437,33 @@ next_planet:
             return tile;
         }
 
-        public HashSet<ISpaceObject> GetSpaceObjects()
+        public SpaceObject GetSpaceObject(int x, int y)
         {
-            return new HashSet<ISpaceObject>(this.spaceObjects.Values);
+            return GetSpaceObject(new Point(x, y));
+        }
+        public SpaceObject GetSpaceObject(Point point)
+        {
+            SpaceObject spaceObject;
+            this.spaceObjects.TryGetValue(point, out spaceObject);
+            return spaceObject;
+        }
+        public HashSet<SpaceObject> GetSpaceObjects()
+        {
+            return new HashSet<SpaceObject>(this.spaceObjects.Values);
         }
 
+        public Tuple<Point, Point> GetTeleporter(Point point, out int number)
+        {
+            number = 0;
+            foreach (Tuple<Point, Point> teleporter in this.teleporters)
+            {
+                ++number;
+                if (teleporter.Item1 == point || teleporter.Item2 == point)
+                    return teleporter;
+            }
+            number = -1;
+            return null;
+        }
         public ReadOnlyCollection<Tuple<Point, Point>> GetTeleporters()
         {
             return this.teleporters.AsReadOnly();
@@ -482,7 +498,7 @@ next_planet:
         {
             HashSet<Planet> planets = new HashSet<Planet>();
             Planet planet;
-            foreach (ISpaceObject spaceObject in this.spaceObjects.Values)
+            foreach (SpaceObject spaceObject in this.spaceObjects.Values)
                 if (( planet = spaceObject as Planet ) != null)
                     planets.Add(planet);
             return planets;
@@ -584,40 +600,42 @@ next_planet:
             if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Game.Random.Bool(1.0 / chance))
             {
                 //check this will not make any planets be too close
-                int closeThis = int.MaxValue, closTrg = int.MaxValue;
-                foreach (Planet planet in GetPlanets())
+                HashSet<Planet> planets = new HashSet<Planet>();
+                foreach (Planet p1 in planets)
                 {
-                    closeThis = Math.Min(closeThis, Tile.GetDistance(tile, planet.Tile));
-                    closTrg = Math.Min(closTrg, Tile.GetDistance(target, planet.Tile));
+                    int dist = Consts.PlanetDistance - Tile.GetDistance(tile, p1.Tile);
+                    if (dist > 0)
+                        foreach (Planet p2 in planets)
+                            if (p1 != p2 && Tile.GetDistance(target, p2.Tile) < dist)
+                                return false;
                 }
 
                 //check and make sure enemies cannot be attacked/invaded
-                if (closeThis + closTrg + 1 > Consts.PlanetDistance)
-                    foreach (Player p in this.players)
-                    {
-                        foreach (Colony c in p.GetColonies())
-                            if (!CheckAttInvPlayers(c.Planet, true, tile, target))
+                foreach (Player p in this.players)
+                {
+                    foreach (Colony c in p.GetColonies())
+                        if (!CheckAttInvPlayers(c.Planet, true, tile, target))
+                            return false;
+                    if (!p.IsTurn)
+                        foreach (Ship s in p.GetShips())
+                            if (!CheckAttInvPlayers(s, false, tile, target))
                                 return false;
-                        if (!p.IsTurn)
-                            foreach (Ship s in p.GetShips())
-                                if (!CheckAttInvPlayers(s, false, tile, target))
-                                    return false;
 
-                        handler.Explore(Anomaly.AnomalyType.Wormhole);
+                    handler.Explore(Anomaly.AnomalyType.Wormhole);
 
-                        CreateTeleporter(tile, target);
-                        return true;
-                    }
+                    CreateTeleporter(tile, target);
+                    return true;
+                }
             }
             return false;
         }
-        private bool CheckAttInvPlayers(ISpaceObject obj, bool inv, Tile t1, Tile t2)
+        private bool CheckAttInvPlayers(SpaceObject obj, bool inv, Tile t1, Tile t2)
         {
-            HashSet<ISpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv);
+            HashSet<SpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv);
             Tuple<Point, Point> teleporter = CreateTeleporter(t1, t2);
-            HashSet<ISpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv);
+            HashSet<SpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv);
             RemoveTeleporter(teleporter);
-            foreach (ISpaceObject other in after)
+            foreach (SpaceObject other in after)
                 if (other.Player != obj.Player && !before.Contains(other))
                     return false;
             return true;
@@ -646,8 +664,6 @@ next_planet:
         }
         internal bool CheckPlanetDistance(Tile tile)
         {
-            if (Tile.GetNeighbors(tile).Count < 6)
-                return false;
             foreach (Planet planet in GetPlanets())
                 if (Tile.GetDistance(tile, planet.Tile) <= Consts.PlanetDistance)
                     return false;

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace GalWar
 {
     [Serializable]
-    public abstract class ISpaceObject
+    public abstract class SpaceObject
     {
         [NonSerialized]
         private Tile _tile;
 
-        protected ISpaceObject(Tile tile)
+        protected SpaceObject(Tile tile)
         {
             checked
             {

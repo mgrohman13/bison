@@ -234,20 +234,23 @@ namespace GalWarWin
                     for (int x = minX ; x <= maxX ; ++x)
                         for (int y = minY ; y <= maxY ; ++y)
                         {
-                            Tile tile = Game.GetTile(x, y);
+                            Point point = new Point(x, y);
                             RectangleF rect = new RectangleF(startX + scale * x + ( y % 2 == 0 ? 0 : scale / 2f ), startY + scale * y, scale, scale);
 
-                            DrawBorder(g, tile, rect, scale);
+                            SpaceObject spaceObject = Game.GetSpaceObject(point);
+
+                            DrawBorder(g, point, spaceObject, rect, scale);
 
                             Ship ship;
                             Planet planet;
-                            if (( planet = ( tile.SpaceObject as Planet ) ) != null)
+                            if (( planet = ( spaceObject as Planet ) ) != null)
                                 DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
-                            else if (( ship = ( tile.SpaceObject as Ship ) ) != null)
+                            else if (( ship = ( spaceObject as Ship ) ) != null)
                                 DrawShip(g, scale, rect, ship, minStr, maxStr);
 
                             if (moves != null)
                             {
+                                Tile tile = Game.GetTile(point);
                                 float move;
                                 if (moves.TryGetValue(tile, out move))
                                 {
@@ -284,24 +287,24 @@ namespace GalWarWin
             max = (float)Math.Max(max, Math.Sqrt(value));
         }
 
-        private void DrawBorder(Graphics g, Tile tile, RectangleF rect, float scale)
+        private void DrawBorder(Graphics g, Point point, SpaceObject spaceObject, RectangleF rect, float scale)
         {
-            Planet planet = tile.SpaceObject as Planet;
-            Ship ship = tile.SpaceObject as Ship;
+            Planet planet = spaceObject as Planet;
+            Ship ship = spaceObject as Ship;
 
             float size;
-            if (tile == this.selectedTile)
+            if (this.selectedTile != null && point == new Point(this.selectedTile.X, this.selectedTile.Y))
                 size = 3f;
-            else if (planet != null || ( this.isDialog ? ValidDialogTile(tile) : ship != null &&
+            else if (planet != null || ( this.isDialog ? ValidDialogTile(point, spaceObject) : ship != null &&
                     ship.Player.IsTurn && ship.CurSpeed > 0 ))
                 size = 2f;
             else
                 size = 1f;
-            if (tile == this.dialogTile)
+            if (this.dialogTile != null && point == new Point(this.dialogTile.X, this.dialogTile.Y))
                 ++size;
 
             int telNum;
-            if (tile.GetTeleporter(out telNum) != null)
+            if (Game.GetTeleporter(point, out telNum) != null)
             {
                 Brush brush = Brushes.DarkGray;
                 if (Game.GetTeleporters().Count > 1)
@@ -312,7 +315,7 @@ namespace GalWarWin
                 g.FillRectangle(brush, rect);
             }
 
-            if (tile.SpaceObject is Anomaly)
+            if (spaceObject is Anomaly)
                 g.FillRectangle(Brushes.White, Inflate(scale, rect, 1, 1, 1, .6f, .13f));
             using (Pen pen = new Pen(Color.White, size))
                 g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
@@ -439,7 +442,7 @@ namespace GalWarWin
             minY = int.MaxValue;
             maxX = int.MinValue;
             maxY = int.MinValue;
-            foreach (ISpaceObject spaceObject in Game.GetSpaceObjects())
+            foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
             {
                 minX = Math.Min(minX, spaceObject.Tile.X);
                 minY = Math.Min(minY, spaceObject.Tile.Y);
@@ -1039,7 +1042,7 @@ namespace GalWarWin
                     this.selectedTile = clickedTile;
                     UnHold(GetSelectedShip());
 
-                    if (this.isDialog && ValidDialogTile(this.selectedTile))
+                    if (this.isDialog && ValidDialogTile(this.selectedTile.Point, this.selectedTile.SpaceObject))
                     {
                         this.DialogResult = DialogResult.OK;
                         this.Close();
@@ -1118,26 +1121,32 @@ namespace GalWarWin
             }
         }
 
-        private bool ValidDialogTile(Tile tile)
+        private bool ValidDialogTile(Point point, SpaceObject spaceObject)
         {
-            if (!Tile.IsNeighbor(dialogTile, tile))
-                return false;
-            if (this.isBuild)
-            {
-                return ( tile.SpaceObject == null );
-            }
-            else
-            {
-                Ship ship = ( tile.SpaceObject as Ship );
-                return ( ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn );
-            }
+            if (dialogTile != null)
+                foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
+                {
+                    if (neighbor.Point == point)
+                    {
+                        if (this.isBuild)
+                        {
+                            return ( spaceObject == null );
+                        }
+                        else
+                        {
+                            Ship ship = ( spaceObject as Ship );
+                            return ( ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn );
+                        }
+                    }
+                }
+            return false;
         }
 
         private bool RightClick(Tile adjacentTile, ref Ship refShip)
         {
             bool selectNext = true;
 
-            ISpaceObject spaceObject = GetSelectedSpaceObject();
+            SpaceObject spaceObject = GetSelectedSpaceObject();
 
             bool switchTroops = false;
             Planet planet;
@@ -1456,7 +1465,7 @@ namespace GalWarWin
             return retVal;
         }
 
-        private ISpaceObject GetSelectedSpaceObject()
+        private SpaceObject GetSelectedSpaceObject()
         {
             if (this.selectedTile != null)
                 return this.selectedTile.SpaceObject;

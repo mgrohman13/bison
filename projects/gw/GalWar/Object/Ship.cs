@@ -729,7 +729,7 @@ namespace GalWar
             //Zone of Control: cannot move from and to tiles that are both adjacent to the same enemy
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
-                ISpaceObject spaceObject = neighbor.SpaceObject;
+                SpaceObject spaceObject = neighbor.SpaceObject;
                 Planet planet = spaceObject as Planet;
                 if (( spaceObject is Ship || ( planet != null && planet.Colony != null && planet.Colony.HP > 0 ) )
                         && spaceObject.Player != player && Tile.IsNeighbor(from, neighbor))

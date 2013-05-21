@@ -6,7 +6,7 @@ using System.Text;
 namespace GalWar
 {
     [Serializable]
-    public class Anomaly : ISpaceObject
+    public class Anomaly : SpaceObject
     {
         #region Explore
 
@@ -229,7 +229,7 @@ namespace GalWar
             return colonies;
         }
 
-        internal static HashSet<ISpaceObject> GetAttInv(Tile target, bool inv)
+        internal static HashSet<SpaceObject> GetAttInv(Tile target, bool inv)
         {
             return GetAttInv(target, null, inv);
         }
@@ -239,11 +239,11 @@ namespace GalWar
             GetAttInvPlayers(GetAttInv(target, anomShip, true), out oneInv, out twoInv);
             GetAttInvPlayers(GetAttInv(target, anomShip, false), out oneAtt, out twoAtt);
         }
-        private static void GetAttInvPlayers(HashSet<ISpaceObject> spaceObjs, out Player one, out bool two)
+        private static void GetAttInvPlayers(HashSet<SpaceObject> spaceObjs, out Player one, out bool two)
         {
             one = null;
             two = false;
-            foreach (ISpaceObject spaceObj in spaceObjs)
+            foreach (SpaceObject spaceObj in spaceObjs)
                 if (one == null)
                 {
                     one = spaceObj.Player;
@@ -256,9 +256,9 @@ namespace GalWar
                 }
         }
 
-        private static HashSet<ISpaceObject> GetAttInv(Tile target, Ship anomShip, bool inv)
+        private static HashSet<SpaceObject> GetAttInv(Tile target, Ship anomShip, bool inv)
         {
-            HashSet<ISpaceObject> retVal = new HashSet<ISpaceObject>();
+            HashSet<SpaceObject> retVal = new HashSet<SpaceObject>();
 
             //check for attacks from Planet Defenses
             if (!inv)
@@ -427,8 +427,9 @@ namespace GalWar
 
         private bool GlobalEvent(IEventHandler handler, Ship anomShip)
         {
+            HashSet<Planet> planets = Tile.Game.GetPlanets();
             double quality = 0, pop = 0, colonies = 0;
-            foreach (Planet planet in Tile.Game.GetPlanets())
+            foreach (Planet planet in planets)
             {
                 quality += planet.Quality;
                 if (planet.Colony != null)
@@ -458,7 +459,7 @@ namespace GalWar
 
                 double addAmt = forExplorer + ( forExplorer * ( 2 *
                         ( ( 2 * quality + 1 * pop ) / 3.0 / Consts.AverageQuality )
-                        + 4 * colonies + 1 * Tile.Game.GetPlanets().Count ) / 7.0 );
+                        + 4 * colonies + 1 * planets.Count ) / 7.0 );
                 double killAmt = diePct * pop;
 
                 if (Game.Random.Bool(addAmt / ( addAmt + killAmt )))
@@ -780,7 +781,7 @@ namespace GalWar
             bool twoInv, twoAtt;
             GetAttInvPlayers(this.Tile, anomShip, out oneInv, out twoInv, out oneAtt, out twoAtt);
 
-            Dictionary<ISpaceObject, int> objects = new Dictionary<ISpaceObject, int>();
+            Dictionary<SpaceObject, int> objects = new Dictionary<SpaceObject, int>();
             if (Tile.Game.CheckPlanetDistance(this.Tile))
             {
                 double mult = ( twoAtt ? 1.69 : ( ( twoInv || ( oneInv != null ) || ( oneAtt != null ) ) ? 1.3 : 1.0 ) );
@@ -802,14 +803,14 @@ namespace GalWar
 
             if (objects.Count > 0)
             {
-                foreach (ISpaceObject spaceObject in Tile.Game.GetSpaceObjects())
+                foreach (SpaceObject spaceObject in Tile.Game.GetSpaceObjects())
                     if (spaceObject is Anomaly)
                         AddPullChance(objects, null, spaceObject, 1, null);
 
                 if (notify)
                     handler.Explore(Anomaly.AnomalyType.Wormhole);
 
-                ISpaceObject teleport = Game.Random.SelectValue(objects);
+                SpaceObject teleport = Game.Random.SelectValue(objects);
                 Ship ship = teleport as Ship;
                 if (ship != null)
                 {
@@ -830,7 +831,7 @@ namespace GalWar
 
             return false;
         }
-        private void AddPullChance(Dictionary<ISpaceObject, int> objects, Player can, ISpaceObject spaceObj, double div, Ship anomShip)
+        private void AddPullChance(Dictionary<SpaceObject, int> objects, Player can, SpaceObject spaceObj, double div, Ship anomShip)
         {
             if (spaceObj != anomShip && ( can == null || spaceObj.Player == null || spaceObj.Player == can ))
             {

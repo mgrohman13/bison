@@ -61,7 +61,7 @@
     <Compile Include="Other\Graphs.cs" />
     <Compile Include="Other\IEventHandler.cs" />
     <Compile Include="Object\PopCarrier.cs" />
-    <Compile Include="Object\ISpaceObject.cs" />
+    <Compile Include="Object\SpaceObject.cs" />
     <Compile Include="Object\Planet.cs" />
     <Compile Include="Game\Player.cs" />
     <Compile Include="Other\HandlerWrapper.cs" />

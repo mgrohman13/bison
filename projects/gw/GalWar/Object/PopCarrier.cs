@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace GalWar
 {
     [Serializable]
-    public abstract class PopCarrier : ISpaceObject
+    public abstract class PopCarrier : SpaceObject
     {
         #region fields and constructors
 

@@ -1,8 +1,10 @@
-CreateTeleporter checks planet distance with themselves
+main map improvements
+	when to draw hex squares and when not to
+	zooming, panning
+	minimap
+	ship speed/type
 
 negative gold?
-infinite map
-	getTile/getNeighbor nullchecks
 
 standardize dead checks
 ShipNames._divisions always has 0 at first index
@@ -10,10 +12,6 @@ ShipNames._divisions always has 0 at first index
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
-main map improvements
-	ship speed/type
-	zooming, panning
-	minimap
 management screens
 	colonies
 	ships

@@ -76,7 +76,7 @@ namespace GalWar
 
         private readonly short _x, _y;
 
-        private ISpaceObject _spaceObject;
+        private SpaceObject _spaceObject;
 
         internal Tile(Game game, Point point)
         {
@@ -106,7 +106,7 @@ namespace GalWar
             }
         }
 
-        public ISpaceObject SpaceObject
+        public SpaceObject SpaceObject
         {
             get
             {
@@ -148,17 +148,15 @@ namespace GalWar
         }
         public Tile GetTeleporter(out int number)
         {
-            number = 0;
-            foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
-            {
-                ++number;
-                if (teleporter.Item1 == this.Point)
-                    return Game.GetTile(teleporter.Item2);
-                else if (teleporter.Item2 == this.Point)
-                    return Game.GetTile(teleporter.Item1);
-            }
-            number = -1;
-            return null;
+            Tuple<Point, Point> teleporter = Game.GetTeleporter(this.Point, out number);
+            if (teleporter == null)
+                return null;
+            if (teleporter.Item1 == this.Point)
+                return Game.GetTile(teleporter.Item2);
+            else if (teleporter.Item2 == this.Point)
+                return Game.GetTile(teleporter.Item1);
+            else
+                throw new Exception();
         }
 
         public override string ToString()
