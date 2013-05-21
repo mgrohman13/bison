@@ -210,7 +210,7 @@ namespace GalWar
                 }
                 avgDist /= totDist;
 
-                retVal.Add(player, Game.Random.Round(tile.Game.MapSize / avgDist));
+                retVal.Add(player, Game.Random.Round(int.MaxValue / avgDist));
             }
             return retVal;
         }
@@ -222,7 +222,7 @@ namespace GalWar
             foreach (Colony colony in player.GetColonies())
             {
                 int weight = Game.Random.Round(( colony.Planet.Quality + colony.Population + 1 )
-                        * Tile.Game.MapSize / (double)Tile.GetDistance(this.Tile, colony.Tile));
+                        * ushort.MaxValue / (double)Tile.GetDistance(this.Tile, colony.Tile));
                 colonies.Add(colony, weight);
                 total += weight;
             }
@@ -867,7 +867,7 @@ namespace GalWar
             for (int a = 0 ; a < create ; ++a)
             {
                 Tile tile = this.Tile;
-                int move = Game.Random.OEInt(( anomShip.CurSpeed + anomShip.MaxSpeed ) / 5.2 + .91 + Math.Sqrt(Tile.Game.MapSize) / 78);
+                int move = Game.Random.OEInt(( anomShip.CurSpeed + anomShip.MaxSpeed ) / 5.2 + .91 + Math.Sqrt(Tile.Game.MapSize) / 78.0);
                 for (int b = 0 ; b < move ; ++b)
                     tile = MoveTile(tile);
                 if (tile.SpaceObject == null)

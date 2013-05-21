@@ -32,6 +32,7 @@ namespace GalWarWin
         private void InitializeComponent()
         {
             this.pnlHUD = new System.Windows.Forms.Panel();
+            this.lblLoc = new System.Windows.Forms.Label();
             this.pnlInfo = new System.Windows.Forms.Panel();
             this.lblTop = new System.Windows.Forms.Label();
             this.lbl2 = new System.Windows.Forms.Label();
@@ -79,13 +80,13 @@ namespace GalWarWin
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnEndTurn = new System.Windows.Forms.Button();
             this.lblPlayer = new System.Windows.Forms.Label();
-            this.pnlBuild = new GalWarWin.BuildableControl();
             this.btnNewGame = new System.Windows.Forms.Button();
             this.btnLoadGame = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
+            this.pnlBuild = new GalWarWin.BuildableControl();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
@@ -94,6 +95,7 @@ namespace GalWarWin
             // 
             // pnlHUD
             // 
+            this.pnlHUD.Controls.Add(this.lblLoc);
             this.pnlHUD.Controls.Add(this.pnlInfo);
             this.pnlHUD.Controls.Add(this.pnlEconomy);
             this.pnlHUD.Controls.Add(this.btnProduction);
@@ -119,6 +121,15 @@ namespace GalWarWin
             this.pnlHUD.Size = new System.Drawing.Size(200, 862);
             this.pnlHUD.TabIndex = 2;
             this.pnlHUD.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
+            // 
+            // lblLoc
+            // 
+            this.lblLoc.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.lblLoc.Location = new System.Drawing.Point(0, 761);
+            this.lblLoc.Name = "lblLoc";
+            this.lblLoc.Size = new System.Drawing.Size(100, 23);
+            this.lblLoc.TabIndex = 55;
+            this.lblLoc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlInfo
             // 
@@ -628,7 +639,7 @@ namespace GalWarWin
             // 
             this.btnSaveGame.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnSaveGame.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnSaveGame.Location = new System.Drawing.Point(0, 761);
+            this.btnSaveGame.Location = new System.Drawing.Point(0, 790);
             this.btnSaveGame.Name = "btnSaveGame";
             this.btnSaveGame.Size = new System.Drawing.Size(200, 23);
             this.btnSaveGame.TabIndex = 1;
@@ -640,7 +651,7 @@ namespace GalWarWin
             // 
             this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(100, 790);
+            this.btnCancel.Location = new System.Drawing.Point(100, 761);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 23);
             this.btnCancel.TabIndex = 3;
@@ -669,15 +680,6 @@ namespace GalWarWin
             this.lblPlayer.TabIndex = 17;
             this.lblPlayer.Text = "lblPlayer";
             this.lblPlayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // pnlBuild
-            // 
-            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.pnlBuild.Location = new System.Drawing.Point(0, 525);
-            this.pnlBuild.Name = "pnlBuild";
-            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
-            this.pnlBuild.TabIndex = 53;
-            this.pnlBuild.Visible = false;
             // 
             // btnNewGame
             // 
@@ -729,6 +731,15 @@ namespace GalWarWin
             this.tbTurns.TabIndex = 4;
             this.tbTurns.Visible = false;
             this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
+            // 
+            // pnlBuild
+            // 
+            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.pnlBuild.Location = new System.Drawing.Point(0, 525);
+            this.pnlBuild.Name = "pnlBuild";
+            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
+            this.pnlBuild.TabIndex = 53;
+            this.pnlBuild.Visible = false;
             // 
             // MainForm
             // 
@@ -816,6 +827,7 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnCostCalc;
         private BuildableControl pnlBuild;
         private System.Windows.Forms.Panel pnlInfo;
+        private System.Windows.Forms.Label lblLoc;
     }
 }
 

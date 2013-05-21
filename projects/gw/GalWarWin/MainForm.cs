@@ -8,6 +8,9 @@ using System.Text;
 using System.Windows.Forms;
 using GalWar;
 using GalWarWin.Sliders;
+using MattUtil;
+using Point = MattUtil.Point;
+using PointForm = System.Drawing.Point;
 
 namespace GalWarWin
 {
@@ -42,7 +45,7 @@ namespace GalWarWin
         private Tile dialogTile = null;
 
         private bool started = false, saved = true, ended = false, _showMoves = false, _showAtt = false;
-        private Point mouse;
+        private PointForm mouse;
         private Font font = new Font("arial", 13f);
 
         private MainForm dialog;
@@ -492,7 +495,7 @@ namespace GalWarWin
 
             const float digit = .1f, div = 1f / digit;
             int min = (int)Math.Floor(Math.Pow(value, 1f / 3f) * div) + 3, max = (int)Math.Ceiling(Math.Sqrt(value) * div);
-            float stat = MattUtil.TBSUtil.FindValue(delegate(int test)
+            float stat = TBSUtil.FindValue(delegate(int test)
             {
                 return ( ShipDesign.GetStatValue(test / div) > value );
             }, min, max, true) / div;
@@ -601,7 +604,7 @@ namespace GalWarWin
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
                     Game.Random.GaussianOE(10.4, .13, .065, 6.5), Game.Random.GaussianCapped(.006, .52, .0021));
 
-            mouse = new Point(ClientSize.Width / 2, ClientHeight / 2);
+            mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
 
             Game.StartGame(this);
@@ -721,17 +724,20 @@ namespace GalWarWin
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
             if (sender == this.pnlHUD)
-                this.mouse = new Point(this.pnlHUD.Location.X + e.Location.X, this.pnlHUD.Location.Y + e.Location.Y);
+                this.mouse = new PointForm(this.pnlHUD.Location.X + e.Location.X, this.pnlHUD.Location.Y + e.Location.Y);
             else
                 this.mouse = e.Location;
 
             if (this.started)
-            {
-                float scale = GetScale();
-                int y = (int)Math.Floor(( e.Y - GetStartY() ) / scale);
-                int x = (int)Math.Floor(( ( e.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
-                this.Text = new Point(x, y).ToString();
-            }
+                this.lblLoc.Text = GetGamePoint(this.mouse).ToString();
+        }
+
+        private Point GetGamePoint(PointForm point)
+        {
+            double scale = GetScale();
+            int y = (int)Math.Floor(( point.Y - GetStartY() ) / scale);
+            int x = (int)Math.Floor(( ( point.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
+            return new Point(x, y);
         }
 
         private void btnProduction_Click(object sender, EventArgs e)
@@ -1025,12 +1031,9 @@ namespace GalWarWin
         {
             if (started)
             {
-                float scale = GetScale();
+                Point clicked = GetGamePoint(e.Location);
 
-                int y = (int)Math.Floor(( e.Y - GetStartY() ) / scale);
-                int x = (int)Math.Floor(( ( e.X - GetStartX() ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
-
-                Tile clickedTile = Game.GetTile(x, y);
+                Tile clickedTile = Game.GetTile(clicked);
                 if (e.Button == MouseButtons.Left)
                 {
                     this.selectedTile = clickedTile;
@@ -1047,7 +1050,6 @@ namespace GalWarWin
                 {
                     Ship target = clickedTile.SpaceObject as Ship;
 
-                    Point clicked = new Point(x, y);
                     if (doubleClick && target != null && this.clicked == clicked && hold.Contains(target))
                     {
                         holdPersistent.Add(target);
@@ -1351,7 +1353,7 @@ namespace GalWarWin
 
         public void SetLocation(Form form)
         {
-            Point mouse;
+            PointForm mouse;
             try
             {
                 mouse = this.PointToScreen(this.mouse);
@@ -1378,7 +1380,7 @@ namespace GalWarWin
             else if (y + form.Height > bounds.Y + bounds.Height)
                 y = bounds.Y + bounds.Height - form.Height;
 
-            form.Location = new Point(x, y);
+            form.Location = new PointForm(x, y);
         }
 
         private void lblGold_Click(object sender, EventArgs e)

@@ -96,8 +96,6 @@ namespace GalWar
 
                 this._currentPlayer = byte.MaxValue;
                 this._turn = 0;
-                this._planetPct = float.NaN;
-                this._anomalyPct = float.NaN;
 
                 planetPct *= MapSize;
                 this._planetPct = (float)Random.GaussianCapped(planetPct / 91.0, .091, planetPct / 169.0);

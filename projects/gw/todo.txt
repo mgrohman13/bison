@@ -1,3 +1,5 @@
+CreateTeleporter checks planet distance with themselves
+
 negative gold?
 infinite map
 	getTile/getNeighbor nullchecks

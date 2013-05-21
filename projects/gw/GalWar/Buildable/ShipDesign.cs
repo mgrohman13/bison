@@ -57,22 +57,22 @@ namespace GalWar
                 (
                     ( attValue + defValue )
                     +
-                    ( colony ? 520.0 : 0.0 )
+                    ( colony ? 520 : 0 )
                     +
                     (
-                        ( Math.Pow(trans, 1.0 + Consts.AttackNumbersPower) )
+                        ( Math.Pow(trans, 1 + Consts.AttackNumbersPower) )
                         +
-                        ( 13.0 * bombardDamage )
+                        ( 13 * bombardDamage )
                     )
                     *
                     ( speed )
                     *
-                    ( ( attValue / 5.2 + defValue + 65000.0 ) / 16900.0 )
+                    ( ( attValue / 5.2 + defValue + 65000 ) / 16900.0 )
                 )
                 *
                 ( speedValue )
                 +
-                ( 78.0 * Math.Pow(speed - 1.0, 1.69) )
+                ( 104 * ( Math.Pow(1.69, speed - 1) - 1 ) )
             );
         }
 
