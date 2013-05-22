@@ -50,7 +50,7 @@ namespace GalWar
             checked
             {
                 this._marks = new byte[numPlayers, (int)ShipClass.MAX];
-                this._divisions = new uint[length];
+                this._divisions = new uint[length - 1];
                 for (int a = 2 ; a < length ; ++a)
                     this.Divisions(a, int.MaxValue);
 
@@ -64,14 +64,14 @@ namespace GalWar
         {
             checked
             {
-                return (int)this._divisions[idx];
+                return (int)this._divisions[idx - 1];
             }
         }
         private void Divisions(int idx, int value)
         {
             checked
             {
-                this._divisions[idx] = (uint)value;
+                this._divisions[idx - 1] = (uint)value;
             }
         }
         private int Marks(int idx1, int idx2)

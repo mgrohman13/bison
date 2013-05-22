@@ -27,6 +27,11 @@ namespace GalWar
             }
         }
 
+        public abstract Player Player
+        {
+            get;
+        }
+
         public virtual Tile Tile
         {
             get
@@ -35,19 +40,25 @@ namespace GalWar
             }
             protected set
             {
-                this.Tile.SpaceObject = null;
-                this._tile = value;
-                this.Tile.SpaceObject = this;
+                checked
+                {
+                    Tile.SpaceObject = null;
+                    this._tile = null;
+                    OnDeserialization(value);
+                }
             }
         }
-        public abstract Player Player
-        {
-            get;
-        }
 
-        internal void OnDeserialization(Tile tile)
+        internal void OnDeserialization(Tile value)
         {
-            this._tile = tile;
+            checked
+            {
+                if (Tile != null || this is Colony)
+                    throw new Exception();
+
+                this._tile = value;
+                Tile.SpaceObject = this;
+            }
         }
     }
 }

@@ -116,7 +116,7 @@ namespace GalWar
             {
                 checked
                 {
-                    if (( value == null ) == ( this.SpaceObject == null ))
+                    if (( value == null ) == ( this.SpaceObject == null ) || value is Colony)
                         throw new Exception();
 
                     this._spaceObject = value;

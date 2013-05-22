@@ -758,7 +758,11 @@ namespace GalWarWin
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseClick);
             this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseDoubleClick);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseDown);
+            this.MouseLeave += new System.EventHandler(this.MainForm_MouseLeave);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseUp);
+            this.Resize += new System.EventHandler(this.MainForm_Resize);
             this.pnlHUD.ResumeLayout(false);
             this.pnlHUD.PerformLayout();
             this.pnlInfo.ResumeLayout(false);

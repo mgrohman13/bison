@@ -481,9 +481,10 @@ namespace GalWar
                 if (planet.Colony != null)
                     gold = Math.Sqrt(( planet.Colony.Population + 1.0 ) / ( planet.Quality + 1.0 )) * .65;
 
-                double before = Consts.GetColonizationCost(planet.Quality, Consts.GetColonizationMult());
+                double mult = Consts.GetColonizationMult();
+                double before = Consts.GetColonizationCost(planet.Quality, mult);
                 planet.DamageVictory();
-                gold *= before - Consts.GetColonizationCost(planet.Quality, Consts.GetColonizationMult());
+                gold *= before - Consts.GetColonizationCost(planet.Quality, mult);
 
                 if (planet.Colony != null)
                 {
@@ -521,14 +522,15 @@ namespace GalWar
             {
                 Colony trgColony = Game.Random.SelectValue(colonies);
 
-                const double costMult = 1.69;
+                double costMult = 1.69;
                 int addQuality = Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Consts.PlanetConstValue, .65, .39, 1);
                 double before = Consts.GetColonizationCost(trgColony.Planet.Quality, costMult);
                 double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, costMult);
                 double expectCost = before - after;
-                double actualCost = Player.RoundGold(this.value + Consts.GetColonizationMult() * before - Consts.GetColonizationMult() * after, true);
+                double actualCost = Player.RoundGold(this.value + expectCost * Consts.GetColonizationMult(), true);
 
-                if (handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances))
+                if (-actualCost < trgColony.Player.Gold &&
+                        handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances))
                 {
                     trgColony.Planet.ReduceQuality(-addQuality);
                     trgColony.Player.AddGold(actualCost);

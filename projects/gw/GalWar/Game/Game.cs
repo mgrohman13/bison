@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace GalWar
 {
     [Serializable]
-    public class Game : IDeserializationCallback
+    public class Game
     {
         #region static
 
@@ -53,10 +53,11 @@ namespace GalWar
 
         internal readonly ShipNames ShipNames;
 
-        private readonly Dictionary<Point, SpaceObject> spaceObjects;
         private readonly List<Player> players;
-        private readonly List<Tuple<Point, Point>> teleporters;
         private readonly List<Result> deadPlayers, winningPlayers;
+
+        private readonly Dictionary<PointS, SpaceObject> _spaceObjects;
+        private readonly List<Tuple<PointS, PointS>> _teleporters;
 
         [NonSerialized]
         private Stack<IUndoCommand> _undoStack;
@@ -88,9 +89,9 @@ namespace GalWar
 
                 this.ShipNames = new ShipNames(numPlayers);
 
-                this.spaceObjects = new Dictionary<Point, SpaceObject>();
+                this._spaceObjects = new Dictionary<PointS, SpaceObject>();
                 this.players = new List<Player>();
-                this.teleporters = new List<Tuple<Point, Point>>();
+                this._teleporters = new List<Tuple<PointS, PointS>>();
                 this.deadPlayers = new List<Result>(numPlayers - 1);
                 this.winningPlayers = new List<Result>(numPlayers - 1);
 
@@ -106,6 +107,50 @@ namespace GalWar
                 InitPlayers(players, numPlanets);
 
                 this.Graphs = new Graphs(this);
+            }
+        }
+
+        public HashSet<SpaceObject> GetSpaceObjects()
+        {
+            return new HashSet<SpaceObject>(this._spaceObjects.Values);
+        }
+        private void AddSpaceObject(Point point, SpaceObject spaceObject)
+        {
+            this._spaceObjects.Add(GetPointS(point), spaceObject);
+        }
+        private bool RemoveSpaceObject(Point point)
+        {
+            return this._spaceObjects.Remove(GetPointS(point));
+        }
+        private bool TryGetSpaceObject(Point point, out SpaceObject spaceObject)
+        {
+            return this._spaceObjects.TryGetValue(GetPointS(point), out spaceObject);
+        }
+        public List<Tuple<Point, Point>> GetTeleporters()
+        {
+            List<Tuple<Point, Point>> teleporters = new List<Tuple<Point, Point>>();
+            foreach (Tuple<PointS, PointS> teleporter in this._teleporters)
+                teleporters.Add(new Tuple<Point, Point>(new Point(teleporter.Item1.X, teleporter.Item1.Y),
+                        new Point(teleporter.Item2.X, teleporter.Item2.Y)));
+            return teleporters;
+        }
+        private void AddTeleporter(Tuple<Point, Point> teleporter)
+        {
+            this._teleporters.Add(GetPointSTeleporter(teleporter));
+        }
+        private bool RemoveTeleporter(Tuple<Point, Point> teleporter)
+        {
+            return this._teleporters.Remove(GetPointSTeleporter(teleporter));
+        }
+        private static Tuple<PointS, PointS> GetPointSTeleporter(Tuple<Point, Point> teleporter)
+        {
+            return new Tuple<PointS, PointS>(GetPointS(teleporter.Item1), GetPointS(teleporter.Item2));
+        }
+        private static PointS GetPointS(Point point)
+        {
+            checked
+            {
+                return new PointS((short)point.X, (short)point.Y);
             }
         }
 
@@ -406,12 +451,12 @@ next_planet:
             Point point = new Point(x, y);
             if (spaceObject == null)
             {
-                if (!this.spaceObjects.Remove(point))
+                if (!RemoveSpaceObject(point))
                     throw new Exception();
             }
             else
             {
-                this.spaceObjects.Add(point, spaceObject);
+                AddSpaceObject(point, spaceObject);
             }
         }
 
@@ -426,13 +471,13 @@ next_planet:
 
             Tile tile;
             SpaceObject spaceObject;
-            if (!this.tileCache.TryGetValue(point, out tile))
+            if (!tileCache.TryGetValue(point, out tile))
             {
-                if (this.spaceObjects.TryGetValue(point, out spaceObject))
+                if (TryGetSpaceObject(point, out spaceObject))
                     tile = spaceObject.Tile;
                 else
                     tile = new Tile(this, point);
-                this.tileCache.Add(point, tile);
+                tileCache.Add(point, tile);
             }
             return tile;
         }
@@ -444,18 +489,14 @@ next_planet:
         public SpaceObject GetSpaceObject(Point point)
         {
             SpaceObject spaceObject;
-            this.spaceObjects.TryGetValue(point, out spaceObject);
+            TryGetSpaceObject(point, out spaceObject);
             return spaceObject;
-        }
-        public HashSet<SpaceObject> GetSpaceObjects()
-        {
-            return new HashSet<SpaceObject>(this.spaceObjects.Values);
         }
 
         public Tuple<Point, Point> GetTeleporter(Point point, out int number)
         {
             number = 0;
-            foreach (Tuple<Point, Point> teleporter in this.teleporters)
+            foreach (Tuple<Point, Point> teleporter in GetTeleporters())
             {
                 ++number;
                 if (teleporter.Item1 == point || teleporter.Item2 == point)
@@ -463,10 +504,6 @@ next_planet:
             }
             number = -1;
             return null;
-        }
-        public ReadOnlyCollection<Tuple<Point, Point>> GetTeleporters()
-        {
-            return this.teleporters.AsReadOnly();
         }
 
         public Dictionary<Player, double> GetResearch()
@@ -498,7 +535,7 @@ next_planet:
         {
             HashSet<Planet> planets = new HashSet<Planet>();
             Planet planet;
-            foreach (SpaceObject spaceObject in this.spaceObjects.Values)
+            foreach (SpaceObject spaceObject in GetSpaceObjects())
                 if (( planet = spaceObject as Planet ) != null)
                     planets.Add(planet);
             return planets;
@@ -585,6 +622,7 @@ next_planet:
 
         private void RemoveTeleporters()
         {
+            List<Tuple<Point, Point>> teleporters = GetTeleporters();
             if (teleporters.Count > 0)
             {
                 double chance = Math.Pow(teleporters.Count - 1.0, 1.69) + 1.0;
@@ -595,7 +633,7 @@ next_planet:
 
         internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target)
         {
-            double chance = Math.Pow(teleporters.Count + 1.3, 1.3);
+            double chance = Math.Pow(GetTeleporters().Count + 1.3, 1.3);
             //check if the tiles are too close to be useful or if either tile already has a teleporter
             if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Game.Random.Bool(1.0 / chance))
             {
@@ -643,13 +681,8 @@ next_planet:
         private Tuple<Point, Point> CreateTeleporter(Tile t1, Tile t2)
         {
             Tuple<Point, Point> teleporter = new Tuple<Point, Point>(t1.Point, t2.Point);
-            this.teleporters.Add(teleporter);
+            AddTeleporter(teleporter);
             return teleporter;
-        }
-
-        private void RemoveTeleporter(Tuple<Point, Point> teleporter)
-        {
-            this.teleporters.Remove(teleporter);
         }
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
@@ -713,7 +746,19 @@ next_planet:
 
         public static Game LoadGame(string filePath)
         {
-            return TBSUtil.LoadGame<Game>(filePath);
+            Game game = TBSUtil.LoadGame<Game>(filePath);
+            game.OnDeserialization();
+            return game;
+        }
+        private void OnDeserialization()
+        {
+            //objects will be re-added as each tile is set
+            var temp = new List<KeyValuePair<PointS, SpaceObject>>(this._spaceObjects);
+            this._spaceObjects.Clear();
+
+            //Tiles are not serialized so we go through and create a new one for each SpaceObject
+            foreach (var pair in temp)
+                pair.Value.OnDeserialization(new Tile(this, new Point(pair.Key.X, pair.Key.Y)));
         }
 
         public List<Result> GetGameResult()
@@ -903,23 +948,5 @@ next_planet:
         }
 
         #endregion //Result
-
-        #region IDeserializationCallback Members
-
-        void IDeserializationCallback.OnDeserialization(object sender)
-        {
-            foreach (var pair in this.spaceObjects)
-            {
-                Tile tile = GetTile(pair.Key);
-                if (tile == null)
-                {
-                    tile = new Tile(this, pair.Key);
-                    this.tileCache.Add(pair.Key, tile);
-                }
-                pair.Value.OnDeserialization(tile);
-            }
-        }
-
-        #endregion
     }
 }

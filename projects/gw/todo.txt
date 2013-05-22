@@ -1,23 +1,24 @@
 main map improvements
-	when to draw hex squares and when not to
-	zooming, panning
-	minimap
-	ship speed/type
-
-negative gold?
+	auto center selected
+		select planet on next player with no ships
+	very large shows more info
+		more detailed planet info
+		different ship graphics for speed/type
+	very small has no grid, less info (minimap style)
+	draw grid first (optimized), then objects, selection
+management screens
+	colonies
+	ships
 
 standardize dead checks
-ShipNames._divisions always has 0 at first index
 
 combat calc show probability table
 show enemy moves/attacks ignoring friendly ships, weight for HP?
 test exact vs oversize dictionary capacity for combat performance
-management screens
-	colonies
-	ships
 clean up code
 	member order
 
+negative gold?
 anomaly neutral ships?
 known enemy designs
 AI
