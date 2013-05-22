@@ -119,7 +119,7 @@ namespace GalWarWin
                 this.lblDefPlayer.Text = defender.Player.Name;
             }
 
-            CalculateOdds(freeDmg > defender.HP);
+            CalculateOdds(defender != null && freeDmg > defender.HP);
         }
 
         public static void SetValue(NumericUpDown nud, decimal value)

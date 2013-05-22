@@ -180,14 +180,19 @@ namespace GalWar
 
         private Tile GetRandomTile()
         {
-            Tile tile = Tile.Game.GetRandomTile();
-            while (!AnomalousTile(tile) && Game.Random.Bool(1 - 1 / ( 13.0 + Math.Sqrt(Tile.Game.MapSize) / 16.9 )))
-            {
-                foreach (Tile neighbor in Tile.GetNeighbors(tile))
-                    if (AnomalousTile(neighbor))
-                        return tile;
+            Tile tile = null;
+            if (Game.Random.Bool())
+                foreach (SpaceObject spaceObject in Tile.Game.GetSpaceObjects())
+                    if (spaceObject is Anomaly)
+                    {
+                        tile = spaceObject.Tile;
+                        int moves = Game.Random.OEInt();
+                        for (int a = 0 ; a < moves ; ++a)
+                            tile = MoveTile(tile);
+                        break;
+                    }
+            if (tile == null)
                 tile = Tile.Game.GetRandomTile();
-            }
             return tile;
         }
         private bool AnomalousTile(Tile tile)

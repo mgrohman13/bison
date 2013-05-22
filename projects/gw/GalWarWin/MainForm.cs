@@ -407,51 +407,54 @@ namespace GalWarWin
         }
         private void VerifyScalePan(bool scaling, bool panning)
         {
-            int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
-            foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
+            if (started)
             {
-                minX = Math.Min(minX, spaceObject.Tile.X);
-                minY = Math.Min(minY, spaceObject.Tile.Y);
-                maxX = Math.Max(maxX, spaceObject.Tile.X);
-                maxY = Math.Max(maxY, spaceObject.Tile.Y);
-            }
-            --minX;
-            --minY;
-            ++maxX;
-            ++maxY;
+                int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+                foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
+                {
+                    minX = Math.Min(minX, spaceObject.Tile.X);
+                    minY = Math.Min(minY, spaceObject.Tile.Y);
+                    maxX = Math.Max(maxX, spaceObject.Tile.X);
+                    maxY = Math.Max(maxY, spaceObject.Tile.Y);
+                }
+                --minX;
+                --minY;
+                ++maxX;
+                ++maxY;
 
-            float xDiameter = maxX - minX + 1.5f;
-            float yDiameter = maxY - minY + 1;
-            float width = ClientSize.Width - pnlHUD.Width;
-            float height = ClientHeight;
+                float xDiameter = maxX - minX + 1.5f;
+                float yDiameter = maxY - minY + 1;
+                float width = ClientSize.Width - pnlHUD.Width;
+                float height = ClientHeight;
 
-            if (scaling)
-            {
-                float minScale = Math.Min(height / yDiameter, width / xDiameter);
-                float maxScale = 91f;
-                if (scale < minScale)
-                    scale = minScale;
-                if (scale > maxScale)
-                    scale = maxScale;
-            }
+                if (scaling)
+                {
+                    float minScale = Math.Min(height / yDiameter, width / xDiameter);
+                    float maxScale = 91f;
+                    if (scale < minScale)
+                        scale = minScale;
+                    if (scale > maxScale)
+                        scale = maxScale;
+                }
 
-            if (panning)
-            {
-                float minPanX = width - scale * ( xDiameter + minX );
-                float maxPanX = -scale * minX;
-                //check min last so the map is anchored at the top
-                if (panX > maxPanX)
-                    panX = maxPanX;
-                if (panX < minPanX)
-                    panX = minPanX;
+                if (panning)
+                {
+                    float minPanX = width - scale * ( xDiameter + minX );
+                    float maxPanX = -scale * minX;
+                    //check min last so the map is anchored at the top
+                    if (panX > maxPanX)
+                        panX = maxPanX;
+                    if (panX < minPanX)
+                        panX = minPanX;
 
-                float minPanY = height - scale * ( yDiameter + minY );
-                float maxPanY = -scale * minY;
-                //check max last so the map is anchored at the right
-                if (panY < minPanY)
-                    panY = minPanY;
-                if (panY > maxPanY)
-                    panY = maxPanY;
+                    float minPanY = height - scale * ( yDiameter + minY );
+                    float maxPanY = -scale * minY;
+                    //check max last so the map is anchored at the right
+                    if (panY < minPanY)
+                        panY = minPanY;
+                    if (panY > maxPanY)
+                        panY = maxPanY;
+                }
             }
         }
 

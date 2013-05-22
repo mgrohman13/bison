@@ -1,4 +1,7 @@
 main map improvements
+	expand map as ship moves out
+	expand map on anomaly appearance
+	show galaxy size
 	auto center selected
 		select planet on next player with no ships
 	very large shows more info
@@ -10,6 +13,7 @@ management screens
 	colonies
 	ships
 
+really weak anom ship AdjustCost Exception
 standardize dead checks
 
 combat calc show probability table
