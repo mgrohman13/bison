@@ -99,9 +99,9 @@ namespace GalWar
                 this._turn = 0;
 
                 planetPct *= MapSize;
-                this._planetPct = (float)Random.GaussianCapped(planetPct / 91.0, .091, planetPct / 169.0);
-                this._anomalyPct = (float)Random.GaussianCapped(this.planetPct + MapSize * .00013 + ( numPlayers + 6.5 ) * .013,
-                        .21, this.planetPct + 0.13);
+                this._planetPct = (float)Random.GaussianCapped(planetPct / 104.0, .091, planetPct / 169.0);
+                this._anomalyPct = (float)Random.GaussianCapped(this.PlanetPct + MapSize * .00013 + ( numPlayers + 6.5 ) * .013,
+                        .21, this.PlanetPct + 0.13);
 
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);
@@ -192,21 +192,21 @@ namespace GalWar
                 }
             }
         }
-        private double mapDeviation
+        public double MapDeviation
         {
             get
             {
                 return this._mapDeviation;
             }
         }
-        private double planetPct
+        public double PlanetPct
         {
             get
             {
                 return this._planetPct;
             }
         }
-        private double anomalyPct
+        public double AnomalyPct
         {
             get
             {
@@ -221,26 +221,24 @@ namespace GalWar
                 NewPlanet();
 
             double anomPlanets = 0;
-            double anomPlanetRate = ( this.planetPct / this.anomalyPct ) / 1.3;
-            int startAnomalies = Random.GaussianOEInt(this.anomalyPct * Consts.StartAnomalies, .39, .13,
-                    ( this.anomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0);
+            double anomPlanetRate = ( this.PlanetPct / this.AnomalyPct );
+            int startAnomalies = Random.GaussianOEInt(this.AnomalyPct * Consts.StartAnomalies, .39, .13,
+                    ( this.AnomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0);
             for (int a = 0 ; a < startAnomalies ; ++a)
             {
                 Anomaly anomaly = CreateAnomaly();
                 if (anomaly != null && CheckPlanetDistance(anomaly.Tile) && ( anomPlanets += anomPlanetRate ) > planetPct)
                 {
-                    planetPct = anomPlanets;
+                    anomaly.Tile.SpaceObject = null;
+                    anomPlanets -= anomPlanetRate;
                     break;
                 }
             }
 
             planetPct -= anomPlanets;
-            if (planetPct > 0)
-            {
-                int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
-                for (int a = 0 ; a < startPlanets ; ++a)
-                    NewPlanet();
-            }
+            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
+            for (int a = 0 ; a < startPlanets ; ++a)
+                NewPlanet();
 
             return GetPlanets().Count + anomPlanets;
         }
@@ -406,7 +404,7 @@ next_planet:
         {
             get
             {
-                return 13 * this.mapDeviation * this.mapDeviation;
+                return 13 * this.MapDeviation * this.MapDeviation;
             }
         }
 
@@ -443,7 +441,7 @@ next_planet:
                 p.SetGame(this);
 
             StartPlayerTurn(handler);
-            CurrentPlayer.PlayTurn(handler);
+            CurrentPlayer.PlayTurn(handler, new List<Anomaly>());
         }
 
         internal void SetSpaceObject(int x, int y, SpaceObject spaceObject)
@@ -541,11 +539,11 @@ next_planet:
             return planets;
         }
 
-        public void EndTurn(IEventHandler handler)
+        public List<Anomaly> EndTurn(IEventHandler handler)
         {
-            EndTurn(handler, false);
+            return EndTurn(handler, false);
         }
-        internal void EndTurn(IEventHandler handler, bool allowAI)
+        internal List<Anomaly> EndTurn(IEventHandler handler, bool allowAI)
         {
             handler = new HandlerWrapper(handler, this);
 
@@ -557,7 +555,7 @@ next_planet:
             if (++this.currentPlayer >= this.players.Count)
                 NewRound();
 
-            CreateAnomalies();
+            List<Anomaly> anomalies = CreateAnomalies();
             RemoveTeleporters();
 
             StartPlayerTurn(handler);
@@ -565,7 +563,8 @@ next_planet:
             if (CurrentPlayer.AI == null)
                 AutoSave();
 
-            CurrentPlayer.PlayTurn(handler);
+            CurrentPlayer.PlayTurn(handler, anomalies);
+            return anomalies;
         }
 
         public void AutoSave()
@@ -625,15 +624,15 @@ next_planet:
             List<Tuple<Point, Point>> teleporters = GetTeleporters();
             if (teleporters.Count > 0)
             {
-                double chance = Math.Pow(teleporters.Count - 1.0, 1.69) + 1.0;
-                if (Game.Random.Bool(chance / ( chance + 52.0 ) / (double)players.Count))
+                double chance = Math.Pow(teleporters.Count, 1.69);
+                if (Game.Random.Bool(chance / ( chance + 65.0 ) / (double)players.Count))
                     RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
             }
         }
 
         internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target)
         {
-            double chance = Math.Pow(GetTeleporters().Count + 1.3, 1.3);
+            double chance = Math.Pow(GetTeleporters().Count + 1, 1.3);
             //check if the tiles are too close to be useful or if either tile already has a teleporter
             if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Game.Random.Bool(1.0 / chance))
             {
@@ -687,7 +686,7 @@ next_planet:
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
         {
-            if (Random.Bool(this.planetPct / this.anomalyPct))
+            if (Random.Bool(this.PlanetPct / this.AnomalyPct))
                 if (CheckPlanetDistance(tile))
                 {
                     handler.Explore(Anomaly.AnomalyType.NewPlanet);
@@ -707,12 +706,17 @@ next_planet:
             return new Planet(tile);
         }
 
-        private void CreateAnomalies()
+        private List<Anomaly> CreateAnomalies()
         {
-            double numPlayers = this.players.Count;
-            int create = Game.Random.OEInt(this.anomalyPct / numPlayers);
+            List<Anomaly> anomalies = new List<Anomaly>();
+            int create = Game.Random.OEInt(this.AnomalyPct / (double)this.players.Count);
             for (int a = 0 ; a < create ; ++a)
-                CreateAnomaly();
+            {
+                Anomaly anomaly = CreateAnomaly();
+                if (anomaly != null)
+                    anomalies.Add(anomaly);
+            }
+            return anomalies;
         }
         private Anomaly CreateAnomaly()
         {
@@ -724,8 +728,8 @@ next_planet:
 
         internal Tile GetRandomTile()
         {
-            int x = Random.GaussianInt(this.mapDeviation);
-            int y = Random.GaussianInt(this.mapDeviation);
+            int x = Random.GaussianInt(this.MapDeviation);
+            int y = Random.GaussianInt(this.MapDeviation);
             if (y % 2 != 0)
                 x -= Random.RangeInt(0, 1);
             return GetTile(x, y);

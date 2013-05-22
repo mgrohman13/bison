@@ -80,13 +80,13 @@ namespace GalWarWin
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnEndTurn = new System.Windows.Forms.Button();
             this.lblPlayer = new System.Windows.Forms.Label();
+            this.pnlBuild = new GalWarWin.BuildableControl();
             this.btnNewGame = new System.Windows.Forms.Button();
             this.btnLoadGame = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
-            this.pnlBuild = new GalWarWin.BuildableControl();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
@@ -130,6 +130,7 @@ namespace GalWarWin
             this.lblLoc.Size = new System.Drawing.Size(100, 23);
             this.lblLoc.TabIndex = 55;
             this.lblLoc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblLoc.Click += new System.EventHandler(this.lblLoc_Click);
             // 
             // pnlInfo
             // 
@@ -681,6 +682,15 @@ namespace GalWarWin
             this.lblPlayer.Text = "lblPlayer";
             this.lblPlayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // pnlBuild
+            // 
+            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.pnlBuild.Location = new System.Drawing.Point(0, 525);
+            this.pnlBuild.Name = "pnlBuild";
+            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
+            this.pnlBuild.TabIndex = 53;
+            this.pnlBuild.Visible = false;
+            // 
             // btnNewGame
             // 
             this.btnNewGame.Location = new System.Drawing.Point(12, 12);
@@ -731,15 +741,6 @@ namespace GalWarWin
             this.tbTurns.TabIndex = 4;
             this.tbTurns.Visible = false;
             this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
-            // 
-            // pnlBuild
-            // 
-            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.pnlBuild.Location = new System.Drawing.Point(0, 525);
-            this.pnlBuild.Name = "pnlBuild";
-            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
-            this.pnlBuild.TabIndex = 53;
-            this.pnlBuild.Visible = false;
             // 
             // MainForm
             // 

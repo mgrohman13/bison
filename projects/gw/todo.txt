@@ -1,19 +1,16 @@
 main map improvements
-	expand map as ship moves out
-	expand map on anomaly appearance
-	show galaxy size
-	auto center selected
-		select planet on next player with no ships
+	draw grid first (optimized), then objects, selection
 	very large shows more info
 		more detailed planet info
 		different ship graphics for speed/type
 	very small has no grid, less info (minimap style)
-	draw grid first (optimized), then objects, selection
 management screens
 	colonies
 	ships
 
-really weak anom ship AdjustCost Exception
+GetMoves use Points instead of Tiles
+anomaly explore delegates
+when prod repair colony ship is/isnt worth it?
 standardize dead checks
 
 combat calc show probability table

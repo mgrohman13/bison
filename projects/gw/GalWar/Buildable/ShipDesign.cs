@@ -96,6 +96,9 @@ namespace GalWar
         //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
         private const double FocusTypeMult = 2.1;
 
+        [NonSerialized]
+        private readonly bool _statsNotInit = true, _costNotInit = true;
+
         private readonly bool _colony;
         private readonly byte _name, _mark, _att, _def, _speed, _upkeep;
         private readonly ushort _cost, _hp, _trans, _bombardDamage;
@@ -159,16 +162,13 @@ namespace GalWar
                 }
 
                 bool anomalyShip = !double.IsNaN(minCost);
-                if (!anomalyShip)
-                {
-                    minCost = GetMinCost(mapSize);
-                    maxCost = GetMaxCost(research, minCost);
-                }
 
                 this._research = (ushort)research;
                 do
                 {
-                    this._bombardDamage = 0;
+                    this._statsNotInit = true;
+                    this._costNotInit = true;
+
                     double upkeepPct, hpMult;
 
                     bool colony;
@@ -188,6 +188,19 @@ namespace GalWar
                     this._hp = (ushort)hp;
                     this._speed = (byte)speed;
                     this._bombardDamage = (ushort)bombardDamage;
+                    this._statsNotInit = false;
+
+                    if (double.IsNaN(minCost))
+                    {
+                        minCost = GetMinCost(mapSize) + MinCostBuffer;
+                        maxCost = GetMaxCost(research, minCost);
+                    }
+                    else
+                    {
+                        double absMin = GetAbsMinCost(mapSize) + MinCostBuffer;
+                        if (minCost < absMin)
+                            minCost = absMin;
+                    }
 
                     //  ------  Cost/Upkeep       ------
                     double cost = -1, upkRnd = double.NaN;
@@ -247,6 +260,7 @@ namespace GalWar
                     }
                     this._cost = (ushort)Game.Random.Round(cost);
                     this._upkeep = (byte)upkeep;
+                    this._costNotInit = false;
                 } while (design != null && !this.MakesObsolete(mapSize, design));
 
                 //  ------  Name   
@@ -353,6 +367,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return this._colony;
             }
         }
@@ -376,6 +391,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return this._att;
             }
         }
@@ -383,6 +399,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return this._def;
             }
         }
@@ -391,6 +408,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return this._speed;
             }
         }
@@ -399,6 +417,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit(true);
                 return this._upkeep;
             }
         }
@@ -407,6 +426,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit(true);
                 return this._cost;
             }
         }
@@ -415,6 +435,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return this._hp;
             }
         }
@@ -423,6 +444,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return this._trans;
             }
         }
@@ -431,6 +453,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return GetBombardDamage(this._bombardDamage, this.Att);
             }
         }
@@ -438,6 +461,7 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return ( this._bombardDamage > 0 );
             }
         }
@@ -446,8 +470,21 @@ namespace GalWar
         {
             get
             {
+                CheckInit();
                 return (int)this._research;
             }
+        }
+
+        private void CheckInit()
+        {
+            CheckInit(false);
+        }
+        private void CheckInit(bool cost)
+        {
+            if (cost ? this._costNotInit : this._statsNotInit)
+                throw new Exception();
+            else
+                ;
         }
 
         private static void GetPcts(ICollection<ShipDesign> designs, double mapSize, int research,
@@ -740,19 +777,23 @@ namespace GalWar
 
         private double GetMinCost(double mapSize)
         {
-            double minCost = this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + 1 / Consts.RepairCostMult;
-            return Game.Random.GaussianOE(minCost * 1.3, 0.026, 0.021, minCost);
+            //random increase to absolute minimum
+            double minCost = GetAbsMinCost(mapSize);
+            return Game.Random.GaussianOE(minCost * 1.3, 0.052, 0.026, minCost);
         }
-
+        private const double MinCostBuffer = 3.9;
+        private double GetAbsMinCost(double mapSize)
+        {
+            return this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + MinCostBuffer;
+        }
         private static double GetMaxCost(int research, double minCost)
         {
+            //max cost is more of a guideline than actual rule
             double maxCost = Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
-            //max is more of a guideline than actual rule
-            if (maxCost > minCost)
-                maxCost = Game.Random.GaussianOE(maxCost, .21, .039, minCost);
-            else
-                maxCost = minCost;
-            return maxCost;
+            double min = minCost * 1.3;
+            if (maxCost > min)
+                return Game.Random.GaussianOE(maxCost, .21, .039, min);
+            return min;
         }
 
         private void GetCost(double mapSize, double upkeepPct, out double cost, out int upkeep, ref double upkRnd, FocusStat focus)
@@ -1075,7 +1116,7 @@ namespace GalWar
             double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
             double cost = GetTotCost() - this.Upkeep * upkeepPayoff;
             cost += ( cost - this.Cost ) / Consts.ScalePct(1, Consts.RepairCostMult, GetNonColonyPct());
-            if (cost < upkeepPayoff * Consts.MinCostMult)
+            if (cost < GetAbsMinCost(mapSize))
                 throw new Exception();
             return cost;
         }

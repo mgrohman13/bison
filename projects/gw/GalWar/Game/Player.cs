@@ -1150,7 +1150,7 @@ namespace GalWar
             }
         }
 
-        internal void PlayTurn(IEventHandler handler)
+        internal void PlayTurn(IEventHandler handler, List<Anomaly> anomalies)
         {
             if (AI != null)
             {
@@ -1162,7 +1162,7 @@ namespace GalWar
                 {
                     Console.WriteLine(e);
                 }
-                Game.EndTurn(handler, true);
+                anomalies.AddRange(Game.EndTurn(handler, true));
             }
         }
 

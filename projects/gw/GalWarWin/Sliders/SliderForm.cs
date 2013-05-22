@@ -142,13 +142,11 @@ namespace GalWarWin.Sliders
 
         public static int ShowForm(SliderController controller)
         {
-            //GoldRepair gr = controller as GoldRepair;
-            //if (gr != null)
-            //    gr.SetSetValueDelegate(new GoldRepair.SetValueDelegate(form.SetValue));
+            form.SetController(controller);
 
+            //SetController may adjust the size so call SetLocation afterwards
             MainForm.GameForm.SetLocation(form);
 
-            form.SetController(controller);
             if (form.ShowDialog() == DialogResult.OK)
                 return form.GetValue();
             return -1;
