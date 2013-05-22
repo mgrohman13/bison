@@ -42,11 +42,11 @@ namespace MattUtil
 
         public static bool operator ==(Point a, Point b)
         {
-            return ( a == null ? b == null : a.Equals(b) );
+            return a.Equals(b);
         }
         public static bool operator !=(Point a, Point b)
         {
-            return !( a == b );
+            return !( a.Equals(b) );
         }
     }
 }
