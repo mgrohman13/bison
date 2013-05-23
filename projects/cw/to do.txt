@@ -24,6 +24,7 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	save/load/autosave locations
 	damage calculator
 	ability to look around main map during a battle, see info screen, etc?
 		highlight participating tiles
