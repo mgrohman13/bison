@@ -232,6 +232,8 @@ namespace GalWarWin
         private const float GridScale = 16.9f;
         private const float TextScale = 21f;
 
+        private int counter = 0;
+
         protected override void OnPaint(PaintEventArgs paintEventArgs)
         {
             base.OnPaint(paintEventArgs);
@@ -335,7 +337,9 @@ namespace GalWarWin
                     Brush brush = Brushes.DarkGray;
                     if (Game.GetTeleporters().Count > 1)
                     {
-                        int color = Game.Random.Round(130 + telNum * ( 260.0 - 130 ) / Game.GetTeleporters().Count);
+                        float telCount = Game.GetTeleporters().Count;
+                        float min = 300 / ( telCount + 1 );
+                        int color = Game.Random.Round(min + telNum * ( 255 - min ) / telCount);
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
                     }
                     g.FillRectangle(brush, rect);
@@ -756,7 +760,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(10.4, .13, .065, 6.5), Game.Random.GaussianCapped(.006, .52, .0021));
+                    Game.Random.GaussianOE(13, .104, .078, 7.8), Game.Random.GaussianCapped(.006, .52, .0021));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -1281,6 +1285,8 @@ namespace GalWarWin
         }
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
+            ++counter;
+
             clicked = null;
             ClickMouse(e, false);
         }

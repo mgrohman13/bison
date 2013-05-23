@@ -44,17 +44,25 @@ namespace GalWar
         }
         private static int GetDistance(Tile tile, int x, int y)
         {
-            int dist = GetRawDistance(tile.X, tile.Y, x, y);
+            return GetDistance(tile.X, tile.Y, x, y, tile.Game.GetTeleporters());
+        }
+        private static int GetDistance(int x1, int y1, int x2, int y2, List<Tuple<Point, Point>> teleporters)
+        {
+            int dist = GetRawDistance(x1, y1, x2, y2);
             if (dist > 1)
-                foreach (Tuple<Point, Point> teleporter in tile.Game.GetTeleporters())
-                    dist = Math.Min(dist, Math.Min(GetTeleporterDistance(tile.X, tile.Y, x, y, teleporter),
-                            GetTeleporterDistance(x, y, tile.X, tile.Y, teleporter)));
+                foreach (Tuple<Point, Point> teleporter in teleporters)
+                {
+                    List<Tuple<Point, Point>> subset = new List<Tuple<Point, Point>>(teleporters);
+                    subset.Remove(teleporter);
+                    dist = Math.Min(dist, Math.Min(GetTeleporterDistance(x1, y1, x2, y2, teleporter, subset),
+                            GetTeleporterDistance(x2, y2, x1, y1, teleporter, subset)));
+                }
             return dist;
         }
-        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter)
+        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter, List<Tuple<Point, Point>> teleporters)
         {
-            return 1 + GetRawDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y)
-                    + GetRawDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y);
+            return 1 + GetDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y, teleporters)
+                    + GetDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y, teleporters);
         }
         private static int GetRawDistance(int x1, int y1, int x2, int y2)
         {

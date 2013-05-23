@@ -2,13 +2,16 @@ main map improvements
 	very large shows more info
 		different ship graphics for speed/type
 	clean up drawing logic
+	draw anomalies smaller when zoomed out past grid
 management screens
 	colonies
 	ships
 
+check research victory every turn?
+change research victory chance to more obvious quantities?
+starting anomaly pct take into account close anomalies as well
+victory resets plane colonizations mults?
 planet completely surrounded by anomalies
-undo turn start switch prod?
-PullIn CheckPlanetDistance might can allow closest planet
 GetMoves use Points instead of Tiles
 check that selected tile doesnt excercise cache
 anomaly explore delegates

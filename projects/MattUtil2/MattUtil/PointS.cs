@@ -33,7 +33,7 @@ namespace MattUtil
 
         public override string ToString()
         {
-            return string.Format("({0:G3},{1:G3})", X, Y);
+            return string.Format("({0},{1})", X, Y);
         }
 
         public static bool operator ==(PointS a, PointS b)

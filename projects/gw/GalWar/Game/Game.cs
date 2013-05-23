@@ -404,7 +404,7 @@ next_planet:
         {
             get
             {
-                return 13 * this.MapDeviation * this.MapDeviation;
+                return 9.1 * this.MapDeviation * this.MapDeviation;
             }
         }
 
@@ -442,6 +442,10 @@ next_planet:
 
             StartPlayerTurn(handler);
             CurrentPlayer.PlayTurn(handler, new List<Anomaly>());
+
+            int testc = Random.GaussianOEInt(3, .26, .21, 1);
+            for (int a = 0 ; a < testc ; ++a)
+                CreateTeleporter(handler, GetRandomTile(), GetRandomTile());
         }
 
         internal void SetSpaceObject(int x, int y, SpaceObject spaceObject)
@@ -594,7 +598,7 @@ next_planet:
             Player[] researchOrder = GetResearchOrder();
             //research victory happens when the top player exceeds a certain multiple of the second place player
             if (researchOrder.Length > 1 && researchOrder[0].Research > researchOrder[1].Research *
-                    Game.Random.GaussianCapped(Consts.ResearchVictoryMult, Consts.ResearchVictoryRndm, Consts.ResearchVictoryMinMult))
+                    Random.GaussianCapped(Consts.ResearchVictoryMult, Consts.ResearchVictoryRndm, Consts.ResearchVictoryMinMult))
             {
                 researchOrder[0].Destroy();
                 RemovePlayer(researchOrder[0]);
@@ -624,17 +628,17 @@ next_planet:
             List<Tuple<Point, Point>> teleporters = GetTeleporters();
             if (teleporters.Count > 0)
             {
-                double chance = Math.Pow(teleporters.Count, 1.69);
-                if (Game.Random.Bool(chance / ( chance + 65.0 ) / (double)players.Count))
+                double chance = teleporters.Count;
+                if (Random.Bool(chance / ( chance + 65 ) / (double)this.players.Count))
                     RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
             }
         }
 
         internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target)
         {
-            double chance = Math.Pow(GetTeleporters().Count + 1, 1.3);
+            double chance = GetTeleporters().Count + 1;
             //check if the tiles are too close to be useful or if either tile already has a teleporter
-            if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Game.Random.Bool(1.0 / chance))
+            if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Random.Bool(1.0 / chance))
             {
                 //check this will not make any planets be too close
                 HashSet<Planet> planets = new HashSet<Planet>();
@@ -709,7 +713,7 @@ next_planet:
         private List<Anomaly> CreateAnomalies()
         {
             List<Anomaly> anomalies = new List<Anomaly>();
-            int create = Game.Random.OEInt(this.AnomalyPct / (double)this.players.Count);
+            int create = Random.OEInt(this.AnomalyPct / (double)this.players.Count);
             for (int a = 0 ; a < create ; ++a)
             {
                 Anomaly anomaly = CreateAnomaly();
@@ -720,7 +724,10 @@ next_planet:
         }
         private Anomaly CreateAnomaly()
         {
-            Tile tile = GetRandomTile();
+            return CreateAnomaly(GetRandomTile());
+        }
+        internal Anomaly CreateAnomaly(Tile tile)
+        {
             if (tile.SpaceObject == null)
                 return new Anomaly(tile);
             return null;
@@ -728,19 +735,63 @@ next_planet:
 
         internal Tile GetRandomTile()
         {
-            int x = Random.GaussianInt(this.MapDeviation);
-            int y = Random.GaussianInt(this.MapDeviation);
-            if (y % 2 != 0)
-                x -= Random.RangeInt(0, 1);
-            return GetTile(x, y);
+            return GetRandomTile(GetTile(0, 0), this.MapDeviation);
+        }
+        internal Tile GetRandomTile(Tile center, double stdDev)
+        {
+            return GetDistanceTile(center, Math.Abs(Random.GaussianInt(stdDev)));
+        }
+        private Tile GetDistanceTile(Tile center, int dist)
+        {
+            int minX, minY, maxX, maxY;
+            GetTileDistances(center, dist, out minX, out minY, out maxX, out maxY, GetTeleporters());
+
+            //Expected iterations is n/(3*(SQRT(n)-1)) where n=(maxX-minX+1)*(maxY-minY+1), or O(SQRT(n)).
+            //Because n is O(dist^2), the operation time of this loop is O(dist).
+            //Teleporters may affect the value of n, but not significantly.
+            foreach (Point p in Random.Iterate(minX, maxX, minY, maxY))
+            {
+                Tile test = GetTile(p);
+                if (Tile.GetDistance(center, test) == dist)
+                    return test;
+            }
+
+            throw new Exception();
+        }
+        private void GetTileDistances(Tile center, int dist, out int minX, out int minY, out int maxX, out int maxY, List<Tuple<Point, Point>> teleporters)
+        {
+            minX = center.X - dist;
+            minY = center.Y - dist;
+            maxX = center.X + dist;
+            maxY = center.Y + dist;
+            foreach (Tuple<Point, Point> teleporter in teleporters)
+            {
+                List<Tuple<Point, Point>> subset = new List<Tuple<Point, Point>>(teleporters);
+                subset.Remove(teleporter);
+                GetTeleporterDistances(center, dist, teleporter.Item1, teleporter.Item2, ref minX, ref minY, ref maxX, ref maxY, subset);
+                GetTeleporterDistances(center, dist, teleporter.Item2, teleporter.Item1, ref minX, ref minY, ref maxX, ref maxY, subset);
+            }
+        }
+        private void GetTeleporterDistances(Tile center, int dist, Point p1, Point p2, ref int minX, ref int minY, ref int maxX, ref int maxY, List<Tuple<Point, Point>> teleporters)
+        {
+            int telDist = Tile.GetDistance(center, GetTile(p1));
+            if (telDist < dist)
+            {
+                int minX2, minY2, maxX2, maxY2;
+                GetTileDistances(GetTile(p2), dist - telDist - 1, out minX2, out minY2, out maxX2, out maxY2, teleporters);
+                minX = Math.Min(minX, minX2);
+                minY = Math.Min(minY, minY2);
+                maxX = Math.Max(maxX, maxX2);
+                maxY = Math.Max(maxY, maxY2);
+            }
         }
 
         private void StartPlayerTurn(IEventHandler handler)
         {
             Graphs.StartTurn(CurrentPlayer);
-            CurrentPlayer.StartTurn(handler);
 
             ClearUndoStack();
+            CurrentPlayer.StartTurn(handler);
         }
 
         public void SaveGame(string filePath)

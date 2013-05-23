@@ -1536,6 +1536,7 @@ namespace MattUtil
 
         /// <summary>
         /// Iterates in random order over an enumeration of objects.
+        /// Modifications to the enumerable will not affect iteration.
         /// </summary>
         public IEnumerable<T> Iterate<T>(IEnumerable<T> enumerable)
         {
@@ -1547,7 +1548,7 @@ namespace MattUtil
             int count;
             if (collection == null)
             {
-                //create a list to get the count
+                //use a list to get the count
                 List<T> list = new List<T>(enumerable);
                 count = list.Count;
                 if (count > 1)
@@ -1555,9 +1556,10 @@ namespace MattUtil
             }
             else if (( count = collection.Count ) > 1)
             {
-                List<T> list = new List<T>(count);
-                list.AddRange(enumerable);
-                return Iterate<T>(list, count, GetItem);
+                //use an array since we already know the count
+                T[] array = new T[count];
+                collection.CopyTo(array, 0);
+                return Iterate<T>(array, count, GetItem);
             }
 
             //if the count is less than 2 there is no element order
@@ -1569,6 +1571,7 @@ namespace MattUtil
         }
         private IEnumerable<T> EnumerateOnce<T>(IEnumerator<T> enumerator)
         {
+            //avoids InvalidOperationException by not calling MoveNext again after returning an item
             if (enumerator.MoveNext())
                 yield return enumerator.Current;
         }
