@@ -1,14 +1,16 @@
 main map improvements
-	draw grid first (optimized), then objects, selection
 	very large shows more info
-		more detailed planet info
 		different ship graphics for speed/type
-	very small has no grid, less info (minimap style)
+	clean up drawing logic
 management screens
 	colonies
 	ships
 
+planet completely surrounded by anomalies
+undo turn start switch prod?
+PullIn CheckPlanetDistance might can allow closest planet
 GetMoves use Points instead of Tiles
+check that selected tile doesnt excercise cache
 anomaly explore delegates
 when prod repair colony ship is/isnt worth it?
 standardize dead checks

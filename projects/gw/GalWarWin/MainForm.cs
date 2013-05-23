@@ -228,8 +228,9 @@ namespace GalWarWin
             return ( x > gameBounds.Left + 1 && x < gameBounds.Right - 1 && y > gameBounds.Top + 1 && y < gameBounds.Bottom - 1 );
         }
 
-        const float GridScale = 13f;
-        const float TextScale = 21f;
+        private const float ShipDetailScale = 9.1f;
+        private const float GridScale = 16.9f;
+        private const float TextScale = 21f;
 
         protected override void OnPaint(PaintEventArgs paintEventArgs)
         {
@@ -272,10 +273,6 @@ namespace GalWarWin
                         }
                     }
 
-                    Dictionary<Tile, float> moves = null;
-                    if (showMoves && scale > TextScale)
-                        moves = GetMoves();
-
                     Rectangle gameBounds = GetGameBounds();
 
                     if (scale > GridScale)
@@ -290,14 +287,26 @@ namespace GalWarWin
                     }
 
                     if (selected != null)
-                        DrawObject(g, gameBounds, selected.Value, moves);
+                        DrawObject(g, gameBounds, selected.Value, null);
+
                     foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
                     {
-                        DrawObject(g, gameBounds, teleporter.Item1, moves);
-                        DrawObject(g, gameBounds, teleporter.Item2, moves);
+                        DrawObject(g, gameBounds, teleporter.Item1, null);
+                        DrawObject(g, gameBounds, teleporter.Item2, null);
                     }
                     foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                        DrawObject(g, gameBounds, spaceObject.Tile.Point, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
+                        DrawObject(g, gameBounds, spaceObject.Tile.Point, null, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
+
+                    if (showMoves && scale > TextScale)
+                    {
+                        Dictionary<Tile, float> moves = GetMoves();
+                        foreach (Tile tile in moves.Keys)
+                            DrawObject(g, gameBounds, tile.Point, moves);
+                    }
+
+                    if (isDialog && dialogTile != null)
+                        foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
+                            DrawObject(g, gameBounds, neighbor.Point, null);
                 }
                 catch (Exception e)
                 {
@@ -342,7 +351,7 @@ namespace GalWarWin
                 else if (( ship = ( spaceObject as Ship ) ) != null)
                     DrawShip(g, scale, rect, ship, minStr, maxStr);
 
-                if (scale > GridScale || point == selected)
+                if (scale > GridScale || point == selected || ( isDialog && ValidDialogTile(point, spaceObject) ))
                     DrawBorder(g, point, spaceObject, rect, scale);
 
                 if (moves != null && scale > TextScale)
@@ -392,7 +401,9 @@ namespace GalWarWin
             Ship ship = spaceObject as Ship;
 
             float size;
-            if (point == selected)
+            if (scale <= GridScale)
+                size = 1f;
+            else if (point == selected)
                 size = 3f;
             else if (planet != null || ( isDialog ? ValidDialogTile(point, spaceObject) : ship != null &&
                     ship.Player.IsTurn && ship.CurSpeed > 0 ))
@@ -402,7 +413,7 @@ namespace GalWarWin
             if (dialogTile != null && point == new Point(dialogTile.X, dialogTile.Y))
                 ++size;
 
-            if (size != 1f)
+            if (scale <= GridScale || size != 1f)
                 using (Pen pen = new Pen(Color.White, size))
                     g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
         }
@@ -424,7 +435,7 @@ namespace GalWarWin
                     g.FillEllipse(brush, planetRect);
             }
 
-            if (colony != null)
+            if (colony != null && scale > ShipDetailScale)
             {
                 if (colony.HP > 0)
                     g.DrawEllipse(Pens.White, planetRect);
@@ -444,30 +455,33 @@ namespace GalWarWin
             using (Brush brush = new SolidBrush(ship.Player.Color))
                 g.FillRectangle(brush, rect);
 
-            if (ship.DeathStar || ship.Population > 0)
-                g.DrawRectangle(Pens.White, rect.X, rect.Y, rect.Width, rect.Height);
-
-            double pct = ship.HP / (double)ship.MaxHP;
-            if (pct < 1)
+            if (scale > ShipDetailScale)
             {
-                Pen pen = Pens.Black;
-                if (ship.Player.IsTurn && !ship.HasRepaired && ship.AutoRepair == 0)
-                    pen = new Pen(Color.White, 2);
+                if (ship.DeathStar || ship.Population > 0)
+                    g.DrawRectangle(Pens.White, rect.X, rect.Y, rect.Width, rect.Height);
 
-                PointF endPoint;
-                if (pct < .75f)
-                    endPoint = new PointF(rect.Right, rect.Bottom);
-                else
-                    endPoint = GetMid(rect);
-                g.DrawLine(pen, rect.Location, endPoint);
-
-                if (pct < .5f)
+                double pct = ship.HP / (double)ship.MaxHP;
+                if (pct < 1)
                 {
-                    if (pct < .25f)
-                        endPoint = new PointF(rect.Right, rect.Top);
+                    Pen pen = Pens.Black;
+                    if (ship.Player.IsTurn && !ship.HasRepaired && ship.AutoRepair == 0)
+                        pen = new Pen(Color.White, 2);
+
+                    PointF endPoint;
+                    if (pct < .75f)
+                        endPoint = new PointF(rect.Right, rect.Bottom);
                     else
                         endPoint = GetMid(rect);
-                    g.DrawLine(pen, new PointF(rect.Left, rect.Bottom), endPoint);
+                    g.DrawLine(pen, rect.Location, endPoint);
+
+                    if (pct < .5f)
+                    {
+                        if (pct < .25f)
+                            endPoint = new PointF(rect.Right, rect.Top);
+                        else
+                            endPoint = GetMid(rect);
+                        g.DrawLine(pen, new PointF(rect.Left, rect.Bottom), endPoint);
+                    }
                 }
             }
         }
@@ -475,17 +489,24 @@ namespace GalWarWin
         private RectangleF Inflate(float scale, RectangleF rect, double value, float min, float max, float smallInvsPct, float inc)
         {
             if (scale <= GridScale)
-                inc = ( 2 - scale ) / scale;
+            {
+                float big = 1 - ( 1 - ( smallInvsPct + inc ) ) / 3f;
+                if (big > ( scale - 1f ) / scale)
+                    big = ( scale - 1f ) / scale;
+                smallInvsPct = .5f + 2f / scale + ( smallInvsPct - .5f ) / 3f;
+                if (smallInvsPct > big)
+                    smallInvsPct = big;
+                inc = big - smallInvsPct;
+                if (inc < 0)
+                    inc = 0;
+            }
             float inflate = (float)( -scale * ( 1f - ( smallInvsPct + inc * ( ( Math.Sqrt(value) - min + 1 ) / ( max - min + 1 ) ) ) ) );
             rect.Inflate(inflate, inflate);
+            if (rect.Width < 1f)
+                rect.Width = 1f;
+            if (rect.Height < 1f)
+                rect.Height = 1f;
             return rect;
-
-
-            //-scale * ( 1f - ( smallInvsPct + inc * ( ( Math.Sqrt(value) - min + 1 ) / ( max - min + 1 ) ) ) );
-
-
-            //scale * ( scale + inc - 1 );
-
         }
 
         private PointF GetMid(RectangleF rect)
@@ -708,9 +729,17 @@ namespace GalWarWin
 
         private void btnShowMoves_Click(object sender, EventArgs e)
         {
+            if (scale < TextScale)
+                SetScale(TextScale);
+
             showAtt = ( showMoves ? !showAtt : false );
             showMoves = true;
             InvalidateMap();
+        }
+        private void SetScale(float value)
+        {
+            scale = (float)( value * ( 1 + Consts.FLOAT_ERROR ) );
+            VerifyScale();
         }
 
         private void btnGraphs_Click(object sender, EventArgs e)
@@ -835,7 +864,7 @@ namespace GalWarWin
             if (!isDialog)
                 dialog.StartGame();
 
-            scale = float.MinValue;
+            SetScale(TextScale);
             panX = float.MinValue;
             panY = float.MaxValue;
             VerifyScalePan();
@@ -963,9 +992,6 @@ namespace GalWarWin
 
         private void SelectTileDialog(Point point, bool build)
         {
-            showMoves = false;
-            dialog.showMoves = false;
-
             Tile tile = Game.GetTile(point);
             if (build)
                 dialog.pnlBuild.SetColony(( (Planet)tile.SpaceObject ).Colony);
@@ -1021,6 +1047,8 @@ namespace GalWarWin
 
         private void btnDisband_Click(object sender, EventArgs e)
         {
+            showMoves = false;
+
             Ship ship = GetSelectedShip();
 
             Colony colony = null;
@@ -1057,6 +1085,7 @@ namespace GalWarWin
         private void btnUndo_Click(object sender, EventArgs e)
         {
             showMoves = false;
+
             SelectTile(Game.Undo(this));
 
             UnHold(GetSelectedShip());
@@ -1067,6 +1096,8 @@ namespace GalWarWin
 
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
+            showMoves = false;
+
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
                 CombatForm.FlushLog();
@@ -1105,7 +1136,6 @@ namespace GalWarWin
                     Center();
                 }
 
-                showMoves = false;
                 saved = false;
                 RefreshAll();
             }
@@ -1275,6 +1305,8 @@ namespace GalWarWin
                 }
                 else if (!isDialog && e.Button == MouseButtons.Right)
                 {
+                    showMoves = false;
+
                     Ship target = clickedTile.SpaceObject as Ship;
 
                     if (doubleClick && target != null && clicked == gamePoint && hold.Contains(target))
@@ -1333,7 +1365,6 @@ namespace GalWarWin
                     }
                 }
 
-                showMoves = false;
                 RefreshAll();
             }
         }
