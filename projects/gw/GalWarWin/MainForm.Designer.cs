@@ -741,6 +741,8 @@ namespace GalWarWin
             this.tbTurns.TabIndex = 4;
             this.tbTurns.Visible = false;
             this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
+            this.tbTurns.MouseEnter += new System.EventHandler(this.tbTurns_MouseEnter);
+            this.tbTurns.MouseLeave += new System.EventHandler(this.tbTurns_MouseLeave);
             // 
             // MainForm
             // 

@@ -555,7 +555,7 @@ namespace GalWar
 
         private void RandResearchDisplay()
         {
-            Player[] research = Game.GetResearchOrder();
+            Player[] research = Game.GetResearchDisplayOrder();
             //the maximum possible skew change can plausibly be accounted for by economy emphasis choices
             double totalIncome = GetTotalIncome();
             double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
@@ -572,7 +572,7 @@ namespace GalWar
             if (sign != ( rDisp > rDispTrg ) || rDisp == rDispTrg)
             {
                 rDisp = rDispTrg;
-                double cap = Math.Max(3 / Consts.ResearchVictoryMult - rDispTrg - 1, 3 + rDispTrg - 3 * Consts.ResearchVictoryMult);
+                double cap = Math.Max(3 / Consts.ResearchVictoryMin - rDispTrg - 1, 3 + rDispTrg - 3 * Consts.ResearchVictoryMin);
                 rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, cap) + 1 ) / 3.0;
 
                 //rate is based on distance to new value

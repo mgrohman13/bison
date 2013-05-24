@@ -59,6 +59,11 @@ namespace GalWarWin
             int place = GetPlace(maxArmada);
             long div = GetDiv(place);
 
+            Player winner;
+            string winChance = MainForm.FormatPct(MainForm.Game.GetResearchVictoryChance(out winner), true);
+            if (winChance == "0.0%")
+                winner = null;
+
             Dictionary<Player, double> research = MainForm.Game.GetResearch();
             labels = new Label[8, players.Count];
             y = 32;
@@ -80,6 +85,11 @@ namespace GalWarWin
                 labels[6, i] = NewLabel(x, y, GetStringDec(players[i].GetArmadaStrength(), div, place), players[i].Color);
                 x += 106;
                 labels[7, i] = NewLabel(x, y, GetResearch(research, players[i]), players[i].Color);
+                if (players[i] == winner)
+                {
+                    x += 106;
+                    labels[7, i] = NewLabel(x, y, winChance, players[i].Color, true);
+                }
                 y += 26;
             }
 
@@ -156,14 +166,18 @@ namespace GalWarWin
 
         private Label NewLabel(int x, int y, string text, Color? backColor)
         {
+            return NewLabel(x, y, text, backColor, false);
+        }
+        private Label NewLabel(int x, int y, string text, Color? backColor, bool bold)
+        {
             Label label = new Label();
             label.AutoEllipsis = true;
-            label.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            label.Location = new System.Drawing.Point(x, y);
-            label.Size = new System.Drawing.Size(100, 23);
+            label.Font = new Font("Microsoft Sans Serif", bold ? 9.75f : 8.25F, FontStyle.Bold);
+            label.Location = new Point(x, y);
+            label.Size = new Size(100, 23);
             label.TabIndex = 40;
             label.Text = text;
-            label.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            label.TextAlign = ContentAlignment.MiddleRight;
             if (backColor.HasValue)
                 label.BackColor = backColor.Value;
             Controls.Add(label);

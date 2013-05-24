@@ -329,6 +329,20 @@ namespace GalWar
 
         internal void StartTurn(IEventHandler handler)
         {
+            bool blocked = true;
+            foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
+                if (!( neighbor.SpaceObject is Anomaly ))
+                {
+                    blocked = false;
+                    break;
+                }
+            if (blocked)
+                foreach (Tile neighbor in Game.Random.Iterate(Tile.GetNeighbors(this.Tile)))
+                {
+                    neighbor.SpaceObject = null;
+                    break;
+                }
+
             DoChange(0, 0, 0, 0);
 
             if (this.built)

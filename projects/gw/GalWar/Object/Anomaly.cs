@@ -494,7 +494,7 @@ namespace GalWar
             {
                 double gold = 0;
                 if (planet.Colony != null)
-                    gold = Math.Sqrt(( planet.Colony.Population + 1.0 ) / ( planet.Quality + 1.0 )) * .65;
+                    gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * .78;
 
                 double mult = Consts.GetColonizationMult();
                 double before = Consts.GetColonizationCost(planet.Quality, mult);
@@ -533,8 +533,9 @@ namespace GalWar
                 double expectCost = GetExpectCost(trgColony, addQuality);
                 double actualCost = Player.RoundGold(this.value + expectCost * Consts.GetColonizationMult(), true);
 
-                if (CanTerraform(actualCost, anomShip) &&
-                        handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances))
+                bool canTerraform = CanTerraform(actualCost, anomShip);
+                canTerraform &= handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances, canTerraform);
+                if (canTerraform)
                 {
                     trgColony.Planet.ReduceQuality(-addQuality);
                     trgColony.Player.AddGold(actualCost);

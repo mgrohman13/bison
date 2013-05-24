@@ -220,21 +220,36 @@ namespace GalWar
             while (GetPlanets().Count < numPlayers)
                 NewPlanet();
 
+            //then create anomalies
             double anomPlanets = 0;
-            double anomPlanetRate = ( this.PlanetPct / this.AnomalyPct );
+            var anomalies = new Dictionary<Anomaly, double>();
             int startAnomalies = Random.GaussianOEInt(this.AnomalyPct * Consts.StartAnomalies, .39, .13,
                     ( this.AnomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0);
             for (int a = 0 ; a < startAnomalies ; ++a)
             {
                 Anomaly anomaly = CreateAnomaly();
-                if (anomaly != null && CheckPlanetDistance(anomaly.Tile) && ( anomPlanets += anomPlanetRate ) > planetPct)
+
+                //keep track of the chances that starting anomlies will become planets
+                if (anomaly != null && CheckPlanetDistance(anomaly.Tile))
                 {
-                    anomaly.Tile.SpaceObject = null;
-                    anomPlanets -= anomPlanetRate;
-                    break;
+                    double anomPlanetRate = this.PlanetPct / this.AnomalyPct;
+                    foreach (var pair in anomalies)
+                        if (Tile.GetDistance(anomaly.Tile, pair.Key.Tile) <= Consts.PlanetDistance)
+                            anomPlanetRate *= ( 1 - pair.Value );
+                    anomPlanets += anomPlanetRate;
+                    if (anomPlanets > planetPct)
+                    {
+                        anomaly.Tile.SpaceObject = null;
+                        anomPlanets -= anomPlanetRate;
+                    }
+                    else
+                    {
+                        anomalies.Add(anomaly, anomPlanetRate);
+                    }
                 }
             }
 
+            //reduce starting planets by the total chances anomalies will be planets
             planetPct -= anomPlanets;
             int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
             for (int a = 0 ; a < startPlanets ; ++a)
@@ -242,6 +257,7 @@ namespace GalWar
 
             return GetPlanets().Count + anomPlanets;
         }
+
         private Planet NewPlanet()
         {
             Tile tile = GetRandomTile();
@@ -442,10 +458,6 @@ next_planet:
 
             StartPlayerTurn(handler);
             CurrentPlayer.PlayTurn(handler, new List<Anomaly>());
-
-            int testc = Random.GaussianOEInt(3, .26, .21, 1);
-            for (int a = 0 ; a < testc ; ++a)
-                CreateTeleporter(handler, GetRandomTile(), GetRandomTile());
         }
 
         internal void SetSpaceObject(int x, int y, SpaceObject spaceObject)
@@ -510,20 +522,33 @@ next_planet:
 
         public Dictionary<Player, double> GetResearch()
         {
-            Player[] players = GetResearchOrder();
+            Player[] players = GetResearchDisplayOrder();
             Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
             for (int a = 0 ; a < players.Length ; ++a)
                 retVal.Add(players[a], players[a].ResearchDisplay / players[0].ResearchDisplay * 100);
             return retVal;
         }
-
-        internal Player[] GetResearchOrder()
+        internal Player[] GetResearchDisplayOrder()
+        {
+            return GetOrder(delegate(Player player)
+            {
+                return player.ResearchDisplay;
+            });
+        }
+        internal Player[] GetRealResearchOrder()
+        {
+            return GetOrder(delegate(Player player)
+            {
+                return player.Research;
+            });
+        }
+        private Player[] GetOrder(Func<Player, double> Func)
         {
             Player[] players = this.players.ToArray();
             Array.Sort<Player>(players, delegate(Player p1, Player p2)
             {
                 //descending sort
-                return Math.Sign(p2.ResearchDisplay - p1.ResearchDisplay);
+                return Math.Sign(Func(p2) - Func(p1));
             });
             return players;
         }
@@ -573,7 +598,8 @@ next_planet:
 
         public void AutoSave()
         {
-            TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
+            if (AutoSavePath != null)
+                TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
         }
 
         private void NewRound()
@@ -595,15 +621,44 @@ next_planet:
 
         private void CheckResearchVictory()
         {
-            Player[] researchOrder = GetResearchOrder();
-            //research victory happens when the top player exceeds a certain multiple of the second place player
-            if (researchOrder.Length > 1 && researchOrder[0].Research > researchOrder[1].Research *
-                    Random.GaussianCapped(Consts.ResearchVictoryMult, Consts.ResearchVictoryRndm, Consts.ResearchVictoryMinMult))
+            //use real research
+            Player[] researchOrder = GetRealResearchOrder();
+            if (researchOrder.Length > 1)
             {
-                researchOrder[0].Destroy();
-                RemovePlayer(researchOrder[0]);
-                this.winningPlayers.Add(new Result(researchOrder[0], true));
+                Player winner = researchOrder[0];
+                double chance = GetResearchVictoryChance(winner.Research, researchOrder[1].Research);
+                if (chance > 0 && Random.Bool(chance))
+                {
+                    winner.Destroy();
+                    RemovePlayer(winner);
+                    this.winningPlayers.Add(new Result(winner, true));
+                }
             }
+        }
+        public double GetResearchVictoryChance(out Player winner)
+        {
+            //use research display values
+            Player[] researchOrder = GetResearchDisplayOrder();
+            if (researchOrder.Length > 1)
+            {
+                winner = researchOrder[0];
+                return GetResearchVictoryChance(winner.ResearchDisplay, researchOrder[1].ResearchDisplay);
+            }
+            winner = null;
+            return 0;
+        }
+        private double GetResearchVictoryChance(double first, double second)
+        {
+            //research victory can happen when the top player exceeds a certain multiple of the second place player
+            double mult = first / second;
+            if (mult > Consts.ResearchVictoryMin)
+            {
+                double chance = ( mult - Consts.ResearchVictoryMin ) / ( Consts.ResearchVictoryMult - Consts.ResearchVictoryMin );
+                if (chance > 0.5)
+                    chance /= ( chance + 0.5 );
+                return Math.Pow(chance, Consts.ResearchVictoryPow);
+            }
+            return 0;
         }
 
         private void RandMoveOrder()
@@ -690,12 +745,11 @@ next_planet:
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
         {
-            if (Random.Bool(this.PlanetPct / this.AnomalyPct))
-                if (CheckPlanetDistance(tile))
-                {
-                    handler.Explore(Anomaly.AnomalyType.NewPlanet);
-                    return CreatePlanet(tile);
-                }
+            if (Random.Bool(this.PlanetPct / this.AnomalyPct) && CheckPlanetDistance(tile))
+            {
+                handler.Explore(Anomaly.AnomalyType.NewPlanet);
+                return CreatePlanet(tile);
+            }
             return null;
         }
         internal bool CheckPlanetDistance(Tile tile)
@@ -764,9 +818,9 @@ next_planet:
             minY = center.Y - dist;
             maxX = center.X + dist;
             maxY = center.Y + dist;
-            foreach (Tuple<Point, Point> teleporter in teleporters)
+            foreach (var teleporter in teleporters)
             {
-                List<Tuple<Point, Point>> subset = new List<Tuple<Point, Point>>(teleporters);
+                var subset = new List<Tuple<Point, Point>>(teleporters);
                 subset.Remove(teleporter);
                 GetTeleporterDistances(center, dist, teleporter.Item1, teleporter.Item2, ref minX, ref minY, ref maxX, ref maxY, subset);
                 GetTeleporterDistances(center, dist, teleporter.Item2, teleporter.Item1, ref minX, ref minY, ref maxX, ref maxY, subset);

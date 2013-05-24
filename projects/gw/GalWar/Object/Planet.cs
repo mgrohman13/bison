@@ -11,7 +11,7 @@ namespace GalWar
         private Colony _colony;
 
         private short _quality;
-        private readonly float _colonizationCostMult;
+        private float _colonizationCostMult;
 
         internal Planet(Tile tile)
             : base(tile)
@@ -21,7 +21,7 @@ namespace GalWar
                 this._colony = null;
 
                 this._quality = (short)Consts.NewPlanetQuality();
-                this._colonizationCostMult = (float)Consts.GetColonizationMult();
+                ResetCostMult();
             }
         }
 
@@ -37,6 +37,9 @@ namespace GalWar
                 {
                     if (( value == null ) == ( this.Colony == null ))
                         throw new Exception();
+
+                    if (value == null && !this.Dead)
+                        ResetCostMult();
 
                     this._colony = value;
                 }
@@ -62,6 +65,13 @@ namespace GalWar
             get
             {
                 return this._colonizationCostMult;
+            }
+        }
+        private void ResetCostMult()
+        {
+            checked
+            {
+                this._colonizationCostMult = (float)Consts.GetColonizationMult();
             }
         }
 

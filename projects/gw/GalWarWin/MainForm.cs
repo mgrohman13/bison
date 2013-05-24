@@ -792,6 +792,8 @@ namespace GalWarWin
 
         private void btnAutosaveView_Click(object sender, EventArgs e)
         {
+            Game.AutoSavePath = null;
+
             openFileDialog1.InitialDirectory = Game.AutoSavePath;
             openFileDialog1.FileName = "1.gws";
 
@@ -819,6 +821,7 @@ namespace GalWarWin
                 tbTurns.TickFrequency = ( max - min ) / 39;
 
                 tbTurns_Scroll(null, null);
+                tbTurns_MouseLeave(null, null);
             }
         }
 
@@ -852,6 +855,15 @@ namespace GalWarWin
             }
         }
 
+        private void tbTurns_MouseEnter(object sender, EventArgs e)
+        {
+            this.tbTurns.Focus();
+        }
+        private void tbTurns_MouseLeave(object sender, EventArgs e)
+        {
+            this.pnlHUD.Focus();
+        }
+
         private string GetAutosaveFolder()
         {
             return Path.GetDirectoryName(openFileDialog1.FileName);
@@ -859,19 +871,22 @@ namespace GalWarWin
 
         private void StartGame()
         {
-            started = true;
-            pnlHUD.Show();
-            btnNewGame.Hide();
-            btnLoadGame.Hide();
-            btnAutosaveView.Hide();
+            if (!started)
+            {
+                started = true;
+                pnlHUD.Show();
+                btnNewGame.Hide();
+                btnLoadGame.Hide();
+                btnAutosaveView.Hide();
 
-            if (!isDialog)
-                dialog.StartGame();
+                if (!isDialog)
+                    dialog.StartGame();
 
-            SetScale(TextScale);
-            panX = float.MinValue;
-            panY = float.MaxValue;
-            VerifyScalePan();
+                SetScale(TextScale);
+                panX = float.MinValue;
+                panY = float.MaxValue;
+                VerifyScalePan();
+            }
         }
 
         private void btnSaveGame_Click(object sender, EventArgs e)
@@ -2326,7 +2341,16 @@ namespace GalWarWin
                     if (a > 0)
                         inf += ", ";
                 }
-                return ShowOption(inf);
+                if ((bool)info[5])
+                {
+                    return ShowOption(inf);
+                }
+                else
+                {
+                    inf += "\r\n\r\nToo Expensive!";
+                    MessageBox.Show(inf);
+                    return true;
+                }
 
 
             case Anomaly.AnomalyType.Death:

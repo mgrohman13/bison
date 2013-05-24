@@ -7,11 +7,8 @@ management screens
 	colonies
 	ships
 
-check research victory every turn?
-change research victory chance to more obvious quantities?
-starting anomaly pct take into account close anomalies as well
-victory resets plane colonizations mults?
-planet completely surrounded by anomalies
+rally ships
+place to calculate pop growth
 GetMoves use Points instead of Tiles
 check that selected tile doesnt excercise cache
 anomaly explore delegates

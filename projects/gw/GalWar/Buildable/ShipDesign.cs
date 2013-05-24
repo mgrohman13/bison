@@ -483,8 +483,6 @@ namespace GalWar
         {
             if (cost ? this._costNotInit : this._statsNotInit)
                 throw new Exception();
-            else
-                ;
         }
 
         private static void GetPcts(ICollection<ShipDesign> designs, double mapSize, int research,
