@@ -296,8 +296,6 @@ namespace GalWarWin
                         DrawObject(g, gameBounds, teleporter.Item1, null);
                         DrawObject(g, gameBounds, teleporter.Item2, null);
                     }
-                    foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                        DrawObject(g, gameBounds, spaceObject.Tile.Point, null, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
 
                     if (showMoves && scale > TextScale)
                     {
@@ -309,6 +307,9 @@ namespace GalWarWin
                     if (isDialog && dialogTile != null)
                         foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
                             DrawObject(g, gameBounds, neighbor.Point, null);
+
+                    foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
+                        DrawObject(g, gameBounds, spaceObject.Tile.Point, null, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
                 }
                 catch (Exception e)
                 {

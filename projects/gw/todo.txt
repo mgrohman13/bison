@@ -1,4 +1,5 @@
 main map improvements
+	measure distances
 	very large shows more info
 		different ship graphics for speed/type
 	clean up drawing logic
@@ -7,8 +8,13 @@ management screens
 	colonies
 	ships
 
+make sure invasion slider shows correct chance
 rally ships
 place to calculate pop growth
+clear show moves after callbacks, especially end turn/start
+anomaly hostile ship attack is confirm or not
+GetDistance without using tiles
+click label to repair at colony buy rate when it is 0 and min is 1
 GetMoves use Points instead of Tiles
 check that selected tile doesnt excercise cache
 anomaly explore delegates
