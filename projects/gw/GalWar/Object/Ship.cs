@@ -570,7 +570,7 @@ namespace GalWar
                     * Math.Pow(this.Population / (double)this.MaxPop, Consts.TransLossPctPower) );
         }
 
-        public double GetColonizationValue(int repair)
+        public double GetColonizationValue(double repair)
         {
             TurnException.CheckTurn(this.Player);
 

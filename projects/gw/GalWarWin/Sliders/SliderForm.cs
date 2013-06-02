@@ -167,5 +167,14 @@ namespace GalWarWin.Sliders
             if (custom != null)
                 custom.MouseWheel -= customMouseEventHandler;
         }
+
+        private void SliderForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!this.txtAmt.Focused)
+            {
+                this.txtAmt.Text = e.KeyChar.ToString();
+                this.txtAmt.Focus();
+            }
+        }
     }
 }

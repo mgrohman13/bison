@@ -1,4 +1,9 @@
 main map improvements
+	draw moves text last
+	invade/colonize counts as move left for ship
+	slider form immediately type numbers
+	keyboard?
+	better disctinction between ships and planets
 	measure distances
 	very large shows more info
 		different ship graphics for speed/type
@@ -8,17 +13,16 @@ management screens
 	colonies
 	ships
 
+double right click changing screen location
+galaxy center
+repair before or after combat??  balance
+upgrade ship numbers out of order
 make sure invasion slider shows correct chance
 rally ships
 place to calculate pop growth
-clear show moves after callbacks, especially end turn/start
-anomaly hostile ship attack is confirm or not
 GetDistance without using tiles
-click label to repair at colony buy rate when it is 0 and min is 1
 GetMoves use Points instead of Tiles
 check that selected tile doesnt excercise cache
-anomaly explore delegates
-when prod repair colony ship is/isnt worth it?
 standardize dead checks
 
 combat calc show probability table

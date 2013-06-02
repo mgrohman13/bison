@@ -446,14 +446,6 @@ namespace GalWar
             //actual researching happens at turn start
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = CheckResearch(out obsoleteDesigns);
-            if (newDesign != null)
-                handler.OnResearch(newDesign, obsoleteDesigns);
-
-            foreach (Colony colony in this.colonies)
-                colony.StartTurn(handler);
-            //gain any levels for exp acquired during enemy turns
-            foreach (Ship ship in this.ships)
-                ship.StartTurn(handler);
 
             //consolidate all gold to start the turn
             double gold = this.TotalGold;
@@ -464,6 +456,17 @@ namespace GalWar
             //re-randomize research chance and display skew
             ResetResearchChance();
             RandResearchDisplay();
+
+            //notify after randomization so the screen shows the correct chance
+            if (newDesign != null)
+                handler.OnResearch(newDesign, obsoleteDesigns);
+
+            //build after notifying research
+            foreach (Colony colony in this.colonies)
+                colony.StartTurn(handler);
+            //gain any levels for exp acquired during enemy turns
+            foreach (Ship ship in this.ships)
+                ship.StartTurn(handler);
         }
 
         internal void NewRound()

@@ -76,22 +76,22 @@ namespace GalWar
             }
 
             Dictionary<ExploreType, int> options = new Dictionary<ExploreType, int>();
-            options.Add(ExploreType.GlobalEvent, 2);//med
-            options.Add(ExploreType.Death, 3);//always
-            options.Add(ExploreType.LostColony, 4);//med
-            options.Add(ExploreType.Production, 5);//always
-            options.Add(ExploreType.SalvageShip, 9);//always
-            options.Add(ExploreType.Valuables, 10);//always
-            options.Add(ExploreType.Experience, 11);//always
-            options.Add(ExploreType.Wormhole, 12);//high
-            options.Add(ExploreType.Pickup, 13);//low
+            options.Add(GlobalEvent, 2);//med
+            options.Add(Death, 3);//always
+            options.Add(LostColony, 4);//med
+            options.Add(Production, 5);//always
+            options.Add(SalvageShip, 9);//always
+            options.Add(Valuables, 10);//always
+            options.Add(Experience, 11);//always
+            options.Add(Wormhole, 12);//high
+            options.Add(Pickup, 13);//low
 
             while (true)
             {
                 this.usedValue = false;
 
-                ExploreType type = Game.Random.SelectValue(options);
-                if (Explore(handler, type, ship))
+                ExploreType ExploreType = Game.Random.SelectValue(options);
+                if (ExploreType(handler, ship))
                 {
                     if (!this.usedValue)
                         throw new Exception();
@@ -100,36 +100,11 @@ namespace GalWar
                 }
                 else
                 {
-                    options.Remove(type);
+                    options.Remove(ExploreType);
                 }
             }
         }
-        private bool Explore(IEventHandler handler, ExploreType type, Ship ship)
-        {
-            switch (type)
-            {
-            case ExploreType.LostColony:
-                return LostColony(handler, ship);
-            case ExploreType.GlobalEvent:
-                return GlobalEvent(handler, ship);
-            case ExploreType.Death:
-                return Death(handler, ship);
-            case ExploreType.Production:
-                return Production(handler, ship);
-            case ExploreType.Wormhole:
-                return Wormhole(handler, ship);
-            case ExploreType.Experience:
-                return Experience(handler, ship);
-            case ExploreType.SalvageShip:
-                return SalvageShip(handler, ship);
-            case ExploreType.Pickup:
-                return Pickup(handler, ship);
-            case ExploreType.Valuables:
-                return Valuables(handler, ship);
-            default:
-                throw new Exception();
-            }
-        }
+        private delegate bool ExploreType(IEventHandler handler, Ship ship);
 
         private double GenerateValue()
         {
@@ -309,19 +284,6 @@ namespace GalWar
             return ( anomShip == speedShip ? 0 : speedShip.CurSpeed );
         }
 
-        private enum ExploreType
-        {
-            Death,
-            Experience,
-            GlobalEvent,
-            LostColony,
-            Pickup,
-            Production,
-            SalvageShip,
-            Valuables,
-            Wormhole,
-        }
-
         public enum AnomalyType
         {
             AskProductionOrDefense,
@@ -438,14 +400,12 @@ namespace GalWar
             if (Game.Random.Bool())
             {
                 bool canTerraform = false;
-                double[] colonyChances;
-                GetTerraformColonies(anomShip, out colonyChances);
-                foreach (Colony colony in anomShip.Player.GetColonies())
+                foreach (var pair in GetTerraformColonies(anomShip))
                 {
-                    double chance = colonyChances[Game.Random.Next(colonyChances.Length)];
+                    double chance = pair.Value.Item1;
                     if (GetTerraformAmt(chance) > 0)
                     {
-                        double cost = this.value + GetExpectCost(colony, GetTerraformQuality());
+                        double cost = this.value + GetExpectCost(pair.Key, GetTerraformQuality());
                         if (CanTerraform(cost, anomShip))
                         {
                             canTerraform = true;
@@ -559,18 +519,30 @@ namespace GalWar
         }
         private Dictionary<Colony, int> GetTerraformColonies(Ship anomShip, out double[] colonyChances)
         {
-            var playerColonies = anomShip.Player.GetColonies();
+            Dictionary<Colony, Tuple<double, int>> terraformColonies = GetTerraformColonies(anomShip);
+            Dictionary<Colony, int> retVal = new Dictionary<Colony, int>();
+            colonyChances = new double[terraformColonies.Count];
             int idx = -1;
-
-            Dictionary<Colony, int> colonies = new Dictionary<Colony, int>();
-            colonyChances = new double[playerColonies.Count];
-
-            foreach (Colony colony in playerColonies)
+            foreach (var pair in terraformColonies)
             {
-                colonyChances[++idx] = .21 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
-                int amt = GetTerraformAmt(colonyChances[idx]);
+                int amt = pair.Value.Item2;
                 if (amt > 0)
-                    colonies.Add(colony, amt);
+                {
+                    retVal.Add(pair.Key, amt);
+                    colonyChances[++idx] = pair.Value.Item1;
+                }
+            }
+            return retVal;
+        }
+        private Dictionary<Colony, Tuple<double, int>> GetTerraformColonies(Ship anomShip)
+        {
+            var colonies = new Dictionary<Colony, Tuple<double, int>>();
+
+            foreach (Colony colony in anomShip.Player.GetColonies())
+            {
+                double raw = .21 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
+                int amt = GetTerraformAmt(raw);
+                colonies.Add(colony, new Tuple<double, int>(raw, amt));
             }
 
             return colonies;

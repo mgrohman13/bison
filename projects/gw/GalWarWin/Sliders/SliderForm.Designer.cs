@@ -171,9 +171,11 @@ namespace GalWarWin.Sliders
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.trackBar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.KeyPreview = true;
             this.Name = "SliderForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SliderForm_FormClosed);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SliderForm_KeyPress);
             ( (System.ComponentModel.ISupportInitialize)( this.trackBar ) ).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

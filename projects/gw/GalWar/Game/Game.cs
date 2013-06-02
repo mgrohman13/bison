@@ -683,8 +683,9 @@ next_planet:
             List<Tuple<Point, Point>> teleporters = GetTeleporters();
             if (teleporters.Count > 0)
             {
-                double chance = teleporters.Count;
-                if (Random.Bool(chance / ( chance + 65 ) / (double)this.players.Count))
+                const double avgTurns = 65;
+                double chance = 1 - Math.Pow(avgTurns / ( avgTurns + teleporters.Count ), 1 / (double)this.players.Count);
+                if (Random.Bool(chance))
                     RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
             }
         }

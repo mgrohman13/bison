@@ -53,6 +53,8 @@ namespace GalWarWin
 
         private void SetCombatants(Combatant attacker, Combatant defender, bool isConfirmation)
         {
+            this.Text = isConfirmation ? "Confirm" : "";
+
             this.isConfirmation = isConfirmation;
             this.showConfirmation = true;
 

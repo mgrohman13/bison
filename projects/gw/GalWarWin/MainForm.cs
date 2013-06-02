@@ -1255,16 +1255,19 @@ namespace GalWarWin
                 int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
                 foreach (Anomaly anomaly in anomalies)
                     FindBounds(ref minX, ref minY, ref maxX, ref maxY, anomaly.Tile.Point);
-                --minX;
-                --minY;
-                ++maxX;
-                ++maxY;
+                minX -= 2;
+                minY -= 2;
+                maxX += 2;
+                maxY += 2;
 
                 scale = GetScale(minX, minY, maxX, maxY);
                 VerifyScale();
                 selected = new Point(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
                 Center();
+                double t1 = panX, t2 = panY;
                 SelectTile(anomalies[Game.Random.Next(anomalies.Count)].Tile);
+                if (t1 != panX || t2 != panY)
+                    throw new Exception();
             }
             else
             {
@@ -2018,7 +2021,16 @@ namespace GalWarWin
             {
                 lblBottom.Text = "Colony Ship";
                 if (ship.Player.IsTurn)
-                    lblBottom.Text += " (" + FormatDouble(ship.ColonizationValue) + ")";
+                {
+                    double colonizationValue = ship.ColonizationValue;
+                    string repair = string.Empty;
+                    Colony repairedFrom = ship.GetRepairedFrom();
+                    if (repairedFrom != null)
+                        repair = " +" + FormatDouble(ship.GetColonizationValue(ship.GetHPForProd(repairedFrom.GetProductionIncome())) - colonizationValue);
+
+                    lblBottom.Text += " (" + FormatDouble(colonizationValue) + repair + ")";
+
+                }
             }
             else if (ship.DeathStar)
             {
@@ -2278,6 +2290,8 @@ namespace GalWarWin
 
         Tile IEventHandler.getBuildTile(Colony colony)
         {
+            showMoves = false;
+
             RefreshAll();
 
             SelectTileDialog(colony.Tile.Point, true);
@@ -2286,6 +2300,8 @@ namespace GalWarWin
 
         Buildable IEventHandler.getNewBuild(Colony colony)
         {
+            showMoves = false;
+
             RefreshAll();
 
             return ChangeBuild(colony);
@@ -2293,6 +2309,8 @@ namespace GalWarWin
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
         {
+            showMoves = false;
+
             if (fromColony != null)
                 SelectTile(fromColony.Tile);
             RefreshAll();
@@ -2302,11 +2320,15 @@ namespace GalWarWin
 
         bool IEventHandler.Continue()
         {
+            showMoves = false;
+
             return ShowOption("Planet population has been killed off.  Continue attacking?");
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
         {
+            showMoves = false;
+
             if (attacker is Ship)
                 SelectTile(attacker.Tile);
             else
@@ -2318,6 +2340,8 @@ namespace GalWarWin
 
         bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
         {
+            showMoves = false;
+
             switch (anomalyType)
             {
 
@@ -2426,6 +2450,8 @@ namespace GalWarWin
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)
         {
+            showMoves = false;
+
             RefreshAll();
 
             ResearchForm.ShowForm(newDesign, obsolete);
@@ -2435,26 +2461,36 @@ namespace GalWarWin
 
         void IEventHandler.OnCombat(Combatant attacker, Combatant defender, int attack, int defense)
         {
+            showMoves = false;
+
             CombatForm.OnCombat(attacker, defender, attack, defense);
         }
 
         void IEventHandler.OnLevel(Ship ship, double pct, int last, int needed)
         {
+            showMoves = false;
+
             CombatForm.OnLevel(ship, pct, last, needed);
         }
 
         void IEventHandler.OnBombard(Ship ship, Planet planet, int freeDmg, int colonyDamage, int planetDamage)
         {
+            showMoves = false;
+
             CombatForm.OnBombard(ship, planet, freeDmg, colonyDamage, planetDamage);
         }
 
         void IEventHandler.OnInvade(Ship ship, Colony colony, int attackers, double attSoldiers, double gold, double attack, double defense)
         {
+            showMoves = false;
+
             CombatForm.OnInvade(ship, colony, attackers, attSoldiers, gold, attack, defense);
         }
 
         void IEventHandler.Event()
         {
+            showMoves = false;
+
             //if (Game.CurrentPlayer.Name == "Pink")
             //{
             //    Refresh();

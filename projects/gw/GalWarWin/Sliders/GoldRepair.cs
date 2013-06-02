@@ -38,6 +38,11 @@ namespace GalWarWin.Sliders
             return GetDefault();
         }
 
+        public override int GetMin()
+        {
+            return 0;
+        }
+
         private double GetDefault()
         {
             return ship.GetAutoRepairHP();

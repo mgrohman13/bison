@@ -68,6 +68,11 @@ namespace GalWarWin.Sliders
             return GetMax();
         }
 
+        public override int GetMin()
+        {
+            return 0;
+        }
+
         protected override int GetMaxInternal()
         {
             return GetMoveTroopsMax();
