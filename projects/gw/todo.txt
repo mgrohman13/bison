@@ -1,4 +1,5 @@
 UI
+	troop move left takes into account having already done one way so unlikely to go the other?
 	make sure invasion slider shows correct chance
 	slider form immediately type numbers
 	combat calc show probability table
@@ -9,11 +10,12 @@ UI
 	rally ships
 		saveable?
 	main map
-		better disctinction between ships and planets
+		clean up drawing logic
 		very large shows more info
 			different ship graphics for speed/type
-		clean up drawing logic
-		draw anomalies smaller when zoomed out past grid
+		very small shows clearer info
+			draw anomalies smaller
+			better distinction between ships and planets
 	management screens
 		colonies
 		ships
@@ -22,10 +24,7 @@ UI
 repair before or after combat balance
 standardize dead checks
 
-tileCache? equality? dictionaries?
-	GetDistance without using tiles
-	GetMoves use Points instead of Tiles
-	check that selected tile doesnt excercise cache
+without tile cache, no longer need to use points instead of tiles in places
 test exact vs oversize dictionary capacity for combat performance
 clean up code
 	member order

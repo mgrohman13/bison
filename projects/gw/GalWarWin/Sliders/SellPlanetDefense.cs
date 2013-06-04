@@ -40,6 +40,11 @@ namespace GalWarWin.Sliders
             return colony.HP / 2.0;
         }
 
+        public override int GetMin()
+        {
+            return 0;
+        }
+
         protected override int GetMaxInternal()
         {
             return colony.HP;

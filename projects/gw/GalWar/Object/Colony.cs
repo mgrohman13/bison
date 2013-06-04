@@ -1053,7 +1053,7 @@ namespace GalWar
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(hp > 0);
+            AssertException.Assert(hp >= 0);
             AssertException.Assert(hp <= this.HP);
             AssertException.Assert(gold || this.Buildable != null);
 

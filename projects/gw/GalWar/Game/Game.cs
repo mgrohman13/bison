@@ -61,8 +61,6 @@ namespace GalWar
 
         [NonSerialized]
         private Stack<IUndoCommand> _undoStack;
-        [NonSerialized]
-        private Dictionary<Point, Tile> tileCache;
 
         private PointS _center;
 
@@ -151,14 +149,6 @@ namespace GalWar
         {
             return new Tuple<PointS, PointS>(GetPointS(teleporter.Item1), GetPointS(teleporter.Item2));
         }
-        private static PointS GetPointS(Point point)
-        {
-            checked
-            {
-                return new PointS((short)point.X, (short)point.Y);
-            }
-        }
-
         public Point Center
         {
             get
@@ -167,10 +157,14 @@ namespace GalWar
             }
             private set
             {
-                checked
-                {
-                    this._center = new PointS((short)value.X, (short)value.Y);
-                }
+                this._center = GetPointS(value);
+            }
+        }
+        private static PointS GetPointS(Point point)
+        {
+            checked
+            {
+                return new PointS((short)point.X, (short)point.Y);
             }
         }
 
@@ -500,20 +494,10 @@ next_planet:
         }
         public Tile GetTile(Point point)
         {
-            if (this.tileCache == null)
-                this.tileCache = new Dictionary<Point, Tile>();
-
-            Tile tile;
             SpaceObject spaceObject;
-            if (!tileCache.TryGetValue(point, out tile))
-            {
-                if (TryGetSpaceObject(point, out spaceObject))
-                    tile = spaceObject.Tile;
-                else
-                    tile = new Tile(this, point);
-                tileCache.Add(point, tile);
-            }
-            return tile;
+            if (TryGetSpaceObject(point, out spaceObject))
+                return spaceObject.Tile;
+            return new Tile(this, point);
         }
 
         public SpaceObject GetSpaceObject(int x, int y)

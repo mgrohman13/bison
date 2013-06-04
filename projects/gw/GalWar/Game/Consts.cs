@@ -124,7 +124,7 @@ namespace GalWar
         public const double AttackNumbersPower = 0.091;
         public const double DefenseStrength = 1.13;
         public const double DefenseNumbersPower = 0.03;
-        public const double TroopExperienceMult = 1 / PopulationForGoldMid / Math.E;
+        public const double TroopExperienceMult = 1 / PopulationForGoldMid / 3.9;
         //maximum for random pct bonus to troop combat strength
         public const double InvadeMultRandMax = Math.PI * .13;
         //payoff power for gold used to boost a planetary invasion

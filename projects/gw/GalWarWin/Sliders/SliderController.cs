@@ -32,7 +32,6 @@ namespace GalWarWin.Sliders
         public virtual int GetMin()
         {
             return 1;
-            //return ( GetInitial() > 0 && GetMax() > 1 ) ? 1 : 0;
         }
 
         public int GetMax()

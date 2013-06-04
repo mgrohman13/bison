@@ -118,13 +118,16 @@ namespace GalWar
         {
             get
             {
+                if (this._spaceObject != null && this._spaceObject.Tile != this)
+                    throw new Exception();
+
                 return this._spaceObject;
             }
             internal set
             {
                 checked
                 {
-                    if (( value == null ) == ( this.SpaceObject == null ) || value is Colony)
+                    if (( ( value == null ) == ( this.SpaceObject == null ) ) || ( value is Colony ))
                         throw new Exception();
 
                     this._spaceObject = value;
@@ -173,5 +176,38 @@ namespace GalWar
         }
 
         #endregion //public
+
+        #region equality
+
+        public override int GetHashCode()
+        {
+            return ( ( ( this.X << 16 ) | this.Y ) ^ Game.GetHashCode() );
+        }
+
+        public override bool Equals(object obj)
+        {
+            Tile tile = ( obj as Tile );
+            bool equals = ( tile != null );
+            if (equals)
+            {
+                equals = ( this.X == tile.X && this.Y == tile.Y && this.Game == tile.Game );
+
+                if (equals ? ( this.SpaceObject != tile.SpaceObject ) : ( this.SpaceObject != null && this.SpaceObject == tile.SpaceObject ))
+                    throw new Exception();
+            }
+
+            return equals;
+        }
+
+        public static bool operator ==(Tile t1, Tile t2)
+        {
+            return Equals(t1, t2);
+        }
+        public static bool operator !=(Tile t1, Tile t2)
+        {
+            return !Equals(t1, t2);
+        }
+
+        #endregion
     }
 }

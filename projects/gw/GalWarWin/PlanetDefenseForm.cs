@@ -85,7 +85,7 @@ namespace GalWarWin
         {
             Sliders.SellPlanetDefense slider = new Sliders.SellPlanetDefense(colony);
             int sell = Sliders.SliderForm.ShowForm(slider);
-            if (sell > 0)
+            if (sell > -1)
             {
                 colony.DisbandPlanetDefense(MainForm.GameForm, sell, slider.Gold);
                 MainForm.GameForm.RefreshAll();
