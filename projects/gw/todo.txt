@@ -1,32 +1,31 @@
-main map improvements
-	draw moves text last
-	invade/colonize counts as move left for ship
+UI
+	make sure invasion slider shows correct chance
 	slider form immediately type numbers
-	keyboard?
-	better disctinction between ships and planets
+	combat calc show probability table
 	measure distances
-	very large shows more info
-		different ship graphics for speed/type
-	clean up drawing logic
-	draw anomalies smaller when zoomed out past grid
-management screens
-	colonies
-	ships
+	calculate pop growth
+		balancing between colonies
+	show enemy moves/attacks ignoring friendly ships, weight for HP?
+	rally ships
+		saveable?
+	main map
+		better disctinction between ships and planets
+		very large shows more info
+			different ship graphics for speed/type
+		clean up drawing logic
+		draw anomalies smaller when zoomed out past grid
+	management screens
+		colonies
+		ships
+	keyboard?
 
-double right click changing screen location
-galaxy center
-repair before or after combat??  balance
-upgrade ship numbers out of order
-make sure invasion slider shows correct chance
-rally ships
-place to calculate pop growth
-GetDistance without using tiles
-GetMoves use Points instead of Tiles
-check that selected tile doesnt excercise cache
+repair before or after combat balance
 standardize dead checks
 
-combat calc show probability table
-show enemy moves/attacks ignoring friendly ships, weight for HP?
+tileCache? equality? dictionaries?
+	GetDistance without using tiles
+	GetMoves use Points instead of Tiles
+	check that selected tile doesnt excercise cache
 test exact vs oversize dictionary capacity for combat performance
 clean up code
 	member order

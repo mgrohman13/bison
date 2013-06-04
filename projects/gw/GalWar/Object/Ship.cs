@@ -228,7 +228,7 @@ namespace GalWar
             {
                 checked
                 {
-                    if (DeathStar || !value)
+                    if (DeathStar || !value || this.NextExpType != ExpType.DS)
                         throw new Exception();
                     this._bombardDamage = ushort.MaxValue;
                 }
@@ -853,8 +853,10 @@ namespace GalWar
 
                 costInc = this.GetCostLastResearched() - costInc;
 
-                //add/subtract gold for level randomness and percent of ship injured 
-                this.Player.GoldIncome(( this.needExpMult - pct ) * costInc / Consts.ExpForGold);
+                //add/subtract gold for level randomness and percent of ship injured
+                double goldIncome = ( this.needExpMult - pct ) * costInc / Consts.ExpForGold;
+                Console.WriteLine(goldIncome);
+                this.Player.GoldIncome(goldIncome);
 
                 double basePayoff = GetUpkeepPayoff();
                 double minCost = basePayoff * Consts.MinCostMult;
@@ -1011,10 +1013,10 @@ namespace GalWar
             int att = Game.Random.Round(mult * stats[ExpType.Def]);
             def = Game.Random.Round(mult * def);
             int hp = Game.Random.Round(mult * stats[ExpType.HP]);
+            newTotal += att + def + hp;
             stats[ExpType.Att] = att;
             stats[ExpType.Def] = def;
             stats[ExpType.HP] = hp;
-            newTotal += att + def + hp;
 
             speed = Game.Random.Round(speed * 2.6 / (double)this.MaxSpeed);
             newTotal += speed;
@@ -1030,7 +1032,7 @@ namespace GalWar
             }
             else
             {
-                double amt = newTotal * .078;
+                double amt = newTotal * .039;
                 stats.Add(ExpType.DS, Game.Random.Round(amt));
                 stats.Add(ExpType.Trans, Game.Random.Round(amt));
             }

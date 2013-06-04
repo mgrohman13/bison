@@ -64,6 +64,8 @@ namespace GalWar
         [NonSerialized]
         private Dictionary<Point, Tile> tileCache;
 
+        private PointS _center;
+
         private byte _currentPlayer;
         private ushort _turn;
         private readonly float _mapDeviation, _planetPct, _anomalyPct;
@@ -74,6 +76,7 @@ namespace GalWar
             {
                 int numPlayers = players.Length;
 
+                this._center = new PointS(0, 0);
                 this._mapDeviation = (float)mapSize;
 
                 AssertException.Assert(players != null);
@@ -81,7 +84,7 @@ namespace GalWar
                 AssertException.Assert(numPlayers * 78 < MapSize);
                 AssertException.Assert(mapSize < 39);
                 AssertException.Assert(planetPct > 0.00013);
-                AssertException.Assert(planetPct < 0.039);
+                AssertException.Assert(planetPct < 0.013);
 
                 this.StoreProd = new StoreProd();
                 this.Attack = new Attack();
@@ -105,6 +108,8 @@ namespace GalWar
 
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);
+
+                AdjustCenter(this.MapDeviation);
 
                 this.Graphs = new Graphs(this);
             }
@@ -151,6 +156,21 @@ namespace GalWar
             checked
             {
                 return new PointS((short)point.X, (short)point.Y);
+            }
+        }
+
+        public Point Center
+        {
+            get
+            {
+                return new Point(this._center.X, this._center.Y);
+            }
+            private set
+            {
+                checked
+                {
+                    this._center = new PointS((short)value.X, (short)value.Y);
+                }
             }
         }
 
@@ -586,6 +606,7 @@ next_planet:
 
             List<Anomaly> anomalies = CreateAnomalies();
             RemoveTeleporters();
+            AdjustCenter(1 / (double)this.players.Count);
 
             StartPlayerTurn(handler);
 
@@ -788,9 +809,108 @@ next_planet:
             return null;
         }
 
+        private void AdjustCenter(double avg)
+        {
+            int amt = Random.OEInt(avg * MapDeviation / 16.9);
+            for (int a = 0 ; a < amt ; ++a)
+                AdjustCenter();
+        }
+        private void AdjustCenter()
+        {
+            double shipWeight = 0, popWeight = 0;
+            foreach (SpaceObject spaceObject in this.GetSpaceObjects())
+            {
+                Ship ship = ( spaceObject as Ship );
+                Planet planet = ( spaceObject as Planet );
+                if (ship != null)
+                {
+                    shipWeight += GetShipWeight(ship);
+                    popWeight += ship.Population;
+                }
+                else if (planet != null && planet.Colony != null)
+                {
+                    popWeight += planet.Colony.Population;
+                }
+            }
+
+            //anomalies weigh less than even the smallest possible planet
+            const double AnomalyWeight = Consts.PlanetConstValue / 1.3;
+            //the total weight of all ships is always less than even a single anomaly
+            shipWeight = AnomalyWeight / 1.3 / shipWeight;
+            //population is weighted at its square root
+            if (popWeight != 0)
+                popWeight = 1 / Math.Sqrt(popWeight);
+
+            var directions = new Dictionary<Tile, double>();
+
+            Tile centerTile = GetTile(this.Center);
+            foreach (SpaceObject spaceObject in this.GetSpaceObjects())
+            {
+                int distance = Tile.GetDistance(centerTile, spaceObject.Tile);
+                if (distance > 0)
+                {
+                    double weight;
+                    Ship ship = ( spaceObject as Ship );
+                    Planet planet = ( spaceObject as Planet );
+                    if (ship != null)
+                    {
+                        weight = shipWeight * GetShipWeight(ship);
+                        weight += popWeight * ship.Population;
+                    }
+                    else if (planet != null)
+                    {
+                        weight = planet.PlanetValue;
+                        if (planet.Colony != null)
+                            weight += popWeight * planet.Colony.Population;
+                    }
+                    else if (spaceObject is Anomaly)
+                    {
+                        weight = AnomalyWeight;
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+
+                    HashSet<Tile> neighbors = Tile.GetNeighbors(centerTile);
+                    neighbors.RemoveWhere(delegate(Tile neighbor)
+                    {
+                        return ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance );
+                    });
+
+                    weight *= distance / (double)neighbors.Count;
+
+                    foreach (Tile neighbor in neighbors)
+                    {
+                        double value;
+                        directions.TryGetValue(neighbor, out value);
+                        directions[neighbor] = value + weight;
+                    }
+                }
+            }
+
+            double max = double.MinValue;
+            Tile newCenter = null;
+            foreach (var pair in Random.Iterate(directions))
+            {
+                double value = Random.GaussianCapped(pair.Value * pair.Value, .26);
+                if (value > max)
+                {
+                    max = value;
+                    newCenter = pair.Key;
+                }
+            }
+
+            this.Center = newCenter.Point;
+        }
+        private static double GetShipWeight(Ship ship)
+        {
+            return ship.GetStrength() * Math.Sqrt(ship.HP / (double)ship.MaxHP);
+        }
+
         internal Tile GetRandomTile()
         {
-            return GetRandomTile(GetTile(0, 0), this.MapDeviation);
+            return GetRandomTile(GetTile(this.Center), this.MapDeviation);
         }
         internal Tile GetRandomTile(Tile center, double stdDev)
         {

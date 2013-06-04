@@ -232,8 +232,6 @@ namespace GalWarWin
         private const float GridScale = 16.9f;
         private const float TextScale = 21f;
 
-        private int counter = 0;
-
         protected override void OnPaint(PaintEventArgs paintEventArgs)
         {
             base.OnPaint(paintEventArgs);
@@ -290,26 +288,25 @@ namespace GalWarWin
 
                     if (selected != null)
                         DrawObject(g, gameBounds, selected.Value, null);
-
                     foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
                     {
                         DrawObject(g, gameBounds, teleporter.Item1, null);
                         DrawObject(g, gameBounds, teleporter.Item2, null);
                     }
-
-                    if (showMoves && scale > TextScale)
-                    {
-                        Dictionary<Tile, float> moves = GetMoves();
-                        foreach (Tile tile in moves.Keys)
-                            DrawObject(g, gameBounds, tile.Point, moves);
-                    }
-
                     if (isDialog && dialogTile != null)
                         foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
                             DrawObject(g, gameBounds, neighbor.Point, null);
 
+                    Dictionary<Tile, float> moves = null;
+                    if (showMoves && scale > TextScale)
+                    {
+                        moves = GetMoves();
+                        foreach (Tile tile in moves.Keys)
+                            DrawObject(g, gameBounds, tile.Point, moves);
+                    }
+
                     foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                        DrawObject(g, gameBounds, spaceObject.Tile.Point, null, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
+                        DrawObject(g, gameBounds, spaceObject.Tile.Point, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
                 }
                 catch (Exception e)
                 {
@@ -761,7 +758,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(13, .104, .078, 7.8), Game.Random.GaussianCapped(.006, .52, .0021));
+                    Game.Random.GaussianOE(13, .13, .078, 6.5), Game.Random.GaussianCapped(.0052, .26, .0013));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -923,7 +920,6 @@ namespace GalWarWin
 
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
-
             if (panning != null && sender != pnlHUD && GetGamePoint(e.Location) != panning)
             {
                 int diff = e.Location.X - mouse.X;
@@ -942,7 +938,10 @@ namespace GalWarWin
                 mouse = e.Location;
 
             if (started)
-                lblLoc.Text = GetGamePoint(mouse).ToString();
+            {
+                Point raw = GetGamePoint(mouse);
+                lblLoc.Text = new Point(raw.X - Game.Center.X, raw.Y - Game.Center.Y).ToString();
+            }
         }
 
         private void MainForm_MouseWheel(object sender, MouseEventArgs e)
@@ -1174,13 +1173,61 @@ namespace GalWarWin
             bool end = true;
 
             foreach (Ship ship in Game.CurrentPlayer.GetShips())
-                if (ship.CurSpeed > 0 && !hold.Contains(ship))
+                if (HasMoveLeft(ship))
                 {
                     end = ShowOption("You have not moved all of your ships.  Are you sure you want to end your turn?");
                     break;
                 }
 
             return end;
+        }
+        private static bool HasMoveLeft(Ship ship)
+        {
+            if (!ship.Player.IsTurn || hold.Contains(ship))
+                return false;
+            if (ship.CurSpeed > 0)
+                return true;
+
+            //determine if this ship can still do something with population
+            if (ship.MaxPop > 0)
+                foreach (Tile neighbor in Tile.GetNeighbors(ship.Tile))
+                {
+                    PopCarrier popCarrier = null;
+
+                    Ship neighborShip = neighbor.SpaceObject as Ship;
+                    Planet planet = neighbor.SpaceObject as Planet;
+                    if (neighborShip != null)
+                    {
+                        //might can transfer population
+                        if (neighborShip.Player == ship.Player)
+                            popCarrier = neighborShip;
+                    }
+                    else if (planet != null)
+                    {
+                        if (planet.Player == ship.Player)
+                        {
+                            //might can transfer population
+                            popCarrier = planet.Colony;
+                        }
+                        else if (planet.Colony == null)
+                        {
+                            //can colonize a planet
+                            if (ship.Colony && ship.AvailablePop == ship.Population && ship.Population > 0)
+                                return true;
+                        }
+                        else if (ship.AvailablePop > 0)
+                        {
+                            //can invade a colony
+                            return true;
+                        }
+                    }
+
+                    //can transfer population
+                    if (popCarrier != null && ( ( ship.AvailablePop > 0 && popCarrier.FreeSpace > 0 ) || ( popCarrier.AvailablePop > 0 && ship.FreeSpace > 0 ) ))
+                        return true;
+                }
+
+            return false;
         }
 
         private bool CheckRepairedShips()
@@ -1226,7 +1273,7 @@ namespace GalWarWin
                     {
                         index = -1;
                     }
-                    else if (ships[index].CurSpeed > 0 && !hold.Contains(ships[index]))
+                    else if (HasMoveLeft(ships[index]))
                     {
                         SelectTile(ships[index].Tile);
                         break;
@@ -1297,16 +1344,14 @@ namespace GalWarWin
                     CombatForm.FlushLog();
         }
 
-        private Point? clicked = null;
+        private Ship clickedShip = null;
         private void MainForm_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ClickMouse(e, true);
         }
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
-            ++counter;
-
-            clicked = null;
+            clickedShip = null;
             ClickMouse(e, false);
         }
         private void ClickMouse(MouseEventArgs e, bool doubleClick)
@@ -1330,17 +1375,17 @@ namespace GalWarWin
                 }
                 else if (!isDialog && e.Button == MouseButtons.Right)
                 {
-                    showMoves = false;
-
-                    Ship target = clickedTile.SpaceObject as Ship;
-
-                    if (doubleClick && target != null && clicked == gamePoint && hold.Contains(target))
+                    if (doubleClick && clickedShip != null && hold.Contains(clickedShip))
                     {
-                        holdPersistent.Add(target);
-                        clicked = null;
+                        holdPersistent.Add(clickedShip);
+                        clickedShip = null;
                         return;
                     }
-                    clicked = gamePoint;
+
+                    Ship target = clickedTile.SpaceObject as Ship;
+                    clickedShip = target;
+
+                    showMoves = false;
 
                     Colony colony = GetSelectedColony();
                     if (colony != null && target != null && colony.Player != target.Player && colony.HP > 0)
@@ -1383,7 +1428,7 @@ namespace GalWarWin
                             }
                         }
 
-                        if (selectNext && ( selectedTile == null || ( ship == null || !ship.Player.IsTurn || ship.CurSpeed == 0 || ship.CurSpeed == oldSpeed ) ))
+                        if (selectNext && ( selectedTile == null || ( ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ) ))
                             SelectNextShip();
 
                         saved = false;
@@ -2097,6 +2142,8 @@ namespace GalWarWin
 
             lbl2.Text = "Population";
             FormatIncome(lbl2Inf, colony.GetPopulationGrowth(), true);
+            if (lbl2Inf.Text == "0.0")
+                lbl2Inf.Text = string.Empty;
             lbl2Inf.Text = colony.Population.ToString() + " " + lbl2Inf.Text;
 
             lbl3.Text = "Soldiers";
