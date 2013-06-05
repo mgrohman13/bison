@@ -33,13 +33,13 @@ namespace GalWar
         public const double PlanetConstValue = .5 / Consts.PopulationGrowth;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
-        public const int HomeworldDistance = 6;
+        public const int HomeworldDistance = 8;
 
         //as pcts of population
         public const double PopulationGrowth = Math.E / 130.0;
         public const double Income = .13;
         //emphasising a single value gives on average precisely double the income of when emphasising the other two
-        public static readonly double EmphasisValue = 8.0 / ( Math.Sqrt(33.0) - 1.0 );
+        public static readonly double EmphasisValue = 8 / ( Math.Sqrt(33) - 1 );
 
         public const double SwitchBuildTypeLossPct = .39;       //  2.6
         public const double SwitchBuildLossPct = .3;            //  3.3

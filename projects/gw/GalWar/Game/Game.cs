@@ -79,8 +79,8 @@ namespace GalWar
 
                 AssertException.Assert(players != null);
                 AssertException.Assert(numPlayers > 1);
-                AssertException.Assert(numPlayers * 78 < MapSize);
-                AssertException.Assert(mapSize < 39);
+                AssertException.Assert(numPlayers * 39 < MapSize);
+                AssertException.Assert(mapSize < 130);
                 AssertException.Assert(planetPct > 0.00013);
                 AssertException.Assert(planetPct < 0.013);
 
@@ -434,7 +434,8 @@ next_planet:
         {
             get
             {
-                return 9.1 * this.MapDeviation * this.MapDeviation;
+                //set this constant to Pi*m^2 where m is the target standard deviation confidence interval
+                return 10.4 * this.MapDeviation * this.MapDeviation;
             }
         }
 

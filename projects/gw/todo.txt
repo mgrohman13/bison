@@ -1,5 +1,7 @@
 UI
+	dont show auto repair button when at full health?
 	troop move left takes into account having already done one way so unlikely to go the other?
+	chance to repair before moving next
 	make sure invasion slider shows correct chance
 	slider form immediately type numbers
 	combat calc show probability table
@@ -21,6 +23,7 @@ UI
 		ships
 	keyboard?
 
+transports more expensive?
 repair before or after combat balance
 standardize dead checks
 

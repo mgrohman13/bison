@@ -1089,7 +1089,7 @@ namespace GalWar
         private Tile UndoDisbandPlanetDefense(int att, int def, int hp, int production, double addGold, double goldIncome)
         {
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(hp > 0);
+            AssertException.Assert(hp >= 0);
             AssertException.Assert(att >= 0);
             AssertException.Assert(def >= 0);
             AssertException.Assert(production >= 0);
