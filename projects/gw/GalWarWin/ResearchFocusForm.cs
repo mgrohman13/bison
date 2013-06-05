@@ -56,8 +56,8 @@ namespace GalWarWin
             double population, production, gold;
             MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
 
-            this.lblChance.Text = string.Format("{0} ( {1} )", MainForm.FormatPct(MainForm.Game.CurrentPlayer.GetResearchChance(research, GetResearchFocusDesign())),
-                    MainForm.FormatPct(MainForm.Game.CurrentPlayer.GetMaxResearchChance(research, GetResearchFocusDesign())));
+            this.lblChance.Text = string.Format("{0} ( {1} )", MainForm.FormatPctWithCheck(MainForm.Game.CurrentPlayer.GetResearchChance(research, GetResearchFocusDesign())),
+                    MainForm.FormatPctWithCheck(MainForm.Game.CurrentPlayer.GetMaxResearchChance(research, GetResearchFocusDesign())));
         }
 
         private ShipDesign GetResearchFocusDesign()

@@ -24,7 +24,7 @@ namespace GalWarWin.Sliders
             string effcnt;
             do
                 effcnt = GetEffcnt(++gold);
-            while (effcnt != "100%");
+            while (!ValidInitial(effcnt));
             this.maxGold = Math.Max(gold, (int)MainForm.Game.CurrentPlayer.Gold);
         }
 
@@ -39,9 +39,12 @@ namespace GalWarWin.Sliders
 
             this.initial = TBSUtil.FindValue(delegate(int gold)
             {
-                string effcnt = GetEffcnt(gold);
-                return ( effcnt == "100%" );
+                return ValidInitial(GetEffcnt(gold));
             }, 1, GetMax(), true);
+        }
+        private static bool ValidInitial(string effcnt)
+        {
+            return ( effcnt == "99%" || effcnt == "100%" );
         }
 
         public override double GetInitial()
@@ -66,14 +69,10 @@ namespace GalWarWin.Sliders
 
         private double GetResult(double attack, double defense)
         {
-            if (attack > 0)
-            {
-                if (attack > defense)
-                    return ( attPop - attPop + ( attack - defense ) / ( attack / attPop ) );
-                else
-                    return ( defPop - ( defense - attack ) / ( defense / defPop ) );
-            }
-            return 0;
+            if (attack > defense)
+                return ( attPop - attPop + ( attack - defense ) / ( attack / attPop ) );
+            else
+                return ( defPop - ( defense - attack ) / ( defense / defPop ) );
         }
 
         protected override void SetText(Label lblTitle, Label lblSlideType)
@@ -118,7 +117,7 @@ namespace GalWarWin.Sliders
             target /= 100;
             return TBSUtil.FindValue(delegate(int gold)
             {
-                return ( GetWinPct(GetAttack(gold)) >= target );
+                return ( GetWinPct(gold) >= target );
             }, 1, GetMax(), true);
         }
 
@@ -137,7 +136,7 @@ namespace GalWarWin.Sliders
 
         private string GetEffcnt(int gold)
         {
-            return MainForm.FormatPctWithCheck(GetWinPct(GetAttack(gold)));
+            return MainForm.FormatPctWithCheck(GetWinPct(gold));
         }
 
         protected override string GetExtra()
@@ -147,8 +146,9 @@ namespace GalWarWin.Sliders
             return attPop + "/" + attTotal;
         }
 
-        private double GetWinPct(double attack)
+        private double GetWinPct(int gold)
         {
+            double attack = GetAttack(gold);
             if (attack > 0)
             {
                 double defense = GetDefense();
@@ -168,9 +168,22 @@ namespace GalWarWin.Sliders
 
                 if (adv)
                     chance = 1 - chance;
-                return chance;
+                return VerifyAlwaysWin(chance, gold);
             }
             throw new Exception();
+        }
+        private double VerifyAlwaysWin(double chance, int gold)
+        {
+            if (chance >= 1)
+            {
+                double defense = GetDefense() * ( 1 + Consts.InvadeMultRandMax );
+                double attack = attPop * Consts.GetInvasionStrengthBase(attPop, GetSoldiers(), gold, defense);
+                //since the defender wins a tie, the attacker must win by a margin of at least one troop to actually have a 100% chance
+                double margin = 1 - 1 / (double)attPop;
+                if (defense > attack * margin)
+                    chance = 1 - Consts.FLOAT_ERROR;
+            }
+            return chance;
         }
 
         private Dictionary<int, double> getAttackCache = new Dictionary<int, double>();
@@ -182,13 +195,16 @@ namespace GalWarWin.Sliders
                 double result;
                 if (!getAttackCache.TryGetValue(gold, out result))
                 {
-                    result = attPop * Consts.GetInvasionStrengthBase(attPop, PopCarrier.GetSoldiers(attTotal, attSoldiers, attPop), gold, GetDefense());
+                    result = attPop * Consts.GetInvasionStrengthBase(attPop, GetSoldiers(), gold, GetDefense());
                     getAttackCache.Add(gold, result);
                 }
-
                 return result;
             }
             throw new Exception();
+        }
+        private double GetSoldiers()
+        {
+            return PopCarrier.GetSoldiers(attTotal, attSoldiers, attPop);
         }
 
         private double GetDefense()

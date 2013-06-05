@@ -353,8 +353,8 @@ end:
                 this.lblAttDmg.Text = FormatDmg(attDmg);
                 this.lblDefDmg.Text = FormatDmg(defDmg);
 
-                this.lblAttKill.Text = MainForm.FormatPct(attDead);
-                this.lblDefKill.Text = MainForm.FormatPct(defDead);
+                this.lblAttKill.Text = MainForm.FormatPctWithCheck(attDead);
+                this.lblDefKill.Text = MainForm.FormatPctWithCheck(defDead);
             }
         }
 
@@ -370,6 +370,8 @@ end:
 
         private void btnAttack_Click(object sender, EventArgs e)
         {
+            MainForm.Attacked(defender);
+
             Ship attShip = this.attacker as Ship;
             Ship defShip = this.defender as Ship;
 
@@ -709,7 +711,7 @@ end:
             private static void Log(LevelUpType level, ref Ship.ExpType expType)
             {
                 MainForm.GameForm.LogMsg(" {0} ({1}) - {2}", GetExpType(expType),
-                        MainForm.FormatPct(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
+                        MainForm.FormatPctWithCheck(level.pct).PadLeft(4, ' '), MainForm.FormatInt(level.needed));
                 expType = level.expType;
             }
             private static string GetExpType(Ship.ExpType expType)

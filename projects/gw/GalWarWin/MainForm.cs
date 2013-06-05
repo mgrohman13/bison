@@ -772,7 +772,10 @@ namespace GalWarWin
         private void btnLoadGame_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
                 LoadGame(openFileDialog1.FileName);
+                SelectNewTurn();
+            }
         }
 
         private void LoadGame(string filePath)
@@ -1139,25 +1142,30 @@ namespace GalWarWin
                 }
                 else
                 {
-                    SelectNextShip();
-                    if (selected == null)
-                    {
-                        int max = int.MinValue;
-                        Colony select = null;
-                        foreach (Colony colony in Game.Random.Iterate(Game.CurrentPlayer.GetColonies()))
-                            if (colony.Population > max)
-                            {
-                                max = colony.Population;
-                                select = colony;
-                            }
-                        SelectTile(select.Tile);
-                    }
-                    Center();
+                    SelectNewTurn();
                 }
 
                 saved = false;
                 RefreshAll();
             }
+        }
+
+        private void SelectNewTurn()
+        {
+            SelectNextShip();
+            if (selected == null)
+            {
+                int max = int.MinValue;
+                Colony select = null;
+                foreach (Colony colony in Game.Random.Iterate(Game.CurrentPlayer.GetColonies()))
+                    if (colony.Population > max)
+                    {
+                        max = colony.Population;
+                        select = colony;
+                    }
+                SelectTile(select.Tile);
+            }
+            Center();
         }
 
         private bool CheckGold()
@@ -1543,10 +1551,12 @@ namespace GalWarWin
 
         private bool Attack(Ship attacker, Combatant defender)
         {
-            bool selectNext = CombatForm.ShowForm(attacker, defender);
-            if (selectNext)
-                holdPersistent.Remove(defender as Ship);
-            return selectNext;
+            return CombatForm.ShowForm(attacker, defender);
+        }
+
+        public static void Attacked(Combatant defender)
+        {
+            holdPersistent.Remove(defender as Ship);
         }
 
         private bool TargetPlanet(Planet targetPlanet, Ship ship, bool switchTroops)
@@ -1911,7 +1921,7 @@ namespace GalWarWin
             FormatIncome(lblPopInc, population);
             FormatIncome(lblGoldInc, gold, true);
             FormatIncome(lblResearch, research);
-            lblRsrchPct.Text = FormatPct(Game.CurrentPlayer.GetResearchChance(research));
+            lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research));
             FormatIncome(lblProduction, production);
 
             emphasisEvent = false;
@@ -2018,11 +2028,14 @@ namespace GalWarWin
             {
                 btnDisband.Visible = true;
 
-                btnGoldRepair.Visible = true;
-                btnGoldRepair.Text = ( ship.HP < ship.MaxHP && !ship.HasRepaired ? "Repair Ship" : "Auto Repair" );
-                double autoRepair = ship.AutoRepair;
-                if (autoRepair != 0)
-                    btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : FormatDouble(autoRepair));
+                if (ship.HP < ship.MaxHP)
+                {
+                    btnGoldRepair.Visible = true;
+                    btnGoldRepair.Text = ( ship.HasRepaired ? "Auto Repair" : "Repair Ship" );
+                    double autoRepair = ship.AutoRepair;
+                    if (autoRepair != 0)
+                        btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : FormatDouble(autoRepair));
+                }
             }
 
             lblTop.Text = ship.ToString();
@@ -2035,7 +2048,7 @@ namespace GalWarWin
 
             lbl3.Text = "Hits";
             lbl3Inf.Text = ship.HP.ToString() + " / " + ship.MaxHP.ToString() + " - "
-                   + FormatPct(ship.HP / (double)ship.MaxHP);
+                   + FormatPctWithCheck(ship.HP / (double)ship.MaxHP);
 
             lbl4.Text = "Speed";
             lbl4Inf.Text = ship.CurSpeed.ToString() + " / " + ship.MaxSpeed.ToString();
@@ -2317,6 +2330,8 @@ namespace GalWarWin
             //never display 100% if pct is less than 1
             if (pct < 1 && retVal == "100%")
                 retVal = "99%";
+            else if (pct > 0 && retVal == "0%")
+                retVal = "1%";
             return retVal;
         }
 

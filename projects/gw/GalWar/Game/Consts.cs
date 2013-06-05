@@ -30,7 +30,7 @@ namespace GalWar
         public const int PlanetQualityMax = 390;
         public const double PlanetQualityOE = 65;
         public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
-        public const double PlanetConstValue = .5 / Consts.PopulationGrowth;
+        public const double PlanetConstValue = .5 / PopulationGrowth;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
         public const int HomeworldDistance = 8;
@@ -50,7 +50,7 @@ namespace GalWar
 
         public const double CostMult = .104;
         public const double CostUpkeepPct = .21;
-        public const double ProdUpkeepMult = 1 / ( 1 / Consts.CostUpkeepPct - 1 ) / 1.3;
+        public const double ProdUpkeepMult = 1 / ( 1 / CostUpkeepPct - 1 ) / 1.3;
         public const double BaseDesignHPMult = .3;
         //percent of upkeep returned when a ship doesnt move
         public const double UpkeepUnmovedReturn = .169;
@@ -148,7 +148,7 @@ namespace GalWar
 
         internal static int NewPlanetQuality()
         {
-            return Game.Random.OEInt(Consts.PlanetQualityOE) + Game.Random.RangeInt(Consts.PlanetQualityMin, Consts.PlanetQualityMax);
+            return Game.Random.OEInt(PlanetQualityOE) + Game.Random.RangeInt(PlanetQualityMin, PlanetQualityMax);
         }
 
         public static double GetMoveOrderGold(int numPlayers)
@@ -158,7 +158,7 @@ namespace GalWar
 
         internal static double GetExperience(double experience)
         {
-            return Game.Random.GaussianOE(experience, Consts.ExperienceRndm, Consts.ExperienceRndm);
+            return Game.Random.GaussianOE(experience, ExperienceRndm, ExperienceRndm);
         }
 
         public static double GetPopulationGrowth(double population, int quality)
@@ -172,22 +172,22 @@ namespace GalWar
 
             //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
             //and to make even pitiful planets have a small carrying capacity
-            return ( 1 + growth * Consts.PopulationGrowth );
+            return ( 1 + growth * PopulationGrowth );
         }
 
         internal static double GetColonizationMult()
         {
-            return Game.Random.GaussianOE(1, Consts.ColonizationCostRndm, Consts.ColonizationCostRndm, .39);
+            return Game.Random.GaussianOE(1, ColonizationCostRndm, ColonizationCostRndm, .39);
         }
 
         internal static double GetColonizationCost(double value, double mult)
         {
-            return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + Consts.PlanetConstValue ), .65);
+            return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + PlanetConstValue ), .65);
         }
 
         public static double GetProductionUpkeepMult(double mapSize)
         {
-            return Consts.ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);
+            return ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);
         }
 
         //upkeep payoff is the number of turns the ship is expected to live
@@ -232,28 +232,59 @@ namespace GalWar
         }
 
         //randomized
-        public static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense)
+        internal static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense)
         {
-            return GetInvasionStrength(attackers, soldiers, gold, totalDefense, true);
+            int initialWave;
+            return RandomizeInvasionStr(GetInvasionStrength(attackers, soldiers, gold, totalDefense, out initialWave));
         }
 
         //non-randomized
-        public static double GetInvasionStrengthBase(int attackers, double soldiers, int gold, double totalDefense)
+        public static double GetInvasionStrengthBase(int attackers, double soldiers, int gold, double defenseBase)
         {
-            return GetInvasionStrength(attackers, soldiers, gold, totalDefense, false);
+            int min, max;
+            double maxStr = GetInvasionStrength(attackers, soldiers, gold, defenseBase, out min);
+            double minStr = GetInvasionStrength(attackers, soldiers, gold, defenseBase * ( 1 + InvadeMultRandMax ), out max);
+            double avgStr = ( maxStr + minStr ) / 2.0;
+
+            if (attackers > 1)
+            {
+                double lowPct = 0, highPct = 0;
+                if (max == attackers)
+                    lowPct = GetStrPct(attackers, soldiers, gold, defenseBase, false);
+                if (min == 1)
+                    highPct = GetStrPct(attackers, soldiers, gold, defenseBase, true);
+                avgStr = minStr * lowPct + maxStr * highPct + avgStr * ( 1 - lowPct - highPct );
+            }
+
+            return avgStr;
+        }
+        private static double GetStrPct(int attackers, double soldiers, int gold, double defenseBase, bool high)
+        {
+            checked
+            {
+                const int max = int.MaxValue - 1;
+                double interval = InvadeMultRandMax / (double)max;
+                int retVal = TBSUtil.FindValue(delegate(int value)
+                {
+                    int ret;
+                    GetInvasionStrength(attackers, soldiers, gold, defenseBase * ( 1 + interval * value ), out ret);
+                    return ( high ? ret > 1 : ret < attackers );
+                }, 0, max, high);
+                if (!high)
+                    retVal = ( max - retVal );
+                return retVal / ( 1.0 + max );
+            }
         }
 
-        private static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense, bool randomize)
+        private static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense, out int initialWave)
         {
             double attack = GetStrengthBase(attackers, soldiers, AttackStrength, AttackNumbersPower);
-            if (randomize)
-                attack = RandomizeInvasionStr(attack);
-            return GetInvasionStrength(TBSUtil.FindValue(delegate(int initialWave)
+            initialWave = TBSUtil.FindValue(delegate(int value)
             {
-                return ( initialWave * GetInvasionStrength(initialWave, attack, gold) > totalDefense );
-            }, 1, attackers, true), attack, gold);
+                return ( value * GetInvasionStrength(value, attack, gold) > totalDefense );
+            }, 1, attackers, true);
+            return GetInvasionStrength(initialWave, attack, gold);
         }
-
         private static double GetInvasionStrength(int initialWave, double attack, int gold)
         {
             if (gold == 0)
@@ -262,7 +293,7 @@ namespace GalWar
         }
 
         //randomized
-        public static double GetPlanetDefenseStrength(int population, double soldiers)
+        internal static double GetPlanetDefenseStrength(int population, double soldiers)
         {
             return RandomizeInvasionStr(GetPlanetDefenseStrengthBase(population, soldiers));
         }
@@ -282,12 +313,12 @@ namespace GalWar
 
         public static int GetPlanetDamage(int population)
         {
-            return Game.Random.WeightedInt(population, Consts.PlanetDamage);
+            return Game.Random.WeightedInt(population, PlanetDamage);
         }
 
         private static double RandomizeInvasionStr(double str)
         {
-            return str * ( 1 + Game.Random.DoubleHalf(Consts.InvadeMultRandMax) );
+            return str * ( 1 + Game.Random.DoubleHalf(InvadeMultRandMax) );
         }
 
         public static double GetBombardDamage(double att)
