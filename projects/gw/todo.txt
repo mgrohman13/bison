@@ -22,6 +22,7 @@ UI
 		ships
 	keyboard?
 
+soldiers more expensive
 planet rate, anom rate
 transports more expensive?
 repair before or after combat balance
