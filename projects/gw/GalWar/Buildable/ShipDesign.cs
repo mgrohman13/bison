@@ -38,19 +38,22 @@ namespace GalWar
 
         private static double GetTotCost(double att, double def, double hp, double speed, double trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
         {
-            const double speedAdd = 2.1, attDiv = 3.9;
-            double speedValue = speed + speedAdd;
+            const double SpeedAdd = 2.1, SpeedPow = 1.3, AttDiv = 5.2;
+            //expect 130% attacking soldiers on average
+            const double AvgAttSoldiers = 1 + 1.30;
+
+            double speedValue = Math.Pow(speed, SpeedPow) + SpeedAdd;
             if (speed < 1)
-                speedValue = attDiv;
+                speedValue = AttDiv;
 
             double statMult = statResearchMult * hp;
-            double attValue = GetStatValue(att) * statMult * speedValue / attDiv;
+            double attValue = GetStatValue(att) * statMult * speedValue / AttDiv;
             double defValue = GetStatValue(def) * statMult;
 
             if (speed < 1)
             {
                 speed = 1;
-                speedValue = speedAdd;
+                speedValue = SpeedAdd;
             }
 
             return Consts.CostMult * totalResearchMult * (
@@ -60,7 +63,7 @@ namespace GalWar
                     ( colony ? 520 : 0 )
                     +
                     (
-                        ( Math.Pow(trans, 1 + Consts.AttackNumbersPower) )
+                        ( Math.Pow(trans * AvgAttSoldiers, 1 + Consts.AttackNumbersPower) / AvgAttSoldiers )
                         +
                         ( 13 * bombardDamage )
                     )

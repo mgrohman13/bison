@@ -76,15 +76,15 @@ namespace GalWar
             }
 
             Dictionary<ExploreType, int> options = new Dictionary<ExploreType, int>();
-            options.Add(GlobalEvent, 2);//med
+            options.Add(GlobalEvent, 1);//med
+            options.Add(LostColony, 2);//med
             options.Add(Death, 3);//always
-            options.Add(LostColony, 4);//med
             options.Add(Production, 5);//always
-            options.Add(SalvageShip, 9);//always
-            options.Add(Valuables, 10);//always
-            options.Add(Experience, 11);//always
-            options.Add(Wormhole, 12);//high
-            options.Add(Pickup, 13);//low
+            options.Add(SalvageShip, 12);//always
+            options.Add(Valuables, 13);//always
+            options.Add(Experience, 14);//always
+            options.Add(Wormhole, 17);//high
+            options.Add(Pickup, 21);//low
 
             while (true)
             {
@@ -132,7 +132,7 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double value = ( armada / 52.0 + Consts.Income / 2.1 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
+            double value = ( armada / 52.0 + Consts.Income / 2.6 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
             return Game.Random.GaussianOE(value, .26, .3, GenerateConsolationValue(value));
         }
         private static double GenerateConsolationValue(double value)
@@ -910,7 +910,7 @@ next:
 
         private Tile MoveTile(Tile tile, double avg, Ship anomShip)
         {
-            avg *= .39 + Math.Sqrt(Tile.Game.MapSize) / 117.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 13.0;
+            avg *= .39 + Math.Sqrt(Tile.Game.MapSize) / 104.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9;
             return Tile.Game.GetRandomTile(Tile, avg);
         }
 

@@ -53,7 +53,9 @@ namespace GalWarWin
         private static bool emphasisEvent = true, anomExp = false;
 
         private static Point? _selected = null, panning = null;
-        private static HashSet<Ship> hold, holdPersistent;
+        private static HashSet<SpaceObject> hold, holdPersistent;
+
+        private static HashSet<Tuple<PopCarrier, PopCarrier>> movedTroops;
 
         private static float panX, panY, scale;
 
@@ -72,8 +74,9 @@ namespace GalWarWin
                 AcceptButton = btnCancel;
             }
 
-            hold = new HashSet<Ship>();
-            holdPersistent = new HashSet<Ship>();
+            hold = new HashSet<SpaceObject>();
+            holdPersistent = new HashSet<SpaceObject>();
+            movedTroops = new HashSet<Tuple<PopCarrier, PopCarrier>>();
         }
 
         private void HideButtons(Control control)
@@ -214,11 +217,15 @@ namespace GalWarWin
         private void Center(bool always)
         {
             if (selected != null && ( always || !SelectedVisible() ))
-            {
-                Point center = GetGamePoint(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
-                panX += ( center.X - selected.Value.X ) * scale;
-                panY += ( center.Y - selected.Value.Y ) * scale;
-            }
+                Center(selected.Value);
+            else
+                VerifyScalePan();
+        }
+        private void Center(Point point)
+        {
+            Point center = GetGamePoint(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
+            panX += ( center.X - point.X ) * scale;
+            panY += ( center.Y - point.Y ) * scale;
             VerifyScalePan();
         }
         private bool SelectedVisible()
@@ -758,7 +765,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(10.4, 0.13, .104, 5.2), Game.Random.GaussianCapped(.0052, .26, .00013));
+                    Game.Random.GaussianOE(10.4, 0.13, .104, 5.2), Game.Random.GaussianCapped(.0039, .26, .00013));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -923,16 +930,14 @@ namespace GalWarWin
 
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
-            if (panning != null && sender != pnlHUD && GetGamePoint(e.Location) != panning)
+            Point gamePoint = GetGamePoint(e.Location);
+            if (panning != null && sender != pnlHUD && gamePoint != panning)
             {
-                int diff = e.Location.X - mouse.X;
-                panX += diff;
-
-                diff = e.Location.Y - mouse.Y;
-                panY += diff;
-
-                VerifyPan();
-                InvalidateMap();
+                Ship ship = GetSelectedShip();
+                if (panning == selected && ship != null && ship.Player.IsTurn)
+                    VectorShip(ship, gamePoint);
+                else
+                    DragPan(e.Location);
             }
 
             if (sender == pnlHUD)
@@ -945,6 +950,23 @@ namespace GalWarWin
                 Point raw = GetGamePoint(mouse);
                 lblLoc.Text = new Point(raw.X - Game.Center.X, raw.Y - Game.Center.Y).ToString();
             }
+        }
+        private void DragPan(PointForm point)
+        {
+            int diff = point.X - mouse.X;
+            panX += diff;
+
+            diff = point.Y - mouse.Y;
+            panY += diff;
+
+            VerifyPan();
+            InvalidateMap();
+        }
+
+        private void VectorShip(Ship ship, Point gamePoint)
+        {
+            Tile vector 
+            ship.SetVector();
         }
 
         private void MainForm_MouseWheel(object sender, MouseEventArgs e)
@@ -1136,14 +1158,12 @@ namespace GalWarWin
                         holdPersistent.Remove(ship);
                 hold.IntersectWith(holdPersistent);
 
+                movedTroops.Clear();
+
                 if (anomalies.Count > 0)
-                {
                     ShowAnomalies(anomalies);
-                }
                 else
-                {
                     SelectNewTurn();
-                }
 
                 saved = false;
                 RefreshAll();
@@ -1152,7 +1172,7 @@ namespace GalWarWin
 
         private void SelectNewTurn()
         {
-            SelectNextShip();
+            SelectNext();
             if (selected == null)
             {
                 int max = int.MinValue;
@@ -1186,54 +1206,107 @@ namespace GalWarWin
                     end = ShowOption("You have not moved all of your ships.  Are you sure you want to end your turn?");
                     break;
                 }
+            if (end)
+                foreach (Colony colony in Game.CurrentPlayer.GetColonies())
+                    if (CanBeInvaded(colony))
+                    {
+                        end = ShowOption("You have colonies that can be attacked.  End turn?");
+                        break;
+                    }
 
             return end;
         }
         private static bool HasMoveLeft(Ship ship)
         {
-            if (!ship.Player.IsTurn || hold.Contains(ship))
-                return false;
-            if (ship.CurSpeed > 0)
-                return true;
+            if (ship.Player.IsTurn && !hold.Contains(ship))
+            {
+                if (ship.CurSpeed > 0)
+                    return true;
 
-            //determine if this ship can still do something with population
-            if (ship.MaxPop > 0)
-                foreach (Tile neighbor in Tile.GetNeighbors(ship.Tile))
-                {
-                    PopCarrier popCarrier = null;
-
-                    Ship neighborShip = neighbor.SpaceObject as Ship;
-                    Planet planet = neighbor.SpaceObject as Planet;
-                    if (neighborShip != null)
+                //determine if this ship can still do something with population, or be production repaired
+                if (ship.MaxPop > 0 || ship.HP < ship.MaxHP)
+                    foreach (Tile neighbor in Tile.GetNeighbors(ship.Tile))
                     {
-                        //might can transfer population
-                        if (neighborShip.Player == ship.Player)
-                            popCarrier = neighborShip;
-                    }
-                    else if (planet != null)
-                    {
-                        if (planet.Player == ship.Player)
+                        Planet planet = neighbor.SpaceObject as Planet;
+                        if (ship.HP < ship.MaxHP && planet != null)
                         {
-                            //might can transfer population
-                            popCarrier = planet.Colony;
+                            //can be production repaired
+                            if (planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == null)
+                                return true;
+                            if (!( ship.MaxPop > 0 ))
+                                break;
                         }
-                        else if (planet.Colony == null)
+                        if (ship.MaxPop > 0)
                         {
-                            //can colonize a planet
-                            if (ship.Colony && ship.AvailablePop == ship.Population && ship.Population > 0)
+                            PopCarrier popCarrier = null;
+
+                            Ship neighborShip = neighbor.SpaceObject as Ship;
+                            if (neighborShip != null)
+                            {
+                                //might can transfer population
+                                if (neighborShip.Player == ship.Player)
+                                    popCarrier = neighborShip;
+                            }
+                            else if (planet != null)
+                            {
+                                if (planet.Player == ship.Player)
+                                {
+                                    //might can transfer population
+                                    popCarrier = planet.Colony;
+                                }
+                                else if (planet.Colony == null)
+                                {
+                                    //can colonize a planet
+                                    if (ship.Colony && ship.AvailablePop == ship.Population && ship.Population > 0)
+                                        return true;
+                                }
+                                else if (ship.AvailablePop > 0)
+                                {
+                                    //can invade a colony
+                                    return true;
+                                }
+                            }
+
+                            //can transfer population
+                            if (popCarrier != null && ( CanTransfer(ship, popCarrier) || ( CanTransfer(popCarrier, ship) ) )
+                                    && !AlreadyTransfered(ship, popCarrier) && !AlreadyTransfered(popCarrier, ship))
                                 return true;
                         }
-                        else if (ship.AvailablePop > 0)
-                        {
-                            //can invade a colony
-                            return true;
-                        }
                     }
+            }
 
-                    //can transfer population
-                    if (popCarrier != null && ( ( ship.AvailablePop > 0 && popCarrier.FreeSpace > 0 ) || ( popCarrier.AvailablePop > 0 && ship.FreeSpace > 0 ) ))
-                        return true;
+            return false;
+        }
+        private static bool AlreadyTransfered(PopCarrier from, PopCarrier to)
+        {
+            return movedTroops.Contains(new Tuple<PopCarrier, PopCarrier>(from, to));
+        }
+        private static bool CanTransfer(PopCarrier from, PopCarrier to)
+        {
+            return ( from.AvailablePop > 0 && to.FreeSpace > 0 );
+        }
+        private bool CanBeInvaded(Colony colony)
+        {
+            if (colony.Player.IsTurn && !hold.Contains(colony))
+            {
+                bool showAtt = this.showAtt;
+                this.showAtt = false;
+
+                foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
+                {
+                    Ship ship = ( spaceObject as Ship );
+                    if (ship != null && !ship.Player.IsTurn && ( ship.Population > 0 || ship.DeathStar ))
+                    {
+                        var totals = new Dictionary<Tile, float>();
+                        AddShip(totals, new Dictionary<Tile, Point>(), ship.Player, ship, ship.MaxSpeed);
+                        foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))
+                            if (totals.ContainsKey(neighbor))
+                                return true;
+                    }
                 }
+
+                this.showAtt = showAtt;
+            }
 
             return false;
         }
@@ -1263,7 +1336,7 @@ namespace GalWarWin
             return true;
         }
 
-        private void SelectNextShip()
+        private void SelectNext()
         {
             ReadOnlyCollection<Ship> ships = Game.CurrentPlayer.GetShips();
             if (ships.Count > 0)
@@ -1300,6 +1373,16 @@ namespace GalWarWin
             else
             {
                 selected = null;
+            }
+
+            if (selected == null)
+            {
+                foreach (Colony colony in Game.CurrentPlayer.GetColonies())
+                    if (CanBeInvaded(colony))
+                    {
+                        SelectTile(colony.Tile);
+                        break;
+                    }
             }
         }
 
@@ -1415,7 +1498,7 @@ namespace GalWarWin
                             if (Tile.IsNeighbor(clickedTile, selectedTile))
                                 selectNext &= RightClick(clickedTile, ref ship);
                             else if (clickedTile == selectedTile)
-                                hold.Add(ship);
+                                hold.Add(GetSelectedSpaceObject());
 
                         if (ship != null)
                         {
@@ -1436,8 +1519,8 @@ namespace GalWarWin
                             }
                         }
 
-                        if (selectNext && ( selectedTile == null || ( ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ) ))
-                            SelectNextShip();
+                        if (selectNext && ( selectedTile == null || ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ))
+                            SelectNext();
 
                         saved = false;
                     }
@@ -1652,6 +1735,9 @@ namespace GalWarWin
                 {
                     SelectTile(to.Tile);
                     from.MovePop(this, troops, to);
+
+                    movedTroops.Add(new Tuple<PopCarrier, PopCarrier>(from, to));
+                    movedTroops.Add(new Tuple<PopCarrier, PopCarrier>(to, from));
                 }
                 return false;
             }
@@ -1769,7 +1855,22 @@ namespace GalWarWin
         private void lblLoc_Click(object sender, EventArgs e)
         {
             LabelsForm.ShowForm("Galaxy Size", FormatDouble(Game.MapDeviation),
-                    "Anomalies", FormatPct(Game.AnomalyPct, true), "Planets", FormatPct(Game.PlanetPct / Game.AnomalyPct, true));
+                    "Anomalies", FormatPct(Game.AnomalyPct, true), "Planets", FormatPct(Game.PlanetPct / Game.AnomalyPct, true),
+                    string.Empty, string.Empty, "Prod/Upk", FormatDouble(Consts.GetProductionUpkeepMult(Game.MapSize)));
+        }
+
+        private void lblTop_Click(object sender, EventArgs e)
+        {
+            Tile selected = GetSelectedTile();
+            if (selected != null)
+            {
+                Tile teleporter = selected.Teleporter;
+                if (teleporter != null)
+                {
+                    Center(teleporter.Point);
+                    InvalidateMap();
+                }
+            }
         }
 
         private void lbl4_Click(object sender, EventArgs e)

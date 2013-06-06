@@ -86,7 +86,7 @@ namespace GalWar
         public const double PopulationForGoldLow = 1 / Income / 2.1;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
-        public const double ProductionForSoldiers = .52;
+        public const double ProductionForSoldiers = .65;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
@@ -121,14 +121,14 @@ namespace GalWar
         public const double ColonizationCostRndm = .104;
 
         public const double AttackStrength = 1;
-        public const double AttackNumbersPower = 0.091;
-        public const double DefenseStrength = 1.13;
-        public const double DefenseNumbersPower = 0.03;
-        public const double TroopExperienceMult = 1 / PopulationForGoldMid / 3.9;
+        public const double AttackNumbersPower = .13;
+        public const double DefenseStrength = 1.39;
+        public const double DefenseNumbersPower = .03;
+        public const double TroopExperienceMult = 1 / PopulationForGoldMid / 5.2;
         //maximum for random pct bonus to troop combat strength
         public const double InvadeMultRandMax = Math.PI * .13;
         //payoff power for gold used to boost a planetary invasion
-        public const double InvadeGoldIncPower = .3;
+        public const double InvadeGoldIncPower = .39;
         //average planet quality lost as a percentage of total troops killed in the battle
         public const double PlanetDamage = .3;
 
@@ -138,7 +138,7 @@ namespace GalWar
 
         public const double PlanetDefenseStatRndm = .091;
         public const double PlanetDefenseBuildRndm = Math.PI / 13.0;
-        public const double PlanetDefensesCostMult = .78;
+        public const double PlanetDefensesCostMult = .65;
         //PlanetDefensesUpkeepMult will be multiplied by ProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
@@ -248,6 +248,11 @@ namespace GalWar
 
             if (attackers > 1)
             {
+
+                if (( max == attackers ) && ( min == 1 ))
+                {
+                }
+
                 double lowPct = 0, highPct = 0;
                 if (max == attackers)
                     lowPct = GetStrPct(attackers, soldiers, gold, defenseBase, false);
@@ -289,7 +294,7 @@ namespace GalWar
         {
             if (gold == 0)
                 return attack;
-            return ( initialWave + gold * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) ) * attack / (double)initialWave;
+            return ( attack * initialWave + gold * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) ) / (double)initialWave;
         }
 
         //randomized

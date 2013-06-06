@@ -116,19 +116,40 @@ namespace GalWarWin.Sliders
         {
             int value;
             if (int.TryParse(txtAmt.Text, out value))
+            {
                 SetValue(value);
+            }
             else
+            {
                 SetText();
-        }
 
+                Overflow();
+            }
+        }
         private void SetValue(double v)
         {
+            bool overflow = false;
+
             int value = Game.Random.Round(v);
             if (value < trackBar.Minimum)
+            {
                 value = trackBar.Minimum;
+                overflow = true;
+            }
             if (value > trackBar.Maximum)
+            {
                 value = trackBar.Maximum;
+                overflow = true;
+            }
             this.trackBar.Value = value;
+
+            if (overflow)
+                Overflow();
+        }
+        private void Overflow()
+        {
+            this.txtAmt.SelectAll();
+            this.txtAmt.Focus();
         }
 
         private void SetText()
@@ -172,8 +193,13 @@ namespace GalWarWin.Sliders
         {
             if (!this.txtAmt.Focused)
             {
-                this.txtAmt.Text = e.KeyChar.ToString();
-                this.txtAmt.Focus();
+                string newStr = e.KeyChar.ToString();
+                this.txtAmt.Text = newStr;
+                if (this.txtAmt.Text == newStr)
+                {
+                    this.txtAmt.Select(1, 0);
+                    this.txtAmt.Focus();
+                }
             }
         }
     }

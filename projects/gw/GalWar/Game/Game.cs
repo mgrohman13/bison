@@ -101,8 +101,8 @@ namespace GalWar
 
                 planetPct *= MapSize;
                 this._planetPct = (float)Random.GaussianCapped(planetPct / 104.0, .091, planetPct / 169.0);
-                this._anomalyPct = (float)Random.GaussianCapped(this.PlanetPct + MapSize * .00013 + ( numPlayers + 6.5 ) * .013,
-                        .21, this.PlanetPct + 0.13);
+                double min = this.PlanetPct + 0.13;
+                this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
 
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);

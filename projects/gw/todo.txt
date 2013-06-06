@@ -1,8 +1,5 @@
 UI
-	troop move left takes into account having already done one way so unlikely to go the other?
-	chance to repair before moving next
 	empirically test invasion values
-	slider form immediately type numbers
 	combat calc show probability table
 	measure distances
 	calculate pop growth
@@ -22,10 +19,6 @@ UI
 		ships
 	keyboard?
 
-soldiers more expensive
-planet rate, anom rate
-transports more expensive?
-repair before or after combat balance
 standardize dead checks
 
 without tile cache, no longer need to use points instead of tiles in places

@@ -165,6 +165,7 @@ namespace GalWarWin
             this.lblTop.TabIndex = 2;
             this.lblTop.Text = "lblTop";
             this.lblTop.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblTop.Click += new System.EventHandler(this.lblTop_Click);
             this.lblTop.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pnlInfo_MouseClick);
             // 
             // lbl2
