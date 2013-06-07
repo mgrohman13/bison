@@ -828,9 +828,6 @@ namespace GalWar
 
                 double costInc = this.GetCostLastResearched();
 
-                //temporarily add upkeep to cost, using pre-level payoff and mult
-                this.cost += this.upkeep * GetUpkeepPayoff() * GetExperienceUpkeepPayoffMult();
-
                 double pct = this.HP / (double)this.MaxHP;
                 if (this.NextExpType == ExpType.HP)
                 {
@@ -862,10 +859,10 @@ namespace GalWar
                 double minCost = basePayoff * Consts.MinCostMult;
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
-                this.upkeep += Game.Random.Round(costInc * this.upkeep / this.cost
+                int addUpkeep = Game.Random.Round(costInc * this.upkeep / this.cost
                         * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
-                //remove upkeep back out of cost, using post-level payoff and mult, and add in the cost increase
-                this.cost += costInc - this.upkeep * multPayoff;
+                this.upkeep += addUpkeep;
+                this.cost += costInc - addUpkeep * multPayoff;
 
                 //upkeep should never account for more than half of the ship's cost
                 while (this.upkeep > 1 && ( ( this.cost < minCost ) || ( this.upkeep * basePayoff > this.cost ) ))

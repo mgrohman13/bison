@@ -55,7 +55,7 @@ namespace GalWar
         //percent of upkeep returned when a ship doesnt move
         public const double UpkeepUnmovedReturn = .169;
         //as a multiple of upkeep payoff
-        public const double MinCostMult = 1.13;
+        public const double MinCostMult = .91;
         //as a multiple and a power of research
         public const double MaxCostMult = 65;
         public const double MaxCostPower = 0.21;
@@ -86,7 +86,7 @@ namespace GalWar
         public const double PopulationForGoldLow = 1 / Income / 2.1;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
-        public const double ProductionForSoldiers = .65;
+        public const double ProductionForSoldiers = .91;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
@@ -121,16 +121,17 @@ namespace GalWar
         public const double ColonizationCostRndm = .104;
 
         public const double AttackStrength = 1;
+        public const double GoldStrength = 1.69;
+        public const double DefenseStrength = 1.69;
         public const double AttackNumbersPower = .13;
-        public const double DefenseStrength = 1.39;
-        public const double DefenseNumbersPower = .03;
-        public const double TroopExperienceMult = 1 / PopulationForGoldMid / 5.2;
-        //maximum for random pct bonus to troop combat strength
-        public const double InvadeMultRandMax = Math.PI * .13;
+        public const double DefenseNumbersPower = .039;
         //payoff power for gold used to boost a planetary invasion
         public const double InvadeGoldIncPower = .39;
-        //average planet quality lost as a percentage of total troops killed in the battle
+        //maximum for random pct bonus to troop combat strength
+        public const double InvadeMultRandMax = Math.PI * .13;
+        //PlanetDamage is average planet quality lost as a percentage of total troops killed in the battle
         public const double PlanetDamage = .3;
+        public const double TroopExperienceMult = 1 / PopulationForGoldMid / 5.2;
 
         public const double DeathStarDamageRndm = .26;
         //multiplyer to planet quality lost when bombarded by a death star
@@ -294,7 +295,7 @@ namespace GalWar
         {
             if (gold == 0)
                 return attack;
-            return ( attack * initialWave + gold * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) ) / (double)initialWave;
+            return attack + GoldStrength * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) * gold / (double)initialWave;
         }
 
         //randomized
@@ -312,7 +313,7 @@ namespace GalWar
         private static double GetStrengthBase(int troops, double soldiers, double strength, double power)
         {
             if (troops > 0)
-                return strength * Math.Pow(troops, power) * Math.Pow(1 + soldiers / (double)troops, 1 + power);
+                return strength * Math.Pow(troops + soldiers, power) * ( 1 + soldiers / (double)troops );
             throw new Exception();
         }
 

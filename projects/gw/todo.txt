@@ -1,4 +1,6 @@
 UI
+	if wormhole click is centerd on exit, center back on selected
+	light wormhole too light
 	clear showMoves
 	show <1 combat pct chance as such
 	unhold colonies on click
@@ -24,6 +26,11 @@ UI
 		ships
 	keyboard?
 
+trans/ds level up based on cost pcts
+soldier upkeep
+reduce soldier exp by high current pct
+dead colony PD checks
+center randomness
 standardize dead checks
 
 without tile cache, no longer need to use points instead of tiles in places

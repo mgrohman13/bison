@@ -39,8 +39,8 @@ namespace GalWar
         private static double GetTotCost(double att, double def, double hp, double speed, double trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
         {
             const double SpeedAdd = 2.1, SpeedPow = 1.3, AttDiv = 5.2;
-            //expect 130% attacking soldiers on average
-            const double AvgAttSoldiers = 1 + 1.30;
+            //expect 169% attacking soldiers on average
+            const double AvgAttSoldiers = 1 + 1.69;
 
             double speedValue = Math.Pow(speed, SpeedPow) + SpeedAdd;
             if (speed < 1)
@@ -65,12 +65,12 @@ namespace GalWar
                     (
                         ( Math.Pow(trans * AvgAttSoldiers, 1 + Consts.AttackNumbersPower) / AvgAttSoldiers )
                         +
-                        ( 13 * bombardDamage )
+                        ( 16.9 * bombardDamage )
                     )
                     *
                     ( speed )
                     *
-                    ( ( attValue / 5.2 + defValue + 65000 ) / 16900.0 )
+                    ( ( attValue / 5.2 + defValue + 65000 ) / 21000.0 )
                 )
                 *
                 ( speedValue )

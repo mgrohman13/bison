@@ -863,10 +863,6 @@ next_planet:
                         return ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance );
                     });
 
-                    if (neighbors.Count > 2)
-                    {
-                    }
-
                     weight *= distance / (double)neighbors.Count;
 
                     foreach (Tile neighbor in neighbors)

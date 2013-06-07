@@ -810,7 +810,7 @@ namespace GalWar
                     else if (planet != null)
                     {
                         foreach (Planet p2 in planets)
-                            if (planet != p2 && Tile.GetDistance(planet.Tile, p2.Tile) <= Consts.PlanetDistance)
+                            if (planet != p2 && Tile.GetDistance(this.Tile, p2.Tile) <= Consts.PlanetDistance)
                                 goto next;
 
                         bool colony = ( planet.Colony != null );
