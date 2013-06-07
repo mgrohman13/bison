@@ -249,7 +249,7 @@ namespace GalWar
             if (attackers > 1)
             {
 
-                if (( max == attackers ) && ( min == 1 ))
+                if (( max == attackers ) && ( min == 1 ) && max - min > 1)
                 {
                 }
 

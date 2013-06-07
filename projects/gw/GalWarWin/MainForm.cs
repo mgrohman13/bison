@@ -933,11 +933,11 @@ namespace GalWarWin
             Point gamePoint = GetGamePoint(e.Location);
             if (panning != null && sender != pnlHUD && gamePoint != panning)
             {
-                Ship ship = GetSelectedShip();
-                if (panning == selected && ship != null && ship.Player.IsTurn)
-                    VectorShip(ship, gamePoint);
-                else
-                    DragPan(e.Location);
+                //Ship ship = GetSelectedShip();
+                //if (panning == selected && ship != null && ship.Player.IsTurn)
+                //    VectorShip(ship, gamePoint);
+                //else
+                DragPan(e.Location);
             }
 
             if (sender == pnlHUD)
@@ -963,11 +963,12 @@ namespace GalWarWin
             InvalidateMap();
         }
 
-        private void VectorShip(Ship ship, Point gamePoint)
-        {
-            Tile vector 
-            ship.SetVector();
-        }
+        //private void VectorShip(Ship ship, Point gamePoint)
+        //{
+        //    //Tile vector = Game.GetTeleporter(gamePoint);
+        //    //if ( vector != ship.ve
+        //    //ship.SetVector();
+        //}
 
         private void MainForm_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -1231,7 +1232,7 @@ namespace GalWarWin
                         if (ship.HP < ship.MaxHP && planet != null)
                         {
                             //can be production repaired
-                            if (planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == null)
+                            if (planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == null && planet.Colony.GetProductionIncome() > 0)
                                 return true;
                             if (!( ship.MaxPop > 0 ))
                                 break;
@@ -1287,7 +1288,7 @@ namespace GalWarWin
         }
         private bool CanBeInvaded(Colony colony)
         {
-            if (colony.Player.IsTurn && !hold.Contains(colony))
+            if (colony.Player.IsTurn && !hold.Contains(colony.Planet))
             {
                 bool showAtt = this.showAtt;
                 this.showAtt = false;
