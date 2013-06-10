@@ -15,7 +15,7 @@ namespace GalWar
         public const double ResearchVictoryPow = 5.2;
 
         //StartAnomalies is the number of turn-rounds for which we immediately create anomalies
-        public const double StartAnomalies = 21;
+        public const double StartAnomalies = 13;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each players homeworld quality
         public const double StartGold = AverageQuality * 650;
@@ -30,7 +30,7 @@ namespace GalWar
         public const int PlanetQualityMax = 390;
         public const double PlanetQualityOE = 65;
         public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
-        public const double PlanetConstValue = .5 / PopulationGrowth;
+        public const double PlanetConstValue = .52 / PopulationGrowth;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
         public const int HomeworldDistance = 8;
@@ -87,6 +87,7 @@ namespace GalWar
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
         public const double ProductionForSoldiers = .91;
+        public const double SoldierUpkeepMult = .26;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
@@ -189,6 +190,11 @@ namespace GalWar
         public static double GetProductionUpkeepMult(double mapSize)
         {
             return ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);
+        }
+
+        public static double GetSoldierUpkeep(PopCarrier popCarrier)
+        {
+            return Consts.SoldierUpkeepMult * Consts.ProductionForSoldiers * GetProductionUpkeepMult(popCarrier.Tile.Game.MapSize) * popCarrier.Soldiers;
         }
 
         //upkeep payoff is the number of turns the ship is expected to live

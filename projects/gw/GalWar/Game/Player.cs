@@ -974,7 +974,7 @@ namespace GalWar
             foreach (Colony colony in this.colonies)
                 colony.GetTurnIncome(ref population, ref production, ref gold, ref research, minGold);
             foreach (Ship ship in this.ships)
-                gold -= ( ship.Upkeep - ship.GetUpkeepReturn() );
+                gold -= ship.Upkeep;
 
             gold += this.goldOffset;
 

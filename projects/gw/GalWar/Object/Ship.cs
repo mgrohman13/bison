@@ -129,13 +129,22 @@ namespace GalWar
             }
         }
 
-        private int upkeep
+        public double Upkeep
         {
             get
             {
+                return this.BaseUpkeep - this.GetUpkeepReturn() + Consts.GetSoldierUpkeep(this);
+            }
+        }
+        public int BaseUpkeep
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
                 return this._upkeep;
             }
-            set
+            private set
             {
                 checked
                 {
@@ -388,7 +397,7 @@ namespace GalWar
         internal void EndTurn()
         {
             //must be calculated before speed is restored
-            this.Player.SpendGold(this.upkeep - this.GetUpkeepReturn());
+            this.Player.SpendGold(this.Upkeep);
 
             ResetMoved();
 
@@ -413,7 +422,7 @@ namespace GalWar
         }
         internal double GetUpkeepReturn(double speedLeft)
         {
-            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.upkeep;
+            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.BaseUpkeep;
         }
 
         internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
@@ -499,16 +508,6 @@ namespace GalWar
             get
             {
                 return this.maxPop;
-            }
-        }
-
-        public int Upkeep
-        {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                return this.upkeep;
             }
         }
 
@@ -859,20 +858,20 @@ namespace GalWar
                 double minCost = basePayoff * Consts.MinCostMult;
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
-                int addUpkeep = Game.Random.Round(costInc * this.upkeep / this.cost
+                int addUpkeep = Game.Random.Round(costInc * this.BaseUpkeep / this.cost
                         * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
-                this.upkeep += addUpkeep;
+                this.BaseUpkeep += addUpkeep;
                 this.cost += costInc - addUpkeep * multPayoff;
 
                 //upkeep should never account for more than half of the ship's cost
-                while (this.upkeep > 1 && ( ( this.cost < minCost ) || ( this.upkeep * basePayoff > this.cost ) ))
+                while (this.BaseUpkeep > 1 && ( ( this.cost < minCost ) || ( this.BaseUpkeep * basePayoff > this.cost ) ))
                 {
-                    --this.upkeep;
+                    --this.BaseUpkeep;
                     this.cost += multPayoff;
                 }
                 if (this.cost < 1)
                     throw new Exception();
-                if (this.upkeep < 1)
+                if (this.BaseUpkeep < 1)
                     throw new Exception();
 
                 this.totalExp += needExp;
@@ -1162,12 +1161,13 @@ namespace GalWar
 
             if (friendly)
                 colonyDamage = initPop - colonyDamage;
+            double moveLeftPlanetDmg = planetDamage;
             if (stopBombard)
             {
                 initQuality = Math.Min(initQuality, planetDamage);
-                planetDamage = Game.Random.Round(planetDamage * colonyDamage / (double)tempPop);
+                moveLeftPlanetDmg = planetDamage * colonyDamage / (double)tempPop;
             }
-            this.Player.GoldIncome(GetUpkeepReturn(GetBombardMoveLeft(planetDamage, initQuality, colonyDamage, initPop, pct)));
+            this.Player.GoldIncome(GetUpkeepReturn(GetBombardMoveLeft(moveLeftPlanetDmg, initQuality, colonyDamage, initPop, pct)));
 
             if (planet.Dead)
                 colonyDamage = tempPop;

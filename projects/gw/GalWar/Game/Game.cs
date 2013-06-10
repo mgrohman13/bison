@@ -104,8 +104,19 @@ namespace GalWar
                 double min = this.PlanetPct + 0.13;
                 this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
 
+                int teleporters = Random.GaussianOEInt(this.MapDeviation / 9.1, 26, .13);
+                for (int a = 0 ; a < teleporters ; ++a)
+                {
+                    Tile t1 = GetRandomTile(), t2 = GetRandomTile();
+                    if (CanCreateTeleporter(t1, t2))
+                        CreateTeleporter(t1, t2);
+                }
+
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);
+
+                for (int a = 0 ; a < teleporters ; ++a)
+                    RemoveTeleporter(this.GetTeleporters()[0]);
 
                 AdjustCenter(this.MapDeviation);
 
@@ -700,7 +711,7 @@ next_planet:
         {
             double chance = GetTeleporters().Count + 1;
             //check if the tiles are too close to be useful or if either tile already has a teleporter
-            if (Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null && Random.Bool(1.0 / chance))
+            if (CanCreateTeleporter(tile, target) && Random.Bool(1.0 / chance))
             {
                 //check this will not make any planets be too close
                 HashSet<Planet> planets = new HashSet<Planet>();
@@ -731,6 +742,10 @@ next_planet:
                 }
             }
             return false;
+        }
+        private static bool CanCreateTeleporter(Tile tile, Tile target)
+        {
+            return ( Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null );
         }
         private bool CheckAttInvPlayers(SpaceObject obj, bool inv, Tile t1, Tile t2)
         {
@@ -797,35 +812,40 @@ next_planet:
         private void AdjustCenter(double avg)
         {
             int amt = Random.OEInt(avg * MapDeviation / 16.9);
-            for (int a = 0 ; a < amt ; ++a)
-                AdjustCenter();
-        }
-        private void AdjustCenter()
-        {
-            double shipWeight = 0, popWeight = 0;
-            foreach (SpaceObject spaceObject in this.GetSpaceObjects())
+
+            if (amt > 0)
             {
-                Ship ship = ( spaceObject as Ship );
-                Planet planet = ( spaceObject as Planet );
-                if (ship != null)
+                double shipWeight = 0, popWeight = 0;
+                foreach (SpaceObject spaceObject in this.GetSpaceObjects())
                 {
-                    shipWeight += GetShipWeight(ship);
-                    popWeight += ship.Population;
+                    Ship ship = ( spaceObject as Ship );
+                    Planet planet = ( spaceObject as Planet );
+                    if (ship != null)
+                    {
+                        shipWeight += GetShipWeight(ship);
+                        popWeight += ship.Population;
+                    }
+                    else if (planet != null && planet.Colony != null)
+                    {
+                        popWeight += planet.Colony.Population;
+                    }
                 }
-                else if (planet != null && planet.Colony != null)
-                {
-                    popWeight += planet.Colony.Population;
-                }
+
+                //anomalies weigh less than even the smallest possible planet
+                const double AnomalyWeight = Consts.PlanetConstValue / 1.3;
+                //the total weight of all ships is always less than even a single anomaly
+                shipWeight = AnomalyWeight / 1.3 / shipWeight;
+                //population is weighted at its total's square root
+                if (popWeight != 0)
+                    popWeight = 1 / Math.Sqrt(popWeight);
+
+                for (int a = 0 ; a < amt ; ++a)
+                    AdjustCenter(shipWeight, popWeight, AnomalyWeight);
             }
-
-            //anomalies weigh less than even the smallest possible planet
-            const double AnomalyWeight = Consts.PlanetConstValue / 1.3;
-            //the total weight of all ships is always less than even a single anomaly
-            shipWeight = AnomalyWeight / 1.3 / shipWeight;
-            //population is weighted at its square root
-            if (popWeight != 0)
-                popWeight = 1 / Math.Sqrt(popWeight);
-
+        }
+        private void AdjustCenter(double shipWeight, double popWeight, double anomalyWeight)
+        {
+            double max = double.MinValue;
             var directions = new Dictionary<Tile, double>();
 
             Tile centerTile = GetTile(this.Center);
@@ -850,7 +870,7 @@ next_planet:
                     }
                     else if (spaceObject is Anomaly)
                     {
-                        weight = AnomalyWeight;
+                        weight = anomalyWeight;
                     }
                     else
                     {
@@ -863,30 +883,28 @@ next_planet:
                         return ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance );
                     });
 
-                    weight *= distance / (double)neighbors.Count;
+                    //sqrt because final values will be squared
+                    weight *= distance / Math.Sqrt(neighbors.Count);
 
                     foreach (Tile neighbor in neighbors)
                     {
                         double value;
                         directions.TryGetValue(neighbor, out value);
-                        directions[neighbor] = value + weight;
+                        value += weight;
+                        directions[neighbor] = value;
+                        max = Math.Max(max, value);
                     }
                 }
             }
 
-            double max = double.MinValue;
-            Tile newCenter = null;
-            foreach (var pair in Random.Iterate(directions))
-            {
-                double value = Random.GaussianCapped(pair.Value * pair.Value, .26);
-                if (value > max)
-                {
-                    max = value;
-                    newCenter = pair.Key;
-                }
-            }
+            //mult just ensures we don't overload 32 bit ints
+            double mult = sbyte.MaxValue / max / max;
 
-            this.Center = newCenter.Point;
+            Dictionary<Tile, int> chances = new Dictionary<Tile, int>();
+            foreach (var pair in directions)
+                //squared - if changed, must change count divide above
+                chances.Add(pair.Key, Random.Round(pair.Value * pair.Value * mult));
+            this.Center = Random.SelectValue(chances).Point;
         }
         private static double GetShipWeight(Ship ship)
         {

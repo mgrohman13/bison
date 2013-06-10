@@ -1,4 +1,10 @@
 UI
+	choose gold double notify
+	clicking auto repair radio button allows immediate typing
+	cost calc research inconsistencies
+	hold persistent colonies
+	show repair costs
+	invade and bombard cycle even when already next to but cant move
 	if wormhole click is centerd on exit, center back on selected
 	light wormhole too light
 	clear showMoves
@@ -26,20 +32,22 @@ UI
 		ships
 	keyboard?
 
+negative gold?
+	current weirdness of auto-selling prod/ship you just built
+	punish by preventing production?
+	move troops always just costs income?
+anomaly planet chance based on distance to closest planet?
+research victory every turn, div by players like remove teleporters
 trans/ds level up based on cost pcts
-soldier upkeep
 reduce soldier exp by high current pct
-dead colony PD checks
-center randomness
-standardize dead checks
 
+standardize dead checks
 without tile cache, no longer need to use points instead of tiles in places
 	replace all point usage with tile in gws (except serailized)
 test exact vs oversize dictionary capacity for combat performance
 clean up code
 	member order
 
-negative gold?
 anomaly neutral ships?
 known enemy designs
 AI

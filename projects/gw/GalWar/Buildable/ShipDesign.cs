@@ -65,12 +65,12 @@ namespace GalWar
                     (
                         ( Math.Pow(trans * AvgAttSoldiers, 1 + Consts.AttackNumbersPower) / AvgAttSoldiers )
                         +
-                        ( 16.9 * bombardDamage )
+                        ( 13 * bombardDamage )
                     )
                     *
                     ( speed )
                     *
-                    ( ( attValue / 5.2 + defValue + 65000 ) / 21000.0 )
+                    ( ( attValue / 5.2 + defValue + 65000 ) / 16900.0 )
                 )
                 *
                 ( speedValue )
@@ -291,7 +291,7 @@ namespace GalWar
             //being a colony ship/transport/death star makes att and def lower
             double strMult = GetAttDefStrMult(transStr, bombardDamageMult, colony, trans);
             double str = GetAttDefStr(research, strMult, focus);
-            DoAttDef(str, attPct, ( colony || trans > Game.Random.Gaussian(transStr * .52, .39) ), out att, out def, focus);
+            DoAttDef(str, attPct, ( colony || trans > Game.Random.GaussianOEInt(transStr * .52, .52, .26) ), out att, out def, focus);
             att = (byte)att;
             def = (byte)def;
 
@@ -720,7 +720,7 @@ namespace GalWar
         private static void CheckFocusStat(double str, ref int s1, ref int s2)
         {
             if (s1 >= s2)
-                while (s1 < Game.Random.Gaussian(s2 * FocusAttMult, .39))
+                while (s1 < Game.Random.GaussianOEInt(s2 * FocusAttMult, .26, .078))
                     MakeAttDef(str, out s1, out s2);
         }
         private static void MakeAttDef(double str, out int s1, out int s2)
@@ -780,9 +780,9 @@ namespace GalWar
         {
             //random increase to absolute minimum
             double minCost = GetAbsMinCost(mapSize);
-            return Game.Random.GaussianOE(minCost * 1.3, 0.052, 0.026, minCost);
+            return Game.Random.GaussianOE(minCost * 1.3, .13, .039, minCost);
         }
-        private const double MinCostBuffer = 3.9;
+        private const double MinCostBuffer = 2.1;
         private double GetAbsMinCost(double mapSize)
         {
             return this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + MinCostBuffer;
@@ -793,7 +793,7 @@ namespace GalWar
             double maxCost = Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
             double min = minCost * 1.3;
             if (maxCost > min)
-                return Game.Random.GaussianOE(maxCost, .21, .039, min);
+                return Game.Random.GaussianOE(maxCost, .169, 1.3, min);
             return min;
         }
 
@@ -813,7 +813,7 @@ namespace GalWar
                     avgUpk /= FocusUpkeepMult;
 
                 if (avgUpk > 1)
-                    upkeep = Game.Random.GaussianCappedInt(avgUpk, 1, 1);
+                    upkeep = Game.Random.GaussianCappedInt(avgUpk, 1.3, 1);
                 else
                     upkeep = 1;
             }
@@ -1094,7 +1094,7 @@ namespace GalWar
 
         private static double GetHPMult(double strMult, bool deathStar, bool colony)
         {
-            return Consts.BaseDesignHPMult / Math.Pow(strMult, deathStar || colony ? 1.69 : 2.6);
+            return Consts.BaseDesignHPMult / Math.Pow(strMult, deathStar ? 1.69 : ( colony ? 2.1 : Math.PI / 1.3 ));
         }
 
         public static double GetHPStr(double s1, double s2)

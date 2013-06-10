@@ -587,9 +587,6 @@ namespace GalWar
                     + ( this.GetActualDisbandValue(this.HP, out newAtt, out newDef) );
             this.Player.AddGold(gold, true);
 
-            if (newAtt != 1 || newDef != 1)
-                throw new Exception();
-
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
             Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
@@ -597,7 +594,7 @@ namespace GalWar
             Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP, out newAtt, out newDef));
             Console.WriteLine();
 
-            if (newAtt != 1 || newDef != 1)
+            if (( this.HP > 0 ) ? ( newAtt != 1 || newDef != 1 ) : ( newAtt != Math.Max(this.Att - 1, 1) || newDef != Math.Max(this.Def - 1, 1) ))
                 throw new Exception();
 
             this.Population = 0;
@@ -715,7 +712,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return PlanetDefenseUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production;
+                return PlanetDefenseUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production + Consts.GetSoldierUpkeep(this);
             }
         }
 

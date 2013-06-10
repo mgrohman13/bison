@@ -75,25 +75,27 @@ namespace GalWarWin
             this.cbDS.Checked = ship.DeathStar;
             SetValue(this.nudDS, ship.BombardDamage);
 
-            double totCost = Update(null);
-            events = false;
-
-            double research;
             if (ship.Player.IsTurn)
             {
                 double cost = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
                 SetValue(this.nudProd, cost);
-                SetValue(this.nudUpk, ship.Upkeep);
-                research = CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.Upkeep);
+                SetValue(this.nudUpk, ship.BaseUpkeep);
+                SetValue(this.nudResearch, CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.BaseUpkeep));
+
+                Update(null);
+                events = false;
             }
             else
             {
                 Dictionary<Player, double> playerResearch = MainForm.Game.GetResearch();
-                research = playerResearch[ship.Player] / playerResearch[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
+                double research = playerResearch[ship.Player] / playerResearch[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
+                SetValue(this.nudResearch, Math.Round(research));
+
+                double totCost = Update(null);
+                events = false;
+
                 CalcCost(research, totCost);
-                research = Math.Round(research);
             }
-            SetValue(this.nudResearch, research);
 
             events = true;
         }

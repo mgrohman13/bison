@@ -976,9 +976,9 @@ namespace GalWarWin
             Point gamePoint = GetGamePoint(mouse);
 
             if (e.Delta < 0)
-                scale /= RandScale();
+                scale /= RandScale(-e.Delta);
             else
-                scale *= RandScale();
+                scale *= RandScale(e.Delta);
 
             VerifyScale();
 
@@ -988,9 +988,9 @@ namespace GalWarWin
             VerifyPan();
             InvalidateMap();
         }
-        private static float RandScale()
+        private static float RandScale(int delta)
         {
-            return Game.Random.GaussianCapped(1.13f, .013f, 1f);
+            return 1 + Game.Random.GaussianCapped(delta / 910f, 0.13f);
         }
 
         private Point GetGamePoint(PointForm point)
@@ -1826,8 +1826,8 @@ namespace GalWarWin
             }
             foreach (Ship ship in Game.CurrentPlayer.GetShips())
             {
-                upkeep += ship.Upkeep - ship.GetUpkeepReturn();
-                ships += ship.Upkeep;
+                upkeep += ship.Upkeep;
+                ships += ship.BaseUpkeep;
             }
             Game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
 
@@ -2158,7 +2158,7 @@ namespace GalWarWin
             if (ship.Player.IsTurn)
             {
                 lbl5.Text = "Upkeep";
-                lbl5Inf.Text = ship.Upkeep.ToString();
+                lbl5Inf.Text = ship.BaseUpkeep.ToString();
             }
             else if (ship.Repair > 0)
             {
