@@ -21,7 +21,6 @@ namespace GalWarWin.Sliders
         private readonly Colony colony;
 
         private readonly int? max;
-        private readonly int free;
 
         private readonly int totalPop;
         private readonly double soldiers;
@@ -36,19 +35,14 @@ namespace GalWarWin.Sliders
                 if (( colony = from as Colony ) == null)
                     this.colony = to as Colony;
             }
-            else
-            {
-                this.free = GetMoveTroopsMax();
-            }
         }
 
-        public MoveTroops(Colony from, int max, int free, int totalPop, double soldiers)
+        public MoveTroops(Colony from, int max, int totalPop, double soldiers)
         {
             this.from = from;
             this.colony = from;
 
             this.max = max;
-            this.free = free;
 
             this.totalPop = totalPop;
             this.soldiers = soldiers;
@@ -75,32 +69,17 @@ namespace GalWarWin.Sliders
 
         protected override int GetMaxInternal()
         {
-            return GetMoveTroopsMax();
-        }
-        private int GetMoveTroopsMax()
-        {
             int max;
             if (this.max.HasValue)
                 max = this.max.Value;
             else
                 max = Math.Min(from.AvailablePop, to.FreeSpace);
-            return Math.Min(max, free + GetMaxMovePop(MainForm.Game.CurrentPlayer.Gold));
-        }
-
-        public static int GetMaxMovePop(double gold)
-        {
-            int max = (int)( gold / Consts.MovePopulationGoldCost ) - 1;
-            while (gold > PopCarrier.GetGoldCost(max))
-                ++max;
-            return ( max - 1 );
+            return max;
         }
 
         protected override double GetResult()
         {
-            int value = GetValue() - free;
-            if (value < 1)
-                return 0;
-            return PopCarrier.GetGoldCost(value);
+            return 0;
         }
 
         protected override string GetExtra()

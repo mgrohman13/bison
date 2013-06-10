@@ -1,25 +1,13 @@
 UI
-	choose gold double notify
-	clicking auto repair radio button allows immediate typing
-	cost calc research inconsistencies
-	hold persistent colonies
-	show repair costs
-	invade and bombard cycle even when already next to but cant move
-	if wormhole click is centerd on exit, center back on selected
+	rally ships
+		saveable?
 	light wormhole too light
 	clear showMoves
-	show <1 combat pct chance as such
-	unhold colonies on click
-	invaded colonies cycle through first
-	rally ships
-	clear moved pop record on undo
-	empirically test invasion values
 	combat calc show probability table
 	measure distances
 	calculate pop growth
 		balancing between colonies
 	show enemy moves/attacks ignoring friendly ships, weight for HP?
-		saveable?
 	main map
 		clean up drawing logic
 		very large shows more info
@@ -32,19 +20,13 @@ UI
 		ships
 	keyboard?
 
-negative gold?
-	current weirdness of auto-selling prod/ship you just built
-	punish by preventing production?
-	move troops always just costs income?
-anomaly planet chance based on distance to closest planet?
 research victory every turn, div by players like remove teleporters
-trans/ds level up based on cost pcts
-reduce soldier exp by high current pct
 
 standardize dead checks
 without tile cache, no longer need to use points instead of tiles in places
 	replace all point usage with tile in gws (except serailized)
 test exact vs oversize dictionary capacity for combat performance
+empirically test invasion values
 clean up code
 	member order
 

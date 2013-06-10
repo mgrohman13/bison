@@ -765,7 +765,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(10.4, 0.13, .104, 5.2), Game.Random.GaussianCapped(.0039, .26, .00013));
+                    Game.Random.GaussianOE(10.4, 0.13, .104, 5.2), Game.Random.GaussianCapped(.0052, .26, .0013));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -965,9 +965,13 @@ namespace GalWarWin
 
         //private void VectorShip(Ship ship, Point gamePoint)
         //{
-        //    //Tile vector = Game.GetTeleporter(gamePoint);
-        //    //if ( vector != ship.ve
-        //    //ship.SetVector();
+        //    Tile vector = Game.GetTile(gamePoint);
+        //    if (vector != ship.Vector)
+        //    {
+        //        ship.Vector = vector;
+
+        //        InvalidateMap();
+        //    }
         //}
 
         private void MainForm_MouseWheel(object sender, MouseEventArgs e)
@@ -1133,7 +1137,12 @@ namespace GalWarWin
 
             SelectTile(Game.Undo(this));
 
-            UnHold(GetSelectedShip());
+            Ship selectedShip = GetSelectedShip();
+            UnHold(selectedShip);
+            movedTroops.RemoveWhere(delegate(Tuple<PopCarrier, PopCarrier> moved)
+            {
+                return ( selectedShip == moved.Item1 || selectedShip == moved.Item2 );
+            });
 
             saved = false;
             RefreshAll();
@@ -1192,8 +1201,8 @@ namespace GalWarWin
         private bool CheckGold()
         {
             bool end = true;
-            if (Game.CurrentPlayer.MinGoldNegative())
-                end = ShowOption("You are running out of gold.  Partial production may be sold and one or more ships disbanded.  Are you sure you want to end your turn?", true);
+            if (Game.CurrentPlayer.Gold < 0)
+                end = ShowOption("You are out of gold.  Partial production may be sold and one or more ships disbanded.  Are you sure you want to end your turn?", true);
             return end;
         }
 
@@ -1293,6 +1302,13 @@ namespace GalWarWin
                 bool showAtt = this.showAtt;
                 this.showAtt = false;
 
+                foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))
+                {
+                    Ship ship = ( neighbor.SpaceObject as Ship );
+                    if (ship != null && !ship.Player.IsTurn && ( ship.Population > 0 || ship.DeathStar ))
+                        return true;
+                }
+
                 foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
                 {
                     Ship ship = ( spaceObject as Ship );
@@ -1339,52 +1355,69 @@ namespace GalWarWin
 
         private void SelectNext()
         {
-            ReadOnlyCollection<Ship> ships = Game.CurrentPlayer.GetShips();
-            if (ships.Count > 0)
+            List<SpaceObject> loop = new List<SpaceObject>();
+            loop.AddRange(Game.CurrentPlayer.GetColonies());
+            loop.AddRange(Game.CurrentPlayer.GetShips());
+
+            SpaceObject spaceObject = GetSelectedColony();
+            if (spaceObject == null)
+                spaceObject = GetSelectedSpaceObject();
+
+            int start = loop.IndexOf(spaceObject);
+            int index = start + 1;
+            if (start < 0)
             {
-                int start = ships.IndexOf(GetSelectedShip());
-                int index = start + 1;
-                if (start < 0)
+                start = loop.Count;
+                index = 0;
+            }
+
+            while (true)
+            {
+                if (index == loop.Count)
                 {
-                    index = 0;
-                    start = ships.Count;
+                    index = -1;
                 }
-                while (true)
+                else if (DoSelect(loop[index]))
                 {
-                    if (index == ships.Count)
-                    {
-                        index = -1;
-                    }
-                    else if (HasMoveLeft(ships[index]))
-                    {
-                        SelectTile(ships[index].Tile);
-                        break;
-                    }
-                    if (++index == start)
-                    {
-                        start = -1;
-                    }
-                    else if (start == -1)
-                    {
-                        selected = null;
-                        break;
-                    }
+                    SelectTile(loop[index].Tile);
+                    break;
                 }
+
+                if (++index == start)
+                {
+                    start = -1;
+                }
+                else if (start == -1)
+                {
+                    selected = null;
+                    break;
+                }
+            }
+        }
+        private bool DoSelect(SpaceObject spaceObject)
+        {
+            Ship ship = ( spaceObject as Ship );
+            bool retVal = ( ship == null );
+            if (retVal)
+            {
+                Colony colony = (Colony)spaceObject;
+
+                retVal = !hold.Remove(colony.Planet);
+                bool invaded = CanBeInvaded(colony);
+                if (!retVal)
+                    hold.Add(colony.Planet);
+                retVal &= invaded;
+
+                if (!invaded)
+                    holdPersistent.Remove(colony.Planet);
+
             }
             else
             {
-                selected = null;
+                retVal = HasMoveLeft(ship);
             }
 
-            if (selected == null)
-            {
-                foreach (Colony colony in Game.CurrentPlayer.GetColonies())
-                    if (CanBeInvaded(colony))
-                    {
-                        SelectTile(colony.Tile);
-                        break;
-                    }
-            }
+            return retVal;
         }
 
         private void ShowAnomalies(List<Anomaly> anomalies)
@@ -1436,14 +1469,14 @@ namespace GalWarWin
                     CombatForm.FlushLog();
         }
 
-        private Ship clickedShip = null;
+        private SpaceObject firstClick = null;
         private void MainForm_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ClickMouse(e, true);
         }
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
-            clickedShip = null;
+            firstClick = null;
             ClickMouse(e, false);
         }
         private void ClickMouse(MouseEventArgs e, bool doubleClick)
@@ -1456,7 +1489,7 @@ namespace GalWarWin
                 if (e.Button == MouseButtons.Left)
                 {
                     selected = gamePoint;
-                    UnHold(GetSelectedShip());
+                    UnHold(GetSelectedSpaceObject());
 
                     if (isDialog && ValidDialogTile(selected.Value, clickedTile.SpaceObject))
                     {
@@ -1467,19 +1500,19 @@ namespace GalWarWin
                 }
                 else if (!isDialog && e.Button == MouseButtons.Right)
                 {
-                    if (doubleClick && clickedShip != null && hold.Contains(clickedShip))
-                    {
-                        holdPersistent.Add(clickedShip);
-                        clickedShip = null;
-                        return;
-                    }
-
-                    Ship target = clickedTile.SpaceObject as Ship;
-                    clickedShip = target;
 
                     showMoves = false;
 
+                    if (doubleClick && firstClick != null && hold.Contains(firstClick))
+                    {
+                        holdPersistent.Add(firstClick);
+                        firstClick = null;
+                        return;
+                    }
+                    firstClick = clickedTile.SpaceObject;
+
                     Colony colony = GetSelectedColony();
+                    Ship target = clickedTile.SpaceObject as Ship;
                     if (colony != null && target != null && colony.Player != target.Player && colony.HP > 0)
                     {
                         CombatForm.ShowForm(colony, target);
@@ -1531,12 +1564,12 @@ namespace GalWarWin
             }
         }
 
-        private void UnHold(Ship ship)
+        private void UnHold(SpaceObject spaceObject)
         {
-            if (ship != null && ship.Player.IsTurn)
+            if (spaceObject != null && spaceObject.Player != null && spaceObject.Player.IsTurn)
             {
-                hold.Remove(ship);
-                holdPersistent.Remove(ship);
+                hold.Remove(spaceObject);
+                holdPersistent.Remove(spaceObject);
             }
         }
 
@@ -1868,7 +1901,12 @@ namespace GalWarWin
                 Tile teleporter = selected.Teleporter;
                 if (teleporter != null)
                 {
-                    Center(teleporter.Point);
+                    Point point = teleporter.Point;
+                    Point center = GetGamePoint(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
+                    if (Math.Abs(point.X - center.X) + Math.Abs(point.Y - center.Y) < 3 || !SelectedVisible())
+                        point = selected.Point;
+
+                    Center(point);
                     InvalidateMap();
                 }
             }
@@ -2014,7 +2052,7 @@ namespace GalWarWin
         private void RefreshPlayerInfo()
         {
             lblPopulation.Text = Game.CurrentPlayer.GetPopulation().ToString();
-            lblGold.Text = FormatDouble(Game.CurrentPlayer.Gold);
+            ColorForIncome(lblGold, FormatDouble(Game.CurrentPlayer.Gold));
 
             int research;
             double population, production, gold;
@@ -2072,12 +2110,13 @@ namespace GalWarWin
 
                 Ship ship = GetSelectedShip();
                 Planet planet = GetSelectedPlanet();
+                Anomaly anomaly = GetSelectedSpaceObject() as Anomaly;
                 if (ship != null)
                     player = ShipInfo(ship);
                 else if (planet != null)
                     player = PlanetInfo(planet);
-                else if (GetSelectedSpaceObject() is Anomaly)
-                    lblTop.Text = "Anomaly";
+                else if (anomaly != null)
+                    AnomalyInfo(anomaly);
 
                 int telNum;
                 Game.GetTeleporter(selected.Value, out telNum);
@@ -2394,6 +2433,13 @@ namespace GalWarWin
                     newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
         }
 
+        private void AnomalyInfo(Anomaly anomaly)
+        {
+            lblTop.Text = "Anomaly";
+            lbl1.Text = "Planet";
+            lbl1Inf.Text = FormatPct(Game.GetAnomalyPlanetChance(anomaly.Tile), true);
+        }
+
         private void PlayerInfo(Player player)
         {
             if (lblTop.Text == string.Empty)
@@ -2429,11 +2475,10 @@ namespace GalWarWin
         public static string FormatPctWithCheck(double pct)
         {
             string retVal = FormatPct(pct);
-            //never display 100% if pct is less than 1
             if (pct < 1 && retVal == "100%")
-                retVal = "99%";
+                retVal = ">99%";
             else if (pct > 0 && retVal == "0%")
-                retVal = "1%";
+                retVal = "< 1%";
             return retVal;
         }
 
@@ -2471,7 +2516,7 @@ namespace GalWarWin
             return ChangeBuild(colony);
         }
 
-        int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
+        int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers)
         {
             showMoves = false;
 
@@ -2479,7 +2524,7 @@ namespace GalWarWin
                 SelectTile(fromColony.Tile);
             RefreshAll();
 
-            return SliderForm.ShowForm(new MoveTroops(fromColony, max, free, totalPop, soldiers));
+            return SliderForm.ShowForm(new MoveTroops(fromColony, max, totalPop, soldiers));
         }
 
         bool IEventHandler.Continue()

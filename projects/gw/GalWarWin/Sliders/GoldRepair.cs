@@ -14,24 +14,37 @@ namespace GalWarWin.Sliders
         private readonly Ship ship;
         private readonly int max;
 
+        private int maxHP;
+        private double repairCost;
+
         public GoldRepair(Ship ship)
         {
             this.ship = ship;
+
             this.max = TBSUtil.FindValue(delegate(int hp)
             {
                 return ( ship.GetGoldForHP(hp) < ship.Player.Gold );
             }, 0, ship.MaxHP - ship.HP, false);
         }
+        public GoldRepair(int maxHP, double repairCost)
+        {
+            this.maxHP = maxHP;
+            this.repairCost = repairCost;
+
+            this.max = maxHP - 1;
+        }
 
         public override Control GetCustomControl()
         {
+            if (ship == null)
+                return null;
             control.SetShip(ship);
             return control;
         }
 
         public override double GetInitial()
         {
-            if (ship.GetRepairedFrom() != null)
+            if (ship == null || ship.GetRepairedFrom() != null)
                 return GetOptimalProd();
             if (ship.Colony)
                 return GetOptimalColony();
@@ -45,6 +58,8 @@ namespace GalWarWin.Sliders
 
         private double GetDefault()
         {
+            if (ship == null)
+                return 1;
             return ship.GetAutoRepairHP();
         }
 
@@ -52,6 +67,8 @@ namespace GalWarWin.Sliders
         {
             return FindValue(delegate(int repair)
             {
+                if (ship == null)
+                    return Consts.GoldForProduction * this.repairCost * repair - Consts.GetGoldRepairCost(repair, this.maxHP, this.repairCost);
                 return Consts.GoldForProduction * ship.GetProdForHP(repair) - ship.GetGoldForHP(repair);
             });
         }
@@ -83,12 +100,19 @@ namespace GalWarWin.Sliders
 
         protected override double GetResult()
         {
+            if (ship == null)
+                return Consts.GetGoldRepairCost(GetValue(), this.maxHP, this.repairCost);
             return ship.GetGoldForHP(GetValue());
         }
 
         protected override string GetExtra()
         {
-            return ship.GetProdForHP(1).ToString("0.00");
+            double repairCost;
+            if (ship == null)
+                repairCost = this.repairCost;
+            else
+                repairCost = ship.GetProdForHP(1);
+            return repairCost.ToString("0.00");
         }
 
         protected override void SetText(Label lblTitle, Label lblSlideType)

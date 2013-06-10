@@ -81,8 +81,8 @@ namespace GalWar
                 AssertException.Assert(numPlayers > 1);
                 AssertException.Assert(numPlayers * 39 < MapSize);
                 AssertException.Assert(mapSize < 130);
-                AssertException.Assert(planetPct > 0.00013);
-                AssertException.Assert(planetPct < 0.013);
+                AssertException.Assert(planetPct > .0013);
+                AssertException.Assert(planetPct < .013);
 
                 this.StoreProd = new StoreProd();
                 this.Attack = new Attack();
@@ -257,19 +257,25 @@ namespace GalWar
                 //keep track of the chances that starting anomlies will become planets
                 if (anomaly != null && CheckPlanetDistance(anomaly.Tile))
                 {
-                    double anomPlanetRate = this.PlanetPct / this.AnomalyPct;
+                    int minDist = int.MaxValue;
+                    foreach (Planet planet in GetPlanets())
+                        minDist = Math.Min(minDist, Tile.GetDistance(anomaly.Tile, planet.Tile));
                     foreach (var pair in anomalies)
-                        if (Tile.GetDistance(anomaly.Tile, pair.Key.Tile) <= Consts.PlanetDistance)
-                            anomPlanetRate *= ( 1 - pair.Value );
-                    anomPlanets += anomPlanetRate;
-                    if (anomPlanets > planetPct)
+                        if (Game.Random.Bool(pair.Value))
+                            minDist = Math.Min(minDist, Tile.GetDistance(anomaly.Tile, pair.Key.Tile));
+                    if (minDist > Consts.PlanetDistance)
                     {
-                        anomaly.Tile.SpaceObject = null;
-                        anomPlanets -= anomPlanetRate;
-                    }
-                    else
-                    {
-                        anomalies.Add(anomaly, anomPlanetRate);
+                        double anomPlanetRate = GetAnomalyPlanetChance(minDist);
+                        anomPlanets += anomPlanetRate;
+                        if (anomPlanets > planetPct)
+                        {
+                            anomaly.Tile.SpaceObject = null;
+                            anomPlanets -= anomPlanetRate;
+                        }
+                        else
+                        {
+                            anomalies.Add(anomaly, anomPlanetRate);
+                        }
                     }
                 }
             }
@@ -767,12 +773,28 @@ next_planet:
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
         {
-            if (Random.Bool(this.PlanetPct / this.AnomalyPct) && CheckPlanetDistance(tile))
+            if (Random.Bool(GetAnomalyPlanetChance(tile)))
             {
                 handler.Explore(Anomaly.AnomalyType.NewPlanet);
                 return CreatePlanet(tile);
             }
             return null;
+        }
+        public double GetAnomalyPlanetChance(Tile tile)
+        {
+            int dist = int.MaxValue;
+            foreach (Planet planet in GetPlanets())
+                dist = Math.Min(dist, Tile.GetDistance(tile, planet.Tile));
+            return GetAnomalyPlanetChance(dist);
+        }
+        private double GetAnomalyPlanetChance(int dist)
+        {
+            if (dist > Consts.PlanetDistance)
+            {
+                dist -= Consts.PlanetDistance;
+                return this.PlanetPct / this.AnomalyPct * Math.Sqrt(dist / ( Math.Sqrt(MapDeviation) + dist ));
+            }
+            return 0;
         }
         internal bool CheckPlanetDistance(Tile tile)
         {

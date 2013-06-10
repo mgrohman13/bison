@@ -195,12 +195,12 @@ namespace GalWar
 
                     if (double.IsNaN(minCost))
                     {
-                        minCost = GetMinCost(mapSize) + MinCostBuffer;
+                        minCost = GetMinCost(mapSize, research) + MinCostBuffer;
                         maxCost = GetMaxCost(research, minCost);
                     }
                     else
                     {
-                        double absMin = GetAbsMinCost(mapSize) + MinCostBuffer;
+                        double absMin = GetAbsMinCost(mapSize, research) + MinCostBuffer;
                         if (minCost < absMin)
                             minCost = absMin;
                     }
@@ -319,7 +319,7 @@ namespace GalWar
                 out double upkeepPct, out double hpMult, out int att, out int def, out int hp,
                 out int speed, out bool colony, out int trans, out int bombardDamage)
         {
-            upkeepPct = ( design.Cost / (double)design.Upkeep / design.GetUpkeepPayoff(mapSize) + 1 ) * Consts.CostUpkeepPct;
+            upkeepPct = ( design.Cost / (double)design.Upkeep / design.GetUpkeepPayoff(mapSize, research) + 1 ) * Consts.CostUpkeepPct;
             hpMult = design.HP / GetHPStr(design.Att, design.Def, 1);
 
             double attStr = design.Att;
@@ -505,7 +505,7 @@ namespace GalWar
                 double costMult = 0;
                 foreach (ShipDesign design in designs)
                 {
-                    double upkeepPayoff = design.GetUpkeepPayoff(mapSize);
+                    double upkeepPayoff = design.GetUpkeepPayoff(mapSize, research);
                     double totalCost = design.Cost + design.Upkeep * upkeepPayoff;
 
                     upkeep *= design.Upkeep / ( totalCost / upkeepPayoff * Consts.CostUpkeepPct );
@@ -776,16 +776,16 @@ namespace GalWar
 
         #region Cost/Upkeep
 
-        private double GetMinCost(double mapSize)
+        private double GetMinCost(double mapSize, int research)
         {
             //random increase to absolute minimum
-            double minCost = GetAbsMinCost(mapSize);
+            double minCost = GetAbsMinCost(mapSize, research);
             return Game.Random.GaussianOE(minCost * 1.3, .13, .039, minCost);
         }
         private const double MinCostBuffer = 2.1;
-        private double GetAbsMinCost(double mapSize)
+        private double GetAbsMinCost(double mapSize, int research)
         {
-            return this.GetUpkeepPayoff(mapSize) * Consts.MinCostMult + MinCostBuffer;
+            return this.GetUpkeepPayoff(mapSize, research) * Consts.MinCostMult + MinCostBuffer;
         }
         private static double GetMaxCost(int research, double minCost)
         {
@@ -799,7 +799,7 @@ namespace GalWar
 
         private void GetCost(double mapSize, double upkeepPct, out double cost, out int upkeep, ref double upkRnd, FocusStat focus)
         {
-            double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
+            double upkeepPayoff = this.GetOnResearchUpkeepPayoff(mapSize);
             double totCost = GetTotCost();
 
             if (double.IsNaN(upkRnd))
@@ -957,18 +957,22 @@ namespace GalWar
         #region internal
 
         internal static double GetColonizationValue(double cost, int att, int def, double curHP, int maxHP,
-                int speed, int trans, bool colony, double bombardDamage, double research)
+                int speed, int trans, bool colony, double bombardDamage, int lastResearched)
         {
             if (!colony)
                 throw new Exception();
             if (curHP > maxHP)
                 curHP = maxHP;
-            return cost * curHP / (double)maxHP * Consts.GetNonColonyPct(att, def, maxHP, speed, trans, colony, bombardDamage, research, false);
+            return cost * curHP / (double)maxHP * Consts.GetNonColonyPct(att, def, maxHP, speed, trans, colony, bombardDamage, lastResearched, false);
         }
 
-        public double GetUpkeepPayoff(double mapSize)
+        private double GetOnResearchUpkeepPayoff(double mapSize)
         {
-            return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(), GetNonTransPct(), this.Speed);
+            return GetUpkeepPayoff(mapSize, this.Research);
+        }
+        public double GetUpkeepPayoff(double mapSize, int lastResearched)
+        {
+            return Consts.GetUpkeepPayoff(mapSize, GetNonColonyPct(lastResearched), GetNonTransPct(lastResearched), this.Speed);
         }
 
         internal HashSet<ShipDesign> GetObsolete(double mapSize, IEnumerable<ShipDesign> designs)
@@ -984,8 +988,8 @@ namespace GalWar
             if (this.Research <= oldDesign.Research)
                 return false;
 
-            double totCost = this.Cost + this.Upkeep * this.GetUpkeepPayoff(mapSize);
-            double oldTotCost = oldDesign.Cost + oldDesign.Upkeep * oldDesign.GetUpkeepPayoff(mapSize);
+            double totCost = this.Cost + this.Upkeep * this.GetOnResearchUpkeepPayoff(mapSize);
+            double oldTotCost = oldDesign.Cost + oldDesign.Upkeep * oldDesign.GetUpkeepPayoff(mapSize, this.Research);
 
             double attStr = GetStatValue(this.Att) * this.HP;
             double oldAttStr = GetStatValue(oldDesign.Att) * oldDesign.HP;
@@ -1053,12 +1057,7 @@ namespace GalWar
             int max = Math.Min(colony.AvailablePop, ship.FreeSpace);
             if (max > 0)
             {
-                //ensure the player has enough gold to move any number of troops
-                double goldBonus = PopCarrier.GetGoldCost(max);
-                if (colony.Player.Gold < goldBonus)
-                    colony.Player.AddGold(0, goldBonus);
-
-                max = handler.MoveTroops(colony, max, 0, colony.Population, colony.Soldiers);
+                max = handler.MoveTroops(colony, max, colony.Population, colony.Soldiers);
                 if (max > 0)
                 {
                     colony.MovePop(handler, max, ship);
@@ -1106,29 +1105,29 @@ namespace GalWar
             return MultStr(( s1 + s2 ) * ( s1 + s2 ), hpMult);
         }
 
-        public double GetColonizationValue(double mapSize, int research)
+        public double GetColonizationValue(double mapSize, int lastResearched)
         {
-            return GetColonizationValue(AdjustCost(mapSize), this.Att, this.Def, this.HP, this.HP,
-                    this.Speed, this.Trans, this.Colony, this.BombardDamage, research);
+            return GetColonizationValue(AdjustCost(mapSize, lastResearched), this.Att, this.Def, this.HP, this.HP,
+                    this.Speed, this.Trans, this.Colony, this.BombardDamage, lastResearched);
         }
 
-        internal double AdjustCost(double mapSize)
+        internal double AdjustCost(double mapSize, int lastResearched)
         {
-            double upkeepPayoff = this.GetUpkeepPayoff(mapSize);
+            double upkeepPayoff = this.GetUpkeepPayoff(mapSize, lastResearched);
             double cost = GetTotCost() - this.Upkeep * upkeepPayoff;
-            cost += ( cost - this.Cost ) / Consts.ScalePct(1, Consts.RepairCostMult, GetNonColonyPct());
-            if (cost < GetAbsMinCost(mapSize))
+            cost += ( cost - this.Cost ) / Consts.ScalePct(1, Consts.RepairCostMult, GetNonColonyPct(lastResearched));
+            if (cost < GetAbsMinCost(mapSize, lastResearched))
                 throw new Exception();
             return cost;
         }
 
-        private double GetNonColonyPct()
+        private double GetNonColonyPct(int lastResearched)
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research, true);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, lastResearched, true);
         }
-        private double GetNonTransPct()
+        private double GetNonTransPct(int lastResearched)
         {
-            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, this.Research);
+            return Consts.GetNonTransPct(this.Att, this.Def, this.HP, this.Speed, this.Trans, this.Colony, this.BombardDamage, lastResearched, true);
         }
 
         #endregion //public

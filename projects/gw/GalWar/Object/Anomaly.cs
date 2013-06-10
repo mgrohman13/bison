@@ -1086,9 +1086,11 @@ next:
             {
                 double addGold = amt;
                 if (amt == -1)
+                {
                     addGold = Player.RoundGold(this.value, true);
 
-                handler.Explore(AnomalyType.Gold, addGold);
+                    handler.Explore(AnomalyType.Gold, addGold);
+                }
 
                 anomShip.Player.AddGold(addGold);
             }

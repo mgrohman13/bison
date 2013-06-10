@@ -16,6 +16,8 @@ namespace GalWar
         private readonly byte _name, _mark;
         private readonly float _expDiv;
 
+        //private Tile _vector;
+
         private bool _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
         private ushort _maxHP, _maxTrans, _bombardDamage, _repair;
@@ -33,6 +35,8 @@ namespace GalWar
 
                 this._name = (byte)design.Name;
                 this._mark = (byte)design.Mark;
+
+                //this._vector = null;
 
                 this._hasRepaired = false;
 
@@ -57,7 +61,7 @@ namespace GalWar
                 this._curExp = 0;
                 this._totalExp = 0;
 
-                this._cost = design.AdjustCost(this.Player.Game.MapSize);
+                this._cost = design.AdjustCost(this.Player.Game.MapSize, this.Player.LastResearched);
 
                 this._expDiv = (float)GetValue();
 
@@ -96,6 +100,25 @@ namespace GalWar
                 return this._expDiv;
             }
         }
+
+        //public Tile Vector
+        //{
+        //    get
+        //    {
+        //        TurnException.CheckTurn(this.Player);
+
+        //        return this._vector;
+        //    }
+        //    set
+        //    {
+        //        checked
+        //        {
+        //            TurnException.CheckTurn(this.Player);
+
+        //            this._vector = value;
+        //        }
+        //    }
+        //}
 
         public bool HasRepaired
         {
@@ -938,12 +961,20 @@ namespace GalWar
 
         private double GetNonColonyPct()
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched, true);
+            return GetNonColonyPct(true);
+        }
+        private double GetNonColonyPct(bool sqr)
+        {
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched, sqr);
         }
 
         private double GetNonTransPct()
         {
-            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched);
+            return GetNonTransPct(true);
+        }
+        private double GetNonTransPct(bool sqr)
+        {
+            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched, sqr);
         }
 
         private void GetNextLevel(IEventHandler handler)
@@ -967,22 +998,26 @@ namespace GalWar
                 stats.Add(ExpType.HP, hp);
                 int total = att + def + hp;
 
+                double strInc = ( GetValue(ExpType.Att) * att + GetValue(ExpType.Def) * def + GetValue(ExpType.HP) * hp )
+                        / (double)total - GetValue();
+
                 int ds = 0, trans = 0;
                 if (this.DeathStar)
                 {
-                    ds = Game.Random.Round(this.BombardDamage * Math.E);
-                    total += ds;
+                    ds = GetExpChance(ref total, ref strInc, ExpType.DS,
+                            ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, 0, Player.LastResearched)
+                            / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched));
                     stats.Add(ExpType.DS, ds);
                 }
                 else if (this.MaxPop > 0)
                 {
-                    trans = Game.Random.Round(( this.MaxPop + ( this.Colony ? 26 : 0 ) ) / Math.PI);
-                    total += trans;
+                    trans = GetExpChance(ref total, ref strInc, ExpType.Trans, GetNonTransPct(false) * Math.Sqrt(GetNonColonyPct(false)));
                     stats.Add(ExpType.Trans, trans);
                 }
 
-                int speed = Game.Random.Round(Math.Sqrt(total * this.MaxSpeed) / 16.9);
-                total += speed;
+                int speed = GetExpChance(ref total, ref strInc, ExpType.Speed,
+                        Math.Sqrt(ShipDesign.GetTotCost(Att, Def, MaxHP, -1, MaxPop, Colony, BombardDamage, Player.LastResearched)
+                        / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched)));
                 stats.Add(ExpType.Speed, speed);
 
                 if (funky)
@@ -997,6 +1032,14 @@ namespace GalWar
             hpStr /= ShipDesign.GetHPStr(stat + 1, other) - hpStr;
             hpStr *= stat / (double)( stat + other );
             return Game.Random.Round(hpStr);
+        }
+        private int GetExpChance(ref int total, ref double strInc, ExpType expType, double nonTypePct)
+        {
+            double typeInc = GetValue(expType) - GetValue();
+            int type = Game.Random.Round(( total * strInc / Math.Sqrt(nonTypePct) - total * strInc ) / typeInc);
+            strInc = ( strInc * total + typeInc * type ) / ( total + type );
+            total += type;
+            return type;
         }
         private Dictionary<ExpType, int> FunkyChance(int oldTotal, int ds, int trans, int speed)
         {
@@ -1014,7 +1057,7 @@ namespace GalWar
             stats[ExpType.Def] = def;
             stats[ExpType.HP] = hp;
 
-            speed = Game.Random.Round(speed * 2.6 / (double)this.MaxSpeed);
+            speed = Game.Random.Round(speed * Math.PI / (double)this.MaxSpeed);
             newTotal += speed;
             stats.Add(ExpType.Speed, speed);
 
@@ -1275,14 +1318,15 @@ namespace GalWar
                 AssertException.Assert(gold == 0);
             }
 
-            //all attackers cost gold to move regardless of where they end up
-            this.Player.SpendGold(GetActualGoldCost(population) + gold, gold);
-
             double soldiers;
             if (target.Population > 0)
                 soldiers = GetSoldiers(population);
             else
                 soldiers = GetMoveSoldiers(population);
+
+            this.Player.SpendGold(gold);
+            //all attackers cost gold to move regardless of where they end up
+            this.Player.GoldIncome(-GetGoldCost(population, soldiers));
 
             //all attackers cannot be moved again regardless of where they end up
             this.Population -= population;
@@ -1321,7 +1365,7 @@ namespace GalWar
             AssertException.Assert(planet.ColonizationCost < this.Player.Gold);
 
             this.Player.SpendGold(planet.ColonizationCost);
-            this.Player.GoldIncome(-GetActualGoldCost(this.Population));
+            this.Player.GoldIncome(-GetGoldCost(this.Population, this.Soldiers));
 
             int production = Game.Random.Round(ColonizationValue);
             this.Player.NewColony(handler, planet, this.Population, this.Soldiers, production);
@@ -1410,9 +1454,9 @@ namespace GalWar
                 gold /= hp;
             return gold;
         }
-        private double CalcGoldForHP(int hp)
+        public double CalcGoldForHP(int hp)
         {
-            return hp * RepairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)this.MaxHP / Consts.RepairGoldHPPct);
+            return Consts.GetGoldRepairCost(hp, this.MaxHP, this.RepairCost);
         }
 
         public double GetHPForGold(double gold)

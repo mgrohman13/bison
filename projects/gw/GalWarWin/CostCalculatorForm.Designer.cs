@@ -302,6 +302,7 @@
             this.label16.TabIndex = 38;
             this.label16.Text = "Production";
             this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.label16.Click += new System.EventHandler(this.label16_Click);
             // 
             // label9
             // 

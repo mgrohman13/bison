@@ -26,7 +26,8 @@ namespace GalWar
         private bool _goldEmphasis, _researchEmphasis, _productionEmphasis;
         private byte _researchFocus, _pdAtt, _pdDef;
         private ushort _newResearch;
-        private uint _research, _lastResearched, _researchGuess, _goldValue;
+        private int _goldValue;
+        private uint _research, _lastResearched, _researchGuess;
         private float _rChance, _rDesignMult, _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
         private double _goldOffset;
 
@@ -283,7 +284,7 @@ namespace GalWar
                 checked
                 {
                     VerifyRounded(value);
-                    this._goldValue = (uint)Math.Round(value * 10);
+                    this._goldValue = (int)Math.Round(value * 10);
                 }
             }
         }
@@ -586,9 +587,9 @@ namespace GalWar
 
         internal void EndTurn(IEventHandler handler)
         {
-            bool neg = MinGoldNegative();
+            AutoRepairShips(handler);
 
-            AutoRepairShips(handler, true);
+            CheckGold(handler);
 
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
@@ -603,11 +604,6 @@ namespace GalWar
             this.AddGold(gold);
             this.newResearch = research;
             this.ResearchGuess += research;
-
-            if (!neg && NegativeGold())
-                throw new Exception();
-
-            CheckGold(handler);
         }
 
         private void CheckGold(IEventHandler handler)
@@ -632,7 +628,6 @@ namespace GalWar
                 ++sold;
                 Colony colony = Game.Random.SelectValue<Colony>(production);
 
-                AddGold(Consts.GetProductionUpkeepMult(Game.MapSize));
                 colony.SellProduction(handler, 1);
 
                 if (colony.Production > 0)
@@ -649,21 +644,15 @@ namespace GalWar
                 {
                     if (colony.HP > 0)
                     {
-                        double target = GetNegativeGold();
                         int sell = MattUtil.TBSUtil.FindValue(delegate(int hp)
                         {
                             int newAtt, newDef;
-                            double gold = colony.Upkeep;
-                            gold += colony.GetActualDisbandValue(hp, out newAtt, out newDef);
-                            gold -= colony.GetPDUpkeep(colony.HP - hp, newAtt, newDef);
-                            return ( gold + target >= 0 );
+                            return ( colony.GetPlanetDefenseDisbandValue(hp, true, out newAtt, out newDef) + goldValue > -Consts.FLOAT_ERROR );
                         }, 1, colony.HP, true);
 
                         Console.WriteLine("Sold " + sell + " hp from " + colony + " (" + colony.Tile + ")");
 
-                        double upkeep = colony.Upkeep;
                         colony.DisbandPlanetDefense(handler, sell, true);
-                        AddGold(upkeep - colony.Upkeep);
                     }
                 }
                 else
@@ -678,31 +667,12 @@ namespace GalWar
                 Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
                 Console.WriteLine("Disbanded ship: " + ship);
 
-                AddGold(ship.Upkeep);
                 ship.Disband(handler, null);
             }
         }
-
-        public bool MinGoldNegative()
-        {
-            return NegativeGold(RoundGold(GetMinGold()));
-        }
         private bool NegativeGold()
         {
-            return ( GetNegativeGold() < 0 );
-        }
-        private double GetNegativeGold()
-        {
-            //fudge factor of half-rounding so that NegativeGold will never return true when MinGoldNegative returned false
-            return GetNegativeGold(this.goldOffset + .05);
-        }
-        private bool NegativeGold(double add)
-        {
-            return ( GetNegativeGold(add) < 0 );
-        }
-        private double GetNegativeGold(double add)
-        {
-            return this.goldValue + add + Consts.FLOAT_ERROR;
+            return ( goldValue < 0 );
         }
 
         internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, int production)
@@ -754,8 +724,6 @@ namespace GalWar
         }
         internal void AddGold(double gold, double rounded)
         {
-            if (rounded < -this.goldValue)
-                rounded = -this.goldValue;
             GoldIncome(gold - rounded);
             this.goldValue += rounded;
         }
@@ -944,13 +912,9 @@ namespace GalWar
 
         public double GetMinGold()
         {
-            return GetMinGold(true);
-        }
-        public double GetMinGold(bool countRepair)
-        {
             int research;
             double population, production, gold;
-            GetTurnIncome(out population, out research, out production, out gold, true, countRepair);
+            GetTurnIncome(out population, out research, out production, out gold, true, true);
             return gold;
         }
 
@@ -1089,31 +1053,20 @@ namespace GalWar
             handler = new HandlerWrapper(handler, this.Game, false);
             TurnException.CheckTurn(this);
 
-            AutoRepairShips(handler, false);
-        }
-        private void AutoRepairShips(IEventHandler handler, bool checkGoldLoss)
-        {
-            double goldLoss = 0;
-            if (checkGoldLoss)
-            {
-                goldLoss = GetMinGold(false);
-                if (goldLoss > 0)
-                    goldLoss = 0;
-            }
+            if (this.goldValue > 0)
+                foreach (Ship ship in Game.Random.Iterate(this.ships))
+                    if (ship.DoAutoRepair)
+                    {
+                        double cost = this.goldValue / GetAutoRepairCost();
+                        if (cost < 1)
+                            ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(cost * ship.GetGoldForHP(ship.GetAutoRepairHP())));
 
-            foreach (Ship ship in Game.Random.Iterate(this.ships))
-                if (ship.DoAutoRepair)
-                {
-                    double cost = ( this.goldValue + goldLoss ) / GetAutoRepairCost();
-                    if (cost < 1)
-                        ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(cost * ship.GetGoldForHP(ship.GetAutoRepairHP())));
-
-                    int hp = Game.Random.Round(ship.GetAutoRepairHP());
-                    while (hp > 0 && ship.GetGoldForHP(hp) > this.Gold + FloorGold(goldLoss))
-                        --hp;
-                    if (hp > 0)
-                        ship.GoldRepair(handler, hp);
-                }
+                        int hp = Game.Random.Round(ship.GetAutoRepairHP());
+                        while (hp > 0 && ship.GetGoldForHP(hp) > this.Gold)
+                            --hp;
+                        if (hp > 0)
+                            ship.GoldRepair(handler, hp);
+                    }
         }
         public double GetAutoRepairCost()
         {
@@ -1137,20 +1090,10 @@ namespace GalWar
         }
         private void AutoRepairIncome(ref double gold, bool minGold)
         {
-            double repairGold = gold;
-            if (!minGold)
-                repairGold = GetMinGold(false);
-            if (repairGold > 0)
-                repairGold = 0;
-            repairGold += this.goldValue;
-            if (repairGold > 0)
-            {
-                double repairCost = GetAutoRepairCost(minGold);
-                if (repairCost > repairGold)
-                    repairCost = repairGold;
-
-                gold -= repairCost;
-            }
+            double repairCost = GetAutoRepairCost(minGold);
+            if (repairCost > this.goldValue)
+                repairCost = this.goldValue;
+            gold -= repairCost;
         }
 
         internal void PlayTurn(IEventHandler handler, List<Anomaly> anomalies)

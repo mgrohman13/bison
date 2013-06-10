@@ -29,9 +29,9 @@ namespace GalWarWin
 
             this.lblOverflow.Visible = false;
 
-            int research = MainForm.Game.CurrentPlayer.GetLastResearched();
-            SetValue(this.nudResearch, Game.Random.GaussianCappedInt(research,
-                    Consts.ResearchRndm, (int)Math.Min(research, Consts.StartResearch)));
+            int research = Game.Random.GaussianCappedInt(MainForm.Game.CurrentPlayer.GetLastResearched(),
+                    Consts.ResearchRndm, (int)Math.Min(MainForm.Game.CurrentPlayer.GetLastResearched(), Consts.StartResearch));
+            SetValue(this.nudResearch, research);
 
             double str = ShipDesign.GetAttDefStr(research);
             SetValue(this.nudAtt, ShipDesign.MakeStat(str));
@@ -64,43 +64,46 @@ namespace GalWarWin
         {
             events = false;
 
-            this.lblOverflow.Visible = false;
-
-            SetValue(this.nudAtt, ship.Att);
-            SetValue(this.nudDef, ship.Def);
-            SetValue(this.nudHP, ship.MaxHP);
-            SetValue(this.nudSpeed, ship.MaxSpeed);
-            SetValue(this.nudTrans, ship.MaxPop);
-            this.cbCol.Checked = ship.Colony;
-            this.cbDS.Checked = ship.DeathStar;
-            SetValue(this.nudDS, ship.BombardDamage);
-
-            if (ship.Player.IsTurn)
+            do
             {
-                double cost = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
-                SetValue(this.nudProd, cost);
-                SetValue(this.nudUpk, ship.BaseUpkeep);
-                SetValue(this.nudResearch, CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.BaseUpkeep));
+                this.lblOverflow.Visible = false;
 
-                Update(null);
-                events = false;
-            }
-            else
-            {
-                Dictionary<Player, double> playerResearch = MainForm.Game.GetResearch();
-                double research = playerResearch[ship.Player] / playerResearch[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
-                SetValue(this.nudResearch, Math.Round(research));
+                SetValue(this.nudAtt, ship.Att);
+                SetValue(this.nudDef, ship.Def);
+                SetValue(this.nudHP, ship.MaxHP);
+                SetValue(this.nudSpeed, ship.MaxSpeed);
+                SetValue(this.nudTrans, ship.MaxPop);
+                this.cbCol.Checked = ship.Colony;
+                this.cbDS.Checked = ship.DeathStar;
+                SetValue(this.nudDS, ship.BombardDamage);
 
-                double totCost = Update(null);
-                events = false;
+                if (ship.Player.IsTurn)
+                {
+                    double cost = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
+                    SetValue(this.nudProd, cost);
+                    SetValue(this.nudUpk, ship.BaseUpkeep);
+                    SetValue(this.nudResearch, CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.BaseUpkeep));
 
-                CalcCost(research, totCost);
-            }
+                    Update(null);
+                    events = false;
+                }
+                else
+                {
+                    Dictionary<Player, double> playerResearch = MainForm.Game.GetResearch();
+                    int research = (int)Math.Round(playerResearch[ship.Player] / playerResearch[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched());
+                    SetValue(this.nudResearch, research);
+
+                    double totCost = Update(null);
+                    events = false;
+
+                    CalcCost(research, totCost);
+                }
+            } while (this.lblOverflow.Visible);
 
             events = true;
         }
 
-        private void CalcCost(double research, double totCost)
+        private void CalcCost(int research, double totCost)
         {
             int att = (int)this.nudAtt.Value;
             int def = (int)this.nudDef.Value;
@@ -145,7 +148,7 @@ namespace GalWarWin
             if (sender != null)
                 this.lblOverflow.Visible = false;
 
-            double research = (double)this.nudResearch.Value;
+            int research = (int)this.nudResearch.Value;
             int att = (int)this.nudAtt.Value;
             int def = (int)this.nudDef.Value;
             int hp = (int)this.nudHP.Value;
@@ -200,16 +203,16 @@ namespace GalWarWin
             return GetProd(att, def, hp, speed, trans, colony, bombardDamage, research, upk,
                     ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research));
         }
-        private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research, int upk, double totCost)
+        private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int research, int upk, double totCost)
         {
             return ( totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamage, research) );
         }
 
-        private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
+        private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int research)
         {
             return Consts.GetUpkeepPayoff(MainForm.Game.MapSize,
                     Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, research, true),
-                    Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamage, research), speed);
+                    Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamage, research, true), speed);
         }
 
         private void MaintainDS(bool deathStar)
@@ -321,6 +324,13 @@ namespace GalWarWin
                 form.SetShipDesign(shipDesign);
 
             form.ShowDialog();
+        }
+
+        private void label16_Click(object sender, EventArgs e)
+        {
+            double cost = (double)this.nudProd.Value;
+            int hp = (int)this.nudHP.Value;
+            Sliders.SliderForm.ShowForm(new Sliders.GoldRepair(hp, Consts.RepairCostMult * cost / (double)hp));
         }
     }
 }

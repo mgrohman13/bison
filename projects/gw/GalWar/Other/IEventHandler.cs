@@ -9,7 +9,7 @@ namespace GalWar
 
         Buildable getNewBuild(Colony colony);
 
-        int MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers);
+        int MoveTroops(Colony fromColony, int max, int totalPop, double soldiers);
 
         bool Continue();
 

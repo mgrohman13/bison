@@ -489,9 +489,9 @@ namespace GalWar
             if (Planet.Dead)
                 exp += Consts.PlanetConstValue;
             exp *= Consts.TroopExperienceMult;
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, initPop, exp);
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, initPop, exp);
             double shipValueExp;
-            attSoldiers += GetExperienceSoldiers(attackers, initAttackers, exp, out shipValueExp);
+            attSoldiers += GetExperienceSoldiers(attackers, attSoldiers, initAttackers, exp, out shipValueExp);
             ship.AddExperience(0, shipValueExp);
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
@@ -504,16 +504,18 @@ namespace GalWar
             }
         }
 
-        private static double GetExperienceSoldiers(Player player, int curPop, double initPop, double exp)
+        private static double GetExperienceSoldiers(Player player, int curPop, double curSoldiers, double initPop, double exp)
         {
             double other;
-            double soldiers = GetExperienceSoldiers(curPop, initPop, exp, out other);
+            double soldiers = GetExperienceSoldiers(curPop, curSoldiers, initPop, exp, out other);
             player.GoldIncome(other);
             return soldiers;
         }
-        private static double GetExperienceSoldiers(int curPop, double initPop, double exp, out double other)
+        private static double GetExperienceSoldiers(int curPop, double curSoldiers, double initPop, double exp, out double other)
         {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
+            double newSoldierPct = ( curSoldiers + mult / Consts.ExpForSoldiers ) / curPop;
+            mult *= 1 / ( newSoldierPct + 1 );
             other = ( exp - mult );
             return Consts.GetExperience(mult / Consts.ExpForSoldiers);
         }
@@ -563,7 +565,7 @@ namespace GalWar
             int occupy = attackers;
             if (initPop > 0 && attackers > 1)
             {
-                occupy = handler.MoveTroops(null, occupy, occupy, occupy, soldiers);
+                occupy = handler.MoveTroops(null, occupy, occupy, soldiers);
                 if (occupy < 1)
                     occupy = 1;
             }
@@ -815,7 +817,13 @@ namespace GalWar
                     totalProd -= loss;
                     gold += loss / Consts.ProductionForGold - shipDesign.Upkeep * Consts.UpkeepUnmovedReturn;
                     if (minGold)
-                        gold -= GetActualGoldCost(shipDesign.Trans);
+                    {
+                        int thisPop = this.Population + (int)Math.Floor(this.GetPopulationGrowth());
+                        int move = shipDesign.Trans;
+                        if (move > thisPop)
+                            move = thisPop + 1;
+                        gold -= GetGoldCost(move, PopCarrier.GetMoveSoldiers(thisPop, this.Soldiers, move));
+                    }
                     if (!this.Buildable.Multiple)
                         break;
                 }
@@ -1185,7 +1193,7 @@ namespace GalWar
         internal override void AddExperience(double rawExp, double valueExp)
         {
             valueExp += rawExp * this.PlanetDefenseCostPerHP / this.PlanetDefenseStrengthPerHP;
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Population, valueExp);
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, this.Population, valueExp);
         }
 
         internal void BuildPlanetDefense(double prodInc)

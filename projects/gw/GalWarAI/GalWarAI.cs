@@ -579,8 +579,8 @@ namespace GalWarAI
         internal double GetStrPerProd()
         {
             double strPerProd = 0;
-            foreach (ShipDesign design in LoopDesigns())
-                strPerProd = Math.Max(strPerProd, design.GetStrength() / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(game.MapSize) ));
+            //foreach (ShipDesign design in LoopDesigns())
+            //    strPerProd = Math.Max(strPerProd, design.GetStrength() / ( design.Cost + design.Upkeep * design.GetUpkeepPayoff(game.MapSize) ));
             return strPerProd;
         }
 

@@ -44,21 +44,36 @@ namespace GalWarWin.Sliders
                 setValue = autoRepair;
             }
 
-            checkRB.Checked = true;
-
             this.txtDefault.Text = string.Empty;
             SetValue(this.txtDefault, setValue);
 
+            checkRB.Checked = true;
+            this.txtDefault.Enabled = false;
+        }
+        private void AutoRepairForm_Shown(object sender, EventArgs e)
+        {
             RefreshEnabled();
         }
 
         private void RefreshEnabled()
         {
-            this.txtDefault.Enabled = this.rbDefault.Checked;
-            this.txtCost.Enabled = this.rbCost.Checked;
-            this.txtConst.Enabled = this.rbConst.Checked;
-            this.txtPct.Enabled = this.rbPct.Checked;
-            this.txtTurn.Enabled = this.rbTurn.Checked;
+            Enable(txtDefault, rbDefault);
+            Enable(txtCost, rbCost);
+            Enable(txtConst, rbConst);
+            Enable(txtPct, rbPct);
+            Enable(txtTurn, rbTurn);
+        }
+        private void Enable(TextBox textBox, RadioButton radioButton)
+        {
+            bool enabled = textBox.Enabled;
+
+            textBox.Enabled = radioButton.Checked;
+
+            if (textBox.Enabled && !enabled)
+            {
+                textBox.SelectAll();
+                textBox.Focus();
+            }
         }
 
         private void RefreshValues(object sender, double value)

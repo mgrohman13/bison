@@ -70,13 +70,18 @@ namespace GalWarWin
 
             double div = 1;
             if (form.cbCost.Checked && form.cbUpkeep.Checked)
-                div = ( shipDesign.Cost + shipDesign.Upkeep * shipDesign.GetUpkeepPayoff(MainForm.Game.MapSize) );
+                div = ( shipDesign.Cost + shipDesign.Upkeep * GetUpkeepPayoff(shipDesign) );
             else if (form.cbCost.Checked)
                 div = shipDesign.Cost;
             else if (form.cbUpkeep.Checked)
-                div = shipDesign.Upkeep + shipDesign.GetUpkeepPayoff(MainForm.Game.MapSize) * Consts.FLOAT_ERROR;
+                div = shipDesign.Upkeep + GetUpkeepPayoff(shipDesign) * Consts.FLOAT_ERROR;
 
             return value / div;
+        }
+
+        private static double GetUpkeepPayoff(ShipDesign shipDesign)
+        {
+            return shipDesign.GetUpkeepPayoff(MainForm.Game.MapSize, MainForm.Game.CurrentPlayer.GetLastResearched());
         }
     }
 }

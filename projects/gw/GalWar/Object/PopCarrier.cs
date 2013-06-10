@@ -165,17 +165,12 @@ namespace GalWar
 
             return this.Tile;
         }
-        private static void MovePop(PopCarrier source, PopCarrier destination, int population, double soldiers, bool undo)
+        private void MovePop(PopCarrier source, PopCarrier destination, int population, double soldiers, bool undo)
         {
-            double actual, rounded;
-            GetGoldCost(population, out actual, out rounded);
+            double goldCost = GetGoldCost(population, soldiers);
             if (!undo)
-            {
-                AssertException.Assert(rounded < source.Player.Gold);
-                actual = -actual;
-                rounded = -rounded;
-            }
-            source.Player.AddGold(actual, rounded);
+                goldCost = -goldCost;
+            source.Player.GoldIncome(goldCost);
 
             source.Soldiers -= soldiers;
             destination.Soldiers += soldiers;
@@ -205,20 +200,9 @@ namespace GalWar
             return moveSoldiers;
         }
 
-        internal static double GetActualGoldCost(int population)
+        protected double GetGoldCost(int population, double soldiers)
         {
-            return population * Consts.MovePopulationGoldCost;
-        }
-        public static double GetGoldCost(int population)
-        {
-            double actual, rounded;
-            GetGoldCost(population, out actual, out rounded);
-            return rounded;
-        }
-        private static void GetGoldCost(int population, out double actual, out double rounded)
-        {
-            actual = GetActualGoldCost(population);
-            rounded = Player.CeilGold(actual);
+            return population * Consts.MovePopulationCost + Consts.GetSoldierUpkeep(Tile.Game.MapSize, soldiers) * Consts.MoveSoldiersCost;
         }
 
         public double GetSoldiers(int troops)

@@ -214,6 +214,7 @@ namespace GalWarWin.Sliders
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "AutoRepairForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Shown += new System.EventHandler(this.AutoRepairForm_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -88,12 +88,13 @@ namespace GalWar
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
         public const double ProductionForSoldiers = .91;
         public const double SoldierUpkeepMult = .26;
+        public const double MoveSoldiersCost = .39;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3;
         public const double SoldiersForGold = ProductionForGold / ProductionForSoldiers;
         //ExpForGold will be increased by the players most recent research
         public const double ExpForGold = 1 / DisbandPct;
 
-        public const double MovePopulationGoldCost = Income / 2.0;
+        public const double MovePopulationCost = Income / 2.0;
         public const double MoveSoldiersMult = 2.1;
         //rate for losing troops when a transport is damaged
         public const double TransLossPctPower = 1.3;
@@ -194,7 +195,16 @@ namespace GalWar
 
         public static double GetSoldierUpkeep(PopCarrier popCarrier)
         {
-            return Consts.SoldierUpkeepMult * Consts.ProductionForSoldiers * GetProductionUpkeepMult(popCarrier.Tile.Game.MapSize) * popCarrier.Soldiers;
+            return GetSoldierUpkeep(popCarrier.Tile.Game.MapSize, popCarrier.Soldiers);
+        }
+        public static double GetSoldierUpkeep(double mapSize, double soldiers)
+        {
+            return Consts.SoldierUpkeepMult * Consts.ProductionForSoldiers * GetProductionUpkeepMult(mapSize) * soldiers;
+        }
+
+        public static double GetGoldRepairCost(int hp, int maxHP, double repairCost)
+        {
+            return hp * repairCost * Math.Pow(Consts.RepairGoldIncPowBase, hp / (double)maxHP / Consts.RepairGoldHPPct);
         }
 
         //upkeep payoff is the number of turns the ship is expected to live
@@ -214,28 +224,30 @@ namespace GalWar
             return ( zero + ( one - zero ) * pct );
         }
 
-        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research, bool sqr)
+        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int lastResearched, bool sqr)
         {
             double retVal = 1;
             if (colony)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 26.0 / (double)trans + 1 ), false, bombardDamage, research)
-                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 13 / (double)trans + 1 ), false, bombardDamage, lastResearched)
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, lastResearched);
                 if (sqr)
                     retVal *= retVal;
             }
             return retVal;
         }
 
-        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double research)
+        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int lastResearched, bool sqr)
         {
+            double retVal = 1;
             if (trans > 0)
             {
-                double retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamage, research)
-                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, research);
-                return ( retVal * retVal );
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamage, lastResearched)
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, lastResearched);
+                if (sqr)
+                    retVal *= retVal;
             }
-            return 1;
+            return retVal;
         }
 
         //randomized

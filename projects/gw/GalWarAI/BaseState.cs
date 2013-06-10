@@ -58,7 +58,7 @@ namespace GalWarAI
             return colony.Buildable;
         }
 
-        int IEventHandler.MoveTroops(Colony fromColony, int max, int free, int totalPop, double soldiers)
+        int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers)
         {
             if (fromColony == null)
                 //TODO: make sure you will not immediately be invaded
