@@ -514,8 +514,15 @@ namespace GalWar
         private static double GetExperienceSoldiers(int curPop, double curSoldiers, double initPop, double exp, out double other)
         {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
-            double newSoldierPct = ( curSoldiers + mult / Consts.ExpForSoldiers ) / curPop;
-            mult *= 1 / ( newSoldierPct + 1 );
+            if (curPop > 0)
+            {
+                double newSoldierPct = ( curSoldiers + mult / Consts.ExpForSoldiers ) / curPop;
+                mult *= 1 / ( newSoldierPct + 1 );
+            }
+            else
+            {
+                mult = 0;
+            }
             other = ( exp - mult );
             return Consts.GetExperience(mult / Consts.ExpForSoldiers);
         }
