@@ -1017,7 +1017,8 @@ namespace GalWar
 
                 int speed = GetExpChance(ref total, ref strInc, ExpType.Speed,
                         Math.Sqrt(ShipDesign.GetTotCost(Att, Def, MaxHP, -1, MaxPop, Colony, BombardDamage, Player.LastResearched)
-                        / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched)));
+                        / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched))
+                        , Math.Sqrt(MaxSpeed / 5.2));
                 stats.Add(ExpType.Speed, speed);
 
                 if (funky)
@@ -1035,8 +1036,19 @@ namespace GalWar
         }
         private int GetExpChance(ref int total, ref double strInc, ExpType expType, double nonTypePct)
         {
+            return GetExpChance(ref total, ref strInc, expType, nonTypePct, 1);
+        }
+        private int GetExpChance(ref int total, ref double strInc, ExpType expType, double nonTypePct, double mult)
+        {
+            nonTypePct = Math.Sqrt(nonTypePct);
             double typeInc = GetValue(expType) - GetValue();
-            int type = Game.Random.Round(( total * strInc / Math.Sqrt(nonTypePct) - total * strInc ) / typeInc);
+            double avg = ( total * strInc / nonTypePct - total * strInc ) / typeInc;
+            const double add = .39;
+            if (avg < 0)
+                avg = add / ( 1.0 - avg );
+            else
+                avg += add;
+            int type = Game.Random.Round(avg * mult);
             strInc = ( strInc * total + typeInc * type ) / ( total + type );
             total += type;
             return type;
