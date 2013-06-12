@@ -104,7 +104,7 @@ namespace GalWar
                 double min = this.PlanetPct + 0.13;
                 this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
 
-                int teleporters = Random.GaussianOEInt(this.MapDeviation / 9.1, 26, .13);
+                int teleporters = Random.GaussianOEInt(Math.Sqrt(MapSize) / 26.0, 26, .13);
                 for (int a = 0 ; a < teleporters ; ++a)
                 {
                     Tile t1 = GetRandomTile(), t2 = GetRandomTile();
@@ -118,7 +118,7 @@ namespace GalWar
                 for (int a = 0 ; a < teleporters ; ++a)
                     RemoveTeleporter(this.GetTeleporters()[0]);
 
-                AdjustCenter(this.MapDeviation);
+                AdjustCenter(13);
 
                 this.Graphs = new Graphs(this);
             }
@@ -791,8 +791,8 @@ next_planet:
         {
             if (dist > Consts.PlanetDistance)
             {
-                dist -= Consts.PlanetDistance;
-                return this.PlanetPct / this.AnomalyPct * Math.Sqrt(dist / ( Math.Sqrt(MapDeviation) + dist ));
+                double value = .52 + dist - Consts.PlanetDistance - 1;
+                return this.PlanetPct / this.AnomalyPct * Math.Sqrt(value / ( .91 + Math.Pow(MapSize, .21) / 1.69 + value ));
             }
             return 0;
         }
@@ -833,7 +833,7 @@ next_planet:
 
         private void AdjustCenter(double avg)
         {
-            int amt = Random.OEInt(avg * MapDeviation / 16.9);
+            int amt = Random.OEInt(avg * Math.Sqrt(MapSize) / 91.0);
 
             if (amt > 0)
             {
@@ -920,7 +920,7 @@ next_planet:
             }
 
             //mult just ensures we don't overload 32 bit ints
-            double mult = sbyte.MaxValue / max / max;
+            double mult = 99 / max / max;
 
             Dictionary<Tile, int> chances = new Dictionary<Tile, int>();
             foreach (var pair in directions)

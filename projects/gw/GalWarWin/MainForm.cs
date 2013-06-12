@@ -444,18 +444,25 @@ namespace GalWarWin
                     g.FillEllipse(brush, planetRect);
             }
 
-            if (colony != null && scale > ShipDetailScale)
-            {
-                if (colony.HP > 0)
-                    g.DrawEllipse(Pens.White, planetRect);
-                double pct = colony.Population / (double)planet.Quality;
-                if (pct < 1 && scale > TextScale)
+            if (colony != null)
+                if (scale > ShipDetailScale)
                 {
-                    string str = FormatPctWithCheck(pct);
-                    SizeF strSize = g.MeasureString(str, font);
-                    g.DrawString(str, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
+                    if (colony.HP > 0)
+                        g.DrawEllipse(Pens.White, planetRect);
+                    double pct = colony.Population / (double)planet.Quality;
+                    if (pct < 1 && scale > TextScale)
+                    {
+                        string str = FormatPctWithCheck(pct);
+                        SizeF strSize = g.MeasureString(str, font);
+                        g.DrawString(str, font, Brushes.White, rect.Right - strSize.Width, rect.Bottom - strSize.Height);
+                    }
                 }
-            }
+                else
+                {
+                    using (Brush brush = new SolidBrush(colony.Player.Color))
+                        g.FillRectangle(brush, rect);
+                    g.DrawEllipse(Pens.White, RectangleF.Inflate(planetRect, .5f, .5f));
+                }
         }
 
         private void DrawShip(Graphics g, float scale, RectangleF rect, Ship ship, float minStr, float maxStr)

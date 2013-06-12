@@ -538,7 +538,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Tile.SpaceObject != this );
+                return ( this.Tile == null || this.Tile.SpaceObject != this );
             }
         }
 
@@ -1018,7 +1018,7 @@ namespace GalWar
                 int speed = GetExpChance(ref total, ref strInc, ExpType.Speed,
                         Math.Sqrt(ShipDesign.GetTotCost(Att, Def, MaxHP, -1, MaxPop, Colony, BombardDamage, Player.LastResearched)
                         / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched))
-                        , Math.Sqrt(MaxSpeed / 5.2));
+                        , Math.Sqrt(MaxSpeed / 6.5));
                 stats.Add(ExpType.Speed, speed);
 
                 if (funky)
@@ -1069,7 +1069,7 @@ namespace GalWar
             stats[ExpType.Def] = def;
             stats[ExpType.HP] = hp;
 
-            speed = Game.Random.Round(speed * Math.PI / (double)this.MaxSpeed);
+            speed = Game.Random.Round(speed * 3.9 / (double)this.MaxSpeed);
             newTotal += speed;
             stats.Add(ExpType.Speed, speed);
 
