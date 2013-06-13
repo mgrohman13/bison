@@ -100,11 +100,12 @@ namespace GalWar
                 this._turn = 0;
 
                 planetPct *= MapSize;
-                this._planetPct = (float)Random.GaussianCapped(planetPct / 104.0, .091, planetPct / 169.0);
+                this._planetPct = (float)Random.GaussianCapped(planetPct / 130.0, .078, planetPct / 169.0);
                 double min = this.PlanetPct + 0.13;
                 this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
 
-                int teleporters = Random.GaussianOEInt(Math.Sqrt(MapSize) / 26.0, 26, .13);
+                double avgTeleporters = Math.Sqrt(MapSize) / 21.0;
+                int teleporters = Random.GaussianOEInt(avgTeleporters, .065, .065, ( ( avgTeleporters > 1 ) ? 1 : 0 ));
                 for (int a = 0 ; a < teleporters ; ++a)
                 {
                     Tile t1 = GetRandomTile(), t2 = GetRandomTile();
@@ -115,7 +116,7 @@ namespace GalWar
                 double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players, numPlanets);
 
-                for (int a = 0 ; a < teleporters ; ++a)
+                while (this.GetTeleporters().Count > 0)
                     RemoveTeleporter(this.GetTeleporters()[0]);
 
                 AdjustCenter(13);
@@ -241,52 +242,18 @@ namespace GalWar
 
         private double CreateSpaceObjects(int numPlayers, double planetPct)
         {
-            //first create enough planets for homeworlds
             while (GetPlanets().Count < numPlayers)
                 NewPlanet();
-
-            //then create anomalies
-            double anomPlanets = 0;
-            var anomalies = new Dictionary<Anomaly, double>();
-            int startAnomalies = Random.GaussianOEInt(this.AnomalyPct * Consts.StartAnomalies, .39, .13,
-                    ( this.AnomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0);
-            for (int a = 0 ; a < startAnomalies ; ++a)
-            {
-                Anomaly anomaly = CreateAnomaly();
-
-                //keep track of the chances that starting anomlies will become planets
-                if (anomaly != null && CheckPlanetDistance(anomaly.Tile))
-                {
-                    int minDist = int.MaxValue;
-                    foreach (Planet planet in GetPlanets())
-                        minDist = Math.Min(minDist, Tile.GetDistance(anomaly.Tile, planet.Tile));
-                    foreach (var pair in anomalies)
-                        if (Game.Random.Bool(pair.Value))
-                            minDist = Math.Min(minDist, Tile.GetDistance(anomaly.Tile, pair.Key.Tile));
-                    if (minDist > Consts.PlanetDistance)
-                    {
-                        double anomPlanetRate = GetAnomalyPlanetChance(minDist);
-                        anomPlanets += anomPlanetRate;
-                        if (anomPlanets > planetPct)
-                        {
-                            anomaly.Tile.SpaceObject = null;
-                            anomPlanets -= anomPlanetRate;
-                        }
-                        else
-                        {
-                            anomalies.Add(anomaly, anomPlanetRate);
-                        }
-                    }
-                }
-            }
-
-            //reduce starting planets by the total chances anomalies will be planets
-            planetPct -= anomPlanets;
-            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( planetPct > 1 ) ? 1 : 0);
+            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( ( planetPct > 1 ) ? 1 : 0 ));
             for (int a = 0 ; a < startPlanets ; ++a)
                 NewPlanet();
 
-            return GetPlanets().Count + anomPlanets;
+            int startAnomalies = Random.GaussianOEInt(this.AnomalyPct * Consts.StartAnomalies, .39, .13,
+                    ( ( this.AnomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0 ));
+            for (int a = 0 ; a < startAnomalies ; ++a)
+                CreateAnomaly();
+
+            return GetPlanets().Count;
         }
 
         private Planet NewPlanet()
@@ -785,14 +752,10 @@ next_planet:
             int dist = int.MaxValue;
             foreach (Planet planet in GetPlanets())
                 dist = Math.Min(dist, Tile.GetDistance(tile, planet.Tile));
-            return GetAnomalyPlanetChance(dist);
-        }
-        private double GetAnomalyPlanetChance(int dist)
-        {
             if (dist > Consts.PlanetDistance)
             {
                 double value = .52 + dist - Consts.PlanetDistance - 1;
-                return this.PlanetPct / this.AnomalyPct * Math.Sqrt(value / ( .91 + Math.Pow(MapSize, .21) / 1.69 + value ));
+                return this.PlanetPct / this.AnomalyPct * Math.Sqrt(value / ( 1.3 + Math.Pow(MapSize, .21) / 2.1 + value ));
             }
             return 0;
         }
@@ -833,7 +796,7 @@ next_planet:
 
         private void AdjustCenter(double avg)
         {
-            int amt = Random.OEInt(avg * Math.Sqrt(MapSize) / 91.0);
+            int amt = Random.OEInt(avg * Math.Sqrt(MapSize) / 130.0);
 
             if (amt > 0)
             {

@@ -540,7 +540,7 @@ namespace GalWar
 
             foreach (Colony colony in anomShip.Player.GetColonies())
             {
-                double raw = .21 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
+                double raw = .169 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
                 int amt = GetTerraformAmt(raw);
                 colonies.Add(colony, new Tuple<double, int>(raw, amt));
             }
@@ -910,7 +910,7 @@ next:
 
         private Tile MoveTile(Tile tile, double avg, Ship anomShip)
         {
-            avg *= .39 + Math.Sqrt(Tile.Game.MapSize) / 104.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9;
+            avg *= .39 + Math.Sqrt(Tile.Game.MapSize) / 130.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9;
             return Tile.Game.GetRandomTile(Tile, avg);
         }
 
