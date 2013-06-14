@@ -1,4 +1,6 @@
 UI
+	GraphsForm winChance FormatPct
+	Invade.ValidInitial
 	rally ships
 		saveable?
 	light wormhole too light
@@ -21,6 +23,7 @@ UI
 	keyboard?
 
 research focus on trn/ds/etc should always reduce chance of pure str
+	mult can slo go higher if I do >.5 cap
 research victory every turn, div by players like remove teleporters
 
 standardize dead checks
