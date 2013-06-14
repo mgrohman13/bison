@@ -20,6 +20,7 @@ UI
 		ships
 	keyboard?
 
+research focus on trn/ds/etc should always reduce chance of pure str
 research victory every turn, div by players like remove teleporters
 
 standardize dead checks
