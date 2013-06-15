@@ -113,8 +113,8 @@ namespace GalWar
                         CreateTeleporter(t1, t2);
                 }
 
-                double numPlanets = CreateSpaceObjects(numPlayers, planetPct);
-                InitPlayers(players, numPlanets);
+                CreateSpaceObjects(numPlayers, planetPct);
+                InitPlayers(players);
 
                 while (this.GetTeleporters().Count > 0)
                     RemoveTeleporter(this.GetTeleporters()[0]);
@@ -240,7 +240,7 @@ namespace GalWar
             }
         }
 
-        private double CreateSpaceObjects(int numPlayers, double planetPct)
+        private void CreateSpaceObjects(int numPlayers, double planetPct)
         {
             while (GetPlanets().Count < numPlayers)
                 NewPlanet();
@@ -252,8 +252,6 @@ namespace GalWar
                     ( ( this.AnomalyPct * Consts.StartAnomalies > 1 ) ? 1 : 0 ));
             for (int a = 0 ; a < startAnomalies ; ++a)
                 CreateAnomaly();
-
-            return GetPlanets().Count;
         }
 
         private Planet NewPlanet()
@@ -265,7 +263,7 @@ namespace GalWar
             return null;
         }
 
-        private void InitPlayers(Player.StartingPlayer[] players, double numPlanets)
+        private void InitPlayers(Player.StartingPlayer[] players)
         {
             int numPlayers = players.Length;
 

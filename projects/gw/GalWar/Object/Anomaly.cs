@@ -79,12 +79,12 @@ namespace GalWar
             options.Add(GlobalEvent, 1);//med
             options.Add(LostColony, 2);//med
             options.Add(Death, 3);//always
-            options.Add(Production, 5);//always
-            options.Add(SalvageShip, 12);//always
-            options.Add(Valuables, 13);//always
-            options.Add(Experience, 14);//always
-            options.Add(Wormhole, 17);//high
-            options.Add(Pickup, 21);//low
+            options.Add(Production, 6);//always
+            options.Add(SalvageShip, 13);//always
+            options.Add(Pickup, 14);//low
+            options.Add(Valuables, 16);//always
+            options.Add(Experience, 17);//always
+            options.Add(Wormhole, 21);//high
 
             while (true)
             {
@@ -156,7 +156,7 @@ namespace GalWar
         private Tile GetRandomTile(Ship anomShip)
         {
             if (Game.Random.Bool())
-                foreach (SpaceObject spaceObject in Tile.Game.GetSpaceObjects())
+                foreach (SpaceObject spaceObject in Game.Random.Iterate(Tile.Game.GetSpaceObjects()))
                     if (spaceObject is Anomaly)
                         return MoveTile(spaceObject.Tile, 2.1, anomShip);
             return Tile.Game.GetRandomTile();
@@ -504,13 +504,13 @@ namespace GalWar
                 else
                 {
                     colonies.Remove(trgColony);
-                    foreach (Colony choice in colonies.Keys.ToArray())
+                    foreach (var pair in colonies)
                     {
-                        int amt = GetTerraformAmt(.52 * colonies[choice]);
+                        int amt = GetTerraformAmt(.52 * pair.Value);
                         if (amt > 0)
-                            colonies[choice] = amt;
+                            colonies[pair.Key] = amt;
                         else
-                            colonies.Remove(choice);
+                            colonies.Remove(pair.Key);
                     }
                 }
             }
@@ -620,7 +620,7 @@ namespace GalWar
 
         private bool Death(IEventHandler handler, Ship ship)
         {
-            int damage = ( ( ship.MaxHP < 2 || Game.Random.Bool() ) ? ( ship.MaxHP ) : ( 1 + Game.Random.WeightedInt(ship.MaxHP - 2, .21) ) );
+            int damage = ( ( ship.MaxHP < 2 || Game.Random.Bool() ) ? ( ship.MaxHP ) : ( 1 + Game.Random.WeightedInt(ship.MaxHP - 2, .26) ) );
 
             handler.Explore(AnomalyType.Death, -damage);
 
@@ -702,8 +702,7 @@ namespace GalWar
 
             if (single == null)
             {
-                if (notify)
-                    handler.Explore(type);
+                handler.Explore(type);
                 value /= total;
                 foreach (var pair in colonies)
                     PlanetDefenseRemoteSoldiersProduction(type, pair.Key, value * pair.Value);
@@ -845,12 +844,11 @@ next:
                 {
                     teleport.Tile.SpaceObject = null;
                     if (Tile.Game.CreateAnomaly(this.Tile) == null)
-                        return false;
+                        throw new Exception();
                 }
                 else
                 {
-                    Planet planet = (Planet)teleport;
-                    planet.Teleport(this.Tile);
+                    ( (Planet)teleport ).Teleport(this.Tile);
                 }
                 return true;
             }
@@ -910,7 +908,7 @@ next:
 
         private Tile MoveTile(Tile tile, double avg, Ship anomShip)
         {
-            avg *= .39 + Math.Sqrt(Tile.Game.MapSize) / 130.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9;
+            avg *= Math.Sqrt(.39 + Math.Sqrt(Tile.Game.MapSize) / 130.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9);
             return Tile.Game.GetRandomTile(Tile, avg);
         }
 
