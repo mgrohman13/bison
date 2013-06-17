@@ -22,9 +22,8 @@ UI
 		ships
 	keyboard?
 
-research focus on trn/ds/etc should always reduce chance of pure str
-	mult can slo go higher if I do >.5 cap
-research victory every turn, div by players like remove teleporters
+ship soldier exp reduces by pct
+AdjustCost check when anom ship
 
 standardize dead checks
 without tile cache, no longer need to use points instead of tiles in places

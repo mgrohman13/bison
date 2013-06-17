@@ -17,7 +17,7 @@ namespace GalWar
         //StartAnomalies is the number of turn-rounds for which we immediately create anomalies
         public const double StartAnomalies = 13;
         public const double StartPopulation = 130;
-        //StartGold will be divided by the number of planets per player and by each players homeworld quality
+        //StartGold will be divided by the number of planets per player and by each indivual player's homeworld quality
         public const double StartGold = AverageQuality * 650;
         public const double StartResearch = 390;
         public const double StartRndm = .13;
@@ -371,6 +371,13 @@ namespace GalWar
             avgAtt *= mult;
             avgDef *= mult;
             return damageTable;
+        }
+
+        public static double LimitPct(double chance)
+        {
+            if (chance > .5)
+                chance /= ( chance + .5 );
+            return chance;
         }
     }
 }

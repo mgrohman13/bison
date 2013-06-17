@@ -156,7 +156,9 @@ namespace GalWar
         {
             get
             {
-                return this.BaseUpkeep - this.GetUpkeepReturn() + Consts.GetSoldierUpkeep(this);
+                TurnException.CheckTurn(this.Player);
+
+                return this.baseUpkeep - this.GetUpkeepReturn() + Consts.GetSoldierUpkeep(this);
             }
         }
         public int BaseUpkeep
@@ -165,9 +167,16 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
+                return this.baseUpkeep;
+            }
+        }
+        private int baseUpkeep
+        {
+            get
+            {
                 return this._upkeep;
             }
-            private set
+            set
             {
                 checked
                 {
@@ -445,7 +454,7 @@ namespace GalWar
         }
         internal double GetUpkeepReturn(double speedLeft)
         {
-            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.BaseUpkeep;
+            return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.baseUpkeep;
         }
 
         internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
@@ -866,7 +875,7 @@ namespace GalWar
                 this.MaxHP = hp;
                 this.MaxSpeed = speed;
                 this.maxPop = trans;
-                if (funky && this.NextExpType == ExpType.DS && !this.DeathStar)
+                if (this.NextExpType == ExpType.DS && !this.DeathStar)
                     this.DeathStar = true;
                 this.BombardDamage = ds;
 
@@ -881,20 +890,20 @@ namespace GalWar
                 double minCost = basePayoff * Consts.MinCostMult;
                 double multPayoff = basePayoff * GetExperienceUpkeepPayoffMult();
 
-                int addUpkeep = Game.Random.Round(costInc * this.BaseUpkeep / this.cost
+                int addUpkeep = Game.Random.Round(costInc * this.baseUpkeep / this.cost
                         * Consts.ScalePct(0, 1 / Consts.ExperienceUpkeepPayoffMult, GetNonColonyPct()));
-                this.BaseUpkeep += addUpkeep;
+                this.baseUpkeep += addUpkeep;
                 this.cost += costInc - addUpkeep * multPayoff;
 
                 //upkeep should never account for more than half of the ship's cost
-                while (this.BaseUpkeep > 1 && ( ( this.cost < minCost ) || ( this.BaseUpkeep * basePayoff > this.cost ) ))
+                while (this.baseUpkeep > 1 && ( ( this.cost < minCost ) || ( this.baseUpkeep * basePayoff > this.cost ) ))
                 {
-                    --this.BaseUpkeep;
+                    --this.baseUpkeep;
                     this.cost += multPayoff;
                 }
                 if (this.cost < 1)
                     throw new Exception();
-                if (this.BaseUpkeep < 1)
+                if (this.baseUpkeep < 1)
                     throw new Exception();
 
                 this.totalExp += needExp;

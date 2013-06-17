@@ -772,7 +772,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(13, .13, .13, 5.2), Game.Random.GaussianCapped(.0052, .26, .0013));
+                    Game.Random.GaussianOE(13, .13, .13, 5.2), Game.Random.GaussianCapped(.169, .26, .039));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -1621,8 +1621,8 @@ namespace GalWarWin
             {
                 if (ship.Player.IsTurn)
                 {
-                    try
-                    {
+                    //try
+                    //{
                         Planet trgPlanet = null;
                         Ship trgShip = null;
                         Anomaly trgAnomaly = null;
@@ -1637,11 +1637,11 @@ namespace GalWarWin
 
                         if (trgShip == null && !selectNext && !( trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0 ))
                             refShip = null;
-                    }
-                    catch (AssertException e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    //}
+                    //catch (AssertException e)
+                    //{
+                    //    Console.WriteLine(e);
+                    //}
                 }
             }
 

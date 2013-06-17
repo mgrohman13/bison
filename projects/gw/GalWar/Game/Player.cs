@@ -32,7 +32,7 @@ namespace GalWar
         private double _goldOffset;
 
         internal Player(int id, Game Game, StartingPlayer player, Planet planet,
-                int population, double soldiers, double gold, List<int> research)
+                int population, List<int> research)
         {
             checked
             {
@@ -58,12 +58,14 @@ namespace GalWar
                 this._pdDef = 1;
 
                 this._newResearch = 0;
-                //the highest research value is the actual starting research
-                this._research = (uint)research[3];
+                //the second highest research value is the highest starting design research
                 this._lastResearched = (uint)research[2];
-                this._researchGuess = (uint)research[3];
+                //the highest value is the actual starting research
+                this._research = (uint)research[3];
+                this._researchGuess = (uint)this.Research;
 
                 this._goldValue = 0;
+                this._goldOffset = 0;
 
                 this._rChance = float.NaN;
                 this._rDesignMult = float.NaN;
@@ -71,10 +73,8 @@ namespace GalWar
                 this._rDisp = 1;
                 this._rDispTrg = 1;
                 this._rDispChange = 1;
-                //production is added in later
-                this._incomeTotal = (float)( gold + this.Research );
-
-                this._goldOffset = gold;
+                //gold and production are added in later
+                this._incomeTotal = this.Research;
 
                 this.designs = ShipDesign.GetStartDesigns(this, research);
                 foreach (ShipDesign design in this.designs)
@@ -82,7 +82,7 @@ namespace GalWar
 
                 ResetResearchChance();
                 //starting production is handled after all players have been created
-                NewColony(null, planet, population, soldiers, 0);
+                NewColony(null, planet, population, 0, 0);
             }
         }
 
@@ -470,12 +470,6 @@ namespace GalWar
                 ship.StartTurn(handler);
         }
 
-        internal void NewRound()
-        {
-            if (this.newResearch > 0)
-                this.Research += Game.Random.GaussianOEInt(this.newResearch, Consts.ResearchRndm, Consts.ResearchRndm, 1);
-        }
-
         internal void FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
         {
             this.ResearchGuess += freeResearch;
@@ -489,6 +483,9 @@ namespace GalWar
         {
             ShipDesign newDesign = null;
             obsoleteDesigns = null;
+
+            if (this.newResearch > 0)
+                this.Research += Game.Random.GaussianOEInt(this.newResearch, Consts.ResearchRndm, Consts.ResearchRndm, 1);
 
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
             {
@@ -562,7 +559,7 @@ namespace GalWar
             Player[] research = Game.GetResearchDisplayOrder();
             //the maximum possible skew change can plausibly be accounted for by economy emphasis choices
             double totalIncome = GetTotalIncome();
-            double low = totalIncome * 1 / ( 1 + 2 * Consts.EmphasisValue );
+            double low = totalIncome * 1 / ( 1.0 + 2 * Consts.EmphasisValue );
             double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
             double diff = ( high - low ) / research[0].ResearchDisplay;
 
@@ -996,9 +993,7 @@ namespace GalWar
             if (researchFocusDesign != null)
                 chance *= rDesignMult * Math.Sqrt(this.LastResearched / ( Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research ));
 
-            if (chance > .5)
-                chance /= ( chance + .5 );
-            return chance;
+            return Consts.LimitPct(chance);
         }
 
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)

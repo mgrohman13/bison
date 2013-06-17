@@ -96,8 +96,7 @@ namespace GalWar
 
         public const double DeathStarAvg = 91;
         private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.1, FocusSpeedMult = 1.3;
-        //note - cannot go much higher than 2.1, due to current CreateType logic overflow 
-        private const double FocusTypeMult = 2.1;
+        private const double FocusTypeMult = 2.6;
 
         [NonSerialized]
         private readonly bool _statsNotInit = true, _costNotInit = true;
@@ -635,9 +634,22 @@ namespace GalWar
 
         private static void FocusPcts(ref double focus, ref double oth1, ref double oth2)
         {
-            focus *= FocusTypeMult;
-            oth1 /= FocusTypeMult;
-            oth2 /= FocusTypeMult;
+            double strChance = ( 1 - focus ) * ( 1 - oth1 ) * ( 1 - oth2 );
+            focus = Consts.LimitPct(focus * FocusTypeMult);
+            bool swap = Game.Random.Bool();
+            if (swap)
+            {
+                double temp = oth1;
+                oth1 = oth2;
+                oth2 = temp;
+            }
+            oth1 = 1 - ( strChance / Math.Sqrt(FocusTypeMult) / ( 1 - focus ) / ( 1 - oth2 ) );
+            if (swap)
+            {
+                double temp = oth1;
+                oth1 = oth2;
+                oth2 = temp;
+            }
         }
         private static bool CreateType(double target, double actual)
         {
@@ -649,7 +661,7 @@ namespace GalWar
                 chance = Math.Sqrt(target - actual) + target;
             else
                 chance = ( 1 + ( target - actual ) / actual ) * target;
-            return Game.Random.Bool(chance);
+            return Game.Random.Bool(Consts.LimitPct(chance));
         }
 
         private static double GetColTransStr(double transStr)
