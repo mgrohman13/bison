@@ -1,4 +1,5 @@
 UI
+	anom exp when no levels but log had unflushed data
 	GraphsForm winChance FormatPct
 	Invade.ValidInitial
 	rally ships
