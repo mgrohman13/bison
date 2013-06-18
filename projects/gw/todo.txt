@@ -1,4 +1,5 @@
 UI
+	show avg pop killed
 	anom exp when no levels but log had unflushed data
 	GraphsForm winChance FormatPct
 	Invade.ValidInitial
@@ -24,6 +25,7 @@ UI
 		ships
 	keyboard?
 
+increase starting gold low quality advantage more
 intial map layout planets use dist check?
 increase severity of planet dist check
 ship soldier exp reduces by pct

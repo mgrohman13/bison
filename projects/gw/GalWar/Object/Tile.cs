@@ -45,12 +45,15 @@ namespace GalWar
         private static int GetDistance(int x1, int y1, int x2, int y2, List<Tuple<Point, Point>> teleporters)
         {
             int dist = GetRawDistance(x1, y1, x2, y2);
-            if (dist > 1 && teleporters.Count > 0)
+            if (dist > 1 && teleporters != null && teleporters.Count > 0)
             {
-                var subset = new List<Tuple<Point, Point>>(teleporters);
+                List<Tuple<Point, Point>> subset = null;
+                if (teleporters.Count > 1)
+                    subset = new List<Tuple<Point, Point>>(teleporters);
                 foreach (var teleporter in teleporters)
                 {
-                    subset.Remove(teleporter);
+                    if (subset != null)
+                        subset.Remove(teleporter);
                     dist = Math.Min(dist, Math.Min(GetTeleporterDistance(x1, y1, x2, y2, teleporter, subset),
                             GetTeleporterDistance(x2, y2, x1, y1, teleporter, subset)));
                 }

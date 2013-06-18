@@ -293,6 +293,16 @@ namespace GalWarWin
                             g.DrawRectangles(pen, rects);
                     }
 
+                    //if (testDistance != null)
+                    //{
+                    //    RectangleF[] rects = new RectangleF[( gameBounds.Width + 3 ) * ( gameBounds.Height + 3 )];
+                    //    int a = -1;
+                    //    foreach (Tile t in testDistance)
+                    //        rects[++a] = GetDrawRect(t.X, t.Y);
+                    //    using (Brush b = new SolidBrush(Game.CurrentPlayer.Color))
+                    //        g.FillRectangles(b, rects);
+                    //}
+
                     if (selected != null)
                         DrawObject(g, gameBounds, selected.Value, null);
                     foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
@@ -1486,6 +1496,10 @@ namespace GalWarWin
             firstClick = null;
             ClickMouse(e, false);
         }
+
+        //int testDist;
+        //IEnumerable<Tile> testDistance;
+
         private void ClickMouse(MouseEventArgs e, bool doubleClick)
         {
             if (started)
@@ -1495,8 +1509,16 @@ namespace GalWarWin
                 Tile clickedTile = Game.GetTile(gamePoint);
                 if (e.Button == MouseButtons.Left)
                 {
+
+                    //if (selected == gamePoint)
+                    //    ++testDist;
+                    //else
+                    //    testDist = 0;
+
                     selected = gamePoint;
                     UnHold(GetSelectedSpaceObject());
+
+                    //testDistance = Game.TestDistance(selected.Value, testDist);
 
                     if (isDialog && ValidDialogTile(selected.Value, clickedTile.SpaceObject))
                     {
@@ -1623,20 +1645,20 @@ namespace GalWarWin
                 {
                     //try
                     //{
-                        Planet trgPlanet = null;
-                        Ship trgShip = null;
-                        Anomaly trgAnomaly = null;
-                        if (adjacentTile.SpaceObject == null)
-                            TargetTile(adjacentTile, ship);
-                        else if (( trgShip = ( adjacentTile.SpaceObject as Ship ) ) != null)
-                            selectNext &= TargetShip(trgShip, ship, switchTroops);
-                        else if (( trgPlanet = ( adjacentTile.SpaceObject as Planet ) ) != null)
-                            selectNext &= TargetPlanet(trgPlanet, ship, switchTroops);
-                        else if (( trgAnomaly = ( adjacentTile.SpaceObject as Anomaly ) ) != null)
-                            selectNext &= targetAnomaly(selectNext, ship, trgAnomaly);
+                    Planet trgPlanet = null;
+                    Ship trgShip = null;
+                    Anomaly trgAnomaly = null;
+                    if (adjacentTile.SpaceObject == null)
+                        TargetTile(adjacentTile, ship);
+                    else if (( trgShip = ( adjacentTile.SpaceObject as Ship ) ) != null)
+                        selectNext &= TargetShip(trgShip, ship, switchTroops);
+                    else if (( trgPlanet = ( adjacentTile.SpaceObject as Planet ) ) != null)
+                        selectNext &= TargetPlanet(trgPlanet, ship, switchTroops);
+                    else if (( trgAnomaly = ( adjacentTile.SpaceObject as Anomaly ) ) != null)
+                        selectNext &= targetAnomaly(selectNext, ship, trgAnomaly);
 
-                        if (trgShip == null && !selectNext && !( trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0 ))
-                            refShip = null;
+                    if (trgShip == null && !selectNext && !( trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0 ))
+                        refShip = null;
                     //}
                     //catch (AssertException e)
                     //{

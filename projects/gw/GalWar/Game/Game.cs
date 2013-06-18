@@ -955,6 +955,19 @@ next_planet:
             return ship.GetStrength() * Math.Sqrt(ship.HP / (double)ship.MaxHP);
         }
 
+        //public IEnumerable<Tile> TestDistance(Point center, int distance)
+        //{
+        //    Tile c = GetTile(center);
+        //    int minX, minY, maxX, maxY;
+        //    GetTileDistances(c, distance, out minX, out minY, out maxX, out maxY, GetTeleporters());
+        //    foreach (Point p in Random.Iterate(minX, maxX, minY, maxY))
+        //    {
+        //        Tile test = GetTile(p);
+        //        if (Tile.GetDistance(c, test) == distance)
+        //            yield return test;
+        //    }
+        //}
+
         internal Tile GetRandomTile()
         {
             return GetRandomTile(GetTile(this.Center), this.MapDeviation);
@@ -986,12 +999,19 @@ next_planet:
             minY = center.Y - dist;
             maxX = center.X + dist;
             maxY = center.Y + dist;
-            foreach (var teleporter in teleporters)
+
+            if (teleporters != null && teleporters.Count > 0)
             {
-                var subset = new List<Tuple<Point, Point>>(teleporters);
-                subset.Remove(teleporter);
-                GetTeleporterDistances(center, dist, teleporter.Item1, teleporter.Item2, ref minX, ref minY, ref maxX, ref maxY, subset);
-                GetTeleporterDistances(center, dist, teleporter.Item2, teleporter.Item1, ref minX, ref minY, ref maxX, ref maxY, subset);
+                List<Tuple<Point, Point>> subset = null;
+                if (teleporters.Count > 1)
+                    subset = new List<Tuple<Point, Point>>(teleporters);
+                foreach (var teleporter in teleporters)
+                {
+                    if (subset != null)
+                        subset.Remove(teleporter);
+                    GetTeleporterDistances(center, dist, teleporter.Item1, teleporter.Item2, ref minX, ref minY, ref maxX, ref maxY, subset);
+                    GetTeleporterDistances(center, dist, teleporter.Item2, teleporter.Item1, ref minX, ref minY, ref maxX, ref maxY, subset);
+                }
             }
         }
         private void GetTeleporterDistances(Tile center, int dist, Point p1, Point p2, ref int minX, ref int minY, ref int maxX, ref int maxY, List<Tuple<Point, Point>> teleporters)
