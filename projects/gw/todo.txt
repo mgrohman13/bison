@@ -11,6 +11,7 @@ UI
 	calculate pop growth
 		balancing between colonies
 	show enemy moves/attacks ignoring friendly ships, weight for HP?
+	keep track of observed income on planet since last build
 	main map
 		clean up drawing logic
 		very large shows more info
@@ -23,6 +24,8 @@ UI
 		ships
 	keyboard?
 
+intial map layout planets use dist check?
+increase severity of planet dist check
 ship soldier exp reduces by pct
 AdjustCost check when anom ship
 

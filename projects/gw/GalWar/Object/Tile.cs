@@ -18,7 +18,7 @@ namespace GalWar
                     int x2 = tile.X + x;
                     int y2 = tile.Y + y;
                     //check this is truly a neighbor in the hexagonal grid
-                    if (IsNeighbor(tile, x2, y2))
+                    if (IsRawNeighbor(tile, x2, y2))
                         neighbors.Add(tile.Game.GetTile(x2, y2));
                 }
             //add teleport destination if there is one
@@ -30,33 +30,31 @@ namespace GalWar
 
         public static bool IsNeighbor(Tile tile1, Tile tile2)
         {
-            return IsNeighbor(tile1, tile2.X, tile2.Y);
+            return ( IsRawNeighbor(tile1, tile2.X, tile2.Y) || tile1.Teleporter == tile2 );
         }
 
         public static int GetDistance(Tile tile1, Tile tile2)
         {
-            return GetDistance(tile1, tile2.X, tile2.Y);
+            return GetDistance(tile1.X, tile1.Y, tile2.X, tile2.Y, tile1.Game.GetTeleporters());
         }
 
-        private static bool IsNeighbor(Tile tile, int x, int y)
+        private static bool IsRawNeighbor(Tile tile, int x2, int y2)
         {
-            return ( GetDistance(tile, x, y) == 1 );
-        }
-        private static int GetDistance(Tile tile, int x, int y)
-        {
-            return GetDistance(tile.X, tile.Y, x, y, tile.Game.GetTeleporters());
+            return ( GetRawDistance(tile.X, tile.Y, x2, y2) == 1 );
         }
         private static int GetDistance(int x1, int y1, int x2, int y2, List<Tuple<Point, Point>> teleporters)
         {
             int dist = GetRawDistance(x1, y1, x2, y2);
-            if (dist > 1)
+            if (dist > 1 && teleporters.Count > 0)
+            {
+                var subset = new List<Tuple<Point, Point>>(teleporters);
                 foreach (var teleporter in teleporters)
                 {
-                    var subset = new List<Tuple<Point, Point>>(teleporters);
                     subset.Remove(teleporter);
                     dist = Math.Min(dist, Math.Min(GetTeleporterDistance(x1, y1, x2, y2, teleporter, subset),
                             GetTeleporterDistance(x2, y2, x1, y1, teleporter, subset)));
                 }
+            }
             return dist;
         }
         private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter, List<Tuple<Point, Point>> teleporters)

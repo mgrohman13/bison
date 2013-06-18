@@ -201,7 +201,11 @@ namespace GalWar
                     {
                         double absMin = GetAbsMinCost(mapSize, research) + MinCostBuffer;
                         if (minCost < absMin)
+                        {
                             minCost = absMin;
+                            //if (maxCost < minCost)
+                            //    maxCost = minCost;
+                        }
                     }
 
                     //  ------  Cost/Upkeep       ------
