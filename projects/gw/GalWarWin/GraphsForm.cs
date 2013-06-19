@@ -60,8 +60,8 @@ namespace GalWarWin
             long div = GetDiv(place);
 
             Player winner;
-            string winChance = MainForm.FormatPct(MainForm.Game.GetResearchVictoryChance(out winner), true);
-            if (winChance == "0.0%")
+            double winChance = MainForm.Game.GetResearchVictoryChance(out winner);
+            if (winChance <= 0)
                 winner = null;
 
             Dictionary<Player, double> research = MainForm.Game.GetResearch();
@@ -88,7 +88,7 @@ namespace GalWarWin
                 if (players[i] == winner)
                 {
                     x += 106;
-                    labels[7, i] = NewLabel(x, y, winChance, players[i].Color, true);
+                    labels[7, i] = NewLabel(x, y, MainForm.FormatPctWithCheck(winChance), players[i].Color, true);
                 }
                 y += 26;
             }
@@ -259,7 +259,7 @@ namespace GalWarWin
 
                 if (xScale > 0 && yScale > 0)
                 {
-                    DrawGrid(g, height, maxX, maxY.Value, xScale, ref yScale);
+                    DrawGrid(g, type, height, maxX, maxY.Value, xScale, ref yScale);
 
                     Dictionary<int, List<PointF>> points = new Dictionary<int, List<PointF>>();
                     int yLen = data.GetLength(1);
@@ -349,17 +349,31 @@ namespace GalWarWin
             return (float)Math.Floor(maxY) + 1f;
         }
 
-        private void DrawGrid(Graphics g, float height, float maxX, float maxY, float xScale, ref float yScale)
+        private void DrawGrid(Graphics g, Graphs.GraphType type, float height, float maxX, float maxY, float xScale, ref float yScale)
         {
             int place = GetPlace(maxY);
             long value;
 
-            DrawYLine(g, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
+            if (type == Graphs.GraphType.Research)
+            {
+                maxY = 100;
+                DrawYLine(g, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
+
+                DrawYLine(g, maxX, xScale, yScale, (float)( maxY / 2.0 ), place);
+                DrawYLine(g, maxX, xScale, yScale, (float)( maxY / Consts.ResearchVictoryMult ), place);
+                DrawYLine(g, maxX, xScale, yScale, (float)( maxY / Consts.ResearchVictoryMin ), place);
+                DrawYLine(g, maxX, xScale, yScale, (float)( maxY * ( 1 + 1 / Consts.ResearchVictoryMin ) / 2.0 ), place);
+            }
+            else
+            {
+                DrawYLine(g, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
+
+                DrawYLine(g, maxX, xScale, yScale, maxY * 1 / 4f, place);
+                DrawYLine(g, maxX, xScale, yScale, maxY * 2 / 4f, place);
+                DrawYLine(g, maxX, xScale, yScale, maxY * 3 / 4f, place);
+            }
 
             DrawYLine(g, maxX, xScale, yScale, 0, place);
-            DrawYLine(g, maxX, xScale, yScale, maxY * 1 / 4f, place);
-            DrawYLine(g, maxX, xScale, yScale, maxY * 2 / 4f, place);
-            DrawYLine(g, maxX, xScale, yScale, maxY * 3 / 4f, place);
 
             DrawXLine(g, value, xScale, yScale, 0);
             DrawXLine(g, value, xScale, yScale, (int)Math.Round(maxX * 1 / 4f));

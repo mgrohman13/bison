@@ -86,14 +86,17 @@ namespace GalWarWin
 
             Form.btnEdit.Visible = !isConfirmation;
 
+            this.lblInfAtt.Visible = false;
+            this.lblInfDef.Visible = false;
+
             double freeDmg = 0;
             bool showFree = ( attShip != null && defender is Colony && defender.Player.IsTurn );
             if (showFree)
                 freeDmg = attShip.GetFreeDmg((Colony)defender);
             showFree = ( freeDmg > .05 );
-            this.lblFree.Visible = showFree;
+            this.lblInfDef.Visible = showFree;
             if (showFree)
-                this.lblFree.Text = MainForm.FormatDouble(-freeDmg);
+                this.lblInfDef.Text = MainForm.FormatDouble(-freeDmg);
 
             if (attacker == null)
             {
@@ -325,12 +328,15 @@ end:
         {
             if (!e.Cancelled)
             {
+                Ship attShip = attacker as Ship;
+                Ship defShip = defender as Ship;
+
                 Dictionary<ResultPoint, double> result = (Dictionary<ResultPoint, double>)e.Result;
                 btnDetails.Tag = result;
                 btnDetails.Visible = true;
 
                 int attHP = (int)this.nudAttHP.Value;
-                double defHP = (double)this.nudDefHP.Value, total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0;
+                double defHP = (double)this.nudDefHP.Value, total = 0, attDead = 0, defDead = 0, attDmg = 0, defDmg = 0, attPop = 0, defPop = 0;
                 foreach (KeyValuePair<ResultPoint, double> pair in result)
                 {
                     ResultPoint res = pair.Key;
@@ -339,22 +345,40 @@ end:
                     int ahp = res.AttHP;
                     int dhp = res.DefHP;
                     if (dhp == 0)
+                    {
                         defDead += chance;
+                    }
                     else if (ahp == 0)
+                    {
                         attDead += chance;
+                    }
                     attDmg += ( attHP - ahp ) * chance;
                     defDmg += ( defHP - dhp ) * chance;
+
+                    if (attShip != null)
+                        attPop += Consts.GetTransLoss(attShip, ( attHP - ahp )) * chance;
+                    if (defShip != null)
+                        defPop += Consts.GetTransLoss(defShip, ( defHP - dhp )) * chance;
                 }
                 attDead /= total;
                 defDead /= total;
                 attDmg /= total;
                 defDmg /= total;
+                attPop /= total;
+                defPop /= total;
 
                 this.lblAttDmg.Text = FormatDmg(attDmg);
                 this.lblDefDmg.Text = FormatDmg(defDmg);
 
                 this.lblAttKill.Text = MainForm.FormatPctWithCheck(attDead);
                 this.lblDefKill.Text = MainForm.FormatPctWithCheck(defDead);
+
+                this.lblInfAtt.Visible = ( attPop > 0 );
+                if (this.lblInfAtt.Visible)
+                    this.lblInfAtt.Text = FormatDmg(attPop);
+                this.lblInfDef.Visible = ( defPop > 0 );
+                if (this.lblInfDef.Visible)
+                    this.lblInfDef.Text = FormatDmg(defPop);
             }
         }
 

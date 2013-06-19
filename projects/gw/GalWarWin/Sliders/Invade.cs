@@ -44,7 +44,7 @@ namespace GalWarWin.Sliders
         }
         private static bool ValidInitial(string effcnt)
         {
-            return ( effcnt == "99%" || effcnt == "100%" );
+            return ( effcnt == "99%" || effcnt == ">99%" || effcnt == "100%" );
         }
 
         public override double GetInitial()

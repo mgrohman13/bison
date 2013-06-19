@@ -345,6 +345,14 @@ namespace GalWar
             return str * ( 1 + Game.Random.DoubleHalf(InvadeMultRandMax) );
         }
 
+        public static double GetTransLoss(Ship ship, double damage)
+        {
+            if (damage >= ship.MaxHP)
+                return ship.Population;
+            return ( damage / (double)ship.MaxHP * ship.MaxPop * Consts.TransLossMult
+                    * Math.Pow(ship.Population / (double)ship.MaxPop, Consts.TransLossPctPower) );
+        }
+
         public static double GetBombardDamage(double att)
         {
             return Math.Pow(att, 1.69) * 0.0091;

@@ -1,12 +1,9 @@
 UI
-	show avg pop killed
 	anom exp when no levels but log had unflushed data
-	GraphsForm winChance FormatPct
-	Invade.ValidInitial
 	rally ships
 		saveable?
-	light wormhole too light
 	clear showMoves
+		examples?
 	combat calc show probability table
 	measure distances
 	calculate pop growth
@@ -25,6 +22,9 @@ UI
 		ships
 	keyboard?
 
+also take into account research until last pure str ship
+research vict a little easier?
+anomaly terraform quality amount
 increase starting gold low quality advantage more
 intial map layout planets use dist check?
 increase severity of planet dist check

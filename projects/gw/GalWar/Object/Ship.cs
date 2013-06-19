@@ -588,17 +588,11 @@ namespace GalWar
                 int losePopulation;
                 if (this.HP > damage)
                     //if hp is lost for any reason, some transported population is killed off
-                    losePopulation = Game.Random.GaussianOEInt(GetTransLoss(damage), Consts.TransLossRndm, Consts.TransLossRndm);
+                    losePopulation = Game.Random.GaussianOEInt(Consts.GetTransLoss(this, damage), Consts.TransLossRndm, Consts.TransLossRndm);
                 else
                     losePopulation = this.Population;
                 LosePopulation(losePopulation);
             }
-        }
-
-        private double GetTransLoss(int damage)
-        {
-            return ( damage / (double)this.MaxHP * this.MaxPop * Consts.TransLossMult
-                    * Math.Pow(this.Population / (double)this.MaxPop, Consts.TransLossPctPower) );
         }
 
         public double GetColonizationValue(double repair)
@@ -901,7 +895,7 @@ namespace GalWar
                     --this.baseUpkeep;
                     this.cost += multPayoff;
                 }
-                if (this.cost < 1)
+                if (this.cost < 1 / Consts.RepairCostMult)
                     throw new Exception();
                 if (this.baseUpkeep < 1)
                     throw new Exception();

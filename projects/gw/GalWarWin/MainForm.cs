@@ -352,12 +352,12 @@ namespace GalWarWin
                     Brush brush = Brushes.DarkGray;
                     if (Game.GetTeleporters().Count > 1)
                     {
-                        float telCount = Game.GetTeleporters().Count;
-                        float min = 300 / ( telCount + 1 );
+                        float telCount = Game.GetTeleporters().Count + 1;
+                        float min = 520 / telCount / telCount;
                         int color = Game.Random.Round(min + telNum * ( 255 - min ) / telCount);
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
                     }
-                    g.FillRectangle(brush, rect);
+                    g.FillRectangle(brush, RectangleF.Inflate(rect, .5f, .5f));
                 }
 
                 if (spaceObject is Anomaly)
@@ -965,7 +965,8 @@ namespace GalWarWin
             if (started)
             {
                 Point raw = GetGamePoint(mouse);
-                lblLoc.Text = new Point(raw.X - Game.Center.X, raw.Y - Game.Center.Y).ToString();
+                lblLoc.Text = Tile.GetDistance(Game.GetTile(Game.Center), Game.GetTile(raw)) + "  :  "
+                        + new Point(raw.X - Game.Center.X, raw.Y - Game.Center.Y);
             }
         }
         private void DragPan(PointForm point)
