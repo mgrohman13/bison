@@ -1,4 +1,5 @@
 UI
+	enter gold per pop killed
 	repair all set should not effect 100% hp
 	Untitled.png
 	anom exp when no levels but log had unflushed data
@@ -24,6 +25,12 @@ UI
 		ships
 	keyboard?
 
+gold needs adv in choose research or gold
+ship name 3.9 might be too much
+	and start with max instead of avg maybe?
+increase gold payout for apocalypse
+check randomness in add/remove pop in anomalies, maybe add/spend more gold
+check colonization mult randomness
 also take into account research until last pure str ship
 research vict a little easier?
 anomaly terraform quality amount

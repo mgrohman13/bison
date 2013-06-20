@@ -149,6 +149,18 @@ namespace GalWar
 
         public const double FLOAT_ERROR = 1.0 / ( 1 << 20 );
 
+        public static double GetResearchVictoryChance(double mult, double numPlayers)
+        {
+            //research victory can happen when the top player exceeds a certain multiple of the second place player
+            if (mult > Consts.ResearchVictoryMin)
+            {
+                double chance = ( mult - Consts.ResearchVictoryMin ) / ( Consts.ResearchVictoryMult - Consts.ResearchVictoryMin );
+                chance = Math.Pow(Consts.LimitPct(chance), Consts.ResearchVictoryPow);
+                return ( 1 - Math.Pow(1 - chance, 1 / numPlayers) );
+            }
+            return 0;
+        }
+
         internal static int NewPlanetQuality()
         {
             return Game.Random.OEInt(PlanetQualityOE) + Game.Random.RangeInt(PlanetQualityMin, PlanetQualityMax);
@@ -347,6 +359,8 @@ namespace GalWar
 
         public static double GetTransLoss(Ship ship, double damage)
         {
+            if (ship == null)
+                return 0;
             if (damage >= ship.MaxHP)
                 return ship.Population;
             return ( damage / (double)ship.MaxHP * ship.MaxPop * Consts.TransLossMult

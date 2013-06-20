@@ -166,13 +166,11 @@ namespace GalWarWin
                 this.lblAttKill.Text = MainForm.FormatPct(attacker != null && attacker.HP == 0 ? 1 : 0);
                 this.lblDefKill.Text = MainForm.FormatPct(noDefHP ? 1 : 0);
 
-                Ship attShip = ( attacker as Ship );
-                Ship defShip = ( defender as Ship );
-                double attPop = Consts.GetTransLoss(attShip, avgDef);
-                double defPop = Consts.GetTransLoss(defShip, avgAtt);
+                double attPop = Consts.GetTransLoss(attacker as Ship, avgDef);
+                double defPop = Consts.GetTransLoss(defender as Ship, avgAtt);
                 if (attPop > 0)
                 {
-                    this.lblInfDef.Visible = true;
+                    this.lblInfAtt.Visible = true;
                     this.lblInfAtt.Text = FormatDmg(attPop);
                 }
                 if (defPop > 0)
@@ -384,10 +382,8 @@ end:
                     attDmg += ( attHP - ahp ) * chance;
                     defDmg += ( defHP - dhp ) * chance;
 
-                    if (attShip != null)
-                        attPop += Consts.GetTransLoss(attShip, ( attHP - ahp )) * chance;
-                    if (defShip != null)
-                        defPop += Consts.GetTransLoss(defShip, ( defHP - dhp )) * chance;
+                    attPop += Consts.GetTransLoss(attShip, ( attHP - ahp )) * chance;
+                    defPop += Consts.GetTransLoss(defShip, ( defHP - dhp )) * chance;
                 }
                 attDead /= total;
                 defDead /= total;
@@ -404,7 +400,7 @@ end:
 
                 if (attPop > 0)
                 {
-                    this.lblInfDef.Visible = true;
+                    this.lblInfAtt.Visible = true;
                     this.lblInfAtt.Text = FormatDmg(attPop);
                 }
                 if (defPop > 0)

@@ -301,9 +301,7 @@ namespace GalWar
                 {
                     if (autoRepair <= 0)
                         autoRepair = 0;
-                    else if (this.HP == this.MaxHP)
-                        autoRepair = double.NaN;
-                    else
+                    else if (this.HP < this.MaxHP)
                         autoRepair = GetAutoRepairForHP(GetAutoRepairHP(autoRepair));
                     this.AutoRepair = autoRepair;
                 }
@@ -316,6 +314,8 @@ namespace GalWar
                 {
                     TurnException.CheckTurn(this.Player);
 
+                    if (this.HP == this.MaxHP)
+                        value = double.NaN;
                     this._autoRepair = (float)value;
                 }
             }
@@ -674,16 +674,17 @@ namespace GalWar
             AssertException.Assert(curSpeed >= 0);
             AssertException.Assert(curSpeed <= this.MaxSpeed);
             AssertException.Assert(addGold >= 0);
-            AssertException.Assert(goldIncome > -.2);
             if (colony == null)
             {
                 AssertException.Assert(production == 0);
                 AssertException.Assert(addGold < this.Player.Gold);
+                AssertException.Assert(goldIncome > -.6);
             }
             else
             {
                 AssertException.Assert(production >= 0);
                 AssertException.Assert(addGold == 0);
+                AssertException.Assert(goldIncome > -.2);
             }
 
             this.Population = population;

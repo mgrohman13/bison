@@ -695,15 +695,7 @@ next_planet:
         }
         private double GetResearchVictoryChance(double first, double second)
         {
-            //research victory can happen when the top player exceeds a certain multiple of the second place player
-            double mult = first / second;
-            if (mult > Consts.ResearchVictoryMin)
-            {
-                double chance = ( mult - Consts.ResearchVictoryMin ) / ( Consts.ResearchVictoryMult - Consts.ResearchVictoryMin );
-                chance = Math.Pow(Consts.LimitPct(chance), Consts.ResearchVictoryPow);
-                return ( 1 - Math.Pow(1 - chance, 1 / (double)this.players.Count) );
-            }
-            return 0;
+            return Consts.GetResearchVictoryChance(first / second, this.players.Count);
         }
 
         private void RandMoveOrder()

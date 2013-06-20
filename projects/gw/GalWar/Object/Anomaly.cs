@@ -399,30 +399,17 @@ namespace GalWar
 
             if (Game.Random.Bool())
             {
-                bool canTerraform = false;
                 foreach (var pair in GetTerraformColonies(anomShip))
-                {
-                    double chance = pair.Value.Item1;
-                    if (GetTerraformAmt(chance) > 0)
+                    if (GetTerraformAmt(pair.Value.Item1) > 0 && CanTerraform(this.value + GetExpectCost(pair.Key, GetTerraformQuality()), anomShip))
                     {
-                        double cost = this.value + GetExpectCost(pair.Key, GetTerraformQuality());
-                        if (CanTerraform(cost, anomShip))
-                        {
-                            canTerraform = true;
-                            break;
-                        }
+                        double terraformAmt = Consts.AverageQuality + Consts.PlanetConstValue;
+                        double apocalypseAmt = quality / 2.0;
+
+                        if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
+                            return DamageVictory(handler, anomShip);
+                        return Terraform(handler, anomShip);
                     }
-                }
-                if (!canTerraform)
-                    return false;
-
-                double terraformAmt = Consts.AverageQuality + Consts.PlanetConstValue;
-                double apocalypseAmt = quality / 2.0;
-
-                if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
-                    return DamageVictory(handler, anomShip);
-                else
-                    return Terraform(handler, anomShip);
+                return false;
             }
             else
             {
@@ -439,8 +426,7 @@ namespace GalWar
 
                 if (Game.Random.Bool(addAmt / ( addAmt + killAmt )))
                     return KillPop(handler, diePct, anomShip);
-                else
-                    return AddPop(handler, addAmt, forExplorer, anomShip);
+                return AddPop(handler, addAmt, forExplorer, anomShip);
             }
         }
 
@@ -452,17 +438,21 @@ namespace GalWar
             addGold[anomShip.Player] = ConsolationValue();
             foreach (Planet planet in Tile.Game.GetPlanets())
             {
-                double gold = 0;
+                double gold = double.NaN, mult = double.NaN, before = double.NaN;
                 if (planet.Colony != null)
+                {
                     gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * .78;
 
-                double mult = Consts.GetColonizationMult();
-                double before = Consts.GetColonizationCost(planet.Quality, mult);
+                    mult = Consts.GetColonizationMult();
+                    before = Consts.GetColonizationCost(planet.Quality, mult);
+                }
+
                 planet.DamageVictory();
-                gold *= before - Consts.GetColonizationCost(planet.Quality, mult);
 
                 if (planet.Colony != null)
                 {
+                    gold *= before - Consts.GetColonizationCost(planet.Quality, mult);
+
                     double amt;
                     addGold.TryGetValue(planet.Colony.Player, out amt);
                     addGold[planet.Colony.Player] = amt + gold;

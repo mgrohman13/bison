@@ -21,7 +21,9 @@ namespace GalWarWin
         private bool checkEvents = false;
         private Dictionary<Graphs.GraphType, bool[]> checks;
 
-        int y;
+        private int y;
+
+        List<int> researchLines = new List<int>();
 
         private GraphsForm()
         {
@@ -40,6 +42,24 @@ namespace GalWarWin
             checks.Add(Graphs.GraphType.Research, new bool[] { false, true });
 
             cbxType.SelectedItem = Graphs.GraphType.Population;
+
+            GetResearchLines();
+        }
+
+        private void GetResearchLines()
+        {
+            GetResearchLine(0);
+            GetResearchLine(.01);
+            GetResearchLine(.1);
+            researchLines.Add(50);
+            researchLines.Add(50 + ( researchLines[0] + 1 ) / 2);
+        }
+        private void GetResearchLine(double pct)
+        {
+            researchLines.Add(MattUtil.TBSUtil.FindValue(delegate(int value)
+            {
+                return ( Consts.GetResearchVictoryChance(100.0 / value, 1) > pct );
+            }, 0, 100, false));
         }
 
         private void LoadData()
@@ -362,10 +382,8 @@ namespace GalWarWin
                 maxY = 100;
                 DrawYLine(g, height, maxX, xScale, ref yScale, ref maxY, place, true, out value);
 
-                DrawYLine(g, maxX, xScale, yScale, (float)( maxY / 2.0 ), place);
-                DrawYLine(g, maxX, xScale, yScale, (float)( maxY / Consts.ResearchVictoryMult ), place);
-                DrawYLine(g, maxX, xScale, yScale, (float)( maxY / Consts.ResearchVictoryMin ), place);
-                DrawYLine(g, maxX, xScale, yScale, (float)( maxY * ( 1 + 1 / Consts.ResearchVictoryMin ) / 2.0 ), place);
+                foreach (int line in researchLines)
+                    DrawYLine(g, maxX, xScale, yScale, line, place);
             }
             else
             {
