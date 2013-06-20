@@ -86,17 +86,7 @@ namespace GalWarWin
 
             Form.btnEdit.Visible = !isConfirmation;
 
-            this.lblInfAtt.Visible = false;
-            this.lblInfDef.Visible = false;
-
-            double freeDmg = 0;
-            bool showFree = ( attShip != null && defender is Colony && defender.Player.IsTurn );
-            if (showFree)
-                freeDmg = attShip.GetFreeDmg((Colony)defender);
-            showFree = ( freeDmg > .05 );
-            this.lblInfDef.Visible = showFree;
-            if (showFree)
-                this.lblInfDef.Text = MainForm.FormatDouble(-freeDmg);
+            double freeDmg = GetFreeDmg();
 
             if (attacker == null)
             {
@@ -157,6 +147,11 @@ namespace GalWarWin
             this.lblAttDmg.Text = FormatDmg(avgDef);
             this.lblDefDmg.Text = FormatDmg(avgAtt);
 
+            ShowFreeDmg();
+
+            this.lblInfAtt.Visible = false;
+            this.lblInfDef.Visible = false;
+
             if (( att * att >= defHP || att * def >= attHP ) &&
                     ( !( attacker != null && ( attacker.HP == 0 || noDefHP ) ) || this.nudAttack.Visible ))
             {
@@ -170,7 +165,41 @@ namespace GalWarWin
             {
                 this.lblAttKill.Text = MainForm.FormatPct(attacker != null && attacker.HP == 0 ? 1 : 0);
                 this.lblDefKill.Text = MainForm.FormatPct(noDefHP ? 1 : 0);
+
+                Ship attShip = ( attacker as Ship );
+                Ship defShip = ( defender as Ship );
+                double attPop = Consts.GetTransLoss(attShip, avgDef);
+                double defPop = Consts.GetTransLoss(defShip, avgAtt);
+                if (attPop > 0)
+                {
+                    this.lblInfDef.Visible = true;
+                    this.lblInfAtt.Text = FormatDmg(attPop);
+                }
+                if (defPop > 0)
+                {
+                    this.lblInfDef.Visible = true;
+                    this.lblInfDef.Text = FormatDmg(defPop);
+                }
             }
+        }
+
+        private double ShowFreeDmg()
+        {
+            double freeDmg = GetFreeDmg();
+            bool showFree = ( freeDmg > .05 );
+            this.lblInfDef.Visible = showFree;
+            if (showFree)
+                this.lblInfDef.Text = MainForm.FormatDouble(-freeDmg);
+            return freeDmg;
+        }
+        private double GetFreeDmg()
+        {
+            Ship attShip = ( attacker as Ship );
+            double freeDmg = 0;
+            bool showFree = ( attShip != null && defender is Colony && defender.Player.IsTurn );
+            if (showFree)
+                freeDmg = attShip.GetFreeDmg((Colony)defender);
+            return freeDmg;
         }
 
         private void InitializeWorker()
@@ -373,12 +402,16 @@ end:
                 this.lblAttKill.Text = MainForm.FormatPctWithCheck(attDead);
                 this.lblDefKill.Text = MainForm.FormatPctWithCheck(defDead);
 
-                this.lblInfAtt.Visible = ( attPop > 0 );
-                if (this.lblInfAtt.Visible)
+                if (attPop > 0)
+                {
+                    this.lblInfDef.Visible = true;
                     this.lblInfAtt.Text = FormatDmg(attPop);
-                this.lblInfDef.Visible = ( defPop > 0 );
-                if (this.lblInfDef.Visible)
+                }
+                if (defPop > 0)
+                {
+                    this.lblInfDef.Visible = true;
                     this.lblInfDef.Text = FormatDmg(defPop);
+                }
             }
         }
 

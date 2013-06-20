@@ -16,6 +16,7 @@ namespace GalWarWin
         private static readonly String[] abbr = new string[] { string.Empty, "k", "M", "G" };
 
         private Label[,] labels;
+        private Label win;
 
         private bool checkEvents = false;
         private Dictionary<Graphs.GraphType, bool[]> checks;
@@ -50,6 +51,8 @@ namespace GalWarWin
                         Controls.Remove(labels[a, b]);
                         labels[a, b] = null;
                     }
+            if (win != null)
+                Controls.Remove(win);
 
             ReadOnlyCollection<Player> players = MainForm.Game.GetPlayers();
 
@@ -88,7 +91,7 @@ namespace GalWarWin
                 if (players[i] == winner)
                 {
                     x += 106;
-                    labels[7, i] = NewLabel(x, y, MainForm.FormatPctWithCheck(winChance), players[i].Color, true);
+                    win = NewLabel(x, y, MainForm.FormatPctWithCheck(winChance), players[i].Color, true);
                 }
                 y += 26;
             }
