@@ -14,7 +14,6 @@ namespace GalWarWin.Sliders
             this.colony = colony;
 
             this.control = new SellPlanetDefenseControl(this.sellForProd_CheckedChanged);
-            control.SetProdEnabled(colony.Buildable != null);
         }
 
         public bool Gold
@@ -67,6 +66,8 @@ namespace GalWarWin.Sliders
         {
             lblTitle.Text = "Disband Defenses";
             lblSlideType.Text = "HP";
+
+            control.SetProdEnabled(colony.Buildable != null);
         }
     }
 }

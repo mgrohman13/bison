@@ -294,19 +294,14 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.Player);
-
-                double autoRepair = this._autoRepair;
-                if (!double.IsNaN(autoRepair))
+                checked
                 {
-                    if (autoRepair <= 0)
-                        autoRepair = 0;
-                    else if (this.HP < this.MaxHP)
-                        autoRepair = GetAutoRepairForHP(GetAutoRepairHP(autoRepair));
-                    this.AutoRepair = autoRepair;
-                }
+                    TurnException.CheckTurn(this.Player);
 
-                return autoRepair;
+                    if (!float.IsNaN(this._autoRepair))
+                        this.AutoRepair = ( ( this._autoRepair > 0 ) ? GetAutoRepairForHP(GetAutoRepairHP(this._autoRepair)) : 0 );
+                    return this._autoRepair;
+                }
             }
             set
             {
@@ -314,9 +309,10 @@ namespace GalWar
                 {
                     TurnException.CheckTurn(this.Player);
 
-                    if (this.HP == this.MaxHP)
-                        value = double.NaN;
-                    this._autoRepair = (float)value;
+                    if (this.HP < this.MaxHP)
+                        this._autoRepair = (float)value;
+                    else
+                        this._autoRepair = float.NaN;
                 }
             }
         }

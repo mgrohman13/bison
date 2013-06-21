@@ -1,4 +1,5 @@
 UI
+	transfer gold costs
 	enter gold per pop killed
 	repair all set should not effect 100% hp
 	Untitled.png
@@ -28,6 +29,7 @@ UI
 gold needs adv in choose research or gold
 ship name 3.9 might be too much
 	and start with max instead of avg maybe?
+	or, always use averages to reduce randomness creep?
 increase gold payout for apocalypse
 check randomness in add/remove pop in anomalies, maybe add/spend more gold
 check colonization mult randomness
