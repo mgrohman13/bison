@@ -913,7 +913,7 @@ next:
 
         private bool Experience(IEventHandler handler, Ship ship)
         {
-            handler.Explore(AnomalyType.Experience);
+            handler.Explore(AnomalyType.Experience, ship);
 
             ship.AddAnomalyExperience(handler, this.value, Game.Random.Bool(), Game.Random.Bool());
 

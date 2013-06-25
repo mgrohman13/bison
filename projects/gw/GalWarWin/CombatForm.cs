@@ -580,12 +580,28 @@ end:
             Form.Flush();
         }
 
-        public static bool OnRefresh(bool show)
+        public static bool OnRefresh(Ship ship)
         {
-            show = ( ( show || Form.chkLog.Checked ) && Form.log.Count > 0 );
+            bool show = ( ( ship != null || Form.chkLog.Checked ) && HasLog(ship) );
             if (show)
                 Form.ShowLog();
             return show;
+        }
+
+        private static bool HasLog(Ship ship)
+        {
+            if (ship == null)
+                return ( Form.log.Count > 0 );
+
+            foreach (ILogType log in Form.log)
+            {
+                LevelUpType level = ( log as LevelUpType );
+                if (level != null)
+                    if (level.Ship == ship)
+                        return true;
+            }
+            return false;
+
         }
 
         private void btnLog_Click(object sender, EventArgs e)
@@ -741,6 +757,14 @@ end:
                 totalExp = this.ship.GetTotalExp();
                 curHP = this.ship.HP;
                 maxHP = this.ship.MaxHP;
+            }
+
+            public Ship Ship
+            {
+                get
+                {
+                    return this.ship;
+                }
             }
 
             protected override bool CanCombine(LevelUpType other)

@@ -1,9 +1,5 @@
 UI
-	transfer gold costs
 	enter gold per pop killed
-	repair all set should not effect 100% hp
-	Untitled.png
-	anom exp when no levels but log had unflushed data
 	rally ships
 		saveable?
 	clear showMoves

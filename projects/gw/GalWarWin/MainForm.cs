@@ -50,7 +50,9 @@ namespace GalWarWin
 
         private MainForm dialog;
 
-        private static bool emphasisEvent = true, anomExp = false;
+        private static bool emphasisEvent = true;
+
+        private static Ship anomExp = null;
 
         private static Point? _selected = null, panning = null;
         private static HashSet<SpaceObject> hold, holdPersistent;
@@ -2035,7 +2037,7 @@ namespace GalWarWin
         }
         public void RefreshAll(bool suppressLog)
         {
-            if (!suppressLog && anomExp)
+            if (!suppressLog && anomExp != null)
                 OnRefresh();
 
             if (!ended && Game.GetPlayers().Count < 2)
@@ -2057,9 +2059,9 @@ namespace GalWarWin
 
         private void OnRefresh()
         {
-            if (!CombatForm.OnRefresh(anomExp) && anomExp)
+            if (!CombatForm.OnRefresh(anomExp) && anomExp != null)
                 ShowExploreMessage(Anomaly.AnomalyType.Experience);
-            anomExp = false;
+            anomExp = null;
         }
 
         private void InvalidateMap()
@@ -2623,7 +2625,7 @@ namespace GalWarWin
                 return true;
 
             case Anomaly.AnomalyType.Experience:
-                anomExp = true;
+                anomExp = (Ship)info[0];
                 return true;
 
             case Anomaly.AnomalyType.Gold:

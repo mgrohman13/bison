@@ -79,34 +79,30 @@ namespace GalWarWin.Sliders
 
         protected override double GetResult()
         {
-            return 0;
+            return Consts.GetMovePopCost(MainForm.Game.MapSize, GetValue(), GetSoldiers());
         }
 
         protected override string GetExtra()
         {
+            double soldiers = GetSoldiers();
+            string retVal = MainForm.FormatPct(soldiers, true);
+            if (retVal == "0.0%")
+                retVal = string.Empty;
+            return retVal;
+        }
+        private double GetSoldiers()
+        {
+            double soldiers = 0;
             int value = GetValue();
             if (value > 0)
-            {
-                double soldiers = 0;
                 if (max.HasValue)
-                {
                     soldiers = PopCarrier.GetMoveSoldiers(this.totalPop, this.soldiers, value) / value;
-                }
                 else if (from != null)
-                {
                     if (to == null || !to.Player.IsTurn)
                         soldiers = from.GetMoveSoldiers(value) / value;
                     else
                         soldiers = ( from.GetMoveSoldiers(value) + to.Soldiers ) / ( value + to.Population ) - to.GetSoldierPct();
-                }
-                if (soldiers != 0)
-                {
-                    string retVal = MainForm.FormatPct(soldiers, true);
-                    if (retVal != "0.0%")
-                        return ( soldiers > 0 ? "+" : string.Empty ) + retVal;
-                }
-            }
-            return string.Empty;
+            return soldiers;
         }
 
         private int GetPopulation()

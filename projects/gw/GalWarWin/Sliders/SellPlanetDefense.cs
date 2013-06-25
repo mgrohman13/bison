@@ -7,13 +7,14 @@ namespace GalWarWin.Sliders
     public class SellPlanetDefense : SliderController
     {
         private readonly Colony colony;
-        private readonly SellPlanetDefenseControl control;
+        private SellPlanetDefenseControl control;
 
         public SellPlanetDefense(Colony colony)
         {
             this.colony = colony;
 
             this.control = new SellPlanetDefenseControl(this.sellForProd_CheckedChanged);
+            this.control.SetProdEnabled(colony.Buildable != null);
         }
 
         public bool Gold
@@ -66,8 +67,6 @@ namespace GalWarWin.Sliders
         {
             lblTitle.Text = "Disband Defenses";
             lblSlideType.Text = "HP";
-
-            control.SetProdEnabled(colony.Buildable != null);
         }
     }
 }

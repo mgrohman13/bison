@@ -200,6 +200,11 @@ namespace GalWar
             return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + PlanetConstValue ), .65);
         }
 
+        public static double GetMovePopCost(double mapSize, int population, double soldiers)
+        {
+            return population * Consts.MovePopulationCost + Consts.GetSoldierUpkeep(mapSize, soldiers) * Consts.MoveSoldiersCost;
+        }
+
         public static double GetProductionUpkeepMult(double mapSize)
         {
             return ProdUpkeepMult / GetUpkeepPayoff(mapSize, 1, 1, 2.1);

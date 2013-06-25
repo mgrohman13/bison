@@ -202,7 +202,7 @@ namespace GalWar
 
         protected double GetGoldCost(int population, double soldiers)
         {
-            return population * Consts.MovePopulationCost + Consts.GetSoldierUpkeep(Tile.Game.MapSize, soldiers) * Consts.MoveSoldiersCost;
+            return Consts.GetMovePopCost(Tile.Game.MapSize, population, soldiers);
         }
 
         public double GetSoldiers(int troops)

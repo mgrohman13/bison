@@ -14,7 +14,8 @@ namespace GalWarWin.Sliders
 
         protected void Refresh()
         {
-            DoSetText(this, new EventArgs());
+            if (DoSetText != null)
+                DoSetText(this, new EventArgs());
         }
 
         public void SetGetValueDelegate(GetValueDelegate GetValue)
