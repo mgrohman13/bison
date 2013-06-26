@@ -32,11 +32,13 @@ check colonization mult randomness
 also take into account research until last pure str ship
 research vict a little easier?
 anomaly terraform quality amount
-increase starting gold low quality advantage more
-intial map layout planets use dist check?
+	also no longer also check income with new neg gold behavior
+	tie terraform too expensive return false to actual quality increase
 increase severity of planet dist check
 ship soldier exp reduces by pct
 AdjustCost check when anom ship
+AdjustCenter before RemoveTeleporters
+ResetResearchChance comments
 
 standardize dead checks
 without tile cache, no longer need to use points instead of tiles in places

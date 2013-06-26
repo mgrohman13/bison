@@ -550,8 +550,10 @@ namespace GalWar
             factor = storedResearch / ( storedResearch + factor );
             factor *= factor;
             if (Game.Random.Bool())
-                return Game.Random.DoubleFull(factor);
-            return Game.Random.Weighted(factor);
+                Game.Random.Weighted(factor);
+            //if (Game.Random.Bool())
+            return Game.Random.DoubleFull(factor);
+            //return Game.Random.OE(factor);
         }
 
         private void RandResearchDisplay()

@@ -18,7 +18,9 @@ namespace GalWar
         public const double StartAnomalies = 13;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each indivual player's homeworld quality
-        public const double StartGold = AverageQuality * 650;
+        public const double StartGold = AverageQuality * 910;
+        //StartGoldProdPct is the percent of total starting gold that will be converted into starting production
+        public const double StartGoldProdPct = .21;
         public const double StartResearch = 390;
         public const double StartRndm = .13;
         public const double StartMinMult = .65;
@@ -122,13 +124,12 @@ namespace GalWar
         public const double DisbandPct = RepairCostMult;
         public const double ColonizationCostRndm = .104;
 
-        public const double AttackStrength = 1;
-        public const double GoldStrength = 1.69;
-        public const double DefenseStrength = 1.69;
-        public const double AttackNumbersPower = .13;
-        public const double DefenseNumbersPower = .039;
-        //payoff power for gold used to boost a planetary invasion
+        public const double InvadeStrength = 1;
+        public const double InvadeNumbersPower = .13;
+        public const double InvadeGoldStrength = 1.69;
         public const double InvadeGoldIncPower = .39;
+        public const double InvadeDefenseStrength = 1.69;
+        public const double InvadeDefenseNumbersPower = .039;
         //maximum for random pct bonus to troop combat strength
         public const double InvadeMultRandMax = Math.PI * .13;
         //PlanetDamage is average planet quality lost as a percentage of total troops killed in the battle
@@ -149,14 +150,13 @@ namespace GalWar
 
         public const double FLOAT_ERROR = 1.0 / ( 1 << 20 );
 
-        public static double GetResearchVictoryChance(double mult, double numPlayers)
+        public static double GetResearchVictoryChance(double mult)
         {
             //research victory can happen when the top player exceeds a certain multiple of the second place player
             if (mult > Consts.ResearchVictoryMin)
             {
                 double chance = ( mult - Consts.ResearchVictoryMin ) / ( Consts.ResearchVictoryMult - Consts.ResearchVictoryMin );
-                chance = Math.Pow(Consts.LimitPct(chance), Consts.ResearchVictoryPow);
-                return ( 1 - Math.Pow(1 - chance, 1 / numPlayers) );
+                return Math.Pow(Consts.LimitPct(chance), Consts.ResearchVictoryPow);
             }
             return 0;
         }
@@ -268,18 +268,17 @@ namespace GalWar
         }
 
         //randomized
-        internal static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense)
+        internal static double GetInvadeStrength(int attackers, double soldiers, int gold, double totalDefense)
         {
             int initialWave;
-            return RandomizeInvasionStr(GetInvasionStrength(attackers, soldiers, gold, totalDefense, out initialWave));
+            return RandomizeInvadeStrength(GetInvadeStrength(attackers, soldiers, gold, totalDefense, out initialWave));
         }
-
         //non-randomized
-        public static double GetInvasionStrengthBase(int attackers, double soldiers, int gold, double defenseBase)
+        public static double GetInvadeStrengthBase(int attackers, double soldiers, int gold, double defenseBase)
         {
             int min, max;
-            double maxStr = GetInvasionStrength(attackers, soldiers, gold, defenseBase, out min);
-            double minStr = GetInvasionStrength(attackers, soldiers, gold, defenseBase * ( 1 + InvadeMultRandMax ), out max);
+            double maxStr = GetInvadeStrength(attackers, soldiers, gold, defenseBase, out min);
+            double minStr = GetInvadeStrength(attackers, soldiers, gold, defenseBase * ( 1 + InvadeMultRandMax ), out max);
             double avgStr = ( maxStr + minStr ) / 2.0;
 
             if (attackers > 1)
@@ -291,15 +290,15 @@ namespace GalWar
 
                 double lowPct = 0, highPct = 0;
                 if (max == attackers)
-                    lowPct = GetStrPct(attackers, soldiers, gold, defenseBase, false);
+                    lowPct = FindInvadeStrengthPct(attackers, soldiers, gold, defenseBase, false);
                 if (min == 1)
-                    highPct = GetStrPct(attackers, soldiers, gold, defenseBase, true);
+                    highPct = FindInvadeStrengthPct(attackers, soldiers, gold, defenseBase, true);
                 avgStr = minStr * lowPct + maxStr * highPct + avgStr * ( 1 - lowPct - highPct );
             }
 
             return avgStr;
         }
-        private static double GetStrPct(int attackers, double soldiers, int gold, double defenseBase, bool high)
+        private static double FindInvadeStrengthPct(int attackers, double soldiers, int gold, double defenseBase, bool high)
         {
             checked
             {
@@ -308,7 +307,7 @@ namespace GalWar
                 int retVal = TBSUtil.FindValue(delegate(int value)
                 {
                     int ret;
-                    GetInvasionStrength(attackers, soldiers, gold, defenseBase * ( 1 + interval * value ), out ret);
+                    GetInvadeStrength(attackers, soldiers, gold, defenseBase * ( 1 + interval * value ), out ret);
                     return ( high ? ret > 1 : ret < attackers );
                 }, 0, max, high);
                 if (!high)
@@ -317,49 +316,48 @@ namespace GalWar
             }
         }
 
-        private static double GetInvasionStrength(int attackers, double soldiers, int gold, double totalDefense, out int initialWave)
+        private static double GetInvadeStrength(int attackers, double soldiers, int gold, double totalDefense, out int initialWave)
         {
-            double attack = GetStrengthBase(attackers, soldiers, AttackStrength, AttackNumbersPower);
+            double attack = GetInvadeStrengthBase(attackers, soldiers, InvadeStrength, InvadeNumbersPower);
             initialWave = TBSUtil.FindValue(delegate(int value)
             {
-                return ( value * GetInvasionStrength(value, attack, gold) > totalDefense );
+                return ( value * GetInvadeStrength(value, attack, gold) > totalDefense );
             }, 1, attackers, true);
-            return GetInvasionStrength(initialWave, attack, gold);
+            return GetInvadeStrength(initialWave, attack, gold);
         }
-        private static double GetInvasionStrength(int initialWave, double attack, int gold)
+        private static double GetInvadeStrength(int initialWave, double attack, int gold)
         {
             if (gold == 0)
                 return attack;
-            return attack + GoldStrength * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) * gold / (double)initialWave;
+            return attack + InvadeGoldStrength * Math.Pow(initialWave / (double)gold, InvadeGoldIncPower) * gold / (double)initialWave;
         }
 
         //randomized
-        internal static double GetPlanetDefenseStrength(int population, double soldiers)
+        internal static double GetInvadeDefenseStrength(int population, double soldiers)
         {
-            return RandomizeInvasionStr(GetPlanetDefenseStrengthBase(population, soldiers));
+            return RandomizeInvadeStrength(GetInvadeDefenseStrengthBase(population, soldiers));
         }
-
         //non-randomized
-        public static double GetPlanetDefenseStrengthBase(int population, double soldiers)
+        public static double GetInvadeDefenseStrengthBase(int population, double soldiers)
         {
-            return GetStrengthBase(population, soldiers, DefenseStrength, DefenseNumbersPower);
+            return GetInvadeStrengthBase(population, soldiers, InvadeDefenseStrength, InvadeDefenseNumbersPower);
         }
 
-        private static double GetStrengthBase(int troops, double soldiers, double strength, double power)
+        private static double GetInvadeStrengthBase(int troops, double soldiers, double strength, double power)
         {
             if (troops > 0)
                 return strength * Math.Pow(troops + soldiers, power) * ( 1 + soldiers / (double)troops );
             throw new Exception();
         }
 
+        private static double RandomizeInvadeStrength(double str)
+        {
+            return str * ( 1 + Game.Random.DoubleHalf(InvadeMultRandMax) );
+        }
+
         public static int GetPlanetDamage(int population)
         {
             return Game.Random.WeightedInt(population, PlanetDamage);
-        }
-
-        private static double RandomizeInvasionStr(double str)
-        {
-            return str * ( 1 + Game.Random.DoubleHalf(InvadeMultRandMax) );
         }
 
         public static double GetTransLoss(Ship ship, double damage)

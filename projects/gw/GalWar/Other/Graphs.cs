@@ -50,7 +50,7 @@ namespace GalWar
             LoopColonies(player, out f, out quality, out pd);
             LoopShips(player, out armada, out damaged, out f);
 
-            //values subject to major fluctuation depending on who moved last get averaged out to eliminate the effect of turn order
+            //values subject to major fluctuation depending on who moved last get averaged out to reduce the effect of turn order
             EndTurn(GraphType.Quality, player, quality);
             EndTurn(GraphType.Armada, player, pd + armada);
             EndTurn(GraphType.ArmadaDamaged, player, pd + damaged);

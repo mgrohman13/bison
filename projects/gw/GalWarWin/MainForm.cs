@@ -784,7 +784,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(13, .13, .13, 5.2), Game.Random.GaussianCapped(.169, .26, .039));
+                    Game.Random.GaussianOE(13, .13, .13, 5.2), Game.Random.GaussianCapped(.26, .26, .065));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();

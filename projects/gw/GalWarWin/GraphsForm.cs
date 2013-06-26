@@ -48,17 +48,17 @@ namespace GalWarWin
 
         private void GetResearchLines()
         {
-            GetResearchLine(0);
-            GetResearchLine(.01);
-            GetResearchLine(.1);
+            AddResearchLine(0);
+            AddResearchLine(.01);
+            AddResearchLine(.1);
             researchLines.Add(50);
-            researchLines.Add(50 + ( researchLines[0] + 1 ) / 2);
+            researchLines.Add(( researchLines[0] + 101 ) / 2);
         }
-        private void GetResearchLine(double pct)
+        private void AddResearchLine(double pct)
         {
             researchLines.Add(MattUtil.TBSUtil.FindValue(delegate(int value)
             {
-                return ( Consts.GetResearchVictoryChance(100.0 / value, 1) > pct );
+                return ( Consts.GetResearchVictoryChance(100.0 / value) > pct );
             }, 0, 100, false));
         }
 

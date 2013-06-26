@@ -83,27 +83,49 @@ namespace GalWarWin.Sliders
 
         internal override double lblExtra_Click()
         {
-            double target = InputForm.ShowForm("Enter maximum gold per troop left:");
+            int retVal;
+
+            double defense = GetDefense();
+            string prompt;
+            if (GetAttack(GetValue()) > defense)
+                prompt = "Enter gold per troop left:";
+            else
+                prompt = "Enter gold per population killed:";
+            double target = InputForm.ShowForm(prompt);
             if (double.IsNaN(target) || target < 0)
                 return GetValue();
 
             int max = GetMax();
-            double defense = GetDefense();
-            int gold = TBSUtil.FindValue(delegate(int findGold)
+            if (GetAttack(GetValue()) > defense)
             {
-                return ( GetAttack(findGold) > defense );
-            }, 1, max, true);
-
-            int retVal = gold;
-            double last = GetResult(gold);
-            while (++gold <= max)
-            {
-                double cur = GetResult(gold);
-                if (( gold - retVal ) / ( cur - last ) < target)
+                int gold = TBSUtil.FindValue(delegate(int findGold)
                 {
-                    retVal = gold;
-                    last = cur;
+                    return ( GetAttack(findGold) > defense );
+                }, 1, max, true);
+
+                //we cannot use a binary search algorithm due to the initialwave logic
+                retVal = gold;
+                double last = GetResult(gold);
+                while (++gold <= max)
+                {
+                    double cur = GetResult(gold);
+                    if (( gold - retVal ) / ( cur - last ) < target)
+                    {
+                        retVal = gold;
+                        last = cur;
+                    }
                 }
+            }
+            else
+            {
+                max = TBSUtil.FindValue(delegate(int findGold)
+                {
+                    return ( GetAttack(findGold) < defense );
+                }, 1, max, false);
+                retVal = TBSUtil.FindValue(delegate(int gold)
+                {
+                    return ( gold / GetResult(gold) < target );
+                }, 1, max, false);
             }
             return retVal;
         }
@@ -177,7 +199,7 @@ namespace GalWarWin.Sliders
             if (chance >= 1)
             {
                 double defense = GetDefense() * ( 1 + Consts.InvadeMultRandMax );
-                double attack = attPop * Consts.GetInvasionStrengthBase(attPop, GetSoldiers(), gold, defense);
+                double attack = attPop * Consts.GetInvadeStrengthBase(attPop, GetSoldiers(), gold, defense);
                 //since the defender wins a tie, the attacker must win by a margin of at least one troop to actually have a 100% chance
                 double margin = 1 - 1 / (double)attPop;
                 if (defense > attack * margin)
@@ -195,7 +217,7 @@ namespace GalWarWin.Sliders
                 double result;
                 if (!getAttackCache.TryGetValue(gold, out result))
                 {
-                    result = attPop * Consts.GetInvasionStrengthBase(attPop, GetSoldiers(), gold, GetDefense());
+                    result = attPop * Consts.GetInvadeStrengthBase(attPop, GetSoldiers(), gold, GetDefense());
                     getAttackCache.Add(gold, result);
                 }
                 return result;
@@ -209,7 +231,7 @@ namespace GalWarWin.Sliders
 
         private double GetDefense()
         {
-            return ( defPop * Consts.GetPlanetDefenseStrengthBase(defPop, defSoldiers) );
+            return ( defPop * Consts.GetInvadeDefenseStrengthBase(defPop, defSoldiers) );
         }
     }
 }

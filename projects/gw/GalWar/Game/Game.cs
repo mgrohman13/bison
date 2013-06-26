@@ -81,8 +81,8 @@ namespace GalWar
                 AssertException.Assert(numPlayers > 1);
                 AssertException.Assert(numPlayers * 39 < MapSize);
                 AssertException.Assert(mapSize < 39);
-                AssertException.Assert(planetPct > .039);
-                AssertException.Assert(planetPct < .39);
+                AssertException.Assert(planetPct > .065);
+                AssertException.Assert(planetPct < .52);
 
                 this.StoreProd = new StoreProd();
                 this.Attack = new Attack();
@@ -100,19 +100,9 @@ namespace GalWar
                 this._turn = 0;
 
                 planetPct *= Math.Sqrt(MapSize);
-                this._planetPct = (float)Random.GaussianCapped(planetPct / 130.0, .078, planetPct / 169.0);
+                this._planetPct = (float)Random.GaussianCapped(planetPct / 210.0, .078, planetPct / 260.0);
                 double min = this.PlanetPct + 0.13;
                 this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
-
-                //temporary starting teleporters to space out initial map generation somewhat
-                double avgTeleporters = Math.Pow(MapSize, .26) / Math.PI;
-                int teleporters = Random.GaussianOEInt(avgTeleporters, .065, .065, ( ( avgTeleporters > 1 ) ? 1 : 0 ));
-                for (int a = 0 ; a < teleporters ; ++a)
-                {
-                    Tile t1 = GetRandomTile(), t2 = GetRandomTile();
-                    if (CanCreateTeleporter(t1, t2))
-                        CreateTeleporter(t1, t2);
-                }
 
                 CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players);
@@ -240,12 +230,25 @@ namespace GalWar
 
         private void CreateSpaceObjects(int numPlayers, double planetPct)
         {
+            //temporary starting teleporters to space out initial map generation somewhat
+            double avgTeleporters = Math.Pow(MapSize, .26) / Math.PI;
+            int teleporters = Random.GaussianOEInt(avgTeleporters, .065, .065, ( ( avgTeleporters > 1 ) ? 1 : 0 ));
+            for (int a = 0 ; a < teleporters ; ++a)
+            {
+                Tile t1 = GetRandomTile(), t2 = GetRandomTile();
+                if (CanCreateTeleporter(t1, t2))
+                    CreateTeleporter(t1, t2);
+            }
+
+            //first create homeworlds
             while (GetPlanets().Count < numPlayers)
                 NewPlanet();
+            //starting planets are actually just chances to create one after homeworlds
             int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( ( planetPct > 1 ) ? 1 : 0 ));
             for (int a = 0 ; a < startPlanets ; ++a)
                 NewPlanet();
 
+            //starting anomalies
             double anomalyPct = this.AnomalyPct * Consts.StartAnomalies;
             int startAnomalies = Random.GaussianOEInt(anomalyPct, .39, .13, ( ( anomalyPct > 1 ) ? 1 : 0 ));
             for (int a = 0 ; a < startAnomalies ; ++a)
@@ -255,9 +258,8 @@ namespace GalWar
         private Planet NewPlanet()
         {
             Tile tile = GetRandomTile();
-            if (tile.SpaceObject == null && CheckPlanetDistance(tile))
+            if (tile.SpaceObject == null && Random.Bool(GetPlanetChance(tile, false)))
                 return CreatePlanet(tile);
-            //dont retry if it cant be placed because of occupied space or existing planet proximity
             return null;
         }
 
@@ -282,40 +284,61 @@ namespace GalWar
                 RemoveTeleporter(GetTeleporters()[0]);
             //homeworlds count as single planets regardless of quality, and anomalies count as their chance of being a planet
             double numPlanets = numPlayers + CountAnomPlanets();
-            //add in actual current uncolonized planet values
+            //actual current uncolonized planets count as their planet value
             foreach (Planet planet in GetPlanets())
                 if (planet.Colony == null)
                     numPlanets += planet.PlanetValue / ( Consts.AverageQuality + Consts.PlanetConstValue );
             //divide starting gold by the number of planets per player, and randomize 
             startGold = GetStartDouble(startGold * numPlayers / numPlanets);
 
-            //starting production is based on the highest colony ship design cost
-            double startProd = double.MinValue;
+            //starting production is based initial ship design costs
+            double startProd = 0, count = 0, max = double.MinValue;
             foreach (Player player in this.players)
                 foreach (ShipDesign design in player.GetDesigns())
-                    if (design.Colony)
-                        startProd = Math.Max(startProd, design.Cost);
-            startProd = GetStartDouble(startProd);
-
-            //calculations to offset AddProduction when currently building StoreProd
-            startProd /= ( 1 - Consts.StoreProdLossPct );
-            double spendGold = startProd * Consts.StoreProdLossPct / Consts.ProductionForGold;
+                {
+                    //colony ships are weighted more than other ships
+                    double weight = design.Colony ? 1.69 : 1;
+                    startProd += design.Cost * weight;
+                    count += weight;
+                    //non-conoly ships only have a half-chance of increasing the maximum
+                    if (design.Cost > max && ( design.Colony || Random.Bool() ))
+                        max = design.Cost;
+                }
+            //average the maximum and average design cost, reduce by StartGoldProdPct, and randomize 
+            startProd = GetStartDouble(( startProd / count + max ) / 2.0 * ( 1 - Consts.StartGoldProdPct ));
 
             for (this.currentPlayer = 0 ; this.currentPlayer < numPlayers ; ++this.currentPlayer)
             {
-                Colony colony = CurrentPlayer.GetColonies()[0];
+                //will always have exactly one colony at this point, the homeworld
+                Colony homeworld = CurrentPlayer.GetColonies()[0];
 
-                colony.BuildPlanetDefense(startDefense, true);
-                double planetDefenseCost = colony.PlanetDefenseCostPerHP * colony.HP + colony.Soldiers * Consts.ProductionForSoldiers;
+                //starting soldiers and defense
+                homeworld.BuildPlanetDefense(startDefense, true);
 
                 //starting gold is divided by each indivual player's homeworld quality
-                double gold = startGold / (double)colony.Planet.Quality;
-                gold += currentPlayer * Consts.GetMoveOrderGold(numPlayers) + startDefense - planetDefenseCost - spendGold;
-                CurrentPlayer.AddGold(gold);
+                double addGold = startGold / (double)homeworld.Planet.Quality;
 
-                colony.AddProduction(startProd);
+                //some starting gold automatically turns into production
+                double addProduction = addGold * Consts.StartGoldProdPct;
+                addGold -= addProduction;
 
-                CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + colony.production;
+                //starting production
+                addProduction += startProd;
+
+                //other gold balancing
+                addGold += currentPlayer * Consts.GetMoveOrderGold(numPlayers) +
+                        startDefense - ( homeworld.PlanetDefenseCostPerHP * homeworld.HP + homeworld.Soldiers * Consts.ProductionForSoldiers );
+
+                //calculations to offset AddProduction when currently building StoreProd
+                addProduction /= ( 1 - Consts.StoreProdLossPct );
+                addGold -= addProduction * Consts.StoreProdLossPct / Consts.ProductionForGold;
+
+                //actually add in starting gold and production
+                CurrentPlayer.AddGold(addGold);
+                homeworld.AddProduction(addProduction);
+
+                //calculate current income total
+                CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + homeworld.production;
             }
         }
         private static List<int> GetStartResearch()
@@ -407,10 +430,10 @@ next_planet:
                         double chance = 1, anomPlanetRate = 0;
                         foreach (var pair in distanceChances)
                         {
-                            anomPlanetRate += chance * pair.Value * GetAnomalyPlanetChance(pair.Key);
+                            anomPlanetRate += chance * pair.Value * GetPlanetChance(pair.Key, true);
                             chance *= ( 1 - pair.Value );
                         }
-                        anomPlanetRate += chance * GetAnomalyPlanetChance(planetDist);
+                        anomPlanetRate += chance * GetPlanetChance(planetDist, true);
 
                         //store chance to effect subsequent anomalies
                         anomalies.Add(anomaly, anomPlanetRate);
@@ -673,7 +696,7 @@ next_planet:
             {
                 Player winner = researchOrder[0];
                 double chance = GetResearchVictoryChance(winner.Research, researchOrder[1].Research);
-                if (chance > 0 && Random.Bool(chance))
+                if (chance > 0 && PlayerTurnChance(chance))
                 {
                     winner.Destroy();
                     RemovePlayer(winner);
@@ -695,7 +718,12 @@ next_planet:
         }
         private double GetResearchVictoryChance(double first, double second)
         {
-            return Consts.GetResearchVictoryChance(first / second, this.players.Count);
+            return Consts.GetResearchVictoryChance(first / second);
+        }
+
+        private bool PlayerTurnChance(double roundChance)
+        {
+            return Random.Bool(1 - Math.Pow(1 - roundChance, 1 / (double)this.players.Count));
         }
 
         private void RandMoveOrder()
@@ -720,9 +748,8 @@ next_planet:
             List<Tuple<Point, Point>> teleporters = GetTeleporters();
             if (teleporters.Count > 0)
             {
-                const double avgTurns = 65;
-                double chance = 1 - Math.Pow(avgTurns / ( avgTurns + teleporters.Count ), 1 / (double)this.players.Count);
-                if (Random.Bool(chance))
+                double chance = teleporters.Count / ( 65.0 + teleporters.Count );
+                if (PlayerTurnChance(chance))
                     RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
             }
         }
@@ -787,7 +814,7 @@ next_planet:
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
         {
-            if (Random.Bool(GetAnomalyPlanetChance(tile)))
+            if (Random.Bool(GetPlanetChance(tile, true)))
             {
                 handler.Explore(Anomaly.AnomalyType.NewPlanet);
                 return CreatePlanet(tile);
@@ -796,19 +823,26 @@ next_planet:
         }
         public double GetAnomalyPlanetChance(Tile tile)
         {
+            return GetPlanetChance(tile, true);
+        }
+        public double GetPlanetChance(Tile tile, bool anomaly)
+        {
             int dist = int.MaxValue;
             foreach (Planet planet in GetPlanets())
                 dist = Math.Min(dist, Tile.GetDistance(tile, planet.Tile));
-            return GetAnomalyPlanetChance(dist);
+            return GetPlanetChance(dist, anomaly);
         }
-        private double GetAnomalyPlanetChance(int dist)
+        private double GetPlanetChance(int dist, bool anomaly)
         {
+            double value = 0;
             if (dist > Consts.PlanetDistance)
             {
-                double value = .52 + dist - Consts.PlanetDistance - 1;
-                return this.PlanetPct / this.AnomalyPct * Math.Sqrt(value / ( 1.3 + Math.Pow(MapSize, .21) / 2.1 + value ));
+                value = .52 + dist - Consts.PlanetDistance - 1;
+                value = Math.Sqrt(value / ( 1.3 + Math.Pow(MapSize, .21) / 2.1 + value ));
+                if (anomaly)
+                    value *= this.PlanetPct / this.AnomalyPct;
             }
-            return 0;
+            return value;
         }
         internal bool CheckPlanetDistance(Tile tile)
         {

@@ -63,7 +63,7 @@ namespace GalWar
                     ( colony ? 520 : 0 )
                     +
                     (
-                        ( Math.Pow(trans * AvgAttSoldiers, 1 + Consts.AttackNumbersPower) / AvgAttSoldiers )
+                        ( Math.Pow(trans * AvgAttSoldiers, 1 + Consts.InvadeNumbersPower) / AvgAttSoldiers )
                         +
                         ( 13 * bombardDamage )
                     )
@@ -366,7 +366,7 @@ namespace GalWar
             speed = (byte)MakeStat(speedStr);
             colony = colonyStr;
             trans = (ushort)( transStr > 0 ? MakeStat(transStr) : 0 );
-            bombardDamage = (ushort)( deathStarStr ? MakeStat(bombardDamageStr) : 0 );
+            bombardDamage = (ushort)( deathStarStr ? SetBombardDamage(MakeStat(bombardDamageStr), att) : 0 );
         }
 
         public bool Colony

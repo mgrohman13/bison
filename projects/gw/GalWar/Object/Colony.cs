@@ -529,8 +529,8 @@ namespace GalWar
 
         private void TroopBattle(ref int attackers, double attSoldiers, int gold, out double attack, out double defense)
         {
-            defense = Consts.GetPlanetDefenseStrength(this.Population, this.Soldiers);
-            attack = Consts.GetInvasionStrength(attackers, attSoldiers, gold, this.Population * defense);
+            defense = Consts.GetInvadeDefenseStrength(this.Population, this.Soldiers);
+            attack = Consts.GetInvadeStrength(attackers, attSoldiers, gold, this.Population * defense);
 
             double attMult = attack / defense;
             double attStr = attMult * attackers;
