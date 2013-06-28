@@ -246,7 +246,7 @@ namespace GalWar
             double retVal = 1;
             if (colony)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 13 / (double)trans + 1 ), false, bombardDamage, lastResearched)
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 1.0 + 13 / (double)trans ), false, bombardDamage, lastResearched)
                         / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, lastResearched);
                 if (sqr)
                     retVal *= retVal;

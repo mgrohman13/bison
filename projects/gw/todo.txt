@@ -1,5 +1,4 @@
 UI
-	enter gold per pop killed
 	rally ships
 		saveable?
 	clear showMoves
@@ -22,6 +21,8 @@ UI
 		ships
 	keyboard?
 
+trans upk payoff problem
+	upkeep IS more severe, but cost ends up being reduced
 gold needs adv in choose research or gold
 ship name 3.9 might be too much
 	and start with max instead of avg maybe?
