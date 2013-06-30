@@ -11,6 +11,8 @@ namespace Trogdor
         public const int FrameRate = 26;
         public const string ScoresFile = "inf.dat";
 
+        public const double ReactionTime = 500;
+
         public const double HutSize = 300;
         public const float CreateHut = .006f;
         public const float CreateOther = CreateHut / 2f;
@@ -23,7 +25,7 @@ namespace Trogdor
         public const float DriftChance = .3f;
         public const float PlayerDrift = .169f;
         public const float OtherDrift = .6f;
-        public const double HitDamage = 26.0 / PlayerSpeed;
+        public const double HitDamage = 13.0 / PlayerSpeed;
 
         public static MattUtil.MTRandom Random;
 
@@ -338,6 +340,17 @@ namespace Trogdor
             Timer.Enabled = true;
 
             MainForm.Invalidate();
+        }
+
+        internal static MattUtil.PointD GetRandomPoint(double diameter)
+        {
+            double x, y;
+            do
+            {
+                x = Game.Random.DoubleHalf(Game.Width - diameter);
+                y = Game.Random.DoubleHalf(Game.Height - diameter);
+            } while (Player != null && Player.CheckCourse(x, y, diameter));
+            return new MattUtil.PointD(x, y);
         }
     }
 }
