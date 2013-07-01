@@ -266,26 +266,6 @@ namespace Trogdor
         {
             float diameter = (float)Diameter;
             graphics.FillEllipse(GetBrush(type), (float)x, (float)y + yOffset, diameter, diameter);
-
-            //if (this.Type == Trogdor.Type.Player)
-            //{
-            //    int iter = Game.Random.Round(Game.ReactionTime / Game.FrameRate) + 1;
-
-            //    diameter = 0;
-            //    double x1 = this.x, y1 = this.y, d1 = this.Diameter, d2 = diameter, e1 = 0, e2 = 0;
-            //    for (int a = 0 ; a < iter ; ++a)
-            //    {
-            //        double f1 = ( d1 - this.Diameter ) / 2.0;
-            //        double f2 = ( d2 - diameter ) / 2.0;
-            //        graphics.DrawEllipse(Pens.Cyan, (float)( x1 - f1 - f2 ), (float)( y1 - f1 - f2 ) + yOffset, (float)( d1 + d2 ), (float)( d1 + d2 ));
-            //        x1 += xVel;
-            //        y1 += yVel;
-            //        d1 += e1;
-            //        d2 += e2;
-            //        e1 += Game.DriftChance * Game.PlayerDrift;
-            //        e2 += Game.DriftChance * Game.OtherDrift + Game.OtherSpeed;
-            //    }
-            //}
         }
         public void DrawBorder(Graphics graphics, int yOffset)
         {
@@ -321,10 +301,10 @@ namespace Trogdor
                     return true;
                 x1 += xVel;
                 y1 += yVel;
+                e1 += Game.DriftChance * Game.PlayerDrift;
+                e2 += Game.DriftChance * Game.OtherDrift + ( Game.Width + Game.Height ) * Game.OtherSpeed / 4.0;
                 d1 += e1;
                 d2 += e2;
-                e1 += Game.DriftChance * Game.PlayerDrift;
-                e2 += Game.DriftChance * Game.OtherDrift + Game.OtherSpeed;
             }
             return false;
         }

@@ -76,7 +76,7 @@ namespace Trogdor
                 y += ( nextY - spacing - y - diameter ) / 2f;
 
             e.Graphics.FillEllipse(Piece.GetBrush(type), x + ( max - diameter ) / 2f, y, diameter, diameter);
-            string str = Game.Random.Round(value * mult).ToString();
+            string str = ( value * mult ).ToString("f0");
             SizeF strSize = e.Graphics.MeasureString(str, font);
             x += spacing + max;
             e.Graphics.DrawString(str, font, Brushes.Black, x, y + ( diameter - strSize.Height ) / 2f);

@@ -147,11 +147,8 @@ namespace Trogdor
 
             using (FileStream fs = new FileStream(ScoresFile, FileMode.Append))
             using (BinaryWriter writer = new BinaryWriter(fs))
-            {
-                uint[] uints = GetUInts(Score);
-                foreach (uint ui in uints)
+                foreach (uint ui in GetUInts(Score))
                     writer.Write(ui);
-            }
 
             ShowScores();
         }

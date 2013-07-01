@@ -50,14 +50,14 @@ namespace Trogdor
             // 
             this.newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
             this.newGameToolStripMenuItem.Size = new System.Drawing.Size(77, 20);
-            this.newGameToolStripMenuItem.Text = "New Game";
+            this.newGameToolStripMenuItem.Text = "&New Game";
             this.newGameToolStripMenuItem.Click += new System.EventHandler(this.newGameToolStripMenuItem_Click);
             // 
             // scoresToolStripMenuItem
             // 
             this.scoresToolStripMenuItem.Name = "scoresToolStripMenuItem";
             this.scoresToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
-            this.scoresToolStripMenuItem.Text = "Scores";
+            this.scoresToolStripMenuItem.Text = "&Scores";
             this.scoresToolStripMenuItem.Click += new System.EventHandler(this.scoresToolStripMenuItem_Click);
             // 
             // Main
