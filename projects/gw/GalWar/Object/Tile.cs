@@ -85,8 +85,6 @@ namespace GalWar
 
         private readonly short _x, _y;
 
-        private SpaceObject _spaceObject;
-
         internal Tile(Game game, Point point)
         {
             checked
@@ -95,8 +93,6 @@ namespace GalWar
 
                 this._x = (short)point.X;
                 this._y = (short)point.Y;
-
-                this._spaceObject = null;
             }
         }
 
@@ -119,21 +115,16 @@ namespace GalWar
         {
             get
             {
-                if (this._spaceObject != null && this._spaceObject.Tile != this)
-                    throw new Exception();
-
-                return this._spaceObject;
+                return Game.GetSpaceObject(X, Y);
             }
             internal set
             {
                 checked
                 {
-                    if (( ( value == null ) == ( this.SpaceObject == null ) ) || ( value is Colony ))
+                    if (( value is Colony ) || ( ( value == null ) == ( SpaceObject == null ) ))
                         throw new Exception();
 
-                    this._spaceObject = value;
-
-                    this.Game.SetSpaceObject(X, Y, value);
+                    Game.SetSpaceObject(X, Y, value);
                 }
             }
         }
@@ -190,13 +181,7 @@ namespace GalWar
             Tile tile = ( obj as Tile );
             bool equals = ( tile != null );
             if (equals)
-            {
                 equals = ( this.X == tile.X && this.Y == tile.Y && this.Game == tile.Game );
-
-                if (equals ? ( this.SpaceObject != tile.SpaceObject ) : ( this.SpaceObject != null && this.SpaceObject == tile.SpaceObject ))
-                    throw new Exception();
-            }
-
             return equals;
         }
 

@@ -928,24 +928,13 @@ next_planet:
                     Ship ship = ( spaceObject as Ship );
                     Planet planet = ( spaceObject as Planet );
                     if (ship != null)
-                    {
-                        weight = shipWeight * GetShipWeight(ship);
-                        weight += popWeight * ship.Population;
-                    }
+                        weight = shipWeight * GetShipWeight(ship) + popWeight * ship.Population;
                     else if (planet != null)
-                    {
-                        weight = planet.PlanetValue;
-                        if (planet.Colony != null)
-                            weight += popWeight * planet.Colony.Population;
-                    }
+                        weight = planet.PlanetValue + ( planet.Colony == null ? 0 : popWeight * planet.Colony.Population );
                     else if (spaceObject is Anomaly)
-                    {
                         weight = anomalyWeight;
-                    }
                     else
-                    {
                         throw new Exception();
-                    }
 
                     HashSet<Tile> neighbors = Tile.GetNeighbors(centerTile);
                     neighbors.RemoveWhere(delegate(Tile neighbor)
@@ -1000,10 +989,8 @@ next_planet:
         }
         internal Tile GetRandomTile(Tile center, double stdDev)
         {
-            return GetDistanceTile(center, Math.Abs(Random.GaussianInt(stdDev)));
-        }
-        private Tile GetDistanceTile(Tile center, int dist)
-        {
+            int dist = Math.Abs(Random.GaussianInt(stdDev));
+
             int minX, minY, maxX, maxY;
             GetTileDistances(center, dist, out minX, out minY, out maxX, out maxY, GetTeleporters());
 
