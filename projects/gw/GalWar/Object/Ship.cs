@@ -473,7 +473,7 @@ namespace GalWar
             }
             else
             {
-                int low = (int)hp;
+                int low = (int)( hp + Consts.FLOAT_ERROR );
                 if (hp != low)
                 {
                     gold += ( hp - low ) * ( production - GetProdForHP(low + 1) );

@@ -262,5 +262,150 @@ namespace GalWar
         }
 
         #endregion //logic
+
+        #region new
+
+        //private Tier[] t = new Tier[length - 1];
+
+        //private ShipClass GetName(int numPlayers, ShipClass[] type, double value)
+        //{
+        //    int retVal = length - 1;
+
+        //    const double mult = Math.PI;
+
+        //    double avg = double.NaN;
+        //    for (int i = 0 ; i < retVal ; ++i)
+        //    {
+        //        if (t[i] == null)
+        //            t[i] = new Tier();
+
+        //        if (t[i].Count < numPlayers * 3)
+        //        {
+        //            retVal = i;
+        //            break;
+        //        }
+
+        //        if (double.IsNaN(avg))
+        //        {
+        //            avg = t[i].Avg;
+        //        }
+        //        else
+        //        {
+        //            avg = ( avg + t[i].Avg ) / 2.0;
+        //            if (avg < t[i].Min)
+        //                avg = t[i].Min;
+        //            else if (avg > t[i].Max)
+        //                avg = t[i].Max;
+        //        }
+
+        //        avg *= mult;
+        //        if (t[i + 1] != null && avg > t[i].Min)
+        //            avg = t[i].Min;
+
+        //        if (value < avg)
+        //        {
+        //            retVal = i;
+        //            break;
+        //        }
+        //    }
+
+        //    t[retVal].AddShip(value);
+        //    return type[retVal];
+        //}
+
+
+        //private class Tier
+        //{
+        //    private float _min, _max, _total;
+        //    private byte _count;
+
+        //    public Tier()
+        //    {
+        //        checked
+        //        {
+        //            this._min = float.MaxValue;
+        //            this._max = float.MinValue;
+
+        //            this._total = 0;
+        //            this._count = 0;
+        //        }
+        //    }
+
+        //    public double Min
+        //    {
+        //        get
+        //        {
+        //            return this._min;
+        //        }
+        //        private set
+        //        {
+        //            checked
+        //            {
+        //                this._min = (float)value;
+        //            }
+        //        }
+        //    }
+        //    public double Max
+        //    {
+        //        get
+        //        {
+        //            return this._max;
+        //        }
+        //        private set
+        //        {
+        //            checked
+        //            {
+        //                this._max = (float)value;
+        //            }
+        //        }
+        //    }
+        //    public int Count
+        //    {
+        //        get
+        //        {
+        //            return this._count;
+        //        }
+        //        private set
+        //        {
+        //            checked
+        //            {
+        //                this._count = (byte)value;
+        //            }
+        //        }
+        //    }
+
+        //    private double total
+        //    {
+        //        get
+        //        {
+        //            return this._total;
+        //        }
+        //        set
+        //        {
+        //            checked
+        //            {
+        //                this._total = (float)value;
+        //            }
+        //        }
+        //    }
+
+        //    public double Avg
+        //    {
+        //        get
+        //        {
+        //            return ( this.total / (double)this.count );
+        //        }
+        //    }
+
+        //    public void AddShip(double value)
+        //    {
+        //        Min = Math.Min(Min, value);
+        //        Max = Math.Max(Max, value);
+        //        this.total += value;
+        //        ++this.count;
+        //    }
+        //}
+
+        #endregion //new
     }
 }
