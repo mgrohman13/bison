@@ -1,4 +1,6 @@
 UI
+	researchLines rounding
+	rapid click to bombard
 	rally ships
 		saveable?
 	clear showMoves

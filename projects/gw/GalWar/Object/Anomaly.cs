@@ -737,9 +737,9 @@ namespace GalWar
             bool any = false;
 
             if (Game.Random.Bool())
-                any |= PushShip(handler, !any, anomShip);
-            if (Game.Random.Bool())
                 any |= PullIn(handler, !any, anomShip);
+            if (Game.Random.Bool())
+                any |= PushShip(handler, !any, anomShip);
             if (Game.Random.Bool())
                 any |= CreateAnomalies(handler, !any, anomShip);
 
@@ -899,7 +899,7 @@ next:
         private Tile MoveTile(Tile tile, double avg, Ship anomShip)
         {
             avg *= Math.Sqrt(.39 + Math.Sqrt(Tile.Game.MapSize) / 130.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9);
-            return Tile.Game.GetRandomTile(Tile, avg);
+            return Tile.Game.GetRandomTile(tile, avg);
         }
 
         private bool CreateTeleporter(IEventHandler handler, Ship anomShip)
