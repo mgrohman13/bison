@@ -219,6 +219,8 @@ namespace CityWar
                     IncrementTurn();
                     currentPlayer = 0;
                 }
+
+                CurrentPlayer.StartTurn();
             }
         }
 

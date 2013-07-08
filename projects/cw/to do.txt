@@ -1,3 +1,5 @@
+game 673 condition wizcheck
+
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
@@ -24,6 +26,8 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	scroll to selected in battle
+	some attacks show names in battle, others not
 	save/load/autosave locations
 	damage calculator
 	ability to look around main map during a battle, see info screen, etc?
