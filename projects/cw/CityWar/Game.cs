@@ -1155,8 +1155,7 @@ namespace CityWar
                 win = players[a];
                 break;
 next:
-                {
-                }
+                ;
             }
 
             return counts;

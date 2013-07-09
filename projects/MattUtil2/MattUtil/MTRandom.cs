@@ -1106,7 +1106,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianCappedInt(double average, double devPct, int lowerCap)
         {
-            return GaussianCappedInt(average, devPct, lowerCap, false);
+            return GaussianCappedInt(average, devPct, lowerCap, ( average == (float)average && devPct == (float)devPct ));
         }
 
         /// <summary>
@@ -1228,7 +1228,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(double average, double devPct)
         {
-            CheckGaussianInt(average, average * devPct, false);
+            CheckGaussianInt(average, average * devPct, ( average == (float)average && devPct == (float)devPct ));
             return Round(Gaussian(average, devPct));
         }
 
@@ -1262,7 +1262,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(double stdDev)
         {
-            CheckGaussianInt(0, stdDev, false);
+            CheckGaussianInt(0, stdDev, ( stdDev == (float)stdDev ));
             return Round(Gaussian(stdDev));
         }
 
@@ -1397,6 +1397,9 @@ namespace MattUtil
         /// </summary>
         public bool Bool(double chance)
         {
+            if (chance == (float)chance)
+                return Bool((float)chance);
+
             CheckBool(chance);
             return ( NextDouble() < chance );
         }
@@ -1421,7 +1424,7 @@ namespace MattUtil
         /// </summary>
         public int Round(double number)
         {
-            return Round(number, false);
+            return Round(number, ( number == (float)number ));
         }
 
         /// <summary>
@@ -1745,7 +1748,7 @@ namespace MattUtil
         /// </summary>
         public int WeightedInt(int max, double weight)
         {
-            return WeightedInt(max, weight, false);
+            return WeightedInt(max, weight, ( weight == (float)weight ));
         }
 
         /// <summary>
@@ -1764,7 +1767,6 @@ namespace MattUtil
                 retVal = max - retVal;
             return retVal;
         }
-
         private double ModWeight(double weight, bool isFloat)
         {
             if (weight < 0 || weight > 1)

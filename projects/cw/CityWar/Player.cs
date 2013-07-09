@@ -1012,7 +1012,7 @@ namespace CityWar
             double total = 0;
             foreach (Piece p in pieces)
             {
-                Unit u = p as Unit;
+                Unit u = ( p as Unit );
                 if (u != null && u.Type != UnitType.Immobile)
                     total += GetUpkeep(u);
             }
@@ -1026,7 +1026,7 @@ namespace CityWar
         private void CheckNegativeWork()
         {
             //when your work is negative, you will lose some actual resources
-            while (work < 0 && GetTotalResources(false) > 0)
+            while (Game.Random.Round(work / 10.0) < 0 && GetTotalResources(false) > 0)
             {
                 int amt;
                 switch (Game.Random.Next(16))
@@ -1354,7 +1354,7 @@ namespace CityWar
                 }
                 else
                 {
-                    //trade a percantage of what you have of each resource
+                    //trade a percentage of what you have of each resource
                     TradePct(ref air);
                     TradePct(ref earth);
                     TradePct(ref nature);
@@ -1362,10 +1362,10 @@ namespace CityWar
                     TradePct(ref death);
                     TradePct(ref production);
                     TradePct(ref population);
-                    TradePct(ref magic, 1, .091, 1.3);
-                    TradePct(ref _relic, 1, .091, 1.3);
+                    TradePct(ref magic, 1, .078, 3.9);
+                    TradePct(ref _relic, 1, .078, 3.9);
                     //pass a negative rate so it decreases work
-                    TradePct(ref upkeep, -1 / UpkeepMult);
+                    TradePct(ref upkeep, -1 / UpkeepMult, .13, .78);
                 }
             }
             if (loseUnits == 0)
@@ -1386,12 +1386,19 @@ namespace CityWar
         }
         private void TradePct(ref int amt, double rate, double pct, double add)
         {
-            //add a little bit to the percent so itll trade away the dregs
-            double tradeAmt = pct * amt + add;
-            if (tradeAmt > amt)
-                tradeAmt = amt;
-            AddWork(tradeAmt * WorkMult * rate);
-            amt = Game.Random.Round(amt - tradeAmt);
+            if (amt > 0)
+            {
+                int tradeAmt = amt;
+                if (pct < 1)
+                {
+                    //add a small constant amount so itll trade away the dregs
+                    tradeAmt = Game.Random.GaussianOEInt(pct * amt + add, .39, .169);
+                    if (tradeAmt > amt)
+                        tradeAmt = amt;
+                }
+                AddWork(tradeAmt * WorkMult * rate);
+                amt -= tradeAmt;
+            }
         }
         #endregion //removing pieces between turn rounds
 

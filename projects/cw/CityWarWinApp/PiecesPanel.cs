@@ -220,6 +220,10 @@ namespace CityWarWinApp
 
         internal void ScrollToSelected()
         {
+            ScrollToSelected(true);
+        }
+        internal void ScrollToSelected(bool always)
+        {
             Piece[] pieces = GetPieces();
             int length = pieces.Length;
             int firstIndex = -1, lastIndex = -1;
@@ -237,7 +241,14 @@ namespace CityWarWinApp
             int numColumns = GetNumColumns();
             int newValue = ( lastIndex / numColumns ) * 126 - this.Height + 139;
 
+            if (!always && newValue > sbPieces.Value)
+                always = true;
+
             int maxValue = ( firstIndex / numColumns ) * 126;
+
+            if (!always && maxValue < sbPieces.Value)
+                always = true;
+
             if (newValue > maxValue)
                 newValue = maxValue;
 

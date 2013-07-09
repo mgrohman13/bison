@@ -2,6 +2,7 @@ balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
+	revamp to balance all at once and use all target units based on types
 
 gameplay
 	group move from different hexes
@@ -25,7 +26,6 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	scroll to selected in battle
 	save/load/autosave locations
 	damage calculator
 		multiple attacks
