@@ -1,11 +1,10 @@
-game 673 condition wizcheck
-
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
 
 gameplay
+	group move from different hexes
 	loading a game with different unit set
 		support?
 		error?
@@ -26,6 +25,7 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	calc show min
 	scroll to selected in battle
 	some attacks show names in battle, others not
 	save/load/autosave locations
