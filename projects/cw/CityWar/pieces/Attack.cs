@@ -149,8 +149,12 @@ namespace CityWar
 
         public int GetMinDamage(Unit target)
         {
-            int minDamage = (int)( damStatic - ( (double)target.Armor / divide ) );
-            return minDamage > 0 ? minDamage : 0;
+            return GetMinDamage(damage, divide, target.Armor);
+        }
+        public static int GetMinDamage(double damage, double divide, double armor)
+        {
+            int minDamage = (int)( damage * ( 1 - DamMultPercent ) - armor / divide );
+            return ( minDamage > 0 ? minDamage : 0 );
         }
 
         public double GetAverageDamage(Unit enemy, out double killPct, out double avgRelic)

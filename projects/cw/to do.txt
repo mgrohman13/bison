@@ -25,11 +25,10 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	calc show min
 	scroll to selected in battle
-	some attacks show names in battle, others not
 	save/load/autosave locations
 	damage calculator
+		multiple attacks
 	ability to look around main map during a battle, see info screen, etc?
 		highlight participating tiles
 		any attempted action re-opens battle window

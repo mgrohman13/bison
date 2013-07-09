@@ -33,6 +33,7 @@ namespace CityWarWinApp
                 {
                     _selected = value;
                     RefreshSelected();
+                    this.panelAttackers.ScrollToSelected();
                 }
             }
         }

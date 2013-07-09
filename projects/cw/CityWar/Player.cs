@@ -1372,26 +1372,26 @@ namespace CityWar
                 AddWork(-LoseWork);
             return loseUnits;
         }
-        private int TradeAll(ref int amt)
+        private void TradeAll(ref int amt)
         {
-            return TradePct(ref amt, 1, 1, 0);
+            TradePct(ref amt, 1, 1, 0);
         }
-        private int TradePct(ref int amt)
+        private void TradePct(ref int amt)
         {
-            return TradePct(ref amt, 1);
+            TradePct(ref amt, 1);
         }
-        private int TradePct(ref int amt, double rate)
+        private void TradePct(ref int amt, double rate)
         {
-            return TradePct(ref amt, rate, .169, 13);
+            TradePct(ref amt, rate, .169, 13);
         }
-        private int TradePct(ref int amt, double rate, double pct, double add)
+        private void TradePct(ref int amt, double rate, double pct, double add)
         {
             //add a little bit to the percent so itll trade away the dregs
             double tradeAmt = pct * amt + add;
             if (tradeAmt > amt)
                 tradeAmt = amt;
             AddWork(tradeAmt * WorkMult * rate);
-            return Game.Random.Round(amt - tradeAmt);
+            amt = Game.Random.Round(amt - tradeAmt);
         }
         #endregion //removing pieces between turn rounds
 
