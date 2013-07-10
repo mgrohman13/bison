@@ -1000,7 +1000,7 @@ namespace CityWar
         {
             if (win != null)
             {
-                Addplayer(winningPlayers, turn, win);
+                AddPlayer(winningPlayers, turn, win);
                 RemovePlayer(win);
 
                 if (players.Length == 1)
@@ -1022,15 +1022,15 @@ namespace CityWar
 
         internal void DefeatPlayer(Player player)
         {
-            Addplayer(defeatedPlayers, turn, player);
+            AddPlayer(defeatedPlayers, turn, player);
             RemovePlayer(player);
         }
 
-        private static void Addplayer(Dictionary<int, Player> dict, int turn, Player p)
+        private static void AddPlayer(Dictionary<int, Player> dict, int turn, Player p)
         {
-            Addplayer(dict, turn, p, false);
+            AddPlayer(dict, turn, p, false);
         }
-        private static void Addplayer(Dictionary<int, Player> dict, int turn, Player p, bool lower)
+        private static void AddPlayer(Dictionary<int, Player> dict, int turn, Player p, bool lower)
         {
             Player low;
             if (dict.TryGetValue(turn, out low))
@@ -1045,12 +1045,12 @@ namespace CityWar
                 if (Game.Random.Bool())
                 {
                     dict[turn] = low;
-                    Addplayer(dict, turn + 1, p, true);
+                    AddPlayer(dict, turn + 1, p, true);
                 }
                 else
                 {
                     dict[turn] = p;
-                    Addplayer(dict, turn - 1, low, false);
+                    AddPlayer(dict, turn - 1, low, false);
                 }
             }
             else

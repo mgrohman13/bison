@@ -323,14 +323,14 @@ namespace CityWar
             }
             else
             {
-                if (MaxMove < 1 && hits < maxHits)
+                if (MaxMove < 1 && hits < maxHits && Regen > 0)
                 {
                     //healing when you have no max movement happens automatically but costs a few resources
                     int newHits = hits + Regen;
                     if (newHits > maxHits)
                         newHits = maxHits;
 
-                    double needed = ( newHits - hits ) / (double)maxHits / 3.0;
+                    double needed = ( newHits - hits ) / (double)maxHits / 3.9;
                     double pplNeeded = needed * BasePplCost * randedCostMult;
                     needed *= BaseOtherCost * randedCostMult;
 
@@ -574,7 +574,7 @@ namespace CityWar
         private void RandStats()
         {
             Unit newUnit;
-            const double maxMult = 1.69;
+            const double maxMult = 1.3;
             do
             {
                 Attack[] randedAttacks = new Attack[attacks.Length];
