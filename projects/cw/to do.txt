@@ -26,6 +26,8 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	always show selected attack in attackers lbx
+	sort portal display unit order
 	save/load/autosave locations
 	damage calculator
 		multiple attacks
