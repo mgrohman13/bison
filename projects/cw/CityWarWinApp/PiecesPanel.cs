@@ -249,24 +249,27 @@ namespace CityWarWinApp
             if (!always && maxValue < sbPieces.Value)
                 always = true;
 
-            if (newValue > maxValue)
-                newValue = maxValue;
-
-            RefreshScrollBar(length, numColumns);
-
-            if (newValue < 0)
-                newValue = 0;
-            else
+            if (always)
             {
-                maxValue = GetRealScrollMax();
                 if (newValue > maxValue)
                     newValue = maxValue;
+
+                RefreshScrollBar(length, numColumns);
+
+                if (newValue < 0)
+                    newValue = 0;
+                else
+                {
+                    maxValue = GetRealScrollMax();
+                    if (newValue > maxValue)
+                        newValue = maxValue;
+                }
+
+                int oldValue = sbPieces.Value;
+                this.sbPieces.Value = newValue;
+
+                sbPieces_Scroll(sbPieces, new ScrollEventArgs(ScrollEventType.EndScroll, oldValue, newValue));
             }
-
-            int oldValue = sbPieces.Value;
-            this.sbPieces.Value = newValue;
-
-            sbPieces_Scroll(sbPieces, new ScrollEventArgs(ScrollEventType.EndScroll, oldValue, newValue));
         }
 
         public static void UseMouseWheel(ScrollBar scrollBar, MouseEventArgs e, ScrollEventHandler scrollEvent)
