@@ -212,7 +212,7 @@ namespace CityWar
         #region internal methods
         internal bool CaptureCity()
         {
-            if (movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
+            if (ability == Abilities.Aircraft || movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
                 return false;
 
             movement = 0;
@@ -573,18 +573,24 @@ namespace CityWar
         #region unit stat randomization
         private void RandStats()
         {
+            Attack[] randedAttacks = new Attack[attacks.Length];
+            for (int b = 0 ; b < randedAttacks.Length ; ++b)
+                randedAttacks[b] = attacks[b].Clone().RandStats();
+            int newHits = ( isThree ? 3 * RandStat(maxHits / 3.0, true) : RandStat(maxHits, true) ),
+                    newArmor = RandStat(armor, false), newRegen = RandStat(regen, true);
+            int hitInc = ( isThree ? 3 : 1 );
+
             Unit newUnit;
             const double maxMult = 1.3;
             do
             {
-                Attack[] randedAttacks = new Attack[attacks.Length];
-                for (int a = 0 ; a < randedAttacks.Length ; ++a)
-                    randedAttacks[a] = attacks[a].Clone().RandStats();
-                newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type,
-                        isThree ? 3 * RandStat(maxHits / 3.0, true) : RandStat(maxHits, true),
-                        RandStat(armor, false), RandStat(regen, true), MaxMove, randedAttacks, regenPct);
+                newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type, newHits, newArmor, newRegen, MaxMove, randedAttacks, regenPct);
+            } while (newUnit.randedCostMult > maxMult && ( newHits -= hitInc ) > 0);
+            while (newUnit.randedCostMult < ( 1 / maxMult ))
+            {
+                newHits += hitInc;
+                newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type, newHits, newArmor, newRegen, MaxMove, randedAttacks, regenPct);
             }
-            while (newUnit.randedCostMult > maxMult || newUnit.randedCostMult < ( 1 / maxMult ));
 
             tile.Add(newUnit);
             owner.Add(newUnit);

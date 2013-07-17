@@ -5,8 +5,6 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
-	randed cost mult check
-	air unit capturing neutral city
 	group move from different hexes
 	loading a game with different unit set
 		support?

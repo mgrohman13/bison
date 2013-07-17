@@ -231,7 +231,7 @@ namespace CityWarWinApp
                         this.btnBuildPiece.Visible = true;
 
                     //if the tile has a neutral city and any pieces have full move, show the capture city button
-                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove)
+                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && p.Abilty != Abilities.Aircraft)
                         this.btnCaptureCity.Visible = true;
 
                     //if any selected pieces are units, show the disband units button
@@ -1087,7 +1087,7 @@ namespace CityWarWinApp
             int curGroup = tile.CurrentGroup;
             Unit[] availUnits = tile.FindAllUnits(delegate(Unit p)
             {
-                return ( p.Group == curGroup && p.MaxMove != 0 && p.Movement == p.MaxMove );
+                return ( p.Group == curGroup && p.MaxMove != 0 && p.Movement == p.MaxMove && p.Abilty != Abilities.Aircraft );
             });
 
             //find the best unit to use
