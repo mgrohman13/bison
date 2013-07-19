@@ -639,7 +639,6 @@ namespace CityWarWinApp
         private System.Windows.Forms.Label lblRelic;
         private System.Windows.Forms.Button btnLoad;
         private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.SaveFileDialog saveGame;
         private System.Windows.Forms.Button btnQuit;
         private System.Windows.Forms.Label lblPpl;
         public System.Windows.Forms.OpenFileDialog loadGame;
@@ -651,5 +650,6 @@ namespace CityWarWinApp
         private System.Windows.Forms.CheckBox chbGamble;
         private System.Windows.Forms.Button btnLog;
         private System.Windows.Forms.Button btnCalc;
+        public System.Windows.Forms.SaveFileDialog saveGame;
     }
 }

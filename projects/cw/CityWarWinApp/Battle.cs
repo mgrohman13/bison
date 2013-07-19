@@ -253,7 +253,7 @@ namespace CityWarWinApp
                 if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1))
                 {
                     int oldHits = clicked.Hits;
-                    int damage = Map.game.AttackUnit(battle, attack, clicked);
+                    int damage = Map.Game.AttackUnit(battle, attack, clicked);
                     if (damage > -1)
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits);
 
@@ -405,7 +405,7 @@ namespace CityWarWinApp
 
         private void btnEnd_Click(object sender, EventArgs e)
         {
-            if (Map.game.EndBattle(battle))
+            if (Map.Game.EndBattle(battle))
             {
                 validAttacks = null;
                 totalCounts = null;
@@ -427,6 +427,7 @@ namespace CityWarWinApp
             else
             {
                 Close();
+                Log.Flush();
             }
         }
 

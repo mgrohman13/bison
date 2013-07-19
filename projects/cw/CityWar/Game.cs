@@ -21,6 +21,7 @@ namespace CityWar
         }
 
         public static string Path = "..\\..\\..\\";
+        public static string AutoSavePath = "..\\..\\..\\";
         public static Dictionary<string, string[]> Races;
 
         private int turn, width, height, currentPlayer;
@@ -34,7 +35,7 @@ namespace CityWar
         #region public commands
         public void AutoSave()
         {
-            TBSUtil.SaveGame(this, Path + "Saves/auto", turn + "-" + currentPlayer + ".cws");
+            TBSUtil.SaveGame(this, AutoSavePath + "auto", turn + "-" + currentPlayer + ".cws");
         }
         public void SaveGame(string filePath)
         {

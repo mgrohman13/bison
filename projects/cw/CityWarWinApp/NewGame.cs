@@ -100,7 +100,7 @@ namespace CityWarWinApp
                             }
                 } while (loop);
 
-                Map.game = CityWar.Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
+                Map.Game = CityWar.Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
             }
             catch (ArgumentOutOfRangeException aoore)
             {

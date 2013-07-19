@@ -119,7 +119,7 @@ namespace CityWarWinApp
                 }
 
 
-                Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.game.CurrentPlayer.Race);
+                Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game.CurrentPlayer.Race);
                 List<CostType> keys = new List<CostType>(portalCost.Keys);
                 keys.Sort(delegate(CostType c1, CostType c2)
                 {
@@ -354,7 +354,7 @@ namespace CityWarWinApp
 
         void trade_Click(object sender, EventArgs e)
         {
-            new Trade(Map.game.CurrentPlayer).ShowDialog();
+            new Trade(Map.Game.CurrentPlayer).ShowDialog();
             RefreshButtons();
             ShowResources();
         }
@@ -366,7 +366,7 @@ namespace CityWarWinApp
 
         private void RefreshButtons()
         {
-            Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.game.CurrentPlayer.Race);
+            Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game.CurrentPlayer.Race);
             foreach (Control control in Controls)
             {
                 if (control is Button && ( control.Tag is string ) && ( (string)control.Tag != "" ))
@@ -423,7 +423,7 @@ namespace CityWarWinApp
             foreach (Capturable c in capts)
                 if (c.CapableBuild(unit))
                 {
-                    Map.game.BuildPiece(c, unit);
+                    Map.Game.BuildPiece(c, unit);
                     break;
                 }
 
@@ -478,7 +478,7 @@ namespace CityWarWinApp
 
         private void ShowResources()
         {
-            Player current = Map.game.CurrentPlayer;
+            Player current = Map.Game.CurrentPlayer;
             this.lblAir.Text = current.Air.ToString();
             this.lblDeath.Text = current.Death.ToString();
             this.lblEarth.Text = current.Earth.ToString();

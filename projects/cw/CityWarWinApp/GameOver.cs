@@ -20,7 +20,7 @@ namespace CityWarWinApp
         {
             Dictionary<Player, int> points = new Dictionary<Player, int>();
 
-            SortedList<int, Player> lost = Map.game.GetLost(), won = Map.game.GetWon();
+            SortedList<int, Player> lost = Map.Game.GetLost(), won = Map.Game.GetWon();
             int cur = 0, add = -1, min = int.MaxValue;
             foreach (var pair in lost)
             {

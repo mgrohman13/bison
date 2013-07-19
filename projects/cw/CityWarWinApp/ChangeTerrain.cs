@@ -47,25 +47,25 @@ namespace CityWarWinApp
 
         private void btnMountain_Click(object sender, EventArgs e)
         {
-            Map.game.ChangeTerrain(wizard, Terrain.Mountain);
+            Map.Game.ChangeTerrain(wizard, Terrain.Mountain);
             this.Close();
         }
 
         private void btnWater_Click(object sender, EventArgs e)
         {
-            Map.game.ChangeTerrain(wizard, Terrain.Water);
+            Map.Game.ChangeTerrain(wizard, Terrain.Water);
             this.Close();
         }
 
         private void btnPlains_Click(object sender, EventArgs e)
         {
-            Map.game.ChangeTerrain(wizard, Terrain.Plains);
+            Map.Game.ChangeTerrain(wizard, Terrain.Plains);
             this.Close();
         }
 
         private void btnForest_Click(object sender, EventArgs e)
         {
-            Map.game.ChangeTerrain(wizard, Terrain.Forest);
+            Map.Game.ChangeTerrain(wizard, Terrain.Forest);
             this.Close();
         }
 

@@ -114,13 +114,16 @@ namespace GalWarWin
 
         private static string GetInitialDirectory()
         {
-            string savePath;
+            string savePath = null;
             try
             {
-                using (StreamReader reader = new StreamReader("savepath.txt"))
-                    savePath = reader.ReadLine();
-                if (!Directory.Exists(savePath))
-                    savePath = null;
+                if (File.Exists("savepath.txt"))
+                {
+                    using (StreamReader reader = new StreamReader("savepath.txt"))
+                        savePath = reader.ReadLine();
+                    if (!Directory.Exists(savePath))
+                        savePath = null;
+                }
             }
             catch (Exception e)
             {

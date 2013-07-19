@@ -29,7 +29,7 @@ namespace CityWarWinApp
 
         private void RefreshStuff(bool players)
         {
-            int playersHeight = 4 + this.lbxOrder.ItemHeight * Map.game.GetPlayers().Length;
+            int playersHeight = 4 + this.lbxOrder.ItemHeight * Map.Game.GetPlayers().Length;
             AdjustPlayerLbx(this.lbxUnits, this.label4, playersHeight);
             AdjustPlayerLbx(this.lbxOrder, this.label10, playersHeight);
             AdjustPlayerLbx(this.lbxRelics, this.label9, playersHeight);
@@ -92,7 +92,7 @@ namespace CityWarWinApp
                 foreach (string unit in raceUnits)
                 {
                     units[arrayIndex].Items.Add(unit);
-                    needed[arrayIndex].Items.Add(Map.game.GetUnitNeeds(unit));
+                    needed[arrayIndex].Items.Add(Map.Game.GetUnitNeeds(unit));
                 }
 
                 if (!row)
@@ -182,7 +182,7 @@ namespace CityWarWinApp
             {
                 lbxCurrent.Items.Clear();
                 foreach (string unit in ( (ListBox)lbxCurrent.Tag ).Items)
-                    lbxCurrent.Items.Add(Map.game.GetUnitHas(unit));
+                    lbxCurrent.Items.Add(Map.Game.GetUnitHas(unit));
             }
         }
 
@@ -196,7 +196,7 @@ namespace CityWarWinApp
             this.lbxPortals.Items.Clear();
             this.lbxResources.Items.Clear();
 
-            foreach (Player p in Map.game.GetPlayers())
+            foreach (Player p in Map.Game.GetPlayers())
             {
                 this.lbxOrder.Items.Add(p);
                 int wizards, portals, cities, relics, units;
