@@ -15,21 +15,24 @@ namespace CityWarWinApp
     {
         private static string LogPath = "cw.log";
 
-        private static string log;
+        private static string log = "";
         private static List<string> lines;
 
         static Log()
         {
-            log = "";
-            lines = new List<string>();
-
             LogPath = MainMenu.SavePath + LogPath;
 
+            lines = new List<string>();
             try
             {
                 if (File.Exists(LogPath))
                     using (StreamReader streamReader = new StreamReader(LogPath))
-                        log = streamReader.ReadToEnd();
+                        while (!streamReader.EndOfStream)
+                        {
+                            string line = streamReader.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(line))
+                                log = line + "\r\n" + log;
+                        }
             }
             catch (Exception e)
             {
@@ -68,7 +71,7 @@ namespace CityWarWinApp
             try
             {
                 using (StreamWriter streamWriter = new StreamWriter(LogPath, true))
-                    foreach (string line in lines.Reverse<string>())
+                    foreach (string line in lines)
                     {
                         streamWriter.Write(line);
                         Console.Write(line);
