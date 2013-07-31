@@ -494,7 +494,7 @@ namespace GalWar
                 else
                 {
                     colonies.Remove(trgColony);
-                    foreach (var pair in colonies)
+                    foreach (var pair in colonies.ToArray())
                     {
                         int amt = GetTerraformAmt(.52 * pair.Value);
                         if (amt > 0)

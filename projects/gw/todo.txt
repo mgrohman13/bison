@@ -1,4 +1,5 @@
 UI
+	ship calc minimum DS
 	undo move pop unholds planet (and maybe ship)
 	researchLines rounding
 	rapid click to bombard
@@ -24,6 +25,8 @@ UI
 		ships
 	keyboard?
 
+transport on build should be pre-growth?
+anomaly prod exact value
 move pop/soldiers always costs income?
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
