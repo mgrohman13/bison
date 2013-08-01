@@ -671,8 +671,8 @@ next_planet:
 
         public void AutoSave()
         {
-            if (AutoSavePath != null)
-                TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
+            //if (AutoSavePath != null)
+            //    TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
         }
 
         private void NewRound()

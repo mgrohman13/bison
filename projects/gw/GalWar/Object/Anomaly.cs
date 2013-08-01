@@ -359,7 +359,7 @@ namespace GalWar
                             + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));
 
             double amount = this.value - cost;
-            double mult = Consts.GetColonizationMult() * 1.3;
+            double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
             if (amount < Consts.GetColonizationCost(Consts.PlanetConstValue, mult))
                 return false;
 
@@ -400,7 +400,7 @@ namespace GalWar
             if (Game.Random.Bool())
             {
                 foreach (var pair in GetTerraformColonies(anomShip))
-                    if (GetTerraformAmt(pair.Value.Item1) > 0 && CanTerraform(this.value + GetExpectCost(pair.Key, GetTerraformQuality()), anomShip))
+                    if (GetTerraformAmt(pair.Value.Item1) > 0 && CanTerraform(this.value + GetExpectCost(pair.Key, Consts.TerraformPlanetQuality()), anomShip))
                     {
                         double terraformAmt = Consts.AverageQuality + Consts.PlanetConstValue;
                         double apocalypseAmt = quality / 2.0;
@@ -417,7 +417,7 @@ namespace GalWar
                     foreach (Ship ship in player.GetShips())
                         pop += ship.Population;
                 double forExplorer = this.value * Consts.PopulationForGoldHigh;
-                double diePct = Game.Random.GaussianCapped(.3, 0.169, .13);
+                double diePct = Game.Random.GaussianCapped(.3, .169, .13);
 
                 double addAmt = forExplorer + ( forExplorer * ( 2 *
                         ( ( 2 * quality + 1 * pop ) / 3.0 / Consts.AverageQuality )
@@ -441,7 +441,7 @@ namespace GalWar
                 double gold = double.NaN, mult = double.NaN, before = double.NaN;
                 if (planet.Colony != null)
                 {
-                    gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * .78;
+                    gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * Consts.AnomalyQualityCostMult;
 
                     mult = Consts.GetColonizationMult();
                     before = Consts.GetColonizationCost(planet.Quality, mult);
@@ -479,7 +479,7 @@ namespace GalWar
             {
                 Colony trgColony = Game.Random.SelectValue(colonies);
 
-                int addQuality = GetTerraformQuality();
+                int addQuality = Consts.TerraformPlanetQuality();
                 double expectCost = GetExpectCost(trgColony, addQuality);
                 double actualCost = Player.RoundGold(this.value + expectCost * Consts.GetColonizationMult(), true);
 
@@ -537,20 +537,15 @@ namespace GalWar
 
             return colonies;
         }
-        private static int GetTerraformQuality()
-        {
-            return Consts.NewPlanetQuality() + Game.Random.GaussianOEInt(Consts.PlanetConstValue, .65, .39, 1);
-        }
         private static double GetExpectCost(Colony trgColony, double addQuality)
         {
-            double costMult = 1.69;
-            double before = Consts.GetColonizationCost(trgColony.Planet.Quality, costMult);
-            double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, costMult);
+            double before = Consts.GetColonizationCost(trgColony.Planet.Quality, Consts.AnomalyQualityCostMult);
+            double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, Consts.AnomalyQualityCostMult);
             return before - after;
         }
         private static bool CanTerraform(double cost, Ship anomShip)
         {
-            return ( -cost < anomShip.Player.TotalGold + anomShip.Player.GetTotalIncome() );
+            return ( -cost < anomShip.Player.Gold );
         }
         private static int GetTerraformAmt(double amt)
         {
@@ -601,7 +596,7 @@ namespace GalWar
             int cap = Math.Max(1, Game.Random.Round(2 * amt - upperCap));
             if (cap > amt)
                 cap = (int)amt;
-            return Game.Random.GaussianCappedInt(amt, .091, cap);
+            return Game.Random.GaussianCappedInt(amt, .039, cap);
         }
 
         #endregion //GlobalEvent
@@ -649,7 +644,7 @@ namespace GalWar
                 single = Game.Random.SelectValue(colonies);
 
             double value = this.value;
-            double production = value / 1.3;
+            int production = Game.Random.Round(value / 1.3);
 
             bool notify = true;
             AnomalyType type;
@@ -1044,15 +1039,16 @@ next:
 
         private bool Valuables(IEventHandler handler, Ship anomShip)
         {
-            int amt = Game.Random.Round(this.value);
+            double value = Player.RoundGold(this.value, true);
 
-            bool research;
+            bool research, notify = true;
             switch (Game.Random.Next(13))
             {
             case 1:
             case 2:
             case 3:
-                research = handler.Explore(AnomalyType.AskResearchOrGold, amt);
+                research = handler.Explore(AnomalyType.AskResearchOrGold, value);
+                notify = false;
                 break;
             case 4:
             case 5:
@@ -1062,25 +1058,18 @@ next:
                 break;
             default:
                 research = false;
-                amt = -1;
                 break;
             }
 
             if (research)
             {
-                anomShip.Player.FreeResearch(handler, amt, GetDesignResearch(anomShip.Player));
+                anomShip.Player.FreeResearch(handler, Game.Random.Round(this.value / 1.3), GetDesignResearch(anomShip.Player));
             }
             else
             {
-                double addGold = amt;
-                if (amt == -1)
-                {
-                    addGold = Player.RoundGold(this.value, true);
-
-                    handler.Explore(AnomalyType.Gold, addGold);
-                }
-
-                anomShip.Player.AddGold(addGold);
+                if (notify)
+                    handler.Explore(AnomalyType.Gold, value);
+                anomShip.Player.AddGold(value);
             }
 
             return true;

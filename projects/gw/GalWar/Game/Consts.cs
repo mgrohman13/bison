@@ -122,7 +122,9 @@ namespace GalWar
         public const double RepairGoldHPPct = 1 / 16.9;
 
         public const double DisbandPct = RepairCostMult;
-        public const double ColonizationCostRndm = .104;
+        public const double ColonizationCostRndm = .078;
+        public const double AnomalyQualityCostMult = 1.69;
+        public const double TerraformQualityMult = .65;
 
         public const double InvadeStrength = 1;
         public const double InvadeNumbersPower = .13;
@@ -164,6 +166,10 @@ namespace GalWar
         internal static int NewPlanetQuality()
         {
             return Game.Random.OEInt(PlanetQualityOE) + Game.Random.RangeInt(PlanetQualityMin, PlanetQualityMax);
+        }
+        internal static int TerraformPlanetQuality()
+        {
+            return Game.Random.Round(Game.Random.GaussianOE(TerraformQualityMult * AverageQuality, 2.1, PlanetQualityOE / AverageQuality, PlanetConstValue));
         }
 
         public static double GetMoveOrderGold(int numPlayers)

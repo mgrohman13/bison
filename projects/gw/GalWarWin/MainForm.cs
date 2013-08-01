@@ -1462,7 +1462,7 @@ namespace GalWarWin
                 double t1 = panX, t2 = panY;
                 SelectTile(anomalies[Game.Random.Next(anomalies.Count)].Tile);
                 if (t1 != panX || t2 != panY)
-                    throw new Exception();
+                    ShowAnomalies(anomalies);
             }
             else
             {
@@ -2592,10 +2592,10 @@ namespace GalWarWin
             case Anomaly.AnomalyType.AskProductionOrDefense:
                 SelectTile(( (Colony)info[0] ).Tile);
                 RefreshAll();
-                return ShowOption("Take +" + FormatDouble((double)info[1]) + " producton or build defenses?");
+                return ShowOption("Take +" + ( (int)info[0] ) + " producton or build defenses?");
 
             case Anomaly.AnomalyType.AskResearchOrGold:
-                return ShowOption("Take research or +" + info[0] + " gold?");
+                return ShowOption("Take research or +" + FormatDouble((double)info[0]) + " gold?");
 
             case Anomaly.AnomalyType.AskTerraform:
                 SelectTile(( (Colony)info[0] ).Tile);
@@ -2674,7 +2674,7 @@ namespace GalWarWin
                 {
                     SelectTile(( (Colony)info[0] ).Tile);
                     RefreshAll();
-                    msg = "+" + FormatDouble((double)info[1]) + " ";
+                    msg = "+" + FormatUsuallyInt((double)info[1]) + " ";
                 }
                 ShowExploreMessage(anomalyType, msg);
                 return true;

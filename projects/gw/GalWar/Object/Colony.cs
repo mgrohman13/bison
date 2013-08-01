@@ -360,9 +360,6 @@ namespace GalWar
             //modify real values
             double population = 0, production = 0;
             TurnStuff(ref population, ref production, ref gold, ref research, true, false);
-
-            this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
-
             ResetRounding();
 
             //build planet defenses first so they can attack this turn
@@ -383,6 +380,8 @@ namespace GalWar
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
                 this.DoBuild(handler, production, ref gold);
+
+            this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
 
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
         }

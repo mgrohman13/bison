@@ -37,43 +37,33 @@ namespace GalWar
 
         #region fields and constructors
 
-        private readonly uint[] _divisions;
+        private readonly Tier[] _tiers;
+
         private readonly byte[,] _marks;
 
         [NonSerialized]
         private bool _setup;
-        [NonSerialized]
-        private int _total, _count;
 
         internal ShipNames(int numPlayers)
         {
             checked
             {
+                this._tiers = new Tier[length];
                 this._marks = new byte[numPlayers, (int)ShipClass.MAX];
-                this._divisions = new uint[length - 1];
-                for (int a = 2 ; a < length ; ++a)
-                    this.Divisions(a, int.MaxValue);
-
                 this._setup = true;
-                this._total = 0;
-                this._count = 0;
+
+                this.tiers[0] = new Tier();
             }
         }
 
-        private int Divisions(int idx)
+        private Tier[] tiers
         {
-            checked
+            get
             {
-                return (int)this._divisions[idx - 1];
+                return this._tiers;
             }
         }
-        private void Divisions(int idx, int value)
-        {
-            checked
-            {
-                this._divisions[idx - 1] = (uint)value;
-            }
-        }
+
         private int Marks(int idx1, int idx2)
         {
             checked
@@ -103,57 +93,19 @@ namespace GalWar
                 }
             }
         }
-        private int total
-        {
-            get
-            {
-                return this._total;
-            }
-            set
-            {
-                checked
-                {
-                    this._total = value;
-                }
-            }
-        }
-        private int count
-        {
-            get
-            {
-                return this._count;
-            }
-            set
-            {
-                checked
-                {
-                    this._count = value;
-                }
-            }
-        }
 
         #endregion //fields and constructors
 
         #region logic
 
-        private ShipClass DoSetup(ShipClass[] type, int value)
-        {
-            //during setup phase, the first name is always used, and the average cost calculated
-            this.total += value;
-            ++this.count;
-            return type[0];
-        }
-
         internal void EndSetup()
         {
             this.setup = false;
-            //first division is set using the average
-            SetDivision(1, this.total / (double)this.count);
         }
 
-        internal ShipClass GetName(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
+        internal ShipClass GetName(int numPlayers, ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
         {
-            return GetNameType(design, attDefStr, transStr, speedStr, anomalyShip);
+            return GetNameType(numPlayers, design, attDefStr, transStr, speedStr, anomalyShip);
         }
 
         internal int GetMark(Player player, int name)
@@ -163,7 +115,7 @@ namespace GalWar
             return value;
         }
 
-        private ShipClass GetNameType(ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
+        private ShipClass GetNameType(int numPlayers, ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
         {
             if (anomalyShip)
                 return ShipClass.Salvage;
@@ -183,45 +135,151 @@ namespace GalWar
             else
                 type = attack;
 
-            int value = RandValue(ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage, 0), 1);
+            double value = ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage, 0);
+            int retVal = GetName(numPlayers, type, RandValue(value));
 
-            if (this.setup)
-                return DoSetup(type, value);
-
-            return GetName(type, value);
+            this.tiers[retVal].AddShip(RandValue(value));
+            return type[retVal];
         }
 
-        private ShipClass GetName(ShipClass[] type, int value)
+        private int GetName(int numPlayers, ShipClass[] type, double value)
         {
-            //find the highest division it matches
-            for (int i = length ; --i > 0 ; )
-                if (value > this.Divisions(i))
+            const double mult = Math.PI;
+
+            if (setup)
+                return 0;
+
+            double avg = double.NaN;
+            for (int a = 0 ; a < length ; ++a)
+            {
+                Tier tier = this.tiers[a];
+                if (tier == null)
+                    tier = this.tiers[a] = new Tier();
+
+                if (tier.Count < numPlayers || value < tier.Max)
+                    return a;
+
+                if (double.IsNaN(avg))
+                    avg = tier.Avg;
+                else
+                    avg = ( avg + tier.Avg ) / 2.0;
+                avg *= mult;
+
+                int b = a + 1;
+                if (b < length)
                 {
-                    //check if this is a breakthrough design, and if so use its value for the next division
-                    int next = i + 1;
-                    if (next < length && this.Divisions(next) == int.MaxValue)
-                        SetDivision(next, value);
-                    return type[i];
+                    Tier next = this.tiers[b];
+                    if (next != null && value > next.Min)
+                        continue;
                 }
-            return type[0];
-        }
 
-        private void SetDivision(int index, double value)
-        {
-            this.Divisions(index, RandValue(value * 3.9, Game.Random.Round(value * 3) + 13));
+                if (value < avg)
+                    return a;
+            }
+
+            return length;
         }
 
         private static double RandMult(double mult)
         {
-            return Game.Random.Gaussian(mult, .03);
+            return Game.Random.GaussianCapped(mult, .03, 0);
         }
 
-        private static int RandValue(double value, int min)
+        private static double RandValue(double value)
         {
-            if (value > min)
-                return Game.Random.GaussianCappedInt(value, .06, min);
-            else
-                return min;
+            return Game.Random.GaussianCapped(value, .06, value / 1.3);
+        }
+
+        private class Tier
+        {
+            private float _min, _max, _total;
+            private byte _count;
+
+            public Tier()
+            {
+                checked
+                {
+                    this._min = float.MaxValue;
+                    this._max = float.MinValue;
+
+                    this._total = 0;
+                    this._count = 0;
+                }
+            }
+
+            public double Min
+            {
+                get
+                {
+                    return this._min;
+                }
+                private set
+                {
+                    checked
+                    {
+                        this._min = (float)value;
+                    }
+                }
+            }
+            public double Max
+            {
+                get
+                {
+                    return this._max;
+                }
+                private set
+                {
+                    checked
+                    {
+                        this._max = (float)value;
+                    }
+                }
+            }
+            public int Count
+            {
+                get
+                {
+                    return this._count;
+                }
+                private set
+                {
+                    checked
+                    {
+                        this._count = (byte)value;
+                    }
+                }
+            }
+
+            private double total
+            {
+                get
+                {
+                    return this._total;
+                }
+                set
+                {
+                    checked
+                    {
+                        this._total = (float)value;
+                    }
+                }
+            }
+
+            public double Avg
+            {
+                get
+                {
+                    return ( this.total / (double)this.Count );
+                }
+            }
+
+            public void AddShip(double value)
+            {
+                Min = Math.Min(Min, value);
+                Max = Math.Max(Max, value);
+                this.total += value;
+                ++this.Count;
+            }
         }
 
         internal enum ShipClass
@@ -262,150 +320,5 @@ namespace GalWar
         }
 
         #endregion //logic
-
-        #region new
-
-        //private Tier[] t = new Tier[length - 1];
-
-        //private ShipClass GetName(int numPlayers, ShipClass[] type, double value)
-        //{
-        //    int retVal = length - 1;
-
-        //    const double mult = Math.PI;
-
-        //    double avg = double.NaN;
-        //    for (int i = 0 ; i < retVal ; ++i)
-        //    {
-        //        if (t[i] == null)
-        //            t[i] = new Tier();
-
-        //        if (t[i].Count < numPlayers * 3)
-        //        {
-        //            retVal = i;
-        //            break;
-        //        }
-
-        //        if (double.IsNaN(avg))
-        //        {
-        //            avg = t[i].Avg;
-        //        }
-        //        else
-        //        {
-        //            avg = ( avg + t[i].Avg ) / 2.0;
-        //            if (avg < t[i].Min)
-        //                avg = t[i].Min;
-        //            else if (avg > t[i].Max)
-        //                avg = t[i].Max;
-        //        }
-
-        //        avg *= mult;
-        //        if (t[i + 1] != null && avg > t[i].Min)
-        //            avg = t[i].Min;
-
-        //        if (value < avg)
-        //        {
-        //            retVal = i;
-        //            break;
-        //        }
-        //    }
-
-        //    t[retVal].AddShip(value);
-        //    return type[retVal];
-        //}
-
-
-        //private class Tier
-        //{
-        //    private float _min, _max, _total;
-        //    private byte _count;
-
-        //    public Tier()
-        //    {
-        //        checked
-        //        {
-        //            this._min = float.MaxValue;
-        //            this._max = float.MinValue;
-
-        //            this._total = 0;
-        //            this._count = 0;
-        //        }
-        //    }
-
-        //    public double Min
-        //    {
-        //        get
-        //        {
-        //            return this._min;
-        //        }
-        //        private set
-        //        {
-        //            checked
-        //            {
-        //                this._min = (float)value;
-        //            }
-        //        }
-        //    }
-        //    public double Max
-        //    {
-        //        get
-        //        {
-        //            return this._max;
-        //        }
-        //        private set
-        //        {
-        //            checked
-        //            {
-        //                this._max = (float)value;
-        //            }
-        //        }
-        //    }
-        //    public int Count
-        //    {
-        //        get
-        //        {
-        //            return this._count;
-        //        }
-        //        private set
-        //        {
-        //            checked
-        //            {
-        //                this._count = (byte)value;
-        //            }
-        //        }
-        //    }
-
-        //    private double total
-        //    {
-        //        get
-        //        {
-        //            return this._total;
-        //        }
-        //        set
-        //        {
-        //            checked
-        //            {
-        //                this._total = (float)value;
-        //            }
-        //        }
-        //    }
-
-        //    public double Avg
-        //    {
-        //        get
-        //        {
-        //            return ( this.total / (double)this.count );
-        //        }
-        //    }
-
-        //    public void AddShip(double value)
-        //    {
-        //        Min = Math.Min(Min, value);
-        //        Max = Math.Max(Max, value);
-        //        this.total += value;
-        //        ++this.count;
-        //    }
-        //}
-
-        #endregion //new
     }
 }
