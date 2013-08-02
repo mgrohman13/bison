@@ -81,8 +81,8 @@ namespace GalWar
                 AssertException.Assert(numPlayers > 1);
                 AssertException.Assert(numPlayers * 39 < MapSize);
                 AssertException.Assert(mapSize < 39);
-                AssertException.Assert(planetPct > .065);
-                AssertException.Assert(planetPct < .52);
+                AssertException.Assert(planetPct > .13);
+                AssertException.Assert(planetPct < .65);
 
                 this.StoreProd = new StoreProd();
                 this.Attack = new Attack();
@@ -654,8 +654,8 @@ next_planet:
 
             CheckResearchVictory();
             List<Anomaly> anomalies = CreateAnomalies();
-            RemoveTeleporters();
             AdjustCenter(1 / (double)this.players.Count);
+            RemoveTeleporters();
 
             if (++this.currentPlayer >= this.players.Count)
                 NewRound();
@@ -837,8 +837,8 @@ next_planet:
             double value = 0;
             if (dist > Consts.PlanetDistance)
             {
-                value = .52 + dist - Consts.PlanetDistance - 1;
-                value = Math.Sqrt(value / ( 1.3 + Math.Pow(MapSize, .21) / 2.1 + value ));
+                value = .91 + dist - Consts.PlanetDistance - 1;
+                value = Math.Sqrt(value / ( 9.1 + Math.Pow(MapSize, .21) + value ));
                 if (anomaly)
                     value *= this.PlanetPct / this.AnomalyPct;
             }
@@ -1006,7 +1006,7 @@ next_planet:
 
             throw new Exception();
         }
-        private void GetTileDistances(Tile center, int dist, out int minX, out int minY, out int maxX, out int maxY, List<Tuple<Point, Point>> teleporters)
+        private void GetTileDistances(Tile center, int dist, out int minX, out int minY, out int maxX, out int maxY, ICollection<Tuple<Point, Point>> teleporters)
         {
             minX = center.X - dist;
             minY = center.Y - dist;
@@ -1015,9 +1015,9 @@ next_planet:
 
             if (teleporters != null && teleporters.Count > 0)
             {
-                List<Tuple<Point, Point>> subset = null;
+                ICollection<Tuple<Point, Point>> subset = null;
                 if (teleporters.Count > 1)
-                    subset = new List<Tuple<Point, Point>>(teleporters);
+                    subset = new HashSet<Tuple<Point, Point>>(teleporters);
                 foreach (var teleporter in teleporters)
                 {
                     if (subset != null)
@@ -1027,7 +1027,7 @@ next_planet:
                 }
             }
         }
-        private void GetTeleporterDistances(Tile center, int dist, Point p1, Point p2, ref int minX, ref int minY, ref int maxX, ref int maxY, List<Tuple<Point, Point>> teleporters)
+        private void GetTeleporterDistances(Tile center, int dist, Point p1, Point p2, ref int minX, ref int minY, ref int maxX, ref int maxY, ICollection<Tuple<Point, Point>> teleporters)
         {
             int telDist = Tile.GetDistance(center, GetTile(p1));
             if (telDist < dist)

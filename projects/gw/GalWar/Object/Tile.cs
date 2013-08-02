@@ -42,14 +42,14 @@ namespace GalWar
         {
             return ( GetRawDistance(tile.X, tile.Y, x2, y2) == 1 );
         }
-        private static int GetDistance(int x1, int y1, int x2, int y2, List<Tuple<Point, Point>> teleporters)
+        private static int GetDistance(int x1, int y1, int x2, int y2, ICollection<Tuple<Point, Point>> teleporters)
         {
             int dist = GetRawDistance(x1, y1, x2, y2);
             if (dist > 1 && teleporters != null && teleporters.Count > 0)
             {
-                List<Tuple<Point, Point>> subset = null;
+                ICollection<Tuple<Point, Point>> subset = null;
                 if (teleporters.Count > 1)
-                    subset = new List<Tuple<Point, Point>>(teleporters);
+                    subset = new HashSet<Tuple<Point, Point>>(teleporters);
                 foreach (var teleporter in teleporters)
                 {
                     if (subset != null)
@@ -60,7 +60,7 @@ namespace GalWar
             }
             return dist;
         }
-        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter, List<Tuple<Point, Point>> teleporters)
+        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter, ICollection<Tuple<Point, Point>> teleporters)
         {
             return 1 + GetDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y, teleporters)
                     + GetDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y, teleporters);

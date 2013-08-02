@@ -787,7 +787,7 @@ namespace GalWarWin
             Player.StartingPlayer red = new Player.StartingPlayer("Red", Color.Red, null);//new GalWarAI.GalWarAI());
             Player.StartingPlayer yellow = new Player.StartingPlayer("Yellow", Color.Gold, null);//new GalWarAI.GalWarAI());
             Game = new Game(new Player.StartingPlayer[] { black, blue, green, pink, red, yellow },
-                    Game.Random.GaussianOE(13, .13, .13, 5.2), Game.Random.GaussianCapped(.26, .26, .065));
+                    Game.Random.GaussianOE(13, .13, .13, 5.2), Game.Random.GaussianCapped(.39, .21, .13));
 
             mouse = new PointForm(ClientSize.Width / 2, ClientHeight / 2);
             StartGame();
@@ -2592,7 +2592,7 @@ namespace GalWarWin
             case Anomaly.AnomalyType.AskProductionOrDefense:
                 SelectTile(( (Colony)info[0] ).Tile);
                 RefreshAll();
-                return ShowOption("Take +" + ( (int)info[0] ) + " producton or build defenses?");
+                return ShowOption("Take +" + ( (int)info[1] ) + " producton or build defenses?");
 
             case Anomaly.AnomalyType.AskResearchOrGold:
                 return ShowOption("Take research or +" + FormatDouble((double)info[0]) + " gold?");

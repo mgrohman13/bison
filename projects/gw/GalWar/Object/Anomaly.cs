@@ -79,7 +79,7 @@ namespace GalWar
             options.Add(GlobalEvent, 1);//med
             options.Add(LostColony, 2);//med
             options.Add(Death, 3);//always
-            options.Add(Production, 6);//always
+            options.Add(Production, 6);//high
             options.Add(SalvageShip, 13);//always
             options.Add(Pickup, 14);//low
             options.Add(Valuables, 16);//always
@@ -148,7 +148,7 @@ namespace GalWar
 
         private int GetDesignResearch(Player player)
         {
-            double avg = ( 1 * ( ( 1 * player.ResearchDisplay + 2 * player.Research ) / 3.0 )
+            double avg = ( 1 * ( ( 1 * player.ResearchGuess + 2 * player.ResearchDisplay + 4 * player.Research ) / 7.0 )
                     + 2 * ( player.LastResearched + this.value ) + 4 * ( Tile.Game.AvgResearch ) ) / 7.0;
             return Game.Random.GaussianOEInt(avg, .13, .013);
         }
@@ -166,38 +166,41 @@ namespace GalWar
             return ( tile.SpaceObject is Anomaly || tile.Teleporter != null );
         }
 
-        private static Dictionary<Player, int> GetPlayerProximity(Tile tile)
+        private Dictionary<Player, int> GetPlayerProximity()
         {
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
-            foreach (Player player in tile.Game.GetPlayers())
+            foreach (Player player in Tile.Game.GetPlayers())
             {
                 double avgDist = 0, totDist = 0;
                 foreach (Colony colony in player.GetColonies())
                 {
-                    double weight = colony.Planet.Quality + colony.Population + 1;
-                    double distance = Tile.GetDistance(tile, colony.Tile);
+                    double weight = GetColonyWeight(colony);
+                    double distance = Tile.GetDistance(this.Tile, colony.Tile);
                     avgDist += weight * distance * distance;
                     totDist += weight;
                 }
                 avgDist /= totDist;
 
-                retVal.Add(player, Game.Random.Round(int.MaxValue / avgDist));
+                retVal.Add(player, Game.Random.Round(ushort.MaxValue / avgDist));
             }
             return retVal;
         }
-
         private Dictionary<Colony, int> GetPlayerColonyWeights(Player player, out double total)
         {
             total = 0;
             var colonies = new Dictionary<Colony, int>();
             foreach (Colony colony in player.GetColonies())
             {
-                int weight = Game.Random.Round(( colony.Planet.Quality + colony.Population + 1 )
-                        * ushort.MaxValue / (double)Tile.GetDistance(this.Tile, colony.Tile));
+                int weight = Game.Random.Round(GetColonyWeight(colony) * ushort.MaxValue / (double)Tile.GetDistance(this.Tile, colony.Tile));
                 colonies.Add(colony, weight);
                 total += weight;
             }
             return colonies;
+        }
+
+        private static double GetColonyWeight(Colony colony)
+        {
+            return ( colony.Planet.PlanetValue / 1.3 + colony.Population );
         }
 
         internal static HashSet<SpaceObject> GetAttInv(Tile target, bool inv)
@@ -324,7 +327,7 @@ namespace GalWar
 
             if (oneInv == null)
             {
-                Dictionary<Player, int> playerProximity = GetPlayerProximity(this.Tile);
+                Dictionary<Player, int> playerProximity = GetPlayerProximity();
 
                 if (Game.Random.Bool() && Colony(handler, anomShip.Player, playerProximity, anomShip))
                     return true;
@@ -637,11 +640,12 @@ namespace GalWar
         private bool Production(IEventHandler handler, Ship anomShip)
         {
             double total;
-            Dictionary<Colony, int> colonies = GetPlayerColonyWeights(anomShip.Player, out total);
+            Dictionary<Colony, int> dict = GetPlayerColonyWeights(anomShip.Player, out total);
+            IEnumerable<KeyValuePair<Colony, int>> colonies = dict;
 
             Colony single = null;
-            if (colonies.Count == 1 || Game.Random.Bool())
-                single = Game.Random.SelectValue(colonies);
+            if (dict.Count == 1 || Game.Random.Bool())
+                single = Game.Random.SelectValue(dict);
 
             double value = this.value;
             int production = Game.Random.Round(value / 1.3);
@@ -666,10 +670,14 @@ namespace GalWar
             case 7:
             case 8:
                 type = AnomalyType.Production;
-                if (single != null)
+                if (single != null && !( single.Buildable is PlanetDefense ))
                 {
-                    type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefense;
-                    notify = false;
+                    type = AnomalyType.SoldiersAndDefense;
+                    if (single.Buildable != null)
+                    {
+                        type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefense;
+                        notify = false;
+                    }
                 }
                 break;
             case 9:
@@ -683,7 +691,24 @@ namespace GalWar
             }
 
             if (type == AnomalyType.Production)
+            {
+                if (single == null)
+                {
+                    colonies = colonies.Where(delegate(KeyValuePair<Colony, int> pair)
+                    {
+                        return ( pair.Key.Buildable != null );
+                    });
+                    if (colonies.Count() == 0)
+                        return false;
+                }
+                else
+                {
+                    if (single.Buildable == null)
+                        return false;
+                }
+
                 value = production;
+            }
 
             if (single == null)
             {
@@ -923,7 +948,7 @@ next:
         {
             Player player = anomShip.Player;
             if (Game.Random.Bool())
-                player = Game.Random.SelectValue(GetPlayerProximity(this.Tile));
+                player = Game.Random.SelectValue(GetPlayerProximity());
 
             handler.Explore(AnomalyType.SalvageShip, player);
 

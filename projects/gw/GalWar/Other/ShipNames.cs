@@ -18,11 +18,11 @@ namespace GalWar
 
         static ShipNames()
         {
-            attack = new ShipClass[] { ShipClass.Destroyer, ShipClass.Cruiser, ShipClass.Battlecruiser, ShipClass.Battleship, ShipClass.Dreadnought, ShipClass.Excalibur };
+            attack = new ShipClass[] { ShipClass.Destroyer, ShipClass.Cruiser, ShipClass.BattleCruiser, ShipClass.Battleship, ShipClass.Dreadnought, ShipClass.Excalibur };
             defense = new ShipClass[] { ShipClass.Warrior, ShipClass.Defender, ShipClass.Ironclad, ShipClass.Armor, ShipClass.Guardian, ShipClass.Avatar };
             speed = new ShipClass[] { ShipClass.Scout, ShipClass.Fighter, ShipClass.Corvette, ShipClass.Frigate, ShipClass.Ranger, ShipClass.Phoenix };
-            transport = new ShipClass[] { ShipClass.Galley, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Invader, ShipClass.Reaper };
-            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.Deathstar, ShipClass.Exterminator, ShipClass.Demon };
+            transport = new ShipClass[] { ShipClass.Bireme, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Invader, ShipClass.MotherShip };
+            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Reaper, ShipClass.Demon };
 
             if (attack.Length != length || defense.Length != length || speed.Length != length || transport.Length != length || deathStar.Length != length)
                 throw new Exception();
@@ -124,13 +124,13 @@ namespace GalWar
 
             //determine which array to use
             ShipClass[] type;
-            if (design.Trans * design.Speed > RandMult(transStr * speedStr * .3))
+            if (design.Trans * design.Speed > RandMult(transStr * speedStr * .3, 0))
                 type = transport;
-            else if (design.BombardDamage * design.Speed > RandMult(Consts.GetBombardDamage(attDefStr) * speedStr * ShipDesign.DeathStarAvg * .3))
+            else if (design.BombardDamage * design.Speed > RandMult(Consts.GetBombardDamage(attDefStr) * speedStr * ShipDesign.DeathStarAvg * .3, Consts.GetBombardDamage(attDefStr) * speedStr))
                 type = deathStar;
-            else if (design.Speed > RandMult(speedStr * 1.3))
+            else if (design.Speed > RandMult(speedStr * 1.3, speedStr))
                 type = speed;
-            else if (design.Def > RandMult(design.Att * 1.3))
+            else if (design.Def > RandMult(design.Att * 1.3, design.Att - 1))
                 type = defense;
             else
                 type = attack;
@@ -180,14 +180,14 @@ namespace GalWar
             return length;
         }
 
-        private static double RandMult(double mult)
+        private static double RandMult(double mult, double min)
         {
-            return Game.Random.GaussianCapped(mult, .03, 0);
+            return Game.Random.GaussianCapped(mult, .039, min);
         }
 
         private static double RandValue(double value)
         {
-            return Game.Random.GaussianCapped(value, .06, value / 1.3);
+            return Game.Random.GaussianCapped(value, .052, value / 1.3);
         }
 
         private class Tier
@@ -284,38 +284,38 @@ namespace GalWar
 
         internal enum ShipClass
         {
-            Salvage,
-            Colony,
-            Destroyer,
-            Cruiser,
-            Battlecruiser,
+            Armor,
+            Avatar,
+            BattleCruiser,
             Battleship,
+            Bireme,
+            Cannon,
+            Carrack,
+            Catapult,
+            Colony,
+            Corvette,
+            Cruiser,
+            DeathStar,
+            Defender,
+            Demon,
+            Destroyer,
             Dreadnought,
             Excalibur,
-            Warrior,
-            Defender,
-            Ironclad,
-            Armor,
-            Guardian,
-            Avatar,
-            Scout,
             Fighter,
-            Corvette,
             Frigate,
-            Ranger,
-            Phoenix,
-            Galley,
-            Carrack,
             Galleon,
-            Transport,
+            Guardian,
             Invader,
+            Ironclad,
+            MotherShip,
+            Phoenix,
+            Ranger,
             Reaper,
-            Catapult,
+            Salvage,
+            Scout,
+            Transport,
             Trebuchet,
-            Cannon,
-            Deathstar,
-            Exterminator,
-            Demon,
+            Warrior,
             MAX
         }
 

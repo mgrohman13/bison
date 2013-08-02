@@ -6,6 +6,7 @@ Green - 1
 Red - 0
 
 UI
+	planet pct dislay mults by anom?
 	ship calc minimum DS
 	undo move pop unholds planet (and maybe ship)
 	researchLines rounding
@@ -34,13 +35,8 @@ UI
 
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
-also take into account research until last pure str ship
-research vict a little easier?
-increase severity of planet dist check
 ship soldier exp reduces by pct
 AdjustCost check when anom ship
-AdjustCenter before RemoveTeleporters
-ResetResearchChance comments
 
 standardize dead checks
 without tile cache, no longer need to use points instead of tiles in places

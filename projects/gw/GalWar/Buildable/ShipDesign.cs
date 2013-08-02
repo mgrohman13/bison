@@ -95,8 +95,7 @@ namespace GalWar
         #region fields and constructors
 
         public const double DeathStarAvg = 91;
-        private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.1, FocusSpeedMult = 1.3;
-        private const double FocusTypeMult = 2.6;
+        private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.1, FocusSpeedMult = 1.3, FocusTypeMult = 2.6;
 
         [NonSerialized]
         private readonly bool _statsNotInit = true, _costNotInit = true;
@@ -501,6 +500,7 @@ namespace GalWar
             int numDesigns;
             if (designs != null && ( numDesigns = designs.Count ) > 0)
             {
+                double str = 0;
                 colony = 0;
                 trans = 0;
                 ds = 0;
@@ -523,6 +523,9 @@ namespace GalWar
                         colony += mult;
                     trans += design.Speed * design.Trans * mult;
                     ds += design.Speed * design.BombardDamage * mult;
+
+                    if (!design.Colony && design.Trans == 0 && !design.DeathStar && design.Speed <= Game.Random.Round(GetSpeedStr(research)))
+                        str += mult;
                 }
 
                 double pow = 1.0 / (double)numDesigns;
@@ -531,6 +534,9 @@ namespace GalWar
                 speed = Math.Pow(speed, pow);
 
                 costMult /= (double)numDesigns * numDesigns;
+                str *= costMult;
+                costMult /= Math.Sqrt(str);
+
                 colony *= costMult;
                 trans *= costMult;
                 ds *= costMult;

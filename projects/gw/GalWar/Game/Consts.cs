@@ -11,8 +11,8 @@ namespace GalWar
         public const double PointsTilesPower = .39;
         //ResearchVictoryMult is a multiple of the second place players research
         public const double ResearchVictoryMult = 1.69;
-        public const double ResearchVictoryMin = 1.5;
-        public const double ResearchVictoryPow = 5.2;
+        public const double ResearchVictoryMin = 1.39;
+        public const double ResearchVictoryPow = Math.PI;
 
         //StartAnomalies is the number of turn-rounds for which we immediately create anomalies
         public const double StartAnomalies = 13;
