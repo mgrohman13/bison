@@ -514,16 +514,20 @@ namespace GalWar
         {
             double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
             if (curPop > 0)
-            {
-                double newSoldierPct = ( curSoldiers + mult / Consts.ExpForSoldiers ) / curPop;
-                mult *= 1 / ( newSoldierPct + 1 );
-            }
+                mult *= GetSoldierMult(curPop, curSoldiers, GetSoldiersForExp(mult));
             else
-            {
                 mult = 0;
-            }
             other = ( exp - mult );
-            return Consts.GetExperience(mult / Consts.ExpForSoldiers);
+            return Consts.GetExperience(GetSoldiersForExp(mult));
+        }
+        private static double GetSoldiersForExp(double exp)
+        {
+            return exp / Consts.ExpForSoldiers;
+        }
+
+        internal static double GetSoldierMult(int curPop, double curSoldiers, double addSoldiers)
+        {
+            return 1 / ( 1 + ( curSoldiers + addSoldiers ) / curPop );
         }
 
         private void TroopBattle(ref int attackers, double attSoldiers, int gold, out double attack, out double defense)
@@ -1202,6 +1206,24 @@ namespace GalWar
             this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, this.Population, valueExp);
         }
 
+        internal void UpgradePlanetDefense(int oldResearch, int newResearch)
+        {
+            if (this.HP > 0)
+            {
+                double diff = ( ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, oldResearch) -
+                        ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, newResearch) );
+                diff *= this.HP * Consts.PlanetDefensesUpgradePct;
+
+                double att = ShipDesign.GetStatValue(this.Att), def = ShipDesign.GetStatValue(this.Def);
+                att = diff * att / ( att + def );
+                def = diff - att;
+
+                bool rand = Game.Random.Bool();
+                BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
+                BuildPlanetDefense(rand ? def : att, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
+            }
+        }
+
         internal void BuildPlanetDefense(double prodInc)
         {
             BuildPlanetDefense(this.production + prodInc, false);
@@ -1223,9 +1245,9 @@ namespace GalWar
         }
         internal void BuildAttAndDef(double prod)
         {
-            bool b = Game.Random.Bool();
-            BuildPlanetDefense(prod / 2.0, b ? (Buildable)Player.Game.Attack : Player.Game.Defense);
-            BuildPlanetDefense(prod / 2.0, b ? (Buildable)Player.Game.Defense : Player.Game.Attack);
+            bool rand = Game.Random.Bool();
+            BuildPlanetDefense(prod / 2.0, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
+            BuildPlanetDefense(prod / 2.0, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
         }
         private void BuildPlanetDefense(double prod, Buildable build)
         {
@@ -1335,10 +1357,10 @@ namespace GalWar
 
             newHP = GetPDHP(trgCost, newAtt, newDef);
 
-            if (att < trgAtt && def > 1 && att == newAtt)
-                ModPD(trgCost, att, att, def, 1, out newAtt, out newDef, out newHP);
-            else if (def < trgDef && att > 1 && def == newDef)
-                ModPD(trgCost, att, 1, def, def, out newAtt, out newDef, out newHP);
+            //if (att < trgAtt && def > 1 && att == newAtt)
+            //    ModPD(trgCost, att, att, def, 1, out newAtt, out newDef, out newHP);
+            //else if (def < trgDef && att > 1 && def == newDef)
+            //    ModPD(trgCost, att, 1, def, def, out newAtt, out newDef, out newHP);
         }
         private bool TestPD(double trgCost, double minAtt, double minDef)
         {

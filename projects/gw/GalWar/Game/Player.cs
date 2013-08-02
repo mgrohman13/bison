@@ -234,12 +234,17 @@ namespace GalWar
             {
                 return (int)this._research;
             }
-            private set
+        }
+        private void AddResearch(int amount, bool random)
+        {
+            checked
             {
-                checked
-                {
-                    this._research = (uint)value;
-                }
+                UpgradePlanetDefense(Research, Research + amount);
+
+                if (random)
+                    amount = Game.Random.GaussianOEInt(amount, Consts.ResearchRndm, Consts.ResearchRndm, 1);
+
+                this._research += (uint)amount;
             }
         }
         internal int LastResearched
@@ -432,6 +437,12 @@ namespace GalWar
             }
         }
 
+        private void UpgradePlanetDefense(int oldResearch, int newResearch)
+        {
+            foreach (Colony colony in this.colonies)
+                colony.UpgradePlanetDefense(oldResearch, newResearch);
+        }
+
         #endregion //fields and constructors
 
         #region internal
@@ -473,7 +484,7 @@ namespace GalWar
         internal void FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
         {
             this.ResearchGuess += freeResearch;
-            this.Research += freeResearch;
+            AddResearch(freeResearch, false);
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = NewShipDesign(false, designResearch, false, out obsoleteDesigns);
             handler.OnResearch(newDesign, obsoleteDesigns);
@@ -485,7 +496,7 @@ namespace GalWar
             obsoleteDesigns = null;
 
             if (this.newResearch > 0)
-                this.Research += Game.Random.GaussianOEInt(this.newResearch, Consts.ResearchRndm, Consts.ResearchRndm, 1);
+                AddResearch(this.newResearch, true);
 
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
             {

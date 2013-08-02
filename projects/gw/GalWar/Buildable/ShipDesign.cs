@@ -94,8 +94,8 @@ namespace GalWar
 
         #region fields and constructors
 
-        public const double DeathStarAvg = 91;
-        private const double DeathStarMin = 7.8, FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.1, FocusSpeedMult = 1.3, FocusTypeMult = 2.6;
+        public const double DeathStarAvg = 91, DeathStarMin = 7.8;
+        private const double FocusCostMult = 1.69, FocusUpkeepMult = 1.3, FocusAttMult = 2.1, FocusSpeedMult = 1.3, FocusTypeMult = 2.6;
 
         [NonSerialized]
         private readonly bool _statsNotInit = true, _costNotInit = true;

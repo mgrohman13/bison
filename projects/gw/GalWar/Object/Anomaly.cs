@@ -403,9 +403,9 @@ namespace GalWar
             if (Game.Random.Bool())
             {
                 foreach (var pair in GetTerraformColonies(anomShip))
-                    if (GetTerraformAmt(pair.Value.Item1) > 0 && CanTerraform(this.value + GetExpectCost(pair.Key, Consts.TerraformPlanetQuality()), anomShip))
+                    if (pair.Value.Item2 > 0 && CanTerraform(this.value + GetExpectCost(pair.Key, Consts.TerraformPlanetQuality()) * Consts.GetColonizationMult(), anomShip))
                     {
-                        double terraformAmt = Consts.AverageQuality + Consts.PlanetConstValue;
+                        double terraformAmt = Consts.TerraformQualityMult * Consts.AverageQuality;
                         double apocalypseAmt = quality / 2.0;
 
                         if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
@@ -499,7 +499,7 @@ namespace GalWar
                     colonies.Remove(trgColony);
                     foreach (var pair in colonies.ToArray())
                     {
-                        int amt = GetTerraformAmt(.52 * pair.Value);
+                        int amt = GetTerraformChance(.52 * pair.Value);
                         if (amt > 0)
                             colonies[pair.Key] = amt;
                         else
@@ -513,18 +513,18 @@ namespace GalWar
         private Dictionary<Colony, int> GetTerraformColonies(Ship anomShip, out double[] colonyChances)
         {
             Dictionary<Colony, Tuple<double, int>> terraformColonies = GetTerraformColonies(anomShip);
-            Dictionary<Colony, int> retVal = new Dictionary<Colony, int>();
+
             colonyChances = new double[terraformColonies.Count];
+            Dictionary<Colony, int> retVal = new Dictionary<Colony, int>(terraformColonies.Count);
+
             int idx = -1;
             foreach (var pair in terraformColonies)
             {
-                int amt = pair.Value.Item2;
-                if (amt > 0)
-                {
-                    retVal.Add(pair.Key, amt);
-                    colonyChances[++idx] = pair.Value.Item1;
-                }
+                colonyChances[++idx] = pair.Value.Item1;
+                if (pair.Value.Item2 > 0)
+                    retVal.Add(pair.Key, pair.Value.Item2);
             }
+
             return retVal;
         }
         private Dictionary<Colony, Tuple<double, int>> GetTerraformColonies(Ship anomShip)
@@ -534,8 +534,7 @@ namespace GalWar
             foreach (Colony colony in anomShip.Player.GetColonies())
             {
                 double raw = .169 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
-                int amt = GetTerraformAmt(raw);
-                colonies.Add(colony, new Tuple<double, int>(raw, amt));
+                colonies.Add(colony, new Tuple<double, int>(raw, GetTerraformChance(raw)));
             }
 
             return colonies;
@@ -550,7 +549,7 @@ namespace GalWar
         {
             return ( -cost < anomShip.Player.Gold );
         }
-        private static int GetTerraformAmt(double amt)
+        private static int GetTerraformChance(double amt)
         {
             return Game.Random.GaussianOEInt(amt, .26, .13);
         }
@@ -564,12 +563,16 @@ namespace GalWar
             foreach (Player player in Tile.Game.GetPlayers())
             {
                 foreach (Colony colony in player.GetColonies())
-                    colony.LosePopulation(GetPopChange(colony.Population * diePct, colony.Population * .52), true);
+                    colony.LosePopulation(GetPopLoss(diePct, colony), true);
                 foreach (Ship ship in player.GetShips())
-                    ship.LosePopulation(GetPopChange(ship.Population * diePct, ship.Population * .52), true);
+                    ship.LosePopulation(GetPopLoss(diePct, ship), true);
             }
 
             return true;
+        }
+        private static int GetPopLoss(double diePct, PopCarrier popCarrier)
+        {
+            return GetPopChange(popCarrier.Population * diePct, popCarrier.Population * .52);
         }
 
         private bool AddPop(IEventHandler handler, double addAmt, double forExplorer, Ship anomShip)
@@ -587,8 +590,7 @@ namespace GalWar
                 amt /= total;
 
                 foreach (var pair in colonies)
-                    pair.Key.LosePopulation(-GetPopChange(amt * pair.Value,
-                            Game.Random.Bool() ? .91 * pair.Key.Population : 1.3 * amt * pair.Value));
+                    pair.Key.LosePopulation(-GetPopChange(amt * pair.Value, 1.04 * pair.Key.Population));
             }
 
             return true;
@@ -596,10 +598,21 @@ namespace GalWar
 
         private static int GetPopChange(double amt, double upperCap)
         {
-            int cap = Math.Max(1, Game.Random.Round(2 * amt - upperCap));
-            if (cap > amt)
-                cap = (int)amt;
-            return Game.Random.GaussianCappedInt(amt, .039, cap);
+            int lowerCap = 0;
+            if (amt > GetLowerCap(amt, upperCap))
+            {
+                do
+                {
+                    lowerCap = GetLowerCap(amt, Game.Random.DoubleHalf(upperCap));
+                } while (amt < lowerCap);
+            }
+            if (lowerCap < 1)
+                lowerCap = ( ( amt > 1 ) ? 1 : 0 );
+            return Game.Random.GaussianCappedInt(amt, .039, lowerCap);
+        }
+        private static int GetLowerCap(double average, double upperCap)
+        {
+            return Game.Random.Round(2 * average - upperCap);
         }
 
         #endregion //GlobalEvent

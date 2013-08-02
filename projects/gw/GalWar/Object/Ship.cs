@@ -804,12 +804,18 @@ namespace GalWar
             {
                 double soldiers = this.Population / Consts.PopulationForGoldMid;
                 soldiers *= rawExp / ( soldiers + this.GetCostLastResearched() );
+
+                soldiers *= GalWar.Colony.GetSoldierMult(this.Population, this.Soldiers, GetSoldiersForExp(soldiers));
+
                 rawExp -= soldiers;
-                soldiers = GetValueExpForRawExp(soldiers) / Consts.ExpForSoldiers;
-                this.Soldiers += Consts.GetExperience(soldiers);
+                this.Soldiers += Consts.GetExperience(GetSoldiersForExp(soldiers));
             }
 
             this.curExp += Consts.GetExperience(rawExp);
+        }
+        private double GetSoldiersForExp(double exp)
+        {
+            return GetValueExpForRawExp(exp) / Consts.ExpForSoldiers;
         }
 
         internal void AddAnomalyExperience(IEventHandler handler, double cost, bool funky, bool noChange)

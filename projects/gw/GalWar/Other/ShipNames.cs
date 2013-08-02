@@ -66,10 +66,7 @@ namespace GalWar
 
         private int Marks(int idx1, int idx2)
         {
-            checked
-            {
-                return this._marks[idx1, idx2];
-            }
+            return this._marks[idx1, idx2];
         }
         private void Marks(int idx1, int idx2, int value)
         {
@@ -103,11 +100,6 @@ namespace GalWar
             this.setup = false;
         }
 
-        internal ShipClass GetName(int numPlayers, ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
-        {
-            return GetNameType(numPlayers, design, attDefStr, transStr, speedStr, anomalyShip);
-        }
-
         internal int GetMark(Player player, int name)
         {
             int value = this.Marks(player.ID, name) + 1;
@@ -115,34 +107,36 @@ namespace GalWar
             return value;
         }
 
-        private ShipClass GetNameType(int numPlayers, ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
+        internal ShipClass GetName(int numPlayers, ShipDesign design, double attDefStr, double transStr, double speedStr, bool anomalyShip)
         {
             if (anomalyShip)
                 return ShipClass.Salvage;
             if (design.Colony)
                 return ShipClass.Colony;
 
+            double avgDS = Consts.GetBombardDamage(attDefStr) * speedStr;
+
             //determine which array to use
             ShipClass[] type;
             if (design.Trans * design.Speed > RandMult(transStr * speedStr * .3, 0))
                 type = transport;
-            else if (design.BombardDamage * design.Speed > RandMult(Consts.GetBombardDamage(attDefStr) * speedStr * ShipDesign.DeathStarAvg * .3, Consts.GetBombardDamage(attDefStr) * speedStr))
+            else if (design.BombardDamage * design.Speed > RandMult(avgDS * ShipDesign.DeathStarAvg * .3, avgDS * ShipDesign.DeathStarMin))
                 type = deathStar;
-            else if (design.Speed > RandMult(speedStr * 1.3, speedStr))
+            else if (design.Speed > RandMult(speedStr * 1.3, speedStr + .52))
                 type = speed;
-            else if (design.Def > RandMult(design.Att * 1.3, design.Att - 1))
+            else if (design.Def > RandMult(design.Att * 1.3, design.Att))
                 type = defense;
             else
                 type = attack;
 
             double value = ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage, 0);
-            int retVal = GetName(numPlayers, type, RandValue(value));
+            int tier = GetShipTier(numPlayers, type, RandValue(value));
 
-            this.tiers[retVal].AddShip(RandValue(value));
-            return type[retVal];
+            this.tiers[tier].AddShip(RandValue(value));
+            return type[tier];
         }
 
-        private int GetName(int numPlayers, ShipClass[] type, double value)
+        private int GetShipTier(int numPlayers, ShipClass[] type, double value)
         {
             const double mult = Math.PI;
 
@@ -182,7 +176,9 @@ namespace GalWar
 
         private static double RandMult(double mult, double min)
         {
-            return Game.Random.GaussianCapped(mult, .039, min);
+            if (mult > min)
+                return Game.Random.GaussianCapped(mult, .039, min);
+            return min;
         }
 
         private static double RandValue(double value)
