@@ -261,12 +261,10 @@ namespace GalWar
                 }
             }
         }
-        public int ResearchGuess
+        internal int ResearchGuess
         {
             get
             {
-                TurnException.CheckTurn(this);
-
                 return (int)this._researchGuess;
             }
             private set
@@ -276,6 +274,12 @@ namespace GalWar
                     this._researchGuess = (uint)value;
                 }
             }
+        }
+        public int GetResearchGuess()
+        {
+            TurnException.CheckTurn(this);
+
+            return ResearchGuess;
         }
 
         private double goldValue

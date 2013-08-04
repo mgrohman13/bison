@@ -186,6 +186,7 @@ namespace GalWar
             return Game.Random.GaussianCapped(value, .052, value / 1.3);
         }
 
+        [Serializable]
         private class Tier
         {
             private float _min, _max, _total;

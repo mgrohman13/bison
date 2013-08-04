@@ -184,7 +184,7 @@ namespace GalWarWin
 
         private string GetResearch(Dictionary<Player, double> research, Player player)
         {
-            return MainForm.FormatInt(research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.ResearchGuess);
+            return MainForm.FormatInt(research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetResearchGuess());
         }
 
         private Label NewLabel(int x, int y, string text, Color? backColor)
