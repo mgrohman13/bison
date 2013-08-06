@@ -969,7 +969,7 @@ namespace GalWar
             else
                 return Consts.GetBombardDamage(att);
         }
-        private static int GetDeathStarMin(int att)
+        public static int GetDeathStarMin(int att)
         {
             return (int)Math.Ceiling(DeathStarMin * Consts.GetBombardDamage(att));
         }

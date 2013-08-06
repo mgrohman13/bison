@@ -222,13 +222,31 @@ namespace GalWarWin
                 events = false;
 
                 if (deathStar)
+                {
                     SetValue(this.nudTrans, 0);
+                    CheckDSMin();
+                }
                 else
+                {
                     ClearDS();
+                }
 
                 events = true;
             }
         }
+
+        private void CheckDSMin()
+        {
+            events = false;
+
+            int min = ShipDesign.GetDeathStarMin((int)this.nudAtt.Value);
+            int bombardDamage = (int)this.nudDS.Value;
+            if (bombardDamage < min)
+                SetValue(this.nudDS, min);
+
+            events = true;
+        }
+
         private void ClearDS()
         {
             SetValue(this.nudDS, GetBombardDamage());
@@ -260,7 +278,11 @@ namespace GalWarWin
 
         private void nudAtt_ValueChanged(object sender, EventArgs e)
         {
-            if (events && !this.cbDS.Checked)
+            if (this.cbDS.Checked)
+            {
+                CheckDSMin();
+            }
+            else if (events)
             {
                 events = false;
                 ClearDS();

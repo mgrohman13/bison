@@ -16,9 +16,9 @@ namespace GalWar
         private readonly byte _name, _mark;
         private readonly float _expDiv;
 
-        //private Tile _vector;
+        private PointS? _vector;
 
-        private bool _hasRepaired;
+        private bool _vectorZOC, _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
         private ushort _maxHP, _maxTrans, _bombardDamage, _repair;
         private float _autoRepair, _needExpMult, _curExp, _totalExp;
@@ -36,7 +36,8 @@ namespace GalWar
                 this._name = (byte)design.Name;
                 this._mark = (byte)design.Mark;
 
-                //this._vector = null;
+                this._vector = null;
+                this._vectorZOC = true;
 
                 this._hasRepaired = false;
 
@@ -101,24 +102,55 @@ namespace GalWar
             }
         }
 
-        //public Tile Vector
-        //{
-        //    get
-        //    {
-        //        TurnException.CheckTurn(this.Player);
+        public Tile Vector
+        {
+            get
+            {
+                checked
+                {
+                    TurnException.CheckTurn(this.Player);
 
-        //        return this._vector;
-        //    }
-        //    set
-        //    {
-        //        checked
-        //        {
-        //            TurnException.CheckTurn(this.Player);
+                    if (this._vector == null)
+                        return null;
+                    else
+                        return Player.Game.GetTile(this._vector.Value.X, this._vector.Value.Y);
+                }
+            }
+            set
+            {
+                checked
+                {
+                    TurnException.CheckTurn(this.Player);
 
-        //            this._vector = value;
-        //        }
-        //    }
-        //}
+                    PointS? newVal;
+                    if (value == null)
+                        newVal = null;
+                    else
+                        newVal = Game.GetPointS(value);
+
+                    if (newVal != this._vector)
+                    {
+                        this._vector = newVal;
+                        VectorZOC = true;
+                    }
+                }
+            }
+        }
+        public bool VectorZOC
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return this._vectorZOC;
+            }
+            set
+            {
+                TurnException.CheckTurn(this.Player);
+
+                this._vectorZOC = value;
+            }
+        }
 
         public bool HasRepaired
         {

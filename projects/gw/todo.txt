@@ -1,8 +1,4 @@
 UI
-	planet pct dislay mults by anom?
-	ship calc minimum DS
-	undo move pop unholds planet (and maybe ship)
-	researchLines rounding
 	rapid click to bombard
 	rally ships
 		saveable?
@@ -13,7 +9,6 @@ UI
 	calculate pop growth
 		balancing between colonies
 	show enemy moves/attacks ignoring friendly ships, weight for HP?
-	keep track of observed income on planet since last build
 	main map
 		clean up drawing logic
 		very large shows more info
@@ -26,16 +21,17 @@ UI
 		ships
 	keyboard?
 
+research victory pct decreases with higher research
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 
+move Tile to Game folder
 standardize dead checks
-without tile cache, no longer need to use points instead of tiles in places
-	replace all point usage with tile in gws (except serailized)
 test exact vs oversize dictionary capacity for combat performance
 empirically test invasion values
 clean up code
 	member order
+fix combatant/popcarrier/colony/pd hierarchy
 
 anomaly neutral ships?
 known enemy designs

@@ -19,7 +19,7 @@ namespace GalWar
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
         private ushort _repair, _production;
-        private float _soldierChange, _researchRounding, _productionRounding;
+        private float _soldierChange, _prodGuess, _researchRounding, _productionRounding;
 
         internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
             : base(null, 1, 1, 0, population, soldiers)
@@ -45,6 +45,7 @@ namespace GalWar
                 this._production = (ushort)production;
 
                 this._soldierChange = 0;
+                this._prodGuess = 0;
 
                 this._researchRounding = float.NaN;
                 this._productionRounding = float.NaN;
@@ -216,6 +217,21 @@ namespace GalWar
             }
         }
 
+        public double ProdGuess
+        {
+            get
+            {
+                return this._prodGuess;
+            }
+            internal set
+            {
+                checked
+                {
+                    this._prodGuess = (float)value;
+                }
+            }
+        }
+
         private double researchRounding
         {
             get
@@ -264,8 +280,10 @@ namespace GalWar
             return loss;
         }
 
-        internal void DoBuild(IEventHandler handler, double productionInc, ref double gold)
+        internal bool DoBuild(IEventHandler handler, double productionInc, ref double gold)
         {
+            bool retVal = false;
+
             if (this.Buildable != null && this.Buildable.HandlesFraction)
                 this.Buildable.SetFraction(productionInc);
             else
@@ -294,6 +312,7 @@ namespace GalWar
                         //invalid selection; just ask again
                         if (tile.SpaceObject != null || !Tile.IsNeighbor(this.Tile, tile))
                             continue;
+                        retVal = true;
                     }
 
                     //build the ship
@@ -308,6 +327,8 @@ namespace GalWar
                 if (!double.IsNaN(this.Buildable.production) && this.Buildable.production != 0)
                     throw new Exception();
             }
+
+            return retVal;
         }
 
         private void DoChange(double soldierChange, int defenseAttChange, int defenseDefChange, int defenseHPChange)
@@ -327,6 +348,10 @@ namespace GalWar
             this.DefenseHPChange = this.HP - defenseHPChange;
         }
 
+        internal void ClearChange()
+        {
+            DoChange(0, 0, 0, 0);
+        }
         internal void StartTurn(IEventHandler handler)
         {
             bool blocked = true;
@@ -342,8 +367,6 @@ namespace GalWar
                     neighbor.SpaceObject = null;
                     break;
                 }
-
-            DoChange(0, 0, 0, 0);
 
             if (this.built)
             {
@@ -363,9 +386,9 @@ namespace GalWar
             ResetRounding();
 
             //build planet defenses first so they can attack this turn
-            bool buildFirst = ( this.Buildable is PlanetDefense );
+            bool buildFirst = ( this.Buildable is PlanetDefense ), built = false;
             if (buildFirst)
-                this.DoBuild(handler, production, ref gold);
+                built = this.DoBuild(handler, production, ref gold);
             if (this.HP > 0)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
                 {
@@ -379,7 +402,14 @@ namespace GalWar
                 }
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
-                this.DoBuild(handler, production, ref gold);
+                built = this.DoBuild(handler, production, ref gold);
+
+            if (built || this.Buildable is PlanetDefense)
+                this.ProdGuess = 0;
+            else if (this.Repair == 0)
+                this.ProdGuess += GetTotalIncome() / 3.0;
+            else if (this.RepairShip == null)
+                this.ProdGuess += GetTotalIncome() / 6.0;
 
             this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
 
@@ -1219,8 +1249,15 @@ namespace GalWar
                 def = diff - att;
 
                 bool rand = Game.Random.Bool();
+
+                int h = HP, a = Att, d = Def;
+
                 BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
                 BuildPlanetDefense(rand ? def : att, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
+
+                if (h != HP || a != Att || d != Def)
+                {
+                }
             }
         }
 

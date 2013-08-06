@@ -459,6 +459,9 @@ namespace GalWar
 
         internal void StartTurn(IEventHandler handler)
         {
+            foreach (Colony colony in this.colonies)
+                colony.ClearChange();
+
             //actual researching happens at turn start
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = CheckResearch(out obsoleteDesigns);

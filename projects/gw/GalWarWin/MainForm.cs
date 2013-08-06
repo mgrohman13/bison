@@ -54,7 +54,7 @@ namespace GalWarWin
 
         private static Ship anomExp = null;
 
-        private static Point? _selected = null, panning = null;
+        private static Tile selected = null, panning = null;
         private static HashSet<SpaceObject> hold, holdPersistent;
 
         private static HashSet<Tuple<PopCarrier, PopCarrier>> movedTroops;
@@ -168,37 +168,19 @@ namespace GalWarWin
             }
         }
 
-        private Point? selected
-        {
-            get
-            {
-                return _selected;
-            }
-            set
-            {
-                _selected = value;
-                Center(false);
-            }
-        }
         private Tile GetSelectedTile()
         {
-            if (selected == null)
-                return null;
-            return Game.GetTile(selected.Value);
+            return selected;
         }
         private void SelectTile(Tile tile)
         {
-            if (tile == null)
-                selected = null;
-            else
-                selected = tile.Point;
+            selected = tile;
         }
 
         private void SetBtnShowMovesText()
         {
             btnShowMoves.Text = ( ( showMoves && !showAtt ) ? "Enemy Attacks" : "Enemy Moves" );
         }
-
 
         private int ClientHeight
         {
@@ -222,21 +204,21 @@ namespace GalWarWin
         private void Center(bool always)
         {
             if (selected != null && ( always || !SelectedVisible() ))
-                Center(selected.Value);
+                Center(selected);
             else
                 VerifyScalePan();
         }
-        private void Center(Point point)
+        private void Center(Tile tile)
         {
-            Point center = GetGamePoint(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
-            panX += ( center.X - point.X ) * scale;
-            panY += ( center.Y - point.Y ) * scale;
+            Tile center = GetTile(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
+            panX += ( center.X - tile.X ) * scale;
+            panY += ( center.Y - tile.Y ) * scale;
             VerifyScalePan();
         }
         private bool SelectedVisible()
         {
             Rectangle gameBounds = GetGameBounds();
-            int x = selected.Value.X, y = selected.Value.Y;
+            int x = selected.X, y = selected.Y;
             return ( x > gameBounds.Left + 1 && x < gameBounds.Right - 1 && y > gameBounds.Top + 1 && y < gameBounds.Bottom - 1 );
         }
 
@@ -298,37 +280,45 @@ namespace GalWarWin
                             g.DrawRectangles(pen, rects);
                     }
 
-                    //if (testDistance != null)
-                    //{
-                    //    RectangleF[] rects = new RectangleF[( gameBounds.Width + 3 ) * ( gameBounds.Height + 3 )];
-                    //    int a = -1;
-                    //    foreach (Tile t in testDistance)
-                    //        rects[++a] = GetDrawRect(t.X, t.Y);
-                    //    using (Brush b = new SolidBrush(Game.CurrentPlayer.Color))
-                    //        g.FillRectangles(b, rects);
-                    //}
-
                     if (selected != null)
-                        DrawObject(g, gameBounds, selected.Value, null);
-                    foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
+                        DrawObject(g, gameBounds, selected, null);
+                    foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
                     {
                         DrawObject(g, gameBounds, teleporter.Item1, null);
                         DrawObject(g, gameBounds, teleporter.Item2, null);
                     }
                     if (isDialog && dialogTile != null)
                         foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
-                            DrawObject(g, gameBounds, neighbor.Point, null);
+                            DrawObject(g, gameBounds, neighbor, null);
 
                     Dictionary<Tile, float> moves = null;
                     if (showMoves && scale > TextScale)
                     {
                         moves = GetMoves();
                         foreach (Tile tile in moves.Keys)
-                            DrawObject(g, gameBounds, tile.Point, moves);
+                            DrawObject(g, gameBounds, tile, moves);
                     }
 
                     foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                        DrawObject(g, gameBounds, spaceObject.Tile.Point, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
+                        DrawObject(g, gameBounds, spaceObject.Tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
+
+                    Ship selectedShip = GetSelectedShip();
+                    if (selectedShip != null && selectedShip.Player.IsTurn && selectedShip.Vector != null)
+                    {
+                        List<Tile> path = Tile.PathFind(selectedShip);
+
+                        PointF[] points = new PointF[path.Count];
+
+                        int idx = -1;
+                        foreach (Tile next in path)
+                        {
+                            RectangleF rect = GetDrawRect(next.X, next.Y);
+                            points[++idx] = new PointF(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f);
+                        }
+
+                        using (Pen pen = new Pen(selectedShip.Player.Color))
+                            g.DrawLines(pen, points);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -339,20 +329,20 @@ namespace GalWarWin
                 }
             }
         }
-        private void DrawObject(Graphics g, Rectangle gameBounds, Point point, Dictionary<Tile, float> moves)
+        private void DrawObject(Graphics g, Rectangle gameBounds, Tile tile, Dictionary<Tile, float> moves)
         {
-            DrawObject(g, gameBounds, point, moves, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN);
+            DrawObject(g, gameBounds, tile, moves, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN);
         }
-        private void DrawObject(Graphics g, Rectangle gameBounds, Point point, Dictionary<Tile, float> moves, float minQuality, float maxQuality, float minPop, float maxPop, float minStr, float maxStr)
+        private void DrawObject(Graphics g, Rectangle gameBounds, Tile tile, Dictionary<Tile, float> moves, float minQuality, float maxQuality, float minPop, float maxPop, float minStr, float maxStr)
         {
-            int x = point.X, y = point.Y;
+            int x = tile.X, y = tile.Y;
             if (x > gameBounds.Left - 2 && x < gameBounds.Right + 2 && y > gameBounds.Top - 2 && y < gameBounds.Bottom + 2)
             {
-                SpaceObject spaceObject = Game.GetSpaceObject(point);
+                SpaceObject spaceObject = tile.SpaceObject;
                 RectangleF rect = GetDrawRect(x, y);
 
-                int telNum;
-                if (Game.GetTeleporter(point, out telNum) != null)
+                int telNum = tile.TeleporterNumber;
+                if (telNum > 0)
                 {
                     Brush brush = Brushes.DarkGray;
                     if (Game.GetTeleporters().Count > 1)
@@ -375,12 +365,11 @@ namespace GalWarWin
                 else if (( ship = ( spaceObject as Ship ) ) != null)
                     DrawShip(g, scale, rect, ship, minStr, maxStr);
 
-                if (scale > GridScale || point == selected || ( isDialog && ValidDialogTile(point, spaceObject) ))
-                    DrawBorder(g, point, spaceObject, rect, scale);
+                if (scale > GridScale || tile == selected || ( isDialog && ValidDialogTile(tile, spaceObject) ))
+                    DrawBorder(g, tile, spaceObject, rect, scale);
 
                 if (moves != null && scale > TextScale)
                 {
-                    Tile tile = Game.GetTile(point);
                     float move;
                     if (moves.TryGetValue(tile, out move))
                     {
@@ -408,8 +397,8 @@ namespace GalWarWin
 
         private Rectangle GetGameBounds()
         {
-            Point min = GetGamePoint(new PointForm(0, 0));
-            Point max = GetGamePoint(new PointForm(ClientSize.Width - pnlHUD.Width, ClientSize.Height));
+            Tile min = GetTile(new PointForm(0, 0));
+            Tile max = GetTile(new PointForm(ClientSize.Width - pnlHUD.Width, ClientSize.Height));
             return new Rectangle(min.X, min.Y, max.X - min.X, max.Y - min.Y);
         }
 
@@ -419,7 +408,7 @@ namespace GalWarWin
             max = (float)Math.Max(max, Math.Sqrt(value));
         }
 
-        private void DrawBorder(Graphics g, Point point, SpaceObject spaceObject, RectangleF rect, float scale)
+        private void DrawBorder(Graphics g, Tile tile, SpaceObject spaceObject, RectangleF rect, float scale)
         {
             Planet planet = spaceObject as Planet;
             Ship ship = spaceObject as Ship;
@@ -427,14 +416,14 @@ namespace GalWarWin
             float size;
             if (scale <= GridScale)
                 size = 1f;
-            else if (point == selected)
+            else if (tile == selected)
                 size = 3f;
-            else if (planet != null || ( isDialog ? ValidDialogTile(point, spaceObject) : ship != null &&
+            else if (planet != null || ( isDialog ? ValidDialogTile(tile, spaceObject) : ship != null &&
                     ship.Player.IsTurn && ship.CurSpeed > 0 ))
                 size = 2f;
             else
                 size = 1f;
-            if (dialogTile != null && point == new Point(dialogTile.X, dialogTile.Y))
+            if (dialogTile != null && tile == dialogTile)
                 ++size;
 
             if (scale <= GridScale || size != 1f)
@@ -563,8 +552,8 @@ namespace GalWarWin
             {
                 int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
                 foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile.Point);
-                foreach (Tuple<Point, Point> teleporter in Game.GetTeleporters())
+                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile);
+                foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
                 {
                     FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item1);
                     FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item2);
@@ -606,12 +595,12 @@ namespace GalWarWin
                 }
             }
         }
-        private static void FindBounds(ref int minX, ref int minY, ref int maxX, ref int maxY, Point point)
+        private static void FindBounds(ref int minX, ref int minY, ref int maxX, ref int maxY, Tile tile)
         {
-            minX = Math.Min(minX, point.X);
-            minY = Math.Min(minY, point.Y);
-            maxX = Math.Max(maxX, point.X);
-            maxY = Math.Max(maxY, point.Y);
+            minX = Math.Min(minX, tile.X);
+            minY = Math.Min(minY, tile.Y);
+            maxX = Math.Max(maxX, tile.X);
+            maxY = Math.Max(maxY, tile.Y);
         }
         private float GetScale(int minX, int minY, int maxX, int maxY)
         {
@@ -939,7 +928,7 @@ namespace GalWarWin
 
         private void MainForm_MouseDown(object sender, MouseEventArgs e)
         {
-            panning = GetGamePoint(e.Location);
+            panning = GetTile(e.Location);
         }
         private void MainForm_MouseUp(object sender, MouseEventArgs e)
         {
@@ -952,14 +941,14 @@ namespace GalWarWin
 
         private void MainForm_MouseMove(object sender, MouseEventArgs e)
         {
-            Point gamePoint = GetGamePoint(e.Location);
-            if (panning != null && sender != pnlHUD && gamePoint != panning)
+            Tile tile = GetTile(e.Location);
+            if (panning != null && sender != pnlHUD && tile != panning)
             {
-                //Ship ship = GetSelectedShip();
-                //if (panning == selected && ship != null && ship.Player.IsTurn)
-                //    VectorShip(ship, gamePoint);
-                //else
-                DragPan(e.Location);
+                Ship ship = GetSelectedShip();
+                if (panning == selected && ship != null && ship.Player.IsTurn)
+                    VectorShip(ship, tile);
+                else
+                    DragPan(e.Location);
             }
 
             if (sender == pnlHUD)
@@ -969,8 +958,8 @@ namespace GalWarWin
 
             if (started)
             {
-                Point raw = GetGamePoint(mouse);
-                lblLoc.Text = Tile.GetDistance(Game.GetTile(Game.Center), Game.GetTile(raw)) + "  :  "
+                Tile raw = GetTile(mouse);
+                lblLoc.Text = Tile.GetDistance(Game.Center, raw) + "  :  "
                         + new Point(raw.X - Game.Center.X, raw.Y - Game.Center.Y);
             }
         }
@@ -986,21 +975,19 @@ namespace GalWarWin
             InvalidateMap();
         }
 
-        //private void VectorShip(Ship ship, Point gamePoint)
-        //{
-        //    Tile vector = Game.GetTile(gamePoint);
-        //    if (vector != ship.Vector)
-        //    {
-        //        ship.Vector = vector;
-
-        //        InvalidateMap();
-        //    }
-        //}
+        private void VectorShip(Ship ship, Tile vector)
+        {
+            if (vector != ship.Vector)
+            {
+                ship.Vector = vector;
+                InvalidateMap();
+            }
+        }
 
         private void MainForm_MouseWheel(object sender, MouseEventArgs e)
         {
             float oldScale = scale;
-            Point gamePoint = GetGamePoint(mouse);
+            Tile tile = GetTile(mouse);
 
             if (e.Delta < 0)
                 scale /= RandScale(-e.Delta);
@@ -1009,8 +996,8 @@ namespace GalWarWin
 
             VerifyScale();
 
-            panY -= ( scale - oldScale ) * gamePoint.Y;
-            panX -= ( scale - oldScale ) * ( gamePoint.X + ( gamePoint.Y % 2 != 0 ? 1 : 0 ) );
+            panY -= ( scale - oldScale ) * tile.Y;
+            panX -= ( scale - oldScale ) * ( tile.X + ( tile.Y % 2 != 0 ? 1 : 0 ) );
 
             VerifyPan();
             InvalidateMap();
@@ -1020,11 +1007,13 @@ namespace GalWarWin
             return 1 + Game.Random.GaussianCapped(delta / 910f, 0.13f);
         }
 
-        private Point GetGamePoint(PointForm point)
+        private Tile GetTile(PointForm point)
         {
+            if (Game == null)
+                return null;
             int y = (int)Math.Floor(( point.Y - panY ) / scale);
             int x = (int)Math.Floor(( ( point.X - panX ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
-            return new Point(x, y);
+            return Game.GetTile(x, y);
         }
 
         private void btnProduction_Click(object sender, EventArgs e)
@@ -1049,7 +1038,7 @@ namespace GalWarWin
             Colony colony = GetSelectedColony();
             if (colony.RepairShip == null)
             {
-                SelectTileDialog(selected.Value, false);
+                SelectTileDialog(selected, false);
                 if (selected != null)
                     colony.RepairShip = ( GetSelectedTile().SpaceObject as Ship );
             }
@@ -1062,9 +1051,8 @@ namespace GalWarWin
             RefreshAll();
         }
 
-        private void SelectTileDialog(Point point, bool build)
+        private void SelectTileDialog(Tile tile, bool build)
         {
-            Tile tile = Game.GetTile(point);
             if (build)
                 dialog.pnlBuild.SetColony(( (Planet)tile.SpaceObject ).Colony);
             dialog.pnlBuild.Visible = build;
@@ -1072,7 +1060,7 @@ namespace GalWarWin
 
             dialog.isBuild = build;
             dialog.dialogTile = tile;
-            selected = point;
+            selected = tile;
 
             dialog.RefreshAll();
 
@@ -1120,6 +1108,7 @@ namespace GalWarWin
         private void btnDisband_Click(object sender, EventArgs e)
         {
             showMoves = false;
+            RefreshAll();
 
             Ship ship = GetSelectedShip();
 
@@ -1160,11 +1149,11 @@ namespace GalWarWin
 
             SelectTile(Game.Undo(this));
 
-            Ship selectedShip = GetSelectedShip();
-            UnHold(selectedShip);
+            PopCarrier selected = GetSelectedPopCarrier();
+            UnHold(selected);
             movedTroops.RemoveWhere(delegate(Tuple<PopCarrier, PopCarrier> moved)
             {
-                return ( selectedShip == moved.Item1 || selectedShip == moved.Item2 );
+                return ( selected == moved.Item1 || selected == moved.Item2 );
             });
 
             saved = false;
@@ -1174,6 +1163,7 @@ namespace GalWarWin
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
             showMoves = false;
+            RefreshAll();
 
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
@@ -1449,7 +1439,7 @@ namespace GalWarWin
             {
                 int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
                 foreach (Anomaly anomaly in anomalies)
-                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, anomaly.Tile.Point);
+                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, anomaly.Tile);
                 minX -= 2;
                 minY -= 2;
                 maxX += 2;
@@ -1457,7 +1447,7 @@ namespace GalWarWin
 
                 scale = GetScale(minX, minY, maxX, maxY);
                 VerifyScale();
-                selected = new Point(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
+                selected = Game.GetTile(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
                 Center();
                 double t1 = panX, t2 = panY;
                 SelectTile(anomalies[Game.Random.Next(anomalies.Count)].Tile);
@@ -1503,30 +1493,17 @@ namespace GalWarWin
             ClickMouse(e, false);
         }
 
-        //int testDist;
-        //IEnumerable<Tile> testDistance;
-
         private void ClickMouse(MouseEventArgs e, bool doubleClick)
         {
             if (started)
             {
-                Point gamePoint = GetGamePoint(e.Location);
-
-                Tile clickedTile = Game.GetTile(gamePoint);
+                Tile clickedTile = GetTile(e.Location);
                 if (e.Button == MouseButtons.Left)
                 {
-
-                    //if (selected == gamePoint)
-                    //    ++testDist;
-                    //else
-                    //    testDist = 0;
-
-                    selected = gamePoint;
+                    selected = clickedTile;
                     UnHold(GetSelectedSpaceObject());
 
-                    //testDistance = Game.TestDistance(selected.Value, testDist);
-
-                    if (isDialog && ValidDialogTile(selected.Value, clickedTile.SpaceObject))
+                    if (isDialog && ValidDialogTile(selected, clickedTile.SpaceObject))
                     {
                         DialogResult = DialogResult.OK;
                         Close();
@@ -1537,6 +1514,7 @@ namespace GalWarWin
                 {
 
                     showMoves = false;
+                    RefreshAll();
 
                     if (doubleClick && firstClick != null && hold.Contains(firstClick))
                     {
@@ -1588,6 +1566,16 @@ namespace GalWarWin
                             }
                         }
 
+                        if (ship != null && ship.Player.IsTurn && ship.Vector != null)
+                        {
+                            if (ship.Vector == clickedTile)
+                                ship.VectorZOC = !ship.VectorZOC;
+                            else if (ship.Tile == clickedTile)
+                                ship.Move(this, Tile.PathFind(ship)[1]);
+
+                            selectNext = false;
+                        }
+
                         if (selectNext && ( selectedTile == null || ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ))
                             SelectNext();
 
@@ -1608,12 +1596,12 @@ namespace GalWarWin
             }
         }
 
-        private bool ValidDialogTile(Point point, SpaceObject spaceObject)
+        private bool ValidDialogTile(Tile tile, SpaceObject spaceObject)
         {
             if (dialogTile != null)
                 foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
                 {
-                    if (neighbor.Point == point)
+                    if (neighbor == tile)
                     {
                         if (isBuild)
                         {
@@ -1686,6 +1674,7 @@ namespace GalWarWin
         {
             if (ship.CurSpeed > 0 && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
             {
+                ship.Vector = null;
                 ship.Move(this, targetTile);
                 SelectTile(targetTile);
             }
@@ -1936,12 +1925,11 @@ namespace GalWarWin
                 Tile teleporter = selected.Teleporter;
                 if (teleporter != null)
                 {
-                    Point point = teleporter.Point;
-                    Point center = GetGamePoint(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
-                    if (Math.Abs(point.X - center.X) + Math.Abs(point.Y - center.Y) < 3 || !SelectedVisible())
-                        point = selected.Point;
+                    Tile center = GetTile(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
+                    if (Math.Abs(teleporter.X - center.X) + Math.Abs(teleporter.Y - center.Y) < 3 || !SelectedVisible())
+                        teleporter = selected;
 
-                    Center(point);
+                    Center(teleporter);
                     InvalidateMap();
                 }
             }
@@ -1984,7 +1972,12 @@ namespace GalWarWin
         {
             if (selected == null)
                 return null;
-            return Game.GetSpaceObject(selected.Value);
+            return selected.SpaceObject;
+        }
+
+        private PopCarrier GetSelectedPopCarrier()
+        {
+            return ( GetSelectedSpaceObject() as PopCarrier );
         }
 
         private Ship GetSelectedShip()
@@ -2153,9 +2146,8 @@ namespace GalWarWin
                 else if (anomaly != null)
                     AnomalyInfo(anomaly);
 
-                int telNum;
-                Game.GetTeleporter(selected.Value, out telNum);
-                if (telNum > -1)
+                int telNum = selected.TeleporterNumber;
+                if (telNum > 0)
                     lblTop.Text = "Wormhole " + telNum + ( lblTop.Text.Length > 0 ? " - " + lblTop.Text : "" );
 
                 if (player != null)
@@ -2364,6 +2356,9 @@ namespace GalWarWin
                     lbl6.Text = "Repair";
                     lbl6Inf.Text = "+" + colony.Repair;
                 }
+
+                lbl7.Text = "Production";
+                lbl7Inf.Text = FormatDouble(colony.ProdGuess);
             }
 
             lbl4.BorderStyle = BorderStyle.FixedSingle;
@@ -2535,17 +2530,15 @@ namespace GalWarWin
         Tile IEventHandler.getBuildTile(Colony colony)
         {
             showMoves = false;
-
             RefreshAll();
 
-            SelectTileDialog(colony.Tile.Point, true);
+            SelectTileDialog(colony.Tile, true);
             return GetSelectedTile();
         }
 
         Buildable IEventHandler.getNewBuild(Colony colony)
         {
             showMoves = false;
-
             RefreshAll();
 
             return ChangeBuild(colony);
@@ -2565,6 +2558,7 @@ namespace GalWarWin
         bool IEventHandler.Continue()
         {
             showMoves = false;
+            RefreshAll();
 
             return ShowOption("Planet population has been killed off.  Continue attacking?");
         }

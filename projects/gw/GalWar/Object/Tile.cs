@@ -4,6 +4,7 @@ using MattUtil;
 
 namespace GalWar
 {
+    //NOT Serializable
     public class Tile
     {
         #region static
@@ -42,14 +43,14 @@ namespace GalWar
         {
             return ( GetRawDistance(tile.X, tile.Y, x2, y2) == 1 );
         }
-        private static int GetDistance(int x1, int y1, int x2, int y2, ICollection<Tuple<Point, Point>> teleporters)
+        private static int GetDistance(int x1, int y1, int x2, int y2, ICollection<Tuple<Tile, Tile>> teleporters)
         {
             int dist = GetRawDistance(x1, y1, x2, y2);
             if (dist > 1 && teleporters != null && teleporters.Count > 0)
             {
-                ICollection<Tuple<Point, Point>> subset = null;
+                ICollection<Tuple<Tile, Tile>> subset = null;
                 if (teleporters.Count > 1)
-                    subset = new HashSet<Tuple<Point, Point>>(teleporters);
+                    subset = new HashSet<Tuple<Tile, Tile>>(teleporters);
                 foreach (var teleporter in teleporters)
                 {
                     if (subset != null)
@@ -60,7 +61,7 @@ namespace GalWar
             }
             return dist;
         }
-        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Point, Point> teleporter, ICollection<Tuple<Point, Point>> teleporters)
+        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Tile, Tile> teleporter, ICollection<Tuple<Tile, Tile>> teleporters)
         {
             return 1 + GetDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y, teleporters)
                     + GetDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y, teleporters);
@@ -77,6 +78,50 @@ namespace GalWar
             return yDist + xDist;
         }
 
+        public static List<Tile> PathFind(Ship ship)
+        {
+            AssertException.Assert(ship.Vector != null);
+
+            return PathFind(ship.Tile, ship.Vector, ship, ship.VectorZOC);
+        }
+        public static List<Tile> PathFind(Tile from, Tile to)
+        {
+            return PathFind(from, to, null, false);
+        }
+        public static List<Tile> PathFind(Tile from, Tile to, Ship ship, bool checkZOC)
+        {
+            if (ship == null)
+                checkZOC = false;
+            MTRandom rand = ( ship == null ? Game.Random : new MTRandom(new uint[] { (uint)ship.GetHashCode() }) );
+
+            List<Tile> retVal = new List<Tile>();
+            retVal.Add(from);
+
+            while (from != to)
+            {
+                Tile next = null;
+                int dist = Tile.GetDistance(from, to);
+                foreach (Tile neighbor in rand.Iterate(GetNeighbors(from)))
+                    if (!checkZOC || ( neighbor.SpaceObject == null && Ship.CheckZOC(ship.Player, from, neighbor) ))
+                    {
+                        int nDist = Tile.GetDistance(neighbor, to);
+                        if (nDist < dist)
+                        {
+                            next = neighbor;
+                            dist = nDist;
+                        }
+                    }
+
+                if (next == null || next == from)
+                    return PathFind(ship.Tile, ship.Vector, null, false);
+
+                retVal.Add(next);
+                from = next;
+            }
+
+            return retVal;
+        }
+
         #endregion //static
 
         #region fields and constructors
@@ -85,14 +130,14 @@ namespace GalWar
 
         private readonly short _x, _y;
 
-        internal Tile(Game game, Point point)
+        internal Tile(Game game, int x, int y)
         {
             checked
             {
                 this.Game = game;
 
-                this._x = (short)point.X;
-                this._y = (short)point.Y;
+                this._x = (short)x;
+                this._y = (short)y;
             }
         }
 
@@ -133,14 +178,6 @@ namespace GalWar
 
         #region public
 
-        public Point Point
-        {
-            get
-            {
-                return new Point(this.X, this.Y);
-            }
-        }
-
         public Tile Teleporter
         {
             get
@@ -149,17 +186,29 @@ namespace GalWar
                 return GetTeleporter(out index);
             }
         }
-        public Tile GetTeleporter(out int number)
+        public int TeleporterNumber
         {
-            Tuple<Point, Point> teleporter = Game.GetTeleporter(this.Point, out number);
-            if (teleporter == null)
-                return null;
-            if (teleporter.Item1 == this.Point)
-                return Game.GetTile(teleporter.Item2);
-            else if (teleporter.Item2 == this.Point)
-                return Game.GetTile(teleporter.Item1);
-            else
-                throw new Exception();
+            get
+            {
+                int index;
+                GetTeleporter(out index);
+                return index;
+            }
+        }
+        private Tile GetTeleporter(out int number)
+        {
+            number = 0;
+            foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
+            {
+                ++number;
+                if (teleporter.Item1 == this)
+                    return teleporter.Item2;
+                else if (teleporter.Item2 == this)
+                    return teleporter.Item1;
+            }
+
+            number = -1;
+            return null;
         }
 
         public override string ToString()
