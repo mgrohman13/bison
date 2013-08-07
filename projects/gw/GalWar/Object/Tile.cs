@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MattUtil;
+using System.Drawing;
 
 namespace GalWar
 {
@@ -82,44 +83,202 @@ namespace GalWar
         {
             AssertException.Assert(ship.Vector != null);
 
-            return PathFind(ship.Tile, ship.Vector, ship, ship.VectorZOC);
+            //MTRandom rand = ( ship == null ? null : new MTRandom(new uint[] { (uint)ship.GetHashCode(), (uint)ship.Vector.GetHashCode() }) );
+
+            return PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);//, rand);
         }
         public static List<Tile> PathFind(Tile from, Tile to)
         {
-            return PathFind(from, to, null, false);
+            return PathFind(from, to, null);
         }
-        public static List<Tile> PathFind(Tile from, Tile to, Ship ship, bool checkZOC)
+        public static List<Tile> PathFind(Tile from, Tile to, Player player)
         {
-            if (ship == null)
-                checkZOC = false;
-            //MTRandom rand = ( ship == null ? Game.Random : new MTRandom(new uint[] { (uint)ship.GetHashCode(), (uint)from.GetHashCode(), (uint)to.GetHashCode() }) );
-
-            List<Tile> retVal = new List<Tile>();
-            retVal.Add(from);
-
-            while (from != to)
+            //    return PathFind(from, to, player, null);
+            //}
+            //private static List<Tile> PathFind(Tile from, Tile to, Player player, MTRandom rand)
+            //{
+            if (player != null)
             {
-                Tile next = null;
-                int dist = Tile.GetDistance(from, to);
-                foreach (Tile neighbor in Game.Random.Iterate(GetNeighbors(from)))
-                    if (!checkZOC || ( neighbor.SpaceObject == null && Ship.CheckZOC(ship.Player, from, neighbor) ))
-                    {
-                        int nDist = Tile.GetDistance(neighbor, to);
-                        if (nDist < dist)
-                        {
-                            next = neighbor;
-                            dist = nDist;
-                        }
-                    }
-
-                if (next == null || next == from)
-                    return PathFind(ship.Tile, ship.Vector, null, false);
-
-                retVal.Add(next);
-                from = next;
+                //if (rand == null)
+                //    rand = Game.Random;
+                List<Tile> path = PathFindZOC(from, to, player);//, rand);
+                if (path != null)
+                    return path;
             }
 
+            return PathFindNoZOC(from, to);
+        }
+
+        private static List<Tile> PathFindNoZOC(Tile from, Tile to)
+        {
+            List<Tile> retVal = new List<Tile>();
+            retVal.Add(to);
+
+            while (to != from)
+            {
+                Tile next = null;
+                int minDist = int.MaxValue;
+                foreach (Tile neighbor in Game.Random.Iterate(GetNeighbors(to)))
+                {
+                    int dist = Tile.GetDistance(neighbor, from);
+                    if (dist < minDist)
+                    {
+                        next = neighbor;
+                        minDist = dist;
+                    }
+                }
+
+                retVal.Add(next);
+                to = next;
+            }
+
+            retVal.Reverse();
             return retVal;
+        }
+
+        private static List<Tile> PathFindZOC(Tile from, Tile to, Player player)//, MTRandom rand)
+        {
+            var bounds = player.Game.GetGameBounds();
+            bounds.Inflate(2, 2);
+
+            //the set of nodes already evaluated
+            var closed = new HashSet<Tile>();
+
+            //the map of navigated nodes
+            var cameFrom = new Dictionary<Tile, Tile>();
+
+            //cost from start along best known path
+            var gScore = new Dictionary<Tile, int>();
+            gScore[to] = 0;
+
+            //estimated total cost from start to goal through y
+            var fScore = new Dictionary<Tile, int>();
+            fScore[to] = GetDistance(to, from);
+
+            //the set of tentative nodes to be evaluated, initially containing the start node
+            var open = new SortedDictionary<int, TileSet>();
+            Add(open, to, fScore);
+
+            while (open.Count > 0)
+            {
+                var enumerator = open.GetEnumerator();
+                enumerator.MoveNext();
+                Tile current = enumerator.Current.Value.RandomKey();
+
+                if (current == from)
+                {
+                    List<Tile> path = ReconstructPath(cameFrom, from);
+                    path.Reverse();
+                    return path;
+                }
+
+                Remove(open, current, fScore);
+                closed.Add(current);
+                foreach (Tile neighbor in Tile.GetNeighbors(current))
+                    if (bounds.Contains(neighbor.X, neighbor.Y) && Ship.CheckZOC(player, neighbor, current)
+                            && ( to == neighbor || from == neighbor || neighbor.SpaceObject == null ))
+                    {
+                        int tentativeGScore = gScore[current] + 1;
+                        if (closed.Contains(neighbor) && tentativeGScore >= gScore[neighbor])
+                            continue;
+
+                        if (!Contains(open, neighbor, fScore) || tentativeGScore < gScore[neighbor])
+                        {
+                            cameFrom[neighbor] = current;
+                            gScore[neighbor] = tentativeGScore;
+
+                            Remove(open, neighbor, fScore);
+                            fScore[neighbor] = gScore[neighbor] + GetDistance(neighbor, from);
+                            Add(open, neighbor, fScore);
+                        }
+                    }
+            }
+
+            return null;
+        }
+        private static void Add(SortedDictionary<int, TileSet> open, Tile tile, Dictionary<Tile, int> fScore)
+        {
+            int key = fScore[tile];
+            TileSet temp;
+            if (!open.TryGetValue(key, out temp))
+                open[key] = ( temp = new TileSet() );
+            temp.Add(tile);
+        }
+        private static void Remove(SortedDictionary<int, TileSet> open, Tile tile, Dictionary<Tile, int> fScore)
+        {
+            int key;
+            if (fScore.TryGetValue(tile, out key))
+            {
+                TileSet temp;
+                if (open.TryGetValue(key, out temp))
+                {
+                    temp.Remove(tile);
+                    if (temp.Count == 0)
+                        open.Remove(key);
+                }
+            }
+        }
+        private static bool Contains(SortedDictionary<int, TileSet> open, Tile tile, Dictionary<Tile, int> fScore)
+        {
+            int key;
+            if (fScore.TryGetValue(tile, out key))
+            {
+                TileSet temp;
+                if (open.TryGetValue(key, out temp))
+                    return temp.Contains(tile);
+            }
+            return false;
+        }
+        private static List<Tile> ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile current)
+        {
+            List<Tile> path;
+            if (cameFrom.ContainsKey(current))
+                path = ReconstructPath(cameFrom, cameFrom[current]);
+            else
+                path = new List<Tile>();
+            path.Add(current);
+            return path;
+        }
+
+        private class TileSet
+        {
+            private List<Tile> contents = new List<Tile>();
+            private Dictionary<Tile, int> indices = new Dictionary<Tile, int>();
+
+            public int Count
+            {
+                get
+                {
+                    return contents.Count;
+                }
+            }
+
+            public void Add(Tile a)
+            {
+                indices.Add(a, contents.Count);
+                contents.Add(a);
+            }
+            public void Remove(Tile a)
+            {
+                int index = indices[a];
+                Tile move = contents[contents.Count - 1];
+
+                contents[index] = move;
+                contents.RemoveAt(contents.Count - 1);
+
+                indices[move] = index;
+                indices.Remove(a);
+            }
+
+            public bool Contains(Tile tile)
+            {
+                return indices.ContainsKey(tile);
+            }
+
+            public Tile RandomKey()
+            {
+                return contents[Game.Random.Next(contents.Count)];
+            }
         }
 
         #endregion //static

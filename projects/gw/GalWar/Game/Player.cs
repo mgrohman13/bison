@@ -239,10 +239,10 @@ namespace GalWar
         {
             checked
             {
-                UpgradePlanetDefense(Research, Research + amount);
-
                 if (random)
                     amount = Game.Random.GaussianOEInt(amount, Consts.ResearchRndm, Consts.ResearchRndm, 1);
+
+                UpgradePlanetDefense(Research, Research + amount);
 
                 this._research += (uint)amount;
             }

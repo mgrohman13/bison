@@ -54,7 +54,7 @@ namespace GalWarWin
 
         private static Ship anomExp = null;
 
-        private static Tile selected = null, panning = null;
+        private static Tile _selected = null, panning = null;
         private static HashSet<SpaceObject> hold, holdPersistent;
 
         private static HashSet<Tuple<PopCarrier, PopCarrier>> movedTroops;
@@ -141,6 +141,19 @@ namespace GalWarWin
         private static string GetInitialAutoSave(string initialDirectory)
         {
             return initialDirectory + "\\auto";
+        }
+
+        private Tile selected
+        {
+            get
+            {
+                return _selected;
+            }
+            set
+            {
+                _selected = value;
+                Center(false);
+            }
         }
 
         private bool showMoves
@@ -550,18 +563,9 @@ namespace GalWarWin
         {
             if (started)
             {
-                int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
-                foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile);
-                foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
-                {
-                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item1);
-                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item2);
-                }
-                --minX;
-                --minY;
-                ++maxX;
-                ++maxY;
+                Rectangle bounds = Game.GetGameBounds();
+                bounds.Inflate(1, 1);
+                int minX = bounds.Left, minY = bounds.Top, maxX = bounds.Right, maxY = bounds.Bottom;
 
                 float xDiameter, yDiameter, width, height, padding;
                 float minScale = GetScale(minX, minY, maxX, maxY, out xDiameter, out yDiameter, out width, out height, out padding);
@@ -1108,7 +1112,7 @@ namespace GalWarWin
         private void btnDisband_Click(object sender, EventArgs e)
         {
             showMoves = false;
-            RefreshAll();
+            InvalidateMap();
 
             Ship ship = GetSelectedShip();
 
@@ -1163,7 +1167,7 @@ namespace GalWarWin
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
             showMoves = false;
-            RefreshAll();
+            InvalidateMap();
 
             if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
             {
@@ -1514,7 +1518,7 @@ namespace GalWarWin
                 {
 
                     showMoves = false;
-                    RefreshAll();
+                    InvalidateMap();
 
                     if (doubleClick && firstClick != null && hold.Contains(firstClick))
                     {
@@ -1567,26 +1571,31 @@ namespace GalWarWin
                         }
 
                         if (ship != null && ship.Player.IsTurn && ship.Vector != null)
-                            //{
-                            //if (ship.Vector == clickedTile)
-                            //{
-                            //    ship.VectorZOC = !ship.VectorZOC;
-                            //}
-                            //else if (ship.Tile == clickedTile)
-                            //{
-                            //    while (ship.CurSpeed > 0)
-                            //    {
-                            if (ship.Tile == ship.Vector)
-                            //{
-                            ship.Vector = null;
-                        //                break;
-                        //            }
-                        //            ship.Move(this, Tile.PathFind(ship)[1]);
-                        //        }
-                        //    }
-
-                        //    selectNext = false;
-                        //}
+                        {
+                            if (ship.Vector == clickedTile)
+                            {
+                                ship.VectorZOC = !ship.VectorZOC;
+                                selectNext = false;
+                            }
+                            else if (ship.Tile == clickedTile)
+                            {
+                                while (ship.CurSpeed > 0)
+                                {
+                                    if (ship.Tile == ship.Vector)
+                                    {
+                                        ship.Vector = null;
+                                        break;
+                                    }
+                                    ship.VectorZOC = true;
+                                    List<Tile> path = Tile.PathFind(ship);
+                                    if (path.Count > 1)
+                                    {
+                                        TargetTile(path[1], ship);
+                                        selectNext = false;
+                                    }
+                                }
+                            }
+                        }
 
                         if (selectNext && ( selectedTile == null || ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ))
                             SelectNext();
@@ -1649,8 +1658,8 @@ namespace GalWarWin
             {
                 if (ship.Player.IsTurn)
                 {
-                    //try
-                    //{
+                    ship.Vector = null;
+
                     Planet trgPlanet = null;
                     Ship trgShip = null;
                     Anomaly trgAnomaly = null;
@@ -1665,11 +1674,6 @@ namespace GalWarWin
 
                     if (trgShip == null && !selectNext && !( trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0 ))
                         refShip = null;
-                    //}
-                    //catch (AssertException e)
-                    //{
-                    //    Console.WriteLine(e);
-                    //}
                 }
             }
 
@@ -1686,7 +1690,6 @@ namespace GalWarWin
         {
             if (ship.CurSpeed > 0 && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
             {
-                //ship.Vector = null;
                 ship.Move(this, targetTile);
                 SelectTile(targetTile);
             }
@@ -2542,7 +2545,7 @@ namespace GalWarWin
         Tile IEventHandler.getBuildTile(Colony colony)
         {
             showMoves = false;
-            RefreshAll();
+            InvalidateMap();
 
             SelectTileDialog(colony.Tile, true);
             return GetSelectedTile();
@@ -2551,7 +2554,7 @@ namespace GalWarWin
         Buildable IEventHandler.getNewBuild(Colony colony)
         {
             showMoves = false;
-            RefreshAll();
+            InvalidateMap();
 
             return ChangeBuild(colony);
         }
@@ -2591,6 +2594,7 @@ namespace GalWarWin
         bool IEventHandler.Explore(Anomaly.AnomalyType anomalyType, params object[] info)
         {
             showMoves = false;
+            InvalidateMap();
 
             switch (anomalyType)
             {
@@ -2701,7 +2705,6 @@ namespace GalWarWin
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)
         {
             showMoves = false;
-
             RefreshAll();
 
             ResearchForm.ShowForm(newDesign, obsolete);

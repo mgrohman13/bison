@@ -58,6 +58,8 @@ namespace GalWarWin
             this.isConfirmation = isConfirmation;
             this.showConfirmation = true;
 
+            this.btnLog.Visible = !isConfirmation;
+
             this.nudAttack.Visible = false;
             this.nudAttHP.Visible = false;
             this.nudDefense.Visible = false;

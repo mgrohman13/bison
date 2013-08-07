@@ -1243,10 +1243,11 @@ namespace GalWar
                 double diff = ( ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, oldResearch) -
                         ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, newResearch) );
                 diff *= this.HP * Consts.PlanetDefensesUpgradePct;
+                double total = Game.Random.GaussianOE(diff, 2.1 / diff, 13 / ( 13 + diff ));
 
                 double att = ShipDesign.GetStatValue(this.Att), def = ShipDesign.GetStatValue(this.Def);
-                att = diff * att / ( att + def );
-                def = diff - att;
+                att = total * att / ( att + def );
+                def = total - att;
 
                 bool rand = Game.Random.Bool();
                 BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
@@ -1405,7 +1406,7 @@ namespace GalWar
         {
             this.Att = GetPDStat(newAtt, this.Att, this.Player.PDAtt);
             this.Def = GetPDStat(newDef, this.Def, this.Player.PDDef);
-            this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, byte.MaxValue);
+            this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, ushort.MaxValue);
 
             if (Math.Abs(GetPDCost(Att, Def) - GetPDCost(Def, Att)) > Consts.FLOAT_ERROR)
                 throw new Exception();

@@ -1,6 +1,3 @@
-auto scroll to right on move ship
-bombard against PD, click combat log on confirm screen, click cancel and get error
-
 UI
 	rapid click to bombard
 	rally ships
@@ -28,6 +25,8 @@ research victory pct decreases with higher research
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 
+standardive Tile.Game vs Player.Game calls
+remove static qualifiers to same class
 move Tile to Game folder
 standardize dead checks
 test exact vs oversize dictionary capacity for combat performance

@@ -5,8 +5,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
-using MattUtil;
 using System.Runtime.Serialization;
+using MattUtil;
+using Rectangle = System.Drawing.Rectangle;
 
 namespace GalWar
 {
@@ -993,6 +994,26 @@ next_planet:
         private static double GetShipWeight(Ship ship)
         {
             return ship.GetStrength() * Math.Sqrt(ship.HP / (double)ship.MaxHP);
+        }
+
+        public Rectangle GetGameBounds()
+        {
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+            foreach (SpaceObject spaceObject in GetSpaceObjects())
+                FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile);
+            foreach (Tuple<Tile, Tile> teleporter in GetTeleporters())
+            {
+                FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item1);
+                FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item2);
+            }
+            return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+        }
+        private static void FindBounds(ref int minX, ref int minY, ref int maxX, ref int maxY, Tile tile)
+        {
+            minX = Math.Min(minX, tile.X);
+            minY = Math.Min(minY, tile.Y);
+            maxX = Math.Max(maxX, tile.X);
+            maxY = Math.Max(maxY, tile.Y);
         }
 
         internal Tile GetRandomTile()

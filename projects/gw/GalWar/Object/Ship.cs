@@ -131,7 +131,7 @@ namespace GalWar
                     if (newVal != this._vector)
                     {
                         this._vector = newVal;
-                        VectorZOC = true;
+                        VectorZOC = false;
                     }
                 }
             }
@@ -140,11 +140,9 @@ namespace GalWar
         {
             get
             {
-                return false;
+                TurnException.CheckTurn(this.Player);
 
-                //TurnException.CheckTurn(this.Player);
-
-                //return this._vectorZOC;
+                return this._vectorZOC;
             }
             set
             {
