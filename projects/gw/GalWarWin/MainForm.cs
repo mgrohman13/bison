@@ -1567,14 +1567,26 @@ namespace GalWarWin
                         }
 
                         if (ship != null && ship.Player.IsTurn && ship.Vector != null)
-                        {
-                            if (ship.Vector == clickedTile)
-                                ship.VectorZOC = !ship.VectorZOC;
-                            else if (ship.Tile == clickedTile)
-                                ship.Move(this, Tile.PathFind(ship)[1]);
+                            //{
+                            //if (ship.Vector == clickedTile)
+                            //{
+                            //    ship.VectorZOC = !ship.VectorZOC;
+                            //}
+                            //else if (ship.Tile == clickedTile)
+                            //{
+                            //    while (ship.CurSpeed > 0)
+                            //    {
+                            if (ship.Tile == ship.Vector)
+                            //{
+                            ship.Vector = null;
+                        //                break;
+                        //            }
+                        //            ship.Move(this, Tile.PathFind(ship)[1]);
+                        //        }
+                        //    }
 
-                            selectNext = false;
-                        }
+                        //    selectNext = false;
+                        //}
 
                         if (selectNext && ( selectedTile == null || ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ))
                             SelectNext();
@@ -1674,7 +1686,7 @@ namespace GalWarWin
         {
             if (ship.CurSpeed > 0 && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
             {
-                ship.Vector = null;
+                //ship.Vector = null;
                 ship.Move(this, targetTile);
                 SelectTile(targetTile);
             }

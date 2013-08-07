@@ -1249,15 +1249,8 @@ namespace GalWar
                 def = diff - att;
 
                 bool rand = Game.Random.Bool();
-
-                int h = HP, a = Att, d = Def;
-
                 BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
                 BuildPlanetDefense(rand ? def : att, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
-
-                if (h != HP || a != Att || d != Def)
-                {
-                }
             }
         }
 

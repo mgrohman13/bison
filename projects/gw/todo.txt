@@ -1,3 +1,6 @@
+auto scroll to right on move ship
+bombard against PD, click combat log on confirm screen, click cancel and get error
+
 UI
 	rapid click to bombard
 	rally ships

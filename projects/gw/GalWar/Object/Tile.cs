@@ -92,7 +92,7 @@ namespace GalWar
         {
             if (ship == null)
                 checkZOC = false;
-            MTRandom rand = ( ship == null ? Game.Random : new MTRandom(new uint[] { (uint)ship.GetHashCode() }) );
+            //MTRandom rand = ( ship == null ? Game.Random : new MTRandom(new uint[] { (uint)ship.GetHashCode(), (uint)from.GetHashCode(), (uint)to.GetHashCode() }) );
 
             List<Tile> retVal = new List<Tile>();
             retVal.Add(from);
@@ -101,7 +101,7 @@ namespace GalWar
             {
                 Tile next = null;
                 int dist = Tile.GetDistance(from, to);
-                foreach (Tile neighbor in rand.Iterate(GetNeighbors(from)))
+                foreach (Tile neighbor in Game.Random.Iterate(GetNeighbors(from)))
                     if (!checkZOC || ( neighbor.SpaceObject == null && Ship.CheckZOC(ship.Player, from, neighbor) ))
                     {
                         int nDist = Tile.GetDistance(neighbor, to);

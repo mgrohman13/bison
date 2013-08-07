@@ -140,9 +140,11 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(this.Player);
+                return false;
 
-                return this._vectorZOC;
+                //TurnException.CheckTurn(this.Player);
+
+                //return this._vectorZOC;
             }
             set
             {
