@@ -1574,7 +1574,8 @@ namespace GalWarWin
                         {
                             if (ship.Vector == clickedTile)
                             {
-                                ship.VectorZOC = !ship.VectorZOC;
+                                if (ship.Tile != panning)
+                                    ship.VectorZOC = !ship.VectorZOC;
                                 selectNext = false;
                             }
                             else if (ship.Tile == clickedTile)
@@ -1588,11 +1589,10 @@ namespace GalWarWin
                                     }
                                     ship.VectorZOC = true;
                                     List<Tile> path = Tile.PathFind(ship);
-                                    if (path.Count > 1)
-                                    {
-                                        TargetTile(path[1], ship);
+                                    if (path.Count > 1 && TargetTile(path[1], ship))
                                         selectNext = false;
-                                    }
+                                    else
+                                        break;
                                 }
                             }
                         }
@@ -1686,13 +1686,15 @@ namespace GalWarWin
             return false;
         }
 
-        private void TargetTile(Tile targetTile, Ship ship)
+        private bool TargetTile(Tile targetTile, Ship ship)
         {
             if (ship.CurSpeed > 0 && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
             {
                 ship.Move(this, targetTile);
                 SelectTile(targetTile);
+                return true;
             }
+            return false;
         }
 
         private bool TargetShip(Ship targetShip, Ship ship, bool switchTroops)

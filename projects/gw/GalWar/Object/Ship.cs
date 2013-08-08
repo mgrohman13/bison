@@ -131,7 +131,7 @@ namespace GalWar
                     if (newVal != this._vector)
                     {
                         this._vector = newVal;
-                        VectorZOC = false;
+                        VectorZOC = true;
                     }
                 }
             }

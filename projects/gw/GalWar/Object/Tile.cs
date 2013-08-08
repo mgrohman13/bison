@@ -139,24 +139,21 @@ namespace GalWar
         private static List<Tile> PathFindZOC(Tile from, Tile to, Player player)//, MTRandom rand)
         {
             var bounds = player.Game.GetGameBounds();
-            bounds.Inflate(2, 2);
+            bounds.Inflate(3, 3);
 
             //the set of nodes already evaluated
             var closed = new HashSet<Tile>();
-
+            //the set of tentative nodes to be evaluated
+            var open = new SortedDictionary<int, SetWithRand>();
             //the map of navigated nodes
             var cameFrom = new Dictionary<Tile, Tile>();
-
             //cost from start along best known path
             var gScore = new Dictionary<Tile, int>();
-            gScore[to] = 0;
-
             //estimated total cost from start to goal through y
             var fScore = new Dictionary<Tile, int>();
-            fScore[to] = GetDistance(to, from);
 
-            //the set of tentative nodes to be evaluated, initially containing the start node
-            var open = new SortedDictionary<int, TileSet>();
+            gScore[to] = 0;
+            fScore[to] = GetDistance(to, from);
             Add(open, to, fScore);
 
             while (open.Count > 0)
@@ -174,11 +171,12 @@ namespace GalWar
 
                 Remove(open, current, fScore);
                 closed.Add(current);
-                foreach (Tile neighbor in Tile.GetNeighbors(current))
+
+                int tentativeGScore = gScore[current] + 1;
+                foreach (Tile neighbor in Game.Random.Iterate(Tile.GetNeighbors(current)))
                     if (bounds.Contains(neighbor.X, neighbor.Y) && Ship.CheckZOC(player, neighbor, current)
-                            && ( to == neighbor || from == neighbor || neighbor.SpaceObject == null ))
+                            && ( to == neighbor || from == neighbor || neighbor.SpaceObject == null || ( neighbor.SpaceObject is Ship && neighbor.SpaceObject.Player == player ) ))
                     {
-                        int tentativeGScore = gScore[current] + 1;
                         if (closed.Contains(neighbor) && tentativeGScore >= gScore[neighbor])
                             continue;
 
@@ -188,7 +186,7 @@ namespace GalWar
                             gScore[neighbor] = tentativeGScore;
 
                             Remove(open, neighbor, fScore);
-                            fScore[neighbor] = gScore[neighbor] + GetDistance(neighbor, from);
+                            fScore[neighbor] = tentativeGScore + GetDistance(neighbor, from);
                             Add(open, neighbor, fScore);
                         }
                     }
@@ -196,37 +194,27 @@ namespace GalWar
 
             return null;
         }
-        private static void Add(SortedDictionary<int, TileSet> open, Tile tile, Dictionary<Tile, int> fScore)
+        private static void Add(SortedDictionary<int, SetWithRand> open, Tile tile, Dictionary<Tile, int> fScore)
         {
             int key = fScore[tile];
-            TileSet temp;
+            SetWithRand temp;
             if (!open.TryGetValue(key, out temp))
-                open[key] = ( temp = new TileSet() );
+                open[key] = ( temp = new SetWithRand() );
             temp.Add(tile);
         }
-        private static void Remove(SortedDictionary<int, TileSet> open, Tile tile, Dictionary<Tile, int> fScore)
+        private static void Remove(SortedDictionary<int, SetWithRand> open, Tile tile, Dictionary<Tile, int> fScore)
         {
             int key;
-            if (fScore.TryGetValue(tile, out key))
-            {
-                TileSet temp;
-                if (open.TryGetValue(key, out temp))
-                {
-                    temp.Remove(tile);
-                    if (temp.Count == 0)
-                        open.Remove(key);
-                }
-            }
+            SetWithRand temp;
+            if (fScore.TryGetValue(tile, out key) && open.TryGetValue(key, out temp) && temp.Remove(tile) && temp.Count == 0)
+                open.Remove(key);
         }
-        private static bool Contains(SortedDictionary<int, TileSet> open, Tile tile, Dictionary<Tile, int> fScore)
+        private static bool Contains(SortedDictionary<int, SetWithRand> open, Tile tile, Dictionary<Tile, int> fScore)
         {
             int key;
-            if (fScore.TryGetValue(tile, out key))
-            {
-                TileSet temp;
-                if (open.TryGetValue(key, out temp))
-                    return temp.Contains(tile);
-            }
+            SetWithRand temp;
+            if (fScore.TryGetValue(tile, out key) && open.TryGetValue(key, out temp))
+                return temp.Contains(tile);
             return false;
         }
         private static List<Tile> ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile current)
@@ -240,10 +228,46 @@ namespace GalWar
             return path;
         }
 
-        private class TileSet
+        //an ICollection of Tiles that provides RandomKey, Add, Contains, and Remove operations all in constant time
+        private class SetWithRand : ICollection<Tile>
         {
-            private List<Tile> contents = new List<Tile>();
-            private Dictionary<Tile, int> indices = new Dictionary<Tile, int>();
+            private Dictionary<Tile, int> indices;
+            private List<Tile> contents;
+
+            public SetWithRand()
+            {
+                indices = new Dictionary<Tile, int>();
+                contents = new List<Tile>();
+            }
+
+            public Tile RandomKey()
+            {
+                return contents[Game.Random.Next(contents.Count)];
+            }
+
+            #region ICollection<Tile> Members
+
+            public void Add(Tile item)
+            {
+                indices.Add(item, contents.Count);
+                contents.Add(item);
+            }
+
+            public void Clear()
+            {
+                indices.Clear();
+                contents.Clear();
+            }
+
+            public bool Contains(Tile item)
+            {
+                return indices.ContainsKey(item);
+            }
+
+            public void CopyTo(Tile[] array, int arrayIndex)
+            {
+                contents.CopyTo(array, arrayIndex);
+            }
 
             public int Count
             {
@@ -253,32 +277,51 @@ namespace GalWar
                 }
             }
 
-            public void Add(Tile a)
+            public bool IsReadOnly
             {
-                indices.Add(a, contents.Count);
-                contents.Add(a);
-            }
-            public void Remove(Tile a)
-            {
-                int index = indices[a];
-                Tile move = contents[contents.Count - 1];
-
-                contents[index] = move;
-                contents.RemoveAt(contents.Count - 1);
-
-                indices[move] = index;
-                indices.Remove(a);
+                get
+                {
+                    return false;
+                }
             }
 
-            public bool Contains(Tile tile)
+            public bool Remove(Tile item)
             {
-                return indices.ContainsKey(tile);
+                int index;
+                if (indices.TryGetValue(item, out index))
+                {
+                    Tile move = contents[contents.Count - 1];
+
+                    indices[move] = index;
+                    indices.Remove(item);
+
+                    contents[index] = move;
+                    contents.RemoveAt(contents.Count - 1);
+
+                    return true;
+                }
+                return false;
             }
 
-            public Tile RandomKey()
+            #endregion
+
+            #region IEnumerable<Tile> Members
+
+            public IEnumerator<Tile> GetEnumerator()
             {
-                return contents[Game.Random.Next(contents.Count)];
+                return contents.GetEnumerator();
             }
+
+            #endregion
+
+            #region IEnumerable Members
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            #endregion
         }
 
         #endregion //static
