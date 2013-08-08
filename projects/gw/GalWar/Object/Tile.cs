@@ -85,7 +85,7 @@ namespace GalWar
 
             //MTRandom rand = ( ship == null ? null : new MTRandom(new uint[] { (uint)ship.GetHashCode(), (uint)ship.Vector.GetHashCode() }) );
 
-            return PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);//, rand);
+            return PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);
         }
         public static List<Tile> PathFind(Tile from, Tile to)
         {
@@ -93,15 +93,9 @@ namespace GalWar
         }
         public static List<Tile> PathFind(Tile from, Tile to, Player player)
         {
-            //    return PathFind(from, to, player, null);
-            //}
-            //private static List<Tile> PathFind(Tile from, Tile to, Player player, MTRandom rand)
-            //{
             if (player != null)
             {
-                //if (rand == null)
-                //    rand = Game.Random;
-                List<Tile> path = PathFindZOC(from, to, player);//, rand);
+                List<Tile> path = PathFindZOC(from, to, player);
                 if (path != null)
                     return path;
             }
@@ -136,7 +130,7 @@ namespace GalWar
             return retVal;
         }
 
-        private static List<Tile> PathFindZOC(Tile from, Tile to, Player player)//, MTRandom rand)
+        private static List<Tile> PathFindZOC(Tile from, Tile to, Player player)
         {
             var bounds = player.Game.GetGameBounds();
             bounds.Inflate(3, 3);
@@ -180,13 +174,21 @@ namespace GalWar
                         if (closed.Contains(neighbor) && tentativeGScore >= gScore[neighbor])
                             continue;
 
-                        if (!Contains(open, neighbor, fScore) || tentativeGScore < gScore[neighbor])
+                        int neighborKey;
+                        SetWithRand openSet = null;
+                        bool isOpen = ( fScore.TryGetValue(neighbor, out neighborKey) && open.TryGetValue(neighborKey, out openSet) && openSet.Contains(neighbor) );
+
+                        if (!isOpen || tentativeGScore < gScore[neighbor])
                         {
                             cameFrom[neighbor] = current;
                             gScore[neighbor] = tentativeGScore;
 
-                            Remove(open, neighbor, fScore);
-                            fScore[neighbor] = tentativeGScore + GetDistance(neighbor, from);
+                            int newFScore = tentativeGScore + GetDistance(neighbor, from);
+                            fScore[neighbor] = newFScore;
+
+                            if (isOpen && openSet.Remove(neighbor) && openSet.Count == 0)
+                                open.Remove(neighborKey);
+                      
                             Add(open, neighbor, fScore);
                         }
                     }
@@ -209,14 +211,6 @@ namespace GalWar
             if (fScore.TryGetValue(tile, out key) && open.TryGetValue(key, out temp) && temp.Remove(tile) && temp.Count == 0)
                 open.Remove(key);
         }
-        private static bool Contains(SortedDictionary<int, SetWithRand> open, Tile tile, Dictionary<Tile, int> fScore)
-        {
-            int key;
-            SetWithRand temp;
-            if (fScore.TryGetValue(tile, out key) && open.TryGetValue(key, out temp))
-                return temp.Contains(tile);
-            return false;
-        }
         private static List<Tile> ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile current)
         {
             List<Tile> path;
@@ -228,7 +222,7 @@ namespace GalWar
             return path;
         }
 
-        //an ICollection of Tiles that provides RandomKey, Add, Contains, and Remove operations all in constant time
+        //Provides RandomKey, Add, Contains, and Remove operations all in constant time
         private class SetWithRand : ICollection<Tile>
         {
             private Dictionary<Tile, int> indices;
