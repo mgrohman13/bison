@@ -130,86 +130,88 @@ namespace GalWar
             return retVal;
         }
 
+        //A* Pathfinding Algorithm
         private static List<Tile> PathFindZOC(Tile from, Tile to, Player player)
         {
-            var bounds = player.Game.GetGameBounds();
+            Rectangle bounds = player.Game.GetGameBounds(from, to);
             bounds.Inflate(3, 3);
 
-            //the set of nodes already evaluated
-            var closed = new HashSet<Tile>();
-            //the set of tentative nodes to be evaluated
-            var open = new SortedDictionary<int, SetWithRand>();
-            //the map of navigated nodes
-            var cameFrom = new Dictionary<Tile, Tile>();
-            //cost from start along best known path
-            var gScore = new Dictionary<Tile, int>();
-            //estimated total cost from start to goal through y
-            var fScore = new Dictionary<Tile, int>();
+            int dist = GetDistance(to, from);
 
+            var open = new SortedDictionary<int, SetWithRand>();
+            AddOpenTile(open, dist, to);
+            var closed = new HashSet<Tile>();
+
+            var gScore = new Dictionary<Tile, int>();
             gScore[to] = 0;
-            fScore[to] = GetDistance(to, from);
-            Add(open, to, fScore);
+            var fScore = new Dictionary<Tile, int>();
+            fScore[to] = dist;
+
+            var cameFrom = new Dictionary<Tile, Tile>();
 
             while (open.Count > 0)
             {
                 var enumerator = open.GetEnumerator();
                 enumerator.MoveNext();
-                Tile current = enumerator.Current.Value.RandomKey();
+                Tile current = enumerator.Current.Value.Random();
 
                 if (current == from)
                 {
+                    //anything with fScore <= gScore[from] is a potential alternate path
                     List<Tile> path = ReconstructPath(cameFrom, from);
                     path.Reverse();
                     return path;
                 }
 
-                Remove(open, current, fScore);
+                RemoveOpenTile(open, enumerator.Current.Value, enumerator.Current.Key, current);
                 closed.Add(current);
 
                 int tentativeGScore = gScore[current] + 1;
                 foreach (Tile neighbor in Game.Random.Iterate(Tile.GetNeighbors(current)))
-                    if (bounds.Contains(neighbor.X, neighbor.Y) && Ship.CheckZOC(player, neighbor, current)
-                            && ( to == neighbor || from == neighbor || neighbor.SpaceObject == null || ( neighbor.SpaceObject is Ship && neighbor.SpaceObject.Player == player ) ))
+                    if (CanMove(player, current, neighbor, bounds))
                     {
-                        if (closed.Contains(neighbor) && tentativeGScore >= gScore[neighbor])
-                            continue;
-
-                        int neighborKey;
-                        SetWithRand openSet = null;
-                        bool isOpen = ( fScore.TryGetValue(neighbor, out neighborKey) && open.TryGetValue(neighborKey, out openSet) && openSet.Contains(neighbor) );
-
-                        if (!isOpen || tentativeGScore < gScore[neighbor])
+                        int key;
+                        SetWithRand set = null;
+                        if (fScore.TryGetValue(neighbor, out key) && open.TryGetValue(key, out set) && !set.Contains(neighbor))
+                            set = null;
+                        if (( set == null && !closed.Contains(neighbor) ) || tentativeGScore < gScore[neighbor])
                         {
-                            cameFrom[neighbor] = current;
-                            gScore[neighbor] = tentativeGScore;
-
                             int newFScore = tentativeGScore + GetDistance(neighbor, from);
+
+                            if (set != null)
+                                RemoveOpenTile(open, set, key, neighbor);
+                            AddOpenTile(open, newFScore, neighbor);
+
+                            gScore[neighbor] = tentativeGScore;
                             fScore[neighbor] = newFScore;
 
-                            if (isOpen && openSet.Remove(neighbor) && openSet.Count == 0)
-                                open.Remove(neighborKey);
-                      
-                            Add(open, neighbor, fScore);
+                            cameFrom[neighbor] = current;
                         }
                     }
             }
 
             return null;
         }
-        private static void Add(SortedDictionary<int, SetWithRand> open, Tile tile, Dictionary<Tile, int> fScore)
+        private static void AddOpenTile(SortedDictionary<int, SetWithRand> open, int key, Tile tile)
         {
-            int key = fScore[tile];
-            SetWithRand temp;
-            if (!open.TryGetValue(key, out temp))
-                open[key] = ( temp = new SetWithRand() );
-            temp.Add(tile);
+            SetWithRand set;
+            if (!open.TryGetValue(key, out set))
+                open[key] = ( set = new SetWithRand() );
+            set.Add(tile);
         }
-        private static void Remove(SortedDictionary<int, SetWithRand> open, Tile tile, Dictionary<Tile, int> fScore)
+        private static void RemoveOpenTile(SortedDictionary<int, SetWithRand> open, SetWithRand set, int key, Tile tile)
         {
-            int key;
-            SetWithRand temp;
-            if (fScore.TryGetValue(tile, out key) && open.TryGetValue(key, out temp) && temp.Remove(tile) && temp.Count == 0)
+            if (set.Count == 1)
                 open.Remove(key);
+            else
+                set.Remove(tile);
+        }
+        private static bool CanMove(Player player, Tile current, Tile neighbor, Rectangle bounds)
+        {
+            SpaceObject spaceObject;
+            return ( bounds.Contains(neighbor.X, neighbor.Y) &&
+                    ( ( spaceObject = neighbor.SpaceObject ) == null || ( spaceObject is Ship && spaceObject.Player == player ) )
+                    && Ship.CheckZOC(player, neighbor, current) );
         }
         private static List<Tile> ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile current)
         {
@@ -222,7 +224,7 @@ namespace GalWar
             return path;
         }
 
-        //Provides RandomKey, Add, Contains, and Remove operations all in constant time
+        //Provides Random, Add, Contains, and Remove operations all in constant time
         private class SetWithRand : ICollection<Tile>
         {
             private Dictionary<Tile, int> indices;
@@ -234,7 +236,7 @@ namespace GalWar
                 contents = new List<Tile>();
             }
 
-            public Tile RandomKey()
+            public Tile Random()
             {
                 return contents[Game.Random.Next(contents.Count)];
             }

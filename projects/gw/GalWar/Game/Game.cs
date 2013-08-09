@@ -996,9 +996,11 @@ next_planet:
             return ship.GetStrength() * Math.Sqrt(ship.HP / (double)ship.MaxHP);
         }
 
-        public Rectangle GetGameBounds()
+        public Rectangle GetGameBounds(params Tile[] include)
         {
             int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+            foreach (Tile tile in include)
+                FindBounds(ref minX, ref minY, ref maxX, ref maxY, tile);
             foreach (SpaceObject spaceObject in GetSpaceObjects())
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile);
             foreach (Tuple<Tile, Tile> teleporter in GetTeleporters())

@@ -3,6 +3,10 @@ UI
 	rally ships
 		rally to target does not clear - error
 		catch assert exceptions
+		allow viewing all shortest paths?
+		constant path
+		waypoints
+		show distance, turns
 	clear showMoves
 		examples?
 	combat calc show probability table
