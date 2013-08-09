@@ -69,7 +69,7 @@
     <Compile Include="Object\Ship.cs" />
     <Compile Include="Buildable\ShipDesign.cs" />
     <Compile Include="Other\ShipNames.cs" />
-    <Compile Include="Object\Tile.cs" />
+    <Compile Include="Game\Tile.cs" />
     <Compile Include="Exception\TurnException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
