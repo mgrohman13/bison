@@ -1,8 +1,6 @@
 UI
 	rapid click to bombard
 	rally ships
-		rally to target does not clear - error
-		catch assert exceptions
 		allow viewing all shortest paths?
 		constant path
 		waypoints

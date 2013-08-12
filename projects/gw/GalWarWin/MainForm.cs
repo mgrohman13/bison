@@ -1582,17 +1582,17 @@ namespace GalWarWin
                             {
                                 while (ship.CurSpeed > 0)
                                 {
-                                    if (ship.Tile == ship.Vector)
-                                    {
-                                        ship.Vector = null;
-                                        break;
-                                    }
-                                    ship.VectorZOC = true;
                                     List<Tile> path = Tile.PathFind(ship);
                                     if (path.Count > 1 && TargetTile(path[1], ship))
                                         selectNext = false;
                                     else
                                         break;
+
+                                    if (ship.Tile == ship.Vector)
+                                    {
+                                        ship.Vector = null;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -1688,7 +1688,7 @@ namespace GalWarWin
 
         private bool TargetTile(Tile targetTile, Ship ship)
         {
-            if (ship.CurSpeed > 0 && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
+            if (ship.CurSpeed > 0 && targetTile.SpaceObject == null && Ship.CheckZOC(Game.CurrentPlayer, ship.Tile, targetTile))
             {
                 ship.Move(this, targetTile);
                 SelectTile(targetTile);

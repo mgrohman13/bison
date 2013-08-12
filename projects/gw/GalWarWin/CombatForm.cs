@@ -259,10 +259,8 @@ namespace GalWarWin
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
             {
-                Dictionary<ResultPoint, double> temp = oldChances;
                 oldChances = chances;
-                chances = temp;
-                chances.Clear();
+                chances = new Dictionary<ResultPoint, double>(targetCap);
 
                 foreach (KeyValuePair<ResultPoint, double> chancePair in oldChances)
                 {

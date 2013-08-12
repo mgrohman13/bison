@@ -83,123 +83,121 @@ namespace GalWar
         {
             AssertException.Assert(ship.Vector != null);
 
-            //MTRandom rand = ( ship == null ? null : new MTRandom(new uint[] { (uint)ship.GetHashCode(), (uint)ship.Vector.GetHashCode() }) );
-
             return PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);
         }
         public static List<Tile> PathFind(Tile from, Tile to)
         {
             return PathFind(from, to, null);
         }
-        public static List<Tile> PathFind(Tile from, Tile to, Player player)
-        {
-            if (player != null)
-            {
-                List<Tile> path = PathFindZOC(from, to, player);
-                if (path != null)
-                    return path;
-            }
-
-            return PathFindNoZOC(from, to);
-        }
-
-        private static List<Tile> PathFindNoZOC(Tile from, Tile to)
-        {
-            List<Tile> retVal = new List<Tile>();
-            retVal.Add(to);
-
-            while (to != from)
-            {
-                Tile next = null;
-                int minDist = int.MaxValue;
-                foreach (Tile neighbor in Game.Random.Iterate(GetNeighbors(to)))
-                {
-                    int dist = Tile.GetDistance(neighbor, from);
-                    if (dist < minDist)
-                    {
-                        next = neighbor;
-                        minDist = dist;
-                    }
-                }
-
-                retVal.Add(next);
-                to = next;
-            }
-
-            retVal.Reverse();
-            return retVal;
-        }
 
         //A* Pathfinding Algorithm
-        private static List<Tile> PathFindZOC(Tile from, Tile to, Player player)
+        public static List<Tile> PathFind(Tile from, Tile to, Player player)
         {
-            Rectangle bounds = player.Game.GetGameBounds(from, to);
-            bounds.Inflate(3, 3);
+            AssertException.Assert(to != null);
+            AssertException.Assert(from != null);
 
             int dist = GetDistance(to, from);
 
-            var open = new SortedDictionary<int, SetWithRand>();
-            AddOpenTile(open, dist, to);
+            //boundary of all objects currently in play, with enough room to move around the edge
+            Rectangle bounds = from.Game.GetGameBounds(from, to);
+            bounds.Inflate(3, 3);
+
+            //priority queue of tiles to be traversed
+            var queue = new SortedDictionary<int, HashSet<Tile>>();
+            Enqueue(queue, dist, to);
+            //tiles already traversed
             var closed = new HashSet<Tile>();
 
-            var gScore = new Dictionary<Tile, int>();
-            gScore[to] = 0;
-            var fScore = new Dictionary<Tile, int>();
-            fScore[to] = dist;
+            //distance from start along best known path
+            var distTo = new Dictionary<Tile, int>();
+            distTo[to] = 0;
+            //best guess total distance when moving through tile; back-index into open queue
+            var distThrough = new Dictionary<Tile, int>();
+            distThrough[to] = dist;
 
-            var cameFrom = new Dictionary<Tile, Tile>();
+            var solutions = new Dictionary<Tile, List<Tile>>();
 
-            while (open.Count > 0)
+            while (queue.Count > 0)
             {
-                var enumerator = open.GetEnumerator();
-                enumerator.MoveNext();
-                Tile current = enumerator.Current.Value.Random();
+                //select one of the next most promising open tiles
+                var a = queue.GetEnumerator();
+                a.MoveNext();
+                var b = a.Current.Value.GetEnumerator();
+                b.MoveNext();
+                Tile current = b.Current;
 
                 if (current == from)
-                {
-                    //anything with fScore <= gScore[from] is a potential alternate path
-                    List<Tile> path = ReconstructPath(cameFrom, from);
-                    path.Reverse();
-                    return path;
-                }
+                    if (a.Current.Value.Count > 1)
+                    {
+                        //select the target last, so that we can collect all solutions
+                        b.MoveNext();
+                        current = b.Current;
+                    }
+                    else
+                    {
+                        //all solutions found; use secondary algorithm to determine which one to return
+                        return GetBestPath(solutions, from);
+                    }
 
-                RemoveOpenTile(open, enumerator.Current.Value, enumerator.Current.Key, current);
-                closed.Add(current);
+                int newDist = distTo[current] + 1;
 
-                int tentativeGScore = gScore[current] + 1;
-                foreach (Tile neighbor in Game.Random.Iterate(Tile.GetNeighbors(current)))
+                foreach (Tile neighbor in Tile.GetNeighbors(current))
                     if (CanMove(player, current, neighbor, bounds))
                     {
-                        int key;
-                        SetWithRand set = null;
-                        if (fScore.TryGetValue(neighbor, out key) && open.TryGetValue(key, out set) && !set.Contains(neighbor))
-                            set = null;
-                        if (( set == null && !closed.Contains(neighbor) ) || tentativeGScore < gScore[neighbor])
+                        //a non-null inQueue set means the tile is already in the queue
+                        HashSet<Tile> inQueue = null;
+                        int priorGuess;
+                        if (distThrough.TryGetValue(neighbor, out priorGuess) && queue.TryGetValue(priorGuess, out inQueue) && !inQueue.Contains(neighbor))
+                            inQueue = null;
+
+                        //default to MaxValue so that the inner if will evaluate true
+                        int priorDist = int.MaxValue;
+
+                        //check if we have not looked at this tile yet, or if this path is equal to or shorter than the previous path
+                        if (( inQueue == null && !closed.Contains(neighbor) ) || newDist <= ( priorDist = distTo[neighbor] ))
                         {
-                            int newFScore = tentativeGScore + GetDistance(neighbor, from);
+                            List<Tile> solutionList;
+                            if (!solutions.TryGetValue(neighbor, out solutionList))
+                                solutions[neighbor] = ( solutionList = new List<Tile>() );
 
-                            if (set != null)
-                                RemoveOpenTile(open, set, key, neighbor);
-                            AddOpenTile(open, newFScore, neighbor);
+                            //check if this path is superior to the previously found path
+                            if (newDist < priorDist)
+                            {
+                                int newGuess = newDist + GetDistance(neighbor, from);
 
-                            gScore[neighbor] = tentativeGScore;
-                            fScore[neighbor] = newFScore;
+                                //reposition in the open set
+                                if (inQueue != null)
+                                    Dequeue(queue, priorGuess, inQueue, neighbor);
+                                Enqueue(queue, newGuess, neighbor);
 
-                            cameFrom[neighbor] = current;
+                                //update distances
+                                distTo[neighbor] = newDist;
+                                distThrough[neighbor] = newGuess;
+
+                                //other paths are now obsolete
+                                solutionList.Clear();
+                            }
+
+                            //possible path
+                            solutionList.Add(current);
                         }
                     }
+
+                //current tile fully traversed
+                Dequeue(queue, a.Current.Key, a.Current.Value, current);
+                closed.Add(current);
             }
 
             return null;
         }
-        private static void AddOpenTile(SortedDictionary<int, SetWithRand> open, int key, Tile tile)
+        private static void Enqueue(SortedDictionary<int, HashSet<Tile>> open, int key, Tile tile)
         {
-            SetWithRand set;
+            HashSet<Tile> set;
             if (!open.TryGetValue(key, out set))
-                open[key] = ( set = new SetWithRand() );
+                open[key] = ( set = new HashSet<Tile>() );
             set.Add(tile);
         }
-        private static void RemoveOpenTile(SortedDictionary<int, SetWithRand> open, SetWithRand set, int key, Tile tile)
+        private static void Dequeue(SortedDictionary<int, HashSet<Tile>> open, int key, HashSet<Tile> set, Tile tile)
         {
             if (set.Count == 1)
                 open.Remove(key);
@@ -209,115 +207,57 @@ namespace GalWar
         private static bool CanMove(Player player, Tile current, Tile neighbor, Rectangle bounds)
         {
             SpaceObject spaceObject;
-            return ( bounds.Contains(neighbor.X, neighbor.Y) &&
+            return ( player == null || ( bounds.Contains(neighbor.X, neighbor.Y) &&
                     ( ( spaceObject = neighbor.SpaceObject ) == null || ( spaceObject is Ship && spaceObject.Player == player ) )
-                    && Ship.CheckZOC(player, neighbor, current) );
+                    && Ship.CheckZOC(player, neighbor, current) ) );
         }
-        private static List<Tile> ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile current)
+        private static List<Tile> GetBestPath(Dictionary<Tile, List<Tile>> solutions, Tile current)
         {
-            List<Tile> path;
-            if (cameFrom.ContainsKey(current))
-                path = ReconstructPath(cameFrom, cameFrom[current]);
-            else
-                path = new List<Tile>();
-            path.Add(current);
-            return path;
+            var weights = new Dictionary<Tile, double>();
+            WeightPaths(solutions, current, weights);
+
+            List<Tile> retVal = new List<Tile>();
+            retVal.Add(current);
+
+            List<Tile> options;
+            while (solutions.TryGetValue(current, out options))
+            {
+                double best = double.MinValue;
+                foreach (Tile option in Game.Random.Iterate(options))
+                {
+                    double cur = weights[option];
+                    if (best < cur)
+                    {
+                        best = cur;
+                        current = option;
+                    }
+                }
+
+                retVal.Add(current);
+            }
+            return retVal;
         }
-
-        //Provides Random, Add, Contains, and Remove operations all in constant time
-        private class SetWithRand : ICollection<Tile>
+        private static double WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile current, Dictionary<Tile, double> weights)
         {
-            private Dictionary<Tile, int> indices;
-            private List<Tile> contents;
+            double weight = 0;
 
-            public SetWithRand()
+            List<Tile> options;
+            if (solutions.TryGetValue(current, out options))
             {
-                indices = new Dictionary<Tile, int>();
-                contents = new List<Tile>();
-            }
-
-            public Tile Random()
-            {
-                return contents[Game.Random.Next(contents.Count)];
-            }
-
-            #region ICollection<Tile> Members
-
-            public void Add(Tile item)
-            {
-                indices.Add(item, contents.Count);
-                contents.Add(item);
-            }
-
-            public void Clear()
-            {
-                indices.Clear();
-                contents.Clear();
-            }
-
-            public bool Contains(Tile item)
-            {
-                return indices.ContainsKey(item);
-            }
-
-            public void CopyTo(Tile[] array, int arrayIndex)
-            {
-                contents.CopyTo(array, arrayIndex);
-            }
-
-            public int Count
-            {
-                get
+                double sum = 0;
+                foreach (Tile option in options)
                 {
-                    return contents.Count;
+                    double cur;
+                    if (!weights.TryGetValue(option, out cur))
+                        cur = WeightPaths(solutions, option, weights);
+                    sum += cur;
                 }
+
+                weight = options.Count + sum / ( sum + 1 );
             }
 
-            public bool IsReadOnly
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            public bool Remove(Tile item)
-            {
-                int index;
-                if (indices.TryGetValue(item, out index))
-                {
-                    Tile move = contents[contents.Count - 1];
-
-                    indices[move] = index;
-                    indices.Remove(item);
-
-                    contents[index] = move;
-                    contents.RemoveAt(contents.Count - 1);
-
-                    return true;
-                }
-                return false;
-            }
-
-            #endregion
-
-            #region IEnumerable<Tile> Members
-
-            public IEnumerator<Tile> GetEnumerator()
-            {
-                return contents.GetEnumerator();
-            }
-
-            #endregion
-
-            #region IEnumerable Members
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            #endregion
+            weights.Add(current, weight);
+            return weight;
         }
 
         #endregion //static
