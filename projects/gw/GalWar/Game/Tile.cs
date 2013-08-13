@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
-using MattUtil;
+using System.Linq;
+using System.Numerics;
 using System.Drawing;
+using MattUtil;
 
 namespace GalWar
 {
@@ -81,6 +83,7 @@ namespace GalWar
 
         public static List<Tile> PathFind(Ship ship)
         {
+            AssertException.Assert(ship != null);
             AssertException.Assert(ship.Vector != null);
 
             return PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);
@@ -111,7 +114,7 @@ namespace GalWar
             //distance from start along best known path
             var distTo = new Dictionary<Tile, int>();
             distTo[to] = 0;
-            //best guess total distance when moving through tile; back-index into open queue
+            //best guess total distance when moving through tile; back-index into queue
             var distThrough = new Dictionary<Tile, int>();
             distThrough[to] = dist;
 
@@ -119,25 +122,13 @@ namespace GalWar
 
             while (queue.Count > 0)
             {
-                //select one of the next most promising open tiles
-                var a = queue.GetEnumerator();
-                a.MoveNext();
-                var b = a.Current.Value.GetEnumerator();
-                b.MoveNext();
-                Tile current = b.Current;
+                //select the next tile from the queue, skipping the target so that we can collect all solutions
+                var pair = queue.First();
+                Tile current = pair.Value.FirstOrDefault(tile => ( tile != from ));
 
-                if (current == from)
-                    if (a.Current.Value.Count > 1)
-                    {
-                        //select the target last, so that we can collect all solutions
-                        b.MoveNext();
-                        current = b.Current;
-                    }
-                    else
-                    {
-                        //all solutions found; use secondary algorithm to determine which one to return
-                        return GetBestPath(solutions, from);
-                    }
+                //all solutions found; use secondary algorithm to determine which one to return
+                if (current == null)
+                    return GetBestPath(solutions, from);
 
                 int newDist = distTo[current] + 1;
 
@@ -155,17 +146,12 @@ namespace GalWar
 
                         //check if we have not looked at this tile yet, or if this path is equal to or shorter than the previous path
                         if (( inQueue == null && !closed.Contains(neighbor) ) || newDist <= ( priorDist = distTo[neighbor] ))
-                        {
-                            List<Tile> solutionList;
-                            if (!solutions.TryGetValue(neighbor, out solutionList))
-                                solutions[neighbor] = ( solutionList = new List<Tile>() );
-
                             //check if this path is superior to the previously found path
                             if (newDist < priorDist)
                             {
                                 int newGuess = newDist + GetDistance(neighbor, from);
 
-                                //reposition in the open set
+                                //reposition in the queue
                                 if (inQueue != null)
                                     Dequeue(queue, priorGuess, inQueue, neighbor);
                                 Enqueue(queue, newGuess, neighbor);
@@ -175,89 +161,107 @@ namespace GalWar
                                 distThrough[neighbor] = newGuess;
 
                                 //other paths are now obsolete
-                                solutionList.Clear();
+                                solutions[neighbor] = new List<Tile> { current };
                             }
-
-                            //possible path
-                            solutionList.Add(current);
-                        }
+                            else
+                            {
+                                //add as a possible path
+                                Enqueue(solutions, neighbor, current);
+                            }
                     }
 
                 //current tile fully traversed
-                Dequeue(queue, a.Current.Key, a.Current.Value, current);
+                Dequeue(queue, pair.Key, pair.Value, current);
                 closed.Add(current);
             }
 
-            return null;
+            return PathFind(from, to, null);
         }
-        private static void Enqueue(SortedDictionary<int, HashSet<Tile>> open, int key, Tile tile)
+        private static void Enqueue<TKey, TValue>(IDictionary<TKey, TValue> queue, TKey key, Tile tile)
+             where TValue : ICollection<Tile>
         {
-            HashSet<Tile> set;
-            if (!open.TryGetValue(key, out set))
-                open[key] = ( set = new HashSet<Tile>() );
-            set.Add(tile);
+            TValue col;
+            if (!queue.TryGetValue(key, out col))
+                queue[key] = ( col = Activator.CreateInstance<TValue>() );
+            col.Add(tile);
         }
-        private static void Dequeue(SortedDictionary<int, HashSet<Tile>> open, int key, HashSet<Tile> set, Tile tile)
+        private static void Dequeue(SortedDictionary<int, HashSet<Tile>> queue, int key, HashSet<Tile> set, Tile tile)
         {
             if (set.Count == 1)
-                open.Remove(key);
+                queue.Remove(key);
             else
                 set.Remove(tile);
         }
         private static bool CanMove(Player player, Tile current, Tile neighbor, Rectangle bounds)
         {
             SpaceObject spaceObject;
+            //a null player means we don't want to do any collision checking at all
             return ( player == null || ( bounds.Contains(neighbor.X, neighbor.Y) &&
                     ( ( spaceObject = neighbor.SpaceObject ) == null || ( spaceObject is Ship && spaceObject.Player == player ) )
                     && Ship.CheckZOC(player, neighbor, current) ) );
         }
         private static List<Tile> GetBestPath(Dictionary<Tile, List<Tile>> solutions, Tile current)
         {
-            var weights = new Dictionary<Tile, double>();
-            WeightPaths(solutions, current, weights);
+            List<Tile> retVal = new List<Tile> { current };
 
-            List<Tile> retVal = new List<Tile>();
-            retVal.Add(current);
+            //weight paths based on which ones keep the most options available
+            var weights = new Dictionary<Tile, Tuple<BigInteger, int>>();
+            WeightPaths(solutions, current, weights);
 
             List<Tile> options;
             while (solutions.TryGetValue(current, out options))
             {
-                double best = double.MinValue;
-                foreach (Tile option in Game.Random.Iterate(options))
+                if (options.Count > 1)
                 {
-                    double cur = weights[option];
-                    if (best < cur)
-                    {
-                        best = cur;
-                        current = option;
-                    }
+                    //choose the path with the highest weight
+                    BigInteger max = options.Max(option => weights[option].Item1);
+                    options = options.Where(option => ( weights[option].Item1 == max )).ToList();
+                    //choose randomly if equivalent
+                    current = options[Game.Random.Next(options.Count)];
+                }
+                else
+                {
+                    current = options[0];
                 }
 
                 retVal.Add(current);
             }
             return retVal;
         }
-        private static double WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile current, Dictionary<Tile, double> weights)
+        private static Tuple<BigInteger, int> WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile current, Dictionary<Tile, Tuple<BigInteger, int>> weights)
         {
-            double weight = 0;
+            BigInteger weight;
+            int shift;
 
             List<Tile> options;
             if (solutions.TryGetValue(current, out options))
             {
-                double sum = 0;
+                BigInteger sum = shift = 0;
                 foreach (Tile option in options)
                 {
-                    double cur;
+                    Tuple<BigInteger, int> cur;
                     if (!weights.TryGetValue(option, out cur))
                         cur = WeightPaths(solutions, option, weights);
-                    sum += cur;
+                    sum += cur.Item1;
+                    shift = cur.Item2;
                 }
 
-                weight = options.Count + sum / ( sum + 1 );
+                shift += 3;
+                weight = ( new BigInteger(options.Count) << shift ) + sum;
+
+                //the sum should always account for less than a single immediate option
+                if (( BigInteger.One << shift ) <= sum)
+                    throw new Exception();
+            }
+            else
+            {
+                shift = 0;
+                weight = 0;
             }
 
-            weights.Add(current, weight);
-            return weight;
+            var retVal = new Tuple<BigInteger, int>(weight, shift);
+            weights.Add(current, retVal);
+            return retVal;
         }
 
         #endregion //static

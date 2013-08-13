@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
@@ -146,11 +147,8 @@ namespace GalWar
         {
             checked
             {
-                var teleporters = new List<Tuple<Tile, Tile>>();
-                foreach (Tuple<PointS, PointS> teleporter in this._teleporters)
-                    teleporters.Add(new Tuple<Tile, Tile>(GetTile(teleporter.Item1.X, teleporter.Item1.Y),
-                            GetTile(teleporter.Item2.X, teleporter.Item2.Y)));
-                return teleporters;
+                return _teleporters.ConvertAll(teleporter => new Tuple<Tile, Tile>(
+                        GetTile(teleporter.Item1.X, teleporter.Item1.Y), GetTile(teleporter.Item2.X, teleporter.Item2.Y)));
             }
         }
         private void AddTeleporter(Tuple<Tile, Tile> teleporter)
