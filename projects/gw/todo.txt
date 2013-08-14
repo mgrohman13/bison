@@ -1,4 +1,5 @@
 UI
+	right click DS, right click trans: error
 	rapid click to bombard
 	rally ships
 		current turn actual move always uses zoc?

@@ -236,20 +236,27 @@ namespace GalWar
             List<Tile> options;
             if (solutions.TryGetValue(current, out options))
             {
-                BigInteger sum = shift = 0;
+                BigInteger sum = 0;
+                shift = int.MinValue;
                 foreach (Tile option in options)
                 {
                     Tuple<BigInteger, int> cur;
                     if (!weights.TryGetValue(option, out cur))
                         cur = WeightPaths(solutions, option, weights);
                     sum += cur.Item1;
+
+                    //shift should be constant for all child options
+                    if (shift != int.MinValue && shift != cur.Item2)
+                        throw new Exception();
+
                     shift = cur.Item2;
                 }
 
-                shift += 3;
+                shift += 4;
                 weight = ( new BigInteger(options.Count) << shift ) + sum;
 
-                //the sum should always account for less than a single immediate option
+                //the sum of child options should always account for less than a single immediate option
+                //if thrown increase shift increment
                 if (( BigInteger.One << shift ) <= sum)
                     throw new Exception();
             }
