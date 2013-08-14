@@ -1,6 +1,9 @@
 UI
 	rapid click to bombard
 	rally ships
+		current turn actual move always uses zoc?
+		do move holds ship
+		next ship after full move
 		allow viewing all shortest paths?
 		constant path
 		waypoints
