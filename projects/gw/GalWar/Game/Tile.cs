@@ -228,6 +228,73 @@ namespace GalWar
             }
             return retVal;
         }
+//        private static Dictionary<Tile, BigInteger> WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile start)
+//        {
+//            var levels = new List<HashSet<Tile>> { new HashSet<Tile> { start } };
+
+//            while (true)
+//            {
+//                HashSet<Tile> cur = levels[levels.Count - 1];
+//                HashSet<Tile> next = new HashSet<Tile>();
+//                foreach (Tile tile in cur)
+//                {
+//                    List<Tile> step;
+//                    if (solutions.TryGetValue(tile, out step))
+//                        next.UnionWith(step);
+//                    else
+//                        goto Weight;
+//                }
+//            }
+
+//Weight:
+//            BigInteger weight;
+//            BigInteger total;
+
+//            for (int a = levels.Count ; --a >= 0 ; )
+//            {
+//                HashSet<Tile> cur = levels[a];
+
+//            }
+
+
+//            List<Tile> options;
+//            if (solutions.TryGetValue(current, out options))
+//            {
+//                BigInteger sum = 0;
+//                shift = int.MinValue;
+//                foreach (Tile option in options)
+//                {
+//                    Tuple<BigInteger, int> cur;
+//                    if (!weights.TryGetValue(option, out cur))
+//                        cur = WeightPaths(solutions, option, weights);
+//                    sum += cur.Item1;
+
+//                    //shift should be constant for all child options
+//                    if (shift != int.MinValue && shift != cur.Item2)
+//                        throw new Exception();
+
+//                    shift = cur.Item2;
+//                }
+
+//                shift += 4;
+//                weight = ( new BigInteger(options.Count) << shift ) + sum;
+
+//                //the sum of child options should always account for less than a single immediate option
+//                //if thrown increase shift increment
+//                if (( BigInteger.One << shift ) <= sum)
+//                    throw new Exception();
+//            }
+//            else
+//            {
+//                shift = 0;
+//                weight = 0;
+//            }
+
+//            var retVal = new Tuple<BigInteger, int>(weight, shift);
+//            weights.Add(current, retVal);
+//            return retVal;
+//        }
+
         private static Tuple<BigInteger, int> WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile current, Dictionary<Tile, Tuple<BigInteger, int>> weights)
         {
             BigInteger weight;
