@@ -55,9 +55,9 @@ namespace GalWarWin
         private static Ship anomExp = null;
 
         private static Tile _selected = null, panning = null;
-        private static HashSet<SpaceObject> hold, holdPersistent;
+        private static HashSet<SpaceObject> hold = new HashSet<SpaceObject>(), holdPersistent = new HashSet<SpaceObject>();
 
-        private static HashSet<Tuple<PopCarrier, PopCarrier>> movedTroops;
+        private static HashSet<Tuple<PopCarrier, PopCarrier>> movedTroops = new HashSet<Tuple<PopCarrier, PopCarrier>>();
 
         private static float panX, panY, scale;
 
@@ -75,10 +75,6 @@ namespace GalWarWin
                 HideButtons(this);
                 AcceptButton = btnCancel;
             }
-
-            hold = new HashSet<SpaceObject>();
-            holdPersistent = new HashSet<SpaceObject>();
-            movedTroops = new HashSet<Tuple<PopCarrier, PopCarrier>>();
         }
 
         private void HideButtons(Control control)
@@ -806,6 +802,12 @@ namespace GalWarWin
             saveFileDialog1.FileName = Path.GetFileName(filePath);
 
             Game = Game.LoadGame(filePath);
+
+            dialogTile = _selected = panning = null;
+            anomExp = null;
+            hold = new HashSet<SpaceObject>();
+            holdPersistent = new HashSet<SpaceObject>();
+            movedTroops = new HashSet<Tuple<PopCarrier, PopCarrier>>();
 
             StartGame();
 

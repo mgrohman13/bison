@@ -14,7 +14,7 @@ namespace GalWar
 
         public static HashSet<Tile> GetNeighbors(Tile tile)
         {
-            HashSet<Tile> neighbors = new HashSet<Tile>();
+            var neighbors = new HashSet<Tile>();
             //loop through the nine regional tiles in the square grid
             for (int x = -2 ; ++x < 2 ; )
                 for (int y = -2 ; ++y < 2 ; )
@@ -106,17 +106,14 @@ namespace GalWar
             bounds.Inflate(3, 3);
 
             //priority queue of tiles to be traversed
-            var queue = new SortedDictionary<int, HashSet<Tile>>();
-            Enqueue(queue, dist, to);
+            var queue = new SortedDictionary<int, HashSet<Tile>> { { dist, new HashSet<Tile> { to } } };
             //tiles already traversed
             var closed = new HashSet<Tile>();
 
             //distance from start along best known path
-            var distTo = new Dictionary<Tile, int>();
-            distTo[to] = 0;
+            var distTo = new Dictionary<Tile, int> { { to, 0 } };
             //best guess total distance when moving through tile; back-index into queue
-            var distThrough = new Dictionary<Tile, int>();
-            distThrough[to] = dist;
+            var distThrough = new Dictionary<Tile, int> { { to, dist } };
 
             var solutions = new Dictionary<Tile, List<Tile>>();
 
@@ -200,142 +197,69 @@ namespace GalWar
                     ( ( spaceObject = neighbor.SpaceObject ) == null || ( spaceObject is Ship && spaceObject.Player == player ) )
                     && Ship.CheckZOC(player, neighbor, current) ) );
         }
+
         private static List<Tile> GetBestPath(Dictionary<Tile, List<Tile>> solutions, Tile current)
         {
-            List<Tile> retVal = new List<Tile> { current };
+            var retVal = new List<Tile> { current };
 
             //weight paths based on which ones keep the most options available
-            var weights = new Dictionary<Tile, Tuple<BigInteger, int>>();
-            WeightPaths(solutions, current, weights);
+            Dictionary<Tile, BigInteger> weights = WeightPaths(solutions, current);
 
             List<Tile> options;
             while (solutions.TryGetValue(current, out options))
             {
-                if (options.Count > 1)
-                {
-                    //choose the path with the highest weight
-                    BigInteger max = options.Max(option => weights[option].Item1);
-                    options = options.Where(option => ( weights[option].Item1 == max )).ToList();
-                    //choose randomly if equivalent
-                    current = options[Game.Random.Next(options.Count)];
-                }
-                else
-                {
-                    current = options[0];
-                }
+                //choose the path with the highest weight
+                BigInteger max = options.Max(option => weights[option]);
+                options = options.Where(option => ( weights[option] == max )).ToList();
+                //choose randomly if equivalent
+                current = options[Game.Random.Next(options.Count)];
 
                 retVal.Add(current);
             }
             return retVal;
         }
-//        private static Dictionary<Tile, BigInteger> WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile start)
-//        {
-//            var levels = new List<HashSet<Tile>> { new HashSet<Tile> { start } };
-
-//            while (true)
-//            {
-//                HashSet<Tile> cur = levels[levels.Count - 1];
-//                HashSet<Tile> next = new HashSet<Tile>();
-//                foreach (Tile tile in cur)
-//                {
-//                    List<Tile> step;
-//                    if (solutions.TryGetValue(tile, out step))
-//                        next.UnionWith(step);
-//                    else
-//                        goto Weight;
-//                }
-//            }
-
-//Weight:
-//            BigInteger weight;
-//            BigInteger total;
-
-//            for (int a = levels.Count ; --a >= 0 ; )
-//            {
-//                HashSet<Tile> cur = levels[a];
-
-//            }
-
-
-//            List<Tile> options;
-//            if (solutions.TryGetValue(current, out options))
-//            {
-//                BigInteger sum = 0;
-//                shift = int.MinValue;
-//                foreach (Tile option in options)
-//                {
-//                    Tuple<BigInteger, int> cur;
-//                    if (!weights.TryGetValue(option, out cur))
-//                        cur = WeightPaths(solutions, option, weights);
-//                    sum += cur.Item1;
-
-//                    //shift should be constant for all child options
-//                    if (shift != int.MinValue && shift != cur.Item2)
-//                        throw new Exception();
-
-//                    shift = cur.Item2;
-//                }
-
-//                shift += 4;
-//                weight = ( new BigInteger(options.Count) << shift ) + sum;
-
-//                //the sum of child options should always account for less than a single immediate option
-//                //if thrown increase shift increment
-//                if (( BigInteger.One << shift ) <= sum)
-//                    throw new Exception();
-//            }
-//            else
-//            {
-//                shift = 0;
-//                weight = 0;
-//            }
-
-//            var retVal = new Tuple<BigInteger, int>(weight, shift);
-//            weights.Add(current, retVal);
-//            return retVal;
-//        }
-
-        private static Tuple<BigInteger, int> WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile current, Dictionary<Tile, Tuple<BigInteger, int>> weights)
+        private static Dictionary<Tile, BigInteger> WeightPaths(Dictionary<Tile, List<Tile>> solutions, Tile start)
         {
-            BigInteger weight;
-            int shift;
-
-            List<Tile> options;
-            if (solutions.TryGetValue(current, out options))
+            //since all solution paths have the same length, we can group tiles into 'levels' by their distance from the start
+            var levels = new List<HashSet<Tile>> { new HashSet<Tile> { start } };
+            while (true)
             {
-                BigInteger sum = 0;
-                shift = int.MinValue;
-                foreach (Tile option in options)
+                HashSet<Tile> next = new HashSet<Tile>();
+                List<Tile> step;
+                foreach (Tile cur in levels[levels.Count - 1])
+                    if (solutions.TryGetValue(cur, out step))
+                        next.UnionWith(step);
+                    else
+                        break;
+                if (next.Count == 0)
+                    break;
+                levels.Add(next);
+            }
+
+            var weights = new Dictionary<Tile, BigInteger> { { levels[levels.Count - 1].Single(), 0 } };
+
+            BigInteger mult = 0;
+            for (int a = levels.Count - 2 ; a > 0 ; --a)
+            {
+                BigInteger total = 1;
+                foreach (Tile cur in levels[a])
                 {
-                    Tuple<BigInteger, int> cur;
-                    if (!weights.TryGetValue(option, out cur))
-                        cur = WeightPaths(solutions, option, weights);
-                    sum += cur.Item1;
+                    //the weight is primarily the number of immediate path options, and secondarily the weight of those options
+                    List<Tile> options = solutions[cur];
+                    BigInteger weight = mult * options.Count;
+                    foreach (Tile o in options)
+                        weight += weights[o];
+                    total += weight;
 
-                    //shift should be constant for all child options
-                    if (shift != int.MinValue && shift != cur.Item2)
-                        throw new Exception();
-
-                    shift = cur.Item2;
+                    weights.Add(cur, weight);
                 }
 
-                shift += 4;
-                weight = ( new BigInteger(options.Count) << shift ) + sum;
-
-                //the sum of child options should always account for less than a single immediate option
-                //if thrown increase shift increment
-                if (( BigInteger.One << shift ) <= sum)
-                    throw new Exception();
-            }
-            else
-            {
-                shift = 0;
-                weight = 0;
+                //the mult for the next level is set to one higher than the total sum of the current level
+                //so that a single immediate option always outweighs all subsequent options
+                mult = total;
             }
 
-            var retVal = new Tuple<BigInteger, int>(weight, shift);
-            weights.Add(current, retVal);
-            return retVal;
+            return weights;
         }
 
         #endregion //static
