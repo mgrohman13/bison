@@ -26,22 +26,32 @@ namespace GalWar
             return new Regex("(?<=[a-z])(?<x>[A-Z])|(?<=.)(?<x>[A-Z])(?=[a-z])").Replace(str, " ${x}");
         }
 
-        public static string NumberToRoman(int mark)
+        public static string NumberToRoman(int number)
         {
-            if (mark > 99)
-                return mark.ToString();
+            string retVal = string.Empty;
+            if (number < 0)
+            {
+                retVal = "-";
+                number = -number;
+            }
 
-            int[] values = new int[] { 90, 50, 40, 10, 9, 5, 4, 1 };
-            string[] numerals = new string[] { "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+            if (number > 3999 || number == 0)
+            {
+                retVal += number.ToString();
+            }
+            else
+            {
+                int[] values = new int[] { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+                string[] numerals = new string[] { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
-            string result = string.Empty;
-            for (int i = 0 ; i < values.Length ; ++i)
-                while (mark >= values[i])
-                {
-                    mark -= values[i];
-                    result += numerals[i];
-                }
-            return result;
+                for (int i = 0 ; i < values.Length ; ++i)
+                    while (number >= values[i])
+                    {
+                        number -= values[i];
+                        retVal += numerals[i];
+                    }
+            }
+            return retVal;
         }
 
         #endregion //static
@@ -1001,12 +1011,16 @@ next_planet:
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, tile);
             foreach (SpaceObject spaceObject in GetSpaceObjects())
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile);
+            FindTeleporterBounds(ref minX, ref minY, ref maxX, ref maxY);
+            return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+        }
+        private void FindTeleporterBounds(ref int minX, ref int minY, ref int maxX, ref int maxY)
+        {
             foreach (Tuple<Tile, Tile> teleporter in GetTeleporters())
             {
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item1);
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item2);
             }
-            return new Rectangle(minX, minY, maxX - minX, maxY - minY);
         }
         private static void FindBounds(ref int minX, ref int minY, ref int maxX, ref int maxY, Tile tile)
         {
@@ -1022,55 +1036,25 @@ next_planet:
         }
         internal Tile GetRandomTile(Tile center, double stdDev)
         {
-            int dist = Math.Abs(Random.GaussianInt(stdDev));
+            return GetDistanceTiles(center, Math.Abs(Random.GaussianInt(stdDev))).First();
+        }
+        public IEnumerable<Tile> GetDistanceTiles(Tile center, int dist)
+        {
+            int minX = center.X, minY = center.Y, maxX = center.X, maxY = center.Y;
+            FindTeleporterBounds(ref minX, ref minY, ref maxX, ref maxY);
+            minX -= dist;
+            minY -= dist;
+            maxX += dist;
+            maxY += dist;
 
-            int minX, minY, maxX, maxY;
-            GetTileDistances(center, dist, out minX, out minY, out maxX, out maxY, GetTeleporters());
-
-            //Expected iterations is n/(3*(SQRT(n)-1)) where n=(maxX-minX+1)*(maxY-minY+1), or O(SQRT(n)).
-            //Because n is O(dist^2), the operation time of this loop is O(dist).
-            //Teleporters may affect the value of n, but not significantly.
+            //Expected iterations per valid value is i=n/(3*(SQRT(n)-1)) where n=(maxX-minX+1)*(maxY-minY+1), or O(SQRT(n)).
+            //Because n is O(dist^2), i, and the operation time to return a single value from this loop, is O(dist).
+            //Teleporters may increase the value of n with respect to dist, but reduce i with respect to values of n.
             foreach (Point p in Random.Iterate(minX, maxX, minY, maxY))
             {
                 Tile test = GetTile(p);
                 if (Tile.GetDistance(center, test) == dist)
-                    return test;
-            }
-
-            throw new Exception();
-        }
-        private void GetTileDistances(Tile center, int dist, out int minX, out int minY, out int maxX, out int maxY, ICollection<Tuple<Tile, Tile>> teleporters)
-        {
-            minX = center.X - dist;
-            minY = center.Y - dist;
-            maxX = center.X + dist;
-            maxY = center.Y + dist;
-
-            if (teleporters != null && teleporters.Count > 0)
-            {
-                ICollection<Tuple<Tile, Tile>> subset = null;
-                if (teleporters.Count > 1)
-                    subset = new HashSet<Tuple<Tile, Tile>>(teleporters);
-                foreach (var teleporter in teleporters)
-                {
-                    if (subset != null)
-                        subset.Remove(teleporter);
-                    GetTeleporterDistances(center, dist, teleporter.Item1, teleporter.Item2, ref minX, ref minY, ref maxX, ref maxY, subset);
-                    GetTeleporterDistances(center, dist, teleporter.Item2, teleporter.Item1, ref minX, ref minY, ref maxX, ref maxY, subset);
-                }
-            }
-        }
-        private void GetTeleporterDistances(Tile center, int dist, Tile t1, Tile t2, ref int minX, ref int minY, ref int maxX, ref int maxY, ICollection<Tuple<Tile, Tile>> teleporters)
-        {
-            int telDist = Tile.GetDistance(center, t1);
-            if (telDist < dist)
-            {
-                int minX2, minY2, maxX2, maxY2;
-                GetTileDistances(t2, dist - telDist - 1, out minX2, out minY2, out maxX2, out maxY2, teleporters);
-                minX = Math.Min(minX, minX2);
-                minY = Math.Min(minY, minY2);
-                maxX = Math.Max(maxX, maxX2);
-                maxY = Math.Max(maxY, maxY2);
+                    yield return test;
             }
         }
 

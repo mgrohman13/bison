@@ -328,6 +328,15 @@ namespace GalWarWin
                         using (Pen pen = new Pen(selectedShip.Player.Color))
                             g.DrawLines(pen, points);
                     }
+
+                    //Tile t = selected;
+                    //if (selected == null)
+                    //    t = Game.Center;
+                    //List<RectangleF> r = new List<RectangleF>();
+                    //foreach (Tile tt in Game.GetDistanceTiles(t, meh))
+                    //    r.Add(GetDrawRect(tt.X, tt.Y));
+                    //using (Brush b = new SolidBrush(Game.CurrentPlayer.Color))
+                    //    g.FillRectangles(b, r.ToArray());
                 }
                 catch (Exception e)
                 {
@@ -1493,10 +1502,16 @@ namespace GalWarWin
         {
             ClickMouse(e, true);
         }
+        //int meh = 0;
         private void MainForm_MouseClick(object sender, MouseEventArgs e)
         {
             firstClick = null;
             ClickMouse(e, false);
+
+            //if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            //    meh = 0;
+            //else
+            //    ++meh;
         }
 
         private void ClickMouse(MouseEventArgs e, bool doubleClick)

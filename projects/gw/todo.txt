@@ -31,6 +31,7 @@ UI
 research victory pct decreases with higher research
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
+terraform check use actual values
 
 standardive Tile.Game vs Player.Game calls
 remove static qualifiers to same class

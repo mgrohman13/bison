@@ -14,6 +14,8 @@ namespace GalWar
 
         public static HashSet<Tile> GetNeighbors(Tile tile)
         {
+            AssertException.Assert(tile != null);
+
             var neighbors = new HashSet<Tile>();
             //loop through the nine regional tiles in the square grid
             for (int x = -2 ; ++x < 2 ; )
@@ -34,11 +36,17 @@ namespace GalWar
 
         public static bool IsNeighbor(Tile tile1, Tile tile2)
         {
+            AssertException.Assert(tile1 != null);
+            AssertException.Assert(tile2 != null);
+
             return ( IsRawNeighbor(tile1, tile2.X, tile2.Y) || tile1.Teleporter == tile2 );
         }
 
         public static int GetDistance(Tile tile1, Tile tile2)
         {
+            AssertException.Assert(tile1 != null);
+            AssertException.Assert(tile2 != null);
+
             return GetDistance(tile1.X, tile1.Y, tile2.X, tile2.Y, tile1.Game.GetTeleporters());
         }
 
@@ -58,16 +66,21 @@ namespace GalWar
                 {
                     if (subset != null)
                         subset.Remove(teleporter);
-                    dist = Math.Min(dist, Math.Min(GetTeleporterDistance(x1, y1, x2, y2, teleporter, subset),
-                            GetTeleporterDistance(x2, y2, x1, y1, teleporter, subset)));
+                    dist = Math.Min(dist, GetTeleporterDistance(x1, y1, x2, y2, teleporter, dist, subset));
+                    if (dist > 1)
+                        dist = Math.Min(dist, GetTeleporterDistance(x2, y2, x1, y1, teleporter, dist, subset));
+                    if (dist == 1)
+                        break;
                 }
             }
             return dist;
         }
-        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Tile, Tile> teleporter, ICollection<Tuple<Tile, Tile>> teleporters)
+        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Tile, Tile> teleporter, int cutoff, ICollection<Tuple<Tile, Tile>> teleporters)
         {
-            return 1 + GetDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y, teleporters)
-                    + GetDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y, teleporters);
+            int dist = 1 + GetDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y, teleporters);
+            if (dist < cutoff)
+                dist += GetDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y, teleporters);
+            return dist;
         }
         private static int GetRawDistance(int x1, int y1, int x2, int y2)
         {
@@ -86,7 +99,10 @@ namespace GalWar
             AssertException.Assert(ship != null);
             AssertException.Assert(ship.Vector != null);
 
-            return PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);
+            List<Tile> retVal = PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);
+            if (retVal == null)
+                retVal = PathFind(ship.Tile, ship.Vector, null);
+            return retVal;
         }
         public static List<Tile> PathFind(Tile from, Tile to)
         {
@@ -172,7 +188,7 @@ namespace GalWar
                 closed.Add(current);
             }
 
-            return PathFind(from, to, null);
+            return null;
         }
         private static void Enqueue<TKey, TValue>(IDictionary<TKey, TValue> queue, TKey key, Tile tile)
              where TValue : ICollection<Tile>
