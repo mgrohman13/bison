@@ -81,7 +81,7 @@ namespace GalWar
             options.Add(Death, 3);//always
             options.Add(Production, 6);//high
             options.Add(SalvageShip, 13);//always
-            options.Add(Pickup, 14);//low
+            options.Add(Pickup, 15);//low
             options.Add(Valuables, 16);//always
             options.Add(Experience, 17);//always
             options.Add(Wormhole, 21);//high
