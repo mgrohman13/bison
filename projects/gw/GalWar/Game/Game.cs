@@ -41,8 +41,8 @@ namespace GalWar
             }
             else
             {
-                int[] values = new int[] { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
-                string[] numerals = new string[] { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+                int[] values = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+                string[] numerals = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
                 for (int i = 0 ; i < values.Length ; ++i)
                     while (number >= values[i])
@@ -218,9 +218,7 @@ namespace GalWar
         {
             get
             {
-                if (this._undoStack == null)
-                    this._undoStack = new Stack<IUndoCommand>();
-                return this._undoStack;
+                return ( this._undoStack ?? ( this._undoStack = new Stack<IUndoCommand>() ) );
             }
         }
 
@@ -635,26 +633,16 @@ next_planet:
         }
         internal Player[] GetResearchDisplayOrder()
         {
-            return GetOrder(delegate(Player player)
-            {
-                return player.ResearchDisplay;
-            });
+            return GetOrder(player => player.ResearchDisplay);
         }
         internal Player[] GetRealResearchOrder()
         {
-            return GetOrder(delegate(Player player)
-            {
-                return player.Research;
-            });
+            return GetOrder(player => player.Research);
         }
         private Player[] GetOrder(Func<Player, double> Func)
         {
             Player[] players = this.players.ToArray();
-            Array.Sort<Player>(players, delegate(Player p1, Player p2)
-            {
-                //descending sort
-                return Math.Sign(Func(p2) - Func(p1));
-            });
+            Array.Sort<Player>(players, (p1, p2) => ( Math.Sign(Func(p2) - Func(p1)) ));
             return players;
         }
 
@@ -971,10 +959,7 @@ next_planet:
                         throw new Exception();
 
                     HashSet<Tile> neighbors = Tile.GetNeighbors(centerTile);
-                    neighbors.RemoveWhere(delegate(Tile neighbor)
-                    {
-                        return ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance );
-                    });
+                    neighbors.RemoveWhere(neighbor => ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance ));
 
                     //sqrt because final values will be squared
                     weight *= distance / Math.Sqrt(neighbors.Count);

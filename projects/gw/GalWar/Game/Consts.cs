@@ -328,10 +328,7 @@ namespace GalWar
         private static double GetInvadeStrength(int attackers, double soldiers, int gold, double totalDefense, out int initialWave)
         {
             double attack = GetInvadeStrengthBase(attackers, soldiers, InvadeStrength, InvadeNumbersPower);
-            initialWave = TBSUtil.FindValue(delegate(int value)
-            {
-                return ( value * GetInvadeStrength(value, attack, gold) > totalDefense );
-            }, 1, attackers, true);
+            initialWave = TBSUtil.FindValue(value => ( value * GetInvadeStrength(value, attack, gold) > totalDefense ), 1, attackers, true);
             return GetInvadeStrength(initialWave, attack, gold);
         }
         private static double GetInvadeStrength(int initialWave, double attack, int gold)

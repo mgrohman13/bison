@@ -1522,10 +1522,7 @@ namespace GalWar
             if (upper > 0)
             {
                 //brute force algorithm to find the integer bounds
-                upper = TBSUtil.FindValue(delegate(int hp)
-                {
-                    return ( GetGoldForHP(hp, isTotal) >= gold );
-                }, 0, upper, true);
+                upper = TBSUtil.FindValue(hp => ( GetGoldForHP(hp, isTotal) >= gold ), 0, upper, true);
 
                 if (upper > 0 && GetGoldForHP(upper, isTotal) > gold)
                 {

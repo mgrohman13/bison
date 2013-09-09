@@ -99,10 +99,8 @@ namespace GalWar
             AssertException.Assert(ship != null);
             AssertException.Assert(ship.Vector != null);
 
-            List<Tile> retVal = PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null);
-            if (retVal == null)
-                retVal = PathFind(ship.Tile, ship.Vector, null);
-            return retVal;
+            return ( PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null)
+                    ?? PathFind(ship.Tile, ship.Vector, null) );
         }
         public static List<Tile> PathFind(Tile from, Tile to)
         {

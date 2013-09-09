@@ -372,10 +372,9 @@ namespace GalWar
                 anomShip.Player.GoldIncome(ConsolationValue());
 
             Planet planet = Tile.Game.CreatePlanet(this.Tile);
-            planet.ReduceQuality(planet.Quality - MattUtil.TBSUtil.FindValue(delegate(int value)
-            {
-                return ( amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult) );
-            }, 0, Consts.NewPlanetQuality(), false));
+            planet.ReduceQuality(planet.Quality -
+                    MattUtil.TBSUtil.FindValue(value => ( amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult) ),
+                    0, Consts.NewPlanetQuality(), false));
             int production = Game.Random.Round(amount - Consts.GetColonizationCost(Consts.PlanetConstValue + planet.Quality, mult));
             player.NewColony(player == anomShip.Player ? handler : null, planet, 0, 0, production);
 
@@ -707,10 +706,7 @@ namespace GalWar
             {
                 if (single == null)
                 {
-                    colonies = colonies.Where(delegate(KeyValuePair<Colony, int> pair)
-                    {
-                        return ( pair.Key.Buildable != null );
-                    });
+                    colonies = colonies.Where(pair => ( pair.Key.Buildable != null ));
                     if (colonies.Count() == 0)
                         return false;
                 }
