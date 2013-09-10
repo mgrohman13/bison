@@ -1507,6 +1507,8 @@ namespace GalWar
         }
         public double CalcGoldForHP(int hp)
         {
+            TurnException.CheckTurn(this.Player);
+
             return Consts.GetGoldRepairCost(hp, this.MaxHP, this.RepairCost);
         }
 
@@ -1554,12 +1556,12 @@ namespace GalWar
 
         public double GetHPForProd(double production)
         {
+            TurnException.CheckTurn(this.Player);
+
             return GetHPForProd(production, true);
         }
         internal double GetHPForProd(double production, bool checkAutoRepair)
         {
-            TurnException.CheckTurn(this.Player);
-
             double hp = production / RepairCost;
             double max = this.MaxHP - HP;
             if (checkAutoRepair && DoAutoRepair)
