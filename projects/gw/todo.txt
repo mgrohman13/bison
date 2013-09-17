@@ -28,6 +28,8 @@ UI
 		ships
 	keyboard?
 
+planetary defenses still not right
+	auto upg turns 1-7 into 13-7
 research victory pct decreases with higher research
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced

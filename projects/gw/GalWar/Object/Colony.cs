@@ -1250,9 +1250,7 @@ namespace GalWar
                 att = total * att / ( att + def );
                 def = total - att;
 
-                bool rand = Game.Random.Bool();
-                BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
-                BuildPlanetDefense(rand ? def : att, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
+                BuildAttAndDef(att, def);
             }
         }
 
@@ -1277,9 +1275,13 @@ namespace GalWar
         }
         internal void BuildAttAndDef(double prod)
         {
+            BuildAttAndDef(prod / 2.0, prod / 2.0);
+        }
+        private void BuildAttAndDef(double att, double def) 
+        {
             bool rand = Game.Random.Bool();
-            BuildPlanetDefense(prod / 2.0, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
-            BuildPlanetDefense(prod / 2.0, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
+            BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
+            BuildPlanetDefense(rand ? def : att, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
         }
         private void BuildPlanetDefense(double prod, Buildable build)
         {

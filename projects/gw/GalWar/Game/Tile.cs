@@ -116,7 +116,7 @@ namespace GalWar
             int dist = GetDistance(to, from);
 
             //boundary of all objects currently in play, with enough room to move around the edge
-            Rectangle bounds = from.Game.GetGameBounds(from, to);
+            Rectangle bounds = from.Game.GetGameBounds(to, from);
             bounds.Inflate(3, 3);
 
             //priority queue of tiles to be traversed
