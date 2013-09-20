@@ -1,3 +1,5 @@
+emphasizing sp
+
 UI
 	right click DS, right click trans: error
 	rapid click to bombard

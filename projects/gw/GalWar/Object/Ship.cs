@@ -1122,7 +1122,7 @@ namespace GalWar
             }
             else
             {
-                double amt = newTotal * .013 + 1.3;
+                double amt = newTotal * .0091 + .91;
                 stats.Add(ExpType.DS, Game.Random.Round(amt));
                 stats.Add(ExpType.Trans, Game.Random.Round(amt));
             }
