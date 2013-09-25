@@ -510,8 +510,9 @@ next_planet:
             {
                 double avgResearch = 0;
                 foreach (Player player in this.players)
-                    avgResearch += 1 * player.ResearchDisplay + 2 * player.Research + 4 * player.LastResearched;
-                return avgResearch / (double)this.players.Count / 7.0;
+                    avgResearch += (1 * player.ResearchDisplay + 5 * player.Research + 13 * player.LastResearched
+                            + 2 * player.ResearchGuess) / 21.0;
+                return avgResearch / (double)this.players.Count;
             }
         }
 

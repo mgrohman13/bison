@@ -148,8 +148,8 @@ namespace GalWar
 
         private int GetDesignResearch(Player player)
         {
-            double avg = ( 1 * ( ( 1 * player.ResearchGuess + 2 * player.ResearchDisplay + 4 * player.Research ) / 7.0 )
-                    + 2 * ( player.LastResearched + this.value ) + 4 * ( Tile.Game.AvgResearch ) ) / 7.0;
+            double avg = (1 * ((1 * player.ResearchGuess + 1 * player.ResearchDisplay + 2 * player.Research) / 4.0)
+                    + 1 * (player.LastResearched + this.value) + 2 * (Tile.Game.AvgResearch)) / 4.0;
             return Game.Random.GaussianOEInt(avg, .13, .013);
         }
 

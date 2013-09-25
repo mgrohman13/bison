@@ -270,7 +270,7 @@ namespace GalWar
                 } while (design != null && !this.MakesObsolete(mapSize, design));
 
                 //  ------  Name   
-                this._name = (byte)player.Game.ShipNames.GetName(player.Game.GetPlayers().Count, this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
+                this._name = (byte)player.Game.ShipNames.GetName(player.Game, this, GetAttDefStr(Research), GetTransStr(Research), GetSpeedStr(Research), anomalyShip);
                 this._mark = (byte)player.Game.ShipNames.GetMark(player, this.Name);
             }
         }

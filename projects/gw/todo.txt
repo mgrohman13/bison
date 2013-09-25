@@ -1,5 +1,3 @@
-emphasizing sp
-
 UI
 	right click DS, right click trans: error
 	rapid click to bombard
@@ -30,6 +28,8 @@ UI
 		ships
 	keyboard?
 
+ship name value
+map size
 planetary defenses still not right
 	auto upg turns 1-7 into 13-7
 research victory pct decreases with higher research
