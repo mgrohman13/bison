@@ -1,4 +1,7 @@
 UI
+	show orig center?
+	unhold wormhole pulled ship
+	center on disappearing wormholes
 	right click DS, right click trans: error
 	rapid click to bombard
 	rally ships
@@ -29,10 +32,12 @@ UI
 	keyboard?
 
 ship name value
+anom design research randomness at higher values
 map size
 planetary defenses still not right
 	auto upg turns 1-7 into 13-7
 research victory pct decreases with higher research
+lost colony follows planet creation chance
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 terraform check use actual values
