@@ -1946,7 +1946,8 @@ namespace GalWarWin
 
         private void lblLoc_Click(object sender, EventArgs e)
         {
-            LabelsForm.ShowForm("Galaxy Size", FormatDouble(Game.MapDeviation),
+            Point start = new Point(-Game.Center.X, -Game.Center.Y);
+            LabelsForm.ShowForm("Start", start.ToString(), string.Empty, string.Empty, "Galaxy Size", FormatDouble(Game.MapDeviation),
                     "Anomalies", FormatPct(Game.AnomalyPct, true), "Planets", FormatPct(Game.PlanetPct / Game.AnomalyPct, true),
                     string.Empty, string.Empty, "Prod/Upk", FormatDouble(1 / Consts.GetProductionUpkeepMult(Game.MapSize)));
         }

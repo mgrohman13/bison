@@ -31,6 +31,8 @@ UI
 		ships
 	keyboard?
 
+GetNonColonyPct full trans?
+increase minimum research chance
 ship name value
 anom design research randomness at higher values
 map size
