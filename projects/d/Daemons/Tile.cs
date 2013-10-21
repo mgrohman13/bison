@@ -201,6 +201,9 @@ namespace Daemons
                 foreach (Unit unit in Game.Random.Iterate<Unit>(allUnits))
                     unit.Attack();
 
+                if (this.attackers.Count > 0 && this.units.Count > 0)
+                    CheckMorale();
+
                 fight = false;
                 foreach (Unit unit in GetAllUnits())
                     if (unit.Owner == Game.GetCurrentPlayer())
@@ -209,6 +212,59 @@ namespace Daemons
                         break;
                     }
             }
+        }
+
+        private void CheckMorale()
+        {
+            double attMorale = GetMorale(this.attackers);
+            double defMorale = GetMorale(this.units);
+
+            double mult = Math.Pow(GetAttackerStr() / GetArmyStr(), .21);
+            attMorale = Mult(attMorale, mult);
+            defMorale = Mult(defMorale, 1 / mult);
+
+            bool side = ( defMorale > attMorale );
+            if (side)
+            {
+                double temp = defMorale;
+                defMorale = attMorale;
+                attMorale = temp;
+            }
+
+            double chance = Math.Pow(attMorale / defMorale, .52) * Math.Pow(1 - defMorale, .91);
+            if (chance > .5)
+                chance /= ( chance + .5 );
+            if (Game.Random.Bool(chance * chance))
+                if (side)
+                    Retreat(this.attackers);
+                else
+                    Retreat(this.units);
+        }
+        private double Mult(double morale, double mult)
+        {
+            if (mult > 1)
+                morale = 1 - ( 1 - morale ) / mult;
+            else
+                morale *= mult;
+            return morale;
+        }
+
+        private static double GetMorale(IEnumerable<Unit> units)
+        {
+            double morale = 0, tot = 0;
+            foreach (Unit unit in units)
+            {
+                morale += unit.Morale * unit.MaxStrength;
+                tot += unit.MaxStrength;
+            }
+            return morale / tot;
+        }
+
+        private void Retreat(List<Unit> units)
+        {
+            Tile t = null;
+            foreach (Unit unit in Game.Random.Iterate(units))
+                t = unit.Retreat(t);
         }
 
         private int GetNewAttackers()
@@ -334,12 +390,33 @@ namespace Daemons
             return GetArmyStr(this.attackers);
         }
 
-        private static double GetArmyStr(List<Unit> units)
+        public static double GetArmyStr(List<Unit> units)
         {
             double retVal = 0;
             foreach (Unit unit in units)
-                retVal += unit.Strength;
+                if (unit.Hits > 0)
+                    retVal += unit.Strength;
             return retVal;
+        }
+
+        internal int GetRetreatValue(Player player)
+        {
+            double friend = GetArmyStr(GetUnits(player));
+            double total = GetArmyStr() + GetAttackerStr();
+
+            double amt = 13;
+            if (friend == total)
+                amt *= 13;
+            if (total > 0)
+                amt += friend * friend * Math.Pow(friend / total, 3.9);
+            return Game.Random.Round(amt);
+        }
+
+        internal IEnumerable<Tile> GetSideNeighbors()
+        {
+            if (sideNeighbors == null)
+                Game.CreateNeighborReferences();
+            return sideNeighbors;
         }
 
         public bool IsSideNeighbor(Tile tile)
