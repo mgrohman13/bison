@@ -1,15 +1,19 @@
-better multi battles
-prod centers regen same during round, not start
-morale only regen when dont fight?
+score by total souls not death order
 victory condition/easier loss
 
-show morale
-trim log text in label
+prod centers regen during round, not start
+indy appearance rate tied to total prod facilities
+process battles at start and end of indy turn
+better multi battles
+morale only regen when dont fight?
 
+split by army size
+show player str, total souls
+show morale/move left
+trim log text in label
 end turn move left waring only if any have move AND healed
 exit confirmation
-refactor everything (reorder members)
-show moved/unmoved units
 show battles
 undo
-z 
+
+refactor everything (reorder members)
