@@ -1,3 +1,9 @@
+better multi battles
+prod centers regen same during round, not start
+morale only regen when dont fight?
+victory condition/easier loss
+
+show morale
 trim log text in label
 
 end turn move left waring only if any have move AND healed
@@ -5,3 +11,5 @@ exit confirmation
 refactor everything (reorder members)
 show moved/unmoved units
 show battles
+undo
+z 
