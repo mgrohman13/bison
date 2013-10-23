@@ -1,18 +1,13 @@
-score by total souls not death order
-victory condition/easier loss
+review recent history for div by int errors
 
-prod centers regen during round, not start
-indy appearance rate tied to total prod facilities
-process battles at start and end of indy turn
+morale boost for daemons?
+show when ending turn will win game?
+highlight a kill in the log
+remove floats
 better multi battles
-morale only regen when dont fight?
-
+auto save location
+heal individ units
 split by army size
-show player str, total souls
-show morale/move left
-trim log text in label
-end turn move left waring only if any have move AND healed
-exit confirmation
 show battles
 undo
 

@@ -54,6 +54,7 @@ namespace DaemonsWinApp
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.btnPlayers = new System.Windows.Forms.Button();
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox1 ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox3 ) ).BeginInit();
             this.SuspendLayout();
@@ -84,7 +85,7 @@ namespace DaemonsWinApp
             // 
             this.lblPlayer.BackColor = System.Drawing.Color.Black;
             this.lblPlayer.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblPlayer.Location = new System.Drawing.Point(775, 593);
+            this.lblPlayer.Location = new System.Drawing.Point(775, 620);
             this.lblPlayer.Name = "lblPlayer";
             this.lblPlayer.Size = new System.Drawing.Size(142, 30);
             this.lblPlayer.TabIndex = 2;
@@ -94,10 +95,11 @@ namespace DaemonsWinApp
             // 
             this.lblSouls.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblSouls.ForeColor = System.Drawing.Color.DarkRed;
-            this.lblSouls.Location = new System.Drawing.Point(829, 623);
+            this.lblSouls.Location = new System.Drawing.Point(877, 650);
             this.lblSouls.Name = "lblSouls";
-            this.lblSouls.Size = new System.Drawing.Size(88, 30);
+            this.lblSouls.Size = new System.Drawing.Size(40, 30);
             this.lblSouls.TabIndex = 3;
+            this.lblSouls.Text = "0666";
             this.lblSouls.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblUnit1
@@ -176,10 +178,11 @@ namespace DaemonsWinApp
             // 
             this.lblArrows.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblArrows.ForeColor = System.Drawing.Color.Goldenrod;
-            this.lblArrows.Location = new System.Drawing.Point(829, 653);
+            this.lblArrows.Location = new System.Drawing.Point(784, 650);
             this.lblArrows.Name = "lblArrows";
-            this.lblArrows.Size = new System.Drawing.Size(88, 30);
+            this.lblArrows.Size = new System.Drawing.Size(40, 30);
             this.lblArrows.TabIndex = 12;
+            this.lblArrows.Text = "1234";
             this.lblArrows.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnBuild
@@ -238,7 +241,7 @@ namespace DaemonsWinApp
             // pictureBox1
             // 
             this.pictureBox1.Image = ( (System.Drawing.Image)( resources.GetObject("pictureBox1.Image") ) );
-            this.pictureBox1.Location = new System.Drawing.Point(793, 623);
+            this.pictureBox1.Location = new System.Drawing.Point(841, 650);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(30, 30);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -248,7 +251,7 @@ namespace DaemonsWinApp
             // pictureBox3
             // 
             this.pictureBox3.Image = ( (System.Drawing.Image)( resources.GetObject("pictureBox3.Image") ) );
-            this.pictureBox3.Location = new System.Drawing.Point(793, 653);
+            this.pictureBox3.Location = new System.Drawing.Point(748, 650);
             this.pictureBox3.Name = "pictureBox3";
             this.pictureBox3.Size = new System.Drawing.Size(30, 30);
             this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -259,7 +262,7 @@ namespace DaemonsWinApp
             // 
             this.lblTurn.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblTurn.ForeColor = System.Drawing.Color.Black;
-            this.lblTurn.Location = new System.Drawing.Point(748, 593);
+            this.lblTurn.Location = new System.Drawing.Point(748, 620);
             this.lblTurn.Name = "lblTurn";
             this.lblTurn.Size = new System.Drawing.Size(32, 30);
             this.lblTurn.TabIndex = 21;
@@ -292,12 +295,24 @@ namespace DaemonsWinApp
             this.button3.UseVisualStyleBackColor = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
+            // btnPlayers
+            // 
+            this.btnPlayers.BackColor = System.Drawing.Color.Silver;
+            this.btnPlayers.Location = new System.Drawing.Point(748, 594);
+            this.btnPlayers.Name = "btnPlayers";
+            this.btnPlayers.Size = new System.Drawing.Size(156, 23);
+            this.btnPlayers.TabIndex = 24;
+            this.btnPlayers.Text = "Players";
+            this.btnPlayers.UseVisualStyleBackColor = false;
+            this.btnPlayers.Click += new System.EventHandler(this.btnPlayers_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(992, 773);
+            this.Controls.Add(this.btnPlayers);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.lblTurn);
@@ -324,6 +339,7 @@ namespace DaemonsWinApp
             this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Daemons";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.mainForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.mainForm_KeyUp);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mainForm_MouseDown);
@@ -362,6 +378,7 @@ namespace DaemonsWinApp
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button btnPlayers;
     }
 }
 

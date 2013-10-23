@@ -13,7 +13,7 @@ namespace DaemonsWinApp
     {
         public static InfoForm Form = new InfoForm();
 
-        private const int offset = 10, size = 100, ySize = 169, picSize = 21;
+        private const int offset = 10, size = 100, ySize = 200, picSize = 21;
 
         private static Bitmap hits = new System.Drawing.Bitmap(@"pics\hits.bmp");
         private static Bitmap damage = new System.Drawing.Bitmap(@"pics\damage.bmp");
@@ -124,29 +124,54 @@ namespace DaemonsWinApp
                 e.Graphics.DrawImage(u.GetPic(), x, y);
 
                 if (use != UseType.View && move.Contains(u))
-                    e.Graphics.DrawRectangle(new Pen(Color.Black, 3), x, y, 90, 90);
+                    using (Pen p = new Pen(Color.Black, 3))
+                        e.Graphics.DrawRectangle(p, x, y, 90, 90);
 
-                x += 6;
-                y += size - 3;
+                double redPct = Math.Min(2 - u.Morale * 2, 1);
+                double greenPct = Math.Min(u.Morale * 2, 1);
+                using (Brush b = new SolidBrush(Color.FromArgb((int)( 255 * redPct ), (int)( 255 * greenPct ), 0)))
+                {
+                    e.Graphics.DrawRectangle(new Pen(Color.Black, 1), x - 1, y + size - 9, 92, 7);
+                    int div = (int)( 91 * u.Morale + .5f );
+                    e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
+                    e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
+                }
 
-                Font f = new Font("Arial", 13);
-                e.Graphics.DrawImage(hits, x, y);
-                e.Graphics.DrawImage(damage, x, y + incPic);
-                e.Graphics.DrawImage(regen, x, y + incPic * 2);
-                string rgnStr = u.Regen.ToString();
-                int incX = incPic + (int)e.Graphics.MeasureString(rgnStr, f).Width;
-                e.Graphics.DrawImage(soul, x + incX, y + incPic * 2);
+                using (Font f = new Font("Arial", 13))
+                {
+                    if (u.Movement > 0)
+                        e.Graphics.DrawString(u.Movement.ToString(), f, Brushes.Black, x, y + 72);
 
-                x += picSize;
+                    x += 6;
+                    y += size;
 
-                Brush b = Brushes.Black;
-                e.Graphics.DrawString(string.Format("{0} / {1}", u.Hits, u.MaxHits), f, b, new Point(x, y));
-                e.Graphics.DrawString(string.Format("{0} / {1}", u.DamageStr, u.BaseDamage), f, b, new Point(x, y + incPic));
-                e.Graphics.DrawString(string.Format("{0}", rgnStr), f, b, new Point(x, y + incPic * 2));
-                e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, b, new Point(x + incX, y + incPic * 2));
+                    e.Graphics.DrawImage(damage, x, y);
+                    e.Graphics.DrawImage(hits, x, y + incPic);
+                    e.Graphics.DrawImage(regen, x, y + incPic * 2);
+                    string rgnStr = u.Regen.ToString();
+                    int incX = incPic + (int)e.Graphics.MeasureString(rgnStr, f).Width;
+                    e.Graphics.DrawImage(soul, x + incX, y + incPic * 2);
+
+                    x += picSize;
+
+                    string str = "{0}";
+                    if (u.DamageStr != u.BaseDamage.ToString())
+                        str += " / {1}";
+                    str = string.Format(str, u.DamageStr, u.BaseDamage);
+                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, y));
+
+                    str = "{0}";
+                    if (u.Hits != u.MaxHits)
+                        str += " / {1}";
+                    str = string.Format(str, u.Hits, u.MaxHits);
+                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, y + incPic));
+
+                    e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, y + incPic * 2));
+                    e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, y + incPic * 2));
+                }
 
                 x -= picSize + 6;
-                y -= size - 3;
+                y -= size;
 
                 x += size;
                 if (x > XMax * size)

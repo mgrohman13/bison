@@ -234,8 +234,9 @@ namespace DaemonsWinApp
         {
             if (Selected != null)
             {
-                this.btnBuild.Visible = ( Selected.GetProduction(true).Count > 0 )
-                    && ( Selected.GetUnits(game.GetCurrentPlayer(), true).Count > 0 );
+                this.btnBuild.Visible = ( ( Selected.GetProduction(true).Count > 0 )
+                        && ( Selected.GetUnits(game.GetCurrentPlayer(), true).Count > 0 )
+                        && Selected.NumAttackers == 0 );
 
                 this.btnFight.Visible = Selected.NumAttackers > 0;
             }
@@ -263,17 +264,25 @@ namespace DaemonsWinApp
 
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
-            game.EndTurn();
-            if (game.GetPlayers().Length == 1)
+            DialogResult result = DialogResult.Yes;
+            Tile tile = game.GetCurrentPlayer().NextUnit(Selected);
+            if (tile != null && tile.GetUnits(game.GetCurrentPlayer(), true, true).Count > 0)
+                result = MessageBox.Show("You have unmoved units.  Are you sure?", "", MessageBoxButtons.YesNo);
+
+            if (result == DialogResult.Yes)
             {
-                TextForm.ShowDialog(game, false);
-            }
-            else
-            {
-                Selected = null;
-                RefreshPlayer();
-                Refresh();
-                RefreshLog();
+                game.EndTurn();
+                if (game.GetPlayers().Length == 1)
+                {
+                    TextForm.ShowDialog(game, false);
+                }
+                else
+                {
+                    Selected = null;
+                    RefreshPlayer();
+                    Refresh();
+                    RefreshLog();
+                }
             }
         }
 
@@ -282,7 +291,7 @@ namespace DaemonsWinApp
             string log = game.CombatLog;
             if (log.Length > 300)
                 log = log.Substring(0, 300);
-            this.lblLog.Text = log;
+            this.lblLog.Text = log.Trim();
         }
 
         private void mainForm_MouseUp(object sender, MouseEventArgs e)
@@ -379,9 +388,10 @@ namespace DaemonsWinApp
         {
             if (Selected != null)
             {
-                for (int a = 0 ; a < 2 ; a++)
-                    foreach (Unit u in Selected.GetUnits())
-                        u.Heal();
+                foreach (Unit u in Selected.GetAttackers())
+                    u.Heal();
+                foreach (Unit u in Selected.GetUnits())
+                    u.Heal();
                 RefreshArrows();
             }
             btnNext_Click(sender, e);
@@ -402,6 +412,11 @@ namespace DaemonsWinApp
         private void lblLog_Click(object sender, EventArgs e)
         {
             TextForm.ShowDialog(game, true);
+        }
+
+        private void btnPlayers_Click(object sender, EventArgs e)
+        {
+            new PlayersForm(game).ShowDialog();
         }
 
         private void mainForm_MouseMove(object sender, MouseEventArgs e)
@@ -430,6 +445,11 @@ namespace DaemonsWinApp
                 RefreshSouls();
                 RefreshUnits();
             }
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.game.AutoSave();
         }
     }
 }

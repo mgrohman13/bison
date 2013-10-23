@@ -10,7 +10,8 @@ namespace Daemons
         internal int x;
         internal int y;
         internal readonly ProductionType type;
-        internal bool used = false;
+        private bool used = false;
+        private Player owner = null;
 
         public ProductionCenter(Tile tile, int a)
         {
@@ -34,6 +35,14 @@ namespace Daemons
             }
         }
 
+        internal Player Owner
+        {
+            get
+            {
+                return owner;
+            }
+        }
+
         public bool Used
         {
             get
@@ -53,6 +62,7 @@ namespace Daemons
         internal void Use(Player owner)
         {
             this.used = true;
+            this.owner = owner;
 
             UnitType unitType;
             switch (this.type)
@@ -71,6 +81,42 @@ namespace Daemons
             }
 
             new Unit(unitType, owner.Game.GetTile(this.x, this.y), owner);
+        }
+
+        internal void Reset(Player owner)
+        {
+            if (this.owner == null || this.owner == owner)
+            {
+                this.used = false;
+                this.owner = null;
+            }
+        }
+
+        public double GetValue()
+        {
+            UnitType unitType;
+            int hits, damage;
+            switch (this.type)
+            {
+            case ProductionType.Archer:
+                unitType = UnitType.Archer;
+                hits = 20;
+                damage = 12;
+                break;
+            case ProductionType.Infantry:
+                unitType = UnitType.Infantry;
+                hits = 25;
+                damage = 8;
+                break;
+            case ProductionType.Knight:
+                unitType = UnitType.Knight;
+                hits = 30;
+                damage = 11;
+                break;
+            default:
+                throw new Exception("die");
+            }
+            return Unit.GetStrength(unitType, hits, damage);
         }
 
         public override string ToString()

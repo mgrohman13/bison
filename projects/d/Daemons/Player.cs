@@ -20,6 +20,7 @@ namespace Daemons
 
         private readonly List<Unit> units;
 
+        private double score;
         private int souls;
         private int arrows;
 
@@ -126,6 +127,14 @@ namespace Daemons
             }
         }
 
+        public double Score
+        {
+            get
+            {
+                return score;
+            }
+        }
+
         public int Souls
         {
             get
@@ -150,6 +159,15 @@ namespace Daemons
         public override string ToString()
         {
             return this.Name;
+        }
+
+        public double GetStrength()
+        {
+            double total = 0;
+            for (int x = 0 ; x < Game.GetWidth() ; ++x)
+                for (int y = 0 ; y < Game.GetHeight() ; ++y)
+                    total += Tile.GetArmyStr(Game.GetTile(x, y).GetUnits(this));
+            return total;
         }
 
         public Tile NextUnit(Tile selectedTile)
@@ -179,12 +197,14 @@ namespace Daemons
 
         internal void AddSouls(float value)
         {
-            AddSouls(Game.Random.Round(value));
+            AddSouls(value, false);
         }
 
-        internal void AddSouls(int value)
+        internal void AddSouls(float value, bool addScore)
         {
-            souls += value;
+            if (addScore)
+                score += value;
+            souls += Game.Random.Round(value);
             SummonDaemon();
         }
 
@@ -227,7 +247,7 @@ namespace Daemons
                 SummonDaemon();
 
                 if (units.Count == 0)
-                    Game.RemovePlayer(this);
+                    Game.RemovePlayer(this, false);
             }
         }
 

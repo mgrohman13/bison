@@ -67,6 +67,12 @@
     <Compile Include="InfoForm.Designer.cs">
       <DependentUpon>InfoForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlayersForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlayersForm.Designer.cs">
+      <DependentUpon>PlayersForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="TextForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -90,6 +96,9 @@
     <EmbeddedResource Include="InfoForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>InfoForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlayersForm.resx">
+      <DependentUpon>PlayersForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TextForm.resx">
       <SubType>Designer</SubType>

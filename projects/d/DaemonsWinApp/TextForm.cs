@@ -31,8 +31,8 @@ namespace DaemonsWinApp
             {
                 this.Text = "Player Ranks";
                 this.textBox1.Text = string.Empty;
-                foreach (Daemons.Player player in game.GetLost())
-                    this.textBox1.Text += player.Name + "\r\n";
+                foreach (var player in game.GetResult())
+                    this.textBox1.Text += player.Key.Name + " " + player.Value + "\r\n";
 
                 this.textBox1.SelectAll();
             }

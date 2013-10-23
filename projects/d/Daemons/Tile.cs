@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Daemons
@@ -178,6 +179,9 @@ namespace Daemons
         {
             Game.Log("----------------------------------------------------");
 
+            foreach (Unit unit in GetAllUnits())
+                unit.OnBattle();
+
             List<Unit> attDaemons = new List<Unit>();
             foreach (Unit unit in this.attackers)
                 if (unit.Type == UnitType.Daemon)
@@ -235,10 +239,19 @@ namespace Daemons
             if (chance > .5)
                 chance /= ( chance + .5 );
             if (Game.Random.Bool(chance * chance))
+            {
                 if (side)
-                    Retreat(this.attackers);
+                    Retreat(this.attackers, false);
                 else
-                    Retreat(this.units);
+                    Retreat(this.units, false);
+            }
+            else if (Game.Random.Bool())
+            {
+                if (Game.Random.Bool())
+                    Retreat(this.attackers.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.13, .39) )), true);
+                if (Game.Random.Bool())
+                    Retreat(this.units.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.13, .39) )), true);
+            }
         }
         private double Mult(double morale, double mult)
         {
@@ -260,11 +273,11 @@ namespace Daemons
             return morale / tot;
         }
 
-        private void Retreat(List<Unit> units)
+        private void Retreat(IEnumerable<Unit> units, bool force)
         {
             Tile t = null;
             foreach (Unit unit in Game.Random.Iterate(units))
-                t = unit.Retreat(t);
+                t = unit.Retreat(t, force);
         }
 
         private int GetNewAttackers()

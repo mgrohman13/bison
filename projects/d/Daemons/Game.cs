@@ -29,7 +29,8 @@ namespace Daemons
         private Player[] players;
         private readonly Player independent;
 
-        private readonly List<Player> lost;
+        private readonly Dictionary<Player, int> won;
+        private readonly HashSet<Player> lost;
 
         [NonSerialized]
         private int _width, _height;
@@ -80,7 +81,8 @@ namespace Daemons
             }
             this.turn = 1;
 
-            this.lost = new List<Player>();
+            this.won = new Dictionary<Player, int>();
+            this.lost = new HashSet<Player>();
             this.CombatLog = null;
 
             Dictionary<UnitType, int> startUnits = new Dictionary<UnitType, int>();
@@ -151,9 +153,28 @@ namespace Daemons
             }
         }
 
-        public List<Player> GetLost()
+        public IEnumerable<Player> GetWinners()
         {
-            return lost;
+            return won.Keys.OrderBy((player) => won[player]);
+        }
+        public IEnumerable<Player> GetLosers()
+        {
+            return lost.OrderBy((player) => player.Score).Reverse();
+        }
+        public Dictionary<Player, int> GetResult()
+        {
+            if (players.Length != 1)
+                throw new Exception();
+
+            Dictionary<Player, int> results = new Dictionary<Player, int>();
+
+            int points = -1;
+            foreach (Player player in GetLosers().Reverse())
+                results.Add(player, ++points);
+            foreach (Player player in GetWinners().Reverse())
+                results.Add(player, ++points + Game.Random.Round(169.0 / won[player]));
+
+            return results;
         }
 
         public Player[] GetPlayers()
@@ -219,17 +240,37 @@ namespace Daemons
             if (players.Length == 1)
             {
                 currentPlayer = 0;
-                Player winner = players[currentPlayer];
-                if (lost[0] != winner)
-                    lost.Insert(0, winner);
+                RemovePlayer(GetCurrentPlayer(), true);
             }
             else
             {
                 ProcessBattles();
-                players[currentPlayer].ResetMoves();
+                GetCurrentPlayer().ResetMoves();
 
-                currentPlayer++;
-                CheckTurnInc();
+                double prod = 0, total = 0;
+                foreach (ProductionCenter pc in production)
+                {
+                    double value = pc.GetValue();
+                    if (pc.Owner == GetCurrentPlayer())
+                        prod += value;
+                    total += value;
+                }
+                if (prod > total / 2.0)
+                    RemovePlayer(GetCurrentPlayer(), true);
+
+                if (players.Length == 1)
+                {
+                    currentPlayer = 0;
+                    RemovePlayer(GetCurrentPlayer(), false);
+                }
+                else
+                {
+                    currentPlayer++;
+                    CheckTurnInc();
+
+                    foreach (ProductionCenter pc in production)
+                        pc.Reset(GetCurrentPlayer());
+                }
             }
 
             AutoSave();
@@ -261,8 +302,6 @@ namespace Daemons
             IndependentsTurn();
 
             turn++;
-            foreach (ProductionCenter pc in production)
-                pc.used = false;
 
             ChangeMoveOrder();
             ChangeMap();
@@ -271,6 +310,8 @@ namespace Daemons
         private void IndependentsTurn()
         {
             independentsTurn = true;
+
+            ProcessBattles();
 
             foreach (Tile t in map)
             {
@@ -365,10 +406,12 @@ namespace Daemons
             return Random.GaussianCappedInt(addSouls, .09f, Random.Round(.78f * addSouls));
         }
 
-        internal void RemovePlayer(Player player)
+        internal void RemovePlayer(Player player, bool win)
         {
-            //add the losing player to the lost collection
-            lost.Insert(0, player);
+            if (win)
+                won.Add(player, turn);
+            else
+                lost.Add(player);
 
             //remove from the players array
             int removedIndex = players.Length - 1;
@@ -420,6 +463,9 @@ namespace Daemons
                 }
             }
 
+            foreach (ProductionCenter pc in this.production)
+                pc.Reset(player);
+
             //ensure we still have the correct current player
             if (currentPlayer > removedIndex)
                 --currentPlayer;
@@ -436,9 +482,18 @@ namespace Daemons
         {
             List<ProductionCenter> result = new List<ProductionCenter>();
             foreach (ProductionCenter pc in production)
-                if (pc.x == x && pc.y == y && ( !unused || !pc.used ))
+                if (pc.x == x && pc.y == y && ( !unused || !pc.Used ))
                     result.Add(pc);
             return result;
+        }
+
+        public double GetProduction(Player p)
+        {
+            double total = 0;
+            foreach (ProductionCenter pc in production)
+                if (pc.Owner == p)
+                    total += pc.GetValue();
+            return total;
         }
 
         internal static T GetRandom<T>(List<T> list)
