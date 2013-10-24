@@ -1,5 +1,13 @@
 review recent history for div by int errors
 
+won players units
+show all checkbox
+info form size
+corner max shoot textbox does not show 1/2
+remove knight ishealed weirdness
+	end turn move warning
+stay on knight does not move next
+show army morale
 morale boost for daemons?
 show when ending turn will win game?
 highlight a kill in the log
