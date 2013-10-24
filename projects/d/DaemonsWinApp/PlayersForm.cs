@@ -16,13 +16,14 @@ namespace DaemonsWinApp
         {
             InitializeComponent();
 
-            foreach (Player p in game.GetPlayers())
-            {
-                this.lbxPlayer.Items.Add(p);
-                this.lbxSoul.Items.Add(p.Score.ToString("0"));
-                this.lbxStr.Items.Add(p.GetStrength().ToString("0"));
-                this.lbxProd.Items.Add(game.GetProduction(p).ToString("+0.0"));
-            }
+            if (game.GetPlayers().Length > 1)
+                foreach (Player p in game.GetPlayers())
+                {
+                    this.lbxPlayer.Items.Add(p);
+                    this.lbxSoul.Items.Add(p.Score.ToString("0"));
+                    this.lbxStr.Items.Add(p.GetStrength().ToString("0"));
+                    this.lbxProd.Items.Add(game.GetProduction(p).ToString("+0.0"));
+                }
             foreach (Player p in game.GetWinners())
             {
                 this.lbxPlayer.Items.Add(p);

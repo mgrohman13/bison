@@ -66,16 +66,11 @@ namespace Daemons
         {
             this._pics = new Dictionary<UnitType, Bitmap>();
             if (this.Independent)
-            {
                 this.pics.Add(UnitType.Indy, new System.Drawing.Bitmap(@"pics\Indy.bmp"));
-            }
-            else
-            {
-                this.pics.Add(UnitType.Archer, new System.Drawing.Bitmap(@"pics\Archer.bmp"));
-                this.pics.Add(UnitType.Daemon, new System.Drawing.Bitmap(@"pics\Daemon.bmp"));
-                this.pics.Add(UnitType.Infantry, new System.Drawing.Bitmap(@"pics\Infantry.bmp"));
-                this.pics.Add(UnitType.Knight, new System.Drawing.Bitmap(@"pics\Knight.bmp"));
-            }
+            this.pics.Add(UnitType.Archer, new System.Drawing.Bitmap(@"pics\Archer.bmp"));
+            this.pics.Add(UnitType.Daemon, new System.Drawing.Bitmap(@"pics\Daemon.bmp"));
+            this.pics.Add(UnitType.Infantry, new System.Drawing.Bitmap(@"pics\Infantry.bmp"));
+            this.pics.Add(UnitType.Knight, new System.Drawing.Bitmap(@"pics\Knight.bmp"));
 
             TunePics();
         }
@@ -168,6 +163,12 @@ namespace Daemons
                 for (int y = 0 ; y < Game.GetHeight() ; ++y)
                     total += Tile.GetArmyStr(Game.GetTile(x, y).GetUnits(this));
             return total;
+        }
+
+        internal void Won(Player independent)
+        {
+            independent.AddSouls(this.souls);
+            independent.MakeArrow(this.arrows);
         }
 
         public Tile NextUnit(Tile selectedTile)

@@ -1,10 +1,15 @@
 review recent history for div by int errors
 
+incorporate loss turn
+win condition too easy
+indy knight/daemon movement
+give won indy units a soul boost
+refactor won to list
 won players units
 show all checkbox
 info form size
 corner max shoot textbox does not show 1/2
-remove knight ishealed weirdness
+remove knight ishealed weirdness??
 	end turn move warning
 stay on knight does not move next
 show army morale

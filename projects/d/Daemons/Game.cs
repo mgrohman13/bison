@@ -237,6 +237,8 @@ namespace Daemons
 
         public void EndTurn()
         {
+            ProcessBattles();
+
             if (players.Length == 1)
             {
                 currentPlayer = 0;
@@ -244,9 +246,6 @@ namespace Daemons
             }
             else
             {
-                ProcessBattles();
-                GetCurrentPlayer().ResetMoves();
-
                 double prod = 0, total = 0;
                 foreach (ProductionCenter pc in production)
                 {
@@ -257,6 +256,8 @@ namespace Daemons
                 }
                 if (prod > total / 2.0)
                     RemovePlayer(GetCurrentPlayer(), true);
+                else
+                    GetCurrentPlayer().ResetMoves();
 
                 if (players.Length == 1)
                 {
@@ -265,6 +266,8 @@ namespace Daemons
                 }
                 else
                 {
+                    GetCurrentPlayer().ResetMoves();
+
                     currentPlayer++;
                     CheckTurnInc();
 
@@ -413,64 +416,73 @@ namespace Daemons
             else
                 lost.Add(player);
 
-            //remove from the players array
-            int removedIndex = players.Length - 1;
-            Player[] newPlayers = new Player[players.Length - 1];
-            for (int a = 0, b = -1 ; a < newPlayers.Length ; ++a)
-                if (players[++b] == player)
-                {
-                    --a;
-                    removedIndex = b;
-                }
-                else
-                {
-                    newPlayers[a] = players[b];
-                }
-            players = newPlayers;
+            player.Won(independent);
+            for (int x = 0 ; x < width ; ++x)
+                for (int y = 0 ; y < height ; ++y)
+                    foreach (Unit u in map[x, y].GetUnits(player))
+                        u.Won(independent);
 
-            //remove the dead players portion of the production centers
-            for (int a = 0 ; a < 3 ; a++)
+            if (this.players.Length > 1)
             {
-                ProductionType type;
-                switch (a)
-                {
-                case 0:
-                    type = ProductionType.Knight;
-                    break;
-                case 1:
-                    type = ProductionType.Archer;
-                    break;
-                case 2:
-                    type = ProductionType.Infantry;
-                    break;
-                default:
-                    throw new Exception();
-                }
-
-                int count = 0;
-                foreach (ProductionCenter pc in production)
-                    if (pc.type == type)
-                        ++count;
-                float avg = count / ( players.Length + 1f );
-                int remove = Random.GaussianCappedInt(avg, .13f);
-                for (int b = 0 ; b < remove ; b++)
-                {
-                    ProductionCenter pc = GetRandom(production);
-                    if (pc.type == type)
-                        production.Remove(pc);
+                //remove from the players array
+                int removedIndex = players.Length - 1;
+                Player[] newPlayers = new Player[players.Length - 1];
+                for (int a = 0, b = -1 ; a < newPlayers.Length ; ++a)
+                    if (players[++b] == player)
+                    {
+                        --a;
+                        removedIndex = b;
+                    }
                     else
-                        --b;
+                    {
+                        newPlayers[a] = players[b];
+                    }
+                players = newPlayers;
+
+                //remove the dead players portion of the production centers
+                for (int a = 0 ; a < 3 ; a++)
+                {
+                    ProductionType type;
+                    switch (a)
+                    {
+                    case 0:
+                        type = ProductionType.Knight;
+                        break;
+                    case 1:
+                        type = ProductionType.Archer;
+                        break;
+                    case 2:
+                        type = ProductionType.Infantry;
+                        break;
+                    default:
+                        throw new Exception();
+                    }
+
+                    int count = 0;
+                    foreach (ProductionCenter pc in production)
+                        if (pc.type == type)
+                            ++count;
+                    float avg = count / ( players.Length + 1f );
+                    int remove = Random.GaussianCappedInt(avg, .13f);
+                    for (int b = 0 ; b < remove ; b++)
+                    {
+                        ProductionCenter pc = GetRandom(production);
+                        if (pc.type == type)
+                            production.Remove(pc);
+                        else
+                            --b;
+                    }
                 }
+
+                foreach (ProductionCenter pc in this.production)
+                    pc.Reset(player);
+
+                //ensure we still have the correct current player
+                if (currentPlayer > removedIndex)
+                    --currentPlayer;
+                else if (currentPlayer == removedIndex)
+                    CheckTurnInc();
             }
-
-            foreach (ProductionCenter pc in this.production)
-                pc.Reset(player);
-
-            //ensure we still have the correct current player
-            if (currentPlayer > removedIndex)
-                --currentPlayer;
-            else if (currentPlayer == removedIndex)
-                CheckTurnInc();
         }
 
         public List<ProductionCenter> GetProduction(int x, int y)

@@ -8,7 +8,7 @@ namespace Daemons
     public class Unit
     {
         private Tile tile;
-        public readonly Player Owner;
+        private Player owner;
         public readonly UnitType Type;
 
         private int hits, movement;
@@ -24,7 +24,7 @@ namespace Daemons
         public Unit(UnitType type, Tile tile, Player owner)
         {
             this.tile = tile;
-            this.Owner = owner;
+            this.owner = owner;
             this.Type = type;
 
             owner.Add(this);
@@ -84,6 +84,14 @@ namespace Daemons
             this.hits = MaxHits;
             souls = Math.Pow(hits * damage, .65) * ( 3.9 + Regen * MaxMove ) * souls / 7.5;
             this.Souls = Game.Random.GaussianCappedInt(souls, .06, Game.Random.Round(souls * .65));
+        }
+
+        public Player Owner
+        {
+            get
+            {
+                return owner;
+            }
         }
 
         public double Damage
@@ -191,6 +199,12 @@ namespace Daemons
             return Math.Pow(hits * Math.Pow(damage +
                     ( type == UnitType.Daemon ? damage / 13.0 : type == UnitType.Archer ? damage / 39.0 : 0 ),
                     24 / 25.0) / 7.0, 2 / 3.0);
+        }
+
+        internal void Won(Player independent)
+        {
+            this.owner = independent;
+            this.owner.Add(this);
         }
 
         public bool CanMove(Tile t)
