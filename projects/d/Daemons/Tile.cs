@@ -68,9 +68,6 @@ namespace Daemons
                 if (unit.Type == UnitType.Daemon)
                     return unit.GetPic();
             foreach (Unit unit in list)
-                if (unit.Type == UnitType.Indy)
-                    return unit.GetPic();
-            foreach (Unit unit in list)
                 if (unit.Type == UnitType.Knight)
                     return unit.GetPic();
             foreach (Unit unit in list)
@@ -78,6 +75,9 @@ namespace Daemons
                     return unit.GetPic();
             foreach (Unit unit in list)
                 if (unit.Type == UnitType.Infantry)
+                    return unit.GetPic();
+            foreach (Unit unit in list)
+                if (unit.Type == UnitType.Indy)
                     return unit.GetPic();
             return null;
         }
@@ -337,7 +337,7 @@ namespace Daemons
                 throw new Exception();
         }
 
-        private double GetDamage(Unit attacker)
+        public double GetDamage(Unit attacker)
         {
             double avg = 0, tot = 0;
             foreach (Unit defender in GetAllUnits())
@@ -430,6 +430,12 @@ namespace Daemons
             if (sideNeighbors == null)
                 Game.CreateNeighborReferences();
             return sideNeighbors;
+        }
+        internal IEnumerable<Tile> GetCornerNeighbors()
+        {
+            if (cornerNeighbors == null)
+                Game.CreateNeighborReferences();
+            return cornerNeighbors;
         }
 
         public bool IsSideNeighbor(Tile tile)

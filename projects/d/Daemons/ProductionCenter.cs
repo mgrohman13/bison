@@ -31,7 +31,7 @@ namespace Daemons
                 break;
 
             default:
-                throw new Exception("");
+                throw new Exception("stuff");
             }
         }
 
@@ -114,7 +114,7 @@ namespace Daemons
                 damage = 11;
                 break;
             default:
-                throw new Exception("die");
+                throw new Exception("meh");
             }
             return Unit.GetStrength(unitType, hits, damage);
         }

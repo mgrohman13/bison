@@ -55,6 +55,7 @@ namespace DaemonsWinApp
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.btnPlayers = new System.Windows.Forms.Button();
+            this.lblAccent = new System.Windows.Forms.Label();
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox1 ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox3 ) ).BeginInit();
             this.SuspendLayout();
@@ -276,7 +277,7 @@ namespace DaemonsWinApp
             // button2
             // 
             this.button2.BackColor = System.Drawing.Color.Silver;
-            this.button2.Location = new System.Drawing.Point(829, 567);
+            this.button2.Location = new System.Drawing.Point(829, 565);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 23;
@@ -287,7 +288,7 @@ namespace DaemonsWinApp
             // button3
             // 
             this.button3.BackColor = System.Drawing.Color.Silver;
-            this.button3.Location = new System.Drawing.Point(748, 567);
+            this.button3.Location = new System.Drawing.Point(748, 565);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 23);
             this.button3.TabIndex = 22;
@@ -298,13 +299,24 @@ namespace DaemonsWinApp
             // btnPlayers
             // 
             this.btnPlayers.BackColor = System.Drawing.Color.Silver;
-            this.btnPlayers.Location = new System.Drawing.Point(748, 594);
+            this.btnPlayers.Location = new System.Drawing.Point(748, 592);
             this.btnPlayers.Name = "btnPlayers";
             this.btnPlayers.Size = new System.Drawing.Size(156, 23);
             this.btnPlayers.TabIndex = 24;
             this.btnPlayers.Text = "Players";
             this.btnPlayers.UseVisualStyleBackColor = false;
             this.btnPlayers.Click += new System.EventHandler(this.btnPlayers_Click);
+            // 
+            // lblAccent
+            // 
+            this.lblAccent.BackColor = System.Drawing.Color.Black;
+            this.lblAccent.ForeColor = System.Drawing.Color.Black;
+            this.lblAccent.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.lblAccent.Location = new System.Drawing.Point(744, 588);
+            this.lblAccent.Name = "lblAccent";
+            this.lblAccent.Size = new System.Drawing.Size(164, 31);
+            this.lblAccent.TabIndex = 25;
+            this.lblAccent.Visible = false;
             // 
             // MainForm
             // 
@@ -336,6 +348,7 @@ namespace DaemonsWinApp
             this.Controls.Add(this.lblPlayer);
             this.Controls.Add(this.btnEndTurn);
             this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblAccent);
             this.KeyPreview = true;
             this.Name = "MainForm";
             this.Text = "Daemons";
@@ -379,6 +392,7 @@ namespace DaemonsWinApp
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button btnPlayers;
+        private System.Windows.Forms.Label lblAccent;
     }
 }
 

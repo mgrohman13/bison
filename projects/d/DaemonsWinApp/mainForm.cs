@@ -152,6 +152,8 @@ namespace DaemonsWinApp
 
         private void RefreshUnits()
         {
+            lblAccent.Visible = game.HasWinner();
+
             RefreshButtons();
 
             ClearUnitInfo();

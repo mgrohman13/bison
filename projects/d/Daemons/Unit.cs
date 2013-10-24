@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Daemons
@@ -14,7 +15,7 @@ namespace Daemons
         private int hits, movement;
         public readonly int MaxHits, Regen, MaxMove;
         private readonly int damage;
-        public readonly int Souls;
+        private int souls;
         private double _morale;
         private float battles;
 
@@ -70,7 +71,7 @@ namespace Daemons
                 this.MaxHits = Game.Random.GaussianCappedInt(35, .30f, 21);//0.40
                 this.Regen = Game.Random.GaussianCappedInt(4, .39f, 1);//0.75
                 this.damage = Game.Random.GaussianCappedInt(10, .39f, 5);//0.50
-                souls = 1.6;
+                souls = 1.0;
                 break;
 
             default:
@@ -82,8 +83,10 @@ namespace Daemons
                 GainMorale(1.3);
 
             this.hits = MaxHits;
+            if (owner.Independent)
+                souls *= 1.6;
             souls = Math.Pow(hits * damage, .65) * ( 3.9 + Regen * MaxMove ) * souls / 7.5;
-            this.Souls = Game.Random.GaussianCappedInt(souls, .06, Game.Random.Round(souls * .65));
+            this.souls = Game.Random.GaussianCappedInt(souls, .06, Game.Random.Round(souls * .65));
         }
 
         public Player Owner
@@ -91,6 +94,14 @@ namespace Daemons
             get
             {
                 return owner;
+            }
+        }
+
+        public int Souls
+        {
+            get
+            {
+                return souls;
             }
         }
 
@@ -128,6 +139,9 @@ namespace Daemons
             }
             private set
             {
+                if (this.Type == UnitType.Daemon && value < this._morale)
+                    value = ( value * ( 1 - .26 ) + .26 * this._morale );
+
                 this._morale = Game.Random.GaussianCapped(value, Math.Abs(_morale - value) / value * .26, Math.Max(0, 2 * value - 1));
             }
         }
@@ -203,6 +217,7 @@ namespace Daemons
 
         internal void Won(Player independent)
         {
+            this.souls = Game.Random.Round(this.souls * 1.6);
             this.owner = independent;
             this.owner.Add(this);
         }
@@ -212,13 +227,15 @@ namespace Daemons
             return ( movement > 0 && ( tile.IsSideNeighbor(t) || ( Type == UnitType.Daemon && tile.IsCornerNeighbor(t) ) ) );
         }
 
-        public void Move(Tile toTile)
+        public bool Move(Tile toTile)
         {
             if (Owner.Game.GetCurrentPlayer() == this.Owner && CanMove(toTile))
             {
                 DoMove(toTile);
                 this.movement--;
+                return true;
             }
+            return false;
         }
         private void DoMove(Tile toTile)
         {
@@ -356,46 +373,40 @@ namespace Daemons
                 DamageUnit(defender);
         }
 
-        public static void Fire(List<Unit> move, Tile target)
+        public static void Fire(IEnumerable<Unit> move, Tile target)
         {
-            move.Sort(Tile.UnitDamageComparison);
+            move = move.OrderByDescending((u) => u.Tile.GetDamage(u));
 
-            while (move.Count > 0 && target.NumUnits > 0)
+            while (move.Any() && target.NumUnits > 0)
             {
                 double totalHits = 0;
                 foreach (Unit defender in target.GetAllUnits())
                     if (defender.Owner != target.Game.GetCurrentPlayer())
                         totalHits += defender.hits / GetDamageMult(UnitType.Archer, defender.Type);
-                double totalDamage = 0;
-                foreach (Unit u in move)
-                    totalDamage += u.Damage;
+                double totalDamage = move.Aggregate<Unit, double>(0, (t, u) => t + u.Damage);
 
                 Unit fire;
                 if (totalDamage > MultHits(totalHits))
                 {
-                    fire = move[0];
-                    foreach (Unit u in move)
-                        if (u.Healed)
-                        {
-                            fire = u;
-                            break;
-                        }
+                    fire = move.FirstOrDefault((u) => u.Healed);
+                    if (fire == null)
+                        fire = move.First();
                 }
                 else
                 {
                     fire = null;
-                    Unit defender = target.GetBestTarget(move[0]);
+                    Unit defender = target.GetBestTarget(move.First());
                     double hits = defender.hits / GetDamageMult(UnitType.Archer, defender.Type);
-                    for (int a = move.Count ; --a > -1 ; )
+                    foreach (Unit u in move.Reverse())
                     {
-                        fire = move[a];
+                        fire = u;
                         if (fire.Damage > MultHits(hits))
                             break;
                     }
                 }
 
                 fire.Fire(target);
-                move.Remove(fire);
+                move = move.Except(new[] { fire });
             }
         }
 

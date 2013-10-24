@@ -1,11 +1,10 @@
 review recent history for div by int errors
 
-incorporate loss turn
-win condition too easy
-indy knight/daemon movement
-give won indy units a soul boost
-refactor won to list
-won players units
+victory condition from 2nd place player not total/sqrt
+daemon retreat corner
+stay when in combat
+	review all actions
+obvious visual indication when shift is held to fire or not
 show all checkbox
 info form size
 corner max shoot textbox does not show 1/2
@@ -13,8 +12,6 @@ remove knight ishealed weirdness??
 	end turn move warning
 stay on knight does not move next
 show army morale
-morale boost for daemons?
-show when ending turn will win game?
 highlight a kill in the log
 remove floats
 better multi battles

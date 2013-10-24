@@ -21,7 +21,11 @@ namespace DaemonsWinApp
                 {
                     this.lbxPlayer.Items.Add(p);
                     this.lbxSoul.Items.Add(p.Score.ToString("0"));
-                    this.lbxStr.Items.Add(p.GetStrength().ToString("0"));
+                    string str = p.GetStrength().ToString("0");
+                    double win = game.GetWinPct(p);
+                    if (win > 0)
+                        str += " (" + ( win * 100 ).ToString("0") + "%)";
+                    this.lbxStr.Items.Add(str);
                     this.lbxProd.Items.Add(game.GetProduction(p).ToString("+0.0"));
                 }
             foreach (Player p in game.GetWinners())

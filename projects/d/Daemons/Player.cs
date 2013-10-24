@@ -221,15 +221,25 @@ namespace Daemons
 
         internal void MakeArrow(float arrows)
         {
-            if (Independent)
-                AddSouls(arrows * 6.5f);
-            else
-                this.arrows += Game.Random.GaussianCappedInt(arrows, .09f);
+            this.arrows += Game.Random.GaussianCappedInt(arrows, .09f);
         }
-
         internal void UseArrows(int needed)
         {
-            arrows -= needed;
+            this.arrows -= needed;
+        }
+        internal void IndyArrows(bool make)
+        {
+            const float rate = 6.5f;
+            if (make)
+            {
+                this.arrows += Game.Random.Round(this.souls / rate);
+                this.souls = 0;
+            }
+            else
+            {
+                AddSouls(this.arrows * rate);
+                this.arrows = 0;
+            }
         }
 
         internal void Add(Unit unit)
