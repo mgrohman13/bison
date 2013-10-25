@@ -217,6 +217,7 @@ namespace Daemons
 
         internal void Won(Player independent)
         {
+            this.movement = 0;
             this.souls = Game.Random.Round(this.souls * 1.6);
             this.owner = independent;
             this.owner.Add(this);
@@ -332,7 +333,7 @@ namespace Daemons
 
         internal Tile Retreat(Tile prev, bool force)
         {
-            if (!force && this.Movement == 0 && this.Morale < Game.Random.Gaussian(0.065, 0.039))
+            if (!force && this.Movement == 0 && this.Morale < Game.Random.Gaussian(.091, .039))
                 return prev;
 
             Tile cur;
@@ -343,7 +344,10 @@ namespace Daemons
             else
             {
                 Dictionary<Tile, int> chances = new Dictionary<Tile, int>();
-                foreach (Tile t in this.Tile.GetSideNeighbors())
+                IEnumerable<Tile> options = this.Tile.GetSideNeighbors();
+                if (this.Type == UnitType.Daemon)
+                    options = options.Union(this.Tile.GetCornerNeighbors());
+                foreach (Tile t in options)
                     chances.Add(t, t.GetRetreatValue(this.Owner));
                 cur = Game.Random.SelectValue(chances);
             }
@@ -499,7 +503,7 @@ namespace Daemons
 
         public void Heal()
         {
-            if (Owner.Game.GetCurrentPlayer() == this.Owner)
+            if (Owner.Game.GetCurrentPlayer() == this.Owner && this.tile.GetAttackers().Length == 0)
                 HealInternal();
         }
 

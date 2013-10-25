@@ -248,9 +248,9 @@ namespace Daemons
             else if (Game.Random.Bool())
             {
                 if (Game.Random.Bool())
-                    Retreat(this.attackers.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.13, .39) )), true);
+                    Retreat(this.attackers.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.169, .52) )), true);
                 if (Game.Random.Bool())
-                    Retreat(this.units.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.13, .39) )), true);
+                    Retreat(this.units.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.169, .52) )), true);
             }
         }
         private double Mult(double morale, double mult)

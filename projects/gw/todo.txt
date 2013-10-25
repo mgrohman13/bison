@@ -31,6 +31,8 @@ UI
 		ships
 	keyboard?
 
+directly upgrade existing ships?
+	to reduce repair cost?
 GetNonColonyPct full trans?
 increase minimum research chance
 ship name value

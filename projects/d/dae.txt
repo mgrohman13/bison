@@ -1,9 +1,12 @@
 review recent history for div by int errors
 
-victory condition from 2nd place player not total/sqrt
-daemon retreat corner
-stay when in combat
-	review all actions
+players show winners on top
+hold down right click negates orig action?
+max archers selects best based on algorithm?
+win condition power?
+indy lower morale?
+review removeplayer scenarios
+review all during-combat actions
 obvious visual indication when shift is held to fire or not
 show all checkbox
 info form size
@@ -22,3 +25,10 @@ show battles
 undo
 
 refactor everything (reorder members)
+
+Pink 0
+Yellow 7
+Red 9
+Blue 12
+Green 15
+Black 18

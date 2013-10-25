@@ -208,7 +208,7 @@ namespace Daemons
             foreach (Player player in GetWinners().Reverse())
                 AddResult(results, player, 169.0 / won[player], ref points, ref min);
 
-            foreach (var pair in results)
+            foreach (var pair in results.ToArray())
                 results[pair.Key] = pair.Value - min;
 
             return results;
@@ -290,6 +290,8 @@ namespace Daemons
             }
             else
             {
+                GetCurrentPlayer().ResetMoves();
+
                 if (Random.Bool(GetWinPct(GetCurrentPlayer())))
                     RemovePlayer(GetCurrentPlayer(), true);
 
@@ -300,8 +302,6 @@ namespace Daemons
                 }
                 else
                 {
-                    GetCurrentPlayer().ResetMoves();
-
                     currentPlayer++;
                     CheckTurnInc();
 
@@ -314,11 +314,12 @@ namespace Daemons
         }
         public double GetWinPct(Player player)
         {
-            double total = players.Aggregate<Player, double>(0, (t, p) => t + ( p == player ? 0 : p.GetStrength() ));
-            total /= Math.Sqrt(players.Length - 1);
+            int count = -1;
+            double total = players.OrderByDescending((p) => p.GetStrength()).Aggregate<Player, double>(0,
+                    (t, p) => t + ( p == player ? 0 : p.GetStrength() / ( 1 + ++count ) ));
             double str = player.GetStrength();
-            if (str > total * 1.69)
-                return ( str - total * 1.69 ) / ( str - total * 1.3 );
+            if (str > total * 1.5)
+                return ( str - total * 1.5 ) / ( str - total );
             return 0;
         }
         public bool HasWinner()
