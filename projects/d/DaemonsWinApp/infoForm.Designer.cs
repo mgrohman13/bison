@@ -38,9 +38,9 @@ namespace DaemonsWinApp
             // vScrollBar1
             // 
             this.vScrollBar1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.vScrollBar1.Location = new System.Drawing.Point(510, 0);
+            this.vScrollBar1.Location = new System.Drawing.Point(268, 0);
             this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(16, 639);
+            this.vScrollBar1.Size = new System.Drawing.Size(16, 262);
             this.vScrollBar1.TabIndex = 0;
             this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
             // 
@@ -49,17 +49,17 @@ namespace DaemonsWinApp
             this.pnlMove.Controls.Add(this.chbAll);
             this.pnlMove.Controls.Add(this.btnOk);
             this.pnlMove.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlMove.Location = new System.Drawing.Point(0, 601);
+            this.pnlMove.Location = new System.Drawing.Point(0, 224);
             this.pnlMove.Name = "pnlMove";
-            this.pnlMove.Size = new System.Drawing.Size(510, 38);
+            this.pnlMove.Size = new System.Drawing.Size(268, 38);
             this.pnlMove.TabIndex = 3;
             this.pnlMove.Visible = false;
             // 
             // chbAll
             // 
-            this.chbAll.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chbAll.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.chbAll.AutoSize = true;
-            this.chbAll.Location = new System.Drawing.Point(440, 7);
+            this.chbAll.Location = new System.Drawing.Point(198, 7);
             this.chbAll.Name = "chbAll";
             this.chbAll.Size = new System.Drawing.Size(67, 17);
             this.chbAll.TabIndex = 5;
@@ -72,7 +72,7 @@ namespace DaemonsWinApp
             this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnOk.BackColor = System.Drawing.Color.Silver;
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(222, 3);
+            this.btnOk.Location = new System.Drawing.Point(101, 3);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
             this.btnOk.TabIndex = 4;
@@ -84,11 +84,15 @@ namespace DaemonsWinApp
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(526, 639);
+            this.ClientSize = new System.Drawing.Size(284, 262);
             this.Controls.Add(this.pnlMove);
             this.Controls.Add(this.vScrollBar1);
             this.KeyPreview = true;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "InfoForm";
+            this.ShowInTaskbar = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "infoForm";
             this.SizeChanged += new System.EventHandler(this.infoForm_SizeChanged);

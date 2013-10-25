@@ -187,9 +187,9 @@ namespace Daemons
             }
         }
 
-        public IEnumerable<Player> GetWinners()
+        public IEnumerable<KeyValuePair<Player, int>> GetWinners()
         {
-            return won.Keys.OrderBy((player) => won[player]);
+            return won.OrderBy((player) => player.Value);
         }
         public IEnumerable<Player> GetLosers()
         {
@@ -205,8 +205,8 @@ namespace Daemons
             int points = 0, min = int.MaxValue;
             foreach (Player player in GetLosers().Reverse())
                 AddResult(results, player, -39.0 / lost[player], ref points, ref min);
-            foreach (Player player in GetWinners().Reverse())
-                AddResult(results, player, 169.0 / won[player], ref points, ref min);
+            foreach (var player in GetWinners().Reverse())
+                AddResult(results, player.Key, 169.0 / player.Value, ref points, ref min);
 
             foreach (var pair in results.ToArray())
                 results[pair.Key] = pair.Value - min;
@@ -285,28 +285,22 @@ namespace Daemons
 
             if (players.Length == 1)
             {
-                currentPlayer = 0;
-                RemovePlayer(GetCurrentPlayer(), true);
+                RemovePlayer(players[0], true);
             }
             else
             {
                 GetCurrentPlayer().ResetMoves();
 
                 if (Random.Bool(GetWinPct(GetCurrentPlayer())))
-                    RemovePlayer(GetCurrentPlayer(), true);
-
-                if (players.Length == 1)
                 {
-                    currentPlayer = 0;
-                    RemovePlayer(GetCurrentPlayer(), false);
+                    RemovePlayer(GetCurrentPlayer(), true);
+                    if (players.Length == 1)
+                        RemovePlayer(players[0], false);
                 }
                 else
                 {
                     currentPlayer++;
-                    CheckTurnInc();
-
-                    foreach (ProductionCenter pc in production)
-                        pc.Reset(GetCurrentPlayer());
+                    StartTurn();
                 }
             }
 
@@ -314,17 +308,23 @@ namespace Daemons
         }
         public double GetWinPct(Player player)
         {
-            int count = -1;
-            double total = players.OrderByDescending((p) => p.GetStrength()).Aggregate<Player, double>(0,
-                    (t, p) => t + ( p == player ? 0 : p.GetStrength() / ( 1 + ++count ) ));
+            double count = 0;
+            double total = players.Union(new[] { independent }).OrderByDescending((p) => p.GetStrength())
+                    .Aggregate<Player, double>(0, (t, p) => t + ( p == player ? 0 : p.GetStrength() / ++count ));
             double str = player.GetStrength();
-            if (str > total * 1.5)
-                return ( str - total * 1.5 ) / ( str - total );
+            if (str > total * 1.3)
+                return Math.Pow(( str - total * 1.3 ) / ( str - total ), 2.6);
             return 0;
         }
         public bool HasWinner()
         {
             return players.Any((p) => ( GetWinPct(p) > 0 ));
+        }
+        private void StartTurn()
+        {
+            CheckTurnInc();
+            foreach (ProductionCenter pc in production)
+                pc.Reset(GetCurrentPlayer());
         }
 
         private void ProcessBattles()
@@ -443,7 +443,7 @@ namespace Daemons
             //convert arrows to souls to create new units
             independent.IndyArrows(false);
 
-            independent.AddSouls(Random.GaussianOEInt(production.Count * ( 5.2 * turn + 39 ), .26f, .52 * turn / ( turn + 7.8 )));
+            independent.AddSouls(Random.GaussianOEInt(IndyProd(), .26f, .52 * turn / ( 7.8 + turn )));
             int amt = independent.RoundSouls();
             if (amt > 0)
             {
@@ -462,6 +462,10 @@ namespace Daemons
             independent.ResetMoves();
 
             independentsTurn = false;
+        }
+        public double IndyProd()
+        {
+            return production.Count * ( 5.2 * turn + 39 );
         }
         private bool MoveIndy(Tile from, Tile to, UnitType? special)
         {
@@ -547,14 +551,14 @@ namespace Daemons
             else
                 lost.Add(player, turn);
 
-            player.Won(independent);
-            for (int x = 0 ; x < width ; ++x)
-                for (int y = 0 ; y < height ; ++y)
-                    foreach (Unit u in map[x, y].GetUnits(player))
-                        u.Won(independent);
-
             if (this.players.Length > 1)
             {
+                player.Won(independent);
+                for (int x = 0 ; x < width ; ++x)
+                    for (int y = 0 ; y < height ; ++y)
+                        foreach (Unit u in map[x, y].GetUnits(player))
+                            u.Won(independent);
+
                 //remove from the players array
                 int removedIndex = players.Length - 1;
                 Player[] newPlayers = new Player[players.Length - 1];
@@ -593,7 +597,7 @@ namespace Daemons
                     foreach (ProductionCenter pc in production)
                         if (pc.type == type)
                             ++count;
-                    float avg = count / ( players.Length + 1f );
+                    float avg = count / ( 1f + players.Length );
                     int remove = Random.GaussianCappedInt(avg, .13f);
                     for (int b = 0 ; b < remove ; b++)
                     {
@@ -603,16 +607,20 @@ namespace Daemons
                         else
                             --b;
                     }
-                }
 
-                foreach (ProductionCenter pc in this.production)
-                    pc.Reset(player);
+                    foreach (ProductionCenter pc in this.production)
+                        pc.Reset(player);
+                }
 
                 //ensure we still have the correct current player
                 if (currentPlayer > removedIndex)
                     --currentPlayer;
                 else if (currentPlayer == removedIndex)
-                    CheckTurnInc();
+                    StartTurn();
+            }
+            else
+            {
+                currentPlayer = 0;
             }
         }
 

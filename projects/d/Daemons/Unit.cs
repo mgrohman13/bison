@@ -78,9 +78,9 @@ namespace Daemons
                 throw new Exception();
             }
 
-            this.Morale = Game.Random.Weighted(.78);
+            this.Morale = Game.Random.Weighted(.91);
             if (Type == UnitType.Daemon)
-                GainMorale(1.3);
+                GainMorale(1.69);
 
             this.hits = MaxHits;
             if (owner.Independent)
@@ -133,14 +133,20 @@ namespace Daemons
         {
             get
             {
-                if (this.hits > 0 && ( this._morale <= 0 || this._morale > 1 ))
-                    throw new Exception();
+                if (this.hits > 0)
+                    if (this._morale <= double.Epsilon)
+                        this._morale = double.Epsilon;
+                    else if (this._morale >= 1)
+                        this._morale = 1;
                 return _morale;
             }
             private set
             {
-                if (this.Type == UnitType.Daemon && value < this._morale)
-                    value = ( value * ( 1 - .26 ) + .26 * this._morale );
+                if (value < this._morale)
+                    if (this.owner.Independent && this.Type != UnitType.Daemon)
+                        value = Math.Pow(value / this._morale, 1.69) * this._morale;
+                    else if (this.Type == UnitType.Daemon)
+                        value = ( value * ( 1 - .26 ) + .26 * this._morale );
 
                 this._morale = Game.Random.GaussianCapped(value, Math.Abs(_morale - value) / value * .26, Math.Max(0, 2 * value - 1));
             }
@@ -150,7 +156,7 @@ namespace Daemons
         {
             get
             {
-                return ( Hits == MaxHits || ( Movement > 1 && ( ( ( Movement - 1 ) * Regen ) + Hits >= MaxHits ) ) );
+                return ( Hits == MaxHits );
             }
         }
 
@@ -190,7 +196,7 @@ namespace Daemons
         {
             get
             {
-                return (double)hits / (double)MaxHits;
+                return hits / (double)MaxHits;
             }
         }
 
@@ -255,15 +261,14 @@ namespace Daemons
             if (defender.hits <= 0)
             {
                 damage += defender.hits;
+                defender.hits = 0;
+                defender.Die();
 
                 List<Unit> units = defender.Tile.GetUnits(defender.Owner);
                 double mult = 1 - defender.MaxStrength / ( defender.MaxStrength + Tile.GetArmyStr(units) );
                 foreach (Unit unit in units)
                     unit.Morale *= mult;
                 addMorale += defender.MaxStrength;
-
-                defender.hits = 0;
-                defender.Die();
 
                 this.Owner.AddSouls(defender.Souls, true);
             }
@@ -272,17 +277,18 @@ namespace Daemons
                 this.Owner.AddSouls(( damage / (float)defender.MaxHits ) * defender.Souls, true);
                 defender.Morale *= 1 - damage / (double)( defender.hits + damage );
 
-                addMorale += defender.MaxStrength * damage / defender.MaxHits;
+                addMorale += defender.MaxStrength * damage / (double)defender.MaxHits;
             }
 
-            this.battles += .21f * ( damage + 1 ) / ( 1f + this.BaseDamage );
-            defender.battles += .091f * ( damage + 1 ) / ( 1f + defender.MaxHits );
+            this.battles += .169f * damage / (float)this.BaseDamage;
+            defender.battles += .169f * damage / (float)defender.MaxHits;
 
-            if (addMorale > 0)
-                GainMorale(addMorale / 16.9);
+            GainMorale(addMorale / 39.0);
 
-            Owner.Game.Log(String.Format("{8} -> {9}\r\n({0}, {1}/{2})   {7}{3}   ({4}, {5}/{6})",
-                    this.DamageStr, this.hits, this.MaxHits, damage, defender.DamageStr, defender.hits, defender.MaxHits, damage > 0 ? "-" : "", this, defender));
+            Owner.Game.Log(String.Format("{5} -> {6}\r\n({0},{1}/{2}) {7}{3} {4}",
+                    this.DamageStr, this.hits, this.MaxHits, damage,
+                    defender.hits > 0 ? string.Format("({0},{1}/{2})", defender.DamageStr, defender.hits, defender.MaxHits) : "KILLED!",
+                    this, defender, damage > 0 ? "-" : ""));
 
             return damage;
         }
@@ -331,9 +337,9 @@ namespace Daemons
             this.dead = true;
         }
 
-        internal Tile Retreat(Tile prev, bool force)
+        internal Tile Retreat(Tile prev)
         {
-            if (!force && this.Movement == 0 && this.Morale < Game.Random.Gaussian(.091, .039))
+            if (this.Movement < 1 && this.Morale < .00117)
                 return prev;
 
             Tile cur;
@@ -354,8 +360,8 @@ namespace Daemons
 
             DoMove(cur);
             if (this.movement < 1)
-                this.Morale = Math.Pow(Morale / 1.3, 2.6);
-            else if (this.movement > 1)
+                this.Morale = Math.Pow(Morale / 1.3, 3);
+            else
                 this.GainMorale(( this.movement - 1.0 ) / this.MaxMove);
             this.movement = 0;
 
@@ -514,20 +520,22 @@ namespace Daemons
 
             this.movement = this.MaxMove;
 
-            double turns = 1 - this.battles;
-            if (turns > 0)
-                GainMorale(turns);
-            --this.battles;
-            if (this.battles < 0)
-                this.battles = 0;
-        }
+            if (battles > 0)
+                battles = Game.Random.GaussianCapped(battles, .13f / battles);
 
+            float turns = 1 - battles;
+            if (turns < .13)
+                turns = (float)( .13 / ( Math.Pow(1.13 - turns, .78) ) );
+            GainMorale(turns);
+            battles -= 1 - turns;
+        }
         private void GainMorale(double turns)
         {
-            double amt = .39 / turns;
-            if (amt > .5)
-                amt /= ( amt + .5 );
-            Morale = Math.Pow(Morale, amt);
+            if (turns > 0)
+                Morale = Math.Pow(Morale, Math.Pow(.39, turns));
+
+            if (turns < 0)
+                throw new Exception();
         }
 
         public string GetMoveString()

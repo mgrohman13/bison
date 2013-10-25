@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -11,11 +12,14 @@ namespace DaemonsWinApp
 {
     public partial class MainForm : Form
     {
+        public static MainForm instance;
+
         private const int size = 91, offSet = 0;
         private Tile _selected;
         public static bool shift = false;
         private Font font = new Font("Arial", 13);
         private Game game;
+        int timestamp;
 
         private Tile Selected
         {
@@ -33,6 +37,8 @@ namespace DaemonsWinApp
 
         public MainForm(Game game)
         {
+            instance = this;
+
             this.game = game;
 
             InitializeComponent();
@@ -140,6 +146,7 @@ namespace DaemonsWinApp
 
         private void ClearUnitInfo()
         {
+            this.lblMorale.Text = "";
             this.lblInf1.Text = "";
             this.lblInf2.Text = "";
             this.lblInf3.Text = "";
@@ -224,6 +231,7 @@ namespace DaemonsWinApp
 
             int num = 0;
 
+            this.lblMorale.Text = ( Tile.GetMorale(units) ).ToString("0%");
             for (int a = 0 ; a < types.Length ; a++)
                 if (types[a].Count > 0)
                 {
@@ -267,8 +275,7 @@ namespace DaemonsWinApp
         private void btnEndTurn_Click(object sender, EventArgs e)
         {
             DialogResult result = DialogResult.Yes;
-            Tile tile = game.GetCurrentPlayer().NextUnit(Selected);
-            if (tile != null && tile.GetUnits(game.GetCurrentPlayer(), true, true).Count > 0)
+            if (game.GetCurrentPlayer().Units.Any((u) => ( u.Movement > 0 && ( ( u.Movement - 1 ) * u.Regen + u.Hits >= u.MaxHits ) )))
                 result = MessageBox.Show("You have unmoved units.  Are you sure?", "", MessageBoxButtons.YesNo);
 
             if (result == DialogResult.Yes)
@@ -299,7 +306,11 @@ namespace DaemonsWinApp
         private void mainForm_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
+            {
                 InfoForm.CloseForm();
+                if (Environment.TickCount - timestamp > 520)
+                    return;
+            }
 
             int x = ( e.X - offSet ) / size, y = ( e.Y - offSet ) / size;
 
@@ -364,6 +375,8 @@ namespace DaemonsWinApp
 
                 if (e.Button == MouseButtons.Right)
                 {
+                    timestamp = Environment.TickCount;
+
                     List<Unit> units = new List<Unit>(clicked.GetAllUnits()), a = null, b = null;
                     InfoForm.ShowDialog(ref units, ref a, ref b, UseType.View);
                 }
@@ -396,7 +409,15 @@ namespace DaemonsWinApp
                     u.Heal();
                 RefreshArrows();
             }
-            btnNext_Click(sender, e);
+            if (Selected.GetUnits(game.GetCurrentPlayer(), true, true).Count == 0)
+            {
+                btnNext_Click(sender, e);
+            }
+            else
+            {
+                RefreshUnits();
+                RefreshArrows();
+            }
         }
 
         private void btnFight_Click(object sender, EventArgs e)

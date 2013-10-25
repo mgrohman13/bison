@@ -13,7 +13,7 @@ namespace DaemonsWinApp
     {
         public static InfoForm Form = new InfoForm();
 
-        private const int offset = 10, size = 100, ySize = 200, picSize = 21;
+        private const int offset = 10, size = 100, ySize = 175, picSize = 21;
 
         private static Bitmap hits = new System.Drawing.Bitmap(@"pics\hits.bmp");
         private static Bitmap damage = new System.Drawing.Bitmap(@"pics\damage.bmp");
@@ -44,13 +44,14 @@ namespace DaemonsWinApp
             this.part = part;
             this.move = move;
             this.showAll = ( use != UseType.Move );
+            this.chbAll.Checked = showAll;
             this.use = use;
             this.y = -1;
 
             Refresh();
 
             this.pnlMove.Visible = ( use == UseType.Move );
-            this.FormBorderStyle = ( use == UseType.View ? FormBorderStyle.None : FormBorderStyle.Sizable );
+            this.FormBorderStyle = ( use == UseType.View ? FormBorderStyle.FixedSingle : FormBorderStyle.Fixed3D );
 
             if (use == UseType.Build)
             {
@@ -66,6 +67,56 @@ namespace DaemonsWinApp
             this.vScrollBar1.Value = this.vScrollBar1.Minimum;
             AdjustMax();
             return true;
+        }
+
+        private void AdjustSize(List<Unit> units)
+        {
+            Size setSize;
+
+            int maxWidth = MainForm.instance.Width - ( this.Width - this.ClientSize.Width );
+            int maxHeight = MainForm.instance.Height - ( this.Height - this.ClientSize.Height );
+
+            int maxX = maxWidth / size;
+            if (( units.Count + maxX - 1 ) / maxX * ySize > maxHeight)
+            {
+                setSize = MainForm.instance.Size;
+            }
+            else
+            {
+                int diff = -1;
+                int setWidth = -1, setHeight = -1;
+                for (int testX = 1 ; testX <= maxX ; ++testX)
+                {
+                    int pxWidth = testX * size;
+                    int pxHeight = ( ( units.Count + testX - 1 ) / testX * ySize );
+
+                    int newDiff = pxWidth - pxHeight;
+                    if (diff == -1 || ( newDiff > 0 && diff < 0 ) || newDiff < diff)
+                    {
+                        diff = newDiff;
+                        setWidth = pxWidth;
+                        setHeight = pxHeight;
+
+                        if (units.Count == 1)
+                            break;
+                    }
+                }
+
+                setWidth += ( use == UseType.View ? offset : 39 );
+                if (use == UseType.Move && setWidth < 300)
+                    setWidth = 300;
+                setSize = new Size(setWidth, setHeight + ( use == UseType.View ? 39 : 169 ));
+            }
+
+            if (this.Size != setSize)
+                this.Size = setSize;
+
+            int setX = MainForm.instance.Location.X + ( MainForm.instance.Width - this.Width ) / 2;
+            int setY = MainForm.instance.Location.Y + ( MainForm.instance.Height - this.Height ) / 2;
+            Point setLocation = new Point(setX, setY);
+
+            if (this.Location != setLocation)
+                this.Location = setLocation;
         }
 
         private int XMax
@@ -117,6 +168,8 @@ namespace DaemonsWinApp
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            this.AdjustSize(showAll ? all : part);
+
             int x = offset, y = offset - this.vScrollBar1.Value * 13;
             const int incPic = picSize + 1;
             foreach (Unit u in ( showAll ? all : part ))
@@ -127,12 +180,26 @@ namespace DaemonsWinApp
                     using (Pen p = new Pen(Color.Black, 3))
                         e.Graphics.DrawRectangle(p, x, y, 90, 90);
 
-                double redPct = Math.Min(2 - u.Morale * 2, 1);
-                double greenPct = Math.Min(u.Morale * 2, 1);
-                using (Brush b = new SolidBrush(Color.FromArgb((int)( 255 * redPct ), (int)( 255 * greenPct ), 0)))
+                Color color;
+                double pct;
+                if (u.Morale < .00117)
+                {
+                    double turns = Math.Log(Math.Log(.00117) / Math.Log(u.Morale)) / Math.Log(.39);
+                    int brightness = (int)( 128 + 131 * Math.Pow(turns / 5.2, .6) );
+                    color = Color.FromArgb(brightness, brightness, brightness);
+                    pct = 1;
+                }
+                else
+                {
+                    double redPct = Math.Min(2 - u.Morale * 2, 1);
+                    double greenPct = Math.Min(u.Morale * 2, 1);
+                    color = Color.FromArgb((int)( 255 * redPct ), (int)( 255 * greenPct ), 0);
+                    pct = u.Morale;
+                }
+                using (Brush b = new SolidBrush(color))
                 {
                     e.Graphics.DrawRectangle(new Pen(Color.Black, 1), x - 1, y + size - 9, 92, 7);
-                    int div = (int)( 91 * u.Morale + .5f );
+                    int div = (int)( 91 * pct + .5f );
                     e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
                     e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
                 }

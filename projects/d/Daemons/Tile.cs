@@ -241,16 +241,16 @@ namespace Daemons
             if (Game.Random.Bool(chance * chance))
             {
                 if (side)
-                    Retreat(this.attackers, false);
+                    Retreat(this.attackers);
                 else
-                    Retreat(this.units, false);
+                    Retreat(this.units);
             }
             else if (Game.Random.Bool())
             {
                 if (Game.Random.Bool())
-                    Retreat(this.attackers.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.169, .52) )), true);
+                    Retreat(this.attackers.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.169, .52) )));
                 if (Game.Random.Bool())
-                    Retreat(this.units.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.169, .52) )), true);
+                    Retreat(this.units.Where((unit) => ( Game.Random.Bool() && unit.Morale < Game.Random.GaussianCapped(.169, .52) )));
             }
         }
         private double Mult(double morale, double mult)
@@ -262,7 +262,7 @@ namespace Daemons
             return morale;
         }
 
-        private static double GetMorale(IEnumerable<Unit> units)
+        public static double GetMorale(IEnumerable<Unit> units)
         {
             double morale = 0, tot = 0;
             foreach (Unit unit in units)
@@ -273,11 +273,11 @@ namespace Daemons
             return morale / tot;
         }
 
-        private void Retreat(IEnumerable<Unit> units, bool force)
+        private void Retreat(IEnumerable<Unit> units)
         {
             Tile t = null;
             foreach (Unit unit in Game.Random.Iterate(units))
-                t = unit.Retreat(t, force);
+                t = unit.Retreat(t);
         }
 
         private int GetNewAttackers()
@@ -314,7 +314,7 @@ namespace Daemons
             double total = 0;
             int count = -1;
             foreach (Unit unit in units)
-                total += GetDamage(unit) / ( 1 + ++count / 2.6 );
+                total += GetDamage(unit) / ( 1.0 + ++count / 2.6 );
             return total;
         }
 

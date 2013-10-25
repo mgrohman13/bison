@@ -1,29 +1,25 @@
-review recent history for div by int errors
-
-players show winners on top
-hold down right click negates orig action?
-max archers selects best based on algorithm?
-win condition power?
-indy lower morale?
-review removeplayer scenarios
 review all during-combat actions
-obvious visual indication when shift is held to fire or not
-show all checkbox
-info form size
-corner max shoot textbox does not show 1/2
-remove knight ishealed weirdness??
-	end turn move warning
-stay on knight does not move next
-show army morale
-highlight a kill in the log
-remove floats
+
+retreat always costs some morale?
+heal individual units
 better multi battles
-auto save location
-heal individ units
-split by army size
-show battles
 undo
 
+unhealed knight stay moves next
+decrease right click suppress interval
+show differing morale when in combat
+max archers selects best based on algorithm?
+obvious visual indication when shift is held to fire or not
+corner max shoot textbox does not show 1/2
+shortcut to customize all
+infoform scrollbar max issue
+auto save location
+split by army size
+show battles
+
+data types
+	remove floats
+use constants
 refactor everything (reorder members)
 
 Pink 0

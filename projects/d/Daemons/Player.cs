@@ -205,7 +205,12 @@ namespace Daemons
         {
             if (addScore)
                 score += value;
-            souls += Game.Random.Round(value);
+
+            if (value > 0)
+                souls += Game.Random.GaussianCappedInt(value, .078f);
+            else
+                souls += Game.Random.Round(value);
+
             SummonDaemon();
         }
 
@@ -221,7 +226,7 @@ namespace Daemons
 
         internal void MakeArrow(float arrows)
         {
-            this.arrows += Game.Random.GaussianCappedInt(arrows, .09f);
+            this.arrows += Game.Random.GaussianCappedInt(arrows, .091f);
         }
         internal void UseArrows(int needed)
         {

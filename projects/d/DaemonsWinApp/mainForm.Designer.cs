@@ -56,6 +56,7 @@ namespace DaemonsWinApp
             this.button3 = new System.Windows.Forms.Button();
             this.btnPlayers = new System.Windows.Forms.Button();
             this.lblAccent = new System.Windows.Forms.Label();
+            this.lblMorale = new System.Windows.Forms.Label();
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox1 ) ).BeginInit();
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox3 ) ).BeginInit();
             this.SuspendLayout();
@@ -318,12 +319,23 @@ namespace DaemonsWinApp
             this.lblAccent.TabIndex = 25;
             this.lblAccent.Visible = false;
             // 
+            // lblMorale
+            // 
+            this.lblMorale.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblMorale.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F);
+            this.lblMorale.Location = new System.Drawing.Point(880, 9);
+            this.lblMorale.Name = "lblMorale";
+            this.lblMorale.Size = new System.Drawing.Size(100, 23);
+            this.lblMorale.TabIndex = 26;
+            this.lblMorale.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(992, 773);
+            this.Controls.Add(this.lblMorale);
             this.Controls.Add(this.btnPlayers);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button3);
@@ -393,6 +405,7 @@ namespace DaemonsWinApp
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button btnPlayers;
         private System.Windows.Forms.Label lblAccent;
+        private System.Windows.Forms.Label lblMorale;
     }
 }
 

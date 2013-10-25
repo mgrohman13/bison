@@ -16,7 +16,16 @@ namespace DaemonsWinApp
         {
             InitializeComponent();
 
+            foreach (var pair in game.GetWinners())
+            {
+                Player p = pair.Key;
+                this.lbxPlayer.Items.Add(p);
+                this.lbxSoul.Items.Add("WON +" + ( 169.0 / pair.Value ).ToString("0.0"));
+                this.lbxStr.Items.Add(0);
+                this.lbxProd.Items.Add(0);
+            }
             if (game.GetPlayers().Length > 1)
+            {
                 foreach (Player p in game.GetPlayers())
                 {
                     this.lbxPlayer.Items.Add(p);
@@ -28,12 +37,11 @@ namespace DaemonsWinApp
                     this.lbxStr.Items.Add(str);
                     this.lbxProd.Items.Add(game.GetProduction(p).ToString("+0.0"));
                 }
-            foreach (Player p in game.GetWinners())
-            {
-                this.lbxPlayer.Items.Add(p);
-                this.lbxSoul.Items.Add("WON");
-                this.lbxStr.Items.Add(0);
-                this.lbxProd.Items.Add(0);
+                this.lbxPlayer.Items.Add(game.GetIndependent());
+                this.lbxSoul.Items.Add(0);
+                this.lbxStr.Items.Add(game.GetIndependent().GetStrength().ToString("0"));
+                this.lbxProd.Items.Add(( game.IndyProd() / 666.0 * Unit.GetStrength(UnitType.Indy, 35, 10) ).ToString("+0.0"));
+
             }
             foreach (Player p in game.GetLosers())
             {

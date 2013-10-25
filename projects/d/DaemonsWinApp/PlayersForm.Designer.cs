@@ -46,7 +46,7 @@
             this.lbxPlayer.ItemHeight = 16;
             this.lbxPlayer.Location = new System.Drawing.Point(12, 35);
             this.lbxPlayer.Name = "lbxPlayer";
-            this.lbxPlayer.Size = new System.Drawing.Size(120, 100);
+            this.lbxPlayer.Size = new System.Drawing.Size(120, 116);
             this.lbxPlayer.TabIndex = 0;
             this.lbxPlayer.SelectedIndexChanged += new System.EventHandler(this.lbx_SelectedIndexChanged);
             // 
@@ -57,7 +57,7 @@
             this.lbxSoul.ItemHeight = 16;
             this.lbxSoul.Location = new System.Drawing.Point(138, 35);
             this.lbxSoul.Name = "lbxSoul";
-            this.lbxSoul.Size = new System.Drawing.Size(120, 100);
+            this.lbxSoul.Size = new System.Drawing.Size(120, 116);
             this.lbxSoul.TabIndex = 1;
             this.lbxSoul.SelectedIndexChanged += new System.EventHandler(this.lbx_SelectedIndexChanged);
             // 
@@ -98,7 +98,7 @@
             this.lbxStr.ItemHeight = 16;
             this.lbxStr.Location = new System.Drawing.Point(264, 35);
             this.lbxStr.Name = "lbxStr";
-            this.lbxStr.Size = new System.Drawing.Size(120, 100);
+            this.lbxStr.Size = new System.Drawing.Size(120, 116);
             this.lbxStr.TabIndex = 4;
             this.lbxStr.SelectedIndexChanged += new System.EventHandler(this.lbx_SelectedIndexChanged);
             // 
@@ -119,7 +119,7 @@
             this.lbxProd.ItemHeight = 16;
             this.lbxProd.Location = new System.Drawing.Point(390, 35);
             this.lbxProd.Name = "lbxProd";
-            this.lbxProd.Size = new System.Drawing.Size(120, 100);
+            this.lbxProd.Size = new System.Drawing.Size(120, 116);
             this.lbxProd.TabIndex = 6;
             this.lbxProd.SelectedIndexChanged += new System.EventHandler(this.lbx_SelectedIndexChanged);
             // 
@@ -127,7 +127,7 @@
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.button1.Location = new System.Drawing.Point(435, 141);
+            this.button1.Location = new System.Drawing.Point(435, 157);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 8;
