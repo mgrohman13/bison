@@ -5,6 +5,9 @@ heal individual units
 better multi battles
 undo
 
+hotkeys
+	close log
+option to sort by current/max str
 unhealed knight stay moves next
 decrease right click suppress interval
 show differing morale when in combat
