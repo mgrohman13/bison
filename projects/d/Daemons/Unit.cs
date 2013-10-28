@@ -12,7 +12,7 @@ namespace Daemons
         private Player owner;
         public readonly UnitType Type;
 
-        private int hits, movement;
+        private int hits, movement, reserve;
         public readonly int MaxHits, Regen, MaxMove;
         private readonly int damage;
         private int souls;
@@ -32,6 +32,7 @@ namespace Daemons
             tile.Add(this);
 
             this.movement = 0;
+            this.reserve = 0;
             this.MaxMove = 1;
 
             double souls;
@@ -80,7 +81,7 @@ namespace Daemons
 
             this.Morale = Game.Random.Weighted(.91);
             if (Type == UnitType.Daemon)
-                GainMorale(1.69);
+                GainMorale(1.3);
 
             this.hits = MaxHits;
             if (owner.Independent)
@@ -143,12 +144,28 @@ namespace Daemons
             private set
             {
                 if (value < this._morale)
-                    if (this.owner.Independent && this.Type != UnitType.Daemon)
-                        value = Math.Pow(value / this._morale, 1.69) * this._morale;
+                    if (this.owner.Independent)
+                    {
+                        if (this.Type != UnitType.Daemon)
+                            value = Math.Pow(value / this._morale, 1.69) * this._morale;
+                    }
                     else if (this.Type == UnitType.Daemon)
+                    {
                         value = ( value * ( 1 - .26 ) + .26 * this._morale );
+                    }
 
                 this._morale = Game.Random.GaussianCapped(value, Math.Abs(_morale - value) / value * .26, Math.Max(0, 2 * value - 1));
+            }
+        }
+        public double RecoverMorale
+        {
+            get
+            {
+                double target = 1 - 1.0 / BaseDamage;
+                target *= target;
+                if (this.Morale < target)
+                    return Math.Log(Math.Log(target) / Math.Log(Morale)) / Math.Log(.39) + battles;
+                return 0;
             }
         }
 
@@ -191,6 +208,15 @@ namespace Daemons
                 return movement;
             }
         }
+        public int ReserveMove
+        {
+            get
+            {
+                if (this.Morale < .00117)
+                    return 0;
+                return reserve;
+            }
+        }
 
         public double HealthPct
         {
@@ -231,7 +257,7 @@ namespace Daemons
 
         public bool CanMove(Tile t)
         {
-            return ( movement > 0 && ( tile.IsSideNeighbor(t) || ( Type == UnitType.Daemon && tile.IsCornerNeighbor(t) ) ) );
+            return ( this.Movement + this.ReserveMove > 0 && ( tile.IsSideNeighbor(t) || ( Type == UnitType.Daemon && tile.IsCornerNeighbor(t) ) ) );
         }
 
         public bool Move(Tile toTile)
@@ -239,7 +265,12 @@ namespace Daemons
             if (Owner.Game.GetCurrentPlayer() == this.Owner && CanMove(toTile))
             {
                 DoMove(toTile);
-                this.movement--;
+
+                if (this.movement > 0)
+                    this.movement--;
+                else
+                    UseReserve();
+
                 return true;
             }
             return false;
@@ -339,8 +370,21 @@ namespace Daemons
 
         internal Tile Retreat(Tile prev)
         {
-            if (this.Movement < 1 && this.Morale < .00117)
+
+            if (this.movement > 0)
+            {
+                this.reserve += this.movement - 1;
+                this.movement = 0;
+            }
+            else if (this.ReserveMove > 0)
+            {
+                UseReserve();
+            }
+            else
+            {
                 return prev;
+            }
+            LoseMorale(.39);
 
             Tile cur;
             if (prev != null && Game.Random.Bool())
@@ -359,13 +403,20 @@ namespace Daemons
             }
 
             DoMove(cur);
-            if (this.movement < 1)
-                this.Morale = Math.Pow(Morale / 1.3, 3);
-            else
-                this.GainMorale(( this.movement - 1.0 ) / this.MaxMove);
-            this.movement = 0;
-
             return Game.Random.Bool() ? cur : prev;
+        }
+        private void UseReserve()
+        {
+            if (this.ReserveMove < 1)
+                throw new Exception();
+
+            this.reserve--;
+
+            LoseMorale(1.0 / this.MaxMove);
+        }
+        private void LoseMorale(double mult)
+        {
+            this.Morale = Math.Pow(this.Morale / ( 1.0 + .21 * mult ), Math.Pow(3.9, mult));
         }
 
         internal void OnBattle()
@@ -427,7 +478,7 @@ namespace Daemons
 
         public void Fire(Tile target)
         {
-            if (( Owner.Game.GetCurrentPlayer() != this.Owner ) || ( this.Type != UnitType.Archer || this.movement <= 0 ))
+            if (Owner.Game.GetCurrentPlayer() != this.Owner || this.Type != UnitType.Archer || this.Movement <= 0)
                 return;
 
             int needed = 1;
@@ -445,7 +496,9 @@ namespace Daemons
             Owner.Game.Log("--------------------------");
 
             DamageUnit(defender);
+
             this.movement--;
+
             this.Owner.UseArrows(needed);
         }
 
@@ -515,22 +568,27 @@ namespace Daemons
 
         internal void ResetMove()
         {
-            while (this.movement > 0)
+            this.movement += this.reserve;
+            while (this.movement > this.MaxMove)
                 HealInternal();
 
             this.movement = this.MaxMove;
+            this.reserve = this.MaxMove;
 
-            if (battles > 0)
-                battles = Game.Random.GaussianCapped(battles, .13f / battles);
-
+            this.battles += Game.Random.Gaussian(.13f);
             float turns = 1 - battles;
             if (turns < .13)
                 turns = (float)( .13 / ( Math.Pow(1.13 - turns, .78) ) );
             GainMorale(turns);
             battles -= 1 - turns;
+            if (this.Type == UnitType.Daemon)
+                battles -= .3f;
         }
         private void GainMorale(double turns)
         {
+            if (this.Type == UnitType.Daemon)
+                turns *= 1.3;
+
             if (turns > 0)
                 Morale = Math.Pow(Morale, Math.Pow(.39, turns));
 

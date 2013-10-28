@@ -58,6 +58,7 @@ namespace DaemonsWinApp
             this.lblUnit3 = new System.Windows.Forms.Label();
             this.lblUnit2 = new System.Windows.Forms.Label();
             this.lblUnit1 = new System.Windows.Forms.Label();
+            this.cbxForce = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // button1
@@ -362,11 +363,25 @@ namespace DaemonsWinApp
             this.lblUnit1.TabIndex = 40;
             this.lblUnit1.Tag = "";
             // 
+            // cbxForce
+            // 
+            this.cbxForce.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.cbxForce.AutoSize = true;
+            this.cbxForce.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.cbxForce.Location = new System.Drawing.Point(93, 395);
+            this.cbxForce.Name = "cbxForce";
+            this.cbxForce.Size = new System.Drawing.Size(97, 17);
+            this.cbxForce.TabIndex = 44;
+            this.cbxForce.Text = "Force March";
+            this.cbxForce.UseVisualStyleBackColor = true;
+            this.cbxForce.CheckedChanged += new System.EventHandler(this.cbxForce_CheckedChanged);
+            // 
             // MoveForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(339, 424);
+            this.Controls.Add(this.cbxForce);
             this.Controls.Add(this.lblUnit4);
             this.Controls.Add(this.lblUnit3);
             this.Controls.Add(this.lblUnit2);
@@ -440,5 +455,6 @@ namespace DaemonsWinApp
         private System.Windows.Forms.Label lblUnit3;
         private System.Windows.Forms.Label lblUnit2;
         private System.Windows.Forms.Label lblUnit1;
+        private System.Windows.Forms.CheckBox cbxForce;
     }
 }

@@ -13,8 +13,9 @@ namespace DaemonsWinApp
     {
         public static InfoForm Form = new InfoForm();
 
-        private const int offset = 10, size = 100, ySize = 175, picSize = 21;
+        private const int offset = 10, size = 100, ySize = 200, picSize = 21;
 
+        private static Bitmap movement = new System.Drawing.Bitmap(@"pics\move.bmp");
         private static Bitmap hits = new System.Drawing.Bitmap(@"pics\hits.bmp");
         private static Bitmap damage = new System.Drawing.Bitmap(@"pics\damage.bmp");
         private static Bitmap regen = new System.Drawing.Bitmap(@"pics\regen.bmp");
@@ -206,35 +207,46 @@ namespace DaemonsWinApp
 
                 using (Font f = new Font("Arial", 13))
                 {
-                    if (u.Movement > 0)
-                        e.Graphics.DrawString(u.Movement.ToString(), f, Brushes.Black, x, y + 72);
-
                     x += 6;
                     y += size;
 
-                    e.Graphics.DrawImage(damage, x, y);
-                    e.Graphics.DrawImage(hits, x, y + incPic);
-                    e.Graphics.DrawImage(regen, x, y + incPic * 2);
+                    int tempY = y;
+                    e.Graphics.DrawImage(movement, x, tempY);
+                    tempY += incPic;
+                    e.Graphics.DrawImage(damage, x, tempY);
+                    tempY += incPic;
+                    e.Graphics.DrawImage(hits, x, tempY);
+                    tempY += incPic;
+                    e.Graphics.DrawImage(regen, x, tempY);
                     string rgnStr = u.Regen.ToString();
                     int incX = incPic + (int)e.Graphics.MeasureString(rgnStr, f).Width;
-                    e.Graphics.DrawImage(soul, x + incX, y + incPic * 2);
+                    e.Graphics.DrawImage(soul, x + incX, tempY);
 
                     x += picSize;
 
-                    string str = "{0}";
+                    tempY = y;
+                    string str = string.Format("{0} ", u.Movement);
+                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, tempY));
+                    if (u.ReserveMove > 0)
+                        e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMove), f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
+
+                    tempY += incPic;
+                    str = "{0}";
                     if (u.DamageStr != u.BaseDamage.ToString())
                         str += " / {1}";
                     str = string.Format(str, u.DamageStr, u.BaseDamage);
-                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, y));
+                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, tempY));
 
+                    tempY += incPic;
                     str = "{0}";
                     if (u.Hits != u.MaxHits)
                         str += " / {1}";
                     str = string.Format(str, u.Hits, u.MaxHits);
-                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, y + incPic));
+                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, tempY));
 
-                    e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, y + incPic * 2));
-                    e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, y + incPic * 2));
+                    tempY += incPic;
+                    e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, tempY));
+                    e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, tempY));
                 }
 
                 x -= picSize + 6;
@@ -251,15 +263,7 @@ namespace DaemonsWinApp
 
         private void infoForm_MouseUp(object sender, MouseEventArgs e)
         {
-            int x = ( e.X - offset ) / size;
-            int y = ( e.Y - offset + this.vScrollBar1.Value * 13 ) / ySize;
-            x += XMax * y;
-
-            Unit u = null;
-            if (showAll && x < all.Count)
-                u = all[x];
-            else if (x < part.Count)
-                u = part[x];
+            Unit u = GetUnit(e);
 
             if (u != null)
             {
@@ -280,6 +284,29 @@ namespace DaemonsWinApp
             Refresh();
         }
 
+        private Unit GetUnit(MouseEventArgs e)
+        {
+            if (!this.ClientRectangle.Contains(e.Location))
+                return null;
+
+            int x = ( e.X - offset ) / size;
+            int y = ( e.Y - offset + this.vScrollBar1.Value * 13 ) / ySize;
+            x += XMax * y;
+
+            if (use == UseType.View)
+                if (x >= 0 && x < all.Count)
+                    return all[x];
+                else
+                    return null;
+
+            Unit u = null;
+            if (showAll && x < all.Count)
+                u = all[x];
+            else if (x < part.Count)
+                u = part[x];
+            return u;
+        }
+
         private void infoForm_KeyDown(object sender, KeyEventArgs e)
         {
             MainForm.shift = e.Shift;
@@ -290,8 +317,22 @@ namespace DaemonsWinApp
             MainForm.shift = e.Shift;
         }
 
+        private Unit showing = null;
         public void infoForm_MouseMove(object sender, MouseEventArgs e)
         {
+            Unit u = GetUnit(e);
+            if (u != null && u.RecoverMorale > 0)
+            {
+                if (u != showing)
+                    toolTip1.Show(string.Format("Recover morale {0} turns", u.RecoverMorale.ToString("0.0")), this, e.X, e.Y, 13000);
+                showing = u;
+            }
+            else
+            {
+                this.toolTip1.Hide(this);
+                showing = null;
+            }
+
             if (this.vScrollBar1.Visible)
             {
                 if (y >= 0 && use == UseType.View)

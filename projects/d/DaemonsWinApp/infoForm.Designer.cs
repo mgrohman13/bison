@@ -28,10 +28,12 @@ namespace DaemonsWinApp
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this.pnlMove = new System.Windows.Forms.Panel();
             this.chbAll = new System.Windows.Forms.CheckBox();
             this.btnOk = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.pnlMove.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -79,6 +81,16 @@ namespace DaemonsWinApp
             this.btnOk.Text = "OK";
             this.btnOk.UseVisualStyleBackColor = false;
             // 
+            // toolTip1
+            // 
+            this.toolTip1.AutomaticDelay = 0;
+            this.toolTip1.AutoPopDelay = 13000;
+            this.toolTip1.InitialDelay = 0;
+            this.toolTip1.ReshowDelay = 0;
+            this.toolTip1.ShowAlways = true;
+            this.toolTip1.UseAnimation = false;
+            this.toolTip1.UseFading = false;
+            // 
             // InfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -112,5 +124,6 @@ namespace DaemonsWinApp
 		private System.Windows.Forms.Panel pnlMove;
 		private System.Windows.Forms.CheckBox chbAll;
 		private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }

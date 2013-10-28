@@ -1,9 +1,8 @@
 review all during-combat actions
 
-individualk retreats more likely
-hard cap at double movement
+log morale during combat
 figure out knight move left
-retreat always costs some morale?
+force march indies?
 heal individual units
 better multi battles
 undo

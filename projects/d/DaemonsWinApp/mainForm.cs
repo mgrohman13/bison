@@ -445,7 +445,12 @@ namespace DaemonsWinApp
         private void mainForm_MouseMove(object sender, MouseEventArgs e)
         {
             if (InfoForm.Form.Visible)
-                InfoForm.Form.infoForm_MouseMove(sender, e);
+            {
+                //InfoForm.Form.Activate();
+                int x = e.X + this.DesktopLocation.X - InfoForm.Form.DesktopLocation.X;
+                int y = e.Y + this.DesktopLocation.Y - InfoForm.Form.DesktopLocation.Y;
+                InfoForm.Form.infoForm_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, x, y, e.Delta));
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)

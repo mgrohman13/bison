@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -71,12 +72,22 @@ namespace DaemonsWinApp
                 unitType = null;
             else
                 unitType = UnitType.Daemon;
-            units = tile.GetUnits(tile.Game.GetCurrentPlayer(), true, unitType);
+            units = tile.GetUnits(tile.Game.GetCurrentPlayer(), !this.cbxForce.Checked, unitType);
+            if (this.cbxForce.Checked)
+                units = units.Where((u) => ( u.Movement + u.ReserveMove > 0 )).ToList();
             if (fire)
                 units.Sort(Tile.UnitDamageComparison);
 
             if (units.Count == 0)
-                return false;
+                if (this.cbxForce.Checked)
+                {
+                    return false;
+                }
+                else
+                {
+                    this.cbxForce.Checked = true;
+                    return SetupStuff(tile, moveTo, fire, max);
+                }
 
             int[] counts = new int[types.Capacity];
 
@@ -258,10 +269,18 @@ namespace DaemonsWinApp
 
         public static DialogResult ShowDialog(Tile tile, Tile moveTo, bool fire, int max)
         {
+            form.cbxForce.Visible = !fire;
+            form.cbxForce.Checked = false;
+
             if (form.SetupStuff(tile, moveTo, fire, max))
                 return form.ShowDialog();
             else
                 return System.Windows.Forms.DialogResult.Cancel;
+        }
+
+        private void cbxForce_CheckedChanged(object sender, EventArgs e)
+        {
+            form.SetupStuff(tile, moveTo, fire, max);
         }
     }
 }
