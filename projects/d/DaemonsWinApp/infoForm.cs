@@ -102,10 +102,10 @@ namespace DaemonsWinApp
                     }
                 }
 
-                setWidth += ( use == UseType.View ? offset : 39 );
+                setWidth += 21;
                 if (use == UseType.Move && setWidth < 300)
                     setWidth = 300;
-                setSize = new Size(setWidth, setHeight + ( use == UseType.View ? 39 : 169 ));
+                setSize = new Size(setWidth, setHeight + ( use == UseType.View ? 39 : 78 ));
             }
 
             if (this.Size != setSize)

@@ -1,5 +1,8 @@
 review all during-combat actions
 
+individualk retreats more likely
+hard cap at double movement
+figure out knight move left
 retreat always costs some morale?
 heal individual units
 better multi battles
