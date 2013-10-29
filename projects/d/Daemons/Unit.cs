@@ -110,7 +110,17 @@ namespace Daemons
         {
             get
             {
-                return damage * Math.Sqrt(HealthPct * Morale);
+                double mult = Math.Sqrt(HealthPct * Morale);
+                if (mult < double.Epsilon)
+                    mult = double.Epsilon;
+                double retVal = damage * mult;
+                if (retVal < 1)
+                {
+                    double turns = Math.Log(Math.Log(1.0 / damage) / Math.Log(mult)) / Math.Log(.39);
+                    double max = Math.Log(Math.Log(1.0 / damage) / Math.Log(double.Epsilon)) / Math.Log(.39);
+                    retVal = ( max - turns + .13 ) / ( .13 + max );
+                }
+                return retVal;
             }
         }
 
@@ -163,9 +173,14 @@ namespace Daemons
             {
                 double target = 1 - 1.0 / BaseDamage;
                 target *= target;
+                double retVal = 0;
                 if (this.Morale < target)
-                    return Math.Log(Math.Log(target) / Math.Log(Morale)) / Math.Log(.39) + battles;
-                return 0;
+                {
+                    retVal = Math.Log(Math.Log(target) / Math.Log(Morale)) / Math.Log(.39) + battles;
+                    if (this.Type == UnitType.Daemon)
+                        retVal /= 1.3;
+                }
+                return retVal;
             }
         }
 
@@ -173,7 +188,7 @@ namespace Daemons
         {
             get
             {
-                return ( Hits == MaxHits );
+                return ( Hits == MaxHits && this.movement > 0 && this.Morale > .00117 );
             }
         }
 
@@ -411,6 +426,7 @@ namespace Daemons
                 throw new Exception();
 
             this.reserve--;
+            this.battles += .65f;
 
             LoseMorale(1.0 / this.MaxMove);
         }

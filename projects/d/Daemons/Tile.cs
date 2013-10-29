@@ -238,7 +238,7 @@ namespace Daemons
             double chance = Math.Pow(attMorale / defMorale, .52) * Math.Pow(1 - defMorale, .91);
             if (chance > .5)
                 chance /= ( chance + .5 );
-            if (Game.Random.Bool(chance * chance))
+            if (defMorale == 0 || Game.Random.Bool(chance * chance))
             {
                 if (side)
                     Retreat(this.attackers);

@@ -206,6 +206,7 @@ namespace DaemonsWinApp
                 }
 
                 using (Font f = new Font("Arial", 13))
+                using (Font b = new Font("Arial", 13, FontStyle.Bold))
                 {
                     x += 6;
                     y += size;
@@ -226,23 +227,23 @@ namespace DaemonsWinApp
 
                     tempY = y;
                     string str = string.Format("{0} ", u.Movement);
-                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, tempY));
+                    e.Graphics.DrawString(str, u.Movement > 0 ? b : f, Brushes.Black, new Point(x, tempY));
                     if (u.ReserveMove > 0)
-                        e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMove), f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
+                        e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMove), u.ReserveMove > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
 
                     tempY += incPic;
                     str = "{0}";
                     if (u.DamageStr != u.BaseDamage.ToString())
                         str += " / {1}";
                     str = string.Format(str, u.DamageStr, u.BaseDamage);
-                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, tempY));
+                    e.Graphics.DrawString(str, u.RecoverMorale > 0 ? f : b, Brushes.Black, new Point(x, tempY));
 
                     tempY += incPic;
                     str = "{0}";
                     if (u.Hits != u.MaxHits)
                         str += " / {1}";
                     str = string.Format(str, u.Hits, u.MaxHits);
-                    e.Graphics.DrawString(str, f, Brushes.Black, new Point(x, tempY));
+                    e.Graphics.DrawString(str, u.Hits == u.MaxHits ? b : f, Brushes.Black, new Point(x, tempY));
 
                     tempY += incPic;
                     e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, tempY));

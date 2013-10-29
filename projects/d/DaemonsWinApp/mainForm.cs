@@ -189,26 +189,26 @@ namespace DaemonsWinApp
                 {
                 case UnitType.Archer:
                     types[1].Add(u);
-                    if (u.Healed && u.Movement > 0)
+                    if (u.Healed)
                         counts[1]++;
                     break;
 
                 case UnitType.Daemon:
                     types[3].Add(u);
-                    if (u.Healed && u.Movement > 0)
+                    if (u.Healed)
                         counts[3]++;
                     break;
 
                 case UnitType.Indy:
                 case UnitType.Infantry:
                     types[0].Add(u);
-                    if (u.Healed && u.Movement > 0)
+                    if (u.Healed)
                         counts[0]++;
                     break;
 
                 case UnitType.Knight:
                     types[2].Add(u);
-                    if (u.Healed && u.Movement > 0)
+                    if (u.Healed)
                         counts[2]++;
                     break;
 
@@ -308,7 +308,7 @@ namespace DaemonsWinApp
             if (e.Button == MouseButtons.Right)
             {
                 InfoForm.CloseForm();
-                if (Environment.TickCount - timestamp > 520)
+                if (Environment.TickCount - timestamp > 260)
                     return;
             }
 
@@ -409,7 +409,7 @@ namespace DaemonsWinApp
                     u.Heal();
                 RefreshArrows();
             }
-            if (Selected.GetUnits(game.GetCurrentPlayer(), true, true).Count == 0)
+            if (Selected != null && Selected.GetUnits(game.GetCurrentPlayer(), true, true).Count == 0)
             {
                 btnNext_Click(sender, e);
             }

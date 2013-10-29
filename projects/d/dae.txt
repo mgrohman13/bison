@@ -1,17 +1,36 @@
+Checkmorale conditional breakpoint defMorale == 0
+
 review all during-combat actions
 
+rethink arrows, long term cost to morale
+reserve move can be done second to allow some other action(fire, heal) first
+leftover reserve gives small advantage somewhere?
+	but costs in the first place maybe always? -except 0:2/3 knight end up equiv
+clear showing on infoform close
 log morale during combat
 figure out knight move left
+	also unmoved confirm with morale
 force march indies?
 heal individual units
 better multi battles
 undo
 
+infoform height doesnt inc by enough
+show str of indy that will move
+third and final loop through reserve move?
+tooltip show more detail
+filter by morale
+info form scroll too quickly
+	add conditional breakpoint with amount != 0 
+flickering
+onpaint accentuates any with move left, maybe healed
+recovery calc accounts for daemon mult
+	battle not quite right?
+morale label blocks daeom picture
 hotkeys
 	close log
 option to sort by current/max str
 unhealed knight stay moves next
-decrease right click suppress interval
 show differing morale when in combat
 max archers selects best based on algorithm?
 obvious visual indication when shift is held to fire or not

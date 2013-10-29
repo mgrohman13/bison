@@ -56,6 +56,8 @@ namespace DaemonsWinApp
 
         private bool SetupStuff(Tile tile, Tile moveTo, bool fire, int max)
         {
+            this.button1.Text = ( fire ? "Fire!" : "OK" );
+
             this.tile = tile;
             this.moveTo = moveTo;
             this.fire = fire;
@@ -78,7 +80,7 @@ namespace DaemonsWinApp
             if (fire)
                 units.Sort(Tile.UnitDamageComparison);
 
-            if (units.Count == 0)
+            if (units.Count == 0 && !fire)
                 if (this.cbxForce.Checked)
                 {
                     return false;
@@ -267,10 +269,13 @@ namespace DaemonsWinApp
             MainForm.shift = e.Shift;
         }
 
+        private static bool events = true;
         public static DialogResult ShowDialog(Tile tile, Tile moveTo, bool fire, int max)
         {
+            events = false;
             form.cbxForce.Visible = !fire;
             form.cbxForce.Checked = false;
+            events = true;
 
             if (form.SetupStuff(tile, moveTo, fire, max))
                 return form.ShowDialog();
@@ -280,7 +285,8 @@ namespace DaemonsWinApp
 
         private void cbxForce_CheckedChanged(object sender, EventArgs e)
         {
-            form.SetupStuff(tile, moveTo, fire, max);
+            if (events)
+                form.SetupStuff(tile, moveTo, fire, max);
         }
     }
 }

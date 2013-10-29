@@ -422,7 +422,7 @@ namespace Daemons
                         else
                         {
                             //first follow regular units unless knights and daemons will move to an already occupied tile
-                            if (follow != null && !to.GetUnits(independent).Any((u) => ( !u.Healed || u.Movement == 0
+                            if (follow != null && !to.GetUnits(independent).Any((u) => ( !u.Healed
                                     || ( u.Type != UnitType.Daemon && u.Type != UnitType.Knight ) )))
                             {
                                 MoveIndy(from, follow, UnitType.Daemon);
