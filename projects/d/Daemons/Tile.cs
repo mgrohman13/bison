@@ -198,7 +198,12 @@ namespace Daemons
             bool fight = true;
             while (fight && GetNewAttackers() > 0)
             {
-                Game.Log("------------- " + this.NumAttackers + " : " + this.NumUnits);
+                double attStr = GetAttackerStr(), defStr = GetArmyStr();
+                double attMorale = Mult(GetMorale(this.attackers), Math.Pow(attStr / defStr, .21));
+                double defMorale = Mult(GetMorale(this.units), 1 / Math.Pow(attStr / defStr, .21));
+                Game.Log(String.Format("------------- {0}/{1} ({2}) : {3}/{4} ({5})",
+                        attStr.ToString("0"), this.NumAttackers, attMorale.ToString("0%"),
+                        defStr.ToString("0"), this.NumUnits, defMorale.ToString("0%")));
 
                 allUnits.Clear();
                 AddUnits(allUnits, this.attackers, this.units, 1);

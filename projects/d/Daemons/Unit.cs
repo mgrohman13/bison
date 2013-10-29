@@ -177,6 +177,8 @@ namespace Daemons
                 if (this.Morale < target)
                 {
                     retVal = Math.Log(Math.Log(target) / Math.Log(Morale)) / Math.Log(.39) + battles;
+                    if (this.movement + this.reserve < this.MaxMove)
+                        retVal += ( this.MaxMove - this.movement - this.reserve ) * .65f / this.MaxMove;
                     if (this.Type == UnitType.Daemon)
                         retVal /= 1.3;
                 }
@@ -375,7 +377,7 @@ namespace Daemons
 
         private void Die()
         {
-            MakeArrow(movement);
+            MakeArrow(movement + ( reserve + .13f ) / ( 3.9f + battles ));
 
             this.tile.Remove(this);
             this.Owner.Remove(this);
@@ -426,8 +428,6 @@ namespace Daemons
                 throw new Exception();
 
             this.reserve--;
-            this.battles += .65f;
-
             LoseMorale(1.0 / this.MaxMove);
         }
         private void LoseMorale(double mult)
@@ -454,7 +454,7 @@ namespace Daemons
         {
             move = move.OrderByDescending((u) => u.Tile.GetDamage(u));
 
-            while (move.Any() && target.NumUnits > 0)
+            while (move.Any() && target.GetAllUnits().Any((u) => ( u.Owner != target.Game.GetCurrentPlayer() )))
             {
                 double totalHits = 0;
                 foreach (Unit defender in target.GetAllUnits())
@@ -514,6 +514,7 @@ namespace Daemons
             DamageUnit(defender);
 
             this.movement--;
+            this.reserve--;
 
             this.Owner.UseArrows(needed);
         }
@@ -524,6 +525,7 @@ namespace Daemons
                 return;
             this.Owner.MakeArrow(amt / ( this.Type == UnitType.Archer ? 1.3f : 6.5f ));
             this.movement--;
+            this.reserve--;
         }
 
         public void Build()
@@ -552,6 +554,7 @@ namespace Daemons
                 {
                     center.Use(this.Owner);
                     this.movement--;
+                    this.reserve--;
                     break;
                 }
         }
@@ -572,6 +575,7 @@ namespace Daemons
                 else
                 {
                     this.movement--;
+                    this.reserve--;
                 }
             }
         }
@@ -587,6 +591,8 @@ namespace Daemons
             this.movement += this.reserve;
             while (this.movement > this.MaxMove)
                 HealInternal();
+            if (this.movement < this.MaxMove)
+                this.battles += ( this.MaxMove - this.movement ) * .65f / this.MaxMove;
 
             this.movement = this.MaxMove;
             this.reserve = this.MaxMove;

@@ -34,6 +34,8 @@ namespace DaemonsWinApp
 
         public bool SetupStuff(ref List<Unit> all, ref  List<Unit> part, ref List<Unit> move, UseType use)
         {
+            showing = null;
+
             if (all != null)
                 all.Sort(Unit.UnitComparison);
             if (part != null)
@@ -337,7 +339,7 @@ namespace DaemonsWinApp
             if (this.vScrollBar1.Visible)
             {
                 if (y >= 0 && use == UseType.View)
-                    ScrollForm(e.Y - y, false);
+                    ScrollForm(Math.Sign(e.Y - y) + ( e.Y - y ) / 6, false);
                 y = e.Y;
             }
         }
