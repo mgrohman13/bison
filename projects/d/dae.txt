@@ -1,39 +1,33 @@
 review all during-combat actions
+	prevent
 
-other bonus for recovering morale at an already high value?
-figure out knight move left
-	also unmoved confirm with morale
+better multi battles
 force march indies?
 heal individual units
-better multi battles
 undo
 rethink arrows?
 
-infoform height doesnt inc by enough
-show str of indy that will move
+figure out knight move left
+	also unmoved confirm with morale
+show str,morale of indy that will move
+	allow way to select and show str,morale of selected
+	always show selected stats regardeless of use type
 third and final loop through reserve move?
-tooltip show more detail
-filter by morale
-flickering
-onpaint accentuates any with move left, maybe healed
-recovery calc accounts for daemon mult
-	battle not quite right?
-morale label blocks daeom picture
 hotkeys
-	close log
-option to sort by current/max str
-unhealed knight stay moves next
-show differing morale when in combat
-max archers selects best based on algorithm?
-obvious visual indication when shift is held to fire or not
-corner max shoot textbox does not show 1/2
 shortcut to customize all
-infoform scrollbar max issue
 auto save location
-split by army size
 show battles
 
+use constants
 data types
 	remove floats
-use constants
-refactor everything (reorder members)
+	field/prop usage
+refactor everything
+reorder members
+
+Black 0
+Green 2
+Blue 4
+Red 7
+Pink 9
+Yellow 17

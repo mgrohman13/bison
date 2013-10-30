@@ -145,7 +145,7 @@ namespace Daemons
             return result;
         }
 
-        public Unit[] GetUnits()
+        public Unit[] GetDefenders()
         {
             return units.ToArray();
         }

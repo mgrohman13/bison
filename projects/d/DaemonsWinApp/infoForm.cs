@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -24,16 +25,19 @@ namespace DaemonsWinApp
         private List<Unit> all, part, move;
         private bool showAll;
         private UseType use;
-        private int y;
 
         private InfoForm()
         {
             InitializeComponent();
             this.MouseWheel += new MouseEventHandler(infoForm_MouseWheel);
+
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint
+                    | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
         }
 
         public bool SetupStuff(ref List<Unit> all, ref  List<Unit> part, ref List<Unit> move, UseType use)
         {
+            l = null;
             showing = null;
 
             if (all != null)
@@ -48,10 +52,10 @@ namespace DaemonsWinApp
             this.move = move;
             this.showAll = ( use != UseType.Move );
             this.chbAll.Checked = showAll;
+            this.chbStr.Checked = false;
             this.use = use;
-            this.y = -1;
 
-            Refresh();
+            Invalidate();
 
             this.pnlMove.Visible = ( use == UseType.Move );
             this.FormBorderStyle = ( use == UseType.View ? FormBorderStyle.FixedSingle : FormBorderStyle.Fixed3D );
@@ -108,6 +112,7 @@ namespace DaemonsWinApp
                 setWidth += 21;
                 if (use == UseType.Move && setWidth < 300)
                     setWidth = 300;
+                setHeight += 21;
                 setSize = new Size(setWidth, setHeight + ( use == UseType.View ? 39 : 78 ));
             }
 
@@ -132,7 +137,7 @@ namespace DaemonsWinApp
 
         private void AdjustMax()
         {
-            int max = GetMax(use == UseType.View ? 39 : 169);
+            int max = GetMax();
             if (max > 0)
             {
                 int val = this.vScrollBar1.Value;
@@ -149,14 +154,14 @@ namespace DaemonsWinApp
             }
         }
 
-        private int GetMax(int add)
+        private int GetMax()
         {
             int needHeight = ( ( (List<Unit>)( showAll ? all : part ) ).Count + XMax - 1 ) / XMax * ySize;
             int height = this.Height;
             if (use == UseType.Move)
                 height -= pnlMove.Height;
             if (height < needHeight && height > 0)
-                return ( add + needHeight - height ) / 13;
+                return ( ( use == UseType.View ? 39 : 169 ) + needHeight - height ) / 13;
             else
                 return -1;
         }
@@ -166,7 +171,7 @@ namespace DaemonsWinApp
             showAll = this.chbAll.Checked;
 
             AdjustMax();
-            Refresh();
+            Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -207,12 +212,12 @@ namespace DaemonsWinApp
                     e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
                 }
 
+                x += 6;
+                y += size;
+
                 using (Font f = new Font("Arial", 13))
                 using (Font b = new Font("Arial", 13, FontStyle.Bold))
                 {
-                    x += 6;
-                    y += size;
-
                     int tempY = y;
                     e.Graphics.DrawImage(movement, x, tempY);
                     tempY += incPic;
@@ -238,7 +243,7 @@ namespace DaemonsWinApp
                     if (u.DamageStr != u.BaseDamage.ToString())
                         str += " / {1}";
                     str = string.Format(str, u.DamageStr, u.BaseDamage);
-                    e.Graphics.DrawString(str, u.RecoverMorale > 0 ? f : b, Brushes.Black, new Point(x, tempY));
+                    e.Graphics.DrawString(str, u.Recover2 > 0 ? f : b, Brushes.Black, new Point(x, tempY));
 
                     tempY += incPic;
                     str = "{0}";
@@ -284,7 +289,7 @@ namespace DaemonsWinApp
                 }
             }
 
-            Refresh();
+            Invalidate();
         }
 
         private Unit GetUnit(MouseEventArgs e)
@@ -303,10 +308,11 @@ namespace DaemonsWinApp
                     return null;
 
             Unit u = null;
-            if (showAll && x < all.Count)
-                u = all[x];
-            else if (x < part.Count)
-                u = part[x];
+            if (x >= 0)
+                if (showAll && x < all.Count)
+                    u = all[x];
+                else if (x < part.Count)
+                    u = part[x];
             return u;
         }
 
@@ -320,14 +326,28 @@ namespace DaemonsWinApp
             MainForm.shift = e.Shift;
         }
 
-        private Unit showing = null;
+        private Point? l;
+        private Unit showing;
         public void infoForm_MouseMove(object sender, MouseEventArgs e)
         {
             Unit u = GetUnit(e);
-            if (u != null && u.RecoverMorale > 0)
+            string morale = null, recover = null, damage = null;
+            if (u != null)
+            {
+                morale = u.Morale.ToString("0%");
+                recover = u.Recover1.ToString("0.0");
+                damage = u.Damage.ToString("0.0");
+            }
+            if (u != null && ( morale != "100%" || recover != "0.0" || damage != u.BaseDamage.ToString("0.0") ))
             {
                 if (u != showing)
-                    toolTip1.Show(string.Format("Recover morale {0} turns", u.RecoverMorale.ToString("0.0")), this, e.X, e.Y, 13000);
+                {
+                    string r2 = u.Recover2.ToString("0.0"), r3 = u.Recover3.ToString("0.0");
+                    toolTip1.Show(string.Format("Morale: {0}{3}Recover: {1}{4}{5}{3}Max Damage: {2}",
+                            morale, recover, damage, Environment.NewLine,
+                            r2 == "0.0" ? "" : " / " + r2, r3 == "0.0" ? "" : " / " + r3),
+                            this, e.X, e.Y, 13000);
+                }
                 showing = u;
             }
             else
@@ -336,12 +356,10 @@ namespace DaemonsWinApp
                 showing = null;
             }
 
-            if (this.vScrollBar1.Visible)
-            {
-                if (y >= 0 && use == UseType.View)
-                    ScrollForm(Math.Sign(e.Y - y) + ( e.Y - y ) / 6, false);
-                y = e.Y;
-            }
+            if (use == UseType.View && l.HasValue && Math.Abs(e.Y - l.Value.Y) > Math.Abs(e.X - l.Value.X) && this.vScrollBar1.Visible)
+                ScrollForm(Math.Sign(e.Y - l.Value.Y) + ( e.Y - l.Value.Y ) / 9, false);
+
+            l = e.Location;
         }
 
         private void infoForm_MouseWheel(object sender, MouseEventArgs e)
@@ -351,16 +369,10 @@ namespace DaemonsWinApp
 
         private void ScrollForm(int amount, bool mouseWheel)
         {
-            int max;
+            int max = GetMax();
             if (mouseWheel)
-            {
-                max = GetMax(39);
-                this.vScrollBar1.Maximum = max;
-            }
-            else
-            {
-                max = this.vScrollBar1.Maximum;
-            }
+                max -= 10;
+            this.vScrollBar1.Maximum = max;
             int newValue = this.vScrollBar1.Value + amount;
             if (newValue < this.vScrollBar1.Minimum)
                 newValue = this.vScrollBar1.Minimum;
@@ -375,6 +387,7 @@ namespace DaemonsWinApp
 
         private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
+            ScrollForm(0, false);
             this.Invalidate();
         }
 
@@ -398,6 +411,29 @@ namespace DaemonsWinApp
                 Form.Hide();
             else
                 Form.Close();
+        }
+
+        private void chbStr_CheckedChanged(object sender, EventArgs e)
+        {
+            IComparer<Unit> c = this.chbStr.Checked ? (IComparer<Unit>)new MaxStrComparer() : (IComparer<Unit>)new CurStrComparer();
+            for (List<Unit> l = all ; l != null ; l = l == all ? part : l == part ? move : null)
+                l.Sort(c);
+            this.Invalidate();
+        }
+
+        private class CurStrComparer : IComparer<Unit>
+        {
+            public int Compare(Unit x, Unit y)
+            {
+                return Math.Sign(y.Strength - x.Strength);
+            }
+        }
+        private class MaxStrComparer : IComparer<Unit>
+        {
+            public int Compare(Unit x, Unit y)
+            {
+                return Math.Sign(y.MaxStrength - x.MaxStrength);
+            }
         }
     }
 

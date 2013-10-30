@@ -28,6 +28,7 @@ namespace DaemonsWinApp
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MoveForm));
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.lblInf4 = new System.Windows.Forms.Label();
@@ -59,6 +60,9 @@ namespace DaemonsWinApp
             this.lblUnit2 = new System.Windows.Forms.Label();
             this.lblUnit1 = new System.Windows.Forms.Label();
             this.cbxForce = new System.Windows.Forms.CheckBox();
+            this.pbArrows = new System.Windows.Forms.PictureBox();
+            this.lblArrows = new System.Windows.Forms.Label();
+            ( (System.ComponentModel.ISupportInitialize)( this.pbArrows ) ).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -376,11 +380,36 @@ namespace DaemonsWinApp
             this.cbxForce.UseVisualStyleBackColor = true;
             this.cbxForce.CheckedChanged += new System.EventHandler(this.cbxForce_CheckedChanged);
             // 
+            // pbArrows
+            // 
+            this.pbArrows.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.pbArrows.Image = ( (System.Drawing.Image)( resources.GetObject("pbArrows.Image") ) );
+            this.pbArrows.Location = new System.Drawing.Point(93, 382);
+            this.pbArrows.Name = "pbArrows";
+            this.pbArrows.Size = new System.Drawing.Size(30, 30);
+            this.pbArrows.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pbArrows.TabIndex = 46;
+            this.pbArrows.TabStop = false;
+            // 
+            // lblArrows
+            // 
+            this.lblArrows.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblArrows.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblArrows.ForeColor = System.Drawing.Color.Goldenrod;
+            this.lblArrows.Location = new System.Drawing.Point(129, 382);
+            this.lblArrows.Name = "lblArrows";
+            this.lblArrows.Size = new System.Drawing.Size(40, 30);
+            this.lblArrows.TabIndex = 45;
+            this.lblArrows.Text = "1234";
+            this.lblArrows.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // MoveForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(339, 424);
+            this.Controls.Add(this.pbArrows);
+            this.Controls.Add(this.lblArrows);
             this.Controls.Add(this.cbxForce);
             this.Controls.Add(this.lblUnit4);
             this.Controls.Add(this.lblUnit3);
@@ -412,12 +441,14 @@ namespace DaemonsWinApp
             this.Controls.Add(this.lblInf1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.KeyPreview = true;
             this.Name = "MoveForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Move";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MoveForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MoveForm_KeyUp);
+            ( (System.ComponentModel.ISupportInitialize)( this.pbArrows ) ).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -456,5 +487,7 @@ namespace DaemonsWinApp
         private System.Windows.Forms.Label lblUnit2;
         private System.Windows.Forms.Label lblUnit1;
         private System.Windows.Forms.CheckBox cbxForce;
+        private System.Windows.Forms.PictureBox pbArrows;
+        private System.Windows.Forms.Label lblArrows;
     }
 }

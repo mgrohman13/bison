@@ -195,25 +195,25 @@ namespace Daemons
         {
             return lost.Keys.OrderBy((player) => player.Score).Reverse();
         }
-        public Dictionary<Player, int> GetResult()
+        public IEnumerable<KeyValuePair<Player, int>> GetResult()
         {
             if (players.Length != 1)
                 throw new Exception();
 
-            Dictionary<Player, int> results = new Dictionary<Player, int>();
+            IDictionary<Player, int> results = new Dictionary<Player, int>();
 
             int points = 0, min = int.MaxValue;
             foreach (Player player in GetLosers().Reverse())
                 AddResult(results, player, -39.0 / lost[player], ref points, ref min);
             foreach (var player in GetWinners().Reverse())
-                AddResult(results, player.Key, 169.0 / player.Value, ref points, ref min);
+                AddResult(results, player.Key, 130.0 / player.Value, ref points, ref min);
 
             foreach (var pair in results.ToArray())
                 results[pair.Key] = pair.Value - min;
 
-            return results;
+            return results.OrderByDescending((p) => p.Value);
         }
-        private static void AddResult(Dictionary<Player, int> results, Player player, double add, ref int points, ref int min)
+        private static void AddResult(IDictionary<Player, int> results, Player player, double add, ref int points, ref int min)
         {
             int newPoints = points + Game.Random.Round(add);
             results.Add(player, newPoints);
@@ -523,13 +523,14 @@ namespace Daemons
 
         private void ChangeMoveOrder()
         {
-            foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, .169))
-            {
-                float souls, arrows;
-                GetMoveDiff(out souls, out arrows);
-                pair.Key.AddSouls(RandSouls(souls));
-                pair.Key.MakeArrow(arrows);
-            }
+            if (players.Length > 1)
+                foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, .169))
+                {
+                    float souls, arrows;
+                    GetMoveDiff(out souls, out arrows);
+                    pair.Key.AddSouls(RandSouls(souls));
+                    pair.Key.MakeArrow(arrows);
+                }
         }
 
         private void GetMoveDiff(out float souls, out float arrows)

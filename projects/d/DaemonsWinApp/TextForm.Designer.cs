@@ -41,15 +41,16 @@ namespace DaemonsWinApp
             this.textBox1.Size = new System.Drawing.Size(292, 573);
             this.textBox1.TabIndex = 0;
             // 
-            // lost
+            // TextForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 573);
             this.Controls.Add(this.textBox1);
-            this.Name = "lost";
+            this.Name = "TextForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "lost";
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextForm_KeyUp);
             this.ResumeLayout(false);
             this.PerformLayout();
 

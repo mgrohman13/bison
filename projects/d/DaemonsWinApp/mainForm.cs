@@ -44,7 +44,7 @@ namespace DaemonsWinApp
             InitializeComponent();
 
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint
-                | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
+                    | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
             RefreshPlayer();
             RefreshLog();
@@ -168,7 +168,7 @@ namespace DaemonsWinApp
             if (Selected == null)
                 return;
 
-            Unit[] units = Selected.GetUnits();
+            Unit[] units = Selected.GetDefenders();
 
             if (units.Length == 0)
                 return;
@@ -232,6 +232,10 @@ namespace DaemonsWinApp
             int num = 0;
 
             this.lblMorale.Text = ( Tile.GetMorale(units) ).ToString("0%");
+            Unit[] attackers = Selected.GetAttackers();
+            if (attackers.Length > 0)
+                this.lblMorale.Text = ( Tile.GetMorale(attackers) ).ToString("0% : ") + this.lblMorale.Text;
+
             for (int a = 0 ; a < types.Length ; a++)
                 if (types[a].Count > 0)
                 {
@@ -289,7 +293,7 @@ namespace DaemonsWinApp
                 {
                     Selected = null;
                     RefreshPlayer();
-                    Refresh();
+                    Invalidate();
                     RefreshLog();
                 }
             }
@@ -336,7 +340,7 @@ namespace DaemonsWinApp
                 }
             }
 
-            Refresh();
+            Invalidate();
             RefreshUnits();
             RefreshSouls();
         }
@@ -361,7 +365,7 @@ namespace DaemonsWinApp
             if (output.Count > 0 && output[0] != null)
                 output[0].Build();
 
-            Refresh();
+            Invalidate();
             RefreshUnits();
         }
 
@@ -396,20 +400,18 @@ namespace DaemonsWinApp
         private void btnNext_Click(object sender, EventArgs e)
         {
             Selected = game.GetCurrentPlayer().NextUnit(Selected);
-            Refresh();
+            Invalidate();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             if (Selected != null)
             {
-                foreach (Unit u in Selected.GetAttackers())
-                    u.Heal();
-                foreach (Unit u in Selected.GetUnits())
+                foreach (Unit u in Selected.GetAllUnits())
                     u.Heal();
                 RefreshArrows();
             }
-            if (Selected != null && Selected.GetUnits(game.GetCurrentPlayer(), true, true).Count == 0)
+            if (Selected != null && Selected.GetUnits(game.GetCurrentPlayer(), true, game.GetCurrentPlayer().Units.Any((u) => u.Healed)).Count == 0)
             {
                 btnNext_Click(sender, e);
             }
@@ -424,7 +426,7 @@ namespace DaemonsWinApp
         {
             if (Selected != null && Selected.FightBattle())
             {
-                Refresh();
+                Invalidate();
                 RefreshUnits();
                 RefreshSouls();
                 RefreshLog();
@@ -465,7 +467,7 @@ namespace DaemonsWinApp
             {
                 game = Game.LoadGame(openFileDialog1.FileName);
 
-                Refresh();
+                Invalidate();
                 RefreshArrows();
                 RefreshButtons();
                 RefreshLog();

@@ -34,6 +34,7 @@ namespace DaemonsWinApp
             this.chbAll = new System.Windows.Forms.CheckBox();
             this.btnOk = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.chbStr = new System.Windows.Forms.CheckBox();
             this.pnlMove.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,6 +49,7 @@ namespace DaemonsWinApp
             // 
             // pnlMove
             // 
+            this.pnlMove.Controls.Add(this.chbStr);
             this.pnlMove.Controls.Add(this.chbAll);
             this.pnlMove.Controls.Add(this.btnOk);
             this.pnlMove.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -61,7 +63,7 @@ namespace DaemonsWinApp
             // 
             this.chbAll.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.chbAll.AutoSize = true;
-            this.chbAll.Location = new System.Drawing.Point(198, 7);
+            this.chbAll.Location = new System.Drawing.Point(93, 7);
             this.chbAll.Name = "chbAll";
             this.chbAll.Size = new System.Drawing.Size(67, 17);
             this.chbAll.TabIndex = 5;
@@ -74,7 +76,7 @@ namespace DaemonsWinApp
             this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnOk.BackColor = System.Drawing.Color.Silver;
             this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOk.Location = new System.Drawing.Point(101, 3);
+            this.btnOk.Location = new System.Drawing.Point(12, 3);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
             this.btnOk.TabIndex = 4;
@@ -90,6 +92,18 @@ namespace DaemonsWinApp
             this.toolTip1.ShowAlways = true;
             this.toolTip1.UseAnimation = false;
             this.toolTip1.UseFading = false;
+            // 
+            // chbStr
+            // 
+            this.chbStr.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.chbStr.AutoSize = true;
+            this.chbStr.Location = new System.Drawing.Point(166, 7);
+            this.chbStr.Name = "chbStr";
+            this.chbStr.Size = new System.Drawing.Size(89, 17);
+            this.chbStr.TabIndex = 6;
+            this.chbStr.Text = "Max Strength";
+            this.chbStr.UseVisualStyleBackColor = true;
+            this.chbStr.CheckedChanged += new System.EventHandler(this.chbStr_CheckedChanged);
             // 
             // InfoForm
             // 
@@ -125,5 +139,6 @@ namespace DaemonsWinApp
 		private System.Windows.Forms.CheckBox chbAll;
 		private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.CheckBox chbStr;
     }
 }

@@ -56,6 +56,16 @@ namespace DaemonsWinApp
 
         private bool SetupStuff(Tile tile, Tile moveTo, bool fire, int max)
         {
+            this.pbArrows.Visible = fire;
+            this.lblArrows.Visible = fire;
+            if (fire)
+            {
+                int arrows = tile.Game.GetCurrentPlayer().Arrows;
+                if (tile.IsCornerNeighbor(moveTo))
+                    arrows /= 2;
+                this.lblArrows.Text = arrows.ToString();
+            }
+
             this.button1.Text = ( fire ? "Fire!" : "OK" );
 
             this.tile = tile;
@@ -80,8 +90,8 @@ namespace DaemonsWinApp
             if (fire)
                 units.Sort(Tile.UnitDamageComparison);
 
-            if (units.Count == 0 && !fire)
-                if (this.cbxForce.Checked)
+            if (units.Count == 0)
+                if (this.cbxForce.Checked || fire)
                 {
                     return false;
                 }
@@ -239,10 +249,6 @@ namespace DaemonsWinApp
 
         private void RefreshSection(int section)
         {
-            if (fire)
-                while (move.Count > max)
-                    move.RemoveAt(move.Count - 1);
-
             if (section < types.Count)
             {
                 List<Unit> units = types[section];

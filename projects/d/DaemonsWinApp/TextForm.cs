@@ -44,5 +44,11 @@ namespace DaemonsWinApp
             form.SetupStuff(game, log);
             return form.ShowDialog();
         }
+
+        private void TextForm_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
+                this.Close();
+        }
     }
 }
