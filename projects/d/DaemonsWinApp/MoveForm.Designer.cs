@@ -407,6 +407,7 @@ namespace DaemonsWinApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(339, 424);
             this.Controls.Add(this.pbArrows);
             this.Controls.Add(this.lblArrows);
@@ -445,7 +446,6 @@ namespace DaemonsWinApp
             this.KeyPreview = true;
             this.Name = "MoveForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Move";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MoveForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MoveForm_KeyUp);
             ( (System.ComponentModel.ISupportInitialize)( this.pbArrows ) ).EndInit();

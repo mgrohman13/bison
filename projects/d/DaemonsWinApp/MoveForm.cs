@@ -67,6 +67,7 @@ namespace DaemonsWinApp
             }
 
             this.button1.Text = ( fire ? "Fire!" : "OK" );
+            this.Text = ( fire ? "Fire" : "Move Troops" );
 
             this.tile = tile;
             this.moveTo = moveTo;
@@ -84,7 +85,7 @@ namespace DaemonsWinApp
                 unitType = null;
             else
                 unitType = UnitType.Daemon;
-            units = tile.GetUnits(tile.Game.GetCurrentPlayer(), !this.cbxForce.Checked, unitType);
+            units = tile.GetUnits(tile.Game.GetCurrentPlayer(), !this.cbxForce.Checked, false, unitType).ToList();
             if (this.cbxForce.Checked)
                 units = units.Where((u) => ( u.Movement + u.ReserveMove > 0 )).ToList();
             if (fire)

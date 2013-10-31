@@ -73,14 +73,20 @@ namespace DaemonsWinApp
                 {
                     Tile t = game.GetTile(x, y);
 
-                    Bitmap picUnit = t.GetBestUnit();
-                    Bitmap picAttacker = t.GetBestAttacker();
+                    IEnumerable<Unit> units = t.GetUnits(game.GetCurrentPlayer());
+                    IEnumerable<Unit> attackers = t.GetUnits().Where((u) => !u.Owner.IsTurn());
+                    Bitmap picUnit = null, picAttacker = null;
+                    if (units.Any())
+                        picAttacker = Tile.GetBestPic(attackers);
+                    else
+                        units = t.GetUnits();
+                    picUnit = Tile.GetBestPic(units);
                     if (picUnit != null && picAttacker == null)
                     {
                         e.Graphics.DrawImage(picUnit, new Point(1 + x * size + offSet, 1 + y * size + offSet));
-                        e.Graphics.DrawString(t.NumUnits.ToString(), font, Brushes.Black,
+                        e.Graphics.DrawString(units.Count().ToString(), font, Brushes.Black,
                             new Point(1 + x * size + offSet, 1 + y * size + offSet + 15));
-                        string armyStr = t.GetArmyStr().ToString("0");
+                        string armyStr = Tile.GetArmyStr(units).ToString("0");
                         //float width = e.Graphics.MeasureString(armyStr, font).Width;
                         e.Graphics.DrawString(armyStr, font, Brushes.Black,
                             new Point(1 + x * size + offSet, 1 + y * size + offSet));
@@ -90,18 +96,18 @@ namespace DaemonsWinApp
                     {
                         e.Graphics.DrawImage(picAttacker, 1 + x * size + offSet,
                             1 + y * size + offSet, size / 2, size / 2);
-                        e.Graphics.DrawString(t.GetAttackerStr().ToString("0"), font, Brushes.Black,
+                        e.Graphics.DrawString(Tile.GetArmyStr(attackers).ToString("0"), font, Brushes.Black,
                             new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet));
-                        e.Graphics.DrawString(t.NumAttackers.ToString(), font, Brushes.Black,
+                        e.Graphics.DrawString(attackers.Count().ToString(), font, Brushes.Black,
                             new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet + 15));
                         e.Graphics.DrawImage(picUnit, 1 + x * size + offSet + size / 2,
                             1 + y * size + offSet + size / 2, size / 2, size / 2);
-                        string measureStr = t.GetArmyStr().ToString("0");
+                        string measureStr = Tile.GetArmyStr(units).ToString("0");
                         int width = (int)e.Graphics.MeasureString(measureStr, font).Width;
                         e.Graphics.DrawString(measureStr, font, Brushes.Black,
                             new Point(1 + x * size + offSet + size / 2 - width,
                             1 + y * size + offSet + size / 2));
-                        measureStr = t.NumUnits.ToString();
+                        measureStr = units.Count().ToString();
                         width = (int)e.Graphics.MeasureString(measureStr, font).Width;
                         e.Graphics.DrawString(measureStr, font, Brushes.Black,
                            new Point(1 + x * size + offSet + size / 2 - width,
@@ -168,10 +174,13 @@ namespace DaemonsWinApp
             if (Selected == null)
                 return;
 
-            Unit[] units = Selected.GetDefenders();
-
-            if (units.Length == 0)
-                return;
+            IEnumerable<Unit> units = Selected.GetUnits(game.GetCurrentPlayer());
+            if (!units.Any())
+            {
+                units = Selected.GetUnits();
+                if (!units.Any())
+                    return;
+            }
 
             List<Unit>[] types = new List<Unit>[4];
 
@@ -232,8 +241,8 @@ namespace DaemonsWinApp
             int num = 0;
 
             this.lblMorale.Text = ( Tile.GetMorale(units) ).ToString("0%");
-            Unit[] attackers = Selected.GetAttackers();
-            if (attackers.Length > 0)
+            IEnumerable<Unit> attackers = Selected.GetUnits().Where((u) => u.Owner != units.First().Owner);
+            if (attackers.Any())
                 this.lblMorale.Text = ( Tile.GetMorale(attackers) ).ToString("0% : ") + this.lblMorale.Text;
 
             for (int a = 0 ; a < types.Length ; a++)
@@ -248,11 +257,12 @@ namespace DaemonsWinApp
         {
             if (Selected != null)
             {
-                this.btnBuild.Visible = ( ( Selected.GetProduction(true).Count > 0 )
-                        && ( Selected.GetUnits(game.GetCurrentPlayer(), true).Count > 0 )
-                        && Selected.NumAttackers == 0 );
+                bool occupied = Selected.Occupied(game.GetCurrentPlayer());
 
-                this.btnFight.Visible = Selected.NumAttackers > 0;
+                this.btnBuild.Visible = ( ( Selected.GetProduction(true).Count > 0 )
+                        && ( Selected.GetUnits(game.GetCurrentPlayer(), true).Any() )
+                        && !occupied );
+                this.btnFight.Visible = occupied;
             }
         }
 
@@ -349,7 +359,7 @@ namespace DaemonsWinApp
         {
             if (Selected == null)
                 return;
-            List<Unit> units = Selected.GetUnits(game.GetCurrentPlayer(), true),
+            List<Unit> units = Selected.GetUnits(game.GetCurrentPlayer(), true).ToList(),
                 unUsed = new List<Unit>(), output = new List<Unit>();
             if (units.Count == 0)
                 return;
@@ -381,7 +391,7 @@ namespace DaemonsWinApp
                 {
                     timestamp = Environment.TickCount;
 
-                    List<Unit> units = new List<Unit>(clicked.GetAllUnits()), a = null, b = null;
+                    List<Unit> units = clicked.GetUnits().ToList(), a = null, b = null;
                     InfoForm.ShowDialog(ref units, ref a, ref b, UseType.View);
                 }
             }
@@ -407,11 +417,12 @@ namespace DaemonsWinApp
         {
             if (Selected != null)
             {
-                foreach (Unit u in Selected.GetAllUnits())
+                foreach (Unit u in Selected.GetUnits())
                     u.Heal();
                 RefreshArrows();
             }
-            if (Selected != null && Selected.GetUnits(game.GetCurrentPlayer(), true, game.GetCurrentPlayer().Units.Any((u) => u.Healed)).Count == 0)
+            bool healed = game.GetCurrentPlayer().Units.Any((u) => u.Healed);
+            if (Selected != null && !Selected.GetUnits(game.GetCurrentPlayer(), true, healed).Any())
             {
                 btnNext_Click(sender, e);
             }

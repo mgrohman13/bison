@@ -1,18 +1,19 @@
 review all during-combat actions
 	prevent
 
-better multi battles
 force march indies?
 heal individual units
 undo
 rethink arrows?
 
-figure out knight move left
-	also unmoved confirm with morale
+colors in mian form unit count area
+lblMorale transparent not working
+indicator for which loop you are looping through
+should draw attackers even for enemies
+should use player with strongest total str for best pic rather than strongest unit
 show str,morale of indy that will move
 	allow way to select and show str,morale of selected
 	always show selected stats regardeless of use type
-third and final loop through reserve move?
 hotkeys
 shortcut to customize all
 auto save location

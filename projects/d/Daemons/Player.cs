@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -173,25 +174,47 @@ namespace Daemons
 
         public Tile NextUnit(Tile selectedTile)
         {
-            int startX = ( selectedTile == null ? 0 : selectedTile.X ), x = startX,
-                    startY = ( selectedTile == null ? 0 : selectedTile.Y ), y = startY;
-
-            bool healed = true;
-            do
+            int startX = ( selectedTile == null ? 0 : selectedTile.X ),
+                    startY = ( selectedTile == null ? 0 : selectedTile.Y );
+            if (selectedTile != null && ++startX == Game.GetWidth())
             {
-                if (++x == Game.GetWidth())
+                startX = 0;
+                if (++startY == Game.GetHeight())
+                    startY = 0;
+            }
+
+            Func<Unit, bool> knightFunc = ( (u) => ( u.Hits < u.MaxHits && ( u.Movement - 1 ) * u.Regen + u.Hits >= u.MaxHits ) );
+            bool knight = false;
+
+            bool healed = true, move = true;
+            while (true)
+            {
+                int x = startX, y = startY;
+                do
                 {
-                    x = 0;
-                    if (++y == Game.GetHeight())
-                        y = 0;
+                    if (Game.GetTile(x, y).GetUnits(this, move, healed).Any((u) => ( knight ? knightFunc(u) : move || u.ReserveMove > 0 )))
+                        return Game.GetTile(x, y);
+                    if (++x == Game.GetWidth())
+                    {
+                        x = 0;
+                        if (++y == Game.GetHeight())
+                            y = 0;
+                    }
+                } while (x != startX || y != startY);
+                if (healed)
+                {
+                    healed = false;
+                    knight = this.units.Any(knightFunc);
                 }
-
-                Tile tile = Game.GetTile(x, y);
-                if (tile.GetUnits(this, true, healed).Count > 0)
-                    return tile;
-
-            } while (( healed || x != startX || y != startY )
-                    | ( healed && x == startX && y == startY && !( healed = false ) ));
+                else if (move)
+                {
+                    move = false;
+                }
+                else
+                {
+                    break;
+                }
+            }
 
             return null;
         }
@@ -276,6 +299,11 @@ namespace Daemons
         internal int RoundSouls()
         {
             return Game.Random.Round(souls / 666f);
+        }
+
+        public bool IsTurn()
+        {
+            return ( this == Game.GetCurrentPlayer() );
         }
     }
 }

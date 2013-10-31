@@ -19,9 +19,6 @@ namespace Daemons
         private double _morale;
         private float battles;
 
-        [NonSerialized]
-        private bool dead;
-
         public Unit(UnitType type, Tile tile, Player owner)
         {
             this.tile = tile;
@@ -79,7 +76,8 @@ namespace Daemons
                 throw new Exception();
             }
 
-            this.Morale = Game.Random.Weighted(.91);
+            this.battles = -.26f;
+            this._morale = Game.Random.Weighted(.91);
             if (Type == UnitType.Daemon)
                 GainMorale(1.3);
 
@@ -144,32 +142,38 @@ namespace Daemons
         {
             get
             {
+                double morale = this._morale;
                 if (this.hits > 0)
-                    if (this._morale <= double.Epsilon)
-                        this._morale = double.Epsilon;
-                    else if (this._morale >= 1)
-                        this._morale = 1;
-                return this._morale;
+                    if (morale <= double.Epsilon)
+                        morale = double.Epsilon;
+                    else if (morale >= 1)
+                        morale = 1;
+                return morale;
             }
             private set
             {
-                double old = this._morale;
-
-                this._morale = Game.Random.GaussianCapped(value, Math.Abs(this._morale - value) / value * .26, Math.Max(0, 2 * value - 1));
-
-                if (this._morale < old)
+                if (value < this.Morale)
                 {
-                    double lost = Math.Log(Math.Log(old) / Math.Log(this._morale)) / Math.Log(.39);
+                    double loss = this.Morale - value;
+                    double turns = Math.Log(Math.Log(this.Morale) / Math.Log(value)) / Math.Log(.39);
                     if (this.owner.Independent)
                     {
                         if (this.Type != UnitType.Daemon)
-                            this._morale = Math.Pow(this._morale, Math.Pow(1 / .39, lost / 5.2));
+                        {
+                            loss = value - loss / 5.2;
+                            turns = Math.Pow(value, Math.Pow(1 / .39, turns / 5.2));
+                            value = Math.Max(loss, turns);
+                        }
                     }
                     else if (this.Type == UnitType.Daemon)
                     {
-                        this._morale = Math.Pow(this._morale, Math.Pow(.39, lost / 3.9));
+                        loss = value + loss / 3.9;
+                        turns = Math.Pow(value, Math.Pow(.39, turns / 3.9));
+                        value = Math.Min(loss, turns);
                     }
                 }
+
+                this._morale = Game.Random.GaussianCapped(value, Math.Abs(this.Morale - value) / value * .26, Math.Max(0, 2 * value - 1));
             }
         }
         public double Recover1
@@ -341,7 +345,7 @@ namespace Daemons
                 defender.hits = 0;
                 defender.Die();
 
-                List<Unit> units = defender.Tile.GetUnits(defender.Owner);
+                IEnumerable<Unit> units = defender.Tile.GetUnits(defender.Owner);
                 double mult = 1 - defender.MaxStrength / ( defender.MaxStrength + Tile.GetArmyStr(units) );
                 foreach (Unit unit in units)
                     unit.Morale *= mult;
@@ -412,8 +416,6 @@ namespace Daemons
 
             this.tile.Remove(this);
             this.Owner.Remove(this);
-
-            this.dead = true;
         }
 
         internal Tile Retreat(Tile prev)
@@ -474,12 +476,12 @@ namespace Daemons
 
         internal void Attack()
         {
-            if (this.dead)
-                return;
-
-            Unit defender = this.tile.GetTarget(this, false);
-            if (defender != null)
-                DamageUnit(defender);
+            if (this.hits > 0)
+            {
+                Unit defender = this.tile.GetTarget(this, false);
+                if (defender != null)
+                    DamageUnit(defender);
+            }
         }
 
         public static void Fire(IEnumerable<Unit> move, Tile target)
@@ -489,9 +491,9 @@ namespace Daemons
             int arrows = target.Game.GetCurrentPlayer().Arrows;
             if (move.FirstOrDefault() != null && move.FirstOrDefault().Tile.IsCornerNeighbor(target))
                 arrows /= 2;
-            while (arrows > 0 && move.Any() && target.GetAllUnits().Any((u) => ( u.Owner != target.Game.GetCurrentPlayer() )))
+            while (arrows > 0 && move.Any() && target.GetUnits().Any((u) => ( u.Owner != target.Game.GetCurrentPlayer() )))
             {
-                double totalHits = MultHits(target.GetAllUnits().Where((defender) => ( defender.Owner != target.Game.GetCurrentPlayer() ))
+                double totalHits = MultHits(target.GetUnits().Where((defender) => ( defender.Owner != target.Game.GetCurrentPlayer() ))
                         .Aggregate<Unit, double>(0, (t, defender) => t + ( defender.hits / GetDamageMult(UnitType.Archer, defender.Type) )));
                 int count = 0;
                 double totalDamage = move.Aggregate<Unit, double>(0, (t, u) => t + ( ++count <= arrows ? u.Damage : 0 ));
@@ -597,7 +599,7 @@ select:
                 return;
 
             foreach (ProductionCenter center in this.tile.GetProduction())
-                if (!center.Used && center.type == type && this.tile.NumAttackers == 0)
+                if (!center.Used && center.type == type && !tile.Occupied(owner))
                 {
                     center.Use(this.Owner);
                     this.movement--;
@@ -629,7 +631,7 @@ select:
 
         public void Heal()
         {
-            if (Owner.Game.GetCurrentPlayer() == this.Owner && this.tile.GetAttackers().Length == 0)
+            if (Owner.Game.GetCurrentPlayer() == this.Owner && !tile.Occupied(owner))
                 HealInternal();
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
@@ -12,253 +13,135 @@ namespace Daemons
 
         public readonly int X, Y;
 
-        private readonly List<Unit> units = new List<Unit>(), attackers = new List<Unit>();
+        private readonly List<Unit> _units;
 
         [NonSerialized]
         private HashSet<Tile> sideNeighbors, cornerNeighbors;
 
         public Tile(Game game, int x, int y)
         {
+            this.Game = game;
+
             this.X = x;
             this.Y = y;
 
-            this.Game = game;
-        }
-
-        public int NumUnits
-        {
-            get
-            {
-                return units.Count;
-            }
-        }
-
-        public int NumAttackers
-        {
-            get
-            {
-                return attackers.Count;
-            }
+            this._units = new List<Unit>();
         }
 
         public List<ProductionCenter> GetProduction()
         {
             return Game.GetProduction(X, Y);
         }
-
         public List<ProductionCenter> GetProduction(bool unused)
         {
             return Game.GetProduction(X, Y, unused);
         }
 
-        public System.Drawing.Bitmap GetBestUnit()
+        public static System.Drawing.Bitmap GetBestPic(IEnumerable<Unit> list)
         {
-            return GetBestPic(units);
+            Unit unit = list.FirstOrDefault((u) => ( u.Type == UnitType.Daemon ))
+                    ?? list.FirstOrDefault((u) => ( u.Type == UnitType.Knight ))
+                    ?? list.FirstOrDefault((u) => ( u.Type == UnitType.Archer ))
+                    ?? list.FirstOrDefault((u) => ( u.Type == UnitType.Infantry ))
+                    ?? list.FirstOrDefault((u) => ( u.Type == UnitType.Indy ));
+            if (unit == null)
+                return null;
+            return unit.GetPic();
         }
 
-        public System.Drawing.Bitmap GetBestAttacker()
+        public bool Occupied(Player notBy)
         {
-            attackers.Sort(Unit.UnitComparison);
-            return GetBestPic(attackers);
-        }
-
-        private static System.Drawing.Bitmap GetBestPic(IEnumerable<Unit> list)
-        {
-            foreach (Unit unit in list)
-                if (unit.Type == UnitType.Daemon)
-                    return unit.GetPic();
-            foreach (Unit unit in list)
-                if (unit.Type == UnitType.Knight)
-                    return unit.GetPic();
-            foreach (Unit unit in list)
-                if (unit.Type == UnitType.Archer)
-                    return unit.GetPic();
-            foreach (Unit unit in list)
-                if (unit.Type == UnitType.Infantry)
-                    return unit.GetPic();
-            foreach (Unit unit in list)
-                if (unit.Type == UnitType.Indy)
-                    return unit.GetPic();
-            return null;
-        }
-
-        public bool Occupied()
-        {
-            Player player;
-            return Occupied(out player);
-        }
-
-        public bool Occupied(out Player occupying)
-        {
-            occupying = null;
-            foreach (Unit unit in units)
-            {
-                occupying = unit.Owner;
-                return true;
-            }
-            return false;
+            return GetUnits().Any((u) => ( u.Owner != notBy ));
         }
 
         internal void Add(Unit unit)
         {
-            Player occupying;
-            if (Occupied(out occupying) && occupying != unit.Owner)
-                attackers.Add(unit);
-            else
-                units.Add(unit);
+            this._units.Add(unit);
         }
-
         internal void Remove(Unit unit)
         {
-            units.Remove(unit);
-            attackers.Remove(unit);
-            GetNewAttackers();
+            this._units.Remove(unit);
         }
 
-        public List<Unit> GetUnits(Player player)
+        public IEnumerable<Unit> GetUnits(Player player = null, bool move = false, bool healed = false, UnitType? type = null)
         {
-            return GetUnits(player, false);
+            return this._units.Where((u) => ( ( player == null || u.Owner == player ) && ( !move || u.Movement > 0 ) && ( !healed || u.Healed )
+                    && ( !type.HasValue || u.Type == type.Value ) ));
+        }
+        public IEnumerable<IGrouping<Player, Unit>> GetPlayerUnits(Func<Unit, bool> predicate = null)
+        {
+            IEnumerable<Unit> units = GetUnits();
+            if (predicate != null)
+                units = units.Where(predicate);
+            return units.GroupBy((u) => u.Owner);
         }
 
-        public List<Unit> GetUnits(Player player, bool hasMove)
+        public bool CanBattle()
         {
-            return GetUnits(player, hasMove, null);
-        }
-
-        public List<Unit> GetUnits(Player player, bool hasMove, UnitType? unitType)
-        {
-            return GetUnits(player, hasMove, false, unitType);
-        }
-
-        public List<Unit> GetUnits(Player player, bool hasMove, bool healed)
-        {
-            return GetUnits(player, hasMove, healed, null);
-        }
-
-        public List<Unit> GetUnits(Player player, bool hasMove, bool healed, UnitType? unitType)
-        {
-            List<Unit> result = new List<Unit>();
-            foreach (Unit unit in GetAllUnits())
-                if (unit.Owner == player && ( !unitType.HasValue || unit.Type == unitType.Value )
-                        && ( !hasMove || unit.Movement > 0 ) && ( !healed || unit.Healed ))
-                    result.Add(unit);
-            return result;
-        }
-
-        public Unit[] GetDefenders()
-        {
-            return units.ToArray();
-        }
-
-        public Unit[] GetAttackers()
-        {
-            return attackers.ToArray();
-        }
-
-        public IEnumerable<Unit> GetAllUnits()
-        {
-            foreach (Unit unit in units)
-                yield return unit;
-            foreach (Unit unit in attackers)
-                yield return unit;
-        }
-
-        public bool FightBattle()
-        {
-            if (this.NumAttackers > 0)
-                foreach (Unit unit in GetAllUnits())
-                    if (unit.Owner == Game.GetCurrentPlayer())
-                    {
-                        ProcessBattle();
-                        return true;
-                    }
+            bool player = false;
+            int count = 0;
+            foreach (var grouping in GetPlayerUnits())
+            {
+                player |= grouping.Key.IsTurn();
+                ++count;
+                if (player && count > 1)
+                    return true;
+            }
             return false;
         }
-
-        private void ProcessBattle()
+        public bool FightBattle()
         {
-            Game.Log("----------------------------------------------------");
-
-            foreach (Unit unit in GetAllUnits())
-                unit.OnBattle();
-
-            List<Unit> attDaemons = new List<Unit>();
-            foreach (Unit unit in this.attackers)
-                if (unit.Type == UnitType.Daemon)
-                    attDaemons.Add(unit);
-            List<Unit> defDaemons = new List<Unit>();
-            foreach (Unit unit in this.units)
-                if (unit.Type == UnitType.Daemon)
-                    defDaemons.Add(unit);
-            List<Unit> allUnits = new List<Unit>();
-            AddUnits(allUnits, attDaemons, defDaemons, .5);
-            foreach (Unit unit in Game.Random.Iterate<Unit>(allUnits))
-                unit.Attack();
-
-            bool fight = true;
-            while (fight && GetNewAttackers() > 0)
+            if (CanBattle())
             {
-                double attStr = GetAttackerStr(), defStr = GetArmyStr();
-                double attMorale = Mult(GetMorale(this.attackers), Math.Pow(attStr / defStr, .21));
-                double defMorale = Mult(GetMorale(this.units), 1 / Math.Pow(attStr / defStr, .21));
-                Game.Log(String.Format("------------- {0}/{1} ({2}) : {3}/{4} ({5})",
-                        attStr.ToString("0"), this.NumAttackers, attMorale.ToString("0%"),
-                        defStr.ToString("0"), this.NumUnits, defMorale.ToString("0%")));
+                Game.Log("----------------------------------------------------");
 
-                allUnits.Clear();
-                AddUnits(allUnits, this.attackers, this.units, 1);
-                foreach (Unit unit in Game.Random.Iterate<Unit>(allUnits))
+                foreach (Unit unit in GetUnits())
+                    unit.OnBattle();
+
+                foreach (Unit unit in GetFightList(GetPlayerUnits((u) => ( u.Type == UnitType.Daemon )), .5))
                     unit.Attack();
 
-                if (this.attackers.Count > 0 && this.units.Count > 0)
-                    CheckMorale();
+                while (CanBattle())
+                {
+                    double totalStr = GetArmyStr(GetUnits());
+                    Game.Log(GetPlayerUnits().Aggregate("------------- ", (l, g) => l +
+                            string.Format("{3} {0}/{1} ({2}) : ", GetArmyStr(g).ToString("0"), g.Count(),
+                            GetMorale(g, totalStr).ToString("0%"), g.Key)).TrimEnd(':', ' '));
 
-                fight = false;
-                foreach (Unit unit in GetAllUnits())
-                    if (unit.Owner == Game.GetCurrentPlayer())
-                    {
-                        fight = true;
-                        break;
-                    }
+                    foreach (Unit unit in GetFightList(GetPlayerUnits(), 1))
+                        unit.Attack();
+
+                    if (CanBattle())
+                        CheckMorale();
+                }
+
+                return true;
             }
+            return false;
         }
-
         private void CheckMorale()
         {
-            double attMorale = GetMorale(this.attackers);
-            double defMorale = GetMorale(this.units);
+            double totalStr = GetArmyStr(GetUnits());
+            var morale = GetPlayerUnits().Select((g) => new Tuple<Player, double>(g.Key, GetMorale(g, totalStr))).OrderBy((t) => t.Item2);
 
-            double mult = Math.Pow(GetAttackerStr() / GetArmyStr(), .21);
-            attMorale = Mult(attMorale, mult);
-            defMorale = Mult(defMorale, 1 / mult);
-
-            bool side = ( defMorale > attMorale );
-            if (side)
-            {
-                double temp = defMorale;
-                defMorale = attMorale;
-                attMorale = temp;
-            }
-
-            double chance = Math.Pow(attMorale / defMorale, .52) * Math.Pow(1 - defMorale, .91);
+            Tuple<Player, double> low = morale.First();
+            double chance = Math.Pow(morale.Last().Item2 / low.Item2, .52) * Math.Pow(1 - low.Item2, .91);
             if (chance > .5)
                 chance /= ( chance + .5 );
-            if (defMorale == 0 || Game.Random.Bool(chance * chance))
-            {
-                if (side)
-                    Retreat(this.attackers);
-                else
-                    Retreat(this.units);
-            }
+
+            if (Game.Random.Bool(chance * chance))
+                Retreat(GetUnits(low.Item1));
             else if (Game.Random.Bool(.78f))
-            {
-                if (Game.Random.Bool(.78f))
-                    Retreat(this.attackers.Where((unit) => ( Game.Random.Bool(.78f) && unit.Morale < Game.Random.GaussianCapped(.169, .52) )));
-                if (Game.Random.Bool(.78f))
-                    Retreat(this.units.Where((unit) => ( Game.Random.Bool(.78f) && unit.Morale < Game.Random.GaussianCapped(.169, .52) )));
-            }
+                foreach (var g in GetPlayerUnits())
+                    if (Game.Random.Bool(.78f))
+                        Retreat(g.Where((unit) => ( Game.Random.Bool(.78f) && unit.Morale < Game.Random.GaussianCapped(.169, .52) )));
         }
-        private double Mult(double morale, double mult)
+        private double GetMorale(IGrouping<Player, Unit> g, double totalStr)
+        {
+            double str = GetArmyStr(g);
+            return MultMorale(GetMorale(g), Math.Pow(str / ( totalStr - str ), .21));
+        }
+        private double MultMorale(double morale, double mult)
         {
             if (mult > 1)
                 morale = 1 - ( 1 - morale ) / mult;
@@ -266,7 +149,6 @@ namespace Daemons
                 morale *= mult;
             return morale;
         }
-
         public static double GetMorale(IEnumerable<Unit> units)
         {
             double morale = 0, tot = 0;
@@ -277,7 +159,6 @@ namespace Daemons
             }
             return morale / tot;
         }
-
         private void Retreat(IEnumerable<Unit> units)
         {
             Tile t = null;
@@ -285,50 +166,14 @@ namespace Daemons
                 t = unit.Retreat(t);
         }
 
-        private int GetNewAttackers()
+        private IEnumerable<Unit> GetFightList(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)
         {
-            Player owner;
-            if (!Occupied(out owner))
-                if (this.NumAttackers > 0)
-                    owner = Game.GetRandom(this.attackers).Owner;
-                else
-                    return 0;
-
-            foreach (Unit unit in this.GetAttackers())
-                if (unit.Owner == owner)
-                {
-                    this.units.Add(unit);
-                    this.attackers.Remove(unit);
-                }
-
-            return this.NumAttackers;
+            List<Unit> fightList = new List<Unit>();
+            foreach (var group in players)
+                AddFightUnits(fightList, group, GetDamage(group) * dmgMult);
+            return Game.Random.Iterate(fightList);
         }
-
-        private void AddUnits(List<Unit> fightList, List<Unit> attackers, List<Unit> defenders, double dmgMult)
-        {
-            double attTot = GetDamage(attackers) * dmgMult;
-            double defTot = GetDamage(defenders) * dmgMult;
-
-            AddUnits(fightList, attackers, attTot);
-            AddUnits(fightList, defenders, defTot);
-        }
-
-        private double GetDamage(List<Unit> units)
-        {
-            units.Sort(UnitDamageComparison);
-            double total = 0;
-            int count = -1;
-            foreach (Unit unit in units)
-                total += GetDamage(unit) / ( 1.0 + ++count / 2.6 );
-            return total;
-        }
-
-        public static int UnitDamageComparison(Unit unit1, Unit unit2)
-        {
-            return Math.Sign(unit2.Tile.GetDamage(unit2) - unit1.Tile.GetDamage(unit1));
-        }
-
-        private void AddUnits(List<Unit> fightList, List<Unit> available, double damTot)
+        private void AddFightUnits(List<Unit> fightList, IEnumerable<Unit> available, double damTot)
         {
             foreach (Unit unit in Game.Random.Iterate<Unit>(available))
             {
@@ -342,10 +187,20 @@ namespace Daemons
                 throw new Exception();
         }
 
+        private double GetDamage(IEnumerable<Unit> units)
+        {
+            double count = -1;
+            return units.OrderByDescending((u) => GetDamage(u)).Aggregate<Unit, double>(0, (t, u) => t + ( GetDamage(u) / ( ++count / 2.6 + 1.0 ) ));
+        }
+        public static int UnitDamageComparison(Unit unit1, Unit unit2)
+        {
+            return Math.Sign(unit2.Tile.GetDamage(unit2) - unit1.Tile.GetDamage(unit1));
+        }
+
         public double GetDamage(Unit attacker)
         {
             double avg = 0, tot = 0;
-            foreach (Unit defender in GetAllUnits())
+            foreach (Unit defender in GetUnits())
                 if (attacker.Owner != defender.Owner)
                 {
                     double mult = Unit.GetDamageMult(attacker.Type, defender.Type);
@@ -372,7 +227,7 @@ namespace Daemons
         private Unit GetTarget(Unit attacker, double deviation)
         {
             List<Unit> targets = new List<Unit>();
-            foreach (Unit u in GetAllUnits())
+            foreach (Unit u in GetUnits())
                 if (u.Owner != attacker.Owner)
                     targets.Add(u);
 
@@ -398,29 +253,15 @@ namespace Daemons
             return null;
         }
 
-        public double GetArmyStr()
+        public static double GetArmyStr(IEnumerable<Unit> units)
         {
-            return GetArmyStr(this.units);
-        }
-
-        public double GetAttackerStr()
-        {
-            return GetArmyStr(this.attackers);
-        }
-
-        public static double GetArmyStr(List<Unit> units)
-        {
-            double retVal = 0;
-            foreach (Unit unit in units)
-                if (unit.Hits > 0)
-                    retVal += unit.Strength;
-            return retVal;
+            return units.Where((u) => ( u.Hits > 0 )).Aggregate<Unit, double>(0, (t, u) => ( t + u.Strength ));
         }
 
         internal int GetRetreatValue(Player player)
         {
             double friend = GetArmyStr(GetUnits(player));
-            double total = GetArmyStr() + GetAttackerStr();
+            double total = GetArmyStr(GetUnits());
 
             double amt = 13;
             if (friend == total)

@@ -31,10 +31,10 @@ namespace DaemonsWinApp
             this.components = new System.ComponentModel.Container();
             this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this.pnlMove = new System.Windows.Forms.Panel();
+            this.chbStr = new System.Windows.Forms.CheckBox();
             this.chbAll = new System.Windows.Forms.CheckBox();
             this.btnOk = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.chbStr = new System.Windows.Forms.CheckBox();
             this.pnlMove.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -58,6 +58,18 @@ namespace DaemonsWinApp
             this.pnlMove.Size = new System.Drawing.Size(268, 38);
             this.pnlMove.TabIndex = 3;
             this.pnlMove.Visible = false;
+            // 
+            // chbStr
+            // 
+            this.chbStr.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.chbStr.AutoSize = true;
+            this.chbStr.Location = new System.Drawing.Point(166, 7);
+            this.chbStr.Name = "chbStr";
+            this.chbStr.Size = new System.Drawing.Size(89, 17);
+            this.chbStr.TabIndex = 6;
+            this.chbStr.Text = "Max Strength";
+            this.chbStr.UseVisualStyleBackColor = true;
+            this.chbStr.CheckedChanged += new System.EventHandler(this.chbStr_CheckedChanged);
             // 
             // chbAll
             // 
@@ -93,18 +105,6 @@ namespace DaemonsWinApp
             this.toolTip1.UseAnimation = false;
             this.toolTip1.UseFading = false;
             // 
-            // chbStr
-            // 
-            this.chbStr.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.chbStr.AutoSize = true;
-            this.chbStr.Location = new System.Drawing.Point(166, 7);
-            this.chbStr.Name = "chbStr";
-            this.chbStr.Size = new System.Drawing.Size(89, 17);
-            this.chbStr.TabIndex = 6;
-            this.chbStr.Text = "Max Strength";
-            this.chbStr.UseVisualStyleBackColor = true;
-            this.chbStr.CheckedChanged += new System.EventHandler(this.chbStr_CheckedChanged);
-            // 
             // InfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -120,7 +120,7 @@ namespace DaemonsWinApp
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "infoForm";
+            this.Text = "Units";
             this.SizeChanged += new System.EventHandler(this.infoForm_SizeChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.infoForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.infoForm_KeyUp);

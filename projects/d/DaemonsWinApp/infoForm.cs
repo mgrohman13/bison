@@ -396,13 +396,18 @@ namespace DaemonsWinApp
             AdjustMax();
         }
 
-        public static void ShowDialog(ref List<Unit> all, ref  List<Unit> part, ref List<Unit> move, UseType use)
+        public static void ShowDialog(ref List<Unit> all, ref List<Unit> part, ref List<Unit> move, UseType use)
         {
             if (Form.SetupStuff(ref all, ref part, ref move, use))
                 if (use == UseType.View)
-                    Form.Show();
+                {
+                    if (all.Count > 0)
+                        Form.Show();
+                }
                 else
+                {
                     Form.ShowDialog();
+                }
         }
 
         public static void CloseForm()

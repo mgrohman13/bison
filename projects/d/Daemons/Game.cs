@@ -92,10 +92,11 @@ namespace Daemons
             while (startUnits.Count > 0 && count > 0)
             {
                 Tile tile = map[Random.Next(width), Random.Next(height)];
-                List<Unit> units = tile.GetUnits(independent);
-                if (units.Count > 0)
+                IEnumerable<Unit> units = tile.GetUnits(independent);
+                if (units.Any())
                 {
-                    Unit unit = units[Random.Next(units.Count)];
+                    List<Unit> list = units.ToList();
+                    Unit unit = list[Random.Next(list.Count)];
                     UnitType unitType = Random.SelectValue(startUnits);
                     startUnits[unitType]--;
                     if (startUnits[unitType] == 0)
@@ -266,11 +267,10 @@ namespace Daemons
         private Tile GetTile(Player player)
         {
             Tile tile;
-            Player occupying;
             do
             {
                 tile = GetRandomTile();
-            } while (tile.Occupied(out occupying) && occupying != player);
+            } while (tile.Occupied(player));
             return tile;
         }
 
@@ -367,10 +367,9 @@ namespace Daemons
             independent.IndyArrows(true);
 
             //move single-movement units
-            Player p;
             Dictionary<Tile, Tile> moved = new Dictionary<Tile, Tile>();
             foreach (Tile from in map)
-                if (from.Occupied(out p) && p.Independent)
+                if (from.Occupied(independent))
                 {
                     int x = from.X, y = from.Y;
                     MoveRand(ref x, ref y);
@@ -452,9 +451,12 @@ namespace Daemons
                 for (int a = 0 ; a < amt ; a++)
                 {
                     UnitType type = UnitType.Indy;
-                    List<Unit> existing = tile.GetUnits(independent);
-                    if (existing.Count > 0)
-                        type = existing[Random.Next(existing.Count)].Type;
+                    IEnumerable<Unit> existing = tile.GetUnits(independent);
+                    if (existing.Any())
+                    {
+                        List<Unit> list = existing.ToList();
+                        type = list[Random.Next(list.Count)].Type;
+                    }
                     new Unit(type, tile, independent);
                 }
             }
@@ -471,7 +473,7 @@ namespace Daemons
         {
             bool any = false;
             if (from != to && to != null)
-                foreach (Unit unit in from.GetUnits(independent))
+                foreach (Unit unit in from.GetUnits(independent).ToList())
                     if (unit.Healed && ( special.HasValue ? ( unit.Type == special.Value ) :
                             ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) ))
                         any |= unit.Move(to);
