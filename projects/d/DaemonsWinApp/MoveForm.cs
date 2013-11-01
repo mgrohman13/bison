@@ -102,13 +102,8 @@ namespace DaemonsWinApp
                     return SetupStuff(tile, moveTo, fire, max);
                 }
 
-            int[] counts = new int[types.Capacity];
-
             for (int a = 0 ; a < types.Capacity ; a++)
-            {
                 types.Add(new List<Unit>());
-                counts[a] = 0;
-            }
 
             foreach (Unit u in units)
             {
@@ -117,37 +112,25 @@ namespace DaemonsWinApp
                 case UnitType.Archer:
                     types[1].Add(u);
                     if (u.Healed)
-                    {
-                        counts[1]++;
                         move.Add(u);
-                    }
                     break;
 
                 case UnitType.Daemon:
                     types[3].Add(u);
                     if (u.Healed)
-                    {
-                        counts[3]++;
                         move.Add(u);
-                    }
                     break;
 
                 case UnitType.Infantry:
                     types[0].Add(u);
                     if (u.Healed)
-                    {
-                        counts[0]++;
                         move.Add(u);
-                    }
                     break;
 
                 case UnitType.Knight:
                     types[2].Add(u);
                     if (u.Healed)
-                    {
-                        counts[2]++;
                         move.Add(u);
-                    }
                     break;
 
                 default:
@@ -172,7 +155,8 @@ namespace DaemonsWinApp
             for (int a = 0 ; a < types.Count ; a++)
                 if (types[a].Count > 0)
                 {
-                    infos[num].Text = string.Format("{0}({1})", types[a].Count, counts[a]);
+                    infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count((u) => u.Healed),
+                            types[a].Count((u) => ( u.Movement > 0 )), types[a].Count());
                     pics[num++].Image = types[a][0].GetPic();
                 }
 
