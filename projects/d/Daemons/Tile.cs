@@ -39,6 +39,8 @@ namespace Daemons
 
         public static System.Drawing.Bitmap GetBestPic(IEnumerable<Unit> list)
         {
+            if (list == null)
+                return null;
             Unit unit = list.FirstOrDefault((u) => ( u.Type == UnitType.Daemon ))
                     ?? list.FirstOrDefault((u) => ( u.Type == UnitType.Knight ))
                     ?? list.FirstOrDefault((u) => ( u.Type == UnitType.Archer ))

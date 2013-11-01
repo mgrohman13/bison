@@ -324,9 +324,9 @@ namespace DaemonsWinApp
             this.lblMorale.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lblMorale.BackColor = System.Drawing.Color.Transparent;
             this.lblMorale.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F);
-            this.lblMorale.Location = new System.Drawing.Point(871, 9);
+            this.lblMorale.Location = new System.Drawing.Point(888, 0);
             this.lblMorale.Name = "lblMorale";
-            this.lblMorale.Size = new System.Drawing.Size(108, 23);
+            this.lblMorale.Size = new System.Drawing.Size(108, 20);
             this.lblMorale.TabIndex = 26;
             this.lblMorale.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 

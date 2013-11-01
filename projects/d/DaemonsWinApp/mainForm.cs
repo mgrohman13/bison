@@ -57,97 +57,113 @@ namespace DaemonsWinApp
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            for (int x = 0 ; x <= game.GetWidth() ; x++)
-                e.Graphics.DrawLine(Pens.Black, new Point(x * size + offSet, offSet),
-                    new Point(x * size + offSet, offSet + game.GetHeight() * size));
-            for (int y = 0 ; y <= game.GetHeight() ; y++)
-                e.Graphics.DrawLine(Pens.Black, new Point(offSet, y * size + offSet),
-                    new Point(offSet + game.GetWidth() * size, y * size + offSet));
+            try
+            {
+                for (int x = 0 ; x <= game.GetWidth() ; x++)
+                    e.Graphics.DrawLine(Pens.Black, new Point(x * size + offSet, offSet),
+                        new Point(x * size + offSet, offSet + game.GetHeight() * size));
+                for (int y = 0 ; y <= game.GetHeight() ; y++)
+                    e.Graphics.DrawLine(Pens.Black, new Point(offSet, y * size + offSet),
+                        new Point(offSet + game.GetWidth() * size, y * size + offSet));
 
-            if (Selected != null)
-                e.Graphics.DrawRectangle(new Pen(Color.Black, 3),
-                    Selected.X * size + offSet, Selected.Y * size + offSet, size, size);
+                if (Selected != null)
+                    e.Graphics.DrawRectangle(new Pen(Color.Black, 3),
+                        Selected.X * size + offSet, Selected.Y * size + offSet, size, size);
 
-            for (int x = 0 ; x < game.GetWidth() ; x++)
-                for (int y = 0 ; y < game.GetHeight() ; y++)
-                {
-                    Tile t = game.GetTile(x, y);
-
-                    IEnumerable<Unit> units = t.GetUnits(game.GetCurrentPlayer());
-                    IEnumerable<Unit> attackers = t.GetUnits().Where((u) => !u.Owner.IsTurn());
-                    Bitmap picUnit = null, picAttacker = null;
-                    if (units.Any())
-                        picAttacker = Tile.GetBestPic(attackers);
-                    else
-                        units = t.GetUnits();
-                    picUnit = Tile.GetBestPic(units);
-                    if (picUnit != null && picAttacker == null)
+                for (int x = 0 ; x < game.GetWidth() ; x++)
+                    for (int y = 0 ; y < game.GetHeight() ; y++)
                     {
-                        e.Graphics.DrawImage(picUnit, new Point(1 + x * size + offSet, 1 + y * size + offSet));
-                        e.Graphics.DrawString(units.Count().ToString(), font, Brushes.Black,
-                            new Point(1 + x * size + offSet, 1 + y * size + offSet + 15));
-                        string armyStr = Tile.GetArmyStr(units).ToString("0");
-                        //float width = e.Graphics.MeasureString(armyStr, font).Width;
-                        e.Graphics.DrawString(armyStr, font, Brushes.Black,
-                            new Point(1 + x * size + offSet, 1 + y * size + offSet));
-                        //new Point((x + 1) * size + offSet - ((int)width) - 1, 1 + y * size + offSet));
-                    }
-                    else if (picUnit != null && picAttacker != null)
-                    {
-                        e.Graphics.DrawImage(picAttacker, 1 + x * size + offSet,
-                            1 + y * size + offSet, size / 2, size / 2);
-                        e.Graphics.DrawString(Tile.GetArmyStr(attackers).ToString("0"), font, Brushes.Black,
-                            new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet));
-                        e.Graphics.DrawString(attackers.Count().ToString(), font, Brushes.Black,
-                            new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet + 15));
-                        e.Graphics.DrawImage(picUnit, 1 + x * size + offSet + size / 2,
-                            1 + y * size + offSet + size / 2, size / 2, size / 2);
-                        string measureStr = Tile.GetArmyStr(units).ToString("0");
-                        int width = (int)e.Graphics.MeasureString(measureStr, font).Width;
-                        e.Graphics.DrawString(measureStr, font, Brushes.Black,
-                            new Point(1 + x * size + offSet + size / 2 - width,
-                            1 + y * size + offSet + size / 2));
-                        measureStr = units.Count().ToString();
-                        width = (int)e.Graphics.MeasureString(measureStr, font).Width;
-                        e.Graphics.DrawString(measureStr, font, Brushes.Black,
-                           new Point(1 + x * size + offSet + size / 2 - width,
-                           1 + y * size + offSet + size / 2 + 15));
-                    }
+                        Tile t = game.GetTile(x, y);
 
-                    int newX = offSet + x * size + 3;
-                    foreach (ProductionCenter pc in t.GetProduction())
-                    {
-                        Brush brush;
-                        switch (pc.Type)
+                        IEnumerable<Unit> units = t.GetUnits(game.GetCurrentPlayer());
+                        IEnumerable<Unit> attackers = null;
+                        if (units.Any())
                         {
-                        case ProductionType.Archer:
-                            if (pc.Used)
-                                brush = Brushes.Yellow;
-                            else
-                                brush = Brushes.Orange;
-                            break;
-
-                        case ProductionType.Infantry:
-                            if (pc.Used)
-                                brush = Brushes.Lime;
-                            else
-                                brush = Brushes.Green;
-                            break;
-
-                        case ProductionType.Knight:
-                            if (pc.Used)
-                                brush = Brushes.Cyan;
-                            else
-                                brush = Brushes.Blue;
-                            break;
-
-                        default:
-                            throw new Exception("go home");
+                            attackers = t.GetUnits().Where((u) => !u.Owner.IsTurn());
                         }
-                        e.Graphics.FillEllipse(brush, newX, ( y + 1 ) * size + offSet - 16, 13, 13);
-                        newX += 16;
+                        else
+                        {
+                            units = t.GetUnits();
+                            if (units.Any())
+                            {
+                                units = units.GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First();
+                                attackers = t.GetUnits().Where((u) => ( u.Owner != ( (IGrouping<Player, Unit>)units ).Key ));
+                            }
+                        }
+                        Bitmap picAttacker = Tile.GetBestPic(attackers);
+                        Bitmap picUnit = Tile.GetBestPic(units);
+                        if (picUnit != null && picAttacker == null)
+                        {
+                            e.Graphics.DrawImage(picUnit, new Point(1 + x * size + offSet, 1 + y * size + offSet));
+                            e.Graphics.DrawString(units.Count().ToString(), font, Brushes.Black,
+                                new Point(1 + x * size + offSet, 1 + y * size + offSet + 15));
+                            string armyStr = Tile.GetArmyStr(units).ToString("0");
+                            //float width = e.Graphics.MeasureString(armyStr, font).Width;
+                            e.Graphics.DrawString(armyStr, font, Brushes.Black,
+                                new Point(1 + x * size + offSet, 1 + y * size + offSet));
+                            //new Point((x + 1) * size + offSet - ((int)width) - 1, 1 + y * size + offSet));
+                        }
+                        else if (picUnit != null && picAttacker != null)
+                        {
+                            e.Graphics.DrawImage(picAttacker, 1 + x * size + offSet,
+                                1 + y * size + offSet, size / 2, size / 2);
+                            e.Graphics.DrawString(Tile.GetArmyStr(attackers).ToString("0"), font, Brushes.Black,
+                                new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet));
+                            e.Graphics.DrawString(attackers.Count().ToString(), font, Brushes.Black,
+                                new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet + 15));
+                            e.Graphics.DrawImage(picUnit, 1 + x * size + offSet + size / 2,
+                                1 + y * size + offSet + size / 2, size / 2, size / 2);
+                            string measureStr = Tile.GetArmyStr(units).ToString("0");
+                            int width = (int)e.Graphics.MeasureString(measureStr, font).Width;
+                            e.Graphics.DrawString(measureStr, font, Brushes.Black,
+                                new Point(1 + x * size + offSet + size / 2 - width,
+                                1 + y * size + offSet + size / 2));
+                            measureStr = units.Count().ToString();
+                            width = (int)e.Graphics.MeasureString(measureStr, font).Width;
+                            e.Graphics.DrawString(measureStr, font, Brushes.Black,
+                               new Point(1 + x * size + offSet + size / 2 - width,
+                               1 + y * size + offSet + size / 2 + 15));
+                        }
+
+                        int newX = offSet + x * size + 3;
+                        foreach (ProductionCenter pc in t.GetProduction())
+                        {
+                            Brush brush;
+                            switch (pc.Type)
+                            {
+                            case ProductionType.Archer:
+                                if (pc.Used)
+                                    brush = Brushes.Yellow;
+                                else
+                                    brush = Brushes.Orange;
+                                break;
+
+                            case ProductionType.Infantry:
+                                if (pc.Used)
+                                    brush = Brushes.Lime;
+                                else
+                                    brush = Brushes.Green;
+                                break;
+
+                            case ProductionType.Knight:
+                                if (pc.Used)
+                                    brush = Brushes.Cyan;
+                                else
+                                    brush = Brushes.Blue;
+                                break;
+
+                            default:
+                                throw new Exception("go home");
+                            }
+                            e.Graphics.FillEllipse(brush, newX, ( y + 1 ) * size + offSet - 16, 13, 13);
+                            newX += 16;
+                        }
                     }
-                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
         }
 
         private void ClearUnitInfo()
@@ -184,13 +200,8 @@ namespace DaemonsWinApp
 
             List<Unit>[] types = new List<Unit>[4];
 
-            int[] counts = new int[types.Length];
-
             for (int a = 0 ; a < types.Length ; a++)
-            {
                 types[a] = new List<Unit>();
-                counts[a] = 0;
-            }
 
             foreach (Unit u in units)
             {
@@ -198,27 +209,19 @@ namespace DaemonsWinApp
                 {
                 case UnitType.Archer:
                     types[1].Add(u);
-                    if (u.Healed)
-                        counts[1]++;
                     break;
 
                 case UnitType.Daemon:
                     types[3].Add(u);
-                    if (u.Healed)
-                        counts[3]++;
                     break;
 
                 case UnitType.Indy:
                 case UnitType.Infantry:
                     types[0].Add(u);
-                    if (u.Healed)
-                        counts[0]++;
                     break;
 
                 case UnitType.Knight:
                     types[2].Add(u);
-                    if (u.Healed)
-                        counts[2]++;
                     break;
 
                 default:
@@ -248,8 +251,9 @@ namespace DaemonsWinApp
             for (int a = 0 ; a < types.Length ; a++)
                 if (types[a].Count > 0)
                 {
-                    infos[num].Text = string.Format("{0}({1})", types[a].Count, counts[a]);
-                    pics[num++].Image = types[a][0].GetPic();
+                    infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count((u) => u.Healed),
+                            types[a].Count((u) => ( u.Movement > 0 )), types[a].Count());
+                    pics[num++].Image = types[a].GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
                 }
         }
 

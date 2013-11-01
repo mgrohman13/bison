@@ -6,11 +6,7 @@ heal individual units
 undo
 rethink arrows?
 
-colors in mian form unit count area
 lblMorale transparent not working
-indicator for which loop you are looping through
-should draw attackers even for enemies
-should use player with strongest total str for best pic rather than strongest unit
 show str,morale of indy that will move
 	allow way to select and show str,morale of selected
 	always show selected stats regardeless of use type
