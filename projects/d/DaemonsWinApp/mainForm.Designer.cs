@@ -174,7 +174,6 @@ namespace DaemonsWinApp
             this.lblInf1.Name = "lblInf1";
             this.lblInf1.Size = new System.Drawing.Size(93, 90);
             this.lblInf1.TabIndex = 8;
-            this.lblInf1.Text = "10 / 10 / 10";
             this.lblInf1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblArrows

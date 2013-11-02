@@ -150,6 +150,7 @@ namespace DaemonsWinApp
             }
             else
             {
+                this.vScrollBar1.Value = this.vScrollBar1.Minimum;
                 this.vScrollBar1.Hide();
             }
         }
