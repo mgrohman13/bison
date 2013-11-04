@@ -7,6 +7,7 @@ heal individual units
 undo
 rethink arrows?
 
+broken show up in same group as injured
 10 / 10 / 10
 	main form bold
 	move form
