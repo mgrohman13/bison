@@ -248,11 +248,14 @@ namespace DaemonsWinApp
             if (attackers.Any())
                 this.lblMorale.Text = ( Tile.GetMorale(attackers) ).ToString("0% : ") + this.lblMorale.Text;
 
+            IEnumerable<int> active = game.GetCurrentPlayer().GetActive(types);
             for (int a = 0 ; a < types.Length ; a++)
                 if (types[a].Count > 0)
                 {
                     infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count((u) => u.Healed),
                             types[a].Count((u) => ( u.Movement > 0 )), types[a].Count());
+                    infos[num].Font = new Font("Microsoft Sans Serif", 12.75f, ( active.Contains(a) ? FontStyle.Bold : FontStyle.Regular ));
+                    infos[num].ForeColor = ( active.Contains(a) ? Color.Black : Color.Gray );
                     pics[num++].Image = types[a].GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
                 }
         }

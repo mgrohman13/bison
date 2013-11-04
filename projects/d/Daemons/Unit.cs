@@ -223,7 +223,7 @@ namespace Daemons
         {
             get
             {
-                return ( Hits == MaxHits && this.movement > 0 && this.Morale > .00117 );
+                return ( this.movement > 0 && Hits == MaxHits && this.Morale > .00117 );
             }
         }
 

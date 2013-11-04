@@ -7,8 +7,9 @@ heal individual units
 undo
 rethink arrows?
 
-end turn move warning piicks up broken, but hard to find
-move form 10 / 10 / 10
+10 / 10 / 10
+	main form bold
+	move form
 build use type needs sort option for max str
 lblMorale transparent not working
 show str,morale of indy that will move

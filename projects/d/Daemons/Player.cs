@@ -174,49 +174,39 @@ namespace Daemons
 
         public Tile NextUnit(Tile selectedTile)
         {
-            int startX = ( selectedTile == null ? 0 : selectedTile.X ),
-                    startY = ( selectedTile == null ? 0 : selectedTile.Y );
-            if (selectedTile != null && ++startX == Game.GetWidth())
+            var all = this.Units.GroupBy((u) => u.Tile).ToList();
+            var active = GetActive(all);
+            if (active.Any())
             {
-                startX = 0;
-                if (++startY == Game.GetHeight())
-                    startY = 0;
+                var next = all.Where((g, i) => active.Contains(i));
+                int start = -1;
+                if (selectedTile != null)
+                    start = selectedTile.Y * Game.GetWidth() + selectedTile.X;
+                return next.OrderBy((g) =>
+                {
+                    int cur = g.Key.Y * Game.GetWidth() + g.Key.X;
+                    cur -= start;
+                    if (cur <= 0)
+                        cur += Game.GetHeight() * Game.GetWidth();
+                    return cur;
+                }).First().Key;
             }
-
-            Func<Unit, bool> knightFunc = ( (u) => ( u.Hits < u.MaxHits && ( u.Movement - 1 ) * u.Regen + u.Hits >= u.MaxHits ) );
-            bool knight = false;
-
-            bool healed = true, move = true;
-            while (true)
-            {
-                int x = startX, y = startY;
-                do
-                {
-                    if (Game.GetTile(x, y).GetUnits(this, move, healed).Any((u) => ( knight ? knightFunc(u) : move || u.ReserveMove > 0 )))
-                        return Game.GetTile(x, y);
-                    if (++x == Game.GetWidth())
-                    {
-                        x = 0;
-                        if (++y == Game.GetHeight())
-                            y = 0;
-                    }
-                } while (x != startX || y != startY);
-                if (healed)
-                {
-                    healed = false;
-                    knight = this.units.Any(knightFunc);
-                }
-                else if (move)
-                {
-                    move = false;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
             return null;
+        }
+        public IEnumerable<int> GetActive(IEnumerable<IEnumerable<Unit>> units)
+        {
+            Func<Unit, bool>[] funcs = { 
+                (u) => u.Healed,
+                (u) => u.Movement > 0 && ( u.Movement - 1 ) * u.Regen + u.Hits >= u.MaxHits,
+                (u) => u.Movement > 0,
+                (u) => u.ReserveMove > 0,
+            };
+
+            foreach (var func in funcs)
+                if (this.Units.Any(func))
+                    return units.Select((l, i) => l.Any(func) ? i : -1).Where((i) => i > -1);
+
+            return new int[0];
         }
 
         internal void AddSouls(float value)
