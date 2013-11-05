@@ -70,7 +70,7 @@ namespace DaemonsWinApp
             this.button1.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.button1.Location = new System.Drawing.Point(12, 376);
+            this.button1.Location = new System.Drawing.Point(29, 376);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 36);
             this.button1.TabIndex = 0;
@@ -83,7 +83,7 @@ namespace DaemonsWinApp
             this.button2.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.button2.Location = new System.Drawing.Point(252, 376);
+            this.button2.Location = new System.Drawing.Point(269, 376);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 36);
             this.button2.TabIndex = 1;
@@ -93,10 +93,10 @@ namespace DaemonsWinApp
             // lblInf4
             // 
             this.lblInf4.BackColor = System.Drawing.Color.White;
-            this.lblInf4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf4.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf4.Location = new System.Drawing.Point(90, 270);
             this.lblInf4.Name = "lblInf4";
-            this.lblInf4.Size = new System.Drawing.Size(75, 90);
+            this.lblInf4.Size = new System.Drawing.Size(92, 90);
             this.lblInf4.TabIndex = 19;
             this.lblInf4.Tag = "";
             this.lblInf4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -104,10 +104,10 @@ namespace DaemonsWinApp
             // lblInf3
             // 
             this.lblInf3.BackColor = System.Drawing.Color.White;
-            this.lblInf3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf3.Location = new System.Drawing.Point(90, 180);
             this.lblInf3.Name = "lblInf3";
-            this.lblInf3.Size = new System.Drawing.Size(75, 90);
+            this.lblInf3.Size = new System.Drawing.Size(92, 90);
             this.lblInf3.TabIndex = 18;
             this.lblInf3.Tag = "";
             this.lblInf3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -115,10 +115,10 @@ namespace DaemonsWinApp
             // lblInf2
             // 
             this.lblInf2.BackColor = System.Drawing.Color.White;
-            this.lblInf2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf2.Location = new System.Drawing.Point(90, 90);
             this.lblInf2.Name = "lblInf2";
-            this.lblInf2.Size = new System.Drawing.Size(75, 90);
+            this.lblInf2.Size = new System.Drawing.Size(92, 90);
             this.lblInf2.TabIndex = 17;
             this.lblInf2.Tag = "";
             this.lblInf2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -126,17 +126,17 @@ namespace DaemonsWinApp
             // lblInf1
             // 
             this.lblInf1.BackColor = System.Drawing.Color.White;
-            this.lblInf1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf1.Location = new System.Drawing.Point(90, 0);
             this.lblInf1.Name = "lblInf1";
-            this.lblInf1.Size = new System.Drawing.Size(75, 90);
+            this.lblInf1.Size = new System.Drawing.Size(92, 90);
             this.lblInf1.TabIndex = 16;
             this.lblInf1.Tag = "";
             this.lblInf1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // btnNone0
             // 
-            this.btnNone0.Location = new System.Drawing.Point(171, 38);
+            this.btnNone0.Location = new System.Drawing.Point(188, 38);
             this.btnNone0.Name = "btnNone0";
             this.btnNone0.Size = new System.Drawing.Size(75, 23);
             this.btnNone0.TabIndex = 20;
@@ -147,7 +147,7 @@ namespace DaemonsWinApp
             // 
             // btnHealed0
             // 
-            this.btnHealed0.Location = new System.Drawing.Point(252, 38);
+            this.btnHealed0.Location = new System.Drawing.Point(269, 38);
             this.btnHealed0.Name = "btnHealed0";
             this.btnHealed0.Size = new System.Drawing.Size(75, 23);
             this.btnHealed0.TabIndex = 21;
@@ -157,7 +157,7 @@ namespace DaemonsWinApp
             // 
             // btnMax0
             // 
-            this.btnMax0.Location = new System.Drawing.Point(171, 67);
+            this.btnMax0.Location = new System.Drawing.Point(188, 67);
             this.btnMax0.Name = "btnMax0";
             this.btnMax0.Size = new System.Drawing.Size(75, 23);
             this.btnMax0.TabIndex = 22;
@@ -167,7 +167,7 @@ namespace DaemonsWinApp
             // 
             // btnCustomize0
             // 
-            this.btnCustomize0.Location = new System.Drawing.Point(252, 67);
+            this.btnCustomize0.Location = new System.Drawing.Point(269, 67);
             this.btnCustomize0.Name = "btnCustomize0";
             this.btnCustomize0.Size = new System.Drawing.Size(75, 23);
             this.btnCustomize0.TabIndex = 23;
@@ -178,7 +178,7 @@ namespace DaemonsWinApp
             // txtNum0
             // 
             this.txtNum0.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.txtNum0.Location = new System.Drawing.Point(232, 5);
+            this.txtNum0.Location = new System.Drawing.Point(249, 5);
             this.txtNum0.Name = "txtNum0";
             this.txtNum0.ReadOnly = true;
             this.txtNum0.Size = new System.Drawing.Size(33, 27);
@@ -187,7 +187,7 @@ namespace DaemonsWinApp
             // txtNum1
             // 
             this.txtNum1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.txtNum1.Location = new System.Drawing.Point(232, 95);
+            this.txtNum1.Location = new System.Drawing.Point(249, 95);
             this.txtNum1.Name = "txtNum1";
             this.txtNum1.ReadOnly = true;
             this.txtNum1.Size = new System.Drawing.Size(33, 27);
@@ -195,7 +195,7 @@ namespace DaemonsWinApp
             // 
             // btnCustomize1
             // 
-            this.btnCustomize1.Location = new System.Drawing.Point(252, 157);
+            this.btnCustomize1.Location = new System.Drawing.Point(269, 157);
             this.btnCustomize1.Name = "btnCustomize1";
             this.btnCustomize1.Size = new System.Drawing.Size(75, 23);
             this.btnCustomize1.TabIndex = 28;
@@ -205,7 +205,7 @@ namespace DaemonsWinApp
             // 
             // btnMax1
             // 
-            this.btnMax1.Location = new System.Drawing.Point(171, 157);
+            this.btnMax1.Location = new System.Drawing.Point(188, 157);
             this.btnMax1.Name = "btnMax1";
             this.btnMax1.Size = new System.Drawing.Size(75, 23);
             this.btnMax1.TabIndex = 27;
@@ -215,7 +215,7 @@ namespace DaemonsWinApp
             // 
             // btnHealed1
             // 
-            this.btnHealed1.Location = new System.Drawing.Point(252, 128);
+            this.btnHealed1.Location = new System.Drawing.Point(269, 128);
             this.btnHealed1.Name = "btnHealed1";
             this.btnHealed1.Size = new System.Drawing.Size(75, 23);
             this.btnHealed1.TabIndex = 26;
@@ -225,7 +225,7 @@ namespace DaemonsWinApp
             // 
             // btnNone1
             // 
-            this.btnNone1.Location = new System.Drawing.Point(171, 128);
+            this.btnNone1.Location = new System.Drawing.Point(188, 128);
             this.btnNone1.Name = "btnNone1";
             this.btnNone1.Size = new System.Drawing.Size(75, 23);
             this.btnNone1.TabIndex = 25;
@@ -236,7 +236,7 @@ namespace DaemonsWinApp
             // txtNum2
             // 
             this.txtNum2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.txtNum2.Location = new System.Drawing.Point(232, 185);
+            this.txtNum2.Location = new System.Drawing.Point(249, 185);
             this.txtNum2.Name = "txtNum2";
             this.txtNum2.ReadOnly = true;
             this.txtNum2.Size = new System.Drawing.Size(33, 27);
@@ -244,7 +244,7 @@ namespace DaemonsWinApp
             // 
             // btnCustomize2
             // 
-            this.btnCustomize2.Location = new System.Drawing.Point(252, 247);
+            this.btnCustomize2.Location = new System.Drawing.Point(269, 247);
             this.btnCustomize2.Name = "btnCustomize2";
             this.btnCustomize2.Size = new System.Drawing.Size(75, 23);
             this.btnCustomize2.TabIndex = 33;
@@ -254,7 +254,7 @@ namespace DaemonsWinApp
             // 
             // btnMax2
             // 
-            this.btnMax2.Location = new System.Drawing.Point(171, 247);
+            this.btnMax2.Location = new System.Drawing.Point(188, 247);
             this.btnMax2.Name = "btnMax2";
             this.btnMax2.Size = new System.Drawing.Size(75, 23);
             this.btnMax2.TabIndex = 32;
@@ -264,7 +264,7 @@ namespace DaemonsWinApp
             // 
             // btnHealed2
             // 
-            this.btnHealed2.Location = new System.Drawing.Point(252, 218);
+            this.btnHealed2.Location = new System.Drawing.Point(269, 218);
             this.btnHealed2.Name = "btnHealed2";
             this.btnHealed2.Size = new System.Drawing.Size(75, 23);
             this.btnHealed2.TabIndex = 31;
@@ -274,7 +274,7 @@ namespace DaemonsWinApp
             // 
             // btnNone2
             // 
-            this.btnNone2.Location = new System.Drawing.Point(171, 218);
+            this.btnNone2.Location = new System.Drawing.Point(188, 218);
             this.btnNone2.Name = "btnNone2";
             this.btnNone2.Size = new System.Drawing.Size(75, 23);
             this.btnNone2.TabIndex = 30;
@@ -285,7 +285,7 @@ namespace DaemonsWinApp
             // txtNum3
             // 
             this.txtNum3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.txtNum3.Location = new System.Drawing.Point(232, 275);
+            this.txtNum3.Location = new System.Drawing.Point(249, 275);
             this.txtNum3.Name = "txtNum3";
             this.txtNum3.ReadOnly = true;
             this.txtNum3.Size = new System.Drawing.Size(33, 27);
@@ -293,7 +293,7 @@ namespace DaemonsWinApp
             // 
             // btnCustomize3
             // 
-            this.btnCustomize3.Location = new System.Drawing.Point(252, 337);
+            this.btnCustomize3.Location = new System.Drawing.Point(269, 337);
             this.btnCustomize3.Name = "btnCustomize3";
             this.btnCustomize3.Size = new System.Drawing.Size(75, 23);
             this.btnCustomize3.TabIndex = 38;
@@ -303,7 +303,7 @@ namespace DaemonsWinApp
             // 
             // btnMax3
             // 
-            this.btnMax3.Location = new System.Drawing.Point(171, 337);
+            this.btnMax3.Location = new System.Drawing.Point(188, 337);
             this.btnMax3.Name = "btnMax3";
             this.btnMax3.Size = new System.Drawing.Size(75, 23);
             this.btnMax3.TabIndex = 37;
@@ -313,7 +313,7 @@ namespace DaemonsWinApp
             // 
             // btnHealed3
             // 
-            this.btnHealed3.Location = new System.Drawing.Point(252, 308);
+            this.btnHealed3.Location = new System.Drawing.Point(269, 308);
             this.btnHealed3.Name = "btnHealed3";
             this.btnHealed3.Size = new System.Drawing.Size(75, 23);
             this.btnHealed3.TabIndex = 36;
@@ -323,7 +323,7 @@ namespace DaemonsWinApp
             // 
             // btnNone3
             // 
-            this.btnNone3.Location = new System.Drawing.Point(171, 308);
+            this.btnNone3.Location = new System.Drawing.Point(188, 308);
             this.btnNone3.Name = "btnNone3";
             this.btnNone3.Size = new System.Drawing.Size(75, 23);
             this.btnNone3.TabIndex = 35;
@@ -372,7 +372,7 @@ namespace DaemonsWinApp
             this.cbxForce.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.cbxForce.AutoSize = true;
             this.cbxForce.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.cbxForce.Location = new System.Drawing.Point(93, 395);
+            this.cbxForce.Location = new System.Drawing.Point(110, 395);
             this.cbxForce.Name = "cbxForce";
             this.cbxForce.Size = new System.Drawing.Size(97, 17);
             this.cbxForce.TabIndex = 44;
@@ -384,7 +384,7 @@ namespace DaemonsWinApp
             // 
             this.pbArrows.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.pbArrows.Image = ( (System.Drawing.Image)( resources.GetObject("pbArrows.Image") ) );
-            this.pbArrows.Location = new System.Drawing.Point(93, 382);
+            this.pbArrows.Location = new System.Drawing.Point(110, 382);
             this.pbArrows.Name = "pbArrows";
             this.pbArrows.Size = new System.Drawing.Size(30, 30);
             this.pbArrows.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -396,7 +396,7 @@ namespace DaemonsWinApp
             this.lblArrows.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lblArrows.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblArrows.ForeColor = System.Drawing.Color.Goldenrod;
-            this.lblArrows.Location = new System.Drawing.Point(129, 382);
+            this.lblArrows.Location = new System.Drawing.Point(146, 382);
             this.lblArrows.Name = "lblArrows";
             this.lblArrows.Size = new System.Drawing.Size(40, 30);
             this.lblArrows.TabIndex = 45;
@@ -408,7 +408,7 @@ namespace DaemonsWinApp
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(339, 424);
+            this.ClientSize = new System.Drawing.Size(356, 424);
             this.Controls.Add(this.pbArrows);
             this.Controls.Add(this.lblArrows);
             this.Controls.Add(this.cbxForce);

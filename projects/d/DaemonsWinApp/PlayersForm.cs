@@ -24,7 +24,7 @@ namespace DaemonsWinApp
                 this.lbxStr.Items.Add(0);
                 this.lbxProd.Items.Add(0);
             }
-            if (game.GetPlayers().Length > 1)
+            if (game.GetPlayers().Count > 1)
             {
                 foreach (Player p in game.GetPlayers())
                 {
@@ -40,7 +40,7 @@ namespace DaemonsWinApp
                 this.lbxPlayer.Items.Add(game.GetIndependent());
                 this.lbxSoul.Items.Add(0);
                 this.lbxStr.Items.Add(game.GetIndependent().GetStrength().ToString("0"));
-                this.lbxProd.Items.Add(( game.IndyProd() / 666.0 * Unit.GetStrength(UnitType.Indy, 35, 10) ).ToString("+0.0"));
+                this.lbxProd.Items.Add(( game.IndyProd() / Consts.DaemonSouls * Consts.GetStrength(UnitType.Indy, Consts.IndyHits, Consts.IndyDamage) ).ToString("+0.0"));
 
             }
             foreach (Player p in game.GetLosers())

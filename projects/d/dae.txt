@@ -1,18 +1,8 @@
 review all during-combat actions
-	prevent
-
-resetMove -.21 results in healing/builders average ~.8 per turn
-force march indies?
+	prevent (except move)
 heal individual units
 undo
-rethink arrows?
 
-broken show up in same group as injured
-10 / 10 / 10
-	main form bold
-	move form
-build use type needs sort option for max str
-lblMorale transparent not working
 show str,morale of indy that will move
 	allow way to select and show str,morale of selected
 	always show selected stats regardeless of use type
@@ -21,12 +11,10 @@ shortcut to customize all
 auto save location
 show battles
 
-use constants
-data types
-	remove floats
-	field/prop usage
-refactor everything
-reorder members
+Game.players to list
+review Consts usage
+arbitrary numbers
+overloads
 
 Black 0
 Green 2
@@ -34,3 +22,10 @@ Blue 4
 Red 7
 Pink 9
 Yellow 17
+
+Blue 17
+Green 14
+Yellow 10
+Black 7
+Pink 4
+Red 0

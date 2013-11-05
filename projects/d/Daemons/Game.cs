@@ -14,8 +14,7 @@ namespace Daemons
     [Serializable]
     public class Game
     {
-        public static MattUtil.MTRandom Random;
-
+        public static readonly MattUtil.MTRandom Random;
         static Game()
         {
             Random = new MattUtil.MTRandom();
@@ -25,14 +24,13 @@ namespace Daemons
         private readonly Tile[,] map;
         private readonly List<ProductionCenter> production;
 
-        private int currentPlayer, turn;
         private Player[] players;
         private readonly Player independent;
 
         private readonly Dictionary<Player, int> won, lost;
 
-        [NonSerialized]
-        private int _width, _height;
+        private int currentPlayer, turn;
+
         [NonSerialized]
         private bool independentsTurn;
         [NonSerialized]
@@ -41,70 +39,65 @@ namespace Daemons
         public Game(Player[] newPlayers, int newWidth, int newHeight)
         {
             //map
-            this._width = newWidth;
-            this._height = newHeight;
-            this.map = new Tile[width, height];
-            for (int x = 0 ; x < width ; x++)
-                for (int y = 0 ; y < height ; y++)
-                    map[x, y] = new Tile(this, x, y);
+            this.map = new Tile[newWidth, newHeight];
+            for (int x = 0 ; x < newWidth ; x++)
+                for (int y = 0 ; y < newHeight ; y++)
+                    this.map[x, y] = new Tile(this, x, y);
             CreateNeighborReferences();
 
             //production centers
-            const float rand = .078f;
+            const double rand = .078;
             const int min = 1;
             this.production = new List<ProductionCenter>();
-            int[] num = new int[3];
-            num[0] = Random.GaussianCappedInt(newPlayers.Length / 2f, rand, min);
-            num[1] = Random.GaussianCappedInt(newPlayers.Length, rand, min);
-            num[2] = Random.GaussianCappedInt(3f * newPlayers.Length / 2f, rand, min);
+            int[] num = new[] { 
+                Random.GaussianCappedInt(newPlayers.Length / 2.0, rand, min),
+                Random.GaussianCappedInt(newPlayers.Length, rand, min),
+                Random.GaussianCappedInt(newPlayers.Length * 3 / 2.0, rand, min)
+            };
+
             for (int a = 0 ; a < num.Length ; a++)
                 for (int b = 0 ; b < num[a] ; b++)
-                    production.Add(new ProductionCenter(GetRandomTile(), a));
+                    this.production.Add(new ProductionCenter(GetRandomTile(), a));
 
             //players/indy
             this.currentPlayer = -1;
             this.players = new Player[newPlayers.Length];
             this.independent = new Player(this, Color.DarkGray, "Independents", true);
-            this.independentsTurn = false;
             int index = -1;
             int lastSouls = 0;
-            float addSouls, addArrows;
+            double addSouls, addArrows;
             GetMoveDiff(out addSouls, out addArrows);
             this.turn = 6;
             foreach (Player player in Random.Iterate<Player>(newPlayers))
             {
                 int souls = lastSouls + RandSouls(addSouls);
                 lastSouls = souls;
-                players[++index] = new Player(this, player.Color, player.Name, souls);
+                this.players[++index] = new Player(this, player.Color, player.Name, souls);
                 for (int b = -1 ; b < index ; ++b)
-                    players[index].MakeArrow(addArrows);
+                    this.players[index].MakeArrow(addArrows);
                 IndependentsTurn();
             }
             this.turn = 1;
 
             //convert some indy start units to special
             Dictionary<UnitType, int> startUnits = new Dictionary<UnitType, int>();
-            AddIndyStart(startUnits, UnitType.Daemon, .13f);
-            AddIndyStart(startUnits, UnitType.Knight, .6f);
-            AddIndyStart(startUnits, UnitType.Archer, 1.2f);
-            AddIndyStart(startUnits, UnitType.Infantry, 1.8f);
-            int count = independent.Units.Count;
-            while (startUnits.Count > 0 && count > 0)
+            AddIndyStart(startUnits, UnitType.Daemon, .169);
+            AddIndyStart(startUnits, UnitType.Knight, .6);
+            AddIndyStart(startUnits, UnitType.Archer, 1.2);
+            AddIndyStart(startUnits, UnitType.Infantry, 1.8);
+            while (startUnits.Count > 0 && this.independent.GetUnits().Any(unit => unit.Type == UnitType.Indy))
             {
-                Tile tile = map[Random.Next(width), Random.Next(height)];
-                IEnumerable<Unit> units = tile.GetUnits(independent);
+                Tile tile = GetRandomTile();
+                IEnumerable<Unit> units = tile.GetUnits(this.independent);
                 if (units.Any())
                 {
-                    List<Unit> list = units.ToList();
-                    Unit unit = list[Random.Next(list.Count)];
+                    Unit unit = GetRandom(units);
                     UnitType unitType = Random.SelectValue(startUnits);
-                    startUnits[unitType]--;
-                    if (startUnits[unitType] == 0)
+                    if (--startUnits[unitType] == 0)
                         startUnits.Remove(unitType);
                     new Unit(unitType, unit.Tile, unit.Owner);
                     unit.Tile.Remove(unit);
                     unit.Owner.Remove(unit);
-                    --count;
                 }
             }
 
@@ -126,42 +119,38 @@ namespace Daemons
             {
                 UnitType unitType = Random.SelectValue<UnitType>(startUnits);
                 --startUnits[unitType];
-                foreach (Player player in Random.Iterate<Player>(players))
+                foreach (Player player in Random.Iterate<Player>(this.players))
                     AddUnit(player, unitType);
             }
 
-            independent.ResetMoves();
-            foreach (Player player in players)
+            this.independent.ResetMoves();
+            foreach (Player player in this.players)
                 player.ResetMoves();
             this.currentPlayer = 0;
         }
-        private void AddIndyStart(Dictionary<UnitType, int> startUnits, UnitType unitType, float amt)
+        private void AddIndyStart(Dictionary<UnitType, int> startUnits, UnitType unitType, double amt)
         {
-            int intAmt = Random.GaussianCappedInt(amt, .52f, 0);
+            int intAmt = Random.GaussianCappedInt(amt, .52);
             if (intAmt > 0)
                 startUnits.Add(unitType, intAmt);
         }
         internal void CreateNeighborReferences()
         {
-            Tile.CreateNeighborReferences(map, width, height);
+            Tile.CreateNeighborReferences(this.map, Width, Height);
         }
 
-        private int width
+        public int Width
         {
             get
             {
-                if (_width == default(int))
-                    _width = map.GetLength(0);
-                return _width;
+                return this.map.GetLength(0);
             }
         }
-        private int height
+        public int Height
         {
             get
             {
-                if (_height == default(int))
-                    _height = map.GetLength(1);
-                return _height;
+                return this.map.GetLength(1);
             }
         }
 
@@ -169,89 +158,78 @@ namespace Daemons
         {
             get
             {
-                if (_log == default(string))
-                    _log = string.Empty;
-                return _log;
+                string log = this._log;
+                if (log == default(string))
+                    log = string.Empty;
+                return log;
             }
             private set
             {
-                if (_log == default(string))
-                    _log = string.Empty;
-                _log = value;
+                this._log = value;
             }
         }
         public string Turn
         {
             get
             {
-                return turn.ToString();
+                return this.turn.ToString();
             }
         }
 
         public IEnumerable<KeyValuePair<Player, int>> GetWinners()
         {
-            return won.OrderBy((player) => player.Value);
+            return this.won.OrderBy(player => player.Value);
         }
         public IEnumerable<Player> GetLosers()
         {
-            return lost.Keys.OrderBy((player) => player.Score).Reverse();
+            return this.lost.Keys.OrderBy(player => player.Score).Reverse();
         }
         public IEnumerable<KeyValuePair<Player, int>> GetResult()
         {
-            if (players.Length != 1)
+            if (this.players.Length != 1)
                 throw new Exception();
 
             IDictionary<Player, int> results = new Dictionary<Player, int>();
 
             int points = 0, min = int.MaxValue;
             foreach (Player player in GetLosers().Reverse())
-                AddResult(results, player, -39.0 / lost[player], ref points, ref min);
+                AddResult(results, player, -39.0 / this.lost[player], ref points, ref min);
             foreach (var player in GetWinners().Reverse())
                 AddResult(results, player.Key, 130.0 / player.Value, ref points, ref min);
 
-            foreach (var pair in results.ToArray())
+            foreach (var pair in results.ToList())
                 results[pair.Key] = pair.Value - min;
 
-            return results.OrderByDescending((p) => p.Value);
+            return results.OrderByDescending(player => player.Value);
         }
         private static void AddResult(IDictionary<Player, int> results, Player player, double add, ref int points, ref int min)
         {
-            int newPoints = points + Game.Random.Round(add);
+            int newPoints = points + Random.Round(add);
             results.Add(player, newPoints);
             points += 2;
             min = Math.Min(min, newPoints);
         }
 
-        public Player[] GetPlayers()
+        public IList<Player> GetPlayers()
         {
-            return players;
+            return this.players.ToList();
         }
 
         public Player GetIndependent()
         {
-            return independent;
-        }
-
-        public int GetWidth()
-        {
-            return width;
-        }
-
-        public int GetHeight()
-        {
-            return height;
+            return this.independent;
         }
 
         public Tile GetTile(int x, int y)
         {
-            return map[x, y];
+            return this.map[x, y];
         }
 
         public Player GetCurrentPlayer()
         {
-            if (independentsTurn)
-                return independent;
-            return players[currentPlayer];
+            if (this.independentsTurn)
+                return this.independent;
+            return this.players[this.currentPlayer];
         }
 
         internal void Log(String message)
@@ -276,16 +254,16 @@ namespace Daemons
 
         internal Tile GetRandomTile()
         {
-            return GetTile(Random.Next(width), Random.Next(height));
+            return GetTile(Random.Next(Width), Random.Next(Height));
         }
 
         public void EndTurn()
         {
             ProcessBattles();
 
-            if (players.Length == 1)
+            if (this.players.Length == 1)
             {
-                RemovePlayer(players[0], true);
+                RemovePlayer(this.players[0], true);
             }
             else
             {
@@ -294,36 +272,36 @@ namespace Daemons
                 if (Random.Bool(GetWinPct(GetCurrentPlayer())))
                 {
                     RemovePlayer(GetCurrentPlayer(), true);
-                    if (players.Length == 1)
-                        RemovePlayer(players[0], false);
+                    if (this.players.Length == 1)
+                        RemovePlayer(this.players[0], false);
                 }
                 else
                 {
-                    currentPlayer++;
+                    this.currentPlayer++;
                     StartTurn();
                 }
             }
 
             AutoSave();
         }
-        public double GetWinPct(Player player)
+        public double GetWinPct(Player curPlayer)
         {
             double count = 0;
-            double total = players.Union(new[] { independent }).OrderByDescending((p) => p.GetStrength())
-                    .Aggregate<Player, double>(0, (t, p) => t + ( p == player ? 0 : p.GetStrength() / ++count ));
-            double str = player.GetStrength();
+            double total = this.players.Union(new[] { this.independent }).OrderByDescending(player => player.GetStrength())
+                    .Aggregate<Player, double>(0, (sum, player) => ( sum + ( player == curPlayer ? 0 : player.GetStrength() / ++count ) ));
+            double str = curPlayer.GetStrength();
             if (str > total * 1.3)
                 return Math.Pow(( str - total * 1.3 ) / ( str - total ), 2.6);
             return 0;
         }
         public bool HasWinner()
         {
-            return players.Any((p) => ( GetWinPct(p) > 0 ));
+            return this.players.Any(player => GetWinPct(player) > 0);
         }
         private void StartTurn()
         {
             CheckTurnInc();
-            foreach (ProductionCenter pc in production)
+            foreach (ProductionCenter pc in this.production)
                 pc.Reset(GetCurrentPlayer());
         }
 
@@ -333,18 +311,18 @@ namespace Daemons
             while (any)
             {
                 any = false;
-                foreach (Tile tile in Random.Iterate<Tile>(map.Cast<Tile>()))
+                foreach (Tile tile in Random.Iterate<Tile>(this.map.Cast<Tile>()))
                     any |= tile.FightBattle();
             }
         }
 
         private void CheckTurnInc()
         {
-            if (currentPlayer >= players.Length)
+            if (this.currentPlayer >= this.players.Length)
             {
-                currentPlayer = -1;
+                this.currentPlayer = -1;
                 IncTurn();
-                currentPlayer = 0;
+                this.currentPlayer = 0;
             }
         }
 
@@ -352,7 +330,7 @@ namespace Daemons
         {
             IndependentsTurn();
 
-            turn++;
+            this.turn++;
 
             ChangeMoveOrder();
             ChangeMap();
@@ -360,43 +338,42 @@ namespace Daemons
 
         private void IndependentsTurn()
         {
-            independentsTurn = true;
+            this.independentsTurn = true;
 
             ProcessBattles();
             //convert any leftover souls to arrows for archers to fire
-            independent.IndyArrows(true);
+            this.independent.IndyArrows(true);
 
             //move single-movement units
             Dictionary<Tile, Tile> moved = new Dictionary<Tile, Tile>();
-            foreach (Tile from in map)
-                if (from.Occupied(independent))
-                {
-                    int x = from.X, y = from.Y;
-                    MoveRand(ref x, ref y);
-                    Tile to = GetTile(x, y);
-                    if (MoveIndy(from, to, null))
-                        moved.Add(from, to);
-                }
+            foreach (Tile from in this.map)
+            {
+                int x = from.X, y = from.Y;
+                MoveRand(ref x, ref y);
+                Tile to = GetTile(x, y);
+                if (MoveIndy(from, to, null))
+                    moved.Add(from, to);
+            }
 
             //move special-movement units
-            foreach (Tile from in Game.Random.Iterate<Tile>(map.Cast<Tile>()))
+            foreach (Tile from in Random.Iterate<Tile>(this.map.Cast<Tile>()))
             {
-                IEnumerable<Unit> units = from.GetUnits(independent, true, true);
+                IEnumerable<Unit> units = from.GetUnits(this.independent, true, true);
                 if (units.Any())
                 {
                     //archers that stay put shoot if they can
-                    IEnumerable<Unit> archers = units.Where((u) => ( u.Type == UnitType.Archer ));
+                    IEnumerable<Unit> archers = units.Where(unit => unit.Type == UnitType.Archer);
                     if (archers.Any())
                     {
-                        foreach (Tile target in Game.Random.Iterate(from.GetSideNeighbors()))
+                        foreach (Tile target in Random.Iterate(from.GetSideNeighbors()))
                             Unit.Fire(archers, target);
-                        foreach (Tile target in Game.Random.Iterate(from.GetCornerNeighbors()))
+                        foreach (Tile target in Random.Iterate(from.GetCornerNeighbors()))
                             Unit.Fire(archers, target);
                     }
 
                     //knights and daemons move separately
-                    IEnumerable<Unit> daemons = units.Where((u) => ( u.Type == UnitType.Daemon ));
-                    IEnumerable<Unit> knights = units.Where((u) => ( u.Type == UnitType.Knight ));
+                    IEnumerable<Unit> daemons = units.Where(unit => unit.Type == UnitType.Daemon);
+                    IEnumerable<Unit> knights = units.Where(unit => unit.Type == UnitType.Knight);
                     bool anyDaemons = daemons.Any();
                     if (anyDaemons || knights.Any())
                     {
@@ -418,21 +395,18 @@ namespace Daemons
                             MoveIndy(from, follow, UnitType.Daemon);
                             MoveIndy(from, follow, UnitType.Knight);
                         }
+                        //first follow regular units unless knights and daemons will move to an already occupied tile
+                        else if (follow != null && !to.GetUnits(this.independent).Any(unit => ( !unit.Healed
+                                || ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) )))
+                        {
+                            MoveIndy(from, follow, UnitType.Daemon);
+                            MoveIndy(from, follow, UnitType.Knight);
+                        }
                         else
                         {
-                            //first follow regular units unless knights and daemons will move to an already occupied tile
-                            if (follow != null && !to.GetUnits(independent).Any((u) => ( !u.Healed
-                                    || ( u.Type != UnitType.Daemon && u.Type != UnitType.Knight ) )))
-                            {
-                                MoveIndy(from, follow, UnitType.Daemon);
-                                MoveIndy(from, follow, UnitType.Knight);
-                            }
-                            else
-                            {
-                                MoveIndy(from, to, UnitType.Daemon);
-                                MoveIndy(from, GetTile(x1, y1), UnitType.Knight);
-                                MoveIndy(from, to, UnitType.Knight);
-                            }
+                            MoveIndy(from, to, UnitType.Daemon);
+                            MoveIndy(from, GetTile(x1, y1), UnitType.Knight);
+                            MoveIndy(from, to, UnitType.Knight);
                         }
                     }
                 }
@@ -440,40 +414,37 @@ namespace Daemons
 
             ProcessBattles();
             //convert arrows to souls to create new units
-            independent.IndyArrows(false);
+            this.independent.IndyArrows(false);
 
-            independent.AddSouls(Random.GaussianOEInt(IndyProd(), .26f, .52 * turn / ( 7.8 + turn )));
-            int amt = independent.RoundSouls();
+            this.independent.AddSouls(Random.GaussianOEInt(IndyProd(), .26, .52 * this.turn / ( 7.8 + this.turn )));
+            int amt = this.independent.RoundSouls();
             if (amt > 0)
             {
-                independent.AddSouls(-666 * amt);
-                Tile tile = GetTile(independent);
+                this.independent.AddSouls(-amt * Consts.DaemonSouls);
+                Tile tile = GetTile(this.independent);
                 for (int a = 0 ; a < amt ; a++)
                 {
                     UnitType type = UnitType.Indy;
-                    IEnumerable<Unit> existing = tile.GetUnits(independent);
+                    IEnumerable<Unit> existing = tile.GetUnits(this.independent);
                     if (existing.Any())
-                    {
-                        List<Unit> list = existing.ToList();
-                        type = list[Random.Next(list.Count)].Type;
-                    }
-                    new Unit(type, tile, independent);
+                        type = GetRandom(existing).Type;
+                    new Unit(type, tile, this.independent);
                 }
             }
 
-            independent.ResetMoves();
+            this.independent.ResetMoves();
 
-            independentsTurn = false;
+            this.independentsTurn = false;
         }
         public double IndyProd()
         {
-            return production.Count * ( 5.2 * turn + 39 );
+            return this.production.Count * ( 5.2 * this.turn + 39 );
         }
         private bool MoveIndy(Tile from, Tile to, UnitType? special)
         {
             bool any = false;
             if (from != to && to != null)
-                foreach (Unit unit in from.GetUnits(independent).ToList())
+                foreach (Unit unit in from.GetUnits(this.independent).ToList())
                     if (unit.Healed && ( special.HasValue ? ( unit.Type == special.Value ) :
                             ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) ))
                         any |= unit.Move(to);
@@ -483,9 +454,14 @@ namespace Daemons
         private void ChangeMap()
         {
             if (Random.Bool())
-                for (int a = 0 ; a < production.Count ; a++)
+                for (int a = 0 ; a < this.production.Count ; a++)
                     if (Random.Bool())
-                        MoveRand(ref production[a].x, ref production[a].y);
+                    {
+                        int x = this.production[a].X;
+                        int y = this.production[a].Y;
+                        MoveRand(ref x, ref y);
+                        this.production[a].Move(x, y);
+                    }
         }
 
         public void MoveRand(ref int x, ref int y)
@@ -511,12 +487,12 @@ namespace Daemons
             bool retry = true;
             if (x < 0)
                 x = 0;
-            else if (x >= width)
-                x = width - 1;
+            else if (x >= Width)
+                x = Width - 1;
             else if (y < 0)
                 y = 0;
-            else if (y >= height)
-                y = height - 1;
+            else if (y >= Height)
+                y = Height - 1;
             else
                 retry = false;
             if (retry)
@@ -525,57 +501,55 @@ namespace Daemons
 
         private void ChangeMoveOrder()
         {
-            if (players.Length > 1)
-                foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, .169))
+            if (this.players.Length > 1)
+                foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, .169))
                 {
-                    float souls, arrows;
+                    double souls, arrows;
                     GetMoveDiff(out souls, out arrows);
                     pair.Key.AddSouls(RandSouls(souls));
                     pair.Key.MakeArrow(arrows);
                 }
         }
 
-        private void GetMoveDiff(out float souls, out float arrows)
+        private void GetMoveDiff(out double souls, out double arrows)
         {
-            float div = players.Length - 1f;
-            souls = 666f / div;
-            arrows = 16.9f / div;
+            double div = this.players.Length - 1;
+            souls = Consts.DaemonSouls / div;
+            arrows = 16.9 / div;
         }
 
-        private static int RandSouls(float addSouls)
+        private static int RandSouls(double addSouls)
         {
-            return Random.GaussianCappedInt(addSouls, .09f, Random.Round(.78f * addSouls));
+            return Random.GaussianCappedInt(addSouls, .091, Random.Round(.78 * addSouls));
         }
 
         internal void RemovePlayer(Player player, bool win)
         {
             if (win)
-                won.Add(player, turn);
+                this.won.Add(player, this.turn);
             else
-                lost.Add(player, turn);
+                this.lost.Add(player, this.turn);
 
             if (this.players.Length > 1)
             {
-                player.Won(independent);
-                for (int x = 0 ; x < width ; ++x)
-                    for (int y = 0 ; y < height ; ++y)
-                        foreach (Unit u in map[x, y].GetUnits(player))
-                            u.Won(independent);
+                player.Won(this.independent);
+                foreach (Unit u in this.independent.GetUnits().ToList())
+                    u.Won(this.independent);
 
                 //remove from the players array
-                int removedIndex = players.Length - 1;
-                Player[] newPlayers = new Player[players.Length - 1];
+                int removedIndex = this.players.Length - 1;
+                Player[] newPlayers = new Player[this.players.Length - 1];
                 for (int a = 0, b = -1 ; a < newPlayers.Length ; ++a)
-                    if (players[++b] == player)
+                    if (this.players[++b] == player)
                     {
                         --a;
                         removedIndex = b;
                     }
                     else
                     {
-                        newPlayers[a] = players[b];
+                        newPlayers[a] = this.players[b];
                     }
-                players = newPlayers;
+                this.players = newPlayers;
 
                 //remove the dead players portion of the production centers
                 for (int a = 0 ; a < 3 ; a++)
@@ -596,17 +570,12 @@ namespace Daemons
                         throw new Exception();
                     }
 
-                    int count = 0;
-                    foreach (ProductionCenter pc in production)
-                        if (pc.type == type)
-                            ++count;
-                    float avg = count / ( 1f + players.Length );
-                    int remove = Random.GaussianCappedInt(avg, .13f);
+                    int remove = Random.GaussianCappedInt(this.production.Count(prod => prod.Type == type) / ( 1.0 + this.players.Length ), .13);
                     for (int b = 0 ; b < remove ; b++)
                     {
-                        ProductionCenter pc = GetRandom(production);
-                        if (pc.type == type)
-                            production.Remove(pc);
+                        ProductionCenter pc = GetRandom(this.production);
+                        if (pc.Type == type)
+                            this.production.Remove(pc);
                         else
                             --b;
                     }
@@ -616,48 +585,44 @@ namespace Daemons
                 }
 
                 //ensure we still have the correct current player
-                if (currentPlayer > removedIndex)
-                    --currentPlayer;
-                else if (currentPlayer == removedIndex)
+                if (this.currentPlayer > removedIndex)
+                    --this.currentPlayer;
+                else if (this.currentPlayer == removedIndex)
                     StartTurn();
             }
             else
             {
-                currentPlayer = 0;
+                this.currentPlayer = 0;
             }
         }
 
-        public List<ProductionCenter> GetProduction(int x, int y)
+        public IEnumerable<ProductionCenter> GetProduction(int x, int y, bool unused = false)
         {
-            return GetProduction(x, y, false);
-        }
-
-        public List<ProductionCenter> GetProduction(int x, int y, bool unused)
-        {
-            List<ProductionCenter> result = new List<ProductionCenter>();
-            foreach (ProductionCenter pc in production)
-                if (pc.x == x && pc.y == y && ( !unused || !pc.Used ))
-                    result.Add(pc);
-            return result;
+            return this.production.Where(prod => ( prod.X == x && prod.Y == y && ( !unused || !prod.Used ) ));
         }
 
         public double GetProduction(Player p)
         {
             double total = 0;
-            foreach (ProductionCenter pc in production)
+            foreach (ProductionCenter pc in this.production)
                 if (pc.Owner == p)
                     total += pc.GetValue();
             return total;
         }
 
-        internal static T GetRandom<T>(List<T> list)
+        public static T GetRandom<T>(IEnumerable<T> enumerable)
         {
-            return list[Random.Next(list.Count)];
+            IList<T> collection;
+            if (enumerable is IList<T>)
+                collection = (IList<T>)enumerable;
+            else
+                collection = enumerable.ToList();
+            return collection[Random.Next(collection.Count)];
         }
 
         public void AutoSave()
         {
-            TBSUtil.SaveGame(this, "../../../auto", turn + "-" + currentPlayer + ".dae");
+            TBSUtil.SaveGame(this, "../../../auto", this.turn + "-" + this.currentPlayer + ".dae");
         }
         public void SaveGame(string filePath)
         {

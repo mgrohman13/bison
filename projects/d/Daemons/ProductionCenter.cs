@@ -7,11 +7,12 @@ namespace Daemons
     [Serializable]
     public class ProductionCenter
     {
-        internal int x;
-        internal int y;
-        internal readonly ProductionType type;
-        private bool used = false;
+        public readonly ProductionType Type;
+
         private Player owner = null;
+
+        private int x, y;
+        private bool used = false;
 
         public ProductionCenter(Tile tile, int a)
         {
@@ -21,13 +22,13 @@ namespace Daemons
             switch (a)
             {
             case 0:
-                this.type = ProductionType.Knight;
+                this.Type = ProductionType.Knight;
                 break;
             case 1:
-                this.type = ProductionType.Archer;
+                this.Type = ProductionType.Archer;
                 break;
             case 2:
-                this.type = ProductionType.Infantry;
+                this.Type = ProductionType.Infantry;
                 break;
 
             default:
@@ -35,11 +36,26 @@ namespace Daemons
             }
         }
 
+        public int X
+        {
+            get
+            {
+                return this.x;
+            }
+        }
+        public int Y
+        {
+            get
+            {
+                return this.y;
+            }
+        }
+
         internal Player Owner
         {
             get
             {
-                return owner;
+                return this.owner;
             }
         }
 
@@ -47,25 +63,23 @@ namespace Daemons
         {
             get
             {
-                return used;
+                return this.used;
             }
         }
 
-        public ProductionType Type
+        internal void Move(int newX, int newY)
         {
-            get
-            {
-                return type;
-            }
+            this.x = newX;
+            this.y = newY;
         }
 
-        internal void Use(Player owner)
+        internal void Use(Player p)
         {
             this.used = true;
-            this.owner = owner;
+            this.owner = p;
 
             UnitType unitType;
-            switch (this.type)
+            switch (this.Type)
             {
             case ProductionType.Archer:
                 unitType = UnitType.Archer;
@@ -80,12 +94,12 @@ namespace Daemons
                 throw new Exception("die");
             }
 
-            new Unit(unitType, owner.Game.GetTile(this.x, this.y), owner);
+            new Unit(unitType, this.owner.Game.GetTile(this.x, this.y), this.owner);
         }
 
-        internal void Reset(Player owner)
+        internal void Reset(Player player)
         {
-            if (this.owner == null || this.owner == owner)
+            if (this.owner == null || this.owner == player)
             {
                 this.used = false;
                 this.owner = null;
@@ -96,32 +110,32 @@ namespace Daemons
         {
             UnitType unitType;
             int hits, damage;
-            switch (this.type)
+            switch (this.Type)
             {
             case ProductionType.Archer:
                 unitType = UnitType.Archer;
-                hits = 20;
-                damage = 12;
+                hits = Consts.ArcherHits;
+                damage = Consts.ArcherDamage;
                 break;
             case ProductionType.Infantry:
                 unitType = UnitType.Infantry;
-                hits = 25;
-                damage = 8;
+                hits = Consts.InfantryHits;
+                damage = Consts.InfantryDamage;
                 break;
             case ProductionType.Knight:
                 unitType = UnitType.Knight;
-                hits = 30;
-                damage = 11;
+                hits = Consts.KnightHits;
+                damage = Consts.KnightDamage;
                 break;
             default:
                 throw new Exception("meh");
             }
-            return Unit.GetStrength(unitType, hits, damage);
+            return Consts.GetStrength(unitType, hits, damage);
         }
 
         public override string ToString()
         {
-            return type.ToString();
+            return this.Type.ToString();
         }
     }
 

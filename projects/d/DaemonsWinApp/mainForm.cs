@@ -14,26 +14,15 @@ namespace DaemonsWinApp
     {
         public static MainForm instance;
 
-        private const int size = 91, offSet = 0;
-        private Tile _selected;
         public static bool shift = false;
-        private Font font = new Font("Arial", 13);
-        private Game game;
+
+        const int size = 91, offset = 0;
+
+        Game game;
+        Font font = new Font("Arial", 13);
         int timestamp;
 
-        private Tile Selected
-        {
-            get
-            {
-                return _selected;
-            }
-
-            set
-            {
-                _selected = value;
-                RefreshUnits();
-            }
-        }
+        Tile selected;
 
         public MainForm(Game game)
         {
@@ -46,32 +35,31 @@ namespace DaemonsWinApp
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint
                     | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
-            RefreshPlayer();
-            RefreshLog();
-
             this.Width += 925 - ClientSize.Width;
             this.Height += 729 - ClientSize.Height;
             this.MinimumSize = this.Size;
             this.MaximumSize = this.Size;
+
+            RefreshAll();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             try
             {
-                for (int x = 0 ; x <= game.GetWidth() ; x++)
-                    e.Graphics.DrawLine(Pens.Black, new Point(x * size + offSet, offSet),
-                        new Point(x * size + offSet, offSet + game.GetHeight() * size));
-                for (int y = 0 ; y <= game.GetHeight() ; y++)
-                    e.Graphics.DrawLine(Pens.Black, new Point(offSet, y * size + offSet),
-                        new Point(offSet + game.GetWidth() * size, y * size + offSet));
+                for (int x = 0 ; x <= game.Width ; x++)
+                    e.Graphics.DrawLine(Pens.Black, new Point(x * size + offset, offset),
+                            new Point(x * size + offset, offset + game.Height * size));
+                for (int y = 0 ; y <= game.Height ; y++)
+                    e.Graphics.DrawLine(Pens.Black, new Point(offset, y * size + offset),
+                            new Point(offset + game.Width * size, y * size + offset));
 
-                if (Selected != null)
-                    e.Graphics.DrawRectangle(new Pen(Color.Black, 3),
-                        Selected.X * size + offSet, Selected.Y * size + offSet, size, size);
+                if (selected != null)
+                    using (Pen p = new Pen(Color.Black, 3))
+                        e.Graphics.DrawRectangle(p, selected.X * size + offset, selected.Y * size + offset, size, size);
 
-                for (int x = 0 ; x < game.GetWidth() ; x++)
-                    for (int y = 0 ; y < game.GetHeight() ; y++)
+                for (int x = 0 ; x < game.Width ; x++)
+                    for (int y = 0 ; y < game.Height ; y++)
                     {
                         Tile t = game.GetTile(x, y);
 
@@ -94,38 +82,36 @@ namespace DaemonsWinApp
                         Bitmap picUnit = Tile.GetBestPic(units);
                         if (picUnit != null && picAttacker == null)
                         {
-                            e.Graphics.DrawImage(picUnit, new Point(1 + x * size + offSet, 1 + y * size + offSet));
+                            e.Graphics.DrawImage(picUnit, new Point(1 + x * size + offset, 1 + y * size + offset));
                             e.Graphics.DrawString(units.Count().ToString(), font, Brushes.Black,
-                                new Point(1 + x * size + offSet, 1 + y * size + offSet + 15));
+                                    new Point(1 + x * size + offset, 1 + y * size + offset + 15));
                             string armyStr = Tile.GetArmyStr(units).ToString("0");
-                            //float width = e.Graphics.MeasureString(armyStr, font).Width;
                             e.Graphics.DrawString(armyStr, font, Brushes.Black,
-                                new Point(1 + x * size + offSet, 1 + y * size + offSet));
-                            //new Point((x + 1) * size + offSet - ((int)width) - 1, 1 + y * size + offSet));
+                                    new Point(1 + x * size + offset, 1 + y * size + offset));
                         }
                         else if (picUnit != null && picAttacker != null)
                         {
-                            e.Graphics.DrawImage(picAttacker, 1 + x * size + offSet,
-                                1 + y * size + offSet, size / 2, size / 2);
+                            e.Graphics.DrawImage(picAttacker, 1 + x * size + offset,
+                                    1 + y * size + offset, size / 2, size / 2);
                             e.Graphics.DrawString(Tile.GetArmyStr(attackers).ToString("0"), font, Brushes.Black,
-                                new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet));
+                                    new Point(1 + x * size + offset + size / 2, 1 + y * size + offset));
                             e.Graphics.DrawString(attackers.Count().ToString(), font, Brushes.Black,
-                                new Point(1 + x * size + offSet + size / 2, 1 + y * size + offSet + 15));
-                            e.Graphics.DrawImage(picUnit, 1 + x * size + offSet + size / 2,
-                                1 + y * size + offSet + size / 2, size / 2, size / 2);
+                                    new Point(1 + x * size + offset + size / 2, 1 + y * size + offset + 15));
+                            e.Graphics.DrawImage(picUnit, 1 + x * size + offset + size / 2,
+                                    1 + y * size + offset + size / 2, size / 2, size / 2);
                             string measureStr = Tile.GetArmyStr(units).ToString("0");
                             int width = (int)e.Graphics.MeasureString(measureStr, font).Width;
                             e.Graphics.DrawString(measureStr, font, Brushes.Black,
-                                new Point(1 + x * size + offSet + size / 2 - width,
-                                1 + y * size + offSet + size / 2));
+                                    new Point(1 + x * size + offset + size / 2 - width,
+                                    1 + y * size + offset + size / 2));
                             measureStr = units.Count().ToString();
                             width = (int)e.Graphics.MeasureString(measureStr, font).Width;
                             e.Graphics.DrawString(measureStr, font, Brushes.Black,
-                               new Point(1 + x * size + offSet + size / 2 - width,
-                               1 + y * size + offSet + size / 2 + 15));
+                                    new Point(1 + x * size + offset + size / 2 - width,
+                                    1 + y * size + offset + size / 2 + 15));
                         }
 
-                        int newX = offSet + x * size + 3;
+                        int newX = offset + x * size + 3;
                         foreach (ProductionCenter pc in t.GetProduction())
                         {
                             Brush brush;
@@ -155,7 +141,7 @@ namespace DaemonsWinApp
                             default:
                                 throw new Exception("go home");
                             }
-                            e.Graphics.FillEllipse(brush, newX, ( y + 1 ) * size + offSet - 16, 13, 13);
+                            e.Graphics.FillEllipse(brush, newX, ( y + 1 ) * size + offset - 16, 13, 13);
                             newX += 16;
                         }
                     }
@@ -166,7 +152,7 @@ namespace DaemonsWinApp
             }
         }
 
-        private void ClearUnitInfo()
+        void ClearUnitInfo()
         {
             this.lblMorale.Text = "";
             this.lblInf1.Text = "";
@@ -179,32 +165,37 @@ namespace DaemonsWinApp
             this.lblUnit4.Image = null;
         }
 
-        private void RefreshUnits()
+        void RefreshAll()
+        {
+            Invalidate();
+            RefreshArrows();
+            RefreshButtons();
+            RefreshLog();
+            RefreshPlayer();
+            RefreshSouls();
+            RefreshUnits();
+        }
+
+        void RefreshUnits()
         {
             lblAccent.Visible = game.HasWinner();
 
-            RefreshButtons();
-
             ClearUnitInfo();
-
-            if (Selected == null)
+            if (selected == null)
                 return;
 
-            IEnumerable<Unit> units = Selected.GetUnits(game.GetCurrentPlayer());
+            IEnumerable<Unit> units = selected.GetUnits(game.GetCurrentPlayer());
             if (!units.Any())
             {
-                units = Selected.GetUnits();
+                units = selected.GetUnits();
                 if (!units.Any())
                     return;
             }
 
             List<Unit>[] types = new List<Unit>[4];
-
             for (int a = 0 ; a < types.Length ; a++)
                 types[a] = new List<Unit>();
-
             foreach (Unit u in units)
-            {
                 switch (u.Type)
                 {
                 case UnitType.Archer:
@@ -227,96 +218,82 @@ namespace DaemonsWinApp
                 default:
                     throw new Exception("I need sleep.");
                 }
-            }
 
-            Label[] pics = new Label[4];
-            pics[0] = this.lblUnit1;
-            pics[1] = this.lblUnit2;
-            pics[2] = this.lblUnit3;
-            pics[3] = this.lblUnit4;
+            Label[] pics = new[] { this.lblUnit1, this.lblUnit2, this.lblUnit3, this.lblUnit4 };
+            Label[] infos = new[] { this.lblInf1, this.lblInf2, this.lblInf3, this.lblInf4 };
 
-            Label[] infos = new Label[4];
-            infos[0] = this.lblInf1;
-            infos[1] = this.lblInf2;
-            infos[2] = this.lblInf3;
-            infos[3] = this.lblInf4;
+            IGrouping<Player, Unit> player = units.GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First();
 
-            int num = 0;
-
-            this.lblMorale.Text = ( Tile.GetMorale(units) ).ToString("0%");
-            IEnumerable<Unit> attackers = Selected.GetUnits().Where((u) => u.Owner != units.First().Owner);
+            this.lblMorale.Text = Tile.GetMorale(player).ToString("0%");
+            IEnumerable<Unit> attackers = selected.GetUnits().Where((u) => u.Owner != player);
             if (attackers.Any())
-                this.lblMorale.Text = ( Tile.GetMorale(attackers) ).ToString("0% : ") + this.lblMorale.Text;
+                this.lblMorale.Text = Tile.GetMorale(attackers).ToString("0% : ") + this.lblMorale.Text;
 
-            IEnumerable<int> active = game.GetCurrentPlayer().GetActive(types);
+            IEnumerable<int> active = new int[0];
+            if (units.All((u) => u.Owner == player.Key))
+                active = player.Key.GetActive(types);
+            int num = 0;
             for (int a = 0 ; a < types.Length ; a++)
                 if (types[a].Count > 0)
                 {
                     infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count((u) => u.Healed),
                             types[a].Count((u) => ( u.Movement > 0 )), types[a].Count());
-                    infos[num].Font = new Font("Microsoft Sans Serif", 12.75f, ( active.Contains(a) ? FontStyle.Bold : FontStyle.Regular ));
+                    infos[num].Font = new Font("Microsoft Sans Serif", 11.25f, ( active.Contains(a) ? FontStyle.Bold : FontStyle.Regular ));
                     infos[num].ForeColor = ( active.Contains(a) ? Color.Black : Color.Gray );
                     pics[num++].Image = types[a].GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
                 }
         }
 
-        private void RefreshButtons()
+        void RefreshButtons()
         {
-            if (Selected != null)
+            if (selected != null)
             {
-                bool occupied = Selected.Occupied(game.GetCurrentPlayer());
+                bool occupied = selected.Occupied(game.GetCurrentPlayer());
 
-                this.btnBuild.Visible = ( ( Selected.GetProduction(true).Count > 0 )
-                        && ( Selected.GetUnits(game.GetCurrentPlayer(), true).Any() )
+                this.btnBuild.Visible = ( selected.GetProduction(true).Any()
+                        && selected.GetUnits(game.GetCurrentPlayer(), true).Any()
                         && !occupied );
                 this.btnFight.Visible = occupied;
             }
         }
 
-        private void RefreshPlayer()
+        void RefreshPlayer()
         {
             this.lblPlayer.BackColor = game.GetCurrentPlayer().Color;
             this.lblPlayer.ForeColor = game.GetCurrentPlayer().InverseColor;
             this.lblPlayer.Text = game.GetCurrentPlayer().Name;
             this.lblTurn.Text = game.Turn;
-            RefreshSouls();
-            RefreshArrows();
         }
 
-        private void RefreshSouls()
+        void RefreshSouls()
         {
             this.lblSouls.Text = game.GetCurrentPlayer().Souls.ToString();
         }
 
-        private void RefreshArrows()
+        void RefreshArrows()
         {
             this.lblArrows.Text = game.GetCurrentPlayer().Arrows.ToString();
         }
 
-        private void btnEndTurn_Click(object sender, EventArgs e)
+        void btnEndTurn_Click(object sender, EventArgs e)
         {
             DialogResult result = DialogResult.Yes;
-            if (game.GetCurrentPlayer().Units.Any((u) => ( u.Movement > 0 && ( ( u.Movement - 1 ) * u.Regen + u.Hits >= u.MaxHits ) )))
+            if (game.GetCurrentPlayer().GetUnits().Any(Consts.MoveLeft))
                 result = MessageBox.Show("You have unmoved units.  Are you sure?", "", MessageBoxButtons.YesNo);
 
             if (result == DialogResult.Yes)
             {
                 game.EndTurn();
-                if (game.GetPlayers().Length == 1)
-                {
+
+                selected = null;
+                RefreshAll();
+
+                if (game.GetPlayers().Count == 1)
                     TextForm.ShowDialog(game, false);
-                }
-                else
-                {
-                    Selected = null;
-                    RefreshPlayer();
-                    Invalidate();
-                    RefreshLog();
-                }
             }
         }
 
-        private void RefreshLog()
+        void RefreshLog()
         {
             string log = game.CombatLog;
             if (log.Length > 300)
@@ -324,7 +301,7 @@ namespace DaemonsWinApp
             this.lblLog.Text = log.Trim();
         }
 
-        private void mainForm_MouseUp(object sender, MouseEventArgs e)
+        void mainForm_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
@@ -333,44 +310,41 @@ namespace DaemonsWinApp
                     return;
             }
 
-            int x = ( e.X - offSet ) / size, y = ( e.Y - offSet ) / size;
+            int x = ( e.X - offset ) / size, y = ( e.Y - offset ) / size;
 
-            if (x >= 0 && y >= 0 && x < game.GetWidth() && y < game.GetHeight())
+            if (x >= 0 && y >= 0 && x < game.Width && y < game.Height)
             {
                 Tile clicked = game.GetTile(x, y);
 
                 if (e.Button == MouseButtons.Left)
-                    Selected = clicked;
+                {
+                    selected = clicked;
+                    RefreshAll();
+                }
                 else if (e.Button == MouseButtons.Right)
                 {
-                    if (Selected == null)
+                    if (selected == null)
                         return;
 
-                    if (Selected.IsNeighbor(clicked))
-                        if (MoveForm.ShowDialog(Selected, clicked, shift, shift ? game.GetCurrentPlayer().Arrows : int.MaxValue) == DialogResult.OK)
+                    if (selected.IsNeighbor(clicked))
+                        if (MoveForm.ShowDialog(selected, clicked, shift) == DialogResult.OK)
                         {
-                            Selected = clicked;
-
-                            RefreshLog();
-                            RefreshArrows();
+                            selected = clicked;
+                            RefreshAll();
                         }
                 }
             }
-
-            Invalidate();
-            RefreshUnits();
-            RefreshSouls();
         }
 
-        private void btnBuild_Click(object sender, EventArgs e)
+        void btnBuild_Click(object sender, EventArgs e)
         {
-            if (Selected == null)
+            if (selected == null)
                 return;
-            List<Unit> units = Selected.GetUnits(game.GetCurrentPlayer(), true).ToList(),
+            List<Unit> units = selected.GetUnits(game.GetCurrentPlayer(), true).ToList(),
                 unUsed = new List<Unit>(), output = new List<Unit>();
             if (units.Count == 0)
                 return;
-            if (Selected.GetProduction(true).Count == 0)
+            if (!selected.GetProduction(true).Any())
                 return;
             try
             {
@@ -380,17 +354,17 @@ namespace DaemonsWinApp
             {
             }
             if (output.Count > 0 && output[0] != null)
+            {
                 output[0].Build();
-
-            Invalidate();
-            RefreshUnits();
+                RefreshAll();
+            }
         }
 
-        private void mainForm_MouseDown(object sender, MouseEventArgs e)
+        void mainForm_MouseDown(object sender, MouseEventArgs e)
         {
-            int x = ( e.X - offSet ) / size, y = ( e.Y - offSet ) / size;
+            int x = ( e.X - offset ) / size, y = ( e.Y - offset ) / size;
 
-            if (x >= 0 && y >= 0 && x < game.GetWidth() && y < game.GetHeight())
+            if (x >= 0 && y >= 0 && x < game.Width && y < game.Height)
             {
                 Tile clicked = game.GetTile(x, y);
 
@@ -404,65 +378,53 @@ namespace DaemonsWinApp
             }
         }
 
-        private void mainForm_KeyDown(object sender, KeyEventArgs e)
+        void mainForm_KeyDown(object sender, KeyEventArgs e)
         {
             shift = e.Shift;
         }
 
-        private void mainForm_KeyUp(object sender, KeyEventArgs e)
+        void mainForm_KeyUp(object sender, KeyEventArgs e)
         {
             shift = e.Shift;
         }
 
-        private void btnNext_Click(object sender, EventArgs e)
+        void btnNext_Click(object sender, EventArgs e)
         {
-            Selected = game.GetCurrentPlayer().NextUnit(Selected);
-            Invalidate();
+            selected = game.GetCurrentPlayer().NextUnit(selected);
+            RefreshAll();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        void button1_Click(object sender, EventArgs e)
         {
-            if (Selected != null)
+            if (selected != null)
             {
-                foreach (Unit u in Selected.GetUnits())
+                foreach (Unit u in selected.GetUnits())
                     u.Heal();
-                RefreshArrows();
-            }
-            bool healed = game.GetCurrentPlayer().Units.Any((u) => u.Healed);
-            if (Selected != null && !Selected.GetUnits(game.GetCurrentPlayer(), true, healed).Any())
-            {
-                btnNext_Click(sender, e);
-            }
-            else
-            {
-                RefreshUnits();
-                RefreshArrows();
+
+                if (!game.GetCurrentPlayer().GetActive(new[] { selected.GetUnits(game.GetCurrentPlayer()) }).Any())
+                    btnNext_Click(sender, e);
+
+                RefreshAll();
             }
         }
 
-        private void btnFight_Click(object sender, EventArgs e)
+        void btnFight_Click(object sender, EventArgs e)
         {
-            if (Selected != null && Selected.FightBattle())
-            {
-                Invalidate();
-                RefreshUnits();
-                RefreshSouls();
-                RefreshLog();
-                RefreshPlayer();
-            }
+            if (selected != null && selected.FightBattle())
+                RefreshAll();
         }
 
-        private void lblLog_Click(object sender, EventArgs e)
+        void lblLog_Click(object sender, EventArgs e)
         {
             TextForm.ShowDialog(game, true);
         }
 
-        private void btnPlayers_Click(object sender, EventArgs e)
+        void btnPlayers_Click(object sender, EventArgs e)
         {
             new PlayersForm(game).ShowDialog();
         }
 
-        private void mainForm_MouseMove(object sender, MouseEventArgs e)
+        void mainForm_MouseMove(object sender, MouseEventArgs e)
         {
             if (InfoForm.Form.Visible)
             {
@@ -473,29 +435,23 @@ namespace DaemonsWinApp
             }
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        void button3_Click(object sender, EventArgs e)
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 game.SaveGame(saveFileDialog1.FileName);
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        void button2_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 game = Game.LoadGame(openFileDialog1.FileName);
 
-                Invalidate();
-                RefreshArrows();
-                RefreshButtons();
-                RefreshLog();
-                RefreshPlayer();
-                RefreshSouls();
-                RefreshUnits();
+                RefreshAll();
             }
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.game.AutoSave();
         }

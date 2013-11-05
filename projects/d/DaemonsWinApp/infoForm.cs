@@ -57,7 +57,9 @@ namespace DaemonsWinApp
 
             Invalidate();
 
-            this.pnlMove.Visible = ( use == UseType.Move );
+            this.pnlMove.Visible = ( use != UseType.View );
+            this.btnOk.Visible = ( use == UseType.Move );
+            this.chbAll.Visible = ( use == UseType.Move );
             this.FormBorderStyle = ( use == UseType.View ? FormBorderStyle.FixedSingle : FormBorderStyle.Fixed3D );
 
             if (use == UseType.Build)
@@ -191,10 +193,11 @@ namespace DaemonsWinApp
 
                 Color color;
                 double pct;
-                if (u.Morale < .00117)
+                if (u.Morale < Consts.MoraleCritical)
                 {
-                    double turns = Math.Log(Math.Log(.00117) / Math.Log(u.Morale)) / Math.Log(.39);
-                    int brightness = (int)( 128 + 131 * Math.Pow(turns / 5.2, .6) );
+                    double turns = Consts.GetMoraleTurns(u.Morale, Consts.MoraleCritical);
+                    double max = Consts.GetMoraleTurns(double.Epsilon, Consts.MoraleCritical);
+                    int brightness = (int)( 127 + 128 * Math.Pow(turns / max, .6) );
                     color = Color.FromArgb(brightness, brightness, brightness);
                     pct = 1;
                 }
@@ -206,8 +209,9 @@ namespace DaemonsWinApp
                     pct = u.Morale;
                 }
                 using (Brush b = new SolidBrush(color))
+                using (Pen p = new Pen(Color.Black, 1))
                 {
-                    e.Graphics.DrawRectangle(new Pen(Color.Black, 1), x - 1, y + size - 9, 92, 7);
+                    e.Graphics.DrawRectangle(p, x - 1, y + size - 9, 92, 7);
                     int div = (int)( 91 * pct + .5f );
                     e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
                     e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
@@ -236,22 +240,22 @@ namespace DaemonsWinApp
                     tempY = y;
                     string str = string.Format("{0} ", u.Movement);
                     e.Graphics.DrawString(str, u.Movement > 0 ? b : f, Brushes.Black, new Point(x, tempY));
-                    if (u.ReserveMove > 0)
-                        e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMove), u.ReserveMove > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
+                    if (u.ReserveMovement > 0)
+                        e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMovement), u.ReserveMovement > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
 
                     tempY += incPic;
                     str = "{0}";
-                    if (u.DamageStr != u.BaseDamage.ToString())
+                    if (u.DamageStr != u.DamageMax.ToString())
                         str += " / {1}";
-                    str = string.Format(str, u.DamageStr, u.BaseDamage);
-                    e.Graphics.DrawString(str, u.Recover2 > 0 ? f : b, Brushes.Black, new Point(x, tempY));
+                    str = string.Format(str, u.DamageStr, u.DamageMax);
+                    e.Graphics.DrawString(str, u.RecoverDmg > 0 ? f : b, Brushes.Black, new Point(x, tempY));
 
                     tempY += incPic;
                     str = "{0}";
-                    if (u.Hits != u.MaxHits)
+                    if (u.Hits != u.HitsMax)
                         str += " / {1}";
-                    str = string.Format(str, u.Hits, u.MaxHits);
-                    e.Graphics.DrawString(str, u.Hits == u.MaxHits ? b : f, Brushes.Black, new Point(x, tempY));
+                    str = string.Format(str, u.Hits, u.HitsMax);
+                    e.Graphics.DrawString(str, u.Hits == u.HitsMax ? b : f, Brushes.Black, new Point(x, tempY));
 
                     tempY += incPic;
                     e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, tempY));
@@ -336,14 +340,14 @@ namespace DaemonsWinApp
             if (u != null)
             {
                 morale = u.Morale.ToString("0%");
-                recover = u.Recover1.ToString("0.0");
+                recover = u.RecoverFull.ToString("0.0");
                 damage = u.Damage.ToString("0.0");
             }
-            if (u != null && ( morale != "100%" || recover != "0.0" || damage != u.BaseDamage.ToString("0.0") ))
+            if (u != null && ( morale != "100%" || recover != "0.0" || damage != u.DamageMax.ToString("0.0") ))
             {
                 if (u != showing)
                 {
-                    string r2 = u.Recover2.ToString("0.0"), r3 = u.Recover3.ToString("0.0");
+                    string r2 = u.RecoverDmg.ToString("0.0"), r3 = u.RecoverCritical.ToString("0.0");
                     toolTip1.Show(string.Format("Morale: {0}{3}Recover: {1}{4}{5}{3}Max Damage: {2}",
                             morale, recover, damage, Environment.NewLine,
                             r2 == "0.0" ? "" : " / " + r2, r3 == "0.0" ? "" : " / " + r3),
@@ -438,7 +442,7 @@ namespace DaemonsWinApp
         {
             public int Compare(Unit x, Unit y)
             {
-                return Math.Sign(y.MaxStrength - x.MaxStrength);
+                return Math.Sign(y.StrengthMax - x.StrengthMax);
             }
         }
     }

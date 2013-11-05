@@ -12,73 +12,70 @@ namespace Daemons
     {
         public readonly Game Game;
 
-        public readonly Color Color;
         public readonly string Name;
-        public readonly bool Independent = false;
+        public readonly Color Color;
+        public readonly bool Independent;
+
+        private readonly List<Unit> units;
+
+        private double arrows, score;
+        private int souls;
 
         [NonSerialized]
         private Dictionary<UnitType, Bitmap> _pics;
 
-        private readonly List<Unit> units;
-
-        private double score;
-        private int souls;
-        private int arrows;
-
-        public Player(Color color, string Name)
-            : this(null, color, Name, false, 0)
+        public Player(Color color, string name)
+            : this(null, color, name, false, 0)
         {
         }
-        public Player(Game game, Color color, string Name, int souls)
-            : this(game, color, Name, false, souls)
+        public Player(Game game, Color color, string name, int startSouls)
+            : this(game, color, name, false, startSouls)
         {
         }
-        public Player(Game game, Color color, string Name, bool independent)
-            : this(game, color, Name, independent, 0)
+        public Player(Game game, Color color, string name, bool independent)
+            : this(game, color, name, independent, 0)
         {
         }
-        public Player(Game game, Color color, string Name, bool independent, int souls)
+        public Player(Game game, Color color, string name, bool independent, int startSouls)
         {
             this.Game = game;
 
             this.Color = color;
-            this.Name = Name;
+            this.Name = name;
             this.Independent = independent;
 
             this.units = new List<Unit>();
 
-            this.souls = souls;
+            this.souls = startSouls;
             this.arrows = 0;
-
-            LoadImages();
+            this.score = 0;
         }
 
         private Dictionary<UnitType, Bitmap> pics
         {
             get
             {
-                if (_pics == null)
-                    LoadImages();
-                return _pics;
+                if (this._pics == null)
+                    this._pics = LoadImages(this.Independent, this.Color);
+                return this._pics;
             }
         }
-
-        private void LoadImages()
+        private static Dictionary<UnitType, Bitmap> LoadImages(bool indy, Color color)
         {
-            this._pics = new Dictionary<UnitType, Bitmap>();
-            if (this.Independent)
-                this.pics.Add(UnitType.Indy, new System.Drawing.Bitmap(@"pics\Indy.bmp"));
-            this.pics.Add(UnitType.Archer, new System.Drawing.Bitmap(@"pics\Archer.bmp"));
-            this.pics.Add(UnitType.Daemon, new System.Drawing.Bitmap(@"pics\Daemon.bmp"));
-            this.pics.Add(UnitType.Infantry, new System.Drawing.Bitmap(@"pics\Infantry.bmp"));
-            this.pics.Add(UnitType.Knight, new System.Drawing.Bitmap(@"pics\Knight.bmp"));
+            Dictionary<UnitType, Bitmap> pics = new Dictionary<UnitType, Bitmap>();
+            if (indy)
+                pics.Add(UnitType.Indy, new System.Drawing.Bitmap(@"pics\Indy.bmp"));
+            pics.Add(UnitType.Archer, new System.Drawing.Bitmap(@"pics\Archer.bmp"));
+            pics.Add(UnitType.Daemon, new System.Drawing.Bitmap(@"pics\Daemon.bmp"));
+            pics.Add(UnitType.Infantry, new System.Drawing.Bitmap(@"pics\Infantry.bmp"));
+            pics.Add(UnitType.Knight, new System.Drawing.Bitmap(@"pics\Knight.bmp"));
 
-            TunePics();
+            TunePics(pics, color);
+            return pics;
         }
-
-        private void TunePics()
+        private static void TunePics(Dictionary<UnitType, Bitmap> pics, Color color)
         {
-            foreach (KeyValuePair<UnitType, Bitmap> pair in new List<KeyValuePair<UnitType, Bitmap>>(pics))
+            foreach (KeyValuePair<UnitType, Bitmap> pair in pics.ToList())
             {
                 Bitmap basePic = pair.Value;
                 //white is transparent
@@ -87,9 +84,9 @@ namespace Daemons
                 //map gray to the player color
                 ColorMap colorMap = new ColorMap();
                 colorMap.OldColor = Color.FromArgb(100, 100, 100);
-                colorMap.NewColor = Color;
+                colorMap.NewColor = color;
                 ImageAttributes colorRemapping = new ImageAttributes();
-                colorRemapping.SetRemapTable(new ColorMap[] { colorMap });
+                colorRemapping.SetRemapTable(new[] { colorMap });
 
                 //draw it to a new image to remap the colors
                 Bitmap newPic = new Bitmap(basePic.Width, basePic.Height);
@@ -111,23 +108,20 @@ namespace Daemons
         {
             get
             {
-                return Color.FromArgb(255 - Color.R, 255 - Color.G, 255 - Color.B);
+                return Color.FromArgb(255 - this.Color.R, 255 - this.Color.G, 255 - this.Color.B);
             }
         }
 
-        public List<Unit> Units
+        public IEnumerable<Unit> GetUnits()
         {
-            get
-            {
-                return units;
-            }
+            return this.units.AsReadOnly();
         }
 
         public double Score
         {
             get
             {
-                return score;
+                return this.score;
             }
         }
 
@@ -135,15 +129,14 @@ namespace Daemons
         {
             get
             {
-                return souls;
+                return this.souls;
             }
         }
-
         public int Arrows
         {
             get
             {
-                return arrows;
+                return (int)Math.Floor(this.arrows);
             }
         }
 
@@ -159,11 +152,7 @@ namespace Daemons
 
         public double GetStrength()
         {
-            double total = 0;
-            for (int x = 0 ; x < Game.GetWidth() ; ++x)
-                for (int y = 0 ; y < Game.GetHeight() ; ++y)
-                    total += Tile.GetArmyStr(Game.GetTile(x, y).GetUnits(this));
-            return total;
+            return Tile.GetArmyStr(this.units);
         }
 
         internal void Won(Player independent)
@@ -174,72 +163,71 @@ namespace Daemons
 
         public Tile NextUnit(Tile selectedTile)
         {
-            var all = this.Units.GroupBy((u) => u.Tile).ToList();
+            var all = this.units.GroupBy(unit => unit.Tile).ToList();
             var active = GetActive(all);
             if (active.Any())
             {
-                var next = all.Where((g, i) => active.Contains(i));
+                var next = all.Where((group, index) => active.Contains(index));
                 int start = -1;
                 if (selectedTile != null)
-                    start = selectedTile.Y * Game.GetWidth() + selectedTile.X;
-                return next.OrderBy((g) =>
+                    start = selectedTile.Y * this.Game.Width + selectedTile.X;
+                return next.OrderBy(group =>
                 {
-                    int cur = g.Key.Y * Game.GetWidth() + g.Key.X;
-                    cur -= start;
-                    if (cur <= 0)
-                        cur += Game.GetHeight() * Game.GetWidth();
+                    int cur = group.Key.Y * this.Game.Width + group.Key.X;
+                    if (cur <= start)
+                        cur += this.Game.Height * this.Game.Width;
                     return cur;
                 }).First().Key;
             }
             return null;
         }
-        public IEnumerable<int> GetActive(IEnumerable<IEnumerable<Unit>> units)
+        public IEnumerable<int> GetActive(IEnumerable<IEnumerable<Unit>> options)
         {
-            Func<Unit, bool>[] funcs = { 
-                (u) => u.Healed,
-                (u) => u.Movement > 0 && ( u.Movement - 1 ) * u.Regen + u.Hits >= u.MaxHits,
-                (u) => u.Movement > 0,
-                (u) => u.ReserveMove > 0,
+            Func<Unit, bool>[] funcs = {
+                unit => unit.Healed,
+                Consts.MoveLeft,
+                unit => unit.Movement > 0,
+                unit => unit.ReserveMovement > 0,
             };
 
             foreach (var func in funcs)
-                if (this.Units.Any(func))
-                    return units.Select((l, i) => l.Any(func) ? i : -1).Where((i) => i > -1);
+                if (this.units.Any(func))
+                    return options.Select((list, index) => ( list.Any(func) ? index : -1 )).Where(index => index > -1);
 
             return new int[0];
         }
 
-        internal void AddSouls(float value)
+        internal void AddSouls(double value)
         {
             AddSouls(value, false);
         }
 
-        internal void AddSouls(float value, bool addScore)
+        internal void AddSouls(double value, bool addScore)
         {
             if (addScore)
-                score += value;
+                this.score += value;
 
             if (value > 0)
-                souls += Game.Random.GaussianCappedInt(value, .078f);
+                this.souls += Game.Random.GaussianCappedInt(value, .078);
             else
-                souls += Game.Random.Round(value);
+                this.souls += Game.Random.Round(value);
 
             SummonDaemon();
         }
 
         private void SummonDaemon()
         {
-            while (!Independent && souls >= 666)
+            while (!this.Independent && this.souls >= Consts.DaemonSouls)
             {
-                souls -= 666;
-                Tile tile = Game.GetRandomTile();
+                this.souls -= Consts.DaemonSouls;
+                Tile tile = this.Game.GetRandomTile();
                 new Unit(UnitType.Daemon, tile, this);
             }
         }
 
-        internal void MakeArrow(float arrows)
+        internal void MakeArrow(double amount)
         {
-            this.arrows += Game.Random.GaussianCappedInt(arrows, .091f);
+            this.arrows += Game.Random.GaussianCapped(amount, .091);
         }
         internal void UseArrows(int needed)
         {
@@ -247,53 +235,53 @@ namespace Daemons
         }
         internal void IndyArrows(bool make)
         {
-            const float rate = 6.5f;
+            const double rate = 6.5;
             if (make)
             {
-                this.arrows += Game.Random.Round(this.souls / rate);
+                this.arrows += ( this.souls / rate );
                 this.souls = 0;
             }
             else
             {
-                AddSouls(this.arrows * rate);
+                this.souls += Game.Random.Round(this.arrows * rate);
                 this.arrows = 0;
             }
         }
 
         internal void Add(Unit unit)
         {
-            units.Add(unit);
+            this.units.Add(unit);
         }
 
         internal void Remove(Unit unit)
         {
-            units.Remove(unit);
-            if (!Independent && units.Count == 0)
+            this.units.Remove(unit);
+            if (!this.Independent && this.units.Count == 0)
             {
-                AddSouls(arrows * 3.9f);
-                arrows = 0;
-                souls = RoundSouls() * 666;
+                AddSouls(this.arrows * 3.9);
+                this.arrows = 0;
+                this.souls = RoundSouls() * Consts.DaemonSouls;
                 SummonDaemon();
 
-                if (units.Count == 0)
-                    Game.RemovePlayer(this, false);
+                if (this.units.Count == 0)
+                    this.Game.RemovePlayer(this, false);
             }
         }
 
         internal void ResetMoves()
         {
-            foreach (Unit unit in units)
+            foreach (Unit unit in this.units)
                 unit.ResetMove();
         }
 
         internal int RoundSouls()
         {
-            return Game.Random.Round(souls / 666f);
+            return Game.Random.Round(this.souls / (double)Consts.DaemonSouls);
         }
 
         public bool IsTurn()
         {
-            return ( this == Game.GetCurrentPlayer() );
+            return ( this == this.Game.GetCurrentPlayer() );
         }
     }
 }

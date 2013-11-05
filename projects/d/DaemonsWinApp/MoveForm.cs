@@ -16,7 +16,6 @@ namespace DaemonsWinApp
 
         private Tile tile, moveTo;
         private bool fire;
-        private int max;
         private List<List<Unit>> types = new List<List<Unit>>(4);
         private List<Unit> move = new List<Unit>(), units = new List<Unit>();
 
@@ -54,7 +53,7 @@ namespace DaemonsWinApp
             this.btnNone3.Tag = 3;
         }
 
-        private bool SetupStuff(Tile tile, Tile moveTo, bool fire, int max)
+        private bool SetupStuff(Tile tile, Tile moveTo, bool fire)
         {
             this.pbArrows.Visible = fire;
             this.lblArrows.Visible = fire;
@@ -72,7 +71,6 @@ namespace DaemonsWinApp
             this.tile = tile;
             this.moveTo = moveTo;
             this.fire = fire;
-            this.max = max;
 
             this.types = new List<List<Unit>>(4);
             this.move = new List<Unit>();
@@ -87,7 +85,7 @@ namespace DaemonsWinApp
                 unitType = UnitType.Daemon;
             units = tile.GetUnits(tile.Game.GetCurrentPlayer(), !this.cbxForce.Checked, false, unitType).ToList();
             if (this.cbxForce.Checked)
-                units = units.Where((u) => ( u.Movement + u.ReserveMove > 0 )).ToList();
+                units = units.Where((u) => ( u.Movement + u.ReserveMovement > 0 )).ToList();
             if (fire)
                 units.Sort(Tile.UnitDamageComparison);
 
@@ -99,10 +97,10 @@ namespace DaemonsWinApp
                 else
                 {
                     this.cbxForce.Checked = true;
-                    return SetupStuff(tile, moveTo, fire, max);
+                    return SetupStuff(tile, moveTo, fire);
                 }
 
-            for (int a = 0 ; a < types.Capacity ; a++)
+            for (int a = 0 ; a < 4 ; a++)
                 types.Add(new List<Unit>());
 
             foreach (Unit u in units)
@@ -138,17 +136,8 @@ namespace DaemonsWinApp
                 }
             }
 
-            Label[] pics = new Label[4];
-            pics[0] = this.lblUnit1;
-            pics[1] = this.lblUnit2;
-            pics[2] = this.lblUnit3;
-            pics[3] = this.lblUnit4;
-
-            Label[] infos = new Label[4];
-            infos[0] = this.lblInf1;
-            infos[1] = this.lblInf2;
-            infos[2] = this.lblInf3;
-            infos[3] = this.lblInf4;
+            Label[] pics = new[] { this.lblUnit1, this.lblUnit2, this.lblUnit3, this.lblUnit4 };
+            Label[] infos = new[] { this.lblInf1, this.lblInf2, this.lblInf3, this.lblInf4 };
 
             int num = 0;
 
@@ -261,14 +250,14 @@ namespace DaemonsWinApp
         }
 
         private static bool events = true;
-        public static DialogResult ShowDialog(Tile tile, Tile moveTo, bool fire, int max)
+        public static DialogResult ShowDialog(Tile tile, Tile moveTo, bool fire)
         {
             events = false;
             form.cbxForce.Visible = !fire;
             form.cbxForce.Checked = false;
             events = true;
 
-            if (form.SetupStuff(tile, moveTo, fire, max))
+            if (form.SetupStuff(tile, moveTo, fire))
                 return form.ShowDialog();
             else
                 return System.Windows.Forms.DialogResult.Cancel;
@@ -277,7 +266,7 @@ namespace DaemonsWinApp
         private void cbxForce_CheckedChanged(object sender, EventArgs e)
         {
             if (events)
-                form.SetupStuff(tile, moveTo, fire, max);
+                form.SetupStuff(tile, moveTo, fire);
         }
     }
 }

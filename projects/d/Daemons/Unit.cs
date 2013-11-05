@@ -8,91 +8,90 @@ namespace Daemons
     [Serializable]
     public class Unit
     {
-        private Tile tile;
-        private Player owner;
         public readonly UnitType Type;
 
-        private int hits, movement, reserve;
-        public readonly int MaxHits, Regen, MaxMove;
-        private readonly int damage;
-        private int souls;
-        private double _morale;
-        private float battles;
+        public readonly int MoveMax, DamageMax, HitsMax, Regen;
 
-        public Unit(UnitType type, Tile tile, Player owner)
+        private Tile tile;
+        private Player owner;
+
+        private int movement, reserve, hits, souls;
+        private double _morale, battles;
+
+        public Unit(UnitType type, Tile t, Player o)
         {
-            this.tile = tile;
-            this.owner = owner;
+            this.tile = t;
+            this.owner = o;
             this.Type = type;
 
-            owner.Add(this);
-            tile.Add(this);
+            o.Add(this);
+            t.Add(this);
 
             this.movement = 0;
             this.reserve = 0;
-            this.MaxMove = 1;
+            this.MoveMax = 1;
 
-            double souls;
+            double s;
             switch (type)
             {
             case UnitType.Infantry:
-                this.MaxHits = Game.Random.GaussianCappedInt(25, .21f, 19);//0.24
-                this.Regen = Game.Random.GaussianCappedInt(3, .09f, 2);//0.33
-                this.damage = Game.Random.GaussianCappedInt(8, .13f, 7);//0.13
-                souls = 1.1;
+                this.HitsMax = Game.Random.GaussianCappedInt(Consts.InfantryHits, .21, 19);     //.24
+                this.Regen = Game.Random.GaussianCappedInt(3, .091, 2);                         //.33
+                this.DamageMax = Game.Random.GaussianCappedInt(Consts.InfantryDamage, .13, 7);  //.13
+                s = 1.1;
                 break;
 
             case UnitType.Archer:
-                this.MaxHits = Game.Random.GaussianCappedInt(20, .09f, 17);//0.15
-                this.Regen = Game.Random.GaussianCappedInt(2, .06f, 1);//0.50
-                this.damage = Game.Random.GaussianCappedInt(12, .21f, 9);//0.25
-                souls = 1.0;
+                this.HitsMax = Game.Random.GaussianCappedInt(Consts.ArcherHits, .091, 17);      //.15
+                this.Regen = Game.Random.GaussianCappedInt(2, .052, 1);                         //.50
+                this.DamageMax = Game.Random.GaussianCappedInt(Consts.ArcherDamage, .21, 9);    //.25
+                s = 1.0;
                 break;
 
             case UnitType.Knight:
-                this.MaxHits = Game.Random.GaussianCappedInt(30, .13f, 21);//0.30
-                this.Regen = Game.Random.GaussianCappedInt(2, .03f, 1);//0.50
-                this.damage = Game.Random.GaussianCappedInt(11, .09f, 9);//0.18
-                this.MaxMove = 2;
-                souls = 0.8;
+                this.HitsMax = Game.Random.GaussianCappedInt(Consts.KnightHits, .13, 21);       //.30
+                this.Regen = Game.Random.GaussianCappedInt(2, .039, 1);                         //.50
+                this.DamageMax = Game.Random.GaussianCappedInt(Consts.KnightDamage, .091, 9);   //.18
+                this.MoveMax = 2;
+                s = .8;
                 break;
 
             case UnitType.Daemon:
-                this.MaxHits = Game.Random.GaussianCappedInt(40, .13f, 34);//0.15
-                this.Regen = Game.Random.GaussianCappedInt(6, .21f, 4);//0.33
-                this.damage = Game.Random.GaussianCappedInt(25, .13f, 21);//0.16
+                this.HitsMax = Game.Random.GaussianCappedInt(40, .13, 34);                      //.15
+                this.Regen = Game.Random.GaussianCappedInt(6, .21, 4);                          //.33
+                this.DamageMax = Game.Random.GaussianCappedInt(25, .13, 21);                    //.16
                 this.movement = 1;
-                souls = 0.5;
+                s = .5;
                 break;
 
             case UnitType.Indy:
-                this.MaxHits = Game.Random.GaussianCappedInt(35, .30f, 21);//0.40
-                this.Regen = Game.Random.GaussianCappedInt(4, .39f, 1);//0.75
-                this.damage = Game.Random.GaussianCappedInt(10, .39f, 5);//0.50
-                souls = 1.0;
+                this.HitsMax = Game.Random.GaussianCappedInt(Consts.IndyHits, .26, 21);         //.40
+                this.Regen = Game.Random.GaussianCappedInt(4, .39, 1);                          //.75
+                this.DamageMax = Game.Random.GaussianCappedInt(Consts.IndyDamage, .39, 5);      //.50
+                s = 1.0;
                 break;
 
             default:
                 throw new Exception();
             }
 
-            this.battles = -.26f;
+            this.battles = -.26;
             this._morale = Game.Random.Weighted(.91);
-            if (Type == UnitType.Daemon)
-                GainMorale(1.3);
+            if (this.Type == UnitType.Daemon)
+                GainMorale(Consts.MoraleDaemonGain);
 
-            this.hits = MaxHits;
-            if (owner.Independent)
-                souls *= 1.6;
-            souls = Math.Pow(hits * damage, .65) * ( 3.9 + Regen * MaxMove ) * souls / 7.5;
-            this.souls = Game.Random.GaussianCappedInt(souls, .06, Game.Random.Round(souls * .65));
+            this.hits = this.HitsMax;
+            if (this.owner.Independent)
+                s *= Consts.IndySoulMult;
+            s = Math.Pow(this.hits * this.DamageMax, .65) * ( 3.9 + this.Regen * this.MoveMax ) * s / 7.8;
+            this.souls = Game.Random.GaussianCappedInt(s, .065, Game.Random.Round(s * .65));
         }
 
         public Player Owner
         {
             get
             {
-                return owner;
+                return this.owner;
             }
         }
 
@@ -100,7 +99,7 @@ namespace Daemons
         {
             get
             {
-                return souls;
+                return this.souls;
             }
         }
 
@@ -111,11 +110,11 @@ namespace Daemons
                 double mult = Math.Sqrt(HealthPct * Morale);
                 if (mult < double.Epsilon)
                     mult = double.Epsilon;
-                double retVal = damage * mult;
+                double retVal = this.DamageMax * mult;
                 if (retVal < 1)
                 {
-                    double turns = Math.Log(Math.Log(1.0 / damage) / Math.Log(mult)) / Math.Log(.39);
-                    double max = Math.Log(Math.Log(1.0 / damage) / Math.Log(double.Epsilon)) / Math.Log(.39);
+                    double turns = Consts.GetMoraleTurns(mult, 1.0 / this.DamageMax);
+                    double max = Consts.GetMoraleTurns(double.Epsilon, 1.0 / this.DamageMax);
                     retVal = ( max - turns + .13 ) / ( .13 + max );
                 }
                 return retVal;
@@ -127,14 +126,6 @@ namespace Daemons
             get
             {
                 return Math.Ceiling(Damage).ToString("0");
-            }
-        }
-
-        public int BaseDamage
-        {
-            get
-            {
-                return damage;
             }
         }
 
@@ -155,20 +146,22 @@ namespace Daemons
                 if (value < this.Morale)
                 {
                     double loss = this.Morale - value;
-                    double turns = Math.Log(Math.Log(this.Morale) / Math.Log(value)) / Math.Log(.39);
+                    double turns = Consts.GetMoraleTurns(value, this.Morale);
                     if (this.owner.Independent)
                     {
                         if (this.Type != UnitType.Daemon)
                         {
-                            loss = value - loss / 5.2;
-                            turns = Math.Pow(value, Math.Pow(1 / .39, turns / 5.2));
+                            const double IndyLoss = 5.2;
+                            loss = value - loss / IndyLoss;
+                            turns = Math.Pow(value, Math.Pow(1 / Consts.MoraleTurnPower, turns / IndyLoss));
                             value = Math.Max(loss, turns);
                         }
                     }
                     else if (this.Type == UnitType.Daemon)
                     {
-                        loss = value + loss / 3.9;
-                        turns = Math.Pow(value, Math.Pow(.39, turns / 3.9));
+                        const double DaemonGain = 3.9;
+                        loss = value + loss / DaemonGain;
+                        turns = Math.Pow(value, Math.Pow(Consts.MoraleTurnPower, turns / DaemonGain));
                         value = Math.Min(loss, turns);
                     }
                 }
@@ -176,29 +169,29 @@ namespace Daemons
                 this._morale = Game.Random.GaussianCapped(value, Math.Abs(this.Morale - value) / value * .26, Math.Max(0, 2 * value - 1));
             }
         }
-        public double Recover1
+        public double RecoverFull
         {
             get
             {
-                double target = 1 - .039 / BaseDamage;
+                double target = 1 - Consts.MoraleMaxDmgLoss / this.DamageMax;
                 target *= target;
                 return GetRecover(target);
             }
         }
-        public double Recover2
+        public double RecoverDmg
         {
             get
             {
-                double target = 1 - 1.0 / BaseDamage;
+                double target = 1 - 1.0 / this.DamageMax;
                 target *= target;
                 return GetRecover(target);
             }
         }
-        public double Recover3
+        public double RecoverCritical
         {
             get
             {
-                return GetRecover(.00117);
+                return GetRecover(Consts.MoraleCritical);
             }
         }
         private double GetRecover(double target)
@@ -206,15 +199,15 @@ namespace Daemons
             double retVal = 0;
             if (this.Morale < target)
             {
-                double start = Math.Log(Math.Log(target) / Math.Log(Morale)) / Math.Log(.39);
-                retVal = start + battles;
-                if (this.movement + this.reserve < this.MaxMove)
-                    retVal += ( this.MaxMove - this.movement - this.reserve ) * .21f / this.MaxMove;
+                double start = Consts.GetMoraleTurns(Morale, target);
+                retVal = start + this.battles;
+                if (this.movement + this.reserve < this.MoveMax)
+                    retVal += ( this.MoveMax - this.movement - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
                 start = Math.Min(start, 1);
                 if (retVal < start)
                     retVal = start;
                 if (this.Type == UnitType.Daemon)
-                    retVal /= 1.3;
+                    retVal /= Consts.MoraleDaemonGain;
             }
             return retVal;
         }
@@ -223,7 +216,7 @@ namespace Daemons
         {
             get
             {
-                return ( this.movement > 0 && Hits == MaxHits && this.Morale > .00117 );
+                return ( this.movement > 0 && this.hits == this.HitsMax && this.Morale > Consts.MoraleCritical );
             }
         }
 
@@ -231,7 +224,7 @@ namespace Daemons
         {
             get
             {
-                return .3 + HealthPct * Math.Sqrt(Hits / Damage);
+                return .3 + HealthPct * Math.Sqrt(this.hits / Damage);
             }
         }
 
@@ -239,7 +232,7 @@ namespace Daemons
         {
             get
             {
-                return tile;
+                return this.tile;
             }
         }
 
@@ -247,7 +240,7 @@ namespace Daemons
         {
             get
             {
-                return hits;
+                return this.hits;
             }
         }
 
@@ -255,16 +248,16 @@ namespace Daemons
         {
             get
             {
-                return movement;
+                return this.movement;
             }
         }
-        public int ReserveMove
+        public int ReserveMovement
         {
             get
             {
-                if (this.Morale < .00117)
+                if (this.Morale < Consts.MoraleCritical)
                     return 0;
-                return reserve;
+                return this.reserve;
             }
         }
 
@@ -272,7 +265,7 @@ namespace Daemons
         {
             get
             {
-                return hits / (double)MaxHits;
+                return this.hits / (double)this.HitsMax;
             }
         }
 
@@ -280,39 +273,33 @@ namespace Daemons
         {
             get
             {
-                return GetStrength(Type, this.Hits, this.Damage);
+                return Consts.GetStrength(this.Type, this.hits, this.Damage);
             }
         }
-        public double MaxStrength
+        public double StrengthMax
         {
             get
             {
-                return GetStrength(Type, this.MaxHits, this.BaseDamage);
+                return Consts.GetStrength(this.Type, this.HitsMax, this.DamageMax);
             }
-        }
-        public static double GetStrength(UnitType type, int hits, double damage)
-        {
-            return Math.Pow(hits * Math.Pow(damage +
-                    ( type == UnitType.Daemon ? damage / 13.0 : type == UnitType.Archer ? damage / 39.0 : 0 ),
-                    24 / 25.0) / 7.0, 2 / 3.0);
         }
 
         internal void Won(Player independent)
         {
             this.movement = 0;
-            this.souls = Game.Random.Round(this.souls * 1.6);
+            this.souls = Game.Random.Round(this.souls * Consts.IndySoulMult);
             this.owner = independent;
             this.owner.Add(this);
         }
 
         public bool CanMove(Tile t)
         {
-            return ( this.Movement + this.ReserveMove > 0 && ( tile.IsSideNeighbor(t) || ( Type == UnitType.Daemon && tile.IsCornerNeighbor(t) ) ) );
+            return ( this.movement + this.ReserveMovement > 0 && ( this.tile.IsSideNeighbor(t) || ( this.Type == UnitType.Daemon && this.tile.IsCornerNeighbor(t) ) ) );
         }
 
         public bool Move(Tile toTile)
         {
-            if (Owner.Game.GetCurrentPlayer() == this.Owner && CanMove(toTile))
+            if (this.owner.Game.GetCurrentPlayer() == this.owner && CanMove(toTile))
             {
                 DoMove(toTile);
 
@@ -334,8 +321,8 @@ namespace Daemons
 
         private int DamageUnit(Unit defender)
         {
-            float bonus = GetDamageMult(this.Type, defender.Type);
-            int damage = Game.Random.WeightedInt(Game.Random.Round(this.Damage), bonus / 2f);
+            double bonus = GetDamageMult(this.Type, defender.Type);
+            int damage = Game.Random.WeightedInt(Game.Random.Round(this.Damage), bonus / 2);
 
             double addMorale = 0;
             defender.hits -= damage;
@@ -345,77 +332,76 @@ namespace Daemons
                 defender.hits = 0;
                 defender.Die();
 
-                IEnumerable<Unit> units = defender.Tile.GetUnits(defender.Owner);
-                double mult = 1 - defender.MaxStrength / ( defender.MaxStrength + Tile.GetArmyStr(units) );
+                IEnumerable<Unit> units = defender.tile.GetUnits(defender.owner);
+                double mult = 1 - defender.StrengthMax / ( defender.StrengthMax + Tile.GetArmyStr(units) );
                 foreach (Unit unit in units)
                     unit.Morale *= mult;
-                addMorale += defender.MaxStrength;
+                addMorale += defender.StrengthMax;
 
-                this.Owner.AddSouls(defender.Souls, true);
+                this.owner.AddSouls(defender.souls, true);
             }
             if (damage > 0)
             {
-                this.Owner.AddSouls(( damage / (float)defender.MaxHits ) * defender.Souls, true);
+                this.owner.AddSouls(( damage / (double)defender.HitsMax ) * defender.souls, true);
                 defender.Morale *= 1 - damage / (double)( defender.hits + damage );
 
-                addMorale += defender.MaxStrength * damage / (double)defender.MaxHits;
+                addMorale += defender.StrengthMax * damage / (double)defender.HitsMax;
             }
 
-            this.battles += .169f * damage / (float)this.BaseDamage;
-            defender.battles += .169f * damage / (float)defender.MaxHits;
+            this.battles += .169 * damage / (double)this.DamageMax;
+            defender.battles += .169 * damage / (double)defender.HitsMax;
 
             double turns = addMorale / 39.0;
-            this.battles += (float)turns;
+            this.battles += turns;
             this.GainMorale(turns);
 
-            Owner.Game.Log(String.Format("{5} -> {6}\r\n({0},{1}/{2}) {7}{3} {4}",
-                    this.DamageStr, this.hits, this.MaxHits, damage,
-                    defender.hits > 0 ? string.Format("({0},{1}/{2})", defender.DamageStr, defender.hits, defender.MaxHits) : "KILLED!",
+            this.owner.Game.Log(string.Format("{5} -> {6}\r\n({0},{1}/{2}) {7}{3} {4}",
+                    this.DamageStr, this.hits, this.HitsMax, damage,
+                    defender.hits > 0 ? string.Format("({0},{1}/{2})", defender.DamageStr, defender.hits, defender.HitsMax) : "KILLED!",
                     this, defender, damage > 0 ? "-" : ""));
 
             return damage;
         }
 
-        internal static float GetDamageMult(UnitType attacker, UnitType defender)
+        internal static double GetDamageMult(UnitType attacker, UnitType defender)
         {
-            const float dmgPos = 1.17f, dmgNeg = .78f, dmgInd = 1.03f, dmgDmn = .97f;
             if (attacker == UnitType.Infantry)
             {
                 if (defender == UnitType.Archer)
-                    return dmgNeg;
+                    return Consts.DmgNeg;
                 else if (defender == UnitType.Knight)
-                    return dmgPos;
+                    return Consts.DmgPos;
             }
             else if (attacker == UnitType.Archer)
             {
                 if (defender == UnitType.Knight)
-                    return dmgNeg;
+                    return Consts.DmgNeg;
                 else if (defender == UnitType.Infantry)
-                    return dmgPos;
+                    return Consts.DmgPos;
             }
             else if (attacker == UnitType.Knight)
             {
                 if (defender == UnitType.Infantry)
-                    return dmgNeg;
+                    return Consts.DmgNeg;
                 else if (defender == UnitType.Archer)
-                    return dmgPos;
+                    return Consts.DmgPos;
             }
             if (attacker != UnitType.Daemon && attacker != UnitType.Indy)
             {
                 if (defender == UnitType.Indy)
-                    return dmgInd;
+                    return Consts.DmgIndy;
                 else if (defender == UnitType.Daemon)
-                    return dmgDmn;
+                    return Consts.DmgDaemon;
             }
             return 1;
         }
 
         private void Die()
         {
-            MakeArrow(movement + ( reserve + .13f ) / ( 3.9f + battles ));
+            MakeArrow(this.movement + ( this.reserve + .13 ) / ( 3.9 + this.battles ));
 
             this.tile.Remove(this);
-            this.Owner.Remove(this);
+            this.owner.Remove(this);
         }
 
         internal Tile Retreat(Tile prev)
@@ -426,7 +412,7 @@ namespace Daemons
                 this.reserve += this.movement - 1;
                 this.movement = 0;
             }
-            else if (this.ReserveMove > 0)
+            else if (this.ReserveMovement > 0)
             {
                 UseReserve();
             }
@@ -444,11 +430,11 @@ namespace Daemons
             else
             {
                 Dictionary<Tile, int> chances = new Dictionary<Tile, int>();
-                IEnumerable<Tile> options = this.Tile.GetSideNeighbors();
+                IEnumerable<Tile> options = this.tile.GetSideNeighbors();
                 if (this.Type == UnitType.Daemon)
-                    options = options.Union(this.Tile.GetCornerNeighbors());
+                    options = options.Union(this.tile.GetCornerNeighbors());
                 foreach (Tile t in options)
-                    chances.Add(t, t.GetRetreatValue(this.Owner));
+                    chances.Add(t, t.GetRetreatValue(this.owner));
                 cur = Game.Random.SelectValue(chances);
             }
 
@@ -457,12 +443,12 @@ namespace Daemons
         }
         private void UseReserve()
         {
-            if (this.ReserveMove < 1)
+            if (this.ReserveMovement < 1)
                 throw new Exception();
 
             this.reserve--;
-            this.battles += .39f;
-            LoseMorale(1.0 / this.MaxMove);
+            this.battles += .39 / this.MoveMax;
+            LoseMorale(1.0 / this.MoveMax);
         }
         private void LoseMorale(double mult)
         {
@@ -471,7 +457,7 @@ namespace Daemons
 
         internal void OnBattle()
         {
-            this.battles += .52f;
+            this.battles += .52;
         }
 
         internal void Attack()
@@ -486,22 +472,22 @@ namespace Daemons
 
         public static void Fire(IEnumerable<Unit> move, Tile target)
         {
-            move = move.OrderByDescending((u) => u.Tile.GetDamage(u));
+            move = move.OrderByDescending(unit => unit.tile.GetDamage(unit));
 
             int arrows = target.Game.GetCurrentPlayer().Arrows;
-            if (move.FirstOrDefault() != null && move.FirstOrDefault().Tile.IsCornerNeighbor(target))
+            if (move.FirstOrDefault() != null && move.FirstOrDefault().tile.IsCornerNeighbor(target))
                 arrows /= 2;
-            while (arrows > 0 && move.Any() && target.GetUnits().Any((u) => ( u.Owner != target.Game.GetCurrentPlayer() )))
+            while (arrows > 0 && move.Any() && target.GetUnits().Any(unit => unit.owner != target.Game.GetCurrentPlayer()))
             {
-                double totalHits = MultHits(target.GetUnits().Where((defender) => ( defender.Owner != target.Game.GetCurrentPlayer() ))
-                        .Aggregate<Unit, double>(0, (t, defender) => t + ( defender.hits / GetDamageMult(UnitType.Archer, defender.Type) )));
+                double totalHits = MultHits(target.GetUnits().Where(unit => unit.owner != target.Game.GetCurrentPlayer())
+                        .Aggregate<Unit, double>(0, (sum, unit) => ( sum + ( unit.hits / GetDamageMult(UnitType.Archer, unit.Type) ) )));
                 int count = 0;
-                double totalDamage = move.Aggregate<Unit, double>(0, (t, u) => t + ( ++count <= arrows ? u.Damage : 0 ));
+                double totalDamage = move.Aggregate<Unit, double>(0, (sum, unit) => ( sum + ( ++count <= arrows ? unit.Damage : 0 ) ));
 
                 Unit fire;
                 if (totalDamage > totalHits)
                 {
-                    fire = move.FirstOrDefault((u) => u.Healed);
+                    fire = move.FirstOrDefault(unit => unit.Healed);
                     if (fire == null)
                         fire = move.First();
                 }
@@ -509,7 +495,7 @@ namespace Daemons
                 {
                     bool healed = ( arrows < move.Count() );
 select:
-                    Unit first = move.FirstOrDefault((u) => !healed || u.Healed);
+                    Unit first = move.FirstOrDefault(unit => !healed || unit.Healed);
                     if (first == null)
                     {
                         healed = false;
@@ -518,13 +504,13 @@ select:
                     else
                     {
                         Unit defender = target.GetBestTarget(first);
-                        double hits = defender.hits / GetDamageMult(UnitType.Archer, defender.Type);
+                        double h = defender.hits / GetDamageMult(UnitType.Archer, defender.Type);
                         fire = null;
                         foreach (Unit u in move.Reverse())
                             if (!healed || u.Healed)
                             {
                                 fire = u;
-                                if (fire.Damage > MultHits(hits))
+                                if (fire.Damage > MultHits(h))
                                     break;
                             }
                     }
@@ -538,12 +524,12 @@ select:
 
         private static double MultHits(double totalHits)
         {
-            return totalHits * Game.Random.Gaussian(1.9f, .019f);
+            return totalHits * Game.Random.Gaussian(1.9, .019);
         }
 
         public void Fire(Tile target)
         {
-            if (Owner.Game.GetCurrentPlayer() != this.Owner || this.Type != UnitType.Archer || this.Movement <= 0)
+            if (this.owner.Game.GetCurrentPlayer() != this.owner || this.Type != UnitType.Archer || this.movement <= 0)
                 return;
 
             int needed = 1;
@@ -551,35 +537,35 @@ select:
                 needed++;
             else if (!( this.tile.IsSideNeighbor(target) ))
                 return;
-            if (this.Owner.Arrows < needed)
+            if (this.owner.Arrows < needed)
                 return;
 
             Unit defender = target.GetTarget(this, true);
             if (defender == null)
                 return;
 
-            Owner.Game.Log("--------------------------");
+            this.owner.Game.Log("--------------------------");
 
             DamageUnit(defender);
 
             this.movement--;
-            this.reserve--;
+            LoseReserve();
 
-            this.Owner.UseArrows(needed);
+            this.owner.UseArrows(needed);
         }
 
-        public void MakeArrow(float amt)
+        public void MakeArrow(double amt)
         {
             if (this.movement <= 0)
                 return;
-            this.Owner.MakeArrow(amt / ( this.Type == UnitType.Archer ? 1.3f : 6.5f ));
+            this.owner.MakeArrow(amt / ( this.Type == UnitType.Archer ? 1.3 : 6.5 ));
             this.movement--;
-            this.reserve--;
+            LoseReserve();
         }
 
         public void Build()
         {
-            if (Owner.Game.GetCurrentPlayer() != this.Owner)
+            if (this.owner.Game.GetCurrentPlayer() != this.owner)
                 return;
 
             int move = this.movement;
@@ -595,15 +581,15 @@ select:
 
         public void Build(ProductionType type)
         {
-            if (Owner.Game.GetCurrentPlayer() != this.Owner || this.movement == 0)
+            if (this.owner.Game.GetCurrentPlayer() != this.owner || this.movement == 0)
                 return;
 
             foreach (ProductionCenter center in this.tile.GetProduction())
-                if (!center.Used && center.type == type && !tile.Occupied(owner))
+                if (!center.Used && center.Type == type && !this.tile.Occupied(this.owner))
                 {
-                    center.Use(this.Owner);
+                    center.Use(this.owner);
                     this.movement--;
-                    this.reserve--;
+                    LoseReserve();
                     break;
                 }
         }
@@ -613,76 +599,82 @@ select:
             if (this.movement > 0)
             {
                 this.hits += this.Regen;
-                if (this.hits > this.MaxHits)
+                if (this.hits > this.HitsMax)
                 {
-                    float diff = this.hits - (float)this.MaxHits;
-                    hits = MaxHits;
+                    double diff = this.hits - this.HitsMax;
+                    this.hits = this.HitsMax;
 
                     //MakeArrow also reduces movement
-                    MakeArrow(diff / (float)this.Regen);
+                    MakeArrow(diff / (double)this.Regen);
                 }
                 else
                 {
                     this.movement--;
-                    this.reserve--;
+                    LoseReserve();
                 }
             }
         }
 
         public void Heal()
         {
-            if (Owner.Game.GetCurrentPlayer() == this.Owner && !tile.Occupied(owner))
+            if (this.owner.Game.GetCurrentPlayer() == this.owner && !this.tile.Occupied(this.owner))
                 HealInternal();
         }
 
+        private void LoseReserve()
+        {
+            this.reserve--;
+            this.battles -= Consts.NoReserveBattles / this.MoveMax;
+        }
         internal void ResetMove()
         {
             this.movement += this.reserve;
-            while (this.movement > this.MaxMove)
+            while (this.movement > this.MoveMax)
                 HealInternal();
-            if (this.movement < this.MaxMove)
-                this.battles += ( this.MaxMove - this.movement ) * .21f / this.MaxMove;
+            if (this.movement < this.MoveMax)
+                this.battles += ( this.MoveMax - this.movement ) * Consts.NoReserveBattles / this.MoveMax;
 
-            this.movement = this.MaxMove;
-            this.reserve = this.MaxMove;
+            this.movement = this.MoveMax;
+            this.reserve = this.MoveMax;
 
-            this.battles += Game.Random.Gaussian(.13f);
-            float turns = 1 - battles;
-            if (turns < .13)
-                turns = (float)( .13 / ( Math.Pow(1.13 - turns, .78) ) );
+            this.battles += Game.Random.Gaussian(.13);
+            double turns = 1 - this.battles;
+            const double minTurns = .13;
+            if (turns < minTurns)
+                turns = ( minTurns / ( Math.Pow(1 + minTurns - turns, .78) ) );
             GainMorale(turns);
-            battles -= 1 - turns;
+            this.battles -= 1 - turns;
             if (this.Type == UnitType.Daemon)
-                battles -= .3f;
+                this.battles -= ( Consts.MoraleDaemonGain - 1 );
         }
         private void GainMorale(double turns)
         {
             if (turns > 0)
-                if (BaseDamage * ( 1 - Math.Sqrt(Morale) ) > .039)
+                if (this.DamageMax * ( 1 - Math.Sqrt(Morale) ) > Consts.MoraleMaxDmgLoss)
                 {
                     if (this.Type == UnitType.Daemon)
-                        turns *= 1.3;
-                    Morale = Math.Pow(Morale, Math.Pow(.39, turns));
+                        turns *= Consts.MoraleDaemonGain;
+                    Morale = Math.Pow(Morale, Math.Pow(Consts.MoraleTurnPower, turns));
                 }
                 else
                 {
-                    this.battles -= (float)turns / 1.3f;
+                    this.battles -= (double)turns / 1.3;
                 }
         }
 
         public string GetMoveString()
         {
-            return string.Format("{0} / {1}", movement, MaxMove);
+            return string.Format("{0} / {1}", this.movement, this.MoveMax);
         }
 
         public System.Drawing.Bitmap GetPic()
         {
-            return Owner.GetPic(Type);
+            return this.owner.GetPic(this.Type);
         }
 
         public override string ToString()
         {
-            return string.Format("{0} {1}", Owner.Name, Type);
+            return string.Format("{0} {1}", this.owner.Name, this.Type);
         }
 
         public static int UnitComparison(Unit u1, Unit u2)

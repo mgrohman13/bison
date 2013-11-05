@@ -139,40 +139,40 @@ namespace DaemonsWinApp
             // lblInf4
             // 
             this.lblInf4.BackColor = System.Drawing.Color.White;
-            this.lblInf4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf4.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf4.Location = new System.Drawing.Point(832, 271);
             this.lblInf4.Name = "lblInf4";
-            this.lblInf4.Size = new System.Drawing.Size(93, 90);
+            this.lblInf4.Size = new System.Drawing.Size(92, 90);
             this.lblInf4.TabIndex = 11;
             this.lblInf4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblInf3
             // 
             this.lblInf3.BackColor = System.Drawing.Color.White;
-            this.lblInf3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf3.Location = new System.Drawing.Point(832, 181);
             this.lblInf3.Name = "lblInf3";
-            this.lblInf3.Size = new System.Drawing.Size(93, 90);
+            this.lblInf3.Size = new System.Drawing.Size(92, 90);
             this.lblInf3.TabIndex = 10;
             this.lblInf3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblInf2
             // 
             this.lblInf2.BackColor = System.Drawing.Color.White;
-            this.lblInf2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf2.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold);
             this.lblInf2.Location = new System.Drawing.Point(832, 91);
             this.lblInf2.Name = "lblInf2";
-            this.lblInf2.Size = new System.Drawing.Size(93, 90);
+            this.lblInf2.Size = new System.Drawing.Size(92, 90);
             this.lblInf2.TabIndex = 9;
             this.lblInf2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblInf1
             // 
             this.lblInf1.BackColor = System.Drawing.Color.White;
-            this.lblInf1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInf1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblInf1.Location = new System.Drawing.Point(832, 1);
             this.lblInf1.Name = "lblInf1";
-            this.lblInf1.Size = new System.Drawing.Size(93, 90);
+            this.lblInf1.Size = new System.Drawing.Size(92, 90);
             this.lblInf1.TabIndex = 8;
             this.lblInf1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
