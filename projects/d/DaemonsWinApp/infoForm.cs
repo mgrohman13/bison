@@ -73,7 +73,7 @@ namespace DaemonsWinApp
                 move.Add(null);
             }
 
-            this.vScrollBar1.Value = this.vScrollBar1.Minimum;
+            this.vScrollBar1.Value = this.vScrollBar1.Minimum = 0;
             AdjustMax();
             return true;
         }
@@ -143,7 +143,7 @@ namespace DaemonsWinApp
             if (max > 0)
             {
                 int val = this.vScrollBar1.Value;
-                this.vScrollBar1.Value = this.vScrollBar1.Minimum;
+                this.vScrollBar1.Value = this.vScrollBar1.Minimum = 0;
                 if (val > max)
                     val = max;
                 this.vScrollBar1.Maximum = max;
@@ -152,7 +152,7 @@ namespace DaemonsWinApp
             }
             else
             {
-                this.vScrollBar1.Value = this.vScrollBar1.Minimum;
+                this.vScrollBar1.Value = this.vScrollBar1.Minimum = 0;
                 this.vScrollBar1.Hide();
             }
         }
@@ -179,98 +179,114 @@ namespace DaemonsWinApp
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            this.AdjustSize(showAll ? all : part);
-
-            int x = offset, y = offset - this.vScrollBar1.Value * 13;
-            const int incPic = picSize + 1;
-            foreach (Unit u in ( showAll ? all : part ))
+            try
             {
-                e.Graphics.DrawImage(u.GetPic(), x, y);
+                this.AdjustSize(showAll ? all : part);
 
-                if (use != UseType.View && move.Contains(u))
-                    using (Pen p = new Pen(Color.Black, 3))
-                        e.Graphics.DrawRectangle(p, x, y, 90, 90);
-
-                Color color;
-                double pct;
-                if (u.Morale < Consts.MoraleCritical)
+                int x = offset, y = this.vScrollBar1.Value;
+                if (y < 0)
                 {
-                    double turns = Consts.GetMoraleTurns(u.Morale, Consts.MoraleCritical);
-                    double max = Consts.GetMoraleTurns(double.Epsilon, Consts.MoraleCritical);
-                    int brightness = (int)( 127 + 128 * Math.Pow(turns / max, .6) );
-                    color = Color.FromArgb(brightness, brightness, brightness);
-                    pct = 1;
+                    this.vScrollBar1.Value = 0;
+                    this.vScrollBar1.Minimum = 0;
+                    y = 0;
                 }
-                else
+                y = offset - y * 13;
+
+                const int incPic = picSize + 1;
+                foreach (Unit u in ( showAll ? all : part ))
                 {
-                    double redPct = Math.Min(2 - u.Morale * 2, 1);
-                    double greenPct = Math.Min(u.Morale * 2, 1);
-                    color = Color.FromArgb((int)( 255 * redPct ), (int)( 255 * greenPct ), 0);
-                    pct = u.Morale;
+                    e.Graphics.DrawImage(u.GetPic(), x, y);
+
+                    if (use != UseType.View && move.Contains(u))
+                        using (Pen p = new Pen(Color.Black, 3))
+                            e.Graphics.DrawRectangle(p, x, y, 90, 90);
+
+                    Color color;
+                    double pct;
+                    if (u.Morale < Consts.MoraleCritical)
+                    {
+                        double turns = Consts.GetMoraleTurns(u.Morale, Consts.MoraleCritical);
+                        double max = Consts.GetMoraleTurns(double.Epsilon, Consts.MoraleCritical);
+                        int brightness = (int)( 127 + 128 * Math.Pow(turns / max, .6) );
+                        color = Color.FromArgb(brightness, brightness, brightness);
+                        pct = 1;
+                    }
+                    else
+                    {
+                        double redPct = Math.Min(2 - u.Morale * 2, 1);
+                        double greenPct = Math.Min(u.Morale * 2, 1);
+                        color = Color.FromArgb((int)( 255 * redPct ), (int)( 255 * greenPct ), 0);
+                        pct = u.Morale;
+                    }
+                    using (Brush b = new SolidBrush(color))
+                    using (Pen p = new Pen(Color.Black, 1))
+                    {
+                        e.Graphics.DrawRectangle(p, x - 1, y + size - 9, 92, 7);
+                        int div = (int)( 91 * pct + .5f );
+                        e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
+                        e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
+                    }
+
+                    x += 6;
+                    y += size;
+
+                    using (Font f = new Font("Arial", 13))
+                    using (Font b = new Font("Arial", 13, FontStyle.Bold))
+                    {
+                        int tempY = y;
+                        e.Graphics.DrawImage(movement, x, tempY);
+                        tempY += incPic;
+                        e.Graphics.DrawImage(damage, x, tempY);
+                        tempY += incPic;
+                        e.Graphics.DrawImage(hits, x, tempY);
+                        tempY += incPic;
+                        e.Graphics.DrawImage(regen, x, tempY);
+                        string rgnStr = u.Regen.ToString();
+                        int incX = incPic + (int)e.Graphics.MeasureString(rgnStr, f).Width;
+                        e.Graphics.DrawImage(soul, x + incX, tempY);
+
+                        x += picSize;
+
+                        tempY = y;
+                        string str = string.Format("{0} ", u.Movement);
+                        e.Graphics.DrawString(str, u.Movement > 0 ? b : f, Brushes.Black, new Point(x, tempY));
+                        if (u.ReserveMovement > 0)
+                            e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMovement), u.ReserveMovement > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
+
+                        tempY += incPic;
+                        str = "{0}";
+                        if (u.DamageStr != u.DamageMax.ToString())
+                            str += " / {1}";
+                        str = string.Format(str, u.DamageStr, u.DamageMax);
+                        e.Graphics.DrawString(str, u.RecoverDmg > 0 ? f : b, Brushes.Black, new Point(x, tempY));
+
+                        tempY += incPic;
+                        str = "{0}";
+                        if (u.Hits != u.HitsMax)
+                            str += " / {1}";
+                        str = string.Format(str, u.Hits, u.HitsMax);
+                        e.Graphics.DrawString(str, u.Hits == u.HitsMax ? b : f, Brushes.Black, new Point(x, tempY));
+
+                        tempY += incPic;
+                        e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, tempY));
+                        e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, tempY));
+                    }
+
+                    x -= picSize + 6;
+                    y -= size;
+
+                    x += size;
+                    if (x > XMax * size)
+                    {
+                        y += ySize;
+                        x = offset;
+                    }
                 }
-                using (Brush b = new SolidBrush(color))
-                using (Pen p = new Pen(Color.Black, 1))
-                {
-                    e.Graphics.DrawRectangle(p, x - 1, y + size - 9, 92, 7);
-                    int div = (int)( 91 * pct + .5f );
-                    e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
-                    e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
-                }
-
-                x += 6;
-                y += size;
-
-                using (Font f = new Font("Arial", 13))
-                using (Font b = new Font("Arial", 13, FontStyle.Bold))
-                {
-                    int tempY = y;
-                    e.Graphics.DrawImage(movement, x, tempY);
-                    tempY += incPic;
-                    e.Graphics.DrawImage(damage, x, tempY);
-                    tempY += incPic;
-                    e.Graphics.DrawImage(hits, x, tempY);
-                    tempY += incPic;
-                    e.Graphics.DrawImage(regen, x, tempY);
-                    string rgnStr = u.Regen.ToString();
-                    int incX = incPic + (int)e.Graphics.MeasureString(rgnStr, f).Width;
-                    e.Graphics.DrawImage(soul, x + incX, tempY);
-
-                    x += picSize;
-
-                    tempY = y;
-                    string str = string.Format("{0} ", u.Movement);
-                    e.Graphics.DrawString(str, u.Movement > 0 ? b : f, Brushes.Black, new Point(x, tempY));
-                    if (u.ReserveMovement > 0)
-                        e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMovement), u.ReserveMovement > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
-
-                    tempY += incPic;
-                    str = "{0}";
-                    if (u.DamageStr != u.DamageMax.ToString())
-                        str += " / {1}";
-                    str = string.Format(str, u.DamageStr, u.DamageMax);
-                    e.Graphics.DrawString(str, u.RecoverDmg > 0 ? f : b, Brushes.Black, new Point(x, tempY));
-
-                    tempY += incPic;
-                    str = "{0}";
-                    if (u.Hits != u.HitsMax)
-                        str += " / {1}";
-                    str = string.Format(str, u.Hits, u.HitsMax);
-                    e.Graphics.DrawString(str, u.Hits == u.HitsMax ? b : f, Brushes.Black, new Point(x, tempY));
-
-                    tempY += incPic;
-                    e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, tempY));
-                    e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, tempY));
-                }
-
-                x -= picSize + 6;
-                y -= size;
-
-                x += size;
-                if (x > XMax * size)
-                {
-                    y += ySize;
-                    x = offset;
-                }
+            }
+            catch (Exception E)
+            {
+                Console.WriteLine(E);
+                throw E;
             }
         }
 
@@ -420,7 +436,7 @@ namespace DaemonsWinApp
             if (Form.use == UseType.View)
                 Form.Hide();
             else
-                Form.Close();
+                Form.DialogResult = DialogResult.Cancel;
         }
 
         private void chbStr_CheckedChanged(object sender, EventArgs e)

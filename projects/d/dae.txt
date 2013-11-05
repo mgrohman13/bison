@@ -3,8 +3,10 @@ review all during-combat actions
 heal individual units
 undo
 
-show str,morale of indy that will move
-	allow way to select and show str,morale of selected
+build defaults to max str
+show str,morale,souls
+	indy that will move
+	allow way to select enemy and show str,morale of selected
 	always show selected stats regardeless of use type
 hotkeys
 shortcut to customize all
