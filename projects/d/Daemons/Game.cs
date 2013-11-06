@@ -248,7 +248,7 @@ namespace Daemons
             do
             {
                 tile = GetRandomTile();
-            } while (tile.Occupied(player));
+            } while (!tile.Unoccupied(player));
             return tile;
         }
 
@@ -532,9 +532,9 @@ namespace Daemons
 
             if (this.players.Length > 1)
             {
-                player.Won(this.independent);
-                foreach (Unit u in this.independent.GetUnits().ToList())
-                    u.Won(this.independent);
+                player.Won(independent);
+                foreach (Unit u in player.GetUnits())
+                    u.Won(independent);
 
                 //remove from the players array
                 int removedIndex = this.players.Length - 1;

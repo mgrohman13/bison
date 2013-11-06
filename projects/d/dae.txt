@@ -1,9 +1,9 @@
+morale loss for want to retreat but cant
 review all during-combat actions
 	prevent (except move)
 heal individual units
 undo
 
-build defaults to max str
 show str,morale,souls
 	indy that will move
 	allow way to select enemy and show str,morale of selected

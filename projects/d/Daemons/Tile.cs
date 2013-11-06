@@ -51,9 +51,9 @@ namespace Daemons
             return best.GetPic();
         }
 
-        public bool Occupied(Player notBy)
+        public bool Unoccupied(Player forPlayer)
         {
-            return GetUnits().Any(unit => unit.Owner != notBy);
+            return ( !GetUnits().Any(unit => unit.Owner != forPlayer) );
         }
 
         internal void Add(Unit unit)

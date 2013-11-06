@@ -52,7 +52,8 @@ namespace DaemonsWinApp
             this.move = move;
             this.showAll = ( use != UseType.Move );
             this.chbAll.Checked = showAll;
-            this.chbStr.Checked = false;
+            this.chbStr.Checked = ( use == UseType.Build );
+            this.chbStr_CheckedChanged(null, null);
             this.use = use;
 
             Invalidate();
@@ -73,7 +74,6 @@ namespace DaemonsWinApp
                 move.Add(null);
             }
 
-            this.vScrollBar1.Value = this.vScrollBar1.Minimum = 0;
             AdjustMax();
             return true;
         }
@@ -143,16 +143,15 @@ namespace DaemonsWinApp
             if (max > 0)
             {
                 int val = this.vScrollBar1.Value;
-                this.vScrollBar1.Value = this.vScrollBar1.Minimum = 0;
                 if (val > max)
                     val = max;
+                this.vScrollBar1.Value = 0;
                 this.vScrollBar1.Maximum = max;
                 this.vScrollBar1.Value = val;
                 this.vScrollBar1.Show();
             }
             else
             {
-                this.vScrollBar1.Value = this.vScrollBar1.Minimum = 0;
                 this.vScrollBar1.Hide();
             }
         }
@@ -184,12 +183,8 @@ namespace DaemonsWinApp
                 this.AdjustSize(showAll ? all : part);
 
                 int x = offset, y = this.vScrollBar1.Value;
-                if (y < 0)
-                {
-                    this.vScrollBar1.Value = 0;
-                    this.vScrollBar1.Minimum = 0;
+                if (y < 0 || !this.vScrollBar1.Visible)
                     y = 0;
-                }
                 y = offset - y * 13;
 
                 const int incPic = picSize + 1;
@@ -223,6 +218,10 @@ namespace DaemonsWinApp
                     {
                         e.Graphics.DrawRectangle(p, x - 1, y + size - 9, 92, 7);
                         int div = (int)( 91 * pct + .5f );
+                        if (pct < .995 && div == 91)
+                            --div;
+                        else if (pct > .995 && div != 91)
+                            div = 91;
                         e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
                         e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
                     }
@@ -318,9 +317,11 @@ namespace DaemonsWinApp
             if (!this.ClientRectangle.Contains(e.Location))
                 return null;
 
-            int x = ( e.X - offset ) / size;
-            int y = ( e.Y - offset + this.vScrollBar1.Value * 13 ) / ySize;
-            x += XMax * y;
+            int y = this.vScrollBar1.Value;
+            if (y < 0 || !this.vScrollBar1.Visible)
+                y = 0;
+            y = ( e.Y - offset + y * 13 ) / ySize;
+            int x = ( e.X - offset ) / size + XMax * y;
 
             if (use == UseType.View)
                 if (x >= 0 && x < all.Count)
@@ -352,18 +353,18 @@ namespace DaemonsWinApp
         public void infoForm_MouseMove(object sender, MouseEventArgs e)
         {
             Unit u = GetUnit(e);
-            string morale = null, recover = null, damage = null;
+            string morale = null, damage = null;
             if (u != null)
             {
                 morale = u.Morale.ToString("0%");
-                recover = u.RecoverFull.ToString("0.0");
                 damage = u.Damage.ToString("0.0");
             }
-            if (u != null && ( morale != "100%" || recover != "0.0" || damage != u.DamageMax.ToString("0.0") ))
+            if (u != null && ( morale != "100%" || damage != u.DamageMax.ToString("0.0") ))
             {
                 if (u != showing)
                 {
-                    string r2 = u.RecoverDmg.ToString("0.0"), r3 = u.RecoverCritical.ToString("0.0");
+                    string recover = u.RecoverFull.ToString("0.0"),
+                            r2 = u.RecoverDmg.ToString("0.0"), r3 = u.RecoverCritical.ToString("0.0");
                     toolTip1.Show(string.Format("Morale: {0}{3}Recover: {1}{4}{5}{3}Max Damage: {2}",
                             morale, recover, damage, Environment.NewLine,
                             r2 == "0.0" ? "" : " / " + r2, r3 == "0.0" ? "" : " / " + r3),
@@ -390,19 +391,28 @@ namespace DaemonsWinApp
 
         private void ScrollForm(int amount, bool mouseWheel)
         {
-            int max = GetMax();
-            if (mouseWheel)
-                max -= 10;
-            this.vScrollBar1.Maximum = max;
-            int newValue = this.vScrollBar1.Value + amount;
-            if (newValue < this.vScrollBar1.Minimum)
-                newValue = this.vScrollBar1.Minimum;
-            else if (newValue > max)
-                newValue = max;
-            if (this.vScrollBar1.Value != newValue)
+            if (this.vScrollBar1.Visible)
             {
-                this.vScrollBar1.Value = newValue;
-                Invalidate();
+                int max = GetMax();
+                if (mouseWheel)
+                    max -= 10;
+                if (max < 0)
+                    max = 0;
+
+                int newValue = this.vScrollBar1.Value + amount;
+                if (newValue < 0)
+                    newValue = 0;
+                else if (newValue > max)
+                    newValue = max;
+
+                if (this.vScrollBar1.Maximum != max || this.vScrollBar1.Value != newValue)
+                {
+                    this.vScrollBar1.Value = 0;
+                    this.vScrollBar1.Maximum = max;
+                    this.vScrollBar1.Value = newValue;
+
+                    Invalidate();
+                }
             }
         }
 

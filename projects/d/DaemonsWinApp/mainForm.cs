@@ -225,7 +225,7 @@ namespace DaemonsWinApp
             IGrouping<Player, Unit> player = units.GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First();
 
             this.lblMorale.Text = Tile.GetMorale(player).ToString("0%");
-            IEnumerable<Unit> attackers = selected.GetUnits().Where((u) => u.Owner != player);
+            IEnumerable<Unit> attackers = selected.GetUnits().Where((u) => u.Owner != player.Key);
             if (attackers.Any())
                 this.lblMorale.Text = Tile.GetMorale(attackers).ToString("0% : ") + this.lblMorale.Text;
 
@@ -248,12 +248,10 @@ namespace DaemonsWinApp
         {
             if (selected != null)
             {
-                bool occupied = selected.Occupied(game.GetCurrentPlayer());
-
                 this.btnBuild.Visible = ( selected.GetProduction(true).Any()
                         && selected.GetUnits(game.GetCurrentPlayer(), true).Any()
-                        && !occupied );
-                this.btnFight.Visible = occupied;
+                        && selected.Unoccupied(game.GetCurrentPlayer()) );
+                this.btnFight.Visible = selected.CanBattle();
             }
         }
 

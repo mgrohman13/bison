@@ -26,7 +26,7 @@ namespace Daemons
 
         public const double MoraleTurnPower = .39;
         public const double MoraleDaemonGain = 1.3;
-        public const double MoraleMaxDmgLoss = .039;
+        public const double MoraleMaxDmgLoss = .0169;
         public const double MoraleCritical = .00117;
 
         public const double NoReserveBattles = .21;
