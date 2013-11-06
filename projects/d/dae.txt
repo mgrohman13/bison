@@ -4,6 +4,8 @@ review all during-combat actions
 heal individual units
 undo
 
+show att/def ratio
+sometimes needs a little more spacing
 show str,morale,souls
 	indy that will move
 	allow way to select enemy and show str,morale of selected

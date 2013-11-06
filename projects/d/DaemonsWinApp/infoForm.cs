@@ -54,6 +54,7 @@ namespace DaemonsWinApp
             this.chbAll.Checked = showAll;
             this.chbStr.Checked = ( use == UseType.Build );
             this.chbStr_CheckedChanged(null, null);
+            this.vScrollBar1.Value = 0;
             this.use = use;
 
             Invalidate();
@@ -163,7 +164,7 @@ namespace DaemonsWinApp
             if (use == UseType.Move)
                 height -= pnlMove.Height;
             if (height < needHeight && height > 0)
-                return ( ( use == UseType.View ? 39 : 169 ) + needHeight - height ) / 13;
+                return ( ( use == UseType.View ? 39 : 182 ) + needHeight - height ) / 13;
             else
                 return -1;
         }
@@ -183,7 +184,7 @@ namespace DaemonsWinApp
                 this.AdjustSize(showAll ? all : part);
 
                 int x = offset, y = this.vScrollBar1.Value;
-                if (y < 0 || !this.vScrollBar1.Visible)
+                if (!this.vScrollBar1.Visible)
                     y = 0;
                 y = offset - y * 13;
 
@@ -318,7 +319,7 @@ namespace DaemonsWinApp
                 return null;
 
             int y = this.vScrollBar1.Value;
-            if (y < 0 || !this.vScrollBar1.Visible)
+            if (!this.vScrollBar1.Visible)
                 y = 0;
             y = ( e.Y - offset + y * 13 ) / ySize;
             int x = ( e.X - offset ) / size + XMax * y;
@@ -391,28 +392,25 @@ namespace DaemonsWinApp
 
         private void ScrollForm(int amount, bool mouseWheel)
         {
-            if (this.vScrollBar1.Visible)
+            int max = GetMax();
+            if (mouseWheel)
+                max -= 10;
+            if (max < 0)
+                max = 0;
+
+            int newValue = this.vScrollBar1.Value + amount;
+            if (newValue < 0)
+                newValue = 0;
+            else if (newValue > max)
+                newValue = max;
+
+            if (this.vScrollBar1.Maximum != max || this.vScrollBar1.Value != newValue)
             {
-                int max = GetMax();
-                if (mouseWheel)
-                    max -= 10;
-                if (max < 0)
-                    max = 0;
+                this.vScrollBar1.Value = 0;
+                this.vScrollBar1.Maximum = max;
+                this.vScrollBar1.Value = newValue;
 
-                int newValue = this.vScrollBar1.Value + amount;
-                if (newValue < 0)
-                    newValue = 0;
-                else if (newValue > max)
-                    newValue = max;
-
-                if (this.vScrollBar1.Maximum != max || this.vScrollBar1.Value != newValue)
-                {
-                    this.vScrollBar1.Value = 0;
-                    this.vScrollBar1.Maximum = max;
-                    this.vScrollBar1.Value = newValue;
-
-                    Invalidate();
-                }
+                Invalidate();
             }
         }
 
