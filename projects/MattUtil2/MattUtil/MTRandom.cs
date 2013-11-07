@@ -966,6 +966,9 @@ namespace MattUtil
         /// </summary>
         public int OEInt(double average)
         {
+            if (average == (float)average)
+                return OEInt((float)average);
+
             return DoOEInt(average, OE(), false);
         }
 
@@ -1051,36 +1054,6 @@ namespace MattUtil
         {
             return GetOEMax() * average;
         }
-
-        //Old quasi-Geometric-Exponential hybrid code:
-        //public int OEInt(double average)
-        //{
-        //    //ensure with almost certain probability that our result will be able to fit within the range of int
-        //    const int max = int.MaxValue / 210;
-        //    if (average > max || average < -max)
-        //        throw new ArgumentOutOfRangeException("average", average, "average must be between -" + max + " and " + max + ", inclusive");
-        //    //we need a certain probability of returning an immediate 0 to account for the rounding bias
-        //    //that would normally cause 0's to appear only half as often as one would expect
-        //    //x~4.75 is approximately the value at which the probability of Round(OE(x))=0 is 1/8
-        //    bool zero = average <= 4.75;
-        //    if (!zero)
-        //        zero = Bool(4.75 / average);
-        //    return Round(OE(zero, average));
-        //}
-        //private double OE(bool zero, double average)
-        //{
-        //    //randomly modify the starting termination bit sequence
-        //    ulong add = NextBits(3);
-        //    //zero of true causes at least 1/8th of all results to be 0, regardless of the average
-        //    ulong count = add + ( zero ? 0u : 1u );
-        //    //look for a changing termination bit sequence, in order to eliminate any pseudorandom bias
-        //    while (NextBits(3) != count % 8)
-        //        ++count;
-        //    //multiply the result with a random double and account for all variables to maintain the average
-        //    return DoubleHalf() * ( ( count - add ) / ( zero ? 3.5 : 4.0 ) ) * average;
-        //
-        //    //TODO: citywar OE values
-        //}
 
         /// <summary>
         /// Returns a normally distributed integer with a mean of 'average' and standard deviation of average*devPct,
@@ -1228,7 +1201,10 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(double average, double devPct)
         {
-            CheckGaussianInt(average, average * devPct, ( average == (float)average && devPct == (float)devPct ));
+            if (average == (float)average && devPct == (float)devPct)
+                return GaussianInt((float)average, (float)devPct);
+
+            CheckGaussianInt(average, average * devPct, false);
             return Round(Gaussian(average, devPct));
         }
 
@@ -1262,7 +1238,10 @@ namespace MattUtil
         /// </summary>
         public int GaussianInt(double stdDev)
         {
-            CheckGaussianInt(0, stdDev, ( stdDev == (float)stdDev ));
+            if (stdDev == (float)stdDev)
+                return GaussianInt((float)stdDev);
+
+            CheckGaussianInt(0, stdDev, false);
             return Round(Gaussian(stdDev));
         }
 
