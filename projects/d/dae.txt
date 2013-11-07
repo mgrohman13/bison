@@ -1,4 +1,4 @@
-starting unit morale,CHARGES battles
+starting unit morale, battles
 review all during-combat actions
 	prevent (except move)
 heal individual units
