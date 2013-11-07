@@ -195,7 +195,7 @@ namespace Daemons
             foreach (Player player in GetLosers().Reverse())
                 AddResult(results, player, -39.0 / this.lost[player], ref points, ref min);
             foreach (var player in GetWinners().Reverse())
-                AddResult(results, player.Key, 130.0 / player.Value, ref points, ref min);
+                AddResult(results, player.Key, Consts.WinPoints / player.Value, ref points, ref min);
 
             foreach (var pair in results.ToList())
                 results[pair.Key] = pair.Value - min;
@@ -438,7 +438,11 @@ namespace Daemons
         }
         public double IndyProd()
         {
-            return this.production.Count * ( 5.2 * this.turn + 39 );
+            double prod = ( ( this.turn * 5.2 + 39 ) * this.production.Count );
+            if (this.players.All(player => player != null))
+                prod *= Math.Sqrt(this.players.Aggregate<Player, double>(0, (sum, player) => sum + player.GetStrength())
+                        / ( this.independent.GetStrength() + 65 ) * .26);
+            return prod;
         }
         private bool MoveIndy(Tile from, Tile to, UnitType? special)
         {

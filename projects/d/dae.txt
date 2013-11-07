@@ -1,9 +1,10 @@
-morale loss for want to retreat but cant
+starting unit morale,CHARGES battles
 review all during-combat actions
 	prevent (except move)
 heal individual units
 undo
 
+combat log ctrl a
 show att/def ratio
 sometimes needs a little more spacing
 show str,morale,souls
@@ -20,12 +21,12 @@ review Consts usage
 arbitrary numbers
 overloads
 
-Black 0
-Green 2
-Blue 4
-Red 7
-Pink 9
 Yellow 17
+Pink 9
+Red 7
+Blue 4
+Green 2
+Black 0
 
 Blue 17
 Green 14
@@ -33,3 +34,10 @@ Yellow 10
 Black 7
 Pink 4
 Red 0
+
+Red 14
+Black 11
+Blue 7
+Yellow 4
+Pink 1
+Green 0

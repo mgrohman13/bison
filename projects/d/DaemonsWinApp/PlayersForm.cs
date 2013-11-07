@@ -20,7 +20,7 @@ namespace DaemonsWinApp
             {
                 Player p = pair.Key;
                 this.lbxPlayer.Items.Add(p);
-                this.lbxSoul.Items.Add("WON +" + ( 169.0 / pair.Value ).ToString("0.0"));
+                this.lbxSoul.Items.Add("WON +" + ( Consts.WinPoints / pair.Value ).ToString("0.0"));
                 this.lbxStr.Items.Add(0);
                 this.lbxProd.Items.Add(0);
             }

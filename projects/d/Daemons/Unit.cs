@@ -198,9 +198,7 @@ namespace Daemons
             if (this.Morale < target)
             {
                 double start = Consts.GetMoraleTurns(Morale, target);
-                retVal = start + this.battles;
-                if (this.movement + this.reserve < this.MoveMax)
-                    retVal += ( this.MoveMax - this.movement - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
+                retVal = start + this.battles + ( this.MoveMax - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
                 start = Math.Min(start, 1);
                 if (retVal < start)
                     retVal = start;
@@ -411,9 +409,9 @@ namespace Daemons
 
         internal Tile Retreat(Tile prev)
         {
-
             if (this.movement > 0)
             {
+                this.battles -= .13 * ( this.movement - 1 );
                 this.reserve += this.movement - 1;
                 this.movement = 0;
             }
@@ -423,6 +421,7 @@ namespace Daemons
             }
             else
             {
+                LoseMorale(.065);
                 return prev;
             }
             LoseMorale(.39);
@@ -452,7 +451,7 @@ namespace Daemons
                 throw new Exception();
 
             this.reserve--;
-            this.battles += .39 / this.MoveMax;
+            this.battles += .65 / this.MoveMax;
             LoseMorale(1.0 / this.MoveMax);
         }
         private void LoseMorale(double mult)
@@ -626,12 +625,10 @@ select:
         }
         internal void ResetMove()
         {
-            this.movement += this.reserve;
-            while (this.movement > this.MoveMax)
+            while (this.movement > 0)
                 HealInternal();
-            if (this.movement < this.MoveMax)
-                this.battles += ( this.MoveMax - this.movement ) * Consts.NoReserveBattles / this.MoveMax;
 
+            this.battles += ( this.MoveMax - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
             this.movement = this.MoveMax;
             this.reserve = this.MoveMax;
 
