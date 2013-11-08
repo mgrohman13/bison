@@ -1,3 +1,4 @@
+check morale uses to ensure epsilon is fine
 review all during-combat actions
 	prevent (except move)
 heal individual units
