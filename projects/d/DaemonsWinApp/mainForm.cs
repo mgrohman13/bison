@@ -224,10 +224,10 @@ namespace DaemonsWinApp
 
             IGrouping<Player, Unit> player = units.GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First();
 
-            this.lblMorale.Text = Tile.GetMorale(player).ToString("0%");
+            this.lblMorale.Text = GetMorale(player).ToString("0%");
             IEnumerable<Unit> attackers = selected.GetUnits().Where((u) => u.Owner != player.Key);
             if (attackers.Any())
-                this.lblMorale.Text = Tile.GetMorale(attackers).ToString("0% : ") + this.lblMorale.Text;
+                this.lblMorale.Text = GetMorale(attackers).ToString("0% : ") + this.lblMorale.Text;
 
             IEnumerable<int> active = new int[0];
             if (units.All((u) => u.Owner == player.Key))
@@ -242,6 +242,13 @@ namespace DaemonsWinApp
                     infos[num].ForeColor = ( active.Contains(a) ? Color.Black : Color.Gray );
                     pics[num++].Image = types[a].GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
                 }
+        }
+        private static double GetMorale(IEnumerable<Unit> units)
+        {
+            double morale = Tile.GetMorale(units);
+            if (morale > Consts.MoraleMax)
+                morale = 1;
+            return morale;
         }
 
         void RefreshButtons()

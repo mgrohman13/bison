@@ -208,7 +208,7 @@ namespace Daemons
                 this.score += value;
 
             if (value > 0)
-                this.souls += Game.Random.GaussianCappedInt(value, .078);
+                this.souls += Game.Random.GaussianCappedInt(value, Consts.SoulRand);
             else
                 this.souls += Game.Random.Round(value);
 

@@ -136,7 +136,7 @@ namespace Daemons
             else if (Game.Random.Bool(.78))
                 foreach (var g in GetPlayerUnits())
                     if (Game.Random.Bool(.78))
-                        Retreat(g.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .52) )));
+                        Retreat(g.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )));
         }
         private double GetMorale(IGrouping<Player, Unit> g, double totalStr)
         {

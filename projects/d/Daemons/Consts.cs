@@ -21,6 +21,10 @@ namespace Daemons
         public const int IndyHits = 35;
         public const int IndyDamage = 10;
 
+        public const double ProdRand = .117;
+        public const double IndyRand = .39;
+        public const double SoulRand = .078;
+
         public const double DmgPos = 1.17;
         public const double DmgNeg = .78;
         public const double DmgIndy = 1.03;
@@ -28,10 +32,10 @@ namespace Daemons
 
         public const double MoraleTurnPower = .39;
         public const double MoraleDaemonGain = 1.3;
-        public const double MoraleMaxDmgLoss = .0169;
+        public const double MoraleMax = 1 - .0091;
         public const double MoraleCritical = .00117;
 
-        public const double NoReserveBattles = .21;
+        public const double NoReserveBattles = .26;
 
         public static bool MoveLeft(Unit unit)
         {

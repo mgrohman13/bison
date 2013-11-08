@@ -46,13 +46,12 @@ namespace Daemons
             CreateNeighborReferences();
 
             //production centers
-            const double rand = .078;
             const int min = 1;
             this.production = new List<ProductionCenter>();
             int[] num = new[] { 
-                Random.GaussianCappedInt(newPlayers.Length / 2.0, rand, min),
-                Random.GaussianCappedInt(newPlayers.Length, rand, min),
-                Random.GaussianCappedInt(newPlayers.Length * 3 / 2.0, rand, min)
+                Random.GaussianCappedInt(newPlayers.Length / 2.0, Consts.ProdRand , min),
+                Random.GaussianCappedInt(newPlayers.Length, Consts.ProdRand, min),
+                Random.GaussianCappedInt(newPlayers.Length * 3 / 2.0, Consts.ProdRand, min)
             };
 
             for (int a = 0 ; a < num.Length ; a++)
@@ -130,7 +129,7 @@ namespace Daemons
         }
         private void AddIndyStart(Dictionary<UnitType, int> startUnits, UnitType unitType, double amt)
         {
-            int intAmt = Random.GaussianCappedInt(amt, .52);
+            int intAmt = Random.GaussianCappedInt(amt, Consts.IndyRand);
             if (intAmt > 0)
                 startUnits.Add(unitType, intAmt);
         }
@@ -416,7 +415,7 @@ namespace Daemons
             //convert arrows to souls to create new units
             this.independent.IndyArrows(false);
 
-            this.independent.AddSouls(Random.GaussianOEInt(IndyProd(), .26, .52 * this.turn / ( 7.8 + this.turn )));
+            this.independent.AddSouls(Random.GaussianOEInt(IndyProd(), Consts.IndyRand, .52 * this.turn / ( 7.8 + this.turn )));
             int amt = this.independent.RoundSouls();
             if (amt > 0)
             {
@@ -524,7 +523,7 @@ namespace Daemons
 
         private static int RandSouls(double addSouls)
         {
-            return Random.GaussianCappedInt(addSouls, .091, Random.Round(.78 * addSouls));
+            return Random.GaussianCappedInt(addSouls, Consts.SoulRand, Random.Round(.78 * addSouls));
         }
 
         internal void RemovePlayer(Player player, bool win)
@@ -574,7 +573,7 @@ namespace Daemons
                         throw new Exception();
                     }
 
-                    int remove = Random.GaussianCappedInt(this.production.Count(prod => prod.Type == type) / ( 1.0 + this.players.Length ), .13);
+                    int remove = Random.GaussianCappedInt(this.production.Count(prod => prod.Type == type) / ( 1.0 + this.players.Length ), Consts.ProdRand);
                     for (int b = 0 ; b < remove ; b++)
                     {
                         ProductionCenter pc = GetRandom(this.production);

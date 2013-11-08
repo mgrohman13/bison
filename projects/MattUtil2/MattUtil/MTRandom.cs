@@ -1036,6 +1036,9 @@ namespace MattUtil
         }
         public static int GetOEIntMax(double average)
         {
+            if (average == (float)average)
+                return GetOEIntMax((float)average);
+
             return DoOEInt(average, GetOEMax(), false);
         }
         public static float GetOEFlaotMax()
@@ -1430,15 +1433,10 @@ namespace MattUtil
         }
         public static int Round(double number, double rand)
         {
-            //the parameter already being an integer is a common situation in real world use
-            int result = (int)number;
-            if (result == number)
-                return result;
-
             if (number > int.MaxValue || number < int.MinValue)
                 throw new ArgumentOutOfRangeException("number", number, "number must be within the range of possible int values");
 
-            result = (int)Math.Floor(number);
+            int result = (int)Math.Floor(number);
             number -= result;
 
             CheckBool(number);

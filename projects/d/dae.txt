@@ -1,9 +1,9 @@
-starting unit morale, battles
 review all during-combat actions
 	prevent (except move)
 heal individual units
 undo
 
+select next after build
 combat log ctrl a
 show att/def ratio
 sometimes needs a little more spacing
@@ -41,3 +41,11 @@ Blue 7
 Yellow 4
 Pink 1
 Green 0
+
+Yellow 22
+Pink 13
+Red 10
+Black 4
+Blue 2
+Green 0
+

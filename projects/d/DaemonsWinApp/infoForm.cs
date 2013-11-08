@@ -198,31 +198,30 @@ namespace DaemonsWinApp
                             e.Graphics.DrawRectangle(p, x, y, 90, 90);
 
                     Color color;
-                    double pct;
-                    if (u.Morale < Consts.MoraleCritical)
+                    double pct = u.Morale;
+                    if (pct < Consts.MoraleCritical)
                     {
-                        double turns = Consts.GetMoraleTurns(u.Morale, Consts.MoraleCritical);
+                        double turns = Consts.GetMoraleTurns(pct, Consts.MoraleCritical);
                         double max = Consts.GetMoraleTurns(double.Epsilon, Consts.MoraleCritical);
-                        int brightness = (int)( 127 + 128 * Math.Pow(turns / max, .6) );
+                        int brightness = (int)( 86.5 + 169 * Math.Sqrt(turns / max) );
                         color = Color.FromArgb(brightness, brightness, brightness);
                         pct = 1;
                     }
                     else
                     {
-                        double redPct = Math.Min(2 - u.Morale * 2, 1);
-                        double greenPct = Math.Min(u.Morale * 2, 1);
+                        if (pct > Consts.MoraleMax)
+                            pct = 1;
+                        double redPct = Math.Min(2 - pct * 2, 1);
+                        double greenPct = Math.Min(pct * 2, 1);
                         color = Color.FromArgb((int)( 255 * redPct ), (int)( 255 * greenPct ), 0);
-                        pct = u.Morale;
                     }
                     using (Brush b = new SolidBrush(color))
                     using (Pen p = new Pen(Color.Black, 1))
                     {
                         e.Graphics.DrawRectangle(p, x - 1, y + size - 9, 92, 7);
                         int div = (int)( 91 * pct + .5f );
-                        if (pct < .995 && div == 91)
+                        if (pct < Consts.MoraleMax && div == 91)
                             --div;
-                        else if (pct > .995 && div != 91)
-                            div = 91;
                         e.Graphics.FillRectangle(Brushes.Black, x, y + size - 8, 91 - div, 6);
                         e.Graphics.FillRectangle(b, x + 91 - div, y + size - 8, div, 6);
                     }
@@ -354,18 +353,20 @@ namespace DaemonsWinApp
         public void infoForm_MouseMove(object sender, MouseEventArgs e)
         {
             Unit u = GetUnit(e);
-            string morale = null, damage = null;
-            if (u != null)
-            {
-                morale = u.Morale.ToString("0%");
-                damage = u.Damage.ToString("0.0");
-            }
-            if (u != null && ( morale != "100%" || damage != u.DamageMax.ToString("0.0") ))
+            if (u != null && ( u.Morale < Consts.MoraleMax || u.Hits < u.HitsMax ))
             {
                 if (u != showing)
                 {
+                    string morale = "100%";
+                    if (u.Morale < Consts.MoraleMax)
+                    {
+                        morale = u.Morale.ToString("0%");
+                        if (morale == "100%")
+                            morale = "99%";
+                    }
                     string recover = u.RecoverFull.ToString("0.0"),
                             r2 = u.RecoverDmg.ToString("0.0"), r3 = u.RecoverCritical.ToString("0.0");
+                    string damage = u.Damage.ToString("0.0");
                     toolTip1.Show(string.Format("Morale: {0}{3}Recover: {1}{4}{5}{3}Max Damage: {2}",
                             morale, recover, damage, Environment.NewLine,
                             r2 == "0.0" ? "" : " / " + r2, r3 == "0.0" ? "" : " / " + r3),
