@@ -424,7 +424,7 @@ namespace Daemons
             LoseMorale(.78);
 
             Tile cur;
-            if (prev != null && Game.Random.Bool())
+            if (prev != null && ( this.tile.IsSideNeighbor(prev) || this.Type == UnitType.Daemon ) && Game.Random.Bool())
             {
                 cur = prev;
             }

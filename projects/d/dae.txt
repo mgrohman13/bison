@@ -1,3 +1,4 @@
+souls double randed
 check morale uses to ensure epsilon is fine
 review all during-combat actions
 	prevent (except move)
@@ -8,6 +9,7 @@ select next after build
 combat log ctrl a
 show att/def ratio
 sometimes needs a little more spacing
+	infoform only??
 show str,morale,souls
 	indy that will move
 	allow way to select enemy and show str,morale of selected
@@ -50,3 +52,9 @@ Black 4
 Blue 2
 Green 0
 
+Black 16
+Blue 12
+Green 7
+Pink 6
+Yellow 3
+Red 0
