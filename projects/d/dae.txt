@@ -5,6 +5,8 @@ review all during-combat actions
 heal individual units
 undo
 
+rounding consistency between recovery and broken
+	maybe also dmage?
 select next after build
 combat log ctrl a
 show att/def ratio
