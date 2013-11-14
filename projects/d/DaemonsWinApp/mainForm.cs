@@ -361,6 +361,7 @@ namespace DaemonsWinApp
             if (output.Count > 0 && output[0] != null)
             {
                 output[0].Build();
+                SelectNext(sender, e);
                 RefreshAll();
             }
         }
@@ -406,11 +407,14 @@ namespace DaemonsWinApp
                 foreach (Unit u in selected.GetUnits())
                     u.Heal();
 
-                if (!game.GetCurrentPlayer().GetActive(new[] { selected.GetUnits(game.GetCurrentPlayer()) }).Any())
-                    btnNext_Click(sender, e);
-
+                SelectNext(sender, e);
                 RefreshAll();
             }
+        }
+        private void SelectNext(object sender, EventArgs e)
+        {
+            if (!game.GetCurrentPlayer().GetActive(new[] { selected.GetUnits(game.GetCurrentPlayer()) }).Any())
+                btnNext_Click(sender, e);
         }
 
         void btnFight_Click(object sender, EventArgs e)

@@ -105,14 +105,16 @@ namespace Daemons
         {
             get
             {
-                double mult = Math.Sqrt(HealthPct * Morale);
-                if (mult < double.Epsilon)
-                    mult = double.Epsilon;
+                //Sqrt separately to properly handle double.Epsilon
+                double mult = Math.Sqrt(HealthPct) * Math.Sqrt(Morale);
+                if (Morale == double.Epsilon)
+                {
+                }
                 double retVal = this.DamageMax * mult;
                 if (retVal < 1)
                 {
                     double turns = Consts.GetMoraleTurns(mult, 1.0 / this.DamageMax);
-                    double max = Consts.GetMoraleTurns(double.Epsilon, 1.0 / this.DamageMax);
+                    double max = Consts.GetMoraleTurns(Math.Sqrt(1.0 / this.HitsMax) * Math.Sqrt(double.Epsilon), 1.0 / this.DamageMax);
                     retVal = ( max - turns + .13 ) / ( .13 + max );
                 }
                 return retVal;
@@ -141,6 +143,9 @@ namespace Daemons
             }
             private set
             {
+                if (value <= double.Epsilon)
+                    value = double.Epsilon;
+
                 if (value < this.Morale)
                     if (this.owner.Independent && this.Type != UnitType.Daemon)
                     {
@@ -481,9 +486,15 @@ namespace Daemons
             while (arrows > 0 && move.Any() && target.GetUnits().Any(unit => unit.owner != target.Game.GetCurrentPlayer()))
             {
                 double totalHits = MultHits(target.GetUnits().Where(unit => unit.owner != target.Game.GetCurrentPlayer())
-                        .Aggregate<Unit, double>(0, (sum, unit) => ( sum + ( unit.hits / GetDamageMult(UnitType.Archer, unit.Type) ) )));
+                        .Sum(unit => ( unit.hits / GetDamageMult(UnitType.Archer, unit.Type) )));
+
+                double totalDamage = 0;
                 int count = 0;
-                double totalDamage = move.Aggregate<Unit, double>(0, (sum, unit) => ( sum + ( ++count <= arrows ? unit.Damage : 0 ) ));
+                foreach (Unit unit in move)
+                    if (++count <= arrows)
+                        totalDamage += unit.Damage;
+                    else
+                        break;
 
                 Unit fire;
                 if (totalDamage > totalHits)
@@ -648,7 +659,12 @@ select:
             GainMorale(turns);
 
             if (this.battles < 0)
-                this.battles /= 1.3;
+            {
+                double add = this.battles / ( this.battles - 1.3 );
+                if (this.Type == UnitType.Daemon)
+                    add *= Consts.MoraleDaemonGain;
+                this.battles += add;
+            }
         }
         private void GainMorale(double turns)
         {

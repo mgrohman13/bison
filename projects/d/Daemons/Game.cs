@@ -285,9 +285,11 @@ namespace Daemons
         }
         public double GetWinPct(Player curPlayer)
         {
-            double count = 0;
-            double total = this.players.Union(new[] { this.independent }).OrderByDescending(player => player.GetStrength())
-                    .Aggregate<Player, double>(0, (sum, player) => ( sum + ( player == curPlayer ? 0 : player.GetStrength() / ++count ) ));
+            IEnumerable<double> strengths = this.players.Where(player => player != curPlayer)
+                    .Union(new[] { this.independent }).Select(player => player.GetStrength()).OrderByDescending(s => s);
+            double total = 0, count = 0;
+            foreach (double strength in strengths)
+                total += ( strength / ++count );
             double str = curPlayer.GetStrength();
             if (str > total * 1.3)
                 return Math.Pow(( str - total * 1.3 ) / ( str - total ), 2.6);
@@ -439,8 +441,10 @@ namespace Daemons
         {
             double prod = ( ( this.turn * 5.2 + 39 ) * this.production.Count );
             if (this.players.All(player => player != null))
-                prod *= Math.Sqrt(this.players.Aggregate<Player, double>(0, (sum, player) => sum + player.GetStrength())
-                        / ( this.independent.GetStrength() + 65 ) * .26);
+            {
+                double playerStr = this.players.Sum(player => player.GetStrength());
+                prod *= Math.Sqrt(playerStr / ( this.independent.GetStrength() + 65 ) * .26);
+            }
             return prod;
         }
         private bool MoveIndy(Tile from, Tile to, UnitType? special)
@@ -509,7 +513,7 @@ namespace Daemons
                 {
                     double souls, arrows;
                     GetMoveDiff(out souls, out arrows);
-                    pair.Key.AddSouls(RandSouls(souls));
+                    pair.Key.AddSouls(souls);
                     pair.Key.MakeArrow(arrows);
                 }
         }

@@ -50,5 +50,11 @@ namespace DaemonsWinApp
             if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
                 this.Close();
         }
+
+        private void textBox1_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.A)
+                this.textBox1.SelectAll();
+        }
     }
 }

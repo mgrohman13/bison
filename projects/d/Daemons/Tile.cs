@@ -191,8 +191,11 @@ namespace Daemons
 
         private double GetDamage(IEnumerable<Unit> units)
         {
-            double count = -1;
-            return units.OrderByDescending(unit => GetDamage(unit)).Aggregate<Unit, double>(0, (sum, unit) => ( sum + ( GetDamage(unit) / ( ++count / 2.6 + 1.0 ) ) ));
+            IEnumerable<double> strengths = units.Select(unit => GetDamage(unit)).OrderByDescending(d => d);
+            double total = 0, count = -1;
+            foreach (double damage in strengths)
+                total += ( damage / ( ++count / 2.6 + 1.0 ) );
+            return total;
         }
         public static int UnitDamageComparison(Unit unit1, Unit unit2)
         {
@@ -254,7 +257,7 @@ namespace Daemons
 
         public static double GetArmyStr(IEnumerable<Unit> units)
         {
-            return units.Aggregate<Unit, double>(0, (sum, unit) => sum + unit.Strength);
+            return units.Sum(unit => unit.Strength);
         }
 
         internal int GetRetreatValue(Player player)

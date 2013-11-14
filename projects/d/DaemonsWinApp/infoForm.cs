@@ -369,7 +369,7 @@ namespace DaemonsWinApp
                     string damage = u.Damage.ToString("0.0");
                     toolTip1.Show(string.Format("Morale: {0}{3}Recover: {1}{4}{5}{3}Max Damage: {2}",
                             morale, recover, damage, Environment.NewLine,
-                            r2 == "0.0" ? "" : " / " + r2, r3 == "0.0" ? "" : " / " + r3),
+                            r2 == "0.0" ? "" : " / " + r2, u.Morale < Consts.MoraleCritical ? " / " + r3 : ""),
                             this, e.X, e.Y, 13000);
                 }
                 showing = u;
