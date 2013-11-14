@@ -24,19 +24,7 @@ namespace Daemons
         [NonSerialized]
         private Dictionary<UnitType, Bitmap> _pics;
 
-        public Player(Color color, string name)
-            : this(null, color, name, false, 0)
-        {
-        }
-        public Player(Game game, Color color, string name, int startSouls)
-            : this(game, color, name, false, startSouls)
-        {
-        }
-        public Player(Game game, Color color, string name, bool independent)
-            : this(game, color, name, independent, 0)
-        {
-        }
-        public Player(Game game, Color color, string name, bool independent, int startSouls)
+        public Player(Color color, string name, Game game = null, bool independent = false, int startSouls = 0)
         {
             this.Game = game;
 
@@ -76,32 +64,29 @@ namespace Daemons
         private static void TunePics(Dictionary<UnitType, Bitmap> pics, Color color)
         {
             foreach (KeyValuePair<UnitType, Bitmap> pair in pics.ToList())
-            {
-                Bitmap basePic = pair.Value;
-                //white is transparent
-                basePic.MakeTransparent(Color.White);
+                using (Bitmap basePic = pair.Value)
+                {
+                    //white is transparent
+                    basePic.MakeTransparent(Color.White);
 
-                //map gray to the player color
-                ColorMap colorMap = new ColorMap();
-                colorMap.OldColor = Color.FromArgb(100, 100, 100);
-                colorMap.NewColor = color;
-                ImageAttributes colorRemapping = new ImageAttributes();
-                colorRemapping.SetRemapTable(new[] { colorMap });
+                    //map gray to the player color
+                    ColorMap colorMap = new ColorMap();
+                    colorMap.OldColor = Color.FromArgb(100, 100, 100);
+                    colorMap.NewColor = color;
+                    using (ImageAttributes colorRemapping = new ImageAttributes())
+                    {
+                        colorRemapping.SetRemapTable(new[] { colorMap });
 
-                //draw it to a new image to remap the colors
-                Bitmap newPic = new Bitmap(basePic.Width, basePic.Height);
-                Graphics graphics = Graphics.FromImage(newPic);
-                graphics.DrawImage(basePic, new Rectangle(new Point(0, 0), newPic.Size), 0, 0,
-                        basePic.Width, basePic.Height, GraphicsUnit.Pixel, colorRemapping);
+                        //draw it to a new image to remap the colors
+                        Bitmap newPic = new Bitmap(basePic.Width, basePic.Height);
+                        using (Graphics graphics = Graphics.FromImage(newPic))
+                            graphics.DrawImage(basePic, new Rectangle(new Point(0, 0), newPic.Size), 0, 0,
+                                    basePic.Width, basePic.Height, GraphicsUnit.Pixel, colorRemapping);
 
-                //store the new image
-                pics[pair.Key] = newPic;
-
-                //clean up
-                graphics.Dispose();
-                basePic.Dispose();
-                colorRemapping.Dispose();
-            }
+                        //store the new image
+                        pics[pair.Key] = newPic;
+                    }
+                }
         }
 
         public Color InverseColor
@@ -197,12 +182,7 @@ namespace Daemons
             return new int[0];
         }
 
-        internal void AddSouls(double value)
-        {
-            AddSouls(value, false);
-        }
-
-        internal void AddSouls(double value, bool addScore)
+        internal void AddSouls(double value, bool addScore = false)
         {
             if (addScore)
                 this.score += value;

@@ -28,11 +28,7 @@ namespace Daemons
             this._units = new List<Unit>();
         }
 
-        public IEnumerable<ProductionCenter> GetProduction()
-        {
-            return this.Game.GetProduction(this.X, this.Y);
-        }
-        public IEnumerable<ProductionCenter> GetProduction(bool unused)
+        public IEnumerable<ProductionCenter> GetProduction(bool unused = false)
         {
             return this.Game.GetProduction(this.X, this.Y, unused);
         }
@@ -100,8 +96,7 @@ namespace Daemons
                 foreach (Unit unit in GetUnits())
                     unit.OnBattle();
 
-                foreach (Unit unit in GetFightList(GetPlayerUnits(unit => unit.Type == UnitType.Daemon), .5))
-                    unit.Attack();
+                Fight(GetPlayerUnits(unit => unit.Type == UnitType.Daemon), .5);
 
                 while (CanBattle())
                 {
@@ -110,8 +105,7 @@ namespace Daemons
                             string.Format("{3} {0}/{1} ({2}) : ", GetArmyStr(group).ToString("0"), group.Count(),
                             GetMorale(group, totalStr).ToString("0%"), group.Key) )).TrimEnd(':', ' '));
 
-                    foreach (Unit unit in GetFightList(GetPlayerUnits(), 1))
-                        unit.Attack();
+                    Fight(GetPlayerUnits(), 1);
 
                     if (CanBattle())
                         CheckMorale();
@@ -168,22 +162,23 @@ namespace Daemons
                 t = unit.Retreat(t);
         }
 
-        private IEnumerable<Unit> GetFightList(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)
+        private void Fight(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)
         {
-            List<Unit> fightList = new List<Unit>();
+            IEnumerable<Unit> fightList = Enumerable.Empty<Unit>();
             foreach (var group in players)
-                AddFightUnits(fightList, group, GetDamage(group) * dmgMult);
-            return Game.Random.Iterate(fightList);
+                fightList = fightList.Concat(GetFightUnits(group, GetDamage(group) * dmgMult));
+            foreach (Unit unit in Game.Random.Iterate(fightList))
+                unit.Attack();
         }
-        private void AddFightUnits(List<Unit> fightList, IEnumerable<Unit> available, double damTot)
+        private IEnumerable<Unit> GetFightUnits(IEnumerable<Unit> available, double damTot)
         {
             foreach (Unit unit in Game.Random.Iterate<Unit>(available))
             {
                 double damage = GetDamage(unit);
                 if (damTot <= 0 || ( damTot < damage && !Game.Random.Bool(damTot / damage) ))
-                    return;
+                    yield break;
+                yield return unit;
                 damTot -= damage;
-                fightList.Add(unit);
             }
             if (damTot > 0)
                 throw new Exception();
@@ -205,13 +200,12 @@ namespace Daemons
         public double GetDamage(Unit attacker)
         {
             double avg = 0, tot = 0;
-            foreach (Unit defender in GetUnits())
-                if (attacker.Owner != defender.Owner)
-                {
-                    double mult = Unit.GetDamageMult(attacker.Type, defender.Type);
-                    tot += mult;
-                    avg += mult * mult;
-                }
+            foreach (Unit defender in GetUnits().Where(unit => attacker.Owner != unit.Owner))
+            {
+                double mult = Unit.GetDamageMult(attacker.Type, defender.Type);
+                tot += mult;
+                avg += mult * mult;
+            }
             if (tot > 0)
                 avg /= tot;
             else
@@ -307,9 +301,8 @@ namespace Daemons
 
         public static void CreateNeighborReferences(Tile[,] map, int width, int height)
         {
-            for (int x = 0 ; x < width ; x++)
-                for (int y = 0 ; y < height ; y++)
-                    map[x, y].SetupNeighbors(map, width, height);
+            foreach (Tile tile in map)
+                tile.SetupNeighbors(map, width, height);
         }
 
         private void SetupNeighbors(Tile[,] map, int width, int height)

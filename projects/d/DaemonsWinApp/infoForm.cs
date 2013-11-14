@@ -164,7 +164,7 @@ namespace DaemonsWinApp
             if (use == UseType.Move)
                 height -= pnlMove.Height;
             if (height < needHeight && height > 0)
-                return ( ( use == UseType.View ? 39 : 182 ) + needHeight - height ) / 13;
+                return ( ( use == UseType.View ? 75 : 225 ) + needHeight - height ) / 13;
             else
                 return -1;
         }
@@ -364,13 +364,10 @@ namespace DaemonsWinApp
                         if (morale == "100%")
                             morale = "99%";
                     }
-                    string recover = u.RecoverFull.ToString("0.0"),
-                            r2 = u.RecoverDmg.ToString("0.0"), r3 = u.RecoverCritical.ToString("0.0");
-                    string damage = u.Damage.ToString("0.0");
-                    toolTip1.Show(string.Format("Morale: {0}{3}Recover: {1}{4}{5}{3}Max Damage: {2}",
-                            morale, recover, damage, Environment.NewLine,
-                            r2 == "0.0" ? "" : " / " + r2, u.Morale < Consts.MoraleCritical ? " / " + r3 : ""),
-                            this, e.X, e.Y, 13000);
+                    toolTip1.Show(string.Format("Morale: {3}{5}Recover: {0}{1}{2}{5}Max Damage: {4}",
+                            u.RecoverFull.ToString("0.0"), u.RecoverDmg > 0 ? " / " + u.RecoverDmg.ToString("0.0") : "",
+                            u.Morale < Consts.MoraleCritical ? " / " + u.RecoverCritical.ToString("0.0") : "",
+                            morale, u.Damage.ToString("0.0"), Environment.NewLine), this, e.X, e.Y, 13000);
                 }
                 showing = u;
             }

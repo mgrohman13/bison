@@ -75,6 +75,9 @@ namespace Daemons
 
         internal void Use(Player p)
         {
+            if (used)
+                throw new Exception();
+
             this.used = true;
             this.owner = p;
 

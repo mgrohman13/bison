@@ -116,6 +116,9 @@ namespace Daemons
                     double turns = Consts.GetMoraleTurns(mult, 1.0 / this.DamageMax);
                     double max = Consts.GetMoraleTurns(Math.Sqrt(1.0 / this.HitsMax) * Math.Sqrt(double.Epsilon), 1.0 / this.DamageMax);
                     retVal = ( max - turns + .13 ) / ( .13 + max );
+                    if (retVal < .4)
+                    {
+                    }
                 }
                 return retVal;
             }
@@ -438,7 +441,7 @@ namespace Daemons
                 Dictionary<Tile, int> chances = new Dictionary<Tile, int>();
                 IEnumerable<Tile> options = this.tile.GetSideNeighbors();
                 if (this.Type == UnitType.Daemon)
-                    options = options.Union(this.tile.GetCornerNeighbors());
+                    options = options.Concat(this.tile.GetCornerNeighbors());
                 foreach (Tile t in options)
                     chances.Add(t, t.GetRetreatValue(this.owner));
                 cur = Game.Random.SelectValue(chances);
@@ -507,24 +510,20 @@ namespace Daemons
                 {
                     bool healed = ( arrows < move.Count() );
 select:
-                    Unit first = move.FirstOrDefault(unit => !healed || unit.Healed);
-                    if (first == null)
+                    IEnumerable<Unit> choices = move;
+                    if (healed)
+                        choices = choices.Where(unit => unit.Healed);
+                    if (choices.Any())
                     {
-                        healed = false;
-                        goto select;
+                        fire = choices.First();
+                        Unit defender = target.GetBestTarget(fire);
+                        double h = defender.hits / GetDamageMult(UnitType.Archer, defender.Type);
+                        fire = choices.LastOrDefault(unit => unit.Damage > MultHits(h)) ?? fire;
                     }
                     else
                     {
-                        Unit defender = target.GetBestTarget(first);
-                        double h = defender.hits / GetDamageMult(UnitType.Archer, defender.Type);
-                        fire = null;
-                        foreach (Unit u in move.Reverse())
-                            if (!healed || u.Healed)
-                            {
-                                fire = u;
-                                if (fire.Damage > MultHits(h))
-                                    break;
-                            }
+                        healed = false;
+                        goto select;
                     }
                 }
 
@@ -539,7 +538,7 @@ select:
             return totalHits * Game.Random.Gaussian(2 - .13, .026);
         }
 
-        public void Fire(Tile target)
+        private void Fire(Tile target)
         {
             if (this.owner.Game.GetCurrentPlayer() != this.owner || this.Type != UnitType.Archer || this.movement <= 0 || !this.tile.Unoccupied(this.owner))
                 return;
@@ -586,20 +585,18 @@ select:
                     Build(ProductionType.Infantry);
             }
         }
-
-        public void Build(ProductionType type)
+        private void Build(ProductionType type)
         {
             if (this.owner.Game.GetCurrentPlayer() != this.owner || this.movement == 0 || !this.tile.Unoccupied(this.owner))
                 return;
 
-            foreach (ProductionCenter center in this.tile.GetProduction())
-                if (!center.Used && center.Type == type)
-                {
-                    center.Use(this.owner);
-                    this.movement--;
-                    LoseReserve();
-                    break;
-                }
+            ProductionCenter center = this.tile.GetProduction().Where(prod => !prod.Used && prod.Type == type).FirstOrDefault();
+            if (center != null)
+            {
+                center.Use(this.owner);
+                this.movement--;
+                LoseReserve();
+            }
         }
 
         internal void HealInternal()

@@ -7,7 +7,7 @@ namespace Daemons
 {
     public class Consts
     {
-        public const double WinPoints = 130;
+        public const double WinPoints = 78;
 
         public const int DaemonSouls = 666;
 

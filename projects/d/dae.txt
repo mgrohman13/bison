@@ -3,11 +3,7 @@ review all during-combat actions
 heal individual units
 undo
 
-rounding consistency between recovery and broken
-	maybe also dmage?
 show att/def ratio
-sometimes needs a little more spacing
-	infoform only??
 show str,morale,souls
 	indy that will move
 	allow way to select enemy and show str,morale of selected
@@ -20,39 +16,3 @@ show battles
 Game.players to list
 review Consts usage
 arbitrary numbers
-overloads
-
-Yellow 17
-Pink 9
-Red 7
-Blue 4
-Green 2
-Black 0
-
-Blue 17
-Green 14
-Yellow 10
-Black 7
-Pink 4
-Red 0
-
-Red 14
-Black 11
-Blue 7
-Yellow 4
-Pink 1
-Green 0
-
-Yellow 22
-Pink 13
-Red 10
-Black 4
-Blue 2
-Green 0
-
-Black 16
-Blue 12
-Green 7
-Pink 6
-Yellow 3
-Red 0
