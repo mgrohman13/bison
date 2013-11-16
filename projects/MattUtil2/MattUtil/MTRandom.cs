@@ -140,10 +140,10 @@ namespace MattUtil
         private const uint SEED_FACTOR_2 = 0x0019660D;  //00000000000110010110011000001101
         private const uint SEED_FACTOR_3 = 0x5D588B65;  //01011101010110001000101101100101
 
-        private const uint LCGN_SEED = 0x075BCD15;       //00000111010110111100110100010101
+        private const uint LCGN_SEED = 0x075BCD15;      //00000111010110111100110100010101
         private const uint LFSR_SEED = 0x159A55E5;      //00010101100110100101010111100101
-        private const uint MWC1_SEED = 0x1F123BB5;     //00011111000100100011101110110101
-        private const uint MWC2_SEED = 0x369BF75D;     //00110110100110111111011101011101
+        private const uint MWC1_SEED = 0x1F123BB5;      //00011111000100100011101110110101
+        private const uint MWC2_SEED = 0x369BF75D;      //00110110100110111111011101011101
 
         private const uint SHIFT_FACTOR = 0x816B8DF8;   //10000001011010111000110111111000
 
@@ -767,7 +767,7 @@ namespace MattUtil
             else
                 retVal = 0;
             if (numBits == 32)
-                return ( retVal | ( (ulong)NextUInt() ) );
+                return ( retVal | NextUInt() );
 
             lock (this)
             {

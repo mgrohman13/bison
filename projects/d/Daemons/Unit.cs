@@ -107,18 +107,12 @@ namespace Daemons
             {
                 //Sqrt separately to properly handle double.Epsilon
                 double mult = Math.Sqrt(HealthPct) * Math.Sqrt(Morale);
-                if (Morale == double.Epsilon)
-                {
-                }
                 double retVal = this.DamageMax * mult;
                 if (retVal < 1)
                 {
                     double turns = Consts.GetMoraleTurns(mult, 1.0 / this.DamageMax);
                     double max = Consts.GetMoraleTurns(Math.Sqrt(1.0 / this.HitsMax) * Math.Sqrt(double.Epsilon), 1.0 / this.DamageMax);
                     retVal = ( max - turns + .13 ) / ( .13 + max );
-                    if (retVal < .4)
-                    {
-                    }
                 }
                 return retVal;
             }
