@@ -34,6 +34,7 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	portal info attacks label
 	pathfinding
 	mousewheel zoom
 		but pieces panel scroll?
