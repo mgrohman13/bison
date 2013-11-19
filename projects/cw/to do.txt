@@ -1,3 +1,6 @@
+in between games
+	use Base... instead of Max...		
+
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
@@ -5,7 +8,7 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
-	undo move when change terrain cannot be undone and prevents redo
+	undo move when change terrain cannot be undone and prevents redo?
 	upkeep for player with no cap
 		usually means other players dont lose any upkeep
 		when not enough resources but no loseunit
@@ -31,11 +34,11 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	build city unit when injured cannot heal
+	pathfinding
 	mousewheel zoom
+		but pieces panel scroll?
 	always show selected attack in attackers lbx
 	select next attack algorithm
-	sort portal display unit order
 	damage calculator
 		multiple attacks
 	ability to look around main map during a battle, see info screen, etc?

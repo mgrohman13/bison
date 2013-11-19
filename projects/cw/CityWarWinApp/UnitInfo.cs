@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -61,9 +62,9 @@ namespace CityWarWinApp
                         this.lblRegen.Text = "Income";
                         this.txtRegen.Text = portal.Income.ToString();
 
-                        Dictionary<string, int> units = portal.GetUnitValues();
-                        foreach (string name in units.Keys)
-                            this.lbAttacks.Items.Add(name + "   " + units[name] + " / " + CityWar.Unit.CreateTempUnit(name).BaseCost);
+                        this.lbAttacks.Items.AddRange(portal.GetUnitValues().OrderBy(
+                                pair => CityWar.Unit.CreateTempUnit(pair.Key).BaseCost).Select(
+                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, CityWar.Unit.CreateTempUnit(pair.Key).BaseCost, pair.Key)).ToArray());
 
                         this.lblArmor.Visible = false;
                         this.txtArmor.Visible = false;

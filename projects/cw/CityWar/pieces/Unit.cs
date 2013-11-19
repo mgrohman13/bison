@@ -10,6 +10,8 @@ namespace CityWar
     public class Unit : Piece, IDeserializationCallback
     {
         #region fields and constructors
+        public const double RegenRecoverPower = .39;
+
         public readonly UnitType Type;
         public readonly int regen, maxHits;
         public readonly string Race;
@@ -181,7 +183,7 @@ namespace CityWar
             }
         }
 
-        internal double WorkRegen
+        public double WorkRegen
         {
             get
             {
@@ -343,7 +345,7 @@ namespace CityWar
                     Heal();
 
                 if (this.recoverRegenPct)
-                    SetRegenPct(Math.Pow(regenPct, .39));
+                    SetRegenPct(Math.Pow(regenPct, RegenRecoverPower));
                 this.recoverRegenPct = true;
 
                 movement = MaxMove;
@@ -464,7 +466,7 @@ namespace CityWar
 
         private void SetRegenPct(double value)
         {
-            _regenPct = value + Game.Random.GaussianCapped(1, Math.Abs(_regenPct - value) * .21, 1 - Math.Min(value, 1 - value)) - 1;
+            this._regenPct = Game.Random.GaussianCapped(value, Math.Abs(this._regenPct - value) / value * .21, Math.Max(0, 2 * value - 1));
         }
 
         private void CheckAttacks()

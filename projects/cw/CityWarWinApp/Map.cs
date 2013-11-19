@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -1097,58 +1098,66 @@ namespace CityWarWinApp
             //get currently selected units with move left
             Tile tile = Game.GetTile(selected.X, selected.Y);
             int curGroup = tile.CurrentGroup;
-            Unit[] availUnits = tile.FindAllUnits(delegate(Unit p)
-            {
-                return ( p.Group == curGroup && p.MaxMove != 0 && p.Movement == p.MaxMove && p.Abilty != Abilities.Aircraft );
-            });
+            Unit[] availUnits = tile.FindAllUnits(unit => unit.Group == curGroup && unit.MaxMove != 0
+                    && unit.Movement == unit.MaxMove && unit.Abilty != Abilities.Aircraft);
 
             //find the best unit to use
-            Unit unit = null;
-            int minWork = int.MaxValue;
-            foreach (Unit u in availUnits)
+            Unit capture = availUnits[0];
+            if (availUnits.Length > 1)
             {
-                const int injdWork = int.MaxValue / 3;
-                int work = u.Regen * u.MaxMove;
-                if (u.Hits < u.maxHits)
+                IEnumerable<Unit> bestUnits = availUnits.Where(unit => unit.Hits == unit.maxHits || unit.Regen == 0);
+                if (bestUnits.Any())
                 {
-                    if (injdWork < minWork)
-                        work += injdWork + (int)Math.Round(injdWork * ( 1 - u.Hits / (double)u.maxHits ));
-                    else
-                        continue;
+                    bestUnits = OrderByRegen(bestUnits);
                 }
-
-                if (work < minWork)
+                else
                 {
-                    unit = u;
-                    minWork = work;
+                    Func<Unit, double>[] funcs = {
+                        unit => unit.RandedCost * unit.Regen / (double)unit.maxHits,
+                        unit => unit.Regen / (double)unit.BaseRegen,
+                        unit =>
+                        {
+                            double turns = 0, hp = unit.Hits, regenPct = unit.Regen / (double)unit.BaseRegen;
+                            while (hp < unit.maxHits)
+                            {
+                                double regen = regenPct * unit.BaseRegen;
+                                hp += regen;
+                                turns += 1 - Math.Max(0, ( hp - unit.maxHits ) / regen);
+                                regenPct = Math.Pow(regenPct, Unit.RegenRecoverPower);
+                            }
+                            return turns;
+                        },
+                    };
+                    var rankings = funcs.Select(func => OrderByRegen(availUnits, func).ToList());
+                    bestUnits = OrderByRegen(availUnits, unit => rankings.Sum(list => -Math.Pow(.5, list.IndexOf(unit))));
                 }
+                capture = bestUnits.First();
             }
 
-            if (unit == null)
-                throw new Exception();
+            Game.CaptureCity(capture);
 
-            Game.CaptureCity(unit);
-
-            bool nomoves = true;
-            foreach (Unit pp in availUnits)
-                if (pp.Movement > 0)
-                {
-                    nomoves = false;
-                    break;
-                }
-            if (nomoves)
-            {
-                //if no one has movement left, go to the next unit
-                btnNext_Click(this, e);
-            }
-            else
+            //if no selected pieces have movement left, go to the next unit
+            if (tile.GetSelectedPieces().Any(unit => unit.Movement > 0))
             {
                 this.panelPieces.Invalidate();
                 this.Invalidate(invalidateRectangle, false);
             }
+            else
+            {
+                btnNext_Click(this, e);
+            }
 
             RefreshResources();
             RefreshButtons();
+        }
+        private IEnumerable<Unit> OrderByRegen(IEnumerable<Unit> units, Func<Unit, double> keySelector = null)
+        {
+            units = Game.Random.Iterate(units);
+            Func<Unit, double> secondary = ( unit => unit.WorkRegen );
+            if (keySelector == null)
+                return units.OrderBy(secondary);
+            else
+                return units.OrderBy(keySelector).ThenBy(secondary);
         }
 
         private void btnEndTurn_Click(object sender, EventArgs e)
