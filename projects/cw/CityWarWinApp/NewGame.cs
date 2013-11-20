@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using CityWar;
 
 namespace CityWarWinApp
 {
@@ -46,8 +47,8 @@ namespace CityWarWinApp
         {
             List<string> races = new List<string>();
             races.Add(Player.Random);
-            CityWar.UnitSchema us = CityWar.UnitTypes.GetSchema();
-            foreach (CityWar.UnitSchema.UnitRow row in us.Unit)
+            UnitSchema us = UnitTypes.GetSchema();
+            foreach (UnitSchema.UnitRow row in us.Unit)
             {
                 if (!races.Contains(row.Race))
                     races.Add(row.Race);
@@ -77,7 +78,7 @@ namespace CityWarWinApp
                         string race = player.Race;
                         if (race == Player.Random)
                         {
-                            int idx = CityWar.Game.Random.Next(cbxRace.Items.Count - 1);
+                            int idx = Game.Random.Next(cbxRace.Items.Count - 1);
                             races[idx] = true;
                             race = (string)cbxRace.Items[idx + 1];
                         }
@@ -100,7 +101,7 @@ namespace CityWarWinApp
                             }
                 } while (loop);
 
-                Map.Game = CityWar.Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
+                Map.Game = Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
             }
             catch (ArgumentOutOfRangeException aoore)
             {

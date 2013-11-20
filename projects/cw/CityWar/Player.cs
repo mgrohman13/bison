@@ -1175,7 +1175,7 @@ namespace CityWar
                     elemental += 30;
                     //rest: +10 (roi 32.50)
                     //find: +50
-                    //88.10% collection needed for average portal roi (52.67% for relic)
+                    //88.77% collection needed for average portal roi (52.67% for relic)
                 }
                 else if (p is City)
                 {
@@ -1196,7 +1196,7 @@ namespace CityWar
                 else if (( portal = p as Portal ) != null)
                 {
                     //avg cost 1000 (700-1502)
-                    //avg roi 17.56 (16.03-19.97)
+                    //avg roi 17.50 (15.97-19.89)
                     int amt = portal.income;
 
                     int type = 0, position = 0;

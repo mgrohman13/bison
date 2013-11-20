@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using CityWar;
 
 namespace CityWarWinApp
 {
@@ -82,8 +83,8 @@ namespace CityWarWinApp
 
         public static Image getBackGround()
         {
-            string[] pics = System.IO.Directory.GetFiles(CityWar.Game.Path + "backs\\", "*.jpg");
-            string file = pics[CityWar.Game.Random.Next(pics.Length)];
+            string[] pics = System.IO.Directory.GetFiles(Game.Path + "backs\\", "*.jpg");
+            string file = pics[Game.Random.Next(pics.Length)];
 
             try
             {

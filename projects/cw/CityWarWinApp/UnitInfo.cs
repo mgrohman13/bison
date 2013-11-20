@@ -6,12 +6,13 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using CityWar;
 
 namespace CityWarWinApp
 {
     partial class UnitInfo : Form
     {
-        public UnitInfo(CityWar.Piece piece, Point location, int currentMove)
+        public UnitInfo(Piece piece, Point location, int currentMove)
         {
             InitializeComponent();
 
@@ -23,17 +24,17 @@ namespace CityWarWinApp
 
             this.txtUnit.Text = piece.Name;
 
-            CityWar.Unit unit = piece as CityWar.Unit;
-            CityWar.City city = piece as CityWar.City;
-            CityWar.Portal portal = piece as CityWar.Portal;
-            CityWar.Relic relic = piece as CityWar.Relic;
-            CityWar.Wizard wizard = piece as CityWar.Wizard;
+            Unit unit = piece as Unit;
+            City city = piece as City;
+            Portal portal = piece as Portal;
+            Relic relic = piece as Relic;
+            Wizard wizard = piece as Wizard;
             if (unit != null)
             {
                 this.txtArmor.Text = GetModString(unit.Armor.ToString(), unit.BaseArmor.ToString());
                 this.txtCost.Text = unit.RandedCost.ToString("0");
                 this.txtHits.Text = string.Format("{0} / {1}", unit.Hits, unit.maxHits);
-                this.txtMove.Text = GetMoveString(currentMove, unit.MaxMove);
+                this.txtMove.Text = GetMoveString(currentMove, unit);
                 this.txtRegen.Text = GetModString(unit.Regen.ToString(), unit.BaseRegen.ToString());
                 if (!unit.RegenRecover)
                     this.txtRegen.Text += " -";
@@ -46,8 +47,8 @@ namespace CityWarWinApp
                 this.txtType.Text = "Passive";
                 if (wizard != null)
                 {
-                    this.txtCost.Text = CityWar.Player.WizardCost.ToString();
-                    this.txtMove.Text = GetMoveString(currentMove, wizard.MaxMove);
+                    this.txtCost.Text = Player.WizardCost.ToString();
+                    this.txtMove.Text = GetMoveString(currentMove, wizard);
                 }
                 else
                 {
@@ -62,9 +63,10 @@ namespace CityWarWinApp
                         this.lblRegen.Text = "Income";
                         this.txtRegen.Text = portal.Income.ToString();
 
+                        this.lblAttacks.Text = "Summons";
                         this.lbAttacks.Items.AddRange(portal.GetUnitValues().OrderBy(
-                                pair => CityWar.Unit.CreateTempUnit(pair.Key).BaseCost).Select(
-                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, CityWar.Unit.CreateTempUnit(pair.Key).BaseCost, pair.Key)).ToArray());
+                                pair => Unit.CreateTempUnit(pair.Key).BaseCost).Select(
+                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, Unit.CreateTempUnit(pair.Key).BaseCost, pair.Key)).ToArray());
 
                         this.lblArmor.Visible = false;
                         this.txtArmor.Visible = false;
@@ -73,7 +75,7 @@ namespace CityWarWinApp
                     }
                     else if (relic != null)
                     {
-                        this.txtCost.Text = CityWar.Player.RelicCost.ToString();
+                        this.txtCost.Text = Player.RelicCost.ToString();
                     }
                 }
             }
@@ -87,9 +89,12 @@ namespace CityWarWinApp
             return retVal;
         }
 
-        private static string GetMoveString(int currentMove, int maxMove)
+        private static string GetMoveString(int currentMove, Piece piece)
         {
-            return ( currentMove != -1 ) ? string.Format("{0} / {1}", currentMove, maxMove) : maxMove.ToString();
+            if (currentMove == -1)
+                currentMove = piece.Movement;
+            return ( currentMove != piece.MaxMove || piece.Owner == piece.Owner.Game.CurrentPlayer )
+                    ? string.Format("{0} / {1}", currentMove, piece.MaxMove) : piece.MaxMove.ToString();
         }
     }
 }

@@ -11,6 +11,7 @@ namespace CityWar
         public const double UnitCostPct = .21;
         public const double ValuePct = ( 1 - UnitCostPct );
         public const double StartAmt = .26;
+        public const double IncomeDiv = 65;
 
         internal readonly int PortalCost, income;
         internal readonly CostType PortalType;
@@ -29,7 +30,7 @@ namespace CityWar
             int mag, elm;
             Player.SplitPortalCost(owner.Race, type, out mag, out elm);
             this.PortalCost = mag + elm;
-            double income = mag / 65.0;
+            double income = mag / IncomeDiv;
             this.income = Game.Random.Round(income);
 
             SetStartValues();
