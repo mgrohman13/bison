@@ -1,5 +1,6 @@
 in between games
-	use Base... instead of Max...		
+	use Base... instead of Max...	
+	save undo stack	
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
@@ -8,6 +9,7 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	work balance for terrain move
 	undo move when change terrain cannot be undone and prevents redo?
 	upkeep for player with no cap
 		usually means other players dont lose any upkeep
@@ -34,6 +36,10 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	view units arracy on capts
+		maybe only freindly and observed?
+	show GC
+		maybe relative to selected/avail attacks
 	pathfinding
 	mousewheel zoom
 		but pieces panel scroll?

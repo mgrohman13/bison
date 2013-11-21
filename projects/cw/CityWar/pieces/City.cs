@@ -25,12 +25,8 @@ namespace CityWar
         private const float avgChance = .8f;
         private static List<string> InitUnits(Tile tile)
         {
-            var neighbors = Enumerable.Range(0, 6).Select(dir => tile.GetNeighbor(dir));
-            Func<Func<Terrain, bool>, int> CountNeighbors = Predicate => neighbors
-                    .Count(neighbor => neighbor != null && Predicate(neighbor.Terrain));
-
-            double baseWaterChance = Math.Pow(1.3 + CountNeighbors(terrain => terrain == Terrain.Water), tile.Terrain == Terrain.Water ? 1.69 : 1.3);
-            baseWaterChance = 1 - 1 / ( 1.0 + 13 * baseWaterChance / ( 5.2 + CountNeighbors(terrain => true) ) );
+            double baseWaterChance = Math.Pow(1.3 + CountNeighbors(tile, terrain => terrain == Terrain.Water), tile.Terrain == Terrain.Water ? 1.69 : 1.3);
+            baseWaterChance = 1 - 1 / ( 1.0 + 13 * baseWaterChance / ( 5.2 + CountNeighbors(tile, terrain => true) ) );
 
             IEnumerable<string> units = Enumerable.Empty<string>();
             foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(name))))
@@ -64,10 +60,15 @@ namespace CityWar
                 var addUnits = race.Where(unit => Game.Random.Bool(GetChance(unit))).ToList();
                 if (!addUnits.Any(unit => unit.costType == CostType.Production))
                     return InitUnits(tile);
-                units.Concat(addUnits.Select(unit => unit.Name));
+                units = units.Concat(addUnits.Select(unit => unit.Name));
             }
 
             return new List<string>(Game.Random.Iterate(units));
+        }
+        private static int CountNeighbors(Tile tile, Func<Terrain, bool> Predicate)
+        {
+            return Enumerable.Range(0, 6).Select(dir => tile.GetNeighbor(dir))
+                    .Count(neighbor => neighbor != null && Predicate(neighbor.Terrain));
         }
         private static void GetChances(int count1, int count2, double baseChance1, out double chance1, out double chance2)
         {
@@ -125,44 +126,28 @@ namespace CityWar
 
             if (costType == CostType.Production)
             {
-                bool ground = false, water = false;
-                for (int i = 0 ; i < 6 ; ++i)
-                {
-                    Tile neighbor = tile.GetNeighbor(i);
-                    if (neighbor != null)
-                        if (neighbor.Terrain == Terrain.Water)
-                            water = true;
-                        else
-                            ground = true;
-                }
-                bool can;
                 switch (unit.Type)
                 {
                 case UnitType.Air:
-                    //can only build air when on or next to ground
-                    can = ( ground || tile.Terrain != Terrain.Water );
-                    break;
                 case UnitType.Amphibious:
-                    //can only build amphibious when on or next to water
-                    can = ( water || tile.Terrain == Terrain.Water );
-                    break;
+                case UnitType.Immobile:
+                    //can always build air, amphibious, and immobile units
+                    return true;
                 case UnitType.Ground:
                     //can only build ground when next to ground
-                    can = ground;
-                    break;
-                case UnitType.Immobile:
-                    //can only build immobile when on ground or next to water
-                    can = ( water || tile.Terrain != Terrain.Water );
-                    break;
+                    if (CountNeighbors(this.Tile, terrain => terrain != Terrain.Water) > 0)
+                        return true;
+                    else
+                        break;
                 case UnitType.Water:
                     //can only build water when next to water
-                    can = water;
-                    break;
+                    if (CountNeighbors(this.Tile, terrain => terrain == Terrain.Water) > 0)
+                        return true;
+                    else
+                        break;
                 default:
                     throw new Exception();
                 }
-                if (can)
-                    return true;
             }
 
             if (raw)
