@@ -26,6 +26,8 @@ namespace CityWar
         {
             List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
+            {
+                bool any = false;
                 foreach (string u in race)
                 {
                     double chance;
@@ -41,11 +43,14 @@ namespace CityWar
                         continue;
                     }
                     if (Game.Random.Bool(chance))
+                    {
                         units.Add(u);
+                        any = true;
+                    }
                 }
-
-            if (units.Count == 0)
-                units = InitUnits();
+                if (!any)
+                    return InitUnits();
+            }
             return units;
         }
         #endregion //fields and constructors
@@ -57,7 +62,7 @@ namespace CityWar
                 return true;
 
             Unit unit = Unit.CreateTempUnit(name);
-            if (!raceCheck(unit))
+            if (!RaceCheck(unit))
                 return false;
             if (units.Contains(name))
                 return true;

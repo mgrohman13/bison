@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CityWar
 {
@@ -21,88 +22,70 @@ namespace CityWar
             owner.Add(this);
         }
 
+        private const float avgChance = .8f;
         private static List<string> InitUnits(Tile tile)
         {
-            double count = 3, watChance = 0;
-            for (int i = 0 ; i < 6 ; ++i)
+            var neighbors = Enumerable.Range(0, 6).Select(dir => tile.GetNeighbor(dir));
+            Func<Func<Terrain, bool>, int> CountNeighbors = Predicate => neighbors
+                    .Count(neighbor => neighbor != null && Predicate(neighbor.Terrain));
+
+            double baseWaterChance = Math.Pow(1.3 + CountNeighbors(terrain => terrain == Terrain.Water), tile.Terrain == Terrain.Water ? 1.69 : 1.3);
+            baseWaterChance = 1 - 1 / ( 1.0 + 13 * baseWaterChance / ( 5.2 + CountNeighbors(terrain => true) ) );
+
+            IEnumerable<string> units = Enumerable.Empty<string>();
+            foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(name))))
             {
-                Tile neighbor = tile.GetNeighbor(i);
-                if (neighbor != null)
+                Func<Func<UnitType, bool>, int> CountUnits = Predicate => race
+                        .Count(unit => unit.costType == CostType.Production && Predicate(unit.Type));
+
+                int waterCount = CountUnits(unitType => unitType == UnitType.Water || unitType == UnitType.Amphibious);
+                int otherCount = CountUnits(unitType => unitType != UnitType.Water && unitType != UnitType.Amphibious);
+                double waterChance, otherChance;
+                GetChances(waterCount, otherCount, baseWaterChance, out waterChance, out otherChance);
+
+                Func<Unit, double> GetChance = unit =>
                 {
-                    ++count;
-                    if (neighbor.Terrain == Terrain.Water)
-                        ++watChance;
-                }
+                    if (unit.costType != CostType.Production)
+                        return avgChance;
+                    switch (unit.Type)
+                    {
+                    case UnitType.Air:
+                    case UnitType.Ground:
+                    case UnitType.Immobile:
+                        return otherChance;
+                    case UnitType.Amphibious:
+                    case UnitType.Water:
+                        return waterChance;
+                    default:
+                        throw new Exception();
+                    }
+                };
+
+                var addUnits = race.Where(unit => Game.Random.Bool(GetChance(unit))).ToList();
+                if (!addUnits.Any(unit => unit.costType == CostType.Production))
+                    return InitUnits(tile);
+                units.Concat(addUnits.Select(unit => unit.Name));
             }
-            const float avgChance = .8f;
-            watChance = 1 - 1 / ( 1 + Math.Pow(watChance + 1.3, tile.Terrain == Terrain.Water ? 1.5 : 1.3) / count * 10 );
 
-            int watCount = 0, nonCount = 0;
-            List<string> units = new List<string>();
-            foreach (string[] race in Game.Races.Values)
-                foreach (string u in Game.Random.Iterate(race))
-                {
-                    Unit unit = Unit.CreateTempUnit(u);
-                    if (unit.costType == CostType.Production)
-                    {
-                        if (unit.Type == UnitType.Water)
-                            ++watCount;
-                        else
-                            ++nonCount;
-                    }
-                    else if (Game.Random.Bool(avgChance))
-                    {
-                        units.Add(u);
-                    }
-                }
-
-            double nonChance;
-            if (watCount > 0 && nonCount > 0)
+            return new List<string>(Game.Random.Iterate(units));
+        }
+        private static void GetChances(int count1, int count2, double baseChance1, out double chance1, out double chance2)
+        {
+            if (count1 > 0 && count2 > 0)
             {
-                nonChance = GetTargetPct(avgChance, watChance, watCount, nonCount);
-                if (nonChance < 0)
-                    nonChance = 0;
-                else if (nonChance > 1)
-                    nonChance = 1;
-                watChance = GetTargetPct(avgChance, nonChance, nonCount, watCount);
+                chance2 = GetTargetPct(avgChance, baseChance1, count1, count2);
+                if (chance2 < 0)
+                    chance2 = 0;
+                else if (chance2 > 1)
+                    chance2 = 1;
+                chance1 = GetTargetPct(avgChance, chance2, count2, count1);
             }
             else
             {
-                watChance = avgChance;
-                nonChance = avgChance;
+                chance1 = avgChance;
+                chance2 = avgChance;
             }
-
-            int raceCount = 0;
-            foreach (string[] race in Game.Races.Values)
-            {
-                bool anyProd = false;
-                foreach (string u in Game.Random.Iterate(race))
-                {
-                    Unit unit = Unit.CreateTempUnit(u);
-                    if (unit.costType == CostType.Production)
-                    {
-                        double pct;
-                        if (unit.Type == UnitType.Water)
-                            pct = watChance;
-                        else
-                            pct = nonChance;
-                        if (Game.Random.Bool(pct))
-                        {
-                            units.Add(u);
-                            anyProd = true;
-                        }
-                    }
-                }
-                if (anyProd)
-                    ++raceCount;
-            }
-
-            if (raceCount != Game.Races.Count)
-                units = InitUnits(tile);
-
-            return units;
         }
-
         private static double GetTargetPct(double avgPct, double havePct, int haveCount, int targetCount)
         {
             return ( ( avgPct * ( haveCount + targetCount ) ) - ( havePct * haveCount ) ) / targetCount;
@@ -130,7 +113,7 @@ namespace CityWar
                 return true;
 
             Unit unit = Unit.CreateTempUnit(name);
-            if (!raceCheck(unit))
+            if (!RaceCheck(unit))
                 return false;
             if (!units.Contains(name))
                 return false;
@@ -168,8 +151,8 @@ namespace CityWar
                     can = ground;
                     break;
                 case UnitType.Immobile:
-                    //can always build immobile
-                    can = true;
+                    //can only build immobile when on ground or next to water
+                    can = ( water || tile.Terrain != Terrain.Water );
                     break;
                 case UnitType.Water:
                     //can only build water when next to water
@@ -201,7 +184,7 @@ namespace CityWar
             {
                 bool can = true;
                 foreach (string available in units)
-                    if (raceCheck(unit) && Unit.CreateTempUnit(available).costType == CostType.Production)
+                    if (RaceCheck(unit) && Unit.CreateTempUnit(available).costType == CostType.Production)
                     {
                         if (can && available == name)
                             return true;

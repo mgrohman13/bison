@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using MattUtil;
 using System.IO;
@@ -25,28 +26,45 @@ namespace randTest
             //seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
             //Write(new MTRandom(true, seed));
 
-            int digits = 6;
-            int max = int.Parse("".PadLeft(digits, '9'));
-            string format = "".PadLeft(digits, '0');
-            double sum = 0;
-            const int baseCost = 402;
-            const float StartAmt = .26f, inc = 50.1f;
-            int upper = (int)Math.Ceiling(baseCost - inc + inc * StartAmt);
-            int[] val = new int[upper + 1];
-            for (int x = 0 ; x < max ; ++x)
+            //int digits = 6;
+            //int max = int.Parse("".PadLeft(digits, '9'));
+            //string format = "".PadLeft(digits, '0');
+            //double sum = 0;
+            //const int baseCost = 402;
+            //const float StartAmt = .26f, inc = 50.1f;
+            //int upper = (int)Math.Ceiling(baseCost - inc + inc * StartAmt);
+            //int[] val = new int[upper + 1];
+            //for (int x = 0 ; x < max ; ++x)
+            //{
+            //    int l = rand.Round(rand.Weighted(baseCost - inc, StartAmt) + inc * StartAmt);
+            //    sum += l;
+            //    val[l]++;
+            //}
+            //Console.BufferHeight = baseCost + 3;
+            //int runtot = 0;
+            //for (int x = (int)( inc * StartAmt ) ; x <= upper ; ++x)
+            //    Console.WriteLine("{0} - {1} - {3} - {2}", x.ToString("000"), val[x].ToString(format),
+            //            ( ( max - runtot ) / ( 1.0 + upper - x ) ).ToString(format.Substring(0, digits - 2)), ( runtot += val[x] ).ToString(format));
+            //Console.WriteLine();
+            //Console.WriteLine(sum / max);
+            //Console.WriteLine(StartAmt * baseCost);
+
+            while (true)
             {
-                int l = rand.Round(rand.Weighted(baseCost - inc, StartAmt) + inc * StartAmt);
-                sum += l;
-                val[l]++;
+                var addUnits = Enumerable.Range(13, 21).Where(i => rand.Bool(1 / ( 1.0 + i )));
+                bool any = addUnits.Any(i => i > 16.9);
+                Console.WriteLine(any);
+                bool any2 = false;
+                foreach (int i in addUnits)
+                {
+                    Console.WriteLine(i);
+                    if (i > 16.9)
+                        any2 = true;
+                }
+                Console.WriteLine(any2);
+                Console.ReadKey(true);
+                Console.WriteLine();
             }
-            Console.BufferHeight = baseCost + 3;
-            int runtot = 0;
-            for (int x = (int)( inc * StartAmt ) ; x <= upper ; ++x)
-                Console.WriteLine("{0} - {1} - {3} - {2}", x.ToString("000"), val[x].ToString(format),
-                        ( ( max - runtot ) / ( 1.0 + upper - x ) ).ToString(format.Substring(0, digits - 2)), ( runtot += val[x] ).ToString(format));
-            Console.WriteLine();
-            Console.WriteLine(sum / max);
-            Console.WriteLine(StartAmt * baseCost);
 
             rand.Dispose();
             Console.ReadKey();

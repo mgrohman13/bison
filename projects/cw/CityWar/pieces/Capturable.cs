@@ -113,9 +113,9 @@ namespace CityWar
                 return true;
             if (name.EndsWith(" Portal"))
                 return true;
-            return raceCheck(Unit.CreateTempUnit(name));
+            return RaceCheck(Unit.CreateTempUnit(name));
         }
-        protected bool raceCheck(Unit temp)
+        protected bool RaceCheck(Unit temp)
         {
             return temp.Race == owner.Race;
         }
