@@ -189,6 +189,9 @@ namespace CityWar
             //tell the caller which tile was relevant to the undo, if any
             if (piece == null)
                 return null;
+
+            piece.Owner.CheckNegativeResources();
+
             Tile retVal = piece.Tile;
             retVal.CurrentGroup = piece.Group;
             return retVal;
@@ -677,8 +680,6 @@ namespace CityWar
                     int stack = UndoCommands.Count;
                     HealPieces(units);
                     RemoveUndos(stack);
-
-                    piece.Owner.CheckNegativeResources();
                 }
             }
             return piece;
@@ -701,13 +702,11 @@ namespace CityWar
 
             unit.UndoCaptureCity();
 
-            if (unit.Owner.Population < 0)
+            if (unit.Owner.Population < 0 || unit.Owner.Work < 0)
             {
                 int stack = UndoCommands.Count;
                 CaptureCity(unit);
                 RemoveUndos(stack);
-
-                unit.Owner.CheckNegativeResources();
             }
             return unit;
         }
@@ -751,8 +750,6 @@ namespace CityWar
                 int stack = UndoCommands.Count;
                 DisbandUnits(units);
                 RemoveUndos(stack);
-
-                player.CheckNegativeResources();
             }
             return piece;
         }

@@ -723,9 +723,11 @@ namespace CityWar
                     u.movement -= minMove;
 
                 //either move everyone or no one
-                bool move = Game.Random.Bool(minMove / (double)needed);
+                double chance = minMove / (double)needed;
+                bool move = Game.Random.Bool(chance);
                 foreach (Unit u in units)
                 {
+                    u.BalanceForMove(chance, move);
                     if (move)
                         u.ActualMove(t);
                     //cant undo a random move
@@ -745,7 +747,6 @@ namespace CityWar
                 return true;
             }
         }
-
         protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
             canUndo = true;
@@ -765,7 +766,9 @@ namespace CityWar
             bool move;
             if (useMove < needed)
             {
-                move = ( Game.Random.Bool(useMove / (double)needed) );
+                double chance = useMove / (double)needed;
+                move = Game.Random.Bool(chance);
+                BalanceForMove(chance, move);
                 //cant undo a random move
                 canUndo = false;
                 movement -= useMove;
@@ -780,6 +783,11 @@ namespace CityWar
                 canUndo &= ActualMove(t);
 
             return move;
+        }
+        private void BalanceForMove(double chance, bool move)
+        {
+            double mult = WorkRegen / Player.WorkMult;
+            Owner.BalanceForUnit(chance * mult, move ? mult : 0);
         }
         private bool ActualMove(Tile t)
         {
