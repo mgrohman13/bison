@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 
 namespace CityWar
@@ -110,11 +111,7 @@ namespace CityWar
 
         public bool HasWizard()
         {
-            foreach (Piece p in pieces)
-                if (p is Wizard)
-                    return true;
-
-            return false;
+            return pieces.OfType<Wizard>().Any();
         }
 
         public bool HasCity()
@@ -165,10 +162,7 @@ namespace CityWar
         }
         public Unit[] GetAllUnits()
         {
-            return Tile.FindAllUnits(pieces, delegate(Unit unit)
-            {
-                return true;
-            });
+            return Tile.FindAllUnits(pieces, unit => true);
         }
         public Piece[] FindAllPieces(Predicate<Piece> match)
         {
@@ -421,7 +415,7 @@ namespace CityWar
             if (cityTime == 0)
             {
                 //get the city
-                player.AddUpkeep(Game.Random.GaussianCappedInt(390, 0.065, 260));
+                player.AddUpkeep(390, .052);
                 new City(player, this);
 
                 cityTime = -1;
@@ -444,7 +438,7 @@ namespace CityWar
         }
         private int GetCaptureCityPop()
         {
-            return Game.Random.GaussianCappedInt(Math.Sqrt(cityTime * 210), 0.078);
+            return Game.Random.GaussianCappedInt(Math.Sqrt(cityTime * 210), .065);
         }
         private static double GetCaptureCityWork(Unit u)
         {
@@ -472,10 +466,7 @@ namespace CityWar
         internal void MakeWizPts()
         {
             //the amount is one less than the distance to the nearest wizard or wizardpoints
-            this.wizardPoints = FindDistance(delegate(Tile tile)
-                {
-                    return ( tile.HasWizard() || tile.wizardPoints > 0 );
-                }) - 1;
+            this.wizardPoints = FindDistance(tile => tile.HasWizard() || tile.wizardPoints > 0) - 1;
             //should not have tried to place too close to existing wizard points
             if (this.wizardPoints < 1)
                 throw new Exception();
@@ -818,11 +809,8 @@ namespace CityWar
             Dictionary<Tile, Tile> CanGetCarrierCopy = new Dictionary<Tile, Tile>(CanGetCarrier);
 
             //find the distance to the nearest tile where the aircraft can land
-            return ( move < FindDistance(delegate(Tile tile)
-                {
-                    //check if a friendly carrier can move into the tile this turn
-                    return ( CanGetCarrierCopy.ContainsKey(tile) );
-                }, move) );
+            //check if a friendly carrier can move into the tile this turn
+            return ( move < FindDistance(tile => CanGetCarrierCopy.ContainsKey(tile), move) );
         }
         private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Piece piece, Tile tile, int move)
         {

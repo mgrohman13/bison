@@ -466,7 +466,11 @@ namespace CityWar
 
         private void SetRegenPct(double value)
         {
-            this._regenPct = Game.Random.GaussianCapped(value, Math.Abs(this._regenPct - value) / value * .21, Math.Max(0, 2 * value - 1));
+            this._regenPct = Game.Random.GaussianCapped(value, Math.Abs(this._regenPct - value) / value * .169, Math.Max(0, 2 * value - 1));
+            if (this._regenPct <= double.Epsilon)
+                this._regenPct = double.Epsilon;
+            else if (this._regenPct > 1)
+                this._regenPct = 1;
         }
 
         private void CheckAttacks()
@@ -718,18 +722,18 @@ namespace CityWar
 
             if (minMove < needed)
             {
-                //just subtract the value that was used to roll for success
-                foreach (Unit u in units)
-                    u.movement -= minMove;
-
                 //either move everyone or no one
                 double chance = minMove / (double)needed;
                 bool move = Game.Random.Bool(chance);
                 foreach (Unit u in units)
                 {
-                    u.BalanceForMove(chance, move);
+                    //subtract the value that was used to roll for success
+                    u.movement -= minMove;
                     if (move)
                         u.ActualMove(t);
+
+                    u.BalanceForMove(minMove, move, chance);
+
                     //cant undo a random move
                     undoPieces.Add(u, false);
                 }
@@ -766,17 +770,20 @@ namespace CityWar
             bool move;
             if (useMove < needed)
             {
+                movement -= useMove;
+
                 double chance = useMove / (double)needed;
                 move = Game.Random.Bool(chance);
-                BalanceForMove(chance, move);
+
+                BalanceForMove(useMove, move, chance);
+
                 //cant undo a random move
                 canUndo = false;
-                movement -= useMove;
             }
             else
             {
-                move = true;
                 movement -= needed;
+                move = true;
             }
 
             if (move)
@@ -784,10 +791,12 @@ namespace CityWar
 
             return move;
         }
-        private void BalanceForMove(double chance, bool move)
+        private void BalanceForMove(int usedMove, bool moved, double chance)
         {
-            double mult = WorkRegen / Player.WorkMult;
-            Owner.BalanceForUnit(chance * mult, move ? mult : 0);
+            if (moved)
+                owner.AddUpkeep(.91 * Player.GetUpkeep(this) * ( 1 - chance ) * usedMove / (double)MaxMove);
+            else
+                owner.AddWork(.65 * WorkRegen * usedMove);
         }
         private bool ActualMove(Tile t)
         {

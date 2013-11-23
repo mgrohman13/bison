@@ -84,7 +84,7 @@ namespace CityWarWinApp
         public static Image getBackGround()
         {
             string[] pics = System.IO.Directory.GetFiles(Game.Path + "backs\\", "*.jpg");
-            string file = pics[Game.Random.Next(pics.Length)];
+            string file = Game.Random.SelectValue(pics);
 
             try
             {

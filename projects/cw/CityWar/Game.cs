@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -261,10 +262,7 @@ namespace CityWar
                 HashSet<Unit> defenders = new HashSet<Unit>();
 
                 //'Immobile' units defend first, by themselves
-                defenders.UnionWith(target.FindAllUnits(delegate(Unit defender)
-                {
-                    return ( defender.Type == UnitType.Immobile );
-                }));
+                defenders.UnionWith(target.FindAllUnits(defender => defender.Type == UnitType.Immobile));
                 if (defenders.Count > 0)
                 {
                     //attack with either just the selected units, or all within range, but do not add any additional defenders
@@ -323,10 +321,7 @@ namespace CityWar
         }
         private IEnumerable<Unit> GetAttackers(Tile target)
         {
-            return FindNeighborUnits(target, delegate(Unit attacker)
-            {
-                return CanStartBattle(attacker);
-            });
+            return FindNeighborUnits(target, attacker => CanStartBattle(attacker));
         }
         private bool CanStartBattle(Unit attacker)
         {
@@ -335,10 +330,8 @@ namespace CityWar
         private void AddDefenders(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit attacker, int length, bool addAttackers)
         {
             //find all adjacent defenders that can either retalliate against or be targeted by this attacker
-            foreach (Unit defender in FindNeighborUnits(attacker.Tile, delegate(Unit defender)
-                    {
-                        return ( defender.Owner == enemy && ( CanTarget(defender, attacker, length) || CanTarget(attacker, defender) ) && !defenders.Contains(defender) );
-                    }))
+            foreach (Unit defender in FindNeighborUnits(attacker.Tile, ( defender =>
+                    defender.Owner == enemy && ( CanTarget(defender, attacker, length) || CanTarget(attacker, defender) ) && !defenders.Contains(defender) )))
             {
                 //add the found defender to the battle
                 defenders.Add(defender);
@@ -481,13 +474,10 @@ namespace CityWar
             }
             else
             {
-                Piece[] pieces = from.FindAllPieces(delegate(Piece p)
-                {
-                    return p.Group == from.CurrentGroup && p.Movement > 0;
-                });
+                Piece[] pieces = from.FindAllPieces(piece => piece.Group == from.CurrentGroup && piece.Movement > 0);
                 bool any = false;
                 //call the helper once for each piece as they will be moved individually
-                foreach (Piece p in Game.Random.Iterate(pieces))
+                foreach (Piece p in Random.Iterate(pieces))
                     if (MovePiecesHelper(from, x, y, p, gamble))
                         any = true;
 
@@ -911,7 +901,7 @@ namespace CityWar
 
         public static int NewGroup()
         {
-            return (int)Game.Random.NextUInt();
+            return Random.RangeInt(int.MinValue, int.MaxValue);
         }
 
         public int Width
@@ -962,36 +952,18 @@ namespace CityWar
         #region internal methods
         internal void CreateWizardPts()
         {
-            Tile t;
-
-            //keep going until a valid tile is found
-            while (true)
-            {
-                t = RandomTile();
-                if (( t.WizardPoints > 0 || t.HasWizard() ))
-                    continue;
-
-                //check neighbors
-                bool can = true;
-                for (int a = -1 ; ++a < 6 ; )
-                {
-                    Tile neighbor = t.GetNeighbor(a);
-                    if (neighbor != null && ( neighbor.WizardPoints > 0 || neighbor.HasWizard() ))
-                    {
-                        can = false;
-                        break;
-                    }
-                }
-                if (can)
-                    break;
-            }
-
-            t.MakeWizPts();
+            Tile tile = RandomTile(neighbor => neighbor == null || ( neighbor.WizardPoints == 0 && !neighbor.HasWizard() ));
+            tile.MakeWizPts();
         }
 
-        internal Tile RandomTile()
+        internal Tile RandomTile(Func<Tile, bool> ValidNeighbor = null)
         {
-            return map[Random.Next(Width), Random.Next(Height)];
+            while (true)
+            {
+                Tile tile = map[Random.Next(Width), Random.Next(Height)];
+                if (ValidNeighbor == null || Enumerable.Range(0, 6).Select(dir => tile.GetNeighbor(dir)).Concat(new[] { tile }).All(ValidNeighbor))
+                    return tile;
+            }
         }
 
         private void WinGame(Player win)
@@ -1040,7 +1012,7 @@ namespace CityWar
                     low = temp;
                 }
 
-                if (Game.Random.Bool())
+                if (Random.Bool())
                 {
                     dict[turn] = low;
                     AddPlayer(dict, turn + 1, p, true);
@@ -1185,16 +1157,16 @@ next:
                 int baseCost;
                 string addUnit;
                 do
-                    addUnit = Races[race][Random.Next(Races[race].Length)];
+                    addUnit = Random.SelectValue(Races[race]);
                 while (unitsHave[addUnit] / 3.0f > Random.Gaussian(baseCost = Unit.CreateTempUnit(addUnit).BaseCost));
-                unitsHave[addUnit] += Random.GaussianInt(65, 1);
+                unitsHave[addUnit] += Random.GaussianOEInt(65, 1, .21);
                 //dont place free units when someone has no capturables
                 if (!noCapts && unitsHave[addUnit] >= baseCost)
                     units.Add(addUnit);
             }
             if (units.Count > 0)
             {
-                Dictionary<string, string> forRaces = GetForRaces(units[Random.Next(units.Count)]);
+                Dictionary<string, string> forRaces = GetForRaces(Random.SelectValue(units));
                 foreach (string unit in forRaces.Values)
                     unitsHave[unit] -= Unit.CreateTempUnit(unit).BaseCost;
                 double avg = 0;
@@ -1242,7 +1214,7 @@ next:
                         target = targetCost / 2.0;
                     else if (target > targetCost * 3 / 2.0)
                         target = targetCost * 3 / 2.0;
-                    retVal.Add(race, Random.SelectValue<string>(Races[race], delegate(string raceUnit)
+                    retVal.Add(race, Random.SelectValue<string>(Races[race], raceUnit =>
                     {
                         const double offset1 = .03, offset2 = .003, offset3 = .3;
                         double baseCost = Unit.CreateTempUnit(raceUnit).BaseCost;
@@ -1258,7 +1230,7 @@ next:
                             mult /= 1 - 6.66 * pct;
                         chance *= mult;
 
-                        return Random.Round(chance * ( int.MaxValue * ( offset1 / ( offset2 + offset3 + 1 ) / Races[race].Length ) - 1 ));
+                        return Random.Round(chance * byte.MaxValue);
                     }));
                 }
 
@@ -1274,7 +1246,7 @@ next:
                 for (int i = -1 ; ++i < 4 ; )
                 {
                     Type type = null;
-                    //this is the order they are removed; relics first, wizards last
+                    //this is the order they are removed: relics first, wizards last
                     switch (i)
                     {
                     case 0:
@@ -1335,9 +1307,9 @@ next:
                     {
                         Unit u = Unit.CreateTempUnit(unit);
                         if (u.costType != CostType.Production)
-                            portalAvg += u.BaseCost * Portal.StartAmt * Portal.ValuePct;
+                            portalAvg += u.BaseCost;
                     }
-                portalAvg /= Races.Count * 5.0;
+                portalAvg *= Portal.StartAmt * Portal.ValuePct / (double)Races.Count / 5.0;
                 portalAvg += Portal.AvgPortalCost;
             }
 
@@ -1355,7 +1327,7 @@ next:
                 {
                     Player loser = null;
                     double min = double.MaxValue;
-                    foreach (Player p in Game.Random.Iterate(deadPlayers.Keys))
+                    foreach (Player p in Random.Iterate(deadPlayers.Keys))
                         if (deadPlayers[p] < min)
                         {
                             loser = p;
@@ -1464,7 +1436,7 @@ next:
         private void AddMoveOrderDiff(Player player, int diff)
         {
             //total difference between first and last moving player is worth 300 resources
-            double amount = 3 * diff / ( players.Length - 1.0 );
+            double amount = diff * 3.0 / ( players.Length - 1.0 );
             player.CollectWizardPts(amount);
             player.BalanceForUnit(50 * amount, 0);
         }

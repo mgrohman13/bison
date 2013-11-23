@@ -42,14 +42,11 @@ namespace CityWarWinApp
             //this line is the whole reason for this class
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 
-            this.GetPieces = delegate()
-            {
-                return new Piece[0];
-            };
+            this.GetPieces = () => new Piece[0];
         }
 
         public void Initialize(GetPiecesDelegate GetPieces, GetDrawFlagsDelegate GetDrawFlags,
-            GetTextDelegate GetText, GetTextBrushDelegate GetTextBrush)
+                GetTextDelegate GetText, GetTextBrushDelegate GetTextBrush)
         {
             this.GetPieces = GetPieces;
             this.GetDrawFlags = GetDrawFlags;

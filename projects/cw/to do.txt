@@ -1,3 +1,30 @@
+review/refactor
+	review Game.StartBattle
+	test if array is IList for SelectValue
+	test Random.Iterate(...).OrderBy...
+	review commit changes to ensure breakpoints to test all touched areas
+	review AddStartResources
+	//~1/28 will be outside [-needed,needed]
+	test Game.AddPlayer algorithm
+	MTRandom.SelectValue when the same object appears in 'choices' multiple times
+	graphically view create map algorithm
+	cities on map edge?
+	Enumerable.Range
+		existing for loops
+	refactor to use Linq!
+		Game.GetForRaces
+		Player.SubtractCommonUpkeep
+	review Tile.FindDistance
+	test gaussian overloads for correctness
+		boundary exceptions
+			caps
+			int range
+		mathematical
+			average
+			never violate caps
+			confidence intervals
+		pos/neg equivalence
+
 in between games
 	use Base... instead of Max...	
 	save undo stack	
@@ -9,6 +36,8 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	Unit.CheckAttacks mucks with used
+	GetForRaces target capping logic
 	apply same ground/water build logic to relic?
 		magic units?
 	when opponents can build wizards\

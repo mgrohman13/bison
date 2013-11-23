@@ -83,12 +83,7 @@ namespace CityWarWinApp
                 CreateRaceBoxes(10 + column * 300, row ? y : 50, raceName, ++arrayIndex);
 
                 List<string> raceUnits = new List<string>(race);
-                raceUnits.Sort(delegate(string name1, string name2)
-                {
-                    Unit unit1 = Unit.CreateTempUnit(name1);
-                    Unit unit2 = Unit.CreateTempUnit(name2);
-                    return unit1.BaseCost.CompareTo(unit2.BaseCost);
-                });
+                raceUnits.Sort((name1, name2) => Unit.CreateTempUnit(name1).BaseCost.CompareTo(Unit.CreateTempUnit(name2).BaseCost));
                 foreach (string unit in raceUnits)
                 {
                     units[arrayIndex].Items.Add(unit);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -68,10 +69,9 @@ namespace CityWarWinApp
             {
                 CityWar.Player[] realPlayers = new CityWar.Player[players.Count];
 
-                bool loop;
+                IEnumerable<IGrouping<string, CityWar.Player>> groups;
                 do
                 {
-                    bool[] races = new bool[cbxRace.Items.Count - 1];
                     int i = -1;
                     foreach (Player player in players)
                     {
@@ -79,27 +79,14 @@ namespace CityWarWinApp
                         if (race == Player.Random)
                         {
                             int idx = Game.Random.Next(cbxRace.Items.Count - 1);
-                            races[idx] = true;
                             race = (string)cbxRace.Items[idx + 1];
                         }
-                        else
-                        {
-                            for (int b = 0 ; b < races.Length ; ++b)
-                                races[b] = true;
-                        }
-
                         realPlayers[++i] = new CityWar.Player(race, player.Color, player.Name);
                     }
 
-                    loop = false;
-                    if (players.Count >= races.Length)
-                        foreach (bool has in races)
-                            if (!has)
-                            {
-                                loop = true;
-                                break;
-                            }
-                } while (loop);
+                    groups = realPlayers.GroupBy(player => player.Race);
+                } while (players.All(player => player.Race == Player.Random) && players.Count >= cbxRace.Items.Count - 1 &&
+                        ( groups.Count() != cbxRace.Items.Count - 1 || groups.Max(group => group.Count()) - groups.Min(group => group.Count()) > 1 ));
 
                 Map.Game = Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
             }

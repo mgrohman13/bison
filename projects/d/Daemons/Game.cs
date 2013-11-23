@@ -90,7 +90,7 @@ namespace Daemons
                 IEnumerable<Unit> units = tile.GetUnits(this.independent);
                 if (units.Any())
                 {
-                    Unit unit = GetRandom(units);
+                    Unit unit = Random.SelectValue(units);
                     UnitType unitType = Random.SelectValue(startUnits);
                     if (--startUnits[unitType] == 0)
                         startUnits.Remove(unitType);
@@ -420,7 +420,7 @@ namespace Daemons
                     UnitType type = UnitType.Indy;
                     IEnumerable<Unit> existing = tile.GetUnits(this.independent);
                     if (existing.Any())
-                        type = GetRandom(existing).Type;
+                        type = Random.SelectValue(existing).Type;
                     new Unit(type, tile, this.independent);
                 }
             }
@@ -554,7 +554,7 @@ namespace Daemons
                 {
                     int remove = Random.GaussianCappedInt(this.production.Count(prod => prod.Type == type) / ( 1.0 + this.players.Length ), Consts.ProdRand);
                     for (int b = 0 ; b < remove ; b++)
-                        this.production.Remove(GetRandom(this.production.Where(prod => prod.Type == type)));
+                        this.production.Remove(Random.SelectValue(this.production.Where(prod => prod.Type == type)));
                 }
                 //reset owned centers
                 foreach (ProductionCenter pc in this.production)
@@ -580,16 +580,6 @@ namespace Daemons
         public double GetProduction(Player p)
         {
             return this.production.Where(prod => prod.Owner == p).Sum(prod => prod.GetValue());
-        }
-
-        public static T GetRandom<T>(IEnumerable<T> enumerable)
-        {
-            IList<T> collection;
-            if (enumerable is IList<T>)
-                collection = (IList<T>)enumerable;
-            else
-                collection = enumerable.ToList();
-            return collection[Random.Next(collection.Count)];
         }
 
         public void AutoSave()

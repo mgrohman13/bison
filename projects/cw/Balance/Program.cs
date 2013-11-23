@@ -14,9 +14,6 @@ namespace balance
         {
             CityWar.Game.Random.ToString();
 
-
-            //Console.WriteLine(CityWar.Attack.GetAverageDamage(CityWar.Balance.AverageDamage, CityWar.Balance.AverageAP, CityWar.Balance.AverageArmor, int.MaxValue));
-
             const double damage = 6, armor = 9, divide = 1, DamMultPercent = .39;
             const double damMult = damage * DamMultPercent, damStatic = damage - damMult;
 
@@ -25,7 +22,6 @@ namespace balance
                 sum += Math.Max(0, CityWar.Game.Random.Round(damStatic - armor / (double)divide) + CityWar.Game.Random.OEInt(damMult));
             Console.WriteLine(sum / tot);
             Console.WriteLine(CityWar.Attack.GetAverageDamage(damage, divide, armor, int.MaxValue));
-
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

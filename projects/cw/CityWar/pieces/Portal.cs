@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CityWar
 {
@@ -34,7 +35,8 @@ namespace CityWar
             this.income = Game.Random.Round(income);
 
             SetStartValues();
-            PayUpkeep(( this.income - income ) * 21);
+            //pay for starting amount and income rounding
+            PayUpkeep(GetResourceValue() + ( this.income - income ) * 21);
 
             tile.Add(this);
             owner.Add(this);
@@ -57,46 +59,19 @@ namespace CityWar
             string oldRace = owner.Race;
             base.Capture(newOwner);
 
-            //setup for new owner
-            if (oldRace == owner.Race)
-            {
-                //if the new owner is the same race, he keeps the have values and pays upkeep for it
-                PayUpkeep(resourceValue);
-            }
-            else
-            {
-                //if not the same race, reset the values as though building a new portal
+            //if the new owner is the same race, he keeps the have values and pays upkeep for it
+            //otherwise, reset the values as though building a new portal
+            if (oldRace != owner.Race)
                 SetStartValues();
-            }
+            PayUpkeep(GetResourceValue());
         }
 
         private void SetStartValues()
         {
-            this.unitsHave = new Dictionary<string, int>();
-
-            Dictionary<string, int> unitCosts = new Dictionary<string, int>();
-            foreach (string unitName in Game.Races[this.owner.Race])
-            {
-                Unit unit = Unit.CreateTempUnit(unitName);
-                if (unit.costType == this.PortalType)
-                    unitCosts.Add(unitName, unit.BaseCost);
-            }
-
-            double totalStart = 0;
-            foreach (var pair in unitCosts)
-            {
-                string unit = pair.Key;
-                double baseCost = pair.Value;
-
-                double inc = GetTurnInc();
-                int start = Game.Random.Round(Game.Random.Weighted(baseCost - inc, StartAmt) + inc * StartAmt);
-
-                totalStart += start;
-                unitsHave.Add(unit, start);
-            }
-
-            //pay for starting amount
-            PayUpkeep(totalStart * ValuePct);
+            double inc = this.GetTurnInc();
+            this.unitsHave = Game.Races[this.owner.Race].Select(unitName => Unit.CreateTempUnit(unitName))
+                    .Where(unit => unit.costType == this.PortalType).ToDictionary(unit => unit.Name,
+                    unit => Game.Random.Round(Game.Random.Weighted(unit.BaseCost - inc, StartAmt) + inc * StartAmt));
         }
 
         public override bool CapableBuild(string name)
@@ -117,16 +92,11 @@ namespace CityWar
 
         internal override void ResetMove()
         {
-            string unit = null;
-            foreach (string name in Game.Random.Iterate(unitsHave.Keys))
-            {
-                unit = name;
-                break;
-            }
+            string unit = Game.Random.SelectValue(unitsHave.Keys);
 
             double inc = GetTurnInc();
             int needed = Unit.CreateTempUnit(unit).BaseCost;
-            unitsHave[unit] += Game.Random.GaussianOEInt(inc, .13 / unitsHave.Count, .065 * ( needed - unitsHave[unit] ) / ( needed + inc ));
+            unitsHave[unit] += Game.Random.GaussianOEInt(inc, .26 / ( 1.3 + unitsHave.Count ), .091 * ( needed - unitsHave[unit] ) / ( needed + inc ));
 
             while (unitsHave[unit] >= needed)
             {
@@ -173,12 +143,9 @@ namespace CityWar
             return Math.Pow(PortalCost, Power) / Divisor / Math.Pow(AvgPortalCost, Power - 1);
         }
 
-        public Dictionary<string, int> GetUnitValues()
+        public IEnumerable<KeyValuePair<string, int>> GetUnitValues()
         {
-            Dictionary<string, int> retVal = new Dictionary<string, int>();
-            foreach (var pair in unitsHave)
-                retVal.Add(pair.Key, pair.Value);
-            return retVal;
+            return unitsHave.ToList();
         }
         #endregion //public methods and properties
 
@@ -189,10 +156,7 @@ namespace CityWar
         }
         internal double GetResourceValue()
         {
-            double total = 0;
-            foreach (int value in unitsHave.Values)
-                total += value;
-            return total * ValuePct;
+            return unitsHave.Values.Sum() * ValuePct;
         }
         #endregion //internal methods
     }

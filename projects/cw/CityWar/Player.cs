@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -65,10 +66,7 @@ namespace CityWar
         {
             int count = pieces.Count;
 
-            pieces.Sort(delegate(Piece p1, Piece p2)
-            {
-                return p1.Group - p2.Group;
-            });
+            pieces.Sort((p1, p2) => p1.Group - p2.Group);
 
             //find the last index of a piece that is selected and start there
             int index;
@@ -335,14 +333,7 @@ namespace CityWar
 
                 for (int a = -1 ; ++a < 3 ; )
                 {
-                    Tile t = RandomStartTile();
-                    for (int b = 0 ; b < 6 ; ++b)
-                        if (t.GetNeighbor(b) == null)
-                        {
-                            t = RandomStartTile();
-                            b = -1;
-                            continue;
-                        }
+                    Tile t = RandomStartTile(false);
 
                     new City(this, t);
                     thisTotal += Unit.NewUnit(startUnits[a], t, this).BaseCost;
@@ -357,7 +348,7 @@ namespace CityWar
                 death += elementals[3];
                 water += elementals[4];
 
-                Tile t = RandomStartTile();
+                Tile t = RandomStartTile(true);
 
                 bool unused;
                 new Wizard(this, t, out unused);
@@ -376,7 +367,7 @@ namespace CityWar
             if (avg > 0)
                 AddWork(avg * WorkMult);
             else
-                AddUpkeep(-avg * UpkeepMult);
+                AddUpkeep(-avg * UpkeepMult, .039);
         }
 
         private int[] AddStartResources(int totalAmt, ref int mainType, int minMain, int maxMain, int numOthers)
@@ -398,25 +389,9 @@ namespace CityWar
             return retVal;
         }
 
-        private Tile RandomStartTile()
+        private Tile RandomStartTile(bool canEdge)
         {
-            while (true)
-            {
-                Tile t = game.RandomTile();
-                if (t.Occupied())
-                    continue;
-
-                //cannot start adjacent to another player, or even yourself
-                bool can = true;
-                for (int b = 0 ; b < 6 ; ++b)
-                    if (t.GetNeighbor(b) != null && t.GetNeighbor(b).Occupied())
-                    {
-                        can = false;
-                        break;
-                    }
-                if (can)
-                    return t;
-            }
+            return game.RandomTile(neighbor => ( canEdge || neighbor != null ) && ( neighbor == null || !neighbor.Occupied() ));
         }
 
         internal void Add(Piece p)
@@ -438,9 +413,9 @@ namespace CityWar
             //the capturing player gets stuck with some of the other players upkeep
             int wizards, portals, cities, relics, units;
             this.GetCounts(out wizards, out portals, out cities, out relics, out units);
-            double transferAmt = this.upkeep / ( wizards + portals + cities + relics - .13 ) * .65;
-            this.AddUpkeep(-Game.Random.GaussianCappedInt(transferAmt, .091));
-            p.AddUpkeep(Game.Random.GaussianCappedInt(transferAmt, .091));
+            double transferAmt = this.upkeep / ( wizards + portals + cities + relics - .26 ) * .65;
+            this.AddUpkeep(-transferAmt, .065);
+            p.AddUpkeep(transferAmt, .065);
 
             Remove(c, false);
         }
@@ -482,9 +457,9 @@ namespace CityWar
         {
             work += Game.Random.Round(amt);
         }
-        internal void AddUpkeep(double amount)
+        internal void AddUpkeep(double amount, double devPct = .13)
         {
-            upkeep += Game.Random.Round(amount);
+            upkeep += Game.Random.GaussianInt(amount, devPct);
         }
 
         internal static void SubtractCommonUpkeep(Player[] players)
@@ -492,9 +467,9 @@ namespace CityWar
             int min = int.MaxValue;
             foreach (Player p in players)
                 min = Math.Min(min, p.upkeep);
-            min = Game.Random.WeightedInt(min, .78f);
+            min = -( Game.Random.WeightedInt(min, .78f) );
             foreach (Player p in players)
-                p.upkeep -= min;
+                p.AddUpkeep(min, .078);
         }
 
         internal Unit FreeUnit(string name, double avgCost)
@@ -524,7 +499,7 @@ namespace CityWar
             while (--amt > -1)
             {
                 double avg = 50 * ( amt == 0 ? amount : 1 );
-                int addAmt = Game.Random.GaussianCappedInt(avg, .26, Game.Random.Round(avg * .52));
+                int addAmt = Game.Random.GaussianCappedInt(avg, .21, Game.Random.Round(avg * .52));
 
                 if (Game.Random.Bool(.01))
                     population += addAmt;	// 01.00%
@@ -728,12 +703,9 @@ namespace CityWar
         }
         private Capturable RandomCapturable()
         {
-            foreach (Piece p in Game.Random.Iterate(pieces))
-            {
-                Capturable piece = ( p as Capturable );
-                if (piece != null)
-                    return piece;
-            }
+            IEnumerable<Capturable> capturables = pieces.OfType<Capturable>();
+            if (capturables.Any())
+                return Game.Random.SelectValue(capturables);
             return null;
         }
         #endregion //relic
@@ -1004,9 +976,8 @@ namespace CityWar
         #region income and upkeep
         private void PayUpkeep()
         {
-            double payment = GetTurnUpkeep();
-            AddWork(-payment);
-            AddUpkeep(-payment);
+            double payment = -( GetTurnUpkeep() );
+            AddWork(payment);
 
             //unit upkeep
             double total = 0;
@@ -1016,7 +987,7 @@ namespace CityWar
                 if (u != null && u.Type != UnitType.Immobile)
                     total += GetUpkeep(u);
             }
-            AddUpkeep(Game.Random.GaussianCappedInt(total, .104));
+            AddUpkeep(total + payment, .091);
         }
         internal static double GetUpkeep(Unit u)
         {
@@ -1273,13 +1244,7 @@ namespace CityWar
         internal void RemoveCapturable(Type type, double portalAvg)
         {
             //pick a random piece of the right type
-            Piece remove = null;
-            foreach (Piece p in Game.Random.Iterate(pieces))
-                if (type.IsInstanceOfType(p))
-                {
-                    remove = p;
-                    break;
-                }
+            Piece remove = Game.Random.SelectValue(pieces.Where(piece => type.IsInstanceOfType(piece)));
 
             if (type == typeof(Portal))
             {
@@ -1303,12 +1268,10 @@ namespace CityWar
             //if you have enough resources, you will lose those instead of a unit
             int loseUnits = RemoveResources();
             for (int i = 0 ; i < loseUnits ; ++i)
-            {
-                int count = pieces.Count;
-                if (count > 0)
+                if (pieces.Any())
                 {
                     //all of the players pieces will be units if this method is called
-                    Unit unit = (Unit)pieces[Game.Random.Next(count)];
+                    Unit unit = (Unit)Game.Random.SelectValue(pieces);
                     double reimburse = GetReimbursement(i == 0, unit.InverseCost, unit.GetHealthPct());
 
                     int costReimbursement = Game.Random.Round(( unit.BaseOtherCost * reimburse ) / unit.BaseCost);
@@ -1318,7 +1281,6 @@ namespace CityWar
                     unit.Tile.Remove(unit);
                     this.Remove(unit, true);
                 }
-            }
             return loseUnits;
         }
         private const double noCapLoseAmt = 1000 / 3.0;
@@ -1392,7 +1354,7 @@ namespace CityWar
                 if (pct < 1)
                 {
                     //add a small constant amount so itll trade away the dregs
-                    tradeAmt = Game.Random.GaussianOEInt(pct * amt + add, .39, .169);
+                    tradeAmt = Game.Random.GaussianOEInt(pct * amt + add, .52, .13);
                     if (tradeAmt > amt)
                         tradeAmt = amt;
                 }

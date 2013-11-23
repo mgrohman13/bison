@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Diagnostics;
 
@@ -1611,6 +1612,23 @@ namespace MattUtil
             }
         }
 
+        /// <summary>
+        /// Returns a random object from 'choices' with equal probability.
+        /// </summary>
+        public T SelectValue<T>(IEnumerable<T> choices)
+        {
+            if (choices == null)
+                throw new ArgumentNullException("choices");
+
+            IList<T> list = ( choices as IList<T> );
+            if (list == null)
+                list = choices.ToList();
+
+            if (list.Count == 0)
+                throw new ArgumentException("choices cannot be empty", "choices");
+
+            return list[Next(list.Count)];
+        }
         public delegate int GetChance<T>(T obj);
         /// <summary>
         /// Returns a random object from 'choices', where 'GetChance' returns the probability of selecting each object.
@@ -1647,7 +1665,7 @@ namespace MattUtil
         /// <summary>
         /// Returns a random key from 'choices', where the value is the probability of selecting that key.
         /// </summary>
-        public T SelectValue<T>(Dictionary<T, int> choices)
+        public T SelectValue<T>(IDictionary<T, int> choices)
         {
             if (choices == null)
                 throw new ArgumentNullException("choices");
@@ -1668,7 +1686,7 @@ namespace MattUtil
             if (chance < 0)
                 throw new ArgumentOutOfRangeException("choices", "each individual chance must be greater than or equal to 0");
         }
-        private T SelectValue<T>(Dictionary<T, int> dictionary, int total)
+        private T SelectValue<T>(IDictionary<T, int> dictionary, int total)
         {
             if (total <= 0)
                 throw new ArgumentOutOfRangeException("choices", "the sum total of the chances must be greater than 0");

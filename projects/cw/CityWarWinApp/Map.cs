@@ -65,11 +65,7 @@ namespace CityWarWinApp
         public Map()
         {
             InitializeComponent();
-            this.panelPieces.Initialize(GetPiecesForPiecesPanel, GetDrawFlagsForPiece, GetTextForPiece,
-                delegate()
-                {
-                    return Brushes.DarkMagenta;
-                });
+            this.panelPieces.Initialize(GetPiecesForPiecesPanel, GetDrawFlagsForPiece, GetTextForPiece, () => Brushes.DarkMagenta);
             this.MouseWheel += new MouseEventHandler(this.panelPieces.PiecesPanel_MouseWheel);
             this.ResizeRedraw = false;
 
@@ -720,10 +716,8 @@ namespace CityWarWinApp
                             Unit[] selectedUnits = null;
                             if (Control.ModifierKeys != Keys.None && selectedTile != null && selectedTile.IsNeighbor(x, y))
                             {
-                                selectedUnits = selectedTile.FindAllUnits(delegate(Unit unit)
-                                {
-                                    return ( unit.Group == selectedTile.CurrentGroup && unit.Owner == Game.CurrentPlayer && unit.Movement > 0 );
-                                });
+                                selectedUnits = selectedTile.FindAllUnits(unit => 
+                                        ( unit.Group == selectedTile.CurrentGroup && unit.Owner == Game.CurrentPlayer && unit.Movement > 0 ));
                                 if (selectedUnits.Length == 0)
                                     selectedUnits = null;
                             }

@@ -44,7 +44,7 @@ namespace CityWarWinApp
             if (selected != null)
             {
                 //lbAttacks.ClearSelected();
-                ValidAttacks(selected, delegate(Attack attack)
+                ValidAttacks(selected, attack =>
                 {
                     if (!attack.Used)
                         lbAttacks.Items.Add(attack);
@@ -66,36 +66,8 @@ namespace CityWarWinApp
 
             InitializeComponent();
 
-            panelAttackers.Initialize(
-                delegate()
-                {
-                    return GetPieces(true);
-                },
-                delegate(Piece piece)
-                {
-                    return GetFlags(piece, true);
-                },
-                GetAttackerText,
-                delegate()
-                {
-                    return Brushes.DarkRed;
-                }
-            );
-            panelDefenders.Initialize(
-                delegate()
-                {
-                    return GetPieces(false);
-                },
-                delegate(Piece piece)
-                {
-                    return GetFlags(piece, false);
-                },
-                GetDefenderText,
-                delegate()
-                {
-                    return Brushes.DarkBlue;
-                }
-            );
+            panelAttackers.Initialize(() => GetPieces(true), piece => GetFlags(piece, true), GetAttackerText, () => Brushes.DarkRed);
+            panelDefenders.Initialize(() => GetPieces(false), piece => GetFlags(piece, false), GetDefenderText, () => Brushes.DarkBlue);
 
             MouseWheel += new MouseEventHandler(Battle_MouseWheel);
             lbAttacks.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
@@ -144,7 +116,7 @@ namespace CityWarWinApp
                     result.Add(PiecesPanel.DrawFlags.Background);
 
                 bool unused = false;
-                ValidAttacks(unit, delegate(Attack attack)
+                ValidAttacks(unit, attack =>
                 {
                     unused = !attack.Used;
                     return unused;
@@ -169,7 +141,7 @@ namespace CityWarWinApp
             Unit unit = (Unit)piece;
 
             int unused = 0, total = totalCounts[unit];
-            ValidAttacks(unit, delegate(Attack attack)
+            ValidAttacks(unit, attack =>
             {
                 if (!attack.Used)
                     ++unused;
@@ -339,7 +311,7 @@ namespace CityWarWinApp
             foreach (Unit attacker in attackers)
             {
                 int minLength = attacker.Length;
-                ValidAttacks(attacker, delegate(Attack attack)
+                ValidAttacks(attacker, attack =>
                 {
                     minLength = Math.Min(minLength, attack.Length);
                 });
@@ -361,7 +333,7 @@ namespace CityWarWinApp
                 selected = null;
                 foreach (Unit attacker in attackers)
                 {
-                    ValidAttacks(attacker, delegate(Attack attack)
+                    ValidAttacks(attacker, attack =>
                     {
                         bool unused = !attack.Used;
                         if (unused)
@@ -388,7 +360,7 @@ namespace CityWarWinApp
         }
         private void ValidAttacks(Unit unit, Action<Attack> Action)
         {
-            ValidAttacks(unit, delegate(Attack attack)
+            ValidAttacks(unit, attack =>
             {
                 Action(attack);
                 return false;
@@ -482,7 +454,7 @@ namespace CityWarWinApp
             Attack attack = GetSelectedAttack();
             if (attacker != null && attack != null)
                 foreach (Unit defender in battle.GetDefenders())
-                    ValidAttacks(defender, delegate(Attack retalliation)
+                    ValidAttacks(defender, retalliation =>
                     {
                         if (cbDefAll.Checked || ShowAttack(retalliation, attacker, attack))
                             showAttacks.Add(retalliation);
@@ -497,7 +469,7 @@ namespace CityWarWinApp
             Attack retalliation = GetSelectedRetalliation();
             if (retalliation != null || cbAttAll.Checked)
                 foreach (Unit attacker in battle.GetAttackers())
-                    ValidAttacks(attacker, delegate(Attack attack)
+                    ValidAttacks(attacker, attack =>
                     {
                         if (!attack.Used && ( cbAttAll.Checked || ShowAttack(retalliation, attacker, attack) ))
                             showAttacks.Add(attack);

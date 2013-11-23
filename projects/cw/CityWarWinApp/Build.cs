@@ -121,10 +121,7 @@ namespace CityWarWinApp
 
                 Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game.CurrentPlayer.Race);
                 List<CostType> keys = new List<CostType>(portalCost.Keys);
-                keys.Sort(delegate(CostType c1, CostType c2)
-                {
-                    return portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1];
-                });
+                keys.Sort((c1, c2) => portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1]);
                 foreach (CostType costType in keys)
                 {
                     Color backColor;

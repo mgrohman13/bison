@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -32,7 +33,7 @@ namespace CityWarWinApp
                 points.Add(won.Values[idx], Game.Random.Round(780.0 / won.Keys[idx]) + ( cur += ( ++add ) ));
 
             this.textBox1.Clear();
-            foreach (var pair in Game.Random.Iterate(points))
+            foreach (var pair in Game.Random.Iterate(points).OrderByDescending(pair => pair.Value))
                 this.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.Name, pair.Value - min);
         }
     }
