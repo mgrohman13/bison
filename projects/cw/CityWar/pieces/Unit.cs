@@ -62,15 +62,11 @@ namespace CityWar
         #endregion //fields and constructors
 
         #region overrides
-        public override string Name
+        public override string ToString()
         {
-            get
-            {
-                if (isThree)
-                    return base.Name + " (" + attacks.Length + ")";
-
-                return base.Name;
-            }
+            if (isThree)
+                return base.Name + " (" + attacks.Length + ")";
+            return base.Name;
         }
         #endregion //overrides
 

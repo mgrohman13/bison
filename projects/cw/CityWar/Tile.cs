@@ -136,7 +136,7 @@ namespace CityWar
             }
             else
             {
-                string pieceName = centerPiece.Name;
+                string pieceName = centerPiece.ToString();
                 //a dot is placed on the image for a capturable if there are any units with it
                 if (( centerPiece is Capturable ) && this.OccupiedByUnit())
                     pieceName += "Unit";

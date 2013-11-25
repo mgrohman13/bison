@@ -109,7 +109,7 @@ namespace CityWarWinApp
                         g.FillRectangle(Brushes.LightGray, x, y, 100, 100);
 
                     //draw the piece
-                    g.DrawImage(currentPiece.Owner.GetConstPic(currentPiece.Name), x, y);
+                    g.DrawImage(currentPiece.Owner.GetConstPic(currentPiece.ToString()), x, y);
 
                     Unit currentUnit = currentPiece as Unit;
                     if (currentUnit != null)

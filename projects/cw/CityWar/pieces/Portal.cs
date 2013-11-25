@@ -47,11 +47,11 @@ namespace CityWar
         internal override void Capture(Player newOwner)
         {
             //reimburse the old owner for partially finished units
-            int magic, element;
-            Player.SplitPortalCost(owner.Race, PortalType, out magic, out element);
+            int m, e;
+            Player.SplitPortalCost(owner.Race, PortalType, out m, out e);
             double resourceValue = GetResourceValue();
-            magic = Game.Random.Round(resourceValue * magic / ( (double)magic + element ));
-            element = Game.Random.Round(resourceValue * element / ( (double)magic + element ));
+            int magic = Game.Random.Round(resourceValue * m / (double)( m + e ));
+            int element = Game.Random.Round(resourceValue * e / (double)( m + e ));
 
             owner.SpendMagic(-magic);
             owner.Spend(-element, PortalType, 0);

@@ -194,7 +194,7 @@ namespace CityWarWinApp
                 {
                     double killPct, avgRelic;
                     double avgDamage = attack.GetAverageDamage(newMoused, out killPct, out avgRelic);
-                    txtTarget.Text = newMoused.Name;
+                    txtTarget.Text = newMoused.ToString();
                     txtArmor.Text = newMoused.Armor.ToString();
                     txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(newMoused));
                     txtChance.Text = killPct.ToString("0") + "%";

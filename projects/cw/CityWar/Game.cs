@@ -191,6 +191,10 @@ namespace CityWar
             if (piece == null)
                 return null;
 
+            if (piece.Owner.Air < 0 || piece.Owner.Death < 0 || piece.Owner.Earth < 0 || piece.Owner.Nature < 0 || piece.Owner.Production < 0 || piece.Owner.Water < 0
+                    || piece.Owner.Magic < 0 || piece.Owner.Relic < 0 || piece.Owner.Population < 0 || piece.Owner.GetTurnUpkeep() < 0 || piece.Owner.Work < 0)
+            {
+            }
             piece.Owner.CheckNegativeResources();
 
             Tile retVal = piece.Tile;
@@ -1065,7 +1069,8 @@ namespace CityWar
 
             //these must happen in this order
             FreeUnit(noCapts, ref counts);
-            RemoveCapturables(noCapts, counts, ref deadPlayer, ref deadPlayers);
+            if (win == null)
+                RemoveCapturables(noCapts, counts, ref deadPlayer, ref deadPlayers);
             KillPlayers(deadPlayer, deadPlayers, win);
             WinGame(win);
 

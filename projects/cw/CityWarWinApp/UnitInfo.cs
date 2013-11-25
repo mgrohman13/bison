@@ -22,7 +22,7 @@ namespace CityWarWinApp
                 location.Y = Screen.PrimaryScreen.Bounds.Height - this.Height;
             this.Location = location;
 
-            this.txtUnit.Text = piece.Name;
+            this.txtUnit.Text = piece.ToString();
 
             Unit unit = piece as Unit;
             City city = piece as City;

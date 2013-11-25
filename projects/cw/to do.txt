@@ -2,7 +2,6 @@ review/refactor
 	review Game.StartBattle
 	test if array is IList for SelectValue
 	test Random.Iterate(...).OrderBy...
-	review commit changes to ensure breakpoints to test all touched areas
 	review AddStartResources
 	//~1/28 will be outside [-needed,needed]
 	test Game.AddPlayer algorithm
@@ -36,6 +35,7 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	collect wizard pts use new wiz position
 	Unit.CheckAttacks mucks with used
 	GetForRaces target capping logic
 	apply same ground/water build logic to relic?
