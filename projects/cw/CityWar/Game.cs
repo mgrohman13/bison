@@ -278,7 +278,7 @@ namespace CityWar
                     //collect all battle units recursively, starting with attackers that can target any units in the target tile
                     Dictionary<Unit, int> attackers = new Dictionary<Unit, int>();
                     foreach (Unit defender in target.GetAllUnits())
-                        AddAttackers(attackers, defenders, enemy, defender);
+                        AddAttackers(defenders, enemy, defender, attackers);
                     selected = attackers.Keys;
                 }
                 else
@@ -287,29 +287,33 @@ namespace CityWar
 
                     //first collect defenders that can be targeted by the selected units
                     foreach (Unit attacker in selected)
-                        AddDefenders(null, defenders, enemy, attacker, int.MaxValue, false);
+                        AddDefenders(defenders, enemy, attacker);
 
                     //then collect defenders that can retalliate
                     foreach (Unit attacker in selected)
                     {
+                        //find the minimum length attack the attacker might use
                         int length = int.MaxValue, minLength;
                         foreach (Unit defender in defenders)
                             if (CanTarget(attacker, defender, out minLength))
                                 length = Math.Min(length, minLength);
+                        //add defenders that can retalliate at that length
                         if (length != int.MaxValue)
-                            AddDefenders(null, defenders, enemy, attacker, length, false);
+                            AddDefenders(defenders, enemy, attacker, length);
                     }
                 }
 
-                foreach (Unit attacker in selected)
-                    if (!CanStartBattle(attacker))
+                if (selected.Any() && defenders.Any())
+                {
+                    if (!selected.All(CanStartBattle))
                         throw new Exception();
 
-                return Unit.StartBattle(selected, defenders);
+                    return Unit.StartBattle(selected, defenders);
+                }
             }
             return null;
         }
-        private void AddAttackers(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit defender)
+        private void AddAttackers(HashSet<Unit> defenders, Player enemy, Unit defender, Dictionary<Unit, int> attackers)
         {
             int minLength, hasLength;
             //find all adjacent attackers that might be able to participate
@@ -320,60 +324,44 @@ namespace CityWar
                     //add the found attacker to the battle with the minimum length weapon it might use
                     attackers[attacker] = minLength;
                     //collect additional adjacent defenders
-                    AddDefenders(attackers, defenders, enemy, attacker, minLength, true);
+                    AddDefenders(defenders, enemy, attacker, minLength, attackers);
                 }
         }
         private IEnumerable<Unit> GetAttackers(Tile target)
         {
-            return FindNeighborUnits(target, attacker => CanStartBattle(attacker));
+            return FindNeighborUnits(target, CanStartBattle);
         }
         private bool CanStartBattle(Unit attacker)
         {
             return ( attacker.Owner == CurrentPlayer && attacker.Movement > 0 );
         }
-        private void AddDefenders(Dictionary<Unit, int> attackers, HashSet<Unit> defenders, Player enemy, Unit attacker, int length, bool addAttackers)
+        private void AddDefenders(HashSet<Unit> defenders, Player enemy, Unit attacker, int length = int.MaxValue, Dictionary<Unit, int> attackers = null)
         {
             //find all adjacent defenders that can either retalliate against or be targeted by this attacker
-            foreach (Unit defender in FindNeighborUnits(attacker.Tile, ( defender =>
-                    defender.Owner == enemy && ( CanTarget(defender, attacker, length) || CanTarget(attacker, defender) ) && !defenders.Contains(defender) )))
+            foreach (Unit defender in FindNeighborUnits(attacker.Tile, defender =>
+                    defender.Owner == enemy && ( CanTarget(defender, attacker, length) || CanTarget(attacker, defender) ) && !defenders.Contains(defender)))
             {
                 //add the found defender to the battle
                 defenders.Add(defender);
 
                 //collect additional adjacent attackers
-                if (addAttackers)
-                    AddAttackers(attackers, defenders, enemy, defender);
+                if (attackers != null)
+                    AddAttackers(defenders, enemy, defender, attackers);
             }
         }
         private static IEnumerable<Unit> FindNeighborUnits(Tile tile, Predicate<Unit> match)
         {
-            for (int a = 0 ; a < 6 ; ++a)
-            {
-                Tile neighbor = tile.GetNeighbor(a);
-                if (neighbor != null)
-                    foreach (Unit unit in neighbor.FindAllUnits(match))
-                        yield return unit;
-            }
+            return tile.GetNeighbors().SelectMany(neighbor => neighbor.FindAllUnits(match));
         }
-        private static bool CanTarget(Unit unit, Unit target)
-        {
-            return CanTarget(unit, target, int.MinValue);
-        }
-        private static bool CanTarget(Unit unit, Unit target, int length)
+        private static bool CanTarget(Unit unit, Unit target, int length = int.MinValue)
         {
             int minLength;
-            return CanTarget(unit, target, length, out minLength);
+            return CanTarget(unit, target, out minLength, length);
         }
-        private static bool CanTarget(Unit unit, Unit target, out int minLength)
+        private static bool CanTarget(Unit unit, Unit target, out int minLength, int length = int.MinValue)
         {
-            return CanTarget(unit, target, int.MinValue, out minLength);
-        }
-        private static bool CanTarget(Unit unit, Unit target, int length, out int minLength)
-        {
-            minLength = int.MaxValue;
-            foreach (Attack attack in unit.Attacks)
-                if (attack.CanTarget(target) && attack.Length >= length)
-                    minLength = Math.Min(minLength, attack.Length);
+            minLength = unit.Attacks.Where(attack => attack.Length >= length && attack.CanTarget(target))
+                    .Select(attack => attack.Length).DefaultIfEmpty(int.MaxValue).Min();
             return ( minLength != int.MaxValue );
         }
 
@@ -965,7 +953,7 @@ namespace CityWar
             while (true)
             {
                 Tile tile = map[Random.Next(Width), Random.Next(Height)];
-                if (ValidNeighbor == null || Enumerable.Range(0, 6).Select(dir => tile.GetNeighbor(dir)).Concat(new[] { tile }).All(ValidNeighbor))
+                if (ValidNeighbor == null || tile.GetNeighbors(true, true).All(ValidNeighbor))
                     return tile;
             }
         }
@@ -1407,26 +1395,11 @@ next:
             int amt = Random.OEInt(Width * Height / 780.0);
             for (int a = 0 ; a < amt ; ++a)
             {
-                Tile tile = RandomTile();
-
-                if (!tile.HasCity())
-                {
-                    bool can = true;
-                    for (int b = 0 ; b < 6 ; ++b)
-                    {
-                        Tile neighbor = tile.GetNeighbor(b);
-                        if (neighbor == null || neighbor.HasCity())
-                        {
-                            //only try again if the chosen tile is on the map edge
-                            if (neighbor == null)
-                                --a;
-                            can = false;
-                            break;
-                        }
-                    }
-                    if (can)
-                        tile.MakeCitySpot(Random.GaussianOEInt(7.8, .39, .169, 1));
-                }
+                //select a tile not on the map edge
+                Tile tile = RandomTile(neighbor => neighbor != null);
+                //don't try again if it is on or next to an existing city
+                if (tile.GetNeighbors(true).All(neighbor => !neighbor.HasCity()))
+                    tile.MakeCitySpot(Random.GaussianOEInt(7.8, .39, .169, 1));
             }
         }
 

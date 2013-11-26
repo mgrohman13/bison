@@ -95,35 +95,29 @@ namespace CityWar
         }
         public bool IsNeighbor(Tile t)
         {
-            for (int a = -1 ; ++a < 6 ; )
-                if (neighbors[a] == t)
-                    return true;
-
-            return false;
+            return neighbors.Contains(t);
         }
         public Tile GetNeighbor(int direction)
         {
-            if (direction < 0 || direction > 5)
-                return null;
-            else
-                return neighbors[direction];
+            return neighbors[direction];
+        }
+        public IEnumerable<Tile> GetNeighbors(bool includeThis = false, bool includeNull = false)
+        {
+            IEnumerable<Tile> neighbors = Enumerable.Empty<Tile>().Concat(this.neighbors);
+            if (!includeNull)
+                neighbors = neighbors.Where(tile => tile != null);
+            if (includeThis)
+                neighbors = neighbors.Concat(new[] { this });
+            return neighbors;
         }
 
         public bool HasWizard()
         {
             return pieces.OfType<Wizard>().Any();
         }
-
         public bool HasCity()
         {
-            if (cityTime > 0)
-                return true;
-
-            foreach (Piece p in pieces)
-                if (p is City)
-                    return true;
-
-            return false;
+            return ( cityTime > 0 || pieces.OfType<City>().Any() );
         }
 
         public Image GetPieceImage()

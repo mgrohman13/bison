@@ -1620,14 +1620,28 @@ namespace MattUtil
             if (choices == null)
                 throw new ArgumentNullException("choices");
 
+            int count = -1;
+            ICollection<T> collection;
+            //if we have both a count and random access, we do not have to walk the enumeration at all
             IList<T> list = ( choices as IList<T> );
             if (list == null)
-                list = choices.ToList();
+                if (( collection = choices as ICollection<T> ) == null)
+                    //we must completely walk the enumeration to get the count, so put the results in a data structure with random access
+                    list = choices.ToList();
+                else
+                    //with a count, we only have to walk the enumeration until the selected index
+                    count = collection.Count;
+            if (list != null)
+                count = list.Count;
 
-            if (list.Count == 0)
+            if (count < 1)
                 throw new ArgumentException("choices cannot be empty", "choices");
 
-            return list[Next(list.Count)];
+            int idx = Next(count);
+            if (list == null)
+                return choices.ElementAt(idx);
+            else
+                return list[idx];
         }
         public delegate int GetChance<T>(T obj);
         /// <summary>
@@ -1660,7 +1674,7 @@ namespace MattUtil
                     total += chance;
                 }
             }
-            return SelectValue<T>(dictionary, total);
+            return SelectValue<T>(choices, dictionary, total);
         }
         /// <summary>
         /// Returns a random key from 'choices', where the value is the probability of selecting that key.
@@ -1679,14 +1693,14 @@ namespace MattUtil
                     total += chance;
                 }
             }
-            return SelectValue<T>(choices, total);
+            return SelectValue<T>(choices.Keys, choices, total);
         }
         private void CheckChance(int chance)
         {
             if (chance < 0)
                 throw new ArgumentOutOfRangeException("choices", "each individual chance must be greater than or equal to 0");
         }
-        private T SelectValue<T>(IDictionary<T, int> dictionary, int total)
+        private T SelectValue<T>(IEnumerable<T> choices, IDictionary<T, int> chances, int total)
         {
             if (total <= 0)
                 throw new ArgumentOutOfRangeException("choices", "the sum total of the chances must be greater than 0");
@@ -1694,11 +1708,11 @@ namespace MattUtil
             //select a random number within the total
             total = Next(total);
             //find the object within whose probability range the selection resides
-            foreach (KeyValuePair<T, int> pair in dictionary)
+            foreach (T key in choices)
             {
-                int curChance = pair.Value;
+                int curChance = chances[key];
                 if (total < curChance)
-                    return pair.Key;
+                    return key;
                 else
                     total -= curChance;
             }

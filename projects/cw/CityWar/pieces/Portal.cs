@@ -145,7 +145,7 @@ namespace CityWar
 
         public IEnumerable<KeyValuePair<string, int>> GetUnitValues()
         {
-            return unitsHave.ToList();
+            return Enumerable.Empty<KeyValuePair<string, int>>().Concat(unitsHave);
         }
         #endregion //public methods and properties
 

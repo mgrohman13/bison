@@ -716,7 +716,7 @@ namespace CityWarWinApp
                             Unit[] selectedUnits = null;
                             if (Control.ModifierKeys != Keys.None && selectedTile != null && selectedTile.IsNeighbor(x, y))
                             {
-                                selectedUnits = selectedTile.FindAllUnits(unit => 
+                                selectedUnits = selectedTile.FindAllUnits(unit =>
                                         ( unit.Group == selectedTile.CurrentGroup && unit.Owner == Game.CurrentPlayer && unit.Movement > 0 ));
                                 if (selectedUnits.Length == 0)
                                     selectedUnits = null;
@@ -1107,14 +1107,14 @@ namespace CityWarWinApp
                 else
                 {
                     Func<Unit, double>[] funcs = {
-                        unit => unit.RandedCost * unit.Regen / (double)unit.maxHits,
+                        unit => unit.RandedCost * Math.Min(unit.maxHits - unit.Hits, unit.MaxMove * unit.Regen) / (double)unit.maxHits,
                         unit => unit.Regen / (double)unit.BaseRegen,
                         unit =>
                         {
                             double turns = 0, hp = unit.Hits, regenPct = unit.Regen / (double)unit.BaseRegen;
                             while (hp < unit.maxHits)
                             {
-                                double regen = regenPct * unit.BaseRegen;
+                                double regen = regenPct * unit.MaxMove * unit.BaseRegen;
                                 hp += regen;
                                 turns += 1 - Math.Max(0, ( hp - unit.maxHits ) / regen);
                                 regenPct = Math.Pow(regenPct, Unit.RegenRecoverPower);

@@ -631,26 +631,12 @@ namespace CityWar
         #region start and end battle
         internal static Battle StartBattle(IEnumerable<Unit> attackers, IEnumerable<Unit> defenders)
         {
-            bool any = false;
+            //make all attackers untargetable
             foreach (Unit u in attackers)
-            {
-                any = true;
-                //make all attackers untargetable
                 u.length = int.MaxValue;
-            }
-            if (!any)
-                return null;
-
-            any = false;
+            //make all defenders targetable
             foreach (Unit u in defenders)
-            {
-                any = true;
-                //make all defenders targetable
                 u.length = int.MinValue;
-            }
-            if (!any)
-                return null;
-
             return new Battle(attackers, defenders);
         }
 

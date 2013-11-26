@@ -67,8 +67,7 @@ namespace CityWar
         }
         private static int CountNeighbors(Tile tile, Func<Terrain, bool> Predicate)
         {
-            return Enumerable.Range(0, 6).Select(dir => tile.GetNeighbor(dir))
-                    .Count(neighbor => neighbor != null && Predicate(neighbor.Terrain));
+            return tile.GetNeighbors().Count(neighbor => Predicate(neighbor.Terrain));
         }
         private static void GetChances(int count1, int count2, double baseChance1, out double chance1, out double chance2)
         {

@@ -1,15 +1,4 @@
 review/refactor
-	review Game.StartBattle
-	test if array is IList for SelectValue
-	test Random.Iterate(...).OrderBy...
-	review AddStartResources
-	//~1/28 will be outside [-needed,needed]
-	test Game.AddPlayer algorithm
-	MTRandom.SelectValue when the same object appears in 'choices' multiple times
-	graphically view create map algorithm
-	cities on map edge?
-	Enumerable.Range
-		existing for loops
 	refactor to use Linq!
 		Game.GetForRaces
 		Player.SubtractCommonUpkeep
@@ -40,7 +29,7 @@ gameplay
 	GetForRaces target capping logic
 	apply same ground/water build logic to relic?
 		magic units?
-	when opponents can build wizards\
+	when opponents can build wizards?
 		make pts more random
 		show
 		show guess

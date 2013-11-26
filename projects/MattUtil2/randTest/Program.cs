@@ -49,22 +49,24 @@ namespace randTest
             //Console.WriteLine(sum / max);
             //Console.WriteLine(StartAmt * baseCost);
 
-            while (true)
-            {
-                var addUnits = Enumerable.Range(13, 21).Where(i => rand.Bool(1 / ( 1.0 + i )));
-                bool any = addUnits.Any(i => i > 16.9);
-                Console.WriteLine(any);
-                bool any2 = false;
-                foreach (int i in addUnits)
-                {
-                    Console.WriteLine(i);
-                    if (i > 16.9)
-                        any2 = true;
-                }
-                Console.WriteLine(any2);
-                Console.ReadKey(true);
-                Console.WriteLine();
-            }
+            //while (true)
+            //{
+            //    var addUnits = Enumerable.Range(13, 21).Where(i => rand.Bool(1 / ( 1.0 + i )));
+            //    bool any = addUnits.Any(i => i > 16.9);
+            //    Console.WriteLine(any);
+            //    bool any2 = false;
+            //    foreach (int i in addUnits)
+            //    {
+            //        Console.WriteLine(i);
+            //        if (i > 16.9)
+            //            any2 = true;
+            //    }
+            //    Console.WriteLine(any2);
+            //    Console.ReadKey(true);
+            //    Console.WriteLine();
+            //}
+
+            CWMapTest();
 
             rand.Dispose();
             Console.ReadKey();
@@ -93,6 +95,114 @@ namespace randTest
         //    Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
         //}
 
+        #region CityWar map
+        private static void CWMapTest()
+        {
+            int width = 18, height = 18;
+            Console.WindowHeight = height * 2 + 3;
+            Tile[,] map = new Tile[width, height];
+            CreateMap(map, width, height, (point) =>
+            {
+                Tile t = map[point.X, point.Y];
+                char c = ' ';
+                if (t != null)
+                    c = t.Terrain;
+                int x = point.X * 2;
+                if (point.Y % 2 == 0)
+                    ++x;
+                Console.SetCursorPosition(x, point.Y * 2);
+                Console.Write(c);
+                Console.SetCursorPosition(x, point.Y * 2);
+                Console.ReadKey(true);
+            });
+        }
+
+        class Tile
+        {
+            public int x, y;
+            public char Terrain;
+            public Tile(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+                this.Terrain = rand.SelectValue(new[] { '_', '.', '!', 'M' });
+            }
+            public Tile(int x, int y, char Terrain)
+            {
+                this.x = x;
+                this.y = y;
+                this.Terrain = Terrain;
+            }
+        }
+        static Tile[,] CreateMap(Tile[,] map, int width, int height, Action<Point> Callback)//, int numPlayers)
+        {
+            foreach (Point coord in rand.Iterate(width, height))
+            {
+                map[coord.X, coord.Y] = CreateTile(map, coord.X, coord.Y, width, height);
+                Callback(coord);
+            }
+            return map;
+        }
+        static Tile CreateTile(Tile[,] map, int x, int y, int width, int height)
+        {
+            Tile tile = null;
+            //try three times to find a neighbor that has already been initialized
+            for (int i = 0 ; i < 3 ; ++i)
+            {
+                tile = GetTileIn(map, x, y, rand.Next(6), width, height);
+                if (tile != null)
+                    break;
+            }
+            Tile result;
+            if (tile == null)
+                result = new Tile(x, y);
+            else
+                result = new Tile(x, y, tile.Terrain);
+
+            return result;
+        }
+        static Tile GetTileIn(Tile[,] map, int x, int y, int direction, int width, int height)
+        {
+            //this methoid is called to set up the neighbors array
+            bool odd = y % 2 > 0;
+            switch (direction)
+            {
+            case 0:
+                if (odd)
+                    --x;
+                --y;
+                break;
+            case 1:
+                if (!odd)
+                    ++x;
+                --y;
+                break;
+            case 2:
+                --x;
+                break;
+            case 3:
+                ++x;
+                break;
+            case 4:
+                if (odd)
+                    --x;
+                ++y;
+                break;
+            case 5:
+                if (!odd)
+                    ++x;
+                ++y;
+                break;
+            default:
+                throw new Exception();
+            }
+            if (x < 0 || x >= width || y < 0 || y >= height)
+                return null;
+            else
+                return map[x, y];
+        }
+        #endregion //CityWar map
+
         #region terrain
 
         private static void GenerateTerrain()
@@ -109,14 +219,14 @@ namespace randTest
                 else
                     Console.BufferHeight = ( Console.WindowHeight = height ) + 1;
 
-                Tile[,] res = new Tile[width, height];
+                Terrain[,] res = new Terrain[width, height];
                 for (int y = 0 ; y < height ; ++y)
                     for (int x = 0 ; x < width ; ++x)
-                        res[x, y] = new Tile();
+                        res[x, y] = new Terrain();
 
-                DoStat(width, height, res, Tile.GetHeight, Tile.SetHeight);
-                DoStat(width, height, res, Tile.GetRain, Tile.SetRain);
-                DoStat(width, height, res, Tile.GetTemp, Tile.SetTemp);
+                DoStat(width, height, res, Terrain.GetHeight, Terrain.SetHeight);
+                DoStat(width, height, res, Terrain.GetRain, Terrain.SetRain);
+                DoStat(width, height, res, Terrain.GetTemp, Terrain.SetTemp);
 
                 float equator = rand.FloatHalf(), eqDif = rand.GaussianCapped(1f - Math.Abs(.5f - equator), .169f, .39f);
 
@@ -130,9 +240,9 @@ namespace randTest
                                     if (y + b >= 0 && y + b < height)
                                     {
                                         float mult = 1 / ( a * a + b * b + .3f );
-                                        h += Tile.GetHeight(res[x + a, y + b]) * mult;
-                                        t += Tile.GetTemp(res[x + a, y + b]) * mult;
-                                        r += Tile.GetRain(res[x + a, y + b]) * mult;
+                                        h += Terrain.GetHeight(res[x + a, y + b]) * mult;
+                                        t += Terrain.GetTemp(res[x + a, y + b]) * mult;
+                                        r += Terrain.GetRain(res[x + a, y + b]) * mult;
                                         count += mult;
                                     }
                         h /= count;
@@ -204,7 +314,7 @@ namespace randTest
             Console.Write(' ');
         }
 
-        private static float DoStat(int width, int height, Tile[,] res, Tile.GetStat Get, Tile.SetStat Set)
+        private static float DoStat(int width, int height, Terrain[,] res, Terrain.GetStat Get, Terrain.SetStat Set)
         {
             float cur = 1, frq = 1.95f, amp = 1.3f;
             Dictionary<Point, float> points = new Dictionary<Point, float>();
@@ -261,41 +371,41 @@ namespace randTest
             return cur;
         }
 
-        private class Tile
+        private class Terrain
         {
             private float height, temp, rain;
 
-            public Tile()
+            public Terrain()
             {
                 height = rand.DoubleHalf(1f);
                 temp = rand.DoubleHalf(1f);
                 rain = rand.DoubleHalf(1f);
             }
 
-            public delegate float GetStat(Tile tile);
-            public delegate void SetStat(Tile tile, float stat);
-            public static float GetHeight(Tile tile)
+            public delegate float GetStat(Terrain tile);
+            public delegate void SetStat(Terrain tile, float stat);
+            public static float GetHeight(Terrain tile)
             {
                 return tile.height;
             }
-            public static void SetHeight(Tile tile, float stat)
+            public static void SetHeight(Terrain tile, float stat)
             {
                 tile.height = stat;
             }
-            public static float GetTemp(Tile tile)
+            public static float GetTemp(Terrain tile)
             {
                 return tile.temp;
             }
-            public static void SetTemp(Tile tile, float stat)
+            public static void SetTemp(Terrain tile, float stat)
             {
                 tile.temp = stat;
             }
 
-            public static float GetRain(Tile tile)
+            public static float GetRain(Terrain tile)
             {
                 return tile.rain;
             }
-            public static void SetRain(Tile tile, float stat)
+            public static void SetRain(Terrain tile, float stat)
             {
                 tile.rain = stat;
             }

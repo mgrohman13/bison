@@ -79,7 +79,7 @@ namespace CityWar
             {
                 if (++index < count)
                 {
-                    if (( pieces[index] ).Movement > 0 && pieces[index].Group != currentGroup)
+                    if (pieces[index].Movement > 0 && pieces[index].Group != currentGroup)
                         return pieces[index];
                 }
                 else
@@ -327,7 +327,7 @@ namespace CityWar
             double thisTotal = 0;
             if (city)
             {
-                int[] prodPop = AddStartResources(666, ref magic, 300, 599, 2);
+                int[] prodPop = AddStartResources(650, ref magic, 300, 499, 2);
                 production += prodPop[0];
                 population += prodPop[1];
 
@@ -341,7 +341,7 @@ namespace CityWar
             }
             else
             {
-                int[] elementals = AddStartResources(390, ref _relic, 100, 199, 5);
+                int[] elementals = AddStartResources(390, ref _relic, 100, 190, 5);
                 air += elementals[0];
                 earth += elementals[1];
                 nature += elementals[2];
@@ -1146,6 +1146,7 @@ namespace CityWar
                     elemental += 30;
                     //rest: +10 (roi 32.50)
                     //find: +50
+
                     //88.77% collection needed for average portal roi (52.67% for relic)
                 }
                 else if (p is City)
@@ -1155,6 +1156,7 @@ namespace CityWar
                     elemental += 6;
                     populationP += 3;
                     deathP += 1;
+                    //+30
                 }
                 else if (p is Relic)
                 {
@@ -1163,6 +1165,7 @@ namespace CityWar
                     magicP += 6;
                     elemental += 5;
                     populationP += 2;
+                    //+13
                 }
                 else if (( portal = p as Portal ) != null)
                 {
