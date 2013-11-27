@@ -599,7 +599,6 @@ namespace CityWarWinApp
             this.KeyPreview = true;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "Map";
-            this.Text = "City War";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainMap_FormClosing);
             this.Load += new System.EventHandler(this.MainMap_Load);
             this.LocationChanged += new System.EventHandler(this.MainMap_LocationChanged);

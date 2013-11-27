@@ -305,7 +305,6 @@ namespace CityWarWinApp
             this.Name = "Info";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "More Info";
             this.ResumeLayout(false);
 
         }

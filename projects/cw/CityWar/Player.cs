@@ -229,6 +229,10 @@ namespace CityWar
 
         public double GetTurnUpkeep()
         {
+            return GetTurnUpkeep(upkeep);
+        }
+        private static double GetTurnUpkeep(double upkeep)
+        {
             return upkeep * .13;
         }
 
@@ -464,12 +468,18 @@ namespace CityWar
 
         internal static void SubtractCommonUpkeep(Player[] players)
         {
-            int min = int.MaxValue;
+            int minUpk = players.Min(player => player.upkeep);
+            minUpk = Game.Random.WeightedInt(minUpk, .78);
+
+            int maxUpk = players.Max(player => player.upkeep);
+            int minWork = players.Min(player => player.work);
+            minWork -= (int)Math.Ceiling(GetTurnUpkeep(maxUpk - minUpk));
+
+            if (minWork > 0)
+                minUpk -= Game.Random.WeightedInt(minWork, .21);
+
             foreach (Player p in players)
-                min = Math.Min(min, p.upkeep);
-            min = -( Game.Random.WeightedInt(min, .78f) );
-            foreach (Player p in players)
-                p.AddUpkeep(min, .078);
+                p.AddUpkeep(-minUpk, .078);
         }
 
         internal Unit FreeUnit(string name, double avgCost)

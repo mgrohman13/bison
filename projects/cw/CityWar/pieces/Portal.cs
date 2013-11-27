@@ -38,8 +38,8 @@ namespace CityWar
             //pay for starting amount and income rounding
             PayUpkeep(GetResourceValue() + ( this.income - income ) * 21);
 
-            tile.Add(this);
             owner.Add(this);
+            tile.Add(this);
         }
         #endregion //fields and constructors
 

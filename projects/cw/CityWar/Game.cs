@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1152,83 +1151,78 @@ next:
                 string addUnit;
                 do
                     addUnit = Random.SelectValue(Races[race]);
-                while (unitsHave[addUnit] / 3.0f > Random.Gaussian(baseCost = Unit.CreateTempUnit(addUnit).BaseCost));
+                while (unitsHave[addUnit] / 2.6f > Random.Gaussian(baseCost = Unit.CreateTempUnit(addUnit).BaseCost));
                 unitsHave[addUnit] += Random.GaussianOEInt(65, 1, .21);
-                //dont place free units when someone has no capturables
-                if (!noCapts && unitsHave[addUnit] >= baseCost)
+                if (unitsHave[addUnit] >= baseCost)
                     units.Add(addUnit);
             }
-            if (units.Count > 0)
+            //dont place free units when someone has no capturables
+            if (!noCapts && units.Count > 0)
             {
                 Dictionary<string, string> forRaces = GetForRaces(Random.SelectValue(units));
                 foreach (string unit in forRaces.Values)
                     unitsHave[unit] -= Unit.CreateTempUnit(unit).BaseCost;
-                double avg = 0;
-                foreach (Player player in players)
-                    avg += Unit.CreateTempUnit(forRaces[player.Race]).BaseCost;
-                avg /= players.Length;
+                double avg = players.Average(player => Unit.CreateTempUnit(forRaces[player.Race]).BaseCost);
                 foreach (Player p in players)
                     p.FreeUnit(forRaces[p.Race], avg);
-                int numPlayers = players.Length;
-                for (int i = 0 ; i < numPlayers ; ++i)
+                for (int i = 0 ; i < players.Length ; ++i)
                     ++counts[i, 4];
             }
         }
 
-        private Dictionary<string, string> GetForRaces(string baseUnit)
+        private Dictionary<string, string> GetForRaces(string targetName)
         {
-            Dictionary<string, string> retVal = new Dictionary<string, string>();
-            Unit unit = Unit.CreateTempUnit(baseUnit);
-            double targetCost = unit.BaseCost;
+            Unit targetUnit = Unit.CreateTempUnit(targetName);
+            double avgRaceTotal = unitsHave.Values.Sum() / (double)Races.Count;
 
-            retVal.Add(unit.Race, baseUnit);
-
-            double numUnits = 0;
-            Dictionary<string, int> raceTotals = new Dictionary<string, int>();
-            double avgRaceTotal = 0;
-            foreach (string race in Races.Keys)
+            return Races.ToDictionary(race => race.Key, race =>
             {
-                int total = 0;
-                foreach (string raceUnit in Races[race])
+                if (targetUnit.Race == race.Key)
                 {
-                    ++numUnits;
-                    total += unitsHave[raceUnit];
+                    return targetName;
                 }
-                raceTotals.Add(race, total);
-                avgRaceTotal += total;
-            }
-            numUnits /= Races.Count;
-            avgRaceTotal /= Races.Count;
-
-            foreach (string race in Races.Keys)
-                if (unit.Race != race)
+                else
                 {
-                    double target = targetCost + ( raceTotals[race] - avgRaceTotal ) / numUnits;
-                    if (target < targetCost / 2.0)
-                        target = targetCost / 2.0;
-                    else if (target > targetCost * 3 / 2.0)
-                        target = targetCost * 3 / 2.0;
-                    retVal.Add(race, Random.SelectValue<string>(Races[race], raceUnit =>
+                    double raceTotal = race.Value.Sum(name => unitsHave[name]);
+                    double target = targetUnit.BaseCost + ( raceTotal - avgRaceTotal ) / (double)race.Value.Length;
+                    double minTarget = targetUnit.BaseCost / 1.69;
+
+                    bool isHigh = ( target > targetUnit.BaseCost );
+                    Func<double> ReverseTarget = ( () => 2 * targetUnit.BaseCost - target );
+                    if (isHigh)
+                        target = ReverseTarget();
+                    if (target < minTarget)
+                        target = minTarget / ( Math.Pow(1 + minTarget - target, .52) );
+                    if (isHigh)
+                        target = ReverseTarget();
+
+                    try
                     {
-                        const double offset1 = .03, offset2 = .003, offset3 = .3;
-                        double baseCost = Unit.CreateTempUnit(raceUnit).BaseCost;
+                        return Random.SelectValue<string>(race.Value, name =>
+                        {
+                            double baseCost = Unit.CreateTempUnit(name).BaseCost;
 
-                        double chance = Math.Abs(target - baseCost) / target;
-                        chance = 1 / ( chance + offset1 );
+                            double chance = Math.Abs(target - baseCost) / target;
+                            chance = 1 / ( .039 + chance );
+                            chance *= chance;
 
-                        double mult = offset2;
-                        double pct = unitsHave[raceUnit] / baseCost;
-                        if (pct > 0)
-                            mult += offset3 + pct;
-                        else
-                            mult /= 1 - 6.66 * pct;
-                        chance *= mult;
+                            double pct = unitsHave[name] / baseCost;
+                            if (pct >= 1)
+                                pct *= 1.3 * pct;
+                            if (pct < 0)
+                                chance *= .052 / ( 1 - 6.5 * pct );
+                            else
+                                chance *= .26 + pct;
 
-                        return Random.Round(chance * byte.MaxValue);
-                    }));
+                            return Random.Round(chance * byte.MaxValue);
+                        });
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        return Random.SelectValue(race.Value);
+                    }
                 }
-
-            return retVal;
+            });
         }
 
         private void RemoveCapturables(bool noCapts, int[,] counts, ref Player deadPlayer, ref Dictionary<Player, double> deadPlayers)

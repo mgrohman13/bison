@@ -1147,7 +1147,7 @@ namespace CityWarWinApp
         private IEnumerable<Unit> OrderByRegen(IEnumerable<Unit> units, Func<Unit, double> keySelector = null)
         {
             units = Game.Random.Iterate(units);
-            Func<Unit, double> secondary = ( unit => unit.WorkRegen );
+            Func<Unit, double> secondary = ( unit => unit.MaxMove * unit.WorkRegen );
             if (keySelector == null)
                 return units.OrderBy(secondary);
             else

@@ -379,10 +379,11 @@ namespace CityWar
 
         internal bool Add(Piece p)
         {
-            bool canUndo;
+            bool canUndo = true;
             SortedInsert(pieces, p, ComparePieces);
+            hasCenterPiece = false;
 
-            if (wizardPoints > 0 && ( p is Wizard ))
+            if (p is Wizard && wizardPoints > 0)
             {
                 p.Owner.CollectWizardPts(wizardPoints);
                 wizardPoints = 0;
@@ -390,8 +391,6 @@ namespace CityWar
                 canUndo = false;
             }
 
-            hasCenterPiece = false;
-            canUndo = true;
             return canUndo;
         }
 
@@ -471,18 +470,6 @@ namespace CityWar
             if (HasCity())
                 throw new Exception();
             cityTime = time;
-        }
-
-        internal bool CollectWizPts(Player player)
-        {
-            if (this.WizardPoints > 0)
-            {
-                player.CollectWizardPts(this.WizardPoints);
-                wizardPoints = 0;
-                game.CreateWizardPts();
-                return false;
-            }
-            return true;
         }
 
         internal bool HasCarrier()
@@ -844,29 +831,26 @@ namespace CityWar
         {
             if (match(this))
                 return 0;
-            if (stopAtDist < 1)
-                return int.MaxValue;
 
-            Dictionary<Tile, int> distances = new Dictionary<Tile, int>();
-            distances.Add(this, 0);
-
+            Dictionary<Tile, int> distances = new Dictionary<Tile, int> { { this, 0 } };
             int dist = 0;
             while (dist < stopAtDist)
             {
-                int checkDist = dist++;
-                Tile[] keys = new Tile[distances.Count];
-                distances.Keys.CopyTo(keys, 0);
-                foreach (Tile t in keys)
-                    //only check the tiles that were picked up at the previous distance
-                    if (distances[t] == checkDist)
-                        foreach (Tile tile in t.neighbors)
-                            //dont rematch tiles or match null tiles
-                            if (tile != null && !distances.ContainsKey(tile))
-                                if (match(tile))
-                                    return dist;
-                                else
-                                    distances.Add(tile, dist);
+                //only check the tiles that were picked up at the previous distance and dont rematch tiles or match null tiles
+                List<Tile> newTiles = distances.Where(pair => pair.Value == dist).SelectMany(pair => pair.Key.neighbors)
+                        .Where(tile => tile != null && !distances.ContainsKey(tile)).Distinct().ToList();
+                //break if we have checked the whole map
+                if (newTiles.Count == 0)
+                    break;
+                ++dist;
+                //check new tiles for a match
+                foreach (Tile tile in newTiles)
+                    if (match(tile))
+                        return dist;
+                    else
+                        distances.Add(tile, dist);
             }
+
             return int.MaxValue;
         }
         #endregion //find distance

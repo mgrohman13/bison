@@ -1,17 +1,6 @@
 review/refactor
-	refactor to use Linq!
-		Game.GetForRaces
-		Player.SubtractCommonUpkeep
-	review Tile.FindDistance
-	test gaussian overloads for correctness
-		boundary exceptions
-			caps
-			int range
-		mathematical
-			average
-			never violate caps
-			confidence intervals
-		pos/neg equivalence
+	Random.Iterate(...).OrderBy...
+		seems to break down with more than 1 pull
 
 in between games
 	use Base... instead of Max...	
@@ -24,9 +13,7 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
-	collect wizard pts use new wiz position
 	Unit.CheckAttacks mucks with used
-	GetForRaces target capping logic
 	apply same ground/water build logic to relic?
 		magic units?
 	when opponents can build wizards?

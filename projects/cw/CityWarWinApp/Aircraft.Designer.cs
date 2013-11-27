@@ -95,7 +95,6 @@ namespace CityWarWinApp
             this.Name = "Aircraft";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Warning";
             ( (System.ComponentModel.ISupportInitialize)( this.pictureBox1 ) ).EndInit();
             this.ResumeLayout(false);
 

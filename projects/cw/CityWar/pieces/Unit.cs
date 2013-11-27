@@ -564,8 +564,8 @@ namespace CityWar
 
             if (add)
             {
-                tile.Add(unit);
                 owner.Add(unit);
+                tile.Add(unit);
             }
 
             return unit;
@@ -594,8 +594,8 @@ namespace CityWar
                 newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type, newHits, newArmor, newRegen, MaxMove, randedAttacks, regenPct);
             }
 
-            tile.Add(newUnit);
             owner.Add(newUnit);
+            tile.Add(newUnit);
 
             newUnit.hits = Game.Random.Round(GetHealthPct() * newUnit.maxHits);
             newUnit.movement = movement;
@@ -783,11 +783,11 @@ namespace CityWar
         private bool ActualMove(Tile t)
         {
             tile.Remove(this);
-            t.Add(this);
-            this.tile = t;
-            tile.CurrentGroup = group;
+            tile = t;
+            bool canUndo = tile.Add(this);
 
-            return tile.CheckCapture(owner);
+            tile.CurrentGroup = group;
+            return canUndo && tile.CheckCapture(owner);
         }
 
         protected override bool CanMoveChild(Tile t)

@@ -61,7 +61,6 @@ namespace CityWarWinApp
             this.Name = "Zoom";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Zoom";
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.zoomForm_KeyPress);
             this.ResumeLayout(false);
 

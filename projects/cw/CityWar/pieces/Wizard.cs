@@ -16,8 +16,8 @@ namespace CityWar
 
             this.units = InitUnits();
 
-            canUndo = tile.Add(this);
             owner.Add(this);
+            canUndo = tile.Add(this);
 
             canUndo = false;
         }
@@ -95,19 +95,20 @@ namespace CityWar
 
         protected override bool DoMove(Tile t, bool gamble, out bool canUndo)
         {
+            canUndo = true;
+
             if (movement > 0)
             {
-                //cant undo if you collect any wizard points
-                canUndo = t.CollectWizPts(owner);
                 tile.Remove(this);
-                t.Add(this);
-                this.tile = t;
+                tile = t;
+                canUndo = tile.Add(this);
+
                 tile.CurrentGroup = group;
                 --movement;
+
                 return true;
             }
 
-            canUndo = true;
             return false;
         }
 

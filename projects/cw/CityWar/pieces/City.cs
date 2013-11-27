@@ -18,8 +18,8 @@ namespace CityWar
 
             this.units = InitUnits(tile);
 
-            tile.Add(this);
             owner.Add(this);
+            tile.Add(this);
         }
 
         private const float avgChance = .8f;

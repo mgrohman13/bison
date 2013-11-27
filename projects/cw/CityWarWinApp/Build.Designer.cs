@@ -338,7 +338,6 @@ namespace CityWarWinApp
             this.Name = "Build";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Units";
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -159,6 +159,8 @@ namespace CityWar
             if (oldMove < 1)
                 throw new Exception();
 
+            movement = oldMove;
+
             if (tile != from)
             {
                 tile.Remove(this);
@@ -169,7 +171,6 @@ namespace CityWar
             {
                 throw new Exception();
             }
-            movement = oldMove;
         }
         #endregion //moving
 

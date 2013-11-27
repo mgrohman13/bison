@@ -115,7 +115,6 @@ namespace CityWarWinApp
             this.Name = "ChangeTerrain";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "Change Terrain";
             this.ResumeLayout(false);
 
         }

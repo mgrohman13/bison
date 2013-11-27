@@ -17,8 +17,8 @@ namespace CityWar
 
             this.units = InitUnits(tile.Terrain);
 
-            tile.Add(this);
             owner.Add(this);
+            tile.Add(this);
         }
 
         private const double matchChance = .5, unmatchChance = .2;

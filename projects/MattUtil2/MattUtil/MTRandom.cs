@@ -1524,37 +1524,7 @@ namespace MattUtil
             if (enumerable == null)
                 throw new ArgumentNullException("enumerable");
 
-            //attempt a cast to ICollection to get the count
-            ICollection<T> collection = enumerable as ICollection<T>;
-            int count;
-            if (collection == null)
-            {
-                //use a list to get the count
-                List<T> list = new List<T>(enumerable);
-                count = list.Count;
-                if (count > 1)
-                    return Iterate<T>(list, count, GetItem);
-            }
-            else if (( count = collection.Count ) > 1)
-            {
-                //use an array since we already know the count
-                T[] array = new T[count];
-                collection.CopyTo(array, 0);
-                return Iterate<T>(array, count, GetItem);
-            }
-
-            //if the count is less than 2 there is no element order
-            return EnumerateOnce(enumerable.GetEnumerator());
-        }
-        private static T GetItem<T>(IList<T> list, int idx)
-        {
-            return list[idx];
-        }
-        private IEnumerable<T> EnumerateOnce<T>(IEnumerator<T> enumerator)
-        {
-            //avoids InvalidOperationException by not calling MoveNext again after returning an item
-            if (enumerator.MoveNext())
-                yield return enumerator.Current;
+            return Iterate<T>(enumerable.ToList(), (list, idx) => list[idx]);
         }
 
         /// <summary>
@@ -1587,20 +1557,19 @@ namespace MattUtil
             if (count < 1)
                 throw new ArgumentOutOfRangeException("count", "count must be greater than 0");
 
-            return Iterate(new int[count], count, GetItemIdx);
-        }
-        private static int GetItemIdx(IList<int> list, int idx)
-        {
-            int item = list[idx];
-            //we can avoid having to initialize the array by assuming the index if the value is 0
-            if (item == 0)
-                return idx;
-            return item;
+            return Iterate(new int[count], (list, idx) =>
+            {
+                int item = list[idx];
+                //we can avoid having to initialize the array by assuming the index if the value is 0
+                if (item == 0)
+                    return idx;
+                return item;
+            });
         }
 
-        private delegate T GetItemDelegate<T>(IList<T> list, int idx);
-        private IEnumerable<T> Iterate<T>(IList<T> list, int count, GetItemDelegate<T> GetItem)
+        private IEnumerable<T> Iterate<T>(IList<T> list, Func<IList<T>, int, T> GetItem)
         {
+            int count = list.Count;
             while (--count > -1)
             {
                 int idx = RangeInt(0, count);
@@ -1643,11 +1612,10 @@ namespace MattUtil
             else
                 return list[idx];
         }
-        public delegate int GetChance<T>(T obj);
         /// <summary>
         /// Returns a random object from 'choices', where 'GetChance' returns the probability of selecting each object.
         /// </summary>
-        public T SelectValue<T>(IEnumerable<T> choices, GetChance<T> GetChance)
+        public T SelectValue<T>(IEnumerable<T> choices, Func<T, int> GetChance)
         {
             if (choices == null)
                 throw new ArgumentNullException("choices");

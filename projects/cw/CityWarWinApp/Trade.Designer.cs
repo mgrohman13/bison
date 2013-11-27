@@ -835,7 +835,6 @@ namespace CityWarWinApp
             this.Name = "Trade";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Trade";
             ( (System.ComponentModel.ISupportInitialize)( this.nudWorkMin ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudWorkMax ) ).EndInit();
             ( (System.ComponentModel.ISupportInitialize)( this.nudPopMax ) ).EndInit();
