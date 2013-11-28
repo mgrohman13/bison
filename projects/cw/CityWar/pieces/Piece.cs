@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CityWar
 {
@@ -92,6 +93,19 @@ namespace CityWar
             }
         }
 
+        private List<Tile> path = null;
+        public List<Tile> Path
+        {
+            get
+            {
+                return ( this.path == null ? null : this.path.ToList() );
+            }
+            internal set
+            {
+                this.path = value;
+            }
+        }
+
         public override string ToString()
         {
             return name;
@@ -102,7 +116,11 @@ namespace CityWar
         internal bool Move(Tile t, bool gamble, out bool canUndo)
         {
             if (CanMove(t))
+            {
+                if (Path != null && Path[0] != t)
+                    Path = null;
                 return DoMove(t, gamble, out canUndo);
+            }
             canUndo = true;
             return false;
         }

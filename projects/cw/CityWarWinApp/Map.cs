@@ -35,7 +35,23 @@ namespace CityWarWinApp
 
         //miscellaneous
         static List<Piece> okToMove = new List<Piece>();
-        Point selected = new Point(-1, -1);
+        Point _selected = new Point(-1, -1);
+        Point selected
+        {
+            get
+            {
+                return _selected;
+            }
+            set
+            {
+                if (_selected != value)
+                {
+                    _selected = value;
+
+                    CheckPath();
+                }
+            }
+        }
         Rectangle oldBounds, invalidateRectangle;
         UnitInfo InfoForm;
         bool storeOld = true, saved = true, canClose = false;
@@ -288,6 +304,8 @@ namespace CityWarWinApp
                 topY = ( (float)Game.Height + 1f / 3f ) * ( (float)Zoom * 3f * mult ) - (float)ClientSize.Height + 26f;
 
             //get the font for city and wizard numbers on a tile
+            if (tileInfoFont != null)
+                tileInfoFont.Dispose();
             tileInfoFont = new Font("Arial", Zoom / 9f);
 
             //reset the pics so they can be the proper size
@@ -393,10 +411,13 @@ namespace CityWarWinApp
                         selectedTile.ClickOn(clicked, CheckModifier(Keys.Shift), CheckModifier(Keys.Control), CheckModifier(Keys.Alt));
                         RefreshButtons();
                         panelPieces.Invalidate();
+
+                        CheckPath();
                     }
                 }
             }
         }
+
         private bool CheckModifier(Keys key)
         {
             return ( ( Control.ModifierKeys & key ) != Keys.None );
@@ -418,6 +439,8 @@ namespace CityWarWinApp
                         selectedTile.ClickOn(clicked, false, true, false);
                         RefreshButtons();
                         panelPieces.Invalidate();
+
+                        CheckPath();
                     }
                 }
             }
@@ -483,152 +506,178 @@ namespace CityWarWinApp
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            //System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-            //watch.Reset();
-            //watch.Start();
-
-
-            float OffX = this.offX - 13f;
-            float OffY = this.offY - 13f - side;
-
-            //get a bunch of arithmetic out of the way to speed up the loop
-            float
-                mid4 = middle * 4f,
-                mid2 = middle * 2f,
-                mid_2 = middle / 2f,
-                side2 = side * 2f,
-                side3 = side * 3f,
-                side2_3 = side * 2.3f,
-                zoom_9 = _zoom / 9f,
-                zoom_3 = _zoom / 3f,
-                zoom_4_5mid_2 = _zoom / 4.5f + mid_2,
-                zoom_9zoom_6_m = zoom_9 + _zoom / 6f - .0666f * _zoom,
-                _zoom_9side2_3 = -zoom_9 + side2_3,
-                _zoom_9side2_3_p = _zoom_9side2_3 + 3f,
-                zoom_4_5mid_2zoom_3 = zoom_4_5mid_2 + zoom_3,
-                zoom_9mid_2 = zoom_9 + mid_2,
-                zoom_9mid_2zoom_3 = zoom_9mid_2 + zoom_3;
-
-            //get the range of hexes that need to be drawn
-            int minX = (int)( offX / _zoom ) - 2, maxX = (int)( ( offX + (float)( ClientSize.Width - panelWidth ) ) / _zoom ) + 1;
-            int minY = (int)( offY / ( side3 ) ) - 2, maxY = (int)( ( offY + ClientSize.Height ) / ( side3 ) ) + 1;
-            if (minX < -1)
-                minX = -1;
-            if (minY < -1)
-                minY = -1;
-            if (maxX > Game.Width)
-                maxX = Game.Width;
-            if (maxY > Game.Height)
-                maxY = Game.Height;
-
-            //draw the hexes
-            for (int X = minX ; ++X < maxX ; )
-                for (int Y = minY ; ++Y < maxY ; )
-                {
-                    //get the current tile being drawn
-                    Tile thisTile = Game.GetTile(X, Y);
-
-                    //get the proper color
-                    Brush theBrush;
-                    switch (thisTile.Terrain)
-                    {
-                    case Terrain.Forest:
-                        theBrush = Brushes.Green;
-                        break;
-                    case Terrain.Mountain:
-                        theBrush = Brushes.Gold;
-                        break;
-                    case Terrain.Plains:
-                        theBrush = Brushes.Gray;
-                        break;
-                    case Terrain.Water:
-                        theBrush = Brushes.Blue;
-                        break;
-                    default:
-                        throw new Exception();
-                    }
-
-                    //caulculate the upper left hand corner of the hex
-                    float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
-                    float yVal = (float)Y * side3 - OffY;
-
-                    //draw the terrain hexegon
-                    PointF[] points = new PointF[6];
-                    points[0] = new PointF(xVal, yVal);
-                    points[1] = new PointF(xVal + mid2, yVal - side);
-                    points[2] = new PointF(xVal + mid4, yVal);
-                    points[3] = new PointF(xVal + mid4, yVal + side2);
-                    points[4] = new PointF(xVal + mid2, yVal + side3);
-                    points[5] = new PointF(xVal, yVal + side2);
-                    e.Graphics.FillPolygon(theBrush, points);
-                    e.Graphics.DrawPolygon(Pens.White, points);
-
-                    //draw tile information
-                    int wp = thisTile.WizardPoints;
-                    if (wp > 0)
-                    {
-                        e.Graphics.FillEllipse(Brushes.DeepPink, xVal + zoom_9mid_2,
-                            yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
-                        e.Graphics.DrawString(wp.ToString(), tileInfoFont, Brushes.Black,
-                            xVal + zoom_4_5mid_2, yVal + _zoom_9side2_3);
-                    }
-                    int cp = thisTile.CityTime;
-                    if (cp > -1)
-                    {
-                        e.Graphics.FillEllipse(Brushes.DarkRed, xVal + zoom_9mid_2zoom_3,
-                            yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
-                        e.Graphics.DrawString(cp.ToString(), tileInfoFont, Brushes.Black,
-                            xVal + zoom_4_5mid_2zoom_3, yVal + _zoom_9side2_3);
-                    }
-                }
-
-            //draw the units
-            for (int X = minX ; ++X < maxX ; )
-                for (int Y = minY ; ++Y < maxY ; )
-                {
-                    Tile thisTile = Game.GetTile(X, Y);
-                    float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
-                    float yVal = (float)Y * side3 - OffY;
-                    Image pic = thisTile.GetPieceImage();
-                    if (pic != null)
-                        e.Graphics.DrawImage(pic, xVal + zoom_9, yVal - zoom_9zoom_6_m);
-                }
-
-            //show the selected tile
-            if (selected.X > minX && selected.X < maxX && selected.Y > minY && selected.Y < maxY)
+            try
             {
-                float XVal = (float)selected.X * mid4 - OffX + ( selected.Y % 2 == 0 ? mid2 : 0f );
-                float YVal = (float)selected.Y * side3 - OffY;
-                PointF[] points = new PointF[6];
-                points[0] = new PointF(XVal, YVal);
-                points[1] = new PointF(XVal + mid2, YVal - side);
-                points[2] = new PointF(XVal + mid4, YVal);
-                points[3] = new PointF(XVal + mid4, YVal + side2);
-                points[4] = new PointF(XVal + mid2, YVal + side3);
-                points[5] = new PointF(XVal, YVal + side2);
-                e.Graphics.DrawPolygon(new Pen(Color.Black, 3f), points);
+                //System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+                //watch.Reset();
+                //watch.Start();
+
+                float OffX = this.offX - 13f;
+                float OffY = this.offY - 13f - side;
+
+                //get a bunch of arithmetic out of the way to speed up the loop
+                float
+                    mid4 = middle * 4f,
+                    mid2 = middle * 2f,
+                    mid_2 = middle / 2f,
+                    side2 = side * 2f,
+                    side3 = side * 3f,
+                    zoom_9 = _zoom / 9f,
+                    zoom_3 = _zoom / 3f,
+                    zoom_4_5mid_2 = _zoom / 4.5f + mid_2,
+                    zoom_9zoom_6_m = zoom_9 + _zoom / 6f - .0666f * _zoom,
+                    _zoom_9side2_3 = -zoom_9 + side * 2.3f,
+                    _zoom_9side2_3_p = _zoom_9side2_3 + 3f,
+                    zoom_4_5mid_2zoom_3 = zoom_4_5mid_2 + zoom_3,
+                    zoom_9mid_2 = zoom_9 + mid_2,
+                    zoom_9mid_2zoom_3 = zoom_9mid_2 + zoom_3;
+
+                //get the range of hexes that need to be drawn
+                int minX = (int)( offX / _zoom ) - 2, maxX = (int)( ( offX + (float)( ClientSize.Width - panelWidth ) ) / _zoom ) + 1;
+                int minY = (int)( offY / ( side3 ) ) - 2, maxY = (int)( ( offY + ClientSize.Height ) / ( side3 ) ) + 1;
+                if (minX < -1)
+                    minX = -1;
+                if (minY < -1)
+                    minY = -1;
+                if (maxX > Game.Width)
+                    maxX = Game.Width;
+                if (maxY > Game.Height)
+                    maxY = Game.Height;
+
+                //draw the hexes
+                for (int X = minX ; ++X < maxX ; )
+                    for (int Y = minY ; ++Y < maxY ; )
+                    {
+                        //get the current tile being drawn
+                        Tile thisTile = Game.GetTile(X, Y);
+
+                        //get the proper color
+                        Brush theBrush;
+                        switch (thisTile.Terrain)
+                        {
+                        case Terrain.Forest:
+                            theBrush = Brushes.Green;
+                            break;
+                        case Terrain.Mountain:
+                            theBrush = Brushes.Gold;
+                            break;
+                        case Terrain.Plains:
+                            theBrush = Brushes.Gray;
+                            break;
+                        case Terrain.Water:
+                            theBrush = Brushes.Blue;
+                            break;
+                        default:
+                            throw new Exception();
+                        }
+
+                        //caulculate the upper left hand corner of the hex
+                        float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
+                        float yVal = (float)Y * side3 - OffY;
+
+                        //draw the terrain hexegon
+                        PointF[] points = new PointF[6];
+                        points[0] = new PointF(xVal, yVal);
+                        points[1] = new PointF(xVal + mid2, yVal - side);
+                        points[2] = new PointF(xVal + mid4, yVal);
+                        points[3] = new PointF(xVal + mid4, yVal + side2);
+                        points[4] = new PointF(xVal + mid2, yVal + side3);
+                        points[5] = new PointF(xVal, yVal + side2);
+                        e.Graphics.FillPolygon(theBrush, points);
+                        e.Graphics.DrawPolygon(Pens.White, points);
+
+                        //draw tile information
+                        int wp = thisTile.WizardPoints;
+                        if (wp > 0)
+                        {
+                            e.Graphics.FillEllipse(Brushes.DeepPink, xVal + zoom_9mid_2,
+                                    yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
+                            e.Graphics.DrawString(wp.ToString(), tileInfoFont, Brushes.Black,
+                                    xVal + zoom_4_5mid_2, yVal + _zoom_9side2_3);
+                        }
+                        int cp = thisTile.CityTime;
+                        if (cp > -1)
+                        {
+                            e.Graphics.FillEllipse(Brushes.DarkRed, xVal + zoom_9mid_2zoom_3,
+                                    yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
+                            e.Graphics.DrawString(cp.ToString(), tileInfoFont, Brushes.Black,
+                                    xVal + zoom_4_5mid_2zoom_3, yVal + _zoom_9side2_3);
+                        }
+                    }
+
+                using (Pen pen3 = new Pen(Color.Black, 3f))
+                {
+                    //show the selected tile
+                    if (selected.X > minX && selected.X < maxX && selected.Y > minY && selected.Y < maxY)
+                    {
+                        float XVal = (float)selected.X * mid4 - OffX + ( selected.Y % 2 == 0 ? mid2 : 0f );
+                        float YVal = (float)selected.Y * side3 - OffY;
+                        PointF[] points = new PointF[6];
+                        points[0] = new PointF(XVal, YVal);
+                        points[1] = new PointF(XVal + mid2, YVal - side);
+                        points[2] = new PointF(XVal + mid4, YVal);
+                        points[3] = new PointF(XVal + mid4, YVal + side2);
+                        points[4] = new PointF(XVal + mid2, YVal + side3);
+                        points[5] = new PointF(XVal, YVal + side2);
+                        e.Graphics.DrawPolygon(pen3, points);
+                    }
+
+                    //draw the units
+                    for (int X = minX ; ++X < maxX ; )
+                        for (int Y = minY ; ++Y < maxY ; )
+                        {
+                            Tile thisTile = Game.GetTile(X, Y);
+                            Image pic = thisTile.GetPieceImage();
+                            if (pic != null)
+                            {
+                                float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
+                                float yVal = (float)Y * side3 - OffY;
+                                e.Graphics.DrawImage(pic, xVal + zoom_9, yVal - zoom_9zoom_6_m);
+                            }
+                        }
+
+                    if (selected.X != -1 && selected.Y != -1)
+                    {
+                        var path = Game.GetTile(selected.X, selected.Y).GetSelectedPieces().Where(piece => piece.Path != null).FirstOrDefault();
+                        if (path != null && path.Path != null)
+                        {
+                            List<PointF> points = new List<PointF>();
+                            foreach (Tile t in path.Path)
+                            {
+                                float xVal = (float)t.x * mid4 - OffX + ( t.y % 2 == 0 ? mid2 : 0f );
+                                float yVal = (float)t.y * side3 - OffY;
+                                points.Add(new PointF(xVal + mid2, yVal + side2 / 2f));
+                            }
+                            e.Graphics.DrawLines(pen3, points.ToArray());
+                        }
+                    }
+                }
+
+                //clip it
+                e.Graphics.FillRectangle(Brushes.Black, new Rectangle(this.ClientSize.Width - panelWidth, 0, panelWidth, this.ClientSize.Height));
+
+                base.OnPaint(e);
+
+                //watch.Stop();
+                //total += watch.ElapsedTicks;
+                //++amt;
+
+                //if (amt > 100)
+                //{
+                //    double avg = total / amt;
+
+                //    total = 0;
+                //    amt = 0;
+                //}
+
+                //101343.44554455446
+                // 97529.0099009901
+                // 98505.316831683172
             }
-
-            //clip it
-            e.Graphics.FillRectangle(Brushes.Black, new Rectangle(this.ClientSize.Width - panelWidth, 0, panelWidth, this.ClientSize.Height));
-
-            base.OnPaint(e);
-
-            //watch.Stop();
-            //total += watch.ElapsedTicks;
-            //++amt;
-
-            //if (amt > 100)
-            //{
-            //    double avg = total / amt;
-
-            //    total = 0;
-            //    amt = 0;
-            //}
-
-            //101343.44554455446
-            // 97529.0099009901
-            // 98505.316831683172
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         #endregion
@@ -697,9 +746,7 @@ namespace CityWarWinApp
                 {
                     //select the tile
                     if (e.Button == MouseButtons.Left)
-                    {
                         selected = new Point(x, y);
-                    }
                     //right mouse button to move units
                     else if (e.Button == MouseButtons.Right)
                     {
@@ -777,7 +824,13 @@ namespace CityWarWinApp
                                         return;
                                 }
                                 else
-                                    return;
+                                {
+                                    var selectedPieces = selectedTile.GetSelectedPieces();
+                                    if (selectedPieces.Any())
+                                        Unit.PathFind(selectedPieces, clicked);
+                                    else
+                                        return;
+                                }
                             }
                             else
                                 return;
@@ -794,6 +847,20 @@ namespace CityWarWinApp
                     RefreshCurrentPlayer();
                     CenterUnit();
                     this.Invalidate(invalidateRectangle, false);
+                }
+            }
+        }
+        private void CheckPath()
+        {
+            this.Invalidate();
+            if (selected.X != -1 && selected.Y != -1)
+            {
+                Tile selectedTile = Game.GetTile(selected.X, selected.Y);
+                var paths = selectedTile.GetSelectedPieces().Where(piece => piece.Path != null);
+                if (paths.Any())
+                {
+                    foreach (var group in paths.GroupBy(piece => piece.Path[piece.Path.Count - 1]))
+                        Unit.PathFind(group, group.Key);
                 }
             }
         }

@@ -1,3 +1,11 @@
+Linq
+	Game.GetHomeworld
+	Game.GetAvailableHomeworlds
+	Player.SellProduction
+	Anomaly.PullIn
+	Anomaly.GetRandomTile
+	ShipDesign.GetStartDesigns
+
 UI
 	show orig center?
 	unhold wormhole pulled ship
@@ -45,6 +53,8 @@ lost colony follows planet creation chance
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 terraform check use actual values
+rethink neg gold again
+	don't like random disbanding - no adv over manual
 
 standardive Tile.Game vs Player.Game calls
 remove static qualifiers to same class

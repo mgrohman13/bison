@@ -1,9 +1,7 @@
-review/refactor
-	Random.Iterate(...).OrderBy...
-		seems to break down with more than 1 pull
-
 in between games
-	use Base... instead of Max...	
+	review serialized/caching stuff
+	standardize fields
+		use Base... instead of Max...
 	save undo stack	
 
 balance
@@ -16,6 +14,7 @@ gameplay
 	Unit.CheckAttacks mucks with used
 	apply same ground/water build logic to relic?
 		magic units?
+		free units?
 	when opponents can build wizards?
 		make pts more random
 		show

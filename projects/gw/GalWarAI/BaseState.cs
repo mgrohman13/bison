@@ -49,7 +49,7 @@ namespace GalWarAI
             foreach (Tile t in options.ToArray())
                 if (t.SpaceObject != null)
                     options.Remove(t);
-            return options.ToArray()[Game.Random.Next(options.Count)];
+            return Game.Random.SelectValue(options);
         }
 
         Buildable IEventHandler.getNewBuild(Colony colony)

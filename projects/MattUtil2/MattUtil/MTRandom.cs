@@ -1265,7 +1265,7 @@ namespace MattUtil
             double max = Math.Abs(average) + Math.Abs(gaussianMax * stdDev);
             if (max >= int.MaxValue)
                 throw new ArgumentOutOfRangeException("stdDev", max,
-                    "|average|+|" + gaussianMax + "*stdDev| (average=" + average + ", stdDev=" + stdDev + ") must be less than " + int.MaxValue);
+                        "|average|+|" + gaussianMax + "*stdDev| (average=" + average + ", stdDev=" + stdDev + ") must be less than " + int.MaxValue);
         }
 
         /// <summary>
@@ -1517,25 +1517,31 @@ namespace MattUtil
 
         /// <summary>
         /// Iterates in random order over an enumeration of objects.
-        /// Modifications to the enumerable will not affect iteration.
+        /// Modifications to the parameter enumerable will not affect iteration.
+        /// The same return enumerable can be re-used for different orderings of the same objects.
         /// </summary>
         public IEnumerable<T> Iterate<T>(IEnumerable<T> enumerable)
         {
             if (enumerable == null)
                 throw new ArgumentNullException("enumerable");
 
-            return Iterate<T>(enumerable.ToList(), (list, idx) => list[idx]);
+            return Iterate<T>(enumerable.ToList());
         }
 
         /// <summary>
-        /// Iterates in random order over each point on an integral grid in euclidean space
+        /// Iterates in random order over each point on an integral grid in euclidean space.
         /// </summary>
         public IEnumerable<Point> Iterate(int width, int height)
         {
+            if (width < 1)
+                throw new ArgumentOutOfRangeException("width", width, "width must be greater than 0");
+            if (height < 1)
+                throw new ArgumentOutOfRangeException("height", height, "height must be greater than 0");
+
             return Iterate(0, width - 1, 0, height - 1);
         }
         /// <summary>
-        /// Iterates in random order over each point on an integral grid in euclidean space
+        /// Iterates in random order over each point on an integral grid in euclidean space.
         /// </summary>
         public IEnumerable<Point> Iterate(int startX, int endX, int startY, int endY)
         {
@@ -1545,17 +1551,16 @@ namespace MattUtil
                 throw new ArgumentOutOfRangeException("endY", endY, "endY must be greater than or equal to startY");
 
             int height = endY - startY + 1;
-            foreach (int coord in Iterate(( endX - startX + 1 ) * height))
-                yield return new Point(startX + coord / height, startY + coord % height);
+            return Iterate(( endX - startX + 1 ) * height)
+                    .Select(coord => new Point(startX + coord / height, startY + coord % height));
         }
-
         /// <summary>
         /// Iterates in random order over the integers 0 through count-1.
         /// </summary>
         public IEnumerable<int> Iterate(int count)
         {
             if (count < 1)
-                throw new ArgumentOutOfRangeException("count", "count must be greater than 0");
+                throw new ArgumentOutOfRangeException("count", count, "count must be greater than 0");
 
             return Iterate(new int[count], (list, idx) =>
             {
@@ -1567,17 +1572,46 @@ namespace MattUtil
             });
         }
 
-        private IEnumerable<T> Iterate<T>(IList<T> list, Func<IList<T>, int, T> GetItem)
+        /// <summary>
+        /// Modifies the order of a list to random order.
+        /// </summary>
+        public void Shuffle<T>(IList<T> list)
         {
-            int count = list.Count;
-            while (--count > -1)
+            IEnumerator<T> enumerator = Iterate(list).GetEnumerator();
+            while (enumerator.MoveNext())
+                ;
+        }
+
+        private IEnumerable<T> Iterate<T>(IList<T> list, Func<IList<T>, int, T> GetItem = null)
+        {
+            bool zero = ( GetItem != null );
+            if (!zero)
+                GetItem = (l, i) => l[i];
+
+            int min = 0, max = list.Count;
+            while (min <= --max)
             {
-                int idx = RangeInt(0, count);
-                //yield return in random order as it is determined
-                yield return GetItem(list, idx);
-                //maintain remaining elements
-                if (idx < count)
-                    list[idx] = GetItem(list, count);
+                //select a random remaining object
+                int idx = RangeInt(min, max);
+                T next = GetItem(list, idx);
+
+                //yield return so that we don't fully shuffle the list unless the entire enumerable is walked
+                yield return next;
+
+                //ensure multiple calls to the same returned enumerable will work correctly
+                if (zero && (int)(object)next == 0)
+                {
+                    zero = false;
+                    min = 1;
+                    ++max;
+                }
+                else
+                {
+                    //maintain remaining objects
+                    if (idx < max)
+                        list[idx] = GetItem(list, max);
+                    list[max] = next;
+                }
             }
         }
 
@@ -1612,6 +1646,7 @@ namespace MattUtil
             else
                 return list[idx];
         }
+
         /// <summary>
         /// Returns a random object from 'choices', where 'GetChance' returns the probability of selecting each object.
         /// </summary>
@@ -1666,12 +1701,12 @@ namespace MattUtil
         private void CheckChance(int chance)
         {
             if (chance < 0)
-                throw new ArgumentOutOfRangeException("choices", "each individual chance must be greater than or equal to 0");
+                throw new ArgumentOutOfRangeException("choices", chance, "each individual chance must be greater than or equal to 0");
         }
         private T SelectValue<T>(IEnumerable<T> choices, IDictionary<T, int> chances, int total)
         {
             if (total <= 0)
-                throw new ArgumentOutOfRangeException("choices", "the sum total of the chances must be greater than 0");
+                throw new ArgumentOutOfRangeException("choices", total, "the sum total of the chances must be greater than 0");
 
             //select a random number within the total
             total = Next(total);

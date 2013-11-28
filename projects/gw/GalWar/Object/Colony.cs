@@ -363,11 +363,7 @@ namespace GalWar
                     break;
                 }
             if (blocked)
-                foreach (Tile neighbor in Game.Random.Iterate(Tile.GetNeighbors(this.Tile)))
-                {
-                    neighbor.SpaceObject = null;
-                    break;
-                }
+                Game.Random.SelectValue(Tile.GetNeighbors(this.Tile)).SpaceObject = null;
 
             if (this.built)
             {
@@ -1277,7 +1273,7 @@ namespace GalWar
         {
             BuildAttAndDef(prod / 2.0, prod / 2.0);
         }
-        private void BuildAttAndDef(double att, double def) 
+        private void BuildAttAndDef(double att, double def)
         {
             bool rand = Game.Random.Bool();
             BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);

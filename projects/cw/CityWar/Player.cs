@@ -572,6 +572,11 @@ namespace CityWar
             game.DefeatPlayer(this);
 
             trades.Clear();
+
+            foreach (Bitmap image in picsConst.Values)
+                image.Dispose();
+            foreach (Bitmap image in pics.Values)
+                image.Dispose();
             picsConst.Clear();
             pics.Clear();
         }
@@ -773,9 +778,9 @@ namespace CityWar
                 pic = GetConstPic(name);
 
             if (constPic)
-                picsConst[name] = pic;
+                picsConst.Add(name, pic);
             else
-                pics[name] = ResizePic(pic);
+                pics.Add(name, ResizePic(pic));
         }
         private Bitmap LoadPicFromFile(string name, Color portalColor)
         {
@@ -814,6 +819,7 @@ namespace CityWar
         {
             return new Bitmap(pic, Game.Random.Round(zoom * 5f / 6f),
                 Game.Random.Round(zoom * 5f / 6f));
+            pic.Dispose();
         }
         internal static void ResetPics(Player[] players, float zoom)
         {

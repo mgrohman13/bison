@@ -401,10 +401,9 @@ namespace GalWar
         private Planet GetHomeworld(int startPop)
         {
             List<Planet> homeworlds;
-            int homeworldCount;
 
             //we may need to add another valid homeworld
-            while (( homeworldCount = ( homeworlds = GetAvailableHomeworlds(startPop) ).Count ) == 0)
+            while (( homeworlds = GetAvailableHomeworlds(startPop) ).Count == 0)
             {
                 //we dont want to change the number of planets, so take one out first
                 Planet removePlanet = null;
@@ -423,7 +422,7 @@ namespace GalWar
                     ;
             }
 
-            return homeworlds[Random.Next(homeworldCount)];
+            return Random.SelectValue(homeworlds);
         }
         private List<Planet> GetAvailableHomeworlds(int startPop)
         {
@@ -510,8 +509,8 @@ next_planet:
             {
                 double avgResearch = 0;
                 foreach (Player player in this.players)
-                    avgResearch += (1 * player.ResearchDisplay + 5 * player.Research + 13 * player.LastResearched
-                            + 2 * player.ResearchGuess) / 21.0;
+                    avgResearch += ( 1 * player.ResearchDisplay + 5 * player.Research + 13 * player.LastResearched
+                            + 2 * player.ResearchGuess ) / 21.0;
                 return avgResearch / (double)this.players.Count;
             }
         }
@@ -773,7 +772,7 @@ next_planet:
             {
                 double chance = teleporters.Count / ( 65.0 + teleporters.Count );
                 if (PlayerTurnChance(chance))
-                    RemoveTeleporter(teleporters[Random.Next(teleporters.Count)]);
+                    RemoveTeleporter(Random.SelectValue(teleporters));
             }
         }
 

@@ -682,7 +682,7 @@ namespace GalWar
         {
             while (NegativeGold() && this.ships.Count > 0)
             {
-                Ship ship = this.ships[Game.Random.Next(this.ships.Count)];
+                Ship ship = Game.Random.SelectValue(this.ships);
                 Console.WriteLine("Disbanded ship: " + ship);
 
                 ship.Disband(handler, null);

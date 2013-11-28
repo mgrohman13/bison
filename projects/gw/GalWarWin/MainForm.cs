@@ -1465,7 +1465,7 @@ namespace GalWarWin
                 selected = Game.GetTile(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
                 Center();
                 double t1 = panX, t2 = panY;
-                SelectTile(anomalies[Game.Random.Next(anomalies.Count)].Tile);
+                SelectTile(Game.Random.SelectValue(anomalies).Tile);
                 if (t1 != panX || t2 != panY)
                     ShowAnomalies(anomalies);
             }

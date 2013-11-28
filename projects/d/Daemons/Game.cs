@@ -110,10 +110,7 @@ namespace Daemons
             startUnits.Add(UnitType.Archer, 2);
             startUnits.Add(UnitType.Infantry, 3);
             for (int a = 6 ; a < 13 ; ++a)
-            {
-                UnitType unitType = Random.SelectValue<UnitType>(startUnits);
-                ++startUnits[unitType];
-            }
+                ++startUnits[Random.SelectValue<UnitType>(startUnits)];
             for (int a = 0 ; a < 13 ; ++a)
             {
                 UnitType unitType = Random.SelectValue<UnitType>(startUnits);

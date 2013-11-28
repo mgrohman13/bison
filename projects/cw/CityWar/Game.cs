@@ -97,7 +97,8 @@ namespace CityWar
 
             //initialize the players, half with cities and half with wizards
             bool city = Random.Bool();
-            foreach (Player current in Random.Iterate<Player>(newPlayers))
+            IEnumerable<Player> randOrder = Random.Iterate<Player>(newPlayers);
+            foreach (Player current in randOrder)
             {
                 string[] raceUnits = new string[3];
                 for (int a = -1 ; ++a < 3 ; )
@@ -108,7 +109,7 @@ namespace CityWar
             //randomize the turn order
             game.currentPlayer = -1;
             game.players = new Player[numPlayers];
-            foreach (Player current in Random.Iterate<Player>(newPlayers))
+            foreach (Player current in randOrder)
             {
                 game.players[++game.currentPlayer] = current;
                 //players moving later in the turn order receive compensation

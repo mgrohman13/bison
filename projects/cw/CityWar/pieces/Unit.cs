@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Runtime.Serialization;
 using MattUtil;
@@ -798,65 +799,95 @@ namespace CityWar
 
         private int GetNeeded(Tile t)
         {
-            //this method can be called for any type of move, so check all possibilities
-            int needed;
             if (t.HasCity())
-            {
-                needed = 1;
-            }
-            else if (Type == UnitType.Air || Type == UnitType.Immobile)
-            {
-                needed = 1;
-            }
-            else if (Type == UnitType.Ground && t.Terrain != Terrain.Water)
-            {
+                return 1;
+
+            if (Type == UnitType.Air || Type == UnitType.Immobile)
+                return 1;
+
+            if (( Type == UnitType.Water || Type == UnitType.Amphibious ) && t.Terrain == Terrain.Water)
+                return 1;
+
+            if (( Type == UnitType.Ground || Type == UnitType.Amphibious ) && t.Terrain != Terrain.Water)
                 switch (t.Terrain)
                 {
                 case Terrain.Plains:
-                    needed = 1;
-                    break;
+                    return 1;
                 case Terrain.Forest:
-                    needed = 2;
-                    break;
+                    return 2;
                 case Terrain.Mountain:
-                    needed = 3;
-                    break;
+                    return 3;
                 default:
                     throw new Exception();
                 }
-            }
-            else if (Type == UnitType.Water && t.Terrain == Terrain.Water)
+
+            //not the right unit type to move on that terrain
+            return -1;
+        }
+        #endregion //moving
+
+        #region pathfinding
+
+        public static void PathFind(IEnumerable<Piece> pieces, Tile clicked, bool makeGroup = false)
+        {
+            int origCount = pieces.Count();
+            pieces = pieces.Where(piece => piece.MaxMove > 0 && piece.Owner == piece.Owner.Game.CurrentPlayer
+                    && ( !( piece is Unit ) || ( (Unit)piece ).GetNeeded(clicked) != -1 ));
+            if (clicked == null || pieces.GroupBy(piece => piece.Tile).Count() != 1)
+                return;
+
+            var units = pieces.OfType<Unit>();
+            var groups = units.Where(unit => unit.Type != UnitType.Air && unit.Type != UnitType.Immobile).GroupBy(unit => unit.Type);
+            if (groups.Count(group => group.Key == UnitType.Ground || group.Key == UnitType.Water) == 2)
             {
-                needed = 1;
-            }
-            else if (Type == UnitType.Amphibious)
-            {
-                switch (t.Terrain)
-                {
-                case Terrain.Water:
-                    needed = 1;
-                    break;
-                case Terrain.Plains:
-                    needed = 1;
-                    break;
-                case Terrain.Forest:
-                    needed = 2;
-                    break;
-                case Terrain.Mountain:
-                    needed = 3;
-                    break;
-                default:
-                    throw new Exception();
-                }
+                foreach (var group in Game.Random.Iterate(groups.Concat(new[] { pieces.Where(piece => !( piece is Unit )),
+                        units.Where(unit => unit.Type == UnitType.Air || unit.Type == UnitType.Immobile) }.Where(group => group.Any()))))
+                    PathFind(group, clicked, true);
             }
             else
             {
-                //not the right unit type to move on that terrain
-                needed = -1;
+                Tile from = pieces.First().Tile;
+                int newGroup;
+                if (makeGroup || origCount != pieces.Count())
+                    newGroup = Game.NewGroup();
+                else
+                    newGroup = from.CurrentGroup;
+
+                List<Tile> tiles = TBSUtil.PathFind(Game.Random, from, clicked, tile => tile.GetNeighbors()
+                        .Select(neighbor => new Tuple<Tile, int>(neighbor, GetWorstNeeded(pieces, neighbor)))
+                        .Where(tuple => tuple.Item2 != -1), GetDistance);
+
+                foreach (Piece piece in pieces)
+                {
+                    piece.Path = tiles;
+                    piece.Group = newGroup;
+                }
+                from.CurrentGroup = newGroup;
             }
-            return needed;
         }
-        #endregion //moving
+        private static int GetWorstNeeded(IEnumerable<Piece> pieces, Tile neighbor)
+        {
+            IEnumerable<int> needed = pieces.OfType<Unit>().Select(unit => unit.GetNeeded(neighbor));
+            if (!needed.Any())
+                return 1;
+            if (needed.Contains(-1))
+                return -1;
+            return needed.Max();
+        }
+        private static int GetDistance(Tile t1, Tile t2)
+        {
+            int x1 = t1.x, y1 = t1.y, x2 = t2.x, y2 = t2.y;
+            int yDist = Math.Abs(y2 - y1);
+            int xDist = Math.Abs(x2 - x1) - yDist / 2;
+            //determine if the odd y distance will save an extra x move or not
+            if (xDist < 1)
+                xDist = 0;
+            else if (( yDist % 2 != 0 ) && ( ( y2 % 2 != 0 ) == ( x2 < x1 ) ))
+                --xDist;
+            return yDist + xDist;
+        }
+
+        #endregion //pathfinding
 
         #region IDeserializationCallback Members
 
