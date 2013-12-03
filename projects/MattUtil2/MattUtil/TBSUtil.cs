@@ -20,7 +20,7 @@ namespace MattUtil
             for (int a = 0 ; a < numShuffles ; ++a)
             {
                 int index = random.Next(playerLength);
-                int swap = ( index - 1 );
+                int swap = index - 1;
                 Player player = players[index];
 
                 if (index == 0 || affected[index] || affected[swap])
@@ -93,15 +93,20 @@ namespace MattUtil
         }
 
         //A* Pathfinding Algorithm
-        public static List<Tile> PathFind<Tile>(MTRandom random, Tile from, Tile to, Func<Tile, IEnumerable<Tuple<Tile, int>>> GetNeighbors, Func<Tile, Tile, int> GetDistance)
-            where Tile : class
+        public static List<Tile> PathFind<Tile>(MTRandom random, Tile from, Tile to,
+                Func<Tile, IEnumerable<Tuple<Tile, int>>> GetNeighbors, Func<Tile, Tile, int> GetDistance)
+                where Tile : class
         {
+            if (random == null)
+                throw new ArgumentNullException("random");
             if (from == null)
                 throw new ArgumentNullException("from");
             if (to == null)
                 throw new ArgumentNullException("to");
             if (GetNeighbors == null)
                 throw new ArgumentNullException("GetNeighbors");
+            if (GetDistance == null)
+                throw new ArgumentNullException("GetDistance");
 
             int dist = GetDistance(to, from);
 
@@ -121,7 +126,7 @@ namespace MattUtil
             {
                 //select the next tile from the queue, skipping the target so that we can collect all solutions
                 var pair = queue.First();
-                Tile current = pair.Value.FirstOrDefault(tile => ( tile != from ));
+                Tile current = pair.Value.FirstOrDefault(tile => tile != from);
 
                 //all solutions found; use secondary algorithm to determine which one to return
                 if (current == null)
@@ -136,7 +141,8 @@ namespace MattUtil
                     //a non-null inQueue set means the tile is already in the queue
                     HashSet<Tile> inQueue = null;
                     int priorGuess;
-                    if (distThrough.TryGetValue(neighbor, out priorGuess) && queue.TryGetValue(priorGuess, out inQueue) && !inQueue.Contains(neighbor))
+                    if (distThrough.TryGetValue(neighbor, out priorGuess) && queue.TryGetValue(priorGuess, out inQueue)
+                            && !inQueue.Contains(neighbor))
                         inQueue = null;
 
                     //default to MaxValue so that the inner if will evaluate true
@@ -177,7 +183,7 @@ namespace MattUtil
         }
 
         private static void Enqueue<Tile, TKey, TValue>(IDictionary<TKey, TValue> queue, TKey key, Tile tile)
-             where TValue : ICollection<Tile>
+                where TValue : ICollection<Tile>
         {
             TValue col;
             if (!queue.TryGetValue(key, out col))
@@ -197,87 +203,81 @@ namespace MattUtil
             var retVal = new List<Tile> { current };
 
             //weight paths based on which ones keep the most options available
-            Dictionary<Tile, BigInteger> weights = WeightPaths(solutions, current, 1);
+            var weights = new Dictionary<Tile, List<BigInteger>>();
+            WeightPaths(solutions, current, weights);
 
-            List<Tile> options;
-            while (solutions.TryGetValue(current, out options))
+            List<Tile> allOptions;
+            while (solutions.TryGetValue(current, out allOptions))
             {
                 //choose the path with the highest weight
-                BigInteger max = options.Max(option => weights[option]);
-                options = options.Where(option => ( weights[option] == max )).ToList();
-                //choose randomly if equivalent
-                current = random.SelectValue(options);
+                if (allOptions.Count == 1)
+                {
+                    current = allOptions[0];
+                }
+                else
+                {
+                    var options = allOptions.Select(tile => new Tuple<Tile, List<BigInteger>>(tile, weights[tile]));
+
+                    int a = 0;
+                    do
+                    {
+                        int b = a++;
+
+                        var filtered = options.Where(tuple => tuple.Item2.Count <= b);
+                        if (filtered.Any())
+                        {
+                            options = filtered;
+                            break;
+                        }
+
+                        BigInteger max = options.Max(tuple => tuple.Item2[b]);
+                        options = options.Where(tuple => tuple.Item2[b] == max);
+                    }
+                    while (options.Skip(1).Any());
+
+                    //choose randomly if equivalent
+                    current = random.SelectValue(options).Item1;
+                }
 
                 retVal.Add(current);
             }
             return retVal;
         }
-        private static Dictionary<Tile, BigInteger> WeightPaths<Tile>(Dictionary<Tile, List<Tile>> solutions, Tile start, BigInteger level, int max = -1, Dictionary<Tile, BigInteger> weights = null)
+        private static void WeightPaths<Tile>(Dictionary<Tile, List<Tile>> solutions, Tile start, Dictionary<Tile, List<BigInteger>> weights)
         {
-            if (max == -1)
-                max = solutions.Values.Max(list => list.Count);
-            if (weights == null)
-                weights = new Dictionary<Tile, BigInteger>();
+            var weight = new List<BigInteger>();
 
-            if (!weights.ContainsKey(start))
+            List<Tile> next;
+            if (solutions.TryGetValue(start, out next))
             {
-                BigInteger weight = 1;
-                List<Tile> next;
-                if (solutions.TryGetValue(start, out next))
+                weight.Add(next.Count);
+
+                var children = new List<List<BigInteger>>();
+                foreach (Tile tile in next)
                 {
-                    BigInteger sum = 0;
-                    foreach (Tile tile in next)
+                    List<BigInteger> child;
+                    if (!weights.TryGetValue(tile, out child))
                     {
-                        weights = WeightPaths(solutions, tile, level * max, max, weights);
-                        sum += weights[tile];
+                        WeightPaths(solutions, tile, weights);
+                        child = weights[tile];
                     }
-                    weight = sum;
+                    children.Add(child);
                 }
-                weights.Add(start, weight);
+
+                int a = children.Min(child => child.Count);
+                foreach (var child in children)
+                    for (int b = 0 ; b < a ; )
+                    {
+                        BigInteger entry = child[b];
+                        int c = ++b;
+                        if (c == weight.Count)
+                            weight.Add(entry);
+                        else
+                            weight[c] = checked(weight[c] + entry);
+                    }
             }
 
-            return weights;
-
-            ////since all solution paths have the same length, we can group tiles into 'levels' by their distance from the start
-            //var levels = new List<HashSet<Tile>> { new HashSet<Tile> { start } };
-            //while (true)
-            //{
-            //    HashSet<Tile> next = new HashSet<Tile>();
-            //    List<Tile> step;
-            //    foreach (Tile cur in levels[levels.Count - 1])
-            //        if (solutions.TryGetValue(cur, out step))
-            //            next.UnionWith(step);
-            //        else
-            //            break;
-            //    if (next.Count == 0)
-            //        break;
-            //    levels.Add(next);
-            //}
-
-            //var weights = new Dictionary<Tile, BigInteger> { { levels[levels.Count - 1].Single(), 0 } };
-
-            //BigInteger mult = 0;
-            //for (int a = levels.Count - 2 ; a > 0 ; --a)
-            //{
-            //    BigInteger total = 1;
-            //    foreach (Tile cur in levels[a])
-            //    {
-            //        //the weight is primarily the number of immediate path options, and secondarily the weight of those options
-            //        List<Tile> options = solutions[cur];
-            //        BigInteger weight = mult * options.Count;
-            //        foreach (Tile o in options)
-            //            weight += weights[o];
-            //        total += weight;
-
-            //        weights.Add(cur, weight);
-            //    }
-
-            //    //the mult for the next level is set to one higher than the total sum of the current level
-            //    //so that a single immediate option always outweighs all subsequent options
-            //    mult = total;
-            //}
-
-            //return weights;
+            weights.Add(start, weight);
         }
     }
 }

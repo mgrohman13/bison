@@ -882,7 +882,7 @@ namespace CityWar
             //determine if the odd y distance will save an extra x move or not
             if (xDist < 1)
                 xDist = 0;
-            else if (( yDist % 2 != 0 ) && ( ( y2 % 2 != 0 ) == ( x2 < x1 ) ))
+            else if (( yDist % 2 != 0 ) && ( ( y2 % 2 == 0 ) == ( x2 < x1 ) ))
                 --xDist;
             return yDist + xDist;
         }

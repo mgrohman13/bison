@@ -67,83 +67,20 @@ namespace randTest
             //}
 
 
-            IEnumerable<Point> e0 = rand.Iterate(-1, 1, -1, 1);
-            IDictionary<int, int> occ1 = new SortedDictionary<int, int>();
-            IDictionary<int, int> occ2 = new SortedDictionary<int, int>();
-            for (int c = -1 ; c < 2 ; ++c)
-            {
-                occ1.Clear();
-                occ2.Clear();
-                for (int a = 0 ; a < 100000 ; ++a)
-                {
-                    int idx = 0;
-                    foreach (Point i in e0)
-                    {
-                        if (i.X == c)
-                        {
-                            int v;
-                            occ1.TryGetValue(idx, out v);
-                            occ1[idx] = v + 1;
-                        }
-                        if (i.Y == c)
-                        {
-                            int v;
-                            occ2.TryGetValue(idx, out v);
-                            occ2[idx] = v + 1;
-                        }
-                        ++idx;
-                    }
-                }
-                foreach (var p in occ1)
-                    Console.WriteLine("{0} {1}", p.Key, p.Value);
-                Console.WriteLine();
-                foreach (var p in occ2)
-                    Console.WriteLine("{0} {1}", p.Key, p.Value);
-                Console.WriteLine();
-            }
-
-            for (int i = 0 ; i < 13 ; ++i)
-            {
-                var arr = new[] { 0, 1, 2 };
-                rand.Shuffle(arr);
-                foreach (var p in arr)
-                    Console.WriteLine(p);
-                Console.WriteLine();
-            }
-            IEnumerable<int> e1 = rand.Iterate(3);
-            Dictionary<int, int> occ = new Dictionary<int, int>();
-            for (int c = 0 ; c < 3 ; ++c)
-            {
-                occ.Clear();
-                for (int a = 0 ; a < 100000 ; ++a)
-                {
-                    int idx = 0;
-                    foreach (int i in e1)
-                    {
-                        if (i == c)
-                        {
-                            int v;
-                            occ.TryGetValue(idx, out v);
-                            occ[idx] = v + 1;
-                        }
-                        ++idx;
-                    }
-                }
-                foreach (var p in occ)
-                    Console.WriteLine("{0} {1}", p.Key, p.Value);
-                Console.WriteLine();
-            }
+            double bits = MTRandom.MAX_SEED_SIZE * 32;
+            double tot = 0;
+            double div = 2;
             while (true)
             {
-                foreach (var v in e1)
+                tot += Math.Log(div, 2);
+                if (tot >= bits)
                 {
-                    if (v == 2)
-                        break;
-                    Console.WriteLine(v);
+                    --div;
+                    break;
                 }
-                Console.WriteLine();
-                Console.ReadKey(true);
+                ++div;
             }
+            Console.WriteLine(div);
 
 
             rand.Dispose();

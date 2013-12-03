@@ -1672,10 +1672,7 @@ namespace MattUtil
                 }
                 //when the same object appears in 'choices' multiple times, its probability of being selected increases appropriately
                 //so we must also increase the total
-                checked
-                {
-                    total += chance;
-                }
+                total = checked(total + chance);
             }
             return SelectValue<T>(choices, dictionary, total);
         }
@@ -1691,10 +1688,7 @@ namespace MattUtil
             foreach (int chance in choices.Values)
             {
                 CheckChance(chance);
-                checked
-                {
-                    total += chance;
-                }
+                total = checked(total + chance);
             }
             return SelectValue<T>(choices.Keys, choices, total);
         }
