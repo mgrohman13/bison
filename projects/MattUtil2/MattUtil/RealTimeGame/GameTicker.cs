@@ -8,7 +8,7 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace MattUtil.RealTimeGame
 {
-    public class GameTicker
+    public class GameTicker : IDisposable
     {
         public static readonly float TicksPerMilisecond = Stopwatch.Frequency / 1000f;
 
@@ -115,10 +115,11 @@ namespace MattUtil.RealTimeGame
 
                 lock (this)
                 {
-                    if (( !paused || game.GameOver() ) && started)
+                    bool gameOver = game.GameOver();
+                    if (( !paused || gameOver ) && started)
                     {
                         //WriteLine("   step " + Environment.TickCount);
-                        if (game.GameOver())
+                        if (gameOver)
                             End();
                         else
                             game.Step();

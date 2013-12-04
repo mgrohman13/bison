@@ -1820,9 +1820,20 @@ namespace MattUtil
 
             bool rand;
             if (isFloat)
-                rand = Bool((float)avg);
+            {
+                //check for rounding errors
+                float avgFloat = (float)avg;
+                if (avgFloat > 1f)
+                    avgFloat = 1f;
+                else if (avgFloat < 0f)
+                    avgFloat = 0f;
+
+                rand = Bool(avgFloat);
+            }
             else
+            {
                 rand = Bool(avg);
+            }
 
             if (rand)
                 return key * 2;

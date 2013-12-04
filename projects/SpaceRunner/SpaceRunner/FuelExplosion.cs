@@ -24,7 +24,7 @@ namespace SpaceRunner
             float size = Game.PowerUpSize;
             for (int idx = 0 ; idx < numImages ; ++idx)
             {
-                Images[idx] = Game.LoadImage(generated[Game.Random.Next(generated.Count)], size, false);
+                Images[idx] = Game.LoadImage(Game.Random.SelectValue(generated), size, false);
                 size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( numImages - 1 );
             }
         }
@@ -78,7 +78,7 @@ namespace SpaceRunner
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
                 {
-                    if (obj.Area > Game.GameRand.OE(Game.GetArea(Game.ExplosionSize)))
+                    if (obj.Size > Game.ExplosionSize)
                         Explosion.NewExplosion(Game, obj);
                     obj.Die();
                 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -161,10 +162,9 @@ namespace SpaceRunner
 
         internal const int StartAmmo = 10;
         internal const int IncAmmo = 3;
-        //time spent reloading (will be divided by ammo^FireTimePower)
+        //time spent reloading, will be divided by (ammo+FireTimeAmmoAdd)^FireTimePower
         internal const double FireTimeMult = 1 / GameSpeed * 3900.0;
         internal const double FireTimePower = 1.69;
-        //constant added to current ammo for fire time calculation
         internal const double FireTimeAmmoAdd = 1.69;
 
         private const float DeadBlinkDiv = 300f / GameTick;
@@ -172,7 +172,7 @@ namespace SpaceRunner
 
         //chances of objects being created each iteration (will be multiplied by player's current speed)
         internal const float LifeDustCreationRate = (float)( Math.E * .0013 );
-        internal const float PowerUpCreationRate = 0.0021f;
+        internal const float PowerUpCreationRate = .0021f;
         internal const float AsteroidCreationRate = .078f;
         internal const float AlienCreationRate = .013f;
         //will be divided by number of alien ships
@@ -290,7 +290,7 @@ namespace SpaceRunner
         internal const float LifeDustAmtToHeal = 52f;
 
         internal const float PowerUpSize = 9f;
-        //these three chance value are only relative to one another
+        //these three chance values are only relative to one another
         internal const int PowerUpAmmoChance = 5;
         internal const int PowerUpFuelChance = 6;
         internal const int PowerUpLifeChance = 2;
@@ -311,7 +311,7 @@ namespace SpaceRunner
         internal const decimal AlienShipScoreMult = ScoreMult * 150m;
         //score an alien ship is worth for killing based on its stats compared to average
         internal const decimal AlienShipDeathScoreMult = AlienShipScoreMult / 10m;
-        internal const decimal RemainingAmmoScore = ScoreMult;
+        internal const decimal RemainingAmmoScore = ScoreMult * 1m;
         internal const decimal RemainingFuelScore = ScoreMult / (decimal)FuelMult / 2m;
 
         #endregion //game params
@@ -549,27 +549,14 @@ namespace SpaceRunner
 
         private void DrawObjects(Graphics graphics)
         {
-            int count;
-            GameObject[] array;
+            IEnumerable<GameObject> gameObjects;
             lock (gameTicker)
-            {
-                count = this.objects.Count;
-                array = new GameObject[count];
-                this.objects.CopyTo(array, 0);
-            }
+                gameObjects = this.objects.ToList();
 
-            Array.Sort<GameObject>(array, delegate(GameObject p1, GameObject p2)
-            {
-                return GetDrawPriority(p1) - GetDrawPriority(p2);
-            });
-
-            for (int idx = 0 ; idx < count ; ++idx)
-            {
-                GameObject obj = array[idx];
+            foreach (GameObject obj in Random.Iterate(gameObjects).OrderBy(GetDrawPriority))
                 lock (gameTicker)
                     if (this.objects.Contains(obj))
                         obj.Draw(graphics, centerX, centerY);
-            }
         }
 
         private static int GetDrawPriority(GameObject obj)
@@ -898,8 +885,7 @@ namespace SpaceRunner
         }
         internal static Image LoadImage(string name, float size)
         {
-            Image image = LoadImage(name);
-            return ResizeImage(image, size);
+            return ResizeImage(LoadImage(name), size);
         }
         internal static Image ResizeImage(Image image, float size)
         {
@@ -978,7 +964,7 @@ namespace SpaceRunner
                 xDir *= mult;
                 yDir *= mult;
             }
-            else if (speed != 0)
+            else
             {
                 GetRandomDirection(out xDir, out yDir, speed);
             }
@@ -1387,12 +1373,10 @@ namespace SpaceRunner
 #endif
                         //make sure the second object is still in the game
                         if (this.objects.Contains(checkObj))
-                        {
-                            obj.CheckCollision(checkObj);
-                            //if the collision killed the main object, return early
-                            if (!this.objects.Contains(obj))
-                                return;
-                        }
+                            if (obj.CheckCollision(checkObj))
+                                //if the collision killed the main object, return early
+                                if (!this.objects.Contains(obj))
+                                    return;
                     }
                 }
             }

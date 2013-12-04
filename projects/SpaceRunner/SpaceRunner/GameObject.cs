@@ -271,11 +271,15 @@ namespace SpaceRunner
         //actual collision logic
         protected abstract void Collide(GameObject obj);
 
-        internal void CheckCollision(GameObject obj)
+        internal bool CheckCollision(GameObject obj)
         {
             float sizes = this.Size + obj.Size;
             if (Game.GetDistanceSqr(this.x, this.y, obj.x, obj.y) < sizes * sizes)
+            {
                 Collide(this, obj);
+                return true;
+            }
+            return false;
         }
 
         private static void Collide(GameObject obj1, GameObject obj2)

@@ -50,7 +50,7 @@ namespace SpaceRunner
 
         private static Image GetImage(float size)
         {
-            return Game.ResizeImage(Images[Game.Random.Next(Game.NumAsteroidImages)], size, false);
+            return Game.ResizeImage(Game.Random.SelectValue(Images), size, false);
         }
 
         internal override decimal Score

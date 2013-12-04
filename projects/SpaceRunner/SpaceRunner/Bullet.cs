@@ -68,7 +68,7 @@ namespace SpaceRunner
         }
 
         private Bullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
-            : base(game, x, y, xDir, yDir, Game.BulletSize, Images[Game.Random.Next(Images.Length)])
+            : base(game, x, y, xDir, yDir, Game.BulletSize, Game.Random.SelectValue(Images))
         {
             this.Friendly = friendly;
             //space out from whoever fired it

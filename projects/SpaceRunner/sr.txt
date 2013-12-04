@@ -1,3 +1,4 @@
+introduce some randomness for explosion appearance chance
 improve asteroid collisions
 	momentum affects damage - glancing hits
 	momentum partially/randomly conserved
