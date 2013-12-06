@@ -1110,17 +1110,20 @@ namespace MattUtil
                 //can cause the lowerCap limit to be violated by the upperCap logic
                 return lowerCap + Round(average - lowerCap, isFloat);
             }
+            //prevent boundary errors
+            if (lowerCap == int.MinValue)
+                ++lowerCap;
 
             //we will need to retry in some cases (worst-case expected retries <1)
             while (true)
             {
                 //use lowerCap-1 to allow for the full probability of rounding to exactly lowerCap or upperCap
-                double rand = GaussianCapped(average, devPct, lowerCap - 1, isFloat);
+                double rand = GaussianCapped(average, devPct, lowerCap - 1.0, isFloat);
 
                 if (rand > average)
                 {
                     double upperDbl = average * 2.0 - lowerCap;
-                    int upperCap = (int)Math.Ceiling(upperDbl);
+                    double upperCap = Math.Ceiling(upperDbl);
 
                     //in case of a non-integer upperCap, duplicate the probability of discarding low values on the high end
                     //this way we maintain the correct mean

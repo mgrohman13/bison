@@ -1,4 +1,7 @@
-introduce some randomness for explosion appearance chance
+bullet explosion object
+	collects bullets, other explosions
+	oeints all at once
+	would require redoing entropic since will just recollect all
 improve asteroid collisions
 	momentum affects damage - glancing hits
 	momentum partially/randomly conserved

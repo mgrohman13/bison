@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace SpaceRunner
 {
@@ -38,11 +39,11 @@ namespace SpaceRunner
 
         internal static PowerUp NewPowerUp(Game game, float x, float y)
         {
-            var types = new System.Collections.Generic.Dictionary<PowerUpType, int>();
-            types.Add(PowerUpType.Ammo, Game.PowerUpAmmoChance);
-            types.Add(PowerUpType.Fuel, Game.PowerUpFuelChance);
-            types.Add(PowerUpType.Life, Game.PowerUpLifeChance);
-
+            var types = new Dictionary<PowerUpType, int> {
+                { PowerUpType.Ammo, Game.PowerUpAmmoChance },
+                { PowerUpType.Fuel, Game.PowerUpFuelChance },
+                { PowerUpType.Life, Game.PowerUpLifeChance },
+            };
             return NewPowerUp(game, x, y, game.GameRand.SelectValue<PowerUpType>(types));
         }
 

@@ -205,7 +205,7 @@ namespace SpaceRunner
 
             float dist = Game.GetDistance(x, y), edgeDist = dist - Size, checkDist, damage = 0;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
-                    Game.GameRand.Bool(1 - Math.Pow(1 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed)))
+                    Game.GameRand.Bool((float)( 1.0 - Math.Pow(1.0 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed) )))
                 Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 damage = HitPlayer();

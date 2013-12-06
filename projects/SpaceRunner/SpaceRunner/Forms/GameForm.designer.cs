@@ -202,6 +202,7 @@ namespace SpaceRunner.Forms
             this.Controls.Add(this.lblLife);
             this.Controls.Add(this.picLife);
             this.Name = "GameForm";
+            this.Text = "";
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GameForm_MouseDown);
             this.MouseLeave += new System.EventHandler(this.GameForm_MouseLeave);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GameForm_MouseMove);

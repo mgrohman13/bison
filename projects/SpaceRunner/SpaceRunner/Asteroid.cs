@@ -68,7 +68,7 @@ namespace SpaceRunner
             //random number of pieces, but always have at least one
             int numPieces = Game.GameRand.GaussianCappedInt(Game.AsteroidPieces, Game.AsteroidPiecesRandomness, 1);
             //maintain total area with the formula: Area=numPieces*pieceArea | pieceArea=Math.PI*pieceSize*pieceSize
-            float pieceSize = (float)Math.Sqrt(Area / ( Math.PI * numPieces ));
+            float pieceSize = (float)( Math.Sqrt(Area / ( Math.PI * numPieces )) );
             float pieceSpeed = Game.GameRand.GaussianCapped(Game.AsteroidPieceSpeed, Game.AsteroidPieceSpeedRandomness);
             //space pieces out evenly in all directions
             float angle = Game.GetRandomAngle();
@@ -76,7 +76,7 @@ namespace SpaceRunner
             float spacing = Game.GetRingSpacing(numPieces, pieceSize);
             for (int idx = 0 ; idx < numPieces ; idx++)
             {
-                if (Game.GameRand.Bool(Math.Pow(Size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower)))
+                if (Game.GameRand.Bool((float)( Math.Pow(Size / Game.AsteroidMaxSize, Game.AsteroidPieceChancePower) )))
                 {
                     float addX, addY;
                     Game.GetDirs(out addX, out addY, angle);
@@ -154,8 +154,7 @@ namespace SpaceRunner
             base.HitPlayer();
 
             float damage = Area / Game.AsteroidAreaToDamageRatio;
-            if (damage > Game.BulletDamage)
-                Explosion.NewExplosion(Game, this, Game.GetPlayerObject());
+            Explosion.NewExplosion(Game, damage, Game.BulletDamage, this, Game.GetPlayerObject());
             return damage;
         }
 

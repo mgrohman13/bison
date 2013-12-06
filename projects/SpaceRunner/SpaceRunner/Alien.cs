@@ -148,8 +148,8 @@ namespace SpaceRunner
         {
             float damage = Game.RandDmgToAlien(asteroid.Area / Game.AsteroidAreaToAlienDamageRatio);
 
-            if (damage > Game.AlienSpeed && Game.GetDistance(xDir, yDir) + speed > damage)
-                Explosion.NewExplosion(Game, asteroid, this);
+            if (Game.GetDistance(xDir, yDir) + speed > damage)
+                Explosion.NewExplosion(Game, damage, Game.AlienSpeed, asteroid, this);
 
             if (HasConstSpeed())
             {

@@ -43,7 +43,7 @@ namespace SpaceRunner.Images
                     }
                     else
                     {
-                        color = (byte)( color + Game.Random.GaussianInt(39) );
+                        color = (byte)( color + Game.Random.GaussianInt(39f) );
                         if (Game.Random.Bool() || exp.GetPixel(x, y).ToArgb() == Color.Magenta.ToArgb())
                             exp.SetPixel(x, y, Color.FromArgb(255, color, 0));
                     }
@@ -58,7 +58,7 @@ namespace SpaceRunner.Images
                 Bitmap exp = new Bitmap(last);
                 last = exp;
 
-                int amt = Game.Random.GaussianCappedInt(width * width / Math.Pow(length, .65), .13);
+                int amt = Game.Random.GaussianCappedInt((float)( width * width / Math.Pow(length, .65) ), .13f);
                 foreach (Point p in Game.Random.Iterate(width, width))
                 {
                     if (--amt < 0)

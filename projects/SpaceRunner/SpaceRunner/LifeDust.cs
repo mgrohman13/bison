@@ -1,18 +1,20 @@
 using System;
 using System.Drawing;
 using SpaceRunner.Images;
+using MattUtil;
 
 namespace SpaceRunner
 {
     internal class LifeDust : GameObject
     {
-        private const float StartSizeImage = .5f;
+        //smallest size that will actually show up in an image
+        private static readonly float StartSizeImage = Game.AddBit(.5f / Game.SqrtTwo);
         private static float SizeIncImage;
         private static Image[] Images;
 
         internal static void InitImages()
         {
-            int numImages = Game.Random.GaussianOEInt(169, .065f, .13f, 130);
+            int numImages = Game.Random.GaussianOEInt(169, .065f, .091f, 130);
             SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( numImages - 1 );
 
             Images = new Image[numImages];
@@ -50,7 +52,8 @@ namespace SpaceRunner
 
         private LifeDust(Game game, float x, float y, float xDir, float yDir, float size)
             : base(game, x, y, xDir, yDir, size,
-                    Images[Game.Random.Round(Math.Max(0, ( size - StartSizeImage ) / SizeIncImage))])
+                //use the smallest image even if the object size is smaller than the image so that it is still visible
+                Images[Game.Random.Round(Math.Max(0f, ( size - StartSizeImage ) / SizeIncImage))])
         {
         }
 
@@ -102,7 +105,7 @@ namespace SpaceRunner
 
         internal bool HitBy(GameObject obj)
         {
-            if (Game.GameRand.Bool(Game.LifeDustHitChance * GetSizePct(this)))
+            if (Game.GameRand.Bool((float)( Math.Pow(Game.LifeDustHitChance, 1.0 / GetSizePct(this)) )))
             {
                 return true;
             }

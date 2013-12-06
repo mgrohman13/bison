@@ -33,7 +33,7 @@ namespace SpaceRunner
         {
             life = baseLife = RandVal(Game.AlienShipLife);
             fireRate = RandVal(Game.AlienShipFireRate);
-            speedMult = RandVal(Game.AlienShipSpeedMult);
+            speedMult = RandVal(Game.AlienShipSpeedMult, 1);
         }
 
         internal override decimal Score
@@ -52,9 +52,9 @@ namespace SpaceRunner
 #endif
             amt = Game.RandDmgToAlien(amt);
 
-            if (objs[0] is FuelExplosion ?
-                    Game.GameRand.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime)
-                    : amt > Game.PlayerLife)
+            if (!( objs[0] is FuelExplosion ))
+                Explosion.NewExplosion(Game, amt, Game.PlayerLife, objs);
+            else if (Game.GameRand.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime))
                 Explosion.NewExplosion(Game, objs);
 
             if (amt > life)
@@ -70,14 +70,14 @@ namespace SpaceRunner
         private decimal GetScore(float life, decimal mult)
         {
             return ( (decimal)life / (decimal)Game.AlienShipLife * (decimal)fireRate / (decimal)Game.AlienShipFireRate
-                    * (decimal)speedMult / (decimal)Game.AlienShipSpeedMult * mult );
+                    * (decimal)speedMult / (decimal)Game.AlienShipSpeedMult * (decimal)mult );
         }
 
         internal override void Die()
         {
             base.Die();
 
-            Bullet.BulletExplosion(Game, x, y, Game.AlienShipExplosionBullets);
+            Bullet.BulletExplosion(Game, x, y, (float)GetScore(baseLife, (decimal)Game.AlienShipExplosionBullets));
         }
 
         protected override void OnStep()
@@ -182,9 +182,10 @@ namespace SpaceRunner
             return damage;
         }
 
-        private float RandVal(float value)
+        private float RandVal(float value, float? lowerCap = null)
         {
-            return Game.GameRand.GaussianCapped(value, Game.AlienShipStatRandomness, value * Game.AlienShipStatCap);
+            lowerCap = lowerCap ?? value * Game.AlienShipStatCap;
+            return Game.GameRand.GaussianCapped(value, Game.AlienShipStatRandomness, lowerCap.Value);
         }
 
         internal override void Draw(Graphics graphics, int centerX, int centerY)

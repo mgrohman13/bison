@@ -30,7 +30,7 @@ namespace SpaceRunner
         }
         private static void GenerateOne()
         {
-            generated.Add(FuelExplosionGenerator.GenerateFuelExplosion(Game.Random.GaussianOEInt(195, .13f, .13f, 104)));
+            generated.Add(FuelExplosionGenerator.GenerateFuelExplosion(Game.Random.GaussianOEInt(195f, .13f, .13f, 104)));
         }
 
         internal static void Dispose()
@@ -78,8 +78,7 @@ namespace SpaceRunner
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
                 {
-                    if (obj.Size > Game.ExplosionSize)
-                        Explosion.NewExplosion(Game, obj);
+                    Explosion.NewExplosion(Game, obj.Size, Game.ExplosionSize, obj);
                     obj.Die();
                 }
             }

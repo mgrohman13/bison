@@ -96,7 +96,7 @@ namespace SpaceRunner.Forms
 
                 base.OnPaint(e);
 
-                int ammo = Game.Ammo, fuel = Game.FuelInt, lives = Game.Lives, score = Game.Round((float)Game.Score);
+                int ammo = Game.Ammo, fuel = Game.FuelInt, lives = Game.Lives, score = Game.Round((float)( Game.Score ));
                 if (this.ammo != ammo)
                 {
                     this.ammo = ammo;
@@ -290,7 +290,7 @@ namespace SpaceRunner.Forms
         }
         private void SetReplaySpeed(int value)
         {
-            Game.SetReplaySpeed(value / 13.0);
+            Game.SetReplaySpeed(value / 13f);
         }
 
         private Thread timeScroll = null;

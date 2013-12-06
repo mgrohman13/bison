@@ -20,7 +20,7 @@ namespace SpaceRunner
 
         internal static void InitImages()
         {
-            int numImages = Game.Random.GaussianOEInt(13, .13f, .21f, 6);
+            int numImages = Game.Random.GaussianOEInt(13f, .13f, .21f, 6);
             Images = new Image[numImages];
             for (int idx = 0 ; idx < numImages ; ++idx)
                 Images[idx] = Game.LoadImageRotated(BulletGenerator.GenerateBullet(), Game.BulletSize);
@@ -45,13 +45,13 @@ namespace SpaceRunner
                 float angleStep = Game.TwoPi / numPieces;
 
                 //placing all bullets in the same spot will cause collisions and more explosions
-                float spacing = 0;
+                float spacing = -speed;
                 //half the time, space bullets out evenly in all directions for a uniform explosion
                 if (game.GameRand.Bool())
-                    spacing = Game.GetRingSpacing(numPieces, Game.BulletSize);
-                //we don't want standard spacing for explosions
-                spacing -= Game.BulletSize;
+                    spacing += Game.GetRingSpacing(numPieces, Game.BulletSize);
 
+                //don't add standard bullet speed
+                speed -= Game.BulletSpeed;
                 for (int idx = 0 ; idx < numPieces ; ++idx)
                 {
                     float xDir, yDir;
@@ -98,7 +98,7 @@ namespace SpaceRunner
 
             if (hit)
             {
-                if (lifeDust == null || Game.GameRand.Bool(Game.BulletLifeDustDieChance))
+                if (lifeDust == null || Game.GameRand.Bool((float)( Math.Pow(Game.BulletLifeDustDieChance, 1.0 / LifeDust.GetSizePct(lifeDust)) )))
                     this.Die();
                 obj.Die();
             }

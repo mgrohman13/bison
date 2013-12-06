@@ -38,6 +38,12 @@ namespace SpaceRunner
         private int time = 0;
         private int expNum;
 
+        internal static Explosion NewExplosion(Game game, float damage, float cutoff, params GameObject[] objs)
+        {
+            if (game.GameRand.Gaussian(damage, Game.ExplosionAppearanceRandomness) > cutoff)
+                return NewExplosion(game, objs);
+            return null;
+        }
         internal static Explosion NewExplosion(Game game, params GameObject[] objs)
         {
 #if DEBUG

@@ -84,7 +84,7 @@ namespace SpaceRunner.Images
         }
         private static Color GetLight(int darkColor)
         {
-            if (Game.Random.Bool(.13))
+            if (Game.Random.Bool(.13f))
                 return GetLight();
 
             int low, high;
