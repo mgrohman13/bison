@@ -1,3 +1,7 @@
+make player damage randomness option a parameter
+increase AlienShipSpeedMultInc
+eliminate shot backfiring?
+stronger lifedust bonding
 bullet explosion object
 	collects bullets, other explosions
 	oeints all at once
