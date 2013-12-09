@@ -19,8 +19,8 @@ namespace SpaceRunner
             {
                 int numImages = Game.Random.GaussianOEInt(16.9f, .039f, .091f, 13);
                 Images[explosion] = new Image[numImages * 2 - 1];
-                const float avgWidth = 39;
-                int width = Game.Random.GaussianOEInt(avgWidth, .052f, .078f, 26);
+                const float avgWidth = 52;
+                int width = Game.Random.GaussianOEInt(avgWidth, .091f, .078f, Game.Random.Round(2 * Game.ExplosionSize));
                 Bitmap[] b = ExplosionGenerator.GenerateExplosion(width, numImages, Game.Random.GaussianCapped(13f * width / avgWidth, .078f));
                 for (int number = 0 ; number < numImages * 2 - 1 ; ++number)
                     Images[explosion][number] = Game.LoadImage(b[number], Game.ExplosionSize);
@@ -98,9 +98,8 @@ namespace SpaceRunner
                 ld.Die();
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
-            return 0;
         }
     }
 }

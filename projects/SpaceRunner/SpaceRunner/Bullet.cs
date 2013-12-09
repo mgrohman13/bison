@@ -104,13 +104,13 @@ namespace SpaceRunner
             }
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
             base.HitPlayer();
 
             GameObject player = Game.GetPlayerObject();
             Explosion.NewExplosion(Game, this, player, player);
-            return Game.BulletDamage;
+            Game.HitPlayer(Game.BulletDamage);
         }
     }
 }

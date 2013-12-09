@@ -149,13 +149,13 @@ namespace SpaceRunner
             }
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
             base.HitPlayer();
 
             float damage = Area / Game.AsteroidAreaToDamageRatio;
             Explosion.NewExplosion(Game, damage, Game.BulletDamage, this, Game.GetPlayerObject());
-            return damage;
+            Game.HitPlayer(damage);
         }
 
         void IDisposable.Dispose()

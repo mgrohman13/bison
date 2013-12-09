@@ -173,8 +173,9 @@ namespace SpaceRunner
         internal const float PowerUpCreationRate = .0021f;
         internal const float AsteroidCreationRate = .078f;
         internal const float AlienCreationRate = .013f;
-        //will be divided by number of alien ships
-        internal const float AlienShipCreationRate = .00013f;
+        internal static readonly float AlienShipCreationRate = (float)( Math.Pow(60.0 * 1000.0 / GameTick, -AlienShipCreationTickPower) * .00013 );//.000078 );
+        internal const float AlienShipCreationTickPower = 0f;//.13f;
+        internal const float AlienShipCreationCountPower = 1f;//1.69f;
 
         internal const float AlienSize = 13f;
         internal const float AlienSpeed = GameSpeed * 2.6f;
@@ -201,7 +202,7 @@ namespace SpaceRunner
         internal const float AlienShipFireRate = GameSpeed * .021f;
         internal const float AlienShipFireRateInc = GameSpeed * .0104f;
         internal const float AlienShipSpeedMult = 1.69f;
-        internal const float AlienShipSpeedMultInc = .39f;
+        internal const float AlienShipSpeedMultInc = .65f;
         internal const float AlienShipStatRandomness = .169f;
         //lower cap as a percentage of the average value
         internal const float AlienShipStatCap = .13f;
@@ -896,19 +897,24 @@ namespace SpaceRunner
             return retVal;
         }
 
-        internal void ShootAtPlayer(float speed, float x, float y, float size)
+        internal void ShootAtPlayer(float fireRate, ref int coolDown, float speed, float x, float y, float size)
         {
-            float xDir = -x, yDir = -y;
-            //half the time, adjust for the player's movement
-            if (GameRand.Bool())
-                this.AdjustForPlayerSpeed(ref xDir, ref yDir, speed + BulletSpeed, size + BulletSize);
+            if (--coolDown < 0 && GameRand.Bool(fireRate))
+            {
+                coolDown = GameRand.Round(1f + 3f * BulletSize / ( speed + BulletSpeed ));
 
-            float bulletAngle = GetAngle(xDir, yDir);
-            //randomize the angle slightly
-            bulletAngle += GameRand.Gaussian(AlienFiringInaccuracy);
+                float xDir = -x, yDir = -y;
+                //half the time, adjust for the player's movement
+                if (GameRand.Bool())
+                    this.AdjustForPlayerSpeed(ref xDir, ref yDir, speed + BulletSpeed, size + BulletSize);
 
-            GetDirs(out xDir, out yDir, bulletAngle);
-            Bullet.NewBullet(this, x, y, xDir, yDir, speed, size, Bullet.FriendlyStatus.Enemy);
+                float bulletAngle = GetAngle(xDir, yDir);
+                //randomize the angle slightly
+                bulletAngle += GameRand.Gaussian(AlienFiringInaccuracy);
+
+                GetDirs(out xDir, out yDir, bulletAngle);
+                Bullet.NewBullet(this, x, y, xDir, yDir, speed, size, Bullet.FriendlyStatus.Enemy);
+            }
         }
 
         internal void AdjustForPlayerSpeed(ref float xDir, ref float yDir, float speed, float spacing)
@@ -1136,9 +1142,9 @@ namespace SpaceRunner
 
         public override void Step()
         {
+            ++tickCount;
             if (replay != null)
             {
-                ++tickCount;
                 if (IsReplay)
                     replay.Play(tickCount, ref inputAngle, ref turbo, ref fire);
                 else
@@ -1249,9 +1255,7 @@ namespace SpaceRunner
             foreach (GameObject obj in GameRand.Iterate(this.objects))
             {
                 //move the object
-                float playerDamage = obj.Step(xSpeed, ySpeed);
-                if (playerDamage > 0)
-                    HitPlayer(playerDamage);
+                obj.Step(xSpeed, ySpeed);
 
                 //make sure the object is still in the game
                 if (this.objects.Contains(obj))
@@ -1274,9 +1278,9 @@ namespace SpaceRunner
 
             return objectSectors;
         }
-        private void HitPlayer(float damage)
+        internal void HitPlayer(float damage, bool randomize = true)
         {
-            if (damage < PlayerLife)
+            if (randomize)
                 damage = GameRand.GaussianCapped(damage, PlayerDamageRandomness);
 
             if (Dead)
@@ -1384,7 +1388,8 @@ namespace SpaceRunner
         {
             if (GameRand.Bool(TotalSpeed * AlienCreationRate))
                 Alien.NewAlien(this);
-            if (GameRand.Bool(TotalSpeed * AlienShipCreationRate / alienCount))
+            if (GameRand.Bool((float)( Math.Pow(tickCount, AlienShipCreationTickPower) * AlienShipCreationRate
+                    * TotalSpeed / Math.Pow(alienCount, AlienShipCreationCountPower) )))
                 AlienShip.NewAlienShip(this);
             if (GameRand.Bool(TotalSpeed * AsteroidCreationRate))
                 Asteroid.NewAsteroid(this);

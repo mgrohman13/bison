@@ -134,11 +134,11 @@ namespace SpaceRunner
             BumpCollision(obj, isLifeDust);
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
-            Game.AddLife(GetHeal(Game.PlayerLife, this), false);
+            base.HitPlayer();
 
-            return base.HitPlayer();
+            Game.AddLife(GetHeal(Game.PlayerLife, this), false);
         }
 
         internal static float GetHeal(float amt, GameObject lifeDust)

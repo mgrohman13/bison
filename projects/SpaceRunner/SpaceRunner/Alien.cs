@@ -19,7 +19,7 @@ namespace SpaceRunner
         }
 
         private float fireRate;
-        private int ammo, life, fuel;
+        private int ammo, life, fuel, coolDown;
         private PowerUp droppedLife;
 
         internal static Alien NewAlien(Game game)
@@ -38,6 +38,7 @@ namespace SpaceRunner
         {
             this.life = life;
             this.droppedLife = droppedLife;
+            this.coolDown = -1;
         }
 
         private Alien(Game game, float x, float y)
@@ -232,7 +233,7 @@ namespace SpaceRunner
 
         protected override void OnStep()
         {
-            if (Game.GameRand.Bool(fireRate))
+            if (fireRate > 0)
             {
                 float towardsPlayer = speed;
                 if (HasConstSpeed())
@@ -241,7 +242,7 @@ namespace SpaceRunner
                     GetTotalMove(out xMove, out yMove);
                     towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
                 }
-                Game.ShootAtPlayer(towardsPlayer, x, y, Size);
+                Game.ShootAtPlayer(fireRate, ref coolDown, towardsPlayer, x, y, Size);
             }
         }
 
@@ -272,14 +273,14 @@ namespace SpaceRunner
             return val + Game.GameRand.GaussianFloat();
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
             base.HitPlayer();
 
             DropPowerUps();
             Explosion.NewExplosion(Game, this);
             //always kill player
-            return Game.PlayerLife;
+            Game.HitPlayer(Game.PlayerLife, false);
         }
     }
 }

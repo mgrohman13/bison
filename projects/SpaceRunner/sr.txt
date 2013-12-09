@@ -1,25 +1,8 @@
-make player damage randomness option a parameter
-increase AlienShipSpeedMultInc
-eliminate shot backfiring?
 stronger lifedust bonding
-bullet explosion object
-	collects bullets, other explosions
-	oeints all at once
-	would require redoing entropic since will just recollect all
 improve asteroid collisions
-	momentum affects damage - glancing hits
 	momentum partially/randomly conserved
-	fuel explosion interaction - 'pushing' effect
+	explosion interaction - 'pushing' effect
+	momentum affects damage - glancing hits
 improve hitboxes for less-round objects
-fix extracted engine
-mines
-	power up visibly sits on player
-	click fire drops one
-		in addition to shooting with free bullet?
-	cannot be collected by aliens?
-	appearace tied to alien ships?
 difficulty increase with time
 	alien ship appearance
-	alien speed?
-broken replay drag slider past end
-debug/raw replay difference?

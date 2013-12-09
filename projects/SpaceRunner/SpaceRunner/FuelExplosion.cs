@@ -81,12 +81,15 @@ namespace SpaceRunner
                     Explosion.NewExplosion(Game, obj.Size, Game.ExplosionSize, obj);
                     obj.Die();
                 }
+
+                if (obj is Bullet)
+                    Bullet.BulletExplosion(Game, obj.X, obj.Y, 1);
             }
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
-            return GetDamage(0, 0);
+            Game.HitPlayer(GetDamage(0, 0));
         }
 
         internal float GetDamage(float x, float y)

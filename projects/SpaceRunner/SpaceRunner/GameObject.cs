@@ -187,7 +187,7 @@ namespace SpaceRunner
         {
         }
 
-        internal float Step(float playerXMove, float playerYMove)
+        internal void Step(float playerXMove, float playerYMove)
         {
             if (!float.IsNaN(curAngle))
                 curAngle += rotate;
@@ -203,15 +203,12 @@ namespace SpaceRunner
             //do stuff in child classes
             OnStep();
 
-            float dist = Game.GetDistance(x, y), edgeDist = dist - Size, checkDist, damage = 0;
+            float dist = Game.GetDistance(x, y), edgeDist = dist - Size, checkDist;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
                     Game.GameRand.Bool((float)( 1.0 - Math.Pow(1.0 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed) )))
                 Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
-                damage = HitPlayer();
-
-            //return damage to player
-            return damage;
+                HitPlayer();
         }
 
         protected void GetTotalMove(out float xMove, out float yMove)
@@ -226,11 +223,10 @@ namespace SpaceRunner
             yMove += yDir;
         }
 
-        protected virtual float HitPlayer()
+        protected virtual void HitPlayer()
         {
             Game.AddScore(Score);
             Game.RemoveObject(this);
-            return 0f;
         }
 
         internal virtual void Die()

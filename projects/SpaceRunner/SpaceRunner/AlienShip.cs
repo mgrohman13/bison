@@ -21,6 +21,7 @@ namespace SpaceRunner
         }
 
         private float life, baseLife, fireRate, speedMult;
+        private int coolDown;
 
         internal static AlienShip NewAlienShip(Game game)
         {
@@ -31,9 +32,10 @@ namespace SpaceRunner
         private AlienShip(Game game, float x, float y)
             : base(game, x, y, Game.AlienShipSize, AlienShipImage)
         {
-            life = baseLife = RandVal(Game.AlienShipLife);
-            fireRate = RandVal(Game.AlienShipFireRate);
-            speedMult = RandVal(Game.AlienShipSpeedMult, 1);
+            this.life = this.baseLife = RandVal(Game.AlienShipLife);
+            this.fireRate = RandVal(Game.AlienShipFireRate);
+            this.speedMult = RandVal(Game.AlienShipSpeedMult, 1);
+            this.coolDown = -1;
         }
 
         internal override decimal Score
@@ -69,15 +71,18 @@ namespace SpaceRunner
 
         private decimal GetScore(float life, decimal mult)
         {
-            return ( (decimal)life / (decimal)Game.AlienShipLife * (decimal)fireRate / (decimal)Game.AlienShipFireRate
-                    * (decimal)speedMult / (decimal)Game.AlienShipSpeedMult * (decimal)mult );
+            return (decimal)GetStrMult(life) * mult;
+        }
+        private float GetStrMult(float life)
+        {
+            return life / Game.AlienShipLife * fireRate / Game.AlienShipFireRate * speedMult / Game.AlienShipSpeedMult;
         }
 
         internal override void Die()
         {
             base.Die();
 
-            Bullet.BulletExplosion(Game, x, y, (float)GetScore(baseLife, (decimal)Game.AlienShipExplosionBullets));
+            Bullet.BulletExplosion(Game, x, y, GetStrMult(baseLife) * Game.AlienShipExplosionBullets);
         }
 
         protected override void OnStep()
@@ -85,9 +90,7 @@ namespace SpaceRunner
             //speed adjusts based on distance from player to keep from running into the player
             speed = Game.GetDistance(x, y) / Game.MapSize * speedMult * Game.BasePlayerSpeed;
 
-            //fire at the player
-            if (Game.GameRand.Bool(fireRate))
-                Game.ShootAtPlayer(speed, x, y, Size);
+            Game.ShootAtPlayer(fireRate, ref coolDown, speed, x, y, Size);
         }
 
         protected override void Collide(GameObject obj)
@@ -170,16 +173,15 @@ namespace SpaceRunner
             baseLife += addlife;
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
-            float damage = 0;
             if (!Game.Dead)
             {
                 //either kill the ship or the player
-                damage = Math.Min(Game.CurrentLifePart, life);
+                float damage = Math.Min(Game.CurrentLifePart, life);
                 Damage(damage, Game.GetPlayerObject(), this);
+                Game.HitPlayer(damage, false);
             }
-            return damage;
         }
 
         private float RandVal(float value, float? lowerCap = null)

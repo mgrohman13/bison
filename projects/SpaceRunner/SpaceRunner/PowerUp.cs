@@ -78,7 +78,7 @@ namespace SpaceRunner
 #endif
         }
 
-        protected override float HitPlayer()
+        protected override void HitPlayer()
         {
             switch (Type)
             {
@@ -98,7 +98,6 @@ namespace SpaceRunner
             }
 
             Game.RemoveObject(this);
-            return 0;
         }
 
         internal override void Die()
