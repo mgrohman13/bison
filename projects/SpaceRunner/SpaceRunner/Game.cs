@@ -43,7 +43,7 @@ namespace SpaceRunner
                 p = game.RandomStartPoint(AsteroidMaxSize);
                 Asteroid.NewAsteroid(game, p.X, p.Y);
             }
-            amt = Game.Random.GaussianCappedInt(2f, 1f);
+            amt = Game.Random.GaussianCappedInt(2f, 1f, 1);
             while (--amt > -1)
             {
                 p = game.RandomStartPoint(AlienSize);
@@ -235,6 +235,7 @@ namespace SpaceRunner
         internal const float AsteroidCollisionChance = 520f;
         //asteroids smaller than this area are frequently destroyed uneventfully when colliding with other asteroids
         internal const float AsteroidCollisionCriticalArea = 117f;
+        internal const float AsteroidHitPowerUpRandomness = .052f;
         internal const float AsteroidRotateConst = GameSpeed * .0065f;
         internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * .0169f;
 
@@ -277,17 +278,20 @@ namespace SpaceRunner
         internal const float LifeDustClumpOEPct = .13f;
         internal const float LifeDustAmtRandomness = .3f;
         //initial spacing between objects in a clump
-        internal const float LifeDustSpacing = LifeDustSize * 1.69f;
+        internal const float LifeDustSpacing = 5.2f;
         //speed of the entire clump
-        internal const float LifeDustClumpSpeed = GameSpeed * .3f;
+        internal const float LifeDustClumpSpeed = GameSpeed * .39f;
         //speed of each individual
-        internal const float LifeDustIndividualSpeed = GameSpeed * .03f;
+        internal const float LifeDustIndividualSpeed = GameSpeed * .13f;
         //exponent to the speed picked up from collisions with other objects
         internal const float LifeDustObjSpeedPower = GameSpeed / ( GameSpeed + .169f );
         //chance of life dust getting hit by a bullet or fuel explosion
         internal const float LifeDustHitChance = GameTick * .0065f;
         //how many particles needed to fully heal, also the amount in a clump created when a life power up explodes
         internal const float LifeDustAmtToHeal = 52f;
+        internal const float LifeDustBondDistance = 91f;
+        internal const float LifeDustBondRandomness = (float)( Math.E / 13.0 );
+        internal const float LifeDustBondAcceleration = Game.GameTick * Game.GameSpeed * .00052f;
 
         internal const float PowerUpSize = 9f;
         //these three chance values are only relative to one another
@@ -1033,6 +1037,10 @@ namespace SpaceRunner
         {
             return (float)( Math.PI * size * size );
         }
+        internal static float GetSize(float area)
+        {
+            return (float)( Math.Sqrt(area / Math.PI) );
+        }
 
         #endregion //internal abstraction methods
 
@@ -1252,6 +1260,8 @@ namespace SpaceRunner
         {
             var objectSectors = new Dictionary<Point, List<GameObject>>();
 
+            LifeDust.bonds.Clear();
+
             foreach (GameObject obj in GameRand.Iterate(this.objects))
             {
                 //move the object
@@ -1267,10 +1277,7 @@ namespace SpaceRunner
                         Point key = p.Value;
                         List<GameObject> sector;
                         if (!objectSectors.TryGetValue(key, out  sector))
-                        {
-                            sector = new List<GameObject>();
-                            objectSectors.Add(key, sector);
-                        }
+                            objectSectors.Add(key, sector = new List<GameObject>());
                         sector.Add(obj);
                     }
                 }
@@ -1343,6 +1350,9 @@ namespace SpaceRunner
                 checkDist = checksExtra.CheckSectors;
                 if (checkDist < 2)
                     checkDist = 1;
+                else
+                {
+                }
             }
 
             foreach (Point p2 in GameRand.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))

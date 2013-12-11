@@ -78,12 +78,12 @@ namespace SpaceRunner
                 LifeDust lifeDust = obj as LifeDust;
                 if (lifeDust == null || lifeDust.HitBy(this))
                 {
-                    Explosion.NewExplosion(Game, obj.Size, Game.ExplosionSize, obj);
+                    if (obj is Bullet)
+                        Bullet.BulletExplosion(Game, obj.X, obj.Y, 1);
+                    else
+                        Explosion.NewExplosion(Game, obj.Size, Game.ExplosionSize, obj);
                     obj.Die();
                 }
-
-                if (obj is Bullet)
-                    Bullet.BulletExplosion(Game, obj.X, obj.Y, 1);
             }
         }
 

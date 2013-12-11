@@ -95,68 +95,62 @@ namespace MattUtil.RealTimeGame
             refresh.Start();
 
             Thread tick = new Thread(RunGame);
-            //tick.Priority = ThreadPriority.AboveNormal;
             tick.IsBackground = true;
             tick.Start();
         }
 
+        //Stopwatch stopwatch = new Stopwatch();
         private void RunGame()
         {
             Stopwatch stopwatch = new Stopwatch();
-            double offset = gameTick;
-            //WriteLine(offset);
+            long ticks = 0;
+            double offset = 0;
 
             lock (this)
                 stopwatch.Start();
 
             while (Running)
             {
-                //int millisecondsTimeout = -1;
-
                 lock (this)
                 {
                     bool gameOver = game.GameOver();
                     if (( !paused || gameOver ) && started)
                     {
-                        //WriteLine("   step " + Environment.TickCount);
+                        //WriteLine("   step " + stopwatch.ElapsedMilliseconds);
                         if (gameOver)
                             End();
                         else
                             game.Step();
-                        //WriteLine("endstep " + Environment.TickCount);
+                        //WriteLine("endstep " + stopwatch.ElapsedMilliseconds);
 
                         if (Running)
                         {
-                            long timeDiff = stopwatch.ElapsedTicks;
-                            stopwatch.Restart();
+                            long elapsedTicks = stopwatch.ElapsedTicks;
+                            long timeDiff = elapsedTicks - ticks;
+                            ticks = elapsedTicks;
 
                             offset += gameTick - timeDiff / TicksPerMilisecond;
-                            //WriteLine(offset);
-                            //millisecondsTimeout = (int)offset;
-                            //offset = ( offset - GameTick ) * ( 1 - 1 / GameTick ) + GameTick;
                         }
                     }
                     else
                     {
-                        stopwatch.Restart();
-
+                        ticks = 0;
                         offset = gameTick;
-                        //WriteLine(offset);
-                        //millisecondsTimeout = GameTick;
+
+                        stopwatch.Restart();
                     }
                 }
 
-                //if (offset > 0)
-                //{
                 lock (timer)
                     Monitor.Pulse(timer);
 
-                //WriteLine("sleep:" + (int)offset);
-                Thread.Sleep(Game.Random.Round(Math.Max(0.0, ( offset + gameTick ) / 2.0)));
-                //}
+                int sleep = Game.Random.Round(Math.Max(0.0, ( offset + gameTick ) / 2.0));
+                //WriteLine("sleep:" + sleep);
+                Thread.Sleep(sleep);
             }
 
-            stopwatch.Stop();
+            lock (this)
+                stopwatch.Stop();
         }
 
         public void End()
@@ -197,16 +191,12 @@ namespace MattUtil.RealTimeGame
         {
             while (Running)
             {
-                //WriteLine("   wait " + Environment.TickCount);
+                //WriteLine("   wait " + stopwatch.ElapsedMilliseconds);
                 lock (timer)
                     Monitor.Wait(timer);
-                //WriteLine("endwait " + Environment.TickCount);
+                //WriteLine("endwait " + stopwatch.ElapsedMilliseconds);
 
                 Refresh();
-
-                //WriteLine("   sleep" + Environment.TickCount);
-                //Thread.Sleep(GameTick);
-                //WriteLine("endsleep" + Environment.TickCount);
             }
         }
 
@@ -214,13 +204,16 @@ namespace MattUtil.RealTimeGame
         //private string[] output = new string[10000];
         //private void WriteLine(object s)
         //{
-        //    if (++index >= 10000)
+        //    lock (output)
         //    {
-        //        foreach (string s2 in output)
-        //            Console.WriteLine(s2);
-        //        index = 0;
+        //        if (++index >= 10000)
+        //        {
+        //            foreach (string s2 in output)
+        //                Console.WriteLine(s2);
+        //            index = 0;
+        //        }
+        //        output[index] = s.ToString();
         //    }
-        //    output[index] = s.ToString();
         //}
 
         public void Dispose()

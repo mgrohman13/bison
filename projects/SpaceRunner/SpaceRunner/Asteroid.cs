@@ -68,7 +68,7 @@ namespace SpaceRunner
             //random number of pieces, but always have at least one
             int numPieces = Game.GameRand.GaussianCappedInt(Game.AsteroidPieces, Game.AsteroidPiecesRandomness, 1);
             //maintain total area with the formula: Area=numPieces*pieceArea | pieceArea=Math.PI*pieceSize*pieceSize
-            float pieceSize = (float)( Math.Sqrt(Area / ( Math.PI * numPieces )) );
+            float pieceSize = Game.GetSize(Area / numPieces);
             float pieceSpeed = Game.GameRand.GaussianCapped(Game.AsteroidPieceSpeed, Game.AsteroidPieceSpeedRandomness);
             //space pieces out evenly in all directions
             float angle = Game.GetRandomAngle();
@@ -106,7 +106,7 @@ namespace SpaceRunner
 
         private void HitPowerUp(GameObject obj)
         {
-            if (Size > Game.PowerUpSize)
+            if (Game.GameRand.Gaussian(Size, Game.AsteroidHitPowerUpRandomness) > Game.PowerUpSize)
             {
                 obj.Die();
                 this.Die();

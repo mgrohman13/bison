@@ -1,8 +1,7 @@
-stronger lifedust bonding
 improve asteroid collisions
 	momentum partially/randomly conserved
 	explosion interaction - 'pushing' effect
 	momentum affects damage - glancing hits
 improve hitboxes for less-round objects
-difficulty increase with time
+difficulty increase with time?
 	alien ship appearance

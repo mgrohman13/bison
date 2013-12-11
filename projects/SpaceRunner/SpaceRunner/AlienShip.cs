@@ -57,7 +57,7 @@ namespace SpaceRunner
             if (!( objs[0] is FuelExplosion ))
                 Explosion.NewExplosion(Game, amt, Game.PlayerLife, objs);
             else if (Game.GameRand.Bool(amt / Game.FuelExplosionDamage / Game.AlienShipFuelExplosionDamageMult / Game.ExplosionTime))
-                Explosion.NewExplosion(Game, objs);
+                Explosion.NewExplosion(Game, this);
 
             if (amt > life)
                 amt = life;
