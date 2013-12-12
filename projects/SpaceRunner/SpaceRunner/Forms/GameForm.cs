@@ -36,7 +36,7 @@ namespace SpaceRunner.Forms
                 return new Game(base.RefreshGame, this.center.X, this.center.Y, scoring, allowReplay);
         }
 
-        private const float TotalMapSize = SpaceRunner.Game.MapSize * 2 - 1;
+        private const float TotalMapSize = SpaceRunner.Game.MapSize * 2f;
         private const int PadSides = 13;
 
         private readonly Point center;

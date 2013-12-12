@@ -34,25 +34,34 @@ namespace SpaceRunner
 
         internal readonly FriendlyStatus Friendly;
 
-        internal static void BulletExplosion(Game game, float x, float y, float numBullets)
+        internal static void BulletExplosion(Game game, float x, float y, float avgNum)
         {
+            const float minSpace = Game.BulletSize / 2f;
             //randomize number of bullets
-            int numPieces = game.GameRand.OEInt(numBullets);
-            if (numPieces > 0)
+            int numBullets = game.GameRand.OEInt(avgNum);
+            if (numBullets > 0)
             {
                 float speed = game.GameRand.Gaussian(Game.BulletExplosionSpeed, Game.BulletExplosionSpeedRandomness);
                 float angle = game.GetRandomAngle();
-                float angleStep = Game.TwoPi / numPieces;
 
-                //placing all bullets in the same spot will cause collisions and more explosions
-                float spacing = -speed;
-                //half the time, space bullets out evenly in all directions for a uniform explosion
-                if (game.GameRand.Bool())
-                    spacing += Game.GetRingSpacing(numPieces, Game.BulletSize);
+                float angleStep, spacing;
+                if (numBullets > 1)
+                {
+                    angleStep = Game.TwoPi / numBullets;
 
-                //don't add standard bullet speed
-                speed -= Game.BulletSpeed;
-                for (int idx = 0 ; idx < numPieces ; ++idx)
+                    //placing all bullets in the same spot will cause collisions and more explosions
+                    spacing = -speed;
+                    //half the time, space bullets out evenly in all directions for a uniform explosion
+                    if (game.GameRand.Bool())
+                        spacing += minSpace + Game.GetRingSpacing(numBullets, Game.BulletSize);
+                }
+                else
+                {
+                    angleStep = 0f;
+                    spacing = 0f;
+                }
+
+                for (int idx = 0 ; idx < numBullets ; ++idx)
                 {
                     float xDir, yDir;
                     Game.GetDirs(out xDir, out yDir, angle);
@@ -64,7 +73,7 @@ namespace SpaceRunner
 
         internal static Bullet NewBullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
         {
-            return new Bullet(game, x, y, xDir, yDir, speed, spacing, friendly);
+            return new Bullet(game, x, y, xDir, yDir, speed + Game.BulletSpeed, spacing + Game.BulletSize, friendly);
         }
 
         private Bullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
@@ -72,11 +81,11 @@ namespace SpaceRunner
         {
             this.Friendly = friendly;
             //space out from whoever fired it
-            Game.NormalizeDirs(ref xDir, ref yDir, spacing + Game.BulletSize);
+            Game.NormalizeDirs(ref xDir, ref yDir, spacing);
             this.x += xDir;
             this.y += yDir;
             //set bullet speed
-            Game.NormalizeDirs(ref this.xDir, ref this.yDir, speed + Game.BulletSpeed);
+            Game.NormalizeDirs(ref this.xDir, ref this.yDir, speed);
         }
 
         internal override decimal Score
@@ -92,7 +101,7 @@ namespace SpaceRunner
             bool hit = true;
             LifeDust lifeDust = obj as LifeDust;
             if (obj is Bullet)
-                BulletExplosion(Game, ( x + obj.X ) / 2, ( y + obj.Y ) / 2, 2);
+                BulletExplosion(Game, ( x + obj.X ) / 2f, ( y + obj.Y ) / 2f, 2f);
             else if (lifeDust != null)
                 hit = lifeDust.HitBy(this);
 

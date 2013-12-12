@@ -29,6 +29,12 @@ namespace SpaceRunner
             FuelImage.Dispose();
         }
 
+        private static readonly Dictionary<PowerUpType, int> types = new Dictionary<PowerUpType, int> {
+            { PowerUpType.Ammo, Game.PowerUpAmmoChance },
+            { PowerUpType.Fuel, Game.PowerUpFuelChance },
+            { PowerUpType.Life, Game.PowerUpLifeChance },
+        };
+
         internal readonly PowerUpType Type;
 
         internal static PowerUp NewPowerUp(Game game)
@@ -39,11 +45,6 @@ namespace SpaceRunner
 
         internal static PowerUp NewPowerUp(Game game, float x, float y)
         {
-            var types = new Dictionary<PowerUpType, int> {
-                { PowerUpType.Ammo, Game.PowerUpAmmoChance },
-                { PowerUpType.Fuel, Game.PowerUpFuelChance },
-                { PowerUpType.Life, Game.PowerUpLifeChance },
-            };
             return NewPowerUp(game, x, y, game.GameRand.SelectValue<PowerUpType>(types));
         }
 

@@ -196,16 +196,9 @@ namespace SpaceRunner
             if (!float.IsNaN(curAngle))
                 curAngle += rotate;
 
-            //move the object to simulate player movement
-            Move(-playerXMove, -playerYMove);
-
-            //directional and towards-player movement
             float xMove, yMove;
             GetTotalMove(out xMove, out yMove);
-            Move(xMove, yMove);
-
-            //do stuff in child classes
-            OnStep();
+            Move(xMove - playerXMove, yMove - playerYMove);
 
             float dist = Game.GetDistance(x, y), edgeDist = dist - Size, checkDist;
             if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
@@ -213,6 +206,8 @@ namespace SpaceRunner
                 Game.RemoveObject(this);
             else if (edgeDist < Game.PlayerSize)
                 HitPlayer();
+            else
+                OnStep();
         }
 
         protected void GetTotalMove(out float xMove, out float yMove)
@@ -295,22 +290,22 @@ namespace SpaceRunner
         {
             //determines which object's Collide method is called when two objects collide
             //the object with the higher return value has its method called
-            if (obj is Alien)
-                return 5;
-            if (obj is AlienShip)
-                return 7;
-            if (obj is Asteroid)
-                return 2;
+            if (obj is LifeDust)
+                return 3;
             if (obj is Bullet)
                 return 4;
             if (obj is Explosion)
                 return 8;
             if (obj is FuelExplosion)
                 return 6;
-            if (obj is LifeDust)
-                return 3;
+            if (obj is Asteroid)
+                return 2;
+            if (obj is Alien)
+                return 5;
             if (obj is PowerUp)
                 return 1;
+            if (obj is AlienShip)
+                return 7;
 #if DEBUG
             throw new Exception();
 #else

@@ -3,5 +3,3 @@ improve asteroid collisions
 	explosion interaction - 'pushing' effect
 	momentum affects damage - glancing hits
 improve hitboxes for less-round objects
-difficulty increase with time?
-	alien ship appearance

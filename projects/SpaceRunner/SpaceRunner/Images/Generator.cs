@@ -42,8 +42,10 @@ namespace SpaceRunner.Images
         {
             Bitmap retVal = CreateInitialImage(size, out graphics);
 
-            graphics.FillEllipse(new SolidBrush(dark), 0, 0, size - 1, size - 1);
-            graphics.FillEllipse(new SolidBrush(light), innerSize, innerSize, size - 1 - innerSize * 2, size - 1 - innerSize * 2);
+            using (Brush brush = new SolidBrush(dark))
+                graphics.FillEllipse(brush, 0, 0, size - 1, size - 1);
+            using (Brush brush = new SolidBrush(light))
+                graphics.FillEllipse(brush, innerSize, innerSize, size - 1 - innerSize * 2, size - 1 - innerSize * 2);
 
 #if DEBUG
             if (size != 13)

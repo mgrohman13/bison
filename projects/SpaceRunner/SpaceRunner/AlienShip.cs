@@ -73,6 +73,15 @@ namespace SpaceRunner
         {
             return (decimal)GetStrMult(life) * mult;
         }
+
+        internal float GetLifePct()
+        {
+            return life / baseLife;
+        }
+        internal float GetStrMult()
+        {
+            return GetStrMult(baseLife);
+        }
         private float GetStrMult(float life)
         {
             return life / Game.AlienShipLife * fireRate / Game.AlienShipFireRate * speedMult / Game.AlienShipSpeedMult;
@@ -82,7 +91,7 @@ namespace SpaceRunner
         {
             base.Die();
 
-            Bullet.BulletExplosion(Game, x, y, GetStrMult(baseLife) * Game.AlienShipExplosionBullets);
+            Bullet.BulletExplosion(Game, x, y, GetStrMult() * Game.AlienShipExplosionBullets);
         }
 
         protected override void OnStep()
@@ -194,7 +203,7 @@ namespace SpaceRunner
         {
             base.Draw(graphics, centerX, centerY);
 
-            Game.DrawHealthBar(graphics, this, life / baseLife);
+            Game.DrawHealthBar(graphics, this, GetLifePct());
         }
     }
 }

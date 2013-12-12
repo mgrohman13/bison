@@ -69,6 +69,8 @@ namespace SpaceRunner
         }
         internal static void StaticDispose()
         {
+            Random.Dispose();
+
             PlayerImage.Dispose();
             NoAmmoImage.Dispose();
             Font.Dispose();
@@ -130,7 +132,7 @@ namespace SpaceRunner
 
         internal const float MapSize = 338f;
         //distance from the center of the map at which new objects are created
-        internal const float CreationDist = MapSize + 39f;
+        internal const float CreationDist = MapSize + 52f;
         //distance from the CreationDist at which objects have a 50% chance of being removed per pixel the player moves
         internal const float RemovalDist = MapSize * MapSize * 1.3f;
         //sectors for collision detection
@@ -169,12 +171,11 @@ namespace SpaceRunner
 
         //chances of objects being created each iteration (will be multiplied by player's current speed)
         internal const float LifeDustCreationRate = (float)( Math.E * .0013 );
-        internal const float PowerUpCreationRate = .0021f;
+        internal const float PowerUpCreationRate = (float)( Math.E / 1300.0 );
         internal const float AsteroidCreationRate = .078f;
         internal const float AlienCreationRate = .013f;
-        internal static readonly float AlienShipCreationRate = (float)( Math.Pow(60.0 * 1000.0 / GameTick, -AlienShipCreationTickPower) * .00013 );//.000078 );
-        internal const float AlienShipCreationTickPower = 0f;//.13f;
-        internal const float AlienShipCreationCountPower = 1f;//1.69f;
+        internal const float AlienShipCreationRate = .000091f;
+        internal const float AlienShipBaseCount = .78f;
 
         internal const float AlienSize = 13f;
         internal const float AlienSpeed = GameSpeed * 2.6f;
@@ -338,14 +339,17 @@ namespace SpaceRunner
         private readonly Replay replay;
         private MTRandom gameRand;
 
-        private readonly HashSet<GameObject> objects = new HashSet<GameObject>();
+        private static readonly HashSet<GameObject> objects = new HashSet<GameObject>();
+
+        private static readonly Dictionary<Point, List<GameObject>> objectSectors = new Dictionary<Point, List<GameObject>>();
+        private static readonly HashSet<Point> finishedSectors = new HashSet<Point>();
 
         private readonly int centerX, centerY;
         private float moveAngle, inputAngle;
         private decimal score;
         private float life, fuel;
         private int ammo;
-        private int deadCounter, fireCounter, alienCount;
+        private int deadCounter, fireCounter;
         private bool turbo;
         private float? fire;
 
@@ -476,7 +480,8 @@ namespace SpaceRunner
         public override void Draw(System.Drawing.Graphics graphics)
         {
 #if TRACE
-            graphics.DrawEllipse(Pens.White, centerX - MapSize, centerY - MapSize, MapSize * 2 - 1, MapSize * 2 - 1);
+            graphics.DrawEllipse(Pens.White, centerX - MapSize, centerY - MapSize, MapSize * 2f, MapSize * 2f);
+            graphics.DrawEllipse(Pens.White, centerX - CreationDist, centerY - CreationDist, CreationDist * 2f, CreationDist * 2f);
             int drawSectors = (int)Math.Ceiling(CreationDist / SectorSize);
             for (int sect = -drawSectors ; sect <= drawSectors ; ++sect)
             {
@@ -507,7 +512,7 @@ namespace SpaceRunner
             //not drawing when deadCounter is within a certain range causes the player to blink when dead
             if (pauseDraw || !Dead || GameOver() || !Started || deadCounter % DeadBlinkDiv - DeadBlinkDiv / 2f > 1)
             {
-                bool turbo = ( !pauseDraw && Turbo && !GameOver() );
+                bool turbo = ( Turbo && !GameOver() );
                 bool canFire = ( pauseDraw || CanFire() || Dead || GameOver() );
                 Image image = ( canFire ? ( turbo ? TurboImage : PlayerImage ) : ( turbo ? NoAmmoTurboImage : NoAmmoImage ) );
                 GameObject.DrawImage(graphics, image, centerX, centerY, 0, 0, 0, PlayerSize, AdjustImageAngle(moveAngle));
@@ -552,11 +557,11 @@ namespace SpaceRunner
         {
             IEnumerable<GameObject> gameObjects;
             lock (gameTicker)
-                gameObjects = this.objects.ToList();
+                gameObjects = Game.objects.ToList();
 
             foreach (GameObject obj in Random.Iterate(gameObjects).OrderBy(GetDrawPriority))
                 lock (gameTicker)
-                    if (this.objects.Contains(obj))
+                    if (Game.objects.Contains(obj))
                         obj.Draw(graphics, centerX, centerY);
         }
 
@@ -620,20 +625,15 @@ namespace SpaceRunner
 
         internal void AddObject(GameObject obj)
         {
-            this.objects.Add(obj);
-
-            if (obj is AlienShip)
-                ++alienCount;
+            Game.objects.Add(obj);
         }
         internal void RemoveObject(GameObject obj)
         {
-            this.objects.Remove(obj);
+            Game.objects.Remove(obj);
 
             IDisposable disposable;
             if (( disposable = obj as IDisposable ) != null)
                 disposable.Dispose();
-            if (obj is AlienShip)
-                --alienCount;
         }
 
         internal void Fire(int x, int y)
@@ -769,14 +769,10 @@ namespace SpaceRunner
             Running = false;
             SleepTick();
 
-            GameObject[] array;
+            IEnumerable<GameObject> objs;
             lock (gameTicker)
-            {
-                array = new GameObject[this.objects.Count];
-                this.objects.CopyTo(array, 0);
-                this.objects.Clear();
-            }
-            foreach (GameObject obj in array)
+                objs = Game.objects.ToList();
+            foreach (GameObject obj in objs)
             {
                 IDisposable disposable = obj as IDisposable;
                 if (disposable != null)
@@ -793,7 +789,7 @@ namespace SpaceRunner
 
         internal static float GetRingSpacing(int numPieces, float size)
         {
-            return (float)( size * ( numPieces < 3.0 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
+            return (float)( size * ( numPieces < 3 ? 1.0 : 1.0 / Math.Sin(Math.PI / numPieces) ) );
         }
 
         internal void GetRandomDirection(out float xDir, out float yDir, float dist)
@@ -1004,7 +1000,7 @@ namespace SpaceRunner
             float padding = 3.9f * ( PlayerSize + AlienSize );
             PointF retVal = GetPoint(GetRandomAngle(), padding + GameRand.DoubleHalf(MapSize - padding));
 
-            foreach (GameObject obj in this.objects)
+            foreach (GameObject obj in Game.objects)
                 if (GetDistanceSqr(retVal.X, retVal.Y, obj.X, obj.Y) < ( size + obj.Size ) * ( size + obj.Size ))
                     return RandomStartPoint(size);
 
@@ -1073,7 +1069,7 @@ namespace SpaceRunner
             this.replay = replay;
             this.Scoring = scoring;
 
-            this.objects.Clear();
+            Game.objects.Clear();
             this.centerX = centerX;
             this.centerY = centerY;
 
@@ -1087,8 +1083,6 @@ namespace SpaceRunner
 
             this.deadCounter = -1;
             this.fireCounter = -1;
-
-            this.alienCount = 1;
 
             this.Turbo = false;
             this.fire = null;
@@ -1165,9 +1159,9 @@ namespace SpaceRunner
 
             float moveX, moveY;
             GetMoveDirs(out moveX, out moveY);
-            MoveAndCollide(moveX, moveY);
+            float alienShips = MoveAndCollide(moveX, moveY);
 
-            CreateObjects();
+            CreateObjects(alienShips);
         }
 
         private void TurnPlayer()
@@ -1246,39 +1240,33 @@ namespace SpaceRunner
             return (float)( FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower) );
         }
 
-        private void MoveAndCollide(float xSpeed, float ySpeed)
+        private float MoveAndCollide(float xSpeed, float ySpeed)
         {
-            var objectSectors = MoveObjects(xSpeed, ySpeed);
-            CollideObjects(objectSectors);
+            MoveObjects(xSpeed, ySpeed);
+            return CollideObjects();
         }
 
-        private Dictionary<Point, List<GameObject>> MoveObjects(float xSpeed, float ySpeed)
+        private void MoveObjects(float xSpeed, float ySpeed)
         {
-            var objectSectors = new Dictionary<Point, List<GameObject>>();
+            objectSectors.Clear();
 
             LifeDust.Reset();
-            foreach (GameObject obj in GameRand.Iterate(this.objects))
+            foreach (GameObject obj in GameRand.Iterate(Game.objects))
             {
                 //move the object
                 obj.Step(xSpeed, ySpeed);
 
-                //make sure the object is still in the game
-                if (this.objects.Contains(obj))
+                //add for collision detection
+                Point? p = GetSector(obj);
+                if (p.HasValue)
                 {
-                    //add for collision detection
-                    Point? p = GetSector(obj);
-                    if (p.HasValue)
-                    {
-                        Point key = p.Value;
-                        List<GameObject> sector;
-                        if (!objectSectors.TryGetValue(key, out  sector))
-                            objectSectors.Add(key, sector = new List<GameObject>());
-                        sector.Add(obj);
-                    }
+                    Point key = p.Value;
+                    List<GameObject> sector;
+                    if (!objectSectors.TryGetValue(key, out sector))
+                        objectSectors.Add(key, sector = new List<GameObject>());
+                    sector.Add(obj);
                 }
             }
-
-            return objectSectors;
         }
         internal void HitPlayer(float damage, bool randomize = true)
         {
@@ -1310,91 +1298,116 @@ namespace SpaceRunner
         private Point? GetSector(GameObject obj)
         {
             //no collisions for objects completely outside of the creation distance
-            if (GetDistance(obj.X, obj.Y) - obj.Size > CreationDist)
-                return null;
+            //and make sure the object is still in the game
+            if (GetDistance(obj.X, obj.Y) - obj.Size < CreationDist && Game.objects.Contains(obj))
+                return new Point((int)( obj.X / SectorSize ) + ( obj.X > 0 ? 1 : 0 ), (int)( obj.Y / SectorSize ) + ( obj.Y > 0 ? 1 : 0 ));
 
-            return new Point((int)( obj.X / SectorSize ) + ( obj.X > 0 ? 1 : 0 ), (int)( obj.Y / SectorSize ) + ( obj.Y > 0 ? 1 : 0 ));
+            return null;
         }
 
-        private void CollideObjects(Dictionary<Point, List<GameObject>> objectSectors)
+        private float CollideObjects()
         {
-            HashSet<Point> done = new HashSet<Point>();
+            float alienShips = AlienShipBaseCount;
+            finishedSectors.Clear();
+
             foreach (var pair in GameRand.Iterate(objectSectors))
             {
                 Point point = pair.Key;
-                List<GameObject> curSector = pair.Value;
+                List<GameObject> sector = pair.Value;
+                int count = sector.Count;
 
-                for (int idx = 0 ; idx < curSector.Count ; ++idx)
+                for (int idx = 0 ; idx < count ; ++idx)
                 {
-                    GameObject obj = curSector[idx];
+                    GameObject obj = sector[idx];
                     //make sure the object is still in the game
-                    if (this.objects.Contains(obj))
-                        CollideObject(objectSectors, obj, point, idx, done);
+                    if (obj != null)
+                        if (CollideObject(obj, point, idx))
+                        {
+                            AlienShip alienShip = ( obj as AlienShip );
+                            if (alienShip != null)
+                                alienShips += (float)( alienShip.GetStrMult() * Math.Sqrt(alienShip.GetLifePct()) );
+                        }
+                        else
+                        {
+                            sector[idx] = null;
+                        }
                 }
 
-                done.Add(point);
+                finishedSectors.Add(point);
             }
+
+            return alienShips;
         }
-        private void CollideObject(Dictionary<Point, List<GameObject>> objectSectors, GameObject obj, Point point, int objIndex, HashSet<Point> done)
+        private bool CollideObject(GameObject obj, Point point, int idx)
         {
             //some objects need to check extra sectors away
-            int checkDist = 1;
+            int checkDist;
             IChecksExtraSectors checksExtra = ( obj as IChecksExtraSectors );
-            if (checksExtra != null)
+            if (checksExtra == null)
+            {
+                checkDist = 1;
+            }
+            else
             {
                 checkDist = checksExtra.CheckSectors;
                 if (checkDist < 2)
                     checkDist = 1;
-                else
-                {
-                }
             }
 
-            foreach (Point p2 in GameRand.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
+            foreach (Point point2 in GameRand.Iterate(point.X - checkDist, point.X + checkDist, point.Y - checkDist, point.Y + checkDist))
             {
-                List<GameObject> value;
-                if (objectSectors.TryGetValue(p2, out value) && ( !done.Contains(p2) ||
-                        ( checkDist > 1 && ( Math.Abs(point.X - p2.X) > 1 || Math.Abs(point.Y - p2.Y) > 1 ) ) ))
+                List<GameObject> sector2;
+                if (objectSectors.TryGetValue(point2, out sector2) && ( !finishedSectors.Contains(point2) ||
+                        ( checkDist > 1 && ( Math.Abs(point.X - point2.X) > 1 || Math.Abs(point.Y - point2.Y) > 1 ) ) ))
                 {
-                    int start = 0;
+                    int idx2;
                     //when checking the object's own sector, we only need to check objects with a higher index
-                    if (p2 == point)
-                        start = objIndex + 1;
+                    if (point == point2)
+                        idx2 = idx + 1;
+                    else
+                        idx2 = 0;
+                    int count = sector2.Count;
 
-                    for (int idx = start ; idx < value.Count ; ++idx)
+                    for ( ; idx2 < count ; ++idx2)
                     {
-                        GameObject checkObj = value[idx];
-#if DEBUG
-                        //if either object checks extra sectors, the sector size is effectively multiplied by that amount
-                        int sectMult = checkDist;
-                        IChecksExtraSectors checksExtra2;
-                        if (( checksExtra2 = checkObj as IChecksExtraSectors ) != null)
-                            sectMult = Math.Max(sectMult, checksExtra2.CheckSectors);
-                        //this collision detection algorithm only works properly
-                        //if the sum of the sizes of any two objects is less than the sector size
-                        if (obj.Size + checkObj.Size > SectorSize * sectMult
-                            //this case is only valid because fuel explosions do not collide with one another
-                            && !( obj is FuelExplosion && checkObj is FuelExplosion ))
-                            throw new Exception(string.Format("Sector size ({4}) is too small for:  {0} ({1}) and {2} ({3})",
-                                    obj.GetType(), obj.Size, checkObj.GetType(), checkObj.Size, SectorSize));
-#endif
+                        GameObject obj2 = sector2[idx2];
                         //make sure the second object is still in the game
-                        if (this.objects.Contains(checkObj))
-                            if (obj.CheckCollision(checkObj))
+                        if (obj2 != null)
+                        {
+#if DEBUG
+                            //if either object checks extra sectors, the sector size is effectively multiplied by that amount
+                            int sectMult = checkDist;
+                            IChecksExtraSectors checksExtra2;
+                            if (( checksExtra2 = obj2 as IChecksExtraSectors ) != null)
+                                sectMult = Math.Max(sectMult, checksExtra2.CheckSectors);
+                            //this collision detection algorithm only works properly
+                            //if the sum of the sizes of any two objects is less than the sector size
+                            if (obj.Size + obj2.Size > SectorSize * sectMult
+                                //this case is only valid because fuel explosions do not collide with one another
+                                && !( obj is FuelExplosion && obj2 is FuelExplosion ))
+                                throw new Exception(string.Format("Sector size ({4}) is too small for:  {0} ({1}) and {2} ({3})",
+                                        obj.GetType(), obj.Size, obj2.GetType(), obj2.Size, SectorSize));
+#endif
+                            if (obj.CheckCollision(obj2))
+                            {
+                                if (!Game.objects.Contains(obj2))
+                                    sector2[idx2] = null;
                                 //if the collision killed the main object, return early
-                                if (!this.objects.Contains(obj))
-                                    return;
+                                if (!Game.objects.Contains(obj))
+                                    return false;
+                            }
+                        }
                     }
                 }
             }
+            return true;
         }
 
-        private void CreateObjects()
+        private void CreateObjects(float alienShips)
         {
             if (GameRand.Bool(TotalSpeed * AlienCreationRate))
                 Alien.NewAlien(this);
-            if (GameRand.Bool((float)( Math.Pow(tickCount, AlienShipCreationTickPower) * AlienShipCreationRate
-                    * TotalSpeed / Math.Pow(alienCount, AlienShipCreationCountPower) )))
+            if (GameRand.Bool(TotalSpeed * AlienShipCreationRate / alienShips))
                 AlienShip.NewAlienShip(this);
             if (GameRand.Bool(TotalSpeed * AsteroidCreationRate))
                 Asteroid.NewAsteroid(this);

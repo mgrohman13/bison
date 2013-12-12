@@ -35,7 +35,7 @@ namespace DaemonsWinApp
                     | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
         }
 
-        public bool SetupStuff(ref List<Unit> all, ref  List<Unit> part, ref List<Unit> move, UseType use)
+        public bool SetupStuff(ref List<Unit> all, ref List<Unit> part, ref List<Unit> move, UseType use)
         {
             l = null;
             showing = null;
