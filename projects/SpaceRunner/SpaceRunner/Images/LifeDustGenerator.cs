@@ -42,7 +42,7 @@ namespace SpaceRunner.Images
                     retVal.SetPixel(6, 1, dark);
             }
 
-            Generator.DisposeGraphics(graphics);
+            graphics.Dispose();
             return retVal;
         }
 

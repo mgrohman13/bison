@@ -12,7 +12,7 @@ namespace SpaceRunner.Images
 
             Generator.DrawBlobs(graphics, Brushes.Aqua, Brushes.White, 13, 6, 1.5f, 4.5f, Game.Random.GaussianCapped(3.9f, .065f), .6f);
 
-            Generator.DisposeGraphics(graphics);
+            graphics.Dispose();
             return retVal;
         }
     }

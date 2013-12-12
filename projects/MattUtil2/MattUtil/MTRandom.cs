@@ -1580,40 +1580,38 @@ namespace MattUtil
         /// </summary>
         public void Shuffle<T>(IList<T> list)
         {
-            IEnumerator<T> enumerator = Iterate(list).GetEnumerator();
+            IEnumerator<T> enumerator = Iterate(list, shuffle: true).GetEnumerator();
             while (enumerator.MoveNext())
                 ;
         }
 
-        private IEnumerable<T> Iterate<T>(IList<T> list, Func<IList<T>, int, T> GetItem = null)
+        private IEnumerable<T> Iterate<T>(IList<T> list, Func<IList<T>, int, T> GetItem = null, bool shuffle = false)
         {
-            bool zero = ( GetItem != null );
-            if (!zero)
-                GetItem = (l, i) => l[i];
-
-            int min = 0, max = list.Count;
-            while (min <= --max)
+            int min = 0, max = list.Count - 1;
+            while (min <= max)
             {
                 //select a random remaining object
                 int idx = RangeInt(min, max);
-                T next = GetItem(list, idx);
+                T next = ( GetItem == null ? list[idx] : GetItem(list, idx) );
 
                 //yield return so that we don't fully shuffle the list unless the entire enumerable is walked
                 yield return next;
 
                 //ensure multiple calls to the same returned enumerable will work correctly
-                if (zero && (int)(object)next == 0)
+                //even if broken out of prematurely, reset, excercised again, etc.
+                if (idx > min || shuffle)
                 {
-                    zero = false;
-                    min = 1;
-                    ++max;
+                    if (idx < max)
+                    {
+                        //maintain remaining objects
+                        list[idx] = ( GetItem == null ? list[max] : GetItem(list, max) );
+                        list[max] = next;
+                    }
+                    --max;
                 }
                 else
                 {
-                    //maintain remaining objects
-                    if (idx < max)
-                        list[idx] = GetItem(list, max);
-                    list[max] = next;
+                    ++min;
                 }
             }
         }

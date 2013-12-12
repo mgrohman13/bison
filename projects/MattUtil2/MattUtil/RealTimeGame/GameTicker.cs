@@ -197,6 +197,7 @@ namespace MattUtil.RealTimeGame
                 //WriteLine("endwait " + stopwatch.ElapsedMilliseconds);
 
                 Refresh();
+                GC.Collect();
             }
         }
 

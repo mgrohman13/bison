@@ -17,7 +17,7 @@ namespace SpaceRunner
 
         internal static Game StaticInit()
         {
-            Game game = new Game(null, Game.Random.Round(MapSize), Game.Random.Round(MapSize), false, false);
+            Game game = new Game(null, Random.Round(MapSize), Random.Round(MapSize), false, false);
             game.Running = false;
             game.Started = false;
             game.Dispose();
@@ -37,13 +37,13 @@ namespace SpaceRunner
 
             p = game.RandomStartPoint(0);
             LifeDust.NewLifeDust(game, p.X, p.Y, 6);
-            int amt = Game.Random.GaussianOEInt(4f, 1f, .1f, 1);
+            int amt = Random.GaussianOEInt(4f, 1f, .1f, 1);
             while (--amt > -1)
             {
                 p = game.RandomStartPoint(AsteroidMaxSize);
                 Asteroid.NewAsteroid(game, p.X, p.Y);
             }
-            amt = Game.Random.GaussianCappedInt(2f, 1f, 1);
+            amt = Random.GaussianCappedInt(2f, 1f, 1);
             while (--amt > -1)
             {
                 p = game.RandomStartPoint(AlienSize);
@@ -57,7 +57,7 @@ namespace SpaceRunner
             p = game.RandomStartPoint(-ExplosionSize);
             Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0, 0));
 
-            amt = Game.Random.OEInt(8f);
+            amt = Random.OEInt(8f);
             while (--amt > -1)
             {
                 game.MoveAndCollide(0, 0);
@@ -165,8 +165,7 @@ namespace SpaceRunner
         internal const float FireTimePower = 1.69f;
         internal const float FireTimeAmmoAdd = 1.69f;
 
-        private const float DeadBlinkDiv = 300f / GameTick;
-        private const float DeadBlinkWindow = DeadBlinkDiv / 2.1f;
+        private const float DeadBlinkDiv = DeathTime / ( -.5f + 5f );
 
         //chances of objects being created each iteration (will be multiplied by player's current speed)
         internal const float LifeDustCreationRate = (float)( Math.E * .0013 );
@@ -291,7 +290,7 @@ namespace SpaceRunner
         internal const float LifeDustAmtToHeal = 52f;
         internal const float LifeDustBondDistance = 91f;
         internal const float LifeDustBondRandomness = (float)( Math.E / 13.0 );
-        internal const float LifeDustBondAcceleration = Game.GameTick * Game.GameSpeed * .00052f;
+        internal const float LifeDustBondAcceleration = GameTick * GameSpeed * .00039f;
 
         internal const float PowerUpSize = 9f;
         //these three chance values are only relative to one another
@@ -359,7 +358,7 @@ namespace SpaceRunner
             get
             {
                 if (gameRand == null)
-                    return Game.Random;
+                    return Random;
                 return gameRand;
             }
         }
@@ -477,7 +476,6 @@ namespace SpaceRunner
         public override void Draw(System.Drawing.Graphics graphics)
         {
 #if TRACE
-            graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX - MapSize, centerY - MapSize, MapSize * 2 - 1, MapSize * 2 - 1);
             int drawSectors = (int)Math.Ceiling(CreationDist / SectorSize);
             for (int sect = -drawSectors ; sect <= drawSectors ; ++sect)
@@ -507,7 +505,7 @@ namespace SpaceRunner
         {
             bool pauseDraw = ( Paused && !IsReplay );
             //not drawing when deadCounter is within a certain range causes the player to blink when dead
-            if (pauseDraw || !Dead || GameOver() || !Started || ( deadCounter % DeadBlinkDiv > DeadBlinkWindow ))
+            if (pauseDraw || !Dead || GameOver() || !Started || deadCounter % DeadBlinkDiv - DeadBlinkDiv / 2f > 1)
             {
                 bool turbo = ( !pauseDraw && Turbo && !GameOver() );
                 bool canFire = ( pauseDraw || CanFire() || Dead || GameOver() );
@@ -538,7 +536,7 @@ namespace SpaceRunner
         private void DrawHealthBar(Graphics graphics)
         {
             Brush brush = ( Dead ? Brushes.Lime : Brushes.White );
-            float pct = ( Dead ? deadCounter / DeathTime : CurrentLifePart / PlayerLife );
+            float pct = (float)( Dead ? deadCounter / Math.Ceiling(DeathTime) : CurrentLifePart / PlayerLife );
             DrawHealthBar(graphics, Pens.White, brush, centerX, centerY, PlayerSize, pct);
         }
 
@@ -547,7 +545,6 @@ namespace SpaceRunner
             const string PausedText = "PAUSED";
             float drawX = centerX - graphics.MeasureString(PausedText, Font).Width / 2f;
 
-            graphics.ResetTransform();
             graphics.DrawString(PausedText, Font, Brushes.White, drawX, centerY + PlayerSize + ( IsReplay ? 9 : 0 ));
         }
 
@@ -566,7 +563,7 @@ namespace SpaceRunner
         private static int GetDrawPriority(GameObject obj)
         {
 #if DEBUG
-            if (Game.GetDistance(obj.X, obj.Y) - obj.Size > Game.MapSize)
+            if (GetDistance(obj.X, obj.Y) - obj.Size > MapSize)
                 return 0;
 #endif
             //z-index: higher values are drawn on top of lower values
@@ -613,7 +610,6 @@ namespace SpaceRunner
         {
             Rectangle fillRect = new Rectangle(rect.X + 1, rect.Y + 1, Round(pct * ( rect.Width - 1 )), rect.Height - 1);
 
-            graphics.ResetTransform();
             graphics.DrawRectangle(border, rect);
             graphics.FillRectangle(fill, fillRect);
         }
@@ -714,7 +710,7 @@ namespace SpaceRunner
 
         private static void SleepTick()
         {
-            Thread.Sleep(Game.Random.Round(GameTick * 1.3f) + 91);
+            Thread.Sleep(Random.Round(GameTick * 1.3f) + 91);
         }
 
         internal void AddScore(decimal amt)
@@ -824,7 +820,7 @@ namespace SpaceRunner
         }
         internal static float GetImageAngle()
         {
-            return GetRandomAngle(Game.Random);
+            return GetRandomAngle(Random);
         }
         private static float GetRandomAngle(MTRandom rand)
         {
@@ -841,7 +837,7 @@ namespace SpaceRunner
             Image temp = SetTransparentBackground(image);
 
             const int NumRotateFlipTypes = 8;
-            RotateFlipType rotateFlipType = (RotateFlipType)Game.Random.Next(NumRotateFlipTypes);
+            RotateFlipType rotateFlipType = (RotateFlipType)Random.Next(NumRotateFlipTypes);
 #if DEBUG
             if (Enum.IsDefined(typeof(RotateFlipType), NumRotateFlipTypes) || !Enum.IsDefined(typeof(RotateFlipType), rotateFlipType))
                 throw new Exception();
@@ -890,7 +886,7 @@ namespace SpaceRunner
         }
         internal static Image ResizeImage(Image image, float size, bool disposeOriginal)
         {
-            int actualSize = Game.Random.Round(size * 2f);
+            int actualSize = Random.Round(size * 2f);
             if (actualSize < 1)
                 actualSize = 1;
             Image retVal;
@@ -1110,9 +1106,9 @@ namespace SpaceRunner
             if (allowReplay)
             {
                 const int max = MTRandom.MAX_SEED_SIZE - 1;
-                uint[] seed = MTRandom.GenerateSeed((ushort)( Game.Random.WeightedInt(max, ( AvgSeedSize - 1f ) / max) + 1 ));
+                uint[] seed = MTRandom.GenerateSeed((ushort)( Random.WeightedInt(max, ( AvgSeedSize - 1f ) / max) + 1 ));
                 for (int idx = 0 ; idx < seed.Length ; ++idx)
-                    seed[idx] += Game.Random.NextUInt();
+                    seed[idx] += Random.NextUInt();
                 return seed;
             }
 
@@ -1159,7 +1155,7 @@ namespace SpaceRunner
                     replay.Record(tickCount, inputAngle, turbo, fire);
             }
 
-            if (Dead && ++deadCounter > DeathTime)
+            if (Dead && ++deadCounter > DeathTime && deadCounter > GameRand.Round(DeathTime))
                 deadCounter = -1;
             --fireCounter;
 
@@ -1260,8 +1256,7 @@ namespace SpaceRunner
         {
             var objectSectors = new Dictionary<Point, List<GameObject>>();
 
-            LifeDust.bonds.Clear();
-
+            LifeDust.Reset();
             foreach (GameObject obj in GameRand.Iterate(this.objects))
             {
                 //move the object

@@ -33,18 +33,18 @@ namespace SpaceRunner
             float xDir, yDir, speed = game.GameRand.Gaussian(Game.AsteroidInitialSpeed);
             game.GetRandomDirection(out xDir, out yDir, speed);
             float size = game.GameRand.GaussianCapped(Game.AsteroidAverageSize, Game.AsteroidSizeRandomness, Game.AsteroidAverageSize * Game.AsteroidSizeCap);
-            return new Asteroid(game, x, y, size, xDir, yDir, speed);
+            return new Asteroid(game, x, y, size, xDir, yDir);
         }
 
         internal static Asteroid NewAsteroid(Game game, float x, float y, float size, float xDir, float yDir)
         {
             //used when an old asteroid breaks up
-            return new Asteroid(game, x, y, size, xDir, yDir, Game.GetDistance(xDir, yDir));
+            return new Asteroid(game, x, y, size, xDir, yDir);
         }
 
         //pass in xDir and yDir total distance so it only needs to be calculated once
-        private Asteroid(Game game, float x, float y, float size, float xDir, float yDir, float speed) :
-            base(game, x, y, xDir, yDir, size, GetImage(size), speed * Game.AsteroidRotateMult + Game.AsteroidRotateConst)
+        private Asteroid(Game game, float x, float y, float size, float xDir, float yDir) :
+            base(game, x, y, xDir, yDir, size, GetImage(size), Game.GetDistance(xDir, yDir) * Game.AsteroidRotateMult + Game.AsteroidRotateConst)
         {
         }
 

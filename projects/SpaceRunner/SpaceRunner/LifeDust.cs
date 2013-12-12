@@ -66,56 +66,53 @@ namespace SpaceRunner
             }
         }
 
-        internal static List<Tuple<float, float, float>> bonds = new List<Tuple<float, float, float>>();
+        private static List<float[]> bonds = new List<float[]>();
+        private static IEnumerable<int> iterator;
+        private static readonly float ClumpSizeDiv = Game.LifeDustClumpAmt / 2f * Game.GetArea(Game.LifeDustSize);
+        private static readonly float maxDist = Game.LifeDustBondDistance + Game.LifeDustBondDistance
+                * Game.LifeDustBondRandomness * MTRandom.GAUSSIAN_FLOAT_MAX;
+        internal static void Reset()
+        {
+            bonds.Clear();
+        }
         protected override void OnStep()
         {
+            int bondCount = bonds.Count;
+            float x = this.x, y = this.y, area = this.Area,
+                    xWeight = x * area, yWeight = y * area;
+
             //find a nearby bond if one exists
-            Tuple<float, float, float> bond = null;
-            int idx = -1;
-            float distance = float.NaN;
-            if (bonds.Count > 0)
-                foreach (int findIdx in Game.GameRand.Iterate(bonds.Count))
+            if (bondCount > 0)
+                foreach (int idx in iterator)
                 {
-                    var find = bonds[findIdx];
-                    distance = Game.GetDistance(this.x, this.y, GetBondX(find), GetBondY(find));
-                    if (Game.GameRand.Gaussian(Game.LifeDustBondDistance, Game.LifeDustBondRandomness) > distance)
+                    var bond = bonds[idx];
+                    float totalX = bond[0], totalY = bond[1], bondArea = bond[2],
+                            bondX = totalX / bondArea, bondY = totalY / bondArea,
+                            distance = Game.GetDistance(x, y, bondX, bondY);
+                    if (maxDist > distance && Game.GameRand.Gaussian(Game.LifeDustBondDistance, Game.LifeDustBondRandomness) > distance)
                     {
-                        bond = find;
-                        idx = findIdx;
-                        break;
+                        if (distance > this.size + Game.GetSize(bondArea))
+                        {
+                            //move towards the bond
+                            float xDir = bondX - x;
+                            float yDir = bondY - y;
+                            Game.NormalizeDirs(ref xDir, ref yDir, (float)( Game.LifeDustBondAcceleration / GetSizePct(this)
+                                    * Math.Sqrt(bondArea / ( bondArea + ClumpSizeDiv )) ));
+                            this.xDir += xDir;
+                            this.yDir += yDir;
+                        }
+
+                        //add to the bond
+                        bond[0] = totalX + xWeight;
+                        bond[1] = totalY + yWeight;
+                        bond[2] = bondArea + area;
+                        return;
                     }
                 }
 
-            if (idx < 0)
-            {
-                bond = Tuple.Create(0f, 0f, 0f);
-            }
-            else if (distance > this.size + Game.GetSize(bond.Item3))
-            {
-                //move towards the bond
-                float xDir = GetBondX(bond) - this.x;
-                float yDir = GetBondY(bond) - this.y;
-                Game.NormalizeDirs(ref xDir, ref yDir, (float)( Game.LifeDustBondAcceleration / GetSizePct(this)
-                        * Math.Sqrt(bond.Item3 / ( bond.Item3 + Game.LifeDustClumpAmt / 2f * Game.GetArea(Game.LifeDustSize) )) ));
-                this.xDir += xDir;
-                this.yDir += yDir;
-            }
-
-            //add to the bond
-            bond = Tuple.Create(bond.Item1 + this.x * this.Area,
-                    bond.Item2 + this.y * this.Area, bond.Item3 + this.Area);
-            if (idx < 0)
-                bonds.Add(bond);
-            else
-                bonds[idx] = bond;
-        }
-        private static float GetBondX(Tuple<float, float, float> bond)
-        {
-            return bond.Item1 / bond.Item3;
-        }
-        private static float GetBondY(Tuple<float, float, float> bond)
-        {
-            return bond.Item2 / bond.Item3;
+            //create a new starting bond
+            bonds.Add(new[] { xWeight, yWeight, area });
+            iterator = Game.GameRand.Iterate(bondCount + 1);
         }
 
         private void AdjustMove(GameObject obj)

@@ -22,7 +22,7 @@ namespace SpaceRunner.Images
         {
             Graphics graphics;
             image = CreateInitialImage(image, out graphics);
-            DisposeGraphics(graphics);
+            graphics.Dispose();
             return image;
         }
 
@@ -36,12 +36,6 @@ namespace SpaceRunner.Images
             graphics = Graphics.FromImage(image);
             graphics.Clear(Color.Magenta);
             return image;
-        }
-
-        internal static void DisposeGraphics(Graphics graphics)
-        {
-            graphics.Flush();
-            graphics.Dispose();
         }
 
         internal static Bitmap CreateInitialImage(int size, Color dark, Color light, int innerSize, out Graphics graphics)

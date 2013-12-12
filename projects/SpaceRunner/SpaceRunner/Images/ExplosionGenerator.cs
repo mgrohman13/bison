@@ -11,6 +11,7 @@ namespace SpaceRunner.Images
             Bitmap[] result = new Bitmap[length * 2 - 1];
 
             Bitmap last = new Bitmap(width, width);
+            bool dispose = true;
             Generator.CreateInitialImage(last);
 
             float center = ( width - 1f ) / 2f;
@@ -19,6 +20,11 @@ namespace SpaceRunner.Images
             while (++idx1 <= length)
             {
                 Bitmap exp = new Bitmap(last);
+                if (dispose)
+                {
+                    dispose = false;
+                    last.Dispose();
+                }
                 last = exp;
 
                 int x = Game.Random.Round(center),

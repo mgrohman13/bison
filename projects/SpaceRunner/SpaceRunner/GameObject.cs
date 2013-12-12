@@ -147,7 +147,6 @@ namespace SpaceRunner
         internal virtual void Draw(Graphics graphics, int centerX, int centerY)
         {
 #if TRACE
-            graphics.ResetTransform();
             graphics.DrawEllipse(Pens.White, centerX + x - size, centerY + y - size, size * 2 - 1, size * 2 - 1);
 #endif
             DrawImage(graphics, image, centerX, centerY, speed, x, y, Size, curAngle);
@@ -169,7 +168,6 @@ namespace SpaceRunner
                     if (speed > 0)
                         curAngle = Game.GetAngleImageAdjusted(-x, -y);
 
-                    graphics.ResetTransform();
                     if (!float.IsNaN(curAngle))
                     {
                         graphics.TranslateTransform(objectX, objectY);
@@ -179,6 +177,12 @@ namespace SpaceRunner
 
                     float offset = image.Width / 2f;
                     graphics.DrawImage(image, objectX - offset, objectY - offset);
+
+                    if (!float.IsNaN(curAngle))
+                    {
+                        graphics.Transform.Dispose();
+                        graphics.ResetTransform();
+                    }
                 }
             }
         }

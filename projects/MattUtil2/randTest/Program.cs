@@ -17,6 +17,7 @@ namespace randTest
         {
             rand.StartTick();
 
+
             //Console.BufferHeight *= 2;
             //Console.BufferWidth *= 2;
             //const double AvgSeedSize = 390;
@@ -25,6 +26,7 @@ namespace randTest
             //Write(new MTRandom(true, seed));
             //seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
             //Write(new MTRandom(true, seed));
+
 
             //int digits = 6;
             //int max = int.Parse("".PadLeft(digits, '9'));
@@ -49,39 +51,40 @@ namespace randTest
             //Console.WriteLine(sum / max);
             //Console.WriteLine(StartAmt * baseCost);
 
-            //while (true)
+
+            //IEnumerable<int> e = rand.Iterate(3);
+            //ThreadStart func = () =>
             //{
-            //    var addUnits = Enumerable.Range(13, 21).Where(i => rand.Bool(1 / ( 1.0 + i )));
-            //    bool any = addUnits.Any(i => i > 16.9);
-            //    Console.WriteLine(any);
-            //    bool any2 = false;
-            //    foreach (int i in addUnits)
+            //    int[] r = new int[3];
+            //    for (int a = 0 ; a < 444444 ; ++a)
+            //        lock (e)
+            //            foreach (int i in e)
+            //            {
+            //                r[i]++;
+            //                if (i == 0)
+            //                    break;
+            //            }
+            //    lock (typeof(Program))
             //    {
-            //        Console.WriteLine(i);
-            //        if (i > 16.9)
-            //            any2 = true;
+            //        foreach (int c in r)
+            //            Console.WriteLine(c);
+            //        Console.WriteLine();
             //    }
-            //    Console.WriteLine(any2);
-            //    Console.ReadKey(true);
-            //    Console.WriteLine();
-            //}
+            //};
+            //const int tests = 13;
+            //Thread[] threads = new Thread[tests];
+            //for (int a = 0 ; a < tests ; ++a)
+            //    threads[a] = new Thread(func);
+            //for (int a = 0 ; a < tests ; ++a)
+            //    threads[a].Start();
+            //Console.ReadKey(true);
 
 
-            double bits = MTRandom.MAX_SEED_SIZE * 32;
-            double tot = 0;
-            double div = 2;
-            while (true)
-            {
-                tot += Math.Log(div, 2);
-                if (tot >= bits)
-                {
-                    --div;
-                    break;
-                }
-                ++div;
-            }
-            Console.WriteLine(div);
 
+
+
+            //CWMapTest();
+            //GenerateTerrain();
 
             rand.Dispose();
             Console.ReadKey();
