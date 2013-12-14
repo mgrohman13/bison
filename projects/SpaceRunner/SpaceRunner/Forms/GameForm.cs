@@ -22,18 +22,26 @@ namespace SpaceRunner.Forms
 
         protected override BaseGame GetNewGame(bool scoring)
         {
-            Game.Dispose();
+            if (Game.IsReplay && timeScroll != null)
+                lock (Game.Replay)
+                    timeScroll.Abort();
 
-            bool isReplay = ( this.replay != null );
-            this.lblTime.Visible = isReplay;
-            this.tbTime.Visible = isReplay;
-            this.lblSpeed.Visible = isReplay;
-            this.tbSpeed.Visible = isReplay;
+            lock (this)
+            {
+                Game.Running = false;
+                Game.Dispose();
 
-            if (isReplay)
-                return new Game(base.RefreshGame, this.center.X, this.center.Y, this.replay);
-            else
-                return new Game(base.RefreshGame, this.center.X, this.center.Y, scoring, allowReplay);
+                bool isReplay = ( this.replay != null );
+                this.lblTime.Visible = isReplay;
+                this.tbTime.Visible = isReplay;
+                this.lblSpeed.Visible = isReplay;
+                this.tbSpeed.Visible = isReplay;
+
+                if (isReplay)
+                    return new Game(base.RefreshGame, this.center.X, this.center.Y, this.replay);
+                else
+                    return new Game(base.RefreshGame, this.center.X, this.center.Y, scoring, allowReplay);
+            }
         }
 
         private const float TotalMapSize = SpaceRunner.Game.MapSize * 2f;
@@ -69,16 +77,17 @@ namespace SpaceRunner.Forms
 
         private Point GetCenter()
         {
-            int total = (int)Math.Ceiling(Game.MapSize + PadSides);
+            int center = Game.Random.Round(Game.MapSize + PadSides);
+            int widthOffset = this.Width - this.ClientSize.Width;
+            int heightOffset = this.Height - this.ClientSize.Height + base.menuStrip.Height;
 #if TRACE
-            Rectangle r = Screen.GetWorkingArea(this);
-            total = Math.Min(r.Width, r.Height) / 2;
+            Rectangle screenArea = Screen.GetWorkingArea(this);
+            center = Game.Random.Round(Math.Min(screenArea.Width - widthOffset, screenArea.Height - heightOffset) / 2f);
 #endif
-            this.Size = new Size(this.Width - this.ClientSize.Width + total * 2,
-                this.Height - this.ClientSize.Height + total * 2 + base.menuStrip.Height);
+            this.Size = new Size(widthOffset + center * 2, heightOffset + center * 2);
             this.MinimumSize = Size;
             this.MaximumSize = Size;
-            return new Point(total, total + base.menuStrip.Height);
+            return new Point(center, center + base.menuStrip.Height);
         }
 
         bool enabled = true;
@@ -297,7 +306,8 @@ namespace SpaceRunner.Forms
         private void SetReplayPosition()
         {
             if (timeScroll != null)
-                timeScroll.Abort();
+                lock (Game.Replay)
+                    timeScroll.Abort();
 
             timeScroll = new Thread(ThreadStart);
             timeScroll.IsBackground = true;
@@ -308,9 +318,12 @@ namespace SpaceRunner.Forms
         {
             Thread.Sleep(1000);
 
-            base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
-            SetReplaySpeed(InvokeGetValue(this.tbSpeed));
-            timeScroll = null;
+            lock (this)
+            {
+                base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
+                SetReplaySpeed(InvokeGetValue(this.tbSpeed));
+                timeScroll = null;
+            }
         }
         private static int InvokeGetValue(TrackBar tb)
         {

@@ -102,55 +102,63 @@ namespace MattUtil.RealTimeGame
         //Stopwatch stopwatch = new Stopwatch();
         private void RunGame()
         {
-            Stopwatch stopwatch = new Stopwatch();
-            long ticks = 0;
-            double offset = 0;
-
-            lock (this)
-                stopwatch.Start();
-
-            while (Running)
+            try
             {
+                Stopwatch stopwatch = new Stopwatch();
+                long ticks = 0;
+                double offset = 0;
+
                 lock (this)
+                    stopwatch.Start();
+
+                while (Running)
                 {
-                    bool gameOver = game.GameOver();
-                    if (( !paused || gameOver ) && started)
+                    lock (this)
                     {
-                        //WriteLine("   step " + stopwatch.ElapsedMilliseconds);
-                        if (gameOver)
-                            End();
-                        else
-                            game.Step();
-                        //WriteLine("endstep " + stopwatch.ElapsedMilliseconds);
-
-                        if (Running)
+                        bool gameOver = game.GameOver();
+                        if (( !paused || gameOver ) && started)
                         {
-                            long elapsedTicks = stopwatch.ElapsedTicks;
-                            long timeDiff = elapsedTicks - ticks;
-                            ticks = elapsedTicks;
+                            //WriteLine("   step " + stopwatch.ElapsedMilliseconds);
+                            if (gameOver)
+                                End();
+                            else
+                                game.Step();
+                            //WriteLine("endstep " + stopwatch.ElapsedMilliseconds);
 
-                            offset += gameTick - timeDiff / TicksPerMilisecond;
+                            if (Running)
+                            {
+                                long elapsedTicks = stopwatch.ElapsedTicks;
+                                long timeDiff = elapsedTicks - ticks;
+                                ticks = elapsedTicks;
+
+                                offset += gameTick - timeDiff / TicksPerMilisecond;
+                            }
+                        }
+                        else
+                        {
+                            ticks = 0;
+                            offset = gameTick;
+
+                            stopwatch.Restart();
                         }
                     }
-                    else
-                    {
-                        ticks = 0;
-                        offset = gameTick;
 
-                        stopwatch.Restart();
-                    }
+                    lock (timer)
+                        Monitor.Pulse(timer);
+
+                    int sleep = Game.Random.Round(Math.Max(0.0, ( offset + gameTick ) / 2.0));
+                    //WriteLine("sleep:" + sleep);
+                    Thread.Sleep(sleep);
                 }
 
+                lock (this)
+                    stopwatch.Stop();
+            }
+            finally
+            {
                 lock (timer)
                     Monitor.Pulse(timer);
-
-                int sleep = Game.Random.Round(Math.Max(0.0, ( offset + gameTick ) / 2.0));
-                //WriteLine("sleep:" + sleep);
-                Thread.Sleep(sleep);
             }
-
-            lock (this)
-                stopwatch.Stop();
         }
 
         public void End()

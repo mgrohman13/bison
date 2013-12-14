@@ -10,29 +10,33 @@ namespace SpaceRunner
 
         internal static void InitImages()
         {
-            Dispose();
-
-            int numExplosions = Game.Random.GaussianOEInt(9.1f, .065f, .065f, 6);
-
-            Images = new Image[numExplosions][];
-            for (int explosion = 0 ; explosion < numExplosions ; ++explosion)
+            lock (typeof(Explosion))
             {
-                int numImages = Game.Random.GaussianOEInt(16.9f, .039f, .091f, 13);
-                Images[explosion] = new Image[numImages * 2 - 1];
-                const float avgWidth = 52;
-                int width = Game.Random.GaussianOEInt(avgWidth, .091f, .078f, Game.Random.Round(2 * Game.ExplosionSize));
-                Bitmap[] b = ExplosionGenerator.GenerateExplosion(width, numImages, Game.Random.GaussianCapped(13f * width / avgWidth, .078f));
-                for (int number = 0 ; number < numImages * 2 - 1 ; ++number)
-                    Images[explosion][number] = Game.LoadImage(b[number], Game.ExplosionSize);
+                StaticDispose();
+
+                int numExplosions = Game.Random.GaussianOEInt(9.1f, .065f, .065f, 6);
+
+                Images = new Image[numExplosions][];
+                for (int explosion = 0 ; explosion < numExplosions ; ++explosion)
+                {
+                    int numImages = Game.Random.GaussianOEInt(16.9f, .039f, .091f, 13);
+                    Images[explosion] = new Image[numImages * 2 - 1];
+                    const float avgWidth = 52;
+                    int width = Game.Random.GaussianOEInt(avgWidth, .091f, .078f, Game.Random.Round(2 * Game.ExplosionSize));
+                    Bitmap[] b = ExplosionGenerator.GenerateExplosion(width, numImages, Game.Random.GaussianCapped(13f * width / avgWidth, .078f));
+                    for (int number = 0 ; number < numImages * 2 - 1 ; ++number)
+                        Images[explosion][number] = Game.LoadImage(b[number], Game.ExplosionSize);
+                }
             }
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
             if (Images != null)
                 foreach (Image[] exp in Images)
                     foreach (Image image in exp)
-                        image.Dispose();
+                        lock (image)
+                            image.Dispose();
         }
 
         private int time = 0;

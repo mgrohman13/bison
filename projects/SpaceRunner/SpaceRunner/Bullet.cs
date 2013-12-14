@@ -20,16 +20,23 @@ namespace SpaceRunner
 
         internal static void InitImages()
         {
-            int numImages = Game.Random.GaussianOEInt(13f, .13f, .21f, 6);
-            Images = new Image[numImages];
-            for (int idx = 0 ; idx < numImages ; ++idx)
-                Images[idx] = Game.LoadImageRotated(BulletGenerator.GenerateBullet(), Game.BulletSize);
+            lock (typeof(Bullet))
+            {
+                StaticDispose();
+
+                int numImages = Game.Random.GaussianOEInt(13f, .13f, .21f, 6);
+                Images = new Image[numImages];
+                for (int idx = 0 ; idx < numImages ; ++idx)
+                    Images[idx] = Game.LoadImageRotated(BulletGenerator.GenerateBullet(), Game.BulletSize);
+            }
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
-            foreach (Image image in Images)
-                image.Dispose();
+            if (Images != null)
+                foreach (Image image in Images)
+                    lock (image)
+                        image.Dispose();
         }
 
         internal readonly FriendlyStatus Friendly;

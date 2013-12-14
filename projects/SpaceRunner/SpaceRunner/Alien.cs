@@ -13,7 +13,7 @@ namespace SpaceRunner
             AlienImage = Game.LoadImage("alien.bmp", Game.AlienSize);
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
             AlienImage.Dispose();
         }

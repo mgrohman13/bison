@@ -15,8 +15,7 @@ namespace SpaceRunner
                 Images[idx] = Game.LoadImage("asteroids\\" + idx.ToString() + ".bmp");
         }
 
-        //dispose all static images, not to be confused with IDisposable implementation
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
             foreach (Image image in Images)
                 image.Dispose();

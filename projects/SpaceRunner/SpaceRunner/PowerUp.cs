@@ -22,7 +22,7 @@ namespace SpaceRunner
             FuelImage = Game.LoadImage("fuel.bmp", Game.PowerUpSize);
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
             LifeImage.Dispose();
             AmmoImage.Dispose();

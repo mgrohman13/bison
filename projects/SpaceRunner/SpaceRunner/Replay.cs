@@ -15,7 +15,6 @@ namespace SpaceRunner
         private HashSet<int> turbo = null;
         private Dictionary<int, float> fire = null;
 
-        [NonSerialized]
         private int length;
 
         [NonSerialized]
@@ -36,19 +35,8 @@ namespace SpaceRunner
         {
             get
             {
-                if (length == default(int))
-                    GetLength();
                 return length;
             }
-        }
-        private void GetLength()
-        {
-            foreach (int shortTick in this.input.Keys)
-                this.length = Math.Max(length, shortTick);
-            foreach (int shortTick in this.turbo)
-                this.length = Math.Max(length, shortTick);
-            foreach (int shortTick in this.fire.Keys)
-                this.length = Math.Max(length, shortTick);
         }
 
         internal void Record(int tickCount, float inputAngle, bool turbo, float? fire)

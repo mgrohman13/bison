@@ -16,16 +16,21 @@ namespace SpaceRunner
         }
         internal static void InitImages()
         {
-            GenerateOne();
-
-            int numImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
-            Images = new Image[numImages];
-
-            float size = Game.PowerUpSize;
-            for (int idx = 0 ; idx < numImages ; ++idx)
+            lock (typeof(FuelExplosion))
             {
-                Images[idx] = Game.LoadImage(Game.Random.SelectValue(generated), size, false);
-                size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( numImages - 1 );
+                DisposeImages();
+
+                GenerateOne();
+
+                int numImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
+                Images = new Image[numImages];
+
+                float size = Game.PowerUpSize;
+                for (int idx = 0 ; idx < numImages ; ++idx)
+                {
+                    Images[idx] = Game.LoadImage(Game.Random.SelectValue(generated), size, false);
+                    size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( numImages - 1 );
+                }
             }
         }
         private static void GenerateOne()
@@ -33,10 +38,18 @@ namespace SpaceRunner
             generated.Add(FuelExplosionGenerator.GenerateFuelExplosion(Game.Random.GaussianOEInt(195f, .13f, .13f, 104)));
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
-            foreach (Image image in Images)
+            foreach (Image image in generated)
                 image.Dispose();
+            DisposeImages();
+        }
+        internal static void DisposeImages()
+        {
+            if (Images != null)
+                foreach (Image image in Images)
+                    lock (image)
+                        image.Dispose();
         }
 
         private int time = 0;

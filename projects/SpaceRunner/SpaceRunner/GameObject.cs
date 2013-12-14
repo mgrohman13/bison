@@ -154,14 +154,13 @@ namespace SpaceRunner
 
         internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float size, float curAngle)
         {
-            lock (image)
-            {
-#if DEBUG
-                if (image.Width != image.Height)
-                    throw new Exception();
-#endif
-                if (Game.GetDistance(x, y) - size < Game.MapSize)
+            if (Game.GetDistance(x, y) - size < Game.MapSize)
+                lock (image)
                 {
+#if DEBUG
+                    if (image.Width != image.Height)
+                        throw new Exception();
+#endif
                     float objectX = centerX + x;
                     float objectY = centerY + y;
 
@@ -184,7 +183,6 @@ namespace SpaceRunner
                         graphics.ResetTransform();
                     }
                 }
-            }
         }
 
         protected virtual void OnStep()
@@ -200,11 +198,10 @@ namespace SpaceRunner
             GetTotalMove(out xMove, out yMove);
             Move(xMove - playerXMove, yMove - playerYMove);
 
-            float dist = Game.GetDistance(x, y), edgeDist = dist - Size, checkDist;
-            if (edgeDist > Game.MapSize && ( checkDist = dist - Game.CreationDist ) > 0 &&
-                    Game.GameRand.Bool((float)( 1.0 - Math.Pow(1.0 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed) )))
+            float dist = Game.GetDistance(x, y) - Size, checkDist = dist - Game.CreationDist;
+            if (checkDist > 0 && Game.GameRand.Bool((float)( 1.0 - Math.Pow(1.0 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed) )))
                 Game.RemoveObject(this);
-            else if (edgeDist < Game.PlayerSize)
+            else if (dist < Game.PlayerSize)
                 HitPlayer();
             else
                 OnStep();
@@ -237,7 +234,7 @@ namespace SpaceRunner
         protected void AddScore(decimal score)
         {
             //only add score if the center of the object is within the visible portion of the map
-            if (score != 0 && Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
+            if (score != 0m && Game.GetDistanceSqr(x, y) < Game.MapSize * Game.MapSize)
                 Game.AddScore(score);
         }
 

@@ -19,8 +19,8 @@ namespace SpaceRunner.Forms
 
             Application.Run(mainForm);
 
-            Game.StaticDispose();
             mainForm.Dispose();
+            Game.StaticDispose();
         }
     }
 }

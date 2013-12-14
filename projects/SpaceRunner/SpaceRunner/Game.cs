@@ -17,10 +17,12 @@ namespace SpaceRunner
 
         internal static Game StaticInit()
         {
-            Game game = new Game(null, Random.Round(MapSize), Random.Round(MapSize), false, false);
+            float avg = MapSize + 26f, dev = .091f;
+            int cap = Random.Round(avg * .39f);
+            Game game = new Game(null, Random.GaussianCappedInt(avg, dev, cap),
+                    Random.GaussianCappedInt(avg, dev, cap), false, false);
             game.Running = false;
             game.Started = false;
-            game.Dispose();
 
             InitializeImages(game);
 
@@ -31,11 +33,13 @@ namespace SpaceRunner
         // -show something interesting on the screen when the game is first launched
         private static void InitializeImages(Game game)
         {
+            Game.objects.Clear();
+
             PointF p = game.RandomEdgePoint();
             FuelExplosion.NewFuelExplosion(game, p.X, p.Y);
             AlienShip.NewAlienShip(game);
 
-            p = game.RandomStartPoint(0);
+            p = game.RandomStartPoint(0f);
             LifeDust.NewLifeDust(game, p.X, p.Y, 6);
             int amt = Random.GaussianOEInt(4f, 1f, .1f, 1);
             while (--amt > -1)
@@ -52,9 +56,9 @@ namespace SpaceRunner
             p = game.RandomStartPoint(PowerUpSize);
             PowerUp.NewPowerUp(game, p.X, p.Y);
 
-            p = game.RandomStartPoint(-BulletSize);
+            p = game.RandomStartPoint(0f);
             Bullet.BulletExplosion(game, p.X, p.Y, 1);
-            p = game.RandomStartPoint(-ExplosionSize);
+            p = game.RandomStartPoint(0f);
             Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0, 0));
 
             amt = Random.OEInt(8f);
@@ -69,20 +73,24 @@ namespace SpaceRunner
         }
         internal static void StaticDispose()
         {
+            DisposeObjects(typeof(Game));
+
             Random.Dispose();
 
+            Font.Dispose();
             PlayerImage.Dispose();
             NoAmmoImage.Dispose();
-            Font.Dispose();
+            TurboImage.Dispose();
+            NoAmmoTurboImage.Dispose();
 
-            PowerUp.Dispose();
-            LifeDust.Dispose();
-            FuelExplosion.Dispose();
-            Explosion.Dispose();
-            Bullet.Dispose();
-            Asteroid.Dispose();
-            AlienShip.Dispose();
-            Alien.Dispose();
+            PowerUp.StaticDispose();
+            LifeDust.StaticDispose();
+            FuelExplosion.StaticDispose();
+            Explosion.StaticDispose();
+            Bullet.StaticDispose();
+            Asteroid.StaticDispose();
+            AlienShip.StaticDispose();
+            Alien.StaticDispose();
         }
 
         #endregion //Main
@@ -132,11 +140,11 @@ namespace SpaceRunner
 
         internal const float MapSize = 338f;
         //distance from the center of the map at which new objects are created
-        internal const float CreationDist = MapSize + 52f;
+        internal const float CreationDist = MapSize + 65f;
         //distance from the CreationDist at which objects have a 50% chance of being removed per pixel the player moves
-        internal const float RemovalDist = MapSize * MapSize * 1.3f;
+        internal const float RemovalDist = MapSize * MapSize / 1.3f;
         //sectors for collision detection
-        internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2;
+        internal const float SectorSize = ( AsteroidMaxSize + FuelExplosionSize ) / 2f;
 
         internal const float GameSpeed = (float)( GameTick * Math.PI * .013 );
 
@@ -306,7 +314,7 @@ namespace SpaceRunner
         //amount each damage point while dead reduces your score
         internal const decimal ScoreToDamageRatio = ScoreMult / (decimal)PlayerLife * 10m;
         //score added per pixel traveled
-        internal const decimal DistanceScore = ScoreMult / (decimal)MapSize / 2m;
+        internal const decimal DistanceScore = ScoreMult / (decimal)MapSize * .5m;
         //score an alien is worth for killing based on its speed
         internal const decimal AlienSpeedScoreMult = ScoreMult / (decimal)AlienSpeed * 1m;
         //extra score an alien that shoots is worth for killing
@@ -567,7 +575,7 @@ namespace SpaceRunner
 
         private static int GetDrawPriority(GameObject obj)
         {
-#if DEBUG
+#if DEBUG || TRACE
             if (GetDistance(obj.X, obj.Y) - obj.Size > MapSize)
                 return 0;
 #endif
@@ -585,7 +593,7 @@ namespace SpaceRunner
             if (obj is FuelExplosion)
                 return 7 * ushort.MaxValue;
             if (obj is LifeDust)
-                return 3 * ushort.MaxValue - GetDrawPriority(LifeDust.GetSizePct(obj) / 4);
+                return 3 * ushort.MaxValue - GetDrawPriority(LifeDust.GetSizePct(obj) / 2f - 1f);
             if (obj is PowerUp)
                 return 2 * ushort.MaxValue;
 #if DEBUG
@@ -600,7 +608,7 @@ namespace SpaceRunner
             if (priority < -1 || priority > 1)
                 throw new Exception();
 #endif
-            return Round(( ushort.MaxValue / 2f - 1 ) * priority);
+            return Round(ushort.MaxValue / 2f * priority);
         }
 
         internal void DrawHealthBar(Graphics graphics, GameObject obj, float pct)
@@ -648,7 +656,7 @@ namespace SpaceRunner
         {
             if (!IsReplay)
                 lock (gameTicker)
-                    if (!GameOver() && Running && !( GetDistanceSqr(x, y) > MapSize * MapSize ))
+                    if (!GameOver() && Running && GetDistanceSqr(x, y) < MapSize * MapSize)
                     {
                         if (!Started)
                             Start();
@@ -678,10 +686,11 @@ namespace SpaceRunner
         internal static Game SetReplayPosition(Game game, int position, GameTicker.EventDelegate Refresh)
         {
             if (position < game.tickCount)
-            {
-                game.Dispose();
-                game = new Game(Refresh, game.centerX, game.centerY, game.replay);
-            }
+                lock (game.replay)
+                {
+                    game.Dispose();
+                    game = new Game(Refresh, game.centerX, game.centerY, game.replay);
+                }
             if (position > game.tickCount)
                 game.SetReplayPosition(position, Refresh);
             return game;
@@ -689,16 +698,20 @@ namespace SpaceRunner
         private void SetReplayPosition(int position, GameTicker.EventDelegate Refresh)
         {
 #if DEBUG
-            if (isReplay && position > tickCount && position <= replay.Length)
+            if (IsReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-                Paused = true;
-                SleepTick();
-                Refresh();
-                SleepTick();
+                lock (replay)
+                {
+                    Paused = true;
+                    SleepTick();
+                    Refresh();
+                    SleepTick();
+                }
                 lock (gameTicker)
                     while (tickCount < position)
-                        this.Step();
+                        lock (replay)
+                            this.Step();
                 SleepTick();
                 Paused = false;
 #if DEBUG
@@ -769,17 +782,28 @@ namespace SpaceRunner
             Running = false;
             SleepTick();
 
+            DisposeObjects(gameTicker);
+
+            SleepTick();
+        }
+
+        private static void DisposeObjects(object lockObj)
+        {
             IEnumerable<GameObject> objs;
-            lock (gameTicker)
+            lock (lockObj)
+            {
                 objs = Game.objects.ToList();
+                Game.objects.Clear();
+                Game.objectSectors.Clear();
+                Game.finishedSectors.Clear();
+                LifeDust.Reset();
+            }
             foreach (GameObject obj in objs)
             {
                 IDisposable disposable = obj as IDisposable;
                 if (disposable != null)
                     disposable.Dispose();
             }
-
-            SleepTick();
         }
 
         private void GetMoveDirs(out float moveX, out float moveY)
@@ -997,7 +1021,7 @@ namespace SpaceRunner
         }
         private PointF RandomStartPoint(float size)
         {
-            float padding = 3.9f * ( PlayerSize + AlienSize );
+            float padding = size + 3.9f * ( PlayerSize + AlienSize );
             PointF retVal = GetPoint(GetRandomAngle(), padding + GameRand.DoubleHalf(MapSize - padding));
 
             foreach (GameObject obj in Game.objects)
@@ -1073,7 +1097,7 @@ namespace SpaceRunner
             this.centerX = centerX;
             this.centerY = centerY;
 
-            this.inputAngle = GetRandomAngle();
+            this.moveAngle = this.inputAngle = GetRandomAngle();
 
             this.score = 0;
 
@@ -1422,7 +1446,7 @@ namespace SpaceRunner
             AddScore((decimal)ammo * RemainingAmmoScore);
             AddScore((decimal)fuel * RemainingFuelScore);
 
-            if (replay != null)
+            if (!IsReplay && replay != null)
                 replay.EndRecord(this.tickCount);
         }
 

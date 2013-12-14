@@ -15,23 +15,30 @@ namespace SpaceRunner
 
         internal static void InitImages()
         {
-            int numImages = Game.Random.GaussianOEInt(169, .065f, .091f, 130);
-            SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( numImages - 1 );
-
-            Images = new Image[numImages];
-
-            float size = StartSizeImage;
-            for (int idx = 0 ; idx < numImages ; ++idx)
+            lock (typeof(LifeDust))
             {
-                Images[idx] = Game.LoadImageRotated(LifeDustGenerator.GenerateLifeDust(), size);
-                size += SizeIncImage;
+                StaticDispose();
+
+                int numImages = Game.Random.GaussianOEInt(169, .065f, .091f, 130);
+                SizeIncImage = ( Game.LifeDustSize * 2f - StartSizeImage ) / ( numImages - 1 );
+
+                Images = new Image[numImages];
+
+                float size = StartSizeImage;
+                for (int idx = 0 ; idx < numImages ; ++idx)
+                {
+                    Images[idx] = Game.LoadImageRotated(LifeDustGenerator.GenerateLifeDust(), size);
+                    size += SizeIncImage;
+                }
             }
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
-            foreach (Image image in Images)
-                image.Dispose();
+            if (Images != null)
+                foreach (Image image in Images)
+                    lock (image)
+                        image.Dispose();
         }
 
         internal static void NewLifeDust(Game game)

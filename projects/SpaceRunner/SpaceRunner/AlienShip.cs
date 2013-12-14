@@ -15,7 +15,7 @@ namespace SpaceRunner
             AlienShipImage = Game.LoadImage("alienship.bmp", Game.AlienShipSize);
         }
 
-        internal static void Dispose()
+        internal static void StaticDispose()
         {
             AlienShipImage.Dispose();
         }
@@ -203,7 +203,8 @@ namespace SpaceRunner
         {
             base.Draw(graphics, centerX, centerY);
 
-            Game.DrawHealthBar(graphics, this, GetLifePct());
+            if (Game.GetDistance(x, y) - size < Game.MapSize)
+                Game.DrawHealthBar(graphics, this, GetLifePct());
         }
     }
 }
