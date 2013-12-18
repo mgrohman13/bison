@@ -203,8 +203,8 @@ namespace SpaceRunner
                 Game.RemoveObject(this);
             else if (dist < Game.PlayerSize)
                 HitPlayer();
-            else
-                OnStep();
+
+            OnStep();
         }
 
         protected void GetTotalMove(out float xMove, out float yMove)
