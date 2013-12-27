@@ -502,7 +502,7 @@ namespace Daemons
                 }
                 else
                 {
-                    bool healed = ( arrows < move.Count() );
+                    bool healed = move.Skip(arrows).Any();
 select:
                     IEnumerable<Unit> choices = move;
                     if (healed)

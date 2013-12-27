@@ -705,7 +705,7 @@ namespace GalWar
                 if (single == null)
                 {
                     colonies = colonies.Where(pair => ( pair.Key.Buildable != null ));
-                    if (colonies.Count() == 0)
+                    if (!colonies.Any())
                         return false;
                 }
                 else

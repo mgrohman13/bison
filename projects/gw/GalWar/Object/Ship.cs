@@ -18,6 +18,7 @@ namespace GalWar
         private readonly float _expDiv;
 
         private PointS? _vector;
+        private PointS[] _moved;
 
         private bool _vectorZOC, _hasRepaired;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
@@ -39,6 +40,7 @@ namespace GalWar
 
                 this._vector = null;
                 this._vectorZOC = true;
+                this._moved = null;
 
                 this._hasRepaired = false;
 
@@ -150,6 +152,18 @@ namespace GalWar
                 TurnException.CheckTurn(this.Player);
 
                 this._vectorZOC = value;
+            }
+        }
+
+        public IEnumerable<Tile> Moved
+        {
+            get
+            {
+                return ( ( this._moved ?? Enumerable.Empty<PointS>() ).Select(point => Tile.Game.GetTile(point.X, point.Y)) );
+            }
+            private set
+            {
+                this._moved = ( ( value != null && value.Any() ) ? value.Select(tile => Game.GetPointS(tile)).ToArray() : null );
             }
         }
 
@@ -744,6 +758,7 @@ namespace GalWar
             Player.Game.PushUndoCommand(new Game.UndoCommand<Tile>(
                     new Game.UndoMethod<Tile>(UndoMove), this.Tile));
 
+            this.Moved = this.Moved.Concat(new[] { this.Tile });
             Move(tile, false);
         }
         private Tile UndoMove(Tile tile)
@@ -755,6 +770,7 @@ namespace GalWar
             AssertException.Assert(tile.SpaceObject == null);
 
             Move(tile, true);
+            this.Moved = this.Moved.Except(new[] { this.Tile });
 
             return this.Tile;
         }
@@ -863,6 +879,8 @@ namespace GalWar
         {
             this.Repair = 0;
             LevelUp(handler);
+
+            this.Moved = null;
         }
 
         internal void LevelUp(IEventHandler handler)

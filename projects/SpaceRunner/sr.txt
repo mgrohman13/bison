@@ -6,3 +6,6 @@ improve hitboxes for less-round objects
 	what about sizes!?
 		bump collisions
 explosion should increase size over time
+replay speeds
+	click for frame
+	fast as possible

@@ -469,10 +469,7 @@ namespace GalWar
         //analogous to MTRandom.Round, but using a constant for the random value
         private int Round(double number, double round)
         {
-            int result = (int)Math.Floor(number);
-            if (round < number - result)
-                ++result;
-            return result;
+            return MattUtil.MTRandom.Round(number, round);
         }
 
         private void ResetRounding()

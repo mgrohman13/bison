@@ -1108,7 +1108,7 @@ namespace GalWar
             gold -= repairCost;
         }
 
-        internal void PlayTurn(IEventHandler handler, List<Anomaly> anomalies)
+        internal void PlayTurn(IEventHandler handler, IEnumerable<Tile> anomalies)
         {
             if (AI != null)
             {
@@ -1120,7 +1120,7 @@ namespace GalWar
                 {
                     Console.WriteLine(e);
                 }
-                anomalies.AddRange(Game.EndTurn(handler, true));
+                anomalies = anomalies.Concat(Game.EndTurn(handler, true));
             }
         }
 

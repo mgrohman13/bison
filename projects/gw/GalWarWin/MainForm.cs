@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
@@ -312,21 +313,19 @@ namespace GalWarWin
                         DrawObject(g, gameBounds, spaceObject.Tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
 
                     Ship selectedShip = GetSelectedShip();
-                    if (selectedShip != null && selectedShip.Player.IsTurn && selectedShip.Vector != null)
+                    if (selectedShip != null)
                     {
-                        List<Tile> path = Tile.PathFind(selectedShip);
-
-                        PointF[] points = new PointF[path.Count];
-
-                        int idx = -1;
-                        foreach (Tile next in path)
-                        {
-                            RectangleF rect = GetDrawRect(next.X, next.Y);
-                            points[++idx] = new PointF(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f);
-                        }
-
-                        using (Pen pen = new Pen(selectedShip.Player.Color))
-                            g.DrawLines(pen, points);
+                        IEnumerable<Tile> path;
+                        if (!selectedShip.Player.IsTurn)
+                            path = selectedShip.Moved.Concat(new[] { selectedShip.Tile });
+                        else if (selectedShip.Vector != null)
+                            path = Tile.PathFind(selectedShip);
+                        else
+                            path = null;
+                        if (path != null && path.Skip(1).Any())
+                            using (Pen pen = new Pen(selectedShip.Player.Color))
+                                g.DrawLines(pen, path.Select(tile => GetDrawRect(tile.X, tile.Y)).Select(
+                                        rect => new PointF(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f)).ToArray());
                     }
 
                     //Tile t = selected;
@@ -1189,7 +1188,7 @@ namespace GalWarWin
                     if (ship.GetRepairedFrom() != null)
                         check.Add(ship);
 
-                List<Anomaly> anomalies = Game.EndTurn(this);
+                IEnumerable<Tile> anomalies = Game.EndTurn(this);
 
                 foreach (Ship ship in check)
                     if (ship.HP == ship.MaxHP)
@@ -1198,7 +1197,7 @@ namespace GalWarWin
 
                 movedTroops.Clear();
 
-                if (anomalies.Count > 0)
+                if (anomalies.Any())
                     ShowAnomalies(anomalies);
                 else
                     SelectNewTurn();
@@ -1448,13 +1447,13 @@ namespace GalWarWin
             return retVal;
         }
 
-        private void ShowAnomalies(List<Anomaly> anomalies)
+        private void ShowAnomalies(IEnumerable<Tile> anomalies)
         {
-            if (anomalies.Count > 1)
+            if (anomalies.Skip(1).Any())
             {
                 int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
-                foreach (Anomaly anomaly in anomalies)
-                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, anomaly.Tile);
+                foreach (Tile anomaly in anomalies)
+                    FindBounds(ref minX, ref minY, ref maxX, ref maxY, anomaly);
                 minX -= 2;
                 minY -= 2;
                 maxX += 2;
@@ -1465,13 +1464,13 @@ namespace GalWarWin
                 selected = Game.GetTile(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
                 Center();
                 double t1 = panX, t2 = panY;
-                SelectTile(Game.Random.SelectValue(anomalies).Tile);
+                SelectTile(Game.Random.SelectValue(anomalies));
                 if (t1 != panX || t2 != panY)
                     ShowAnomalies(anomalies);
             }
             else
             {
-                SelectTile(anomalies[0].Tile);
+                SelectTile(anomalies.Single());
                 Center();
             }
         }
@@ -1699,7 +1698,14 @@ namespace GalWarWin
 
         private bool targetAnomaly(bool selectNext, Ship ship, Anomaly trgAnomaly)
         {
+            Tile tile = trgAnomaly.Tile;
             ship.Explore(this, trgAnomaly);
+            if (holdPersistent.Remove(tile.SpaceObject))
+            {
+            }
+            else
+            {
+            }
             return false;
         }
 

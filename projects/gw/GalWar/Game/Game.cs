@@ -548,7 +548,7 @@ namespace GalWar
                 p.SetGame(this);
 
             StartPlayerTurn(handler);
-            CurrentPlayer.PlayTurn(handler, new List<Anomaly>());
+            CurrentPlayer.PlayTurn(handler, Enumerable.Empty<Tile>());
         }
 
         internal void SetSpaceObject(int x, int y, SpaceObject spaceObject)
@@ -617,11 +617,11 @@ namespace GalWar
             return new HashSet<Planet>(GetSpaceObjects().OfType<Planet>());
         }
 
-        public List<Anomaly> EndTurn(IEventHandler handler)
+        public IEnumerable<Tile> EndTurn(IEventHandler handler)
         {
             return EndTurn(handler, false);
         }
-        internal List<Anomaly> EndTurn(IEventHandler handler, bool allowAI)
+        internal IEnumerable<Tile> EndTurn(IEventHandler handler, bool allowAI)
         {
             handler = new HandlerWrapper(handler, this);
 
@@ -631,9 +631,11 @@ namespace GalWar
             Graphs.EndTurn(CurrentPlayer);
 
             CheckResearchVictory();
-            List<Anomaly> anomalies = CreateAnomalies();
+            var anomalies = CreateAnomalies().Select(anomaly => anomaly.Tile);
             AdjustCenter(1 / (double)this.players.Count);
-            RemoveTeleporters();
+            var removed = RemoveTeleporters();
+            if (removed != null)
+                anomalies = anomalies.Concat(new[] { removed.Item1, removed.Item2 });
 
             if (++this.currentPlayer >= this.players.Count)
                 NewRound();
@@ -721,15 +723,20 @@ namespace GalWar
             }
         }
 
-        private void RemoveTeleporters()
+        private Tuple<Tile, Tile> RemoveTeleporters()
         {
             List<Tuple<Tile, Tile>> teleporters = GetTeleporters();
             if (teleporters.Count > 0)
             {
                 double chance = teleporters.Count / ( 65.0 + teleporters.Count );
                 if (PlayerTurnChance(chance))
-                    RemoveTeleporter(Random.SelectValue(teleporters));
+                {
+                    var remove = Random.SelectValue(teleporters);
+                    RemoveTeleporter(remove);
+                    return remove;
+                }
             }
+            return null;
         }
 
         internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target)

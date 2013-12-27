@@ -234,7 +234,7 @@ namespace Daemons
                 foreach (Unit defender in targets)
                 {
                     double tartgetVal = defender.TargetFactor;
-                    if (groups.Count() > 1)
+                    if (groups.Skip(1).Any())
                         tartgetVal /= Math.Pow(GetArmyStr(groups.First(group => group.Key == defender.Owner)), .26);
                     tartgetVal /= Unit.GetDamageMult(attacker.Type, defender.Type);
                     tartgetVal = Game.Random.GaussianCapped(tartgetVal, deviation);

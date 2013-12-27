@@ -1,8 +1,5 @@
 UI
 	show enemy ship last moved path
-	show orig center?
-	unhold wormhole pulled ship
-	center on disappearing wormholes
 	right click DS, right click trans: error
 	rapid click to bombard
 	rally ships
@@ -13,6 +10,7 @@ UI
 		constant path
 		waypoints
 		show distance, turns
+		left click vector then selects tile
 	clear showMoves
 		examples?
 	combat calc show probability table
