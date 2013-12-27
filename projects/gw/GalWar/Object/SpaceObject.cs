@@ -50,6 +50,11 @@ namespace GalWar
             }
         }
 
+        internal void Teleport(Tile tile)
+        {
+            this.Tile = tile;
+        }
+
         internal void OnDeserialization(Tile value)
         {
             checked

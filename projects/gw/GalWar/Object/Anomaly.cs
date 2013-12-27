@@ -156,14 +156,12 @@ namespace GalWar
         private Tile GetRandomTile(Ship anomShip)
         {
             if (Game.Random.Bool())
-                foreach (SpaceObject spaceObject in Game.Random.Iterate(Tile.Game.GetSpaceObjects()))
-                    if (spaceObject is Anomaly)
-                        return MoveTile(spaceObject.Tile, 2.1, anomShip);
+            {
+                var anomalies = Tile.Game.GetSpaceObjects().OfType<Anomaly>();
+                if (anomalies.Any())
+                    return MoveTile(Game.Random.SelectValue(anomalies).Tile, 2.1, anomShip);
+            }
             return Tile.Game.GetRandomTile();
-        }
-        private bool AnomalousTile(Tile tile)
-        {
-            return ( tile.SpaceObject is Anomaly || tile.Teleporter != null );
         }
 
         private Dictionary<Player, int> GetPlayerProximity()
@@ -807,14 +805,18 @@ namespace GalWar
 
         private bool PullIn(IEventHandler handler, bool notify, Ship anomShip)
         {
+            var objects = new Dictionary<SpaceObject, int>();
+
             Player oneInv, oneAtt;
             bool twoInv, twoAtt;
             GetAttInvPlayers(this.Tile, anomShip, out oneInv, out twoInv, out oneAtt, out twoAtt);
+            double planetMult;
+            if (twoInv || twoAtt || new[] { anomShip.Player, oneInv, oneAtt }.Distinct().Count(player => player != null) > 1)
+                planetMult = 1.69;
+            else
+                planetMult = .91;
+            var planets = Tile.Game.GetPlanets();
 
-            Dictionary<SpaceObject, int> objects = new Dictionary<SpaceObject, int>();
-
-            double planetMult = ( twoInv || twoAtt ? 1.69 : ( ( oneInv != null ) || ( oneAtt != null ) ? 1.3 : 1.04 ) );
-            HashSet<Planet> planets = Tile.Game.GetPlanets();
             foreach (SpaceObject spaceObject in Game.Random.Iterate(Tile.Game.GetSpaceObjects()))
                 if (spaceObject != anomShip)
                 {
@@ -822,30 +824,25 @@ namespace GalWar
                     Planet planet = spaceObject as Planet;
                     if (ship != null)
                     {
-                        if (!twoAtt || ship.Player == anomShip.Player)
+                        if (ship != anomShip && ( !twoAtt || ship.Player == anomShip.Player ))
                             AddPullChance(objects, ship.Player == anomShip.Player ? null : oneAtt, ship, .39, anomShip);
                     }
                     else if (planet != null)
                     {
-                        foreach (Planet p2 in planets)
-                            if (planet != p2 && Tile.GetDistance(this.Tile, p2.Tile) <= Consts.PlanetDistance)
-                                goto next;
-
                         bool colony = ( planet.Colony != null );
-                        if (!twoInv || !colony)
-                            AddPullChance(objects, oneInv, planet, ( colony ? 1.3 : .91 ) * planetMult *
-                                    Math.Sqrt(( Consts.AverageQuality + planet.Quality ) / Consts.AverageQuality), anomShip);
+                        if (( !twoInv || !colony ) &&
+                                !planets.All(p2 => planet == p2 || Tile.GetDistance(this.Tile, p2.Tile) > Consts.PlanetDistance))
+                            AddPullChance(objects, oneInv, planet, planetMult * Math.Sqrt(( Consts.AverageQuality + planet.PlanetValue +
+                                    ( colony ? ( Consts.AverageQuality + planet.Colony.Population ) / 2.1 : 0 ) ) / Consts.AverageQuality), anomShip);
                     }
                     else if (spaceObject is Anomaly)
                     {
-                        AddPullChance(objects, null, spaceObject, .78, null);
+                        AddPullChance(objects, null, spaceObject, .78, anomShip);
                     }
                     else
                     {
                         throw new Exception();
                     }
-next:
-                    ;
                 }
 
             if (objects.Count > 0)
@@ -853,22 +850,7 @@ next:
                 if (notify)
                     handler.Explore(Anomaly.AnomalyType.Wormhole);
 
-                SpaceObject teleport = Game.Random.SelectValue(objects);
-                Ship ship = teleport as Ship;
-                if (ship != null)
-                {
-                    ship.Teleport(this.Tile);
-                }
-                else if (teleport is Anomaly)
-                {
-                    teleport.Tile.SpaceObject = null;
-                    if (Tile.Game.CreateAnomaly(this.Tile) == null)
-                        throw new Exception();
-                }
-                else
-                {
-                    ( (Planet)teleport ).Teleport(this.Tile);
-                }
+                Game.Random.SelectValue(objects).Teleport(this.Tile);
                 return true;
             }
 
@@ -876,7 +858,7 @@ next:
         }
         private void AddPullChance(Dictionary<SpaceObject, int> objects, Player can, SpaceObject spaceObj, double distMult, Ship anomShip)
         {
-            if (spaceObj != anomShip && ( can == null || spaceObj.Player == null || spaceObj.Player == can ))
+            if (can == null || spaceObj.Player == null || spaceObj.Player == can)
             {
                 if (objects.Count == 0)
                     distMult *= 2.6;
@@ -886,7 +868,7 @@ next:
                     avg = Math.Sqrt(avg);
                 else
                     avg *= avg;
-                int amt = Game.Random.OEInt(avg / (double)Tile.Game.GetSpaceObjects().Count);
+                int amt = Game.Random.OEInt(avg / (double)Tile.Game.GetSpaceObjects().Count());
                 if (amt > 0 && !( spaceObj is Ship && CanAttackAny((Ship)spaceObj, this.Tile, anomShip) ))
                     objects.Add(spaceObj, amt);
             }

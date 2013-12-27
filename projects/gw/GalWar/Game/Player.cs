@@ -635,11 +635,7 @@ namespace GalWar
         }
         private void SellProduction(IEventHandler handler)
         {
-            Dictionary<Colony, int> production = new Dictionary<Colony, int>();
-            foreach (Colony colony in this.colonies)
-                if (colony.Production > 0)
-                    production.Add(colony, colony.Production);
-
+            var production = this.colonies.Where(colony => colony.Production > 0).ToDictionary(colony => colony, colony => colony.Production);
             int sold = 0;
             while (NegativeGold() && production.Count > 0)
             {

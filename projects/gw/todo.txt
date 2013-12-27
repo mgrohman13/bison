@@ -1,12 +1,5 @@
-Linq
-	Game.GetHomeworld
-	Game.GetAvailableHomeworlds
-	Player.SellProduction
-	Anomaly.PullIn
-	Anomaly.GetRandomTile
-	ShipDesign.GetStartDesigns
-
 UI
+	show enemy ship last moved path
 	show orig center?
 	unhold wormhole pulled ship
 	center on disappearing wormholes
@@ -39,6 +32,13 @@ UI
 		ships
 	keyboard?
 
+terrain from anomalies
+	non-permanent
+	slower move
+	impassable
+	damage
+	att/def bonus
+	apply effects to neighbors
 directly upgrade existing ships?
 	to reduce repair cost?
 GetNonColonyPct full trans?

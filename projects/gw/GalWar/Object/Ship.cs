@@ -732,11 +732,6 @@ namespace GalWar
             return this.Tile;
         }
 
-        internal void Teleport(Tile tile)
-        {
-            this.Tile = tile;
-        }
-
         public void Move(IEventHandler handler, Tile tile)
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);

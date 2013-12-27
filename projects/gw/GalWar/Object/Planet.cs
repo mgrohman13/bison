@@ -105,11 +105,6 @@ namespace GalWar
             this.Tile.Game.RemovePlanet(this);
         }
 
-        internal void Teleport(Tile tile)
-        {
-            this.Tile = tile;
-        }
-
         #endregion //internal
 
         #region public

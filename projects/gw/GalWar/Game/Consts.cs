@@ -86,7 +86,7 @@ namespace GalWar
         public const double ProductionForGold = 10.0 / 3.0;
         public const double GoldProductionForGold = ProductionForGold / 1.3;
         public const double GoldForProduction = 2;
-        public const double PopulationForGoldLow = 1 / Income / 2.1;
+        public const double PopulationForGoldLow = 1 / Income / 2.6;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;
         public const double ProductionForSoldiers = .91;
@@ -153,7 +153,7 @@ namespace GalWar
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
 
-        public const double FLOAT_ERROR = 1.0 / ( 1 << 20 );
+        public const double FLOAT_ERROR = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 1 ) );
 
         public static double GetResearchVictoryChance(double mult)
         {

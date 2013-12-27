@@ -103,12 +103,12 @@ namespace GalWar
                 this.ShipNames = new ShipNames(numPlayers);
 
                 this._spaceObjects = new Dictionary<PointS, SpaceObject>();
-                this.players = new List<Player>();
+                this.players = new List<Player>(numPlayers);
                 this._teleporters = new List<Tuple<PointS, PointS>>();
                 this.deadPlayers = new List<Result>(numPlayers - 1);
                 this.winningPlayers = new List<Result>(numPlayers - 1);
 
-                this._currentPlayer = byte.MaxValue;
+                this._currentPlayer = byte.MaxValue / 2;
                 this._turn = 0;
 
                 planetPct *= Math.Sqrt(MapSize);
@@ -125,12 +125,9 @@ namespace GalWar
             }
         }
 
-        public HashSet<SpaceObject> GetSpaceObjects()
+        public IEnumerable<SpaceObject> GetSpaceObjects()
         {
-            checked
-            {
-                return new HashSet<SpaceObject>(this._spaceObjects.Values);
-            }
+            return this._spaceObjects.Select(pair => pair.Value);
         }
         private void AddSpaceObject(int x, int y, SpaceObject spaceObject)
         {
@@ -324,14 +321,11 @@ namespace GalWar
             //starting gold is based on the number and value of initial planets, must happen after GetHomeworld planet shuffling
             double startGold = Consts.StartGold;
             //remove temporary starting teleporters to allow actual distance calculations
-            while (GetTeleporters().Count > 0)
-                RemoveTeleporter(GetTeleporters()[0]);
-            //homeworlds count as single planets regardless of quality, and anomalies count as their chance of being a planet
-            double numPlanets = numPlayers + CountAnomPlanets();
-            //actual current uncolonized planets count as their planet value
-            foreach (Planet planet in GetPlanets())
-                if (planet.Colony == null)
-                    numPlanets += planet.PlanetValue / ( Consts.AverageQuality + Consts.PlanetConstValue );
+            this._teleporters.Clear();
+            //homeworlds count as single planets regardless of quality, anomalies count as their chance of being a planet,
+            //and actual current uncolonized planets count as their planet value
+            double numPlanets = numPlayers + CountAnomPlanets() + GetPlanets().Where(planet => planet.Colony == null)
+                    .Sum(planet => planet.PlanetValue / ( Consts.AverageQuality + Consts.PlanetConstValue ));
             //divide starting gold by the number of planets per player, and randomize 
             startGold = GetStartDouble(startGold * numPlayers / numPlanets);
 
@@ -389,11 +383,12 @@ namespace GalWar
         }
         private static List<int> GetStartResearch()
         {
-            List<int> research = new List<int>(4);
-            research.Add(GetStartInt(Consts.StartResearch * 1 / 4.0));
-            research.Add(GetStartInt(Consts.StartResearch * 2 / 4.0));
-            research.Add(GetStartInt(Consts.StartResearch * 3 / 4.0));
-            research.Add(GetStartInt(Consts.StartResearch * 4 / 4.0));
+            var research = new List<int> {
+                GetStartInt(Consts.StartResearch * 1 / 4.0),
+                GetStartInt(Consts.StartResearch * 2 / 4.0),
+                GetStartInt(Consts.StartResearch * 3 / 4.0),
+                GetStartInt(Consts.StartResearch * 4 / 4.0),
+            };
             //ensure the List is in order despite randomness
             research.Sort();
             return research;
@@ -406,17 +401,7 @@ namespace GalWar
             while (( homeworlds = GetAvailableHomeworlds(startPop) ).Count == 0)
             {
                 //we dont want to change the number of planets, so take one out first
-                Planet removePlanet = null;
-                foreach (Planet planet in Random.Iterate(GetPlanets()))
-                {
-                    removePlanet = planet;
-                    if (removePlanet.Colony == null)
-                        break;
-                }
-                if (removePlanet == null)
-                    throw new Exception();
-                this.RemovePlanet(removePlanet);
-
+                this.RemovePlanet(Random.SelectValue(GetPlanets().Where(planet => planet.Colony == null)));
                 //try until we add a new one
                 while (NewPlanet() == null)
                     ;
@@ -426,68 +411,50 @@ namespace GalWar
         }
         private List<Planet> GetAvailableHomeworlds(int startPop)
         {
+            var colonies = this.players.Where(player => player != null).SelectMany(player => player.GetColonies()).ToList();
             //planets can only be used as homeworlds if they have enough quality to support the initial population
-            List<Planet> retVal = new List<Planet>();
-            foreach (Planet planet in GetPlanets())
-                if (planet.Quality > startPop && planet.Colony == null)
-                {
-                    foreach (Player player in this.players)
-                        if (player != null)
-                            foreach (Colony colony in player.GetColonies())
-                                if (Tile.GetDistance(planet.Tile, colony.Tile) <= Consts.HomeworldDistance)
-                                    goto next_planet;
-                    retVal.Add(planet);
-next_planet:
-                    ;
-                }
-            return retVal;
+            return GetPlanets().Where(planet => planet.Quality > startPop && planet.Colony == null
+                //and are far enough away from other homeworlds
+                    && colonies.All(colony => ( Tile.GetDistance(planet.Tile, colony.Tile) > Consts.HomeworldDistance ))).ToList();
         }
         private double CountAnomPlanets()
         {
-            double anomPlanets = 0;
             var anomalies = new Dictionary<Anomaly, double>();
             //'explore' anomalies in random order
-            foreach (SpaceObject spaceObject in Random.Iterate(GetSpaceObjects()))
+            foreach (Anomaly anomaly in Random.Iterate(GetSpaceObjects().OfType<Anomaly>()))
             {
-                Anomaly anomaly = ( spaceObject as Anomaly );
-                if (anomaly != null)
+                int planetDist = GetPlanets().Min(planet => Tile.GetDistance(anomaly.Tile, planet.Tile));
+                //must be outside of PlanetDistance to have any chance of being a planet
+                if (planetDist > Consts.PlanetDistance)
                 {
-                    int planetDist = int.MaxValue;
-                    foreach (Planet planet in GetPlanets())
-                        planetDist = Math.Min(planetDist, Tile.GetDistance(anomaly.Tile, planet.Tile));
-                    //must be outside of PlanetDistance to have any chance of being a planet
-                    if (planetDist > Consts.PlanetDistance)
+                    //previously 'explored' anomalies have their chance of providing a shorter distance
+                    var distanceChances = new SortedDictionary<int, double>();
+                    foreach (var pair in anomalies)
                     {
-                        //previously 'explored' anomalies have their chance of providing a shorter distance
-                        var distanceChances = new SortedDictionary<int, double>();
-                        foreach (var pair in anomalies)
+                        int dist = Tile.GetDistance(anomaly.Tile, pair.Key.Tile);
+                        if (dist < planetDist)
                         {
-                            int dist = Tile.GetDistance(anomaly.Tile, pair.Key.Tile);
-                            if (dist < planetDist)
-                            {
-                                double value;
-                                distanceChances.TryGetValue(dist, out value);
-                                distanceChances[dist] = 1 - ( ( 1 - value ) * ( 1 - pair.Value ) );
-                            }
+                            double value;
+                            distanceChances.TryGetValue(dist, out value);
+                            distanceChances[dist] = 1 - ( ( 1 - value ) * ( 1 - pair.Value ) );
                         }
-
-                        //calculate in order of shortest distances first (longer distance chances don't matter if a closer one happens)
-                        double chance = 1, anomPlanetRate = 0;
-                        foreach (var pair in distanceChances)
-                        {
-                            anomPlanetRate += chance * pair.Value * GetPlanetChance(pair.Key, true);
-                            chance *= ( 1 - pair.Value );
-                        }
-                        anomPlanetRate += chance * GetPlanetChance(planetDist, true);
-
-                        //store chance to effect subsequent anomalies
-                        anomalies.Add(anomaly, anomPlanetRate);
-                        //add to total
-                        anomPlanets += anomPlanetRate;
                     }
+
+                    //calculate in order of shortest distances first (longer distance chances don't matter if a closer one happens)
+                    double chance = 1, anomPlanetRate = 0;
+                    foreach (var pair in distanceChances)
+                    {
+                        anomPlanetRate += chance * pair.Value * GetPlanetChance(pair.Key, true);
+                        chance *= ( 1 - pair.Value );
+                    }
+                    anomPlanetRate += chance * GetPlanetChance(planetDist, true);
+
+                    //store final chance to become a planet
+                    anomalies.Add(anomaly, anomPlanetRate);
                 }
             }
-            return anomPlanets;
+
+            return anomalies.Values.Sum();
         }
 
         private static int GetStartInt(double avg)
@@ -507,11 +474,8 @@ next_planet:
         {
             get
             {
-                double avgResearch = 0;
-                foreach (Player player in this.players)
-                    avgResearch += ( 1 * player.ResearchDisplay + 5 * player.Research + 13 * player.LastResearched
-                            + 2 * player.ResearchGuess ) / 21.0;
-                return avgResearch / (double)this.players.Count;
+                return this.players.Average(player => ( 1 * player.ResearchDisplay + 2 * player.ResearchGuess
+                        + 5 * player.Research + 13 * player.LastResearched ) / 21.0);
             }
         }
 
@@ -626,10 +590,7 @@ next_planet:
         public Dictionary<Player, double> GetResearch()
         {
             Player[] players = GetResearchDisplayOrder();
-            Dictionary<Player, double> retVal = new Dictionary<Player, double>(players.Length);
-            for (int a = 0 ; a < players.Length ; ++a)
-                retVal.Add(players[a], players[a].ResearchDisplay / players[0].ResearchDisplay * 100);
-            return retVal;
+            return players.ToDictionary(player => player, player => player.ResearchDisplay / players[0].ResearchDisplay * 100);
         }
         internal Player[] GetResearchDisplayOrder()
         {
@@ -653,12 +614,7 @@ next_planet:
 
         public HashSet<Planet> GetPlanets()
         {
-            HashSet<Planet> planets = new HashSet<Planet>();
-            Planet planet;
-            foreach (SpaceObject spaceObject in GetSpaceObjects())
-                if (( planet = spaceObject as Planet ) != null)
-                    planets.Add(planet);
-            return planets;
+            return new HashSet<Planet>(GetSpaceObjects().OfType<Planet>());
         }
 
         public List<Anomaly> EndTurn(IEventHandler handler)
@@ -1032,8 +988,8 @@ next_planet:
             maxX += dist;
             maxY += dist;
 
-            //Expected iterations per valid value is i=n/(3*(SQRT(n)-1)) where n=(maxX-minX+1)*(maxY-minY+1), or O(SQRT(n)).
-            //Because n is O(dist^2), i, and the operation time to return a single value from this loop, is O(dist).
+            //Expected iterations per returned value is i=n/(3*(SQRT(n)-1)) where n=(maxX-minX+1)*(maxY-minY+1), or O(SQRT(n)).
+            //Because n is O(dist^2), the operation time to return a single value from this loop, i, is O(dist).
             //Teleporters may increase the value of n with respect to dist, but reduce i with respect to values of n.
             foreach (Point p in Random.Iterate(minX, maxX, minY, maxY))
             {
