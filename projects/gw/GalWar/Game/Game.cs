@@ -1030,7 +1030,7 @@ namespace GalWar
             checked
             {
                 //objects will be re-added as each tile is set
-                var temp = new List<KeyValuePair<PointS, SpaceObject>>(this._spaceObjects);
+                var temp = this._spaceObjects.ToList();
                 this._spaceObjects.Clear();
 
                 //Tiles are not serialized so we go through and create a new one for each SpaceObject
@@ -1203,7 +1203,7 @@ namespace GalWar
                 {
                     checked
                     {
-                        _points = (sbyte)value;
+                        this._points = (sbyte)value;
                     }
                 }
             }

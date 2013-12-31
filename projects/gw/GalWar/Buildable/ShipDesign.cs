@@ -288,31 +288,28 @@ namespace GalWar
             DoColonyTransDS(forceColony, forceTrans, forceNeither, research, colonyPct, transPct, dsPct,
                     ref transStr, out colony, out trans, out bombardDamageMult, focus);
             bool deathStar = ( bombardDamageMult > 0 );
-            trans = (ushort)trans;
 
             //  ------  Att/Def           ------
             //being a colony ship/transport/death star makes att and def lower
             double strMult = GetAttDefStrMult(transStr, bombardDamageMult, colony, trans);
             double str = GetAttDefStr(research, strMult, focus);
             DoAttDef(str, attPct, ( colony || trans > Game.Random.GaussianOEInt(transStr * .52, .52, .26) ), out att, out def, focus);
-            att = (byte)att;
-            def = (byte)def;
 
             //  ------  HP                ------
             //being a colony ship/transport/death star makes hp higher
             hpMult = GetHPMult(strMult, deathStar, colony);
             //hp is relative to actual randomized stats
-            hp = (ushort)MakeStat(GetHPStr(att, def, hpMult));
+            hp = MakeStat(GetHPStr(att, def, hpMult));
 
             //  ------  Speed             ------
             double speedStr = MultStr(ModSpeedStr(GetSpeedStr(research), transStr, deathStar, colony, trans, true),
                     GetSpeedMult(str, hpMult, speedPct, att, def, hp, focus));
-            speed = (byte)MakeStat(speedStr);
+            speed = MakeStat(speedStr);
 
             //  ------  BombardDamage     ------
             //modify bombard mult based on speed and att
             if (deathStar)
-                bombardDamage = (ushort)SetBombardDamage(Game.Random.Round(bombardDamageMult * Consts.GetBombardDamage(att)
+                bombardDamage = SetBombardDamage(Game.Random.Round(bombardDamageMult * Consts.GetBombardDamage(att)
                         * Math.Sqrt(speedStr / (double)speed * Math.Sqrt(str * def) / (double)att)), att, true);
             else
                 bombardDamage = 0;
@@ -360,13 +357,13 @@ namespace GalWar
                 }
             }
 
-            att = (byte)MakeStat(attStr);
-            def = (byte)MakeStat(defStr);
-            hp = (ushort)MakeStat(hpStr);
-            speed = (byte)MakeStat(speedStr);
+            att = MakeStat(attStr);
+            def = MakeStat(defStr);
+            hp = MakeStat(hpStr);
+            speed = MakeStat(speedStr);
             colony = colonyStr;
-            trans = (ushort)( transStr > 0 ? MakeStat(transStr) : 0 );
-            bombardDamage = (ushort)( deathStarStr ? SetBombardDamage(MakeStat(bombardDamageStr), att) : 0 );
+            trans = ( transStr > 0 ? MakeStat(transStr) : 0 );
+            bombardDamage = ( deathStarStr ? SetBombardDamage(MakeStat(bombardDamageStr), att) : 0 );
         }
 
         public bool Colony
@@ -944,11 +941,11 @@ namespace GalWar
             return mult * stat / (double)( stat + other );
         }
 
-        internal static double SetBombardDamage(double bombardDamage, int att)
+        internal static int SetBombardDamage(double bombardDamage, int att)
         {
             return SetBombardDamage(bombardDamage, att, true);
         }
-        private static double SetBombardDamage(double bombardDamage, int att, bool keepDeathStar)
+        private static int SetBombardDamage(double bombardDamage, int att, bool keepDeathStar)
         {
             int minDamage = GetDeathStarMin(att);
             if (bombardDamage < minDamage)
@@ -956,9 +953,9 @@ namespace GalWar
                     bombardDamage = minDamage;
                 else
                     bombardDamage = 0;
-            if (bombardDamage != (ushort)bombardDamage)
+            if (bombardDamage != (int)bombardDamage)
                 throw new Exception();
-            return bombardDamage;
+            return (int)bombardDamage;
         }
         internal static double GetBombardDamage(ushort bombardDamage, int att)
         {
@@ -1176,15 +1173,15 @@ namespace GalWar
 
         public enum FocusStat
         {
-            None = 0x00,
-            Trans = 0x04,
-            DS = 0x06,
-            Colony = 0x07,
-            Def = 0x10,
-            Att = 0x18,
-            Speed = 0x20,
-            Cost = 0x80,
-            Upkeep = 0xC0,
+            None = 0x00,    //00000000
+            Trans = 0x04,   //00000100
+            DS = 0x06,      //00000110
+            Colony = 0x07,  //00000111
+            Def = 0x10,     //00010000
+            Att = 0x18,     //00011000
+            Speed = 0x20,   //00100000
+            Cost = 0x80,    //10000000
+            Upkeep = 0xC0,  //11000000
         }
 
         #endregion //enum

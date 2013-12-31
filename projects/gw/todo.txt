@@ -1,4 +1,5 @@
 UI
+	repair form income show only base - upkeep
 	show enemy ship last moved path
 	right click DS, right click trans: error
 	rapid click to bombard
@@ -30,6 +31,10 @@ UI
 		ships
 	keyboard?
 
+new game parameters
+	num anomalies (start/rate)
+	differentiate starting and planet rate
+	pop,prod,etc.
 terrain from anomalies
 	non-permanent
 	slower move
@@ -42,6 +47,7 @@ directly upgrade existing ships?
 GetNonColonyPct full trans?
 increase minimum research chance
 ship name value
+ship name mult too high
 anom design research randomness at higher values
 map size
 planetary defenses still not right
@@ -53,7 +59,9 @@ trans upk payoff problem
 terraform check use actual values
 rethink neg gold again
 	don't like random disbanding - no adv over manual
+	if keep impossible negative, make _goldValue a uint?
 
+graph dictionaries can be arrays
 standardive Tile.Game vs Player.Game calls
 remove static qualifiers to same class
 move Tile to Game folder

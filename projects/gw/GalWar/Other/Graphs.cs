@@ -25,7 +25,7 @@ namespace GalWar
 
         internal void StartTurn(Player player)
         {
-            float f, quality, pd, armada, damaged;
+            double f, quality, pd, armada, damaged;
             LoopColonies(player, out f, out quality, out pd);
             LoopShips(player, out armada, out damaged, out f);
 
@@ -34,7 +34,7 @@ namespace GalWar
             AddNested(turnVals, GraphType.ArmadaDamaged, player, pd + damaged);
         }
 
-        private static void AddNested(Dictionary<byte, Dictionary<byte, float>> dictionary, GraphType graphType, Player player, float amount)
+        private static void AddNested(Dictionary<byte, Dictionary<byte, float>> dictionary, GraphType graphType, Player player, double amount)
         {
             Dictionary<byte, float> playerVals;
             if (!dictionary.TryGetValue((byte)graphType, out playerVals))
@@ -42,12 +42,12 @@ namespace GalWar
                 playerVals = new Dictionary<byte, float>();
                 dictionary.Add((byte)graphType, playerVals);
             }
-            playerVals.Add((byte)player.ID, amount);
+            playerVals.Add((byte)player.ID, (float)amount);
         }
 
         internal void EndTurn(Player player)
         {
-            float f, quality, pd, armada, damaged;
+            double f, quality, pd, armada, damaged;
             LoopColonies(player, out f, out quality, out pd);
             LoopShips(player, out armada, out damaged, out f);
 
@@ -57,9 +57,9 @@ namespace GalWar
             EndTurn(GraphType.ArmadaDamaged, player, pd + damaged);
         }
 
-        private void EndTurn(GraphType graphType, Player player, float amount)
+        private void EndTurn(GraphType graphType, Player player, double amount)
         {
-            turnVals[(byte)graphType][(byte)player.ID] = ( turnVals[(byte)graphType][(byte)player.ID] + amount ) / 2f;
+            turnVals[(byte)graphType][(byte)player.ID] = (float)( ( turnVals[(byte)graphType][(byte)player.ID] + amount ) / 2.0 );
         }
 
         internal void Increment(Game game)
@@ -76,10 +76,10 @@ namespace GalWar
                     Add(playerGraphs, GraphType.Armada, player, turnVals[(byte)GraphType.Armada][(byte)player.ID]);
                     Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[(byte)GraphType.ArmadaDamaged][(byte)player.ID]);
 
-                    Add(playerGraphs, GraphType.Research, player, (float)research[player]);
-                    Add(playerGraphs, GraphType.TotalIncome, player, (float)player.IncomeTotal);
+                    Add(playerGraphs, GraphType.Research, player, research[player]);
+                    Add(playerGraphs, GraphType.TotalIncome, player, player.IncomeTotal);
 
-                    float pop, trans, f1, f2, f3, f4;
+                    double pop, trans, f1, f2, f3, f4;
                     LoopColonies(player, out pop, out f1, out f4);
                     LoopShips(player, out f2, out f3, out trans);
 
@@ -102,7 +102,7 @@ namespace GalWar
             turnVals.Clear();
         }
 
-        private void Add(Dictionary<byte, Dictionary<byte, float>> playerGraphs, GraphType graphType, Player player, float value)
+        private void Add(Dictionary<byte, Dictionary<byte, float>> playerGraphs, GraphType graphType, Player player, double value)
         {
             float last = -2;
             for (int x = this.data.Count ; --x > -1 ; )
@@ -123,29 +123,29 @@ namespace GalWar
                 AddNested(playerGraphs, graphType, player, value);
         }
 
-        private static void LoopColonies(Player player, out float pop, out float quality, out float armada)
+        private static void LoopColonies(Player player, out double pop, out double quality, out double armada)
         {
             pop = 0;
             quality = 0;
             armada = 0;
             foreach (Colony colony in player.GetColonies())
             {
-                armada += (float)( colony.PlanetDefenseStrength / 2.1 );
+                armada += ( colony.PlanetDefenseStrength / 2.1 );
                 pop += colony.Population;
-                quality += (float)colony.Planet.PlanetValue;
+                quality += colony.Planet.PlanetValue;
             }
         }
 
-        private static void LoopShips(Player player, out float armada, out float damaged, out float trans)
+        private static void LoopShips(Player player, out double armada, out double damaged, out double trans)
         {
             armada = 0;
             damaged = 0;
             trans = 0;
             foreach (Ship ship in player.GetShips())
             {
-                float strength = (float)ship.GetStrength();
+                double strength = ship.GetStrength();
                 armada += strength;
-                damaged += strength * ship.HP / (float)ship.MaxHP;
+                damaged += strength * ship.HP / ship.MaxHP;
                 trans += ship.Population;
             }
         }
