@@ -203,7 +203,7 @@ namespace GalWarWin.Sliders
                 //since the defender wins a tie, the attacker must win by a margin of at least one troop to actually have a 100% chance
                 double margin = 1 - 1 / (double)attPop;
                 if (defense > attack * margin)
-                    chance = 1 - Consts.FLOAT_ERROR;
+                    chance = 1 - Consts.FLOAT_ERROR_ZERO;
             }
             return chance;
         }

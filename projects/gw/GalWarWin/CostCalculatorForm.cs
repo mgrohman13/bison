@@ -158,7 +158,7 @@ namespace GalWarWin
             bool colony = (bool)this.cbCol.Checked;
             double bombardDamage = (double)this.nudDS.Value;
 
-            this.cbDS.Checked = ( bombardDamage > GetBombardDamage() + GetBombardDamage() * Consts.FLOAT_ERROR );
+            this.cbDS.Checked = ( bombardDamage > GetBombardDamage() * Consts.FLOAT_ERROR_ONE );
             if (!cbDS.Checked)
             {
                 bombardDamage = GetBombardDamage();

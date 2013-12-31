@@ -158,7 +158,7 @@ namespace GalWar
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= destination.Population);
             AssertException.Assert(population <= this.FreeSpace);
-            AssertException.Assert(soldiers < destination.Soldiers + ( destination.Soldiers + 1 ) * Consts.FLOAT_ERROR);
+            AssertException.Assert(soldiers < destination.Soldiers * Consts.FLOAT_ERROR_ONE);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, destination.Tile));
             AssertException.Assert(this.Player == destination.Player);
 
@@ -192,7 +192,7 @@ namespace GalWar
         public static double GetMoveSoldiers(int population, double soldiers, int movePop)
         {
             double moveSoldiers = 0;
-            if (soldiers > Consts.FLOAT_ERROR)
+            if (soldiers > Consts.FLOAT_ERROR_ZERO)
                 if (population == movePop)
                     moveSoldiers = soldiers;
                 else

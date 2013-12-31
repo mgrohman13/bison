@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MattUtil;
 
 namespace GalWar
 {
@@ -469,7 +470,7 @@ namespace GalWar
         //analogous to MTRandom.Round, but using a constant for the random value
         private int Round(double number, double round)
         {
-            return MattUtil.MTRandom.Round(number, round);
+            return MTRandom.Round(number, round);
         }
 
         private void ResetRounding()
@@ -1172,7 +1173,7 @@ namespace GalWar
             int newHP = this.HP - hp;
             double hpMult = HP / ShipDesign.GetHPStr(Att, Def);
 
-            double mult = 1, step = 1 / ( Consts.FLOAT_ERROR + Att * Def );
+            double mult = 1, step = 1 / ( Att * Def * Consts.FLOAT_ERROR_ONE );
             do
             {
                 mult -= step;
@@ -1254,7 +1255,7 @@ namespace GalWar
         }
         internal void BuildPlanetDefense(double prodInc, bool attAndDef)
         {
-            if (prodInc > Consts.FLOAT_ERROR)
+            if (prodInc > Consts.FLOAT_ERROR_ZERO)
             {
                 prodInc /= 2.0;
 
@@ -1292,7 +1293,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            if (prod > Consts.FLOAT_ERROR)
+            if (prod > Consts.FLOAT_ERROR_ZERO)
             {
                 prod /= 2.0;
 
@@ -1325,13 +1326,13 @@ namespace GalWar
         {
             double totalCost = this.PlanetDefenseCost;
 
-            if (this.HP == 0 || mult < Consts.FLOAT_ERROR)
+            if (this.HP == 0 || mult < Consts.FLOAT_ERROR_ZERO)
             {
                 this.Att = 1;
                 this.Def = 1;
                 this.HP = 0;
             }
-            else if (mult < 1 - Consts.FLOAT_ERROR)
+            else if (mult < 1 - Consts.FLOAT_ERROR_ZERO)
             {
                 double newAtt, newDef, newHP;
                 ModPD(totalCost * mult, this.Att, 1, this.Def, 1, out newAtt, out newDef, out newHP);
@@ -1378,7 +1379,7 @@ namespace GalWar
                         else
                             max = mult;
                         mult = ( min + max ) / 2.0;
-                    } while (max - min > Consts.FLOAT_ERROR);
+                    } while (max - min > Consts.FLOAT_ERROR_ZERO);
                 }
             }
 
@@ -1404,7 +1405,8 @@ namespace GalWar
             this.Def = GetPDStat(newDef, this.Def, this.Player.PDDef);
             this.HP = GetPDStat(newCost / PlanetDefenseCostPerHP, this.HP, ushort.MaxValue);
 
-            if (Math.Abs(GetPDCost(Att, Def) - GetPDCost(Def, Att)) > Consts.FLOAT_ERROR)
+            double cost = GetPDCost(Att, Def);
+            if (Math.Abs(cost - GetPDCost(Def, Att)) > cost * Consts.FLOAT_ERROR_ZERO)
                 throw new Exception();
         }
         private static int GetPDStat(double target, int current, int max)

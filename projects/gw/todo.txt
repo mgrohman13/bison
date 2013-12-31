@@ -61,6 +61,7 @@ rethink neg gold again
 	don't like random disbanding - no adv over manual
 	if keep impossible negative, make _goldValue a uint?
 
+6 tiers saved? return length?
 graph dictionaries can be arrays
 standardive Tile.Game vs Player.Game calls
 remove static qualifiers to same class

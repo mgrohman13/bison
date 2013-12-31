@@ -72,7 +72,7 @@ namespace GalWarWin
             }
 
             double value = yVal - xVal;
-            if (Math.Abs(value) > Consts.FLOAT_ERROR)
+            if (Math.Abs(value) > Consts.FLOAT_ERROR_ZERO)
                 return Math.Sign(value);
             else
                 return y.Research - x.Research;

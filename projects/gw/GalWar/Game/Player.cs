@@ -598,7 +598,7 @@ namespace GalWar
                 rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, cap) + 1 ) / 3.0;
 
                 //rate is based on distance to new value
-                rDispChange = Consts.FLOAT_ERROR + Game.Random.Weighted(1 -
+                rDispChange = Consts.FLOAT_ERROR_ZERO + Game.Random.Weighted(1 -
                         Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3 * Math.Abs(rDisp - rDispTrg) ));
             }
         }
@@ -661,7 +661,7 @@ namespace GalWar
                         int sell = MattUtil.TBSUtil.FindValue(delegate(int hp)
                         {
                             int newAtt, newDef;
-                            return ( colony.GetPlanetDefenseDisbandValue(hp, true, out newAtt, out newDef) + goldValue > -Consts.FLOAT_ERROR );
+                            return ( colony.GetPlanetDefenseDisbandValue(hp, true, out newAtt, out newDef) + goldValue > -Consts.FLOAT_ERROR_ZERO );
                         }, 1, colony.HP, true);
 
                         Console.WriteLine("Sold " + sell + " hp from " + colony + " (" + colony.Tile + ")");
@@ -744,7 +744,7 @@ namespace GalWar
 
         public static void VerifyRounded(double rounded)
         {
-            if (Math.Abs(rounded - RoundGold(rounded)) > Consts.FLOAT_ERROR)
+            if (Math.Abs(rounded - RoundGold(rounded)) > Consts.FLOAT_ERROR_ZERO)
                 throw new Exception();
         }
 
@@ -776,12 +776,12 @@ namespace GalWar
 
         public static double FloorGold(double gold)
         {
-            return Math.Floor(gold * 10 + Consts.FLOAT_ERROR) / 10.0;
+            return Math.Floor(gold * 10 * Consts.FLOAT_ERROR_ONE) / 10.0;
         }
 
         public static double CeilGold(double gold)
         {
-            return Math.Ceiling(gold * 10 - Consts.FLOAT_ERROR) / 10.0;
+            return Math.Ceiling(gold * 10 / Consts.FLOAT_ERROR_ONE) / 10.0;
         }
 
         internal void DeathCheck()
@@ -835,7 +835,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return this.goldValue + .05 - Consts.FLOAT_ERROR;
+                return this.goldValue + .05 / Consts.FLOAT_ERROR_ONE;
             }
         }
         internal double TotalGold
@@ -1094,7 +1094,7 @@ namespace GalWar
                     if (minGold)
                         hp = Math.Ceiling(hp);
                     double gold = ship.GetGoldForHP(hp);
-                    if (Math.Abs(hp - Math.Round(hp)) < Consts.FLOAT_ERROR)
+                    if (Math.Abs(hp - Math.Round(hp)) < hp * Consts.FLOAT_ERROR_ZERO)
                         gold = Player.RoundGold(gold);
                     cost += gold;
                 }

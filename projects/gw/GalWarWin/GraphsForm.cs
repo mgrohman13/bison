@@ -169,7 +169,7 @@ namespace GalWarWin
 
         private static string GetString(double value, long div, int place, bool dec)
         {
-            if (value > Consts.FLOAT_ERROR)
+            if (value > Consts.FLOAT_ERROR_ZERO)
             {
                 value /= div;
                 string retVal;
@@ -422,7 +422,7 @@ namespace GalWarWin
             value = GetValue(y, ceil, div);
             if (height > 0)
             {
-                y = (float)( value - value * Consts.FLOAT_ERROR );
+                y = (float)( value / Consts.FLOAT_ERROR_ONE );
                 yScale = height / (float)Math.Ceiling(y);
             }
 

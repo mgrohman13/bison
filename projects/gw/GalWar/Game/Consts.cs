@@ -153,7 +153,8 @@ namespace GalWar
         public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
         public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
 
-        public const double FLOAT_ERROR = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 1 ) );
+        public const double FLOAT_ERROR_ZERO = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 2 ) );
+        public const double FLOAT_ERROR_ONE = 1.0 + FLOAT_ERROR_ZERO;
 
         public static double GetResearchVictoryChance(double mult)
         {

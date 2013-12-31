@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using GalWar;
+using MattUtil;
 
 namespace GalWarWin
 {
@@ -141,7 +142,7 @@ namespace GalWarWin
                 noDefHP = true;
 
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
-            int attHP = (int)this.nudAttHP.Value, defHP = (int)( this.nudDefHP.Value + this.nudDefHP.Value * (decimal)Consts.FLOAT_ERROR );
+            int attHP = (int)this.nudAttHP.Value, defHP = (int)( this.nudDefHP.Value * (decimal)Consts.FLOAT_ERROR_ONE );
 
             double avgAtt, avgDef;
             Dictionary<int, double> damageTable = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
@@ -217,7 +218,7 @@ namespace GalWarWin
 
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
             double mult = (double)( this.nudDefHP.Value - defHP );
-            if (mult > 1 - Consts.FLOAT_ERROR)
+            if (mult > 1 - Consts.FLOAT_ERROR_ZERO)
             {
                 mult = 0;
                 ++defHP;
@@ -225,7 +226,7 @@ namespace GalWarWin
 
             Dictionary<ResultPoint, double> chances = GetChances(worker, damageTable, defHP);
 
-            if (mult > Consts.FLOAT_ERROR)
+            if (mult > Consts.FLOAT_ERROR_ZERO)
             {
                 mult /= ( 1 - mult );
                 Dictionary<ResultPoint, double> combine = GetChances(worker, damageTable, defHP + 1);
@@ -254,7 +255,7 @@ namespace GalWarWin
             var oldChances = new Dictionary<ResultPoint, double>(targetCap);
 
             ResultPoint rp = new ResultPoint(attHP, defHP);
-            chances.Add(rp, double.Epsilon / Consts.FLOAT_ERROR / Consts.FLOAT_ERROR);
+            chances.Add(rp, double.Epsilon * ( 1 << MTRandom.DOUBLE_BITS ));
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ; )
@@ -932,9 +933,9 @@ end:
                     mid.LogLine();
                     after.LogLine();
 
-                    if (after.gold > Consts.FLOAT_ERROR)
+                    if (after.gold > Consts.FLOAT_ERROR_ZERO)
                         MainForm.GameForm.LogMsg("Gold -{0}{1}", MainForm.FormatUsuallyInt(after.gold),
-                                after.gold > this.gold - this.gold * Consts.FLOAT_ERROR ? string.Empty : "/" + MainForm.FormatInt(this.gold));
+                                after.gold > this.gold / Consts.FLOAT_ERROR_ONE ? string.Empty : "/" + MainForm.FormatInt(this.gold));
                     if (this.quality != after.quality)
                         MainForm.GameForm.LogMsg("Quality {0} -> {1}{2}", this.quality,
                                 after.quality < 0 ? "Destroyed" : after.quality.ToString(),

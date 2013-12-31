@@ -74,7 +74,7 @@ namespace GalWarWin
             else if (form.cbCost.Checked)
                 div = shipDesign.Cost;
             else if (form.cbUpkeep.Checked)
-                div = shipDesign.Upkeep + GetUpkeepPayoff(shipDesign) * Consts.FLOAT_ERROR;
+                div = shipDesign.Upkeep + GetUpkeepPayoff(shipDesign) * shipDesign.Upkeep * Consts.FLOAT_ERROR_ZERO;
 
             return value / div;
         }

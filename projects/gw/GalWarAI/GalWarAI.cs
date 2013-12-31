@@ -520,7 +520,7 @@ namespace GalWarAI
             foreach (Ship s in LoopShips())
             {
                 double dist = GetShipDistance(s, t);
-                if (dist < turns + Consts.FLOAT_ERROR)
+                if (dist < turns * Consts.FLOAT_ERROR_ONE)
                     yield return new Tuple<Ship, double>(s, dist);
             }
         }

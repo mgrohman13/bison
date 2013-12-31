@@ -124,7 +124,7 @@ namespace GalWarWin.Sliders
 
         public static string GetFloatErrorPrecisionFormat()
         {
-            return "0.".PadRight((int)Math.Ceiling(-Math.Log10(Consts.FLOAT_ERROR)) + 1, '0');
+            return "0.".PadRight((int)Math.Floor(-Math.Log10(Consts.FLOAT_ERROR_ZERO)) + 2, '0');
         }
 
         public static bool ShowForm(Ship ship)

@@ -520,7 +520,7 @@ namespace GalWar
             }
             else
             {
-                int low = (int)( hp + Consts.FLOAT_ERROR );
+                int low = (int)( hp * Consts.FLOAT_ERROR_ONE );
                 if (hp != low)
                 {
                     gold += ( hp - low ) * ( production - GetProdForHP(low + 1) );
@@ -1035,7 +1035,7 @@ namespace GalWar
         }
         private void GetNextLevel(IEventHandler handler, bool funky, bool noChange)
         {
-            this.needExpMult = Game.Random.GaussianCapped(1, Consts.ExperienceRndm, Consts.FLOAT_ERROR);
+            this.needExpMult = Game.Random.GaussianCapped(1, Consts.ExperienceRndm, Consts.FLOAT_ERROR_ZERO);
 
             if (!noChange)
             {
@@ -1551,7 +1551,7 @@ namespace GalWar
                     else
                         hp = ( upper * ( low - high ) + high ) / ( ( low - high ) + gold );
 
-                    if (Math.Abs(GetGoldForHP(hp, isTotal) - gold) > Consts.FLOAT_ERROR)
+                    if (Math.Abs(GetGoldForHP(hp, isTotal) - gold) > gold * Consts.FLOAT_ERROR_ZERO)
                         throw new Exception();
                     return hp;
                 }

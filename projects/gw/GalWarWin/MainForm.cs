@@ -677,7 +677,7 @@ namespace GalWarWin
                 stat -= digit;
 
             const float adj = digit / 10f, half = .5f;
-            if (Math.Abs(stat % 1f - half) < Consts.FLOAT_ERROR)
+            if (Math.Abs(stat % 1f - half) < half * Consts.FLOAT_ERROR_ZERO)
                 if (( ShipDesign.GetStatValue(stat + half) - value ) > ( value - ShipDesign.GetStatValue(stat - half) ))
                     stat -= adj;
                 else
@@ -766,7 +766,7 @@ namespace GalWarWin
         }
         private void SetScale(float value)
         {
-            scale = (float)( value * ( 1 + Consts.FLOAT_ERROR ) );
+            scale = (float)( value * Consts.FLOAT_ERROR_ONE );
             VerifyScale();
         }
 
