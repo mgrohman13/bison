@@ -1,3 +1,27 @@
+System.Exception: Exception of type 'System.Exception' was thrown.
+   at GalWarWin.CostCalculatorForm.SetValue(NumericUpDown nud, Double value) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 265
+   at GalWarWin.CostCalculatorForm.ClearDS() in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 252
+   at GalWarWin.CostCalculatorForm.MaintainDS(Boolean deathStar) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 231
+   at GalWarWin.CostCalculatorForm.nudTrans_ValueChanged(Object sender, EventArgs e) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 296
+   at System.Windows.Forms.NumericUpDown.set_Value(Decimal value)
+   at GalWarWin.CostCalculatorForm.SetValue(NumericUpDown nud, Double value) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 276
+   at GalWarWin.CostCalculatorForm.SetShipDesign(ShipDesign shipDesign) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 137
+   at GalWarWin.CostCalculatorForm.ShowForm(Ship ship, ShipDesign shipDesign) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 346
+   at GalWarWin.CostCalculatorForm.ShowForm(ShipDesign selected) in C:\files\projects\gw\GalWarWin\CostCalculatorForm.cs:line 337
+   at GalWarWin.BuildableControl.label_MouseClick(Object sender, MouseEventArgs e) in C:\files\projects\gw\GalWarWin\BuildableControl.cs:line 144
+   at System.Windows.Forms.Control.WmMouseUp(Message& m, MouseButtons button, Int32 clicks)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.Label.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.DebuggableCallback(IntPtr hWnd, Int32 msg, IntPtr wparam, IntPtr lparam)
+   at System.Windows.Forms.UnsafeNativeMethods.DispatchMessageW(MSG& msg)
+   at System.Windows.Forms.Application.ComponentManager.System.Windows.Forms.UnsafeNativeMethods.IMsoComponentManager.FPushMessageLoop(IntPtr dwComponentID, Int32 reason, Int32 pvLoopData)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(Int32 reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(Int32 reason, ApplicationContext context)
+   at System.Windows.Forms.Form.ShowDialog(IWin32Window owner)
+   at GalWarWin.ResearchForm.ShowForm(ShipDesign newDesign, HashSet`1 obsolete) in C:\files\projects\gw\GalWarWin\ResearchForm.cs:line 46
+   at GalWarWin.MainForm.GalWar.IEventHandler.OnResearch(ShipDesign newDesign, HashSet`1 obsolete) in C:\files\projects\gw\GalWarWin\MainForm.cs:line 2736
+   at GalWar.HandlerWrapper.GalWar.IEventHandler.OnResearch(ShipDesign newDesign, HashSet`1 obsolete) in C:\files\projects\gw\GalWar\Other\HandlerWrapper.cs:line 191
+
 UI
 	repair form income show only base - upkeep
 	show enemy ship last moved path
