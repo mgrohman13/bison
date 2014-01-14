@@ -46,20 +46,22 @@ namespace SpaceRunner
             const float minSpace = Game.BulletSize / 2f;
             //randomize number of bullets
             int numBullets = game.GameRand.OEInt(avgNum);
+            float? speed = null;
+            bool? b = null;
             if (numBullets > 0)
             {
-                float speed = game.GameRand.Gaussian(Game.BulletExplosionSpeed, Game.BulletExplosionSpeedRandomness);
+                speed = game.GameRand.Gaussian(Game.BulletExplosionSpeed, Game.BulletExplosionSpeedRandomness);
                 float angle = game.GetRandomAngle();
-
                 float angleStep, spacing;
                 if (numBullets > 1)
                 {
                     angleStep = Game.TwoPi / numBullets;
 
                     //placing all bullets in the same spot will cause collisions and more explosions
-                    spacing = -speed;
+                    spacing = -speed.Value;
                     //half the time, space bullets out evenly in all directions for a uniform explosion
-                    if (game.GameRand.Bool())
+                    b = game.GameRand.Bool();
+                    if (b.Value)
                         spacing += minSpace + Game.GetRingSpacing(numBullets, Game.BulletSize);
                 }
                 else
@@ -72,10 +74,15 @@ namespace SpaceRunner
                 {
                     float xDir, yDir;
                     Game.GetDirs(out xDir, out yDir, angle);
-                    new Bullet(game, x, y, xDir, yDir, speed, spacing, FriendlyStatus.Neutral);
+                    new Bullet(game, x, y, xDir, yDir, speed.Value, spacing, FriendlyStatus.Neutral);
                     angle += angleStep;
                 }
             }
+
+            ////Game.BulletExplosionSpeed: 4.08
+            //Console.WriteLine("{1}  {3}{2}{0}", avgNum.ToString("000.00").TrimEnd('0').TrimEnd('.').PadRight(6).TrimStart('0').PadLeft(7),
+            //        numBullets.ToString().PadLeft(3), ( speed.HasValue ? speed.Value.ToString("0.00") : "" ).PadLeft(6),
+            //        ( b.HasValue ? b.ToString() : "" ).PadRight(5));
         }
 
         internal static Bullet NewBullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
