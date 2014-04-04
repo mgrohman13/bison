@@ -218,10 +218,9 @@ namespace MattUtil
                 {
                     var options = allOptions.Select(tile => new Tuple<Tile, List<BigInteger>>(tile, weights[tile]));
 
-                    int a = 0;
-                    do
+                    for (int a = 0 ; options.Skip(1).Any() ; ++a)
                     {
-                        int b = a++;
+                        int b = a;
 
                         var filtered = options.Where(tuple => tuple.Item2.Count <= b);
                         if (filtered.Any())
@@ -233,7 +232,6 @@ namespace MattUtil
                         BigInteger max = options.Max(tuple => tuple.Item2[b]);
                         options = options.Where(tuple => tuple.Item2[b] == max);
                     }
-                    while (options.Skip(1).Any());
 
                     //choose randomly if equivalent
                     current = random.SelectValue(options).Item1;
@@ -266,14 +264,13 @@ namespace MattUtil
 
                 int a = children.Min(child => child.Count);
                 foreach (var child in children)
-                    for (int b = 0 ; b < a ; )
+                    for (int b = 1 ; b <= a ; ++b)
                     {
-                        BigInteger entry = child[b];
-                        int c = ++b;
-                        if (c == weight.Count)
+                        BigInteger entry = child[b - 1];
+                        if (b == weight.Count)
                             weight.Add(entry);
                         else
-                            weight[c] = checked(weight[c] + entry);
+                            weight[b] = checked(weight[b] + entry);
                     }
             }
 

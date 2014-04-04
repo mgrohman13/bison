@@ -83,7 +83,7 @@ namespace GalWar
         public const double ResearchDisplayRndm = .169;
 
         //trade rates
-        public const double ProductionForGold = 10.0 / 3.0;
+        public const double ProductionForGold = 1 / .3;
         public const double GoldProductionForGold = ProductionForGold / 1.3;
         public const double GoldForProduction = 2;
         public const double PopulationForGoldLow = 1 / Income / 2.6;

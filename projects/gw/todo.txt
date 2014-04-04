@@ -65,9 +65,10 @@ terrain from anomalies
 	impassable
 	damage
 	att/def bonus
-	apply effects to neighbors
+	random spread of tiles? apply effects to neighbors?
 directly upgrade existing ships?
 	to reduce repair cost?
+	improve stats?
 GetNonColonyPct full trans?
 increase minimum research chance
 ship name value
@@ -77,14 +78,15 @@ map size
 planetary defenses still not right
 	auto upg turns 1-7 into 13-7
 research victory pct decreases with higher research
-lost colony follows planet creation chance
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 terraform check use actual values
 rethink neg gold again
 	don't like random disbanding - no adv over manual
 	if keep impossible negative, make _goldValue a uint?
+decrease GoldProductionForGold to 1.69-2?
 
+fix ShipClass alpha order
 6 tiers saved? return length?
 graph dictionaries can be arrays
 standardive Tile.Game vs Player.Game calls

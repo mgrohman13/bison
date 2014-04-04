@@ -350,14 +350,12 @@ namespace GalWar
         }
         private bool Colony(IEventHandler handler, Player player, Ship anomShip)
         {
-            int distance = int.MaxValue;
-            foreach (Colony colony in player.GetColonies())
-                distance = Math.Min(distance, Tile.GetDistance(this.Tile, colony.Tile));
-            double cost = int.MaxValue;
-            foreach (ShipDesign design in player.GetDesigns())
-                if (design.Colony)
-                    cost = Math.Min(cost, design.Upkeep * distance / (double)design.Speed
-                            + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched));
+            var colonyDesigns = player.GetDesigns().Where(design => design.Colony);
+            if (!colonyDesigns.Any())
+                return false;
+            int distance = player.GetColonies().Min(colony => Tile.GetDistance(this.Tile, colony.Tile));
+            double cost = colonyDesigns.Min(design => ( design.Upkeep * distance / (double)design.Speed
+                    + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched) ));
 
             double amount = this.value - cost;
             double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
