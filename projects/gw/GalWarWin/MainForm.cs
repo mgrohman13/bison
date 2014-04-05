@@ -2255,7 +2255,7 @@ namespace GalWarWin
             lbl2.Text = "Defense";
             lbl2Inf.Text = ship.Def.ToString();
 
-            lbl3.Text = "Hits";
+            lbl3.Text = "HP";
             lbl3Inf.Text = ship.HP.ToString() + " / " + ship.MaxHP.ToString() + " - "
                    + FormatPctWithCheck(ship.HP / (double)ship.MaxHP);
 
