@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -263,6 +264,7 @@ namespace GalWarWin
                 oldChances = chances;
                 chances = new Dictionary<ResultPoint, double>(targetCap);
 
+                //Parallel.ForEach(oldChances, chancePair =>
                 foreach (KeyValuePair<ResultPoint, double> chancePair in oldChances)
                 {
                     ResultPoint oldRes = chancePair.Key;
@@ -290,21 +292,28 @@ namespace GalWarWin
                                 res.AttHP = dmg;
                             }
 
-                            double val;
+                            double val, add = oldChance * damagePair.Value;
+                            //lock (chances)
+                            //{
                             chances.TryGetValue(res, out val);
-                            chances[res] = val + oldChance * damagePair.Value;
+                            chances[res] = val + add;
+                            //}
                         }
                     }
                     else
                     {
-                        double val;
+                        double val, add = oldChance * totalDmgChance;
+                        //lock (chances)
+                        //{
                         chances.TryGetValue(oldRes, out val);
-                        chances[oldRes] = val + oldChance * totalDmgChance;
+                        chances[oldRes] = val + add;
+                        //}
                     }
                 }
+                //);
 
                 if (worker.CancellationPending)
-                    goto end;
+                    return null;
             }
 
             int max = Math.Max(chances.Count, oldChances.Count);
