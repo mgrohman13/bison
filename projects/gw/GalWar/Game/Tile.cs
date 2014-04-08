@@ -112,20 +112,23 @@ namespace GalWar
             AssertException.Assert(to != null);
             AssertException.Assert(from != null);
 
-            //boundary of all objects currently in play, with enough room to move around the edge
             Rectangle bounds = from.Game.GetGameBounds(to, from);
-            bounds.Inflate(3, 3);
+            int count = 0, max = bounds.Width * bounds.Height;
 
-            return TBSUtil.PathFind(Game.Random, from, to, tile => Tile.GetNeighbors(tile)
-                    .Where(neighbor => CanMove(player, tile, neighbor, bounds)).Select(neighbor => new Tuple<Tile, int>(neighbor, 1)), GetDistance);
+            return TBSUtil.PathFind(Game.Random, from, to, current =>
+            {
+                if (++count > max)
+                    return Enumerable.Empty<Tuple<Tile, int>>();
+                return Tile.GetNeighbors(current).Where(neighbor => CanMove(player, current, neighbor))
+                        .Select(neighbor => new Tuple<Tile, int>(neighbor, 1));
+            }, GetDistance);
         }
-        private static bool CanMove(Player player, Tile current, Tile neighbor, Rectangle bounds)
+        private static bool CanMove(Player player, Tile current, Tile neighbor)
         {
             SpaceObject spaceObject;
             //a null player means we don't want to do any collision checking at all
-            return ( player == null || ( bounds.Contains(neighbor.X, neighbor.Y) &&
-                    ( ( spaceObject = neighbor.SpaceObject ) == null || ( spaceObject is Ship && spaceObject.Player == player ) )
-                    && Ship.CheckZOC(player, neighbor, current) ) );
+            return ( player == null || ( ( ( spaceObject = neighbor.SpaceObject ) == null
+                    || ( spaceObject is Ship && spaceObject.Player == player ) ) && Ship.CheckZOC(player, neighbor, current) ) );
         }
 
         #endregion //static

@@ -832,6 +832,9 @@ namespace GalWar
                                 planets.All(p2 => planet == p2 || Tile.GetDistance(this.Tile, p2.Tile) > Consts.PlanetDistance))
                             AddPullChance(objects, oneInv, planet, planetMult * Math.Sqrt(( Consts.AverageQuality + planet.PlanetValue +
                                     ( colony ? ( Consts.AverageQuality + planet.Colony.Population ) / 2.1 : 0 ) ) / Consts.AverageQuality), anomShip);
+                        else
+                        {
+                        }
                     }
                     else if (spaceObject is Anomaly)
                     {

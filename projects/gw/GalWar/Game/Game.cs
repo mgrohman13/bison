@@ -889,9 +889,10 @@ namespace GalWar
                 //anomalies weigh less than even the smallest possible planet
                 const double AnomalyWeight = Consts.PlanetConstValue / 1.3;
                 //the total weight of all ships is always less than even a single anomaly
-                shipWeight = AnomalyWeight / 1.3 / shipWeight;
+                if (shipWeight != 0)
+                    shipWeight = AnomalyWeight / 1.3 / shipWeight;
                 //population is weighted at its total's square root
-                if (popWeight != 0)
+                if (popWeight > 0)
                     popWeight = 1 / Math.Sqrt(popWeight);
 
                 for (int a = 0 ; a < amt ; ++a)
@@ -949,7 +950,7 @@ namespace GalWar
         }
         private static double GetShipWeight(Ship ship)
         {
-            return ship.GetStrength() * Math.Sqrt(ship.HP / (double)ship.MaxHP);
+            return ( 2.6 * ship.GetStrength() + ship.GetValue() ) * Math.Sqrt(ship.HP / (double)ship.MaxHP);
         }
 
         public Rectangle GetGameBounds(params Tile[] include)

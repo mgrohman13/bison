@@ -427,7 +427,7 @@ namespace GalWar
             return ShipDesign.GetStrength(this.Att, this.Def, this.MaxHP, this.MaxSpeed);
         }
 
-        private double GetValue()
+        internal double GetValue()
         {
             return GetValue(null);
         }

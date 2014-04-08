@@ -23,6 +23,9 @@ System.Exception: Exception of type 'System.Exception' was thrown.
    at GalWar.HandlerWrapper.GalWar.IEventHandler.OnResearch(ShipDesign newDesign, HashSet`1 obsolete) in C:\files\projects\gw\GalWar\Other\HandlerWrapper.cs:line 191
 
 UI
+	option to stop offering to build
+		clears when switched for ANY reason
+	bombard continue attacking with auto show breaks
 	repair form income show only base - upkeep
 	show enemy ship last moved path
 	right click DS, right click trans: error

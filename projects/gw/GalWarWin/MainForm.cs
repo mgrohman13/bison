@@ -68,7 +68,7 @@ namespace GalWarWin
             MouseWheel += new MouseEventHandler(MainForm_MouseWheel);
             ResizeRedraw = true;
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
-            Bounds = Screen.GetWorkingArea(this);
+            //Bounds = Screen.GetWorkingArea(this);
 
             isDialog = dialog;
             if (isDialog)
