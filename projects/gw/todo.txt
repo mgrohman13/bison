@@ -54,7 +54,15 @@ UI
 		colonies
 		ships
 	keyboard?
+	ship calc form use current research guess for opp without using lastresearched
+	show total saved up prod on main screen?
 
+ship leveling uses actual research rather than last?
+balance for anomaly salvage research randomness?
+friendly bombard
+	never kill pop
+	confirm before completely destroy
+	doesn't give free exp to both
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate

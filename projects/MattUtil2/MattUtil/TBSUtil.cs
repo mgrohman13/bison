@@ -270,7 +270,7 @@ namespace MattUtil
                         if (b == weight.Count)
                             weight.Add(entry);
                         else
-                            weight[b] = checked(weight[b] + entry);
+                            weight[b] = weight[b] + entry;
                     }
             }
 
