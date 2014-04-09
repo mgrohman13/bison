@@ -87,6 +87,7 @@ namespace GalWarWin
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
             this.pnlBuild = new GalWarWin.BuildableControl();
+            this.lblProdTot = new System.Windows.Forms.Label();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
@@ -339,6 +340,7 @@ namespace GalWarWin
             this.pnlEconomy.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.pnlEconomy.AutoSize = true;
             this.pnlEconomy.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.pnlEconomy.Controls.Add(this.lblProdTot);
             this.pnlEconomy.Controls.Add(this.label12);
             this.pnlEconomy.Controls.Add(this.lblGold);
             this.pnlEconomy.Controls.Add(this.lblPopulation);
@@ -739,6 +741,17 @@ namespace GalWarWin
             this.pnlBuild.TabIndex = 53;
             this.pnlBuild.Visible = false;
             // 
+            // lblProdTot
+            // 
+            this.lblProdTot.AutoEllipsis = true;
+            this.lblProdTot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblProdTot.Location = new System.Drawing.Point(88, 69);
+            this.lblProdTot.Name = "lblProdTot";
+            this.lblProdTot.Size = new System.Drawing.Size(42, 23);
+            this.lblProdTot.TabIndex = 39;
+            this.lblProdTot.Text = "99999";
+            this.lblProdTot.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // MainForm
             // 
             this.AcceptButton = this.btnEndTurn;
@@ -830,6 +843,7 @@ namespace GalWarWin
         private BuildableControl pnlBuild;
         private System.Windows.Forms.Panel pnlInfo;
         private System.Windows.Forms.Label lblLoc;
+        private System.Windows.Forms.Label lblProdTot;
     }
 }
 

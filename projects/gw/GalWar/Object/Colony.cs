@@ -17,7 +17,7 @@ namespace GalWar
         private Buildable _buildable;
         private Ship _repairShip;
 
-        private bool _built;
+        private bool _built, _pauseBuild;
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
         private ushort _repair, _production;
@@ -38,6 +38,7 @@ namespace GalWar
                 this._repairShip = null;
 
                 this._built = ( handler == null );
+                this._pauseBuild = false;
 
                 this._defenseAttChange = 0;
                 this._defenseDefChange = 0;
@@ -54,7 +55,7 @@ namespace GalWar
 
                 ResetRounding();
                 if (handler != null)
-                    StartBuilding(handler, handler.getNewBuild(this));
+                    ChangeBuild(handler);
             }
         }
 
@@ -79,6 +80,22 @@ namespace GalWar
                 checked
                 {
                     this._buildable = value;
+                }
+            }
+        }
+        public bool PauseBuild
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return ( this._pauseBuild && ( this.Buildable is ShipDesign ) );
+            }
+            private set
+            {
+                checked
+                {
+                    this._pauseBuild = value;
                 }
             }
         }
@@ -267,15 +284,24 @@ namespace GalWar
 
         #region internal
 
-        internal void SetBuildable(Buildable newBuild, double losspct)
+        internal void ChangeBuild(IEventHandler handler)
+        {
+            Buildable newBuild;
+            bool newPause;
+            handler.getNewBuild(this, out newBuild, out newPause);
+            StartBuilding(handler, newBuild, newPause);
+        }
+        internal void SetBuildable(Buildable newBuild, double losspct, bool pause)
         {
             this.Buildable = newBuild;
+            this.PauseBuild = pause;
 
             LoseProductionPct(losspct);
         }
-        internal int SetBuildableCeilLoss(Buildable newBuild, double losspct)
+        internal int SetBuildableCeilLoss(Buildable newBuild, double losspct, bool pause)
         {
             this.Buildable = newBuild;
+            this.PauseBuild = pause;
 
             int loss = (int)Math.Ceiling(this.production * losspct);
             LoseProduction(loss);
@@ -292,7 +318,7 @@ namespace GalWar
                 this.production += RoundValue(productionInc, ref gold);
 
             //actual building of new ships happens at turn end
-            if (this.Buildable != null)
+            if (this.Buildable != null && !this.PauseBuild)
             {
                 while (this.production >= this.Buildable.Cost)
                 {
@@ -368,7 +394,7 @@ namespace GalWar
 
             if (this.built)
             {
-                StartBuilding(handler, handler.getNewBuild(this));
+                ChangeBuild(handler);
                 this.built = false;
             }
         }
@@ -974,21 +1000,26 @@ namespace GalWar
             return ( buildable == null || buildable.CanBeBuiltBy(this) );
         }
 
-        public void StartBuilding(IEventHandler handler, Buildable newBuild)
+        public void StartBuilding(IEventHandler handler, Buildable newBuild, bool pause)
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
-            if (this.Buildable != newBuild)
+            if (this.Buildable != newBuild || this.PauseBuild != pause)
             {
                 Buildable oldBuild = this.Buildable;
-                int loss = SetBuildableCeilLoss(newBuild, GetLossPct(newBuild));
-                Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int>(
-                        new Game.UndoMethod<Buildable, int>(UndoStartBuilding), oldBuild, loss));
+                bool oldPause = this.PauseBuild;
+                int loss = 0;
+                if (this.Buildable != newBuild)
+                    loss = SetBuildableCeilLoss(newBuild, GetLossPct(newBuild), pause);
+                else
+                    this.PauseBuild = pause;
+                Player.Game.PushUndoCommand(new Game.UndoCommand<Buildable, int, bool>(
+                        new Game.UndoMethod<Buildable, int, bool>(UndoStartBuilding), oldBuild, loss, oldPause));
             }
         }
-        internal Tile UndoStartBuilding(Buildable oldBuild, int loss)
+        internal Tile UndoStartBuilding(Buildable oldBuild, int loss, bool oldPause)
         {
             AssertException.Assert(CanBuild(oldBuild));
             AssertException.Assert(this.Buildable != oldBuild);
@@ -997,6 +1028,7 @@ namespace GalWar
             AssertException.Assert(this.Player.Gold > gold);
 
             this.Buildable = oldBuild;
+            this.PauseBuild = oldPause;
             this.production += loss;
             this.Player.SpendGold(gold);
 

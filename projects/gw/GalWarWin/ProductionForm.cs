@@ -104,26 +104,37 @@ namespace GalWarWin
             RefreshBuild();
         }
 
-        private void RefreshBuild()
+        private void RefreshBuild(bool? setPause = true)
         {
             Buildable newBuild = GetSelectedDesign();
 
-            //this.sdForm.Visible = newBuild is ShipDesign;
-            this.chkObsolete.Visible = newBuild is ShipDesign;
+            this.chkObsolete.Enabled = newBuild is ShipDesign;
 
             int lossAmt = GetLossAmt(newBuild);
 
             this.sdForm.SetColony(colony, newBuild, lossAmt);
-            this.chkObsolete.Checked = true;
+            this.chkObsolete.Checked = false;
 
             if (lossAmt > 0)
                 this.lblProdLoss.Text = "-" + lossAmt + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Production - lossAmt);
+            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Production - lossAmt, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 );
+
+            if (setPause.HasValue)
+            {
+                bool canPause = ( newBuild is ShipDesign );
+                this.chkPause.Enabled = canPause;
+                if (canPause)
+                    if (setPause.Value)
+                        canPause = ( colony.PauseBuild && colony.Buildable == newBuild );
+                    else
+                        canPause = false;
+                this.chkPause.Checked = canPause;
+            }
         }
 
         private int GetLossAmt(Buildable newBuild)
@@ -149,12 +160,12 @@ namespace GalWarWin
                 {
                     if (switchFirst)
                     {
-                        colony.StartBuilding(MainForm.GameForm, buildable);
+                        colony.StartBuilding(MainForm.GameForm, buildable, false);
                         if (prod == initial)
                             prod = GetInitialBuy(buildable, false);
                     }
                     colony.BuyProduction(MainForm.GameForm, prod);
-                    RefreshBuild();
+                    RefreshBuild(false);
                 }
             }
         }
@@ -226,22 +237,22 @@ namespace GalWarWin
             if (prod > 0)
             {
                 colony.SellProduction(MainForm.GameForm, prod);
-                RefreshBuild();
+                RefreshBuild(null);
             }
         }
 
         private void chkObsolete_CheckedChanged(object sender, EventArgs e)
         {
-            if (!this.chkObsolete.Checked)
+            if (this.chkObsolete.Checked)
             {
                 if (MainForm.ShowOption("Are you sure you want to mark this design as obsolete?"))
                     this.DialogResult = DialogResult.Abort;
                 else
-                    this.chkObsolete.Checked = true;
+                    this.chkObsolete.Checked = false;
             }
         }
 
-        public static Buildable ShowForm(Colony colony)
+        public static void ShowForm(Colony colony, out Buildable buildable, out bool pause)
         {
             MainForm.GameForm.SetLocation(form);
 
@@ -249,13 +260,21 @@ namespace GalWarWin
             DialogResult result = form.ShowDialog();
 
             if (result == DialogResult.OK)
-                return form.GetSelectedDesign();
-            else if (result == DialogResult.Abort)
-                MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, (ShipDesign)form.GetSelectedDesign());
+            {
+                buildable = form.GetSelectedDesign();
+                pause = form.chkPause.Checked;
+            }
+            else
+            {
+                if (result == DialogResult.Abort)
+                    MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, (ShipDesign)form.GetSelectedDesign());
 
-            if (colony.CanBuild(colony.Buildable))
-                return colony.Buildable;
-            return MainForm.Game.StoreProd;
+                if (colony.CanBuild(colony.Buildable))
+                    buildable = colony.Buildable;
+                else
+                    buildable = MainForm.Game.StoreProd;
+                pause = colony.PauseBuild;
+            }
         }
 
         private void lbxDesigns_DoubleClick(object sender, EventArgs e)

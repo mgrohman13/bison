@@ -1033,18 +1033,22 @@ namespace GalWarWin
         private void btnProduction_Click(object sender, EventArgs e)
         {
             Colony colony = GetSelectedColony();
-            colony.StartBuilding(this, ChangeBuild(colony));
+
+            Buildable buildable;
+            bool pause;
+            ChangeBuild(colony, out buildable, out pause);
+            colony.StartBuilding(this, buildable, pause);
 
             saved = false;
             RefreshAll();
         }
 
-        private Buildable ChangeBuild(Colony colony)
+        private void ChangeBuild(Colony colony, out Buildable buildable, out bool pause)
         {
             SelectTile(colony.Tile);
             RefreshAll();
 
-            return ProductionForm.ShowForm(colony);
+            ProductionForm.ShowForm(colony, out buildable, out pause);
         }
 
         private void btnProdRepair_Click(object sender, EventArgs eventArgs)
@@ -2132,6 +2136,7 @@ namespace GalWarWin
             FormatIncome(lblResearch, research);
             lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research));
             FormatIncome(lblProduction, production);
+            lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.Production).ToString();
 
             emphasisEvent = false;
             chkGold.Checked = Game.CurrentPlayer.GoldEmphasis;
@@ -2442,14 +2447,18 @@ namespace GalWarWin
 
         private static string GetProdText(Colony colony)
         {
-            return GetProdText(colony, colony.Buildable, colony.Production);
+            return GetProdText(colony, colony.Buildable, colony.Production, colony.PauseBuild);
         }
 
-        public static string GetProdText(Colony colony, Buildable build, double production)
+        public static string GetProdText(Colony colony, Buildable build, double production, bool paused)
         {
             string retVal = string.Empty;
             if (build != null)
-                retVal = build.GetProdText(FormatUsuallyInt(production));
+            {
+                retVal = FormatUsuallyInt(production);
+                if (!paused)
+                    retVal = build.GetProdText(retVal);
+            }
 
             double prodInc = colony.GetAfterRepairProdInc();
 
@@ -2577,12 +2586,12 @@ namespace GalWarWin
             return GetSelectedTile();
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony)
+        void IEventHandler.getNewBuild(Colony colony, out Buildable buildable, out bool pause)
         {
             showMoves = false;
             InvalidateMap();
 
-            return ChangeBuild(colony);
+            ChangeBuild(colony, out buildable, out pause);
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers)

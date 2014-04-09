@@ -50,22 +50,21 @@ namespace GalWar
             }
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony)
+        void IEventHandler.getNewBuild(Colony colony, out Buildable buildable, out bool pause)
         {
             callback = true;
             special = true;
 
-            Buildable retVal;
-
             try
             {
-                retVal = handler.getNewBuild(colony);
+                handler.getNewBuild(colony, out buildable, out pause);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
 
-                retVal = colony.Buildable;
+                buildable = colony.Buildable;
+                pause = colony.PauseBuild;
             }
             finally
             {
@@ -73,9 +72,8 @@ namespace GalWar
                 special = false;
             }
 
-            if (colony.CanBuild(retVal))
-                return retVal;
-            return colony.Player.Game.StoreProd;
+            if (!colony.CanBuild(buildable))
+                buildable = colony.Player.Game.StoreProd;
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers)
