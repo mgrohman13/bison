@@ -139,10 +139,13 @@ namespace GalWarWin
             SetValue(this.nudDS, shipDesign.BombardDamage);
 
             Update(null);
+            this.Text = shipDesign.ToString();
         }
 
         private double Update(object sender)
         {
+            this.Text = string.Empty;
+
             events = false;
             if (sender != null)
                 this.lblOverflow.Visible = false;

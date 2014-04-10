@@ -332,7 +332,6 @@ namespace GalWarWin
                 Console.WriteLine();
             }
 
-end:
             return chances;
         }
         private static int GetCapacity(int att, int def, int rounds, int attHP, int defHP)

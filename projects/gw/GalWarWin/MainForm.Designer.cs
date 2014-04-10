@@ -32,6 +32,9 @@ namespace GalWarWin
         private void InitializeComponent()
         {
             this.pnlHUD = new System.Windows.Forms.Panel();
+            this.pnlBuild = new GalWarWin.BuildableControl();
+            this.btnColonies = new System.Windows.Forms.Button();
+            this.btnShips = new System.Windows.Forms.Button();
             this.lblLoc = new System.Windows.Forms.Label();
             this.pnlInfo = new System.Windows.Forms.Panel();
             this.lblTop = new System.Windows.Forms.Label();
@@ -50,6 +53,7 @@ namespace GalWarWin
             this.lbl5Inf = new System.Windows.Forms.Label();
             this.lbl4Inf = new System.Windows.Forms.Label();
             this.pnlEconomy = new System.Windows.Forms.Panel();
+            this.lblProdTot = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.lblGold = new System.Windows.Forms.Label();
             this.lblPopulation = new System.Windows.Forms.Label();
@@ -86,8 +90,6 @@ namespace GalWarWin
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
-            this.pnlBuild = new GalWarWin.BuildableControl();
-            this.lblProdTot = new System.Windows.Forms.Label();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
@@ -98,6 +100,8 @@ namespace GalWarWin
             // 
             this.pnlHUD.BackColor = System.Drawing.Color.White;
             this.pnlHUD.Controls.Add(this.pnlBuild);
+            this.pnlHUD.Controls.Add(this.btnColonies);
+            this.pnlHUD.Controls.Add(this.btnShips);
             this.pnlHUD.Controls.Add(this.lblLoc);
             this.pnlHUD.Controls.Add(this.pnlInfo);
             this.pnlHUD.Controls.Add(this.pnlEconomy);
@@ -123,6 +127,35 @@ namespace GalWarWin
             this.pnlHUD.Size = new System.Drawing.Size(200, 688);
             this.pnlHUD.TabIndex = 2;
             this.pnlHUD.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
+            // 
+            // pnlBuild
+            // 
+            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.pnlBuild.Location = new System.Drawing.Point(0, 351);
+            this.pnlBuild.Name = "pnlBuild";
+            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
+            this.pnlBuild.TabIndex = 53;
+            this.pnlBuild.Visible = false;
+            // 
+            // btnColonies
+            // 
+            this.btnColonies.Location = new System.Drawing.Point(0, 473);
+            this.btnColonies.Name = "btnColonies";
+            this.btnColonies.Size = new System.Drawing.Size(100, 23);
+            this.btnColonies.TabIndex = 56;
+            this.btnColonies.Text = "Colonies";
+            this.btnColonies.UseVisualStyleBackColor = true;
+            this.btnColonies.Click += new System.EventHandler(this.btnColonies_Click);
+            // 
+            // btnShips
+            // 
+            this.btnShips.Location = new System.Drawing.Point(100, 473);
+            this.btnShips.Name = "btnShips";
+            this.btnShips.Size = new System.Drawing.Size(100, 23);
+            this.btnShips.TabIndex = 57;
+            this.btnShips.Text = "Ships";
+            this.btnShips.UseVisualStyleBackColor = true;
+            this.btnShips.Click += new System.EventHandler(this.btnShips_Click);
             // 
             // lblLoc
             // 
@@ -360,6 +393,17 @@ namespace GalWarWin
             this.pnlEconomy.Size = new System.Drawing.Size(193, 92);
             this.pnlEconomy.TabIndex = 45;
             // 
+            // lblProdTot
+            // 
+            this.lblProdTot.AutoEllipsis = true;
+            this.lblProdTot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblProdTot.Location = new System.Drawing.Point(88, 69);
+            this.lblProdTot.Name = "lblProdTot";
+            this.lblProdTot.Size = new System.Drawing.Size(42, 23);
+            this.lblProdTot.TabIndex = 39;
+            this.lblProdTot.Text = "99999";
+            this.lblProdTot.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // label12
             // 
             this.label12.AutoEllipsis = true;
@@ -565,7 +609,7 @@ namespace GalWarWin
             // 
             // btnUndo
             // 
-            this.btnUndo.Location = new System.Drawing.Point(0, 409);
+            this.btnUndo.Location = new System.Drawing.Point(0, 386);
             this.btnUndo.Name = "btnUndo";
             this.btnUndo.Size = new System.Drawing.Size(100, 23);
             this.btnUndo.TabIndex = 51;
@@ -575,7 +619,7 @@ namespace GalWarWin
             // 
             // btnAutoRepairShips
             // 
-            this.btnAutoRepairShips.Location = new System.Drawing.Point(100, 409);
+            this.btnAutoRepairShips.Location = new System.Drawing.Point(100, 386);
             this.btnAutoRepairShips.Name = "btnAutoRepairShips";
             this.btnAutoRepairShips.Size = new System.Drawing.Size(100, 23);
             this.btnAutoRepairShips.TabIndex = 50;
@@ -585,7 +629,7 @@ namespace GalWarWin
             // 
             // btnCombat
             // 
-            this.btnCombat.Location = new System.Drawing.Point(0, 438);
+            this.btnCombat.Location = new System.Drawing.Point(0, 415);
             this.btnCombat.Name = "btnCombat";
             this.btnCombat.Size = new System.Drawing.Size(100, 23);
             this.btnCombat.TabIndex = 49;
@@ -595,7 +639,7 @@ namespace GalWarWin
             // 
             // btnInvasion
             // 
-            this.btnInvasion.Location = new System.Drawing.Point(100, 438);
+            this.btnInvasion.Location = new System.Drawing.Point(100, 415);
             this.btnInvasion.Name = "btnInvasion";
             this.btnInvasion.Size = new System.Drawing.Size(100, 23);
             this.btnInvasion.TabIndex = 48;
@@ -605,7 +649,7 @@ namespace GalWarWin
             // 
             // btnShowMoves
             // 
-            this.btnShowMoves.Location = new System.Drawing.Point(0, 467);
+            this.btnShowMoves.Location = new System.Drawing.Point(0, 444);
             this.btnShowMoves.Name = "btnShowMoves";
             this.btnShowMoves.Size = new System.Drawing.Size(100, 23);
             this.btnShowMoves.TabIndex = 46;
@@ -615,7 +659,7 @@ namespace GalWarWin
             // 
             // btnCostCalc
             // 
-            this.btnCostCalc.Location = new System.Drawing.Point(100, 467);
+            this.btnCostCalc.Location = new System.Drawing.Point(100, 444);
             this.btnCostCalc.Name = "btnCostCalc";
             this.btnCostCalc.Size = new System.Drawing.Size(100, 23);
             this.btnCostCalc.TabIndex = 52;
@@ -625,7 +669,7 @@ namespace GalWarWin
             // 
             // btnGraphs
             // 
-            this.btnGraphs.Location = new System.Drawing.Point(0, 496);
+            this.btnGraphs.Location = new System.Drawing.Point(0, 502);
             this.btnGraphs.Name = "btnGraphs";
             this.btnGraphs.Size = new System.Drawing.Size(200, 23);
             this.btnGraphs.TabIndex = 43;
@@ -732,26 +776,6 @@ namespace GalWarWin
             this.tbTurns.MouseEnter += new System.EventHandler(this.tbTurns_MouseEnter);
             this.tbTurns.MouseLeave += new System.EventHandler(this.tbTurns_MouseLeave);
             // 
-            // pnlBuild
-            // 
-            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.pnlBuild.Location = new System.Drawing.Point(0, 351);
-            this.pnlBuild.Name = "pnlBuild";
-            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
-            this.pnlBuild.TabIndex = 53;
-            this.pnlBuild.Visible = false;
-            // 
-            // lblProdTot
-            // 
-            this.lblProdTot.AutoEllipsis = true;
-            this.lblProdTot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
-            this.lblProdTot.Location = new System.Drawing.Point(88, 69);
-            this.lblProdTot.Name = "lblProdTot";
-            this.lblProdTot.Size = new System.Drawing.Size(42, 23);
-            this.lblProdTot.TabIndex = 39;
-            this.lblProdTot.Text = "99999";
-            this.lblProdTot.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
             // MainForm
             // 
             this.AcceptButton = this.btnEndTurn;
@@ -844,6 +868,8 @@ namespace GalWarWin
         private System.Windows.Forms.Panel pnlInfo;
         private System.Windows.Forms.Label lblLoc;
         private System.Windows.Forms.Label lblProdTot;
+        private System.Windows.Forms.Button btnColonies;
+        private System.Windows.Forms.Button btnShips;
     }
 }
 

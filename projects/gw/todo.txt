@@ -1,4 +1,5 @@
 UI
+	compare designs
 	bombard continue attacking with auto show breaks
 	repair form income show only base-upkeep ?
 	right click DS, right click trans: error
@@ -23,7 +24,6 @@ UI
 			draw anomalies smaller
 			better distinction between ships and planets
 	management screens
-		colonies
 		ships
 	keyboard?
 

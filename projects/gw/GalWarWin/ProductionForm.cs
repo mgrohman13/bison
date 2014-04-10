@@ -252,7 +252,7 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowForm(Colony colony, out Buildable buildable, out bool pause)
+        public static bool ShowForm(Colony colony, out Buildable buildable, out bool pause)
         {
             MainForm.GameForm.SetLocation(form);
 
@@ -275,6 +275,8 @@ namespace GalWarWin
                     buildable = MainForm.Game.StoreProd;
                 pause = colony.PauseBuild;
             }
+
+            return ( result != DialogResult.Cancel );
         }
 
         private void lbxDesigns_DoubleClick(object sender, EventArgs e)

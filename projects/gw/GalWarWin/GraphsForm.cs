@@ -187,11 +187,11 @@ namespace GalWarWin
             return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetResearchGuess();
         }
 
-        private Label NewLabel(int x, int y, string text, Color? backColor)
+        private Label NewLabel(int x, int y, string text = "", Color? backColor = null, bool bold = false)
         {
-            return NewLabel(x, y, text, backColor, false);
+            return NewLabel(this.Controls, x, y, text, backColor, bold);
         }
-        private Label NewLabel(int x, int y, string text, Color? backColor, bool bold)
+        public static Label NewLabel(Control.ControlCollection controls, int x, int y, string text, Color? backColor, bool bold)
         {
             Label label = new Label();
             label.AutoEllipsis = true;
@@ -199,11 +199,11 @@ namespace GalWarWin
             label.Location = new Point(x, y);
             label.Size = new Size(100, 23);
             label.TabIndex = 40;
-            label.Text = text;
+            label.Text = text.ToString();
             label.TextAlign = ContentAlignment.MiddleRight;
             if (backColor.HasValue)
                 label.BackColor = backColor.Value;
-            Controls.Add(label);
+            controls.Add(label);
             return label;
         }
 

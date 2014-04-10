@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using GalWar;
 
 namespace GalWarWin
 {
@@ -111,6 +112,29 @@ namespace GalWarWin
 
             this.Controls.Add(label);
             return label;
+        }
+
+        public static void ShowColonyIncome(Colony colony)
+        {
+            double population = 0, production = 0, gold = 0, origGold;
+            int research = 0, origProd;
+            colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
+            colony.GetTurnValues(out origProd, out origGold, out research);
+            gold = Player.RoundGold(gold);
+            production = Player.RoundGold(production);
+
+            ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research), 
+                    "Upkeep", MainForm.FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
+                    "Gold", ShowOrig(origGold, gold), "Research", MainForm.FormatDouble(research),
+                    "Production", ShowOrig(origProd, production));
+        }
+        private static string ShowOrig(double orig, double mod)
+        {
+            orig = Player.RoundGold(orig);
+            string retVal = MainForm.FormatDouble(mod);
+            if (orig != mod)
+                retVal = string.Format("({0}) {1}", MainForm.FormatUsuallyInt(orig), retVal);
+            return retVal;
         }
 
         public static void ShowForm(params string[] info)

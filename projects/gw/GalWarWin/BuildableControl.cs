@@ -19,27 +19,27 @@ namespace GalWarWin
             InitializeComponent();
         }
 
-        public void SetColony(Colony colony)
+        public bool SetColony(Colony colony)
         {
-            SetColony(colony, colony.Buildable, 0);
+            return SetColony(colony, colony.Buildable, 0);
         }
-        public void SetBuildable(Buildable buildable)
+        public bool SetBuildable(Buildable buildable)
         {
-            SetColony(null, buildable, 0);
+            return SetColony(null, buildable, 0);
         }
-        public void SetColony(Colony colony, Buildable buildable, int prodLoss)
+        public bool SetColony(Colony colony, Buildable buildable, int prodLoss)
         {
             this.colony = colony;
             this.buildable = buildable;
             this.prodLoss = prodLoss;
-            RefreshBuildable();
+            return RefreshBuildable();
         }
 
-        public void RefreshBuildable()
+        public bool RefreshBuildable()
         {
-            RefreshBuildable(0);
+            return RefreshBuildable(0);
         }
-        public void RefreshBuildable(double buyProd)
+        public bool RefreshBuildable(double buyProd)
         {
             SetVisibility(false);
 
@@ -67,6 +67,8 @@ namespace GalWarWin
                 this.lblInf7.Text = design.Upkeep.ToString();
                 this.lblInf8.Text = design.Trans.ToString();
                 this.lblBottom.Text = GetBottomText(design);
+
+                return true;
             }
             else
             {
@@ -120,8 +122,12 @@ namespace GalWarWin
                         this.lblInf3.Visible = true;
                         this.lblInf3.Text = MainForm.Game.CurrentPlayer.PlanetDefenseDef.ToString();
                     }
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
         private void SetVisibility(bool visible)

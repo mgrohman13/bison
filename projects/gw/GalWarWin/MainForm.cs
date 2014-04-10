@@ -140,13 +140,13 @@ namespace GalWarWin
             return initialDirectory + "\\auto";
         }
 
-        private Tile selected
+        public Tile selected
         {
             get
             {
                 return _selected;
             }
-            set
+            private set
             {
                 _selected = value;
                 Center(false);
@@ -182,7 +182,7 @@ namespace GalWarWin
         {
             return selected;
         }
-        private void SelectTile(Tile tile)
+        internal void SelectTile(Tile tile)
         {
             selected = tile;
         }
@@ -207,7 +207,7 @@ namespace GalWarWin
 
         #region Drawing
 
-        private void Center()
+        public void Center()
         {
             Center(true);
         }
@@ -773,6 +773,16 @@ namespace GalWarWin
         private void btnGraphs_Click(object sender, EventArgs e)
         {
             GraphsForm.ShowForm();
+        }
+
+        private void btnColonies_Click(object sender, EventArgs e)
+        {
+            ColoniesForm.ShowForm();
+        }
+
+        private void btnShips_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void btnNewGame_Click(object sender, EventArgs e)
@@ -1991,26 +2001,7 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
             if (colony != null && colony.Player.IsTurn)
-            {
-                double population = 0, production = 0, gold = 0, origGold;
-                int research = 0, origProd;
-                colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
-                colony.GetTurnValues(out origProd, out origGold, out research);
-                gold = Player.RoundGold(gold);
-                production = Player.RoundGold(production);
-
-                LabelsForm.ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research), "Upkeep", FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
-                        "Gold", ShowOrig(origGold, gold), "Research", FormatDouble(research), "Production", ShowOrig(origProd, production));
-            }
-        }
-
-        private string ShowOrig(double orig, double mod)
-        {
-            orig = Player.RoundGold(orig);
-            string retVal = FormatDouble(mod);
-            if (orig != mod)
-                retVal = string.Format("({0}) {1}", FormatUsuallyInt(orig), retVal);
-            return retVal;
+              LabelsForm.  ShowColonyIncome(colony);
         }
 
         private SpaceObject GetSelectedSpaceObject()
@@ -2240,11 +2231,14 @@ namespace GalWarWin
         {
             if (!isDialog && ship.Player.IsTurn)
             {
+                btnGoldRepair.Visible = true;
                 btnDisband.Visible = true;
 
-                if (ship.HP < ship.MaxHP)
+                bool repair = ( ship.HP < ship.MaxHP );
+                btnGoldRepair.Enabled = repair;
+
+                if (repair)
                 {
-                    btnGoldRepair.Visible = true;
                     btnGoldRepair.Text = ( ship.HasRepaired ? "Auto Repair" : "Repair Ship" );
                     double autoRepair = ship.AutoRepair;
                     if (autoRepair != 0)
@@ -2341,8 +2335,8 @@ namespace GalWarWin
                     btnProduction.Visible = true;
                     btnProdRepair.Visible = true;
 
-                    pnlBuild.Visible = true;
-                    pnlBuild.SetColony(colony);
+                    bool visible = pnlBuild.SetColony(colony);
+                    pnlBuild.Visible = visible;
                 }
 
                 if (colony.RepairShip == null)
@@ -2445,12 +2439,12 @@ namespace GalWarWin
             return colony.Player;
         }
 
-        private static string GetProdText(Colony colony)
+        internal static string GetProdText(Colony colony)
         {
             return GetProdText(colony, colony.Buildable, colony.Production, colony.PauseBuild);
         }
 
-        public static string GetProdText(Colony colony, Buildable build, double production, bool paused)
+        internal static string GetProdText(Colony colony, Buildable build, double production, bool paused)
         {
             string retVal = string.Empty;
             if (build != null)
@@ -2826,5 +2820,6 @@ namespace GalWarWin
         }
 
         #endregion //Log
+
     }
 }

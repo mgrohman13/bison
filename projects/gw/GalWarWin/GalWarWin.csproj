@@ -55,6 +55,12 @@
     <Compile Include="CombatForm.Designer.cs">
       <DependentUpon>CombatForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ColoniesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ColoniesForm.Designer.cs">
+      <DependentUpon>ColoniesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ResearchFocusForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -114,6 +120,9 @@
     <EmbeddedResource Include="CombatForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>CombatForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ColoniesForm.resx">
+      <DependentUpon>ColoniesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ResearchFocusForm.resx">
       <DependentUpon>ResearchFocusForm.cs</DependentUpon>

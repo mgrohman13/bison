@@ -28,7 +28,6 @@ namespace GalWarWin
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -44,15 +43,6 @@ namespace GalWarWin
             this.label9 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(82, 9);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(35, 13);
-            this.label6.TabIndex = 2;
-            this.label6.Text = "label6";
             // 
             // label7
             // 
@@ -211,19 +201,16 @@ namespace GalWarWin
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.label7);
-            this.Controls.Add(this.label6);
             this.Name = "GraphsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
 		}
 
 		#endregion
 
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;

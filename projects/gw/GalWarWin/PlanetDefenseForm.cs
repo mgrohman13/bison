@@ -15,6 +15,7 @@ namespace GalWarWin
         private static PlanetDefenseForm form = new PlanetDefenseForm();
 
         private Colony colony;
+        private bool sold = false;
 
         private PlanetDefenseForm()
         {
@@ -73,12 +74,14 @@ namespace GalWarWin
             }
         }
 
-        public static void ShowForm(Colony colony)
+        public static bool ShowForm(Colony colony)
         {
             MainForm.GameForm.SetLocation(form);
 
             form.SetColony(colony);
+            form.sold = false;
             form.ShowDialog();
+            return form.sold;
         }
 
         private void btnDisband_Click(object sender, EventArgs e)
@@ -90,6 +93,7 @@ namespace GalWarWin
                 colony.DisbandPlanetDefense(MainForm.GameForm, sell, slider.Gold);
                 MainForm.GameForm.RefreshAll();
                 SetColony(colony);
+                sold = true;
             }
         }
     }
