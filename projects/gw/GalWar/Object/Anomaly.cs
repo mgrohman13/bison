@@ -371,7 +371,7 @@ namespace GalWar
             planet.ReduceQuality(planet.Quality -
                     MattUtil.TBSUtil.FindValue(value => ( amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult) ),
                     0, Consts.NewPlanetQuality(), false));
-            int production = Game.Random.Round(amount - Consts.GetColonizationCost(Consts.PlanetConstValue + planet.Quality, mult));
+            int production = Game.Random.Round(amount - Consts.GetColonizationCost(planet.PlanetValue, mult));
             player.NewColony(player == anomShip.Player ? handler : null, planet, 0, 0, production);
 
             return true;
@@ -442,14 +442,14 @@ namespace GalWar
                     gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * Consts.AnomalyQualityCostMult;
 
                     mult = Consts.GetColonizationMult();
-                    before = Consts.GetColonizationCost(planet.Quality, mult);
+                    before = Consts.GetColonizationCost(planet.PlanetValue, mult);
                 }
 
                 planet.DamageVictory();
 
                 if (planet.Colony != null)
                 {
-                    gold *= before - Consts.GetColonizationCost(planet.Quality, mult);
+                    gold *= before - Consts.GetColonizationCost(planet.PlanetValue, mult);
 
                     double amt;
                     addGold.TryGetValue(planet.Colony.Player, out amt);
@@ -457,9 +457,7 @@ namespace GalWar
                 }
             }
 
-            double min = double.MaxValue;
-            foreach (double gold in addGold.Values)
-                min = Math.Min(min, gold);
+            double min = addGold.Values.Min();
             foreach (var pair in addGold)
                 pair.Key.AddGold(pair.Value - min, true);
 
@@ -534,10 +532,10 @@ namespace GalWar
 
             return colonies;
         }
-        private static double GetExpectCost(Colony trgColony, double addQuality)
+        private static double GetExpectCost(Colony trgColony, int addQuality)
         {
-            double before = Consts.GetColonizationCost(trgColony.Planet.Quality, Consts.AnomalyQualityCostMult);
-            double after = Consts.GetColonizationCost(trgColony.Planet.Quality + addQuality, Consts.AnomalyQualityCostMult);
+            double before = Consts.GetColonizationCost(trgColony.Planet.PlanetValue, Consts.AnomalyQualityCostMult);
+            double after = Consts.GetColonizationCost(trgColony.Planet.PlanetValue + addQuality, Consts.AnomalyQualityCostMult);
             return before - after;
         }
         private static bool CanTerraform(double cost, Ship anomShip)

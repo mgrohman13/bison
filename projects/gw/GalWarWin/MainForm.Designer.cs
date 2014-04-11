@@ -122,16 +122,16 @@ namespace GalWarWin
             this.pnlHUD.Controls.Add(this.btnEndTurn);
             this.pnlHUD.Controls.Add(this.lblPlayer);
             this.pnlHUD.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlHUD.Location = new System.Drawing.Point(710, 0);
+            this.pnlHUD.Location = new System.Drawing.Point(734, 0);
             this.pnlHUD.Name = "pnlHUD";
-            this.pnlHUD.Size = new System.Drawing.Size(200, 688);
+            this.pnlHUD.Size = new System.Drawing.Size(200, 712);
             this.pnlHUD.TabIndex = 2;
             this.pnlHUD.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
             // 
             // pnlBuild
             // 
             this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.pnlBuild.Location = new System.Drawing.Point(0, 351);
+            this.pnlBuild.Location = new System.Drawing.Point(0, 375);
             this.pnlBuild.Name = "pnlBuild";
             this.pnlBuild.Size = new System.Drawing.Size(200, 230);
             this.pnlBuild.TabIndex = 53;
@@ -160,7 +160,7 @@ namespace GalWarWin
             // lblLoc
             // 
             this.lblLoc.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.lblLoc.Location = new System.Drawing.Point(0, 587);
+            this.lblLoc.Location = new System.Drawing.Point(0, 611);
             this.lblLoc.Name = "lblLoc";
             this.lblLoc.Size = new System.Drawing.Size(100, 23);
             this.lblLoc.TabIndex = 55;
@@ -681,7 +681,7 @@ namespace GalWarWin
             // 
             this.btnSaveGame.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnSaveGame.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnSaveGame.Location = new System.Drawing.Point(0, 616);
+            this.btnSaveGame.Location = new System.Drawing.Point(0, 640);
             this.btnSaveGame.Name = "btnSaveGame";
             this.btnSaveGame.Size = new System.Drawing.Size(200, 23);
             this.btnSaveGame.TabIndex = 1;
@@ -693,7 +693,7 @@ namespace GalWarWin
             // 
             this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(100, 587);
+            this.btnCancel.Location = new System.Drawing.Point(100, 611);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 23);
             this.btnCancel.TabIndex = 3;
@@ -704,7 +704,7 @@ namespace GalWarWin
             // btnEndTurn
             // 
             this.btnEndTurn.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
-            this.btnEndTurn.Location = new System.Drawing.Point(0, 665);
+            this.btnEndTurn.Location = new System.Drawing.Point(0, 689);
             this.btnEndTurn.Name = "btnEndTurn";
             this.btnEndTurn.Size = new System.Drawing.Size(200, 23);
             this.btnEndTurn.TabIndex = 0;
@@ -716,7 +716,7 @@ namespace GalWarWin
             // 
             this.lblPlayer.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.lblPlayer.AutoEllipsis = true;
-            this.lblPlayer.Location = new System.Drawing.Point(0, 642);
+            this.lblPlayer.Location = new System.Drawing.Point(0, 666);
             this.lblPlayer.Name = "lblPlayer";
             this.lblPlayer.Size = new System.Drawing.Size(200, 23);
             this.lblPlayer.TabIndex = 17;
@@ -766,10 +766,10 @@ namespace GalWarWin
             // 
             this.tbTurns.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.tbTurns.LargeChange = 1;
-            this.tbTurns.Location = new System.Drawing.Point(0, 643);
+            this.tbTurns.Location = new System.Drawing.Point(0, 667);
             this.tbTurns.Maximum = 0;
             this.tbTurns.Name = "tbTurns";
-            this.tbTurns.Size = new System.Drawing.Size(710, 45);
+            this.tbTurns.Size = new System.Drawing.Size(734, 45);
             this.tbTurns.TabIndex = 4;
             this.tbTurns.Visible = false;
             this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
@@ -782,7 +782,7 @@ namespace GalWarWin
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnSaveGame;
-            this.ClientSize = new System.Drawing.Size(910, 688);
+            this.ClientSize = new System.Drawing.Size(934, 712);
             this.Controls.Add(this.tbTurns);
             this.Controls.Add(this.btnAutosaveView);
             this.Controls.Add(this.btnLoadGame);
