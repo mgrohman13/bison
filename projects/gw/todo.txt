@@ -27,6 +27,8 @@ UI
 		ships
 	keyboard?
 
+upg PD when lastresearched > current
+ExpForSoldiers should be * 1.3 not / 1.3?
 ship leveling uses actual research rather than last?
 balance for anomaly salvage research randomness?
 friendly bombard

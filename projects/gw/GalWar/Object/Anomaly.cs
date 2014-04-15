@@ -997,11 +997,11 @@ namespace GalWar
         private bool Pickup(IEventHandler handler, Ship ship)
         {
             int pop = Game.Random.Round(this.value * Consts.PopulationForGoldHigh);
+            int hp = Game.Random.Round(ship.GetHPForProd(this.value, false));
             double soldiers = this.value / Consts.ExpForSoldiers;
 
             bool canPop = ( pop > 0 && pop <= ship.FreeSpace );
-            bool canHeal = ( ship.HP < ship.MaxHP && ship.GetProdForHP(1) < this.value
-                    && ship.GetProdForHP(ship.MaxHP - ship.HP + 1) > this.value );
+            bool canHeal = ( hp > 0 && ship.HP + hp <= ship.MaxHP );
             if (ship.Population > 0 && soldiers / ship.Population > .01)
             {
                 double soldierChance = ship.GetSoldierPct() / 1.69;
@@ -1033,9 +1033,8 @@ namespace GalWar
                 ship.AddPopulation(pop);
                 return true;
             }
-            else if (canHeal)
+            if (canHeal)
             {
-                int hp = Game.Random.Round(ship.GetHPForProd(this.value, false));
                 handler.Explore(AnomalyType.Heal, hp);
 
                 double prod = ship.GetProdForHP(hp), gold = this.value - prod;
