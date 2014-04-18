@@ -28,6 +28,7 @@ UI
 	keyboard?
 
 upg PD when lastresearched > current
+	cost uses last, upg uses current
 ExpForSoldiers should be * 1.3 not / 1.3?
 ship leveling uses actual research rather than last?
 balance for anomaly salvage research randomness?
@@ -58,6 +59,10 @@ map size
 planetary defenses still not right
 	auto upg turns 1-7 into 13-7
 research victory pct decreases with higher research
+	10k=now
+	30k=85% instead of 67%?
+	uses real avg, graph calcs using average shown
+	also decrease max display skew appropriately
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 terraform check use actual values
