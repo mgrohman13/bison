@@ -365,7 +365,6 @@ namespace DaemonsWinApp
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.KeyPreview = true;
             this.Name = "MainForm";
-            this.Text = "Daemons";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.mainForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.mainForm_KeyUp);

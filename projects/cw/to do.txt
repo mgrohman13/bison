@@ -11,6 +11,7 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	build unit, change terrain on relic, undo build unit
 	Unit.CheckAttacks mucks with used
 	apply same ground/water build logic to relic?
 		magic units?

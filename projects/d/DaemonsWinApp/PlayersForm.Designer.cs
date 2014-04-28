@@ -152,7 +152,6 @@
             this.Controls.Add(this.lbxPlayer);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "PlayersForm";
-            this.Text = "Players";
             this.ResumeLayout(false);
 
         }

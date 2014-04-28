@@ -120,7 +120,6 @@ namespace DaemonsWinApp
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Units";
             this.SizeChanged += new System.EventHandler(this.infoForm_SizeChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.infoForm_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.infoForm_KeyUp);

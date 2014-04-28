@@ -117,7 +117,7 @@ namespace CityWar
         {
             if (CanMove(t))
             {
-                if (Path != null && Path[0] != t)
+                if (Path != null && ( Path.Count < 2 || Path[1] != t ))
                     Path = null;
                 return DoMove(t, gamble, out canUndo);
             }
