@@ -24,7 +24,7 @@ namespace Daemons
         private readonly Tile[,] map;
         private readonly List<ProductionCenter> production;
 
-        private Player[] players;
+        private List<Player> players;
         private readonly Player independent;
 
         private readonly Dictionary<Player, int> won, lost;
@@ -60,7 +60,7 @@ namespace Daemons
 
             //players/indy
             this.currentPlayer = -1;
-            this.players = new Player[newPlayers.Length];
+            this.players = newPlayers.Select<Player, Player>(player => null).ToList();
             this.independent = new Player(Color.DarkGray, "Independents", this, true);
             int index = -1;
             int lastSouls = 0;
@@ -182,7 +182,7 @@ namespace Daemons
         }
         public IEnumerable<KeyValuePair<Player, int>> GetResult()
         {
-            if (this.players.Length != 1)
+            if (this.players.Count != 1)
                 throw new Exception();
 
             IDictionary<Player, int> results = new Dictionary<Player, int>();
@@ -205,7 +205,7 @@ namespace Daemons
 
         public IList<Player> GetPlayers()
         {
-            return this.players.ToList();
+            return this.players.AsReadOnly();
         }
 
         public Player GetIndependent()
@@ -249,7 +249,7 @@ namespace Daemons
         {
             ProcessBattles();
 
-            if (this.players.Length == 1)
+            if (this.players.Count == 1)
             {
                 RemovePlayer(this.players[0], true);
             }
@@ -260,7 +260,7 @@ namespace Daemons
                 if (Random.Bool(GetWinPct(GetCurrentPlayer())))
                 {
                     RemovePlayer(GetCurrentPlayer(), true);
-                    if (this.players.Length == 1)
+                    if (this.players.Count == 1)
                         RemovePlayer(this.players[0], false);
                 }
                 else
@@ -308,7 +308,7 @@ namespace Daemons
 
         private void CheckTurnInc()
         {
-            if (this.currentPlayer >= this.players.Length)
+            if (this.currentPlayer >= this.players.Count)
             {
                 this.currentPlayer = -1;
                 IncTurn();
@@ -496,7 +496,7 @@ namespace Daemons
 
         private void ChangeMoveOrder()
         {
-            if (this.players.Length > 1)
+            if (this.players.Count > 1)
                 foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, .169))
                 {
                     double souls, arrows;
@@ -508,7 +508,7 @@ namespace Daemons
 
         private void GetMoveDiff(out double souls, out double arrows)
         {
-            double div = this.players.Length - 1;
+            double div = this.players.Count - 1;
             souls = Consts.DaemonSouls / div;
             arrows = 16.9 / div;
         }
@@ -525,31 +525,20 @@ namespace Daemons
             else
                 this.lost.Add(player, this.turn);
 
-            if (this.players.Length > 1)
+            if (this.players.Count > 1)
             {
                 player.Won(independent);
                 foreach (Unit u in player.GetUnits())
                     u.Won(independent);
 
                 //remove from the players array
-                int removedIndex = this.players.Length - 1;
-                Player[] newPlayers = new Player[this.players.Length - 1];
-                for (int a = 0, b = -1 ; a < newPlayers.Length ; ++a)
-                    if (this.players[++b] == player)
-                    {
-                        --a;
-                        removedIndex = b;
-                    }
-                    else
-                    {
-                        newPlayers[a] = this.players[b];
-                    }
-                this.players = newPlayers;
+                int removedIndex = this.players.IndexOf(player);
+                this.players.RemoveAt(removedIndex);
 
                 //remove the dead players portion of the production centers
                 foreach (ProductionType type in new[] { ProductionType.Infantry, ProductionType.Archer, ProductionType.Knight })
                 {
-                    int remove = Random.GaussianCappedInt(this.production.Count(prod => prod.Type == type) / ( 1.0 + this.players.Length ), Consts.ProdRand);
+                    int remove = Random.GaussianCappedInt(this.production.Count(prod => prod.Type == type) / ( 1.0 + this.players.Count ), Consts.ProdRand);
                     for (int b = 0 ; b < remove ; b++)
                         this.production.Remove(Random.SelectValue(this.production.Where(prod => prod.Type == type)));
                 }
