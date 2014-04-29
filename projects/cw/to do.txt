@@ -3,15 +3,20 @@ in between games
 	standardize fields
 		use Base... instead of Max...
 	save undo stack	
+	make upkeep double
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
 	revamp to balance all at once and use all target units based on types
-
+	
 gameplay
+	why is unitsHave set to cost at start?
+	CollectWizardPts algorithm more obvious
+	Player.AddWork randomness in some cases
 	build unit, change terrain on relic, undo build unit
+	undo move when change terrain cannot be undone and prevents redo?
 	Unit.CheckAttacks mucks with used
 	apply same ground/water build logic to relic?
 		magic units?
@@ -20,7 +25,6 @@ gameplay
 		make pts more random
 		show
 		show guess
-	undo move when change terrain cannot be undone and prevents redo?
 	upkeep for player with no cap
 		usually means other players dont lose any upkeep
 		when not enough resources but no loseunit
@@ -46,15 +50,20 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	panel background paint problem
+	show appeared wizard points, cities
+		changed map?
 	view units array on capts
 		maybe only freindly and observed?
 	show GC
 		maybe relative to selected/avail attacks
 	pathfinding
+		easy move along path
 	mousewheel zoom
 		but pieces panel scroll?
-	always show selected attack in attackers lbx
-	select next attack algorithm
+	battles
+		always show selected attack in attackers lbx
+		select next attack algorithm
 	damage calculator
 		multiple attacks
 	ability to look around main map during a battle, see info screen, etc?

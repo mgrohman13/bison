@@ -91,7 +91,8 @@ namespace CityWar
 
         public bool IsNeighbor(int x, int y)
         {
-            return IsNeighbor(game.GetTile(x, y));
+            Tile neighbor = game.GetTile(x, y);
+            return ( neighbor != null && IsNeighbor(neighbor) );
         }
         public bool IsNeighbor(Tile t)
         {

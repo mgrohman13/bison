@@ -331,9 +331,9 @@ namespace CityWar
             double thisTotal = 0;
             if (city)
             {
-                int[] prodPop = AddStartResources(650, ref magic, 300, 499, 2);
-                production += prodPop[0];
-                population += prodPop[1];
+                int[] prodPop = AddStartResources(780, ref magic, 374, 522, 2);
+                this.production += prodPop[0];
+                this.population += prodPop[1];
 
                 for (int a = -1 ; ++a < 3 ; )
                 {
@@ -345,12 +345,22 @@ namespace CityWar
             }
             else
             {
-                int[] elementals = AddStartResources(390, ref _relic, 100, 190, 5);
-                air += elementals[0];
-                earth += elementals[1];
-                nature += elementals[2];
-                death += elementals[3];
-                water += elementals[4];
+                int numTypes = Game.Random.RangeInt(3, 4);
+                int[] elementals = AddStartResources(390, ref _relic, 101, 199, numTypes);
+
+                Action<int>[] typeFuncs = new Action<int>[] {
+                    amt => this.air += amt,
+                    amt => this.earth += amt,
+                    amt => this.nature += amt,
+                    amt => this.water += amt
+                };
+                int idx = 0;
+                foreach (int type in Game.Random.Iterate(typeFuncs.Length).Take(numTypes - 1))
+                    typeFuncs[type](elementals[idx++]);
+
+                int pop = Game.Random.WeightedInt(elementals[idx], .65);
+                this.population += pop;
+                this.death += elementals[idx] - pop;
 
                 Tile t = RandomStartTile(true);
 

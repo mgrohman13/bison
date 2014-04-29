@@ -954,7 +954,7 @@ namespace CityWar
             while (true)
             {
                 Tile tile = map[Random.Next(Width), Random.Next(Height)];
-                if (ValidNeighbor == null || tile.GetNeighbors(true, true).All(ValidNeighbor))
+                if (tile != null && ( ValidNeighbor == null || tile.GetNeighbors(true, true).All(ValidNeighbor) ))
                     return tile;
             }
         }
@@ -1340,7 +1340,8 @@ next:
         private void ResetTiles()
         {
             foreach (Tile t in map)
-                t.Reset();
+                if (t != null)
+                    t.Reset();
         }
 
         private void ChangeMap()
@@ -1426,7 +1427,8 @@ next:
 
             for (int x = -1 ; ++x < width ; )
                 for (int y = -1 ; ++y < height ; )
-                    map[x, y].SetupNeighbors();
+                    if (map[x, y] != null)
+                        map[x, y].SetupNeighbors();
         }
         private Tile CreateTile(int x, int y)
         {
