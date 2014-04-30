@@ -386,7 +386,7 @@ namespace CityWar
 
             if (p is Wizard && wizardPoints > 0)
             {
-                p.Owner.CollectWizardPts(wizardPoints);
+                p.Owner.CollectWizardPts(wizardPoints, this.Terrain);
                 wizardPoints = 0;
                 game.CreateWizardPts();
                 canUndo = false;

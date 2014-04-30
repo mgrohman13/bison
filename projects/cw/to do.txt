@@ -50,6 +50,7 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
+	form can close without exiting app
 	show appeared wizard points, cities
 		changed map?
 	view units array on capts
@@ -58,6 +59,9 @@ interface
 		maybe relative to selected/avail attacks
 	pathfinding
 		easy move along path
+		from/to reverse when on unmoveable tile
+		option to avoid occupied tiles
+		drag to reposition route
 	mousewheel zoom
 		but pieces panel scroll?
 	battles

@@ -503,52 +503,83 @@ namespace CityWar
             return Unit.NewUnit(unit, cur.Tile, this);
         }
 
-        internal void CollectWizardPts(double amount)
+        internal void CollectWizardPts(double points, Terrain? terrain = null)
         {
-            int amt = (int)amount;
-            if (amt == amount)
+            Action<int> population = ( amt => this.population += amt );
+            Action<int> production = ( amt => this.production += amt );
+            Action<int> magic = ( amt => this.magic += amt );
+            Action<int> relic = ( amt => this.relic += amt );
+            Action<int> death = ( amt => this.death += amt );
+            Action<int> air = ( amt => this.air += amt );
+            Action<int> earth = ( amt => this.earth += amt );
+            Action<int> nature = ( amt => this.nature += amt );
+            Action<int> water = ( amt => this.water += amt );
+
+            Dictionary<Action<int>, int> typeFuncs;
+            if (terrain == null)
             {
-                amount = 1;
+                //not really wizard points, but for turn order balancing
+                //total: 182
+                typeFuncs = new Dictionary<Action<int>, int>() {
+                    { magic, 7 },
+                    { relic, 7 },
+                    { death, 12 },
+                    { air, 18 },
+                    { earth, 18 },
+                    { nature, 18 },
+                    { water, 18 },
+                    { population, 42 },
+                    { production, 42 },
+                };
             }
             else
             {
-                amount -= amt;
-                ++amt;
+                //for actual wizard points
+                //total: 100
+                typeFuncs = new Dictionary<Action<int>, int>() {
+                    { population, 1 },
+                    { production, 1 },
+                    { magic, 3 },
+                    { relic, 6 },
+                    { death, 13 },
+                    //these will really be 16 or 28, based on terrain
+                    { air, 19 },
+                    { earth, 19 },
+                    { nature, 19 },
+                    { water, 19 },
+                };
+                const int mod = 3;
+                Action<int> terrainFunc;
+                switch (terrain.Value)
+                {
+                case Terrain.Forest:
+                    terrainFunc = nature;
+                    break;
+                case Terrain.Mountain:
+                    terrainFunc = earth;
+                    break;
+                case Terrain.Plains:
+                    terrainFunc = air;
+                    break;
+                case Terrain.Water:
+                    terrainFunc = water;
+                    break;
+                default:
+                    throw new Exception();
+                }
+                typeFuncs[terrainFunc] += mod * 4;
+                typeFuncs[air] -= mod;
+                typeFuncs[earth] -= mod;
+                typeFuncs[nature] -= mod;
+                typeFuncs[water] -= mod;
             }
 
-            while (--amt > -1)
+            int whole = (int)points;
+            double fraction = ( whole == points ? 1 : points - whole++ );
+            while (--whole > -1)
             {
-                double avg = 50 * ( amt == 0 ? amount : 1 );
-                int addAmt = Game.Random.GaussianCappedInt(avg, .21, Game.Random.Round(avg * .52));
-
-                if (Game.Random.Bool(.01))
-                    population += addAmt;	// 01.00%
-                else if (Game.Random.Bool(.013))
-                    production += addAmt;	// 01.29%
-                else if (Game.Random.Bool(.03))
-                    magic += addAmt;		// 02.93%
-                else if (Game.Random.Bool(.06))
-                    relic += addAmt;		// 05.69%
-                else if (Game.Random.Bool(.169))
-                    death += addAmt;		// 15.06%
-                else
-                    switch (Game.Random.Next(4))
-                    {
-                    case 0:
-                        water += addAmt;	// 18.51%
-                        break;
-                    case 1:
-                        nature += addAmt;	// 18.51%
-                        break;
-                    case 2:
-                        earth += addAmt;	// 18.51%
-                        break;
-                    case 3:
-                        air += addAmt;		// 18.51%
-                        break;
-                    default:
-                        throw new Exception();
-                    }
+                double avg = 50 * ( whole == 0 ? fraction : 1 );
+                Game.Random.SelectValue(typeFuncs)(Game.Random.GaussianCappedInt(avg, .21, avg > 2 ? Game.Random.Round(avg * .52) : 0));
             }
         }
 
@@ -1353,10 +1384,10 @@ namespace CityWar
                     TradePct(ref death);
                     TradePct(ref production);
                     TradePct(ref population);
-                    TradePct(ref magic, 1, .078, 3.9);
-                    TradePct(ref _relic, 1, .078, 3.9);
+                    TradePct(ref magic, 1, .013, 1);
+                    TradePct(ref _relic, 1, .013, 1);
                     //pass a negative rate so it decreases work
-                    TradePct(ref upkeep, -1 / UpkeepMult, .13, .78);
+                    TradePct(ref upkeep, -1 / UpkeepMult, .13, 0);
                 }
             }
             if (loseUnits == 0)

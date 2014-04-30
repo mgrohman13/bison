@@ -79,9 +79,9 @@ namespace CityWarWinApp
             this.lblDiv.BackColor = System.Drawing.Color.Silver;
             this.lblDiv.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblDiv.ForeColor = System.Drawing.Color.Black;
-            this.lblDiv.Location = new System.Drawing.Point(545, 0);
+            this.lblDiv.Location = new System.Drawing.Point(522, 0);
             this.lblDiv.Name = "lblDiv";
-            this.lblDiv.Size = new System.Drawing.Size(3, 600);
+            this.lblDiv.Size = new System.Drawing.Size(3, 607);
             this.lblDiv.TabIndex = 1;
             // 
             // lblMouse
@@ -89,7 +89,7 @@ namespace CityWarWinApp
             this.lblMouse.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lblMouse.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblMouse.ForeColor = System.Drawing.Color.White;
-            this.lblMouse.Location = new System.Drawing.Point(554, 238);
+            this.lblMouse.Location = new System.Drawing.Point(531, 245);
             this.lblMouse.Name = "lblMouse";
             this.lblMouse.Size = new System.Drawing.Size(86, 21);
             this.lblMouse.TabIndex = 2;
@@ -102,7 +102,7 @@ namespace CityWarWinApp
             this.btnEndTurn.BackColor = System.Drawing.Color.Silver;
             this.btnEndTurn.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnEndTurn.ForeColor = System.Drawing.Color.Black;
-            this.btnEndTurn.Location = new System.Drawing.Point(688, 549);
+            this.btnEndTurn.Location = new System.Drawing.Point(665, 556);
             this.btnEndTurn.Name = "btnEndTurn";
             this.btnEndTurn.Size = new System.Drawing.Size(100, 39);
             this.btnEndTurn.TabIndex = 13;
@@ -116,7 +116,7 @@ namespace CityWarWinApp
             this.lblPlayer.BackColor = System.Drawing.Color.Black;
             this.lblPlayer.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblPlayer.ForeColor = System.Drawing.Color.Black;
-            this.lblPlayer.Location = new System.Drawing.Point(554, 549);
+            this.lblPlayer.Location = new System.Drawing.Point(531, 556);
             this.lblPlayer.Name = "lblPlayer";
             this.lblPlayer.Size = new System.Drawing.Size(100, 39);
             this.lblPlayer.TabIndex = 6;
@@ -256,7 +256,7 @@ namespace CityWarWinApp
             this.btnBuildPiece.BackColor = System.Drawing.Color.Silver;
             this.btnBuildPiece.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnBuildPiece.ForeColor = System.Drawing.Color.Black;
-            this.btnBuildPiece.Location = new System.Drawing.Point(554, 43);
+            this.btnBuildPiece.Location = new System.Drawing.Point(531, 43);
             this.btnBuildPiece.Name = "btnBuildPiece";
             this.btnBuildPiece.Size = new System.Drawing.Size(86, 25);
             this.btnBuildPiece.TabIndex = 1;
@@ -271,7 +271,7 @@ namespace CityWarWinApp
             this.btnNext.BackColor = System.Drawing.Color.Silver;
             this.btnNext.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnNext.ForeColor = System.Drawing.Color.Black;
-            this.btnNext.Location = new System.Drawing.Point(554, 111);
+            this.btnNext.Location = new System.Drawing.Point(531, 111);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(86, 25);
             this.btnNext.TabIndex = 3;
@@ -285,7 +285,7 @@ namespace CityWarWinApp
             this.btnRest.BackColor = System.Drawing.Color.Silver;
             this.btnRest.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnRest.ForeColor = System.Drawing.Color.Black;
-            this.btnRest.Location = new System.Drawing.Point(554, 74);
+            this.btnRest.Location = new System.Drawing.Point(531, 74);
             this.btnRest.Name = "btnRest";
             this.btnRest.Size = new System.Drawing.Size(86, 25);
             this.btnRest.TabIndex = 2;
@@ -299,7 +299,7 @@ namespace CityWarWinApp
             this.btnCaptureCity.BackColor = System.Drawing.Color.Silver;
             this.btnCaptureCity.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnCaptureCity.ForeColor = System.Drawing.Color.Black;
-            this.btnCaptureCity.Location = new System.Drawing.Point(554, 12);
+            this.btnCaptureCity.Location = new System.Drawing.Point(531, 12);
             this.btnCaptureCity.Name = "btnCaptureCity";
             this.btnCaptureCity.Size = new System.Drawing.Size(86, 25);
             this.btnCaptureCity.TabIndex = 0;
@@ -313,7 +313,7 @@ namespace CityWarWinApp
             this.lblTurn.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.lblTurn.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.lblTurn.ForeColor = System.Drawing.Color.Silver;
-            this.lblTurn.Location = new System.Drawing.Point(554, 435);
+            this.lblTurn.Location = new System.Drawing.Point(531, 442);
             this.lblTurn.Name = "lblTurn";
             this.lblTurn.Size = new System.Drawing.Size(86, 18);
             this.lblTurn.TabIndex = 20;
@@ -325,7 +325,7 @@ namespace CityWarWinApp
             this.label3.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label3.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label3.ForeColor = System.Drawing.Color.Silver;
-            this.label3.Location = new System.Drawing.Point(554, 417);
+            this.label3.Location = new System.Drawing.Point(531, 424);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(86, 18);
             this.label3.TabIndex = 22;
@@ -338,7 +338,7 @@ namespace CityWarWinApp
             this.btnInfo.BackColor = System.Drawing.Color.Silver;
             this.btnInfo.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnInfo.ForeColor = System.Drawing.Color.Black;
-            this.btnInfo.Location = new System.Drawing.Point(554, 327);
+            this.btnInfo.Location = new System.Drawing.Point(531, 334);
             this.btnInfo.Name = "btnInfo";
             this.btnInfo.Size = new System.Drawing.Size(86, 25);
             this.btnInfo.TabIndex = 9;
@@ -366,7 +366,7 @@ namespace CityWarWinApp
             this.btnLoad.BackColor = System.Drawing.Color.Silver;
             this.btnLoad.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnLoad.ForeColor = System.Drawing.Color.Black;
-            this.btnLoad.Location = new System.Drawing.Point(554, 487);
+            this.btnLoad.Location = new System.Drawing.Point(531, 494);
             this.btnLoad.Name = "btnLoad";
             this.btnLoad.Size = new System.Drawing.Size(86, 25);
             this.btnLoad.TabIndex = 11;
@@ -380,7 +380,7 @@ namespace CityWarWinApp
             this.btnSave.BackColor = System.Drawing.Color.Silver;
             this.btnSave.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnSave.ForeColor = System.Drawing.Color.Black;
-            this.btnSave.Location = new System.Drawing.Point(554, 456);
+            this.btnSave.Location = new System.Drawing.Point(531, 463);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(86, 25);
             this.btnSave.TabIndex = 10;
@@ -406,7 +406,7 @@ namespace CityWarWinApp
             this.btnQuit.BackColor = System.Drawing.Color.Silver;
             this.btnQuit.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnQuit.ForeColor = System.Drawing.Color.Black;
-            this.btnQuit.Location = new System.Drawing.Point(554, 518);
+            this.btnQuit.Location = new System.Drawing.Point(531, 525);
             this.btnQuit.Name = "btnQuit";
             this.btnQuit.Size = new System.Drawing.Size(86, 25);
             this.btnQuit.TabIndex = 12;
@@ -434,7 +434,7 @@ namespace CityWarWinApp
             this.btnDisbandUnits.BackColor = System.Drawing.Color.Silver;
             this.btnDisbandUnits.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnDisbandUnits.ForeColor = System.Drawing.Color.Black;
-            this.btnDisbandUnits.Location = new System.Drawing.Point(554, 303);
+            this.btnDisbandUnits.Location = new System.Drawing.Point(531, 303);
             this.btnDisbandUnits.Name = "btnDisbandUnits";
             this.btnDisbandUnits.Size = new System.Drawing.Size(86, 25);
             this.btnDisbandUnits.TabIndex = 7;
@@ -448,7 +448,7 @@ namespace CityWarWinApp
             this.btnGroup.BackColor = System.Drawing.Color.Silver;
             this.btnGroup.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnGroup.ForeColor = System.Drawing.Color.Black;
-            this.btnGroup.Location = new System.Drawing.Point(554, 179);
+            this.btnGroup.Location = new System.Drawing.Point(531, 179);
             this.btnGroup.Name = "btnGroup";
             this.btnGroup.Size = new System.Drawing.Size(86, 25);
             this.btnGroup.TabIndex = 4;
@@ -462,7 +462,7 @@ namespace CityWarWinApp
             this.btnUngroup.BackColor = System.Drawing.Color.Silver;
             this.btnUngroup.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnUngroup.ForeColor = System.Drawing.Color.Black;
-            this.btnUngroup.Location = new System.Drawing.Point(554, 210);
+            this.btnUngroup.Location = new System.Drawing.Point(531, 210);
             this.btnUngroup.Name = "btnUngroup";
             this.btnUngroup.Size = new System.Drawing.Size(86, 25);
             this.btnUngroup.TabIndex = 5;
@@ -477,7 +477,7 @@ namespace CityWarWinApp
             this.chbGroup.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chbGroup.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.chbGroup.ForeColor = System.Drawing.Color.Silver;
-            this.chbGroup.Location = new System.Drawing.Point(554, 241);
+            this.chbGroup.Location = new System.Drawing.Point(531, 241);
             this.chbGroup.Name = "chbGroup";
             this.chbGroup.Size = new System.Drawing.Size(86, 25);
             this.chbGroup.TabIndex = 6;
@@ -490,7 +490,7 @@ namespace CityWarWinApp
             this.btnUndo.BackColor = System.Drawing.Color.Silver;
             this.btnUndo.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnUndo.ForeColor = System.Drawing.Color.Black;
-            this.btnUndo.Location = new System.Drawing.Point(554, 142);
+            this.btnUndo.Location = new System.Drawing.Point(531, 142);
             this.btnUndo.Name = "btnUndo";
             this.btnUndo.Size = new System.Drawing.Size(86, 25);
             this.btnUndo.TabIndex = 8;
@@ -505,7 +505,7 @@ namespace CityWarWinApp
             this.chbGamble.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chbGamble.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.chbGamble.ForeColor = System.Drawing.Color.Silver;
-            this.chbGamble.Location = new System.Drawing.Point(554, 272);
+            this.chbGamble.Location = new System.Drawing.Point(531, 272);
             this.chbGamble.Name = "chbGamble";
             this.chbGamble.Size = new System.Drawing.Size(86, 25);
             this.chbGamble.TabIndex = 58;
@@ -518,7 +518,7 @@ namespace CityWarWinApp
             this.btnLog.BackColor = System.Drawing.Color.Silver;
             this.btnLog.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnLog.ForeColor = System.Drawing.Color.Black;
-            this.btnLog.Location = new System.Drawing.Point(554, 358);
+            this.btnLog.Location = new System.Drawing.Point(531, 365);
             this.btnLog.Name = "btnLog";
             this.btnLog.Size = new System.Drawing.Size(86, 25);
             this.btnLog.TabIndex = 59;
@@ -532,7 +532,7 @@ namespace CityWarWinApp
             this.btnCalc.BackColor = System.Drawing.Color.Silver;
             this.btnCalc.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.btnCalc.ForeColor = System.Drawing.Color.Black;
-            this.btnCalc.Location = new System.Drawing.Point(554, 389);
+            this.btnCalc.Location = new System.Drawing.Point(531, 396);
             this.btnCalc.Name = "btnCalc";
             this.btnCalc.Size = new System.Drawing.Size(86, 25);
             this.btnCalc.TabIndex = 60;
@@ -547,9 +547,9 @@ namespace CityWarWinApp
             this.panelPieces.BackColor = System.Drawing.Color.White;
             this.panelPieces.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.panelPieces.ForeColor = System.Drawing.Color.Black;
-            this.panelPieces.Location = new System.Drawing.Point(646, 12);
+            this.panelPieces.Location = new System.Drawing.Point(623, 12);
             this.panelPieces.Name = "panelPieces";
-            this.panelPieces.Size = new System.Drawing.Size(142, 531);
+            this.panelPieces.Size = new System.Drawing.Size(142, 538);
             this.panelPieces.TabIndex = 4;
             this.panelPieces.MouseClick += new System.Windows.Forms.MouseEventHandler(this.panelPieces_MouseClick);
             this.panelPieces.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.panelPieces_MouseDoubleClick);
@@ -561,7 +561,7 @@ namespace CityWarWinApp
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(800, 600);
+            this.ClientSize = new System.Drawing.Size(777, 607);
             this.Controls.Add(this.chbGamble);
             this.Controls.Add(this.btnLog);
             this.Controls.Add(this.btnCalc);
@@ -595,9 +595,8 @@ namespace CityWarWinApp
             this.Controls.Add(this.panelPieces);
             this.Controls.Add(this.lblMouse);
             this.Controls.Add(this.lblDiv);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.KeyPreview = true;
-            this.MinimumSize = new System.Drawing.Size(800, 600);
+            this.MaximumSize = new System.Drawing.Size(793, 645);
             this.Name = "Map";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainMap_FormClosing);
             this.Load += new System.EventHandler(this.MainMap_Load);
