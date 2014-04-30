@@ -50,7 +50,6 @@ requiring rebalance
 	bonus to element units on terrain?
 
 interface
-	panel background paint problem
 	show appeared wizard points, cities
 		changed map?
 	view units array on capts

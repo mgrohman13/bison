@@ -639,7 +639,7 @@ namespace CityWarWinApp
                     if (selected.X != -1 && selected.Y != -1)
                     {
                         var path = Game.GetTile(selected.X, selected.Y).GetSelectedPieces().Where(piece => piece.Path != null).FirstOrDefault();
-                        if (path != null && path.Path != null)
+                        if (path != null && path.Path != null && path.Path.Count > 1)
                         {
                             List<PointF> points = new List<PointF>();
                             foreach (Tile t in path.Path)
