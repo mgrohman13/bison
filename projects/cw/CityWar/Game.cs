@@ -12,7 +12,7 @@ namespace CityWar
     public class Game
     {
         #region fields
-        public static MattUtil.MTRandom Random;
+        public static readonly MattUtil.MTRandom Random;
         static Game()
         {
             Random = new MattUtil.MTRandom();
@@ -75,35 +75,30 @@ namespace CityWar
             InitRaces(out us, out numUnits, out game.unitsHave);
 
             //pick 3 random starting units
-
             Dictionary<string, string>[] startUnits = new Dictionary<string, string>[3];
-
             for (int a = -1 ; ++a < 3 ; )
             {
                 UnitSchema.UnitRow row = ( (UnitSchema.UnitRow)us.Unit.Rows[Random.Next(numUnits)] );
-                //this has to come after unitsHave is set to cost but before actualy initialized
+                //this has to come after unitsHave is set to 0 but before actualy initialized
                 startUnits[a] = game.GetForRaces(row.Name);
             }
-            double totalStartCost = 0;
-            foreach (Player player in newPlayers)
-                foreach (Dictionary<string, string> dict in startUnits)
-                    totalStartCost += Unit.CreateTempUnit(dict[player.Race]).BaseCost;
-            totalStartCost /= newPlayers.Length;
+            double totalStartCost = newPlayers.Average(player => startUnits.Sum(dict => Unit.CreateTempUnit(dict[player.Race]).BaseCost));
 
             foreach (string[] race in Races.Values)
                 foreach (string name in race)
-                    if (game.unitsHave[name] > 0)
-                        game.unitsHave[name] = game.GetInitUnitsHave(game.unitsHave[name]);
+                    game.unitsHave[name] = game.GetInitUnitsHave(name);
 
             //initialize the players, half with cities and half with wizards
             bool city = Random.Bool();
             IEnumerable<Player> randOrder = Random.Iterate<Player>(newPlayers);
+            int addWork = 0;
             foreach (Player current in randOrder)
             {
                 string[] raceUnits = new string[3];
                 for (int a = -1 ; ++a < 3 ; )
                     raceUnits[a] = startUnits[a][current.Race];
                 current.NewPlayer(game, city = !city, raceUnits, totalStartCost);
+                addWork = Math.Max(addWork, (int)Math.Ceiling(current.GetTurnUpkeep()) - current.Work);
             }
 
             //randomize the turn order
@@ -114,6 +109,7 @@ namespace CityWar
                 game.players[++game.currentPlayer] = current;
                 //players moving later in the turn order receive compensation
                 game.AddMoveOrderDiff(current, game.currentPlayer);
+                current.AddWork(addWork);
                 current.EndTurn();
             }
 
@@ -132,8 +128,9 @@ namespace CityWar
 
             return game;
         }
-        private int GetInitUnitsHave(int needed)
+        private int GetInitUnitsHave(string name)
         {
+            int needed = Unit.CreateTempUnit(name).BaseCost;
             //~1/28 will be outside [-needed,needed]
             return Random.GaussianInt(needed / 2.1);
         }
@@ -159,7 +156,7 @@ namespace CityWar
                 if (!tempRaces.ContainsKey(race))
                     tempRaces.Add(race, new List<string>());
                 tempRaces[race].Add(name);
-                unitsHave.Add(name, row.Cost + row.People);
+                unitsHave.Add(name, 0);
             }
 
             Races = new Dictionary<string, string[]>();
@@ -171,12 +168,14 @@ namespace CityWar
         private static Stack<UndoDelegate> UndoCommands = new Stack<UndoDelegate>();
         private static Stack<object[]> UndoArgs = new Stack<object[]>();
         private static Dictionary<Unit, List<Tile>> UnitTiles = new Dictionary<Unit, List<Tile>>();
+        private static Dictionary<Tile, List<Unit>> TileUnits = new Dictionary<Tile, List<Unit>>();
 
         private static void ClearUndos()
         {
             UndoCommands.Clear();
             UndoArgs.Clear();
             UnitTiles.Clear();
+            TileUnits.Clear();
         }
 
         public static bool CanUndoCommand()
@@ -398,21 +397,22 @@ namespace CityWar
                 else
                 {
                     wizard.ChangeTerrain(terrain);
-                    bool canUndo = true;
-                    foreach (Piece p in wizard.Tile.GetAllPieces())
-                        if (p is Relic)
-                        {
-                            canUndo = false;
-                            break;
-                        }
+
+                    bool canUndo = !wizard.Tile.GetAllPieces().OfType<Relic>().Any();
                     if (canUndo)
                     {
                         UndoCommands.Push(UndoChangeTerrain);
                         UndoArgs.Push(new object[] { wizard, movement, oldTerrain });
                     }
+                    else
+                    {
+                        //if you cannot undo changing the terrain, you can no longer undo any pieces that were built or moved onto the tile
+                        RemoveUndosForTile(wizard.Tile);
+                    }
                 }
             }
         }
+
         private static Piece UndoChangeTerrain(object[] args)
         {
             Wizard wizard = (Wizard)args[0];
@@ -436,6 +436,10 @@ namespace CityWar
             if (piece != null)
                 if (canUndo)
                 {
+                    Unit u = ( piece as Unit );
+                    if (u != null)
+                        AddTileUnit(u.Tile, u);
+
                     UndoCommands.Push(UndoBuildPiece);
                     UndoArgs.Push(new object[] { capt, piece });
                 }
@@ -520,6 +524,10 @@ namespace CityWar
                     {
                         if (from != p.Tile)
                         {
+                            Unit u = p as Unit;
+                            if (u != null)
+                                AddTileUnit(u.Tile, u);
+
                             UndoCommands.Push(UndoMovePieces);
                             UndoArgs.Push(new object[] { from, p, oldMoves[p], p.Movement });
                         }
@@ -743,6 +751,18 @@ namespace CityWar
                 UnitTiles.Add(u, new List<Tile>());
             UnitTiles[u].Add(t);
         }
+        private static void AddTileUnit(Tile t, Unit u)
+        {
+            if (!TileUnits.ContainsKey(t))
+                TileUnits.Add(t, new List<Unit>());
+            TileUnits[t].Add(u);
+        }
+        private static void RemoveUndosForTile(Tile tile)
+        {
+            List<Unit> units;
+            if (TileUnits.TryGetValue(tile, out units))
+                RemoveUndosForPieces(units);
+        }
         private static void RemoveUndos(int stack)
         {
             List<object> args = new List<object>();
@@ -781,7 +801,8 @@ namespace CityWar
             {
                 UndoDelegate undo = UndoCommands.Pop();
                 object[] args = UndoArgs.Pop();
-                if (!IsUndoTerrain(undo, args, pieces) && !ContainsPiece(args, pieces))
+                bool undoTerrain = IsUndoTerrain(undo, args, pieces);
+                if (!undoTerrain && !ContainsPiece(args, pieces))
                 {
                     newCommands.Add(undo);
                     newArgs.Add(args);
@@ -789,6 +810,8 @@ namespace CityWar
                 else
                 {
                     removeArgs.AddRange(args);
+                    if (undoTerrain)
+                        RemoveUndosForTile(( (Wizard)args[0] ).Tile);
                 }
             }
 
@@ -1218,7 +1241,7 @@ next:
                             return Random.Round(chance * byte.MaxValue);
                         });
                     }
-                    catch (ArgumentOutOfRangeException e)
+                    catch (ArgumentOutOfRangeException)
                     {
                         return Random.SelectValue(race.Value);
                     }
@@ -1287,18 +1310,14 @@ next:
         private void RemoveCapturables(Type type)
         {
             //const double portalAvg = Player.WizardCost;
-            double portalAvg = 0;
+            double portalAvg = double.NaN;
             if (type == typeof(Portal))
             {
                 //account for partially finished units
-                foreach (string[] units in Races.Values)
-                    foreach (string unit in units)
-                    {
-                        Unit u = Unit.CreateTempUnit(unit);
-                        if (u.costType != CostType.Production)
-                            portalAvg += u.BaseCost;
-                    }
+                portalAvg = Races.Values.SelectMany(units => units).Select(unit => Unit.CreateTempUnit(unit))
+                        .Where(unit => unit.costType != CostType.Production).Sum(unit => unit.BaseCost);
                 portalAvg *= Portal.StartAmt * Portal.ValuePct / (double)Races.Count / 5.0;
+
                 portalAvg += Portal.AvgPortalCost;
             }
 

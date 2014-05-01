@@ -37,6 +37,7 @@ namespace CityWarWinApp
             AdjustPlayerLbx(this.lbxWizards, this.label8, playersHeight);
             AdjustPlayerLbx(this.lbxPortals, this.label6, playersHeight);
             AdjustPlayerLbx(this.lbxResources, this.label5, playersHeight);
+            AdjustPlayerLbx(this.lbxMagic, this.label11, playersHeight);
 
             if (players)
                 GetPlayers();
@@ -61,6 +62,7 @@ namespace CityWarWinApp
             this.lbxWizards.DrawMode = DrawMode.OwnerDrawFixed;
             this.lbxPortals.DrawMode = DrawMode.OwnerDrawFixed;
             this.lbxResources.DrawMode = DrawMode.OwnerDrawFixed;
+            this.lbxMagic.DrawMode = DrawMode.OwnerDrawFixed;
 
             GetPlayers();
 
@@ -190,18 +192,22 @@ namespace CityWarWinApp
             this.lbxWizards.Items.Clear();
             this.lbxPortals.Items.Clear();
             this.lbxResources.Items.Clear();
+            this.lbxMagic.Items.Clear();
 
             foreach (Player p in Map.Game.GetPlayers())
             {
                 this.lbxOrder.Items.Add(p);
                 int wizards, portals, cities, relics, units;
                 p.GetCounts(out wizards, out portals, out cities, out relics, out units);
-                this.lbxUnits.Items.Add(p.GetArmyStrength().ToString("0"));
+                this.lbxUnits.Items.Add("(" + units + ") " + p.GetArmyStrength().ToString("0"));
                 this.lbxRelics.Items.Add(relics);
                 this.lbxCities.Items.Add(cities);
                 this.lbxWizards.Items.Add(wizards);
                 this.lbxPortals.Items.Add(portals);
                 this.lbxResources.Items.Add(p.GetTotalResources().ToString("0"));
+                int airInc = 0, deathInc = 0, earthInc = 0, natureInc = 0, prodInc = 0, waterInc = 0, magicInc = 0, popInc = 0;
+                p.GenerateIncome(ref airInc, ref deathInc, ref earthInc, ref natureInc, ref prodInc, ref waterInc, ref magicInc, ref popInc);
+                this.lbxMagic.Items.Add(p.Magic + " +" + magicInc);
             }
         }
 

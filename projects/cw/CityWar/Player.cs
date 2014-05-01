@@ -16,6 +16,7 @@ namespace CityWar
         internal const int TradeDown = 9, TradeUp = 30;
         internal const double WorkMult = ( TradeDown + ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
         internal const double UpkeepMult = ( TradeUp - ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
+        private const double TurnUpkPct = .13;
 
         private Game game;
 
@@ -26,8 +27,8 @@ namespace CityWar
 
         public readonly string Race;
 
-        private int death, air, earth, nature, water, population, production, _relic, magic, upkeep, work;
-        private double healRound;
+        public int death, air, earth, nature, water, population, production, _relic, magic, work;
+        public double upkeep, healRound;
 
         private List<Piece> pieces = new List<Piece>();
 
@@ -233,7 +234,7 @@ namespace CityWar
         }
         private static double GetTurnUpkeep(double upkeep)
         {
-            return upkeep * .13;
+            return upkeep * TurnUpkPct;
         }
 
         public int GetResource(string resource)
@@ -427,9 +428,9 @@ namespace CityWar
             //the capturing player gets stuck with some of the other players upkeep
             int wizards, portals, cities, relics, units;
             this.GetCounts(out wizards, out portals, out cities, out relics, out units);
-            double transferAmt = this.upkeep / ( wizards + portals + cities + relics - .26 ) * .65;
-            this.AddUpkeep(-transferAmt, .065);
-            p.AddUpkeep(transferAmt, .065);
+            double transferAmt = this.upkeep / ( wizards + portals + cities + relics ) / 2.1;
+            this.AddUpkeep(-transferAmt);
+            p.AddUpkeep(transferAmt);
 
             Remove(c, false);
         }
@@ -471,25 +472,22 @@ namespace CityWar
         {
             work += Game.Random.Round(amt);
         }
-        internal void AddUpkeep(double amount, double devPct = .13)
+        internal void AddUpkeep(double amount, double devPct = .065)
         {
-            upkeep += Game.Random.GaussianInt(amount, devPct);
+            upkeep += Game.Random.Gaussian(amount, devPct);
         }
 
         internal static void SubtractCommonUpkeep(Player[] players)
         {
-            int minUpk = players.Min(player => player.upkeep);
-            minUpk = Game.Random.WeightedInt(minUpk, .78);
+            double minUpk = players.Min(player => player.upkeep);
+            minUpk = Game.Random.Weighted(minUpk, .78);
 
-            int maxUpk = players.Max(player => player.upkeep);
-            int minWork = players.Min(player => player.work);
-            minWork -= (int)Math.Ceiling(GetTurnUpkeep(maxUpk - minUpk));
-
+            double minWork = players.Min(player => player.work - GetTurnUpkeep(player.upkeep - minUpk));
             if (minWork > 0)
-                minUpk -= Game.Random.WeightedInt(minWork, .21);
+                minUpk -= Game.Random.Weighted(minWork / TurnUpkPct, .13);
 
             foreach (Player p in players)
-                p.AddUpkeep(-minUpk, .078);
+                p.AddUpkeep(-minUpk);
         }
 
         internal Unit FreeUnit(string name, double avgCost)
@@ -813,7 +811,8 @@ namespace CityWar
 
             Bitmap pic;
             //dont bother saving a const pic if the name ends with unit; it will never be drawn in a panel
-            if (constPic || name.EndsWith("Unit"))
+            bool file = ( constPic || name.EndsWith("Unit") );
+            if (file)
                 pic = LoadPicFromFile(loadName, portalColor);
             else
                 pic = GetConstPic(name);
@@ -821,7 +820,7 @@ namespace CityWar
             if (constPic)
                 picsConst.Add(name, pic);
             else
-                pics.Add(name, ResizePic(pic));
+                pics.Add(name, ResizePic(pic, file));
         }
         private Bitmap LoadPicFromFile(string name, Color portalColor)
         {
@@ -836,6 +835,7 @@ namespace CityWar
             }
             //white is transparent
             basePic.MakeTransparent(Color.FromArgb(255, 255, 255));
+
             //change the gray to the player color and the red to the poral color
             ImageAttributes colorRemapping = new ImageAttributes();
             ColorMap playerMap = new ColorMap();
@@ -845,22 +845,25 @@ namespace CityWar
             portalMap.OldColor = Color.FromArgb(200, 0, 0);
             portalMap.NewColor = portalColor;
             colorRemapping.SetRemapTable(new ColorMap[] { playerMap, portalMap });
+
             Bitmap pic = new Bitmap(100, 100);
             Graphics g = Graphics.FromImage(pic);
             //draw it to a new image to remap the colors
             g.DrawImage(basePic, new Rectangle(0, 0, 100, 100), 0, 0, 100, 100, GraphicsUnit.Pixel, colorRemapping);
+
             g.Dispose();
             basePic.Dispose();
             colorRemapping.Dispose();
+
             //return the new image
             return pic;
-
         }
-        private Bitmap ResizePic(Bitmap pic)
+        private Bitmap ResizePic(Bitmap pic, bool dispose)
         {
-            return new Bitmap(pic, Game.Random.Round(zoom * 5f / 6f),
-                Game.Random.Round(zoom * 5f / 6f));
-            pic.Dispose();
+            Bitmap newPic = new Bitmap(pic, Game.Random.Round(zoom * 5f / 6f), Game.Random.Round(zoom * 5f / 6f));
+            if (dispose)
+                pic.Dispose();
+            return newPic;
         }
         internal static void ResetPics(Player[] players, float zoom)
         {
@@ -1044,7 +1047,7 @@ namespace CityWar
                 if (u != null && u.Type != UnitType.Immobile)
                     total += GetUpkeep(u);
             }
-            AddUpkeep(total + payment, .091);
+            AddUpkeep(total + payment);
         }
         internal static double GetUpkeep(Unit u)
         {
@@ -1182,21 +1185,25 @@ namespace CityWar
         }
 
         //this doesnt actually add the income to the player so it can be used to simply view the income
-        public void GenerateIncome(ref int airP, ref int deathP, ref int earthP, ref int natureP, ref int productionP, ref int waterP, ref int magicP, ref int populationP)
+        public void GenerateIncome(ref int airInc, ref int deathInc, ref int earthInc, ref int natureInc,
+                ref int prodInc, ref int waterInc, ref int magicInc, ref int popInc)
         {
-            populationP += 15;
-            magicP += 10;
-            productionP += 5;
+            GenerateIncome(this.pieces.OfType<Capturable>(), ref airInc, ref deathInc,
+                    ref earthInc, ref natureInc, ref prodInc, ref waterInc, ref magicInc, ref popInc);
+        }
+        private static void GenerateIncome(IEnumerable<Capturable> capturables, ref int air, ref int death,
+                ref int earth, ref int nature, ref int prod, ref int water, ref int magic, ref int pop)
+        {
+            pop += 15;
+            magic += 10;
+            prod += 5;
 
-            foreach (Piece p in pieces)
+            foreach (Capturable capturable in capturables)
             {
-                if (!( p is Capturable ))
-                    continue;
-
                 int elemental = 0;
 
                 Portal portal;
-                if (p is Wizard)
+                if (capturable is Wizard)
                 {
                     //cost 1300
                     //roi 16.25-43.33
@@ -1206,25 +1213,25 @@ namespace CityWar
 
                     //88.77% collection needed for average portal roi (52.67% for relic)
                 }
-                else if (p is City)
+                else if (capturable is City)
                 {
-                    productionP += 13;
-                    magicP += 7;
+                    prod += 13;
+                    magic += 7;
                     elemental += 6;
-                    populationP += 3;
-                    deathP += 1;
+                    pop += 3;
+                    death += 1;
                     //+30
                 }
-                else if (p is Relic)
+                else if (capturable is Relic)
                 {
                     //cost 300
                     //roi 23.08
-                    magicP += 6;
+                    magic += 6;
                     elemental += 5;
-                    populationP += 2;
+                    pop += 2;
                     //+13
                 }
-                else if (( portal = p as Portal ) != null)
+                else if (( portal = capturable as Portal ) != null)
                 {
                     //avg cost 1000 (700-1502)
                     //avg roi 17.50 (15.97-19.89)
@@ -1238,38 +1245,38 @@ namespace CityWar
                             ++type;
                             break;
                         case 2:
-                            ++magicP;
+                            ++magic;
                             break;
                         case 3:
-                            ++elemental;
+                            ++type;
                             break;
                         case 4:
-                            ++type;
+                            ++elemental;
                             break;
                         case 5:
-                            ++magicP;
+                            ++type;
                             break;
                         case 0:
-                            ++type;
+                            ++magic;
                             break;
                         }
 
-                    switch (( (Portal)p ).PortalType)
+                    switch (( (Portal)capturable ).PortalType)
                     {
                     case CostType.Air:
-                        airP += type;
+                        air += type;
                         break;
                     case CostType.Death:
-                        deathP += type;
+                        death += type;
                         break;
                     case CostType.Earth:
-                        earthP += type;
+                        earth += type;
                         break;
                     case CostType.Nature:
-                        natureP += type;
+                        nature += type;
                         break;
                     case CostType.Water:
-                        waterP += type;
+                        water += type;
                         break;
                     default:
                         throw new Exception();
@@ -1279,19 +1286,19 @@ namespace CityWar
                     throw new Exception();
 
                 //the actual resource for the element is based off of the terrain type
-                switch (p.Tile.Terrain)
+                switch (capturable.Tile.Terrain)
                 {
                 case Terrain.Forest:
-                    natureP += elemental;
+                    nature += elemental;
                     break;
                 case Terrain.Mountain:
-                    earthP += elemental;
+                    earth += elemental;
                     break;
                 case Terrain.Plains:
-                    airP += elemental;
+                    air += elemental;
                     break;
                 case Terrain.Water:
-                    waterP += elemental;
+                    water += elemental;
                     break;
                 default:
                     throw new Exception();
@@ -1370,7 +1377,7 @@ namespace CityWar
                         TradeAll(ref population);
                         TradeAll(ref magic);
                         TradeAll(ref _relic);
-                        TradePct(ref upkeep, -1 / UpkeepMult, 1, 0);
+                        //TradePct(ref upkeep, -1 / UpkeepMult, 1, 0);
                     }
                     break;
                 }
@@ -1386,8 +1393,8 @@ namespace CityWar
                     TradePct(ref population);
                     TradePct(ref magic, 1, .013, 1);
                     TradePct(ref _relic, 1, .013, 1);
-                    //pass a negative rate so it decreases work
-                    TradePct(ref upkeep, -1 / UpkeepMult, .13, 0);
+                    ////pass a negative rate so it decreases work
+                    //TradePct(ref upkeep, -1 / UpkeepMult, .078, 0);
                 }
             }
             if (loseUnits == 0)

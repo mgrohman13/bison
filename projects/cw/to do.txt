@@ -3,43 +3,24 @@ in between games
 	standardize fields
 		use Base... instead of Max...
 	save undo stack	
-	make upkeep double
+	hex
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
 	revamp to balance all at once and use all target units based on types
-	
+
 gameplay
-	why is unitsHave set to cost at start?
-	CollectWizardPts algorithm more obvious
-	Player.AddWork randomness in some cases
-	build unit, change terrain on relic, undo build unit
-	undo move when change terrain cannot be undone and prevents redo?
-	Unit.CheckAttacks mucks with used
-	apply same ground/water build logic to relic?
-		magic units?
-		free units?
-	when opponents can build wizards?
-		make pts more random
-		show
-		show guess
-	upkeep for player with no cap
-		usually means other players dont lose any upkeep
-		when not enough resources but no loseunit
-		but dont want to make amt lost less than 300/turn
+	when opponents can build wizards
+		show magic, inc for all
 	group move from different hexes
 	loading a game with different unit set
 		support?
 		error?
 		save units with game?
-	undo capturing?
-	hex
 	teleporters
 	exp?
-	alliances?
-		participate in each others battles
 requiring rebalance
 	unit abilities
 	better terrains
@@ -59,7 +40,6 @@ interface
 		maybe relative to selected/avail attacks
 	pathfinding
 		easy move along path
-		from/to reverse when on unmoveable tile
 		option to avoid occupied tiles
 		drag to reposition route
 	mousewheel zoom

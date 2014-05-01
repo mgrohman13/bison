@@ -474,18 +474,22 @@ namespace CityWar
         {
             if (isThree)
             {
-                double used = 0;
-                foreach (Attack a in attacks)
-                    if (a.Used)
-                        ++used;
-                used /= attacks.Length;
-                Attack attack = attacks[0].Clone();
                 int numAttacks = ( 3 * hits + maxHits - 1 ) / maxHits;
-                attacks = new Attack[numAttacks];
-                for (int a = -1 ; ++a < numAttacks ; )
+                if (numAttacks != attacks.Length)
                 {
-                    attacks[a] = attack.Clone();
-                    attacks[a].Used = Game.Random.Bool(used);
+                    double used = 0;
+                    foreach (Attack a in attacks)
+                        if (a.Used)
+                            ++used;
+                    used /= attacks.Length;
+
+                    Attack attack = attacks[0].Clone();
+                    attacks = new Attack[numAttacks];
+                    for (int a = -1 ; ++a < numAttacks ; )
+                    {
+                        attacks[a] = attack.Clone();
+                        attacks[a].Used = Game.Random.Bool(used);
+                    }
                 }
             }
         }
@@ -777,7 +781,7 @@ namespace CityWar
         private void BalanceForMove(int usedMove, bool moved, double chance)
         {
             if (moved)
-                owner.AddUpkeep(.91 * Player.GetUpkeep(this) * ( 1 - chance ) * usedMove / (double)MaxMove);
+                owner.AddUpkeep(.91 * Player.GetUpkeep(this) * ( 1 - chance ) * usedMove / (double)MaxMove, .13);
             else
                 owner.AddWork(.65 * WorkRegen * usedMove);
         }
@@ -867,6 +871,8 @@ namespace CityWar
         }
         private static int GetWorstNeeded(IEnumerable<Piece> pieces, Tile neighbor)
         {
+            if (pieces.First().Tile == neighbor)
+                return 1;
             IEnumerable<int> needed = pieces.OfType<Unit>().Select(unit => unit.GetNeeded(neighbor));
             if (!needed.Any())
                 return 1;

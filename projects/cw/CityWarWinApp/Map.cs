@@ -95,6 +95,7 @@ namespace CityWarWinApp
         private void MainMap_Load(object sender, EventArgs e)
         {
             //set to full screen
+            this.FormBorderStyle = FormBorderStyle.None;
             setOldBounds();
             storeOld = false;
             this.Bounds = Screen.PrimaryScreen.Bounds;

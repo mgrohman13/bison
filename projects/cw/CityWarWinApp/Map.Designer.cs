@@ -596,7 +596,7 @@ namespace CityWarWinApp
             this.Controls.Add(this.lblMouse);
             this.Controls.Add(this.lblDiv);
             this.KeyPreview = true;
-            this.MaximumSize = new System.Drawing.Size(793, 645);
+            this.MinimumSize = new System.Drawing.Size(793, 645);
             this.Name = "Map";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainMap_FormClosing);
             this.Load += new System.EventHandler(this.MainMap_Load);

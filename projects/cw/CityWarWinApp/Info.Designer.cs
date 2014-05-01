@@ -46,6 +46,8 @@ namespace CityWarWinApp
             this.lbxUnits = new System.Windows.Forms.ListBox();
             this.label10 = new System.Windows.Forms.Label();
             this.lbxResources = new System.Windows.Forms.ListBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.lbxMagic = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // label1
@@ -114,7 +116,7 @@ namespace CityWarWinApp
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.button1.ForeColor = System.Drawing.Color.Black;
-            this.button1.Location = new System.Drawing.Point(806, 93);
+            this.button1.Location = new System.Drawing.Point(894, 93);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(86, 25);
             this.button1.TabIndex = 0;
@@ -126,7 +128,7 @@ namespace CityWarWinApp
             this.label5.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label5.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label5.ForeColor = System.Drawing.Color.Silver;
-            this.label5.Location = new System.Drawing.Point(832, 9);
+            this.label5.Location = new System.Drawing.Point(920, 9);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(60, 18);
             this.label5.TabIndex = 10;
@@ -138,7 +140,7 @@ namespace CityWarWinApp
             this.label6.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label6.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label6.ForeColor = System.Drawing.Color.Silver;
-            this.label6.Location = new System.Drawing.Point(774, 9);
+            this.label6.Location = new System.Drawing.Point(862, 9);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(55, 18);
             this.label6.TabIndex = 11;
@@ -153,7 +155,7 @@ namespace CityWarWinApp
             this.lbxCities.ForeColor = System.Drawing.Color.Black;
             this.lbxCities.FormattingEnabled = true;
             this.lbxCities.ItemHeight = 17;
-            this.lbxCities.Location = new System.Drawing.Point(777, 30);
+            this.lbxCities.Location = new System.Drawing.Point(865, 30);
             this.lbxCities.Name = "lbxCities";
             this.lbxCities.Size = new System.Drawing.Size(52, 21);
             this.lbxCities.TabIndex = 12;
@@ -167,7 +169,7 @@ namespace CityWarWinApp
             this.lbxRelics.ForeColor = System.Drawing.Color.Black;
             this.lbxRelics.FormattingEnabled = true;
             this.lbxRelics.ItemHeight = 17;
-            this.lbxRelics.Location = new System.Drawing.Point(835, 30);
+            this.lbxRelics.Location = new System.Drawing.Point(923, 30);
             this.lbxRelics.Name = "lbxRelics";
             this.lbxRelics.Size = new System.Drawing.Size(57, 21);
             this.lbxRelics.TabIndex = 9;
@@ -181,7 +183,7 @@ namespace CityWarWinApp
             this.lbxWizards.ForeColor = System.Drawing.Color.Black;
             this.lbxWizards.FormattingEnabled = true;
             this.lbxWizards.ItemHeight = 17;
-            this.lbxWizards.Location = new System.Drawing.Point(618, 30);
+            this.lbxWizards.Location = new System.Drawing.Point(706, 30);
             this.lbxWizards.Name = "lbxWizards";
             this.lbxWizards.Size = new System.Drawing.Size(74, 21);
             this.lbxWizards.TabIndex = 13;
@@ -195,7 +197,7 @@ namespace CityWarWinApp
             this.lbxPortals.ForeColor = System.Drawing.Color.Black;
             this.lbxPortals.FormattingEnabled = true;
             this.lbxPortals.ItemHeight = 17;
-            this.lbxPortals.Location = new System.Drawing.Point(698, 30);
+            this.lbxPortals.Location = new System.Drawing.Point(786, 30);
             this.lbxPortals.Name = "lbxPortals";
             this.lbxPortals.Size = new System.Drawing.Size(73, 21);
             this.lbxPortals.TabIndex = 14;
@@ -206,7 +208,7 @@ namespace CityWarWinApp
             this.label7.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label7.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label7.ForeColor = System.Drawing.Color.Silver;
-            this.label7.Location = new System.Drawing.Point(615, 9);
+            this.label7.Location = new System.Drawing.Point(703, 9);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(77, 18);
             this.label7.TabIndex = 15;
@@ -218,7 +220,7 @@ namespace CityWarWinApp
             this.label8.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label8.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label8.ForeColor = System.Drawing.Color.Silver;
-            this.label8.Location = new System.Drawing.Point(695, 9);
+            this.label8.Location = new System.Drawing.Point(783, 9);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(76, 18);
             this.label8.TabIndex = 16;
@@ -230,9 +232,9 @@ namespace CityWarWinApp
             this.label9.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.label9.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
             this.label9.ForeColor = System.Drawing.Color.Silver;
-            this.label9.Location = new System.Drawing.Point(534, 9);
+            this.label9.Location = new System.Drawing.Point(612, 9);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(78, 18);
+            this.label9.Size = new System.Drawing.Size(88, 18);
             this.label9.TabIndex = 18;
             this.label9.Text = "Army";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -245,9 +247,11 @@ namespace CityWarWinApp
             this.lbxUnits.ForeColor = System.Drawing.Color.Black;
             this.lbxUnits.FormattingEnabled = true;
             this.lbxUnits.ItemHeight = 17;
-            this.lbxUnits.Location = new System.Drawing.Point(537, 30);
+            this.lbxUnits.Items.AddRange(new object[] {
+            "(999) 99999"});
+            this.lbxUnits.Location = new System.Drawing.Point(615, 30);
             this.lbxUnits.Name = "lbxUnits";
-            this.lbxUnits.Size = new System.Drawing.Size(75, 21);
+            this.lbxUnits.Size = new System.Drawing.Size(85, 21);
             this.lbxUnits.TabIndex = 17;
             this.lbxUnits.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
@@ -277,12 +281,42 @@ namespace CityWarWinApp
             this.lbxResources.TabIndex = 19;
             this.lbxResources.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
             // 
+            // label11
+            // 
+            this.label11.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.label11.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.label11.ForeColor = System.Drawing.Color.Silver;
+            this.label11.Location = new System.Drawing.Point(534, 9);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(75, 18);
+            this.label11.TabIndex = 22;
+            this.label11.Text = "Magic";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lbxMagic
+            // 
+            this.lbxMagic.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lbxMagic.BackColor = System.Drawing.Color.Silver;
+            this.lbxMagic.Font = new System.Drawing.Font("Arial", 11.25F);
+            this.lbxMagic.ForeColor = System.Drawing.Color.Black;
+            this.lbxMagic.FormattingEnabled = true;
+            this.lbxMagic.ItemHeight = 17;
+            this.lbxMagic.Items.AddRange(new object[] {
+            "9999 +99"});
+            this.lbxMagic.Location = new System.Drawing.Point(537, 30);
+            this.lbxMagic.Name = "lbxMagic";
+            this.lbxMagic.Size = new System.Drawing.Size(72, 21);
+            this.lbxMagic.TabIndex = 21;
+            this.lbxMagic.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxCapturables_DrawItem);
+            // 
             // Info
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(904, 130);
+            this.ClientSize = new System.Drawing.Size(992, 130);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.lbxMagic);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.lbxResources);
             this.Controls.Add(this.label9);
@@ -329,5 +363,7 @@ namespace CityWarWinApp
 		private System.Windows.Forms.ListBox lbxUnits;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.ListBox lbxResources;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ListBox lbxMagic;
     }
 }

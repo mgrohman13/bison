@@ -226,7 +226,7 @@ namespace CityWar
             if (owner.Owner == owner.Owner.Game.CurrentPlayer)
                 owner.Owner.AddWork(owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length);
             else
-                owner.Owner.AddUpkeep(.39 * Player.GetUpkeep(owner) * ( 1 - overkill ) / owner.Attacks.Length);
+                owner.Owner.AddUpkeep(.39 * Player.GetUpkeep(owner) * ( 1 - overkill ) / owner.Attacks.Length, .169);
 
             double relicValue = ( GetAverageDamage(this.damage, this.divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
             if (relicValue > 0)
