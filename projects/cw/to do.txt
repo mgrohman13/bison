@@ -39,6 +39,7 @@ interface
 	show GC
 		maybe relative to selected/avail attacks
 	pathfinding
+		clear path
 		easy move along path
 		option to avoid occupied tiles
 		drag to reposition route

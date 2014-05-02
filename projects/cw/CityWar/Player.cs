@@ -484,7 +484,7 @@ namespace CityWar
 
             double minWork = players.Min(player => player.work - GetTurnUpkeep(player.upkeep - minUpk));
             if (minWork > 0)
-                minUpk -= Game.Random.Weighted(minWork / TurnUpkPct, .13);
+                minUpk -= Game.Random.Weighted(minWork / TurnUpkPct / 2.1, .169);
 
             foreach (Player p in players)
                 p.AddUpkeep(-minUpk);

@@ -1220,29 +1220,31 @@ next:
                     if (isHigh)
                         target = ReverseTarget();
 
+                    IDictionary<string, int> dict = race.Value.ToDictionary(name => name, name =>
+                    {
+                        double baseCost = Unit.CreateTempUnit(name).BaseCost;
+
+                        double chance = Math.Abs(target - baseCost) / target;
+                        chance = 1 / ( .039 + chance );
+                        chance *= chance;
+
+                        double pct = unitsHave[name] / baseCost;
+                        if (pct >= 1)
+                            pct *= 1.3 * pct;
+                        if (pct < 0)
+                            chance *= .052 / ( 1 - 6.5 * pct );
+                        else
+                            chance *= .26 + pct;
+
+                        return Random.Round(chance * byte.MaxValue);
+                    });
                     try
                     {
-                        return Random.SelectValue<string>(race.Value, name =>
-                        {
-                            double baseCost = Unit.CreateTempUnit(name).BaseCost;
-
-                            double chance = Math.Abs(target - baseCost) / target;
-                            chance = 1 / ( .039 + chance );
-                            chance *= chance;
-
-                            double pct = unitsHave[name] / baseCost;
-                            if (pct >= 1)
-                                pct *= 1.3 * pct;
-                            if (pct < 0)
-                                chance *= .052 / ( 1 - 6.5 * pct );
-                            else
-                                chance *= .26 + pct;
-
-                            return Random.Round(chance * byte.MaxValue);
-                        });
+                        return Random.SelectValue(dict);
                     }
-                    catch (ArgumentOutOfRangeException)
+                    catch (ArgumentOutOfRangeException aore)
                     {
+                        Console.WriteLine(aore);
                         return Random.SelectValue(race.Value);
                     }
                 }
