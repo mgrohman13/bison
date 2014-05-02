@@ -78,16 +78,16 @@ namespace CityWarWinApp
 
         void RefVals()
         {
-            this.lblAir.Text = p.GetResource("Air").ToString("0");
-            this.lblDeath.Text = p.GetResource("Death").ToString("0");
-            this.lblEarth.Text = p.GetResource("Earth").ToString("0");
-            this.lblWizard.Text = p.GetResource("Magic").ToString("0");
-            this.lblNature.Text = p.GetResource("Nature").ToString("0");
-            this.lblWork.Text = p.GetResource("Work").ToString("0");
-            this.lblProd.Text = p.GetResource("Production").ToString("0");
-            this.lblWater.Text = p.GetResource("Water").ToString("0");
-            this.lblRelic.Text = p.GetResource("Relic").ToString("0");
-            this.lblPpl.Text = p.GetResource("Population").ToString("0");
+            this.lblAir.Text = p.Air.ToString();
+            this.lblDeath.Text = p.Death.ToString();
+            this.lblEarth.Text = p.Earth.ToString();
+            this.lblWizard.Text = p.Magic.ToString();
+            this.lblNature.Text = p.Nature.ToString();
+            this.lblWork.Text = p.Work.ToString();
+            this.lblProd.Text = p.Production.ToString();
+            this.lblWater.Text = p.Water.ToString();
+            this.lblRelic.Text = p.Relic.ToString();
+            this.lblPpl.Text = p.Population.ToString();
         }
 
         private void btnProdU_Click(object sender, EventArgs e)

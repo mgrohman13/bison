@@ -27,8 +27,8 @@ namespace CityWar
 
         public readonly string Race;
 
-        public int death, air, earth, nature, water, population, production, _relic, magic, work;
-        public double upkeep, healRound;
+        private int death, air, earth, nature, water, population, production, relicOffset, _relic, magic, work;
+        private double upkeep, healRound;
 
         private List<Piece> pieces = new List<Piece>();
 
@@ -209,7 +209,7 @@ namespace CityWar
         {
             get
             {
-                return relic;
+                return relic + RelicCost - relicOffset;
             }
         }
         public int Work
@@ -247,20 +247,12 @@ namespace CityWar
                 return death;
             case "Earth":
                 return earth;
-            case "Magic":
-                return magic;
             case "Nature":
                 return nature;
-            case "Work":
-                return work;
             case "Production":
                 return production;
             case "Water":
                 return water;
-            case "Relic":
-                return relic;
-            case "Population":
-                return population;
             default:
                 throw new Exception();
             }
@@ -325,14 +317,18 @@ namespace CityWar
             production = 0;
             population = 0;
             magic = 0;
-            relic = 0;
+            relicOffset = Game.Random.RangeInt(1, RelicCost - 1);
+            relic = Game.Random.Round(RelicCost / 2.0);
             work = 0;
             upkeep = 0;
 
             double thisTotal = 0;
             if (city)
             {
-                int[] prodPop = AddStartResources(780, ref magic, 374, 522, 2);
+                //stronger starting units means the concentrated armies of wizard players is more of a threat
+                double mult = ( Math.Pow(totalStartCost, .39) * 10.4 );
+                int[] prodPop = AddStartResources(Game.Random.Round(5.2 * mult), ref magic,
+                        Game.Random.Round(2.6 * mult), Game.Random.Round(3.9 * mult), 2);
                 this.production += prodPop[0];
                 this.population += prodPop[1];
 
@@ -346,14 +342,15 @@ namespace CityWar
             }
             else
             {
+                int maxRelic = Math.Min(Game.Random.Round(RelicCost * .78), RelicCost + relicOffset - relic - 1);
                 int numTypes = Game.Random.RangeInt(3, 4);
-                int[] elementals = AddStartResources(390, ref _relic, 101, 199, numTypes);
+                int[] elementals = AddStartResources(390, ref _relic, RelicCost - maxRelic, maxRelic, numTypes);
 
                 Action<int>[] typeFuncs = new Action<int>[] {
                     amt => this.air += amt,
                     amt => this.earth += amt,
                     amt => this.nature += amt,
-                    amt => this.water += amt
+                    amt => this.water += amt,
                 };
                 int idx = 0;
                 foreach (int type in Game.Random.Iterate(typeFuncs.Length).Take(numTypes - 1))
@@ -731,13 +728,13 @@ namespace CityWar
         #endregion //portal cost
 
         #region relic
-        private int relic
+        internal int relic
         {
             get
             {
                 return _relic;
             }
-            set
+            private set
             {
                 _relic = value;
                 GetRelic();
@@ -745,13 +742,25 @@ namespace CityWar
         }
         private void GetRelic()
         {
-            if (relic >= RelicCost)
+            if (relicOffset < 0)
+                relicOffset = Game.Random.RangeInt(0, RelicCost);
+
+            if (relic - relicOffset >= RelicCost)
             {
                 Capturable cur = RandomCapturable();
                 if (cur != null)
                 {
+
+                    int old = this.pieces.OfType<Relic>().Count();
+
+                    relicOffset = int.MinValue;
                     relic -= RelicCost;
                     new Relic(this, cur.Tile);
+
+                    if (old + 2 >= this.pieces.OfType<Relic>().Count())
+                    {
+                    }
+
                 }
             }
         }
@@ -921,13 +930,13 @@ namespace CityWar
             return value;
         }
 
-        private void TradeMagic(bool up)
+        private void TradeMagic()
         {
-            magic = Trade(up, magic, "ma");
+            magic = Trade(false, magic, "ma");
         }
-        private void TradeRelic(bool up)
+        private void TradeRelic()
         {
-            relic = Trade(up, relic, "re");
+            relic = Trade(false, relic, "re");
         }
         public void TradeDeath(bool up)
         {
@@ -1114,13 +1123,13 @@ namespace CityWar
                         case 3:
                         case 4:
                             amt = magic;
-                            TradeMagic(false);
+                            TradeMagic();
                             break;
                         case 5:
                         case 6:
                         case 7:
                             amt = relic;
-                            TradeRelic(false);
+                            TradeRelic();
                             break;
                         default:
                             throw new Exception();
@@ -1391,8 +1400,8 @@ namespace CityWar
                     TradePct(ref death);
                     TradePct(ref production);
                     TradePct(ref population);
-                    TradePct(ref magic, 1, .013, 1);
-                    TradePct(ref _relic, 1, .013, 1);
+                    TradePct(ref magic, 1, .013, 1.3);
+                    TradePct(ref _relic, 1, .013, 1.3);
                     ////pass a negative rate so it decreases work
                     //TradePct(ref upkeep, -1 / UpkeepMult, .078, 0);
                 }

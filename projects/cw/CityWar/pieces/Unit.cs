@@ -464,10 +464,6 @@ namespace CityWar
         private void SetRegenPct(double value)
         {
             this._regenPct = Game.Random.GaussianCapped(value, Math.Abs(this._regenPct - value) / value * .169, Math.Max(0, 2 * value - 1));
-            if (this._regenPct <= double.Epsilon)
-                this._regenPct = double.Epsilon;
-            else if (this._regenPct > 1)
-                this._regenPct = 1;
         }
 
         private void CheckAttacks()

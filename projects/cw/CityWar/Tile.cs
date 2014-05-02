@@ -840,9 +840,6 @@ namespace CityWar
                 //only check the tiles that were picked up at the previous distance and dont rematch tiles or match null tiles
                 List<Tile> newTiles = distances.Where(pair => pair.Value == dist).SelectMany(pair => pair.Key.neighbors)
                         .Where(tile => tile != null && !distances.ContainsKey(tile)).Distinct().ToList();
-                //break if we have checked the whole map
-                if (newTiles.Count == 0)
-                    break;
                 ++dist;
                 //check new tiles for a match
                 foreach (Tile tile in newTiles)

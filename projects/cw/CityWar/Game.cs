@@ -192,7 +192,7 @@ namespace CityWar
                 return null;
 
             if (piece.Owner.Air < 0 || piece.Owner.Death < 0 || piece.Owner.Earth < 0 || piece.Owner.Nature < 0 || piece.Owner.Production < 0 || piece.Owner.Water < 0
-                    || piece.Owner.Magic < 0 || piece.Owner.Relic < 0 || piece.Owner.Population < 0 || piece.Owner.GetTurnUpkeep() < 0 || piece.Owner.Work < 0)
+                    || piece.Owner.Magic < 0 || piece.Owner.relic < 0 || piece.Owner.Population < 0 || piece.Owner.GetTurnUpkeep() < 0 || piece.Owner.Work < 0)
             {
             }
             piece.Owner.CheckNegativeResources();
@@ -1220,31 +1220,32 @@ next:
                     if (isHigh)
                         target = ReverseTarget();
 
-                    IDictionary<string, int> dict = race.Value.ToDictionary(name => name, name =>
-                    {
-                        double baseCost = Unit.CreateTempUnit(name).BaseCost;
-
-                        double chance = Math.Abs(target - baseCost) / target;
-                        chance = 1 / ( .039 + chance );
-                        chance *= chance;
-
-                        double pct = unitsHave[name] / baseCost;
-                        if (pct >= 1)
-                            pct *= 1.3 * pct;
-                        if (pct < 0)
-                            chance *= .052 / ( 1 - 6.5 * pct );
-                        else
-                            chance *= .26 + pct;
-
-                        return Random.Round(chance * byte.MaxValue);
-                    });
+                    IDictionary<string, int> dict = null;
                     try
                     {
+                        dict = race.Value.ToDictionary(name => name, name =>
+                        {
+                            double baseCost = Unit.CreateTempUnit(name).BaseCost;
+
+                            double chance = Math.Abs(target - baseCost) / target;
+                            chance = 1 / ( .039 + chance );
+                            chance *= chance;
+
+                            double pct = unitsHave[name] / baseCost;
+                            if (pct >= 1)
+                                pct *= 1.3 * pct;
+                            if (pct < 0)
+                                chance *= .052 / ( 1 - 6.5 * pct );
+                            else
+                                chance *= .26 + pct;
+
+                            return Random.Round(chance * short.MaxValue);
+                        });
                         return Random.SelectValue(dict);
                     }
-                    catch (ArgumentOutOfRangeException aore)
+                    catch (Exception exception)
                     {
-                        Console.WriteLine(aore);
+                        Console.WriteLine(exception);
                         return Random.SelectValue(race.Value);
                     }
                 }
