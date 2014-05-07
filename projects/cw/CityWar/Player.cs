@@ -757,7 +757,7 @@ namespace CityWar
                     relic -= RelicCost;
                     new Relic(this, cur.Tile);
 
-                    if (old + 2 >= this.pieces.OfType<Relic>().Count())
+                    if (old + 2 <= this.pieces.OfType<Relic>().Count())
                     {
                     }
 
