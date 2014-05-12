@@ -54,9 +54,9 @@ namespace CityWar
 
             this.attacks = attacks;
             this.hits = hits;
-            CheckAttacks();
             foreach (Attack attack in this.attacks)
                 attack.SetOwner(this);
+            CheckAttacks();
 
             this.OnDeserialization(null);
         }
@@ -471,22 +471,26 @@ namespace CityWar
             if (isThree)
             {
                 int numAttacks = ( 3 * hits + maxHits - 1 ) / maxHits;
-                if (numAttacks != attacks.Length)
-                {
-                    double used = 0;
-                    foreach (Attack a in attacks)
-                        if (a.Used)
-                            ++used;
-                    used /= attacks.Length;
+                //if (numAttacks != attacks.Length)
+                //{
+                double used = 0;
+                foreach (Attack a in attacks)
+                    if (a.Used)
+                        ++used;
+                used /= attacks.Length;
 
-                    Attack attack = attacks[0].Clone();
-                    attacks = new Attack[numAttacks];
-                    for (int a = -1 ; ++a < numAttacks ; )
-                    {
-                        attacks[a] = attack.Clone();
-                        attacks[a].Used = Game.Random.Bool(used);
-                    }
+                if (used > 0 && used < 1)
+                {
                 }
+
+                Attack attack = attacks[0].Clone();
+                attacks = new Attack[numAttacks];
+                for (int a = -1 ; ++a < numAttacks ; )
+                {
+                    attacks[a] = attack.Clone();
+                    attacks[a].Used = Game.Random.Bool(used);
+                }
+                //}
             }
         }
         #endregion //hits
