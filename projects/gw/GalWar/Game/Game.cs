@@ -645,7 +645,7 @@ namespace GalWar
             if (CurrentPlayer.AI == null)
                 AutoSave();
 
-            CurrentPlayer.PlayTurn(handler, anomalies);
+            anomalies = CurrentPlayer.PlayTurn(handler, anomalies);
             return anomalies;
         }
 

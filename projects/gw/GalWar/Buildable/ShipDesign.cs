@@ -319,7 +319,7 @@ namespace GalWar
                 out double upkeepPct, out double hpMult, out int att, out int def, out int hp,
                 out int speed, out bool colony, out int trans, out int bombardDamage)
         {
-            upkeepPct = ( design.Cost / (double)design.Upkeep / design.GetUpkeepPayoff(mapSize, research) + 1 ) * Consts.CostUpkeepPct;
+            upkeepPct = ( design.Cost / (double)design.Upkeep / design.GetUpkeepPayoff(mapSize, design.Research) + 1 ) * Consts.CostUpkeepPct;
             hpMult = design.HP / GetHPStr(design.Att, design.Def, 1);
 
             double attStr = design.Att;
@@ -335,15 +335,15 @@ namespace GalWar
             {
                 double attDefStr = GetAttDefStr(research);
                 if (Game.Random.Bool())
-                    attStr += Game.Random.Range(0, 1 + attDefStr);
+                    attStr += Game.Random.Range(0, attDefStr);
                 if (Game.Random.Bool())
-                    defStr += Game.Random.Range(0, 1 + attDefStr);
+                    defStr += Game.Random.Range(0, attDefStr);
                 if (Game.Random.Bool())
-                    hpStr += Game.Random.Range(0, 1 + GetHPStr(attDefStr, attDefStr));
+                    hpStr += 1 + Game.Random.Range(0, GetHPStr(attDefStr, attDefStr));
                 if (Game.Random.Bool())
                 {
                     if (Game.Random.Bool())
-                        speedStr += Game.Random.Range(0, 1 + GetSpeedStr(research));
+                        speedStr += Game.Random.Range(0, GetSpeedStr(research) - 1);
                     if (Game.Random.Bool() && ( deathStarStr || transStr > 0 || Game.Random.Bool() ))
                     {
                         if (!deathStarStr)
@@ -352,8 +352,9 @@ namespace GalWar
                             else
                                 deathStarStr = true;
                         bombardDamageStr += Game.Random.Range(1, Consts.GetBombardDamage(attDefStr) * DeathStarAvg);
+                        if (!colonyStr)
+                            colonyStr = ( transStr > 0 && Game.Random.Bool() );
                     }
-                    colonyStr |= ( transStr > 0 && Game.Random.Bool() );
                 }
             }
 

@@ -1113,7 +1113,7 @@ namespace GalWar
             gold -= repairCost;
         }
 
-        internal void PlayTurn(IEventHandler handler, IEnumerable<Tile> anomalies)
+        internal IEnumerable<Tile> PlayTurn(IEventHandler handler, IEnumerable<Tile> anomalies)
         {
             if (AI != null)
             {
@@ -1127,6 +1127,7 @@ namespace GalWar
                 }
                 anomalies = anomalies.Concat(Game.EndTurn(handler, true));
             }
+            return anomalies;
         }
 
         public override int GetHashCode()
