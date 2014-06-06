@@ -74,6 +74,45 @@ namespace NCWMap
 
         public static void DoMore()
         {
+            int loops = 0;
+            while (true)
+            {
+                Tile r1 = Map[Random.Next(Width), Random.Next(Height)];
+                Tile r2 = Map[Random.Next(Width), Random.Next(Height)];
+                if (r1.Water != r2.Water)
+                {
+                    ++loops;
+                    var n1 = r1.GetNeighbors().Where(t => t.Water != r1.Water).ToList();
+                    var n2 = r2.GetNeighbors().Where(t => t.Water != r2.Water).ToList();
+                    if (n1.Any() && n2.Any())
+                        foreach (Point p in Random.Iterate(n1.Count, n2.Count))
+                        {
+                            Tile t1 = n1[p.X];
+                            Tile t2 = n2[p.Y];
+                            if (TrySwap(t1, t2))
+                            {
+                                Console.WriteLine(loops);
+                                return;
+                            }
+                        }
+                }
+            }
+        }
+
+        private static bool TrySwap(Tile s1, Tile s2)
+        {
+            s1.Water = !s1.Water;
+            s2.Water = !s2.Water;
+            var total = new[] { s1, s2 }.Concat(s1.GetNeighbors()).Concat(s2.GetNeighbors());
+            foreach (Tile t1 in total)
+                foreach (Tile t2 in total)
+                    if (t1.Water == t2.Water && !CanReach(t1, t2, t1.Water))
+                    {
+                        s1.Water = !s1.Water;
+                        s2.Water = !s2.Water;
+                        return false;
+                    }
+            return true;
         }
 
         private static void CreateMap()
