@@ -35,8 +35,7 @@ namespace NCWMap
         }
         public static int GetDistance(Tile t1, Tile t2)
         {
-            int x1 = t1.X, y1 = t1.Y, x2 = t2.X, y2 = t2.Y;
-            return GetDistance(x1, y1, x2, y2);
+            return GetDistance(t1.X, t1.Y, t2.X, t2.Y);
         }
         private static int GetDistance(int x1, int y1, int x2, int y2)
         {

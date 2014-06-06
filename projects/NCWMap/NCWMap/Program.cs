@@ -24,6 +24,45 @@ namespace NCWMap
             Random = new MTRandom();
             Random.StartTick();
 
+
+            //SortedDictionary<int, int> algDist = new SortedDictionary<int, int>();
+            //int algTot = 1000000;
+            //for (int a = 0 ; a < algTot ; ++a)
+            //{
+            //    int amt = GetResourceAmt(), num;
+            //    algDist.TryGetValue(amt, out num);
+            //    algDist[amt] = num + 1;
+            //}
+
+
+            //SortedDictionary<int, int>[] dist = new SortedDictionary<int, int>[] { new SortedDictionary<int, int>(), new SortedDictionary<int, int>(), new SortedDictionary<int, int>() };
+            //int[] r2 = new int[3];
+            //InitMap();
+            //int total = 1000000;
+            //for (int a = 0 ; a < total ; ++a)
+            //{
+            //    int[] res = new int[3];
+            //    Player p = new Player("", Map[0, 0], 0);
+            //    for (int b = 0 ; b < 3 ; ++b)
+            //    {
+            //        res[b] += p.Resources[b, 0];
+            //        r2[b] += p.Resources[b, 0];
+            //    }
+            //    int tier = int.Parse(p.Unit[0].ToString());
+            //    res[tier - 1] += tier * 2;
+            //    r2[tier - 1] += tier * 2;
+            //    for (int b = 0 ; b < 3 ; ++b)
+            //    {
+            //        int v;
+            //        dist[b].TryGetValue(res[b], out v);
+            //        dist[b][res[b]] = v + 1;
+            //    }
+            //}
+            //total = 0;
+            //for (int b = 0 ; b < 3 ; ++b)
+            //    total += r2[b];
+
+
             CreateMap();
 
             Application.EnableVisualStyles();
@@ -65,40 +104,33 @@ namespace NCWMap
                 tile.Water = Random.Next(3) == 0;
 
             //select the largest block of contiuous land as the mainland
-            int countLand;
-            Tile land = FindLargest(false, out countLand);
-
-            //fill in islands with water
-            foreach (Tile tile in Map)
-                if (!tile.Water && !CanReach(tile, land, false))
-                    tile.Water = true;
+            KeepLargest(false);
 
             //select the largest lake
-            int countWater;
-            Tile lake = FindLargest(true, out countWater);
-
-            //fill in other lakes with land 
-            foreach (Tile t in Map)
-                if (t.Water && !CanReach(t, lake, true))
-                    t.Water = false;
-
-            return countWater;
+            return KeepLargest(true);
         }
-        private static Tile FindLargest(bool water, out int count)
+        private static int KeepLargest(bool water)
         {
+            //find the largest block
             Tile main = null;
-            count = int.MinValue;
+            int count = int.MinValue;
             foreach (Tile tile in Random.Iterate(Map.Cast<Tile>()))
-                if (tile.Water == water)
+                if (tile.Water == water && ( main == null || !CanReach(tile, main, water) ))
                 {
-                    int cur = Map.Cast<Tile>().Count(t2 => t2.Water == water && CanReach(tile, t2, water));
+                    int cur = Map.Cast<Tile>().Count(t => t.Water == water && CanReach(tile, t, water));
                     if (count < cur)
                     {
                         main = tile;
                         count = cur;
                     }
                 }
-            return main;
+
+            //remove all others
+            foreach (Tile tile in Map)
+                if (tile.Water == water && !CanReach(tile, main, water))
+                    tile.Water = !water;
+
+            return count;
         }
         private static void FillWater(int countWater)
         {
@@ -106,7 +138,7 @@ namespace NCWMap
             bool water = true;
             if (countWater > targetWater)
             {
-                //we actually need land to creep in on the excess water
+                //we actually need land to creep in on the excess water instead
                 countWater = Width * Height - countWater;
                 targetWater = Width * Height - targetWater;
                 water = false;
@@ -127,7 +159,7 @@ namespace NCWMap
                         {
                             neighbors = test.GetNeighbors().Where(n => n.Water != water);
                             Tile land = neighbors.First();
-
+                            //test if the change is valid
                             test.Water = water;
                             if (neighbors.All(n => CanReach(n, land, !water)))
                                 return;
@@ -145,10 +177,13 @@ namespace NCWMap
 
         private static void CreateResources()
         {
+            //each map sector gets 2 resources
             for (int a = 0 ; a < 2 ; ++a)
                 for (int x = 0 ; x < 3 ; ++x)
                     for (int y = 0 ; y < 3 ; ++y)
                         CreateResource(GetSectorPoint(x, y, true));
+
+            //6 more randomly throughout map
             for (int b = 0 ; b < 6 ; ++b)
                 CreateResource(Map[Random.Next(Width), Random.Next(Height)]);
         }
@@ -162,10 +197,19 @@ namespace NCWMap
             }
             else
             {
+                //we haven't placed anything else yet so the only tile info is another resource
                 type = int.Parse(t.Inf[1]);
                 amt = int.Parse(t.Inf[2]) * 6 + int.Parse(t.Inf[3]);
             }
 
+            amt += GetResourceAmt();
+
+            t.Inf = new string[] { "T", type.ToString(), ( amt / 6 ).ToString(), ( amt % 6 ).ToString() };
+        }
+        private static int GetResourceAmt()
+        {
+            //same algorithm as done in-game
+            int amt = 0;
             int zeroes = 0;
             while (zeroes != 2)
             {
@@ -177,8 +221,7 @@ namespace NCWMap
                 --amt;
             else
                 ++amt;
-
-            t.Inf = new string[] { "T", type.ToString(), ( amt / 6 ).ToString(), ( amt % 6 ).ToString() };
+            return amt;
         }
 
         private static void CreatePlayers()
@@ -193,17 +236,17 @@ namespace NCWMap
             IEnumerator<Point> sectors = Random.Iterate(3, 3).GetEnumerator();
             foreach (string player in Random.Iterate(players))
             {
+                //each player starts in a different sector
                 sectors.MoveNext();
                 Point sector = sectors.Current;
 
                 Tile tile;
                 do
-                {
                     tile = GetSectorPoint(sector.X, sector.Y, false);
-                }
+                //must have at least 4 tiles in between players
                 while (tile.Inf != null || tile.GetNeighbors()
                         .SelectMany(t => t.GetNeighbors()).SelectMany(t => t.GetNeighbors()).SelectMany(t => t.GetNeighbors())
-                        .Distinct().Any(t => t.Inf != null && t.Inf.Length == 2));
+                        .Any(t => t.Inf != null && t.Inf.Length == 2));
 
                 tile.Inf = new[] { player, null };
 
@@ -217,6 +260,7 @@ namespace NCWMap
             Players = new Player[players.Count];
             foreach (var pair in Random.Iterate(players))
             {
+                //starting resources and units created and stored in Player object
                 Players[idx] = new Player(pair.Key, pair.Value, idx);
                 ++idx;
             }
@@ -224,6 +268,7 @@ namespace NCWMap
 
         private static void CreateCitySpots()
         {
+            //each sector gets a city spot
             foreach (Point sector in Random.Iterate(3, 3))
             {
                 Tile tile;
