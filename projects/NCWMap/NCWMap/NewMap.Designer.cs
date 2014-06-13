@@ -1,6 +1,6 @@
 ﻿namespace NCWMap
 {
-    partial class ShowMap
+    partial class NewMap
     {
         /// <summary>
         /// Required designer variable.

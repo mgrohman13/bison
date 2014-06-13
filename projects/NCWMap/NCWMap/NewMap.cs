@@ -9,10 +9,12 @@ using System.Windows.Forms;
 
 namespace NCWMap
 {
-    public partial class ShowMap : Form
+    public partial class NewMap : Form
     {
-        public ShowMap()
+        public NewMap()
         {
+            Program.CreateMap();
+
             InitializeComponent();
             ResizeRedraw = true;
         }

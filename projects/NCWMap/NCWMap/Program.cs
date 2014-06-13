@@ -25,6 +25,54 @@ namespace NCWMap
             Random.StartTick();
 
 
+            //foreach (Point p in Random.Iterate(2, 6, 1, 4))
+            //{
+            //    int att = p.X, def = p.Y;
+            //    if (att >= def)
+            //        for (int divFlag = 0 ; divFlag < 2 ; ++divFlag)
+            //        {
+            //            bool divDef = ( att == 4 && divFlag == 0 );
+            //            int attHP = 1 + Random.WeightedInt(35, 5.0 / 35), defHP = 1 + Random.WeightedInt(35, 5.0 / 35);
+            //            BattleResult br = new BattleResult(att, def, divDef, attHP, defHP);
+            //            int pos = 0, kill = 0, neg = 0, die = 0, tot = 100000;
+            //            for (int a = 0 ; a < tot ; ++a)
+            //            {
+            //                int ad = 0, dd = 0;
+            //                for (int b = 0 ; b < att ; ++b)
+            //                    ad += Random.Next(6);
+            //                int ct = ( divDef ? Random.Round(def / 2.0) : def );
+            //                for (int c = 0 ; c < ct ; ++c)
+            //                    dd += Random.Next(6);
+            //                if (ad > dd)
+            //                {
+            //                    int dmg = Random.Round(( ad - dd ) / 2.0);
+            //                    if (dmg >= defHP)
+            //                    {
+            //                        dmg = defHP;
+            //                        kill++;
+            //                    }
+            //                    pos += dmg;
+            //                }
+            //                else
+            //                {
+            //                    int dmg = Random.Round(( dd - ad ) / 2.0);
+            //                    if (dmg >= attHP)
+            //                    {
+            //                        dmg = attHP;
+            //                        die++;
+            //                    }
+            //                    neg += dmg;
+            //                }
+            //            }
+            //            double attKill, defKill, attDmg, defDmg;
+            //            attDmg = neg / (double)tot;
+            //            defDmg = pos / (double)tot;
+            //            attKill = die / (double)tot;
+            //            defKill = kill / (double)tot;
+            //        }
+            //}
+
+
             //SortedDictionary<int, int> algDist = new SortedDictionary<int, int>();
             //int algTot = 1000000;
             //for (int a = 0 ; a < algTot ; ++a)
@@ -62,12 +110,9 @@ namespace NCWMap
             //for (int b = 0 ; b < 3 ; ++b)
             //    total += r2[b];
 
-
-            CreateMap();
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ShowMap());
+            Application.Run(new Calculator());
 
             Random.Dispose();
         }
@@ -78,13 +123,16 @@ namespace NCWMap
             while (true)
             {
                 Tile r1 = Map[Random.Next(Width), Random.Next(Height)];
-                Tile r2 = Map[Random.Next(Width), Random.Next(Height)];
-                if (r1.Water != r2.Water)
+                var n1 = r1.GetNeighbors().Where(t => t.Water != r1.Water).ToList();
+                if (n1.Any())
                 {
                     ++loops;
-                    var n1 = r1.GetNeighbors().Where(t => t.Water != r1.Water).ToList();
+                    Tile r2;
+                    //do
+                    r2 = Map[Random.Next(Width), Random.Next(Height)];
+                    //while (r1.Water == r2.Water);
                     var n2 = r2.GetNeighbors().Where(t => t.Water != r2.Water).ToList();
-                    if (n1.Any() && n2.Any())
+                    if (r1.Water != r2.Water && n2.Any())
                         foreach (Point p in Random.Iterate(n1.Count, n2.Count))
                         {
                             Tile t1 = n1[p.X];
@@ -98,7 +146,6 @@ namespace NCWMap
                 }
             }
         }
-
         private static bool TrySwap(Tile s1, Tile s2)
         {
             s1.Water = !s1.Water;
@@ -115,7 +162,7 @@ namespace NCWMap
             return true;
         }
 
-        private static void CreateMap()
+        public static void CreateMap()
         {
             CreateTerrain();
             CreateResources();
