@@ -78,7 +78,7 @@ namespace NCWMap
         private int BalanceOrder(int order)
         {
             //turn order balancing
-            order *= 2;
+            order *= 3;
             while (order >= 1)
                 AddResource(Program.Random.Next(3), 1, 1, ref order);
             return order;

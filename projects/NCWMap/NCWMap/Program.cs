@@ -110,6 +110,7 @@ namespace NCWMap
             //for (int b = 0 ; b < 3 ; ++b)
             //    total += r2[b];
 
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Calculator());
@@ -117,31 +118,28 @@ namespace NCWMap
             Random.Dispose();
         }
 
+        private static int turn = 1;
         public static void DoMore()
         {
-            int loops = 0;
             while (true)
             {
-                Tile r1 = Map[Random.Next(Width), Random.Next(Height)];
-                var n1 = r1.GetNeighbors().Where(t => t.Water != r1.Water).ToList();
+                ++turn;
+                Tile r1, r2;
+                List<Tile> n1, n2;
+                r1 = Map[Random.Next(Width), Random.Next(Height)];
+                n1 = r1.GetNeighbors().Where(t => t.Water != r1.Water).ToList();
                 if (n1.Any())
                 {
-                    ++loops;
-                    Tile r2;
-                    //do
-                    r2 = Map[Random.Next(Width), Random.Next(Height)];
-                    //while (r1.Water == r2.Water);
-                    var n2 = r2.GetNeighbors().Where(t => t.Water != r2.Water).ToList();
-                    if (r1.Water != r2.Water && n2.Any())
-                        foreach (Point p in Random.Iterate(n1.Count, n2.Count))
+                    do
+                    {
+                        r2 = Map[Random.Next(Width), Random.Next(Height)];
+                        n2 = r2.GetNeighbors().Where(t => t.Water != r2.Water).ToList();
+                    } while (r1.Water == r2.Water || !n2.Any());
+                    foreach (Point p in Random.Iterate(n1.Count, n2.Count))
+                        if (TrySwap(n1[p.X], n2[p.Y]))
                         {
-                            Tile t1 = n1[p.X];
-                            Tile t2 = n2[p.Y];
-                            if (TrySwap(t1, t2))
-                            {
-                                Console.WriteLine(loops);
-                                return;
-                            }
+                            Console.WriteLine(turn--);
+                            return;
                         }
                 }
             }
@@ -164,10 +162,33 @@ namespace NCWMap
 
         public static void CreateMap()
         {
+            //InitMap();
+            //int total = 1000000;
+            //for (int a = 0 ; a < total ; ++a)
+            //{
+            //    Tile first, second;
+            //    first = Map[Random.Next(Width), Random.Next(Height)];
+            //    do
+            //        second = Map[Random.Next(Width), Random.Next(Height)];
+            //    while (Tile.GetDistance(first, second) < 7);
+            //    AddPick(first, 0);
+            //    AddPick(second, 0);
+            //}
+            //foreach (Tile tile in Map.Cast<Tile>())
+            //    if (tile.Inf != null)
+            //        tile.Inf[0] = ( Width * Height * int.Parse(tile.Inf[0]) / (double)total / 2.0 ).ToString("0.00");
+
+
             CreateTerrain();
             CreateResources();
             CreatePlayers();
             CreateCitySpots();
+        }
+        private static void AddPick(Tile tile, int idx)
+        {
+            if (tile.Inf == null)
+                tile.Inf = new[] { "0", "" };
+            tile.Inf[idx] = ( int.Parse(tile.Inf[idx]) + 1 ).ToString();
         }
 
         private static void CreateTerrain()
@@ -328,7 +349,7 @@ namespace NCWMap
 
                 Tile tile;
                 do
-                    tile = GetSectorPoint(sector.X, sector.Y, false);
+                    tile = GetSectorPoint(sector, false);
                 //must have at least 4 tiles in between players
                 while (tile.Inf != null || tile.GetNeighbors()
                         .SelectMany(t => t.GetNeighbors()).SelectMany(t => t.GetNeighbors()).SelectMany(t => t.GetNeighbors())
@@ -360,13 +381,17 @@ namespace NCWMap
                 Tile tile;
                 do
                 {
-                    tile = GetSectorPoint(sector.X, sector.Y, true);
+                    tile = GetSectorPoint(sector, true);
                 }
                 while (tile.Inf != null);
                 tile.Inf = new[] { "CTY", null };
             }
         }
 
+        private static Tile GetSectorPoint(Point sector, bool edge)
+        {
+            return GetSectorPoint(sector.X, sector.Y, edge);
+        }
         private static Tile GetSectorPoint(int x, int y, bool edge)
         {
             int val = edge ? 0 : 1;
