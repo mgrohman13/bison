@@ -163,20 +163,20 @@ namespace NCWMap
         public static void CreateMap()
         {
             //InitMap();
-            //int total = 1000000;
-            //for (int a = 0 ; a < total ; ++a)
-            //{
-            //    Tile first, second;
-            //    first = Map[Random.Next(Width), Random.Next(Height)];
-            //    do
-            //        second = Map[Random.Next(Width), Random.Next(Height)];
-            //    while (Tile.GetDistance(first, second) < 7);
-            //    AddPick(first, 0);
-            //    AddPick(second, 0);
-            //}
+            ////CreateResources();
+            //foreach (Tile t1 in Map.Cast<Tile>())
+            //    if (t1.Inf == null || t1.Inf.Length == 2)
+            //    {
+            //        AddPick(t1, 0, 0.5);
+            //        var others = Map.Cast<Tile>().Where(t2 =>
+            //                ( t2.Inf == null || t2.Inf.Length == 2 ) && Tile.GetDistance(t1, t2) >= 7).ToList();
+            //        double mult = 0.5 / others.Count;
+            //        foreach (Tile t2 in others)
+            //            AddPick(t2, 0, mult);
+            //    }
             //foreach (Tile tile in Map.Cast<Tile>())
-            //    if (tile.Inf != null)
-            //        tile.Inf[0] = ( Width * Height * int.Parse(tile.Inf[0]) / (double)total / 2.0 ).ToString("0.00");
+            //    if (tile.Inf.Length == 2)
+            //        tile.Inf[0] = double.Parse(tile.Inf[0]).ToString("0.000");
 
 
             CreateTerrain();
@@ -184,11 +184,11 @@ namespace NCWMap
             CreatePlayers();
             CreateCitySpots();
         }
-        private static void AddPick(Tile tile, int idx)
+        private static void AddPick(Tile tile, int idx, double amt)
         {
             if (tile.Inf == null)
                 tile.Inf = new[] { "0", "" };
-            tile.Inf[idx] = ( int.Parse(tile.Inf[idx]) + 1 ).ToString();
+            tile.Inf[idx] = ( double.Parse(tile.Inf[idx]) + amt ).ToString();
         }
 
         private static void CreateTerrain()
