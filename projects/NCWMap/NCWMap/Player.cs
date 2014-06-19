@@ -27,6 +27,8 @@ namespace NCWMap
             int tier = SelectUnit(tile);
             DistResources(( tier + 1 ) * 2);
             BalanceOrder(order);
+            for (int a = 0 ; a < 3 ; ++a)
+                AddOne(a);
         }
         private int SelectUnit(Tile tile)
         {
@@ -43,7 +45,7 @@ namespace NCWMap
             else
                 unit = Program.Random.Next(2) * 3;
             int tier = Program.Random.Next(3);
-            this.Unit = units[4 * tier + unit];
+            Unit = units[4 * tier + unit];
 
             return tier;
         }
@@ -78,15 +80,25 @@ namespace NCWMap
         private int BalanceOrder(int order)
         {
             //turn order balancing
-            order *= 3;
+            order *= 2;
             while (order >= 1)
                 AddResource(Program.Random.Next(3), 1, 1, ref order);
             return order;
         }
+        private void AddOne(int tier)
+        {
+            int unused = 0;
+            AddResource(tier, 1, 1, ref unused);
+        }
         private void AddResource(int tier, int mult, int add, ref int total)
         {
             total -= add;
-            this.Resources[tier, mult] += add;
+            Resources[tier, mult] += add;
+            if (mult == 1)
+            {
+                Resources[tier, 0] += Resources[tier, 1] / 6;
+                Resources[tier, 1] %= 6;
+            }
         }
     }
 }

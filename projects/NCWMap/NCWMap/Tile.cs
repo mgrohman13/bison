@@ -24,9 +24,9 @@ namespace NCWMap
             for (int xAdd = -1 ; xAdd <= 1 ; ++xAdd)
                 for (int yAdd = -1 ; yAdd <= 1 ; ++yAdd)
                 {
-                    int x = this.X + xAdd;
-                    int y = this.Y + yAdd;
-                    if (GetDistance(this.X, this.Y, x, y) == 1)
+                    int x = X + xAdd;
+                    int y = Y + yAdd;
+                    if (GetDistance(X, Y, x, y) == 1)
                     {
                         if (!( x < 0 || x >= Program.Width || y < 0 || y >= Program.Height ))
                             yield return Program.Map[x, y];

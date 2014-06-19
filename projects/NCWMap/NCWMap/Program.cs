@@ -118,16 +118,19 @@ namespace NCWMap
             Random.Dispose();
         }
 
-        private static int turn = 1;
         public static void DoMore()
         {
-            while (true)
+            int turn = 1, turns = Random.OEInt(39);
+            Console.WriteLine(turns);
+            while (turn <= turns)
             {
-                ++turn;
+                turn++;
+
                 Tile r1, r2;
                 List<Tile> n1, n2;
                 r1 = Map[Random.Next(Width), Random.Next(Height)];
                 n1 = r1.GetNeighbors().Where(t => t.Water != r1.Water).ToList();
+
                 if (n1.Any())
                 {
                     do
@@ -135,11 +138,12 @@ namespace NCWMap
                         r2 = Map[Random.Next(Width), Random.Next(Height)];
                         n2 = r2.GetNeighbors().Where(t => t.Water != r2.Water).ToList();
                     } while (r1.Water == r2.Water || !n2.Any());
+
                     foreach (Point p in Random.Iterate(n1.Count, n2.Count))
                         if (TrySwap(n1[p.X], n2[p.Y]))
                         {
                             Console.WriteLine(turn--);
-                            return;
+                            break;
                         }
                 }
             }
@@ -180,6 +184,7 @@ namespace NCWMap
 
 
             CreateTerrain();
+            DoMore();
             CreateResources();
             CreatePlayers();
             CreateCitySpots();
@@ -340,25 +345,23 @@ namespace NCWMap
         {
             Dictionary<string, Tile> result = new Dictionary<string, Tile>();
 
-            IEnumerator<Point> sectors = Random.Iterate(3, 3).GetEnumerator();
             foreach (string player in Random.Iterate(players))
             {
-                //each player starts in a different sector
-                sectors.MoveNext();
-                Point sector = sectors.Current;
-
-                Tile tile;
-                do
-                    tile = GetSectorPoint(sector, false);
-                //must have at least 4 tiles in between players
-                while (tile.Inf != null || tile.GetNeighbors()
-                        .SelectMany(t => t.GetNeighbors()).SelectMany(t => t.GetNeighbors()).SelectMany(t => t.GetNeighbors())
-                        .Any(t => t.Inf != null && t.Inf.Length == 2));
-
-                tile.Inf = new[] { player, null };
+                Tile tile = null;
+                foreach (Tile t1 in Random.Iterate(Map.Cast<Tile>()))
+                    if (t1.Inf == null && !result.Values.Any(t2 => Tile.GetDistance(t1, t2) < 7))
+                    {
+                        tile = t1;
+                        break;
+                    }
+                if (tile == null)
+                    return PlayerStartTiles(players);
 
                 result.Add(player, tile);
             }
+
+            foreach (var pair in result)
+                pair.Value.Inf = new[] { pair.Key, null };
             return result;
         }
         private static void PlayerResources(Dictionary<string, Tile> players)
@@ -380,9 +383,7 @@ namespace NCWMap
             {
                 Tile tile;
                 do
-                {
                     tile = GetSectorPoint(sector, true);
-                }
                 while (tile.Inf != null);
                 tile.Inf = new[] { "CTY", null };
             }
