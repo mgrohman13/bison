@@ -26,11 +26,8 @@ namespace NCWMap
                 {
                     int x = X + xAdd;
                     int y = Y + yAdd;
-                    if (GetDistance(X, Y, x, y) == 1)
-                    {
-                        if (!( x < 0 || x >= Program.Width || y < 0 || y >= Program.Height ))
-                            yield return Program.Map[x, y];
-                    }
+                    if (x >= 0 && x < 18 && y >= 0 && y < 18 && GetDistance(X, Y, x, y) == 1)
+                        yield return Program.Map[x, y];
                 }
         }
         public static int GetDistance(Tile t1, Tile t2)

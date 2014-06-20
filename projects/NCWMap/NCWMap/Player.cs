@@ -19,17 +19,13 @@ namespace NCWMap
             this.Unit = null;
             this.Resources = new int[3, 2];
 
-            InitPlayer(tile, order);
-        }
-
-        private void InitPlayer(Tile tile, int order)
-        {
             int tier = SelectUnit(tile);
-            DistResources(( tier + 1 ) * 2);
+            DistResources(GetTierCost(tier));
             BalanceOrder(order);
             for (int a = 0 ; a < 3 ; ++a)
                 AddOne(a);
         }
+
         private int SelectUnit(Tile tile)
         {
             //determine available units
@@ -49,6 +45,7 @@ namespace NCWMap
 
             return tier;
         }
+
         private void DistResources(int unitCost)
         {
             //remaining resources to be given to bank
@@ -70,13 +67,13 @@ namespace NCWMap
             while (resources >= 6)
             {
                 int tier = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 6 }, { 1, 3 }, { 2, 2 } });
-                int amt = ( tier + 1 ) * 2;
-                AddResource(tier, 0, amt, ref resources);
+                AddResource(tier, 0, GetTierCost(tier), ref resources);
             }
             //remaining are evenly distributed
             while (resources >= 1)
                 AddResource(Program.Random.Next(3), 0, 1, ref resources);
         }
+
         private int BalanceOrder(int order)
         {
             //turn order balancing
@@ -84,6 +81,11 @@ namespace NCWMap
             while (order >= 1)
                 AddResource(Program.Random.Next(3), 1, 1, ref order);
             return order;
+        }
+
+        private static int GetTierCost(int tier)
+        {
+            return ( tier + 1 ) * 2;
         }
         private void AddOne(int tier)
         {

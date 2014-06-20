@@ -26,17 +26,17 @@ namespace NCWMap
                 const float bottomSpace = 52f;
 
                 const float padding = 6f;
-                float xs = ( ClientSize.Width - padding * 2f ) / (float)( Program.Width + .5f );
-                float ys = ( ClientSize.Height - padding * 2f - bottomSpace ) / (float)( Program.Height );
+                float xs = ( ClientSize.Width - padding * 2f ) / 18.5f;
+                float ys = ( ClientSize.Height - padding * 2f - bottomSpace ) / 18f;
 
                 if (xs > 1 && ys > 1)
                 {
                     int idx = 0;
-                    RectangleF[] rects = new RectangleF[Program.Width * Program.Height];
+                    RectangleF[] rects = new RectangleF[18 * 18];
 
                     using (Font font = new Font("arial", ys / 2.6f))
-                        for (int x = 0 ; x < Program.Width ; ++x)
-                            for (int y = 0 ; y < Program.Height ; ++y)
+                        for (int x = 0 ; x < 18 ; ++x)
+                            for (int y = 0 ; y < 18 ; ++y)
                             {
                                 RectangleF r = new RectangleF(padding + x * xs + ( y % 2 == 0 ? xs / 2f : 0 ), padding + y * ys, xs, ys);
                                 rects[idx++] = r;
