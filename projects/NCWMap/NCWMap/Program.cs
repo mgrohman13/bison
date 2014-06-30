@@ -81,7 +81,9 @@ namespace NCWMap
             //}
 
 
-            //SortedDictionary<int, int>[] dist = new SortedDictionary<int, int>[] { new SortedDictionary<int, int>(), new SortedDictionary<int, int>(), new SortedDictionary<int, int>() };
+            //SortedDictionary<int, int>[] dist = new SortedDictionary<int, int>[] {
+            //        new SortedDictionary<int, int>(), new SortedDictionary<int, int>(), new SortedDictionary<int, int>()
+            //};
             //int[] r2 = new int[3];
             //InitMap();
             //int total = 1000000;
@@ -125,28 +127,27 @@ namespace NCWMap
             {
                 turn++;
 
-                Tile r1 = GetRandomTile();
-                List<Tile> n1 = r1.GetNeighbors().Where(n => n.Water != r1.Water).ToList();
-
+                Tile t1 = GetRandomTile();
+                List<Tile> n1 = t1.GetNeighbors().Where(n => n.Water != t1.Water).ToList();
                 if (n1.Any())
                 {
-                    Tile r2 = null;
+                    Tile t2 = null;
                     List<Tile> n2 = null;
                     foreach (Tile tile in RandMap())
-                        if (r1.Water != tile.Water)
+                        if (t1.Water != tile.Water)
                         {
                             n2 = tile.GetNeighbors().Where(n => n.Water != tile.Water).ToList();
                             if (n2.Any())
                             {
-                                r2 = tile;
+                                t2 = tile;
                                 break;
                             }
                         }
-                    if (r2 == null)
+                    if (t2 == null)
                         throw new Exception();
 
-                    foreach (Point p in Random.Iterate(n1.Count, n2.Count))
-                        if (TrySwap(n1[p.X], n2[p.Y]))
+                    foreach (Point point in Random.Iterate(n1.Count, n2.Count))
+                        if (TrySwap(n1[point.X], n2[point.Y]))
                         {
                             Console.WriteLine(turn--);
                             break;
@@ -219,7 +220,7 @@ namespace NCWMap
         {
             //all tiles have a chance of initially being water
             foreach (Tile tile in Map)
-                tile.Water = Random.Next(3) == 0;
+                tile.Water = ( Random.Next(3) == 0 );
 
             //select the largest block of contiuous land as the mainland
             KeepLargest(false);
@@ -235,7 +236,7 @@ namespace NCWMap
             foreach (Tile tile in EnumMap())
                 if (tile.Water == water && ( main == null || !CanReach(tile, main, water) ))
                 {
-                    int cur = EnumMap().Count(t => t.Water == water && CanReach(tile, t, water));
+                    int cur = EnumMap().Count(t2 => t2.Water == water && CanReach(tile, t2, water));
                     if (count < cur)
                     {
                         main = tile;

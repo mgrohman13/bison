@@ -616,7 +616,7 @@ namespace MattUtil
             }
         }
 
-        //int asdf = 0;
+        //int mersenneCount = 0;
         //Mersenne Twister pseudorandom number generator, period 2^19937-1.
         private uint MersenneTwister()
         {
@@ -626,7 +626,7 @@ namespace MattUtil
             {
                 if (t >= LENGTH)
                 {
-                    //Console.WriteLine(++asdf);
+                    //Console.WriteLine("MersenneTwister " + mersenneCount++);
                     //generate the next state of N 32-bit uints
                     uint b;
                     for (b = 0 ; b < LENGTH - STEP ; ++b)
@@ -753,6 +753,7 @@ namespace MattUtil
 
         #region other random methods
 
+        //ulong totalBits = 0;
         /// <summary>
         /// Returns a uniform random integer from 0 through 2^numBits-1.
         /// </summary>
@@ -760,6 +761,8 @@ namespace MattUtil
         {
             if (numBits <= 0 || numBits >= 65)
                 throw new ArgumentOutOfRangeException("numBits", numBits, "numBits must be greater than 0 and less than 65");
+
+            //Console.WriteLine(totalBits += numBits);
 
             //take initial coherent 32 bit uints when we can
             ulong retVal;
@@ -1881,8 +1884,12 @@ namespace MattUtil
         {
             ushort frequency = (ushort)obj;
 
+            //int inc = 0;
             while (true)
             {
+                //Console.WriteLine(inc++);
+                //Console.WriteLine(watch.Elapsed.TotalSeconds.ToString("0.0"));
+
                 //amount of sleep time is random, averaging at frequency
                 int sleep = OEInt(frequency);
 

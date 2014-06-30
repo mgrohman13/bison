@@ -1,132 +1,151 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using MattUtil;
 
 namespace CollectorKiller
 {
     class CollectorKiller
     {
+        static readonly MTRandom rand = new MTRandom();
+
         const int startLife = 13;
         const int startAmmo = 13;
 
         const int minDimension = 6;
-        const float startWidth = 39;
-        const float startHeight = 16.9f;
+        const double startWidth = 39.0;
+        const double startHeight = 16.9;
 
-        const float startEnemy = .26f;
-        const float startPickup = 1 / 3.9f;
+        const double startEnemy = .26;
+        const double startPickup = 1 / 3.9;
 
-        const float startRand = .13f;
+        const double startRand = .13;
 
         const double createEnemyChance = .3;
         const double createPickupChance = 1 / 3.0;
 
-        const int pause = 666;
+        const int pause = 780;
 
-        static MTRandom rand;
+        static readonly HashSet<Point> _invalid = new HashSet<Point>();
+        static int lastKey = Environment.TickCount;
 
-        static List<Point> _invalid;
-
-        Piece[,] _map;
-        int width, height, x, y, score, life, ammo;
+        readonly Piece[,] _map;
+        readonly int width, height;
+        int xP, yP, score, life, ammo;
 
         static void Main(string[] args)
         {
-            rand = new MTRandom();
             rand.StartTick();
-
             new CollectorKiller().PlayGame();
-
             rand.Dispose();
         }
 
         void DrawBorder()
         {
+            Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.White;
+
+            Console.Clear();
+
+            Console.WindowHeight = height + 3;
+            Console.WindowWidth = Math.Max(width + 2, 33);
+            Console.BufferWidth = Console.WindowWidth;
+
             for (int y = 0 ; y < height ; ++y)
             {
                 Console.SetCursorPosition(width, y);
                 Console.Write('|');
-                Write(' ', Console.BufferWidth - width - 1);
             }
+            Console.SetCursorPosition(0, height);
             Write('-', width);
             Console.Write('+');
-            Write(' ', 3 * Console.BufferWidth - width - 1);
         }
 
         void ReadScores()
         {
-            StreamReader reader = null;
             try
             {
-                reader = new StreamReader("scores.txt");
-
-                double avg = 0, scores = 0;
-                string input;
-                while (( input = reader.ReadLine() ) != null)
+                using (StreamReader reader = new StreamReader("scores.txt"))
                 {
-                    avg += int.Parse(input);
-                    scores++;
-                }
-                reader.Close();
 
-                WriteMessage("Average score: " + ( (double)( scores < 1 ? 0 : avg / scores ) ).ToString("0.0"));
-            }
-            catch (Exception e)
-            {
-                WriteMessage(e.Message);
-            }
-            finally
-            {
-                if (reader != null)
+                    ulong avg = 0, scores = 0, high = 0;
+                    string input;
+                    while (( input = reader.ReadLine() ) != null)
+                    {
+                        ulong score;
+                        if (ulong.TryParse(input, out score))
+                        {
+                            avg += score;
+                            scores++;
+                            if (high < score)
+                                high = score;
+                        }
+                    }
+
                     reader.Close();
+
+                    WriteMessage(string.Format("High Score: {0}  Avg: {1}", high,
+                            ( scores < 1 ? 0.0 : avg / (double)scores ).ToString("0.0")));
+                }
+            }
+            catch (Exception exception)
+            {
+                HandleException(exception);
             }
         }
-
         void UpdateScores()
         {
-            StreamWriter output = null;
             try
             {
-                output = new StreamWriter("scores.txt", true);
-                output.WriteLine(score.ToString());
-                output.Flush();
-                output.Close();
-            }
-            catch (System.Exception e)
-            {
-                WriteMessage(e.Message);
-            }
-            finally
-            {
-                if (output != null)
+                using (StreamWriter output = new StreamWriter("scores.txt", true))
+                {
+                    output.WriteLine(score);
+                    output.Flush();
                     output.Close();
+                }
+            }
+            catch (Exception exception)
+            {
+                HandleException(exception);
             }
         }
 
-        void PlayGame()
+        void HandleException(Exception exception)
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine(exception);
+            Console.ReadKey(true);
+        }
+
+        CollectorKiller()
+        {
+            _invalid.Clear();
+
             width = rand.GaussianCappedInt(startWidth, startRand, minDimension);
             height = rand.GaussianCappedInt(startHeight, startRand, minDimension);
 
-            Console.WindowHeight = height + 3;
-            Console.WindowWidth = Math.Max(width + 2, 32);
-            Console.BufferWidth = Console.WindowWidth;
-            DrawBorder();
+            _map = new Piece[width, height];
 
             score = 0;
             life = startLife;
             ammo = startAmmo;
-            x = rand.GaussianCappedInt(( width - 1 ) / 2f, startRand);
-            y = rand.GaussianCappedInt(( height - 1 ) / 2f, startRand);
-            InitGameMap();
-            DrawAll();
+            xP = rand.GaussianCappedInt(( width - 1 ) / 2.0, startRand);
+            yP = rand.GaussianCappedInt(( height - 1 ) / 2.0, startRand);
 
+            CreateStartPieces();
+
+            DrawBorder();
             ReadScores();
+            DrawAll();
+        }
 
+        void PlayGame()
+        {
             while (life >= 0)
             {
                 MovePlayer();
@@ -135,8 +154,13 @@ namespace CollectorKiller
                 CheckPiece(true);
             }
 
-            Refresh();
+            EndGame();
+        }
+
+        private void EndGame()
+        {
             UpdateScores();
+            Pause();
 
             WriteMessage("You Lost!   Final Score: " + score, 1);
             WriteMessage("Play again? (y/n)");
@@ -150,41 +174,45 @@ namespace CollectorKiller
 
             if (input.Equals("Y"))
             {
-                PlayGame();
+                new CollectorKiller().PlayGame();
             }
             else
             {
-                WriteMessage("Thank you for playing!  Press any key to exit.");
+                WriteMessage("Thanks for playing!  Press any key...");
                 Console.ReadKey(true);
             }
         }
 
-        void InitGameMap()
+        void CreateStartPieces()
         {
-            _map = new Piece[width, height];
-            _invalid = new List<Point>();
+            const double sizePow = .26, numPow = .52;
+            const double minStartPickup = 1.0;
 
-            float size = width * height - 1;
-            float sizeFactor = (float)Math.Pow(( startWidth * startHeight - 1 ) / size, .26);
-            float pickupMult = startPickup * sizeFactor;
+            double size = width * height - 1.0;
+            double factor = Math.Pow(( startWidth * startHeight - 1.0 ) / size, sizePow);
+            double pickups = startPickup * factor;
 
-            int numEnemies = rand.GaussianCappedInt(startEnemy * size, startRand, (int)Math.Ceiling(1 / pickupMult));
-            int numPickups = rand.Round(pickupMult * numEnemies);
+            factor = startEnemy * size;
+            int cap = (int)Math.Ceiling(Math.Pow(minStartPickup * Math.Pow(factor, numPow) / pickups, 1.0 / ( 1.0 + numPow )));
+            if (cap > factor)
+                cap = (int)Math.Floor(factor);
+            int numEnemies = rand.GaussianCappedInt(factor, startRand, cap);
+            pickups *= Math.Pow(numEnemies / factor, numPow) * numEnemies;
+            int numPickups = rand.Round(pickups);
 
-            for (int e = 0 ; e < numEnemies ; ++e)
-                CreateStart(Piece.Enemy);
-            for (int p = 0 ; p < numPickups ; ++p)
-                CreateStart(Piece.Pickup);
+            for (int a = 0 ; a < numEnemies ; ++a)
+                CreateStartPiece(Piece.Enemy);
+            for (int b = 0 ; b < numPickups ; ++b)
+                CreateStartPiece(Piece.Pickup);
         }
-
-        void CreateStart(Piece piece)
+        void CreateStartPiece(Piece piece)
         {
             int x, y;
             do
             {
                 x = rand.Next(width);
                 y = rand.Next(height);
-            } while (_map[x, y] != Piece.None || ( x == this.x && y == this.y ));
+            } while (_map[x, y] != Piece.None || ( x == this.xP && y == this.yP ));
             _map[x, y] = piece;
         }
 
@@ -192,14 +220,14 @@ namespace CollectorKiller
         {
             Move move = GetInput();
 
-            Invalidate(x, y);
+            Invalidate(xP, yP);
 
             switch (move)
             {
             case Move.Up:
-                if (y != 0)
+                if (yP != 0)
                 {
-                    y--;
+                    yP--;
                     break;
                 }
                 else
@@ -208,9 +236,9 @@ namespace CollectorKiller
                     return;
                 }
             case Move.Left:
-                if (x != 0)
+                if (xP != 0)
                 {
-                    x--;
+                    xP--;
                     break;
                 }
                 else
@@ -219,9 +247,9 @@ namespace CollectorKiller
                     return;
                 }
             case Move.Down:
-                if (y + 1 < height)
+                if (yP + 1 < height)
                 {
-                    y++;
+                    yP++;
                     break;
                 }
                 else
@@ -230,9 +258,9 @@ namespace CollectorKiller
                     return;
                 }
             case Move.Right:
-                if (x + 1 < width)
+                if (xP + 1 < width)
                 {
-                    x++;
+                    xP++;
                     break;
                 }
                 else
@@ -242,23 +270,16 @@ namespace CollectorKiller
                 }
 
             case Move.Attack:
-                bool useAmmo = false;
-                foreach (Point p in GetAdjacent(x, y))
-                    if (Get(p.x, p.y) == Piece.Enemy)
-                    {
-                        useAmmo = true;
-                        break;
-                    }
-                if (useAmmo)
+                if (GetAdjacent(xP, yP).Any(point => Get(point) == Piece.Enemy))
                 {
                     if (ammo > 0)
                     {
                         ammo--;
-                        foreach (Point p in GetAdjacent(x, y))
+                        foreach (Point point in GetAdjacent(xP, yP))
                         {
-                            if (Get(p.x, p.y) == Piece.Enemy)
+                            if (Get(point) == Piece.Enemy)
                                 score++;
-                            Set(p.x, p.y, Piece.None);
+                            Set(point, Piece.None);
                         }
                     }
                     else
@@ -275,51 +296,57 @@ namespace CollectorKiller
                 throw new Exception();
             }
 
-            foreach (Point p in GetAdjacent(x, y))
-                if (Get(p.x, p.y) == Piece.Enemy)
-                    life--;
+            life -= GetAdjacent(xP, yP).Count(point => Get(point) == Piece.Enemy);
 
-            Invalidate(x, y);
+            Invalidate(xP, yP);
 
             CheckPiece(false);
         }
-
         Move GetInput()
         {
             Refresh();
 
+            Console.SetCursorPosition(xP, yP);
+            if (ammo == 0 || life == 0)
+                Console.Write('\a');
             while (true)
             {
-                if (ammo == 0 || life == 0)
-                    Console.Write('\a');
-
-                string input;
-                Console.SetCursorPosition(x, y);
                 ConsoleKeyInfo key = Console.ReadKey(true);
-                if (key.Key == ConsoleKey.LeftArrow)
-                    input = "a";
-                else if (key.Key == ConsoleKey.UpArrow)
-                    input = "w";
-                else if (key.Key == ConsoleKey.RightArrow)
-                    input = "d";
-                else if (key.Key == ConsoleKey.DownArrow)
-                    input = "s";
-                else
-                    input = key.KeyChar.ToString();
 
-                switch (input.ToUpper())
+                if (Environment.TickCount - lastKey < 260)
+                    continue;
+                lastKey = Environment.TickCount;
+
+                char input;
+                if (key.Key == ConsoleKey.LeftArrow)
+                    input = 'a';
+                else if (key.Key == ConsoleKey.UpArrow)
+                    input = 'w';
+                else if (key.Key == ConsoleKey.RightArrow)
+                    input = 'd';
+                else if (key.Key == ConsoleKey.DownArrow)
+                    input = 's';
+                else
+                    input = key.KeyChar;
+
+                switch (input)
                 {
-                case " ":
+                case ' ':
                     return Move.Attack;
-                case "W":
+                case 'W':
+                case 'w':
                     return Move.Up;
-                case "A":
+                case 'A':
+                case 'a':
                     return Move.Left;
-                case "S":
+                case 'S':
+                case 's':
                     return Move.Down;
-                case "D":
+                case 'D':
+                case 'd':
                     return Move.Right;
-                case "P":
+                case 'P':
+                case 'p':
                     return Move.None;
                 }
             }
@@ -373,7 +400,6 @@ namespace CollectorKiller
                 throw new Exception();
             }
         }
-
         void MoveEnemy(int x, int y)
         {
             if (Get(x, y) == Piece.Enemy)
@@ -415,36 +441,49 @@ namespace CollectorKiller
             int enemies = rand.OEInt(createEnemyChance);
             if (enemies > 0)
             {
-                for (int a = 0 ; a < enemies ; ++a)
-                    CreatePiece(Piece.Enemy);
                 int pickups = rand.OEInt(enemies * createPickupChance);
-                for (int b = 0 ; b < pickups ; ++b)
-                    CreatePiece(Piece.Pickup);
+                //Log(enemies + " : " + pickups);
+                var choices = new[] { Piece.Enemy, Piece.Pickup };
+                while (enemies > 0 || pickups > 0)
+                {
+                    Piece create = rand.SelectValue(choices, piece => piece == Piece.Enemy ? enemies : pickups);
+                    if (create == Piece.Enemy)
+                        enemies--;
+                    else
+                        pickups--;
+                    CreatePiece(create);
+                }
             }
         }
-
         void CreatePiece(Piece piece)
         {
             int x = rand.Next(width);
             int y = rand.Next(height);
             if (Get(x, y) == Piece.None)
+            {
                 Set(x, y, piece);
+                //Log(piece.ToString());
+            }
         }
+        //int inc = 4;
+        //void Log(string msg)
+        //{
+        //    Console.ForegroundColor = ConsoleColor.Gray;
+        //    Console.SetCursorPosition(0, height + inc++);
+        //    Console.WriteLine(msg);
+        //    Console.SetWindowPosition(0, 0);
+        //}
 
         void CheckPiece(bool pause)
         {
-            Piece piece = Get(x, y);
+            Piece piece = Get(xP, yP);
 
             switch (piece)
             {
-            case Piece.None:
-                break;
-
             case Piece.Pickup:
                 life++;
                 ammo++;
                 break;
-
             case Piece.Enemy:
                 life--;
                 score++;
@@ -454,7 +493,7 @@ namespace CollectorKiller
             if (pause && piece != Piece.None)
                 Pause();
 
-            Set(x, y, Piece.None);
+            Set(xP, yP, Piece.None);
         }
 
         IEnumerable<Point> GetAdjacent(int x, int y)
@@ -464,12 +503,12 @@ namespace CollectorKiller
                 int yTot = y + yAdd;
                 if (yTot >= 0 && yTot < height)
                     for (int xAdd = -1 ; xAdd <= 1 ; ++xAdd)
-                        if (!( xAdd == 0 && yAdd == 0 ))
-                        {
-                            int xTot = x + xAdd;
-                            if (xTot >= 0 && xTot < width)
+                    {
+                        int xTot = x + xAdd;
+                        if (xTot >= 0 && xTot < width)
+                            if (x != xTot || y != yTot)
                                 yield return new Point(xTot, yTot);
-                        }
+                    }
             }
         }
 
@@ -483,11 +522,19 @@ namespace CollectorKiller
             }
         }
 
+        Piece Get(Point point)
+        {
+            return Get(point.X, point.Y);
+        }
         Piece Get(int x, int y)
         {
             return _map[x, y];
         }
 
+        void Set(Point point, Piece piece)
+        {
+            Set(point.X, point.Y, piece);
+        }
         void Set(int x, int y, Piece piece)
         {
             if (Get(x, y) != piece)
@@ -504,8 +551,8 @@ namespace CollectorKiller
 
         void Refresh()
         {
-            foreach (Point p in _invalid)
-                Draw(p.x, p.y);
+            foreach (Point point in rand.Iterate(_invalid))
+                Draw(point);
             _invalid.Clear();
 
             DrawPlayer();
@@ -514,13 +561,17 @@ namespace CollectorKiller
 
         void DrawAll()
         {
-            for (int y = 0 ; y < height ; ++y)
-                for (int x = 0 ; x < width ; ++x)
-                    Draw(x, y);
+            foreach (Point point in rand.Iterate(width, height))
+            {
+                Draw(point);
+                if (Get(point) != Piece.None)
+                    Thread.Sleep(6);
+            }
         }
 
-        void Draw(int x, int y)
+        void Draw(Point point)
         {
+            int x = point.X, y = point.Y;
             Console.SetCursorPosition(x, y);
             Piece piece = Get(x, y);
             switch (piece)
@@ -541,10 +592,13 @@ namespace CollectorKiller
 
         void DrawPlayer()
         {
-            if (Get(x, y) == Piece.None)
+            if (Get(xP, yP) == Piece.None)
             {
-                Console.SetCursorPosition(x, y);
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.SetCursorPosition(xP, yP);
+                if (ammo == 0 || life == 0)
+                    Console.ForegroundColor = ConsoleColor.Green;
+                else
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write('X');
             }
         }
@@ -555,15 +609,24 @@ namespace CollectorKiller
             Console.SetCursorPosition(0, height + 1);
 
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(string.Format("Score: {0}   Ammo: ", score));
+            Console.Write("Score: ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(score);
+
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("   Ammo: ");
             if (ammo == 0)
                 Console.ForegroundColor = ConsoleColor.Red;
+            else
+                Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write(ammo);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write("   Life: ");
             if (life == 0)
                 Console.ForegroundColor = ConsoleColor.Red;
+            else
+                Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(life);
         }
 
@@ -571,7 +634,6 @@ namespace CollectorKiller
         {
             WriteMessage(message, 2);
         }
-
         void WriteMessage(string message, int sizeInc)
         {
             Console.SetCursorPosition(0, height + sizeInc);
@@ -581,7 +643,6 @@ namespace CollectorKiller
                 Write(' ', Console.BufferWidth - message.Length);
             Console.SetWindowPosition(0, 0);
         }
-
         void Write(char value, int repeatCount)
         {
             StringBuilder str = new StringBuilder();
@@ -593,16 +654,6 @@ namespace CollectorKiller
         {
             Refresh();
             Thread.Sleep(pause);
-        }
-
-        struct Point
-        {
-            public int x, y;
-            public Point(int x, int y)
-            {
-                this.x = x;
-                this.y = y;
-            }
         }
 
         enum Piece
