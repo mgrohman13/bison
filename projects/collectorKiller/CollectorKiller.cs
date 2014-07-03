@@ -19,10 +19,10 @@ namespace CollectorKiller
         const double startWidth = 39.0;
         const double startHeight = 16.9;
 
-        const double startEnemy = .26;
+        const double startEnemy = .21;
         const double startPickup = 1 / 3.9;
 
-        const double startRand = .13;
+        const double startRand = .169;
 
         const double createEnemyChance = .3;
         const double createPickupChance = 1 / 3.0;

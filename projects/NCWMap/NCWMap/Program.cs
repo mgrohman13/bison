@@ -23,6 +23,29 @@ namespace NCWMap
             Random.StartTick();
 
 
+            //for (int att = 2 ; att <= 6 ; ++att)
+            //    for (int def = 1 ; def <= 4 ; ++def)
+            //        if (att >= def)
+            //            for (int divFlag = 0 ; divFlag < 2 ; ++divFlag)
+            //                if (divFlag == 1 || ( att == 4 && def < 3 ))
+            //                {
+            //                    if (divFlag == 0 && def == 2)
+            //                        def = 3;
+            //                    bool divDef = ( divFlag == 0 );
+            //                    double[] r = new double[26];
+            //                    for (int attHP = 1 ; attHP <= (int)Math.Ceiling(def * 2.5) ; ++attHP)
+            //                        r[-attHP + 10] = new BattleResult(att, def, divDef, attHP, 16).AttKill;
+            //                    for (int defHP = 1 ; defHP <= (int)Math.Ceiling(att * 2.5) ; ++defHP)
+            //                        r[defHP + 10] = new BattleResult(att, def, divDef, 16, defHP).DefKill;
+            //                    Console.Write("{0}\t{1}\t", att, divDef ? ( def / 2.0 ).ToString("0.0") : def.ToString());
+            //                    for (int a = 0 ; a < 26 ; ++a)
+            //                        Console.Write("\t" + r[a]);
+            //                    Console.WriteLine();
+            //                    if (divFlag == 0 && def == 3)
+            //                        def = 2;
+            //                }
+
+
             //foreach (Point p in Random.Iterate(2, 6, 1, 4))
             //{
             //    int att = p.X, def = p.Y;

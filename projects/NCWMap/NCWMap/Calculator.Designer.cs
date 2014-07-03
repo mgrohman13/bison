@@ -188,6 +188,7 @@
             // 
             // btnAdd
             // 
+            this.btnAdd.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
             this.btnAdd.Location = new System.Drawing.Point(15, 65);
             this.btnAdd.Name = "btnAdd";
             this.btnAdd.Size = new System.Drawing.Size(84, 23);
@@ -210,6 +211,7 @@
             // 
             // btnCalc
             // 
+            this.btnCalc.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.btnCalc.Location = new System.Drawing.Point(188, 65);
             this.btnCalc.Name = "btnCalc";
             this.btnCalc.Size = new System.Drawing.Size(84, 23);
@@ -220,6 +222,7 @@
             // 
             // panelResult
             // 
+            this.panelResult.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.panelResult.Controls.Add(this.txtDefKill);
             this.panelResult.Controls.Add(this.txtAttKill);
             this.panelResult.Controls.Add(this.txtDefDmg);
@@ -228,7 +231,7 @@
             this.panelResult.Controls.Add(this.label7);
             this.panelResult.Controls.Add(this.label6);
             this.panelResult.Controls.Add(this.label5);
-            this.panelResult.Location = new System.Drawing.Point(70, 94);
+            this.panelResult.Location = new System.Drawing.Point(70, 152);
             this.panelResult.Name = "panelResult";
             this.panelResult.Size = new System.Drawing.Size(144, 69);
             this.panelResult.TabIndex = 11;
@@ -308,6 +311,7 @@
             // 
             // nudDefHP
             // 
+            this.nudDefHP.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
             this.nudDefHP.Location = new System.Drawing.Point(233, 39);
             this.nudDefHP.Maximum = new decimal(new int[] {
             36,
