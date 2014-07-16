@@ -1,3 +1,4 @@
+restart game with fire/turbo on
 improve asteroid collisions
 	momentum partially/randomly conserved
 	explosion interaction - 'pushing' effect

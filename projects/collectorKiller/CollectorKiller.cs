@@ -30,7 +30,6 @@ namespace CollectorKiller
         const int pause = 780;
 
         static readonly HashSet<Point> _invalid = new HashSet<Point>();
-        static int lastKey = Environment.TickCount;
 
         readonly Piece[,] _map;
         readonly int width, height;
@@ -309,13 +308,12 @@ namespace CollectorKiller
             Console.SetCursorPosition(xP, yP);
             if (ammo == 0 || life == 0)
                 Console.Write('\a');
+            int lastKey = Environment.TickCount;
             while (true)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
-
                 if (Environment.TickCount - lastKey < 260)
                     continue;
-                lastKey = Environment.TickCount;
 
                 char input;
                 if (key.Key == ConsoleKey.LeftArrow)
@@ -326,6 +324,8 @@ namespace CollectorKiller
                     input = 'd';
                 else if (key.Key == ConsoleKey.DownArrow)
                     input = 's';
+                else if (key.Key == ConsoleKey.Enter)
+                    input = 'p';
                 else
                     input = key.KeyChar;
 
