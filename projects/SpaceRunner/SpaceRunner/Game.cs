@@ -33,14 +33,14 @@ namespace SpaceRunner
         // -show something interesting on the screen when the game is first launched
         private static void InitializeImages(Game game)
         {
-            Game.objects.Clear();
+            ClearStaticData();
 
             PointF p = game.RandomEdgePoint();
             FuelExplosion.NewFuelExplosion(game, p.X, p.Y);
             AlienShip.NewAlienShip(game);
 
             p = game.RandomStartPoint(0f);
-            LifeDust.NewLifeDust(game, p.X, p.Y, 6);
+            LifeDust.NewLifeDust(game, p.X, p.Y, 6f);
             int amt = Random.GaussianOEInt(4f, 1f, .1f, 1);
             while (--amt > -1)
             {
@@ -57,16 +57,16 @@ namespace SpaceRunner
             PowerUp.NewPowerUp(game, p.X, p.Y);
 
             p = game.RandomStartPoint(0f);
-            Bullet.BulletExplosion(game, p.X, p.Y, 1);
+            Bullet.BulletExplosion(game, p.X, p.Y, 1f);
             p = game.RandomStartPoint(0f);
-            Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0, 0));
+            Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0f, 0f));
 
             amt = Random.OEInt(8f);
             while (--amt > -1)
             {
-                game.MoveAndCollide(0, 0);
+                game.MoveAndCollide(0f, 0f);
 
-                game.score = 0;
+                game.score = 0m;
                 game.life = StartLife;
                 game.deadCounter = -1;
             }
@@ -793,10 +793,7 @@ namespace SpaceRunner
             lock (lockObj)
             {
                 objs = Game.objects.ToList();
-                Game.objects.Clear();
-                Game.objectSectors.Clear();
-                Game.finishedSectors.Clear();
-                LifeDust.Reset();
+                ClearStaticData();
             }
             foreach (GameObject obj in objs)
             {
@@ -804,6 +801,13 @@ namespace SpaceRunner
                 if (disposable != null)
                     disposable.Dispose();
             }
+        }
+        private static void ClearStaticData()
+        {
+            Game.objects.Clear();
+            Game.objectSectors.Clear();
+            Game.finishedSectors.Clear();
+            LifeDust.Reset();
         }
 
         private void GetMoveDirs(out float moveX, out float moveY)
@@ -1084,6 +1088,8 @@ namespace SpaceRunner
         private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring, Replay replay, bool isReplay)
             : base(GameTick, Refresh)
         {
+            ClearStaticData();
+
             SpaceRunner.Images.Generator.Generate();
 
             if (seed == null)
@@ -1096,7 +1102,6 @@ namespace SpaceRunner
             this.replay = replay;
             this.Scoring = scoring;
 
-            Game.objects.Clear();
             this.centerX = centerX;
             this.centerY = centerY;
 
