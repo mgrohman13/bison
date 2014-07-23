@@ -156,7 +156,7 @@ namespace SpaceRunner
             {
                 damage = ReduceConstSpeed(damage);
                 //use const speed to save from getting destroyed
-                while (speed < damage && HasConstSpeed())
+                while (speed <= damage && HasConstSpeed())
                     damage = ReduceConstSpeed(damage);
             }
 
@@ -181,21 +181,18 @@ namespace SpaceRunner
         private float ReduceConstSpeed(float damage)
         {
             float constSpeed = Game.GetDistance(xDir, yDir);
-            if (constSpeed > 0)
+            float constDmg = Game.GameRand.Weighted(damage, Game.AlienConstSpeedReduceWeight);
+            if (constDmg > constSpeed)
             {
-                float constDmg = Game.GameRand.Weighted(damage, Game.AlienConstSpeedReduceWeight);
-                if (constDmg > constSpeed)
-                {
-                    constDmg = constSpeed;
-                    xDir = yDir = 0;
-                }
-                else
-                {
-                    Game.NormalizeDirs(ref xDir, ref yDir, constSpeed - constDmg);
-                }
-                damage -= constDmg;
-                AddScore((decimal)constDmg * Game.AlienSpeedScoreMult);
+                constDmg = constSpeed;
+                xDir = yDir = 0;
             }
+            else
+            {
+                Game.NormalizeDirs(ref xDir, ref yDir, constSpeed - constDmg);
+            }
+            damage -= constDmg;
+            AddScore((decimal)constDmg * Game.AlienSpeedScoreMult);
             return damage;
         }
 

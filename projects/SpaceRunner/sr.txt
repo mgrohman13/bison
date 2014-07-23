@@ -1,3 +1,4 @@
+LifeDustSpacing too high
 restart game with fire/turbo on
 improve asteroid collisions
 	momentum partially/randomly conserved
@@ -7,6 +8,8 @@ improve hitboxes for less-round objects
 	what about sizes!?
 		bump collisions
 explosion should increase size over time
+	generate a bunch of random explosions and see what fits
 replay speeds
 	click for frame
 	fast as possible
+resume from replay

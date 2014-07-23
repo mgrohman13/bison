@@ -80,51 +80,56 @@ namespace SpaceRunner
                 * Game.LifeDustBondRandomness * MTRandom.GAUSSIAN_FLOAT_MAX;
         internal static void Reset()
         {
-            bonds.Clear();
+            lock (bonds)
+                bonds.Clear();
         }
         protected override void OnStep()
         {
-            int bondCount = bonds.Count;
-            float x = this.x, y = this.y, area = this.Area,
-                    xWeight = x * area, yWeight = y * area;
+            lock (bonds)
+            {
+                int bondCount = bonds.Count;
+                float x = this.x, y = this.y, area = this.Area,
+                        xWeight = x * area, yWeight = y * area;
 
-            //find a nearby bond if one exists
-            if (bondCount > 0)
-                foreach (int idx in iterator)
-                {
-                    var bond = bonds[idx];
-                    float totalX = bond[0], totalY = bond[1], bondArea = bond[2],
-                            bondX = totalX / bondArea, bondY = totalY / bondArea,
-                            distance = Game.GetDistance(x, y, bondX, bondY);
-                    if (maxDist > distance && Game.GameRand.Gaussian(Game.LifeDustBondDistance, Game.LifeDustBondRandomness) > distance)
+                //find a nearby bond if one exists
+                if (bondCount > 0)
+                    foreach (int idx in iterator)
                     {
-                        if (distance > this.size + Game.GetSize(bondArea))
+                        var bond = bonds[idx];
+                        float totalX = bond[0], totalY = bond[1], bondArea = bond[2],
+                                bondX = totalX / bondArea, bondY = totalY / bondArea,
+                                distance = Game.GetDistance(x, y, bondX, bondY);
+                        if (maxDist > distance && Game.GameRand.Gaussian(Game.LifeDustBondDistance, Game.LifeDustBondRandomness) > distance)
                         {
-                            //move towards the bond
-                            float xDir = bondX - x;
-                            float yDir = bondY - y;
-                            Game.NormalizeDirs(ref xDir, ref yDir, (float)( Game.LifeDustBondAcceleration / GetSizePct(this)
-                                    * Math.Sqrt(bondArea / ( bondArea + ClumpSizeDiv )) ));
-                            this.xDir += xDir;
-                            this.yDir += yDir;
+                            if (distance > this.size + Game.GetSize(bondArea))
+                            {
+                                //move towards the bond
+                                float xDir = bondX - x;
+                                float yDir = bondY - y;
+                                Game.NormalizeDirs(ref xDir, ref yDir, (float)( Game.LifeDustBondAcceleration / GetSizePct(this)
+                                        * Math.Sqrt(bondArea / ( bondArea + ClumpSizeDiv )) ));
+                                this.xDir += xDir;
+                                this.yDir += yDir;
+                            }
+
+                            //add to the bond
+                            bond[0] = totalX + xWeight;
+                            bond[1] = totalY + yWeight;
+                            bond[2] = bondArea + area;
+                            return;
                         }
-
-                        //add to the bond
-                        bond[0] = totalX + xWeight;
-                        bond[1] = totalY + yWeight;
-                        bond[2] = bondArea + area;
-                        return;
                     }
-                }
 
-            //create a new starting bond
-            bonds.Add(new[] { xWeight, yWeight, area });
-            iterator = Game.GameRand.Iterate(bondCount + 1);
+                //create a new starting bond
+                bonds.Add(new[] { xWeight, yWeight, area });
+                iterator = Game.GameRand.Iterate(bondCount + 1);
+            }
         }
 
         private void AdjustMove(GameObject obj)
         {
-            float objXDir = obj.XDir, objYDir = obj.YDir, xDist = this.x - obj.X, yDist = this.y - obj.Y;
+            float objXDir, objYDir, xDist = this.x - obj.X, yDist = this.y - obj.Y;
+            obj.GetTotalMove(out objXDir, out objYDir);
             Game.NormalizeDirs(ref xDist, ref yDist, 1);
             if (obj is Explosion || obj is FuelExplosion)
             {
@@ -180,9 +185,9 @@ namespace SpaceRunner
             bool isLifeDust = ( lifeDust != null );
             if (isLifeDust)
             {
-                float areas = ( this.Area + obj.Area );
-                lifeDust.xDir = xDir = ( xDir * this.Area + lifeDust.xDir * obj.Area ) / areas;
-                lifeDust.yDir = yDir = ( yDir * this.Area + lifeDust.yDir * obj.Area ) / areas;
+                float areas = ( this.Area + lifeDust.Area );
+                lifeDust.xDir = this.xDir = ( this.xDir * this.Area + lifeDust.xDir * lifeDust.Area ) / areas;
+                lifeDust.yDir = this.yDir = ( this.yDir * this.Area + lifeDust.yDir * lifeDust.Area ) / areas;
             }
             else
             {

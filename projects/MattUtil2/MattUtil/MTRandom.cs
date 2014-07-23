@@ -1350,7 +1350,7 @@ namespace MattUtil
                 else if (isFloat)
                 {
                     float retVal = this.gaussianFloat;
-                    //double.NaN signifies lack of a buffered value
+                    //float.NaN signifies lack of a buffered value
                     this.gaussianFloat = float.NaN;
                     return retVal;
                 }

@@ -231,7 +231,7 @@ namespace SpaceRunner.Forms
         {
             string save = ShowDialog(this.saveFileDialog);
             if (save != null)
-                TBSUtil.SaveGame(Game.Replay, save);
+                Game.Replay.Save(save);
         }
         private void replayLoad_Click(object sender, EventArgs e)
         {
@@ -239,7 +239,7 @@ namespace SpaceRunner.Forms
             {
                 string load = ShowDialog(this.openFileDialog);
                 if (load != null)
-                    ShowReplay(TBSUtil.LoadGame<Replay>(load));
+                    ShowReplay(Replay.Load(load));
             }
         }
         private void replayEnable_Click(object sender, EventArgs e)

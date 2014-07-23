@@ -207,7 +207,7 @@ namespace SpaceRunner
             OnStep();
         }
 
-        protected void GetTotalMove(out float xMove, out float yMove)
+        internal void GetTotalMove(out float xMove, out float yMove)
         {
             //move towards the player
             xMove = -x;

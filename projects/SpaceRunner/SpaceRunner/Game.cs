@@ -285,11 +285,11 @@ namespace SpaceRunner
         internal const float LifeDustClumpAmt = 13f;
         internal const float LifeDustClumpOEPct = .13f;
         internal const float LifeDustAmtRandomness = .3f;
-        //initial spacing between objects in a clump
+        //standard deviation for initial spacing between objects in a clump
         internal const float LifeDustSpacing = 5.2f;
-        //speed of the entire clump
+        //standard deviation for initial speed of the entire clump
         internal const float LifeDustClumpSpeed = GameSpeed * .39f;
-        //speed of each individual
+        //standard deviation for initial speed of each individual
         internal const float LifeDustIndividualSpeed = GameSpeed * .13f;
         //exponent to the speed picked up from collisions with other objects
         internal const float LifeDustObjSpeedPower = GameSpeed / ( GameSpeed + .169f );
@@ -964,6 +964,9 @@ namespace SpaceRunner
                 sqrt = (float)( Math.Sqrt(sqrt) );
             //lead is the extra distance the player will travel until the bullet hits
             float lead = ( sqrt + xDist ) / ( speedRatio - 1f );
+            if (( sqrt + xDist ) < 0)
+            {
+            }
             //negative lead means the player is traveling away too quickly
             if (lead > 0)
             {
@@ -973,9 +976,15 @@ namespace SpaceRunner
                 NormalizeDirs(ref moveX, ref moveY, lead);
                 xDir += moveX;
                 yDir += moveY;
+                if (speedRatio < 1)
+                {
+                }
             }
             else
             {
+                if (speedRatio > 1)
+                {
+                }
             }
         }
         internal static float AddBit(float value, bool negative = false)
@@ -1315,12 +1324,12 @@ namespace SpaceRunner
         }
         static void PrintObjInfo(GameObject obj)
         {
-            if (obj != null)
-            {
-                string point = string.Format("({0},{1})", obj.X.ToString("0.0"), obj.Y.ToString("0.0"));
-                Console.WriteLine("{0}\t{1}{2}{3}", GetDistance(obj.X, obj.Y).ToString("0").PadLeft(5),
-                        point, point.Length < 12 ? "\t\t\t" : ( point.Length < 16 ? "\t\t" : "\t" ), obj.ToString().Substring(12));
-            }
+            //if (obj != null)
+            //{
+            //    string point = string.Format("({0},{1})", obj.X.ToString("0.0"), obj.Y.ToString("0.0"));
+            //    Console.WriteLine("{0}\t{1}{2}{3}", GetDistance(obj.X, obj.Y).ToString("0").PadLeft(5),
+            //            point, point.Length < 12 ? "\t\t\t" : ( point.Length < 16 ? "\t\t" : "\t" ), obj.ToString().Substring(12));
+            //}
         }
         internal void HitPlayer(float damage, bool randomize = true)
         {

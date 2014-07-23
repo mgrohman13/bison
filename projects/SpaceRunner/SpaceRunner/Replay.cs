@@ -6,29 +6,22 @@ using MattUtil;
 
 namespace SpaceRunner
 {
-    [Serializable]
     internal class Replay
     {
         internal readonly uint[] Seed;
 
-        private Dictionary<int, float> input = null;
-        private HashSet<int> turbo = null;
-        private Dictionary<int, float> fire = null;
+        private readonly Dictionary<int, float> input = new Dictionary<int, float>();
+        private readonly HashSet<int> turbo = new HashSet<int>();
+        private readonly Dictionary<int, float> fire = new Dictionary<int, float>();
 
-        private int length;
+        private int length = -1;
 
-        [NonSerialized]
-        private float lastInput;
-        [NonSerialized]
-        private bool lastTurbo;
+        private float lastInput = float.NaN;
+        private bool lastTurbo = false;
 
         internal Replay(uint[] Seed)
         {
             this.Seed = Seed;
-
-            this.input = new Dictionary<int, float>();
-            this.turbo = new HashSet<int>();
-            this.fire = new Dictionary<int, float>();
         }
 
         internal int Length
@@ -41,51 +34,98 @@ namespace SpaceRunner
 
         internal void Record(int tickCount, float inputAngle, bool turbo, float? fire)
         {
-            float input = inputAngle;
-            if (this.lastInput != input)
+            if (this.lastInput != inputAngle)
             {
-                this.lastInput = input;
-                this.input.Add(tickCount, input);
+                this.lastInput = inputAngle;
+                this.input.Add(tickCount, inputAngle);
             }
 
-            RecordBool(tickCount, this.turbo, ref lastTurbo, turbo);
+            if (this.lastTurbo != turbo)
+            {
+                this.lastTurbo = turbo;
+                this.turbo.Add(tickCount);
+            }
 
             if (fire.HasValue)
                 this.fire.Add(tickCount, fire.Value);
         }
-
         internal void EndRecord(int tickCount)
         {
             this.length = tickCount;
         }
-
         internal void Play(int tickCount, ref float inputAngle, ref bool turbo, ref float? fire)
         {
             float saved;
             if (this.input.TryGetValue(tickCount, out saved))
                 inputAngle = saved;
 
-            PlayBool(tickCount, this.turbo, ref turbo);
+            if (this.turbo.Contains(tickCount))
+                turbo = !turbo;
 
-            if (this.fire.ContainsKey(tickCount))
-                fire = this.fire[tickCount];
+            if (this.fire.TryGetValue(tickCount, out saved))
+                fire = saved;
             else
                 fire = null;
         }
 
-        private static void RecordBool(int tickCount, HashSet<int> save, ref bool last, bool incoming)
+        internal void Save(string path)
         {
-            if (last != incoming)
-            {
-                last = incoming;
-                save.Add(tickCount);
-            }
+            TBSUtil.SaveGame(new ReplaySave(this), path);
         }
-
-        private static void PlayBool(int tickCount, HashSet<int> save, ref bool value)
+        internal static Replay Load(string path)
         {
-            if (save.Contains(tickCount))
-                value = !value;
+            return new Replay(TBSUtil.LoadGame<ReplaySave>(path));
+        }
+        private Replay(ReplaySave save)
+        {
+            this.Seed = save.Seed;
+
+            for (int a = 0 ; a < save.input.Length ; ++a)
+                if (!float.IsNaN(save.input[a]))
+                    this.input.Add(a, save.input[a]);
+
+            this.turbo = new HashSet<int>(save.turbo);
+
+            for (int b = 0 ; b < save.fire1.Length ; ++b)
+                this.fire.Add(save.fire1[b], save.fire2[b]);
+
+            this.length = save.input.Length;
+        }
+        //cut down on replay file size by saving a simplified data structure consisting of only primitive arrays
+        [Serializable]
+        private class ReplaySave
+        {
+            internal readonly uint[] Seed;
+            internal readonly float[] input;
+            internal readonly int[] turbo;
+            internal readonly int[] fire1;
+            internal readonly float[] fire2;
+
+            internal ReplaySave(Replay replay)
+            {
+                this.Seed = replay.Seed;
+
+                this.input = new float[replay.Length];
+                for (int a = 0 ; a < replay.Length ; ++a)
+                {
+                    float value;
+                    if (!replay.input.TryGetValue(a, out value))
+                        value = float.NaN;
+                    this.input[a] = value;
+                }
+
+                this.turbo = replay.turbo.ToArray();
+
+                this.fire1 = new int[replay.fire.Count];
+                this.fire2 = new float[replay.fire.Count];
+                int b = 0;
+                foreach (var pair in replay.fire)
+                {
+                    this.fire1[b] = pair.Key;
+                    this.fire2[b] = pair.Value;
+                    b++;
+                }
+            }
         }
     }
 }
