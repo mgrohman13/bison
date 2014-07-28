@@ -84,6 +84,13 @@ namespace SpaceRunner
                 return 0;
             }
         }
+        internal int Time
+        {
+            get
+            {
+                return time;
+            }
+        }
 
         protected override void OnStep()
         {
