@@ -959,7 +959,12 @@ namespace CityWar
             get
             {
                 if (players.Length < 1)
-                    return defeatedPlayers[0];
+                {
+                    int max = winningPlayers.Concat(defeatedPlayers).Max(pair => pair.Key);
+                    if (winningPlayers.ContainsKey(max))
+                        return winningPlayers[max];
+                    return defeatedPlayers[max];
+                }
                 return players[currentPlayer];
             }
         }

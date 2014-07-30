@@ -320,8 +320,10 @@ namespace SpaceRunner.Forms
 
             lock (this)
             {
-                base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
-                SetReplaySpeed(InvokeGetValue(this.tbSpeed));
+                if (tbTime.IsHandleCreated)
+                    base.game = Game.SetReplayPosition(Game, InvokeGetValue(this.tbTime), base.RefreshGame);
+                if (tbSpeed.IsHandleCreated)
+                    SetReplaySpeed(InvokeGetValue(this.tbSpeed));
                 timeScroll = null;
             }
         }

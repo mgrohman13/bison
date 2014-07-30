@@ -591,7 +591,7 @@ namespace SpaceRunner
             if (obj is Explosion)
                 return 8 * ushort.MaxValue
                         + GetDrawPriority(Math.Abs(( (Explosion)obj ).Time - Game.ExplosionTime / 2f)
-                        / Game.ExplosionTime * 4f - 1f);
+                        / ( Game.ExplosionTime + 2f ) * 4f - 1f);
             if (obj is FuelExplosion)
                 return 7 * ushort.MaxValue - GetDrawPriority(obj.Size / FuelExplosionSize * 2f - 1f);
             if (obj is LifeDust)

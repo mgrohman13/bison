@@ -107,6 +107,10 @@ namespace SpaceRunner
             LifeDust ld = obj as LifeDust;
             if (ld != null && ld.HitBy(this))
                 ld.Die();
+
+            if (obj is Explosion)
+            {
+            }
         }
 
         protected override void HitPlayer()
