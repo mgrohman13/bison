@@ -1242,7 +1242,12 @@ namespace SpaceRunner
         private void MovePlayer()
         {
             if (Turbo)
+            {
                 fuel -= GameRand.OE(TurboSpeed);
+                if (fuel <= 0)
+                {
+                }
+            }
 
             AddScore((decimal)TotalSpeed * DistanceScore);
         }

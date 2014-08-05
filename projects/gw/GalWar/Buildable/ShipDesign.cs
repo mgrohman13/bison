@@ -1082,6 +1082,7 @@ namespace GalWar
                 if (max > 0)
                 {
                     colony.MovePop(handler, max, ship);
+
                     //troops can be moved again next turn
                     ship.ResetMoved();
                 }

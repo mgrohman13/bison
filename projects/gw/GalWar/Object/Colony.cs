@@ -407,6 +407,9 @@ namespace GalWar
             //modify real values
             double population = 0, production = 0;
             TurnStuff(ref population, ref production, ref gold, ref research, true, false);
+
+            this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
+
             ResetRounding();
 
             //build planet defenses first so they can attack this turn
@@ -434,8 +437,6 @@ namespace GalWar
                 this.ProdGuess += GetTotalIncome() / 3.0;
             else if (this.RepairShip == null)
                 this.ProdGuess += GetTotalIncome() / 6.0;
-
-            this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
 
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
         }
@@ -1022,7 +1023,7 @@ namespace GalWar
         internal Tile UndoStartBuilding(Buildable oldBuild, int loss, bool oldPause)
         {
             AssertException.Assert(CanBuild(oldBuild));
-            AssertException.Assert(this.Buildable != oldBuild);
+            AssertException.Assert(( this.Buildable != oldBuild ) || ( loss == 0 && this.PauseBuild != oldPause ));
             AssertException.Assert(loss >= 0);
             double gold = loss / Consts.ProductionForGold;
             AssertException.Assert(this.Player.Gold > gold);
