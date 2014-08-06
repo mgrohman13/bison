@@ -82,8 +82,7 @@ namespace GalWar
 
         public static double GetStatValue(double stat)
         {
-            double sqr = stat * stat;
-            return ( sqr * stat + 6.0 * sqr + 2.0 * stat ) / 9.0;
+            return ( 1.0 * stat * stat * stat + 6.0 * stat * stat + 2.0 * stat ) / 9.0;
         }
 
         private static double GetResearchMult(double research)
@@ -1192,38 +1191,38 @@ namespace GalWar
 
         public static void DoCostTable()
         {
-            Console.WriteLine("research\t\tmax\t\treg\tcol\ttrans\tds\t\tRS\tCS\tTS\tDS");
+            Console.WriteLine("research\t\ta/d\th\ts\tt\td\t\tmax\t\treg\tcol\ttrans\tds\t\tRS\tCS\tTS\tDS");
 
             int research = 0;
             int max = Game.Random.GaussianOEInt(130000, .13, .13);
             while (( research = Game.Random.GaussianCappedInt(( research + 13 ) * 1.3, .13, research + 13) ) < max)
             {
-                double str = GetAttDefStr(research);
-                double hp = GetHPStr(str, str);
-                double speed = GetSpeedStr(research);
-                double trans = GetTransStr(research);
-                double BD = Consts.GetBombardDamage(str);
+                double ad = GetAttDefStr(research);
+                double h = GetHPStr(ad, ad);
+                double s = GetSpeedStr(research);
+                double tr = GetTransStr(research);
+                double d = Consts.GetBombardDamage(ad);
                 double rMult = GetResearchMult(research);
 
-                double reg = GetTotCost(str, str, hp, speed, 0, false, BD, rMult, rMult);
-                double regS = GetTotCost(str, str, hp, speed, 0, false, 0, rMult, rMult);
+                double reg = GetTotCost(ad, ad, h, s, 0, false, d, rMult, rMult);
+                double regS = GetTotCost(ad, ad, h, s, 0, false, 0, rMult, rMult);
 
-                double strMult = GetAttDefStrMult(trans, 0, false, trans);
-                str = GetAttDefStr(research, strMult, FocusStat.None);
+                double strMult = GetAttDefStrMult(tr, 0, false, tr);
+                double str = GetAttDefStr(research, strMult, FocusStat.None);
                 double hpMult = GetHPMult(strMult, false, false);
-                hp = GetHPStr(str, str, hpMult);
+                double hp = GetHPStr(str, str, hpMult);
 
-                double t = GetTotCost(str, str, hp, speed, trans, false, BD, rMult, rMult);
-                double tS = GetTotCost(str, str, hp, speed, 0, false, 0, rMult, rMult);
+                double t = GetTotCost(str, str, hp, s, tr, false, d, rMult, rMult);
+                double tS = GetTotCost(str, str, hp, s, 0, false, 0, rMult, rMult);
 
-                trans = GetColTransStr(trans);
+                double trans = GetColTransStr(t);
                 strMult = GetAttDefStrMult(trans, 0, true, trans);
                 str = GetAttDefStr(research, strMult, FocusStat.None);
                 hpMult = GetHPMult(strMult, false, true);
                 hp = GetHPStr(str, str, hpMult);
-                speed = ModSpeedStr(GetSpeedStr(research), trans, false, true, trans, true);
+                double speed = ModSpeedStr(GetSpeedStr(research), trans, false, true, trans, true);
 
-                double col = GetTotCost(str, str, hp, speed, trans, true, BD, rMult, rMult);
+                double col = GetTotCost(str, str, hp, speed, trans, true, d, rMult, rMult);
                 double colS = GetTotCost(str, str, hp, speed, 0, false, 0, rMult, rMult);
 
                 trans = GetTransStr(research);
@@ -1232,14 +1231,15 @@ namespace GalWar
                 hpMult = GetHPMult(strMult, true, false);
                 hp = GetHPStr(str, str, hpMult);
                 speed = ModSpeedStr(GetSpeedStr(research), trans, true, false, 0, true);
-                BD *= DeathStarAvg;
+                d *= DeathStarAvg;
 
-                double ds = GetTotCost(str, str, hp, speed, 0, false, BD, rMult, rMult);
+                double ds = GetTotCost(str, str, hp, speed, 0, false, d, rMult, rMult);
                 double dsS = GetTotCost(str, str, hp, speed, 0, false, 0, rMult, rMult);
 
                 double maxCost = Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
 
-                Console.WriteLine(research + "\t\t" + maxCost + "\t\t" + reg + "\t" + col + "\t" + t + "\t" + ds
+                Console.WriteLine(research + "\t\t" + ad + "\t" + h + "\t" + s + "\t" + tr + "\t" + d + "\t\t"
+                        + maxCost + "\t\t" + reg + "\t" + col + "\t" + t + "\t" + ds
                         + "\t\t" + regS + "\t" + colS + "\t" + tS + "\t" + dsS);
             }
         }
