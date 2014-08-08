@@ -5,7 +5,7 @@ using System.Linq;
 namespace GalWar
 {
     [Serializable]
-    public class ShipDesign : Buildable
+    public class ShipDesign : Buildable, IShipStats
     {
         #region cost
 
@@ -1245,5 +1245,98 @@ namespace GalWar
         }
 
         #endregion //test
+
+        #region IShipStats Members
+
+        double IShipStats.Cost
+        {
+            get
+            {
+                return Cost;
+            }
+        }
+        int IShipStats.Upkeep
+        {
+            get
+            {
+                return Upkeep;
+            }
+        }
+        bool IShipStats.Colony
+        {
+            get
+            {
+                return Colony;
+            }
+        }
+        int IShipStats.CurTrans
+        {
+            get
+            {
+                return Trans;
+            }
+        }
+        int IShipStats.MaxTrans
+        {
+            get
+            {
+                return Trans;
+            }
+        }
+        double IShipStats.BombardDamage
+        {
+            get
+            {
+                return BombardDamage;
+            }
+        }
+        int IShipStats.CurSpeed
+        {
+            get
+            {
+                return Speed;
+            }
+        }
+        int IShipStats.MaxSpeed
+        {
+            get
+            {
+                return Speed;
+            }
+        }
+        int IShipStats.Att
+        {
+            get
+            {
+                return Att;
+            }
+        }
+        int IShipStats.Def
+        {
+            get
+            {
+                return Def;
+            }
+        }
+        int IShipStats.CurHP
+        {
+            get
+            {
+                return HP;
+            }
+        }
+        int IShipStats.MaxHP
+        {
+            get
+            {
+                return HP;
+            }
+        }
+        double IShipStats.GetUpkeepPayoff(double mapSize, int lastResearched)
+        {
+            return GetUpkeepPayoff(mapSize, lastResearched);
+        }
+
+        #endregion
     }
 }

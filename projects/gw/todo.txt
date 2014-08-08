@@ -4,6 +4,7 @@ UI
 	bombard continue attacking with auto show breaks
 	repair form income show only base-upkeep ?
 	right click DS, right click trans: error
+		commented out in CostCalculatorForm SetValue
 	rapid click to bombard
 	rally ships
 		current turn actual move always uses zoc?
@@ -72,7 +73,8 @@ rethink neg gold again
 	if keep impossible negative, make _goldValue a uint?
 decrease GoldProductionForGold to 1.69-2?
 
-fix ShipClass alpha order
+ShipClass order
+	order by tier, use in ShipsForm sort
 6 tiers saved? return length?
 graph dictionaries can be arrays
 standardive Tile.Game vs Player.Game calls

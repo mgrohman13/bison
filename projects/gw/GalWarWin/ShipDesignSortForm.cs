@@ -24,7 +24,7 @@ namespace GalWarWin
             return ( form.ShowDialog() == DialogResult.OK );
         }
 
-        internal static double GetValue(ShipDesign shipDesign)
+        internal static double GetValue(IShipStats shipDesign)
         {
             bool str = ( form.cbAttack.Checked || form.cbDefense.Checked );
             bool tr = ( form.cbTransport.Checked || form.cbColony.Checked );
@@ -36,36 +36,36 @@ namespace GalWarWin
             {
                 int att = form.cbAttack.Checked ? shipDesign.Att : 0;
                 int def = form.cbDefense.Checked ? shipDesign.Def : 0;
-                int hp = str ? shipDesign.HP : 0;
-                int speed = form.cbSpeed.Checked ? shipDesign.Speed : -1;
-                int trans = form.cbTransport.Checked ? shipDesign.Trans : 0;
+                int hp = str ? shipDesign.MaxHP : 0;
+                int speed = form.cbSpeed.Checked ? shipDesign.MaxSpeed : -1;
+                int trans = form.cbTransport.Checked ? shipDesign.MaxTrans : 0;
                 bool colony = form.cbColony.Checked ? shipDesign.Colony : false;
                 double bombardDamage = ds ? shipDesign.BombardDamage : 0;
-                value = ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, shipDesign.Research);
+                value = ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game.CurrentPlayer.GetLastResearched());
             }
             else if (str)
             {
                 int att = form.cbAttack.Checked ? shipDesign.Att : 0;
                 int def = form.cbDefense.Checked ? shipDesign.Def : 0;
-                int speed = form.cbSpeed.Checked ? shipDesign.Speed : -1;
-                value = ShipDesign.GetStrength(att, def, shipDesign.HP, speed);
+                int speed = form.cbSpeed.Checked ? shipDesign.MaxSpeed : -1;
+                value = ShipDesign.GetStrength(att, def, shipDesign.MaxHP, speed);
             }
             else if (tr)
             {
-                int speed = form.cbSpeed.Checked ? shipDesign.Speed : 1;
-                int trans = form.cbTransport.Checked ? shipDesign.Trans * speed : 0;
+                int speed = form.cbSpeed.Checked ? shipDesign.MaxSpeed : 1;
+                int trans = form.cbTransport.Checked ? shipDesign.MaxTrans * speed : 0;
                 if (form.cbColony.Checked && shipDesign.Colony)
                     trans += Game.Random.Round(130 * ( speed + 2.1 ));
                 value = trans;
             }
             else if (ds)
             {
-                int speed = form.cbSpeed.Checked ? shipDesign.Speed : 1;
+                int speed = form.cbSpeed.Checked ? shipDesign.MaxSpeed : 1;
                 value = shipDesign.BombardDamage * speed;
             }
             else
             {
-                value = form.cbSpeed.Checked ? shipDesign.Speed : 1;
+                value = form.cbSpeed.Checked ? shipDesign.MaxSpeed : 1;
             }
 
             double div = 1;
@@ -79,7 +79,7 @@ namespace GalWarWin
             return value / div;
         }
 
-        private static double GetUpkeepPayoff(ShipDesign shipDesign)
+        private static double GetUpkeepPayoff(IShipStats shipDesign)
         {
             return shipDesign.GetUpkeepPayoff(MainForm.Game.MapSize, MainForm.Game.CurrentPlayer.GetLastResearched());
         }

@@ -261,8 +261,8 @@ namespace GalWarWin
 
         private void SetValue(NumericUpDown nud, double value)
         {
-            if (nud.DecimalPlaces == 0 && (int)value != value)
-                throw new Exception();
+            //if (nud.DecimalPlaces == 0 && (int)value != value)
+            //    throw new Exception();
 
             decimal setValue = (decimal)value;
             if (setValue < nud.Minimum)
@@ -348,6 +348,12 @@ namespace GalWarWin
                 form.SetShipDesign(shipDesign);
 
             form.ShowDialog();
+        }
+
+        public static int CalcResearch(Ship ship)
+        {
+            form.SetShip(ship);
+            return (int)form.nudResearch.Value;
         }
 
         private void label16_Click(object sender, EventArgs e)

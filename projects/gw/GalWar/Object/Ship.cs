@@ -6,7 +6,7 @@ using MattUtil;
 namespace GalWar
 {
     [Serializable]
-    public class Ship : Combatant
+    public class Ship : Combatant, IShipStats
     {
         #region fields and constructors
 
@@ -1635,5 +1635,111 @@ namespace GalWar
             Speed,
             Trans,
         }
+
+        #region IShipStats Members
+
+        double IShipStats.Cost
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return GetProdForHP(MaxHP) / Consts.RepairCostMult;
+            }
+        }
+        int IShipStats.Upkeep
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return baseUpkeep;
+            }
+        }
+        bool IShipStats.Colony
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return Colony;
+            }
+        }
+        int IShipStats.CurTrans
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return Population;
+            }
+        }
+        int IShipStats.MaxTrans
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return MaxPop;
+            }
+        }
+        double IShipStats.BombardDamage
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return BombardDamage;
+            }
+        }
+        int IShipStats.CurSpeed
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return CurSpeed;
+            }
+        }
+        int IShipStats.MaxSpeed
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return MaxSpeed;
+            }
+        }
+        int IShipStats.Att
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return Att;
+            }
+        }
+        int IShipStats.Def
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return Def;
+            }
+        }
+        int IShipStats.CurHP
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return HP;
+            }
+        }
+        int IShipStats.MaxHP
+        {
+            get
+            {
+                TurnException.CheckTurn(Player);
+                return MaxHP;
+            }
+        }
+        double IShipStats.GetUpkeepPayoff(double mapSize, int lastResearched)
+        {
+            TurnException.CheckTurn(Player);
+            return GetUpkeepPayoff();
+        }
+
+        #endregion
     }
 }

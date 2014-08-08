@@ -782,7 +782,7 @@ namespace GalWarWin
 
         private void btnShips_Click(object sender, EventArgs e)
         {
-
+            ShipsForm.ShowForm();
         }
 
         private void btnNewGame_Click(object sender, EventArgs e)
@@ -983,9 +983,13 @@ namespace GalWarWin
             if (started)
             {
                 Tile raw = GetTile(mouse);
-                lblLoc.Text = Tile.GetDistance(Game.Center, raw) + "  :  "
-                        + new Point(raw.X - Game.Center.X, raw.Y - Game.Center.Y);
+                lblLoc.Text = GetLoction(raw);
             }
+        }
+        public static string GetLoction(Tile tile)
+        {
+            return Tile.GetDistance(Game.Center, tile) + "  :  "
+                    + new Point(tile.X - Game.Center.X, tile.Y - Game.Center.Y);
         }
         private void DragPan(PointForm point)
         {
@@ -2001,7 +2005,7 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
             if (colony != null && colony.Player.IsTurn)
-              LabelsForm.  ShowColonyIncome(colony);
+                LabelsForm.ShowColonyIncome(colony);
         }
 
         private SpaceObject GetSelectedSpaceObject()
@@ -2259,10 +2263,12 @@ namespace GalWarWin
                    + FormatPctWithCheck(ship.HP / (double)ship.MaxHP);
 
             lbl4.Text = "Speed";
-            lbl4Inf.Text = ship.CurSpeed.ToString() + " / " + ship.MaxSpeed.ToString();
+            lbl4Inf.Text = ship.CurSpeed.ToString();
 
             if (ship.Player.IsTurn)
             {
+                lbl4Inf.Text += " / " + ship.MaxSpeed.ToString();
+
                 lbl5.Text = "Upkeep";
                 lbl5Inf.Text = ship.BaseUpkeep.ToString();
             }

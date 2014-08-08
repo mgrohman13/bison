@@ -44,7 +44,7 @@ namespace GalWarWin
                     }
 
             var colonies = MainForm.Game.CurrentPlayer.GetColonies()
-                    .OrderBy(colony => colony.Tile.Y).ThenByDescending(colony => colony.Tile.X);
+                    .OrderBy(colony => colony.Tile.Y).ThenBy(colony => colony.Tile.X);
 
             controls = new Control[8, colonies.Count()];
             int y = 33, i = 0;
@@ -81,8 +81,7 @@ namespace GalWarWin
 
         private void Loc(int x, int y, int i, Colony colony)
         {
-            Label location = (Label)( controls[0, i] = NewLabel(x, y, Tile.GetDistance(MainForm.Game.Center, colony.Tile) + "  :  "
-                    + new MattUtil.Point(colony.Tile.X - MainForm.Game.Center.X, colony.Tile.Y - MainForm.Game.Center.Y).ToString(),
+            Label location = (Label)( controls[0, i] = NewLabel(x, y, MainForm.GetLoction(colony.Tile),
                     click: true, bold: colony.Tile == MainForm.GameForm.selected) );
             location.Click += new EventHandler((sender, e) =>
             {
