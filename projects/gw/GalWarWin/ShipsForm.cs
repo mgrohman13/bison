@@ -15,8 +15,7 @@ namespace GalWarWin
     {
         private static ShipsForm form = new ShipsForm();
 
-        private static Dictionary<Ship, int> researchCache = new Dictionary<Ship, int>();
-
+        private IOrderedEnumerable<ShipInfo> items;
         private string sort;
         private bool reverse;
 
@@ -39,25 +38,23 @@ namespace GalWarWin
             MainForm.GameForm.SetLocation(form);
 
             form.ShowDialog();
+            form.dataGridView1.DataSource = null;
         }
 
         private void LoadData()
         {
-            researchCache.Clear();
+            this.items = MainForm.Game.CurrentPlayer.GetShips().Select(ship => new ShipInfo(ship)).ToList().OrderBy(ship => 0);
 
             this.sort = "Location";
             this.reverse = false;
-
-            LoadData(ShipInfo.SortLocation);
+            SortData(ShipInfo.SortLocation);
         }
-        private void LoadData(Func<IOrderedEnumerable<Ship>, IOrderedEnumerable<Ship>> Sort)
+        private void SortData(Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>> Sort)
         {
-            var items = Sort(MainForm.Game.CurrentPlayer.GetShips().OrderBy(ship => 0))
-                    .ThenBy(ship => ship.Tile.Y).ThenBy(ship => ship.Tile.X)
-                    .Select(ship => new ShipInfo(ship));
+            IEnumerable<ShipInfo> dataSource = ShipInfo.SortLocation(Sort(this.items));
             if (reverse)
-                items = items.Reverse();
-            this.dataGridView1.DataSource = items.ToList();
+                dataSource = dataSource.Reverse();
+            this.dataGridView1.DataSource = dataSource.ToList();
         }
 
         private void dataGridView1_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -81,10 +78,10 @@ namespace GalWarWin
                     var method = typeof(ShipInfo).GetMethod("Sort" + column);
                     if (method != null)
                     {
-                        var fucType = typeof(Func<IOrderedEnumerable<Ship>, IOrderedEnumerable<Ship>>);
-                        var func = (Func<IOrderedEnumerable<Ship>, IOrderedEnumerable<Ship>>)
+                        var fucType = typeof(Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>>);
+                        var func = (Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>>)
                                 Delegate.CreateDelegate(fucType, null, method);
-                        LoadData(func);
+                        SortData(func);
                     }
                 }
             }
@@ -92,20 +89,24 @@ namespace GalWarWin
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex > -1 && e.RowIndex > -1)
+            int columnIdx = e.ColumnIndex, rowIdx = e.RowIndex;
+            if (columnIdx > -1 && rowIdx > -1)
             {
-            }
-        }
+                string column = this.dataGridView1.Columns[columnIdx].Name;
+                if (column != null && column.Length > 0)
+                {
+                    Ship row = ( (IList<ShipInfo>)this.dataGridView1.DataSource )[rowIdx].Class;
 
-        private static int CalcResearch(Ship ship)
-        {
-            int research;
-            if (!researchCache.TryGetValue(ship, out research))
-            {
-                research = CostCalculatorForm.CalcResearch(ship);
-                researchCache.Add(ship, research);
+                    Console.WriteLine(column);
+                    Console.WriteLine(row);
+
+                    //"Location";
+                    //"HP";
+                    //"Pct";
+                    //"Repair";
+                    //"Disband?";
+                }
             }
-            return research;
         }
 
         private class ShipInfo
@@ -115,255 +116,366 @@ namespace GalWarWin
             public ShipInfo(Ship ship)
             {
                 this.ship = ship;
+                //ensure we calculate research now
+                string research = this.Research;
             }
 
+            private string location = null;
             public string Location
             {
                 get
                 {
-                    return MainForm.GetLoction(ship.Tile);
+                    if (location == null)
+                        location = MainForm.GetLoction(ship.Tile);
+                    return location;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortLocation(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortLocation(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.OrderBy(ship => 0);
+                return items.ThenBy(info => info.ship.Tile.Y).ThenBy(info => info.ship.Tile.X);
             }
 
-            public string Type
+            private string className = null;
+            public Ship Class
             {
                 get
                 {
-                    return ship.ToString();
+                    if (className == null)
+                        className = ship.ToString();
+                    return ship;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortType(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortClass(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenBy(ship => ship.ToString());
+                return items.ThenBy(info => info.className);
             }
 
+            private string att = null;
             public string Att
             {
                 get
                 {
-                    return ship.Att.ToString();
+                    if (att == null)
+                        att = ship.Att.ToString();
+                    return att;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortAtt(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortAtt(IOrderedEnumerable<ShipInfo> items)
             {
-                return SortHP(items.ThenByDescending(ship => ship.Att));
+                return SortHP(items.ThenByDescending(info => info.ship.Att));
             }
 
+            private string def = null;
             public string Def
             {
                 get
                 {
-                    return ship.Def.ToString();
+                    if (def == null)
+                        def = ship.Def.ToString();
+                    return def;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortDef(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortDef(IOrderedEnumerable<ShipInfo> items)
             {
-                return SortHP(items.ThenByDescending(ship => ship.Def));
+                return SortHP(items.ThenByDescending(info => info.ship.Def));
             }
 
+            private string hp = null;
+            private double sortHP = double.NaN;
             public string HP
             {
                 get
                 {
-                    return ship.HP.ToString() + " / " + ship.MaxHP.ToString();
+                    if (hp == null)
+                    {
+                        sortHP = ShipDesign.GetStatValue(ship.Att) + ShipDesign.GetStatValue(ship.Def);
+                        hp = ship.HP.ToString() + " / " + ship.MaxHP.ToString();
+                    }
+                    return hp;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortHP(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortHP(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ship.MaxHP).ThenByDescending(ship => ship.HP)
-                        .ThenByDescending(ship => ShipDesign.GetStatValue(ship.Att) + ShipDesign.GetStatValue(ship.Def));
+                return items.ThenByDescending(info => info.ship.MaxHP).ThenByDescending(info => info.ship.HP)
+                        .ThenByDescending(info => info.sortHP);
             }
 
+            private string pct = null;
+            private double sortPct = double.NaN;
             public string Pct
             {
                 get
                 {
-                    return MainForm.FormatPctWithCheck(ship.HP / (double)ship.MaxHP);
+                    if (pct == null)
+                    {
+                        sortPct = ship.HP / (double)ship.MaxHP;
+                        pct = MainForm.FormatPctWithCheck(sortPct);
+                    }
+                    return pct;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortPct(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortPct(IOrderedEnumerable<ShipInfo> items)
             {
-                return SortHP(items.ThenByDescending(ship => ship.HP / (double)ship.MaxHP)
-                        .ThenByDescending(ship => ship.HP));
+                return SortHP(items.ThenByDescending(info => info.sortPct).ThenByDescending(info => info.ship.HP));
             }
 
+            private string repair = null;
+            private double sortRepair = double.NaN;
+            public string Repair
+            {
+                get
+                {
+                    if (repair == null)
+                    {
+                        sortRepair = ship.AutoRepair;
+                        repair = string.Empty;
+                        if (ship.HP < ship.MaxHP)
+                            if (double.IsNaN(sortRepair))
+                            {
+                                sortRepair = double.PositiveInfinity;
+                                repair = "M";
+                            }
+                            else if (sortRepair != 0)
+                            {
+                                repair = MainForm.FormatDouble(sortRepair);
+                            }
+                        Colony repairedFrom = ship.GetRepairedFrom();
+                        if (repairedFrom != null)
+                            repair = string.Format("(+{1}) {0}", repair,
+                                    MainForm.FormatDouble(ship.GetHPForProd(repairedFrom.GetProductionIncome())));
+                    }
+                    return repair;
+                }
+            }
+            public static IOrderedEnumerable<ShipInfo> SortRepair(IOrderedEnumerable<ShipInfo> items)
+            {
+                return SortPct(items.ThenByDescending(info => info.sortRepair));
+            }
+
+            private string speed = null;
             public string Speed
             {
                 get
                 {
-                    return ship.CurSpeed.ToString() + " / " + ship.MaxSpeed.ToString();
+                    if (speed == null)
+                        speed = ship.CurSpeed.ToString() + " / " + ship.MaxSpeed.ToString();
+                    return speed;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortSpeed(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortSpeed(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ship.MaxSpeed).ThenByDescending(ship => ship.CurSpeed);
+                return items.ThenByDescending(info => info.ship.MaxSpeed).ThenByDescending(info => info.ship.CurSpeed);
             }
 
+            private string upk = null;
+            private double sortUpk = double.NaN;
             public string Upk
             {
                 get
                 {
-                    return ship.BaseUpkeep.ToString();
+                    if (upk == null)
+                    {
+                        sortUpk = ship.Upkeep;
+                        upk = ship.BaseUpkeep.ToString();
+                    }
+                    return upk;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortUpk(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortUpk(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ship.BaseUpkeep).ThenByDescending(ship => ship.Upkeep);
+                return items.ThenByDescending(info => info.ship.BaseUpkeep).ThenByDescending(info => info.sortUpk);
             }
 
+            private string exp = null;
+            private int sortExp = int.MinValue;
             public string Exp
             {
                 get
                 {
-                    return ship.GetTotalExp().ToString();
+                    if (exp == null)
+                    {
+                        sortExp = ship.GetTotalExp();
+                        exp = sortExp.ToString();
+                    }
+                    return exp;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortExp(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortExp(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ship.GetTotalExp()).ThenBy(ship => ship.NextExpType.ToString());
+                return items.ThenByDescending(info => info.sortExp).ThenBy(info => info.next);
             }
 
+            private string next = null;
             public string Next
             {
                 get
                 {
-                    return ship.NextExpType.ToString();
+                    if (next == null)
+                        next = ship.NextExpType.ToString();
+                    return next;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortNext(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortNext(IOrderedEnumerable<ShipInfo> items)
             {
-                return SortExp(items.ThenBy(ship => ship.NextExpType.ToString()));
+                return SortExp(items.ThenBy(info => info.next));
             }
 
+            private string troops = null;
             public string Troops
             {
                 get
                 {
-                    if (ship.MaxPop > 0)
-                        return ship.Population.ToString() + " / " + ship.MaxPop.ToString();
-                    return string.Empty;
+                    if (troops == null)
+                        if (ship.MaxPop > 0)
+                            troops = ship.Population.ToString() + " / " + ship.MaxPop.ToString();
+                        else
+                            troops = string.Empty;
+                    return troops;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortTroops(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortTroops(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ship.Population).ThenByDescending(ship => ship.MaxPop)
-                        .ThenByDescending(ship => ship.Soldiers);
+                return items.ThenByDescending(info => info.ship.Population).ThenByDescending(info => info.ship.MaxPop)
+                        .ThenByDescending(info => info.ship.Soldiers);
             }
 
+            private string sldrs = null;
             public string Sldrs
             {
                 get
                 {
-                    if (ship.Population > 0)
-                        return MainForm.FormatPct(ship.GetSoldierPct());
-                    return string.Empty;
+                    if (sldrs == null)
+                        if (ship.Population > 0)
+                            sldrs = MainForm.FormatPct(ship.GetSoldierPct());
+                        else
+                            sldrs = string.Empty;
+                    return sldrs;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortSldrs(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortSldrs(IOrderedEnumerable<ShipInfo> items)
             {
-                return SortTroops(items.ThenByDescending(ship => ship.Soldiers));
+                return SortTroops(items.ThenByDescending(info => info.ship.Soldiers));
             }
 
+            private string info = null;
+            private double sortInfo = double.NaN;
             public string Info
             {
                 get
                 {
-                    string info = string.Empty;
-                    if (ship.Colony)
+                    if (info == null)
                     {
-                        info = "Colony Ship";
-                        if (ship.Player.IsTurn)
-                        {
-                            double colonizationValue = ship.ColonizationValue;
-                            string repair = string.Empty;
-                            Colony repairedFrom = ship.GetRepairedFrom();
-                            if (repairedFrom != null)
-                                repair = " +" + MainForm.FormatDouble(ship.GetColonizationValue(ship.GetHPForProd(repairedFrom.GetProductionIncome())) - colonizationValue);
-
-                            info += " (" + MainForm.FormatDouble(colonizationValue) + repair + ")";
-
-                        }
-                    }
-                    else if (ship.DeathStar)
-                    {
-                        info = "Death Star (" + MainForm.FormatInt(ship.BombardDamage) + ")";
+                        sortInfo = ( ship.Colony ? ship.ColonizationValue : ship.BombardDamage * ship.MaxSpeed );
+                        if (ship.Colony)
+                            info = "Colony Ship (" + MainForm.FormatDouble(sortInfo) + ")";
+                        else if (ship.DeathStar)
+                            info = "Death Star (" + MainForm.FormatInt(sortInfo) + ")";
+                        else
+                            info = string.Empty;
                     }
                     return info;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortInfo(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortInfo(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenBy(ship => ship.Colony ? 0 : 1)
-                        .ThenByDescending(ship => ship.Colony ? ship.ColonizationValue : ship.BombardDamage * ship.MaxSpeed);
+                return items.ThenBy(info => info.ship.Colony ? 0 : 1).ThenByDescending(info => info.sortInfo);
             }
 
+            private string prod = null;
+            private double sortProd = double.NaN;
             public string Prod
             {
                 get
                 {
-                    double prod = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
-                    return MainForm.FormatDouble(prod);
+                    if (prod == null)
+                    {
+                        sortProd = ship.GetProdForHP(ship.MaxHP);
+                        prod = MainForm.FormatDouble(sortProd / Consts.RepairCostMult);
+                    }
+                    return prod;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortProd(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortProd(IOrderedEnumerable<ShipInfo> items)
             {
-                return SortUpk(items.ThenByDescending(ship => ship.GetProdForHP(ship.MaxHP)));
+                return SortUpk(items.ThenByDescending(info => info.sortProd));
             }
 
+            private string research = null;
+            private int sortResearch = int.MinValue;
             public string Research
             {
                 get
                 {
-                    return CalcResearch(ship).ToString();
+                    if (research == null)
+                    {
+                        sortResearch = CostCalculatorForm.CalcResearch(ship);
+                        research = sortResearch.ToString();
+                    }
+                    return research;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortResearch(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortResearch(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => CalcResearch(ship));
+                return items.ThenByDescending(info => info.sortResearch);
             }
 
+            private string cost = null;
+            private double sortCost = double.NaN;
             public string Cost
             {
                 get
                 {
-                    return MainForm.FormatDouble(ShipDesign.GetTotCost(ship.Att, ship.Def, ship.MaxHP,
-                            ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, CalcResearch(ship)));
+                    if (cost == null)
+                    {
+                        sortCost = ShipDesign.GetTotCost(ship.Att, ship.Def, ship.MaxHP,
+                                ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, sortResearch);
+                        cost = MainForm.FormatDouble(sortCost);
+                    }
+                    return cost;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortCost(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortCost(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ShipDesign.GetTotCost(ship.Att, ship.Def, ship.MaxHP,
-                        ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, CalcResearch(ship)));
+                return items.ThenByDescending(info => info.sortCost);
             }
 
+            private string strength = null;
+            private double sortStrength = double.NaN;
             public string Strength
             {
                 get
                 {
-                    return GraphsForm.GetArmadaString(ShipDesign.GetStrength(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed));
+                    if (strength == null)
+                    {
+                        sortStrength = ShipDesign.GetStrength(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed);
+                        strength = GraphsForm.GetArmadaString(sortStrength);
+                    }
+                    return strength;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortStrength(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortStrength(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ShipDesign.GetStrength(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed));
+                return items.ThenByDescending(info => info.sortStrength);
             }
 
+            private string value = null;
+            private double sortValue = double.NaN;
             public string Value
             {
                 get
                 {
-                    return GraphsForm.GetArmadaString(ShipDesign.GetValue(ship.Att, ship.Def, ship.MaxHP,
-                            ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, CalcResearch(ship)));
+                    if (value == null)
+                    {
+                        sortValue = ShipDesign.GetValue(ship.Att, ship.Def, ship.MaxHP,
+                                ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, sortResearch);
+                        value = GraphsForm.GetArmadaString(sortValue);
+                    }
+                    return value;
                 }
             }
-            public static IOrderedEnumerable<Ship> SortValue(IOrderedEnumerable<Ship> items)
+            public static IOrderedEnumerable<ShipInfo> SortValue(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(ship => ShipDesign.GetValue(ship.Att, ship.Def, ship.MaxHP,
-                        ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, CalcResearch(ship)));
+                return items.ThenByDescending(info => info.sortValue);
             }
         }
     }

@@ -98,10 +98,11 @@ namespace MattUtil
         private const double DOUBLE_DIV = 0x1FFFFFFFFFFFFF;
         private const double DOUBLE_DIV_1 = 0x20000000000000;
 
-        private static readonly int OE_INT_LIMIT;           // 58,455,924 (36.7368005696771)
-        private static readonly int OE_INT_FLOAT_LIMIT;     //129,090,164 (16.6355324      )
-        public static readonly double GAUSSIAN_MAX;         //8.531146110505567
-        public static readonly float GAUSSIAN_FLOAT_MAX;    //5.707707
+        private static readonly int OE_INT_LIMIT;           //  58,455,924 ( 36.7368005696771 )
+        private static readonly int OE_INT_FLOAT_LIMIT;     // 129,090,164 ( 16.6355324       )
+
+        public static readonly double GAUSSIAN_MAX;         // 8.531146110505567
+        public static readonly float GAUSSIAN_FLOAT_MAX;    // 5.707707
 
         private static readonly double LN_2 = Math.Log(2);
 

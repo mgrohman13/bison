@@ -484,20 +484,14 @@ namespace GalWar
             researchPct /= totalPct;
             productionPct /= totalPct;
 
-            research = Round(researchPct * income, this.researchRounding);
-            production = Round(productionPct * income, this.productionRounding);
+            research = MTRandom.Round(researchPct * income, this.researchRounding);
+            production = MTRandom.Round(productionPct * income, this.productionRounding);
             gold = income - research - production;
         }
 
         private double GetPct(bool emphasis)
         {
             return emphasis ? Consts.EmphasisValue : 1;
-        }
-
-        //analogous to MTRandom.Round, but using a constant for the random value
-        private int Round(double number, double round)
-        {
-            return MTRandom.Round(number, round);
         }
 
         private void ResetRounding()
