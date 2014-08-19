@@ -12,44 +12,137 @@ namespace CityWar
     public class Player : IDeserializationCallback
     {
         #region fields and constructors
+
         public const int WizardCost = 1300, RelicCost = 300;
-        internal const int TradeDown = 9, TradeUp = 30;
-        internal const double WorkMult = ( TradeDown + ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
-        internal const double UpkeepMult = ( TradeUp - ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
-        private const double TurnUpkPct = .13;
-
-        private Game game;
-
-        public readonly Color Color;
-        public readonly string Name;
+        public const int TradeDown = 9, TradeUp = 30;
+        public const double WorkMult = ( TradeDown + ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
+        public const double UpkeepMult = ( TradeUp - ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
+        public const double TurnUpkPct = .13;
 
         private static float zoom = -1;
 
+        [NonSerialized]
+        private Dictionary<string, Bitmap> pics = new Dictionary<string, Bitmap>(),
+                picsConst = new Dictionary<string, Bitmap>();
+
+        public readonly string Name;
+        public readonly Color Color;
         public readonly string Race;
 
-        private int death, air, earth, nature, water, population, production, relicOffset, _relic, magic, work;
+        private Game game;
+        private List<Piece> pieces;
+        private List<string> trades;
+        private int death, air, earth, nature, water, population, production, relicOffset, magic, work;
         private double upkeep, healRound;
 
-        private List<Piece> pieces = new List<Piece>();
+        private int _relic;
 
-        [NonSerialized]
-        private List<string> trades;
-        [NonSerialized]
-        private Dictionary<string, Bitmap> pics, picsConst;
-
-        public Player(string Race, Color color, string Name)
+        //template player to pass into a new game
+        public Player(string race, Color color, string name)
         {
-            this.Race = Race;
+            this.Name = name;
             this.Color = color;
-            Color c = this.InverseColor;
-            this.Name = Name;
+            this.Race = race;
+        }
+
+        //real player for in-game use
+        internal void NewPlayer(Game game, bool city, string[] startUnits, double totalStartCost)
+        {
+            this.game = game;
+            this.pieces = new List<Piece>();
+            this.trades = new List<string>();
+            this.death = 0;
+            this.air = 0;
+            this.earth = 0;
+            this.nature = 0;
+            this.water = 0;
+            this.population = 0;
+            this.production = 0;
+            this.relicOffset = Game.Random.RangeInt(1, RelicCost - 1);
+            this.magic = 0;
+            this.work = 0;
+            this.upkeep = 0;
             this.healRound = Game.Random.NextDouble();
 
-            this.OnDeserialization(null);
+            this._relic = Game.Random.Round(RelicCost / 2.0);
+
+            double thisTotal = 0;
+            if (city)
+            {
+                //stronger starting units means the concentrated armies of wizard players is more of a threat
+                double mult = ( Math.Pow(totalStartCost, .39) * 10.4 );
+                int[] prodPop = AddStartResources(Game.Random.Round(5.2 * mult), ref magic,
+                        Game.Random.Round(2.6 * mult), Game.Random.Round(3.9 * mult), 2);
+                this.production += prodPop[0];
+                this.population += prodPop[1];
+
+                for (int a = -1 ; ++a < 3 ; )
+                {
+                    Tile t = RandomStartTile(false);
+
+                    new City(this, t);
+                    thisTotal += Unit.NewUnit(startUnits[a], t, this).BaseTotalCost;
+                }
+            }
+            else
+            {
+                int maxRelic = Math.Min(Game.Random.Round(RelicCost * .78), RelicCost + relicOffset - relic - 1);
+                int numTypes = Game.Random.RangeInt(3, 4);
+                int[] elementals = AddStartResources(390, ref _relic, RelicCost - maxRelic, maxRelic, numTypes);
+
+                Action<int>[] typeFuncs = new Action<int>[] {
+                    amt => this.air += amt,
+                    amt => this.earth += amt,
+                    amt => this.nature += amt,
+                    amt => this.water += amt,
+                };
+                int idx = 0;
+                foreach (int type in Game.Random.Iterate(typeFuncs.Length).Take(numTypes - 1))
+                    typeFuncs[type](elementals[idx++]);
+
+                int pop = Game.Random.WeightedInt(elementals[idx], .65);
+                this.population += pop;
+                this.death += elementals[idx] - pop;
+
+                Tile t = RandomStartTile(true);
+
+                bool unused;
+                new Wizard(this, t, out unused);
+                new Relic(this, t);
+
+                for (int i = -1 ; ++i < startUnits.Length ; )
+                    thisTotal += Unit.NewUnit(startUnits[i], t, this).BaseTotalCost;
+            }
+
+            BalanceForUnit(totalStartCost, thisTotal);
         }
+        private static int[] AddStartResources(int totalAmt, ref int mainType, int minMain, int maxMain, int numOthers)
+        {
+            int addAmt = Game.Random.RangeInt(minMain, maxMain);
+            mainType += addAmt;
+            totalAmt -= addAmt;
+
+            int[] retVal = new int[numOthers];
+            foreach (int val in Game.Random.Iterate(numOthers))
+            {
+                if (numOthers > 1)
+                    addAmt = Game.Random.RangeInt(0, Game.Random.Round(2 * totalAmt / (double)( numOthers-- )));
+                else
+                    addAmt = totalAmt;
+                retVal[val] = addAmt;
+                totalAmt -= addAmt;
+            }
+            return retVal;
+        }
+        private Tile RandomStartTile(bool canEdge)
+        {
+            return game.RandomTile(neighbor => ( canEdge || neighbor != null ) && ( neighbor == null || !neighbor.Occupied() ));
+        }
+
         #endregion //fields and constructors
 
         #region public methods and properties
+
         public Game Game
         {
             get
@@ -299,79 +392,10 @@ namespace CityWar
         {
             return Name;
         }
+
         #endregion //public methods and properties
 
         #region internal methods
-        internal void NewPlayer(Game game, bool city, string[] startUnits, double totalStartCost)
-        {
-            this.game = game;
-
-            pieces.Clear();
-            trades.Clear();
-
-            air = 0;
-            earth = 0;
-            nature = 0;
-            death = 0;
-            water = 0;
-            production = 0;
-            population = 0;
-            magic = 0;
-            relicOffset = Game.Random.RangeInt(1, RelicCost - 1);
-            relic = Game.Random.Round(RelicCost / 2.0);
-            work = 0;
-            upkeep = 0;
-
-            double thisTotal = 0;
-            if (city)
-            {
-                //stronger starting units means the concentrated armies of wizard players is more of a threat
-                double mult = ( Math.Pow(totalStartCost, .39) * 10.4 );
-                int[] prodPop = AddStartResources(Game.Random.Round(5.2 * mult), ref magic,
-                        Game.Random.Round(2.6 * mult), Game.Random.Round(3.9 * mult), 2);
-                this.production += prodPop[0];
-                this.population += prodPop[1];
-
-                for (int a = -1 ; ++a < 3 ; )
-                {
-                    Tile t = RandomStartTile(false);
-
-                    new City(this, t);
-                    thisTotal += Unit.NewUnit(startUnits[a], t, this).BaseCost;
-                }
-            }
-            else
-            {
-                int maxRelic = Math.Min(Game.Random.Round(RelicCost * .78), RelicCost + relicOffset - relic - 1);
-                int numTypes = Game.Random.RangeInt(3, 4);
-                int[] elementals = AddStartResources(390, ref _relic, RelicCost - maxRelic, maxRelic, numTypes);
-
-                Action<int>[] typeFuncs = new Action<int>[] {
-                    amt => this.air += amt,
-                    amt => this.earth += amt,
-                    amt => this.nature += amt,
-                    amt => this.water += amt,
-                };
-                int idx = 0;
-                foreach (int type in Game.Random.Iterate(typeFuncs.Length).Take(numTypes - 1))
-                    typeFuncs[type](elementals[idx++]);
-
-                int pop = Game.Random.WeightedInt(elementals[idx], .65);
-                this.population += pop;
-                this.death += elementals[idx] - pop;
-
-                Tile t = RandomStartTile(true);
-
-                bool unused;
-                new Wizard(this, t, out unused);
-                new Relic(this, t);
-
-                for (int i = -1 ; ++i < startUnits.Length ; )
-                    thisTotal += Unit.NewUnit(startUnits[i], t, this).BaseCost;
-            }
-
-            BalanceForUnit(totalStartCost, thisTotal);
-        }
 
         public void BalanceForUnit(double avg, double mine)
         {
@@ -380,30 +404,6 @@ namespace CityWar
                 AddWork(avg * WorkMult);
             else
                 AddUpkeep(-avg * UpkeepMult, .039);
-        }
-
-        private int[] AddStartResources(int totalAmt, ref int mainType, int minMain, int maxMain, int numOthers)
-        {
-            int addAmt = Game.Random.RangeInt(minMain, maxMain);
-            mainType += addAmt;
-            totalAmt -= addAmt;
-
-            int[] retVal = new int[numOthers];
-            foreach (int val in Game.Random.Iterate(numOthers))
-            {
-                if (numOthers > 1)
-                    addAmt = Game.Random.RangeInt(0, Game.Random.Round(2 * totalAmt / (double)( numOthers-- )));
-                else
-                    addAmt = totalAmt;
-                retVal[val] = addAmt;
-                totalAmt -= addAmt;
-            }
-            return retVal;
-        }
-
-        private Tile RandomStartTile(bool canEdge)
-        {
-            return game.RandomTile(neighbor => ( canEdge || neighbor != null ) && ( neighbor == null || !neighbor.Occupied() ));
         }
 
         internal void Add(Piece p)
@@ -490,7 +490,7 @@ namespace CityWar
         internal Unit FreeUnit(string name, double avgCost)
         {
             Unit unit = FreeUnit(name, RandomCapturable());
-            BalanceForUnit(avgCost, unit.BaseCost);
+            BalanceForUnit(avgCost, unit.BaseTotalCost);
             return unit;
         }
         internal Unit FreeUnit(string unit, Capturable cur)
@@ -616,21 +616,23 @@ namespace CityWar
             picsConst.Clear();
             pics.Clear();
         }
+
         #endregion //internal methods
 
         #region portal cost
-        public static int TotalPortalCost(string race, CostType costType)
+
+        public static int TotalPortalCost(Game game, string race, CostType costType)
         {
-            int[] cost = Player.SplitPortalCost(race)[costType];
+            int[] cost = Player.SplitPortalCost(game, race)[costType];
             return cost[0] + cost[1];
         }
-        public static void SplitPortalCost(string race, CostType costType, out int magic, out int element)
+        public static void SplitPortalCost(Game game, string race, CostType costType, out int magic, out int element)
         {
-            int[] retVal = SplitPortalCost(race)[costType];
+            int[] retVal = SplitPortalCost(game, race)[costType];
             magic = retVal[0];
             element = retVal[1];
         }
-        public static Dictionary<CostType, int[]> SplitPortalCost(string race)
+        public static Dictionary<CostType, int[]> SplitPortalCost(Game game, string race)
         {
             Dictionary<CostType, int[]> portalCosts = new Dictionary<CostType, int[]>();
 
@@ -641,14 +643,14 @@ namespace CityWar
 
             foreach (string name in Game.Races[race])
             {
-                Unit unit = Unit.CreateTempUnit(name);
-                int idx = getCTIdx(unit.costType);
+                Unit unit = Unit.CreateTempUnit(game, name);
+                int idx = getCTIdx(unit.CostType);
                 if (idx > -1)
                 {
-                    elmDbl[idx] += unit.BaseCost + unit.BasePplCost / 2.0;
+                    elmDbl[idx] += unit.BaseTotalCost + unit.BasePplCost / 2.0;
                     ++elmInt[idx];
 
-                    double div = Math.Sqrt(unit.BaseCost);
+                    double div = Math.Sqrt(unit.BaseTotalCost);
                     other[idx] += unit.BaseOtherCost / div;
                     ppl[idx] += unit.BasePplCost / div;
                 }
@@ -725,9 +727,11 @@ namespace CityWar
                 throw new Exception();
             }
         }
+
         #endregion //portal cost
 
         #region relic
+
         internal int relic
         {
             get
@@ -771,9 +775,11 @@ namespace CityWar
                 return Game.Random.SelectValue(capturables);
             return null;
         }
+
         #endregion //relic
 
         #region piece images
+
         public Bitmap GetPic(string name)
         {
             return GetPic(name, false);
@@ -836,11 +842,11 @@ namespace CityWar
             Bitmap basePic;
             try
             {
-                basePic = new Bitmap(Game.Path + "pics\\" + name + ".bmp");
+                basePic = new Bitmap(Game.ResourcePath + "pics\\" + name + ".bmp");
             }
             catch
             {
-                basePic = new Bitmap(Game.Path + "pics\\notFound.bmp");
+                basePic = new Bitmap(Game.ResourcePath + "pics\\notFound.bmp");
             }
             //white is transparent
             basePic.MakeTransparent(Color.FromArgb(255, 255, 255));
@@ -887,9 +893,11 @@ namespace CityWar
                 }
             }
         }
+
         #endregion //piece images
 
         #region trading
+
         public void GambleWork(int low, int high)
         {
             work = Gamble(work, low, high);
@@ -1040,9 +1048,11 @@ namespace CityWar
 
             return amt;
         }
+
         #endregion //trading
 
         #region income and upkeep
+
         private void PayUpkeep()
         {
             double payment = -( GetTurnUpkeep() );
@@ -1244,7 +1254,7 @@ namespace CityWar
                 {
                     //avg cost 1000 (700-1502)
                     //avg roi 17.50 (15.97-19.89)
-                    int amt = portal.income;
+                    int amt = portal.Income;
 
                     int type = 0, position = 0;
                     for ( ; amt > 0 ; --amt)
@@ -1270,7 +1280,7 @@ namespace CityWar
                             break;
                         }
 
-                    switch (( (Portal)capturable ).PortalType)
+                    switch (( (Portal)capturable ).Type)
                     {
                     case CostType.Air:
                         air += type;
@@ -1314,9 +1324,11 @@ namespace CityWar
                 }
             }
         }
+
         #endregion //income and upkeep
 
         #region removing pieces between turn rounds
+
         internal void RemoveCapturable(Type type, double portalAvg)
         {
             //pick a random piece of the right type
@@ -1327,12 +1339,12 @@ namespace CityWar
                 //if its a portal, receive or lose some compensation for the cost difference
                 Portal portal = (Portal)remove;
                 int m, e;
-                Player.SplitPortalCost(portal.Owner.Race, portal.PortalType, out m, out e);
+                Player.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out m, out e);
                 double magicPct = m / (double)( m + e ), elementPct = e / (double)( m + e );
                 double diff = portal.GetPortalValue() - portalAvg;
                 const double mult = .87;
                 magic += Game.Random.Round(diff * mult * magicPct);
-                Spend(-Game.Random.Round(diff * mult * elementPct), portal.PortalType, 0);
+                Spend(-Game.Random.Round(diff * mult * elementPct), portal.Type, 0);
             }
 
             remove.Tile.Remove(remove);
@@ -1350,9 +1362,9 @@ namespace CityWar
                     Unit unit = (Unit)Game.Random.SelectValue(pieces);
                     double reimburse = GetReimbursement(i == 0, unit.InverseCost, unit.GetHealthPct());
 
-                    int costReimbursement = Game.Random.Round(( unit.BaseOtherCost * reimburse ) / unit.BaseCost);
-                    int pplReimbursement = Game.Random.Round(( unit.BasePplCost * reimburse ) / unit.BaseCost);
-                    Spend(-costReimbursement, unit.costType, -pplReimbursement);
+                    int costReimbursement = Game.Random.Round(( unit.BaseOtherCost * reimburse ) / unit.BaseTotalCost);
+                    int pplReimbursement = Game.Random.Round(( unit.BasePplCost * reimburse ) / unit.BaseTotalCost);
+                    Spend(-costReimbursement, unit.CostType, -pplReimbursement);
 
                     unit.Tile.Remove(unit);
                     this.Remove(unit, true);
@@ -1438,15 +1450,15 @@ namespace CityWar
                 amt -= tradeAmt;
             }
         }
+
         #endregion //removing pieces between turn rounds
 
         #region IDeserializationCallback Members
 
-        public void OnDeserialization(object sender)
+        void IDeserializationCallback.OnDeserialization(object sender)
         {
-            this.trades = new List<string>();
-            this.pics = new Dictionary<string, Bitmap>();
-            this.picsConst = new Dictionary<string, Bitmap>();
+            pics = new Dictionary<string, Bitmap>();
+            picsConst = new Dictionary<string, Bitmap>();
         }
 
         #endregion

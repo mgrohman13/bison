@@ -42,13 +42,15 @@ namespace CityWarWinApp
             players.Add(new Player(Color.Yellow, "Yellow"));
 
             RefreshPlayerList();
+
+            nudSize_ValueChanged(null, null);
         }
 
         private void InitRaces()
         {
             List<string> races = new List<string>();
             races.Add(Player.Random);
-            UnitSchema us = UnitTypes.GetSchema();
+            UnitSchema us = new UnitTypes().GetSchema();
             foreach (UnitSchema.UnitRow row in us.Unit)
             {
                 if (!races.Contains(row.Race))
@@ -88,7 +90,7 @@ namespace CityWarWinApp
                 } while (players.All(player => player.Race == Player.Random) && players.Count >= cbxRace.Items.Count - 1 &&
                         ( groups.Count() != cbxRace.Items.Count - 1 || groups.Max(group => group.Count()) - groups.Min(group => group.Count()) > 1 ));
 
-                Map.Game = Game.StartNewGame(realPlayers, (int)this.nudWidth.Value, (int)this.nudHeight.Value);
+                Map.Game = new Game(realPlayers, Game.Random.GaussianCappedInt((double)this.nudSize.Value, .104, (int)this.nudSize.Minimum));
             }
             catch (ArgumentOutOfRangeException aoore)
             {
@@ -284,6 +286,11 @@ namespace CityWarWinApp
                     return player;
                 }
             }
+        }
+
+        private void nudSize_ValueChanged(object sender, EventArgs e)
+        {
+            this.lblSize.Text = Game.GetNumHexes((double)this.nudSize.Value).ToString("0.0");
         }
     }
 }

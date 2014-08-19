@@ -13,14 +13,14 @@ namespace CityWar
 
         private static double weaponDiv = GetWeaponDiv();
 
-        public static double getCost(int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, UnitType Type, Attack[] Attacks, bool isThree, int maxHits)
+        public static double getCost(UnitTypes unitTypes, int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, UnitType Type, Attack[] Attacks, bool isThree, int maxHits)
         {
             double gc;
-            return getCost(MaxMove, BaseRegen, Ability, BaseArmor, Type, Attacks, isThree, maxHits, out gc);
+            return getCost(unitTypes, MaxMove, BaseRegen, Ability, BaseArmor, Type, Attacks, isThree, maxHits, out gc);
         }
-        public static double getCost(int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, UnitType Type, Attack[] Attacks, bool isThree, int maxHits, out double gc)
+        public static double getCost(UnitTypes unitTypes, int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, UnitType Type, Attack[] Attacks, bool isThree, int maxHits, out double gc)
         {
-            double costMult = getCostMult();
+            double costMult = getCostMult(unitTypes);
             return getCost(MaxMove, BaseRegen, Ability, BaseArmor, Type, Attacks, isThree, maxHits, costMult, out gc);
         }
         public static double getCost(int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, UnitType Type, Attack[] Attacks, bool isThree, int maxHits, double costMult)
@@ -66,10 +66,10 @@ namespace CityWar
                 for (int i = 0 ; i < ( isThree ? 3 : Attacks.Length ) ; ++i)
                 {
                     int attack = isThree ? 0 : i;
-                    type[i] = Attacks[attack].target.Count;
+                    type[i] = Attacks[attack].Target.Count;
                     length[i] = Attacks[attack].Length;
                     damage[i] = Attacks[attack].Damage;
-                    divide[i] = Attacks[attack].ArmorPiercing;
+                    divide[i] = Attacks[attack].Pierce;
                 }
 
             //do the actual cost calculation
@@ -140,9 +140,9 @@ namespace CityWar
             addArmor += ( 3 * terrArm + cityArm ) / 4;
         }
 
-        private static double getCostMult()
+        private static double getCostMult(UnitTypes unitTypes)
         {
-            UnitSchema schema = UnitTypes.GetSchema();
+            UnitSchema schema = unitTypes.GetSchema();
             return (double)schema.CostMult.Rows[0][0];
         }
 

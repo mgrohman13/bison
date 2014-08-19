@@ -3,16 +3,19 @@ using System.Collections.Generic;
 
 namespace CityWar
 {
-    public static class UnitTypes
+    [Serializable]
+    public class UnitTypes
     {
-        private static UnitSchema schema;
-        public static UnitSchema GetSchema()
+        private UnitSchema schema;
+
+        public UnitTypes()
         {
-            if (schema == null)
-            {
-                schema = new UnitSchema();
-                schema.ReadXml(Game.Path + "Units.xml");
-            }
+            schema = new UnitSchema();
+            schema.ReadXml(Game.ResourcePath + "Units.xml");
+        }
+
+        public UnitSchema GetSchema()
+        {
             return schema;
         }
     }

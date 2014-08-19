@@ -20,7 +20,7 @@ namespace CityWarWinApp
         int tabOrder = -1;
 
         List<Capturable> capts = new List<Capturable>();
-        public Build(List<Capturable> capts, Point l, Size s)
+        public Build(Game game, List<Capturable> capts, Point l, Size s)
         {
             InitializeComponent();
             this.MouseWheel += new MouseEventHandler(Build_MouseWheel);
@@ -29,7 +29,7 @@ namespace CityWarWinApp
             this.Location = l;
             this.Size = s;
 
-            loadUnits();
+            loadUnits(game);
             RefreshButtons();
         }
 
@@ -38,12 +38,12 @@ namespace CityWarWinApp
             PiecesPanel.UseMouseWheel(sbVer, e, sbVer_Scroll);
         }
 
-        private void loadUnits()
+        private void loadUnits(Game game)
         {
             bool enabled = true;
             int y = 60 - 29;
 
-            UnitSchema us = UnitTypes.GetSchema();
+            UnitSchema us = game.UnitTypes.GetSchema();
 
             List<double> costs = new List<double>(us.Unit.Count);
             Dictionary<double, UnitSchema.UnitRow> costRef = new Dictionary<double, UnitSchema.UnitRow>(costs.Count);
@@ -119,7 +119,7 @@ namespace CityWarWinApp
                 }
 
 
-                Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game.CurrentPlayer.Race);
+                Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
                 List<CostType> keys = new List<CostType>(portalCost.Keys);
                 keys.Sort((c1, c2) => portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1]);
                 foreach (CostType costType in keys)
@@ -363,7 +363,7 @@ namespace CityWarWinApp
 
         private void RefreshButtons()
         {
-            Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game.CurrentPlayer.Race);
+            Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
             foreach (Control control in Controls)
             {
                 if (control is Button && ( control.Tag is string ) && ( (string)control.Tag != "" ))

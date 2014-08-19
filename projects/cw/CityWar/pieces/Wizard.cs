@@ -7,22 +7,17 @@ namespace CityWar
     public class Wizard : Capturable
     {
         #region fields and constructors
-        private List<string> units;
+
+        private readonly List<string> units = new List<string>();
 
         internal Wizard(Player owner, Tile tile, out bool canUndo)
-            : base(1, owner, tile)
+            : base(1, owner, tile, "Wizard")
         {
-            name = "Wizard";
-
-            this.units = InitUnits();
-
-            owner.Add(this);
-            canUndo = tile.Add(this);
-
+            this.units = InitUnits(owner.Game);
             canUndo = false;
         }
 
-        private static List<string> InitUnits()
+        private static List<string> InitUnits(Game game)
         {
             List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
@@ -31,7 +26,7 @@ namespace CityWar
                 foreach (string u in race)
                 {
                     double chance;
-                    switch (Unit.CreateTempUnit(u).costType)
+                    switch (Unit.CreateTempUnit(game, u).CostType)
                     {
                     case CostType.Death:
                         chance = .6;
@@ -49,26 +44,28 @@ namespace CityWar
                     }
                 }
                 if (!any)
-                    return InitUnits();
+                    return InitUnits(game);
             }
             return units;
         }
+
         #endregion //fields and constructors
 
         #region overrides
+
         public override bool CapableBuild(string name)
         {
             if (name == "Wizard" || name.EndsWith(" Portal"))
                 return true;
 
-            Unit unit = Unit.CreateTempUnit(name);
+            Unit unit = Unit.CreateTempUnit(owner.Game, name);
             if (!RaceCheck(unit))
                 return false;
             if (units.Contains(name))
                 return true;
 
             //can always build magic units when on the correct terrain
-            return tile.MatchesTerrain(unit.costType);
+            return tile.MatchesTerrain(unit.CostType);
         }
 
         internal override double Heal()
@@ -119,9 +116,11 @@ namespace CityWar
 
             movement = MaxMove;
         }
+
         #endregion //overrides
 
         #region internal methods
+
         internal void ChangeTerrain(Terrain t)
         {
             if (movement > 0)
@@ -143,6 +142,7 @@ namespace CityWar
                 return units.Count;
             }
         }
+
         #endregion //internal methods
     }
 }

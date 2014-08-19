@@ -14,7 +14,7 @@ namespace CityWarWinApp
         public Aircraft(Piece p)
         {
             InitializeComponent();
-            this.pictureBox1.Image = p.Owner.GetConstPic(p.Name);
+            this.pictureBox1.Image = p.Owner.GetConstPic(p.ToString());
             this.lblText.Text = "This action will cause your " + p.ToString() +
                 " to die!  Continue anyways?";
         }

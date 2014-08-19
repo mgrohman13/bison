@@ -33,9 +33,9 @@ namespace CityWarWinApp
             {
                 this.txtArmor.Text = GetModString(unit.Armor.ToString(), unit.BaseArmor.ToString());
                 this.txtCost.Text = unit.RandedCost.ToString("0");
-                this.txtHits.Text = string.Format("{0} / {1}", unit.Hits, unit.maxHits);
+                this.txtHits.Text = string.Format("{0} / {1}", unit.Hits, unit.MaxHits);
                 this.txtMove.Text = GetMoveString(currentMove, unit);
-                this.txtRegen.Text = GetModString(unit.Regen.ToString(), unit.BaseRegen.ToString());
+                this.txtRegen.Text = GetModString(unit.Regen.ToString(), unit.MaxRegen.ToString());
                 if (!unit.RegenRecover)
                     this.txtRegen.Text += " -";
                 this.txtType.Text = unit.Type.ToString();
@@ -65,8 +65,8 @@ namespace CityWarWinApp
 
                         this.lblAttacks.Text = "Summons";
                         this.lbAttacks.Items.AddRange(portal.GetUnitValues().OrderBy(
-                                pair => Unit.CreateTempUnit(pair.Key).BaseCost).Select(
-                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, Unit.CreateTempUnit(pair.Key).BaseCost, pair.Key)).ToArray());
+                                pair => Unit.CreateTempUnit(Map.Game, pair.Key).BaseTotalCost).Select(
+                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, Unit.CreateTempUnit(Map.Game, pair.Key).BaseTotalCost, pair.Key)).ToArray());
 
                         this.lblArmor.Visible = false;
                         this.txtArmor.Visible = false;

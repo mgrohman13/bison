@@ -11,67 +11,84 @@ namespace CityWar
     public class Unit : Piece, IDeserializationCallback
     {
         #region fields and constructors
+
+        //power to which regeneration percent is raised every turn that it recovers
         public const double RegenRecoverPower = .39;
 
-        public readonly UnitType Type;
-        public readonly int regen, maxHits;
-        public readonly string Race;
-        private double _regenPct;
-        private bool recoverRegenPct;
-
-        internal readonly CostType costType;
-        internal readonly bool isThree;
-        private readonly int cost, pplCost;
-
-        private int _hits, armor;
-        private Attack[] attacks;
-        private bool randed;
-
-        [NonSerialized]
-        private double _randedCostMult;
+        //only used during a battle
         [NonSerialized]
         private int length;
 
-        private Unit(string race, string name, Tile tile, Player owner, int cost, int pplCost, CostType costType, Abilities abil,
-            bool isThree, UnitType Type, int hits, int armor, int regen, int movement, Attack[] attacks, double _regenPct)
-            : base(movement, owner, tile)
+        public readonly UnitType Type;
+        public readonly CostType CostType;
+        public readonly string Race;
+        public readonly bool IsThree;
+        public readonly int BaseOtherCost, BasePplCost;
+
+        private Attack[] attacks;
+        private bool randed;
+        private int maxHits, armor, regen;
+        private bool recoverRegen;
+
+        private int _hits;
+        private double _regenPct;
+
+        private Unit(string race, string name, Tile tile, Player owner, int otherCost, int pplCost, CostType costType, Abilities ability,
+                bool isThree, UnitType Type, int hits, int armor, int regen, int move, Attack[] attacks)
+            : base(move, owner, tile, name, ability)
         {
-            this.Race = race;
-            this.ability = abil;
-            this.name = name;
-            this.cost = cost;
-            this.costType = costType;
             this.Type = Type;
+            this.CostType = costType;
+            this.Race = race;
+            this.IsThree = isThree;
+            this.BaseOtherCost = otherCost;
+            this.BasePplCost = pplCost;
+
+            this.attacks = attacks;
+            this.randed = false;
             this.maxHits = hits;
             this.armor = armor;
             this.regen = regen;
-            this.isThree = isThree;
-            this.pplCost = pplCost;
-            this._regenPct = _regenPct;
-            this.recoverRegenPct = true;
+            this.recoverRegen = true;
 
-            this.randed = false;
+            this._hits = hits;
+            this._regenPct = 1;
 
-            this.attacks = attacks;
-            this.hits = hits;
+            OnDeserialization(null);
+
             foreach (Attack attack in this.attacks)
                 attack.SetOwner(this);
-            CheckAttacks();
-
-            this.OnDeserialization(null);
         }
+
         #endregion //fields and constructors
 
         #region overrides
+
+        internal string Name
+        {
+            get
+            {
+                return base.ToString();
+            }
+        }
         public override string ToString()
         {
-            if (isThree)
-                return base.Name + " (" + attacks.Length + ")";
-            return base.Name;
+            if (IsThree)
+                return Name + " (" + attacks.Length + ")";
+            return Name;
         }
+
         #endregion //overrides
 
         #region public methods and properties
+
+        public int MaxHits
+        {
+            get
+            {
+                return maxHits;
+            }
+        }
         public bool IsRanded
         {
             get
@@ -84,7 +101,7 @@ namespace CityWar
         {
             get
             {
-                return BaseCost * randedCostMult;
+                return BaseTotalCost * randedCostMult;
             }
         }
 
@@ -92,31 +109,15 @@ namespace CityWar
         {
             get
             {
-                return BaseCost / randedCostMult;
+                return BaseTotalCost / randedCostMult;
             }
         }
 
-        public int BaseCost
+        public int BaseTotalCost
         {
             get
             {
                 return BaseOtherCost + BasePplCost;
-            }
-        }
-
-        public int BasePplCost
-        {
-            get
-            {
-                return pplCost;
-            }
-        }
-
-        public int BaseOtherCost
-        {
-            get
-            {
-                return cost;
             }
         }
 
@@ -156,11 +157,11 @@ namespace CityWar
         {
             get
             {
-                return armor + tile.GetArmorBonus(Type);
+                return BaseArmor + tile.GetArmorBonus(Type);
             }
         }
 
-        public int BaseRegen
+        public int MaxRegen
         {
             get
             {
@@ -172,7 +173,7 @@ namespace CityWar
         {
             get
             {
-                double heal = regen * regenPct;
+                double heal = MaxRegen * regenPct;
                 int result = (int)heal;
                 if (owner.HealRound < ( heal % 1 ))
                     ++result;
@@ -184,7 +185,7 @@ namespace CityWar
         {
             get
             {
-                return ( BaseRegen + Regen ) * .5;
+                return ( MaxRegen + Regen ) * .5;
             }
         }
 
@@ -192,7 +193,7 @@ namespace CityWar
         {
             get
             {
-                return this.recoverRegenPct;
+                return this.recoverRegen;
             }
         }
 
@@ -204,14 +205,16 @@ namespace CityWar
 
         public double GetHealthPct()
         {
-            return hits / (double)maxHits;
+            return hits / (double)MaxHits;
         }
+
         #endregion //public methods and properties
 
         #region internal methods
+
         internal bool CaptureCity()
         {
-            if (ability == Abilities.Aircraft || movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
+            if (Ability == Abilities.Aircraft || movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
                 return false;
 
             movement = 0;
@@ -226,12 +229,12 @@ namespace CityWar
         internal void Attacked(int length)
         {
             this.length = Math.Min(this.Length, length);
-            this.recoverRegenPct = false;
+            this.recoverRegen = false;
         }
 
         internal void Wound(int damage)
         {
-            this.recoverRegenPct = false;
+            this.recoverRegen = false;
 
             hits -= damage;
             if (Dead)
@@ -241,8 +244,8 @@ namespace CityWar
             }
             else
             {
-                SetRegenPct(regenPct * ( 1 - damage / (double)( damage + hits ) ));
-                if (isThree)
+                this.regenPct = ( regenPct * ( 1 - damage / (double)( damage + hits ) ) );
+                if (IsThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
             }
@@ -262,17 +265,17 @@ namespace CityWar
                 --movement;
 
                 int regen = Regen;
-                owner.AddWork(( BaseRegen - regen ) * .5);
+                owner.AddWork(( MaxRegen - regen ) * .5);
 
                 hits += regen;
                 double pctWork = 0;
-                if (hits > maxHits)
+                if (hits > MaxHits)
                 {
-                    pctWork = ( hits - maxHits ) / (double)regen;
-                    owner.AddWork(hits - maxHits);
-                    hits = maxHits;
+                    pctWork = ( hits - MaxHits ) / (double)regen;
+                    owner.AddWork(hits - MaxHits);
+                    hits = MaxHits;
                 }
-                if (isThree)
+                if (IsThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
 
@@ -285,7 +288,7 @@ namespace CityWar
             ++movement;
 
             int regen = Regen;
-            owner.AddWork(-( BaseRegen - regen ) * .5);
+            owner.AddWork(-( MaxRegen - regen ) * .5);
 
             int work = Game.Random.Round(pctWork * regen);
             Owner.AddWork(-work);
@@ -299,7 +302,7 @@ namespace CityWar
                 if (Dead)
                     Die();
             }
-            else if (isThree)
+            else if (IsThree)
             {
                 tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
@@ -308,46 +311,44 @@ namespace CityWar
 
         internal override void ResetMove()
         {
-            ResetMoveIntern(true);
-        }
-        private void ResetMoveIntern(bool checkAircraft)
-        {
-            if (!randed)
-            {
-                RandStats();
-            }
-            else if (checkAircraft && ability == Abilities.Aircraft && !tile.HasCarrier())
+            if (Ability == Abilities.Aircraft && !tile.HasCarrier())
             {
                 Disband();
             }
             else
             {
-                if (MaxMove < 1 && hits < maxHits && Regen > 0)
+                if (!randed)
+                    RandStats();
+
+                if (!Dead)
                 {
-                    //healing when you have no max movement happens automatically but costs a few resources
-                    int newHits = hits + Regen;
-                    if (newHits > maxHits)
-                        newHits = maxHits;
+                    if (MaxMove < 1 && hits < MaxHits && Regen > 0)
+                    {
+                        //healing when you have no max movement happens automatically but costs a few resources
+                        int newHits = hits + Regen;
+                        if (newHits > MaxHits)
+                            newHits = MaxHits;
 
-                    double needed = ( newHits - hits ) / (double)maxHits / 3.9;
-                    double pplNeeded = needed * BasePplCost * randedCostMult;
-                    needed *= BaseOtherCost * randedCostMult;
+                        double needed = ( newHits - hits ) / (double)MaxHits / 3.9;
+                        double pplNeeded = needed * BasePplCost * randedCostMult;
+                        needed *= BaseOtherCost * randedCostMult;
 
-                    owner.Spend(Game.Random.Round(needed), costType, Game.Random.Round(pplNeeded));
+                        owner.Spend(Game.Random.Round(needed), CostType, Game.Random.Round(pplNeeded));
 
-                    hits = newHits;
+                        hits = newHits;
+                    }
+
+                    while (movement > 0)
+                        Heal();
+
+                    if (this.recoverRegen)
+                        this.regenPct = ( Math.Pow(regenPct, RegenRecoverPower) );
+                    this.recoverRegen = true;
+
+                    movement = MaxMove;
                 }
 
-                while (movement > 0)
-                    Heal();
-
-                if (this.recoverRegenPct)
-                    SetRegenPct(Math.Pow(regenPct, RegenRecoverPower));
-                this.recoverRegenPct = true;
-
-                movement = MaxMove;
-
-                if (isThree)
+                if (IsThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
             }
@@ -389,9 +390,11 @@ namespace CityWar
                 return length;
             }
         }
+
         #endregion //internal methods
 
         #region hits
+
         [NonSerialized]
         private Brush _healthBrush;
         public Brush HealthBrush
@@ -422,17 +425,22 @@ namespace CityWar
         {
             get
             {
-                return _hits;
+                return this._hits;
             }
             set
             {
-                if (( _hits == value ) || ( ( _hits = value ) < 0 ))
-                    return;
-                CheckAttacks();
-                if (_healthBrush != null)
+                if (this._hits != value)
                 {
-                    _healthBrush.Dispose();
-                    _healthBrush = null;
+                    this._hits = value;
+                    if (!Dead)
+                    {
+                        CheckAttacks();
+                        if (_healthBrush != null)
+                        {
+                            _healthBrush.Dispose();
+                            _healthBrush = null;
+                        }
+                    }
                 }
             }
         }
@@ -441,38 +449,28 @@ namespace CityWar
         {
             get
             {
-                if (_randedCostMult < 0)
-                    GetRandedCostMult();
-
-                return _randedCostMult;
+                return Balance.getCost(owner.Game.UnitTypes, MaxMove, MaxRegen, Ability, BaseArmor, Type, Attacks, IsThree, MaxHits) / (double)( BaseTotalCost );
             }
-        }
-
-        private void GetRandedCostMult()
-        {
-            _randedCostMult = Balance.getCost(MaxMove, regen, Abilty, armor, Type, Attacks, isThree, maxHits) / (double)( BaseCost );
         }
 
         public double regenPct
         {
             get
             {
-                return _regenPct;
+                return this._regenPct;
             }
-        }
-
-        private void SetRegenPct(double value)
-        {
-            this._regenPct = Game.Random.GaussianCapped(value, Math.Abs(this._regenPct - value) / value * .169, Math.Max(0, 2 * value - 1));
+            set
+            {
+                this._regenPct = Game.Random.GaussianCapped(value,
+                        Math.Abs(this._regenPct - value) / value * .169, Math.Max(0, 2 * value - 1));
+            }
         }
 
         private void CheckAttacks()
         {
-            if (isThree)
+            if (IsThree)
             {
-                int numAttacks = ( 3 * hits + maxHits - 1 ) / maxHits;
-                //if (numAttacks != attacks.Length)
-                //{
+                int numAttacks = ( 3 * hits + MaxHits - 1 ) / MaxHits;
                 double used = 0;
                 foreach (Attack a in attacks)
                     if (a.Used)
@@ -490,23 +488,24 @@ namespace CityWar
                     attacks[a] = attack.Clone();
                     attacks[a].Used = Game.Random.Bool(used);
                 }
-                //}
             }
         }
+
         #endregion //hits
 
         #region new units
-        public static Unit CreateTempUnit(string name)
+
+        public static Unit CreateTempUnit(Game game, string name)
         {
-            return NewUnit(name, null, null, false);
+            return NewUnit(game, name, null, null, false);
         }
         internal static Unit NewUnit(string name, Tile tile, Player owner)
         {
-            return NewUnit(name, tile, owner, true);
+            return NewUnit(owner.Game, name, tile, owner, true);
         }
-        private static Unit NewUnit(string name, Tile tile, Player owner, bool add)
+        private static Unit NewUnit(Game game, string name, Tile tile, Player owner, bool add)
         {
-            UnitSchema schema = UnitTypes.GetSchema();
+            UnitSchema schema = game.UnitTypes.GetSchema();
             UnitSchema.UnitRow unitRow = schema.Unit.FindByName(name);
 
             Abilities ability;
@@ -565,7 +564,7 @@ namespace CityWar
             }
 
             Unit unit = new Unit(unitRow.Race, name, tile, owner, unitRow.Cost, unitRow.People, costType, ability,
-                unitRow.IsThree, type, unitRow.Hits, unitRow.Armor, unitRow.Regen, unitRow.Move, attacks, 1);
+                    unitRow.IsThree, type, unitRow.Hits, unitRow.Armor, unitRow.Regen, unitRow.Move, attacks);
 
             if (add)
             {
@@ -575,47 +574,39 @@ namespace CityWar
 
             return unit;
         }
+
         #endregion //new units
 
         #region unit stat randomization
+
         private void RandStats()
         {
-            Attack[] randedAttacks = new Attack[attacks.Length];
-            for (int b = 0 ; b < randedAttacks.Length ; ++b)
-                randedAttacks[b] = attacks[b].Clone().RandStats();
-            int newHits = ( isThree ? 3 * RandStat(maxHits / 3.0, true) : RandStat(maxHits, true) ),
-                    newArmor = RandStat(armor, false), newRegen = RandStat(regen, true);
-            int hitInc = ( isThree ? 3 : 1 );
-
-            Unit newUnit;
             const double maxMult = 1.3;
+
+            foreach (Attack attack in this.attacks)
+                attack.RandStats();
+            this.armor = RandStat(this.armor, false);
+            this.regen = RandStat(this.regen, true);
+
+            int oldHits = this.maxHits;
+            int newHits = ( IsThree ? 3 * RandStat(oldHits / 3.0, true) : RandStat(oldHits, true) );
+            int hitInc = ( IsThree ? 3 : 1 );
             do
             {
-                newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type, newHits, newArmor, newRegen, MaxMove, randedAttacks, regenPct);
-            } while (newUnit.randedCostMult > maxMult && ( newHits -= hitInc ) > 0);
-            while (newUnit.randedCostMult < ( 1 / maxMult ))
+                this.maxHits = newHits;
+                newHits -= hitInc;
+            } while (newHits > 0 && randedCostMult > maxMult);
+            while (randedCostMult < ( 1 / maxMult ))
             {
                 newHits += hitInc;
-                newUnit = new Unit(Race, name, tile, owner, cost, pplCost, costType, ability, isThree, Type, newHits, newArmor, newRegen, MaxMove, randedAttacks, regenPct);
+                this.maxHits = newHits;
             }
 
-            owner.Add(newUnit);
-            tile.Add(newUnit);
+            this.hits = Game.Random.Round(this.hits * this.maxHits / (double)oldHits);
+            if (Dead)
+                Die();
 
-            newUnit.hits = Game.Random.Round(GetHealthPct() * newUnit.maxHits);
-            newUnit.movement = movement;
-            newUnit.group = group;
-
-            tile.Remove(this);
-            owner.Remove(this, false);
-
-            newUnit.randed = true;
-            newUnit.ResetMoveIntern(false);
-
-            if (newUnit.Dead)
-                newUnit.Die();
-
-            tile.hasCenterPiece = false;
+            this.randed = true;
         }
         internal static int RandStat(double stat, bool keepPositive)
         {
@@ -631,9 +622,11 @@ namespace CityWar
             }
             return Game.Random.GaussianCappedInt(stat + 1, .078, lowerCap + 1) - 1;
         }
+
         #endregion //unit stat randomization
 
         #region start and end battle
+
         internal static Battle StartBattle(IEnumerable<Unit> attackers, IEnumerable<Unit> defenders)
         {
             //make all attackers untargetable
@@ -671,9 +664,11 @@ namespace CityWar
                 Owner.AddWork(Attack.OverkillPercent * WorkRegen * ( attacks.Length - usedAttacks ) / (double)attacks.Length);
             }
         }
+
         #endregion //start and end battle
 
         #region moving
+
         internal static bool UnitGroupMove(List<Unit> units, Tile t, Dictionary<Piece, bool> undoPieces, bool gamble)
         {
             if (units.Count < 2)
@@ -798,7 +793,7 @@ namespace CityWar
         protected override bool CanMoveChild(Tile t)
         {
             Player p;
-            return ( GetNeeded(t) > -1 && ( ability != Abilities.Aircraft || !t.Occupied(out p) || p == owner ) );
+            return ( GetNeeded(t) > -1 && ( Ability != Abilities.Aircraft || !t.Occupied(out p) || p == owner ) );
         }
 
         private int GetNeeded(Tile t)
@@ -828,6 +823,7 @@ namespace CityWar
             //not the right unit type to move on that terrain
             return -1;
         }
+
         #endregion //moving
 
         #region pathfinding
@@ -882,7 +878,7 @@ namespace CityWar
         }
         private static int GetDistance(Tile t1, Tile t2)
         {
-            int x1 = t1.x, y1 = t1.y, x2 = t2.x, y2 = t2.y;
+            int x1 = t1.X, y1 = t1.Y, x2 = t2.X, y2 = t2.Y;
             int yDist = Math.Abs(y2 - y1);
             int xDist = Math.Abs(x2 - x1) - yDist / 2;
             //determine if the odd y distance will save an extra x move or not
@@ -899,7 +895,6 @@ namespace CityWar
 
         public void OnDeserialization(object sender)
         {
-            this._randedCostMult = -1;
             this.length = int.MaxValue;
             this._healthBrush = null;
         }

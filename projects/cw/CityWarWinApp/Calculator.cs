@@ -200,11 +200,7 @@ namespace CityWarWinApp
             {
                 HashSet<Tile> tiles = new HashSet<Tile>();
                 foreach (Unit unit in selected)
-                {
-                    for (int a = 0 ; a < 6 ; ++a)
-                        tiles.Add(unit.Tile.GetNeighbor(a));
-                    tiles.Add(unit.Tile);
-                }
+                    tiles.UnionWith(unit.Tile.GetNeighbors());
                 units = new HashSet<Unit>();
                 foreach (Tile tile in tiles)
                     if (tile != null)
@@ -227,7 +223,7 @@ namespace CityWarWinApp
             {
                 this.info = attack;
                 this.damage = attack.Damage;
-                this.pierce = attack.ArmorPiercing;
+                this.pierce = attack.Pierce;
             }
             public override string ToString()
             {

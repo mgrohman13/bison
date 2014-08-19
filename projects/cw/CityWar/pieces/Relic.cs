@@ -7,22 +7,17 @@ namespace CityWar
     public class Relic : Capturable
     {
         #region fields and constructors
-        private List<string> units;
+
+        private readonly List<string> units = new List<string>();
 
         internal Relic(Player owner, Tile tile)
-            : base(0, owner, tile)
+            : base(0, owner, tile, "Relic", Abilities.AircraftCarrier)
         {
-            ability = Abilities.AircraftCarrier;
-            name = "Relic";
-
-            this.units = InitUnits(tile.Terrain);
-
-            owner.Add(this);
-            tile.Add(this);
+            this.units = InitUnits(tile.Game, tile.Terrain);
         }
 
         private const double matchChance = .5, unmatchChance = .2;
-        private static List<string> InitUnits(Terrain terrain)
+        private static List<string> InitUnits(Game game, Terrain terrain)
         {
             List<string> units = new List<string>();
             foreach (string[] race in Game.Races.Values)
@@ -31,12 +26,12 @@ namespace CityWar
                 foreach (string u in race)
                 {
                     double val;
-                    Unit unit = Unit.CreateTempUnit(u);
-                    if (unit.costType == CostType.Production)
+                    Unit unit = Unit.CreateTempUnit(game, u);
+                    if (unit.CostType == CostType.Production)
                         val = .3;
-                    else if (unit.costType == CostType.Death)
+                    else if (unit.CostType == CostType.Death)
                         val = .7;
-                    else if (Tile.MatchesTerrain(unit.costType, terrain))
+                    else if (Tile.MatchesTerrain(unit.CostType, terrain))
                         val = matchChance;
                     else
                         val = unmatchChance;
@@ -48,7 +43,7 @@ namespace CityWar
                     }
                 }
                 if (!any)
-                    return InitUnits(terrain);
+                    return InitUnits(game, terrain);
             }
             return units;
         }
@@ -58,23 +53,25 @@ namespace CityWar
             //chance to remove units matching the old terrain
             foreach (string u in this.units.ToArray())
             {
-                Unit unit = Unit.CreateTempUnit(u);
-                if (tile.MatchesTerrain(unit.costType) && Game.Random.Bool(1 - ( unmatchChance / matchChance )))
+                Unit unit = Unit.CreateTempUnit(owner.Game, u);
+                if (tile.MatchesTerrain(unit.CostType) && Game.Random.Bool(1 - ( unmatchChance / matchChance )))
                     this.units.Remove(u);
             }
             //chance to add units matching the new terrain
             foreach (string[] race in Game.Races.Values)
                 foreach (string u in race)
                 {
-                    Unit unit = Unit.CreateTempUnit(u);
-                    if (!this.units.Contains(u) && Tile.MatchesTerrain(unit.costType, newTerrain)
+                    Unit unit = Unit.CreateTempUnit(owner.Game, u);
+                    if (!this.units.Contains(u) && Tile.MatchesTerrain(unit.CostType, newTerrain)
                             && Game.Random.Bool(( matchChance - unmatchChance ) / ( 1 - unmatchChance )))
                         this.units.Add(u);
                 }
         }
+
         #endregion //fields and constructors
 
         #region overrides
+
         public override bool CapableBuild(string name)
         {
             if (name == "Wizard")
@@ -108,9 +105,11 @@ namespace CityWar
         {
             throw new Exception();
         }
+
         #endregion //overrides
 
         #region internal methods
+
         internal int CanBuildCount
         {
             get
@@ -118,6 +117,7 @@ namespace CityWar
                 return units.Count;
             }
         }
+
         #endregion //internal methods
     }
 }

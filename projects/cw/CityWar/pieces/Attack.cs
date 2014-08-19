@@ -6,30 +6,33 @@ using MattUtil;
 namespace CityWar
 {
     [Serializable]
-    public partial class Attack : IDeserializationCallback
+    public partial class Attack
     {
         #region fields and constructors
+
         //changing requires rebalance of units
         private const double DamMultPercent = .39;
 
         //unit cost : death when killed
         public const double DeathDivide = 7;
         //unit cost : death for disband
-        internal const double DisbandDivide = 4;
+        internal const double DisbandDivide = 3;
         //unit cost : relic for wounding
-        internal const double RelicDivide = 6;
+        internal const double RelicDivide = 5;
 
         //percentage of unused attacks that adds to work
-        internal const double OverkillPercent = .87;
+        internal const double OverkillPercent = 1 / 1.3;
 
         //only used during a battle
         [NonSerialized]
-        private bool used = false;
+        private bool used;
 
         public readonly string Name;
+        public readonly EnumFlags<TargetType> Target;
+        public readonly int Length, Pierce;
+
         private Unit owner;
-        private int length, damage, divide;
-        public readonly EnumFlags<TargetType> target;
+        private int damage;
 
         //balance constructor
         public Attack(EnumFlags<TargetType> target, int length, int damage, int divide)
@@ -39,23 +42,22 @@ namespace CityWar
 
         //in game constructor
         internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int divide)
-            : this(name, null, target, length, damage, divide, false)
+            : this(name, null, target, length, damage, divide)
         {
         }
 
         //constructor for cloning an attack	for isThree
-        private Attack(string name, Unit owner, EnumFlags<TargetType> target, int length, int damage, int divide, bool used)
+        private Attack(string name, Unit owner, EnumFlags<TargetType> target, int length, int damage, int pierce)
         {
             this.Name = name;
-            this.owner = owner;
-            this.target = target;
-            this.length = length;
-            this.damage = damage;
-            this.divide = divide;
-            this.used = used;
+            this.Target = target;
+            this.Length = length;
+            this.Pierce = pierce;
 
-            this.OnDeserialization(null);
+            this.owner = owner;
+            this.damage = damage;
         }
+
         #endregion //fields and constructors
 
         #region public methods and properties
@@ -65,22 +67,6 @@ namespace CityWar
             get
             {
                 return owner;
-            }
-        }
-
-        public int ArmorPiercing
-        {
-            get
-            {
-                return divide;
-            }
-        }
-
-        public int Length
-        {
-            get
-            {
-                return length;
             }
         }
 
@@ -110,7 +96,7 @@ namespace CityWar
         }
         public bool CanAttack(Unit u, int length)
         {
-            if (this.Used || this.length < length)
+            if (this.Used || this.Length < length)
                 return false;
 
             //Immobile units protect on defense only
@@ -144,12 +130,12 @@ namespace CityWar
             else
                 throw new Exception();
 
-            return target.Contains(enemy);
+            return Target.Contains(enemy);
         }
 
         public int GetMinDamage(Unit target)
         {
-            return GetMinDamage(damage, divide, target.Armor);
+            return GetMinDamage(damage, Pierce, target.Armor);
         }
         public static int GetMinDamage(double damage, double divide, double armor)
         {
@@ -159,9 +145,9 @@ namespace CityWar
 
         public double GetAverageDamage(Unit enemy, out double killPct, out double avgRelic)
         {
-            double averageDamage = DamageThrows(damage, divide, enemy.Armor, enemy.hits, out killPct, out avgRelic, true);
+            double averageDamage = DamageThrows(damage, Pierce, enemy.Armor, enemy.hits, out killPct, out avgRelic, true);
             killPct *= 100;
-            avgRelic *= enemy.RandedCost / RelicDivide / enemy.maxHits;
+            avgRelic *= enemy.RandedCost / RelicDivide / enemy.MaxHits;
             return averageDamage;
         }
 
@@ -179,14 +165,14 @@ namespace CityWar
         public string GetTargetString()
         {
             string res = "";
-            foreach (TargetType t in target)
+            foreach (TargetType t in Target)
                 res += t.ToString()[0].ToString();
             return res;
         }
 
         public string GetLogString()
         {
-            return string.Format(Name + " ({0}, {1})", damage, divide);
+            return string.Format(Name + " ({0}, {1})", damage, Pierce);
         }
 
         public static string GetString(string name, int damage, int divide, string targets, int length)
@@ -196,11 +182,13 @@ namespace CityWar
 
         public override string ToString()
         {
-            return GetString(Name, damage, divide, GetTargetString(), length);
+            return GetString(Name, damage, Pierce, GetTargetString(), Length);
         }
+
         #endregion //public methods and properties
 
         #region internal methods
+
         internal int AttackUnit(Unit unit)
         {
             if (!CanAttack(unit))
@@ -228,7 +216,7 @@ namespace CityWar
             else
                 owner.Owner.AddUpkeep(.39 * Player.GetUpkeep(owner) * ( 1 - overkill ) / owner.Attacks.Length, .169);
 
-            double relicValue = ( GetAverageDamage(this.damage, this.divide, armor, hits) - damage ) / RelicDivide / unit.maxHits;
+            double relicValue = ( GetAverageDamage(this.damage, this.Pierce, armor, hits) - damage ) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
                 owner.Owner.AddRelic(unit.RandedCost * relicValue);
             else
@@ -241,7 +229,7 @@ namespace CityWar
 
         internal Attack Clone()
         {
-            return new Attack(Name, owner, target.Clone(), length, damage, divide, used);
+            return new Attack(Name, owner, Target.Clone(), Length, damage, Pierce);
         }
 
         internal void SetOwner(Unit unit)
@@ -249,14 +237,15 @@ namespace CityWar
             this.owner = unit;
         }
 
-        internal Attack RandStats()
+        internal void RandStats()
         {
-            damage = Unit.RandStat(damage, true);
-            return this;
+            this.damage = Unit.RandStat(this.damage, true);
         }
+
         #endregion //internal methods
 
         #region damage
+
         private double damMult
         {
             get
@@ -274,7 +263,7 @@ namespace CityWar
 
         private int DoDamage(int armor)
         {
-            return Game.Random.Round(damStatic - armor / (double)divide) + Game.Random.OEInt(damMult);
+            return Game.Random.Round(damStatic - armor / (double)Pierce) + Game.Random.OEInt(damMult);
         }
 
         private static double DamageThrows(double damage, double divide, double targetArmor, int targetHits, out double killPct, out double avgRelic, bool doRelic)
@@ -321,16 +310,8 @@ namespace CityWar
             avgRelic /= total;
             return avgDamage / total;
         }
+
         #endregion //damage
-
-        #region IDeserializationCallback Members
-
-        public void OnDeserialization(object sender)
-        {
-            this.used = false;
-        }
-
-        #endregion
     }
 
     [Flags]

@@ -160,7 +160,7 @@ namespace balance
                 if (damage3 > 0)
                     Attacks[2] = CreateAttack(this.txtType3.Text, length3, damage3, divide3);
 
-                double cost = CityWar.Balance.getCost(move, regen, ability, armor, type, Attacks, this.txtName.Text.Contains("*"), hits, out gc);
+                double cost = CityWar.Balance.getCost(new UnitTypes(), move, regen, ability, armor, type, Attacks, this.txtName.Text.Contains("*"), hits, out gc);
 
                 double ActCost = Math.Round(cost);
 

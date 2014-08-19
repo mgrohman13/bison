@@ -1,9 +1,5 @@
 in between games
-	review serialized/caching stuff
-	standardize fields
-		use Base... instead of Max...
-	save undo stack	
-	hex
+	"security" of public fields
 	fix shitty inc turn code
 
 balance
@@ -17,10 +13,6 @@ gameplay
 		consider allowing same functionality for pre-existing transports?
 		costs more somehow?
 	group move from different hexes
-	loading a game with different unit set
-		support?
-		error?
-		save units with game?
 	teleporters
 	exp?
 requiring rebalance

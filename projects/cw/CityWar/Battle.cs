@@ -61,10 +61,10 @@ namespace CityWar
         }
         public static int CompareUnits(Unit x, Unit y)
         {
-            int retVal = x.Tile.y - y.Tile.y;
+            int retVal = x.Tile.Y - y.Tile.Y;
             if (retVal == 0)
             {
-                retVal = x.Tile.x - y.Tile.x;
+                retVal = x.Tile.X - y.Tile.X;
                 if (retVal == 0)
                 {
                     retVal = Tile.ComparePieces(x, y);

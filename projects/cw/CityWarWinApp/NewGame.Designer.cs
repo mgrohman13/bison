@@ -30,10 +30,9 @@ namespace CityWarWinApp
         {
             this.lblCancel = new System.Windows.Forms.Label();
             this.lblStart = new System.Windows.Forms.Label();
-            this.nudWidth = new System.Windows.Forms.NumericUpDown();
+            this.nudSize = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.nudHeight = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lblSize = new System.Windows.Forms.Label();
             this.lbxPlayers = new System.Windows.Forms.ListBox();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.lblColor = new System.Windows.Forms.Label();
@@ -45,8 +44,7 @@ namespace CityWarWinApp
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.cbxRace = new System.Windows.Forms.ComboBox();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudWidth ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudHeight ) ).BeginInit();
+            ( (System.ComponentModel.ISupportInitialize)( this.nudSize ) ).BeginInit();
             this.SuspendLayout();
             // 
             // lblCancel
@@ -81,33 +79,40 @@ namespace CityWarWinApp
             this.lblStart.MouseEnter += new System.EventHandler(this.lblStart_MouseEnter);
             this.lblStart.MouseLeave += new System.EventHandler(this.lblStart_MouseLeave);
             // 
-            // nudWidth
+            // nudSize
             // 
-            this.nudWidth.BackColor = System.Drawing.Color.Black;
-            this.nudWidth.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.nudWidth.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.nudWidth.Font = new System.Drawing.Font("Arial", 15.75F);
-            this.nudWidth.ForeColor = System.Drawing.Color.LightCyan;
-            this.nudWidth.Location = new System.Drawing.Point(213, 9);
-            this.nudWidth.Maximum = new decimal(new int[] {
-            30,
+            this.nudSize.BackColor = System.Drawing.Color.Black;
+            this.nudSize.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.nudSize.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.nudSize.DecimalPlaces = 1;
+            this.nudSize.Font = new System.Drawing.Font("Arial", 15.75F);
+            this.nudSize.ForeColor = System.Drawing.Color.LightCyan;
+            this.nudSize.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.nudSize.Location = new System.Drawing.Point(213, 9);
+            this.nudSize.Maximum = new decimal(new int[] {
+            21,
             0,
             0,
             0});
-            this.nudWidth.Minimum = new decimal(new int[] {
-            3,
+            this.nudSize.Minimum = new decimal(new int[] {
+            6,
             0,
             0,
             0});
-            this.nudWidth.Name = "nudWidth";
-            this.nudWidth.Size = new System.Drawing.Size(50, 28);
-            this.nudWidth.TabIndex = 6;
-            this.nudWidth.UpDownAlign = System.Windows.Forms.LeftRightAlignment.Left;
-            this.nudWidth.Value = new decimal(new int[] {
-            18,
+            this.nudSize.Name = "nudSize";
+            this.nudSize.Size = new System.Drawing.Size(65, 28);
+            this.nudSize.TabIndex = 6;
+            this.nudSize.UpDownAlign = System.Windows.Forms.LeftRightAlignment.Left;
+            this.nudSize.Value = new decimal(new int[] {
+            104,
             0,
             0,
-            0});
+            65536});
+            this.nudSize.ValueChanged += new System.EventHandler(this.nudSize_ValueChanged);
             // 
             // label1
             // 
@@ -120,44 +125,16 @@ namespace CityWarWinApp
             this.label1.TabIndex = 7;
             this.label1.Text = "Map Size:";
             // 
-            // nudHeight
+            // lblSize
             // 
-            this.nudHeight.BackColor = System.Drawing.Color.Black;
-            this.nudHeight.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.nudHeight.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.nudHeight.Font = new System.Drawing.Font("Arial", 15.75F);
-            this.nudHeight.ForeColor = System.Drawing.Color.LightCyan;
-            this.nudHeight.Location = new System.Drawing.Point(289, 9);
-            this.nudHeight.Maximum = new decimal(new int[] {
-            30,
-            0,
-            0,
-            0});
-            this.nudHeight.Minimum = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            this.nudHeight.Name = "nudHeight";
-            this.nudHeight.Size = new System.Drawing.Size(50, 28);
-            this.nudHeight.TabIndex = 8;
-            this.nudHeight.UpDownAlign = System.Windows.Forms.LeftRightAlignment.Left;
-            this.nudHeight.Value = new decimal(new int[] {
-            18,
-            0,
-            0,
-            0});
-            // 
-            // label2
-            // 
-            this.label2.BackColor = System.Drawing.Color.Black;
-            this.label2.Font = new System.Drawing.Font("Arial", 15.75F);
-            this.label2.ForeColor = System.Drawing.Color.LightCyan;
-            this.label2.Location = new System.Drawing.Point(263, 9);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(26, 31);
-            this.label2.TabIndex = 9;
-            this.label2.Text = "X";
+            this.lblSize.BackColor = System.Drawing.Color.Black;
+            this.lblSize.Font = new System.Drawing.Font("Arial", 15.75F);
+            this.lblSize.ForeColor = System.Drawing.Color.LightCyan;
+            this.lblSize.Location = new System.Drawing.Point(284, 9);
+            this.lblSize.Name = "lblSize";
+            this.lblSize.Size = new System.Drawing.Size(128, 31);
+            this.lblSize.TabIndex = 9;
+            this.lblSize.Text = "X";
             // 
             // lbxPlayers
             // 
@@ -300,16 +277,14 @@ namespace CityWarWinApp
             this.Controls.Add(this.label3);
             this.Controls.Add(this.lblColor);
             this.Controls.Add(this.lbxPlayers);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.nudHeight);
+            this.Controls.Add(this.lblSize);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.nudWidth);
+            this.Controls.Add(this.nudSize);
             this.Controls.Add(this.lblCancel);
             this.Controls.Add(this.lblStart);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "NewGame";
-            ( (System.ComponentModel.ISupportInitialize)( this.nudWidth ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudHeight ) ).EndInit();
+            ( (System.ComponentModel.ISupportInitialize)( this.nudSize ) ).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -319,10 +294,9 @@ namespace CityWarWinApp
 
         private System.Windows.Forms.Label lblCancel;
         private System.Windows.Forms.Label lblStart;
-        private System.Windows.Forms.NumericUpDown nudWidth;
+        private System.Windows.Forms.NumericUpDown nudSize;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown nudHeight;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lblSize;
         private System.Windows.Forms.ListBox lbxPlayers;
         private System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.Label lblColor;

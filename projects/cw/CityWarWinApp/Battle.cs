@@ -408,7 +408,7 @@ namespace CityWarWinApp
             Attack attack = GetSelectedAttack();
             if (attack != null)
             {
-                txtAP.Text = attack.ArmorPiercing.ToString();
+                txtAP.Text = attack.Pierce.ToString();
                 txtDam.Text = attack.Damage.ToString();
                 txtTargets.Text = attack.GetTargetString();
                 txtLength.Text = attack.Length.ToString();
@@ -584,7 +584,7 @@ namespace CityWarWinApp
             int retVal = ( y.Length - x.Length );
             if (retVal == 0)
             {
-                retVal = ( y.ArmorPiercing - x.ArmorPiercing );
+                retVal = ( y.Pierce - x.Pierce );
                 if (retVal == 0)
                 {
                     retVal = ( y.Damage - x.Damage );

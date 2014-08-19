@@ -9,45 +9,53 @@ namespace CityWar
     public class Tile
     {
         #region fields and constructors
-        private readonly Game game;
-        public readonly int x, y;
 
-        private int currentGroup;
-        private bool madeCity = false;
+        [NonSerialized]
+        private int group;
+
+        public readonly Game Game;
+        public readonly int X, Y;
+
+        private readonly List<Piece> pieces;
+
         private Terrain terrain;
-        private List<Piece> pieces = new List<Piece>();
-        private Tile[] neighbors = new Tile[6];
-        private int wizardPoints = 0;
-        private int cityTime = -1;
+        private int wizardPoints;
+        private int cityTime;
+        private bool madeCity;
 
-        internal Tile(Game game, int x, int y, Terrain terrain)
-        {
-            //mostly for validating the random terrain constructor
-            if (terrain != CityWar.Terrain.Forest && terrain != CityWar.Terrain.Mountain &&
-                    terrain != CityWar.Terrain.Plains && terrain != CityWar.Terrain.Water)
-                throw new Exception();
-
-            this.game = game;
-            this.x = x;
-            this.y = y;
-            this.terrain = terrain;
-        }
         internal Tile(Game game, int x, int y)
             : this(game, x, y, (Terrain)Game.Random.Next(4))
         {
         }
+        internal Tile(Game game, int x, int y, Terrain terrain)
+        {
+            this.group = Game.NewGroup();
+
+            this.Game = game;
+            this.X = x;
+            this.Y = y;
+
+            this.pieces = new List<Piece>();
+
+            this.terrain = terrain;
+            this.wizardPoints = -1;
+            this.cityTime = -1;
+            this.madeCity = false;
+        }
+
         #endregion //fields and constructors
 
         #region public methods and properties
+
         public int CurrentGroup
         {
             get
             {
-                return currentGroup;
+                return group;
             }
             set
             {
-                currentGroup = value;
+                group = value;
             }
         }
         public bool MadeCity
@@ -91,25 +99,64 @@ namespace CityWar
 
         public bool IsNeighbor(int x, int y)
         {
-            Tile neighbor = game.GetTile(x, y);
+            Tile neighbor = Game.GetTile(x, y);
             return ( neighbor != null && IsNeighbor(neighbor) );
         }
         public bool IsNeighbor(Tile t)
         {
-            return neighbors.Contains(t);
-        }
-        public Tile GetNeighbor(int direction)
-        {
-            return neighbors[direction];
+            return GetNeighbors().Contains(t);
         }
         public IEnumerable<Tile> GetNeighbors(bool includeThis = false, bool includeNull = false)
         {
-            IEnumerable<Tile> neighbors = Enumerable.Empty<Tile>().Concat(this.neighbors);
+            IEnumerable<Tile> neighbors = Enumerable.Empty<Tile>().Concat(Enumerable.Range(0, 6).Select(dir => GetTileIn(dir)));
             if (!includeNull)
                 neighbors = neighbors.Where(tile => tile != null);
             if (includeThis)
                 neighbors = neighbors.Concat(new[] { this });
             return neighbors;
+        }
+
+        internal Tile GetTileIn(int direction)
+        {
+            int x = X, y = Y;
+            //this methoid is called to set up the neighbors array
+            bool odd = y % 2 > 0;
+            switch (direction)
+            {
+            case 0:
+                if (odd)
+                    --x;
+                --y;
+                break;
+            case 1:
+                if (!odd)
+                    ++x;
+                --y;
+                break;
+            case 2:
+                --x;
+                break;
+            case 3:
+                ++x;
+                break;
+            case 4:
+                if (odd)
+                    --x;
+                ++y;
+                break;
+            case 5:
+                if (!odd)
+                    ++x;
+                ++y;
+                break;
+            default:
+                throw new Exception();
+            }
+
+            if (x < 0 || x >= Game.Diameter || y < 0 || y >= Game.Diameter)
+                return null;
+            else
+                return Game.GetTile(x, y);
         }
 
         public bool HasWizard()
@@ -153,7 +200,7 @@ namespace CityWar
         }
         private bool IsSelected(Piece p)
         {
-            return ( p.Group == CurrentGroup && p.Owner == game.CurrentPlayer );
+            return ( p.Group == CurrentGroup && p.Owner == Game.CurrentPlayer );
         }
         public Unit[] GetAllUnits()
         {
@@ -224,7 +271,7 @@ namespace CityWar
         {
             Player player;
             Occupied(out player);
-            if (game.CurrentPlayer != player)
+            if (Game.CurrentPlayer != player)
                 return;
 
             CurrentGroup = Game.NewGroup();
@@ -235,7 +282,7 @@ namespace CityWar
         {
             Player player;
             Occupied(out player);
-            if (game.CurrentPlayer != player)
+            if (Game.CurrentPlayer != player)
                 return;
 
             int newGroup = CurrentGroup;
@@ -331,11 +378,13 @@ namespace CityWar
         }
         public override int GetHashCode()
         {
-            return x * game.Height + y;
+            return X * Game.Diameter + Y;
         }
+
         #endregion //public methods and properties
 
         #region internal methods
+
         internal int GetArmorBonus(UnitType unitType)
         {
             int armor = 0;
@@ -387,8 +436,8 @@ namespace CityWar
             if (p is Wizard && wizardPoints > 0)
             {
                 p.Owner.CollectWizardPts(wizardPoints, this.Terrain);
-                wizardPoints = 0;
-                game.CreateWizardPts();
+                wizardPoints = -1;
+                Game.CreateWizardPts();
                 canUndo = false;
             }
 
@@ -439,12 +488,6 @@ namespace CityWar
             return u.WorkRegen * u.MaxMove * .52;
         }
 
-        internal void SetupNeighbors()
-        {
-            for (int a = -1 ; ++a < neighbors.Length ; )
-                neighbors[a] = game.GetTileIn(x, y, a);
-        }
-
         internal bool CheckCapture(Player owner)
         {
             bool canUndo = true;
@@ -476,7 +519,7 @@ namespace CityWar
         internal bool HasCarrier()
         {
             foreach (Piece p in pieces)
-                if (p.Abilty == Abilities.AircraftCarrier)
+                if (p.Ability == Abilities.AircraftCarrier)
                     return true;
 
             return false;
@@ -500,7 +543,7 @@ namespace CityWar
         }
         public Dictionary<Piece, bool> MovePiece(Piece p, Tile tile, bool gamble)
         {
-            if (p.Group == currentGroup && p.Movement > 0 && CanMove(tile))
+            if (p.Group == group && p.Movement > 0 && CanMove(tile))
             {
                 bool canUndo;
                 if (p.Move(tile, gamble, out canUndo) || p.Movement == 0)
@@ -536,13 +579,15 @@ namespace CityWar
                     || ( terrain == Terrain.Plains && costType == CostType.Air )
                     || ( terrain == Terrain.Water && costType == CostType.Water ) );
         }
+
         #endregion //internal methods
 
         #region piece sorting
+
         [NonSerialized]
-        private Piece _centerPiece = null;
+        private Piece _centerPiece;
         [NonSerialized]
-        internal bool hasCenterPiece = false;
+        internal bool hasCenterPiece;
         //this is the piece that is drawn on the map for the tile
         private Piece CenterPiece
         {
@@ -582,7 +627,7 @@ namespace CityWar
                     Portal portal;
                     if (( portal = p as Portal ) != null)
                     {
-                        int portalCost = portal.PortalCost;
+                        int portalCost = portal.Cost;
                         if (portalCost > cost)
                         {
                             cost = portalCost;
@@ -623,7 +668,7 @@ namespace CityWar
 
                     //find the unit with the highest cost
                     double tempCost = unit.RandedCost;
-                    if (unit.isThree)
+                    if (unit.IsThree)
                         tempCost *= unit.Attacks.Length / 3.0;
                     if (tempCost > cost)
                     {
@@ -706,7 +751,7 @@ namespace CityWar
                 //higher values show up higher in the list
                 if (u.Type == UnitType.Immobile)
                     return 7;
-                switch (u.Abilty)
+                switch (u.Ability)
                 {
                 case Abilities.Aircraft:
                     return 6;
@@ -740,7 +785,7 @@ namespace CityWar
             Portal p;
             if (( p = piece as Portal ) != null)
             {
-                return 700000000 + p.PortalCost;
+                return 700000000 + p.Cost;
             }
             Wizard w;
             if (( w = piece as Wizard ) != null)
@@ -750,9 +795,11 @@ namespace CityWar
 
             throw new Exception();
         }
+
         #endregion //piece sorting
 
         #region check aircraft
+
         //if a carrier is the piece being moved, these variables store information about the move
         public static Piece MovedCarrier;
         public static Tile MovedToTile;
@@ -761,7 +808,7 @@ namespace CityWar
         public bool CheckAircraft(int moveMod, Piece p, ref Dictionary<Tile, Tile> CanGetCarrier)
         {
             //returning true means the aircraft will die
-            if (p.Abilty == Abilities.Aircraft)
+            if (p.Ability == Abilities.Aircraft)
             {
                 int move = p.Movement - moveMod;
                 if (move < 0)
@@ -778,7 +825,7 @@ namespace CityWar
             {
                 CanGetCarrier = new Dictionary<Tile, Tile>();
                 foreach (Piece piece in owner.GetPieces())
-                    if (piece.Abilty == Abilities.AircraftCarrier)
+                    if (piece.Ability == Abilities.AircraftCarrier)
                     {
                         if (piece == MovedCarrier)
                             AddTilesInRange(CanGetCarrier, piece, MovedToTile, piece.Movement - MoveModifier);
@@ -798,7 +845,7 @@ namespace CityWar
         {
             if (--move > -1)
             {
-                foreach (Tile t in tile.neighbors)
+                foreach (Tile t in tile.GetNeighbors())
                     if (t != null)
                     {
                         int newMove = move;
@@ -821,9 +868,11 @@ namespace CityWar
             if (!CanGetCarrier.ContainsKey(tile))
                 CanGetCarrier.Add(tile, null);
         }
+
         #endregion //check aircraft
 
         #region find distance
+
         private int FindDistance(Predicate<Tile> match)
         {
             return FindDistance(match, int.MaxValue);
@@ -838,7 +887,7 @@ namespace CityWar
             while (dist < stopAtDist)
             {
                 //only check the tiles that were picked up at the previous distance and dont rematch tiles or match null tiles
-                List<Tile> newTiles = distances.Where(pair => pair.Value == dist).SelectMany(pair => pair.Key.neighbors)
+                List<Tile> newTiles = distances.Where(pair => pair.Value == dist).SelectMany(pair => pair.Key.GetNeighbors())
                         .Where(tile => tile != null && !distances.ContainsKey(tile)).Distinct().ToList();
                 ++dist;
                 //check new tiles for a match
@@ -851,6 +900,7 @@ namespace CityWar
 
             return int.MaxValue;
         }
+
         #endregion //find distance
     }
 

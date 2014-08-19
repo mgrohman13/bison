@@ -8,18 +8,13 @@ namespace CityWar
     public class City : Capturable
     {
         #region fields and constructors
-        private List<string> units;
+
+        private readonly List<string> units = new List<string>();
 
         internal City(Player owner, Tile tile)
-            : base(0, owner, tile)
+            : base(0, owner, tile, "City", Abilities.AircraftCarrier)
         {
-            ability = Abilities.AircraftCarrier;
-            name = "City";
-
             this.units = InitUnits(tile);
-
-            owner.Add(this);
-            tile.Add(this);
         }
 
         private const float avgChance = .8f;
@@ -29,10 +24,10 @@ namespace CityWar
             baseWaterChance = 1 - 1 / ( 1.0 + 13 * baseWaterChance / ( 5.2 + CountNeighbors(tile, terrain => true) ) );
 
             IEnumerable<string> units = Enumerable.Empty<string>();
-            foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(name))))
+            foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(tile.Game, name))))
             {
                 Func<Func<UnitType, bool>, int> CountUnits = Predicate => race
-                        .Count(unit => unit.costType == CostType.Production && Predicate(unit.Type));
+                        .Count(unit => unit.CostType == CostType.Production && Predicate(unit.Type));
 
                 int waterCount = CountUnits(unitType => unitType == UnitType.Water || unitType == UnitType.Amphibious);
                 int otherCount = CountUnits(unitType => unitType != UnitType.Water && unitType != UnitType.Amphibious);
@@ -41,7 +36,7 @@ namespace CityWar
 
                 Func<Unit, double> GetChance = unit =>
                 {
-                    if (unit.costType != CostType.Production)
+                    if (unit.CostType != CostType.Production)
                         return avgChance;
                     switch (unit.Type)
                     {
@@ -58,7 +53,7 @@ namespace CityWar
                 };
 
                 var addUnits = race.Where(unit => Game.Random.Bool(GetChance(unit))).ToList();
-                if (!addUnits.Any(unit => unit.costType == CostType.Production))
+                if (!addUnits.Any(unit => unit.CostType == CostType.Production))
                     return InitUnits(tile);
                 units = units.Concat(addUnits.Select(unit => unit.Name));
             }
@@ -90,9 +85,11 @@ namespace CityWar
         {
             return ( ( avgPct * ( haveCount + targetCount ) ) - ( havePct * haveCount ) ) / targetCount;
         }
+
         #endregion //fields and constructors
 
         #region internal methods
+
         internal int CanBuildCount
         {
             get
@@ -100,9 +97,11 @@ namespace CityWar
                 return units.Count;
             }
         }
+
         #endregion //internal methods
 
         #region overrides
+
         public override bool CapableBuild(string name)
         {
             return CapableBuild(name, false);
@@ -112,14 +111,14 @@ namespace CityWar
             if (name == "Wizard")
                 return true;
 
-            Unit unit = Unit.CreateTempUnit(name);
+            Unit unit = Unit.CreateTempUnit(owner.Game, name);
             if (!RaceCheck(unit))
                 return false;
             if (!units.Contains(name))
                 return false;
 
             //can only build elemental units when on the correct terrain
-            CostType costType = unit.costType;
+            CostType costType = unit.CostType;
             if (tile.MatchesTerrain(costType))
                 return true;
 
@@ -153,7 +152,7 @@ namespace CityWar
                 return false;
 
             bool prod = true, death = true;
-            UnitSchema us = UnitTypes.GetSchema();
+            UnitSchema us = owner.Game.UnitTypes.GetSchema();
             foreach (UnitSchema.UnitRow r in us.Unit.Rows)
                 if (CapableBuild(r.Name, true))
                 {
@@ -168,7 +167,7 @@ namespace CityWar
             {
                 bool can = true;
                 foreach (string available in units)
-                    if (RaceCheck(unit) && Unit.CreateTempUnit(available).costType == CostType.Production)
+                    if (RaceCheck(unit) && Unit.CreateTempUnit(owner.Game, available).CostType == CostType.Production)
                     {
                         if (can && available == name)
                             return true;
@@ -203,6 +202,7 @@ namespace CityWar
         {
             throw new Exception();
         }
+
         #endregion //overrides
     }
 }

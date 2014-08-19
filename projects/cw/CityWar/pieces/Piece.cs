@@ -8,28 +8,38 @@ namespace CityWar
     public abstract class Piece
     {
         #region fields and constructors
+
+        public readonly Abilities Ability;
         public readonly int MaxMove;
+
+        private readonly string name;
 
         protected Tile tile;
         protected Player owner;
-        protected string name;
         protected int movement;
-        protected Abilities ability = Abilities.None;
         protected int group;
 
-        protected Piece(int maxMove, Player owner, Tile tile)
+        protected Piece(int maxMove, Player owner, Tile tile, string name)
+            : this(maxMove, owner, tile, name, Abilities.None)
         {
-            this.owner = owner;
-            this.tile = tile;
-
-            this.movement = 0;
+        }
+        protected Piece(int maxMove, Player owner, Tile tile, string name, Abilities ability)
+        {
+            this.Ability = ability;
             this.MaxMove = maxMove;
 
-            group = Game.NewGroup();
+            this.name = name;
+
+            this.tile = tile;
+            this.owner = owner;
+            this.movement = 0;
+            this.group = Game.NewGroup();
         }
+
         #endregion //fields and constructors
 
         #region public methods and properties
+
         public bool CanMove(Tile t)
         {
             if (tile.IsNeighbor(t))
@@ -61,14 +71,6 @@ namespace CityWar
             }
         }
 
-        public Abilities Abilty
-        {
-            get
-            {
-                return ability;
-            }
-        }
-
         public int Movement
         {
             get
@@ -82,14 +84,6 @@ namespace CityWar
             get
             {
                 return owner;
-            }
-        }
-
-        public virtual string Name
-        {
-            get
-            {
-                return name;
             }
         }
 
@@ -110,9 +104,11 @@ namespace CityWar
         {
             return name;
         }
+
         #endregion //public methods and properties
 
         #region moving
+
         internal bool Move(Tile t, bool gamble, out bool canUndo)
         {
             if (CanMove(t))
@@ -190,14 +186,17 @@ namespace CityWar
                 throw new Exception();
             }
         }
+
         #endregion //moving
 
         #region abstract members
+
         protected abstract bool CanMoveChild(Tile t);
         protected abstract bool DoMove(Tile t, bool gamble, out bool canUndo);
         internal abstract void ResetMove();
         internal abstract double Heal();
         internal abstract void UndoHeal(double v);
+
         #endregion //abstract members
     }
 
