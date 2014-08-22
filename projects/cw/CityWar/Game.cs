@@ -5,11 +5,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using MattUtil;
+using System.Runtime.Serialization;
 
 namespace CityWar
 {
     [Serializable]
-    public class Game
+    public class Game : IDeserializationCallback
     {
         #region fields
 
@@ -1409,5 +1410,16 @@ namespace CityWar
         }
 
         #endregion //create map
+
+        #region IDeserializationCallback Members
+
+        public void OnDeserialization(object sender)
+        {
+            UnitSchema us;
+            int numUnits;
+            InitRaces(out us, out numUnits);
+        }
+
+        #endregion
     }
 }

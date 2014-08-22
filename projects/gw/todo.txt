@@ -29,6 +29,9 @@ UI
 		ships
 	keyboard?
 
+transport-on-build
+	consider allowing same functionality for pre-existing transports?
+	costs more somehow?
 upg PD when lastresearched > current
 	cost uses last, upg uses current
 ExpForSoldiers should be * 1.3 not / 1.3?

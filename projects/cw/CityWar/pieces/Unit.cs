@@ -449,7 +449,22 @@ namespace CityWar
         {
             get
             {
-                return Balance.getCost(owner.Game.UnitTypes, MaxMove, MaxRegen, Ability, BaseArmor, Type, Attacks, IsThree, MaxHits) / (double)( BaseTotalCost );
+                Attack[] attacks;
+                if (IsThree && this.attacks.Length < 3)
+                {
+                    attacks = new Attack[3];
+                    for (int a = 0 ; a < this.attacks.Length ; ++a)
+                        attacks[a] = this.attacks[a];
+                    for (int b = this.attacks.Length ; b < 3 ; ++b)
+                        attacks[b] = GetAttack(GetAttackRow());
+                }
+                else
+                {
+                    attacks = this.attacks;
+                }
+
+                return Balance.getCost(owner.Game.UnitTypes, MaxMove, MaxRegen, Ability,
+                        BaseArmor, Type, attacks, IsThree, MaxHits) / (double)( BaseTotalCost );
             }
         }
 
@@ -470,25 +485,34 @@ namespace CityWar
         {
             if (IsThree)
             {
-                int numAttacks = ( 3 * hits + MaxHits - 1 ) / MaxHits;
-                double used = 0;
-                foreach (Attack a in attacks)
-                    if (a.Used)
-                        ++used;
-                used /= attacks.Length;
+                int curAttacks = this.attacks.Length;
+                int newAttacks = ( 3 * hits + MaxHits - 1 ) / MaxHits;
 
-                if (used > 0 && used < 1)
+                if (curAttacks > newAttacks)
                 {
+                    this.attacks = this.attacks.Take(newAttacks).ToArray();
                 }
-
-                Attack attack = attacks[0].Clone();
-                attacks = new Attack[numAttacks];
-                for (int a = -1 ; ++a < numAttacks ; )
+                else if (curAttacks < newAttacks && newAttacks <= 3)
                 {
-                    attacks[a] = attack.Clone();
-                    attacks[a].Used = Game.Random.Bool(used);
+                    UnitSchema.AttackRow attackRow = GetAttackRow();
+                    Attack[] attacks = new Attack[newAttacks];
+                    for (int a = 0 ; a < curAttacks ; ++a)
+                        attacks[a] = this.attacks[a];
+                    for (int b = curAttacks ; b < newAttacks ; ++b)
+                    {
+                        attacks[b] = GetAttack(attackRow);
+                        attacks[b].SetOwner(this);
+                        attacks[b].RandStats();
+                    }
+                    this.attacks = attacks;
                 }
             }
+        }
+        private UnitSchema.AttackRow GetAttackRow()
+        {
+            UnitSchema unitSchema = owner.Game.UnitTypes.GetSchema();
+            UnitSchema.UnitRow unitRow = unitSchema.Unit.FindByName(Name);
+            return unitRow.GetAttackRows()[0];
         }
 
         #endregion //hits
@@ -549,18 +573,7 @@ namespace CityWar
             Attack[] attacks = new Attack[numAttacks];
             for (int i = 0 ; i < numAttacks ; ++i)
             {
-                UnitSchema.AttackRow attackRow = attackRows[i];
-
-                EnumFlags<TargetType> targets = new EnumFlags<TargetType>();
-
-                if (attackRow.Target_Type.Contains("G"))
-                    targets.Add(TargetType.Ground);
-                if (attackRow.Target_Type.Contains("W"))
-                    targets.Add(TargetType.Water);
-                if (attackRow.Target_Type.Contains("A"))
-                    targets.Add(TargetType.Air);
-
-                attacks[i] = new Attack(attackRow.Name, targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+                attacks[i] = GetAttack(attackRows[i]);
             }
 
             Unit unit = new Unit(unitRow.Race, name, tile, owner, unitRow.Cost, unitRow.People, costType, ability,
@@ -573,6 +586,17 @@ namespace CityWar
             }
 
             return unit;
+        }
+        private static Attack GetAttack(UnitSchema.AttackRow attackRow)
+        {
+            EnumFlags<TargetType> targets = new EnumFlags<TargetType>();
+            if (attackRow.Target_Type.Contains("G"))
+                targets.Add(TargetType.Ground);
+            if (attackRow.Target_Type.Contains("W"))
+                targets.Add(TargetType.Water);
+            if (attackRow.Target_Type.Contains("A"))
+                targets.Add(TargetType.Air);
+            return new Attack(attackRow.Name, targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
         }
 
         #endregion //new units

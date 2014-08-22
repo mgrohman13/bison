@@ -40,21 +40,15 @@ namespace CityWar
         {
         }
 
-        //in game constructor
-        internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int divide)
-            : this(name, null, target, length, damage, divide)
-        {
-        }
-
-        //constructor for cloning an attack	for isThree
-        private Attack(string name, Unit owner, EnumFlags<TargetType> target, int length, int damage, int pierce)
+        //in-game constructor
+        internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int pierce)
         {
             this.Name = name;
             this.Target = target;
             this.Length = length;
             this.Pierce = pierce;
 
-            this.owner = owner;
+            this.owner = null;
             this.damage = damage;
         }
 
@@ -225,11 +219,6 @@ namespace CityWar
             unit.Wound(damage);
 
             return retVal;
-        }
-
-        internal Attack Clone()
-        {
-            return new Attack(Name, owner, Target.Clone(), Length, damage, Pierce);
         }
 
         internal void SetOwner(Unit unit)

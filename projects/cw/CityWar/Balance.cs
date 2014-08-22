@@ -63,13 +63,12 @@ namespace CityWar
                     throw new Exception();
             }
             else
-                for (int i = 0 ; i < ( isThree ? 3 : Attacks.Length ) ; ++i)
+                for (int i = 0 ; i < Attacks.Length ; ++i)
                 {
-                    int attack = isThree ? 0 : i;
-                    type[i] = Attacks[attack].Target.Count;
-                    length[i] = Attacks[attack].Length;
-                    damage[i] = Attacks[attack].Damage;
-                    divide[i] = Attacks[attack].Pierce;
+                    type[i] = Attacks[i].Target.Count;
+                    length[i] = Attacks[i].Length;
+                    damage[i] = Attacks[i].Damage;
+                    divide[i] = Attacks[i].Pierce;
                 }
 
             //do the actual cost calculation
