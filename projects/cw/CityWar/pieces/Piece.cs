@@ -19,10 +19,6 @@ namespace CityWar
         protected int movement;
         protected int group;
 
-        protected Piece(int maxMove, Player owner, Tile tile, string name)
-            : this(maxMove, owner, tile, name, Abilities.None)
-        {
-        }
         protected Piece(int maxMove, Player owner, Tile tile, string name, Abilities ability)
         {
             this.Ability = ability;

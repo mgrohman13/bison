@@ -93,6 +93,7 @@ namespace CityWar
             for (int a = 0 ; a < 3 ; ++a)
             {
                 UnitSchema.UnitRow row = ( (UnitSchema.UnitRow)us.Unit.Rows[Random.Next(numUnits)] );
+                //this should come after freeUnits is set to 0 but before actualy initialized
                 startUnits[a] = GetForRaces(row.Name);
             }
             double totalStartCost = newPlayers.Average(player => startUnits.Sum(
@@ -989,30 +990,6 @@ namespace CityWar
             }
         }
 
-        private void WinGame(Player win)
-        {
-            if (win != null)
-            {
-                AddPlayer(winningPlayers, turn, win);
-                RemovePlayer(win);
-
-                if (players.Length == 1)
-                {
-                    players[0].KillPlayer();
-                }
-                else if (players.Length > 1)
-                {
-                    Piece[] temp = new Piece[win.GetPieces().Count];
-                    win.GetPieces().CopyTo(temp, 0);
-                    foreach (Piece piece in temp)
-                    {
-                        piece.Tile.Remove(piece);
-                        win.Remove(piece, true);
-                    }
-                }
-            }
-        }
-
         internal void DefeatPlayer(Player player)
         {
             AddPlayer(defeatedPlayers, turn, player);
@@ -1082,16 +1059,18 @@ namespace CityWar
 
         private void IncrementTurn()
         {
-            Dictionary<Player, double> deadPlayers;
-            Player win;
-            bool noCapts;
-            int[,] counts = GetPlayerCounts(out deadPlayers, out win, out noCapts);
+            var dead = new List<Player>();
+            //priority by which capturables are removed
+            var capts = new[] { typeof(Relic), typeof(City), typeof(Portal), typeof(Wizard) };
+
+            var counts = GetPlayerCounts(capts);
+            var win = GetWinner(counts);
 
             //these must happen in this order
-            FreeUnit(noCapts, ref counts);
-            if (win == null && !noCapts)
-                RemoveCapturables(counts, ref deadPlayers);
-            KillPlayers(deadPlayers, win);
+            var removed = RemoveUnits(dead, counts);
+            FreeUnit(removed);
+            RemoveCapturables(dead, capts, counts, win, removed);
+            KillPlayers(dead);
             WinGame(win);
 
             if (players.Length > 0)
@@ -1106,67 +1085,51 @@ namespace CityWar
 
             ++turn;
         }
-        private int[,] GetPlayerCounts(out Dictionary<Player, double> deadPlayers, out Player win, out bool noCapts)
+
+        private Dictionary<Type, Dictionary<Player, int>> GetPlayerCounts(IEnumerable<Type> capts)
         {
-            deadPlayers = new Dictionary<Player, double>();
-            win = null;
-            noCapts = false;
+            var counts = new Dictionary<Type, Dictionary<Player, int>>();
+            foreach (Type type in capts)
+                counts.Add(type, new Dictionary<Player, int>());
 
-            int numPlayers = players.Length;
-            double[] values = new double[numPlayers];
-            int[,] counts = new int[numPlayers, 5];
-            //count the number of different types of pieces for each player
-            for (int i = 0 ; i < numPlayers ; ++i)
+            foreach (Player player in this.players)
             {
-                values[i] = players[i].GetArmyStrength() + players[i].GetTotalResources();
-
                 int wizards, portals, cities, relics, units;
-                players[i].GetCounts(out wizards, out portals, out cities, out relics, out units);
+                player.GetCounts(out wizards, out portals, out cities, out relics, out units);
 
-                if (relics < 1 && cities < 1 && portals < 1 && wizards < 1)
-                {
-                    noCapts = true;
-                    //if a player has no capturables, remove one of their remaining units
-                    units -= players[i].RemoveUnit();
-                    if (units < 1)
-                    {
-                        units = 0;
-                        AddDeadPlayer(ref deadPlayers, players[i]);
-                    }
-                }
-
-                counts[i, 0] = relics;
-                counts[i, 1] = cities;
-                counts[i, 2] = portals;
-                counts[i, 3] = wizards;
-                counts[i, 4] = units;
-            }
-
-            for (int a = 0 ; a < numPlayers ; ++a)
-            {
-                for (int b = 0 ; b < numPlayers ; ++b)
-                    if (a != b)
-                    {
-                        for (int c = 0 ; c < 4 ; ++c)
-                            if (counts[a, c] <= counts[b, c])
-                                goto next;
-                        if (values[a] <= values[b])
-                            goto next;
-                    }
-                win = players[a];
-                break;
-next:
-                ;
+                counts[typeof(Relic)].Add(player, relics);
+                counts[typeof(City)].Add(player, cities);
+                counts[typeof(Portal)].Add(player, portals);
+                counts[typeof(Wizard)].Add(player, wizards);
             }
 
             return counts;
         }
-        private void AddDeadPlayer(ref Dictionary<Player, double> deadPlayers, Player player)
+        private Player GetWinner(Dictionary<Type, Dictionary<Player, int>> counts)
         {
-            deadPlayers.Add(player, player.GetTotalResources());
+            //a player whens the game when, for all capturable types, they have more than the next highest player
+            foreach (Player player in this.players)
+                if (counts.Values.All(dict => dict[player] > dict.Where(pair => player != pair.Key).Max(pair => pair.Value)))
+                    return player;
+            return null;
         }
 
-        private void FreeUnit(bool noCapts, ref int[,] counts)
+        private bool RemoveUnits(List<Player> dead, Dictionary<Type, Dictionary<Player, int>> counts)
+        {
+            //remove resources/units for players with no capturables
+            bool removed = false;
+            foreach (Player player in this.players)
+                if (counts.All(pair => pair.Value[player] == 0))
+                {
+                    removed = true;
+                    player.RemoveUnit();
+                    if (player.Dead)
+                        dead.Add(player);
+                }
+            return removed;
+        }
+
+        private void FreeUnit(bool removed)
         {
             List<string> units = new List<string>();
             foreach (string race in Races.Keys)
@@ -1181,19 +1144,16 @@ next:
                     units.Add(addUnit);
             }
             //dont place free units when someone has no capturables
-            if (!noCapts && units.Count > 0)
+            if (!removed && units.Count > 0)
             {
                 Dictionary<string, string> forRaces = GetForRaces(Random.SelectValue(units));
                 foreach (string unit in forRaces.Values)
                     freeUnits[unit] -= Unit.CreateTempUnit(this, unit).BaseTotalCost;
                 double avg = players.Average(player => Unit.CreateTempUnit(this, forRaces[player.Race]).BaseTotalCost);
-                foreach (Player p in players)
-                    p.FreeUnit(forRaces[p.Race], avg);
-                for (int i = 0 ; i < players.Length ; ++i)
-                    ++counts[i, 4];
+                foreach (Player player in players)
+                    player.FreeUnit(forRaces[player.Race], avg);
             }
         }
-
         private Dictionary<string, string> GetForRaces(string targetName)
         {
             Unit targetUnit = Unit.CreateTempUnit(this, targetName);
@@ -1252,62 +1212,18 @@ next:
             });
         }
 
-        private void RemoveCapturables(int[,] counts, ref Dictionary<Player, double> deadPlayers)
+        private void RemoveCapturables(List<Player> dead, IEnumerable<Type> capts,
+                Dictionary<Type, Dictionary<Player, int>> counts, Player win, bool removed)
         {
-            int numPlayers = players.Length;
-            //check for a capturable type to remove
-            for (int a = 0 ; a < 4 ; ++a)
-            {
-                Type type = null;
-                //this is the order they are removed: relics first, wizards last
-                switch (a)
-                {
-                case 0:
-                    type = typeof(Relic);
-                    break;
-                case 1:
-                    type = typeof(City);
-                    break;
-                case 2:
-                    type = typeof(Portal);
-                    break;
-                case 3:
-                    type = typeof(Wizard);
-                    break;
-                }
-
-                bool canRemove = true;
-                for (int b = 0 ; b < numPlayers ; ++b)
-                    if (counts[b, a] < 1)
+            if (win == null && !removed)
+                foreach (Type type in capts)
+                    if (counts[type].All(pair => pair.Value > 0))
                     {
-                        canRemove = false;
+                        RemoveCapturables(dead, type);
                         break;
                     }
-
-                if (canRemove)
-                {
-                    RemoveCapturables(type);
-
-                    //check if any players died
-                    for (int c = 0 ; c < numPlayers ; ++c)
-                    {
-                        bool any = false;
-                        for (int d = 0 ; d < 5 ; ++d)
-                            if (counts[c, d] > 0)
-                            {
-                                any = true;
-                                break;
-                            }
-                        if (!any)
-                            AddDeadPlayer(ref deadPlayers, players[c]);
-                    }
-
-                    //only remove one each round of turns
-                    break;
-                }
-            }
         }
-        private void RemoveCapturables(Type type)
+        private void RemoveCapturables(List<Player> dead, Type type)
         {
             //const double portalAvg = Player.WizardCost;
             double portalAvg = double.NaN;
@@ -1321,32 +1237,58 @@ next:
                 portalAvg += Portal.AvgPortalCost;
             }
 
-            foreach (Player p in players)
-                p.RemoveCapturable(type, portalAvg);
+            foreach (Player player in players)
+            {
+                player.RemoveCapturable(type, portalAvg);
+                if (player.Dead)
+                    dead.Add(player);
+            }
         }
 
-        private void KillPlayers(Dictionary<Player, double> deadPlayers, Player win)
+        private void KillPlayers(List<Player> dead)
         {
-            //kill off any players that died during IncrementTurn
-            while (deadPlayers.Count > 0)
+            while (dead.Count > 0)
             {
+                //if there are multiple dead players, kill them off in order based on the amount of resources they died with
                 Player loser = null;
                 double min = double.MaxValue;
-                //if there are multiple dead players, kill them off in order based on the amount of resources they died with
-                foreach (Player p in Random.Iterate(deadPlayers.Keys))
-                    if (deadPlayers[p] < min)
+                foreach (Player player in Random.Iterate(dead))
+                {
+                    double value = player.GetTotalResources();
+                    if (value < min)
                     {
-                        loser = p;
-                        min = deadPlayers[p];
+                        loser = player;
+                        min = value;
                     }
+                }
 
-                deadPlayers.Remove(loser);
+                dead.Remove(loser);
                 loser.KillPlayer();
             }
+        }
 
-            //if theres only one player left, end the game
-            if (players.Length == 1 && players[0] != win)
-                WinGame(players[0]);
+        private void WinGame(Player win)
+        {
+            //a single remaining player automatically wins
+            if (players.Length == 1)
+                win = players[0];
+
+            if (win != null)
+            {
+                AddPlayer(winningPlayers, turn, win);
+                RemovePlayer(win);
+
+                if (players.Length == 1)
+                    //if a single player if left, they lose
+                    players[0].KillPlayer();
+                else if (players.Length > 1)
+                    //otherwise, remove all winning pieces from the game
+                    foreach (Piece piece in win.GetPieces().ToList())
+                    {
+                        piece.Tile.Remove(piece);
+                        win.Remove(piece, true);
+                    }
+            }
         }
 
         private void ResetTiles()

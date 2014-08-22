@@ -397,6 +397,14 @@ namespace CityWar
 
         #region internal methods
 
+        internal bool Dead
+        {
+            get
+            {
+                return ( pieces.Count < 1 );
+            }
+        }
+
         public void BalanceForUnit(double avg, double mine)
         {
             avg -= mine;
@@ -416,7 +424,7 @@ namespace CityWar
         {
             pieces.Remove(p);
             //actually losing the game is handled separately inside IncrementTurn
-            if (!turnIncrement && pieces.Count < 1)
+            if (!turnIncrement && Dead)
                 KillPlayer();
         }
 
@@ -1351,7 +1359,7 @@ namespace CityWar
             Remove(remove, true);
         }
 
-        internal int RemoveUnit()
+        internal void RemoveUnit()
         {
             //if you have enough resources, you will lose those instead of a unit
             int loseUnits = RemoveResources();
@@ -1369,7 +1377,6 @@ namespace CityWar
                     unit.Tile.Remove(unit);
                     this.Remove(unit, true);
                 }
-            return loseUnits;
         }
         private const double noCapLoseAmt = 1000 / 3.0;
         private double GetReimbursement(bool first, double cost, double healthPct)
@@ -1455,7 +1462,7 @@ namespace CityWar
 
         #region IDeserializationCallback Members
 
-        void IDeserializationCallback.OnDeserialization(object sender)
+        public void OnDeserialization(object sender)
         {
             pics = new Dictionary<string, Bitmap>();
             picsConst = new Dictionary<string, Bitmap>();

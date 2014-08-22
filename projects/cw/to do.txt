@@ -1,6 +1,5 @@
 in between games
 	"security" of public fields
-	fix shitty inc turn code
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
@@ -9,9 +8,6 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
-	transport-on-build
-		consider allowing same functionality for pre-existing transports?
-		costs more somehow?
 	group move from different hexes
 	teleporters
 	exp?
