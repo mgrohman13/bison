@@ -317,6 +317,9 @@ namespace CityWar
             }
             else
             {
+                //foreach (Attack attack in this.attacks)
+                //    attack.RandStats();
+
                 if (!randed)
                     RandStats();
 
@@ -607,8 +610,10 @@ namespace CityWar
         {
             const double maxMult = 1.3;
 
+            //TODO: remove, uncomment others
             foreach (Attack attack in this.attacks)
                 attack.RandStats();
+
             this.armor = RandStat(this.armor, false);
             this.regen = RandStat(this.regen, true);
 
