@@ -311,15 +311,14 @@ namespace CityWar
 
         internal override void ResetMove()
         {
-            if (Ability == Abilities.Aircraft && !tile.HasCarrier())
+            if (randed && Ability == Abilities.Aircraft && !tile.HasCarrier())
             {
                 Disband();
             }
             else
             {
-                //foreach (Attack attack in this.attacks)
-                //    attack.RandStats();
-
+                foreach (Attack attack in this.attacks)
+                    attack.RandStats();
                 if (!randed)
                     RandStats();
 
@@ -505,7 +504,6 @@ namespace CityWar
                     {
                         attacks[b] = GetAttack(attackRow);
                         attacks[b].SetOwner(this);
-                        attacks[b].RandStats();
                     }
                     this.attacks = attacks;
                 }
@@ -609,10 +607,6 @@ namespace CityWar
         private void RandStats()
         {
             const double maxMult = 1.3;
-
-            //TODO: remove, uncomment others
-            foreach (Attack attack in this.attacks)
-                attack.RandStats();
 
             this.armor = RandStat(this.armor, false);
             this.regen = RandStat(this.regen, true);

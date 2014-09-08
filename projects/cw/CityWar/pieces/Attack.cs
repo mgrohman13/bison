@@ -33,7 +33,7 @@ namespace CityWar
 
         private Unit owner;
         private int damage;
-        //private bool randed;
+        private bool randed;
 
         //balance constructor
         public Attack(EnumFlags<TargetType> target, int length, int damage, int divide)
@@ -51,7 +51,7 @@ namespace CityWar
 
             this.owner = null;
             this.damage = damage;
-            //this.randed = false;
+            this.randed = false;
         }
 
         #endregion //fields and constructors
@@ -230,8 +230,11 @@ namespace CityWar
 
         internal void RandStats()
         {
-            //if (!randed)
-            this.damage = Unit.RandStat(this.damage, true);
+            if (!randed)
+            {
+                this.damage = Unit.RandStat(this.damage, true);
+                this.randed = true;
+            }
         }
 
         #endregion //internal methods
