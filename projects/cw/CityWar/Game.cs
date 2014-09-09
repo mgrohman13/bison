@@ -307,7 +307,7 @@ namespace CityWar
                 if (selected.Any() && defenders.Any())
                 {
                     if (!selected.All(CanStartBattle))
-                        throw new Exception();
+                        return null;
 
                     return Unit.StartBattle(selected, defenders);
                 }

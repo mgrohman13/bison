@@ -1,5 +1,6 @@
 in between games
 	"security" of public fields
+	swap hydra g/w attacks?  shouldn't need rebalance?
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy

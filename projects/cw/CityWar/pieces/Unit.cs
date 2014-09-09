@@ -244,7 +244,7 @@ namespace CityWar
             }
             else
             {
-                this.regenPct = ( regenPct * ( 1 - damage / (double)( damage + hits ) ) );
+                this.regenPct *= 1 - damage / (double)( damage + hits );
                 if (IsThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
@@ -344,8 +344,9 @@ namespace CityWar
                         Heal();
 
                     if (this.recoverRegen)
-                        this.regenPct = ( Math.Pow(regenPct, RegenRecoverPower) );
-                    this.recoverRegen = true;
+                        this.regenPct = Math.Pow(regenPct, RegenRecoverPower);
+                    else
+                        this.recoverRegen = true;
 
                     movement = MaxMove;
                 }
