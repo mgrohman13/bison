@@ -1339,7 +1339,7 @@ namespace CityWar
 
         private void CreateCitySpot()
         {
-            int amt = Random.OEInt(GetMapSize(Diameter - 2) / 520.0);
+            int amt = Random.OEInt(Math.Sqrt(GetMapSize(Diameter - 2) / 910.0));
             for (int a = 0 ; a < amt ; ++a)
             {
                 //select a tile not on the map edge
