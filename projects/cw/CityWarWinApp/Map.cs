@@ -375,10 +375,12 @@ namespace CityWarWinApp
 
         private void CenterUnit()
         {
-            //select any pieces with movement left
-            Game.GetTile(selected.X, selected.Y).Select();
-            panelPieces.ScrollToSelected();
-            RefreshButtons();
+            if (selected != null)
+            {
+                Game.GetTile(selected.X, selected.Y).Select();
+                panelPieces.ScrollToSelected();
+                RefreshButtons();
+            }
         }
 
         private void setOldBounds()
