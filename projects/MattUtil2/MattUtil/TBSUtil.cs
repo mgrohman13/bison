@@ -15,7 +15,7 @@ namespace MattUtil
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
 
             int playerLength = players.Count;
-            int numShuffles = random.OEInt(playerLength * shuffle);
+            int numShuffles = random.GaussianOEInt(playerLength * shuffle, .39, .39);
             bool[] affected = new bool[playerLength];
             for (int a = 0 ; a < numShuffles ; ++a)
             {
@@ -28,11 +28,22 @@ namespace MattUtil
                     int amt;
                     retVal.TryGetValue(player, out amt);
                     retVal[player] = amt + 1;
+
+                    swap = playerLength - 1;
+                    if (index == 0 && !affected[index] && !affected[swap])
+                    {
+                        Player last = players[swap];
+                        retVal.TryGetValue(last, out amt);
+                        retVal[last] = amt - 1;
+
+                        affected[0] = true;
+                        affected[swap] = true;
+                    }
                 }
                 else
                 {
-                    affected[swap] = true;
                     affected[index] = true;
+                    affected[swap] = true;
 
                     players[index] = players[swap];
                     players[swap] = player;
