@@ -10,6 +10,7 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	get relic when no capt?
 	exploit heal over isThree change
 	group move from different hexes
 	teleporters?

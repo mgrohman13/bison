@@ -375,7 +375,7 @@ namespace CityWarWinApp
 
         private void CenterUnit()
         {
-            if (selected != null)
+            if (selected != null && selected.X != -1)
             {
                 Game.GetTile(selected.X, selected.Y).Select();
                 panelPieces.ScrollToSelected();

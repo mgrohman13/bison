@@ -10,7 +10,7 @@ namespace MattUtil.RealTimeGame
 {
     public class GameTicker : IDisposable
     {
-        public static readonly float TicksPerMilisecond = Stopwatch.Frequency / 1000f;
+        public static readonly double TicksPerMilisecond = Stopwatch.Frequency / 1000.0;
 
         public delegate void EventDelegate();
 
