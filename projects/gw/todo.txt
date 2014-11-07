@@ -55,6 +55,7 @@ terrain from anomalies
 directly upgrade existing ships?
 	to reduce repair cost?
 	improve stats?
+	obsolete designs?
 GetNonColonyPct full trans?
 increase minimum research chance
 ship name value

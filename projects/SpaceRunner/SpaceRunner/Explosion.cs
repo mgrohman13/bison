@@ -92,6 +92,13 @@ namespace SpaceRunner
             }
         }
 
+        internal override void Draw(Graphics graphics, int centerX, int centerY)
+        {
+            const float minDistSqr = ( Game.AsteroidMaxSize + Game.PlayerSize ) * ( Game.AsteroidMaxSize + Game.PlayerSize );
+            if (!Game.GameOver() || this.time + 3 < Game.ExplosionTime || Game.GetDistanceSqr(x, y) > Game.Random.DoubleFull(minDistSqr))
+                base.Draw(graphics, centerX, centerY);
+        }
+
         protected override void OnStep()
         {
             Game.NormalizeDirs(ref this.xDir, ref this.yDir, Game.GetDistance(this.xDir, this.yDir) * Game.ExplosionSpeedMult);
@@ -107,10 +114,6 @@ namespace SpaceRunner
             LifeDust ld = obj as LifeDust;
             if (ld != null && ld.HitBy(this))
                 ld.Die();
-
-            if (obj is Explosion)
-            {
-            }
         }
 
         protected override void HitPlayer()

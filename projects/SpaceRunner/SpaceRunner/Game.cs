@@ -966,9 +966,6 @@ namespace SpaceRunner
                 sqrt = (float)( Math.Sqrt(sqrt) );
             //lead is the extra distance the player will travel until the bullet hits
             float lead = ( sqrt + xDist ) / ( speedRatio - 1f );
-            if (( sqrt + xDist ) < 0)
-            {
-            }
             //negative lead means the player is traveling away too quickly
             if (lead > 0)
             {
@@ -978,15 +975,9 @@ namespace SpaceRunner
                 NormalizeDirs(ref moveX, ref moveY, lead);
                 xDir += moveX;
                 yDir += moveY;
-                if (speedRatio < 1)
-                {
-                }
             }
-            else
+            else if (speedRatio > 1)
             {
-                if (speedRatio > 1)
-                {
-                }
             }
         }
         internal static float AddBit(float value, bool negative = false)
@@ -1242,12 +1233,7 @@ namespace SpaceRunner
         private void MovePlayer()
         {
             if (Turbo)
-            {
                 fuel -= GameRand.OE(TurboSpeed);
-                if (fuel <= 0)
-                {
-                }
-            }
 
             AddScore((decimal)TotalSpeed * DistanceScore);
         }
@@ -1294,10 +1280,10 @@ namespace SpaceRunner
             return CollideObjects();
         }
 
-        static GameObject obj_ = null;
+        //static GameObject obj_ = null;
         private void MoveObjects(float xSpeed, float ySpeed)
         {
-            GameObject obj_2 = null;
+            //GameObject obj_2 = null;
 
             objectSectors.Clear();
 
@@ -1318,26 +1304,26 @@ namespace SpaceRunner
                     sector.Add(obj);
                 }
 
-                if (obj_2 == null || GetDistance(obj_2.X, obj_2.Y) < GetDistance(obj.X, obj.Y))
-                    obj_2 = obj;
+                //if (obj_2 == null || GetDistance(obj_2.X, obj_2.Y) < GetDistance(obj.X, obj.Y))
+                //    obj_2 = obj;
             }
 
-            if (obj_ != obj_2)
-            {
-                PrintObjInfo(obj_);
-                PrintObjInfo(obj_2);
-                obj_ = obj_2;
-            }
-        }
-        static void PrintObjInfo(GameObject obj)
-        {
-            //if (obj != null)
+            //if (obj_ != obj_2)
             //{
-            //    string point = string.Format("({0},{1})", obj.X.ToString("0.0"), obj.Y.ToString("0.0"));
-            //    Console.WriteLine("{0}\t{1}{2}{3}", GetDistance(obj.X, obj.Y).ToString("0").PadLeft(5),
-            //            point, point.Length < 12 ? "\t\t\t" : ( point.Length < 16 ? "\t\t" : "\t" ), obj.ToString().Substring(12));
+            //    PrintObjInfo(obj_);
+            //    PrintObjInfo(obj_2);
+            //    obj_ = obj_2;
             //}
         }
+        //static void PrintObjInfo(GameObject obj)
+        //{
+        //    if (obj != null)
+        //    {
+        //        string point = string.Format("({0},{1})", obj.X.ToString("0.0"), obj.Y.ToString("0.0"));
+        //        Console.WriteLine("{0}\t{1}{2}{3}", GetDistance(obj.X, obj.Y).ToString("0").PadLeft(5),
+        //                point, point.Length < 12 ? "\t\t\t" : ( point.Length < 16 ? "\t\t" : "\t" ), obj.ToString().Substring(12));
+        //    }
+        //}
         internal void HitPlayer(float damage, bool randomize = true)
         {
             if (randomize)

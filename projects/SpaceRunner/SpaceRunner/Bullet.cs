@@ -80,9 +80,9 @@ namespace SpaceRunner
             }
 
             ////Game.BulletExplosionSpeed: 4.08
-            //Console.WriteLine("{1}  {3}{2}{0}", avgNum.ToString("000.00").TrimEnd('0').TrimEnd('.').PadRight(6).TrimStart('0').PadLeft(7),
+            //Console.WriteLine("{1}  {3}{2}{0} {4}", avgNum.ToString("000.00").TrimEnd('0').TrimEnd('.').PadRight(6).TrimStart('0').PadLeft(7),
             //        numBullets.ToString().PadLeft(3), ( speed.HasValue ? speed.Value.ToString("0.00") : "" ).PadLeft(6),
-            //        ( b.HasValue ? b.ToString() : "" ).PadRight(5));
+            //        ( b.HasValue ? b.ToString() : "" ).PadRight(5), game.TickCount.ToString().PadLeft(6));
         }
 
         internal static Bullet NewBullet(Game game, float x, float y, float xDir, float yDir, float speed, float spacing, FriendlyStatus friendly)
