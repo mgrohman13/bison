@@ -80,6 +80,38 @@ namespace randTest
             //Console.ReadKey(true);
 
 
+            while (rand.Bool(999 / 1000.0))
+            {
+                bool f = rand.Bool();
+                if (f)
+                {
+                    float val = rand.OEFloat();
+                    //float act = (float)Math.Sqrt(val);
+                    Console.WriteLine(val);
+                    float s = sqrt(val);
+                    Console.WriteLine(s);
+                    //if (val != act) 
+                    if (s * s != val)
+                        Console.WriteLine("off");
+                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+                        Console.WriteLine("Math");
+                }
+                else
+                {
+                    double val = rand.OE();
+                    //double act = Math.Sqrt(val);
+                    Console.WriteLine(val);
+                    double s = sqrt(val);
+                    Console.WriteLine(s);
+                    //if (val != act)
+                    if (s * s != val)
+                        Console.WriteLine("off");
+                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+                        Console.WriteLine("Math");
+                }
+                Console.WriteLine();
+                //Thread.Sleep(1300);
+            }
 
 
 
@@ -88,6 +120,64 @@ namespace randTest
 
             rand.Dispose();
             Console.ReadKey();
+        }
+
+        static float sqrt(float n)
+        {
+            return (float)sqrt(n, true);
+        }
+        static double sqrt(double n)
+        {
+            return sqrt(n, false);
+        }
+        static double sqrt(double n, bool isFloat)
+        {
+            if (n < 0)
+                throw new ArgumentOutOfRangeException();
+
+            int count = 0;
+
+            double min, max;
+            if (n < 1)
+            {
+                min = n;
+                max = 1;
+            }
+            else
+            {
+                min = 1;
+                max = n;
+            }
+            double val;
+            while (true)
+            {
+
+                ++count;
+
+                val = ( min + max ) / 2.0;
+                if (isFloat ? ( (float)val == (float)min || (float)val == (float)max ) : ( val == min || val == max ))
+                {
+                    if (Math.Abs(( min * min ) - n) < Math.Abs(( max * max ) - n))
+                        val = min;
+                    else
+                        val = max;
+                    break;
+                }
+                double sqr = val * val;
+                if (isFloat ? ( (float)sqr == (float)n ) : ( sqr == n ))
+                {
+                    Console.WriteLine("break");
+                    break;
+                }
+                else if (sqr < n)
+                    min = val;
+                else
+                    max = val;
+            }
+
+            Console.WriteLine(count);
+
+            return val;
         }
 
         //private static void Write(MTRandom rand)
