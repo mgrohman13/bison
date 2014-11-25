@@ -11,7 +11,7 @@ namespace FTLRuler
 {
     public partial class Form1 : Form
     {
-        private const float diameter = 2048f, _100 = 64f, _70 = _100 * .70f, _50 = _100 * .50f;
+        private const float diameter = 1536f, full = 64f, nSector = full * .80f, nBeacon = full * .50f;
 
         private Dictionary<int, float> jumps = new Dictionary<int, float>();
 
@@ -23,9 +23,7 @@ namespace FTLRuler
             this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
             this.MouseWheel += new MouseEventHandler(Form1_MouseWheel);
 
-            Rectangle bounds = Screen.GetBounds(this);
-            bounds.Inflate(bounds.Width / -13, bounds.Height / -13);
-            this.Bounds = bounds;
+            this.Height = ( Screen.GetBounds(this).Height * 12 ) / 13;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -44,8 +42,8 @@ namespace FTLRuler
         {
             if (e.Delta != 0)
             {
-                float val = ( e.Delta < 0 ? _50 : _70 );
-                for (int idx = 0 ; idx < this.Width / val ; ++idx)
+                float val = ( e.Delta < 0 ? nBeacon : nSector );
+                for (int idx = 0 ; idx < this.Width / val + 1 ; ++idx)
                     jumps[idx] = val;
             }
             this.Invalidate();
@@ -70,12 +68,12 @@ namespace FTLRuler
                         {
                             float val, newVal;
                             jumps.TryGetValue(idx, out val);
-                            if (val == _70)
-                                newVal = _100;
-                            else if (val == _50)
-                                newVal = _70;
+                            if (val == nSector)
+                                newVal = full;
+                            else if (val == nBeacon)
+                                newVal = nSector;
                             else
-                                newVal = _50;
+                                newVal = nBeacon;
                             jumps[idx] = newVal;
                         }
                         return true;
@@ -93,9 +91,9 @@ namespace FTLRuler
 
         private void Loop(Func<float, int, bool> Callback)
         {
-            float x = -diameter + _100 / 2f;
+            float x = -diameter + full / 2f;
             int idx = -1;
-            while (x + diameter - _100 * 2f < this.Width)
+            while (x + diameter - full * 2f < this.Width)
             {
                 if (Callback(x, idx))
                     break;
@@ -103,7 +101,7 @@ namespace FTLRuler
                 if (jumps.TryGetValue(++idx, out val))
                     x += val;
                 else
-                    x += _100;
+                    x += full;
             }
         }
     }
