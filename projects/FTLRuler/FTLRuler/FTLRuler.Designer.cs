@@ -1,6 +1,6 @@
 ﻿namespace FTLRuler
 {
-    partial class Form1
+    partial class FTLRuler
     {
         /// <summary>
         /// Required designer variable.
@@ -30,17 +30,16 @@
         {
             this.SuspendLayout();
             // 
-            // Form1
+            // FTLRuler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(884, 566);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Name = "Form1";
-            this.Opacity = 0.5D;
-            this.Text = "Form1";
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseClick);
+            this.Name = "FTLRuler";
+            this.Text = "FTLRuler";
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FTLRuler_KeyPress);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FTLRuler_MouseClick);
             this.ResumeLayout(false);
 
         }
@@ -48,4 +47,3 @@
         #endregion
     }
 }
-
