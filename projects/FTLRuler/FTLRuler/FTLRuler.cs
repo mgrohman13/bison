@@ -11,7 +11,7 @@ namespace FTLRuler
 {
     public partial class FTLRuler : Form
     {
-        private const float diameter = 1536f, full = 64f, nSector = full * .80f, nBeacon = full * .50f;
+        private const float diameter = 1520f, full = 64f, nSector = full * .80f, nBeacon = full * .50f;
 
         private Dictionary<int, float> jumps = new Dictionary<int, float>();
         private float current = full;
