@@ -41,9 +41,12 @@ namespace FTLRuler
             });
         }
 
-        private void FTLRuler_KeyPress(object sender, KeyPressEventArgs e)
+        private void FTLRuler_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyChar.ToString().ToLower() == "m")
+            int amt = 1;
+            if (e.Alt || e.Shift || e.Control)
+                amt *= 6;
+            if (e.KeyCode == Keys.M)
             {
                 if (jumps.Count == 0)
                     if (current == full)
@@ -51,6 +54,22 @@ namespace FTLRuler
                     else
                         current = full;
                 Reset();
+            }
+            else if (e.KeyCode == Keys.Up)
+            {
+                this.Location = new Point(this.Location.X, this.Location.Y - amt);
+            }
+            else if (e.KeyCode == Keys.Left)
+            {
+                this.Location = new Point(this.Location.X - amt, this.Location.Y);
+            }
+            else if (e.KeyCode == Keys.Right)
+            {
+                this.Location = new Point(this.Location.X + amt, this.Location.Y);
+            }
+            else if (e.KeyCode == Keys.Down)
+            {
+                this.Location = new Point(this.Location.X, this.Location.Y + amt);
             }
             else
             {
