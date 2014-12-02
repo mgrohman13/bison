@@ -38,7 +38,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "FTLRuler";
             this.Text = "FTLRuler";
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.FTLRuler_KeyUp);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FTLRuler_KeyPress);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FTLRuler_MouseClick);
             this.ResumeLayout(false);
 

@@ -41,12 +41,34 @@ namespace FTLRuler
             });
         }
 
-        private void FTLRuler_KeyUp(object sender, KeyEventArgs e)
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            Func<Keys, bool> PressedKey = key => ( keyData & key ) == key;
+            Action<int, int> MoveForm = (x, y) => this.Location = new Point(this.Location.X + x, this.Location.Y + y);
+
             int amt = 1;
-            if (e.Alt || e.Shift || e.Control)
-                amt *= 6;
-            if (e.KeyCode == Keys.M)
+            if (PressedKey(Keys.Alt))
+                amt *= 2;
+            if (PressedKey(Keys.Control))
+                amt *= 15;
+            if (PressedKey(Keys.Shift))
+                amt *= 5;
+
+            if (PressedKey(Keys.Down))
+                MoveForm(0, amt);
+            else if (PressedKey(Keys.Right))
+                MoveForm(amt, 0);
+            else if (PressedKey(Keys.Up))
+                MoveForm(0, -amt);
+            else if (PressedKey(Keys.Left))
+                MoveForm(-amt, 0);
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void FTLRuler_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar.ToString().ToLower() == "m")
             {
                 if (jumps.Count == 0)
                     if (current == full)
@@ -54,22 +76,6 @@ namespace FTLRuler
                     else
                         current = full;
                 Reset();
-            }
-            else if (e.KeyCode == Keys.Up)
-            {
-                this.Location = new Point(this.Location.X, this.Location.Y - amt);
-            }
-            else if (e.KeyCode == Keys.Left)
-            {
-                this.Location = new Point(this.Location.X - amt, this.Location.Y);
-            }
-            else if (e.KeyCode == Keys.Right)
-            {
-                this.Location = new Point(this.Location.X + amt, this.Location.Y);
-            }
-            else if (e.KeyCode == Keys.Down)
-            {
-                this.Location = new Point(this.Location.X, this.Location.Y + amt);
             }
             else
             {
