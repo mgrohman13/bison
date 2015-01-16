@@ -1090,6 +1090,19 @@ namespace SpaceRunner
         private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring, Replay replay, bool isReplay)
             : base(GameTick, Refresh)
         {
+
+
+
+            //lifeS.Clear();
+            //ammoS.Clear();
+            //shipNum.Clear();
+            //lifePart.Clear();
+            //fuelS.Clear();
+            //shipStr.Clear();
+            //scoreS.Clear();
+
+
+
             ClearStaticData();
 
             SpaceRunner.Images.Generator.Generate();
@@ -1172,8 +1185,29 @@ namespace SpaceRunner
             return new GameObject.DummyObject(moveX, moveY);
         }
 
+
+
+        //List<int> lifeS = new List<int>(), ammoS = new List<int>(), shipNum = new List<int>();
+        //List<float> lifePart = new List<float>(), fuelS = new List<float>(), shipStr = new List<float>();
+        //List<decimal> scoreS = new List<decimal>();
+
+
+
         public override void Step()
         {
+
+
+
+            //lifeS.Add(this.Lives);
+            //ammoS.Add(this.Ammo);
+            //lifePart.Add(this.CurrentLifePart);
+            //fuelS.Add(this.fuel);
+            //scoreS.Add(this.Score);
+            //shipNum.Add(objects.OfType<AlienShip>().Count());
+            //shipStr.Add(objects.OfType<AlienShip>().Sum(alienShip => (float)( alienShip.GetStrMult() * Math.Sqrt(alienShip.GetLifePct()) )));
+
+
+
             ++tickCount;
             if (replay != null)
             {
@@ -1480,6 +1514,24 @@ namespace SpaceRunner
 
             if (!IsReplay && replay != null)
                 replay.EndRecord(this.tickCount);
+
+
+
+            //System.Windows.Forms.MessageBox.Show("hi");
+            //string str = "";
+            //for (int i = 0 ; i < lifeS.Count ; ++i)
+            //{
+            //    str += string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\r\n", lifeS[i], ammoS[i], shipNum[i], lifePart[i] / PlayerLife, fuelS[i] / FuelMult, shipStr[i], scoreS[i]);
+            //}
+            //using (var s = new System.IO.FileStream("blah.txt.", System.IO.FileMode.CreateNew))
+            //{
+            //    s.Write(System.Text.Encoding.ASCII.GetBytes(str), 0, str.Length);
+            //    s.Flush();
+            //}
+            //System.Windows.Forms.MessageBox.Show("bye");
+
+
+
         }
 
         #endregion //game logic
