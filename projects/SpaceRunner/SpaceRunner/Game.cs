@@ -352,6 +352,10 @@ namespace SpaceRunner
         private static readonly Dictionary<Point, List<GameObject>> objectSectors = new Dictionary<Point, List<GameObject>>();
         private static readonly HashSet<Point> finishedSectors = new HashSet<Point>();
 
+        private static readonly List<int> gLives = new List<int>(), gAmmo = new List<int>(), gAlienShips = new List<int>();
+        private static readonly List<float> gLife = new List<float>(), gFuel = new List<float>(), gAlienShipStr = new List<float>();
+        private static readonly List<decimal> gScore = new List<decimal>();
+
         private readonly int centerX, centerY;
         private float moveAngle, inputAngle;
         private decimal score;
@@ -809,6 +813,13 @@ namespace SpaceRunner
             Game.objects.Clear();
             Game.objectSectors.Clear();
             Game.finishedSectors.Clear();
+            gLives.Clear();
+            gAmmo.Clear();
+            gAlienShips.Clear();
+            gLife.Clear();
+            gFuel.Clear();
+            gAlienShipStr.Clear();
+            gScore.Clear();
             LifeDust.Reset();
         }
 
@@ -1090,19 +1101,6 @@ namespace SpaceRunner
         private Game(GameTicker.EventDelegate Refresh, uint[] seed, int centerX, int centerY, bool scoring, Replay replay, bool isReplay)
             : base(GameTick, Refresh)
         {
-
-
-
-            //lifeS.Clear();
-            //ammoS.Clear();
-            //shipNum.Clear();
-            //lifePart.Clear();
-            //fuelS.Clear();
-            //shipStr.Clear();
-            //scoreS.Clear();
-
-
-
             ClearStaticData();
 
             SpaceRunner.Images.Generator.Generate();
@@ -1185,29 +1183,8 @@ namespace SpaceRunner
             return new GameObject.DummyObject(moveX, moveY);
         }
 
-
-
-        //List<int> lifeS = new List<int>(), ammoS = new List<int>(), shipNum = new List<int>();
-        //List<float> lifePart = new List<float>(), fuelS = new List<float>(), shipStr = new List<float>();
-        //List<decimal> scoreS = new List<decimal>();
-
-
-
         public override void Step()
         {
-
-
-
-            //lifeS.Add(this.Lives);
-            //ammoS.Add(this.Ammo);
-            //lifePart.Add(this.CurrentLifePart);
-            //fuelS.Add(this.fuel);
-            //scoreS.Add(this.Score);
-            //shipNum.Add(objects.OfType<AlienShip>().Count());
-            //shipStr.Add(objects.OfType<AlienShip>().Sum(alienShip => (float)( alienShip.GetStrMult() * Math.Sqrt(alienShip.GetLifePct()) )));
-
-
-
             ++tickCount;
             if (replay != null)
             {
@@ -1230,6 +1207,17 @@ namespace SpaceRunner
             float alienShips = MoveAndCollide(moveX, moveY);
 
             CreateObjects(alienShips);
+
+            GraphStep();
+        }
+
+        private void GraphStep()
+        {
+            gLives.Add(Lives);
+            gAmmo.Add(Ammo);
+            gFuel.Add(fuel / FuelMult);
+            gLife.Add(CurrentLifePart / PlayerLife);
+            gScore.Add(Score);
         }
 
         private void TurnPlayer()
@@ -1397,6 +1385,7 @@ namespace SpaceRunner
 
         private float CollideObjects()
         {
+            int alienShipCount = 0;
             float alienShips = AlienShipBaseCount;
             finishedSectors.Clear();
 
@@ -1415,7 +1404,10 @@ namespace SpaceRunner
                         {
                             AlienShip alienShip = ( obj as AlienShip );
                             if (alienShip != null)
-                                alienShips += (float)( alienShip.GetStrMult() * Math.Sqrt(alienShip.GetLifePct()) );
+                            {
+                                ++alienShipCount;
+                                alienShips += GetAlienShipStr(alienShip);
+                            }
                         }
                         else
                         {
@@ -1426,7 +1418,14 @@ namespace SpaceRunner
                 finishedSectors.Add(point);
             }
 
+            gAlienShips.Add(alienShipCount);
+            gAlienShipStr.Add(alienShips - AlienShipBaseCount);
+
             return alienShips;
+        }
+        private static float GetAlienShipStr(AlienShip alienShip)
+        {
+            return (float)( alienShip.GetStrMult() * Math.Sqrt(alienShip.GetLifePct()) );
         }
         private bool CollideObject(GameObject obj, Point point, int idx)
         {
@@ -1515,23 +1514,19 @@ namespace SpaceRunner
             if (!IsReplay && replay != null)
                 replay.EndRecord(this.tickCount);
 
+            GraphStep();
+            var ships = objects.OfType<AlienShip>().ToList();
+            gAlienShips.Add(ships.Count);
+            gAlienShipStr.Add(ships.Sum((Func<AlienShip, float>)GetAlienShipStr));
 
-
-            //System.Windows.Forms.MessageBox.Show("hi");
-            //string str = "";
-            //for (int i = 0 ; i < lifeS.Count ; ++i)
-            //{
-            //    str += string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\r\n", lifeS[i], ammoS[i], shipNum[i], lifePart[i] / PlayerLife, fuelS[i] / FuelMult, shipStr[i], scoreS[i]);
-            //}
-            //using (var s = new System.IO.FileStream("blah.txt.", System.IO.FileMode.CreateNew))
-            //{
-            //    s.Write(System.Text.Encoding.ASCII.GetBytes(str), 0, str.Length);
-            //    s.Flush();
-            //}
-            //System.Windows.Forms.MessageBox.Show("bye");
-
-
-
+            using (var fileStream = new System.IO.StreamWriter(PicLocation + "..\\graph.txt", false))
+            {
+                fileStream.WriteLine("Ammo\tFuel\tLife\t\tShips\tStr\tLife\t\tScore");
+                for (int a = 0 ; a < gLives.Count ; ++a)
+                    fileStream.WriteLine(string.Format("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t\t{6}",
+                            gAmmo[a], gFuel[a], gLives[a], gAlienShips[a], gAlienShipStr[a], gLife[a], gScore[a]));
+                fileStream.Flush();
+            }
         }
 
         #endregion //game logic
