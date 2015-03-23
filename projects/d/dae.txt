@@ -1,3 +1,5 @@
+reset ownerless PC on indy turn
+
 3 way battle, person with lowest morale has no move left, can second lowest rout?
 review all during-combat actions
 	prevent (except move)

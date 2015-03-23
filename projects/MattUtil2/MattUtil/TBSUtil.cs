@@ -20,8 +20,9 @@ namespace MattUtil
             for (int a = 0 ; a < numShuffles ; ++a)
             {
                 int index = random.Next(playerLength);
-                int swap = index - 1;
+                int swap = ( index == 0 ? playerLength : index ) - 1;
                 Player player = players[index];
+                Player last = players[swap];
 
                 if (index == 0 || affected[index] || affected[swap])
                 {
@@ -29,23 +30,15 @@ namespace MattUtil
                     retVal.TryGetValue(player, out amt);
                     retVal[player] = amt + 1;
 
-                    swap = playerLength - 1;
-                    if (index == 0 && !affected[index] && !affected[swap])
-                    {
-                        Player last = players[swap];
-                        retVal.TryGetValue(last, out amt);
-                        retVal[last] = amt - 1;
-
-                        affected[0] = true;
-                        affected[swap] = true;
-                    }
+                    retVal.TryGetValue(last, out amt);
+                    retVal[last] = amt - 1;
                 }
                 else
                 {
                     affected[index] = true;
                     affected[swap] = true;
 
-                    players[index] = players[swap];
+                    players[index] = last;
                     players[swap] = player;
                 }
             }

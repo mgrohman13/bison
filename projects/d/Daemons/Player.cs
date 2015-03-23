@@ -207,7 +207,10 @@ namespace Daemons
 
         internal void MakeArrow(double amount)
         {
-            this.arrows += Game.Random.GaussianCapped(amount, .091);
+            if (amount > 0)
+                this.arrows += Game.Random.GaussianCapped(amount, .091);
+            else
+                this.arrows += amount;
         }
         internal void UseArrows(int needed)
         {

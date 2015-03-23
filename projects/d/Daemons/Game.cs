@@ -293,6 +293,19 @@ namespace Daemons
             CheckTurnInc();
             foreach (ProductionCenter pc in this.production)
                 pc.Reset(GetCurrentPlayer());
+
+            while (GetCurrentPlayer().Souls < 0)
+            {
+                int add = -players.Min(p => p.Souls);
+                foreach (Player p in players)
+                    p.AddSouls(add);
+            }
+            while (GetCurrentPlayer().Arrows < 0)
+            {
+                double add = -players.Min(p => p.Arrows);
+                foreach (Player p in players)
+                    p.MakeArrow(add);
+            }
         }
 
         private void ProcessBattles()
@@ -498,9 +511,11 @@ namespace Daemons
         {
             if (this.players.Count > 1)
                 foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, .26))
-                { //TODO: pair.Value
+                {
                     double souls, arrows;
                     GetMoveDiff(out souls, out arrows);
+                    souls *= pair.Value;
+                    arrows *= pair.Value;
                     pair.Key.AddSouls(souls);
                     pair.Key.MakeArrow(arrows);
                 }
