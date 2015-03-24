@@ -40,6 +40,16 @@ namespace MattUtil
 
                     players[index] = last;
                     players[swap] = player;
+
+                    if (a + 1 < numShuffles)
+                    {
+                        for (int b = 1 ; b < playerLength ; ++b)
+                            if (!affected[b - 1] && !affected[b])
+                                goto end;
+                        break;
+end:
+                        ;
+                    }
                 }
             }
 

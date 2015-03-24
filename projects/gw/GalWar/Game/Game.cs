@@ -716,7 +716,7 @@ namespace GalWar
                 {
                     Player player = pair.Key;
                     //player cant move up any further
-                    double gold = moveOrderGold * pair.Value;
+                    double gold = moveOrderGold * pair.Value / 2.0;
                     player.AddGold(gold);
                     player.IncomeTotal += gold;
                 }

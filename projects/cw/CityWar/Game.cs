@@ -1356,9 +1356,9 @@ namespace CityWar
             const double shuffleValue = .169;
             Dictionary<Player, int> bonus = MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, shuffleValue);
             foreach (KeyValuePair<Player, int> pair in bonus)
-                AddMoveOrderDiff(pair.Key, pair.Value);
+                AddMoveOrderDiff(pair.Key, pair.Value / 2.0);
         }
-        private void AddMoveOrderDiff(Player player, int diff)
+        private void AddMoveOrderDiff(Player player, double diff)
         {
             //total difference between first and last moving player is worth 300 resources
             double amount = diff * 3.0 / ( players.Length - 1.0 );

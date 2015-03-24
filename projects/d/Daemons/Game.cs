@@ -514,8 +514,8 @@ namespace Daemons
                 {
                     double souls, arrows;
                     GetMoveDiff(out souls, out arrows);
-                    souls *= pair.Value;
-                    arrows *= pair.Value;
+                    souls *= pair.Value / 2.0;
+                    arrows *= pair.Value / 2.0;
                     pair.Key.AddSouls(souls);
                     pair.Key.MakeArrow(arrows);
                 }
