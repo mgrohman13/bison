@@ -29,6 +29,7 @@ UI
 		ships
 	keyboard?
 
+move order gold based on current average income?
 transport-on-build
 	consider allowing same functionality for pre-existing transports?
 	costs more somehow?
