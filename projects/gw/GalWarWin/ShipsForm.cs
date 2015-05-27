@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
 using GalWar;
+using GalWarWin.Sliders;
 
 namespace GalWarWin
 {
@@ -15,7 +16,7 @@ namespace GalWarWin
     {
         private static ShipsForm form = new ShipsForm();
 
-        private IOrderedEnumerable<ShipInfo> items;
+        private List<ShipInfo> items;
         private string sort;
         private bool reverse;
 
@@ -33,17 +34,17 @@ namespace GalWarWin
 
         public static void ShowForm()
         {
+            form.dataGridView1.DataSource = null;
             form.LoadData();
 
             MainForm.GameForm.SetLocation(form);
 
             form.ShowDialog();
-            form.dataGridView1.DataSource = null;
         }
 
         private void LoadData()
         {
-            this.items = MainForm.Game.CurrentPlayer.GetShips().Select(ship => new ShipInfo(ship)).ToList().OrderBy(ship => 0);
+            this.items = MainForm.Game.CurrentPlayer.GetShips().Select(ship => new ShipInfo(ship)).ToList();
 
             this.sort = "Location";
             this.reverse = false;
@@ -51,10 +52,11 @@ namespace GalWarWin
         }
         private void SortData(Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>> Sort)
         {
-            IEnumerable<ShipInfo> dataSource = ShipInfo.SortLocation(Sort(this.items));
+            IEnumerable<ShipInfo> dataSource = ShipInfo.SortLocation(Sort(this.items.OrderBy(ship => 0)));
             if (reverse)
                 dataSource = dataSource.Reverse();
-            this.dataGridView1.DataSource = dataSource.ToList();
+            this.items = dataSource.ToList();
+            this.dataGridView1.DataSource = this.items;
         }
 
         private void dataGridView1_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -75,15 +77,19 @@ namespace GalWarWin
                         reverse = false;
                     }
 
-                    var method = typeof(ShipInfo).GetMethod("Sort" + column);
-                    if (method != null)
-                    {
-                        var fucType = typeof(Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>>);
-                        var func = (Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>>)
-                                Delegate.CreateDelegate(fucType, null, method);
-                        SortData(func);
-                    }
+                    SortData();
                 }
+            }
+        }
+        private void SortData()
+        {
+            var method = typeof(ShipInfo).GetMethod("Sort" + sort);
+            if (method != null)
+            {
+                var fucType = typeof(Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>>);
+                var func = (Func<IOrderedEnumerable<ShipInfo>, IOrderedEnumerable<ShipInfo>>)
+                        Delegate.CreateDelegate(fucType, null, method);
+                SortData(func);
             }
         }
 
@@ -95,18 +101,57 @@ namespace GalWarWin
                 string column = this.dataGridView1.Columns[columnIdx].Name;
                 if (column != null && column.Length > 0)
                 {
-                    Ship row = ( (IList<ShipInfo>)this.dataGridView1.DataSource )[rowIdx].Class;
+                    ShipInfo shipInfo = ( (IList<ShipInfo>)this.dataGridView1.DataSource )[rowIdx];
+                    Ship ship = shipInfo.Class;
 
-                    Console.WriteLine(column);
-                    Console.WriteLine(row);
-
-                    //"Location";
-                    //"HP";
-                    //"Pct";
-                    //"Repair";
-                    //"Disband?";
+                    switch (column)
+                    {
+                    case "Location":
+                        MainForm.GameForm.SelectTile(ship.Tile);
+                        MainForm.GameForm.Center();
+                        MainForm.GameForm.RefreshAll();
+                        this.Close();
+                        break;
+                    case "Class":
+                        string designName = ship.ToString();
+                        ShipDesign shipDesign = ship.Player.GetShipDesigns().SingleOrDefault(design => designName == design.ToString());
+                        if (shipDesign != null)
+                            CostCalculatorForm.ShowForm(shipDesign);
+                        break;
+                    case "HP":
+                    case "Pct":
+                    case "Repair":
+                        if (ship.HP < ship.MaxHP && !ship.HasRepaired && column != "Repair")
+                        {
+                            int HP = SliderForm.ShowForm(new GoldRepair(ship));
+                            if (HP > 0)
+                            {
+                                ship.GoldRepair(MainForm.GameForm, HP);
+                                RefreshData(shipInfo);
+                            }
+                        }
+                        else
+                        {
+                            if (AutoRepairForm.ShowForm(ship))
+                                RefreshData(shipInfo);
+                        }
+                        break;
+                    case "Disband":
+                        break;
+                    default:
+                        CostCalculatorForm.ShowForm(ship);
+                        break;
+                    }
                 }
             }
+        }
+        private void RefreshData(ShipInfo shipInfo)
+        {
+            MainForm.GameForm.RefreshAll();
+
+            this.items.Remove(shipInfo);
+            this.items.Add(new ShipInfo(shipInfo.Class));
+            SortData();
         }
 
         private class ShipInfo
@@ -116,8 +161,26 @@ namespace GalWarWin
             public ShipInfo(Ship ship)
             {
                 this.ship = ship;
-                //ensure we calculate research now
-                string research = this.Research;
+
+                this.Att.ToString();
+                this.Class.ToString();
+                this.Cost.ToString();
+                this.Def.ToString();
+                this.Exp.ToString();
+                this.HP.ToString();
+                this.Info.ToString();
+                this.Location.ToString();
+                this.Next.ToString();
+                this.Pct.ToString();
+                this.Prod.ToString();
+                this.Repair.ToString();
+                this.Research.ToString();
+                this.Sldrs.ToString();
+                this.Speed.ToString();
+                this.Strength.ToString();
+                this.Troops.ToString();
+                this.Upk.ToString();
+                this.Value.ToString();
             }
 
             private string location = null;

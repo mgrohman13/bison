@@ -2607,9 +2607,6 @@ namespace GalWarWin
 
         bool IEventHandler.Continue()
         {
-            showMoves = false;
-            RefreshAll();
-
             return ShowOption("Planet population has been killed off.  Continue attacking?");
         }
 

@@ -1,10 +1,6 @@
 UI
-	refresh after buy prod from colony mgmt screen
 	compare designs
-	bombard continue attacking with auto show breaks
 	repair form income show only base-upkeep ?
-	right click DS, right click trans: error
-		commented out in CostCalculatorForm SetValue
 	rapid click to bombard
 	rally ships
 		current turn actual move always uses zoc?
@@ -26,7 +22,7 @@ UI
 			draw anomalies smaller
 			better distinction between ships and planets
 	management screens
-		ships
+		re-do colony
 	keyboard?
 
 move order gold based on current average income?
@@ -82,9 +78,8 @@ ShipClass order
 	order by tier, use in ShipsForm sort
 6 tiers saved? return length?
 graph dictionaries can be arrays
-standardive Tile.Game vs Player.Game calls
+standardize Tile.Game vs Player.Game calls
 remove static qualifiers to same class
-move Tile to Game folder
 standardize dead checks
 test exact vs oversize dictionary capacity for combat performance
 empirically test invasion values
