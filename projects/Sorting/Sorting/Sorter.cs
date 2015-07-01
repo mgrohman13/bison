@@ -83,7 +83,7 @@ namespace Sorting
 
         //all sorts are done entirely in-place and the only valid operation on the list is a swap
         //this makes them more interesting to watch, leaves no hidden information,
-        //and ensures that we can stop the sort at any time and not corrupt the values in the list
+        //and ensures that we can stop the sort at any time and not corrupt the elements in the list
         //they are all also implemented as purely comparison sorts
         #region Sorts
 
@@ -277,7 +277,7 @@ namespace Sorting
             //we use a different algorithm if a 'small' block is encountered
             if (unsorted < smallBlock)
             {
-                //sort the initial  unsorted elements
+                //sort the initial unsorted elements
                 KronrodSort(left, mid - 1);
 
                 //merge the upper portions
@@ -612,53 +612,427 @@ namespace Sorting
         #region Removed
 
         //removed for being too similar to shell
-        //public void CombSort()
-        //{
-        //    int step = length;
-        //    bool swapped;
-        //    do
-        //    {
-        //        if (step > 1)
-        //        {
-        //            if (step < 5)
-        //                --step;
-        //            else
-        //                step = Program.Random.Round(step / 1.3);
-        //        }
-        //        swapped = false;
-        //        for (int i = step; i < length; ++i)
-        //        {
-        //            if (list[i - step] > list[i])
-        //            {
-        //                Swap(i, i - step);
-        //                swapped = true;
-        //            }
-        //        }
-        //    }
-        //    while (step > 1 || swapped);
+        public void CombSort()
+        {
+            int step = length;
+            bool swapped;
+            do
+            {
+                if (step > 1)
+                {
+                    if (step < 5)
+                        --step;
+                    else
+                        step = Program.Random.Round(step / 1.3);
+                }
+                swapped = false;
+                for (int i = step ; i < length ; ++i)
+                {
+                    if (list[i - step] > list[i])
+                    {
+                        Swap(i, i - step);
+                        swapped = true;
+                    }
+                }
+            }
+            while (step > 1 || swapped);
 
-        //    Done();
-        //}
+            Done();
+        }
+
+        //TODO: an lsd implementation might be more interesting to watch
+        //in-place msd radix sort
+        //radix sorts are non-comparative so this doesnt quite fit in, but is fun nonetheless
+        public void RadixSort()
+        {
+            //start with highest uint bit
+            RadixSort(0, length, 1u << 31);
+
+            Done();
+        }
+        private void RadixSort(int start, int end, uint bit)
+        {
+            int a = start, b = end;
+            while (a < b)
+                if (( list[a].Value & bit ) == 0)
+                {
+                    //if the current bit is 0, leave the element at the bottom
+                    a++;
+                }
+                else
+                {
+                    // if the current bit is 1, find the topmost 0-bit element
+                    while (a < --b && ( list[b].Value & bit ) != 0)
+                        ;
+                    //swap it with the original 1-bit element
+                    if (a < b)
+                        Swap(a, b);
+                }
+
+            if (bit > 1)
+            {
+                //recursively sort both sides with the next-highest bit
+                bit = bit >> 1;
+                RadixSort(start, a, bit);
+                RadixSort(a, end, bit);
+            }
+        }
 
         //removed for being lame an boring
-        //public void SelectionSort()
-        //{
-        //    for (int a = 0; a < length - 1; ++a)
-        //    {
-        //        int min = a;
-        //        for (int b = a + 1; b < length; ++b)
-        //        {
-        //            if (list[b] < list[min])
-        //            {
-        //                min = b;
-        //            }
-        //        }
-        //        Swap(a, min);
-        //    }
+        public void SelectionSort()
+        {
+            for (int a = 0 ; a < length - 1 ; ++a)
+            {
+                int min = a;
+                for (int b = a + 1 ; b < length ; ++b)
+                {
+                    if (list[b] < list[min])
+                    {
+                        min = b;
+                    }
+                }
+                Swap(a, min);
+            }
 
-        //    Done();
-        //}
+            Done();
+        }
 
         #endregion //Removed
+
+        #region Smoothsort
+
+        /* File: Smoothsort.hh
+        * Author: Keith Schwarz (htiek@cs.stanford.edu)
+        * An implementation of Dijkstra's Smoothsort algorithm, a modification of heapsort that runs in O(n lg n) in the worst case, but O(n) if the data
+        * are already sorted. For more information about how this algorithm works and some of the details necessary for its proper operation, please see
+        * http://www.keithschwarz.com/smoothsort/
+        * This implementation is designed to work on a 32-bit machine and may have portability issues on 64-bit computers. In particular, I've only
+        * precomputed the Leonardo numbers up 2^32, and so if you try to sort a sequence of length greater than that you'll run into trouble. Similarly,
+        * I've used the tricky O(1) optimization to use a constant amount of space given the fact that the machine is 32 bits. */
+
+        /* Function: Smoothsort(RandomIterator begin, RandomIterator end);
+        * -----------------------------------------------------------------------
+        * Sorts the input range into ascending order using the smoothsort algorithm. */
+        //template <typename RandomIterator> 
+        //void Smoothsort(RandomIterator begin, RandomIterator end); 
+
+        /* Function: Smoothsort(RandomIterator begin, RandomIterator end, Comparator comp);
+        * -----------------------------------------------------------------------
+        * Sorts the input range into ascending order according to the strict total ordering comp using the smoothsort algorithm. */
+        //template <typename RandomIterator, typename Comparator> 
+        //void Smoothsort(RandomIterator begin, RandomIterator end, Comparator comp); 
+
+        /* Implementation Below This Point */
+
+        /* A constant containing the number of Leonardo numbers that can fit into 32 bits. For a 64-bit machine, you'll need to update this value and the */
+        //const int kNumLeonardoNumbers = 46;
+
+        /* A list of all the Leonardo numbers below 2^32, precomputed for efficiency.
+        * Source: http://oeis.org/classic/b001595.txt */
+        private int[] kLeonardoNumbers = new[] 
+        {
+            1, 1, 3, 5, 9, 15, 25, 41, 67, 109, 177, 287, 465, 753, 1219, 1973, 3193, 5167, 8361, 13529, 21891,
+            35421, 57313, 92735, 150049, 242785, 392835, 635621, 1028457, 1664079, 2692537, 4356617, 7049155,
+            11405773, 18454929, 48315633, 78176337, 126491971, 204668309, 331160281, 535828591, 866988873, 1402817465
+            //, 2269806339u, 3672623805u
+        };
+
+        /* A structure containing a bitvector encoding of the trees in a Leonardo heap. The representation is as a bitvector shifted down so that its
+        * first digit is a one, along with the amount that it was shifted. */
+        private class HeapShape
+        {
+            /* A bitvector capable of holding all the Leonardo numbers. */
+            public ulong trees = 0x0ul;
+            /* The shift amount, which is also the size of the smallest tree. */
+            public int smallestTreeSize = 0;
+        };
+
+        /* Function: RandomIterator SecondChild(RandomIterator root)
+        * ---------------------------------------------------------------------
+        * Given an iterator to the root of Leonardo heap, returns an iterator to the root of that tree's second child. It's assumed that the heap is well-formed and that size > 1. */
+        private int SecondChild(int root)
+        {
+            /* The second child root is always one step before the root. */
+            return root - 1;
+        }
+
+        /* Function: RandomIterator FirstChild(RandomIterator root, int size)
+        * ---------------------------------------------------------------------
+        * Given an iterator to the root of Leonardo heap, returns an iterator to the root of that tree's first child. It's assumed that the heap is well-formed and that size > 1. */
+        private int FirstChild(int root, int size)
+        {
+            /* Go to the second child, then step backwards L(size - 2) steps to skip over it. */
+            return SecondChild(root) - kLeonardoNumbers[size - 2];
+        }
+
+        /* Function: RandomIterator LargerChild(RandomIterator root, int size, Comparator comp);
+        * --------------------------------------------------------------------
+        * Given an iterator to the root of a max-heap Leonardo tree, returns an iterator to its larger child. It's assumed that the heap is well-formatted and that the heap has order > 1. */
+        private int LargerChild(int root, int size)
+        {
+            /* Get pointers to the first and second child. */
+            int first = FirstChild(root, size);
+            int second = SecondChild(root);
+
+            /* Determine which is greater. */
+            return list[first] < list[second] ? second : first;
+        }
+
+        /* Function: RebalanceSingleHeap(RandomIterator root, int size, Comparator comp);
+        * --------------------------------------------------------------------
+        * Given an iterator to the root of a single Leonardo tree that needs rebalancing, rebalances that tree using the standard "bubble-down" approach. */
+        private void RebalanceSingleHeap(int root, int size)
+        {
+            /* Loop until the current node has no children, which happens when the order of the tree is 0 or 1. */
+            while (size > 1)
+            {
+                /* Get pointers to the first and second child. */
+                int first = FirstChild(root, size);
+                int second = SecondChild(root);
+
+                /* Determine which child is larger and remember the order of its tree. */
+                int largerChild;
+                int childSize;
+                if (list[first] < list[second])
+                {
+                    largerChild = second;
+                    // Second child is larger... 
+                    childSize = size - 2;
+                    // ... and has order k - 2. 
+                }
+                else
+                {
+                    largerChild = first;
+                    // First child is larger... 
+                    childSize = size - 1;
+                    // ... and has order k - 1. 
+                }
+
+                /* If the root is bigger than this child, we're done. */
+                if (!( list[root] < list[largerChild] ))
+                    return;
+
+                /* Otherwise, swap down and update our order. */
+                Swap(root, largerChild);
+                root = largerChild;
+                size = childSize;
+            }
+        }
+
+        /* Function: LeonardoHeapRectify(RandomIterator begin, RandomIterator end, HeapShape shape, Comparator comp);
+        * ---------------------------------------------------------------------
+        * Given an implicit Leonardo heap spanning [begin, end) that has just had an element inserted into it at the very end, along with the size
+        * list for that heap, rectifies the heap structure by shuffling the new root down to the proper position and rebalancing the target heap. */
+        private void LeonardoHeapRectify(int begin, int end, HeapShape tempShape)
+        {
+            HeapShape shape = new HeapShape();
+            shape.smallestTreeSize = tempShape.smallestTreeSize;
+            shape.trees = tempShape.trees;
+
+            /* Back up the end iterator one step to get to the root of the rightmost heap. */
+            int itr = end - 1;
+            /* Keep track of the size of the last heap size that we visited. We need this so that once we've positioned the new node atop the correct heap we remember how large it is. */
+            int lastHeapSize;
+
+            /* Starting at the last heap and working backward, check whether we need to swap the root of the current heap with the previous root. */
+            while (true)
+            {
+                /* Cache the size of the heap we're currently on top of. */
+                lastHeapSize = shape.smallestTreeSize;
+
+                /* If this is the very first heap in the tree, we're done. */
+                if (itr - begin == kLeonardoNumbers[lastHeapSize] - 1)
+                    break;
+
+                /* We want to swap the previous root with this one if it's strictly greater than both the root of this tree and both its children.
+                * In order to avoid weird edge cases when the current heap has size zero or size one, we'll compute what value will be compared against. */
+                int toCompare = itr;
+
+                /* If we aren't an order-0 or order-1 tree, we have two children, and need to check which of the three values is largest. */
+                if (shape.smallestTreeSize > 1)
+                {
+                    /* Get the largest child and see if we need to change what we're comparing against. */
+                    int largeChild = LargerChild(itr, shape.smallestTreeSize);
+
+                    /* Update what element is being compared against. */
+                    if (list[toCompare] < list[largeChild])
+                        toCompare = largeChild;
+                }
+
+                /* Get a pointer to the root of the second heap by backing up the size of this heap. */
+                int priorHeap = itr - kLeonardoNumbers[lastHeapSize];
+
+                /* If we ran out of trees or the new tree root is less than the element we're comparing, we now have the new node at the top of the correct heap. */
+                if (!( list[toCompare] < list[priorHeap] ))
+                    break;
+
+                /* Otherwise, do the swap and adjust our location. */
+                Swap(itr, priorHeap);
+                itr = priorHeap;
+
+                /* Scan down until we find the heap before this one. We do this by continously shifting down the tree bitvector and bumping up the size
+                * of the smallest tree until we hit a new tree. */
+                do
+                {
+                    shape.trees >>= 1;
+                    ++shape.smallestTreeSize;
+                } while (( shape.trees & 1 ) == 0);
+            }
+
+            /* Finally, rebalance the current heap. */
+            RebalanceSingleHeap(itr, lastHeapSize);
+        }
+
+        /* Function: LeonardoHeapAdd(RandomIterator begin, RandomIterator end, RandomIterator heapEnd, HeapShape& shape, Comparator comp);
+        * ----------------------------------------------------------------------
+        * Given an implicit Leonardo heap spanning [begin, end) in a range spanned by [begin, heapEnd], along with the shape and a comparator, increases the
+        * size of that heap by one by inserting the element at end. */
+        private void LeonardoHeapAdd(int begin, int end, int heapEnd, HeapShape shape)
+        {
+            /* There are three cases to consider, which are analogous to the cases in the proof that it is possible to partition the input into heaps of decreasing size:
+            * 
+            * Case 0: If there are no elements in the heap, add a tree of order 1.
+            * Case 1: If the last two heaps have sizes that differ by one, we add the new element by merging the last two heaps.
+            * Case 2: Otherwise, if the last heap has Leonardo number 1, add a singleton heap of Leonardo number 0.
+            * Case 3: Otherwise, add a singleton heap of Leonardo number 1. */
+
+            /* Case 0 represented by the first bit being a zero; it should always be one during normal operation.
+            */
+            if (( shape.trees & 1 ) == 0)
+            {
+                shape.trees |= 1;
+                shape.smallestTreeSize = 1;
+            }
+
+            /* Case 1 would be represented by the last two bits of the bitvector both being set. */
+            else if (( shape.trees & 2 ) == 2 && ( shape.trees & 1 ) == 1)
+            {
+                /* First, remove those two trees by shifting them off the bitvector. */
+                shape.trees >>= 2;
+                /* Set the last bit of the bitvector; we just added a tree of this size. */
+                shape.trees |= 1;
+                /* Finally, increase the size of the smallest tree by two, since the new Leonardo tree has order one greater than both of them. */
+                shape.smallestTreeSize += 2;
+            }
+
+            /* Case two is represented by the size of the smallest tree being 1. */
+            else if (shape.smallestTreeSize == 1)
+            {
+                /* Shift the bits up one spot so that we have room for the zero bit. */
+                shape.trees <<= 1;
+                shape.smallestTreeSize = 0;
+                /* Set the bit. */
+                shape.trees |= 1;
+            }
+
+            /* Case three is everything else. */
+            else
+            {
+                /* We currently have a forest encoded with a format that looks like (W, n) for bitstring W and exponent n. We want to convert this to
+                * (W00...01, 1) by shifting up n - 1 spaces, then setting the last bit. */
+                shape.trees <<= shape.smallestTreeSize - 1;
+                shape.trees |= 1;
+                /* Set the smallest tree size to one, since that is the new smallest tree size. */
+                shape.smallestTreeSize = 1;
+            }
+
+            /* At this point, we've set up a new tree. We need to see if this tree is at the final size it's going to take. If so, we'll do a full rectify
+            * on it. Otherwise, all we need to do is maintain the heap property. */
+            bool isLast = false;
+            switch (shape.smallestTreeSize)
+            {
+            /* If this last heap has order 0, then it's in its final position only if it's the very last element of the array. */
+            case 0:
+                if (end + 1 == heapEnd)
+                    isLast = true;
+                break;
+
+            /* If this last heap has order 1, then it's in its final position if it's the last element, or it's the penultimate element and it's not about to be merged. For simplicity */
+            case 1:
+                if (end + 1 == heapEnd || ( end + 2 == heapEnd && ( shape.trees & 2 ) == 0 ))
+                    isLast = true;
+                break;
+
+            /* Otherwise, this heap is in its final position if there isn't enough room for the next Leonardo number and one extra element. */
+            default:
+                if (heapEnd - end - 1 < kLeonardoNumbers[shape.smallestTreeSize - 1] + 1)
+                    isLast = true;
+                break;
+            }
+
+            /* If this isn't a final heap, then just rebalance the current heap. */
+            if (!isLast)
+                RebalanceSingleHeap(end, shape.smallestTreeSize);
+            /* Otherwise do a full rectify to put this node in its place. */
+            else
+                LeonardoHeapRectify(begin, end + 1, shape);
+        }
+
+        /* Function: LeonardoHeapRemove(RandomIterator begin, RandomIterator end, HeapShape& shape, Comparator comp);
+        * ----------------------------------------------------------------------
+        * Given an implicit Leonardo heap spanning [begin, end), along with the size list and a comparator, dequeues the element at end - 1 and rebalances 
+        * the heap. Since the largest element of the heap is already at end, this essentially keeps the max element in its place and does a rebalance if necessary. */
+        private void LeonardoHeapRemove(int begin, int end, HeapShape shape)
+        {
+            /* There are two cases to consider:
+            * 
+            * Case 1: The last heap is of order zero or one. In this case, removing it doesn't expose any new trees and we can just drop it from the list of trees.
+            * Case 2: The last heap is of order two or greater. In this case, we exposed two new heaps, which may require rebalancing. */
+
+            /* Case 1. */
+            if (shape.smallestTreeSize <= 1)
+            {
+                /* Keep scanning up the list looking for the next tree. */
+                do
+                {
+                    shape.trees >>= 1;
+                    ++shape.smallestTreeSize;
+                } while (shape.trees != 0 && ( shape.trees & 1 ) == 0);
+                return;
+            }
+
+            /* Break open the last heap to expose two subheaps of order k - 2 and k - 1. This works by mapping the encoding (W1, n) to the encoding (W011, n - 2). */
+            int heapOrder = shape.smallestTreeSize;
+            shape.trees -= 1;
+            shape.trees <<= 2;
+            shape.trees |= 3;
+            shape.smallestTreeSize -= 2;
+
+            /* We now do the insertion-sort/rebalance operation on the larger exposed heap to put it in its proper place, then on the smaller of the two. But first, we need
+            * to find where they are. This can be done by just looking up the first and second children of the former root, which was at end - 1. */
+            int leftHeap = FirstChild(end - 1, heapOrder);
+            int rightHeap = SecondChild(end - 1);
+
+            /* Rebalance the left heap. For this step we'll pretend that there is one fewer heap than there actually is, since we're ignoring the rightmost heap. */
+            HeapShape allButLast = new HeapShape();
+            allButLast.smallestTreeSize = shape.smallestTreeSize;
+            allButLast.trees = shape.trees;
+            ++allButLast.smallestTreeSize;
+            allButLast.trees >>= 1;
+
+            /* We add one to the position of the left heap because the function assumes an exclusive range, while leftHeap is actually an iterator directly to where the root is. */
+            LeonardoHeapRectify(begin, leftHeap + 1, allButLast);
+            LeonardoHeapRectify(begin, rightHeap + 1, shape);
+        }
+
+        /* Actual smoothsort implementation. */
+        public void Smoothsort()
+        {
+            /* Construct a shape object describing the empty heap. */
+            HeapShape shape = new HeapShape();
+
+            /* Convert the input into an implicit Leonardo heap. */
+            for (int itr = 0 ; itr != length ; ++itr)
+                LeonardoHeapAdd(0, itr, length, shape);
+
+            /* Continuously dequeue from the implicit Leonardo heap until we've consumed all the elements. */
+            for (int itr = length ; itr != 0 ; --itr)
+                LeonardoHeapRemove(0, itr, shape);
+
+            Done();
+        }
+
+        #endregion //Smoothsort
+
     }
 }
