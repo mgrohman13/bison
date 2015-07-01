@@ -380,5 +380,17 @@ namespace Sorting
         {
             StartSort(sorter.MergeSort);
         }
+        private void btnSmooth_Click(object sender, EventArgs e)
+        {
+            StartSort(sorter.Smoothsort);
+        }
+        private void btnLSD_Click(object sender, EventArgs e)
+        {
+            StartSort(sorter.RadixLSDSort);
+        }
+        private void btnMSD_Click(object sender, EventArgs e)
+        {
+            StartSort(sorter.RadixMSDSort);
+        }
     }
 }

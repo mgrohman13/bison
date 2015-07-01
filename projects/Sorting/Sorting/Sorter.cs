@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Sorting
@@ -264,13 +265,13 @@ namespace Sorting
                 KronrodSort(mid, right);
 
                 //sort using the two sections with an effective bound for 'small' blocks
-                KronrodSort(left, mid, right, count / Math.Log(count, 2));
+                KronrodSort(left, mid, right, Program.Random.Round(count / Math.Log(count, 2.0)));
             }
             else if (count > 1 && list[left] > list[right])
                 Swap(left, right);
         }
         //takes in two sections, an unsorted left and sorted right, and sorts
-        private void KronrodSort(int left, int mid, int right, double smallBlock)
+        private void KronrodSort(int left, int mid, int right, int smallBlock)
         {
             int unsorted = mid - left;
             //since merging a 'small' list with a 'large' one is highly inefficient
@@ -608,6 +609,78 @@ namespace Sorting
 
         #endregion //Sorts
 
+        //radix sorts are non-comparative so this doesnt quite fit in, but is fun nonetheless
+        #region Radix
+
+        //in-place lsd radix sort
+        //this is the only algorithm that manupulates the raw uint data rather than swapping
+        //I wanted to avoid this since the hidden information involved diminishes algorithm visibility, but radix already breaks the rule of only comparison sorts anyways
+        public void RadixLSDSort()
+        {
+            ulong bit = 1ul;
+            do
+            {
+                //place objects in either bucket depending on the value of the current bit
+                List<Obj> zeros = new List<Obj>(), ones = new List<Obj>();
+                for (int a = 0 ; a < length ; ++a)
+                    if (( list[a].Value & bit ) == 0)
+                        zeros.Add(list[a]);
+                    else
+                        ones.Add(list[a]);
+
+                //replace the list with the concatenation of the buckets
+                int b = 0;
+                foreach (Obj c in zeros.Concat(ones))
+                {
+                    list[b++] = c;
+                    Swapped();
+                }
+
+                //continue sorting with the next-highest bit
+                bit <<= 1;
+            } while (bit <= 1ul << 31);
+
+            Done();
+        }
+
+        //in-place msd radix sort
+        public void RadixMSDSort()
+        {
+            //start with highest uint bit
+            RadixMSDSort(0, length, 1u << 31);
+
+            Done();
+        }
+        private void RadixMSDSort(int start, int end, uint bit)
+        {
+            int a = start, b = end;
+            while (a < b)
+                if (( list[a].Value & bit ) == 0)
+                {
+                    //if the current bit is 0, leave the element at the bottom
+                    a++;
+                }
+                else
+                {
+                    //if the current bit is 1, find the topmost 0-bit element
+                    while (a < --b && ( list[b].Value & bit ) != 0)
+                        ;
+                    //swap it with the original 1-bit element
+                    if (a < b)
+                        Swap(a, b);
+                }
+
+            if (bit > 1)
+            {
+                //recursively sort both sides with the next-lowest bit
+                bit >>= 1;
+                RadixMSDSort(start, a, bit);
+                RadixMSDSort(a, end, bit);
+            }
+        }
+
+        #endregion //Radix
+
         //sorts programmed but left out for various reasons
         #region Removed
 
@@ -638,44 +711,6 @@ namespace Sorting
             while (step > 1 || swapped);
 
             Done();
-        }
-
-        //TODO: an lsd implementation might be more interesting to watch
-        //in-place msd radix sort
-        //radix sorts are non-comparative so this doesnt quite fit in, but is fun nonetheless
-        public void RadixSort()
-        {
-            //start with highest uint bit
-            RadixSort(0, length, 1u << 31);
-
-            Done();
-        }
-        private void RadixSort(int start, int end, uint bit)
-        {
-            int a = start, b = end;
-            while (a < b)
-                if (( list[a].Value & bit ) == 0)
-                {
-                    //if the current bit is 0, leave the element at the bottom
-                    a++;
-                }
-                else
-                {
-                    // if the current bit is 1, find the topmost 0-bit element
-                    while (a < --b && ( list[b].Value & bit ) != 0)
-                        ;
-                    //swap it with the original 1-bit element
-                    if (a < b)
-                        Swap(a, b);
-                }
-
-            if (bit > 1)
-            {
-                //recursively sort both sides with the next-highest bit
-                bit = bit >> 1;
-                RadixSort(start, a, bit);
-                RadixSort(a, end, bit);
-            }
         }
 
         //removed for being lame an boring
@@ -729,7 +764,7 @@ namespace Sorting
 
         /* A list of all the Leonardo numbers below 2^32, precomputed for efficiency.
         * Source: http://oeis.org/classic/b001595.txt */
-        private int[] kLeonardoNumbers = new[] 
+        private static int[] kLeonardoNumbers = new[] 
         {
             1, 1, 3, 5, 9, 15, 25, 41, 67, 109, 177, 287, 465, 753, 1219, 1973, 3193, 5167, 8361, 13529, 21891,
             35421, 57313, 92735, 150049, 242785, 392835, 635621, 1028457, 1664079, 2692537, 4356617, 7049155,
