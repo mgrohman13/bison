@@ -29,6 +29,7 @@ namespace Sorting
 		private void InitializeComponent()
 		{
             this.panel2 = new System.Windows.Forms.Panel();
+            this.btnBitonic = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.btnLSD = new System.Windows.Forms.Button();
             this.btnMSD = new System.Windows.Forms.Button();
@@ -59,8 +60,6 @@ namespace Sorting
             this.label7 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.lblSwaps = new System.Windows.Forms.Label();
-            this.lblComps = new System.Windows.Forms.Label();
             this.btnShell = new System.Windows.Forms.Button();
             this.btnQuick = new System.Windows.Forms.Button();
             this.btnKronrod = new System.Windows.Forms.Button();
@@ -69,6 +68,9 @@ namespace Sorting
             this.label1 = new System.Windows.Forms.Label();
             this.tbSpeed = new System.Windows.Forms.TrackBar();
             this.pnlGraph = new System.Windows.Forms.Panel();
+            this.lblComps = new System.Windows.Forms.TextBox();
+            this.lblSwaps = new System.Windows.Forms.TextBox();
+            this.lblSortType = new System.Windows.Forms.Label();
             this.panel2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbSorted)).BeginInit();
@@ -81,6 +83,10 @@ namespace Sorting
             this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel2.BackColor = System.Drawing.Color.White;
+            this.panel2.Controls.Add(this.lblSortType);
+            this.panel2.Controls.Add(this.lblSwaps);
+            this.panel2.Controls.Add(this.lblComps);
+            this.panel2.Controls.Add(this.btnBitonic);
             this.panel2.Controls.Add(this.label6);
             this.panel2.Controls.Add(this.btnLSD);
             this.panel2.Controls.Add(this.btnMSD);
@@ -99,8 +105,6 @@ namespace Sorting
             this.panel2.Controls.Add(this.label7);
             this.panel2.Controls.Add(this.label4);
             this.panel2.Controls.Add(this.label3);
-            this.panel2.Controls.Add(this.lblSwaps);
-            this.panel2.Controls.Add(this.lblComps);
             this.panel2.Controls.Add(this.btnShell);
             this.panel2.Controls.Add(this.btnQuick);
             this.panel2.Controls.Add(this.btnKronrod);
@@ -112,6 +116,17 @@ namespace Sorting
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(198, 529);
             this.panel2.TabIndex = 1;
+            // 
+            // btnBitonic
+            // 
+            this.btnBitonic.BackColor = System.Drawing.Color.Silver;
+            this.btnBitonic.Location = new System.Drawing.Point(3, 503);
+            this.btnBitonic.Name = "btnBitonic";
+            this.btnBitonic.Size = new System.Drawing.Size(60, 23);
+            this.btnBitonic.TabIndex = 37;
+            this.btnBitonic.Text = "Bitonic";
+            this.btnBitonic.UseVisualStyleBackColor = false;
+            this.btnBitonic.Click += new System.EventHandler(this.btnBitonic_Click);
             // 
             // label6
             // 
@@ -127,7 +142,7 @@ namespace Sorting
             // btnLSD
             // 
             this.btnLSD.BackColor = System.Drawing.Color.Silver;
-            this.btnLSD.Location = new System.Drawing.Point(135, 474);
+            this.btnLSD.Location = new System.Drawing.Point(135, 503);
             this.btnLSD.Name = "btnLSD";
             this.btnLSD.Size = new System.Drawing.Size(60, 23);
             this.btnLSD.TabIndex = 35;
@@ -138,7 +153,7 @@ namespace Sorting
             // btnMSD
             // 
             this.btnMSD.BackColor = System.Drawing.Color.Silver;
-            this.btnMSD.Location = new System.Drawing.Point(135, 503);
+            this.btnMSD.Location = new System.Drawing.Point(135, 474);
             this.btnMSD.Name = "btnMSD";
             this.btnMSD.Size = new System.Drawing.Size(60, 23);
             this.btnMSD.TabIndex = 34;
@@ -149,7 +164,7 @@ namespace Sorting
             // btnSmooth
             // 
             this.btnSmooth.BackColor = System.Drawing.Color.Silver;
-            this.btnSmooth.Location = new System.Drawing.Point(3, 445);
+            this.btnSmooth.Location = new System.Drawing.Point(3, 474);
             this.btnSmooth.Name = "btnSmooth";
             this.btnSmooth.Size = new System.Drawing.Size(60, 23);
             this.btnSmooth.TabIndex = 33;
@@ -320,7 +335,7 @@ namespace Sorting
             // btnMerge
             // 
             this.btnMerge.BackColor = System.Drawing.Color.Silver;
-            this.btnMerge.Location = new System.Drawing.Point(3, 503);
+            this.btnMerge.Location = new System.Drawing.Point(69, 358);
             this.btnMerge.Name = "btnMerge";
             this.btnMerge.Size = new System.Drawing.Size(60, 23);
             this.btnMerge.TabIndex = 31;
@@ -331,7 +346,7 @@ namespace Sorting
             // btnStrand
             // 
             this.btnStrand.BackColor = System.Drawing.Color.Silver;
-            this.btnStrand.Location = new System.Drawing.Point(69, 358);
+            this.btnStrand.Location = new System.Drawing.Point(69, 387);
             this.btnStrand.Name = "btnStrand";
             this.btnStrand.Size = new System.Drawing.Size(60, 23);
             this.btnStrand.TabIndex = 30;
@@ -343,7 +358,7 @@ namespace Sorting
             // 
             this.btnStop.BackColor = System.Drawing.Color.Silver;
             this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(69, 303);
+            this.btnStop.Location = new System.Drawing.Point(16, 306);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(60, 23);
             this.btnStop.TabIndex = 29;
@@ -387,7 +402,7 @@ namespace Sorting
             // btnGnome
             // 
             this.btnGnome.BackColor = System.Drawing.Color.Silver;
-            this.btnGnome.Location = new System.Drawing.Point(69, 387);
+            this.btnGnome.Location = new System.Drawing.Point(69, 416);
             this.btnGnome.Name = "btnGnome";
             this.btnGnome.Size = new System.Drawing.Size(60, 23);
             this.btnGnome.TabIndex = 25;
@@ -398,7 +413,7 @@ namespace Sorting
             // btnOddEven
             // 
             this.btnOddEven.BackColor = System.Drawing.Color.Silver;
-            this.btnOddEven.Location = new System.Drawing.Point(69, 445);
+            this.btnOddEven.Location = new System.Drawing.Point(69, 474);
             this.btnOddEven.Name = "btnOddEven";
             this.btnOddEven.Size = new System.Drawing.Size(60, 23);
             this.btnOddEven.TabIndex = 23;
@@ -409,7 +424,7 @@ namespace Sorting
             // btnCocktail
             // 
             this.btnCocktail.BackColor = System.Drawing.Color.Silver;
-            this.btnCocktail.Location = new System.Drawing.Point(69, 416);
+            this.btnCocktail.Location = new System.Drawing.Point(69, 445);
             this.btnCocktail.Name = "btnCocktail";
             this.btnCocktail.Size = new System.Drawing.Size(60, 23);
             this.btnCocktail.TabIndex = 22;
@@ -461,24 +476,6 @@ namespace Sorting
             this.label3.Text = "Comps:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
-            // lblSwaps
-            // 
-            this.lblSwaps.BackColor = System.Drawing.Color.White;
-            this.lblSwaps.Location = new System.Drawing.Point(51, 279);
-            this.lblSwaps.Name = "lblSwaps";
-            this.lblSwaps.Size = new System.Drawing.Size(144, 21);
-            this.lblSwaps.TabIndex = 12;
-            this.lblSwaps.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblComps
-            // 
-            this.lblComps.BackColor = System.Drawing.Color.White;
-            this.lblComps.Location = new System.Drawing.Point(51, 258);
-            this.lblComps.Name = "lblComps";
-            this.lblComps.Size = new System.Drawing.Size(144, 21);
-            this.lblComps.TabIndex = 9;
-            this.lblComps.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // btnShell
             // 
             this.btnShell.BackColor = System.Drawing.Color.Silver;
@@ -504,7 +501,7 @@ namespace Sorting
             // btnKronrod
             // 
             this.btnKronrod.BackColor = System.Drawing.Color.Silver;
-            this.btnKronrod.Location = new System.Drawing.Point(3, 474);
+            this.btnKronrod.Location = new System.Drawing.Point(3, 445);
             this.btnKronrod.Name = "btnKronrod";
             this.btnKronrod.Size = new System.Drawing.Size(60, 23);
             this.btnKronrod.TabIndex = 1;
@@ -526,7 +523,7 @@ namespace Sorting
             // btnBubble
             // 
             this.btnBubble.BackColor = System.Drawing.Color.Silver;
-            this.btnBubble.Location = new System.Drawing.Point(69, 474);
+            this.btnBubble.Location = new System.Drawing.Point(69, 503);
             this.btnBubble.Name = "btnBubble";
             this.btnBubble.Size = new System.Drawing.Size(60, 23);
             this.btnBubble.TabIndex = 7;
@@ -568,6 +565,30 @@ namespace Sorting
             this.pnlGraph.TabIndex = 2;
             this.pnlGraph.Visible = false;
             // 
+            // lblComps
+            // 
+            this.lblComps.Location = new System.Drawing.Point(51, 259);
+            this.lblComps.Name = "lblComps";
+            this.lblComps.ReadOnly = true;
+            this.lblComps.Size = new System.Drawing.Size(144, 20);
+            this.lblComps.TabIndex = 38;
+            // 
+            // lblSwaps
+            // 
+            this.lblSwaps.Location = new System.Drawing.Point(51, 280);
+            this.lblSwaps.Name = "lblSwaps";
+            this.lblSwaps.ReadOnly = true;
+            this.lblSwaps.Size = new System.Drawing.Size(144, 20);
+            this.lblSwaps.TabIndex = 39;
+            // 
+            // lblSortType
+            // 
+            this.lblSortType.Location = new System.Drawing.Point(82, 311);
+            this.lblSortType.Name = "lblSortType";
+            this.lblSortType.Size = new System.Drawing.Size(113, 23);
+            this.lblSortType.TabIndex = 40;
+            this.lblSortType.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
             // Graph
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -599,14 +620,12 @@ namespace Sorting
 		private System.Windows.Forms.Button btnHeap;
 		private System.Windows.Forms.Button btnKronrod;
 		private System.Windows.Forms.Button btnQuick;
-		private System.Windows.Forms.Button btnShell;
-		private System.Windows.Forms.Label lblComps;
+        private System.Windows.Forms.Button btnShell;
 		private System.Windows.Forms.Panel pnlGraph;
 		private System.Windows.Forms.NumericUpDown nudAmt;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label lblSwaps;
+        private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label8;
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.Button btnCocktail;
@@ -632,6 +651,10 @@ namespace Sorting
         private System.Windows.Forms.Button btnMSD;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button btnLSD;
+        private System.Windows.Forms.Button btnBitonic;
+        private System.Windows.Forms.TextBox lblSwaps;
+        private System.Windows.Forms.TextBox lblComps;
+        private System.Windows.Forms.Label lblSortType;
 	}
 }
 

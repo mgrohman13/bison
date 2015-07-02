@@ -88,6 +88,43 @@ namespace Sorting
         //they are all also implemented as purely comparison sorts
         #region Sorts
 
+        //bitonic sorting network modified to work for arbitrary list length
+        //standard bitonic sort requires the list length to be a power of 2
+        public void BitonicSort()
+        {
+            BitonicSort(0, length, true);
+
+            Done();
+        }
+        private void BitonicSort(int left, int right, bool dir)
+        {
+            if (right > 1)
+            {
+                int mid = right / 2;
+                BitonicSort(left, mid, !dir);
+                BitonicSort(left + mid, right - mid, dir);
+                BitonicMerge(left, right, dir);
+            }
+        }
+        private void BitonicMerge(int left, int right, bool dir)
+        {
+            if (right > 1)
+            {
+                //find the greatest power of 2 that is less than right
+                int a = 1;
+                while (a < right)
+                    a = a << 1;
+                a >>= 1;
+
+                for (int b = left ; b < left + right - a ; b++)
+                    if (dir == ( list[b] > list[b + a] ))
+                        Swap(b, b + a);
+
+                BitonicMerge(left, a, dir);
+                BitonicMerge(left + a, right - a, dir);
+            }
+        }
+
         //this is an optimized bozo sort
         //a true bozo sort always swaps the two chosen elements
         //and always checks for a sorted list each swap
@@ -276,7 +313,7 @@ namespace Sorting
             int unsorted = mid - left;
             //since merging a 'small' list with a 'large' one is highly inefficient
             //we use a different algorithm if a 'small' block is encountered
-            if (unsorted < smallBlock)
+            if (unsorted <= smallBlock)
             {
                 //sort the initial unsorted elements
                 KronrodSort(left, mid - 1);
@@ -443,25 +480,25 @@ namespace Sorting
 
             Done();
         }
-        private void StoogeSort(int start, int end)
+        private void StoogeSort(int left, int right)
         {
-            if (end > start)
+            if (right > left)
             {
                 //swap the first and last elements if they are not in order
-                if (list[start] > list[end])
-                    Swap(start, end);
+                if (list[left] > list[right])
+                    Swap(left, right);
                 //check if there are at least three elements
-                int elements = end - start + 1;
+                int elements = right - left + 1;
                 if (elements > 2)
                 {
                     //split into thirds
                     elements /= 3;
                     //stooge the first two thirds
-                    StoogeSort(start, end - elements);
+                    StoogeSort(left, right - elements);
                     //stooge the last two thirds
-                    StoogeSort(start + elements, end);
+                    StoogeSort(left + elements, right);
                     //stooge the first two thirds again
-                    StoogeSort(start, end - elements);
+                    StoogeSort(left, right - elements);
                 }
             }
         }
@@ -711,6 +748,43 @@ namespace Sorting
             while (step > 1 || swapped);
 
             Done();
+        }
+
+        //removed because it requires the list length to be a power of 2
+        public void OddEvenMergeSort()
+        {
+            OddEvenMergeSort(0, length);
+
+            Done();
+        }
+        //sorts a piece of length n of the array starting at position lo
+        private void OddEvenMergeSort(int lo, int n)
+        {
+            if (n > 1)
+            {
+                int m = n / 2;
+                OddEvenMergeSort(lo, m);
+                OddEvenMergeSort(lo + m, m);
+                OddEvenMergeSort(lo, n, 1);
+            }
+        }
+        // lo is the starting position and n is the length of the piece to be merged, r is the distance of the elements to be compared
+        private void OddEvenMergeSort(int lo, int n, int r)
+        {
+            int m = r * 2;
+            if (m < n)
+            {
+                // even subsequence
+                OddEvenMergeSort(lo, n, m);
+                // odd subsequence
+                OddEvenMergeSort(lo + r, n, m);
+                for (int i = lo + r ; i + r < lo + n ; i += m)
+                    if (list[i] > list[i + r])
+                        Swap(i, i + r);
+            }
+            else
+                if (list[lo] > list[lo + r])
+                    Swap(lo, lo + r);
         }
 
         //removed for being lame an boring

@@ -201,9 +201,10 @@ namespace Sorting
 
         private Thread sortThread = null;
         private int comparisons, swaps;
-        private void StartSort(ThreadStart start)
+        private void StartSort(object sender, ThreadStart start)
         {
             Stop();
+            this.lblSortType.Text = ( (Button)sender ).Text;
 
             //reset counts
             comparisons = swaps = 0;
@@ -321,6 +322,7 @@ namespace Sorting
         private void btnStop_Click(object sender, EventArgs e)
         {
             Stop();
+            RefreshAll();
         }
 
         private void btnNew_Click(object sender, EventArgs e)
@@ -334,63 +336,67 @@ namespace Sorting
         //sort button events
         private void btnBubble_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.BubbleSort);
+            StartSort(sender, sorter.BubbleSort);
         }
         private void btnHeap_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.HeapSort);
+            StartSort(sender, sorter.HeapSort);
         }
         private void btnQuick_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.QuickSort);
+            StartSort(sender, sorter.QuickSort);
         }
         private void btnShell_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.ShellSort);
+            StartSort(sender, sorter.ShellSort);
         }
         private void btnCocktail_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.CocktailSort);
+            StartSort(sender, sorter.CocktailSort);
         }
         private void btnOddEven_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.OddEvenSort);
+            StartSort(sender, sorter.OddEvenSort);
         }
         private void btnGnome_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.GnomeSort);
+            StartSort(sender, sorter.GnomeSort);
         }
         private void btnStooge_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.StoogeSort);
+            StartSort(sender, sorter.StoogeSort);
         }
         private void btnBozo_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.BozoSort);
+            StartSort(sender, sorter.BozoSort);
         }
         private void btnStrand_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.StrandSort);
+            StartSort(sender, sorter.StrandSort);
         }
         private void btnKronrod_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.KronrodSort);
+            StartSort(sender, sorter.KronrodSort);
         }
         private void btnMerge_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.MergeSort);
+            StartSort(sender, sorter.MergeSort);
         }
         private void btnSmooth_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.Smoothsort);
+            StartSort(sender, sorter.Smoothsort);
         }
         private void btnLSD_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.RadixLSDSort);
+            StartSort(sender, sorter.RadixLSDSort);
         }
         private void btnMSD_Click(object sender, EventArgs e)
         {
-            StartSort(sorter.RadixMSDSort);
+            StartSort(sender, sorter.RadixMSDSort);
+        }
+        private void btnBitonic_Click(object sender, EventArgs e)
+        {
+            StartSort(sender, sorter.BitonicSort);
         }
     }
 }
