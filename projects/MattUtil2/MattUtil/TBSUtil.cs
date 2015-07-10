@@ -197,7 +197,7 @@ end:
         }
 
         private static void Enqueue<Tile, TKey, TValue>(IDictionary<TKey, TValue> queue, TKey key, Tile tile)
-                where TValue : ICollection<Tile>
+                where TValue : ICollection<Tile>, new()
         {
             TValue col;
             if (!queue.TryGetValue(key, out col))

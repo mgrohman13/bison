@@ -29,6 +29,9 @@ namespace Sorting
 		private void InitializeComponent()
 		{
             this.panel2 = new System.Windows.Forms.Panel();
+            this.lblSortType = new System.Windows.Forms.Label();
+            this.lblSwaps = new System.Windows.Forms.TextBox();
+            this.lblComps = new System.Windows.Forms.TextBox();
             this.btnBitonic = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.btnLSD = new System.Windows.Forms.Button();
@@ -68,9 +71,6 @@ namespace Sorting
             this.label1 = new System.Windows.Forms.Label();
             this.tbSpeed = new System.Windows.Forms.TrackBar();
             this.pnlGraph = new System.Windows.Forms.Panel();
-            this.lblComps = new System.Windows.Forms.TextBox();
-            this.lblSwaps = new System.Windows.Forms.TextBox();
-            this.lblSortType = new System.Windows.Forms.Label();
             this.panel2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbSorted)).BeginInit();
@@ -116,6 +116,30 @@ namespace Sorting
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(198, 529);
             this.panel2.TabIndex = 1;
+            // 
+            // lblSortType
+            // 
+            this.lblSortType.Location = new System.Drawing.Point(82, 311);
+            this.lblSortType.Name = "lblSortType";
+            this.lblSortType.Size = new System.Drawing.Size(113, 23);
+            this.lblSortType.TabIndex = 40;
+            this.lblSortType.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // lblSwaps
+            // 
+            this.lblSwaps.Location = new System.Drawing.Point(51, 280);
+            this.lblSwaps.Name = "lblSwaps";
+            this.lblSwaps.ReadOnly = true;
+            this.lblSwaps.Size = new System.Drawing.Size(144, 20);
+            this.lblSwaps.TabIndex = 39;
+            // 
+            // lblComps
+            // 
+            this.lblComps.Location = new System.Drawing.Point(51, 259);
+            this.lblComps.Name = "lblComps";
+            this.lblComps.ReadOnly = true;
+            this.lblComps.Size = new System.Drawing.Size(144, 20);
+            this.lblComps.TabIndex = 38;
             // 
             // btnBitonic
             // 
@@ -564,30 +588,6 @@ namespace Sorting
             this.pnlGraph.Size = new System.Drawing.Size(529, 529);
             this.pnlGraph.TabIndex = 2;
             this.pnlGraph.Visible = false;
-            // 
-            // lblComps
-            // 
-            this.lblComps.Location = new System.Drawing.Point(51, 259);
-            this.lblComps.Name = "lblComps";
-            this.lblComps.ReadOnly = true;
-            this.lblComps.Size = new System.Drawing.Size(144, 20);
-            this.lblComps.TabIndex = 38;
-            // 
-            // lblSwaps
-            // 
-            this.lblSwaps.Location = new System.Drawing.Point(51, 280);
-            this.lblSwaps.Name = "lblSwaps";
-            this.lblSwaps.ReadOnly = true;
-            this.lblSwaps.Size = new System.Drawing.Size(144, 20);
-            this.lblSwaps.TabIndex = 39;
-            // 
-            // lblSortType
-            // 
-            this.lblSortType.Location = new System.Drawing.Point(82, 311);
-            this.lblSortType.Name = "lblSortType";
-            this.lblSortType.Size = new System.Drawing.Size(113, 23);
-            this.lblSortType.TabIndex = 40;
-            this.lblSortType.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // Graph
             // 

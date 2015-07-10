@@ -568,7 +568,8 @@ namespace GalWarWin
             if (started)
             {
                 Rectangle bounds = Game.GetGameBounds();
-                bounds.Inflate(1, 1);
+                int inflate = (int)( Game.GetSpaceObjects().OfType<Ship>().Select(ship => ship.MaxSpeed).DefaultIfEmpty(1).Max() * 1.3f + 2.1f );
+                bounds.Inflate(inflate, inflate);
                 int minX = bounds.Left, minY = bounds.Top, maxX = bounds.Right, maxY = bounds.Bottom;
 
                 float xDiameter, yDiameter, width, height, padding;
@@ -1142,10 +1143,15 @@ namespace GalWarWin
             showMoves = false;
             InvalidateMap();
 
-            Ship ship = GetSelectedShip();
+            DisbandShip(GetSelectedShip());
 
+            saved = false;
+            RefreshAll();
+        }
+        public bool DisbandShip(Ship ship)
+        {
             Colony colony = null;
-            foreach (Tile neighbor in Tile.GetNeighbors(GetSelectedTile()))
+            foreach (Tile neighbor in Tile.GetNeighbors(ship.Tile))
             {
                 Planet planet = neighbor.SpaceObject as Planet;
                 if (planet != null)
@@ -1167,12 +1173,16 @@ namespace GalWarWin
             }
 
             if (buildable != null && ShowOption("Disband for " + production + " production?"))
+            {
                 ship.Disband(this, colony);
-            else if (ShowOption("Disband for " + FormatDouble(gold) + " gold?"))
+                return true;
+            }
+            if (ShowOption("Disband for " + FormatDouble(gold) + " gold?"))
+            {
                 ship.Disband(this, null);
-
-            saved = false;
-            RefreshAll();
+                return true;
+            }
+            return false;
         }
 
         private void btnUndo_Click(object sender, EventArgs e)

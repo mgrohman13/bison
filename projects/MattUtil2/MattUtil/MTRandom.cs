@@ -419,7 +419,7 @@ namespace MattUtil
                 uint seedSize = (uint)seed.Length;
                 if (seedSize <= 0 || seedSize > MAX_SEED_SIZE)
                     throw new ArgumentOutOfRangeException("seed", seed,
-                        "seedSize must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ));
+                            "seed length must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ));
 
                 //reset fields
                 if (storeSeed)
@@ -562,14 +562,14 @@ namespace MattUtil
         private uint LCG()
         {
             lock (this)
-                unchecked
-                {
-                    return ( lcgn = LCG(lcgn) );
-                }
+                return ( lcgn = LCG(lcgn) );
         }
         public static uint LCG(uint lcgn)
         {
-            return LCG_MULTIPLIER * lcgn + LCG_INCREMENT;
+            unchecked
+            {
+                return LCG_MULTIPLIER * lcgn + LCG_INCREMENT;
+            }
         }
 
         //A 3-shift shift-register generator, period 2^32-1,
@@ -584,11 +584,17 @@ namespace MattUtil
         }
         private static uint XorLShift(uint value, int shift)
         {
-            return ( value ^ ( value << shift ) );
+            unchecked
+            {
+                return ( value ^ ( value << shift ) );
+            }
         }
         private static uint XorRShift(uint value, int shift)
         {
-            return ( value ^ ( value >> shift ) );
+            unchecked
+            {
+                return ( value ^ ( value >> shift ) );
+            }
         }
 
         //Two 16-bit multiply-with-carry generators, period 597273182964842497(>2^59)
@@ -599,7 +605,10 @@ namespace MattUtil
         }
         public static uint MWCs(ref uint mwc1, ref uint mwc2)
         {
-            return ( MWC1(ref mwc1) << MWC_SHIFT ) + MWC2(ref mwc2);
+            unchecked
+            {
+                return ( MWC1(ref mwc1) << MWC_SHIFT ) + MWC2(ref mwc2);
+            }
         }
         private static uint MWC1(ref uint mwc1)
         {
@@ -621,40 +630,43 @@ namespace MattUtil
         //Mersenne Twister pseudorandom number generator, period 2^19937-1.
         private uint MersenneTwister()
         {
-            uint a;
-
-            lock (this)
+            unchecked
             {
-                if (t >= LENGTH)
+                uint a;
+
+                lock (this)
                 {
-                    //Console.WriteLine("MersenneTwister " + mersenneCount++);
-                    //generate the next state of N 32-bit uints
-                    uint b;
-                    for (b = 0 ; b < LENGTH - STEP ; ++b)
+                    if (t >= LENGTH)
                     {
-                        a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
-                        m[b] = m[b + STEP] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
+                        //Console.WriteLine("MersenneTwister " + mersenneCount++);
+                        //generate the next state of N 32-bit uints
+                        uint b;
+                        for (b = 0 ; b < LENGTH - STEP ; ++b)
+                        {
+                            a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
+                            m[b] = m[b + STEP] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
+                        }
+                        for ( ; b < LENGTH - 1 ; ++b)
+                        {
+                            a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
+                            m[b] = m[b + STEP - LENGTH] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
+                        }
+                        a = ( m[LENGTH - 1] & UPPER_MASK ) | ( m[0] & LOWER_MASK );
+                        m[LENGTH - 1] = m[STEP - 1] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
+                        t = 0;
                     }
-                    for ( ; b < LENGTH - 1 ; ++b)
-                    {
-                        a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
-                        m[b] = m[b + STEP - LENGTH] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
-                    }
-                    a = ( m[LENGTH - 1] & UPPER_MASK ) | ( m[0] & LOWER_MASK );
-                    m[LENGTH - 1] = m[STEP - 1] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
-                    t = 0;
+
+                    a = m[t++];
                 }
 
-                a = m[t++];
+                //tempering
+                a ^= ( a >> TEMPER_1 );
+                a ^= ( a << TEMPER_2 ) & TEMPER_MASK_2;
+                a ^= ( a << TEMPER_3 ) & TEMPER_MASK_3;
+                a ^= ( a >> TEMPER_4 );
+
+                return a;
             }
-
-            //tempering
-            a ^= ( a >> TEMPER_1 );
-            a ^= ( a << TEMPER_2 ) & TEMPER_MASK_2;
-            a ^= ( a << TEMPER_3 ) & TEMPER_MASK_3;
-            a ^= ( a >> TEMPER_4 );
-
-            return a;
         }
 
         #endregion
@@ -1944,6 +1956,10 @@ namespace MattUtil
             }
         }
 
+        ~MTRandom()
+        {
+            Dispose();
+        }
         public void Dispose()
         {
             StopTick();

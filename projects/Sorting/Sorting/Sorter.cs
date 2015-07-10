@@ -8,7 +8,6 @@ namespace Sorting
     class Sorter
     {
         //TODO:
-        //smoothsort 
         //strand
         //pancake
 
@@ -113,10 +112,10 @@ namespace Sorting
                 //find the greatest power of 2 that is less than right
                 int a = 1;
                 while (a < right)
-                    a = a << 1;
+                    a <<= 1;
                 a >>= 1;
 
-                for (int b = left ; b < left + right - a ; b++)
+                for (int b = left ; b < left + right - a ; ++b)
                     if (dir == ( list[b] > list[b + a] ))
                         Swap(b, b + a);
 
@@ -134,8 +133,8 @@ namespace Sorting
             {
                 //check if the list is already sorted
                 bool sorted = true;
-                for (int i = 1 ; i < length ; ++i)
-                    if (list[i - 1] > list[i])
+                for (int a = 1 ; a < length ; ++a)
+                    if (list[a - 1] > list[a])
                     {
                         sorted = false;
                         break;
@@ -147,13 +146,15 @@ namespace Sorting
                 while (true)
                 {
                     //choose two random elements
-                    int a = Program.Random.Next(length);
                     int b = Program.Random.Next(length);
+                    int c = Program.Random.Next(length - 1);
+                    if (c >= b)
+                        ++c;
                     //only swap them if they are in the wrong order
-                    int compVal = Obj.Compare(list[a], list[b]);
-                    if (a < b ? compVal > 0 : a > b && compVal < 0)
+                    int compVal = Obj.Compare(list[b], list[c]);
+                    if (b < c ? compVal > 0 : compVal < 0)
                     {
-                        Swap(a, b);
+                        Swap(b, c);
                         //only check for a sorted list if we made a swap
                         break;
                     }
@@ -167,7 +168,7 @@ namespace Sorting
         public void BubbleSort()
         {
             //we can reduce the number of elemets to look at during each consecutive loop by one
-            for (int a = length ; --a > -1 ; )
+            for (int a = length ; --a >= 0 ; )
             {
                 bool swapped = false;
                 for (int b = 0 ; b < a ; ++b)
@@ -196,10 +197,10 @@ namespace Sorting
             {
                 //forwards bubble sort
                 swapped = false;
-                for (int i = ++left ; i <= right ; ++i)
-                    if (list[i] > list[i + 1])
+                for (int a = ++left ; a <= right ; ++a)
+                    if (list[a] > list[a + 1])
                     {
-                        Swap(i, i + 1);
+                        Swap(a, a + 1);
                         swapped = true;
                     }
                 //break out early if no swaps
@@ -207,10 +208,10 @@ namespace Sorting
                     break;
                 //backwards bubble sort
                 swapped = false;
-                for (int i = --right ; i >= left ; --i)
-                    if (list[i] > list[i + 1])
+                for (int b = --right ; b >= left ; --b)
+                    if (list[b] > list[b + 1])
                     {
-                        Swap(i, i + 1);
+                        Swap(b, b + 1);
                         swapped = true;
                     }
             }
@@ -225,18 +226,20 @@ namespace Sorting
         {
             //topmost position
             int top = 1;
-            for (int i = 1 ; i < length ; )
-                if (list[i - 1] > list[i])
+            for (int a = 1 ; a < length ; )
+                if (list[a - 1] > list[a])
                 {
                     //swap out of place elemnts
-                    Swap(i, --i);
+                    Swap(a, --a);
                     //check if we hit the bottom and if so return to the top
-                    if (i < 1)
-                        i = ++top;
+                    if (a < 1)
+                        a = ++top;
                 }
                 else
+                {
                     //return to top
-                    i = ++top;
+                    a = ++top;
+                }
 
             Done();
         }
@@ -246,8 +249,8 @@ namespace Sorting
         {
             int bottom = length - 1;
             //build the heap
-            for (int i = length / 2 ; --i > -1 ; )
-                Heapify(i, bottom);
+            for (int a = length / 2 ; --a >= 0 ; )
+                Heapify(a, bottom);
 
             //for an odd number of elements, the last element wont get heapified
             //so make sure it is not already higher than the top of the heap before we swap it
@@ -279,8 +282,11 @@ namespace Sorting
                     //continue with the new index
                     root = maxChild;
                 }
-                else //it is in its heap position
+                else
+                {
+                    //it is in its heap position
                     break;
+                }
             }
         }
 
@@ -305,7 +311,9 @@ namespace Sorting
                 KronrodSort(left, mid, right, Program.Random.Round(count / Math.Log(count, 2.0)));
             }
             else if (count > 1 && list[left] > list[right])
+            {
                 Swap(left, right);
+            }
         }
         //takes in two sections, an unsorted left and sorted right, and sorts
         private void KronrodSort(int left, int mid, int right, int smallBlock)
@@ -319,26 +327,26 @@ namespace Sorting
                 KronrodSort(left, mid - 1);
 
                 //merge the upper portions
-                MergeUpper(left, mid, ref right);
+                MergeUpper(left, ref mid, ref right);
 
                 //sort the remaining unsorted lower elements
                 KronrodSort(left, right);
             }
             else
             {
-                int use = left + unsorted / 2;
+                int start = left + unsorted / 2;
                 //sort the first half of the left section
-                KronrodSort(left, use - 1);
+                KronrodSort(left, start - 1);
 
-                int leftEnd = use - 1;
+                int leftEnd = start - 1;
                 //check for a single extra element and move use past it
-                if (mid - use > use - left)
-                    ++use;
+                if (mid - start > start - left)
+                    ++start;
                 //merge the first half of the left with the right, using the second half of the left
-                MergeAt(use, left, leftEnd, mid, right);
+                MergeAt(start, left, leftEnd, mid, right);
 
                 //recurse with the larger sorted section and smaller unsorted
-                KronrodSort(left, use, right, smallBlock);
+                KronrodSort(left, start, right, smallBlock);
             }
         }
 
@@ -367,12 +375,14 @@ namespace Sorting
                 Merge(left, mid + 1, right);
             }
             else if (count > 0 && list[left] > list[right])
+            {
                 Swap(left, right);
+            }
         }
         //this is a redone merge algorithm that works in-place
         private void Merge(int left, int mid, int right)
         {
-            mid = MergeUpper(left, mid, ref right);
+            MergeUpper(left, ref mid, ref right);
 
             //at this point, the elements from left to mid are already sorted
             //so we can just sort mid through right and merge them
@@ -390,17 +400,17 @@ namespace Sorting
             {
                 swapped = false;
                 //compare all element pairs and swap if necessary
-                for (int i = 2 ; i < length ; i += 2)
-                    if (list[i] < list[i - 1])
+                for (int a = 2 ; a < length ; a += 2)
+                    if (list[a] < list[a - 1])
                     {
-                        Swap(i, i - 1);
+                        Swap(a, a - 1);
                         swapped = true;
                     }
                 //compare between pairs
-                for (int i = 1 ; i < length ; i += 2)
-                    if (list[i] < list[i - 1])
+                for (int b = 1 ; b < length ; b += 2)
+                    if (list[b] < list[b - 1])
                     {
-                        Swap(i, i - 1);
+                        Swap(b, b - 1);
                         swapped = true;
                     }
             }
@@ -421,10 +431,10 @@ namespace Sorting
             if (left < right)
             {
                 //split into two sections
-                int index = Split(left, right);
+                int mid = Split(left, right);
                 //sort each section
-                QuickSort(left, index - 1);
-                QuickSort(index + 1, right);
+                QuickSort(left, mid - 1);
+                QuickSort(mid + 1, right);
             }
         }
         private int Split(int left, int right)
@@ -433,13 +443,13 @@ namespace Sorting
             //a randomly chosen pivot prevents the sort from degenerating to O(n^2) for nearly-sorted lists
             Swap(left + Program.Random.Next(right - left + 1), right);
             //split the other elements
-            for (int i = left ; i < right ; ++i)
+            for (int a = left ; a < right ; ++a)
             {
-                int compVal = Obj.Compare(list[i], list[right]);
+                int compVal = Obj.Compare(list[a], list[right]);
                 //if the value is equal to the pivot move it randomly to either side 
                 //this prevents the sort from degenerating to O(n^2) when there are a large number of identical values
                 if (compVal < 0 || ( compVal == 0 && Program.Random.Bool() ))
-                    Swap(i, left++);
+                    Swap(a, left++);
             }
             //place the pivot in its final position
             Swap(right, left);
@@ -462,12 +472,8 @@ namespace Sorting
 
                 //swap each element into place using the current increment
                 for (int a = step ; a < length ; ++a)
-                    for (int b = a ; list[b] < list[b - step] ; )
-                    {
+                    for (int b = a ; b >= step && list[b] < list[b - step] ; )
                         Swap(b, b -= step);
-                        if (b < step)
-                            break;
-                    }
             }
 
             Done();
@@ -509,12 +515,8 @@ namespace Sorting
             //first build a sorted strand at the end of the list
             int sorted = length - 1;
             while (sorted > 0 && !( list[sorted] < list[--sorted] ))
-            {
-            }
+                ;
             ++sorted;
-            //for (int i = sorted; --i > -1; )
-            //    if (i < sorted && !(list[i] > list[sorted]))
-            //        Swap(i, --sorted);
 
             //continue while there are at least four unordered elements left
             int subStart = 0;
@@ -526,9 +528,9 @@ namespace Sorting
                 int max = ( sorted + subStart ) / 2 - 1;
                 if (subStart < max)
                 {
-                    for (int i = subStart ; ++i < sorted && sublist < max ; )
-                        if (!( list[i] < list[sublist] ))
-                            Swap(i, ++sublist);
+                    for (int a = subStart ; ++a < sorted && sublist < max ; )
+                        if (!( list[a] < list[sublist] ))
+                            Swap(a, ++sublist);
 
                     //merge the strand with the sorted elements at the end
                     MergeAt(sorted - ++sublist + subStart, subStart, sublist - 1, sorted, length - 1);
@@ -546,8 +548,8 @@ namespace Sorting
             //insert the remaining elements individually
             int right = length - 1;
             while (sorted > 0)
-                for (int i = --sorted ; i < right && list[i] > list[i + 1] ; )
-                    Swap(i, ++i);
+                for (int b = --sorted ; b < right && list[b] > list[b + 1] ; )
+                    Swap(b, ++b);
 
             Done();
         }
@@ -600,13 +602,12 @@ namespace Sorting
 
         //merges two lists, leaving an unsorted left and sorted right
         //where all elements in the left section are smaller than the elements in the right
-        private int MergeUpper(int left, int mid, ref int right)
+        private void MergeUpper(int left, ref int mid, ref int right)
         {
             int leftEnd = mid;
-            int use;
+            int start;
             //bring in the starting indices of both lists creating space we can use to merge
-            while (( use = leftEnd - left ) > mid - leftEnd)
-            {
+            while (( start = leftEnd - left ) > mid - leftEnd)
                 if (left >= leftEnd)
                     ++mid;
                 else if (mid > right)
@@ -615,27 +616,24 @@ namespace Sorting
                     ++left;
                 else
                     ++mid;
-            }
             //merge what we can of the lists, using the lower section of the right list as the work area
-            MergeAt(use = mid - use, left, leftEnd - 1, mid, right);
+            MergeAt(mid - start, left, leftEnd - 1, mid, right);
             //set right to the last element in the left section 
-            right = use - 1;
-            //return the first unsorted element in the left section
-            return left;
+            right = mid - start - 1;
+            //set mid to the first unsorted element in the left section
+            mid = left;
         }
 
-        //starts at use and places each element from left and right in order
+        //places each element from left and right in an ordered section at start
         //assumes the result will overlap right, so stops once left has no remaining elements
         private void MergeAt(int start, int left, int leftEnd, int right, int rightEnd)
         {
             //place each element in order
             while (( left <= leftEnd ) && ( right <= rightEnd ))
-            {
                 if (list[left] > list[right])
                     Swap(start++, right++);
                 else
                     Swap(start++, left++);
-            }
             //place the remaining elements from left
             while (left <= leftEnd)
                 Swap(start++, left++);
@@ -733,17 +731,15 @@ namespace Sorting
                     if (step < 5)
                         --step;
                     else
-                        step = Program.Random.Round(step / 1.3);
+                        step = Program.Random.Round(step / 1.3f);
                 }
                 swapped = false;
-                for (int i = step ; i < length ; ++i)
-                {
-                    if (list[i - step] > list[i])
+                for (int a = step ; a < length ; ++a)
+                    if (list[a - step] > list[a])
                     {
-                        Swap(i, i - step);
+                        Swap(a, a - step);
                         swapped = true;
                     }
-                }
             }
             while (step > 1 || swapped);
 
@@ -757,34 +753,35 @@ namespace Sorting
 
             Done();
         }
-        //sorts a piece of length n of the array starting at position lo
-        private void OddEvenMergeSort(int lo, int n)
+        //sorts a piece of of the array starting at position left
+        private void OddEvenMergeSort(int left, int right)
         {
-            if (n > 1)
+            if (right > 1)
             {
-                int m = n / 2;
-                OddEvenMergeSort(lo, m);
-                OddEvenMergeSort(lo + m, m);
-                OddEvenMergeSort(lo, n, 1);
+                int mid = right / 2;
+                OddEvenMergeSort(left, mid);
+                OddEvenMergeSort(left + mid, mid);
+                OddEvenMergeSort(left, right, 1);
             }
         }
-        // lo is the starting position and n is the length of the piece to be merged, r is the distance of the elements to be compared
-        private void OddEvenMergeSort(int lo, int n, int r)
+        //left is the starting position and size is the length of the piece to be merged, step is the distance of the elements to be compared
+        private void OddEvenMergeSort(int left, int size, int step)
         {
-            int m = r * 2;
-            if (m < n)
+            int next = step * 2;
+            if (next < size)
             {
-                // even subsequence
-                OddEvenMergeSort(lo, n, m);
-                // odd subsequence
-                OddEvenMergeSort(lo + r, n, m);
-                for (int i = lo + r ; i + r < lo + n ; i += m)
-                    if (list[i] > list[i + r])
-                        Swap(i, i + r);
+                //even subsequence
+                OddEvenMergeSort(left, size, next);
+                //odd subsequence
+                OddEvenMergeSort(left + step, size, next);
+                for (int a = left + step ; a + step < left + size ; a += next)
+                    if (list[a] > list[a + step])
+                        Swap(a, a + step);
             }
-            else
-                if (list[lo] > list[lo + r])
-                    Swap(lo, lo + r);
+            else if (list[left] > list[left + step])
+            {
+                Swap(left, left + step);
+            }
         }
 
         //removed for being lame an boring
@@ -793,13 +790,9 @@ namespace Sorting
             for (int a = 0 ; a < length - 1 ; ++a)
             {
                 int min = a;
-                for (int b = a + 1 ; b < length ; ++b)
-                {
+                for (int b = a ; ++b < length ; )
                     if (list[b] < list[min])
-                    {
                         min = b;
-                    }
-                }
                 Swap(a, min);
             }
 
@@ -833,7 +826,7 @@ namespace Sorting
 
         /* Implementation Below This Point */
 
-        /* A constant containing the number of Leonardo numbers that can fit into 32 bits. For a 64-bit machine, you'll need to update this value and the */
+        /* A constant containing the number of Leonardo numbers that can fit into 32 bits. For a 64-bit machine, you'll need to update this value and the list below. */
         //const int kNumLeonardoNumbers = 46;
 
         /* A list of all the Leonardo numbers below 2^32, precomputed for efficiency.
@@ -1014,7 +1007,7 @@ namespace Sorting
             }
 
             /* Case 1 would be represented by the last two bits of the bitvector both being set. */
-            else if (( shape.trees & 2 ) == 2 && ( shape.trees & 1 ) == 1)
+            else if (( shape.trees & 3 ) == 3)
             {
                 /* First, remove those two trees by shifting them off the bitvector. */
                 shape.trees >>= 2;
