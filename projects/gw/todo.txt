@@ -1,5 +1,4 @@
 UI
-	compare designs
 	repair form income show only base-upkeep ?
 	rapid click to bombard
 	rally ships
@@ -23,6 +22,8 @@ UI
 			better distinction between ships and planets
 	management screens
 		re-do colony
+		designs?
+			compare
 	keyboard?
 
 move order gold based on current average income?

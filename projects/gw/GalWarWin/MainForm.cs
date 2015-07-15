@@ -249,19 +249,26 @@ namespace GalWarWin
                     float height = ClientHeight;
                     float width = ClientSize.Width - pnlHUD.Width;
 
-                    g.FillRectangle(Brushes.Black, 0, 0, width, height);
+                    g.Clear(Color.Black);
 
                     float minQuality = int.MaxValue, maxQuality = int.MinValue,
-                           minPop = int.MaxValue, maxPop = int.MinValue, minStr = int.MaxValue, maxStr = int.MinValue;
-                    foreach (Planet planet in Game.GetPlanets())
+                            minPop = int.MaxValue, maxPop = int.MinValue, minStr = int.MaxValue, maxStr = int.MinValue;
+                    foreach (SpaceObject obj in Game.GetSpaceObjects())
                     {
-                        GetVals(ref minQuality, ref maxQuality, planet.Quality);
-                        if (planet.Colony != null)
-                            GetVals(ref minPop, ref maxPop, planet.Colony.Population);
-                    }
-                    foreach (Player player in Game.GetPlayers())
-                        foreach (Ship ship in player.GetShips())
+                        Ship ship;
+                        Planet planet;
+                        if (( ship = ( obj as Ship ) ) != null)
+                        {
                             GetVals(ref minStr, ref maxStr, (float)ship.GetStrength() * ship.HP / (float)ship.MaxHP);
+                        }
+                        else if (( planet = ( obj as Planet ) ) != null)
+                        {
+                            GetVals(ref minQuality, ref maxQuality, planet.Quality);
+                            Colony colony = planet.Colony;
+                            if (colony != null)
+                                GetVals(ref minPop, ref maxPop, colony.Population);
+                        }
+                    }
 
                     if (scale > TextScale)
                     {
@@ -281,36 +288,45 @@ namespace GalWarWin
 
                     if (scale > GridScale)
                     {
-                        RectangleF[] rects = new RectangleF[( gameBounds.Width + 3 ) * ( gameBounds.Height + 3 )];
-                        int a = -1;
-                        for (int x = gameBounds.Left - 1 ; x <= gameBounds.Right + 1 ; ++x)
-                            for (int y = gameBounds.Top - 1 ; y <= gameBounds.Bottom + 1 ; ++y)
-                                rects[++a] = GetDrawRect(x, y);
+                        int capacity = ( ( gameBounds.Width + 4 ) * gameBounds.Height * 2 + 2 ) / 3;
+                        List<RectangleF> rects = new List<RectangleF>(capacity);
+                        for (int y = gameBounds.Top ; y <= gameBounds.Bottom ; ++y)
+                        {
+                            //we can skip drawing every 3rd rectangle as a decent optimization
+                            int skip = ( y % 2 == 0 ? 1 : 0 );
+                            for (int x = gameBounds.Left ; x <= gameBounds.Right ; ++x)
+                                if (++skip == 3 && x != gameBounds.Left && x != gameBounds.Right)
+                                    skip = 0;
+                                else
+                                    rects.Add(GetDrawRect(x, y));
+                        }
+                        //Console.WriteLine(rects.Count + "\t" + capacity);
+                        if (capacity < rects.Count)
+                        {
+                        }
                         using (Pen pen = new Pen(Color.White, 1f))
-                            g.DrawRectangles(pen, rects);
+                            g.DrawRectangles(pen, rects.ToArray());
                     }
 
+                    HashSet<Tile> drawTiles = new HashSet<Tile>();
                     if (selected != null)
-                        DrawObject(g, gameBounds, selected, null);
-                    foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
-                    {
-                        DrawObject(g, gameBounds, teleporter.Item1, null);
-                        DrawObject(g, gameBounds, teleporter.Item2, null);
-                    }
+                        drawTiles.Add(selected);
+                    drawTiles.UnionWith(Game.GetTeleporters().SelectMany(teleporter => new[] { teleporter.Item1, teleporter.Item2 }));
                     if (isDialog && dialogTile != null)
-                        foreach (Tile neighbor in Tile.GetNeighbors(dialogTile))
-                            DrawObject(g, gameBounds, neighbor, null);
+                        drawTiles.UnionWith(Tile.GetNeighbors(dialogTile));
+                    drawTiles.UnionWith(Game.GetSpaceObjects().Select(spaceObject => spaceObject.Tile));
 
                     Dictionary<Tile, float> moves = null;
                     if (showMoves && scale > TextScale)
                     {
                         moves = GetMoves();
-                        foreach (Tile tile in moves.Keys)
-                            DrawObject(g, gameBounds, tile, moves);
+                        drawTiles.UnionWith(moves.Keys);
                     }
 
-                    foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
-                        DrawObject(g, gameBounds, spaceObject.Tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
+                    gameBounds = new Rectangle(gameBounds.X - ( gameBounds.Top % 2 == 0 ? 1 : 0 ), gameBounds.Y,
+                            gameBounds.Width + ( gameBounds.Top % 2 == 0 ? 3 : 2 ), gameBounds.Height + 1);
+                    foreach (Tile tile in drawTiles.Distinct())
+                        DrawObject(g, gameBounds, tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
 
                     Ship selectedShip = GetSelectedShip();
                     if (selectedShip != null)
@@ -331,8 +347,13 @@ namespace GalWarWin
                     //Tile t = selected;
                     //if (selected == null)
                     //    t = Game.Center;
+                    //if (last != t)
+                    //    meh = 0;
+                    //last = t;
                     //List<RectangleF> r = new List<RectangleF>();
-                    //foreach (Tile tt in Game.GetDistanceTiles(t, meh))
+                    //List<Tile> mehs = Game.GetDistanceTiles(t, ++meh).ToList();
+                    //Console.WriteLine(mehs.Count);
+                    //foreach (Tile tt in mehs)
                     //    r.Add(GetDrawRect(tt.X, tt.Y));
                     //using (Brush b = new SolidBrush(Game.CurrentPlayer.Color))
                     //    g.FillRectangles(b, r.ToArray());
@@ -342,10 +363,12 @@ namespace GalWarWin
                     Console.WriteLine(e);
 
                     using (Font font = new Font("arial", 13f))
-                        g.DrawString(e.ToString(), font, Brushes.White, 0, 0);
+                        g.DrawString(e.ToString(), font, Brushes.White, 0f, 0f);
                 }
             }
         }
+        //int meh = 0;
+        //Tile last = null;
         private void DrawObject(Graphics g, Rectangle gameBounds, Tile tile, Dictionary<Tile, float> moves)
         {
             DrawObject(g, gameBounds, tile, moves, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN);
@@ -353,7 +376,7 @@ namespace GalWarWin
         private void DrawObject(Graphics g, Rectangle gameBounds, Tile tile, Dictionary<Tile, float> moves, float minQuality, float maxQuality, float minPop, float maxPop, float minStr, float maxStr)
         {
             int x = tile.X, y = tile.Y;
-            if (x > gameBounds.Left - 2 && x < gameBounds.Right + 2 && y > gameBounds.Top - 2 && y < gameBounds.Bottom + 2)
+            if (gameBounds.Contains(x, y))
             {
                 SpaceObject spaceObject = tile.SpaceObject;
                 RectangleF rect = GetDrawRect(x, y);
@@ -364,25 +387,29 @@ namespace GalWarWin
                     Brush brush = Brushes.DarkGray;
                     if (Game.GetTeleporters().Count > 1)
                     {
-                        float telCount = Game.GetTeleporters().Count + 1;
-                        float min = 520 / telCount / telCount;
-                        int color = Game.Random.Round(min + telNum * ( 255 - min ) / telCount);
+                        float telCount = Game.GetTeleporters().Count + 1f;
+                        float min = 520f / telCount / telCount;
+                        int color = Game.Random.Round(min + telNum * ( 255f - min ) / telCount);
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
                     }
                     g.FillRectangle(brush, RectangleF.Inflate(rect, .5f, .5f));
                 }
 
                 if (spaceObject is Anomaly)
-                    g.FillRectangle(Brushes.White, Inflate(scale, rect, 1, 1, 1, .6f, .13f));
+                {
+                    g.FillRectangle(Brushes.White, Inflate(scale, rect, 1f, 1f, 1f, .6f, .13f));
+                }
+                else
+                {
+                    Ship ship;
+                    Planet planet;
+                    if (( ship = ( spaceObject as Ship ) ) != null)
+                        DrawShip(g, scale, rect, ship, minStr, maxStr);
+                    else if (( planet = ( spaceObject as Planet ) ) != null)
+                        DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
+                }
 
-                Ship ship;
-                Planet planet;
-                if (( planet = ( spaceObject as Planet ) ) != null)
-                    DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
-                else if (( ship = ( spaceObject as Ship ) ) != null)
-                    DrawShip(g, scale, rect, ship, minStr, maxStr);
-
-                if (scale > GridScale || tile == selected || ( isDialog && ValidDialogTile(tile, spaceObject) ))
+                if (scale > GridScale || spaceObject is Planet || tile == selected || ( isDialog && ValidDialogTile(tile, spaceObject) ))
                     DrawBorder(g, tile, spaceObject, rect, scale);
 
                 if (moves != null && scale > TextScale)
@@ -394,7 +421,7 @@ namespace GalWarWin
                         if (showAtt)
                             foreach (Tile neighbor in Tile.GetNeighbors(tile))
                             {
-                                planet = neighbor.SpaceObject as Planet;
+                                Planet planet = neighbor.SpaceObject as Planet;
                                 if (planet != null && planet.Colony != null && !planet.Colony.Player.IsTurn)
                                 {
                                     s = FormatInt(move) + "+";
@@ -409,7 +436,7 @@ namespace GalWarWin
         }
         private static RectangleF GetDrawRect(int x, int y)
         {
-            return new RectangleF(panX + scale * x + ( y % 2 == 0 ? 0 : scale / 2f ), panY + scale * y, scale, scale);
+            return new RectangleF(panX + scale * x + ( y % 2 == 0 ? 0f : scale / 2f ), panY + scale * y, scale, scale);
         }
 
         private Rectangle GetGameBounds()
@@ -427,7 +454,6 @@ namespace GalWarWin
 
         private void DrawBorder(Graphics g, Tile tile, SpaceObject spaceObject, RectangleF rect, float scale)
         {
-            Planet planet = spaceObject as Planet;
             Ship ship = spaceObject as Ship;
 
             float size;
@@ -435,12 +461,12 @@ namespace GalWarWin
                 size = 1f;
             else if (tile == selected)
                 size = 3f;
-            else if (planet != null || ( isDialog ? ValidDialogTile(tile, spaceObject) : ship != null &&
-                    ship.Player.IsTurn && ship.CurSpeed > 0 ))
+            else if (spaceObject is Planet || ( isDialog ? ValidDialogTile(tile, spaceObject) :
+                    ship != null && ship.Player.IsTurn && ship.CurSpeed > 0 ))
                 size = 2f;
             else
                 size = 1f;
-            if (dialogTile != null && tile == dialogTile)
+            if (scale > GridScale && tile == dialogTile)
                 ++size;
 
             if (scale <= GridScale || size != 1f)
