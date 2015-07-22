@@ -288,14 +288,14 @@ namespace GalWarWin
 
                     if (scale > GridScale)
                     {
-                        int capacity = ( ( gameBounds.Width + 4 ) * gameBounds.Height * 2 + 2 ) / 3;
+                        int capacity = ( ( gameBounds.Width + 3 ) * ( gameBounds.Height + 1 ) * 2 ) / 3;
                         List<RectangleF> rects = new List<RectangleF>(capacity);
                         for (int y = gameBounds.Top ; y <= gameBounds.Bottom ; ++y)
                         {
                             //we can skip drawing every 3rd rectangle as a decent optimization
                             int skip = ( y % 2 == 0 ? 1 : 0 );
                             for (int x = gameBounds.Left ; x <= gameBounds.Right ; ++x)
-                                if (++skip == 3 && x != gameBounds.Left && x != gameBounds.Right)
+                                if (++skip == 3 && x != gameBounds.Right)
                                     skip = 0;
                                 else
                                     rects.Add(GetDrawRect(x, y));
@@ -313,7 +313,10 @@ namespace GalWarWin
                         drawTiles.Add(selected);
                     drawTiles.UnionWith(Game.GetTeleporters().SelectMany(teleporter => new[] { teleporter.Item1, teleporter.Item2 }));
                     if (isDialog && dialogTile != null)
+                    {
+                        drawTiles.Add(dialogTile);
                         drawTiles.UnionWith(Tile.GetNeighbors(dialogTile));
+                    }
                     drawTiles.UnionWith(Game.GetSpaceObjects().Select(spaceObject => spaceObject.Tile));
 
                     Dictionary<Tile, float> moves = null;
@@ -325,7 +328,7 @@ namespace GalWarWin
 
                     gameBounds = new Rectangle(gameBounds.X - ( gameBounds.Top % 2 == 0 ? 1 : 0 ), gameBounds.Y,
                             gameBounds.Width + ( gameBounds.Top % 2 == 0 ? 3 : 2 ), gameBounds.Height + 1);
-                    foreach (Tile tile in drawTiles.Distinct())
+                    foreach (Tile tile in drawTiles)
                         DrawObject(g, gameBounds, tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
 
                     Ship selectedShip = GetSelectedShip();
@@ -389,7 +392,7 @@ namespace GalWarWin
                     {
                         float telCount = Game.GetTeleporters().Count + 1f;
                         float min = 520f / telCount / telCount;
-                        int color = Game.Random.Round(min + telNum * ( 255f - min ) / telCount);
+                        int color = (int)( .5f + min + telNum * ( 255f - min ) / telCount );
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
                     }
                     g.FillRectangle(brush, RectangleF.Inflate(rect, .5f, .5f));
@@ -409,8 +412,7 @@ namespace GalWarWin
                         DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
                 }
 
-                if (scale > GridScale || spaceObject is Planet || tile == selected || ( isDialog && ValidDialogTile(tile, spaceObject) ))
-                    DrawBorder(g, tile, spaceObject, rect, scale);
+                DrawBorder(g, tile, spaceObject, rect, scale);
 
                 if (moves != null && scale > TextScale)
                 {
@@ -454,22 +456,17 @@ namespace GalWarWin
 
         private void DrawBorder(Graphics g, Tile tile, SpaceObject spaceObject, RectangleF rect, float scale)
         {
-            Ship ship = spaceObject as Ship;
-
-            float size;
-            if (scale <= GridScale)
-                size = 1f;
-            else if (tile == selected)
+            float size = float.NaN;
+            Ship ship;
+            if (tile == selected || tile == dialogTile)
                 size = 3f;
-            else if (spaceObject is Planet || ( isDialog ? ValidDialogTile(tile, spaceObject) :
-                    ship != null && ship.Player.IsTurn && ship.CurSpeed > 0 ))
+            else if (spaceObject is Planet || ( scale > GridScale && ( ship = ( spaceObject as Ship ) ) != null && ship.Player.IsTurn && ship.CurSpeed > 0 )
+                    || ( isDialog && ValidDialogTile(tile, spaceObject) ))
                 size = 2f;
-            else
-                size = 1f;
-            if (scale > GridScale && tile == dialogTile)
-                ++size;
+            if (scale <= GridScale)
+                size -= 1f;
 
-            if (scale <= GridScale || size != 1f)
+            if (!float.IsNaN(size))
                 using (Pen pen = new Pen(Color.White, size))
                     g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
         }
@@ -514,7 +511,7 @@ namespace GalWarWin
 
         private void DrawShip(Graphics g, float scale, RectangleF rect, Ship ship, float minStr, float maxStr)
         {
-            rect = Inflate(scale, rect, ship.GetStrength() * ship.HP / (float)ship.MaxHP, minStr, maxStr, .666f, .13f);
+            rect = Inflate(scale, rect, (float)ship.GetStrength() * ship.HP / (float)ship.MaxHP, minStr, maxStr, .666f, .13f);
             using (Brush brush = new SolidBrush(ship.Player.Color))
                 g.FillRectangle(brush, rect);
 
@@ -528,7 +525,7 @@ namespace GalWarWin
                 {
                     Pen pen = Pens.Black;
                     if (ship.Player.IsTurn && !ship.HasRepaired && ship.AutoRepair == 0)
-                        pen = new Pen(Color.White, 2);
+                        pen = new Pen(Color.White, 2f);
 
                     PointF endPoint;
                     if (pct < .75f)
@@ -549,21 +546,21 @@ namespace GalWarWin
             }
         }
 
-        private RectangleF Inflate(float scale, RectangleF rect, double value, float min, float max, float smallInvsPct, float inc)
+        private RectangleF Inflate(float scale, RectangleF rect, float value, float min, float max, float smallInvsPct, float inc)
         {
             if (scale <= GridScale)
             {
-                float big = 1 - ( 1 - ( smallInvsPct + inc ) ) / 3f;
+                float big = 1f - ( 1f - ( smallInvsPct + inc ) ) / 3f;
                 if (big > ( scale - 1f ) / scale)
                     big = ( scale - 1f ) / scale;
                 smallInvsPct = .5f + 2f / scale + ( smallInvsPct - .5f ) / 3f;
                 if (smallInvsPct > big)
                     smallInvsPct = big;
                 inc = big - smallInvsPct;
-                if (inc < 0)
-                    inc = 0;
+                if (inc < 0f)
+                    inc = 0f;
             }
-            float inflate = (float)( -scale * ( 1f - ( smallInvsPct + inc * ( ( Math.Sqrt(value) - min + 1 ) / ( max - min + 1 ) ) ) ) );
+            float inflate = ( -scale * ( 1f - ( smallInvsPct + inc * ( ( (float)Math.Sqrt(value) - min + 1f ) / ( max - min + 1f ) ) ) ) );
             rect.Inflate(inflate, inflate);
             if (rect.Width < 1f)
                 rect.Width = 1f;
@@ -1517,7 +1514,7 @@ namespace GalWarWin
                 VerifyScale();
                 selected = Game.GetTile(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
                 Center();
-                double t1 = panX, t2 = panY;
+                float t1 = panX, t2 = panY;
                 SelectTile(Game.Random.SelectValue(anomalies));
                 if (t1 != panX || t2 != panY)
                     ShowAnomalies(anomalies);
