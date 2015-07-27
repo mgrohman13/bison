@@ -22,15 +22,13 @@ namespace SpaceRunner
 
                 GenerateOne();
 
-                int numImages = Game.Random.Round(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond);
+                int numImages = Game.Random.GaussianInt(Game.FuelExplosionTime * Game.GameTick / 1000f * Game.FuelExplosionImagesPerSecond, .026f);
                 Images = new Image[numImages];
 
                 float size = Game.PowerUpSize;
+                float sizeInc = ( Game.FuelExplosionSize - Game.PowerUpSize ) / numImages;
                 for (int idx = 0 ; idx < numImages ; ++idx)
-                {
-                    Images[idx] = Game.LoadImage(Game.Random.SelectValue(generated), size, false);
-                    size += ( Game.FuelExplosionSize - Game.PowerUpSize ) / ( numImages - 1 );
-                }
+                    Images[idx] = Game.LoadImage(Game.Random.SelectValue(generated), size += sizeInc, false);
             }
         }
         private static void GenerateOne()
