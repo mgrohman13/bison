@@ -11,11 +11,12 @@ namespace randTest
 {
     class Program
     {
-        private static readonly MTRandom rand = new MTRandom();
+        private static MTRandom rand = new MTRandom();
 
         public static void Main(string[] args)
         {
             rand.StartTick();
+            //rand = new MTRandom();
 
 
             //Console.BufferHeight *= 2;
@@ -80,45 +81,57 @@ namespace randTest
             //Console.ReadKey(true);
 
 
-            while (rand.Bool(999 / 1000.0))
-            {
-                bool f = rand.Bool();
-                if (f)
-                {
-                    float val = rand.OEFloat();
-                    //float act = (float)Math.Sqrt(val);
-                    Console.WriteLine(val);
-                    float s = sqrt(val);
-                    Console.WriteLine(s);
-                    //if (val != act) 
-                    if (s * s != val)
-                        Console.WriteLine("off");
-                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
-                        Console.WriteLine("Math");
-                }
-                else
-                {
-                    double val = rand.OE();
-                    //double act = Math.Sqrt(val);
-                    Console.WriteLine(val);
-                    double s = sqrt(val);
-                    Console.WriteLine(s);
-                    //if (val != act)
-                    if (s * s != val)
-                        Console.WriteLine("off");
-                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
-                        Console.WriteLine("Math");
-                }
-                Console.WriteLine();
-                //Thread.Sleep(1300);
-            }
+            //while (rand.Bool(999 / 1000.0))
+            //{
+            //    bool f = rand.Bool();
+            //    if (f)
+            //    {
+            //        float val = rand.OEFloat();
+            //        //float act = (float)Math.Sqrt(val);
+            //        Console.WriteLine(val);
+            //        float s = sqrt(val);
+            //        Console.WriteLine(s);
+            //        //if (val != act) 
+            //        if (s * s != val)
+            //            Console.WriteLine("off");
+            //        if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+            //            Console.WriteLine("Math");
+            //    }
+            //    else
+            //    {
+            //        double val = rand.OE();
+            //        //double act = Math.Sqrt(val);
+            //        Console.WriteLine(val);
+            //        double s = sqrt(val);
+            //        Console.WriteLine(s);
+            //        //if (val != act)
+            //        if (s * s != val)
+            //            Console.WriteLine("off");
+            //        if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+            //            Console.WriteLine("Math");
+            //    }
+            //    Console.WriteLine();
+            //    //Thread.Sleep(1300);
+            //}
 
 
 
             //CWMapTest();
             //GenerateTerrain();
 
-            rand.Dispose();
+            //rand = null;
+            //while (true)
+            //{
+            //    Thread.Sleep(1);
+            //    GC.Collect();
+            //}
+
+
+            //for (int a = 0 ; a < 13 ; ++a)
+            //    new MTRandom().StartTick(0);
+
+
+            //rand.Dispose();
             Console.ReadKey();
         }
 
