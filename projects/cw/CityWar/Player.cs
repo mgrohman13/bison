@@ -655,7 +655,7 @@ namespace CityWar
                 int idx = getCTIdx(unit.CostType);
                 if (idx > -1)
                 {
-                    elmDbl[idx] += unit.BaseTotalCost + unit.BasePplCost / 2.0;
+                    elmDbl[idx] += unit.BaseTotalCost + unit.BaseOtherCost / 2.1;
                     ++elmInt[idx];
 
                     double div = Math.Sqrt(unit.BaseTotalCost);
@@ -694,10 +694,16 @@ namespace CityWar
             //the greater the number of units and their cost, the greater the total cost of the portal
             return Math.Pow(totCost * ( numUnits + 1 ), .39);
         }
-        public static int GetPortalElementCost(double percent, double totalCost)
+        public static int GetPortalElementCost(double elemPct, double totalCost)
         {
             //the more population the units cost, the less magic the portal costs
-            return (int)Math.Ceiling(( 1 - ( percent * percent * .666 + .21 ) ) * totalCost);
+            return (int)Math.Ceiling(( 1 - ( elemPct * elemPct * .666 + .21 ) ) * totalCost);
+
+            ////the more population the units cost, the more magic the portal costs
+            //elemPct *= elemPct;
+            //if (elemPct <= .26)
+            //    return 1;
+            //return (int)Math.Ceiling(( 0.65 * ( elemPct - 0.26 ) ) * totalCost);
         }
         private static int getCTIdx(CostType costType)
         {
@@ -1261,7 +1267,7 @@ namespace CityWar
                 else if (( portal = capturable as Portal ) != null)
                 {
                     //avg cost 1000 (700-1502)
-                    //avg roi 17.50 (15.97-19.89)
+                    //avg roi 17.48 (15.97-19.89)
                     int amt = portal.Income;
 
                     int type = 0, position = 0;
@@ -1272,23 +1278,23 @@ namespace CityWar
                             ++type;
                             break;
                         case 2:
-                            ++magic;
+                            ++elemental;
                             break;
                         case 3:
                             ++type;
                             break;
                         case 4:
-                            ++elemental;
+                            ++magic;
                             break;
                         case 5:
                             ++type;
                             break;
                         case 0:
-                            ++magic;
+                            ++elemental;
                             break;
                         }
 
-                    switch (( (Portal)capturable ).Type)
+                    switch (portal.Type)
                     {
                     case CostType.Air:
                         air += type;

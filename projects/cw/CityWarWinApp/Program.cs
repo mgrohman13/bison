@@ -13,9 +13,6 @@ namespace CityWarWinApp
         [STAThread]
         static void Main()
         {
-            //Game g = new Game();
-            //Player p = new Player("dwarf", System.Drawing.Color.FloralWhite, "hi");
-
             //double minC = int.MaxValue, maxC = 0, avgC = 0, minW = int.MaxValue, maxW = 0, avgW = 0;
 
             //int times = 1000000;
@@ -54,12 +51,30 @@ namespace CityWarWinApp
 
             Game.Random.ToString();
 
+            Player p1 = new Player("Dwarf", System.Drawing.Color.FloralWhite, "hi");
+            Player p2 = new Player("Fae", System.Drawing.Color.FloralWhite, "hi");
+            Player p3 = new Player("Human", System.Drawing.Color.FloralWhite, "hi");
+            Game g = new Game(new[] { p1, p2, p3 }, 13);
+
+            PrintCosts(Player.SplitPortalCost(g, "Dwarf"));
+            PrintCosts(Player.SplitPortalCost(g, "Fae"));
+            PrintCosts(Player.SplitPortalCost(g, "Human"));
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             new MainMenu().Show();
             Application.Run();
 
             Game.Random.Dispose();
+        }
+
+        private static void PrintCosts(Dictionary<CostType, int[]> dictionary)
+        {
+            Console.WriteLine("{0} - {1}", dictionary[CostType.Air][0], dictionary[CostType.Air][1]);
+            Console.WriteLine("{0} - {1}", dictionary[CostType.Death][0], dictionary[CostType.Death][1]);
+            Console.WriteLine("{0} - {1}", dictionary[CostType.Earth][0], dictionary[CostType.Earth][1]);
+            Console.WriteLine("{0} - {1}", dictionary[CostType.Nature][0], dictionary[CostType.Nature][1]);
+            Console.WriteLine("{0} - {1}", dictionary[CostType.Water][0], dictionary[CostType.Water][1]);
         }
     }
 }

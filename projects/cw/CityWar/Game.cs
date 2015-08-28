@@ -1233,7 +1233,7 @@ namespace CityWar
                 //account for partially finished units
                 portalAvg = Races.Values.SelectMany(units => units).Select(unit => Unit.CreateTempUnit(this, unit))
                         .Where(unit => unit.CostType != CostType.Production).Sum(unit => unit.BaseTotalCost);
-                portalAvg *= Portal.StartAmt * Portal.ValuePct / (double)Races.Count / 5.0;
+                portalAvg *= .39 * Portal.ValuePct / (double)Races.Count / 5.0;
 
                 portalAvg += Portal.AvgPortalCost;
             }

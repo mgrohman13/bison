@@ -1,6 +1,6 @@
 in between games
 	"security" of public fields
-	swap hydra g/w attacks?  shouldn't need rebalance?
+	swap hydra g/w attacks?  shouldn't need rebalance? but is it best human water v water unit?
 	larger map avg?
 
 balance
@@ -10,11 +10,13 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	SplitPortalCost - see comment
 	get relic when no capt?
 	group move from different hexes
 	teleporters?
 	exp?
 requiring rebalance
+	tough for fae to dump air
 	unit abilities
 	better terrains
 		add new (e.g. hills)?

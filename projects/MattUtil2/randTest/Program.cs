@@ -11,112 +11,22 @@ namespace randTest
 {
     class Program
     {
-        private static MTRandom rand = new MTRandom();
+        static MTRandom rand = new MTRandom();
 
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             rand.StartTick();
-            //rand = new MTRandom();
 
+            //SeedTest();
 
-            //Console.BufferHeight *= 2;
-            //Console.BufferWidth *= 2;
-            //const double AvgSeedSize = 390;
-            //const int max = MTRandom.MAX_SEED_SIZE - 1;
-            //uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
-            //Write(new MTRandom(true, seed));
-            //seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
-            //Write(new MTRandom(true, seed));
+            CWPortalStart();
 
+            //IterateTest();
 
-            //int digits = 6;
-            //int max = int.Parse("".PadLeft(digits, '9'));
-            //string format = "".PadLeft(digits, '0');
-            //double sum = 0;
-            //const int baseCost = 402;
-            //const float StartAmt = .26f, inc = 50.1f;
-            //int upper = (int)Math.Ceiling(baseCost - inc + inc * StartAmt);
-            //int[] val = new int[upper + 1];
-            //for (int x = 0 ; x < max ; ++x)
-            //{
-            //    int l = rand.Round(rand.Weighted(baseCost - inc, StartAmt) + inc * StartAmt);
-            //    sum += l;
-            //    val[l]++;
-            //}
-            //Console.BufferHeight = baseCost + 3;
-            //int runtot = 0;
-            //for (int x = (int)( inc * StartAmt ) ; x <= upper ; ++x)
-            //    Console.WriteLine("{0} - {1} - {3} - {2}", x.ToString("000"), val[x].ToString(format),
-            //            ( ( max - runtot ) / ( 1.0 + upper - x ) ).ToString(format.Substring(0, digits - 2)), ( runtot += val[x] ).ToString(format));
-            //Console.WriteLine();
-            //Console.WriteLine(sum / max);
-            //Console.WriteLine(StartAmt * baseCost);
+            //BinarySearchSqrt();
 
+            //CWMapGen();
 
-            //IEnumerable<int> e = rand.Iterate(3);
-            //ThreadStart func = () =>
-            //{
-            //    int[] r = new int[3];
-            //    for (int a = 0 ; a < 444444 ; ++a)
-            //        lock (e)
-            //            foreach (int i in e)
-            //            {
-            //                r[i]++;
-            //                if (i == 0)
-            //                    break;
-            //            }
-            //    lock (typeof(Program))
-            //    {
-            //        foreach (int c in r)
-            //            Console.WriteLine(c);
-            //        Console.WriteLine();
-            //    }
-            //};
-            //const int tests = 13;
-            //Thread[] threads = new Thread[tests];
-            //for (int a = 0 ; a < tests ; ++a)
-            //    threads[a] = new Thread(func);
-            //for (int a = 0 ; a < tests ; ++a)
-            //    threads[a].Start();
-            //Console.ReadKey(true);
-
-
-            //while (rand.Bool(999 / 1000.0))
-            //{
-            //    bool f = rand.Bool();
-            //    if (f)
-            //    {
-            //        float val = rand.OEFloat();
-            //        //float act = (float)Math.Sqrt(val);
-            //        Console.WriteLine(val);
-            //        float s = sqrt(val);
-            //        Console.WriteLine(s);
-            //        //if (val != act) 
-            //        if (s * s != val)
-            //            Console.WriteLine("off");
-            //        if (Math.Sqrt(val) * Math.Sqrt(val) != val)
-            //            Console.WriteLine("Math");
-            //    }
-            //    else
-            //    {
-            //        double val = rand.OE();
-            //        //double act = Math.Sqrt(val);
-            //        Console.WriteLine(val);
-            //        double s = sqrt(val);
-            //        Console.WriteLine(s);
-            //        //if (val != act)
-            //        if (s * s != val)
-            //            Console.WriteLine("off");
-            //        if (Math.Sqrt(val) * Math.Sqrt(val) != val)
-            //            Console.WriteLine("Math");
-            //    }
-            //    Console.WriteLine();
-            //    //Thread.Sleep(1300);
-            //}
-
-
-
-            //CWMapTest();
             //GenerateTerrain();
 
             //rand = null;
@@ -125,31 +35,199 @@ namespace randTest
             //    Thread.Sleep(1);
             //    GC.Collect();
             //}
-
-
             //for (int a = 0 ; a < 13 ; ++a)
             //    new MTRandom().StartTick(0);
 
-
-            //rand.Dispose();
-            Console.ReadKey();
+            Console.ReadKey(true);
         }
 
-        static float sqrt(float n)
+        #region SeedTest
+        //static void SeedTest()
+        //{
+        //    Console.BufferHeight *= 2;
+        //    Console.BufferWidth *= 2;
+        //    const double AvgSeedSize = 520;
+        //    const int max = MTRandom.MAX_SEED_SIZE - 1;
+        //    uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
+        //    Write(new MTRandom(true, seed));
+        //    seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
+        //    Write(new MTRandom(true, seed));
+        //}
+        //static void Write(MTRandom rand)
+        //{
+        //    Console.WriteLine("seed:");
+        //    foreach (uint seed in rand.Seed)
+        //        Write(seed);
+        //    Console.WriteLine();
+        //    Console.WriteLine();
+        //    Console.WriteLine("state:");
+        //    Write(rand.lcgn);
+        //    Write(rand.lfsr);
+        //    Write(rand.mwc1);
+        //    Write(rand.mwc2);
+        //    Console.WriteLine();
+        //    foreach (uint v in rand.m)
+        //        Write(v);
+        //    Console.WriteLine();
+        //    Console.WriteLine();
+        //}
+        static void Write(uint seed)
         {
-            return (float)sqrt(n, true);
+            Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
         }
-        static double sqrt(double n)
+        #endregion //SeedTest
+
+        #region CWPortalStart
+        static void CWPortalStart()
         {
-            return sqrt(n, false);
+            Console.BufferHeight = 6500;
+            CWPortalStart(077, 059.0177976546929, "Zombies"); //        1
+            CWPortalStart(081, 077.1171385555153, "Golem"); //          2
+            CWPortalStart(129, 077.1171385555153, "Bats"); //           3
+            CWPortalStart(137, 066.4231558922337, "Gryphon"); //        4
+            CWPortalStart(137, 053.5436012924079, "Pyroraptor"); //     5
+            CWPortalStart(150, 100.4116741003120, "Shield"); //         6
+            CWPortalStart(156, 067.6899674689582, "Fanglers"); //       7
+            CWPortalStart(190, 063.9845569584666, "Giant"); //          8
+            CWPortalStart(202, 067.6899674689582, "Salamander"); //     9
+            CWPortalStart(219, 073.2961632985778, "Dryads"); //        10
+            CWPortalStart(222, 100.4116741003120, "Roc"); //           11
+            CWPortalStart(226, 063.9845569584666, "Scorpion"); //      12
+            CWPortalStart(232, 073.2961632985778, "Unicorn"); //       13
+            CWPortalStart(242, 073.2961632985778, "Treant"); //        14
+            CWPortalStart(283, 041.9128572788207, "Wyrm"); //          15
+            CWPortalStart(301, 067.6899674689582, "Leviathan"); //     16
+            CWPortalStart(317, 077.1171385555153, "Troll"); //         17
+            CWPortalStart(320, 043.4823892578576, "Wraith"); //        18
+            CWPortalStart(321, 040.2159889856090, "Kraken"); //        19
+            CWPortalStart(356, 059.0177976546929, "Behemoth"); //      20
+            CWPortalStart(368, 037.2169472931034, "Wind Sprite"); //   21
+            CWPortalStart(374, 100.4116741003120, "Pegasi"); //        22
+            CWPortalStart(393, 066.4231558922337, "Wyverns"); //       23
+            CWPortalStart(402, 050.1118884368771, "Hydra"); //         24
+            CWPortalStart(403, 065.8706680810215, "Daemon"); //        25
+            CWPortalStart(408, 065.8706680810215, "Spirit"); //        26
+            CWPortalStart(435, 053.5436012924079, "Elemental"); //     27
+            CWPortalStart(560, 054.5983483459748, "Dragon"); //        28
         }
-        static double sqrt(double n, bool isFloat)
+
+        static void CWPortalStart(int baseUnitCost, double portalTurnInc, string name)
+        {
+            const int digits = 6;
+            int max = int.Parse("".PadLeft(digits, '9'));
+            string format = "".PadLeft(digits, '0');
+            double sum = 0;
+            const double StartAmt = .26;
+            int upper = (int)Math.Ceiling(baseUnitCost - portalTurnInc + portalTurnInc * StartAmt);
+            int[] val = new int[upper + 1];
+            for (int x = 0 ; x < max ; ++x)
+            {
+                int l = rand.Round(rand.Weighted(baseUnitCost - portalTurnInc, StartAmt) + portalTurnInc * StartAmt);
+                sum += l;
+                val[l]++;
+            }
+            //Console.BufferHeight = baseUnitCost + 3;
+            int runtot = 0;
+
+            Console.WriteLine("{0} - {1} - {2}", name, sum / max, StartAmt * baseUnitCost);
+            Console.WriteLine();
+            for (int x = (int)( portalTurnInc * StartAmt ) ; x <= upper ; ++x)
+                Console.WriteLine("{0} - {1} - {3}", x.ToString("000"), val[x].ToString(format),
+                        ( ( max - runtot ) / ( 1.0 + upper - x ) ).ToString(format), ( runtot += val[x] ).ToString(format));
+            Console.WriteLine();
+            Console.WriteLine(baseUnitCost);
+            Console.WriteLine();
+            Console.WriteLine();
+        }
+        #endregion //CWPortalStart
+
+        #region IterateTest
+        static void IterateTest()
+        {
+            const int count = 4;
+            IEnumerable<int> e = rand.Iterate(count);
+            ThreadStart func = () =>
+            {
+                int[] r = new int[count];
+                for (int a = 0 ; a < 222222 ; ++a)
+                    lock (e)
+                        foreach (int i in e)
+                        {
+                            if (i == 0)
+                            {
+                                if (rand.Bool())
+                                    r[i]++;
+                                break;
+                            }
+                            r[i]++;
+                        }
+                lock (typeof(Program))
+                {
+                    foreach (int c in r)
+                        Console.WriteLine(c);
+                    Console.WriteLine();
+                }
+            };
+            const int tests = 13;
+            Thread[] threads = new Thread[tests];
+            for (int a = 0 ; a < tests ; ++a)
+                threads[a] = new Thread(func);
+            for (int a = 0 ; a < tests ; ++a)
+                threads[a].Start();
+        }
+        #endregion //IterateTest
+
+        #region BinarySearchSqrt
+        static void BinarySearchSqrt()
+        {
+            do
+            {
+                bool f = rand.Bool();
+                if (f)
+                {
+                    float val = rand.OEFloat();
+                    //float act = (float)Math.Sqrt(val);
+                    Console.WriteLine(val);
+                    float s = BinarySearchSqrt(val);
+                    Console.WriteLine(s);
+                    Console.WriteLine(Math.Sqrt(val));
+                    //if (val != act) 
+                    if (s * s != val)
+                        Console.WriteLine("off");
+                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+                        Console.WriteLine("Math");
+                }
+                else
+                {
+                    double val = rand.OE();
+                    //double act = Math.Sqrt(val);
+                    Console.WriteLine(val);
+                    double s = BinarySearchSqrt(val);
+                    Console.WriteLine(s);
+                    Console.WriteLine(Math.Sqrt(val));
+                    //if (val != act)
+                    if (s * s != val)
+                        Console.WriteLine("off");
+                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+                        Console.WriteLine("Math");
+                }
+                Console.WriteLine();
+                Thread.Sleep(3900);
+            } while (rand.Bool(999 / 1000.0));
+        }
+        static float BinarySearchSqrt(float n)
+        {
+            return (float)BinarySearchSqrt(n, true);
+        }
+        static double BinarySearchSqrt(double n)
+        {
+            return BinarySearchSqrt(n, false);
+        }
+        static double BinarySearchSqrt(double n, bool isFloat)
         {
             if (n < 0)
                 throw new ArgumentOutOfRangeException();
-
             int count = 0;
-
             double min, max;
             if (n < 1)
             {
@@ -164,9 +242,7 @@ namespace randTest
             double val;
             while (true)
             {
-
                 ++count;
-
                 val = ( min + max ) / 2.0;
                 if (isFloat ? ( (float)val == (float)min || (float)val == (float)max ) : ( val == min || val == max ))
                 {
@@ -187,37 +263,13 @@ namespace randTest
                 else
                     max = val;
             }
-
             Console.WriteLine(count);
-
             return val;
         }
+        #endregion //BinarySearchSqrt
 
-        //private static void Write(MTRandom rand)
-        //{
-        //    Console.WriteLine("seed:");
-        //    foreach (uint seed in rand.Seed)
-        //        Write(seed);
-        //    Console.WriteLine();
-        //    Console.WriteLine();
-        //    Console.WriteLine("state:");
-        //    Write(rand.lcgn);
-        //    Write(rand.lfsr);
-        //    Write(rand.mwc1);
-        //    Write(rand.mwc2);
-        //    Console.WriteLine();
-        //    foreach (uint v in rand.m)
-        //        Write(v);
-        //    Console.WriteLine();
-        //    Console.WriteLine();
-        //}
-        //private static void Write(uint seed)
-        //{
-        //    Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
-        //}
-
-        #region CityWar map
-        private static void CWMapTest()
+        #region CWMapGen
+        static void CWMapGen()
         {
             int width = 18, height = 18;
             Console.WindowHeight = height * 2 + 3;
@@ -322,11 +374,10 @@ namespace randTest
             else
                 return map[x, y];
         }
-        #endregion //CityWar map
+        #endregion //CWMapGen
 
-        #region terrain
-
-        private static void GenerateTerrain()
+        #region GenerateTerrain
+        static void GenerateTerrain()
         {
             do
             {
@@ -379,7 +430,7 @@ namespace randTest
             } while (Console.ReadKey(true).Key != ConsoleKey.Q);
         }
 
-        private static void DrawTerrain(float height, float temp, float rain)
+        static void DrawTerrain(float height, float temp, float rain)
         {
             if (height > .39 && height < .5)
             {
@@ -397,7 +448,14 @@ namespace randTest
             temp *= 500;
             rain *= temp;
 
-            if (temp < 39)
+            if (height > .87)
+                if (height % .02f < ( height - .87f ) / 5f && height < .98)
+                    Console.BackgroundColor = ConsoleColor.DarkGray; // mountain
+                else if (temp < 6 || height > .98)
+                    Console.BackgroundColor = ConsoleColor.White; // glacier 
+                else
+                    Console.BackgroundColor = ConsoleColor.Gray; // alpine tundra
+            else if (temp < 6)
                 Console.BackgroundColor = ConsoleColor.White; // glacier
             else if (height < .169)
                 Console.BackgroundColor = ConsoleColor.DarkBlue; // deep sea
@@ -405,11 +463,6 @@ namespace randTest
                 Console.BackgroundColor = ConsoleColor.Blue; // sea
             else if (height > .97)
                 Console.BackgroundColor = ConsoleColor.White; // alpine glacier
-            else if (height > .87)
-                if (height % .02f < ( height - .87f ) / 5f)
-                    Console.BackgroundColor = ConsoleColor.DarkGray; // mountain
-                else
-                    Console.BackgroundColor = ConsoleColor.Gray; // alpine tundra
             else if (( temp > 100 ) && ( ( rain < ( temp - 100 ) * ( temp - 100 ) / 1000f ) ))
                 if (rain < temp - 313)
                     Console.BackgroundColor = ConsoleColor.Red; // sub. desert
@@ -435,19 +488,20 @@ namespace randTest
             Console.Write(' ');
         }
 
-        private static float DoStat(int width, int height, Terrain[,] res, Terrain.GetStat Get, Terrain.SetStat Set)
+        static float DoStat(int width, int height, Terrain[,] res, Terrain.GetStat Get, Terrain.SetStat Set)
         {
-            float cur = 1, frq = 1.95f, amp = 1.3f;
+            float cur = 1, frq = 1.95f, amp = 1.5f;
             Dictionary<Point, float> points = new Dictionary<Point, float>();
-            for (int dim = rand.Round(res.Length / frq) ; dim >= 3 ; dim = rand.GaussianInt(dim / frq, .03f))
+            //int lim = rand.Round(Math.Sqrt(width * height / 1300.0));
+            for (int dim = rand.Round(res.Length / frq) ; dim >= 2 ; dim = rand.GaussianInt(dim / frq, .03f))
             {
-                cur *= rand.GaussianInt(amp, .03f);
+                cur *= rand.Gaussian(amp, .03f);
 
                 points.Clear();
                 for (int a = 0 ; a < dim ; ++a)
                     points[new Point(rand.Next(width), rand.Next(height))] = rand.DoubleHalf(cur);
-                if (points.Count < 2 + rand.OEInt())
-                    break;
+                if (points.Count < rand.OEInt())
+                    continue;
 
                 for (int y = 0 ; y < height ; ++y)
                     for (int x = 0 ; x < width ; ++x)
@@ -485,6 +539,8 @@ namespace randTest
                     Set(res[x, y], Get(res[x, y]) + rand.GaussianFloat());
                 sort.Add(Get(res[x, y]), p);
             }
+            sort.First();
+            sort.Last();
             int v1 = 0;
             float div = res.Length - 1;
             foreach (Point value in sort.Values)
@@ -492,9 +548,9 @@ namespace randTest
             return cur;
         }
 
-        private class Terrain
+        class Terrain
         {
-            private float height, temp, rain;
+            public float height, temp, rain;
 
             public Terrain()
             {
@@ -521,7 +577,6 @@ namespace randTest
             {
                 tile.temp = stat;
             }
-
             public static float GetRain(Terrain tile)
             {
                 return tile.rain;
@@ -531,7 +586,6 @@ namespace randTest
                 tile.rain = stat;
             }
         }
-
-        #endregion //terrain
+        #endregion //GenerateTerrain
     }
 }

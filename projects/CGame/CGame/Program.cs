@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using MattUtil;
 
 namespace CGame
 {
@@ -25,8 +27,9 @@ namespace CGame
         const char BulletVertical = (char)9474;
         const char BulletHorizontal = (char)9472;
         const char Wall = (char)9608;
+        const char Path = '.';
 
-        static MattUtil.MTRandom Random;
+        static MTRandom Random;
 
         //game parameters, constant throughout a single game
         static int Height;			    //playing area height
@@ -109,7 +112,7 @@ namespace CGame
 
         static void Main(string[] args)
         {
-            Random = new MattUtil.MTRandom();
+            Random = new MTRandom();
             Random.StartTick();
 
             enemies = new HashSet<Point>();
@@ -124,6 +127,8 @@ namespace CGame
                     if (-1 == goalX)
                         PlaceGoal();
 
+
+                    PathFind();
                     DrawMap();
 
                     char[,] dataOld = (char[,])map.Clone();
@@ -303,6 +308,103 @@ input:
             Point p = RandomPoint(Goal);
             goalX = p.x;
             goalY = p.y;
+        }
+
+        static void PathFind()
+        {
+            Tile[,] map = new Tile[Width, Height];
+            for (int x = 0 ; x < Width ; ++x)
+                for (int y = 0 ; y < Height ; ++y)
+                {
+                    if (PointIs(x, y, Path))
+                        SetPoint(x, y, Empty);
+                    map[x, y] = new Tile(x, y);
+                }
+
+            Tile from = map[playerX, playerY], to = map[goalX, goalY];
+            var path = TBSUtil.PathFind<Tile>(Random, from, to, tile =>
+            {
+                List<Tile> neighbors = new List<Tile>();
+                for (int x = -1 ; tile.point.x + x >= 0 ; --x)
+                {
+                    int y = 0;
+                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
+                        break;
+                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
+                }
+                for (int y = -1 ; tile.point.y + y >= 0 ; --y)
+                {
+                    int x = 0;
+                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
+                        break;
+                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
+                }
+                for (int x = 1 ; tile.point.x + x < Width ; ++x)
+                {
+                    int y = 0;
+                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
+                        break;
+                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
+                }
+                for (int y = 1 ; tile.point.y + y < Height ; ++y)
+                {
+                    int x = 0;
+                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
+                        break;
+                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
+                }
+                return neighbors.Select(n => new Tuple<Tile, int>(n, 1));
+            }, (m1, m2) =>
+            {
+                if (m1.point.x == m2.point.x || m1.point.y == m2.point.y)
+                    return 1;
+                return 2;
+            });
+            Tile last = from;
+            foreach (Tile tile in path)
+            {
+                if (last.point.x == tile.point.x)
+                    for (int y = Math.Min(last.point.y, tile.point.y) ; y <= Math.Max(last.point.y, tile.point.y) ; ++y)
+                        if (PointIs(tile.point.x, y, Empty))
+                            SetPoint(tile.point.x, y, Path);
+                if (last.point.y == tile.point.y)
+                    for (int x = Math.Min(last.point.x, tile.point.x) ; x <= Math.Max(last.point.x, tile.point.x) ; ++x)
+                        if (PointIs(x, tile.point.y, Empty))
+                            SetPoint(x, tile.point.y, Path);
+                last = tile;
+            }
+        }
+        class Tile
+        {
+            public Point point;
+            public Tile(int x, int y)
+            {
+                this.point = new Point(x, y);
+            }
+            public Tile(Point point)
+            {
+                this.point = point;
+            }
+            public override bool Equals(object obj)
+            {
+                return point.Equals(( (Tile)obj ).point);
+            }
+            public static bool operator ==(Tile t1, Tile t2)
+            {
+                return t1.Equals(t2);
+            }
+            public static bool operator !=(Tile t1, Tile t2)
+            {
+                return !( t1.Equals(t2) );
+            }
+            public override int GetHashCode()
+            {
+                return point.GetHashCode();
+            }
+            public override string ToString()
+            {
+                return point.ToString();
+            }
         }
 
         static void DrawMap()
@@ -788,7 +890,10 @@ actualmove:
 
         static bool PointIs(int x, int y, char type)
         {
-            return ( GetPoint(x, y) == type );
+            bool retVal = ( GetPoint(x, y) == type );
+            if (!retVal && type == Empty)
+                retVal = ( GetPoint(x, y) == Path );
+            return retVal;
         }
 
         static char GetPoint(Point point)
