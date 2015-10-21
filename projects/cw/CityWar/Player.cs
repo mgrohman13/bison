@@ -87,7 +87,7 @@ namespace CityWar
             else
             {
                 int maxRelic = Math.Min(Game.Random.Round(RelicCost * .78), RelicCost + relicOffset - relic - 1);
-                int numTypes = Game.Random.RangeInt(3, 4);
+                int numTypes = Game.Random.GaussianCappedInt(3.5, .21, 2);
                 int[] elementals = AddStartResources(390, ref _relic, RelicCost - maxRelic, maxRelic, numTypes);
 
                 Action<int>[] typeFuncs = new Action<int>[] {
@@ -696,14 +696,15 @@ namespace CityWar
         }
         public static int GetPortalElementCost(double elemPct, double totalCost)
         {
-            //the more population the units cost, the less magic the portal costs
-            return (int)Math.Ceiling(( 1 - ( elemPct * elemPct * .666 + .21 ) ) * totalCost);
+            ////the more population the units cost, the less magic the portal costs
+            //return (int)Math.Ceiling(( 1 - ( elemPct * elemPct * .666 + .21 ) ) * totalCost);
 
-            ////the more population the units cost, the more magic the portal costs
-            //elemPct *= elemPct;
-            //if (elemPct <= .26)
-            //    return 1;
-            //return (int)Math.Ceiling(( 0.65 * ( elemPct - 0.26 ) ) * totalCost);
+            //the more population the units cost, the more magic the portal costs
+            elemPct *= elemPct;
+            if (elemPct <= .26)
+                return 1;
+            elemPct = ( 0.65 * ( elemPct - 0.26 ) );
+            return (int)Math.Ceiling(elemPct * totalCost);
         }
         private static int getCTIdx(CostType costType)
         {
@@ -1244,7 +1245,7 @@ namespace CityWar
                     //rest: +10 (roi 32.50)
                     //find: +50
 
-                    //88.77% collection needed for average portal roi (52.67% for relic)
+                    //88.01% collection needed for average portal roi (52.67% for relic)
                 }
                 else if (capturable is City)
                 {
@@ -1266,8 +1267,8 @@ namespace CityWar
                 }
                 else if (( portal = capturable as Portal ) != null)
                 {
-                    //avg cost 1000 (700-1502)
-                    //avg roi 17.48 (15.97-19.89)
+                    //avg cost 1000 (673-1461)
+                    //avg roi 17.57 (15.64-19.51)
                     int amt = portal.Income;
 
                     int type = 0, position = 0;
