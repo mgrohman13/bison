@@ -100,7 +100,7 @@ namespace CityWar
                 foreach (int type in Game.Random.Iterate(typeFuncs.Length).Take(numTypes - 1))
                     typeFuncs[type](elementals[idx++]);
 
-                int pop = Game.Random.WeightedInt(elementals[idx], .65);
+                int pop = Game.Random.WeightedInt(elementals[idx], .78);
                 this.population += pop;
                 this.death += elementals[idx] - pop;
 
