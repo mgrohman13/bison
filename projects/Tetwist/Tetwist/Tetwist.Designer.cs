@@ -207,7 +207,6 @@ namespace Tetwist
             this.Controls.Add(this.panel);
             this.Controls.Add(this.menuStrip);
             this.Name = "Tetwist";
-            this.Text = "Tetwist";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Tetwist_FormClosed);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Tetwist_KeyDown);
             this.menuStrip.ResumeLayout(false);

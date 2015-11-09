@@ -17,6 +17,24 @@ namespace randTest
         {
             rand.StartTick();
 
+            //float f1 = rand.OEFloat();
+            //float f2 = rand.OEFloat();
+            //Console.WriteLine(f1);
+            //Console.WriteLine(f2);
+            //Console.WriteLine(f1 * f2);
+            //Console.ReadKey(true);
+            //while (true)
+            //{
+            //    float mult = 1f + ( ( rand.FloatFull() - 1f ) / ( 1 << 23 ) );
+            //    float f3 = f1 * mult;
+            //    mult = 1f + ( ( rand.FloatFull() - 1f ) / ( 1 << 23 ) );
+            //    float f4 = f2 * mult;
+            //    Console.WriteLine(f3 * f4);
+            //    Console.ReadKey(true);
+            //}
+
+            //TickTest();
+
             //SeedTest();
 
             CWPortalStart();
@@ -40,6 +58,53 @@ namespace randTest
 
             Console.ReadKey(true);
         }
+
+        #region TickTest
+        private static void TickTest()
+        {
+            const double AvgSeedSize = 520;
+            const int max = MTRandom.MAX_SEED_SIZE - 1;
+            uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
+            ParameterizedThreadStart func = (object param) =>
+            {
+                MTRandom r;
+                lock (typeof(Program))
+                    r = (MTRandom)param;
+                for (int a = 0 ; a < 3 ; ++a)
+                {
+                    Console.WriteLine(r.OEFloat());
+                    Thread.Sleep(3);
+                }
+            };
+            Thread[] threads = new Thread[2];
+            threads[0] = new Thread(func);
+            threads[1] = new Thread(func);
+            MTRandom r1 = new MTRandom(seed);
+            MTRandom r2 = new MTRandom(seed);
+            lock (typeof(Program))
+            {
+                threads[0].Start(r1);
+                threads[1].Start(r2);
+            }
+            while (true)
+            {
+                Console.ReadKey(true);
+                Console.WriteLine();
+                Console.WriteLine();
+                threads[0] = new Thread(func);
+                threads[1] = new Thread(func);
+                r1 = new MTRandom(seed);
+                r2 = new MTRandom(seed);
+                lock (typeof(Program))
+                {
+                    threads[0].Start(r2);
+                    threads[1].Start(r1);
+                    r1.StartTick();
+                    r2.StartTick();
+                }
+            }
+        }
+        #endregion //TickTest
 
         #region SeedTest
         //static void SeedTest()
@@ -81,34 +146,41 @@ namespace randTest
         static void CWPortalStart()
         {
             Console.BufferHeight = 6500;
-            CWPortalStart(077, 059.0177976546929, "Zombies"); //        1
-            CWPortalStart(081, 077.1171385555153, "Golem"); //          2
-            CWPortalStart(129, 077.1171385555153, "Bats"); //           3
-            CWPortalStart(137, 066.4231558922337, "Gryphon"); //        4
-            CWPortalStart(137, 053.5436012924079, "Pyroraptor"); //     5
-            CWPortalStart(150, 100.4116741003120, "Shield"); //         6
-            CWPortalStart(156, 067.6899674689582, "Fanglers"); //       7
-            CWPortalStart(190, 063.9845569584666, "Giant"); //          8
-            CWPortalStart(202, 067.6899674689582, "Salamander"); //     9
-            CWPortalStart(219, 073.2961632985778, "Dryads"); //        10
-            CWPortalStart(222, 100.4116741003120, "Roc"); //           11
-            CWPortalStart(226, 063.9845569584666, "Scorpion"); //      12
-            CWPortalStart(232, 073.2961632985778, "Unicorn"); //       13
-            CWPortalStart(242, 073.2961632985778, "Treant"); //        14
-            CWPortalStart(283, 041.9128572788207, "Wyrm"); //          15
-            CWPortalStart(301, 067.6899674689582, "Leviathan"); //     16
-            CWPortalStart(317, 077.1171385555153, "Troll"); //         17
-            CWPortalStart(320, 043.4823892578576, "Wraith"); //        18
-            CWPortalStart(321, 040.2159889856090, "Kraken"); //        19
-            CWPortalStart(356, 059.0177976546929, "Behemoth"); //      20
-            CWPortalStart(368, 037.2169472931034, "Wind Sprite"); //   21
-            CWPortalStart(374, 100.4116741003120, "Pegasi"); //        22
-            CWPortalStart(393, 066.4231558922337, "Wyverns"); //       23
-            CWPortalStart(402, 050.1118884368771, "Hydra"); //         24
-            CWPortalStart(403, 065.8706680810215, "Daemon"); //        25
-            CWPortalStart(408, 065.8706680810215, "Spirit"); //        26
-            CWPortalStart(435, 053.5436012924079, "Elemental"); //     27
-            CWPortalStart(560, 054.5983483459748, "Dragon"); //        28
+
+            Action[] actions = new Action[]
+            {
+                () => CWPortalStart(077, 059.0177976546929, "Zombies"), //      1
+                () => CWPortalStart(081, 077.1171385555153, "Golem"), //        2
+                () => CWPortalStart(129, 077.1171385555153, "Bats"), //         3
+                () => CWPortalStart(137, 066.4231558922337, "Gryphon"), //      4
+                () => CWPortalStart(137, 053.5436012924079, "Pyroraptor"), //   5
+                () => CWPortalStart(150, 100.4116741003120, "Shield"), //       6
+                () => CWPortalStart(156, 067.6899674689582, "Fanglers"), //     7
+                () => CWPortalStart(190, 063.9845569584666, "Giant"), //        8
+                () => CWPortalStart(202, 067.6899674689582, "Salamander"), //   9
+                () => CWPortalStart(219, 073.2961632985778, "Dryads"), //      10
+                () => CWPortalStart(222, 100.4116741003120, "Roc"), //         11
+                () => CWPortalStart(226, 063.9845569584666, "Scorpion"), //    12
+                () => CWPortalStart(232, 073.2961632985778, "Unicorn"), //     13
+                () => CWPortalStart(242, 073.2961632985778, "Treant"), //      14
+                () => CWPortalStart(283, 041.9128572788207, "Wyrm"), //        15
+                () => CWPortalStart(301, 067.6899674689582, "Leviathan"), //   16
+                () => CWPortalStart(317, 077.1171385555153, "Troll"), //       17
+                () => CWPortalStart(320, 043.4823892578576, "Wraith"), //      18
+                () => CWPortalStart(321, 040.2159889856090, "Kraken"), //      19
+                () => CWPortalStart(356, 059.0177976546929, "Behemoth"), //    20
+                () => CWPortalStart(368, 037.2169472931034, "Wind Sprite"), // 21
+                () => CWPortalStart(374, 100.4116741003120, "Pegasi"), //      22
+                () => CWPortalStart(393, 066.4231558922337, "Wyverns"), //     23
+                () => CWPortalStart(402, 050.1118884368771, "Hydra"), //       24
+                () => CWPortalStart(403, 065.8706680810215, "Daemon"), //      25
+                () => CWPortalStart(408, 065.8706680810215, "Spirit"), //      26
+                () => CWPortalStart(435, 053.5436012924079, "Elemental"), //   27
+                () => CWPortalStart(560, 054.5983483459748, "Dragon"), //      28
+            };
+
+            foreach (Action action in rand.Iterate(actions))
+                action();
         }
 
         static void CWPortalStart(int baseUnitCost, double portalTurnInc, string name)
@@ -493,7 +565,7 @@ namespace randTest
             float cur = 1, frq = 1.95f, amp = 1.5f;
             Dictionary<Point, float> points = new Dictionary<Point, float>();
             //int lim = rand.Round(Math.Sqrt(width * height / 1300.0));
-            for (int dim = rand.Round(res.Length / frq) ; dim >= 2 ; dim = rand.GaussianInt(dim / frq, .03f))
+            for (int dim = rand.Round(res.Length / frq) ; dim > 2 ; dim = rand.GaussianInt(dim / frq, .03f))
             {
                 cur *= rand.Gaussian(amp, .03f);
 
