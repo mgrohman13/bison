@@ -18,7 +18,7 @@ namespace RandomWalk
         }
 
         private double x, y;
-        private int interval;
+        private double interval;
         private Thread thread;
         private Action Invalidate;
         private List<PointD> points;
@@ -43,7 +43,7 @@ namespace RandomWalk
             get;
             set;
         }
-        public int Interval
+        public double Interval
         {
             get
             {
@@ -75,7 +75,7 @@ namespace RandomWalk
             }
         }
 
-        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double deviation, int interval, double intDevPct, double intOePct)
+        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double deviation, double interval, double intDevPct, double intOePct)
         {
             Console.WriteLine("color:{0} size:{1} singleDimension:{2} deviation:{3} interval:{4} IntDevPct:{5} IntOePct:{6}",
                     color, size, singleDimension, deviation, interval, intDevPct, intOePct);

@@ -16,26 +16,54 @@ namespace RandomWalk
 
         public ViewForm()
         {
-            InitializeComponent();
-            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
+            this.SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.UserPaint, true);
+            this.BackColor = Color.Transparent;
+
+            this.InitializeComponent();
+
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.TransparencyKey = this.BackColor;
+            this.Bounds = Screen.GetBounds(this);
 
             this.walks = new List<Walk>();
+            this.Reset();
+        }
+
+        private void Reset()
+        {
+            foreach (Walk walk in walks)
+                walk.Stop();
+
+            walks.Clear();
             int num = Walk.rand.Round(1.3 + Walk.rand.GaussianOE(2.6, .169, .21));
             for (int a = 0 ; a < num ; ++a)
-                walks.Add(new Walk(this.Invalidate, Color.FromArgb(Walk.rand.Next(256), Walk.rand.Next(256), Walk.rand.Next(256)),
-                        1 + Walk.rand.GaussianOEInt(1.3, .13, .13), Walk.rand.Bool(), Walk.rand.OE(), Walk.rand.OEInt(650), Walk.rand.Weighted(.21), Walk.rand.Weighted(.091)));
+                walks.Add(new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39),
+                        Walk.rand.Bool(), Walk.rand.OE(), Walk.rand.OE(650), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13)));
 
             foreach (Walk walk in walks)
                 walk.Start();
         }
 
+        private static Color RandomColor()
+        {
+            return Color.FromArgb(Walk.rand.Next(256), Walk.rand.Next(256), Walk.rand.Next(256));
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                // Activate double buffering at the form level.  All child controls will be double buffered as well.
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x02000000;   // WS_EX_COMPOSITED
+                return cp;
+            }
+        }
         protected override void OnPaint(PaintEventArgs e)
         {
             try
             {
-                base.OnPaint(e);
-
-                double minX = -1, minY = 1, maxX = -1, maxY = 1;
+                double minX = -13, minY = -13, maxX = 13, maxY = 13;
                 foreach (PointD point in walks.SelectMany(walk => walk.Points))
                 {
                     minX = Math.Min(minX, point.X);
@@ -61,6 +89,16 @@ namespace RandomWalk
                 Console.WriteLine(exception.StackTrace);
                 Console.WriteLine();
             }
+        }
+
+        private void ViewForm_Click(object sender, EventArgs e)
+        {
+            Reset();
+        }
+
+        private void ViewForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Close();
         }
     }
 }
