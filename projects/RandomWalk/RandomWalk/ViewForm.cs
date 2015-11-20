@@ -16,14 +16,21 @@ namespace RandomWalk
 
         public ViewForm()
         {
-            this.SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.UserPaint, true);
+            ControlStyles flag = ControlStyles.SupportsTransparentBackColor | ControlStyles.UserPaint;
+            if (Environment.OSVersion.Version.Major != 5 || Environment.OSVersion.Version.Minor != 1)
+                flag |= ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint;
+            this.SetStyle(flag, true);
             this.BackColor = Color.Transparent;
 
             this.InitializeComponent();
 
             this.FormBorderStyle = FormBorderStyle.None;
             this.TransparencyKey = this.BackColor;
-            this.Bounds = Screen.GetBounds(this);
+
+            Rectangle rect = new Rectangle(0, 0, 0, 0);
+            foreach (Screen screen in Screen.AllScreens)
+                rect = Rectangle.Union(rect, screen.Bounds);
+            this.Bounds = rect;
 
             this.walks = new List<Walk>();
             this.Reset();
