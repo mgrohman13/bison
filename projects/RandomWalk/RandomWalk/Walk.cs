@@ -77,8 +77,15 @@ namespace RandomWalk
 
         public Walk(Action Invalidate, Color color, int size, bool singleDimension, double deviation, double interval, double intDevPct, double intOePct)
         {
-            Console.WriteLine("color:{0} size:{1} singleDimension:{2} deviation:{3} interval:{4} IntDevPct:{5} IntOePct:{6}",
+            string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\tdeviation:{3}\tinterval:{4}\tIntDevPct:{5}\tIntOePct:{6}",
                     color, size, singleDimension, deviation, interval, intDevPct, intOePct);
+            Console.WriteLine(info);
+            string today = DateTime.Now.ToString().Replace('/', '_').Replace(":", "_");
+            using (var fileStream = new System.IO.StreamWriter("walks_" + today + ".txt", true))
+            {
+                fileStream.WriteLine(info);
+                fileStream.Flush();
+            }
 
             this.Color = color;
             this.Size = size;
