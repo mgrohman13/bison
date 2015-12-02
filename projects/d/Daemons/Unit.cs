@@ -475,7 +475,7 @@ namespace Daemons
 
         public static void Fire(IEnumerable<Unit> move, Tile target)
         {
-            move = move.OrderByDescending(unit => unit.tile.GetDamage(unit));
+            move = move.Where(unit => unit.Type == UnitType.Archer && unit.movement > 0).OrderByDescending(unit => unit.tile.GetDamage(unit));
 
             int arrows = target.Game.GetCurrentPlayer().Arrows;
             if (move.FirstOrDefault() != null && move.FirstOrDefault().tile.IsCornerNeighbor(target))

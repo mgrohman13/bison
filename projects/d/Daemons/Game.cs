@@ -366,7 +366,7 @@ namespace Daemons
                 {
                     //archers that stay put shoot if they can
                     IEnumerable<Unit> archers = units.Where(unit => unit.Type == UnitType.Archer);
-                    if (archers.Any())
+                    if (this.independent.Arrows > 0 && archers.Any())
                     {
                         foreach (Tile target in Random.Iterate(from.GetSideNeighbors()))
                             Unit.Fire(archers, target);
@@ -376,15 +376,19 @@ namespace Daemons
 
                     //knights and daemons move separately
                     IEnumerable<Unit> daemons = units.Where(unit => unit.Type == UnitType.Daemon);
-                    IEnumerable<Unit> knights = units.Where(unit => unit.Type == UnitType.Knight);
+                    IEnumerable<Unit> knights = units.Where(unit => unit.Type == UnitType.Knight && unit.Movement == unit.MoveMax);
                     bool anyDaemons = daemons.Any();
                     if (anyDaemons || knights.Any())
                     {
                         //move in 2 steps
                         int x = from.X, y = from.Y;
                         MoveRand(ref x, ref y);
+                        if (x == from.X && y == from.Y)
+                            MoveRand(ref x, ref y);
                         int x1 = x, y1 = y;
                         MoveRand(ref x, ref y);
+                        if (x1 == x && y1 == y)
+                            MoveRand(ref x, ref y);
                         Tile to = GetTile(x, y);
 
                         //check where regular units moved
@@ -399,8 +403,9 @@ namespace Daemons
                             MoveIndy(from, follow, UnitType.Knight);
                         }
                         //first follow regular units unless knights and daemons will move to an already occupied tile
-                        else if (follow != null && !to.GetUnits(this.independent).Any(unit => ( !unit.Healed
-                                || ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) )))
+                        else if (follow != null && !to.GetUnits(this.independent).Any(
+                                unit => unit.Hits == unit.HitsMax && unit.Morale > Consts.MoraleCritical
+                                && ( unit.Movement == 0 || ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) )))
                         {
                             MoveIndy(from, follow, UnitType.Daemon);
                             MoveIndy(from, follow, UnitType.Knight);
@@ -408,8 +413,9 @@ namespace Daemons
                         else
                         {
                             MoveIndy(from, to, UnitType.Daemon);
-                            MoveIndy(from, GetTile(x1, y1), UnitType.Knight);
-                            MoveIndy(from, to, UnitType.Knight);
+                            Tile step = GetTile(x1, y1);
+                            MoveIndy(from, step, UnitType.Knight);
+                            MoveIndy(step, to, UnitType.Knight);
                         }
                     }
                 }
@@ -451,12 +457,21 @@ namespace Daemons
         }
         private bool MoveIndy(Tile from, Tile to, UnitType? special)
         {
-            bool any = false;
-            if (from != to && to != null)
-                foreach (Unit unit in from.GetUnits(this.independent).Where(unit => unit.Healed &&
-                        ( special.HasValue ? ( unit.Type == special.Value ) : ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) )).ToList())
+            if (to == null)
+                return false;
+            var units = from.GetUnits(this.independent).Where(unit => unit.Healed &&
+                    ( special.HasValue ? ( unit.Type == special.Value ) : ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) ));
+            if (from == to && units.Any())
+            {
+                return true;
+            }
+            else
+            {
+                bool any = false;
+                foreach (Unit unit in units.ToList())
                     any |= unit.Move(to);
-            return any;
+                return any;
+            }
         }
 
         private void ChangeMap()
