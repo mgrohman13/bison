@@ -87,7 +87,7 @@ namespace DaemonsWinApp
             if (this.cbxForce.Checked)
                 units = units.Where((u) => ( u.Movement + u.ReserveMovement > 0 )).ToList();
             if (fire)
-                units.Sort(Tile.UnitDamageComparison);
+                units.Sort(UnitDamageComparison);
 
             if (units.Count == 0)
                 if (this.cbxForce.Checked || fire)
@@ -164,6 +164,10 @@ namespace DaemonsWinApp
             RefreshSection();
 
             return true;
+        }
+        private static int UnitDamageComparison(Unit unit1, Unit unit2)
+        {
+            return Math.Sign(unit2.Tile.GetDamage(unit2) - unit1.Tile.GetDamage(unit1));
         }
 
         private void button1_Click(object sender, EventArgs e)

@@ -463,6 +463,18 @@ namespace DaemonsWinApp
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.game.AutoSave();
+
+            if (this.game.CombatLog.Length > 0)
+            {
+                string logFile = "../../../combat.txt";
+                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(logFile, true))
+                {
+                    sw.WriteLine();
+                    sw.WriteLine();
+                    sw.WriteLine(this.game.CombatLog);
+                    sw.Flush();
+                }
+            }
         }
     }
 }

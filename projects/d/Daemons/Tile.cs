@@ -78,7 +78,7 @@ namespace Daemons
         {
             bool player = false;
             int count = 0;
-            foreach (var grouping in GetPlayerUnits())
+            foreach (IGrouping<Player, Unit> grouping in GetPlayerUnits())
             {
                 player |= grouping.Key.IsTurn();
                 ++count;
@@ -100,10 +100,9 @@ namespace Daemons
 
                 while (CanBattle())
                 {
-                    double totalStr = GetArmyStr(GetUnits());
                     this.Game.Log(GetPlayerUnits().Aggregate("------------- ", (log, group) => ( log +
                             string.Format("{3} {0}/{1} ({2}) : ", GetArmyStr(group).ToString("0"), group.Count(),
-                            GetMorale(group, totalStr).ToString("0%"), group.Key) )).TrimEnd(':', ' '));
+                            GetMorale(group).ToString("0%"), group.Key) )).TrimEnd(':', ' '));
 
                     Fight(GetPlayerUnits(), 1);
 
@@ -117,20 +116,35 @@ namespace Daemons
         }
         private void CheckMorale()
         {
-            double totalStr = GetArmyStr(GetUnits());
-            var morale = GetPlayerUnits().Select(group => new Tuple<Player, double>(group.Key, GetMorale(group, totalStr))).OrderBy(tuple => tuple.Item2);
+            if (Game.Random.Bool(.78))
+                foreach (IGrouping<Player, Unit> group in Game.Random.Iterate(GetPlayerUnits()))
+                    if (Game.Random.Bool(.78))
+                        Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )));
 
-            Tuple<Player, double> low = morale.First();
-            double chance = Math.Pow(morale.Last().Item2 / low.Item2, .52) * Math.Pow(1 - low.Item2, .91);
+            double totalStr = GetArmyStr(GetUnits());
+            var morale = GetPlayerUnits().Select(group => new Tuple<Player, double>(group.Key, GetMorale(group, totalStr)))
+                    .OrderBy(tuple => tuple.Item2).ToList();
+
+            if (morale.Any())
+            {
+                Tuple<Player, double> high = morale.Last();
+                foreach (Tuple<Player, double> low in Game.Random.Iterate(morale))
+                {
+                    double chance = GetRetreatChance(low.Item2, high.Item2);
+                    this.Game.Log(low.Item1 + ": " + chance.ToString("0%") + " (" + low.Item2.ToString("0%") + ")");
+                    if (Game.Random.Bool(chance))
+                        Retreat(GetUnits(low.Item1));
+                }
+            }
+        }
+        private static double GetRetreatChance(double morale, double high)
+        {
+            if (morale == high)
+                return 0;
+            double chance = Math.Pow(high / morale, .52) * Math.Pow(1 - morale, .91);
             if (chance > .5)
                 chance /= ( chance + .5 );
-
-            if (Game.Random.Bool(chance * chance))
-                Retreat(GetUnits(low.Item1));
-            else if (Game.Random.Bool(.78))
-                foreach (var g in GetPlayerUnits())
-                    if (Game.Random.Bool(.78))
-                        Retreat(g.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )));
+            return chance * chance;
         }
         private double GetMorale(IGrouping<Player, Unit> g, double totalStr)
         {
@@ -157,6 +171,11 @@ namespace Daemons
         }
         private void Retreat(IEnumerable<Unit> units)
         {
+            units = units.ToList();
+            IEnumerable<Unit> log = units.Where(unit => unit.Movement + unit.ReserveMovement > 0);
+            if (log.Any())
+                this.Game.Log(log.First().Owner + " retreated " + log.Count());
+
             Tile t = null;
             foreach (Unit unit in Game.Random.Iterate(units))
                 t = unit.Retreat(t);
@@ -165,7 +184,7 @@ namespace Daemons
         private void Fight(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)
         {
             IEnumerable<Unit> fightList = Enumerable.Empty<Unit>();
-            foreach (var group in players)
+            foreach (IGrouping<Player, Unit> group in players)
                 fightList = fightList.Concat(GetFightUnits(group, GetDamage(group) * dmgMult));
             foreach (Unit unit in Game.Random.Iterate(fightList))
                 unit.Attack();
@@ -191,10 +210,6 @@ namespace Daemons
             foreach (double damage in strengths)
                 total += ( damage / ( ++count / 2.6 + 1.0 ) );
             return total;
-        }
-        public static int UnitDamageComparison(Unit unit1, Unit unit2)
-        {
-            return Math.Sign(unit2.Tile.GetDamage(unit2) - unit1.Tile.GetDamage(unit1));
         }
 
         public double GetDamage(Unit attacker)
@@ -256,14 +271,13 @@ namespace Daemons
 
         internal int GetRetreatValue(Player player)
         {
-            double friend = GetArmyStr(GetUnits(player));
-            double total = GetArmyStr(GetUnits());
+            double friend = GetArmyStr(GetUnits(player)) + 13;
+            double total = GetArmyStr(GetUnits()) + 26;
 
-            double amt = 13;
+            double amt = 169;
             if (friend == total)
                 amt *= 13;
-            if (total > 0)
-                amt += friend * friend * Math.Pow(friend / total, 3.9);
+            amt += friend * friend * Math.Pow(friend / total, 3.9) * 13;
             return Game.Random.Round(amt);
         }
 

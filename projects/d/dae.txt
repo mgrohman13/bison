@@ -1,6 +1,3 @@
-retreat path take into account total even when friendly == 0
-
-3 way battle, person with lowest morale has no move left, can second lowest rout?
 review all during-combat actions
 	prevent (except move)
 heal individual units

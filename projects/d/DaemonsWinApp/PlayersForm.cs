@@ -16,7 +16,7 @@ namespace DaemonsWinApp
         {
             InitializeComponent();
 
-            foreach (var pair in game.GetWinners())
+            foreach (KeyValuePair<Player, int> pair in game.GetWinners())
             {
                 Player p = pair.Key;
                 this.lbxPlayer.Items.Add(p);

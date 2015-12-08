@@ -190,7 +190,7 @@ namespace Daemons
             int points = 0, min = int.MaxValue;
             foreach (Player player in GetLosers().Reverse())
                 AddResult(results, player, -13.0 / this.lost[player], ref points, ref min);
-            foreach (var player in GetWinners().Reverse())
+            foreach (KeyValuePair<Player, int> player in GetWinners().Reverse())
                 AddResult(results, player.Key, Consts.WinPoints / player.Value, ref points, ref min);
 
             return results.Select(pair => new KeyValuePair<Player, int>(pair.Key, pair.Value - min)).OrderByDescending(player => player.Value);
@@ -459,7 +459,7 @@ namespace Daemons
         {
             if (to == null)
                 return false;
-            var units = from.GetUnits(this.independent).Where(unit => unit.Healed &&
+            IEnumerable<Unit> units = from.GetUnits(this.independent).Where(unit => unit.Healed &&
                     ( special.HasValue ? ( unit.Type == special.Value ) : ( unit.Type != UnitType.Daemon && unit.Type != UnitType.Knight ) ));
             if (from == to && units.Any())
             {

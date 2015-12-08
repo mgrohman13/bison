@@ -420,7 +420,7 @@ namespace Daemons
             }
             else
             {
-                LoseMorale(.21);
+                LoseMorale(.13);
                 return prev;
             }
             LoseMorale(.78);

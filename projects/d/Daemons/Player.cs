@@ -149,7 +149,7 @@ namespace Daemons
         public Tile NextUnit(Tile selectedTile)
         {
             var all = this.units.GroupBy(unit => unit.Tile).ToList();
-            var active = GetActive(all);
+            IEnumerable<int> active = GetActive(all);
             if (active.Any())
             {
                 var next = all.Where((group, index) => active.Contains(index));
@@ -175,7 +175,7 @@ namespace Daemons
                 unit => unit.ReserveMovement > 0,
             };
 
-            foreach (var func in funcs)
+            foreach (Func<Unit, bool> func in funcs)
                 if (this.units.Any(func))
                     return options.Select((list, index) => ( list.Any(func) ? index : -1 )).Where(index => index > -1);
 
