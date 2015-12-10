@@ -302,7 +302,7 @@ namespace Daemons
             }
             while (GetCurrentPlayer().Arrows < 0)
             {
-                double add = -players.Min(p => p.Arrows);
+                int add = -players.Min(p => p.Arrows);
                 foreach (Player p in players)
                     p.MakeArrow(add);
             }

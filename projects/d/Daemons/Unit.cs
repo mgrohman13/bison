@@ -144,10 +144,13 @@ namespace Daemons
                     value = double.Epsilon;
 
                 if (value < this.Morale)
+                {
+                    Func<double> GetLoss = () => this.Morale - value;
+                    Func<double> GetTurns = () => Consts.GetMoraleTurns(value, this.Morale);
                     if (this.owner.Independent && this.Type != UnitType.Daemon)
                     {
-                        double loss = this.Morale - value;
-                        double turns = Consts.GetMoraleTurns(value, this.Morale);
+                        double loss = GetLoss();
+                        double turns = GetTurns();
 
                         const double IndyLoss = 5.2;
                         loss = value - loss / IndyLoss;
@@ -156,14 +159,15 @@ namespace Daemons
                     }
                     else if (!this.owner.Independent && this.Type == UnitType.Daemon)
                     {
-                        double loss = this.Morale - value;
-                        double turns = Consts.GetMoraleTurns(value, this.Morale);
+                        double loss = GetLoss();
+                        double turns = GetTurns();
 
                         const double DaemonGain = 3.9;
                         loss = value + loss / DaemonGain;
                         turns = Math.Pow(value, Math.Pow(Consts.MoraleTurnPower, turns / DaemonGain));
                         value = Math.Min(loss, turns);
                     }
+                }
 
                 this._morale = Game.Random.GaussianCapped(value, Math.Abs(this.Morale - value) / value * .21, Math.Max(0, 2 * value - 1));
             }
@@ -198,7 +202,7 @@ namespace Daemons
             if (this.Morale < target)
             {
                 double start = Consts.GetMoraleTurns(Morale, target);
-                retVal = start + this.battles + ( this.MoveMax - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
+                retVal = start + this.battles + GetNoReserveBattles();
                 start = Math.Min(start, 1);
                 if (retVal < start)
                     retVal = start;
@@ -410,7 +414,7 @@ namespace Daemons
         {
             if (this.movement > 0)
             {
-                this.battles -= .13 * ( this.movement - 1 );
+                this.battles -= Consts.NoReserveBattles * ( this.movement - 1 );
                 this.reserve += this.movement - 1;
                 this.movement = 0;
             }
@@ -426,7 +430,7 @@ namespace Daemons
             LoseMorale(.78);
 
             Tile cur;
-            if (prev != null && ( this.tile.IsSideNeighbor(prev) || this.Type == UnitType.Daemon ) && Game.Random.Bool())
+            if (prev != null && ( this.Type == UnitType.Daemon || this.tile.IsSideNeighbor(prev) ) && Game.Random.Bool())
             {
                 cur = prev;
             }
@@ -627,7 +631,7 @@ select:
             while (this.movement > 0)
                 HealInternal();
 
-            this.battles += ( this.MoveMax - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
+            this.battles += GetNoReserveBattles();
             this.movement = this.MoveMax;
             this.reserve = this.MoveMax;
 
@@ -656,6 +660,11 @@ select:
                     add *= Consts.MoraleDaemonGain;
                 this.battles += add;
             }
+        }
+
+        private double GetNoReserveBattles()
+        {
+            return ( this.MoveMax - this.reserve ) * Consts.NoReserveBattles / this.MoveMax;
         }
         private void GainMorale(double turns)
         {

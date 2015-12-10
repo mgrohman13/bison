@@ -98,6 +98,8 @@ namespace Daemons
 
                 Fight(GetPlayerUnits(unit => unit.Type == UnitType.Daemon), .5);
 
+                Dictionary<Player, Tile> retreat = new Dictionary<Player, Tile>();
+
                 while (CanBattle())
                 {
                     this.Game.Log(GetPlayerUnits().Aggregate("------------- ", (log, group) => ( log +
@@ -107,19 +109,19 @@ namespace Daemons
                     Fight(GetPlayerUnits(), 1);
 
                     if (CanBattle())
-                        CheckMorale();
+                        CheckMorale(retreat);
                 }
 
                 return true;
             }
             return false;
         }
-        private void CheckMorale()
+        private void CheckMorale(Dictionary<Player, Tile> retreat)
         {
             if (Game.Random.Bool(.78))
                 foreach (IGrouping<Player, Unit> group in Game.Random.Iterate(GetPlayerUnits()))
                     if (Game.Random.Bool(.78))
-                        Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )));
+                        Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )), retreat);
 
             double totalStr = GetArmyStr(GetUnits());
             var morale = GetPlayerUnits().Select(group => new Tuple<Player, double>(group.Key, GetMorale(group, totalStr)))
@@ -133,7 +135,7 @@ namespace Daemons
                     double chance = GetRetreatChance(low.Item2, high.Item2);
                     this.Game.Log(low.Item1 + ": " + chance.ToString("0%") + " (" + low.Item2.ToString("0%") + ")");
                     if (Game.Random.Bool(chance))
-                        Retreat(GetUnits(low.Item1));
+                        Retreat(GetUnits(low.Item1), retreat);
                 }
             }
         }
@@ -144,7 +146,11 @@ namespace Daemons
             double chance = Math.Pow(high / morale, .52) * Math.Pow(1 - morale, .91);
             if (chance > .5)
                 chance /= ( chance + .5 );
-            return chance * chance;
+            chance *= chance;
+            if (double.IsNaN(chance))
+            {
+            }
+            return chance;
         }
         private double GetMorale(IGrouping<Player, Unit> g, double totalStr)
         {
@@ -169,16 +175,23 @@ namespace Daemons
             }
             return morale / tot;
         }
-        private void Retreat(IEnumerable<Unit> units)
+        private void Retreat(IEnumerable<Unit> units, Dictionary<Player, Tile> retreat)
         {
             units = units.ToList();
+
             IEnumerable<Unit> log = units.Where(unit => unit.Movement + unit.ReserveMovement > 0);
             if (log.Any())
                 this.Game.Log(log.First().Owner + " retreated " + log.Count());
 
-            Tile t = null;
-            foreach (Unit unit in Game.Random.Iterate(units))
-                t = unit.Retreat(t);
+            if (units.Any())
+            {
+                Player player = units.First().Owner;
+                Tile tile;
+                retreat.TryGetValue(player, out tile);
+                foreach (Unit unit in Game.Random.Iterate(units))
+                    tile = unit.Retreat(tile);
+                retreat[player] = tile;
+            }
         }
 
         private void Fight(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)
@@ -275,7 +288,7 @@ namespace Daemons
             double total = GetArmyStr(GetUnits()) + 26;
 
             double amt = 169;
-            if (friend == total)
+            if (friend + 13 == total)
                 amt *= 13;
             amt += friend * friend * Math.Pow(friend / total, 3.9) * 13;
             return Game.Random.Round(amt);
