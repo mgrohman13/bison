@@ -27,10 +27,7 @@ namespace RandomWalk
             this.FormBorderStyle = FormBorderStyle.None;
             this.TransparencyKey = this.BackColor;
 
-            Rectangle rect = new Rectangle(0, 0, 0, 0);
-            foreach (Screen screen in Screen.AllScreens)
-                rect = Rectangle.Union(rect, screen.Bounds);
-            this.Bounds = rect;
+            this.Bounds = Screen.AllScreens.Aggregate(new Rectangle(0, 0, 0, 0), (rect, screen) => Rectangle.Union(rect, screen.Bounds));
 
             this.walks = new List<Walk>();
             this.Reset();
@@ -44,8 +41,8 @@ namespace RandomWalk
             walks.Clear();
             int num = Walk.rand.Round(1.3 + Walk.rand.GaussianOE(2.6, .169, .21));
             for (int a = 0 ; a < num ; ++a)
-                walks.Add(new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39),
-                        Walk.rand.Bool(), Walk.rand.OE(), Walk.rand.OE(650), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13)));
+                walks.Add(new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39), Walk.rand.Bool(),
+                        Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13)));
 
             foreach (Walk walk in walks)
                 walk.Start();
@@ -53,7 +50,8 @@ namespace RandomWalk
 
         private static Color RandomColor()
         {
-            return Color.FromArgb(Walk.rand.Next(256), Walk.rand.Next(256), Walk.rand.Next(256));
+            Func<int> Gen = () => Walk.rand.Next(256);
+            return Color.FromArgb(Gen(), Gen(), Gen());
         }
 
         protected override CreateParams CreateParams
@@ -79,16 +77,18 @@ namespace RandomWalk
                     maxY = Math.Max(maxY, point.Y);
                 }
 
-                double scaleX = ClientSize.Width / ( maxX - minX );
-                double scaleY = ClientSize.Height / ( maxY - minY );
+                Func<double, double, double, double> Scale = (s, x, m) => s / ( x - m );
+                double scaleX = Scale(ClientSize.Width, maxX, minX);
+                double scaleY = Scale(ClientSize.Height, maxY, minY);
 
-                foreach (Walk walk in walks)//Walk.rand.Iterate(walks))
+                foreach (Walk walk in walks)
                     using (Pen pen = new Pen(walk.Color, walk.Size))
                     {
+                        Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
                         PointF[] points = walk.Points.Select(point =>
-                                new PointF((float)( ( point.X - minX ) * scaleX ), (float)( ( point.Y - minY ) * scaleY ))).ToArray();
+                                new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
                         if (points.Length > 1)
-                            e.Graphics.DrawLines(pen, points);
+                            e.Graphics.DrawCurve(pen, points, (float)walk.Tension);
                     }
             }
             catch (Exception exception)

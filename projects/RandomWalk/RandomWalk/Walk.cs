@@ -38,6 +38,11 @@ namespace RandomWalk
             get;
             set;
         }
+        public double Tension
+        {
+            get;
+            set;
+        }
         public double Deviation
         {
             get;
@@ -75,10 +80,10 @@ namespace RandomWalk
             }
         }
 
-        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double deviation, double interval, double intDevPct, double intOePct)
+        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct)
         {
-            string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\tdeviation:{3}\tinterval:{4}\tIntDevPct:{5}\tIntOePct:{6}",
-                    color, size, singleDimension, deviation, interval, intDevPct, intOePct);
+            string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\ttension:{7}\tdeviation:{3}\tinterval:{4}\tIntDevPct:{5}\tIntOePct:{6}",
+                    color, size, singleDimension, deviation, interval, intDevPct, intOePct, tension);
             Console.WriteLine(info);
             string today = DateTime.Now.ToString().Replace('/', '_').Replace(":", "_");
             using (var fileStream = new System.IO.StreamWriter("walks_" + today + ".txt", true))
@@ -90,6 +95,7 @@ namespace RandomWalk
             this.Color = color;
             this.Size = size;
             this.SingleDimension = singleDimension;
+            this.Tension = tension;
             this.Deviation = deviation;
             this.interval = interval;
             this.IntDevPct = intDevPct;
@@ -136,8 +142,6 @@ namespace RandomWalk
         {
             while (true)
             {
-                Thread.Sleep(rand.GaussianOEInt(interval, IntDevPct, IntOePct));
-
                 if (SingleDimension)
                 {
                     if (rand.Bool())
@@ -155,6 +159,8 @@ namespace RandomWalk
                     points.Add(new PointD(x, y));
 
                 Invalidate();
+
+                Thread.Sleep(rand.GaussianOEInt(interval, IntDevPct, IntOePct));
             }
         }
         private void Mod(ref double value)

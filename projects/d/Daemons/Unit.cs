@@ -132,10 +132,14 @@ namespace Daemons
             {
                 double morale = this._morale;
                 if (this.hits > 0)
-                    if (morale <= double.Epsilon)
+                    if (morale < double.Epsilon)
+                    {
                         morale = double.Epsilon;
+                    }
                     else if (morale >= 1)
+                    {
                         morale = 1;
+                    }
                 return morale;
             }
             private set

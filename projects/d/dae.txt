@@ -1,3 +1,5 @@
+indy kills last player shows score without final winner - workaround just end turn
+
 review all during-combat actions
 	prevent (except move)
 heal individual units

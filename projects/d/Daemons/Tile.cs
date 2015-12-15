@@ -144,10 +144,12 @@ namespace Daemons
             if (morale == high)
                 return 0;
             double chance = Math.Pow(high / morale, .52) * Math.Pow(1 - morale, .91);
-            if (chance > .5)
+            if (double.IsInfinity(chance))
+                chance = 1;
+            else if (chance > .5)
                 chance /= ( chance + .5 );
             chance *= chance;
-            if (double.IsNaN(chance))
+            if (double.IsInfinity(chance) || double.IsNaN(chance) || chance <= 0 || chance > 1)
             {
             }
             return chance;
