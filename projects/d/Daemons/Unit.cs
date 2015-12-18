@@ -133,13 +133,9 @@ namespace Daemons
                 double morale = this._morale;
                 if (this.hits > 0)
                     if (morale < double.Epsilon)
-                    {
                         morale = double.Epsilon;
-                    }
                     else if (morale >= 1)
-                    {
                         morale = 1;
-                    }
                 return morale;
             }
             private set
@@ -173,7 +169,7 @@ namespace Daemons
                     }
                 }
 
-                this._morale = Game.Random.GaussianCapped(value, Math.Abs(this.Morale - value) / value * .21, Math.Max(0, 2 * value - 1));
+                this._morale = Game.Random.GaussianCapped(value, Math.Abs(this.Morale - value) / value * .21, Math.Max(double.Epsilon, 2 * value - 1));
             }
         }
 
@@ -696,11 +692,6 @@ select:
         public override string ToString()
         {
             return string.Format("{0} {1}", this.owner.Name, this.Type);
-        }
-
-        public static int UnitComparison(Unit u1, Unit u2)
-        {
-            return ( u2.Strength > u1.Strength ? 1 : ( u1.Strength > u2.Strength ? -1 : 0 ) );
         }
     }
 

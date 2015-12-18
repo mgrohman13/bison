@@ -41,11 +41,11 @@ namespace DaemonsWinApp
             showing = null;
 
             if (all != null)
-                all.Sort(Unit.UnitComparison);
+                all.Sort(new CurStrComparer());
             if (part != null)
-                part.Sort(Unit.UnitComparison);
+                part.Sort(new CurStrComparer());
             if (move != null)
-                move.Sort(Unit.UnitComparison);
+                move.Sort(new CurStrComparer());
 
             this.all = all;
             this.part = part;
