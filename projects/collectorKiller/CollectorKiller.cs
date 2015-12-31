@@ -172,7 +172,8 @@ namespace CollectorKiller
         }
         double GetElapsedTime()
         {
-            return timer.ElapsedTicks / MattUtil.RealTimeGame.GameTicker.TicksPerMilisecond;
+            return 0;
+            //return timer.ElapsedTicks / MattUtil.RealTimeGame.GameTicker.TicksPerMilisecond;
         }
 
         void ThreadStart()

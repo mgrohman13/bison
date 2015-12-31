@@ -198,10 +198,7 @@ namespace Daemons
 
         private void Fight(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)
         {
-            IEnumerable<Unit> fightList = Enumerable.Empty<Unit>();
-            foreach (IGrouping<Player, Unit> group in players)
-                fightList = fightList.Concat(GetFightUnits(group, GetDamage(group) * dmgMult));
-            foreach (Unit unit in Game.Random.Iterate(fightList))
+            foreach (Unit unit in Game.Random.Iterate(players.SelectMany(group => GetFightUnits(group, GetDamage(group) * dmgMult))))
                 unit.Attack();
         }
         private IEnumerable<Unit> GetFightUnits(IEnumerable<Unit> available, double damTot)

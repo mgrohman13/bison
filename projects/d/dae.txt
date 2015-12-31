@@ -1,5 +1,9 @@
-morale drop below epsilon
+morale drop below epsilon - adds battles?
+	indy can try to set morale to 0
+LoseMorale doesn't add up when dividing by movement
+dead unit friend morale loss should use GetArmyStr MAX?
 
+log tried but failed retreats?
 indy kills last player shows score without final winner - workaround just end turn
 
 review all during-combat actions

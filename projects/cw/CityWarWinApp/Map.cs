@@ -29,6 +29,10 @@ namespace CityWarWinApp
             }
         }
 
+        //public static Screen GetScreen()
+        //{
+        //}
+
         //constants 
         public const int panelWidth = 255;
         public const int startZoom = 100;

@@ -470,6 +470,7 @@ namespace DaemonsWinApp
                 using (System.IO.StreamWriter sw = new System.IO.StreamWriter(logFile, true))
                 {
                     sw.WriteLine();
+                    sw.WriteLine("~~~~~~~~~~~~~");
                     sw.WriteLine();
                     sw.WriteLine(this.game.CombatLog);
                     sw.Flush();

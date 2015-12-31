@@ -345,7 +345,8 @@ namespace Daemons
             if (damage > 0)
             {
                 this.owner.AddSouls(( damage / (double)defender.HitsMax ) * defender.souls, true);
-                defender.Morale *= 1 - damage / (double)( defender.hits + damage );
+                if (defender.hits > 0)
+                    defender.Morale *= 1 - damage / (double)( defender.hits + damage );
 
                 addMorale += defender.StrengthMax * damage / (double)defender.HitsMax;
             }
