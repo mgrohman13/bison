@@ -78,9 +78,9 @@ namespace Daemons
         {
             bool player = false;
             int count = 0;
-            foreach (IGrouping<Player, Unit> grouping in GetPlayerUnits())
+            foreach (IGrouping<Player, Unit> group in GetPlayerUnits())
             {
-                player |= grouping.Key.IsTurn();
+                player |= group.Key.IsTurn();
                 ++count;
                 if (player && count > 1)
                     return true;
@@ -118,10 +118,12 @@ namespace Daemons
         }
         private void CheckMorale(Dictionary<Player, Tile> retreat)
         {
+            IEnumerable<Unit> retreated = Enumerable.Empty<Unit>();
+
             if (Game.Random.Bool(.78))
                 foreach (IGrouping<Player, Unit> group in Game.Random.Iterate(GetPlayerUnits()))
                     if (Game.Random.Bool(.78))
-                        Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )), retreat);
+                        retreated = retreated.Union(Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )), retreat));
 
             double totalStr = GetArmyStr(GetUnits());
             var morale = GetPlayerUnits().Select(group => new Tuple<Player, double>(group.Key, GetMorale(group, totalStr)))
@@ -135,9 +137,11 @@ namespace Daemons
                     double chance = GetRetreatChance(low.Item2, high.Item2);
                     this.Game.Log(low.Item1 + ": " + chance.ToString("0%") + " (" + low.Item2.ToString("0%") + ")");
                     if (Game.Random.Bool(chance))
-                        Retreat(GetUnits(low.Item1), retreat);
+                        retreated = retreated.Union(Retreat(GetUnits(low.Item1), retreat));
                 }
             }
+
+            Unit.Retreated(retreated, this);
         }
         private static double GetRetreatChance(double morale, double high)
         {
@@ -177,7 +181,7 @@ namespace Daemons
             }
             return morale / tot;
         }
-        private void Retreat(IEnumerable<Unit> units, Dictionary<Player, Tile> retreat)
+        private IEnumerable<Unit> Retreat(IEnumerable<Unit> units, Dictionary<Player, Tile> retreat)
         {
             units = units.ToList();
 
@@ -194,6 +198,8 @@ namespace Daemons
                     tile = unit.Retreat(tile);
                 retreat[player] = tile;
             }
+
+            return units.Where(unit => unit.Tile != this);
         }
 
         private void Fight(IEnumerable<IGrouping<Player, Unit>> players, double dmgMult)

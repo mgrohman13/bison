@@ -61,21 +61,21 @@ namespace DaemonsWinApp
                 for (int x = 0 ; x < game.Width ; x++)
                     for (int y = 0 ; y < game.Height ; y++)
                     {
-                        Tile t = game.GetTile(x, y);
+                        Tile tile = game.GetTile(x, y);
 
-                        IEnumerable<Unit> units = t.GetUnits(game.GetCurrentPlayer());
+                        IEnumerable<Unit> units = tile.GetUnits(game.GetCurrentPlayer());
                         IEnumerable<Unit> attackers = null;
                         if (units.Any())
                         {
-                            attackers = t.GetUnits().Where((u) => !u.Owner.IsTurn());
+                            attackers = tile.GetUnits().Where(unit => !unit.Owner.IsTurn());
                         }
                         else
                         {
-                            units = t.GetUnits();
+                            units = tile.GetUnits();
                             if (units.Any())
                             {
-                                units = units.GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First();
-                                attackers = t.GetUnits().Where((u) => ( u.Owner != ( (IGrouping<Player, Unit>)units ).Key ));
+                                units = units.GroupBy(unit => unit.Owner).OrderByDescending(group => Tile.GetArmyStr(group)).First();
+                                attackers = tile.GetUnits().Where(unit => ( unit.Owner != ( (IGrouping<Player, Unit>)units ).Key ));
                             }
                         }
                         Bitmap picAttacker = Tile.GetBestPic(attackers);
@@ -112,27 +112,27 @@ namespace DaemonsWinApp
                         }
 
                         int newX = offset + x * size + 3;
-                        foreach (ProductionCenter pc in t.GetProduction())
+                        foreach (ProductionCenter productionCenter in tile.GetProduction())
                         {
                             Brush brush;
-                            switch (pc.Type)
+                            switch (productionCenter.Type)
                             {
                             case ProductionType.Archer:
-                                if (pc.Used)
+                                if (productionCenter.Used)
                                     brush = Brushes.Yellow;
                                 else
                                     brush = Brushes.Orange;
                                 break;
 
                             case ProductionType.Infantry:
-                                if (pc.Used)
+                                if (productionCenter.Used)
                                     brush = Brushes.Lime;
                                 else
                                     brush = Brushes.Green;
                                 break;
 
                             case ProductionType.Knight:
-                                if (pc.Used)
+                                if (productionCenter.Used)
                                     brush = Brushes.Cyan;
                                 else
                                     brush = Brushes.Blue;
@@ -195,24 +195,24 @@ namespace DaemonsWinApp
             List<Unit>[] types = new List<Unit>[4];
             for (int a = 0 ; a < types.Length ; a++)
                 types[a] = new List<Unit>();
-            foreach (Unit u in units)
-                switch (u.Type)
+            foreach (Unit unit in units)
+                switch (unit.Type)
                 {
                 case UnitType.Archer:
-                    types[1].Add(u);
+                    types[1].Add(unit);
                     break;
 
                 case UnitType.Daemon:
-                    types[3].Add(u);
+                    types[3].Add(unit);
                     break;
 
                 case UnitType.Indy:
                 case UnitType.Infantry:
-                    types[0].Add(u);
+                    types[0].Add(unit);
                     break;
 
                 case UnitType.Knight:
-                    types[2].Add(u);
+                    types[2].Add(unit);
                     break;
 
                 default:
@@ -222,25 +222,25 @@ namespace DaemonsWinApp
             Label[] pics = new[] { this.lblUnit1, this.lblUnit2, this.lblUnit3, this.lblUnit4 };
             Label[] infos = new[] { this.lblInf1, this.lblInf2, this.lblInf3, this.lblInf4 };
 
-            IGrouping<Player, Unit> player = units.GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First();
+            IGrouping<Player, Unit> player = units.GroupBy(unit => unit.Owner).OrderByDescending(group => Tile.GetArmyStr(group)).First();
 
             this.lblMorale.Text = GetMorale(player).ToString("0%");
-            IEnumerable<Unit> attackers = selected.GetUnits().Where((u) => u.Owner != player.Key);
+            IEnumerable<Unit> attackers = selected.GetUnits().Where(unit => unit.Owner != player.Key);
             if (attackers.Any())
                 this.lblMorale.Text = GetMorale(attackers).ToString("0% : ") + this.lblMorale.Text;
 
             IEnumerable<int> active = new int[0];
-            if (units.All((u) => u.Owner == player.Key))
+            if (units.All(unit => unit.Owner == player.Key))
                 active = player.Key.GetActive(types);
             int num = 0;
             for (int a = 0 ; a < types.Length ; a++)
                 if (types[a].Count > 0)
                 {
-                    infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count((u) => u.Healed),
-                            types[a].Count((u) => ( u.Movement > 0 )), types[a].Count());
+                    infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count(unit => unit.Healed),
+                            types[a].Count(unit => ( unit.Movement > 0 )), types[a].Count());
                     infos[num].Font = new Font("Microsoft Sans Serif", 11.25f, ( active.Contains(a) ? FontStyle.Bold : FontStyle.Regular ));
                     infos[num].ForeColor = ( active.Contains(a) ? Color.Black : Color.Gray );
-                    pics[num++].Image = types[a].GroupBy((u) => u.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
+                    pics[num++].Image = types[a].GroupBy(unit => unit.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
                 }
         }
         private static double GetMorale(IEnumerable<Unit> units)
@@ -404,8 +404,8 @@ namespace DaemonsWinApp
         {
             if (selected != null)
             {
-                foreach (Unit u in selected.GetUnits())
-                    u.Heal();
+                foreach (Unit unit in selected.GetUnits())
+                    unit.Heal();
 
                 SelectNext(sender, e);
                 RefreshAll();

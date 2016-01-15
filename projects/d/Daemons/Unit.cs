@@ -156,6 +156,9 @@ namespace Daemons
                         loss = value - loss / IndyLoss;
                         turns = Math.Pow(value, Math.Pow(1 / Consts.MoraleTurnPower, turns / IndyLoss));
                         value = Math.Max(loss, turns);
+
+                        if (value < double.Epsilon)
+                            value = double.Epsilon;
                     }
                     else if (!this.owner.Independent && this.Type == UnitType.Daemon)
                     {
@@ -334,10 +337,7 @@ namespace Daemons
                 defender.hits = 0;
                 defender.Die();
 
-                IEnumerable<Unit> units = defender.tile.GetUnits(defender.owner);
-                double mult = 1 - defender.StrengthMax / ( defender.StrengthMax + Tile.GetArmyStr(units) );
-                foreach (Unit unit in units)
-                    unit.Morale *= mult;
+                MultFriendlyMorale(defender.tile, defender, 1);
                 addMorale += defender.StrengthMax;
 
                 this.owner.AddSouls(defender.souls, true);
@@ -363,6 +363,24 @@ namespace Daemons
                     this, defender, damage > 0 ? "-" : ""));
 
             return damage;
+        }
+
+        internal static void Retreated(IEnumerable<Unit> retreated, Tile tile)
+        {
+            foreach (Unit unit in retreated)
+                MultFriendlyMorale(tile, unit, .52);
+        }
+
+        private static void MultFriendlyMorale(Tile tile, Unit defender, double modifier)
+        {
+            IEnumerable<Unit> units = tile.GetUnits(defender.owner);
+            if (units.Any())
+            {
+                double str = defender.StrengthMax * modifier;
+                double mult = 1 - str / ( str + Tile.GetArmyStr(units) );
+                foreach (Unit unit in units)
+                    unit.Morale *= mult;
+            }
         }
 
         internal static double GetDamageMult(UnitType attacker, UnitType defender)
@@ -441,8 +459,8 @@ namespace Daemons
                 IEnumerable<Tile> options = this.tile.GetSideNeighbors();
                 if (this.Type == UnitType.Daemon)
                     options = options.Concat(this.tile.GetCornerNeighbors());
-                foreach (Tile t in options)
-                    chances.Add(t, t.GetRetreatValue(this.owner));
+                foreach (Tile tile in options)
+                    chances.Add(tile, tile.GetRetreatValue(this.owner));
                 cur = Game.Random.SelectValue(chances);
             }
 
@@ -457,6 +475,21 @@ namespace Daemons
             this.reserve--;
             this.battles += .65 / this.MoveMax;
             LoseMorale(1.3 / this.MoveMax);
+
+            //This value was determined by a binary search down to the least significant bit to approximate
+            //  a knight using 2 reserve moves losing (mathematically) the same morale as a standard unit using 1.
+            //It relies on the above LoseMorale parameter being "1.3 / this.MoveMax" and LoseMorale being implemented as follows:
+            //  this.Morale = Math.Pow(this.Morale / ( 1.0 + .169 * mult ), Math.Pow(1 / Consts.MoraleTurnPower, mult));
+            //It does not take into account morale randomness, which from empirical testing results in knights ending up with
+            //  more morale than standard units at an error margin ranging from ~00.17% for 1 morale to ~26.00% for .00117 morale.
+            //  This is acceptable because the difference is miniscule at values where slight morale ratios are significant
+            //  and only grows large in situations where morale largely matters by orders of magnitute of ratios.
+            const double knightDiv = 1.046319547648739;
+
+            if (this.MoveMax == 2)
+                this.Morale = this.Morale / knightDiv;
+            else if (this.MoveMax != 1)
+                throw new Exception();
         }
         private void LoseMorale(double mult)
         {

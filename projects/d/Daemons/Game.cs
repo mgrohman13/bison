@@ -291,20 +291,20 @@ namespace Daemons
         private void StartTurn()
         {
             CheckTurnInc();
-            foreach (ProductionCenter pc in this.production)
-                pc.Reset(GetCurrentPlayer());
+            foreach (ProductionCenter productionCenter in this.production)
+                productionCenter.Reset(GetCurrentPlayer());
 
             while (GetCurrentPlayer().Souls < 0)
             {
-                int add = -players.Min(p => p.Souls);
-                foreach (Player p in players)
-                    p.AddSouls(add);
+                int add = -players.Min(player => player.Souls);
+                foreach (Player player in players)
+                    player.AddSouls(add);
             }
             while (GetCurrentPlayer().Arrows < 0)
             {
-                int add = -players.Min(p => p.Arrows);
-                foreach (Player p in players)
-                    p.MakeArrow(add);
+                int add = -players.Min(player => player.Arrows);
+                foreach (Player player in players)
+                    player.MakeArrow(add);
             }
         }
 
@@ -425,7 +425,7 @@ namespace Daemons
             //convert arrows to souls to create new units
             this.independent.IndyArrows(false);
 
-            this.independent.AddSouls(Random.GaussianOEInt(IndyProd(), Consts.IndyRand, .52 * this.turn / ( 7.8 + this.turn )));
+            this.independent.AddSouls(Random.GaussianOE(IndyProd(), Consts.IndyRand, .52 * this.turn / ( 7.8 + this.turn )));
             int amt = this.independent.RoundSouls();
             if (amt > 0)
             {
@@ -558,8 +558,8 @@ namespace Daemons
             if (this.players.Count > 1)
             {
                 player.Won(independent);
-                foreach (Unit u in player.GetUnits())
-                    u.Won(independent);
+                foreach (Unit unit in player.GetUnits())
+                    unit.Won(independent);
 
                 //remove from the players array
                 int removedIndex = this.players.IndexOf(player);
@@ -573,8 +573,8 @@ namespace Daemons
                         this.production.Remove(Random.SelectValue(this.production.Where(prod => prod.Type == type)));
                 }
                 //reset owned centers
-                foreach (ProductionCenter pc in this.production)
-                    pc.Reset(player);
+                foreach (ProductionCenter productionCenter in this.production)
+                    productionCenter.Reset(player);
 
                 //ensure we still have the correct current player
                 if (this.currentPlayer > removedIndex)

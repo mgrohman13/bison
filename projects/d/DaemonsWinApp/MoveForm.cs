@@ -85,7 +85,7 @@ namespace DaemonsWinApp
                 unitType = UnitType.Daemon;
             units = tile.GetUnits(tile.Game.GetCurrentPlayer(), !this.cbxForce.Checked, false, unitType).ToList();
             if (this.cbxForce.Checked)
-                units = units.Where((u) => ( u.Movement + u.ReserveMovement > 0 )).ToList();
+                units = units.Where(unit => ( unit.Movement + unit.ReserveMovement > 0 )).ToList();
             if (fire)
                 units.Sort(UnitDamageComparison);
 
@@ -103,32 +103,32 @@ namespace DaemonsWinApp
             for (int a = 0 ; a < 4 ; a++)
                 types.Add(new List<Unit>());
 
-            foreach (Unit u in units)
+            foreach (Unit unit in units)
             {
-                switch (u.Type)
+                switch (unit.Type)
                 {
                 case UnitType.Archer:
-                    types[1].Add(u);
-                    if (u.Healed)
-                        move.Add(u);
+                    types[1].Add(unit);
+                    if (unit.Healed)
+                        move.Add(unit);
                     break;
 
                 case UnitType.Daemon:
-                    types[3].Add(u);
-                    if (u.Healed)
-                        move.Add(u);
+                    types[3].Add(unit);
+                    if (unit.Healed)
+                        move.Add(unit);
                     break;
 
                 case UnitType.Infantry:
-                    types[0].Add(u);
-                    if (u.Healed)
-                        move.Add(u);
+                    types[0].Add(unit);
+                    if (unit.Healed)
+                        move.Add(unit);
                     break;
 
                 case UnitType.Knight:
-                    types[2].Add(u);
-                    if (u.Healed)
-                        move.Add(u);
+                    types[2].Add(unit);
+                    if (unit.Healed)
+                        move.Add(unit);
                     break;
 
                 default:
@@ -144,8 +144,8 @@ namespace DaemonsWinApp
             for (int a = 0 ; a < types.Count ; a++)
                 if (types[a].Count > 0)
                 {
-                    infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count((u) => u.Healed),
-                            types[a].Count((u) => ( u.Movement > 0 )), types[a].Count());
+                    infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count(unit => unit.Healed),
+                            types[a].Count(unit => ( unit.Movement > 0 )), types[a].Count());
                     pics[num++].Image = types[a][0].GetPic();
                 }
 
@@ -153,9 +153,9 @@ namespace DaemonsWinApp
                 if (types[a].Count <= 0)
                     types.RemoveAt(a);
 
-            foreach (Control c in Controls)
-                if (c.Tag is int)
-                    c.Visible = ( (int)c.Tag != num );
+            foreach (Control control in Controls)
+                if (control.Tag is int)
+                    control.Visible = ( (int)control.Tag != num );
 
             this.Height = 462;
             for (int a = num ; a < 4 ; a++)
@@ -175,37 +175,37 @@ namespace DaemonsWinApp
             if (fire)
                 Unit.Fire(move, moveTo);
             else
-                foreach (Unit u in move)
-                    u.Move(moveTo);
+                foreach (Unit unit in move)
+                    unit.Move(moveTo);
         }
 
         private void btnNone_Click(object sender, EventArgs e)
         {
             List<Unit> units = types[(int)( (Control)sender ).Tag];
-            foreach (Unit u in units)
-                if (move.Contains(u))
-                    move.Remove(u);
+            foreach (Unit unit in units)
+                if (move.Contains(unit))
+                    move.Remove(unit);
             RefreshSection((int)( (Control)sender ).Tag);
         }
 
         private void btnMax_Click(object sender, EventArgs e)
         {
             List<Unit> units = types[(int)( (Control)sender ).Tag];
-            foreach (Unit u in units)
-                if (!move.Contains(u))
-                    move.Add(u);
+            foreach (Unit unit in units)
+                if (!move.Contains(unit))
+                    move.Add(unit);
             RefreshSection((int)( (Control)sender ).Tag);
         }
 
         private void btnHealed_Click(object sender, EventArgs e)
         {
             List<Unit> units = types[(int)( (Control)sender ).Tag];
-            foreach (Unit u in units)
+            foreach (Unit unit in units)
             {
-                if (move.Contains(u))
-                    move.Remove(u);
-                if (u.Healed)
-                    move.Add(u);
+                if (move.Contains(unit))
+                    move.Remove(unit);
+                if (unit.Healed)
+                    move.Add(unit);
             }
             RefreshSection((int)( (Control)sender ).Tag);
         }
@@ -231,13 +231,13 @@ namespace DaemonsWinApp
             {
                 List<Unit> units = types[section];
                 int count = 0;
-                foreach (Unit u in units)
-                    if (move.Contains(u))
+                foreach (Unit unit in units)
+                    if (move.Contains(unit))
                         count++;
-                foreach (Control c in Controls)
-                    if (c is TextBox && (int)c.Tag == section)
+                foreach (Control control in Controls)
+                    if (control is TextBox && (int)control.Tag == section)
                     {
-                        ( (TextBox)c ).Text = count.ToString();
+                        ( (TextBox)control ).Text = count.ToString();
                         break;
                     }
             }

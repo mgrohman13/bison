@@ -189,16 +189,16 @@ namespace DaemonsWinApp
                 y = offset - y * 13;
 
                 const int incPic = picSize + 1;
-                foreach (Unit u in ( showAll ? all : part ))
+                foreach (Unit unit in ( showAll ? all : part ))
                 {
-                    e.Graphics.DrawImage(u.GetPic(), x, y);
+                    e.Graphics.DrawImage(unit.GetPic(), x, y);
 
-                    if (use != UseType.View && move.Contains(u))
+                    if (use != UseType.View && move.Contains(unit))
                         using (Pen p = new Pen(Color.Black, 3))
                             e.Graphics.DrawRectangle(p, x, y, 90, 90);
 
                     Color color;
-                    double pct = u.Morale;
+                    double pct = unit.Morale;
                     if (pct < Consts.MoraleCritical)
                     {
                         double turns = Consts.GetMoraleTurns(pct, Consts.MoraleCritical);
@@ -240,35 +240,35 @@ namespace DaemonsWinApp
                         e.Graphics.DrawImage(hits, x, tempY);
                         tempY += incPic;
                         e.Graphics.DrawImage(regen, x, tempY);
-                        string rgnStr = u.Regen.ToString();
+                        string rgnStr = unit.Regen.ToString();
                         int incX = incPic + (int)e.Graphics.MeasureString(rgnStr, f).Width;
                         e.Graphics.DrawImage(soul, x + incX, tempY);
 
                         x += picSize;
 
                         tempY = y;
-                        string str = string.Format("{0} ", u.Movement);
-                        e.Graphics.DrawString(str, u.Movement > 0 ? b : f, Brushes.Black, new Point(x, tempY));
-                        if (u.ReserveMovement > 0)
-                            e.Graphics.DrawString(string.Format("({0})", u.Movement + u.ReserveMovement), u.ReserveMovement > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
+                        string str = string.Format("{0} ", unit.Movement);
+                        e.Graphics.DrawString(str, unit.Movement > 0 ? b : f, Brushes.Black, new Point(x, tempY));
+                        if (unit.ReserveMovement > 0)
+                            e.Graphics.DrawString(string.Format("({0})", unit.Movement + unit.ReserveMovement), unit.ReserveMovement > 0 ? b : f, Brushes.Gray, new PointF(x + e.Graphics.MeasureString(str, f).Width, tempY));
 
                         tempY += incPic;
                         str = "{0}";
-                        if (u.DamageStr != u.DamageMax.ToString())
+                        if (unit.DamageStr != unit.DamageMax.ToString())
                             str += " / {1}";
-                        str = string.Format(str, u.DamageStr, u.DamageMax);
-                        e.Graphics.DrawString(str, u.RecoverDmg > 0 ? f : b, Brushes.Black, new Point(x, tempY));
+                        str = string.Format(str, unit.DamageStr, unit.DamageMax);
+                        e.Graphics.DrawString(str, unit.RecoverDmg > 0 ? f : b, Brushes.Black, new Point(x, tempY));
 
                         tempY += incPic;
                         str = "{0}";
-                        if (u.Hits != u.HitsMax)
+                        if (unit.Hits != unit.HitsMax)
                             str += " / {1}";
-                        str = string.Format(str, u.Hits, u.HitsMax);
-                        e.Graphics.DrawString(str, u.Hits == u.HitsMax ? b : f, Brushes.Black, new Point(x, tempY));
+                        str = string.Format(str, unit.Hits, unit.HitsMax);
+                        e.Graphics.DrawString(str, unit.Hits == unit.HitsMax ? b : f, Brushes.Black, new Point(x, tempY));
 
                         tempY += incPic;
                         e.Graphics.DrawString(string.Format("{0}", rgnStr), f, Brushes.Black, new Point(x, tempY));
-                        e.Graphics.DrawString(string.Format("{0}", ( (double)( u.Souls * ( 1 + u.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, tempY));
+                        e.Graphics.DrawString(string.Format("{0}", ( (double)( unit.Souls * ( 1 + unit.HealthPct ) ) ).ToString("0")), f, Brushes.Black, new Point(x + incX, tempY));
                     }
 
                     x -= picSize + 6;
@@ -364,7 +364,7 @@ namespace DaemonsWinApp
                         if (morale == "100%")
                             morale = "99%";
                     }
-                    toolTip1.Show(string.Format("Morale: {3}{5}Recover: {0}{1}{2}{5}Max Damage: {4}",
+                    toolTip1.Show(string.Format("Morale: {3}{5}Recover: {0}{1}{2}{5}Damage: {4}",
                             u.RecoverFull.ToString("0.0"), u.RecoverDmg > 0 ? " / " + u.RecoverDmg.ToString("0.0") : "",
                             u.Morale < Consts.MoraleCritical ? " / " + u.RecoverCritical.ToString("0.0") : "",
                             morale, u.Damage.ToString("0.0"), Environment.NewLine), this, e.X, e.Y, 13000);

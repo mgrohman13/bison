@@ -33,11 +33,13 @@ namespace randTest
             //    Console.ReadKey(true);
             //}
 
+            DaeReserveMorale();
+
             //TickTest();
 
             //SeedTest();
 
-            CWPortalStart();
+            //CWPortalStart();
 
             //IterateTest();
 
@@ -339,6 +341,158 @@ namespace randTest
             return val;
         }
         #endregion //BinarySearchSqrt
+
+        #region DaeReserveMorale
+        static void DaeReserveMorale()
+        {
+            //test w/ randomness (max 1.047)?  how close can we get accuracy?  binary search impossible?  mathematically integrate over gaussian curve?
+            //use 0.9909 and hardcode 0.4933376783627060 to increase speed/accuracy?  
+            DaeReserveMorale0();
+        }
+        static void DaeReserveMorale0()
+        {
+            //const double closest = 1.046319547648739;
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(CalcDaeReserveMorale()), 2));
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(closest), 2));
+            //Console.WriteLine(CalcDaeReserveMorale());
+            //Console.WriteLine(closest);
+
+            Action<Action> ThreadRun = Action =>
+            {
+                Thread thread = new Thread(new ThreadStart(Action));
+                thread.IsBackground = true;
+                thread.Start();
+            };
+            ThreadRun(() => DaeRandTest(1));
+            ThreadRun(() => DaeRandTest(1 - .0091));
+            ThreadRun(() => DaeRandTest(.5));
+            ThreadRun(() => DaeRandTest(Math.Pow(.00117, 1 / Math.Pow(1 / .39, 1.3)) * ( 1.0 + .169 * 1.3 )));
+            ThreadRun(() => DaeRandTest(.00117));
+            ThreadRun(() => DaeRandTest(float.Epsilon));
+            ThreadRun(() => DaeRandTest(Math.Pow(double.Epsilon, 1 / Math.Pow(1 / .39, 1.3)) * 2));
+            ThreadRun(() => DaeRandTest(double.Epsilon));
+            ThreadRun(() => DaeRandTest(() => 1 - rand.NextDouble()));
+
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(1.0463195476487386), 2));
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(1.0463195476487388), 2));
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(1.0463195476487390), 2));
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(1.0463195476487392), 2));
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(1.0463195476487395), 2));
+            //Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(1.0463195476487397), 2));
+            //Console.WriteLine();
+            //Dictionary<double, int> otherCnt = new Dictionary<double, int>();
+            //for (int b = 0 ; b < 130000 ; ++b)
+            //{
+            //    double test = CalcDaeReserveMorale();
+            //    int cnt;
+            //    if (!otherCnt.TryGetValue(test, out cnt))
+            //        cnt = 0;
+            //    otherCnt[test] = cnt + 1;
+            //}
+            //foreach (KeyValuePair<double, int> p in otherCnt.OrderBy(p => p.Key))
+            //{
+            //    Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(p.Key), 2));
+            //    Console.WriteLine(p.Value);
+            //}
+            //Console.WriteLine();
+            //foreach (KeyValuePair<double, int> p in daeCnt.OrderBy(p => p.Key))
+            //{
+            //    Console.WriteLine(Convert.ToString(BitConverter.DoubleToInt64Bits(p.Key), 2));
+            //    Console.WriteLine(p.Value);
+            //}
+        }
+
+        private static void DaeRandTest(double morale)
+        {
+            DaeRandTest(() => morale);
+        }
+        private static void DaeRandTest(Func<double> GetMorale)
+        {
+            double[] a = new double[2];
+            const double closest = 1.046319547648739;
+            const int d = 13000000;
+            double tot = 0;
+            for (int b = 0 ; b < d ; ++b)
+            {
+                double morale = GetMorale();
+                tot += morale;
+                double[] c = DaeReserveMoraleRand(closest, morale);
+                a[0] += c[0];
+                a[1] += c[1];
+            }
+            Console.WriteLine(tot / d);
+            Console.WriteLine(a[0] / d);
+            Console.WriteLine(a[1] / d);
+            Console.WriteLine();
+        }
+
+        static double CalcDaeReserveMorale()
+        {
+            double min = 1;
+            double max = 1.13744213481967;
+            double val;
+            while (true)
+            {
+                val = ( min + max ) / 2.0;
+                if (( val == min || val == max ))
+                    return val;
+
+                if (DaeReserveMorale(val))
+                    min = val;
+                else
+                    max = val;
+            }
+        }
+        static Dictionary<double, int> daeCnt = new Dictionary<double, int>();
+        static bool DaeReserveMorale(double test)
+        {
+            const double loss = 1.3;
+            double m1 = 1 - rand.NextDouble();
+            double m2 = m1;
+
+            m1 = LoseMorale(m1, loss);
+
+            m2 = LoseMorale(m2, loss / 2.0) / test;
+            m2 = LoseMorale(m2, loss / 2.0) / test;
+
+            if (m1 == m2)
+            {
+                int cnt;
+                if (!daeCnt.TryGetValue(test, out cnt))
+                    cnt = 0;
+                daeCnt[test] = cnt + 1;
+                return rand.Bool();
+            }
+            return ( m1 < m2 );
+        }
+        static double LoseMorale(double Morale, double mult)
+        {
+            return Math.Pow(Morale / ( 1.0 + .169 * mult ), Math.Pow(1 / .39, mult));
+        }
+        static double[] DaeReserveMoraleRand(double test, double morale)
+        {
+            const double loss = 1.3;
+            double m1 = morale;
+            double m2 = morale;
+
+            m1 = LoseMoraleRand(m1, loss);
+
+            m2 = LoseMoraleRand(m2, loss / 2.0) / test;
+            m2 = LoseMoraleRand(m2, loss / 2.0) / test;
+
+            return new[] { m1, m2 };
+        }
+        static double LoseMoraleRand(double Morale, double mult)
+        {
+            return RandMorale(Morale, LoseMorale(Morale, mult));
+        }
+        static double RandMorale(double Morale, double value)
+        {
+            if (value < double.Epsilon)
+                value = double.Epsilon;
+            return rand.GaussianCapped(value, Math.Abs(Morale - value) / value * .21, Math.Max(double.Epsilon, 2 * value - 1));
+        }
+        #endregion //DaeReserveMorale
 
         #region CWMapGen
         static void CWMapGen()
