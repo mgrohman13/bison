@@ -33,7 +33,9 @@ namespace randTest
             //    Console.ReadKey(true);
             //}
 
-            DaeReserveMorale();
+            XComShipSim();
+
+            //DaeReserveMorale();
 
             //TickTest();
 
@@ -60,6 +62,140 @@ namespace randTest
 
             Console.ReadKey(true);
         }
+
+        #region XComShipSim
+        static void XComShipSim()
+        {
+            XComShip x1 = new XComShip(120, new XComShip.Weapon(6, 60, 32, .7, 24), new XComShip.Weapon(6, 60, 32, .7, 24)); //dual AJAX
+            XComShip x2 = new XComShip(120, new XComShip.Weapon(3, 110, 50, .8, 36), new XComShip.Weapon(3, 110, 50, .8, 36)); //dual D.U.P. Head
+            XComShip a = new XComShip(700, new XComShip.Weapon(120, 50, 24)); //Battleship
+            XComShipSim(a, x1, x2);
+
+            x1 = new XComShip(120, new XComShip.Weapon(3, 110, 50, .8, 36), new XComShip.Weapon(3, 110, 50, .8, 36)); //dual D.U.P. Head
+            x2 = new XComShip(120, new XComShip.Weapon(3, 110, 50, .8, 36), new XComShip.Weapon(3, 110, 50, .8, 36)); //dual D.U.P. Head
+            a = new XComShip(700, new XComShip.Weapon(120, 50, 24)); //Battleship
+            XComShipSim(a, x1, x2);
+
+            x1 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(200, 15, 8, .25, 3)); //dual Gas Cannon
+            x2 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(3, 110, 50, .8, 36)); //Gas Cannon, D.U.P. Head
+            a = new XComShip(1000, new XComShip.Weapon(70, 38, 24)); //Fleet Supply Cruiser
+            XComShipSim(a, x1, x2);
+
+            x1 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(200, 15, 8, .25, 3)); //dual Gas Cannon
+            x2 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(200, 15, 8, .25, 3)); //dual Gas Cannon
+            a = new XComShip(1000, new XComShip.Weapon(70, 38, 24)); //Fleet Supply Cruiser
+            XComShipSim(a, x1, x2);
+        }
+        static void XComShipSim(XComShip alien, params XComShip[] xcom)
+        {
+            const int tries = 100000;
+            int[] killed = new int[xcom.Length + 1];
+            for (int a = 0 ; a < tries ; ++a)
+            {
+                foreach (var s in xcom.Concat(new[] { alien }))
+                    s.Reset();
+
+                var alive = xcom as IEnumerable<XComShip>;
+                int distx2 = alive.SelectMany(s => s.weapons).Max(w => w.range) * 2;
+                do
+                {
+                    var weapons = alive.Concat(new[] { alien }).SelectMany(s => s.weapons).Where(w => w.curShots > 0);
+                    Func<XComShip.Weapon, bool> InRange = w => w.range * 2 >= distx2;
+                    Func<XComShip.Weapon, bool> CanFire = w => w.curReload <= 0 && InRange(w);
+
+                    int interval = weapons.Where(w => !InRange(w)).Select(w => distx2 - w.range * 2)
+                            .Concat(weapons.Where(InRange).Select(w => w.curReload)).Min();
+                    distx2 -= interval;
+                    foreach (var w in weapons)
+                        w.curReload -= interval;
+
+                    var aW = alien.weapons.First();
+                    if (CanFire(aW))
+                        aW.Fire(rand.SelectValue(alive), true, alive.Count() > 1);
+                    foreach (var w in alive.SelectMany(s => s.weapons).Where(CanFire))
+                        w.Fire(alien, false, false);
+
+                    alive = alive.Where(s => s.curHits > 0).ToList();
+                } while (alien.curHits > 0 && alive.Any());
+
+                for (int b = 0 ; b < xcom.Length ; ++b)
+                    if (xcom[b].curHits <= 0)
+                        killed[b]++;
+                if (alien.curHits <= 0)
+                    killed[xcom.Length]++;
+            }
+            foreach (int ship in killed)
+                Console.WriteLine(ship / (double)tries);
+            Console.WriteLine();
+        }
+        class XComShip
+        {
+            public XComShip(int hits, Weapon w1, Weapon w2 = null)
+            {
+                this.hits = hits;
+                this.weapons = new List<Weapon>(new[] { w1 });
+                if (w2 != null)
+                    this.weapons.Add(w2);
+            }
+            public void Reset()
+            {
+                curHits = hits;
+                weapons.ForEach(w => w.Reset());
+            }
+            private readonly int hits;
+            public int curHits;
+            public readonly List<Weapon> weapons;
+            public override string ToString()
+            {
+                return string.Format("{0}/{1}", curHits, hits);
+            }
+            public class Weapon
+            {
+                const int difficulty = 0;
+                public Weapon(int dmg, int range, int reload)
+                {
+                    this.shots = int.MaxValue;
+                    this.dmg = dmg;
+                    this.range = range;
+                    this.acc = 60.0 / 101.0;
+                    this.reload = rand.Round(1.5 * ( reload - 2.0 * difficulty ));
+                }
+                public Weapon(int shots, int dmg, int range, double acc, int reload)
+                {
+                    this.shots = shots;
+                    this.dmg = dmg;
+                    this.range = range;
+                    this.acc = acc;
+                    this.reload = reload;
+                }
+                public void Reset()
+                {
+                    curShots = shots;
+                    curReload = 0;
+                }
+                public void Fire(XComShip target, bool alien, bool mob)
+                {
+                    --curShots;
+                    curReload = reload;
+                    if (alien)
+                        curReload += rand.RangeInt(0, reload);
+                    if (mob)
+                        curReload = rand.Round(curReload * .75);
+                    if (rand.Bool(acc))
+                        target.curHits -= rand.RangeInt(dmg, alien ? 0 : rand.Round(dmg / 2.0));
+                }
+                private readonly int shots, dmg, reload;
+                public readonly int range;
+                public int curShots, curReload;
+                private readonly double acc;
+                public override string ToString()
+                {
+                    return string.Format("{0} {5} {6} {1}/{2} {3}/{4}", dmg, curReload, reload, curShots, shots, acc, range);
+                }
+            }
+        }
+
+        #endregion //XComShipSim
 
         #region TickTest
         private static void TickTest()
