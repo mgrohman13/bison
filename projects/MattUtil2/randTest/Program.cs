@@ -66,29 +66,77 @@ namespace randTest
         #region XComShipSim
         static void XComShipSim()
         {
-            XComShip x1 = new XComShip(120, new XComShip.Weapon(6, 60, 32, .7, 24), new XComShip.Weapon(6, 60, 32, .7, 24)); //dual AJAX
-            XComShip x2 = new XComShip(120, new XComShip.Weapon(3, 110, 50, .8, 36), new XComShip.Weapon(3, 110, 50, .8, 36)); //dual D.U.P. Head
-            XComShip a = new XComShip(700, new XComShip.Weapon(120, 50, 24)); //Battleship
-            XComShipSim(a, x1, x2);
+            const int Beginner = 0;
+            const int Experienced = 1;
+            const int Veteran = 2;
+            const int Genius = 3;
+            const int Superhuman = 4;
+            Func<XComShip> Cruiser = () => new XComShip(new Tuple<String, int, int>("Cruiser", 150, 4), new XComShip.Weapon(25, 35, 48));
+            Func<XComShip> Escort = () => new XComShip(new Tuple<String, int, int>("Escort", 150, 4), new XComShip.Weapon(30, 13, 56));
+            Func<XComShip> Hunter = () => new XComShip(new Tuple<String, int, int>("Hunter", 250, 3), new XComShip.Weapon(50, 18, 48));
+            Func<XComShip> HeavyCruiser = () => new XComShip(new Tuple<String, int, int>("HeavyCruiser", 225, 3), new XComShip.Weapon(60, 20, 32));
+            Func<XComShip> FleetSupplyCruiser = () => new XComShip(new Tuple<String, int, int>("FleetSupplyCruiser", 1000, 2), new XComShip.Weapon(70, 38, 24));
+            Func<XComShip> Battleship = () => new XComShip(new Tuple<String, int, int>("Battleship", 700, 2), new XComShip.Weapon(120, 50, 24));
+            Func<XComShip> Dreadnought = () => new XComShip(new Tuple<String, int, int>("Dreadnought", 1700, 1), new XComShip.Weapon(140, 60, 24));
+            Func<Tuple<String, int>> Barracuda = () => new Tuple<String, int>("Barracuda", 120);
+            Func<Tuple<String, int>> Manta = () => new Tuple<String, int>("Manta", 400);
+            Func<Tuple<String, int>> Hammerhead = () => new Tuple<String, int>("Hammerhead", 960);
+            Func<Tuple<String, int>> Leviathan = () => new Tuple<String, int>("Leviathan", 1250);
+            Func<XComShip.Weapon> GasCannon = () => new XComShip.Weapon("GasCannon", 200, 15, 8, .25, 3);
+            Func<XComShip.Weapon> AJAX = () => new XComShip.Weapon("AJAX", 6, 60, 32, .7, 24);
+            Func<XComShip.Weapon> DUPHead = () => new XComShip.Weapon("DUPHead", 3, 110, 50, .8, 36);
+            Func<XComShip.Weapon> GaussCannon = () => new XComShip.Weapon("GaussCannon", 50, 90, 20, .35, 18);
+            Func<XComShip.Weapon> SonicOscillator = () => new XComShip.Weapon("SonicOscillator", 100, 150, 55, .5, 18);
+            Func<XComShip.Weapon> PWTLauncher = () => new XComShip.Weapon("PWTLauncher", 2, 200, 60, 1, 24);
 
-            x1 = new XComShip(120, new XComShip.Weapon(3, 110, 50, .8, 36), new XComShip.Weapon(3, 110, 50, .8, 36)); //dual D.U.P. Head
-            x2 = new XComShip(120, new XComShip.Weapon(3, 110, 50, .8, 36), new XComShip.Weapon(3, 110, 50, .8, 36)); //dual D.U.P. Head
-            a = new XComShip(700, new XComShip.Weapon(120, 50, 24)); //Battleship
-            XComShipSim(a, x1, x2);
+            XComShip.Weapon.setDifficulty(Superhuman);
+            for (int numBs = 1 ; numBs <= 3 ; ++numBs)
+            {
+                //Console.WriteLine(numBs);
+                //Console.WriteLine();
+                //Console.WriteLine();
+                XComShip[] xcom = new XComShip[numBs];
+                for (int b = 0 ; b < numBs ; ++b)
+                    xcom[b] = new XComShip(Barracuda(), PWTLauncher(), PWTLauncher());
+                XComShipSim(FleetSupplyCruiser(), xcom);
+                XComShipSim(Battleship(), xcom);
+                XComShipSim(Dreadnought(), xcom);
+            }
 
-            x1 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(200, 15, 8, .25, 3)); //dual Gas Cannon
-            x2 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(3, 110, 50, .8, 36)); //Gas Cannon, D.U.P. Head
-            a = new XComShip(1000, new XComShip.Weapon(70, 38, 24)); //Fleet Supply Cruiser
-            XComShipSim(a, x1, x2);
+            for (int a = 0 ; a < 5 ; ++a)
+            {
+                XComShip.Weapon.setDifficulty(a);
 
-            x1 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(200, 15, 8, .25, 3)); //dual Gas Cannon
-            x2 = new XComShip(120, new XComShip.Weapon(200, 15, 8, .25, 3), new XComShip.Weapon(200, 15, 8, .25, 3)); //dual Gas Cannon
-            a = new XComShip(1000, new XComShip.Weapon(70, 38, 24)); //Fleet Supply Cruiser
-            XComShipSim(a, x1, x2);
+                XComShipSim(FleetSupplyCruiser(), new XComShip(Barracuda(), SonicOscillator(), SonicOscillator()));
+                XComShipSim(Battleship(), new XComShip(Barracuda(), SonicOscillator(), SonicOscillator()));
+                XComShipSim(Dreadnought(), new XComShip(Barracuda(), SonicOscillator(), SonicOscillator()),
+                        new XComShip(Barracuda(), SonicOscillator(), SonicOscillator()));
+
+                XComShipSim(Hunter(), new XComShip(Barracuda(), GasCannon(), GasCannon()));
+                XComShipSim(HeavyCruiser(), new XComShip(Barracuda(), GasCannon(), GasCannon()));
+
+                XComShipSim(FleetSupplyCruiser(), new XComShip(Barracuda(), GasCannon(), GasCannon()));
+                XComShipSim(FleetSupplyCruiser(), new XComShip(Barracuda(), GaussCannon(), GaussCannon()));
+
+                XComShipSim(Battleship(), new XComShip(Barracuda(), GasCannon(), GasCannon()), new XComShip(Barracuda(), GasCannon(), GasCannon()));
+                XComShipSim(Battleship(), new XComShip(Barracuda(), DUPHead(), DUPHead()), new XComShip(Barracuda(), AJAX(), AJAX()));
+                XComShipSim(Battleship(), new XComShip(Barracuda(), DUPHead(), DUPHead()), new XComShip(Barracuda(), DUPHead(), DUPHead()));
+                XComShipSim(FleetSupplyCruiser(), new XComShip(Barracuda(), GasCannon(), GasCannon()), new XComShip(Barracuda(), GasCannon(), GasCannon()));
+                XComShipSim(Dreadnought(), new XComShip(Barracuda(), GasCannon(), GasCannon()), new XComShip(Barracuda(), GasCannon(), GasCannon()),
+                        new XComShip(Barracuda(), GasCannon(), GasCannon()));
+
+                XComShipSim(FleetSupplyCruiser(), new XComShip(Manta(), GasCannon(), GasCannon()));
+                XComShipSim(FleetSupplyCruiser(), new XComShip(Manta(), GaussCannon(), GaussCannon()));
+                XComShipSim(Battleship(), new XComShip(Manta(), GasCannon(), GasCannon()));
+                XComShipSim(Battleship(), new XComShip(Manta(), GaussCannon(), GaussCannon()));
+                XComShipSim(Dreadnought(), new XComShip(Manta(), GasCannon(), GasCannon()));
+                XComShipSim(Dreadnought(), new XComShip(Manta(), GaussCannon(), GaussCannon()));
+                XComShipSim(Dreadnought(), new XComShip(Manta(), SonicOscillator(), SonicOscillator()));
+            }
         }
         static void XComShipSim(XComShip alien, params XComShip[] xcom)
         {
-            const int tries = 100000;
+            const int tries = 10000;
             int[] killed = new int[xcom.Length + 1];
             for (int a = 0 ; a < tries ; ++a)
             {
@@ -109,7 +157,8 @@ namespace randTest
                     foreach (var w in weapons)
                         w.curReload -= interval;
 
-                    var aW = alien.weapons.First();
+                    //simulate projectile travel speed?
+                    var aW = alien.weapons[0];
                     if (CanFire(aW))
                         aW.Fire(rand.SelectValue(alive), true, alive.Count() > 1);
                     foreach (var w in alive.SelectMany(s => s.weapons).Where(CanFire))
@@ -124,15 +173,24 @@ namespace randTest
                 if (alien.curHits <= 0)
                     killed[xcom.Length]++;
             }
-            foreach (int ship in killed)
-                Console.WriteLine(ship / (double)tries);
+            for (int b = 0 ; b < killed.Length ; ++b)
+            {
+                XComShip ship = b < xcom.Length ? xcom[b] : alien;
+                Console.WriteLine("{0:000.0%} - {1} {2} {3}", killed[b] / (double)tries, ship.name, ship.weapons[0].name, ship.weapons.Count > 1 ? ship.weapons[1].name : "");
+            }
             Console.WriteLine();
         }
         class XComShip
         {
-            public XComShip(int hits, Weapon w1, Weapon w2 = null)
+            public XComShip(Tuple<string, int, int> nameHitsSize, Weapon w1)
+                : this(new Tuple<string, int>(nameHitsSize.Item1, nameHitsSize.Item2), w1)
             {
-                this.hits = hits;
+                this.size = nameHitsSize.Item3;
+            }
+            public XComShip(Tuple<string, int> nameHits, Weapon w1, Weapon w2 = null)
+            {
+                this.name = nameHits.Item1;
+                this.hits = nameHits.Item2;
                 this.weapons = new List<Weapon>(new[] { w1 });
                 if (w2 != null)
                     this.weapons.Add(w2);
@@ -142,26 +200,57 @@ namespace randTest
                 curHits = hits;
                 weapons.ForEach(w => w.Reset());
             }
-            private readonly int hits;
+            public readonly string name;
+            private readonly int hits, size;
             public int curHits;
             public readonly List<Weapon> weapons;
             public override string ToString()
             {
-                return string.Format("{0}/{1}", curHits, hits);
+                return string.Format("{2}: {0}/{1}", curHits, hits, name);
             }
             public class Weapon
             {
-                const int difficulty = 0;
+                private static int difficulty = int.MinValue;
+                public static void setDifficulty(int difficulty)
+                {
+                    Weapon.difficulty = difficulty;
+                    string dName = null;
+                    switch (difficulty)
+                    {
+                    case 0:
+                        dName = "Beginner";
+                        break;
+                    case 1:
+                        dName = "Experienced";
+                        break;
+                    case 2:
+                        dName = "Veteran";
+                        break;
+                    case 3:
+                        dName = "Genius";
+                        break;
+                    case 4:
+                        dName = "Superhuman";
+                        break;
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine(dName);
+                    Console.WriteLine();
+                }
                 public Weapon(int dmg, int range, int reload)
                 {
+                    if (difficulty < 0 || difficulty > 4)
+                        throw new Exception();
+                    this.name = "";
                     this.shots = int.MaxValue;
                     this.dmg = dmg;
                     this.range = range;
                     this.acc = 60.0 / 101.0;
                     this.reload = rand.Round(1.5 * ( reload - 2.0 * difficulty ));
                 }
-                public Weapon(int shots, int dmg, int range, double acc, int reload)
+                public Weapon(string name, int shots, int dmg, int range, double acc, int reload)
                 {
+                    this.name = name;
                     this.shots = shots;
                     this.dmg = dmg;
                     this.range = range;
@@ -177,24 +266,29 @@ namespace randTest
                 {
                     --curShots;
                     curReload = reload;
+                    double acc = this.acc;
                     if (alien)
                         curReload += rand.RangeInt(0, reload);
+                    else if (target.size >= 1 && target.size <= 5)
+                        ; //acc *= ( 1.0 + ( 3.0 / target.size ) ) / 2.0; //this seems hard to believe
+                    else
+                        throw new Exception();
                     if (mob)
-                        curReload = rand.Round(curReload * .75);
-                    if (rand.Bool(acc))
+                        curReload = rand.Round(curReload * .75); //this is just a best a guess of the actual behavior
+                    if (rand.Bool(acc)) //(acc > 0 && ( acc > 1 || rand.Bool(acc) )) //only needed with above accuracy modifier
                         target.curHits -= rand.RangeInt(dmg, alien ? 0 : rand.Round(dmg / 2.0));
                 }
+                public readonly string name;
                 private readonly int shots, dmg, reload;
                 public readonly int range;
                 public int curShots, curReload;
                 private readonly double acc;
                 public override string ToString()
                 {
-                    return string.Format("{0} {5} {6} {1}/{2} {3}/{4}", dmg, curReload, reload, curShots, shots, acc, range);
+                    return string.Format("{7}: {0} {5} {6} {1}/{2} {3}/{4}", dmg, curReload, reload, curShots, shots, acc, range, name);
                 }
             }
         }
-
         #endregion //XComShipSim
 
         #region TickTest
