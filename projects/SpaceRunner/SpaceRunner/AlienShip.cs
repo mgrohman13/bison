@@ -29,6 +29,7 @@ namespace SpaceRunner
             return new AlienShip(game, point.X, point.Y);
         }
 
+        private float tx, ty, moveTypeRatio;
         private AlienShip(Game game, float x, float y)
             : base(game, x, y, Game.AlienShipSize, AlienShipImage)
         {
@@ -36,6 +37,9 @@ namespace SpaceRunner
             this.fireRate = RandVal(Game.AlienShipFireRate);
             this.speedMult = RandVal(Game.AlienShipSpeedMult, 1);
             this.coolDown = -1;
+
+            game.GetRandomDirection(out this.tx, out this.ty, ( Game.MapSize / 2f ) * ( Game.AlienShipSpeedMult / this.speedMult ));
+            moveTypeRatio = game.GameRand.Weighted(game.GameRand.Weighted(game.GameRand.DoubleHalf(1)));
         }
 
         internal override decimal Score
@@ -99,7 +103,16 @@ namespace SpaceRunner
             //speed adjusts based on distance from player to keep from running into the player
             speed = Game.GetDistance(x, y) / Game.MapSize * speedMult * Game.BasePlayerSpeed;
 
-            Game.ShootAtPlayer(fireRate, ref coolDown, speed, x, y, Size);
+            xDir = ( tx - x );
+            yDir = ( ty - y );
+            Game.NormalizeDirs(ref xDir, ref yDir, speed * moveTypeRatio);
+
+            speed *= ( 1f - moveTypeRatio );
+
+            float xMove, yMove;
+            GetTotalMove(out xMove, out yMove);
+            float towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
+            Game.ShootAtPlayer(fireRate, ref coolDown, towardsPlayer, x, y, Size);
         }
 
         protected override void Collide(GameObject obj)
@@ -203,7 +216,7 @@ namespace SpaceRunner
         {
             base.Draw(graphics, centerX, centerY);
 
-            if (Game.GetDistance(x, y) - size < Game.MapSize)
+            if (ShouldDraw(x, y, size))
                 Game.DrawHealthBar(graphics, this, GetLifePct());
         }
     }

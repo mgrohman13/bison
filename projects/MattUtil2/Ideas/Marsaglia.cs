@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MattUtil
+namespace Ideas
 {
     //http://www.cs.ucl.ac.uk/staff/d.jones/GoodPracticeRNG.pdf
     //https://groups.google.com/group/sci.math.num-analysis/msg/eb4ddde782b17051?hl=en

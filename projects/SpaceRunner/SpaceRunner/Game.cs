@@ -1337,13 +1337,14 @@ namespace SpaceRunner
             //    obj_ = obj_2;
             //}
         }
-        //static void PrintObjInfo(GameObject obj)
+        //public void PrintObjInfo(GameObject obj, bool tickCount)
         //{
         //    if (obj != null)
         //    {
         //        string point = string.Format("({0},{1})", obj.X.ToString("0.0"), obj.Y.ToString("0.0"));
-        //        Console.WriteLine("{0}\t{1}{2}{3}", GetDistance(obj.X, obj.Y).ToString("0").PadLeft(5),
-        //                point, point.Length < 12 ? "\t\t\t" : ( point.Length < 16 ? "\t\t" : "\t" ), obj.ToString().Substring(12));
+        //        Console.WriteLine("{4}{0}\t{1}{2}{3}", GetDistance(obj.X, obj.Y).ToString("0").PadLeft(5),
+        //                point, point.Length < 12 ? "\t\t\t" : ( point.Length < 16 ? "\t\t" : "\t" ), obj.ToString().Substring(12),
+        //                tickCount ? this.TickCount.ToString().PadLeft(7) + "\t" : "");
         //    }
         //}
         internal void HitPlayer(float damage, bool randomize = true)

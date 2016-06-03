@@ -740,7 +740,7 @@ namespace GalWar
         private static void CheckFocusStat(double str, ref int s1, ref int s2)
         {
             if (s1 >= s2)
-                while (s1 < Game.Random.GaussianOEInt(s2 * FocusAttMult, .26, .078))
+                while (s1 < Game.Random.GaussianOEInt(s2 * FocusAttMult, .65 / FocusAttMult, .078))
                     MakeAttDef(str, out s1, out s2);
         }
         private static void MakeAttDef(double str, out int s1, out int s2)

@@ -337,7 +337,7 @@ namespace Daemons
                 defender.hits = 0;
                 defender.Die();
 
-                MultFriendlyMorale(defender.tile, defender, 1);
+                MultFriendlyMorale(defender.tile, defender, .91);
                 addMorale += defender.StrengthMax;
 
                 this.owner.AddSouls(defender.souls, true);
@@ -367,8 +367,8 @@ namespace Daemons
 
         internal static void Retreated(IEnumerable<Unit> retreated, Tile tile)
         {
-            foreach (Unit unit in retreated)
-                MultFriendlyMorale(tile, unit, .52);
+            foreach (Unit unit in Game.Random.Iterate(retreated))
+                MultFriendlyMorale(tile, unit, .65);
         }
 
         private static void MultFriendlyMorale(Tile tile, Unit defender, double modifier)

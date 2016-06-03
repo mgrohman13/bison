@@ -154,7 +154,7 @@ namespace SpaceRunner
 
         internal static void DrawImage(Graphics graphics, Image image, int centerX, int centerY, float speed, float x, float y, float size, float curAngle)
         {
-            if (Game.GetDistance(x, y) - size < Game.MapSize)
+            if (ShouldDraw(x, y, size))
                 lock (image)
                 {
 #if DEBUG
@@ -185,6 +185,11 @@ namespace SpaceRunner
                 }
         }
 
+        protected static bool ShouldDraw(float x, float y, float size)
+        {
+            return ( Game.GetDistance(x, y) - size < Game.MapSize );
+        }
+
         protected virtual void OnStep()
         {
         }
@@ -200,7 +205,10 @@ namespace SpaceRunner
 
             float dist = Game.GetDistance(x, y) - Size, checkDist = dist - Game.CreationDist;
             if (checkDist > 0 && Game.GameRand.Bool((float)( 1.0 - Math.Pow(1.0 - checkDist / ( checkDist + Game.RemovalDist ), Game.TotalSpeed) )))
+            {
+                //Game.PrintObjInfo(this, true);
                 Game.RemoveObject(this);
+            }
             else if (dist < Game.PlayerSize)
                 HitPlayer();
 

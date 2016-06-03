@@ -1,9 +1,11 @@
 souls int?
 
-MultFriendlyMorale in bulk - OK?
+Unit.Retreated(retreated, this); at end of retreat check but not in between
+
 morale drop below epsilon - adds battles?
 	indy can try to set morale to 0
 	surrender?
+	absolute minimum damage could stand to be 5x higher
 
 log tried but failed retreats?
 indy kills last player shows score without final winner - workaround just end turn

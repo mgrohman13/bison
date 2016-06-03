@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MattUtil", "MattUtil\MattUtil.csproj", "{531F3166-D160-4185-B555-1A279F10FA7A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "randTest", "randTest\randTest.csproj", "{EDD09CC3-43F5-467C-8A32-B4086B4CEDEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ideas", "Ideas\Ideas.csproj", "{585F359D-B388-4B8C-BCCD-D78B158FC1BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +21,10 @@ Global
 		{EDD09CC3-43F5-467C-8A32-B4086B4CEDEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDD09CC3-43F5-467C-8A32-B4086B4CEDEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDD09CC3-43F5-467C-8A32-B4086B4CEDEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{585F359D-B388-4B8C-BCCD-D78B158FC1BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{585F359D-B388-4B8C-BCCD-D78B158FC1BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{585F359D-B388-4B8C-BCCD-D78B158FC1BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{585F359D-B388-4B8C-BCCD-D78B158FC1BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

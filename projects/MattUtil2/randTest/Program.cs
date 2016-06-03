@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MattUtil;
+using Ideas;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace randTest
@@ -13,9 +15,116 @@ namespace randTest
     {
         static MTRandom rand = new MTRandom();
 
+        [STAThread]
         static void Main(string[] args)
         {
             rand.StartTick();
+
+
+            for (int testiter = 0 ; testiter < 1 ; ++testiter)
+            {
+                Console.WriteLine(testiter);
+                const int g = 100;
+                int[] c = new int[g];
+                for (int a = 0 ; a < 1000000 ; ++a)
+                {
+                    //double weight = rand.DoubleHalf(1);
+                    //for (int b = 0 ; b < testiter ; ++b)
+                    //    weight = rand.Weighted(weight);
+                    //c[rand.WeightedInt(g - 1, weight)]++;
+
+                    c[rand.WeightedInt(g - 1, rand.Weighted(rand.DoubleHalf(1)))]++;
+
+                }
+                int runtot = 0;
+                for (int b = 0 ; b < g ; ++b)
+                    Console.WriteLine(runtot += c[b]);
+                Console.WriteLine();
+            }
+            Console.ReadKey();
+            return;
+
+
+            //new RandBooleans(rand, .5);
+
+            Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / RandBooleans.GaussianDeviation) ).ToString().PadRight(21), RandBooleans.GaussianDeviation);
+            float lifeDustBond = (float)( Math.E / 13.0 );
+            Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / lifeDustBond) ).ToString().PadRight(21), lifeDustBond);
+            Console.WriteLine();
+
+            double change = rand.Weighted(1.0 / 13);
+            Console.WriteLine(change);
+            Console.WriteLine();
+            bool dir = rand.Bool();
+            int f1 = 0, fm1 = 0, f2 = 0, fm2 = 0, t1 = 0, tm1 = 0, t2 = 0, tm2 = 0;
+            double trg = rand.DoubleHalf();
+            Console.WriteLine(trg);
+            RandBooleans rb = new RandBooleans(rand, trg);
+
+            int t = 0, f = 0;
+
+            while (true)
+            {
+                if (rand.Bool(change))
+                {
+                    rb.Chance = trg = rand.DoubleHalf();
+
+
+                    Console.WriteLine(t / (double)( t + f ));
+                    Console.WriteLine(t + f);
+                    Console.WriteLine();
+                    t = 0;
+                    f = 0;
+                    Thread.Sleep(1300);
+
+                    Console.WriteLine(trg);
+
+                }
+                bool b = ( rb.GetResult() );
+                bool r = ( rand.Bool(trg) );
+                if (b)
+                {
+                    ++t;
+                    f1 = 0;
+                    if (++t1 > tm1)
+                    {
+                        tm1 = t1;
+                        //Console.WriteLine("bt: " + t1);
+                    }
+                }
+                else
+                {
+                    ++f;
+                    t1 = 0;
+                    if (++f1 > fm1)
+                    {
+                        fm1 = f1;
+                        //Console.WriteLine("bf: " + f1);
+                    }
+                }
+                if (r)
+                {
+                    f2 = 0;
+                    if (++t2 > tm2)
+                    {
+                        tm2 = t2;
+                        //Console.WriteLine("rt: " + t2);
+                    }
+                }
+                else
+                {
+                    t2 = 0;
+                    if (++f2 > fm2)
+                    {
+                        fm2 = f2;
+                        //Console.WriteLine("rf: " + f2);
+                    }
+                }
+
+                Console.WriteLine("{0}    {1}", ( dir ? b : r ).ToString().PadRight(5), dir ? r : b);
+                Thread.Sleep(1300);
+            }
+
 
             //float f1 = rand.OEFloat();
             //float f2 = rand.OEFloat();
@@ -33,7 +142,10 @@ namespace randTest
             //    Console.ReadKey(true);
             //}
 
-            XComShipSim();
+
+            //NormSDist();
+
+            //XComShipSim();
 
             //DaeReserveMorale();
 
@@ -51,6 +163,7 @@ namespace randTest
 
             //GenerateTerrain();
 
+
             //rand = null;
             //while (true)
             //{
@@ -60,8 +173,215 @@ namespace randTest
             //for (int a = 0 ; a < 13 ; ++a)
             //    new MTRandom().StartTick(0);
 
+
             Console.ReadKey(true);
         }
+
+        #region NormSDist
+        static double NormDense(double x, double mean, double stdDev)
+        {
+            return Math.Exp(Math.Pow(x - mean, 2.0) / ( -2.0 * Math.Pow(stdDev, 2.0) )) / ( stdDev * Math.Sqrt(2.0 * Math.PI) );
+        }
+        static double NormDenseInv(double y, double mean, double stdDev)
+        {
+            double retVal = stdDev * Math.Sqrt(2.0 * Math.Log(1.0 / ( y * stdDev )) - Math.Log(2.0 * Math.PI));
+            return mean + retVal; //alternatively: mean - retVal
+        }
+        static void NormSDist()
+        {
+            //Console.WriteLine(NormDense(0, 0, 1));
+            //Console.WriteLine(0.5 / NormSDist(-2.1));
+            //Console.WriteLine();
+
+            //Console.WriteLine(1.0 / MTRandom.GAUSSIAN_MAX);
+            //Console.WriteLine(0.117 * MTRandom.GAUSSIAN_MAX);
+
+            for (int n = 2 ; n < 101 ; ++n)
+                Console.WriteLine(TBSUtil.FindValue((v) => ( 0.5 / NormSDist(-1 / v) ), n, 2, 0).ToString().PadRight(21) + n);
+
+            Action<double> Print = v => Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / v) ).ToString().PadRight(21), v);
+            //Print(3.0);
+            //Print(2.6);
+            //Print(2.1);
+            //Print(1.69);
+            //Print(1.3);
+            //Print(1.04);
+            //Print(1.0);
+            //Print(0.91);
+            //Print(0.78);
+            //Print(0.65);
+            //Print(0.52);
+            //Print(4.0 / 9.0);
+            //Print(0.39);
+            //Print(1.0 / 3.0);
+            //Print(0.3);
+            //Print(0.26);
+            //Print(0.21);
+            //Print(0.169);
+            //Print(0.13);
+            //Print(0.117);
+            //Print(0.104);
+
+            //////requires modification of FindValue conditional from (result <= target) to (result < target)
+            //////8.2923610758167
+            ////Console.WriteLine(TBSUtil.FindValue(z => NormSDist(z), 1, 3.65, 10.9));
+            ////Console.WriteLine();
+
+            //const double excelMax = 8.29230302795755;
+            //Console.WriteLine(excelMax);
+            //Console.WriteLine(( -Math.Log(NormDense(excelMax, 0, 1), 2) ) + "   Excel");
+            //Console.WriteLine(MTRandom.GAUSSIAN_MAX);
+            //Console.WriteLine(( -Math.Log(NormDense(MTRandom.GAUSSIAN_MAX, 0, 1), 2) ) + "   MTRandom");
+            //const double normSDistMax = 8.2923610758167;
+            //Console.WriteLine(normSDistMax);
+            //Console.WriteLine(( -Math.Log(NormDense(normSDistMax, 0, 1), 2) ) + "   NormSDist");
+            //Console.WriteLine();
+
+            //double val = double.NaN;
+            //for (int a = -3 ; a < 2 ; ++a)
+            //{
+            //    double trg = 1.0 / Math.Pow(2.0, MTRandom.DOUBLE_BITS + a);
+            //    Console.WriteLine(NormDenseInv(trg, 0, 1).ToString("0.00000000000000") + "   " + ( MTRandom.DOUBLE_BITS + a ));
+            //    if (double.IsNaN(val))
+            //        val = NormDenseInv(trg, 0, 1);
+            //}
+            //Console.WriteLine();
+
+            //while (true)
+            //{
+            //    //double v = -rand.OE(MTRandom.GAUSSIAN_MAX);
+            //    //double v2 = 1 - Math.Log10(NormSDist(v) * 2.0);
+            //    //Console.WriteLine(v + "  " + v2);
+
+            //    double v3 = rand.OE(MTRandom.GAUSSIAN_MAX);
+
+            //    //Console.WriteLine(v3);
+            //    //Console.WriteLine(AsymptoticSeries(v3));
+            //    //Console.WriteLine(NormSDist(v3));
+            //    //Console.WriteLine();
+
+            //    double d1 = NormSDist(-v3), d2 = NormSDist(v3);
+            //    Console.WriteLine(v3);
+            //    Console.WriteLine(d2);
+            //    Console.WriteLine(d1);
+            //    Console.WriteLine(d1 + d2);
+            //    Console.WriteLine();
+
+            //    Thread.Sleep(2600);
+            //}
+        }
+
+        //static double ContinuedFraction(double z)
+        //{
+        //    bool sign = ( z > 0 );
+        //    if (!sign)
+        //        z = -z;
+        //    const int cnt = 100000000;
+        //    double f = 1;//0
+        //    for (int n = cnt ; n > 0 ; --n)
+        //    {
+        //        f = n / ( ( ( n % 2 ) + 1.0 ) * z + f );
+        //    }
+        //    //Math.Sqrt(Math.PI) / 2.0 -
+        //    double aln = 0.5 * Math.Exp(-z * z) / f;
+        //    return ( sign ? 1.0 - aln : aln );
+        //}
+
+        //z>~8.7
+        static double AsymptoticSeries(double z)
+        {
+            bool sign = ( z > 0 );
+            if (!sign)
+                z = -z;
+            double coefficient = 1;
+            double prev = double.NaN;
+            double erf = 1.0 / z;
+            for (int n = 1 ; prev != erf ; ++n)
+            {
+                coefficient *= -( 2.0 * n - 1.0 );
+                prev = erf;
+                erf += coefficient / Math.Pow(z, 2.0 * n + 1);
+            }
+            double aln = erf * Math.Exp(-( z * z ) / 2.0) / Math.Sqrt(2.0 * Math.PI);
+            return ( sign ? 1.0 - aln : aln );
+        }
+
+        static double NormDist(double x, double mean, double stdDev)
+        {
+            return NormSDist(x - mean) / stdDev;
+        }
+        //ALGORITHM AS 66 APPL. STATIST. (1973) VOL.22, NO.3:
+        //Hill,  I.D.  (1973).  Algorithm AS 66.  The normal  integral.
+        //                      Appl. Statist.,22,424-427.
+        //Compute values of the cumulative normal probability function
+        //From G. Dallal's STAT-SAK (Fortran code)
+        //Additional precision using asymptotic expression added 7/8/92
+        //2/9/16: use Black-Scholes model for z<3.65
+        //  add additional power series expression term and use for for z>10.9 (instead of 15)
+        static double NormSDist(double z)
+        {
+            const double FORMULA_BREAK = 3.65; //Changes to cont. fraction
+            const double UPPER_TAIL_IS_ZERO = 10.9; //Changes to power series expression
+            double LOWER_TAIL_IS_ONE = MTRandom.GAUSSIAN_MAX; //I.e., alnorm(8.5,0) = .999999999999+
+
+            double aln;
+            bool up = ( z < 0.0 );
+            if (up)
+                z = -z;
+
+            Func<double> y = () => Math.Exp(-0.5 * z * z) / Math.Sqrt(2.0 * Math.PI);
+
+            //Evaluates the tail area of the standard normal curve from z to infinity if up, or from -infinity to z if not up
+            if (z < LOWER_TAIL_IS_ONE || ( up && z < UPPER_TAIL_IS_ZERO ))
+            {
+                //double y = ;
+                if (z > FORMULA_BREAK)
+                    aln = y() /
+                            ( z - 3.8052E-8 + 1.00000615302 /
+                            ( z + 3.98064794E-4 + 1.98615381364 /
+                            ( z - 0.151679116635 + 5.29330324926 /
+                            ( z + 4.8385912808 - 15.1508972451 /
+                            ( z + 0.742380924027 + 30.789933034 /
+                            ( z + 3.99019417011 ) ) ) ) ) );
+                else
+                    aln = 1.0 - BlackScholes(z);
+            }
+            else
+            {
+                if (up)
+                {
+                    //7/8/92
+                    //Uses asymptotic expansion for exp(-z*z/2)/alnorm(z)
+                    //Agrees with continued fraction to 11 s.f. when z >= 16 and coefficients through 706 are used
+                    double w = 1.0 / ( z * z ); //1/z^2
+                    aln = y() / ( z * ( 1 + w * ( 1 + w * ( -2 + w * ( 10 + w * ( -74 + w * ( 706 + w * ( -8162 + w * 110410 ) ) ) ) ) ) ) );
+                    //https://oeis.org/A000698
+                }
+                else
+                {
+                    aln = 0.0;
+                }
+            }
+
+            return up ? aln : 1.0 - aln;
+        }
+        static double BlackScholes(double z)
+        {
+            int sign = ( z >= 0 ? 1 : -1 );
+            z = Math.Abs(z) / Math.Sqrt(2.0);
+            double coefficient = 1.0;
+            double prev = double.NaN;
+            double erf = z;
+            for (int n = 1 ; prev != erf ; n++)
+            {
+                coefficient *= ( -2.0 * n + 1.0 ) / ( n * ( 2.0 * n + 1.0 ) );
+                prev = erf;
+                erf += coefficient * Math.Pow(z, 2.0 * n + 1.0);
+            }
+            return 0.5 + sign * erf / Math.Sqrt(Math.PI);
+        }
+
+        #endregion NormSDist
 
         #region XComShipSim
         static void XComShipSim()
@@ -134,49 +454,63 @@ namespace randTest
                 XComShipSim(Dreadnought(), new XComShip(Manta(), SonicOscillator(), SonicOscillator()));
             }
         }
-        static void XComShipSim(XComShip alien, params XComShip[] xcom)
+        static void XComShipSim(XComShip ap, params XComShip[] xp)
         {
-            const int tries = 10000;
-            int[] killed = new int[xcom.Length + 1];
-            for (int a = 0 ; a < tries ; ++a)
+            const int timePer = 2100;
+            int tries = 0, time = Environment.TickCount;
+            int[] killed = new int[xp.Length + 1];
+            Action action = () =>
             {
-                foreach (var s in xcom.Concat(new[] { alien }))
-                    s.Reset();
-
-                var alive = xcom as IEnumerable<XComShip>;
-                int distx2 = alive.SelectMany(s => s.weapons).Max(w => w.range) * 2;
-                do
+                while (time + timePer > Environment.TickCount)
                 {
-                    var weapons = alive.Concat(new[] { alien }).SelectMany(s => s.weapons).Where(w => w.curShots > 0);
-                    Func<XComShip.Weapon, bool> InRange = w => w.range * 2 >= distx2;
-                    Func<XComShip.Weapon, bool> CanFire = w => w.curReload <= 0 && InRange(w);
+                    XComShip alien = ap.Clone(true);
+                    XComShip[] xcom = new XComShip[xp.Length];
+                    for (int a = 0 ; a < xp.Length ; ++a)
+                        xcom[a] = xp[a].Clone(false);
+                    lock (typeof(Program))
+                        ++tries;
+                    foreach (var s in xcom.Concat(new[] { alien }))
+                        s.Reset();
 
-                    int interval = weapons.Where(w => !InRange(w)).Select(w => distx2 - w.range * 2)
-                            .Concat(weapons.Where(InRange).Select(w => w.curReload)).Min();
-                    distx2 -= interval;
-                    foreach (var w in weapons)
-                        w.curReload -= interval;
+                    var alive = xcom as IEnumerable<XComShip>;
+                    const int distMult = 2;
+                    int dist = alive.Concat(new[] { alien }).SelectMany(s => s.weapons).Max(w => w.range) * distMult;
+                    do
+                    {
+                        var weapons = alive.Concat(new[] { alien }).SelectMany(s => s.weapons).Where(w => w.curShots > 0);
+                        Func<XComShip.Weapon, bool> InRange = w => w.range * distMult >= dist;
+                        Func<XComShip.Weapon, bool> CanFire = w => w.curReload <= 0 && InRange(w);
 
-                    //simulate projectile travel speed?
-                    var aW = alien.weapons[0];
-                    if (CanFire(aW))
-                        aW.Fire(rand.SelectValue(alive), true, alive.Count() > 1);
-                    foreach (var w in alive.SelectMany(s => s.weapons).Where(CanFire))
-                        w.Fire(alien, false, false);
+                        int interval = weapons.Where(w => !InRange(w)).Select(w => dist - w.range * distMult).Concat(weapons.Where(InRange).Select(w => w.curReload)).Min();
+                        dist -= interval;
+                        foreach (var w in weapons)
+                            w.curReload -= interval;
 
-                    alive = alive.Where(s => s.curHits > 0).ToList();
-                } while (alien.curHits > 0 && alive.Any());
+                        //simulate projectile travel speed?
+                        var aW = alien.weapons[0];
+                        if (CanFire(aW))
+                            aW.Fire(rand.SelectValue(alive), true, alive.Count() > 1);
+                        foreach (var w in alive.SelectMany(s => s.weapons).Where(CanFire))
+                            w.Fire(alien, false, false);
 
-                for (int b = 0 ; b < xcom.Length ; ++b)
-                    if (xcom[b].curHits <= 0)
-                        killed[b]++;
-                if (alien.curHits <= 0)
-                    killed[xcom.Length]++;
-            }
-            for (int b = 0 ; b < killed.Length ; ++b)
+                        alive = alive.Where(s => s.curHits > 0).ToList();
+                    } while (alien.curHits > 0 && alive.Any());
+
+                    for (int b = 0 ; b < xcom.Length ; ++b) if (xcom[b].curHits <= 0)
+                            lock (typeof(Program))
+                                ++killed[b];
+                    if (alien.curHits <= 0)
+                        lock (typeof(Program))
+                            ++killed[xcom.Length];
+                }
+            };
+
+            Parallel.Invoke(Enumerable.Repeat<Action>(action, Math.Max(1, rand.Round(Environment.ProcessorCount / 1.95))).ToArray());
+            Console.WriteLine(tries.ToString("000000"));
+            for (int c = 0 ; c < killed.Length ; ++c)
             {
-                XComShip ship = b < xcom.Length ? xcom[b] : alien;
-                Console.WriteLine("{0:000.0%} - {1} {2} {3}", killed[b] / (double)tries, ship.name, ship.weapons[0].name, ship.weapons.Count > 1 ? ship.weapons[1].name : "");
+                XComShip ship = c < xp.Length ? xp[c] : ap;
+                Console.WriteLine("{0:000.0%} - {1} {2} {3}", killed[c] / (double)tries, ship.name, ship.weapons[0].name, ship.weapons.Count > 1 ? ship.weapons[1].name : "");
             }
             Console.WriteLine();
         }
@@ -199,6 +533,14 @@ namespace randTest
             {
                 curHits = hits;
                 weapons.ForEach(w => w.Reset());
+            }
+            public XComShip Clone(bool alien)
+            {
+                if (alien)
+                    return new XComShip(new Tuple<string, int, int>(name, hits, size), weapons[0].Clone(alien));
+                else
+                    return new XComShip(new Tuple<string, int>(name, hits), weapons[0].Clone(alien),
+                            weapons.Count > 1 ? weapons[1].Clone(alien) : null);
             }
             public readonly string name;
             private readonly int hits, size;
@@ -277,6 +619,13 @@ namespace randTest
                         curReload = rand.Round(curReload * .75); //this is just a best a guess of the actual behavior
                     if (rand.Bool(acc)) //(acc > 0 && ( acc > 1 || rand.Bool(acc) )) //only needed with above accuracy modifier
                         target.curHits -= rand.RangeInt(dmg, alien ? 0 : rand.Round(dmg / 2.0));
+                }
+                public Weapon Clone(bool alien)
+                {
+                    if (alien)
+                        return new Weapon(dmg, range, reload);
+                    else
+                        return new Weapon(name, shots, dmg, range, acc, reload);
                 }
                 public readonly string name;
                 private readonly int shots, dmg, reload;

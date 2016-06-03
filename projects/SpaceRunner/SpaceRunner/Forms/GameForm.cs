@@ -59,6 +59,10 @@ namespace SpaceRunner.Forms
             InitializeReplayMenu();
             InitializeComponent();
 
+#if TRACE
+            this.MaximizeBox = true;
+#endif
+
             base.game = game;
 
             center = GetCenter();
@@ -87,6 +91,11 @@ namespace SpaceRunner.Forms
             this.Size = new Size(widthOffset + center * 2, heightOffset + center * 2);
             this.MinimumSize = Size;
             this.MaximumSize = Size;
+#if TRACE
+            this.MinimumSize = new Size(0, 0);
+            this.MaximumSize = new Size(0, 0);
+#endif
+
             return new Point(center, center + base.menuStrip.Height);
         }
 

@@ -87,7 +87,7 @@ namespace Daemons
             while (startUnits.Count > 0 && this.independent.GetUnits().Any(unit => unit.Type == UnitType.Indy))
             {
                 Tile tile = GetRandomTile();
-                IEnumerable<Unit> units = tile.GetUnits(this.independent);
+                IEnumerable<Unit> units = tile.GetUnits(this.independent, type: UnitType.Indy);
                 if (units.Any())
                 {
                     Unit unit = Random.SelectValue(units);
@@ -126,7 +126,7 @@ namespace Daemons
         }
         private void AddIndyStart(Dictionary<UnitType, int> startUnits, UnitType unitType, double amt)
         {
-            int intAmt = Random.GaussianCappedInt(amt, Consts.IndyRand);
+            int intAmt = Random.GaussianOEInt(amt, Consts.IndyRand, .21);
             if (intAmt > 0)
                 startUnits.Add(unitType, intAmt);
         }
@@ -425,7 +425,7 @@ namespace Daemons
             //convert arrows to souls to create new units
             this.independent.IndyArrows(false);
 
-            this.independent.AddSouls(Random.GaussianOE(IndyProd(), Consts.IndyRand, .52 * this.turn / ( 7.8 + this.turn )));
+            this.independent.AddSouls(Random.GaussianOE(IndyProd(), Consts.IndyRand, this.turn / ( 52.0 + this.turn )));
             int amt = this.independent.RoundSouls();
             if (amt > 0)
             {

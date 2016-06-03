@@ -96,7 +96,7 @@ namespace Daemons
                 foreach (Unit unit in GetUnits())
                     unit.OnBattle();
 
-                Fight(GetPlayerUnits(unit => unit.Type == UnitType.Daemon), .5);
+                Fight(GetPlayerUnits(unit => unit.Type == UnitType.Daemon), 1 / 2.0);
 
                 Dictionary<Player, Tile> retreat = new Dictionary<Player, Tile>();
 
@@ -123,7 +123,7 @@ namespace Daemons
             if (Game.Random.Bool(.78))
                 foreach (IGrouping<Player, Unit> group in Game.Random.Iterate(GetPlayerUnits()))
                     if (Game.Random.Bool(.78))
-                        retreated = retreated.Union(Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.GaussianCapped(.169, .65) )), retreat));
+                        retreated = retreated.Union(Retreat(group.Where(unit => ( Game.Random.Bool(.78) && unit.Morale < Game.Random.DoubleFull(.169) )), retreat));
 
             double totalStr = GetArmyStr(GetUnits());
             var morale = GetPlayerUnits().Select(group => new Tuple<Player, double>(group.Key, GetMorale(group, totalStr)))

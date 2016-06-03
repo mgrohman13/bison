@@ -15,7 +15,7 @@ namespace MattUtil
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
 
             int playerLength = players.Count;
-            int numShuffles = random.GaussianOEInt(playerLength * shuffle, .39, .39);
+            int numShuffles = random.GaussianOEInt(playerLength * shuffle, .39, .26);
             bool[] affected = new bool[playerLength];
             for (int a = 0 ; a < numShuffles ; ++a)
             {
@@ -79,6 +79,35 @@ end:
                     max = mid;
             }
             return ( trueHigh ? max : min );
+        }
+
+        public static double FindValue(Func<double, double> Func, double target, double min, double max)
+        {
+            //int steps = 0;
+            while (min != max)
+            {
+                //++steps;
+                double mid = ( min + max ) / 2.0;
+                if (mid == min || mid == max)
+                {
+                    if (Math.Abs(Func(min) - target) > Math.Abs(Func(max) - target))
+                        min = max;
+                    break;
+                }
+                double result = Func(mid);
+                if (result <= target)
+                {
+                    min = mid;
+                    if (result == target)
+                        break;
+                }
+                else
+                {
+                    max = mid;
+                }
+            }
+            //Console.WriteLine(steps);
+            return min;
         }
 
         public static void SaveGame(object game, string path, string fileName)

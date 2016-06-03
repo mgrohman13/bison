@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace MattUtil
+namespace Ideas
 {
     [Serializable]
     public class EnumFlags<T> : ICollection<T>, IEnumerable<T>, ICollection, IEnumerable where T : struct
