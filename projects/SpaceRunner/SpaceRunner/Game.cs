@@ -1528,7 +1528,34 @@ namespace SpaceRunner
                             gAmmo[a], gFuel[a], gLives[a], gAlienShips[a], gAlienShipStr[a], gLife[a], gScore[a]));
                 fileStream.Flush();
             }
+
+
+            using (var fs = new System.IO.StreamWriter(PicLocation + "..\\as.txt", false))
+            {
+                for (int a = 0 ; a < this.tickCount ; ++a)
+                {
+                    PrintD(fs, a, AlienShip.sms, "spm");
+                    PrintD(fs, a, AlienShip.mtrrs, "mtr");
+                    PrintD(fs, a, AlienShip.trgps, "trg");
+                    PrintD(fs, a, AlienShip.dirs, "dir");
+                    PrintD(fs, a, AlienShip.spds, "spd");
+                    PrintD(fs, a, AlienShip.actMovs, "tmv");
+                }
+                fs.Flush();
+            }
+
+
         }
+
+
+        void PrintD<T>(System.IO.StreamWriter fs, int tc, Dictionary<int, List<T>> d, string line)
+        {
+            List<T> l;
+            if (d.TryGetValue(tc, out l))
+                foreach (T t in l)
+                    fs.WriteLine(t + "\t" + line);
+        }
+
 
         #endregion //game logic
 
