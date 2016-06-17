@@ -20,7 +20,7 @@ namespace SpaceRunner
             AlienShipImage.Dispose();
         }
 
-        private float life, baseLife, fireRate, speedMult;
+        private float life, baseLife, fireRate, speedMult, targetAngle, moveTypeRatio;
         private int coolDown;
 
         internal static AlienShip NewAlienShip(Game game)
@@ -28,7 +28,6 @@ namespace SpaceRunner
             PointF point = game.RandomEdgePoint();
             return new AlienShip(game, point.X, point.Y);
         }
-
 
         public static readonly Dictionary<int, List<PointF>> trgps = new Dictionary<int, List<PointF>>(), dirs = new Dictionary<int, List<PointF>>(), actMovs = new Dictionary<int, List<PointF>>();
         public static readonly Dictionary<int, List<float>> mtrrs = new Dictionary<int, List<float>>(), spds = new Dictionary<int, List<float>>(), sms = new Dictionary<int, List<float>>();
@@ -40,9 +39,6 @@ namespace SpaceRunner
             l.Add(obj);
         }
 
-
-
-        private float tx, ty, moveTypeRatio;
         private AlienShip(Game game, float x, float y)
             : base(game, x, y, Game.AlienShipSize, AlienShipImage)
         {
@@ -51,17 +47,15 @@ namespace SpaceRunner
             this.speedMult = RandVal(Game.AlienShipSpeedMult, 1);
             this.coolDown = -1;
 
-
-            //TODO: do the math on dist they would actually follow with distance speed modification
-            game.GetRandomDirection(out this.tx, out this.ty, ( Game.MapSize / 2f ) * ( Game.AlienShipSpeedMult / this.speedMult ));
+            targetAngle = game.GetRandomAngle();
             moveTypeRatio = game.GameRand.Weighted(game.GameRand.Weighted(game.GameRand.DoubleHalf(1)));
 
-
-            Add(trgps, Game.TickCount, new PointF(tx, ty));
-            Add(mtrrs, Game.TickCount, moveTypeRatio);
-            Add(sms, Game.TickCount, speedMult);
-
-
+            //Console.WriteLine(speedMult);
+            //Console.WriteLine(moveTypeRatio);
+            //Console.WriteLine(Game.GetPoint(this.targetAngle, (float)( Game.MapSize / Math.Sqrt(Game.AlienShipSpeedMult) / this.speedMult )));
+            //Add(trgps, Game.TickCount, Game.GetPoint(this.targetAngle, Game.MapSize / this.speedMult));
+            //Add(mtrrs, Game.TickCount, moveTypeRatio);
+            //Add(sms, Game.TickCount, speedMult);
         }
 
         internal override decimal Score
@@ -125,25 +119,42 @@ namespace SpaceRunner
             //speed adjusts based on distance from player to keep from running into the player
             speed = Game.GetDistance(x, y) / Game.MapSize * speedMult * Game.BasePlayerSpeed;
 
-            //TODO: don't overshoot distance - creates a weird jitter in movement when at the point
-            //perhaps when closer than total speed, dont move at all
-            xDir = ( tx - x );
-            yDir = ( ty - y );
+            PointF target = Game.GetPoint(this.targetAngle, (float)( Game.MapSize / Math.Sqrt(Game.AlienShipSpeedMult) / this.speedMult ));
+            float trgX = target.X, trgY = target.Y;
+            float towardsPlayer;
+
+            //float distSqr = Game.GetDistanceSqr(x, y, trgX, trgY);
+            //if (distSqr < speed * speed)
+            //{
+            //    Add(dirs, Game.TickCount, new PointF(0, 0));
+            //    Add(spds, Game.TickCount, 0);
+            //    Add(actMovs, Game.TickCount, new PointF(trgX - x, trgY - y));
+            //    Console.WriteLine("hold: " + target);
+            //    towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(trgX, trgY);
+            //    Console.WriteLine("towardsPlayer: " + towardsPlayer);
+            //    x = trgX;
+            //    y = trgY;
+            //    xDir = yDir = 0;
+            //    speed = float.Epsilon;
+            //}
+            //else
+            //{
+            xDir = trgX - x;
+            yDir = trgY - y;
             Game.NormalizeDirs(ref xDir, ref yDir, speed * moveTypeRatio);
 
             speed *= ( 1f - moveTypeRatio );
 
             float xMove, yMove;
             GetTotalMove(out xMove, out yMove);
-            float towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
+            towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
+
+            //    Add(dirs, Game.TickCount, new PointF(xDir, yDir));
+            //    Add(spds, Game.TickCount, speed);
+            //    Add(actMovs, Game.TickCount, new PointF(xMove, yMove));
+            //}
+
             Game.ShootAtPlayer(fireRate, ref coolDown, towardsPlayer, x, y, Size);
-
-
-            Add(dirs, Game.TickCount, new PointF(xDir, yDir));
-            Add(spds, Game.TickCount, speed);
-            Add(actMovs, Game.TickCount, new PointF(xMove, yMove));
-
-
         }
 
         protected override void Collide(GameObject obj)
@@ -201,7 +212,6 @@ namespace SpaceRunner
                 break;
             case PowerUp.PowerUpType.Fuel:
                 speedMult += RandVal(Game.AlienShipSpeedMultInc);
-                //TODO: track alt move type closer
                 break;
             case PowerUp.PowerUpType.Life:
                 AddLife(Game.AlienShipLifeInc);
