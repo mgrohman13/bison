@@ -123,20 +123,21 @@ namespace SpaceRunner
             float trgX = target.X, trgY = target.Y;
             float towardsPlayer;
 
-            //float distSqr = Game.GetDistanceSqr(x, y, trgX, trgY);
-            //if (distSqr < speed * speed)
-            //{
-            //    Add(dirs, Game.TickCount, new PointF(0, 0));
-            //    Add(spds, Game.TickCount, 0);
-            //    Add(actMovs, Game.TickCount, new PointF(trgX - x, trgY - y));
-            //    Console.WriteLine("hold: " + target);
-            //    towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(trgX, trgY);
-            //    Console.WriteLine("towardsPlayer: " + towardsPlayer);
-            //    x = trgX;
-            //    y = trgY;
-            //    xDir = yDir = 0;
-            //    speed = float.Epsilon;
-            //}
+            float distSqr = Game.GetDistanceSqr(x, y, trgX, trgY);
+            if (distSqr < speed * speed)
+            {
+                //Add(dirs, Game.TickCount, new PointF(0, 0));
+                //Add(spds, Game.TickCount, 0);
+                //Add(actMovs, Game.TickCount, new PointF(trgX - x, trgY - y));
+                Console.WriteLine("hold: " + target);
+                towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(trgX, trgY);
+                Console.WriteLine("towardsPlayer: " + towardsPlayer);
+                Console.WriteLine("tick: " + Game.TickCount);
+                //x = trgX;
+                //y = trgY;
+                //xDir = yDir = 0;
+                //speed = float.Epsilon;
+            }
             //else
             //{
             xDir = trgX - x;
@@ -144,14 +145,16 @@ namespace SpaceRunner
             Game.NormalizeDirs(ref xDir, ref yDir, speed * moveTypeRatio);
 
             speed *= ( 1f - moveTypeRatio );
+            if (speed < float.Epsilon)
+                speed = float.Epsilon;
 
             float xMove, yMove;
             GetTotalMove(out xMove, out yMove);
             towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
 
-            //    Add(dirs, Game.TickCount, new PointF(xDir, yDir));
-            //    Add(spds, Game.TickCount, speed);
-            //    Add(actMovs, Game.TickCount, new PointF(xMove, yMove));
+            //Add(dirs, Game.TickCount, new PointF(xDir, yDir));
+            //Add(spds, Game.TickCount, speed);
+            //Add(actMovs, Game.TickCount, new PointF(xMove, yMove));
             //}
 
             Game.ShootAtPlayer(fireRate, ref coolDown, towardsPlayer, x, y, Size);
