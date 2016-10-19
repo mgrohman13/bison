@@ -13,7 +13,7 @@ namespace RandomWalk
 {
     public partial class ViewForm : Form
     {
-        const double avg = 3.9;
+        const double avg = 5.2;
         double minX = -13, minY = -13, maxX = 13, maxY = 13;
         private List<Walk> walks;
 
@@ -36,27 +36,21 @@ namespace RandomWalk
             {
                 while (true)
                 {
-                    int sleep = Walk.rand.OEInt(1300);
-                    Console.WriteLine(sleep);
+                    int sleep = Walk.rand.OEInt(13000);
+                    Console.WriteLine("wait: " + sleep);
                     Thread.Sleep(sleep);
                     lock (walks)
-                    {
-                        if (this.walks.Count > 1 && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
+                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
                         {
                             Console.WriteLine("deactivate");
                             int idx = Walk.rand.Next(this.walks.Count);
-                            if (!this.walks[idx].Deactivate())
-                            {
-                                Console.WriteLine("remove");
-                                this.walks.RemoveAt(idx);
-                            }
+                            this.walks[idx].Deactivate();
                         }
-                        if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
+                        else if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
                         {
                             Console.WriteLine("add");
-                            this.walks.Add(randWalk());
+                            this.walks.Add(RandWalk());
                         }
-                    }
                 }
             });
             t1.IsBackground = true;
@@ -64,9 +58,10 @@ namespace RandomWalk
 
             Thread t2 = new Thread(() =>
             {
+                int i = 0;
                 while (true)
                 {
-                    Thread.Sleep(21);
+                    Thread.Sleep(39);
                     double minX = -13, minY = -13, maxX = 13, maxY = 13;
                     lock (walks)
                         foreach (PointD point in walks.SelectMany(walk => walk.Points))
@@ -76,15 +71,25 @@ namespace RandomWalk
                             maxX = Math.Max(maxX, point.X);
                             maxY = Math.Max(maxY, point.Y);
                         }
+                    bool mod = false;
                     Func<double, double, double> Mod = new Func<double, double, double>((v1, v2) =>
                     {
-                        const double factor = .013;
-                        return ( v1 * ( 1 - factor ) ) + ( v2 * factor );
+                        const double factor = .0169;
+                        double newVal = ( v1 * ( 1 - factor ) ) + ( v2 * factor );
+                        if (Math.Abs(v2 - newVal) < .039)
+                            newVal = v2;
+                        if (v1 != newVal)
+                            mod = true;
+                        return newVal;
                     });
                     this.minX = Mod(this.minX, minX);
                     this.minY = Mod(this.minY, minY);
                     this.maxX = Mod(this.maxX, maxX);
                     this.maxY = Mod(this.maxY, maxY);
+                    if (mod)
+                        Invalidate();
+                    else
+                        Console.WriteLine(++i);
                 }
             });
             t2.IsBackground = true;
@@ -104,14 +109,14 @@ namespace RandomWalk
                 walks.Clear();
                 int num = Walk.rand.GaussianOEInt(avg, .169, .21, 1);
                 for (int a = 0 ; a < num ; ++a)
-                    walks.Add(randWalk());
+                    walks.Add(RandWalk());
             }
         }
 
-        private Walk randWalk()
+        private Walk RandWalk()
         {
             Walk walk = new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39), Walk.rand.Bool(),
-                    Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(130, .13, .13));
+                    Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(169, .26, .13));
             walk.Start();
             return walk;
         }
@@ -141,14 +146,21 @@ namespace RandomWalk
                 double scaleY = Scale(ClientSize.Height, maxY, minY);
 
                 lock (walks)
-                    foreach (Walk walk in walks)
+                    foreach (Walk walk in walks.ToArray())
                         using (Pen pen = new Pen(walk.Color, walk.Size))
                         {
                             Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
                             PointF[] points = walk.Points.Select(point =>
                                     new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
                             if (points.Length > 1)
+                            {
                                 e.Graphics.DrawCurve(pen, points, (float)walk.Tension);
+                            }
+                            else if (points.Length == 0)
+                            {
+                                Console.WriteLine("remove");
+                                this.walks.Remove(walk);
+                            }
                         }
             }
             catch (Exception exception)

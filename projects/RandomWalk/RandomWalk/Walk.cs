@@ -24,6 +24,14 @@ namespace RandomWalk
         private Action Invalidate;
         private List<PointD> points;
 
+        public bool Active
+        {
+            get
+            {
+                return active;
+            }
+        }
+
         public Color Color
         {
             get;
@@ -91,8 +99,8 @@ namespace RandomWalk
 
         public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct, double max)
         {
-            string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\ttension:{7}\tdeviation:{3}\tinterval:{4}\tIntDevPct:{5}\tIntOePct:{6}",
-                    color, size, singleDimension, deviation, interval, intDevPct, intOePct, tension);
+            string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\ttension:{3}\tdeviation:{4}\tinterval:{5}\tIntDevPct:{6}\tIntOePct:{7}\tmax:{8}",
+                    color, size, singleDimension, tension, deviation, interval, intDevPct, intOePct, max);
             Console.WriteLine(info);
             string today = DateTime.Now.ToString().Replace('/', '_').Replace(":", "_");
             using (var fileStream = new System.IO.StreamWriter("walks_" + today + ".txt", true))
@@ -118,10 +126,9 @@ namespace RandomWalk
             Restart();
         }
 
-        public bool Deactivate()
+        public void Deactivate()
         {
             this.active = false;
-            return ( this.points.Count > 1 );
         }
 
         public void Start()
@@ -156,7 +163,7 @@ namespace RandomWalk
 
         private void Run()
         {
-            while (true)
+            while (this.Count > 0)
             {
                 if (this.active)
                 {
@@ -185,6 +192,8 @@ namespace RandomWalk
 
                 Thread.Sleep(rand.GaussianOEInt(interval, IntDevPct, IntOePct));
             }
+            Deactivate();
+            thread = null;
         }
 
         public void Decay()
