@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using MattUtil;
 
@@ -12,6 +13,8 @@ namespace RandomWalk
 {
     public partial class ViewForm : Form
     {
+        const double avg = 3.9;
+        double minX = -13, minY = -13, maxX = 13, maxY = 13;
         private List<Walk> walks;
 
         public ViewForm()
@@ -29,23 +32,88 @@ namespace RandomWalk
 
             this.Bounds = Screen.AllScreens.Aggregate(new Rectangle(0, 0, 0, 0), (rect, screen) => Rectangle.Union(rect, screen.Bounds));
 
+            Thread t1 = new Thread(() =>
+            {
+                while (true)
+                {
+                    int sleep = Walk.rand.OEInt(1300);
+                    Console.WriteLine(sleep);
+                    Thread.Sleep(sleep);
+                    lock (walks)
+                    {
+                        if (this.walks.Count > 1 && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
+                        {
+                            Console.WriteLine("deactivate");
+                            int idx = Walk.rand.Next(this.walks.Count);
+                            if (!this.walks[idx].Deactivate())
+                            {
+                                Console.WriteLine("remove");
+                                this.walks.RemoveAt(idx);
+                            }
+                        }
+                        if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
+                        {
+                            Console.WriteLine("add");
+                            this.walks.Add(randWalk());
+                        }
+                    }
+                }
+            });
+            t1.IsBackground = true;
+            t1.Start();
+
+            Thread t2 = new Thread(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(21);
+                    double minX = -13, minY = -13, maxX = 13, maxY = 13;
+                    lock (walks)
+                        foreach (PointD point in walks.SelectMany(walk => walk.Points))
+                        {
+                            minX = Math.Min(minX, point.X);
+                            minY = Math.Min(minY, point.Y);
+                            maxX = Math.Max(maxX, point.X);
+                            maxY = Math.Max(maxY, point.Y);
+                        }
+                    Func<double, double, double> Mod = new Func<double, double, double>((v1, v2) =>
+                    {
+                        const double factor = .013;
+                        return ( v1 * ( 1 - factor ) ) + ( v2 * factor );
+                    });
+                    this.minX = Mod(this.minX, minX);
+                    this.minY = Mod(this.minY, minY);
+                    this.maxX = Mod(this.maxX, maxX);
+                    this.maxY = Mod(this.maxY, maxY);
+                }
+            });
+            t2.IsBackground = true;
+            t2.Start();
+
             this.walks = new List<Walk>();
             this.Reset();
         }
 
         private void Reset()
         {
-            foreach (Walk walk in walks)
-                walk.Stop();
+            lock (walks)
+            {
+                foreach (Walk walk in walks)
+                    walk.Stop();
 
-            walks.Clear();
-            int num = Walk.rand.Round(1.3 + Walk.rand.GaussianOE(2.6, .169, .21));
-            for (int a = 0 ; a < num ; ++a)
-                walks.Add(new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39), Walk.rand.Bool(),
-                        Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13)));
+                walks.Clear();
+                int num = Walk.rand.GaussianOEInt(avg, .169, .21, 1);
+                for (int a = 0 ; a < num ; ++a)
+                    walks.Add(randWalk());
+            }
+        }
 
-            foreach (Walk walk in walks)
-                walk.Start();
+        private Walk randWalk()
+        {
+            Walk walk = new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39), Walk.rand.Bool(),
+                    Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(130, .13, .13));
+            walk.Start();
+            return walk;
         }
 
         private static Color RandomColor()
@@ -68,28 +136,20 @@ namespace RandomWalk
         {
             try
             {
-                double minX = -13, minY = -13, maxX = 13, maxY = 13;
-                foreach (PointD point in walks.SelectMany(walk => walk.Points))
-                {
-                    minX = Math.Min(minX, point.X);
-                    minY = Math.Min(minY, point.Y);
-                    maxX = Math.Max(maxX, point.X);
-                    maxY = Math.Max(maxY, point.Y);
-                }
-
                 Func<double, double, double, double> Scale = (s, x, m) => s / ( x - m );
                 double scaleX = Scale(ClientSize.Width, maxX, minX);
                 double scaleY = Scale(ClientSize.Height, maxY, minY);
 
-                foreach (Walk walk in walks)
-                    using (Pen pen = new Pen(walk.Color, walk.Size))
-                    {
-                        Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
-                        PointF[] points = walk.Points.Select(point =>
-                                new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
-                        if (points.Length > 1)
-                            e.Graphics.DrawCurve(pen, points, (float)walk.Tension);
-                    }
+                lock (walks)
+                    foreach (Walk walk in walks)
+                        using (Pen pen = new Pen(walk.Color, walk.Size))
+                        {
+                            Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
+                            PointF[] points = walk.Points.Select(point =>
+                                    new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
+                            if (points.Length > 1)
+                                e.Graphics.DrawCurve(pen, points, (float)walk.Tension);
+                        }
             }
             catch (Exception exception)
             {

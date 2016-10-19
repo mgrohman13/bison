@@ -17,8 +17,9 @@ namespace RandomWalk
             rand.StartTick();
         }
 
+        private bool active = true;
         private double x, y;
-        private double interval;
+        private double interval, max;
         private Thread thread;
         private Action Invalidate;
         private List<PointD> points;
@@ -80,7 +81,15 @@ namespace RandomWalk
             }
         }
 
-        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct)
+        public int Count
+        {
+            get
+            {
+                return points.Count;
+            }
+        }
+
+        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct, double max)
         {
             string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\ttension:{7}\tdeviation:{3}\tinterval:{4}\tIntDevPct:{5}\tIntOePct:{6}",
                     color, size, singleDimension, deviation, interval, intDevPct, intOePct, tension);
@@ -100,12 +109,19 @@ namespace RandomWalk
             this.interval = interval;
             this.IntDevPct = intDevPct;
             this.IntOePct = intOePct;
+            this.max = max;
 
             this.thread = null;
             this.Invalidate = Invalidate;
 
             this.points = new List<PointD>();
             Restart();
+        }
+
+        public bool Deactivate()
+        {
+            this.active = false;
+            return ( this.points.Count > 1 );
         }
 
         public void Start()
@@ -142,27 +158,42 @@ namespace RandomWalk
         {
             while (true)
             {
-                if (SingleDimension)
+                if (this.active)
                 {
-                    if (rand.Bool())
-                        Mod(ref x);
+                    if (SingleDimension)
+                    {
+                        if (rand.Bool())
+                            Mod(ref x);
+                        else
+                            Mod(ref y);
+                    }
                     else
+                    {
+                        Mod(ref x);
                         Mod(ref y);
-                }
-                else
-                {
-                    Mod(ref x);
-                    Mod(ref y);
+                    }
+
+                    lock (this)
+                        points.Add(new PointD(x, y));
                 }
 
-                lock (this)
-                    points.Add(new PointD(x, y));
+                double val = active ? max : Math.Sqrt(max);
+                if (rand.Bool(Count / ( Count + val )))
+                    Decay();
 
                 Invalidate();
 
                 Thread.Sleep(rand.GaussianOEInt(interval, IntDevPct, IntOePct));
             }
         }
+
+        public void Decay()
+        {
+            lock (this)
+                if (points.Count > 0)
+                    points.RemoveAt(rand.Next(points.Count));
+        }
+
         private void Mod(ref double value)
         {
             value += rand.Gaussian(Deviation);
