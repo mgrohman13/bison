@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 using MattUtil;
 
 namespace RandomWalk
@@ -26,6 +27,9 @@ namespace RandomWalk
             this.BackColor = Color.Transparent;
 
             this.InitializeComponent();
+            this.TopLevel = true;
+            this.TopMost = true;
+            this.SetTopLevel(true);
 
             this.FormBorderStyle = FormBorderStyle.None;
             this.TransparencyKey = this.BackColor;
@@ -40,13 +44,13 @@ namespace RandomWalk
                     Console.WriteLine("wait: " + sleep);
                     Thread.Sleep(sleep);
                     lock (walks)
-                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
+                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / (this.walks.Count + avg)))
                         {
                             Console.WriteLine("deactivate");
                             int idx = Walk.rand.Next(this.walks.Count);
                             this.walks[idx].Deactivate();
                         }
-                        else if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
+                        else if (Walk.rand.Bool(avg / (this.walks.Count + avg)))
                         {
                             Console.WriteLine("add");
                             this.walks.Add(RandWalk());
@@ -75,9 +79,9 @@ namespace RandomWalk
                     Func<double, double, double> Mod = new Func<double, double, double>((v1, v2) =>
                     {
                         const double factor = .0169;
-                        double newVal = ( v1 * ( 1 - factor ) ) + ( v2 * factor );
+                        double newVal = (v1 * (1 - factor)) + (v2 * factor);
                         if (Math.Abs(v2 - newVal) < .039)
-                            newVal = v2;
+                            newVal = v2;x
                         if (v1 != newVal)
                             mod = true;
                         return newVal;
@@ -85,7 +89,7 @@ namespace RandomWalk
                     this.minX = Mod(this.minX, minX);
                     this.minY = Mod(this.minY, minY);
                     this.maxX = Mod(this.maxX, maxX);
-                    this.maxY = Mod(this.maxY, maxY);
+                    this.maxY = Mod(this.maxY, maxY);x
                     if (mod)
                         Invalidate();
                     else
@@ -99,6 +103,18 @@ namespace RandomWalk
             this.Reset();
         }
 
+        private void ViewForm_Load(object sender, EventArgs e)
+        {
+            SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+        }
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const UInt32 SWP_NOSIZE = 0x0001;
+        private const UInt32 SWP_NOMOVE = 0x0002;
+        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
         private void Reset()
         {
             lock (walks)
@@ -108,7 +124,7 @@ namespace RandomWalk
 
                 walks.Clear();
                 int num = Walk.rand.GaussianOEInt(avg, .169, .21, 1);
-                for (int a = 0 ; a < num ; ++a)
+                for (int a = 0; a < num; ++a)
                     walks.Add(RandWalk());
             }
         }
@@ -137,11 +153,12 @@ namespace RandomWalk
                 return cp;
             }
         }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             try
             {
-                Func<double, double, double, double> Scale = (s, x, m) => s / ( x - m );
+                Func<double, double, double, double> Scale = (s, x, m) => s / (x - m);
                 double scaleX = Scale(ClientSize.Width, maxX, minX);
                 double scaleY = Scale(ClientSize.Height, maxY, minY);
 
@@ -149,7 +166,7 @@ namespace RandomWalk
                     foreach (Walk walk in walks.ToArray())
                         using (Pen pen = new Pen(walk.Color, walk.Size))
                         {
-                            Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
+                            Func<double, double, double, float> GetP = (p, m, s) => (float)((p - m) * s);
                             PointF[] points = walk.Points.Select(point =>
                                     new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
                             if (points.Length > 1)
