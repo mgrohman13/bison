@@ -44,13 +44,13 @@ namespace RandomWalk
                     Console.WriteLine("wait: " + sleep);
                     Thread.Sleep(sleep);
                     lock (walks)
-                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / (this.walks.Count + avg)))
+                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
                         {
                             Console.WriteLine("deactivate");
                             int idx = Walk.rand.Next(this.walks.Count);
                             this.walks[idx].Deactivate();
                         }
-                        else if (Walk.rand.Bool(avg / (this.walks.Count + avg)))
+                        else if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
                         {
                             Console.WriteLine("add");
                             this.walks.Add(RandWalk());
@@ -79,9 +79,9 @@ namespace RandomWalk
                     Func<double, double, double> Mod = new Func<double, double, double>((v1, v2) =>
                     {
                         const double factor = .0169;
-                        double newVal = (v1 * (1 - factor)) + (v2 * factor);
+                        double newVal = ( v1 * ( 1 - factor ) ) + ( v2 * factor );
                         if (Math.Abs(v2 - newVal) < .039)
-                            newVal = v2;x
+                            newVal = v2;
                         if (v1 != newVal)
                             mod = true;
                         return newVal;
@@ -89,7 +89,7 @@ namespace RandomWalk
                     this.minX = Mod(this.minX, minX);
                     this.minY = Mod(this.minY, minY);
                     this.maxX = Mod(this.maxX, maxX);
-                    this.maxY = Mod(this.maxY, maxY);x
+                    this.maxY = Mod(this.maxY, maxY);
                     if (mod)
                         Invalidate();
                     else
@@ -124,7 +124,7 @@ namespace RandomWalk
 
                 walks.Clear();
                 int num = Walk.rand.GaussianOEInt(avg, .169, .21, 1);
-                for (int a = 0; a < num; ++a)
+                for (int a = 0 ; a < num ; ++a)
                     walks.Add(RandWalk());
             }
         }
@@ -158,7 +158,7 @@ namespace RandomWalk
         {
             try
             {
-                Func<double, double, double, double> Scale = (s, x, m) => s / (x - m);
+                Func<double, double, double, double> Scale = (s, x, m) => s / ( x - m );
                 double scaleX = Scale(ClientSize.Width, maxX, minX);
                 double scaleY = Scale(ClientSize.Height, maxY, minY);
 
@@ -166,7 +166,7 @@ namespace RandomWalk
                     foreach (Walk walk in walks.ToArray())
                         using (Pen pen = new Pen(walk.Color, walk.Size))
                         {
-                            Func<double, double, double, float> GetP = (p, m, s) => (float)((p - m) * s);
+                            Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
                             PointF[] points = walk.Points.Select(point =>
                                     new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
                             if (points.Length > 1)
