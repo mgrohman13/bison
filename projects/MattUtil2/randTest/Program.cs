@@ -21,109 +21,109 @@ namespace randTest
             rand.StartTick();
 
 
-            for (int testiter = 0 ; testiter < 1 ; ++testiter)
-            {
-                Console.WriteLine(testiter);
-                const int g = 100;
-                int[] c = new int[g];
-                for (int a = 0 ; a < 1000000 ; ++a)
-                {
-                    //double weight = rand.DoubleHalf(1);
-                    //for (int b = 0 ; b < testiter ; ++b)
-                    //    weight = rand.Weighted(weight);
-                    //c[rand.WeightedInt(g - 1, weight)]++;
+            //for (int testiter = 0 ; testiter < 1 ; ++testiter)
+            //{
+            //    Console.WriteLine(testiter);
+            //    const int g = 100;
+            //    int[] c = new int[g];
+            //    for (int a = 0 ; a < 1000000 ; ++a)
+            //    {
+            //        //double weight = rand.DoubleHalf(1);
+            //        //for (int b = 0 ; b < testiter ; ++b)
+            //        //    weight = rand.Weighted(weight);
+            //        //c[rand.WeightedInt(g - 1, weight)]++;
 
-                    c[rand.WeightedInt(g - 1, rand.Weighted(rand.DoubleHalf(1)))]++;
+            //        c[rand.WeightedInt(g - 1, rand.Weighted(rand.DoubleHalf(1)))]++;
 
-                }
-                int runtot = 0;
-                for (int b = 0 ; b < g ; ++b)
-                    Console.WriteLine(runtot += c[b]);
-                Console.WriteLine();
-            }
-            Console.ReadKey();
-            return;
-
-
-            //new RandBooleans(rand, .5);
-
-            Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / RandBooleans.GaussianDeviation) ).ToString().PadRight(21), RandBooleans.GaussianDeviation);
-            float lifeDustBond = (float)( Math.E / 13.0 );
-            Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / lifeDustBond) ).ToString().PadRight(21), lifeDustBond);
-            Console.WriteLine();
-
-            double change = rand.Weighted(1.0 / 13);
-            Console.WriteLine(change);
-            Console.WriteLine();
-            bool dir = rand.Bool();
-            int f1 = 0, fm1 = 0, f2 = 0, fm2 = 0, t1 = 0, tm1 = 0, t2 = 0, tm2 = 0;
-            double trg = rand.DoubleHalf();
-            Console.WriteLine(trg);
-            RandBooleans rb = new RandBooleans(rand, trg);
-
-            int t = 0, f = 0;
-
-            while (true)
-            {
-                if (rand.Bool(change))
-                {
-                    rb.Chance = trg = rand.DoubleHalf();
+            //    }
+            //    int runtot = 0;
+            //    for (int b = 0 ; b < g ; ++b)
+            //        Console.WriteLine(runtot += c[b]);
+            //    Console.WriteLine();
+            //}
+            //Console.ReadKey();
+            //return;
 
 
-                    Console.WriteLine(t / (double)( t + f ));
-                    Console.WriteLine(t + f);
-                    Console.WriteLine();
-                    t = 0;
-                    f = 0;
-                    Thread.Sleep(1300);
+            ////new RandBooleans(rand, .5);
 
-                    Console.WriteLine(trg);
+            //Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / RandBooleans.GaussianDeviation) ).ToString().PadRight(21), RandBooleans.GaussianDeviation);
+            //float lifeDustBond = (float)( Math.E / 13.0 );
+            //Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / lifeDustBond) ).ToString().PadRight(21), lifeDustBond);
+            //Console.WriteLine();
 
-                }
-                bool b = ( rb.GetResult() );
-                bool r = ( rand.Bool(trg) );
-                if (b)
-                {
-                    ++t;
-                    f1 = 0;
-                    if (++t1 > tm1)
-                    {
-                        tm1 = t1;
-                        //Console.WriteLine("bt: " + t1);
-                    }
-                }
-                else
-                {
-                    ++f;
-                    t1 = 0;
-                    if (++f1 > fm1)
-                    {
-                        fm1 = f1;
-                        //Console.WriteLine("bf: " + f1);
-                    }
-                }
-                if (r)
-                {
-                    f2 = 0;
-                    if (++t2 > tm2)
-                    {
-                        tm2 = t2;
-                        //Console.WriteLine("rt: " + t2);
-                    }
-                }
-                else
-                {
-                    t2 = 0;
-                    if (++f2 > fm2)
-                    {
-                        fm2 = f2;
-                        //Console.WriteLine("rf: " + f2);
-                    }
-                }
+            //double change = rand.Weighted(1.0 / 13);
+            //Console.WriteLine(change);
+            //Console.WriteLine();
+            //bool dir = rand.Bool();
+            //int f1 = 0, fm1 = 0, f2 = 0, fm2 = 0, t1 = 0, tm1 = 0, t2 = 0, tm2 = 0;
+            //double trg = rand.DoubleHalf();
+            //Console.WriteLine(trg);
+            //RandBooleans rb = new RandBooleans(rand, trg);
 
-                Console.WriteLine("{0}    {1}", ( dir ? b : r ).ToString().PadRight(5), dir ? r : b);
-                Thread.Sleep(1300);
-            }
+            //int t = 0, f = 0;
+
+            //while (true)
+            //{
+            //    if (rand.Bool(change))
+            //    {
+            //        rb.Chance = trg = rand.DoubleHalf();
+
+
+            //        Console.WriteLine(t / (double)( t + f ));
+            //        Console.WriteLine(t + f);
+            //        Console.WriteLine();
+            //        t = 0;
+            //        f = 0;
+            //        Thread.Sleep(1300);
+
+            //        Console.WriteLine(trg);
+
+            //    }
+            //    bool b = ( rb.GetResult() );
+            //    bool r = ( rand.Bool(trg) );
+            //    if (b)
+            //    {
+            //        ++t;
+            //        f1 = 0;
+            //        if (++t1 > tm1)
+            //        {
+            //            tm1 = t1;
+            //            //Console.WriteLine("bt: " + t1);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        ++f;
+            //        t1 = 0;
+            //        if (++f1 > fm1)
+            //        {
+            //            fm1 = f1;
+            //            //Console.WriteLine("bf: " + f1);
+            //        }
+            //    }
+            //    if (r)
+            //    {
+            //        f2 = 0;
+            //        if (++t2 > tm2)
+            //        {
+            //            tm2 = t2;
+            //            //Console.WriteLine("rt: " + t2);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        t2 = 0;
+            //        if (++f2 > fm2)
+            //        {
+            //            fm2 = f2;
+            //            //Console.WriteLine("rf: " + f2);
+            //        }
+            //    }
+
+            //    Console.WriteLine("{0}    {1}", ( dir ? b : r ).ToString().PadRight(5), dir ? r : b);
+            //    Thread.Sleep(1300);
+            //}
 
 
             //float f1 = rand.OEFloat();
@@ -145,6 +145,8 @@ namespace randTest
 
             //NormSDist();
 
+            //NCWDist();
+
             //XComShipSim();
 
             //DaeReserveMorale();
@@ -157,7 +159,7 @@ namespace randTest
 
             //IterateTest();
 
-            //BinarySearchSqrt();
+            BinarySearchSqrt();
 
             //CWMapGen();
 
@@ -174,8 +176,47 @@ namespace randTest
             //    new MTRandom().StartTick(0);
 
 
+            rand.StopTick();
             Console.ReadKey(true);
         }
+
+        #region NCWDist
+        static void NCWDist()
+        {
+            const int n = 4073;
+            //1-CDF for a single Geometric Distribution
+            double[] a1 = new double[n];
+            a1[0] = 1;
+            a1[1] = 1;
+            for (int a = 2 ; a < n ; ++a)
+                a1[a] = a1[a - 1] * ( 5.0 / 6.0 );
+            //PMF for one
+            double[] a2 = new double[n];
+            for (int a = 0 ; a + 1 < n ; ++a)
+                a2[a] = a1[a] - a1[a + 1];
+            //PMF for sum of two
+            a1 = new double[n];
+            for (int a = n - 1 ; a >= 0 ; --a)
+                for (int b = n - 1 - a ; b >= 0 ; --b)
+                    a1[a + b] += a2[a] * a2[b];
+            //account for final offset
+            a2 = new double[n];
+            for (int a = 1 ; a + 1 < n ; ++a)
+                a2[a] = ( a1[a - 1] + a1[a + 1] ) / 2.0;
+
+            double s1 = 0, s2 = 0;
+            for (int a = 0 ; a < n ; a++)
+            {
+                s1 += a2[a];
+                s2 += a * a2[a];
+                if (a < Console.BufferHeight - 3)
+                    Console.WriteLine("{0}\t{1}", a, a2[a]);//.ToString("E16"));
+            }
+            Console.WriteLine(-Math.Log(Math.Abs(s1 - 1)) / Math.Log(2));
+            Console.WriteLine(-Math.Log(Math.Abs(s2 - 12) / 12.0) / Math.Log(2));
+            Console.Write(MTRandom.DOUBLE_BITS);
+        }
+        #endregion //NCWDist
 
         #region NormSDist
         static double NormDense(double x, double mean, double stdDev)
@@ -843,11 +884,11 @@ namespace randTest
                     Console.WriteLine(val);
                     float s = BinarySearchSqrt(val);
                     Console.WriteLine(s);
-                    Console.WriteLine(Math.Sqrt(val));
+                    Console.WriteLine((float)Math.Sqrt(val));
                     //if (val != act) 
                     if (s * s != val)
                         Console.WriteLine("off");
-                    if (Math.Sqrt(val) * Math.Sqrt(val) != val)
+                    if ((float)Math.Sqrt(val) * (float)Math.Sqrt(val) != val)
                         Console.WriteLine("Math");
                 }
                 else
@@ -989,7 +1030,7 @@ namespace randTest
         {
             double[] a = new double[2];
             const double closest = 1.046319547648739;
-            const int d = 13000000;
+            const int d = 1300000;
             double tot = 0;
             for (int b = 0 ; b < d ; ++b)
             {
