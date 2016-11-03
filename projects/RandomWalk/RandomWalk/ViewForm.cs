@@ -14,8 +14,8 @@ namespace RandomWalk
 {
     public partial class ViewForm : Form
     {
-        const double avg = 5.2;
-        double minX = -13, minY = -13, maxX = 13, maxY = 13;
+        private const double avg = 5.2;
+        private double minX = -13, minY = -13, maxX = 13, maxY = 13;
         private List<Walk> walks;
 
         public ViewForm()
@@ -27,9 +27,9 @@ namespace RandomWalk
             this.BackColor = Color.Transparent;
 
             this.InitializeComponent();
-            this.TopLevel = true;
-            this.TopMost = true;
-            this.SetTopLevel(true);
+            //this.TopLevel = true;
+            //this.TopMost = true;
+            //this.SetTopLevel(true);
 
             this.FormBorderStyle = FormBorderStyle.None;
             this.TransparencyKey = this.BackColor;
@@ -105,12 +105,8 @@ namespace RandomWalk
 
         private void ViewForm_Load(object sender, EventArgs e)
         {
-            SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+            SetWindowPos(this.Handle, new IntPtr(-1), 0, 0, 0, 0, 0x0001 | 0x0002);
         }
-        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        private const UInt32 SWP_NOSIZE = 0x0001;
-        private const UInt32 SWP_NOMOVE = 0x0002;
-        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -131,7 +127,7 @@ namespace RandomWalk
 
         private Walk RandWalk()
         {
-            Walk walk = new Walk(Invalidate, RandomColor(), 1 + Walk.rand.GaussianOEInt(2.1, .39, .39), Walk.rand.Bool(),
+            Walk walk = new Walk(Invalidate, RandomColor(), Walk.rand.GaussianOEInt(3.0, .26, .26, 1), Walk.rand.Bool(),
                     Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(169, .26, .13));
             walk.Start();
             return walk;

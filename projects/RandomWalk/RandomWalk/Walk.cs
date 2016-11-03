@@ -93,7 +93,8 @@ namespace RandomWalk
         {
             get
             {
-                return points.Count;
+                lock (this)
+                    return points.Count;
             }
         }
 
@@ -196,7 +197,7 @@ namespace RandomWalk
             thread = null;
         }
 
-        public void Decay()
+        private void Decay()
         {
             lock (this)
                 if (points.Count > 0)
