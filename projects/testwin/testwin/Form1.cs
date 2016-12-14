@@ -25,7 +25,7 @@ namespace testwin
         const float AlienShipLife = 260f;
         const float AlienDamageRandomness = .078f;
         const float AlienDamageOEPct = .26f;
-        const int tot = 100000;
+        const int tot = 10000;
 
         float[] results;
 
@@ -43,7 +43,7 @@ namespace testwin
         void reset()
         {
             results = new float[tot];
-            for (int a = 0 ; a < tot ; ++a)
+            for (int a = 0; a < tot; ++a)
             {
                 float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
                 results[a] = dmg;
@@ -56,35 +56,77 @@ namespace testwin
             {
                 base.OnPaint(e);
 
-                float mult = AlienShipLife / ( Width - 1f );
-                float max = 1f;
-                float[] cache = new float[Width];
-                for (int a = 0 ; a < Width ; ++a)
-                {
-                    float val = a * mult;
-                    float tot = 0f;
-                    foreach (float r in results)
-                    {
-                        float diff = Math.Abs(val - r) + 1f;
-                        tot += 1f / diff / diff;
-                    }
-                    tot = (float)Math.Sqrt(tot);
-                    cache[a] = tot;
-                    max = Math.Max(max, tot);
-                }
-                mult = ( Height - 1 ) / max;
-                PointF[] points = new PointF[Width];
-                for (int a = 0 ; a < Width ; ++a)
-                {
-                    int y = ( Height - 1 ) - rand.Round(cache[a] * mult);
-                    points[a] = new PointF(a, y);
-                }
-                e.Graphics.DrawLines(Pens.Black, points);
+                draw1(e.Graphics);
+                draw2(e.Graphics);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
+        }
+        void draw1(Graphics g)
+        {
+            float mult = AlienShipLife / (Width - 1f);
+            float max = 1f;
+            float[] cache = new float[Width];
+            for (int a = 0; a < Width; ++a)
+            {
+                float val = a * mult;
+                float tot =
+                results.Select(r =>
+                {
+                    float diff = Math.Abs(val - r) + 1f;
+                    return 1f / diff / diff;
+                }).OrderByDescending(r => r).Skip(Math.Max(1, rand.Round(amt / 666f))).Sum();
+
+                //tot = (float)Math.Sqrt(tot);
+                cache[a] = tot;
+                max = Math.Max(max, tot);
+            }
+            mult = (Height - 1) / max;
+            PointF[] points = new PointF[Width];
+            for (int a = 0; a < Width; ++a)
+            {
+                int y = (Height - 1) - rand.Round(cache[a] * mult);
+                points[a] = new PointF(a, y);
+            }
+            g.DrawLines(Pens.Black, points);
+        }
+        void draw2(Graphics g)
+        {
+            float smooth = (float)trackBar1.Value;
+            float mult = AlienShipLife / (Width - 1f);
+            float max = 1f;
+            float[] cache = new float[Width];
+            for (int a = 0; a < Width; ++a)
+            {
+                float val = a * mult;
+                float tot = 0f;
+                foreach (float r in results)
+                {
+                    float diff = Math.Abs(val - r);
+                    if (diff < mult * smooth)
+                        ++tot;
+                }
+                cache[a] = tot;
+                max = Math.Max(max, tot);
+            }
+            mult = (Height - 1) / max;
+            PointF[] points = new PointF[Width];
+            for (int a = 0; a < Width; ++a)
+            {
+                int y = (Height - 1) - rand.Round(cache[a] * mult);
+                points[a] = new PointF(a, y);
+            }
+            g.DrawLines(Pens.Black, points);
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            int width = rand.Round(Width / 6f);
+            if (trackBar1.Value > width)
+                trackBar1.Value = width;
+            trackBar1.Maximum = width;
         }
     }
 }
