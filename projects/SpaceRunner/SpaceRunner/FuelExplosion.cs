@@ -91,7 +91,7 @@ namespace SpaceRunner
                 {
                     if (obj is Bullet)
                         Bullet.BulletExplosion(Game, obj.X, obj.Y, 1);
-                    else
+                    else if (!( obj is Alien ))
                         Explosion.NewExplosion(Game, obj.Size, Game.ExplosionSize, obj);
                     obj.Die();
                 }

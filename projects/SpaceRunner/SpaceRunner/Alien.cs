@@ -150,18 +150,17 @@ namespace SpaceRunner
             float damage = Game.RandDmgToAlien(asteroid.Area / Game.AsteroidAreaToAlienDamageRatio);
 
             if (Game.GetDistance(xDir, yDir) + speed > damage)
+            {
                 Explosion.NewExplosion(Game, damage, Game.AlienSpeed, asteroid, this);
 
-            if (HasConstSpeed())
-            {
-                damage = ReduceConstSpeed(damage);
-                //use const speed to save from getting destroyed
-                while (speed <= damage && HasConstSpeed())
+                if (HasConstSpeed())
+                {
                     damage = ReduceConstSpeed(damage);
-            }
+                    //use const speed to save from getting destroyed
+                    while (speed <= damage && HasConstSpeed())
+                        damage = ReduceConstSpeed(damage);
+                }
 
-            if (speed > damage)
-            {
                 speed -= damage;
                 AddScore((decimal)damage * Game.AlienSpeedScoreMult);
                 Game.RemoveObject(asteroid);

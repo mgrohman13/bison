@@ -245,6 +245,119 @@ namespace GalWarWin
             if (worker.CancellationPending)
                 e.Cancel = true;
         }
+        //private Dictionary<ResultPoint, double> GetChances(BackgroundWorker worker, Dictionary<int, double> damageTable, int defHP)
+        //{
+        //    Dictionary<ResultPoint, double> c1 = GetChances1(worker, damageTable, defHP);
+        //    Dictionary<ResultPoint, double> c2 = GetChances2(worker, damageTable, defHP);
+        //    if (c1.Count == c2.Count)
+        //    {
+        //        foreach (var kvp in c1)
+        //            if (kvp.Value != c2[kvp.Key])
+        //                throw new Exception();
+        //        return c1;
+        //    }
+        //    throw new Exception();
+        //}
+        //private Dictionary<ResultPoint, double> GetChances1(BackgroundWorker worker, Dictionary<int, double> damageTable, int defHP)
+        //{
+        //    int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
+        //    int attHP = (int)this.nudAttHP.Value;
+
+        //    int rounds = Math.Min(att, 1 + Math.Min(defHP / att, attHP / def));
+        //    Func<bool, int, double[]> firstPass = (bool neg, int val) =>
+        //    {
+        //        double[] dmgArr = new double[val + 1];
+        //        double[] resArr = new double[rounds * val + 1];
+        //        foreach (int dmg in damageTable.Keys)
+        //        {
+        //            int idx = Math.Max(dmg * ( neg ? -1 : 1 ), 0);
+        //            double res = damageTable[dmg];
+        //            dmgArr[idx] += res;
+        //            resArr[idx] += res;
+        //        }
+        //        for (int a = 2 ; a <= rounds ; ++a)
+        //        {
+        //            int last = ( a - 1 ) * val;
+        //            double[] next = new double[a * val + 1];
+        //            for (int idx = a * val ; idx >= 0 ; --idx)
+        //                for (int dmg = Math.Max(idx - val, Math.Max(idx - last, 0)) ; dmg <= Math.Min(idx, last) ; ++dmg)
+        //                    next[idx] += dmgArr[idx - dmg] * resArr[dmg];
+        //            resArr = next;
+        //        }
+        //        return resArr;
+        //    };
+
+        //    var chances = new Dictionary<ResultPoint, double>(GetCapacity(att, def, rounds, attHP, defHP));
+
+        //    const double initMult = double.Epsilon * ( 1 << MTRandom.DOUBLE_BITS );
+        //    double[] attTbl = firstPass(false, att);
+        //    double[] defTbl = firstPass(true, def);
+        //    for (int initAtt = 0 ; initAtt < attTbl.Length ; ++initAtt)
+        //        for (int initDef = 0 ; initDef < defTbl.Length ; ++initDef)
+        //        {
+        //            int resAtt = Math.Max(attHP + Math.Max(initAtt - initDef, 0), 0);
+        //            int resDef = Math.Max(defHP + Math.Max(initDef - initAtt, 0), 0);
+        //            ResultPoint rp = new ResultPoint(resAtt, resDef);
+
+        //            double val, add = ( attTbl[initAtt] * defTbl[initDef] ) * initMult;
+        //            chances.TryGetValue(rp, out val);
+        //            chances[rp] = val + add;
+        //        }
+
+        //    double totalDmgChance = ( att + 1 ) * ( def + 1 );
+        //    //the code in this loop should be optimized for performance
+        //    for (int round = rounds ; ++round <= att ;)
+        //    {
+        //        if (worker.CancellationPending)
+        //            return null;
+
+        //        Dictionary<ResultPoint, double> oldChances = chances;
+        //        chances = new Dictionary<ResultPoint, double>(GetCapacity(att, def, round, attHP, defHP));
+
+        //        //Parallel.ForEach(oldChances, chancePair =>
+        //        foreach (KeyValuePair<ResultPoint, double> chancePair in oldChances)
+        //        {
+        //            ResultPoint oldRes = chancePair.Key;
+        //            double oldChance = chancePair.Value;
+        //            int ahp = oldRes.AttHP;
+        //            int dhp = oldRes.DefHP;
+        //            if (dhp > 0 && ahp > 0)
+        //            {
+        //                foreach (KeyValuePair<int, double> damagePair in damageTable)
+        //                {
+        //                    int dmg = damagePair.Key;
+        //                    ResultPoint res = oldRes;
+        //                    if (dmg > 0)
+        //                    {
+        //                        dmg = dhp - dmg;
+        //                        if (dmg < 0)
+        //                            dmg = 0;
+        //                        res.DefHP = dmg;
+        //                    }
+        //                    else if (dmg < 0)
+        //                    {
+        //                        dmg = ahp + dmg;
+        //                        if (dmg < 0)
+        //                            dmg = 0;
+        //                        res.AttHP = dmg;
+        //                    }
+
+        //                    double val, add = oldChance * damagePair.Value;
+        //                    chances.TryGetValue(res, out val);
+        //                    chances[res] = val + add;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                double val, add = oldChance * totalDmgChance;
+        //                chances.TryGetValue(oldRes, out val);
+        //                chances[oldRes] = val + add;
+        //            }
+        //        }
+        //    }
+
+        //    return chances;
+        //}
         private Dictionary<ResultPoint, double> GetChances(BackgroundWorker worker, Dictionary<int, double> damageTable, int defHP)
         {
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
@@ -259,7 +372,7 @@ namespace GalWarWin
             chances.Add(rp, double.Epsilon * ( 1 << MTRandom.DOUBLE_BITS ));
 
             //the code in this loop should be optimized for performance
-            for (int round = -1 ; ++round < att ; )
+            for (int round = -1 ; ++round < att ;)
             {
                 oldChances = chances;
                 chances = new Dictionary<ResultPoint, double>(targetCap);

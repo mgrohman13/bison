@@ -52,7 +52,7 @@ namespace SpaceRunner
             int num = game.GameRand.GaussianOEInt(amt, Game.LifeDustAmtRandomness, Game.LifeDustClumpOEPct, 1);
             float xDir = game.GameRand.Gaussian(Game.LifeDustClumpSpeed);
             float yDir = game.GameRand.Gaussian(Game.LifeDustClumpSpeed);
-            for ( ; num > 0 ; --num)
+            for (; num > 0 ; --num)
                 new LifeDust(game, x + game.GameRand.Gaussian(Game.LifeDustSpacing), y + game.GameRand.Gaussian(Game.LifeDustSpacing),
                         xDir + game.GameRand.Gaussian(Game.LifeDustIndividualSpeed), yDir + game.GameRand.Gaussian(Game.LifeDustIndividualSpeed),
                         game.GameRand.GaussianCapped(Game.LifeDustSize, Game.LifeDustSizeRandomness));
@@ -95,7 +95,7 @@ namespace SpaceRunner
                 if (bondCount > 0)
                     foreach (int idx in iterator)
                     {
-                        var bond = bonds[idx];
+                        float[] bond = bonds[idx];
                         float totalX = bond[0], totalY = bond[1], bondArea = bond[2],
                                 bondX = totalX / bondArea, bondY = totalY / bondArea,
                                 distance = Game.GetDistance(x, y, bondX, bondY);

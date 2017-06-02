@@ -324,35 +324,26 @@ input:
             Tile from = map[playerX, playerY], to = map[goalX, goalY];
             var path = TBSUtil.PathFind<Tile>(Random, from, to, tile =>
             {
+                int tileX = tile.point.x;
+                int tileY = tile.point.y;
                 List<Tile> neighbors = new List<Tile>();
-                for (int x = -1 ; tile.point.x + x >= 0 ; --x)
+                Action<bool, bool, Func<int, bool>> traverse = (bool dir, bool fwd, Func<int, bool> check) =>
                 {
-                    int y = 0;
-                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
-                        break;
-                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
-                }
-                for (int y = -1 ; tile.point.y + y >= 0 ; --y)
-                {
-                    int x = 0;
-                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
-                        break;
-                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
-                }
-                for (int x = 1 ; tile.point.x + x < Width ; ++x)
-                {
-                    int y = 0;
-                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
-                        break;
-                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
-                }
-                for (int y = 1 ; tile.point.y + y < Height ; ++y)
-                {
-                    int x = 0;
-                    if (PointIs(tile.point.x + x, tile.point.y + y, Wall))
-                        break;
-                    neighbors.Add(map[tile.point.x + x, tile.point.y + y]);
-                }
+                    for (int a = 0 ; check(fwd ? ++a : --a) ;)
+                    {
+                        int x = tileX + ( dir ? a : 0 );
+                        int y = tileY + ( dir ? 0 : a );
+                        if (PointIs(x, y, Wall))
+                            break;
+                        neighbors.Add(map[x, y]);
+                    }
+                };
+
+                traverse(true, true, x => tileX + x < Width);
+                traverse(true, false, x => tileX + x >= 0);
+                traverse(false, true, y => tileY + y < Height);
+                traverse(false, false, y => tileY + y >= 0);
+
                 return neighbors.Select(n => new Tuple<Tile, int>(n, 1));
             }, (m1, m2) =>
             {
@@ -360,17 +351,28 @@ input:
                     return 1;
                 return 2;
             });
+
             Tile last = from;
             foreach (Tile tile in path)
             {
-                if (last.point.x == tile.point.x)
-                    for (int y = Math.Min(last.point.y, tile.point.y) ; y <= Math.Max(last.point.y, tile.point.y) ; ++y)
-                        if (PointIs(tile.point.x, y, Empty))
-                            SetPoint(tile.point.x, y, Path);
-                if (last.point.y == tile.point.y)
-                    for (int x = Math.Min(last.point.x, tile.point.x) ; x <= Math.Max(last.point.x, tile.point.x) ; ++x)
-                        if (PointIs(x, tile.point.y, Empty))
-                            SetPoint(x, tile.point.y, Path);
+                int tileX = tile.point.x;
+                int tileY = tile.point.y;
+                Action<bool, int, int> mark = (bool dir, int b, int c) =>
+                {
+                    int max = Math.Max(b, c);
+                    for (int d = Math.Min(b, c) ; d <= max ; ++d)
+                    {
+                        int x = ( dir ? d : tileX );
+                        int y = ( dir ? tileY : d );
+                        if (PointIs(x, y, Empty))
+                            SetPoint(x, y, Path);
+                    }
+                };
+
+                if (tileX == last.point.x)
+                    mark(false, tileY, last.point.y);
+                else if (tileY == last.point.y)
+                    mark(true, tileX, last.point.x);
                 last = tile;
             }
         }
@@ -708,7 +710,7 @@ input:
             int x = move.x, y = move.y;
 
 actualmove:
-            //check the edges of the playing area
+//check the edges of the playing area
             if (!( x < 0 || y < 0 || x >= Width || y >= Height ))
                 if (PointIs(x, y, Empty))
                 {

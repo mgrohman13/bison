@@ -26,6 +26,9 @@ UI
 			compare
 	keyboard?
 
+combat predict performance
+	partial-mathematical-resolve until limit is reached
+	monte carlo?	
 move order gold based on current average income?
 transport-on-build
 	consider allowing same functionality for pre-existing transports?

@@ -61,7 +61,7 @@ namespace SpaceRunner
             p = game.RandomStartPoint(0f);
             Explosion.NewExplosion(game, new GameObject.DummyObject(p.X, p.Y, 0f, 0f));
 
-            amt = Random.OEInt(8f);
+            amt = Random.OEInt(13f);
             while (--amt > -1)
             {
                 game.MoveAndCollide(0f, 0f);
@@ -1458,7 +1458,7 @@ namespace SpaceRunner
                         idx2 = 0;
                     int count = sector2.Count;
 
-                    for ( ; idx2 < count ; ++idx2)
+                    for (; idx2 < count ; ++idx2)
                     {
                         GameObject obj2 = sector2[idx2];
                         //make sure the second object is still in the game

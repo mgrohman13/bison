@@ -118,7 +118,7 @@ namespace SpaceRunner.Forms
                 if (this.ammo != ammo)
                 {
                     this.ammo = ammo;
-                    this.lblAmmo.Text = this.ammo.ToString();
+                    this.lblAmmo.Text = ammo.ToString();
                 }
                 if (this.fuel != fuel)
                 {
@@ -339,7 +339,7 @@ namespace SpaceRunner.Forms
         private static int InvokeGetValue(TrackBar tb)
         {
             int value = -1;
-            tb.Invoke(new MethodInvoker(delegate()
+            tb.Invoke(new MethodInvoker(delegate ()
             {
                 value = tb.Value;
             }));

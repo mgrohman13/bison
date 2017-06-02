@@ -21,6 +21,36 @@ namespace randTest
             rand.StartTick();
 
 
+            const float AlienShipFriendlyBulletDamageMult = 13f;
+            const float BulletDamage = 3.9f;
+            const float amt = AlienShipFriendlyBulletDamageMult * BulletDamage;
+            const float AlienShipLife = 260f;
+            const float AlienDamageRandomness = .078f;
+            const float AlienDamageOEPct = .26f;
+
+            Console.WriteLine(amt.ToString().PadLeft(4) + " (" + ( AlienShipLife / amt ).ToString("0.0") + ") ");
+            Console.WriteLine();
+
+            SortedDictionary<int, int> cnt = new SortedDictionary<int, int>();
+            const int tot = 1000000;
+            for (int a = 0 ; a < tot ; ++a)
+            {
+                float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
+                int rnded = rand.Round(dmg);
+                int val;
+                cnt.TryGetValue(rnded, out val);
+                cnt[rnded] = val + 1;
+            }
+            int culm = tot;
+            foreach (KeyValuePair<int, int> p in cnt)
+            {
+                //if (p.Value >= tot / 10000)
+                Console.WriteLine(p.Key.ToString().PadLeft(3) + "  (" + ( AlienShipLife / p.Key ).ToString("0.0") + ") "
+                        + p.Value.ToString().PadLeft(7) + " " + culm.ToString().PadLeft(7));
+                culm -= p.Value;
+            }
+
+
             //for (int testiter = 0 ; testiter < 1 ; ++testiter)
             //{
             //    Console.WriteLine(testiter);
@@ -159,7 +189,7 @@ namespace randTest
 
             //IterateTest();
 
-            BinarySearchSqrt();
+            //BinarySearchSqrt();
 
             //CWMapGen();
 
@@ -537,7 +567,8 @@ namespace randTest
                         alive = alive.Where(s => s.curHits > 0).ToList();
                     } while (alien.curHits > 0 && alive.Any());
 
-                    for (int b = 0 ; b < xcom.Length ; ++b) if (xcom[b].curHits <= 0)
+                    for (int b = 0 ; b < xcom.Length ; ++b)
+                        if (xcom[b].curHits <= 0)
                             lock (typeof(Program))
                                 ++killed[b];
                     if (alien.curHits <= 0)

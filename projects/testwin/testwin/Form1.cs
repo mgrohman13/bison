@@ -22,10 +22,11 @@ namespace testwin
         const float AlienShipFriendlyBulletDamageMult = 13f;
         const float BulletDamage = 3.9f;
         const float amt = AlienShipFriendlyBulletDamageMult * BulletDamage;
-        const float AlienShipLife = 260f;
+        const int AlienShipLife = 260;
         const float AlienDamageRandomness = .078f;
         const float AlienDamageOEPct = .26f;
-        const int tot = 10000;
+        const float MoraleMax = .25f;// 1 - .0091f;
+        const int tot = 100000;
 
         float[] results;
 
@@ -42,12 +43,23 @@ namespace testwin
 
         void reset()
         {
+            float avg = 0;
+            //bool b = rand.Bool();
             results = new float[tot];
-            for (int a = 0; a < tot; ++a)
+            for (int a = 0 ; a < tot ; ++a)
             {
-                float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
+                //float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
+                float dmg;
+                //if (b)
+                dmg = rand.Weighted(rand.Weighted(rand.DoubleHalf(1))) * AlienShipLife;
+                //dmg = rand.Weighted(AlienShipLife, MoraleMax);
+                //else
+                //    dmg = rand.DoubleHalf(rand.DoubleHalf(AlienShipLife));
+                //dmg = rand.OEFloat();
+                //avg += dmg;
                 results[a] = dmg;
             }
+            //MessageBox.Show(b + "" + ( avg / tot ));
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -56,7 +68,7 @@ namespace testwin
             {
                 base.OnPaint(e);
 
-                draw1(e.Graphics);
+                //draw1(e.Graphics);
                 draw2(e.Graphics);
             }
             catch (Exception ex)
@@ -66,14 +78,13 @@ namespace testwin
         }
         void draw1(Graphics g)
         {
-            float mult = AlienShipLife / (Width - 1f);
+            float mult = AlienShipLife / ( ClientSize.Width - 1f );
             float max = 1f;
-            float[] cache = new float[Width];
-            for (int a = 0; a < Width; ++a)
+            float[] cache = new float[ClientSize.Width];
+            for (int a = 0 ; a < ClientSize.Width ; ++a)
             {
                 float val = a * mult;
-                float tot =
-                results.Select(r =>
+                float tot = results.Select(r =>
                 {
                     float diff = Math.Abs(val - r) + 1f;
                     return 1f / diff / diff;
@@ -83,47 +94,43 @@ namespace testwin
                 cache[a] = tot;
                 max = Math.Max(max, tot);
             }
-            mult = (Height - 1) / max;
-            PointF[] points = new PointF[Width];
-            for (int a = 0; a < Width; ++a)
+            mult = ( Height - 1 ) / max;
+            PointF[] points = new PointF[ClientSize.Width];
+            for (int a = 0 ; a < ClientSize.Width ; ++a)
             {
-                int y = (Height - 1) - rand.Round(cache[a] * mult);
+                int y = ( Height - 1 ) - rand.Round(cache[a] * mult);
                 points[a] = new PointF(a, y);
             }
             g.DrawLines(Pens.Black, points);
         }
         void draw2(Graphics g)
         {
+            float mVal = results.Max();
             float smooth = (float)trackBar1.Value;
-            float mult = AlienShipLife / (Width - 1f);
+            float mult = mVal / ( ClientSize.Width - 1f );
             float max = 1f;
-            float[] cache = new float[Width];
-            for (int a = 0; a < Width; ++a)
+            float[] cache = new float[ClientSize.Width];
+            for (int x = 0 ; x < ClientSize.Width ; ++x)
             {
-                float val = a * mult;
-                float tot = 0f;
-                foreach (float r in results)
-                {
-                    float diff = Math.Abs(val - r);
-                    if (diff < mult * smooth)
-                        ++tot;
-                }
-                cache[a] = tot;
-                max = Math.Max(max, tot);
+                float v1 = x * mult;
+                float v2 = mult * smooth;
+                float count = results.Count(r => Math.Abs(v1 - r) < v2);
+                //count *= x / (float)ClientSize.Width;
+                cache[x] = count;
+                max = Math.Max(max, count);
             }
-            mult = (Height - 1) / max;
-            PointF[] points = new PointF[Width];
-            for (int a = 0; a < Width; ++a)
-            {
-                int y = (Height - 1) - rand.Round(cache[a] * mult);
-                points[a] = new PointF(a, y);
-            }
+            //max = 60f;
+            mult = ( Height - 1f ) / max;
+            PointF[] points = new PointF[ClientSize.Width];
+            for (int x = 0 ; x < ClientSize.Width ; ++x)
+                points[x] = new PointF(x, rand.Round(Height - 1f - mult * cache[x]));
             g.DrawLines(Pens.Black, points);
+            //MessageBox.Show(max.ToString());
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            int width = rand.Round(Width / 6f);
+            int width = rand.Round(ClientSize.Width / 6f);
             if (trackBar1.Value > width)
                 trackBar1.Value = width;
             trackBar1.Maximum = width;
