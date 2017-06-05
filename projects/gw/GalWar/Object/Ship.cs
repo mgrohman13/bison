@@ -159,11 +159,11 @@ namespace GalWar
         {
             get
             {
-                return ( ( this._moved ?? Enumerable.Empty<PointS>() ).Select(point => Tile.Game.GetTile(point.X, point.Y)) );
+                return ((this._moved ?? Enumerable.Empty<PointS>()).Select(point => Tile.Game.GetTile(point.X, point.Y)));
             }
             private set
             {
-                this._moved = ( ( value != null && value.Any() ) ? value.Select(tile => Game.GetPointS(tile)).ToArray() : null );
+                this._moved = ((value != null && value.Any()) ? value.Select(tile => Game.GetPointS(tile)).ToArray() : null);
             }
         }
 
@@ -310,7 +310,7 @@ namespace GalWar
         {
             get
             {
-                return ( this._bombardDamage > 0 );
+                return (this._bombardDamage > 0);
             }
             private set
             {
@@ -346,7 +346,7 @@ namespace GalWar
                     TurnException.CheckTurn(this.Player);
 
                     if (!float.IsNaN(this._autoRepair))
-                        this.AutoRepair = ( ( this._autoRepair > 0 ) ? GetAutoRepairForHP(GetAutoRepairHP(this._autoRepair)) : 0 );
+                        this.AutoRepair = ((this._autoRepair > 0) ? GetAutoRepairForHP(GetAutoRepairHP(this._autoRepair)) : 0);
                     return this._autoRepair;
                 }
             }
@@ -453,7 +453,7 @@ namespace GalWar
         {
             get
             {
-                return ( Consts.RepairCostMult * this.cost / (double)this.MaxHP );
+                return (Consts.RepairCostMult * this.cost / (double)this.MaxHP);
             }
         }
 
@@ -461,7 +461,7 @@ namespace GalWar
         {
             get
             {
-                return ( !HasRepaired && AutoRepair > 0 );
+                return (!HasRepaired && AutoRepair > 0);
             }
         }
 
@@ -520,11 +520,11 @@ namespace GalWar
             }
             else
             {
-                int low = (int)( hp * Consts.FLOAT_ERROR_ONE );
+                int low = (int)(hp * Consts.FLOAT_ERROR_ONE);
                 if (hp != low)
                 {
-                    gold += ( hp - low ) * ( production - GetProdForHP(low + 1) );
-                    production = ( low + 1 - hp ) * ( production - GetProdForHP(low) );
+                    gold += (hp - low) * (production - GetProdForHP(low + 1));
+                    production = (low + 1 - hp) * (production - GetProdForHP(low));
                     return retVal;
                 }
             }
@@ -590,7 +590,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Tile == null || this.Tile.SpaceObject != this );
+                return (this.Tile == null || this.Tile.SpaceObject != this);
             }
         }
 
@@ -606,7 +606,7 @@ namespace GalWar
 
         internal double GetDisbandValue(double hp)
         {
-            return ( Consts.DisbandPct * this.cost * hp / (double)this.MaxHP );
+            return (Consts.DisbandPct * this.cost * hp / (double)this.MaxHP);
         }
 
         public double ColonizationValue
@@ -652,21 +652,21 @@ namespace GalWar
         }
         private int GetExp(double exp)
         {
-            return (int)Math.Round(100 * ( this.totalExp + exp ) / this.expDiv);
+            return (int)Math.Round(100 * (this.totalExp + exp) / this.expDiv);
         }
 
         public double GetDestroyGold()
         {
-            double gold = ( this.Population / Consts.PopulationForGoldLow )
-                    + ( this.Soldiers / Consts.SoldiersForGold )
-                    + ( GetValueExpForRawExp(this.curExp) / Consts.ExpForGold )
-                    + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 );
+            double gold = (this.Population / Consts.PopulationForGoldLow)
+                    + (this.Soldiers / Consts.SoldiersForGold)
+                    + (GetValueExpForRawExp(this.curExp) / Consts.ExpForGold)
+                    + (this.Player.IsTurn ? GetUpkeepReturn() : 0);
 
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
             Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
             Console.WriteLine("Experience:  " + GetValueExpForRawExp(this.curExp) / Consts.ExpForGold);
-            Console.WriteLine("Upkeep:  " + ( this.Player.IsTurn ? GetUpkeepReturn() : 0 ));
+            Console.WriteLine("Upkeep:  " + (this.Player.IsTurn ? GetUpkeepReturn() : 0));
             Console.WriteLine();
 
             return gold;
@@ -678,7 +678,7 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(colony == null || colony.Player == this.Player);
 
-            bool isGold = ( colony == null );
+            bool isGold = (colony == null);
 
             int population = this.Population;
             double soldiers = this.Soldiers;
@@ -797,7 +797,7 @@ namespace GalWar
             {
                 SpaceObject spaceObject = neighbor.SpaceObject;
                 Planet planet = spaceObject as Planet;
-                if (( spaceObject is Ship || ( planet != null && planet.Colony != null && planet.Colony.HP > 0 ) )
+                if ((spaceObject is Ship || (planet != null && planet.Colony != null && planet.Colony.HP > 0))
                         && spaceObject.Player != player && Tile.IsNeighbor(from, neighbor))
                     return false;
             }
@@ -847,7 +847,7 @@ namespace GalWar
             if (this.Population > 0 && this.HP > 0)
             {
                 double soldiers = this.Population / Consts.PopulationForGoldMid;
-                soldiers *= rawExp / ( soldiers + this.GetCostLastResearched() );
+                soldiers *= rawExp / (soldiers + this.GetCostLastResearched());
 
                 soldiers *= GalWar.Colony.GetSoldierMult(this.Population, this.Soldiers, GetSoldiersForExp(soldiers));
 
@@ -892,7 +892,7 @@ namespace GalWar
         {
             bool first = true;
             double needExp;
-            while (this.HP > 0 && !this.Dead && this.curExp > ( needExp = this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ))
+            while (this.HP > 0 && !this.Dead && this.curExp > (needExp = this.needExpMult * (GetValue(this.NextExpType) - GetValue())))
             {
                 if (first)
                 {
@@ -925,7 +925,7 @@ namespace GalWar
                 costInc = this.GetCostLastResearched() - costInc;
 
                 //add/subtract gold for level randomness and percent of ship injured
-                double goldIncome = ( this.needExpMult - pct ) * costInc / Consts.ExpForGold;
+                double goldIncome = (this.needExpMult - pct) * costInc / Consts.ExpForGold;
                 Console.WriteLine(goldIncome);
                 this.Player.GoldIncome(goldIncome);
 
@@ -939,7 +939,7 @@ namespace GalWar
                 this.cost += costInc - addUpkeep * multPayoff;
 
                 //upkeep should never account for more than half of the ship's cost
-                while (this.baseUpkeep > 1 && ( ( this.cost < minCost ) || ( this.baseUpkeep * basePayoff > this.cost ) ))
+                while (this.baseUpkeep > 1 && ((this.cost < minCost) || (this.baseUpkeep * basePayoff > this.cost)))
                 {
                     --this.baseUpkeep;
                     this.cost += multPayoff;
@@ -969,35 +969,35 @@ namespace GalWar
             if (expType.HasValue)
                 switch (expType.Value)
                 {
-                case ExpType.Att:
-                    ++att;
-                    if (this.DeathStar)
-                        ds = ShipDesign.SetBombardDamage(ds, att);
-                    else
-                        ds = ShipDesign.GetBombardDamage(0, att);
-                    break;
-                case ExpType.Def:
-                    ++def;
-                    break;
-                case ExpType.HP:
-                    ++hp;
-                    break;
-                case ExpType.DS:
-                    if (this.DeathStar)
-                        ++ds;
-                    else
-                        ds = ShipDesign.SetBombardDamage(0, att);
-                    break;
-                case ExpType.Speed:
-                    ++speed;
-                    if (this.DeathStar)
-                        ds = ShipDesign.SetBombardDamage(Math.Ceiling(ds * ( speed - 1.0 ) / (double)speed), att);
-                    break;
-                case ExpType.Trans:
-                    ++trans;
-                    break;
-                default:
-                    throw new Exception();
+                    case ExpType.Att:
+                        ++att;
+                        if (this.DeathStar)
+                            ds = ShipDesign.SetBombardDamage(ds, att);
+                        else
+                            ds = ShipDesign.GetBombardDamage(0, att);
+                        break;
+                    case ExpType.Def:
+                        ++def;
+                        break;
+                    case ExpType.HP:
+                        ++hp;
+                        break;
+                    case ExpType.DS:
+                        if (this.DeathStar)
+                            ++ds;
+                        else
+                            ds = ShipDesign.SetBombardDamage(0, att);
+                        break;
+                    case ExpType.Speed:
+                        ++speed;
+                        if (this.DeathStar)
+                            ds = ShipDesign.SetBombardDamage(Math.Ceiling(ds * (speed - 1.0) / (double)speed), att);
+                        break;
+                    case ExpType.Trans:
+                        ++trans;
+                        break;
+                    default:
+                        throw new Exception();
                 }
         }
 
@@ -1050,7 +1050,7 @@ namespace GalWar
                 stats.Add(ExpType.HP, hp);
                 int total = att + def + hp;
 
-                double strInc = ( GetValue(ExpType.Att) * att + GetValue(ExpType.Def) * def + GetValue(ExpType.HP) * hp )
+                double strInc = (GetValue(ExpType.Att) * att + GetValue(ExpType.Def) * def + GetValue(ExpType.HP) * hp)
                         / (double)total - GetValue();
 
                 int ds = 0, trans = 0;
@@ -1083,7 +1083,7 @@ namespace GalWar
         {
             double hpStr = ShipDesign.GetHPStr(stat, other);
             hpStr /= ShipDesign.GetHPStr(stat + 1, other) - hpStr;
-            hpStr *= stat / (double)( stat + other );
+            hpStr *= stat / (double)(stat + other);
             return Game.Random.Round(hpStr);
         }
         private int GetExpChance(ref int total, ref double strInc, ExpType expType, double nonTypePct)
@@ -1094,14 +1094,14 @@ namespace GalWar
         {
             nonTypePct = Math.Sqrt(nonTypePct);
             double typeInc = GetValue(expType) - GetValue();
-            double avg = ( total * strInc / nonTypePct - total * strInc ) / typeInc;
+            double avg = (total * strInc / nonTypePct - total * strInc) / typeInc;
             const double add = .39;
             if (avg < 0)
-                avg = add / ( 1.0 - avg );
+                avg = add / (1.0 - avg);
             else
                 avg += add;
             int type = Game.Random.Round(avg * mult);
-            strInc = ( strInc * total + typeInc * type ) / ( total + type );
+            strInc = (strInc * total + typeInc * type) / (total + type);
             total += type;
             return type;
         }
@@ -1143,7 +1143,7 @@ namespace GalWar
         }
         private static int FunkyChance(int value, int oldTotal, int newTotal)
         {
-            return Game.Random.Round(newTotal * .065 * ( 3.9 + oldTotal - value ) / ( 1.0 + value ));
+            return Game.Random.Round(newTotal * .065 * (3.9 + oldTotal - value) / (1.0 + value));
         }
 
         public void Bombard(IEventHandler handler, Planet planet)
@@ -1153,7 +1153,7 @@ namespace GalWar
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
             AssertException.Assert(this.CurSpeed > 0);
-            bool friendly = ( this.Player == planet.Player );
+            bool friendly = (this.Player == planet.Player);
             if (friendly)
                 AssertException.Assert(this.DeathStar);
 
@@ -1167,7 +1167,7 @@ namespace GalWar
 
             Colony colony = planet.Colony;
             double pct = 1, rawExp = 0, valueExp = 0;
-            bool enemy = ( !friendly && colony != null );
+            bool enemy = (!friendly && colony != null);
             if (enemy && colony.HP > 0)
                 pct = AttackColony(handler, colony, out freeDmg, ref rawExp, ref valueExp);
 
@@ -1181,7 +1181,7 @@ namespace GalWar
                     int colonyDamage, planetDamage;
                     Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage, ref rawExp, ref valueExp);
 
-                    if (freeDmg == -1 && ( colonyDamage != 0 || planetDamage != 0 ))
+                    if (freeDmg == -1 && (colonyDamage != 0 || planetDamage != 0))
                         freeDmg = 0;
                     //log actual damage to planet
                     if (freeDmg != -1)
@@ -1211,14 +1211,14 @@ namespace GalWar
             freeDmg = GetBombardDamage(freeAvg);
             if (freeDmg > colony.HP)
             {
-                freePct = ( 1 - ( colony.HP / (double)freeDmg ) );
+                freePct = (1 - (colony.HP / (double)freeDmg));
                 freeDmg = colony.HP;
             }
 
             colony.Damage(freeDmg, ref rawExp, ref valueExp);
 
             double combatPct = 1;
-            if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
+            if (colony.HP > 0 && (!this.DeathStar || handler.ConfirmCombat(this, colony)))
             {
 
                 //log free damage, if any, before combat
@@ -1233,7 +1233,7 @@ namespace GalWar
                 freeDmg = -1;
             }
 
-            return ( ( freePct * freeAvg + combatPct * combatAvg ) / ( freeAvg + combatAvg ) );
+            return ((freePct * freeAvg + combatPct * combatAvg) / (freeAvg + combatAvg));
         }
 
         public double GetFreeDmg(Colony colony)
@@ -1251,9 +1251,9 @@ namespace GalWar
         {
             colonyDamage = GetColonyDamage(planet, pct);
 
-            int dmgBase = colonyDamage, tempPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
+            int dmgBase = colonyDamage, tempPop = (planet.Colony == null ? 0 : planet.Colony.Population);
             double dmgMult = pct;
-            bool stopBombard = ( !friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue() );
+            bool stopBombard = (!friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue());
             if (stopBombard)
                 if (this.DeathStar)
                     dmgMult *= tempPop / (double)colonyDamage;
@@ -1269,7 +1269,7 @@ namespace GalWar
             if (friendly)
                 colonyDamage = initPop - colonyDamage;
             double moveLeftPlanetDmg = planetDamage;
-            if (stopBombard)
+            if (stopBombard && !planet.Dead)
             {
                 initQuality = Math.Min(initQuality, planetDamage);
                 moveLeftPlanetDmg = planetDamage * colonyDamage / (double)tempPop;
@@ -1286,7 +1286,7 @@ namespace GalWar
         {
             double damage = this.BombardDamage * pct;
             if (planet.Player == this.Player)
-                damage *= planet.Colony.Population / (double)( planet.Colony.Population + ( 3 * planet.Quality + 1 * Consts.AverageQuality ) / 4.0 );
+                damage *= planet.Colony.Population / (double)(planet.Colony.Population + (3 * planet.Quality + 1 * Consts.AverageQuality) / 4.0);
             return GetBombardDamage(damage);
         }
 
@@ -1354,10 +1354,10 @@ namespace GalWar
             double move = 0;
             //planet quality overkill
             if (planetDamage > quality)
-                move += ( 1 - ( quality / planetDamage ) );
+                move += (1 - (quality / planetDamage));
             //colony population overkill
             if (colonyDamage > pop)
-                move += ( 1 - ( pop / colonyDamage ) );
+                move += (1 - (pop / colonyDamage));
             return move / 2.0 * pct;
         }
 
@@ -1491,7 +1491,7 @@ namespace GalWar
 
             foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
             {
-                Planet planet = ( neighbor.SpaceObject as Planet );
+                Planet planet = (neighbor.SpaceObject as Planet);
                 if (planet != null && planet.Player == this.Player && planet.Colony.RepairShip == this)
                     return planet.Colony;
             }
@@ -1512,7 +1512,7 @@ namespace GalWar
             int floor = (int)Math.Floor(hp);
             double gold = CalcGoldForHP(floor);
             if (floor != hp)
-                gold += ( CalcGoldForHP(floor + 1) - gold ) * ( hp - floor );
+                gold += (CalcGoldForHP(floor + 1) - gold) * (hp - floor);
 
             if (!isTotal)
                 gold /= hp;
@@ -1537,7 +1537,7 @@ namespace GalWar
             if (upper > 0)
             {
                 //brute force algorithm to find the integer bounds
-                upper = TBSUtil.FindValue(hp => ( GetGoldForHP(hp, isTotal) >= gold ), 0, upper, true);
+                upper = TBSUtil.FindValue(hp => (GetGoldForHP(hp, isTotal) >= gold), 0, upper, true);
 
                 if (upper > 0 && GetGoldForHP(upper, isTotal) > gold)
                 {
@@ -1547,9 +1547,9 @@ namespace GalWar
                     double hp, low = CalcGoldForHP(upper - 1), high = CalcGoldForHP(upper);
 
                     if (isTotal)
-                        hp = upper - 1 + ( gold - low ) / ( high - low );
+                        hp = upper - 1 + (gold - low) / (high - low);
                     else
-                        hp = ( upper * ( low - high ) + high ) / ( ( low - high ) + gold );
+                        hp = (upper * (low - high) + high) / ((low - high) + gold);
 
                     if (Math.Abs(GetGoldForHP(hp, isTotal) - gold) > gold * Consts.FLOAT_ERROR_ZERO)
                         throw new Exception();
@@ -1616,7 +1616,7 @@ namespace GalWar
 
         private double GetGoldRepairTarget()
         {
-            return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
+            return (this.GetCostLastResearched() * (1 - Consts.CostUpkeepPct) / (double)this.MaxHP);
         }
 
         public override string ToString()

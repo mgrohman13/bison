@@ -1,4 +1,9 @@
 UI
+	attacker show free dmg based on best guess research
+	show extra on-build move cost in dialog
+	save off graph-less autosaves for replay?
+		every turn?
+	graph select turns
 	repair form income show only base-upkeep ?
 	rapid click to bombard
 	rally ships
@@ -24,20 +29,23 @@ UI
 		re-do colony
 		designs?
 			compare
+		ships/colony view include enemy
+			multi select with all players
 	keyboard?
+	combat predict performance
+		partial-mathematical-resolve until limit is reached
+		monte carlo?	
 
-combat predict performance
-	partial-mathematical-resolve until limit is reached
-	monte carlo?	
+move start turn gold to after start turn ship
+individual colony/planet have slightly different income ratios?S
+verify last researched>current issues
+	upg ship > current?
+rchance > 1 throws off max
+ship upg algorithm
+using generate value instead of this value for compensation?
+focuspcts mathematically might make the other two overall more likely
 move order gold based on current average income?
-transport-on-build
-	consider allowing same functionality for pre-existing transports?
-	costs more somehow?
-upg PD when lastresearched > current
-	cost uses last, upg uses current
-ExpForSoldiers should be * 1.3 not / 1.3?
-ship leveling uses actual research rather than last?
-balance for anomaly salvage research randomness?
+gold income for anomaly research randomness
 friendly bombard
 	never kill pop
 	confirm before completely destroy
@@ -57,14 +65,18 @@ directly upgrade existing ships?
 	to reduce repair cost?
 	improve stats?
 	obsolete designs?
-GetNonColonyPct full trans?
 increase minimum research chance
 ship name value
 ship name mult too high
-anom design research randomness at higher values
+anom design research randomness with higher values (any pct based randomness)
 map size
+ExpForSoldiers should be * 1.3 not / 1.3?
+soldiers = meh
 planetary defenses still not right
 	auto upg turns 1-7 into 13-7
+	upg PD when lastresearched > current
+		cost uses last, upg uses current
+	global random PD upg factor across all planets for the turn
 research victory pct decreases with higher research
 	10k=now
 	30k=85% instead of 67%?
@@ -72,11 +84,11 @@ research victory pct decreases with higher research
 	also decrease max display skew appropriately
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
-terraform check use actual values
 rethink neg gold again
 	don't like random disbanding - no adv over manual
 	if keep impossible negative, make _goldValue a uint?
-decrease GoldProductionForGold to 1.69-2?
+1:1 vs reduced payouts... analyze
+rebalance global event?
 
 ShipClass order
 	order by tier, use in ShipsForm sort
@@ -91,6 +103,7 @@ clean up code
 	member order
 fix combatant/popcarrier/colony/pd hierarchy
 
+influence
 anomaly neutral ships?
 known enemy designs
 AI

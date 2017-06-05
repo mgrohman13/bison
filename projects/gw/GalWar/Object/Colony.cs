@@ -416,6 +416,7 @@ namespace GalWar
             bool buildFirst = ( this.Buildable is PlanetDefense ), built = false;
             if (buildFirst)
                 built = this.DoBuild(handler, production, ref gold);
+
             if (this.HP > 0)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
                 {
@@ -427,6 +428,7 @@ namespace GalWar
                             break;
                     }
                 }
+
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
                 built = this.DoBuild(handler, production, ref gold);
