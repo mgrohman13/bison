@@ -51,15 +51,16 @@ namespace GalWarWin
             this.btnDetails = new System.Windows.Forms.Button();
             this.lblInfDef = new System.Windows.Forms.Label();
             this.lblInfAtt = new System.Windows.Forms.Label();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudAttack ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudAttHP ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDefHP ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDefense ) ).BeginInit();
+            this.btnChances = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAttack)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAttHP)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDefHP)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDefense)).BeginInit();
             this.SuspendLayout();
             // 
             // btnAttack
             // 
-            this.btnAttack.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnAttack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAttack.Location = new System.Drawing.Point(12, 247);
             this.btnAttack.Name = "btnAttack";
             this.btnAttack.Size = new System.Drawing.Size(100, 23);
@@ -70,7 +71,7 @@ namespace GalWarWin
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Location = new System.Drawing.Point(118, 247);
             this.btnCancel.Name = "btnCancel";
@@ -81,7 +82,7 @@ namespace GalWarWin
             // 
             // lblAttack
             // 
-            this.lblAttack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblAttack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAttack.Location = new System.Drawing.Point(12, 32);
             this.lblAttack.Name = "lblAttack";
             this.lblAttack.Size = new System.Drawing.Size(97, 23);
@@ -91,7 +92,7 @@ namespace GalWarWin
             // 
             // lblAttHP
             // 
-            this.lblAttHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblAttHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAttHP.Location = new System.Drawing.Point(12, 55);
             this.lblAttHP.Name = "lblAttHP";
             this.lblAttHP.Size = new System.Drawing.Size(97, 23);
@@ -101,8 +102,8 @@ namespace GalWarWin
             // 
             // lblDefense
             // 
-            this.lblDefense.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.lblDefense.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDefense.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblDefense.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDefense.Location = new System.Drawing.Point(121, 32);
             this.lblDefense.Name = "lblDefense";
             this.lblDefense.Size = new System.Drawing.Size(97, 23);
@@ -112,8 +113,8 @@ namespace GalWarWin
             // 
             // lblDefHP
             // 
-            this.lblDefHP.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.lblDefHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDefHP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblDefHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDefHP.Location = new System.Drawing.Point(121, 55);
             this.lblDefHP.Name = "lblDefHP";
             this.lblDefHP.Size = new System.Drawing.Size(97, 23);
@@ -123,8 +124,8 @@ namespace GalWarWin
             // 
             // btnSwap
             // 
-            this.btnSwap.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
-                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnSwap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSwap.Location = new System.Drawing.Point(118, 179);
             this.btnSwap.Name = "btnSwap";
             this.btnSwap.Size = new System.Drawing.Size(100, 23);
@@ -136,7 +137,7 @@ namespace GalWarWin
             // lblAttKill
             // 
             this.lblAttKill.AutoEllipsis = true;
-            this.lblAttKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblAttKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAttKill.Location = new System.Drawing.Point(12, 124);
             this.lblAttKill.Name = "lblAttKill";
             this.lblAttKill.Size = new System.Drawing.Size(97, 23);
@@ -147,7 +148,7 @@ namespace GalWarWin
             // lblAttDmg
             // 
             this.lblAttDmg.AutoEllipsis = true;
-            this.lblAttDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblAttDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblAttDmg.Location = new System.Drawing.Point(12, 101);
             this.lblAttDmg.Name = "lblAttDmg";
             this.lblAttDmg.Size = new System.Drawing.Size(97, 23);
@@ -157,9 +158,9 @@ namespace GalWarWin
             // 
             // lblDefKill
             // 
-            this.lblDefKill.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblDefKill.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDefKill.AutoEllipsis = true;
-            this.lblDefKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDefKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDefKill.Location = new System.Drawing.Point(121, 124);
             this.lblDefKill.Name = "lblDefKill";
             this.lblDefKill.Size = new System.Drawing.Size(97, 23);
@@ -169,9 +170,9 @@ namespace GalWarWin
             // 
             // lblDefDmg
             // 
-            this.lblDefDmg.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblDefDmg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDefDmg.AutoEllipsis = true;
-            this.lblDefDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblDefDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDefDmg.Location = new System.Drawing.Point(121, 101);
             this.lblDefDmg.Name = "lblDefDmg";
             this.lblDefDmg.Size = new System.Drawing.Size(97, 23);
@@ -201,8 +202,8 @@ namespace GalWarWin
             // 
             // btnEdit
             // 
-            this.btnEdit.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
-                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnEdit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnEdit.Location = new System.Drawing.Point(12, 179);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(100, 23);
@@ -313,8 +314,8 @@ namespace GalWarWin
             // 
             // btnLog
             // 
-            this.btnLog.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
-                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnLog.AutoSize = true;
             this.btnLog.Location = new System.Drawing.Point(60, 208);
             this.btnLog.Name = "btnLog";
@@ -326,8 +327,8 @@ namespace GalWarWin
             // 
             // chkLog
             // 
-            this.chkLog.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
-                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chkLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.chkLog.AutoSize = true;
             this.chkLog.Location = new System.Drawing.Point(140, 212);
             this.chkLog.Name = "chkLog";
@@ -338,10 +339,10 @@ namespace GalWarWin
             // 
             // btnDetails
             // 
-            this.btnDetails.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
-                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnDetails.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDetails.AutoSize = true;
-            this.btnDetails.Location = new System.Drawing.Point(78, 150);
+            this.btnDetails.Location = new System.Drawing.Point(64, 150);
             this.btnDetails.Name = "btnDetails";
             this.btnDetails.Size = new System.Drawing.Size(74, 23);
             this.btnDetails.TabIndex = 16;
@@ -352,9 +353,9 @@ namespace GalWarWin
             // 
             // lblInfDef
             // 
-            this.lblInfDef.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblInfDef.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblInfDef.AutoEllipsis = true;
-            this.lblInfDef.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInfDef.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblInfDef.Location = new System.Drawing.Point(121, 78);
             this.lblInfDef.Name = "lblInfDef";
             this.lblInfDef.Size = new System.Drawing.Size(97, 23);
@@ -364,15 +365,28 @@ namespace GalWarWin
             // 
             // lblInfAtt
             // 
-            this.lblInfAtt.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblInfAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblInfAtt.AutoEllipsis = true;
-            this.lblInfAtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblInfAtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblInfAtt.Location = new System.Drawing.Point(12, 78);
             this.lblInfAtt.Name = "lblInfAtt";
             this.lblInfAtt.Size = new System.Drawing.Size(97, 23);
             this.lblInfAtt.TabIndex = 18;
             this.lblInfAtt.Text = "lblInfAtt";
             this.lblInfAtt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnChances
+            // 
+            this.btnChances.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnChances.AutoSize = true;
+            this.btnChances.Location = new System.Drawing.Point(144, 150);
+            this.btnChances.Name = "btnChances";
+            this.btnChances.Size = new System.Drawing.Size(74, 23);
+            this.btnChances.TabIndex = 19;
+            this.btnChances.Text = "Chances";
+            this.btnChances.UseVisualStyleBackColor = true;
+            this.btnChances.Click += new System.EventHandler(this.btnChances_Click);
             // 
             // CombatForm
             // 
@@ -381,6 +395,7 @@ namespace GalWarWin
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(230, 282);
+            this.Controls.Add(this.btnChances);
             this.Controls.Add(this.lblInfAtt);
             this.Controls.Add(this.lblInfDef);
             this.Controls.Add(this.btnDetails);
@@ -408,10 +423,10 @@ namespace GalWarWin
             this.Name = "CombatForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CombatForm_FormClosing);
-            ( (System.ComponentModel.ISupportInitialize)( this.nudAttack ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudAttHP ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDefHP ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDefense ) ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAttack)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAttHP)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDefHP)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDefense)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -442,5 +457,6 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnDetails;
         private System.Windows.Forms.Label lblInfDef;
         private System.Windows.Forms.Label lblInfAtt;
+        private System.Windows.Forms.Button btnChances;
     }
 }

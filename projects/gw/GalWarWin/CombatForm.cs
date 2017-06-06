@@ -146,7 +146,7 @@ namespace GalWarWin
             int attHP = (int)this.nudAttHP.Value, defHP = (int)( this.nudDefHP.Value * (decimal)Consts.FLOAT_ERROR_ONE );
 
             double avgAtt, avgDef;
-            Dictionary<int, double> damageTable = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
+            IDictionary<int, double> damageTable = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
 
             this.lblAttDmg.Text = FormatDmg(avgDef);
             this.lblDefDmg.Text = FormatDmg(avgAtt);
@@ -189,9 +189,9 @@ namespace GalWarWin
         {
             Ship attShip = ( attacker as Ship );
             double freeDmg = 0;
-            bool showFree = ( attShip != null && defender is Colony && defender.Player.IsTurn );
+            bool showFree = ( attShip != null && defender is Colony );
             if (showFree)
-                freeDmg = attShip.GetFreeDmg((Colony)defender);
+                freeDmg = attShip.GetFreeDmgGuess((Colony)defender);
             return freeDmg;
         }
 
@@ -215,7 +215,7 @@ namespace GalWarWin
         private void worker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = (BackgroundWorker)sender;
-            Dictionary<int, double> damageTable = (Dictionary<int, double>)e.Argument;
+            IDictionary<int, double> damageTable = (IDictionary<int, double>)e.Argument;
 
             int attHP = (int)this.nudAttHP.Value, defHP = (int)this.nudDefHP.Value;
             double mult = (double)( this.nudDefHP.Value - defHP );
@@ -358,7 +358,7 @@ namespace GalWarWin
 
         //    return chances;
         //}
-        private Dictionary<ResultPoint, double> GetChances(BackgroundWorker worker, Dictionary<int, double> damageTable, int defHP)
+        private Dictionary<ResultPoint, double> GetChances(BackgroundWorker worker, IDictionary<int, double> damageTable, int defHP)
         {
             int att = (int)this.nudAttack.Value, def = (int)this.nudDefense.Value;
             int attHP = (int)this.nudAttHP.Value;
@@ -537,6 +537,11 @@ namespace GalWarWin
         private void btnDetails_Click(object sender, EventArgs e)
         {
             TextForm.ShowForm((Dictionary<ResultPoint, double>)btnDetails.Tag);
+        }
+
+        private void btnChances_Click(object sender, EventArgs e)
+        {
+            TextForm.ShowForm((int)this.nudAttack.Value, (int)this.nudDefense.Value);
         }
 
         private string FormatDmg(double dmg)

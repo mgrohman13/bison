@@ -59,7 +59,7 @@ namespace GalWarAI
             pause = colony.PauseBuild;
         }
 
-        int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers)
+        int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost)
         {
             if (fromColony == null)
                 //TODO: make sure you will not immediately be invaded

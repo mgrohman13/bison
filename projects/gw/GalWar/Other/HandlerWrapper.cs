@@ -76,7 +76,7 @@ namespace GalWar
                 buildable = colony.Player.Game.StoreProd;
         }
 
-        int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers)
+        int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost)
         {
             callback = true;
 
@@ -84,7 +84,7 @@ namespace GalWar
 
             try
             {
-                retVal = handler.MoveTroops(fromColony, max, totalPop, soldiers);
+                retVal = handler.MoveTroops(fromColony, max, totalPop, soldiers, extraCost);
 
                 if (retVal < 0)
                     retVal = 0;

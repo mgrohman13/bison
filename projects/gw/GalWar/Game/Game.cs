@@ -58,7 +58,7 @@ namespace GalWar
 
         #region fields and constructors
 
-        public readonly Graphs Graphs;
+        private Graphs _graphs;
         public readonly StoreProd StoreProd;
         public readonly Attack Attack;
         public readonly Defense Defense;
@@ -75,6 +75,8 @@ namespace GalWar
         private Stack<IUndoCommand> _undoStack;
 
         private PointS _center;
+
+        private readonly uint _id;
 
         private byte _currentPlayer;
         private ushort _turn;
@@ -108,6 +110,8 @@ namespace GalWar
                 this.deadPlayers = new List<Result>(numPlayers - 1);
                 this.winningPlayers = new List<Result>(numPlayers - 1);
 
+                this._id = Random.NextUInt();
+
                 this._currentPlayer = byte.MaxValue / 2;
                 this._turn = 0;
 
@@ -121,7 +125,19 @@ namespace GalWar
 
                 AdjustCenter(13);
 
-                this.Graphs = new Graphs(this);
+                this._graphs = new Graphs(this);
+            }
+        }
+
+        public Graphs Graphs
+        {
+            get
+            {
+                return this._graphs;
+            }
+            private set
+            {
+                this._graphs = value;
             }
         }
 
@@ -216,6 +232,14 @@ namespace GalWar
             get
             {
                 return ( this._undoStack ?? ( this._undoStack = new Stack<IUndoCommand>() ) );
+            }
+        }
+
+        private uint ID
+        {
+            get
+            {
+                return this._id;
             }
         }
 
@@ -414,7 +438,7 @@ namespace GalWar
             var colonies = this.players.Where(player => player != null).SelectMany(player => player.GetColonies()).ToList();
             //planets can only be used as homeworlds if they have enough quality to support the initial population
             return GetPlanets().Where(planet => planet.Quality > startPop && planet.Colony == null
-                //and are far enough away from other homeworlds
+                    //and are far enough away from other homeworlds
                     && colonies.All(colony => ( Tile.GetDistance(planet.Tile, colony.Tile) > Consts.HomeworldDistance ))).ToList();
         }
         private double CountAnomPlanets()
@@ -548,6 +572,7 @@ namespace GalWar
                 p.SetGame(this);
 
             StartPlayerTurn(handler);
+            this.AutoSave();
             CurrentPlayer.PlayTurn(handler, Enumerable.Empty<Tile>());
         }
 
@@ -652,7 +677,14 @@ namespace GalWar
         public void AutoSave()
         {
             if (AutoSavePath != null)
+            {
                 TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
+
+                Graphs temp = this.Graphs;
+                this.Graphs = null;
+                TBSUtil.SaveGame(this, AutoSavePath + "/../replay/" + this.ID, turn + "_" + ( currentPlayer + 1 ) + ".gws");
+                this.Graphs = temp;
+            }
         }
 
         private void NewRound()
@@ -1057,7 +1089,7 @@ namespace GalWar
             if (!foundCurrent)
                 result.Add(new Result(this.players[0], false));
 
-            for (int i = this.deadPlayers.Count ; --i > -1 ; )
+            for (int i = this.deadPlayers.Count ; --i > -1 ;)
                 result.Add(this.deadPlayers[i]);
 
             //add in the final point score
@@ -1125,7 +1157,7 @@ namespace GalWar
         internal class UndoCommand<T1, T2> : UndoCommand<Tuple<T1, T2>>
         {
             public UndoCommand(UndoMethod<T1, T2> UndoMethod, T1 arg1, T2 arg2)
-                : base(delegate(Tuple<T1, T2> args)
+                : base(delegate (Tuple<T1, T2> args)
                     {
                         return UndoMethod(args.Item1, args.Item2);
                     }, new Tuple<T1, T2>(arg1, arg2))
@@ -1135,7 +1167,7 @@ namespace GalWar
         internal class UndoCommand<T1, T2, T3> : UndoCommand<Tuple<T1, T2, T3>>
         {
             public UndoCommand(UndoMethod<T1, T2, T3> UndoMethod, T1 arg1, T2 arg2, T3 arg3)
-                : base(delegate(Tuple<T1, T2, T3> args)
+                : base(delegate (Tuple<T1, T2, T3> args)
                     {
                         return UndoMethod(args.Item1, args.Item2, args.Item3);
                     }, new Tuple<T1, T2, T3>(arg1, arg2, arg3))
@@ -1145,7 +1177,7 @@ namespace GalWar
         internal class UndoCommand<T1, T2, T3, T4> : UndoCommand<Tuple<T1, T2, T3, T4>>
         {
             public UndoCommand(UndoMethod<T1, T2, T3, T4> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-                : base(delegate(Tuple<T1, T2, T3, T4> args)
+                : base(delegate (Tuple<T1, T2, T3, T4> args)
                     {
                         return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4);
                     }, new Tuple<T1, T2, T3, T4>(arg1, arg2, arg3, arg4))
@@ -1155,7 +1187,7 @@ namespace GalWar
         internal class UndoCommand<T1, T2, T3, T4, T5, T6> : UndoCommand<Tuple<T1, T2, T3, T4, T5, T6>>
         {
             public UndoCommand(UndoMethod<T1, T2, T3, T4, T5, T6> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
-                : base(delegate(Tuple<T1, T2, T3, T4, T5, T6> args)
+                : base(delegate (Tuple<T1, T2, T3, T4, T5, T6> args)
                 {
                     return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4, args.Item5, args.Item6);
                 }, new Tuple<T1, T2, T3, T4, T5, T6>(arg1, arg2, arg3, arg4, arg5, arg6))
@@ -1165,7 +1197,7 @@ namespace GalWar
         internal class UndoCommand<T1, T2, T3, T4, T5, T6, T7, T8> : UndoCommand<Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>>>
         {
             public UndoCommand(UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
-                : base(delegate(Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>> args)
+                : base(delegate (Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>> args)
                     {
                         return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4, args.Item5, args.Item6, args.Item7, args.Rest.Item1);
                     }, new Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>>(arg1, arg2, arg3, arg4, arg5, arg6, arg7, new Tuple<T8>(arg8)))
@@ -1215,7 +1247,7 @@ namespace GalWar
                 int add = -1;
                 int min = int.MaxValue;
                 //adds in (x^2+x)/2 points, where x is the inverse index
-                for (int i = results.Count ; --i > -1 ; )
+                for (int i = results.Count ; --i > -1 ;)
                 {
                     int newPoints = results[i].Points + ( points += ( ++add ) );
                     results[i].Points = newPoints;

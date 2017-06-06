@@ -1,19 +1,16 @@
 UI
-	attacker show free dmg based on best guess research
-	show extra on-build move cost in dialog
-	save off graph-less autosaves for replay?
-		every turn?
-	graph select turns
-	repair form income show only base-upkeep ?
+	replay
+		overwrites when currentPlayer decrements
+		final end game save include graphs
+		parse correctly for history button
+	graph select turns / smoothing
 	rapid click to bombard
 	rally ships
-		current turn actual move always uses zoc?
-		allow viewing all shortest paths?
-		constant path
+		current turn actual move always use zoc, friendly ship blocks
+			ensure shown path is path that will be taken this turn
+		allow viewing all shortest paths? constant path?
 		waypoints
-		show distance, turns
-		left click drag to vector should not select target tile
-	combat calc show probability table
+			left click drag to vector should not select target tile
 	measure distances
 	calculate pop growth
 		balancing between colonies
@@ -36,8 +33,14 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
+soldiers "other" gives full gold?
+anomaly global event could look at actual terraform colonies
+anomaly pickup requirments heal inconsistent
+why do enemy colonies show repair amt?
+ship vector allow for waypoints/constant path
+population w/o trans graph should also average?
 move start turn gold to after start turn ship
-individual colony/planet have slightly different income ratios?S
+individual colony/planet have slightly different income ratios?
 verify last researched>current issues
 	upg ship > current?
 rchance > 1 throws off max

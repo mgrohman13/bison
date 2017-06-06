@@ -623,7 +623,7 @@ namespace GalWar
             int occupy = attackers;
             if (initPop > 0 && attackers > 1)
             {
-                occupy = handler.MoveTroops(null, occupy, occupy, soldiers);
+                occupy = handler.MoveTroops(null, occupy, occupy, soldiers, false);
                 if (occupy < 1)
                     occupy = 1;
             }

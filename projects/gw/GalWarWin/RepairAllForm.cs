@@ -29,6 +29,7 @@ namespace GalWarWin
             double population, production, gold;
             MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold, false);
             MainForm.FormatIncome(this.lblIncome, gold, true);
+            gold -= MainForm.Game.CurrentPlayer.GetAutoRepairCost();
 
             double avg = 0, tot = 0;
             foreach (Ship ship in MainForm.Game.CurrentPlayer.GetShips())

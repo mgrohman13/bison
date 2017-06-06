@@ -17,6 +17,7 @@ namespace GalWarWin.Sliders
 
         private readonly PopCarrier from;
         private readonly PopCarrier to;
+        private readonly bool extraCost;
 
         private readonly Colony colony;
 
@@ -25,10 +26,11 @@ namespace GalWarWin.Sliders
         private readonly int totalPop;
         private readonly double soldiers;
 
-        public MoveTroops(PopCarrier from, PopCarrier to)
+        public MoveTroops(PopCarrier from, PopCarrier to, bool extraCost)
         {
             this.from = from;
             this.to = to;
+            this.extraCost = extraCost;
 
             if (from.Player == to.Player)
             {
@@ -37,10 +39,11 @@ namespace GalWarWin.Sliders
             }
         }
 
-        public MoveTroops(Colony from, int max, int totalPop, double soldiers)
+        public MoveTroops(Colony from, int max, int totalPop, double soldiers, bool extraCost)
         {
             this.from = from;
             this.colony = from;
+            this.extraCost = extraCost;
 
             this.max = max;
 
@@ -79,7 +82,7 @@ namespace GalWarWin.Sliders
 
         protected override double GetResult()
         {
-            return Consts.GetMovePopCost(MainForm.Game.MapSize, GetValue(), GetSoldiers());
+            return Consts.GetMovePopCost(MainForm.Game.MapSize, GetValue(), GetSoldiers()) + ( this.extraCost ? GetValue() * Consts.Income : 0 );
         }
 
         protected override string GetExtra()

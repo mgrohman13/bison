@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -73,6 +74,28 @@ namespace GalWarWin
             {
                 int val = (int)Math.Ceiling(pair.Value / maxDef * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
                 form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+            }
+
+            form.ShowDialog();
+        }
+
+        internal static void ShowForm(int att, int def)
+        {
+            double avgAtt, avgDef;
+            IDictionary<int, double> table = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
+
+            form.textBox1.Text = avgAtt.ToString("+0.00").PadLeft(8);
+            form.textBox1.Text += "\r\n";
+            form.textBox1.Text += avgDef.ToString("-0.00").PadLeft(8);
+            form.textBox1.Text += "\r\n\r\n";
+
+            double total = table.Values.Sum();
+            foreach (var pair in table)
+            {
+                form.textBox1.Text += pair.Key.ToString("+#;-#;0").PadLeft(5);
+                form.textBox1.Text += ": ";
+                form.textBox1.Text += MainForm.FormatPct(pair.Value / total, true).PadLeft(4);
+                form.textBox1.Text += "\r\n";
             }
 
             form.ShowDialog();

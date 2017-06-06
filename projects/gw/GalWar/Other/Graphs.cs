@@ -47,9 +47,9 @@ namespace GalWar
 
         internal void EndTurn(Player player)
         {
-            double f, quality, pd, armada, damaged;
-            LoopColonies(player, out f, out quality, out pd);
-            LoopShips(player, out armada, out damaged, out f);
+            double quality, pd, armada, damaged, d1, d2;
+            LoopColonies(player, out d1, out quality, out pd);
+            LoopShips(player, out armada, out damaged, out d2);
 
             //values subject to major fluctuation depending on who moved last get averaged out to reduce the effect of turn order
             EndTurn(GraphType.Quality, player, quality);
@@ -79,9 +79,9 @@ namespace GalWar
                     Add(playerGraphs, GraphType.Research, player, research[player]);
                     Add(playerGraphs, GraphType.TotalIncome, player, player.IncomeTotal);
 
-                    double pop, trans, f1, f2, f3, f4;
-                    LoopColonies(player, out pop, out f1, out f4);
-                    LoopShips(player, out f2, out f3, out trans);
+                    double pop, trans, d1, d2, d3, d4;
+                    LoopColonies(player, out pop, out d1, out d2);
+                    LoopShips(player, out d3, out d4, out trans);
 
                     Add(playerGraphs, GraphType.Population, player, pop);
                     Add(playerGraphs, GraphType.PopulationTrans, player, pop + trans);
@@ -105,7 +105,7 @@ namespace GalWar
         private void Add(Dictionary<byte, Dictionary<byte, float>> playerGraphs, GraphType graphType, Player player, double value)
         {
             float last = -2;
-            for (int x = this.data.Count ; --x > -1 ; )
+            for (int x = this.data.Count ; --x > -1 ;)
             {
                 Dictionary<byte, float> prevGraphs;
                 if (this.data[x].TryGetValue((byte)graphType, out prevGraphs))
@@ -151,9 +151,9 @@ namespace GalWar
         }
 
         //[turn,playerIndex,(0=turn,1=value)]
-        public float[, ,] Get(GraphType type, out Dictionary<int, Player> playerIndexes)
+        public float[,,] Get(GraphType type, out Dictionary<int, Player> playerIndexes)
         {
-            float[, ,] retVal = new float[this.data.Count, this.players.Length, 2];
+            float[,,] retVal = new float[this.data.Count, this.players.Length, 2];
             //tells the caller which players are at which indices
             playerIndexes = new Dictionary<int, Player>();
             for (int b = 0 ; b < this.players.Length ; ++b)
