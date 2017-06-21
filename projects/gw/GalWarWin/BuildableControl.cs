@@ -79,21 +79,22 @@ namespace GalWarWin
                     {
                         SetVisibility(true);
 
+                        double att, def, hp, soldiers;
+                        colony.GetPlanetDefenseInc(buildable, colony.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(),
+                                out att, out def, out hp, out soldiers);
+                        double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetLastResearched());
+                        string costLabel = handleCost(ref cost);
+                        if (colony.Population > 1)
+                            soldiers /= colony.Population;
+
                         this.label1.Text = "Attack";
                         this.label2.Text = "Defense";
                         this.label3.Text = "HP";
-                        this.label4.Text = "Cost / HP";
+                        this.label4.Text = costLabel;
                         this.label5.Text = "Soldiers";
                         this.label6.Visible = false;
                         this.label7.Text = "Max Att";
                         this.label8.Text = "Max Def";
-
-                        double cost, att, def, hp, soldiers;
-                        colony.GetPlanetDefenseInc(buildable, colony.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(),
-                                out att, out def, out hp, out soldiers);
-                        cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetLastResearched());
-                        if (colony.Population > 1)
-                            soldiers /= colony.Population;
 
                         this.lblTop.Text = "Planetary Defenses";
                         this.lblInf1.Text = MainForm.FormatUsuallyInt(att);
@@ -108,15 +109,18 @@ namespace GalWarWin
                     }
                     else
                     {
+                        double cost = MainForm.Game.CurrentPlayer.PlanetDefenseCostPerHP;
+                        string costLabel = handleCost(ref cost);
+
                         this.label1.Visible = true;
-                        this.label1.Text = "Cost / HP";
+                        this.label1.Text = costLabel;
                         this.label2.Visible = true;
                         this.label2.Text = "Attack";
                         this.label3.Visible = true;
                         this.label3.Text = "Defense";
 
                         this.lblInf1.Visible = true;
-                        this.lblInf1.Text = MainForm.FormatDouble(MainForm.Game.CurrentPlayer.PlanetDefenseCostPerHP);
+                        this.lblInf1.Text = MainForm.FormatDouble(cost);
                         this.lblInf2.Visible = true;
                         this.lblInf2.Text = MainForm.Game.CurrentPlayer.PlanetDefenseAtt.ToString();
                         this.lblInf3.Visible = true;
@@ -128,6 +132,17 @@ namespace GalWarWin
             }
 
             return false;
+        }
+
+        private string handleCost(ref double cost)
+        {
+            string costLabel = "Cost / HP";
+            if (cost < .2)
+            {
+                costLabel = "HP / Cost";
+                cost = 1 / cost;
+            }
+            return costLabel;
         }
 
         private void SetVisibility(bool visible)
