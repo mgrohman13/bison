@@ -15,40 +15,31 @@ namespace MattUtil
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
 
             int playerLength = players.Count;
-            int numShuffles = random.GaussianOEInt(playerLength * shuffle, .39, .26);
-            bool[] affected = new bool[playerLength];
-            for (int a = 0 ; a < numShuffles ; ++a)
+            if (playerLength > 1)
             {
-                int index = random.Next(playerLength);
-                int swap = ( index == 0 ? playerLength : index ) - 1;
-                Player player = players[index];
-                Player last = players[swap];
-
-                if (index == 0 || affected[index] || affected[swap])
+                int numShuffles = random.GaussianOEInt(( playerLength - 1 ) * shuffle, .39, .26);
+                bool[] affected = new bool[playerLength];
+                for (int a = 0 ; a < numShuffles ; ++a)
                 {
-                    int amt;
-                    retVal.TryGetValue(player, out amt);
-                    retVal[player] = amt + 1;
+                    int index = random.Next(1, playerLength);
+                    int swap = index - 1;
+                    Player player = players[index];
+                    Player prev = players[swap];
 
-                    retVal.TryGetValue(last, out amt);
-                    retVal[last] = amt - 1;
-                }
-                else
-                {
-                    affected[index] = true;
-                    affected[swap] = true;
-
-                    players[index] = last;
-                    players[swap] = player;
-
-                    if (a + 1 < numShuffles)
+                    if (!affected[index] && !affected[swap])
                     {
-                        for (int b = 1 ; b < playerLength ; ++b)
-                            if (!affected[b - 1] && !affected[b])
-                                goto end;
-                        break;
-end:
-                        ;
+                        int amt;
+                        retVal.TryGetValue(player, out amt);
+                        retVal[player] = amt - 1;
+
+                        retVal.TryGetValue(prev, out amt);
+                        retVal[prev] = amt + 1;
+
+                        affected[index] = true;
+                        affected[swap] = true;
+
+                        players[index] = prev;
+                        players[swap] = player;
                     }
                 }
             }
