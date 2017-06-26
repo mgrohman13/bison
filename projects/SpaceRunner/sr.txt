@@ -14,3 +14,4 @@ replay speeds
 	fast as possible
 resume from replay
 player bump collision with alien ship?
+alien ship fuel modifies movetype?

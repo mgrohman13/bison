@@ -17,9 +17,9 @@ namespace MattUtil
             int playerLength = players.Count;
             if (playerLength > 1)
             {
-                int numShuffles = random.GaussianOEInt(( playerLength - 1 ) * shuffle, .39, .26);
+                int numShuffles = random.GaussianOEInt((playerLength - 1) * shuffle, .39, .26);
                 bool[] affected = new bool[playerLength];
-                for (int a = 0 ; a < numShuffles ; ++a)
+                for (int a = 0; a < numShuffles; ++a)
                 {
                     int index = random.Next(1, playerLength);
                     int swap = index - 1;
@@ -30,10 +30,10 @@ namespace MattUtil
                     {
                         int amt;
                         retVal.TryGetValue(player, out amt);
-                        retVal[player] = amt - 1;
+                        retVal[player] = amt - 2;
 
                         retVal.TryGetValue(prev, out amt);
-                        retVal[prev] = amt + 1;
+                        retVal[prev] = amt + 2;
 
                         affected[index] = true;
                         affected[swap] = true;
@@ -56,7 +56,7 @@ namespace MattUtil
             else
                 ++max;
             int mid;
-            while (( mid = max - min ) > 1)
+            while ((mid = max - min) > 1)
             {
                 mid = min + mid / 2;
                 if (Predicate(mid))
@@ -69,7 +69,7 @@ namespace MattUtil
                 else
                     max = mid;
             }
-            return ( trueHigh ? max : min );
+            return (trueHigh ? max : min);
         }
 
         public static double FindValue(Func<double, double> Func, double target, double min, double max)
@@ -78,7 +78,7 @@ namespace MattUtil
             while (min != max)
             {
                 //++steps;
-                double mid = ( min + max ) / 2.0;
+                double mid = (min + max) / 2.0;
                 if (mid == min || mid == max)
                 {
                     if (Math.Abs(Func(min) - target) > Math.Abs(Func(max) - target))
@@ -183,7 +183,7 @@ namespace MattUtil
                     int priorDist = int.MaxValue;
 
                     //check if we have not looked at this tile yet, or if this path is equal to or shorter than the previous path
-                    if (( inQueue == null && !closed.Contains(neighbor) ) || newDist <= ( priorDist = distTo[neighbor] ))
+                    if ((inQueue == null && !closed.Contains(neighbor)) || newDist <= (priorDist = distTo[neighbor]))
                         //check if this path is superior to the previously found path
                         if (newDist < priorDist)
                         {
@@ -221,7 +221,7 @@ namespace MattUtil
         {
             TValue col;
             if (!queue.TryGetValue(key, out col))
-                queue[key] = ( col = Activator.CreateInstance<TValue>() );
+                queue[key] = (col = Activator.CreateInstance<TValue>());
             col.Add(tile);
         }
         private static void Dequeue<Tile>(SortedDictionary<int, HashSet<Tile>> queue, int key, HashSet<Tile> set, Tile tile)
@@ -252,7 +252,7 @@ namespace MattUtil
                 {
                     var options = allOptions.Select(tile => new Tuple<Tile, List<BigInteger>>(tile, weights[tile]));
 
-                    for (int a = 0 ; options.Skip(1).Any() ; ++a)
+                    for (int a = 0; options.Skip(1).Any(); ++a)
                     {
                         int b = a;
 
@@ -298,7 +298,7 @@ namespace MattUtil
 
                 int a = children.Min(child => child.Count);
                 foreach (var child in children)
-                    for (int b = 1 ; b <= a ; ++b)
+                    for (int b = 1; b <= a; ++b)
                     {
                         BigInteger entry = child[b - 1];
                         if (b == weight.Count)

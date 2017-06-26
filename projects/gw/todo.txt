@@ -33,8 +33,10 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
+civ zoc?
+	rebalance?
+buy gold on terraform event?
 anomaly global event could look at actual terraform colonies
-anomaly pickup requirments heal inconsistent
 why do enemy colonies show repair amt?
 ship vector allow for waypoints/constant path
 population w/o trans graph should also average?
@@ -95,6 +97,8 @@ trans upk payoff problem
 rethink neg gold again
 	don't like random disbanding - no adv over manual
 	if keep impossible negative, make _goldValue a uint?
+	current impl could work if guarantee popup always shows if possibility of sale 
+	think of any starrt turn action?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
 rebalance global event?

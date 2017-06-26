@@ -1008,11 +1008,15 @@ namespace GalWar
         private bool Pickup(IEventHandler handler, Ship ship)
         {
             int pop = Game.Random.Round(this.value * Consts.PopulationForGoldHigh);
-            int hp = Game.Random.Round(ship.GetHPForProd(this.value, false));
+            int hp = Game.Random.Round(this.value / ship.GetProdForHP(1));
             double soldiers = this.value / Consts.ExpForSoldiers;
 
-            bool canPop = (pop > 0 && pop <= ship.FreeSpace);
-            bool canHeal = (hp > 0 && ship.HP + hp <= ship.MaxHP);
+            Func<int, int, bool> DoChance = (add, max) =>
+            {
+                return (Game.Random.Range(Math.Sqrt(add), add) <= max);
+            };
+            bool canPop = (pop > 0 && ship.FreeSpace > 0 && (pop <= ship.FreeSpace || DoChance(pop, ship.FreeSpace)));
+            bool canHeal = (hp > 0 && ship.HP < ship.MaxHP && (ship.HP + hp <= ship.MaxHP || DoChance(hp, ship.MaxHP - ship.HP)));
             if (ship.Population > 0 && soldiers / ship.Population > .01)
             {
                 double soldierChance = ship.GetSoldierPct() / 1.69;
@@ -1029,6 +1033,9 @@ namespace GalWar
                     ship.AddSoldiers(soldiers);
                     return true;
                 }
+                else
+                {
+                }
             }
 
             if (canPop && canHeal)
@@ -1039,18 +1046,24 @@ namespace GalWar
 
             if (canPop)
             {
+                pop = Math.Min(pop, ship.FreeSpace);
+
                 handler.Explore(AnomalyType.PickupPopulation, pop);
 
                 ship.AddPopulation(pop);
+                ship.Player.GoldIncome(this.value - pop / Consts.PopulationForGoldHigh);
                 return true;
             }
             if (canHeal)
             {
-                handler.Explore(AnomalyType.Heal, hp);
+                int show = Math.Min(hp, ship.MaxHP - ship.HP);
+                handler.Explore(AnomalyType.Heal, show);
 
                 double prod = ship.GetProdForHP(hp), gold = this.value - prod;
-                if (ship.ProductionRepair(ref prod, ref gold, true, false) != hp)
-                    throw new Exception();
+                int result = ship.ProductionRepair(ref prod, ref gold, true, false);
+                if (result != hp || result != show)
+                {
+                }
                 ship.Player.GoldIncome(prod + gold);
                 return true;
             }
