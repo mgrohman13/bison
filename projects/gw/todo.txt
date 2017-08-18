@@ -33,6 +33,7 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
+bombard free dmg based on attacker research??
 civ zoc?
 	rebalance?
 buy gold on terraform event?
