@@ -16,10 +16,11 @@ namespace CityWarWinApp
         {
             InitializeComponent();
 
-            if (location.X + this.Width > Screen.PrimaryScreen.Bounds.Width)
-                location.X = Screen.PrimaryScreen.Bounds.Width - this.Width;
-            if (location.Y + this.Height > Screen.PrimaryScreen.Bounds.Height)
-                location.Y = Screen.PrimaryScreen.Bounds.Height - this.Height;
+            Rectangle bounds = Map.GetScreenBounds();
+            if (location.X + this.Width > bounds.Width)
+                location.X = bounds.Width - this.Width;
+            if (location.Y + this.Height > bounds.Height)
+                location.Y = bounds.Height - this.Height;
             this.Location = location;
 
             this.txtUnit.Text = piece.ToString();

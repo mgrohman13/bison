@@ -62,7 +62,6 @@
     <Compile Include="pieces\Wizard.cs" />
     <Compile Include="UnitSchema.cs">
       <DependentUpon>UnitSchema.xsd</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="UnitSchema.Designer.cs">
       <AutoGen>True</AutoGen>

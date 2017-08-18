@@ -105,7 +105,7 @@ namespace CityWarWinApp
             this.FormBorderStyle = FormBorderStyle.None;
             setOldBounds();
             storeOld = false;
-            this.Bounds = Screen.PrimaryScreen.Bounds;
+            this.Bounds = GetScreenBounds();
             storeOld = true;
 
             //refresh information
@@ -555,8 +555,8 @@ namespace CityWarWinApp
                     maxY = Game.Diameter;
 
                 //draw the hexes
-                for (int X = minX ; ++X < maxX ; )
-                    for (int Y = minY ; ++Y < maxY ; )
+                for (int X = minX ; ++X < maxX ;)
+                    for (int Y = minY ; ++Y < maxY ;)
                     {
                         //get the current tile being drawn
                         Tile thisTile = Game.GetTile(X, Y);
@@ -635,8 +635,8 @@ namespace CityWarWinApp
                     }
 
                     //draw the units
-                    for (int X = minX ; ++X < maxX ; )
-                        for (int Y = minY ; ++Y < maxY ; )
+                    for (int X = minX ; ++X < maxX ;)
+                        for (int Y = minY ; ++Y < maxY ;)
                         {
                             Tile thisTile = Game.GetTile(X, Y);
                             if (thisTile != null)
@@ -913,10 +913,19 @@ namespace CityWarWinApp
                     //set to full screen
                     storeOld = false;
                     this.FormBorderStyle = FormBorderStyle.None;
-                    this.Bounds = Screen.PrimaryScreen.Bounds;
+                    this.Bounds = Screen.FromControl(this).Bounds;
                     storeOld = true;
                 }
+                screenBounds = Screen.FromControl(this);
             }
+        }
+
+        private static Screen screenBounds = null;
+        public static Rectangle GetScreenBounds()
+        {
+            if (screenBounds == null)
+                screenBounds = Screen.PrimaryScreen;
+            return screenBounds.Bounds;
         }
 
         private void MainMap_KeyPress(object sender, KeyPressEventArgs e)

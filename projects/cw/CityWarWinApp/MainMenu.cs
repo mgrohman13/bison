@@ -53,20 +53,20 @@ namespace CityWarWinApp
             menuItems[2] = this.lblOptions;
             menuItems[3] = this.lblQuit;
 
-            for (int i = -1 ; ++i < menuItems.Length ; )
+            for (int i = -1 ; ++i < menuItems.Length ;)
             {
                 menuItems[i].BackColor = back;
                 menuItems[i].ForeColor = fore;
             }
 
-            this.Bounds = Screen.PrimaryScreen.Bounds;
+            this.Bounds = Map.GetScreenBounds();
 
             int width = this.lblNewGame.Width, items = 4, spacing = 30,
-                height = this.lblNewGame.Height + spacing;
+                 height = this.lblNewGame.Height + spacing;
             int x = ( this.Width - width ) / 2,
                 y = ( this.Height - height * items + spacing ) / 2;
 
-            for (int i = -1 ; ++i < menuItems.Length ; )
+            for (int i = -1 ; ++i < menuItems.Length ;)
             {
                 menuItems[i].Location = new Point(x, y);
                 y += height;

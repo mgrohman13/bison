@@ -23,9 +23,9 @@ namespace CityWarWinApp
 
             int insideX = this.Bounds.Width, insideY = this.Bounds.Height;
 
-            this.Bounds = Screen.PrimaryScreen.Bounds;
+            this.Bounds = Map.GetScreenBounds();
 
-            for (int i = -1 ; ++i < Controls.Count ; )
+            for (int i = -1 ; ++i < Controls.Count ;)
             {
                 Controls[i].Location = new Point(Controls[i].Location.X + ( this.Width - insideX ) / 2,
                     Controls[i].Location.Y + ( this.Height - insideY ) / 2);
