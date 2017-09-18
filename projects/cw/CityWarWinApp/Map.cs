@@ -90,6 +90,7 @@ namespace CityWarWinApp
             InitializeComponent();
             this.panelPieces.Initialize(GetPiecesForPiecesPanel, GetDrawFlagsForPiece, GetTextForPiece, () => Brushes.DarkMagenta);
             this.MouseWheel += new MouseEventHandler(this.panelPieces.PiecesPanel_MouseWheel);
+            MouseWheel += new MouseEventHandler(MainMap_MouseWheel);
             this.ResizeRedraw = false;
 
             //reduce flickering
@@ -888,6 +889,15 @@ namespace CityWarWinApp
         {
             new Trade(Game.CurrentPlayer).ShowDialog();
             RefreshResources();
+        }
+
+        private void MainMap_MouseWheel(object sender, MouseEventArgs e)
+        {
+            ////z zooms in, x zooms out
+            //if (e.KeyChar == 'z' || e.KeyChar == 'Z')
+            //    new Zoom(this, Zoom, true).Show();
+            //else if (e.KeyChar == 'x' || e.KeyChar == 'X')
+            //    new Zoom(this, Zoom, false).Show();
         }
 
         #endregion
