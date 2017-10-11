@@ -20,21 +20,25 @@ namespace Gravity
         public Form1()
         {
             InitializeComponent();
-            this.ClientSize = new Size(300, 300);
+
+            this.Bounds = Screen.PrimaryScreen.WorkingArea;
+            int min = Math.Min(ClientSize.Width, ClientSize.Height);
+            this.ClientSize = new Size(min, min);
+            Text = ClientSize.ToString();
 
             game = GetNewGame(false);
         }
 
         protected override BaseGame GetNewGame(bool scoring)
         {
-            return ( game = new Game(1000 / 39f, base.RefreshGame, this.ClientRectangle) );
+            return (game = new Game(1000 / 39f, base.RefreshGame, this.ClientRectangle));
         }
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
             if (game != null)
             {
-                ( (Game)game ).setTarget(e.X, e.Y);
+                ((Game)game).setTarget(e.X, e.Y);
                 if (!game.Started)
                     game.Start();
             }
@@ -44,7 +48,7 @@ namespace Gravity
         {
             if (game != null)
             {
-                ( (Game)game ).setClientRectangle(this.ClientRectangle);
+                ((Game)game).setClientRectangle(this.ClientRectangle);
                 Invalidate(ClientRectangle, false);
 
                 Text = ClientSize.ToString();

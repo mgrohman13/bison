@@ -32,10 +32,13 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 262);
+            this.ClientSize = new System.Drawing.Size(521, 484);
+            this.Margin = new System.Windows.Forms.Padding(11, 11, 11, 11);
+            this.MaximizeBox = true;
             this.Name = "Form1";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Auto;
             this.Text = "Form1";
             this.ClientSizeChanged += new System.EventHandler(this.Form1_ClientSizeChanged);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);

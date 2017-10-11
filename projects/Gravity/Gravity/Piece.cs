@@ -29,7 +29,7 @@ namespace Gravity
         {
             get
             {
-                return size * density;
+                return size * size * density;
             }
         }
         internal abstract float GetGravity(Type type);
@@ -45,7 +45,7 @@ namespace Gravity
             float yDist = p1.y - p2.y;
             float distSqr = xDist * xDist + yDist * yDist;
             float distance = (float)Math.Sqrt(distSqr);
-            if (distance > ( p1.size + p2.size ) / 2f)
+            if (distance > (p1.size + p2.size) / 2f)
             {
                 float mult = Game.gravity * p1.Mass * p2.Mass / distSqr / distance;
                 xDist *= mult;
@@ -80,8 +80,8 @@ namespace Gravity
             float xScale = drawRectangle.Width / gameWidth;
             float yScale = drawRectangle.Height / gameHeight;
 
-            float xDraw = ( x - size / 2f ) * xScale + drawRectangle.Width / 2f;
-            float yDraw = ( y - size / 2f ) * yScale + drawRectangle.Height / 2f;
+            float xDraw = (x - size / 2f) * xScale + drawRectangle.Width / 2f;
+            float yDraw = (y - size / 2f) * yScale + drawRectangle.Height / 2f;
 
             graphics.FillEllipse(getBrush(color), xDraw, yDraw, size * xScale, size * yScale);
         }

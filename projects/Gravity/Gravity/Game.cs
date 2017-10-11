@@ -12,9 +12,9 @@ namespace Gravity
     {
         public static MTRandom rand = new MTRandom();
 
-        public const float gameSize = 750f;
-        public const float gravity = 5f;
-        public const float offMapPull = 1 / 10000f;
+        public const float gameSize = 1500f;
+        public const float gravity = .5f;
+        public const float offMapPull = .00001f;
 
         private HashSet<Piece> pieces;
         private Player player;
@@ -33,10 +33,12 @@ namespace Gravity
             pieces = new HashSet<Piece>() { new Center(0, 0, 5f, 5f), player, target };
 
             int amt = rand.GaussianOEInt(5, .1f, .1f, 3);
-            for (int a = 0 ; a < amt ; ++a)
+            for (int a = 0; a < amt; ++a)
             {
                 const float enemyDist = gameSize / 5f;
-                pieces.Add(new Enemy(rand.Gaussian(enemyDist), rand.Gaussian(enemyDist), rand.GaussianOE(30f, .2f, .3f, 5), rand.GaussianOE(1f, .2f, .3f)));
+                const float avgSize = 30f;
+                float size = rand.GaussianOE(avgSize, .2f, .3f, 5);
+                pieces.Add(new Enemy(rand.Gaussian(enemyDist), rand.Gaussian(enemyDist), size, rand.GaussianOE(size / avgSize, .2f, .3f)));
             }
         }
 
@@ -70,9 +72,9 @@ namespace Gravity
         public override void Step()
         {
             List<Piece> pieces = new List<Piece>(rand.Iterate(this.pieces));
-            for (int a = 0 ; a < pieces.Count ; ++a)
+            for (int a = 0; a < pieces.Count; ++a)
             {
-                for (int b = a + 1 ; b < pieces.Count ; ++b)
+                for (int b = a + 1; b < pieces.Count; ++b)
                     pieces[a].Interact(pieces[b]);
                 pieces[a].Step();
             }
