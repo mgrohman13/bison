@@ -8,7 +8,7 @@ namespace Gravity
 {
     class Target : Piece
     {
-        public Target(float x, float y, float size, float density) : base(x, y, size, density, System.Drawing.Color.Teal)
+        public Target(Game game, float x, float y, float size, float density) : base(game, x, y, size, density, System.Drawing.Color.Teal)
         {
         }
 
@@ -23,7 +23,7 @@ namespace Gravity
             this.y = y;
         }
 
-        internal override void Step()
+        internal override void Step(float count)
         {
         }
     }

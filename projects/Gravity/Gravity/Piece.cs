@@ -11,11 +11,14 @@ namespace Gravity
     {
         private static Dictionary<Color, Brush> brushes = new Dictionary<Color, Brush>();
 
+        protected Game game;
         protected float x, y, xDir, yDir, size, density;
-        private Color color;
+        protected Color color;
 
-        protected Piece(float x, float y, float size, float density, Color color)
+        protected Piece(Game game, float x, float y, float size, float density, Color color)
         {
+            this.game = game;
+
             this.x = x;
             this.y = y;
             this.xDir = 0;
@@ -29,9 +32,14 @@ namespace Gravity
         {
             get
             {
-                return size * size * density;
+                return getMass(size, density);
             }
         }
+        protected static float getMass(float size, float density)
+        {
+            return size * size * density;
+        }
+
         internal abstract float GetGravity(Type type);
 
         internal virtual void Interact(Piece piece)
@@ -45,7 +53,7 @@ namespace Gravity
             float yDist = p1.y - p2.y;
             float distSqr = xDist * xDist + yDist * yDist;
             float distance = (float)Math.Sqrt(distSqr);
-            if (distance > (p1.size + p2.size) / 2f)
+            if (distance > ( p1.size + p2.size ) / 2f)
             {
                 float mult = Game.gravity * p1.Mass * p2.Mass / distSqr / distance;
                 xDist *= mult;
@@ -61,7 +69,7 @@ namespace Gravity
             }
         }
 
-        internal virtual void Step()
+        internal virtual void Step(float count)
         {
             x += xDir;
             y += yDir;
@@ -70,9 +78,15 @@ namespace Gravity
             dist *= dist;
             if (x * x + y * y > dist)
             {
-                xDir -= x * Game.offMapPull;
-                yDir -= y * Game.offMapPull;
+                xDir = adj(xDir, x);
+                yDir = adj(yDir, y);
             }
+        }
+
+        private float adj(float dir, float pos)
+        {
+            float trg = -pos * Game.offMapPull;
+            return dir * ( 1 - Game.offMapPull ) + trg * Game.offMapPull;
         }
 
         public virtual void Draw(Graphics graphics, Rectangle drawRectangle, float gameWidth, float gameHeight)
@@ -80,8 +94,8 @@ namespace Gravity
             float xScale = drawRectangle.Width / gameWidth;
             float yScale = drawRectangle.Height / gameHeight;
 
-            float xDraw = (x - size / 2f) * xScale + drawRectangle.Width / 2f;
-            float yDraw = (y - size / 2f) * yScale + drawRectangle.Height / 2f;
+            float xDraw = ( x - size / 2f ) * xScale + drawRectangle.Width / 2f;
+            float yDraw = ( y - size / 2f ) * yScale + drawRectangle.Height / 2f;
 
             graphics.FillEllipse(getBrush(color), xDraw, yDraw, size * xScale, size * yScale);
         }

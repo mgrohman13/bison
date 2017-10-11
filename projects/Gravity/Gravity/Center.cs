@@ -8,7 +8,7 @@ namespace Gravity
 {
     class Center : Piece
     {
-        public Center(float x, float y, float size, float density) : base(x, y, size, density, System.Drawing.Color.Red)
+        public Center(Game game, float x, float y, float size, float density) : base(game, x, y, size, density, System.Drawing.Color.Red)
         {
         }
 
@@ -17,7 +17,7 @@ namespace Gravity
             return 0;
         }
 
-        internal override void Step()
+        internal override void Step(float count)
         {
         }
     }

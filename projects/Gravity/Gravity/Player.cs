@@ -8,7 +8,7 @@ namespace Gravity
 {
     class Player : Piece
     {
-        public Player(float x, float y, float size, float density) : base(x, y, size, density, System.Drawing.Color.Blue)
+        public Player(Game game, float x, float y, float size, float density) : base(game, x, y, size, density, System.Drawing.Color.Blue)
         {
         }
 
@@ -25,11 +25,11 @@ namespace Gravity
             throw new Exception();
         }
 
-        internal override void Step()
+        internal override void Step(float count)
         {
-            base.Step();
+            base.Step(count);
 
-            const float decay = .999f;
+            const float decay = .9999f;
             this.xDir *= decay;
             this.yDir *= decay;
         }

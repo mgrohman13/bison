@@ -31,14 +31,16 @@ namespace Gravity
 
         protected override BaseGame GetNewGame(bool scoring)
         {
-            return (game = new Game(1000 / 39f, base.RefreshGame, this.ClientRectangle));
+            game = new Game(1000 / 39f, base.RefreshGame, this.ClientRectangle);
+            game.Start();
+            return game;
         }
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
             if (game != null)
             {
-                ((Game)game).setTarget(e.X, e.Y);
+                ( (Game)game ).setTarget(e.X, e.Y);
                 if (!game.Started)
                     game.Start();
             }
@@ -48,7 +50,7 @@ namespace Gravity
         {
             if (game != null)
             {
-                ((Game)game).setClientRectangle(this.ClientRectangle);
+                ( (Game)game ).setClientRectangle(this.ClientRectangle);
                 Invalidate(ClientRectangle, false);
 
                 Text = ClientSize.ToString();
