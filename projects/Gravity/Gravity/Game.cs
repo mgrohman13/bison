@@ -93,7 +93,7 @@ namespace Gravity
 
         public override void Draw(Graphics graphics)
         {
-            foreach (Piece p in pieces)
+            foreach (Piece p in rand.Iterate(pieces))
                 p.Draw(graphics, drawRectangle, gameSize, gameSize);
         }
 
