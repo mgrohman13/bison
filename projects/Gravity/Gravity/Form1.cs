@@ -22,17 +22,21 @@ namespace Gravity
             InitializeComponent();
 
             this.Bounds = Screen.PrimaryScreen.WorkingArea;
-            int min = Math.Min(ClientSize.Width, ClientSize.Height);
-            this.ClientSize = new Size(min, min);
-            //Text = ClientSize.ToString();
+            int pad = menuStrip.Height + this.panel1.Height;
+            int min = //300;
+                    Math.Min(ClientSize.Width, ClientSize.Height - pad);
+            this.ClientSize = new Size(min, min + pad);
 
-            game = GetNewGame(false);
+            game = GetNewGame(true);
         }
 
         protected override BaseGame GetNewGame(bool scoring)
         {
-            game = new Game(1000 / 39f, this.RefreshGame, this.ClientRectangle);
-            game.Start();
+            Rectangle rectangle = this.ClientRectangle;
+            rectangle.Y += menuStrip.Height;
+            rectangle.Height -= menuStrip.Height + this.panel1.Height;
+            game = new Game(1000 / 39f, this.RefreshGame, rectangle);
+            //game.Start();
             return game;
         }
 
@@ -40,15 +44,17 @@ namespace Gravity
         {
             if (game != null)
             {
-                ((Game)game).setTarget(e.X, e.Y);
-                if (!game.Started)
-                    game.Start();
+                ( (Game)game ).setTarget(e.X, e.Y);
+                if (!game.Started || !game.Running || game.Paused)
+                    RefreshGame();
             }
         }
 
         protected override void RefreshGame()
         {
             base.RefreshGame();
+            panel1.Invalidate();
+
             this.Invoke((MethodInvoker)delegate
             {
                 try
@@ -68,10 +74,8 @@ namespace Gravity
         {
             if (game != null)
             {
-                ((Game)game).setClientRectangle(this.ClientRectangle);
+                ( (Game)game ).setClientRectangle(this.ClientRectangle);
                 Invalidate(ClientRectangle, false);
-
-                //Text = ClientSize.ToString();
             }
         }
 
@@ -88,11 +92,28 @@ namespace Gravity
         private void Form1_Click(object sender, EventArgs e)
         {
             if (game != null)
-                //{
-                //    if (!game.Started)
-                //        game.Start();
-                game.Paused = !game.Paused;
-            //}
+            {
+                if (game.Started)
+                    game.Paused = !game.Paused;
+                else
+                    game.Start();
+            }
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            if (game != null && !game.GameOver())
+            {
+                Player player = ( (Game)game ).Player;
+                using (Brush brush = new SolidBrush(player.GetShieldColor()))
+                    e.Graphics.FillRectangle(brush, 0, 0, player.GetShieldPct() * panel1.Width, panel1.Height);
+                using (Pen pen = new Pen(Color.Black, 2))
+                    for (float a = .5f ; a < 10 ; a = (float)Math.Floor(a + 1))
+                    {
+                        float x = Player.GetShieldPct(a) * panel1.Width;
+                        e.Graphics.DrawLine(pen, x, 0, x, panel1.Height);
+                    }
+            }
         }
     }
 }

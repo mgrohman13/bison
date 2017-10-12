@@ -18,18 +18,22 @@ namespace Gravity
         public const float avgSize = 30f;
         public const float scoreSize = 50f;
         public const float scoreDensity = .25f;
-        public const float avgNum = 5f;
+
 
         private HashSet<Piece> pieces;
         private Player player;
         private Target target;
 
+        private float avgNum;
         private decimal score;
 
         private Rectangle drawRectangle;
 
-        public Game(double gameTick, MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, Rectangle rectangle) : base(gameTick, RefreshGame)
+        public Game(float gameTick, MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, Rectangle rectangle) : base(gameTick, RefreshGame)
         {
+            this.avgNum = 5f;
+            this.score = 0;
+
             drawRectangle = rectangle;
 
             const float playerDist = gameSize / 10f;
@@ -37,20 +41,34 @@ namespace Gravity
             target = new Target(this, rand.Gaussian(playerDist), rand.Gaussian(playerDist), 15f, 1f);
             Piece center = new Center(this, 0, 0, 5f, 10f);
 
-            Console.WriteLine(Enemy.GetColor(player.Size, player.Density / 2f));
-            Console.WriteLine(Enemy.GetColor(target.Size, target.Density / 4f));
-            Console.WriteLine(Enemy.GetColor(center.Size, center.Density * 2f));
+            //Console.WriteLine(Enemy.GetColor(player.Size, player.Density / 2f));
+            //Console.WriteLine(Enemy.GetColor(target.Size, target.Density / 4f));
+            //Console.WriteLine(Enemy.GetColor(center.Size, center.Density * 2f));
 
             pieces = new HashSet<Piece>() { center, player, target };
 
-            int amt = rand.GaussianOEInt(avgNum, .1f, .1f, 3);
-            for (int a = 0; a < amt; ++a)
+            int amt = rand.GaussianOEInt(Difficulty, .1f, .1f, 3);
+            for (int a = 0 ; a < amt ; ++a)
                 NewEnemy();
 
             NewPowerUp();
             NewPowerUp();
+        }
 
-            this.score = 0;
+        public Player Player
+        {
+            get
+            {
+                return player;
+            }
+        }
+
+        public float Difficulty
+        {
+            get
+            {
+                return avgNum;
+            }
         }
 
         internal void AddScore(float score)
@@ -62,7 +80,12 @@ namespace Gravity
         {
             const float enemyDist = gameSize / 5f;
             float size = rand.GaussianOE(avgSize, .25f, .25f, 5);
-            pieces.Add(new Enemy(this, rand.Gaussian(enemyDist), rand.Gaussian(enemyDist), size, GetDensity(size)));
+            float x = rand.Gaussian(enemyDist);
+            float y = rand.Gaussian(enemyDist);
+            if (player.CheckCourse(x - size / 2f, y - size / 2f, size))
+                NewEnemy();
+            else
+                pieces.Add(new Enemy(this, x, y, size, GetDensity(size)));
         }
         private void NewPowerUp()
         {
@@ -99,34 +122,37 @@ namespace Gravity
 
         public override bool GameOver()
         {
-            return false;
+            return ( player.Shield <= 0 );
         }
 
         public override void Step()
         {
             List<Piece> pieces = new List<Piece>(rand.Iterate(this.pieces));
             int enemyCount = pieces.OfType<Enemy>().Count();
-            for (int a = 0; a < pieces.Count; ++a)
+            for (int a = 0 ; a < pieces.Count ; ++a)
             {
                 bool exists = true;
-                for (int b = a + 1; b < pieces.Count && (exists = this.pieces.Contains(pieces[a])); ++b)
+                for (int b = a + 1 ; b < pieces.Count && ( exists = this.pieces.Contains(pieces[a]) ) ; ++b)
                     if (this.pieces.Contains(pieces[b]))
                         pieces[a].Interact(pieces[b]);
                 if (exists && this.pieces.Contains(pieces[a]))
                     pieces[a].Step(enemyCount);
             }
 
-            if (ExistChance(enemyCount, avgNum, 1))
+            if (ExistChance(enemyCount, Difficulty, 1))
                 NewEnemy();
 
-            if (rand.Bool(.0015f))
+            if (rand.Bool(.00075f * Math.Sqrt(Difficulty)))
                 NewPowerUp();
+
+            this.avgNum += rand.OE(.0025f / ( avgNum + 5f ));
+            Console.WriteLine(avgNum);
         }
 
 
         public static bool ExistChance(float value, float target, float power)
         {
-            return rand.Bool(.01 * Math.Pow(target / (target + value), 5 * power));
+            return rand.Bool(.01 * Math.Pow(target / ( target + value ), 5 * power));
         }
 
         protected override void OnEnd()
