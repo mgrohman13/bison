@@ -105,16 +105,18 @@ namespace Gravity
         public override void Step()
         {
             List<Piece> pieces = new List<Piece>(rand.Iterate(this.pieces));
+            int enemyCount = pieces.OfType<Enemy>().Count();
             for (int a = 0; a < pieces.Count; ++a)
-                if (this.pieces.Contains(pieces[a]))
-                {
-                    for (int b = a + 1; b < pieces.Count; ++b)
-                        if (this.pieces.Contains(pieces[b]))
-                            pieces[a].Interact(pieces[b]);
-                    pieces[a].Step(pieces.Count);
-                }
+            {
+                bool exists = true;
+                for (int b = a + 1; b < pieces.Count && (exists = this.pieces.Contains(pieces[a])); ++b)
+                    if (this.pieces.Contains(pieces[b]))
+                        pieces[a].Interact(pieces[b]);
+                if (exists && this.pieces.Contains(pieces[a]))
+                    pieces[a].Step(enemyCount);
+            }
 
-            if (ExistChance(avgNum / (avgNum + this.pieces.OfType<Enemy>().Count())))
+            if (ExistChance(enemyCount, avgNum, 1))
                 NewEnemy();
 
             if (rand.Bool(.0015f))
@@ -122,9 +124,9 @@ namespace Gravity
         }
 
 
-        public static bool ExistChance(float pct)
+        public static bool ExistChance(float value, float target, float power)
         {
-            return rand.Bool(.01 * Math.Pow(pct, 5));
+            return rand.Bool(.01 * Math.Pow(target / (target + value), 5 * power));
         }
 
         protected override void OnEnd()

@@ -107,9 +107,9 @@ namespace Gravity
             y += yDir;
 
             float dist = Game.gameSize / 2f;
-            dist *= dist;
-            if (x * x + y * y > dist)
+            if (x * x + y * y > dist * dist)
             {
+                //Console.WriteLine(Math.Sqrt(x * x + y * y) / dist);
                 xDir = adj(xDir, x);
                 yDir = adj(yDir, y);
             }

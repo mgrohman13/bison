@@ -49,7 +49,19 @@ namespace Gravity
         protected override void RefreshGame()
         {
             base.RefreshGame();
-            this.Invoke((MethodInvoker)delegate { this.Text = game.Score.ToString("0.0"); });
+            this.Invoke((MethodInvoker)delegate
+            {
+                try
+                {
+                    this.Text = game.Score.ToString("0.0");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(exception);
+                    Console.WriteLine();
+                }
+            });
         }
 
         private void Form1_ClientSizeChanged(object sender, EventArgs e)

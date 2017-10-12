@@ -45,15 +45,13 @@ namespace Gravity
                 if (size > 0)
                 {
                     float inc = Game.rand.GaussianFloat();
-                    if (size < Game.avgSize == inc < 0 && Game.rand.Bool(Math.Abs(size - Game.avgSize) / (size + Game.avgSize)))
-                        inc *= -1;
-                    if (count < Game.avgNum == inc < 0 && Game.rand.Bool(Math.Abs(count - Game.avgNum) / (count + Game.avgNum)))
-                        inc *= -1;
+                    inc = FlipInc(inc, size, Game.avgSize);
+                    inc = FlipInc(inc, count, Game.avgNum);
                     float sqrt = sizeRate + inc;
                     if (sqrt < 0)
-                        sqrt = (float)-Math.Sqrt(-sqrt);
+                        sqrt = (float)-(Math.Pow(-sqrt + 1, .75) - 1);
                     else
-                        sqrt = (float)Math.Sqrt(sqrt);
+                        sqrt = (float)(Math.Pow(sqrt + 1, .75) - 1);
                     sizeRate = sqrt;
 
                     this.color = GetColor(size, density);
@@ -68,8 +66,15 @@ namespace Gravity
                 }
             }
 
-            if (Game.ExistChance(color.R / 255f))
+            if (Game.ExistChance(this.Mass, getMass(Game.avgSize, 1), 2.5f))
                 game.Remove(this);
+        }
+
+        private static float FlipInc(float inc, float value, float target)
+        {
+            if (value < target == inc < 0 && Game.rand.Bool(Math.Abs(value - target) / (value + target)))
+                inc *= -1;
+            return inc;
         }
 
         internal override float GetGravity(Type type)
