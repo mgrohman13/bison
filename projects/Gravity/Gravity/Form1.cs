@@ -24,14 +24,14 @@ namespace Gravity
             this.Bounds = Screen.PrimaryScreen.WorkingArea;
             int min = Math.Min(ClientSize.Width, ClientSize.Height);
             this.ClientSize = new Size(min, min);
-            Text = ClientSize.ToString();
+            //Text = ClientSize.ToString();
 
             game = GetNewGame(false);
         }
 
         protected override BaseGame GetNewGame(bool scoring)
         {
-            game = new Game(1000 / 39f, base.RefreshGame, this.ClientRectangle);
+            game = new Game(1000 / 39f, this.RefreshGame, this.ClientRectangle);
             game.Start();
             return game;
         }
@@ -40,21 +40,47 @@ namespace Gravity
         {
             if (game != null)
             {
-                ( (Game)game ).setTarget(e.X, e.Y);
+                ((Game)game).setTarget(e.X, e.Y);
                 if (!game.Started)
                     game.Start();
             }
+        }
+
+        protected override void RefreshGame()
+        {
+            base.RefreshGame();
+            this.Invoke((MethodInvoker)delegate { this.Text = game.Score.ToString("0.0"); });
         }
 
         private void Form1_ClientSizeChanged(object sender, EventArgs e)
         {
             if (game != null)
             {
-                ( (Game)game ).setClientRectangle(this.ClientRectangle);
+                ((Game)game).setClientRectangle(this.ClientRectangle);
                 Invalidate(ClientRectangle, false);
 
-                Text = ClientSize.ToString();
+                //Text = ClientSize.ToString();
             }
+        }
+
+        private void Form1_MouseEnter(object sender, EventArgs e)
+        {
+            Cursor.Hide();
+        }
+
+        private void Form1_MouseLeave(object sender, EventArgs e)
+        {
+            Cursor.Show();
+        }
+
+        private void Form1_Click(object sender, EventArgs e)
+        {
+            if (game != null)
+                //{
+                //    if (!game.Started)
+                //        game.Start();
+                game.Paused = !game.Paused;
+            //}
         }
     }
 }

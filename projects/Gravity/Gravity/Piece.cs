@@ -10,6 +10,7 @@ namespace Gravity
     abstract class Piece
     {
         private static Dictionary<Color, Brush> brushes = new Dictionary<Color, Brush>();
+        private static Dictionary<Color, Pen> pens = new Dictionary<Color, Pen>();
 
         protected Game game;
         protected float x, y, xDir, yDir, size, density;
@@ -28,6 +29,34 @@ namespace Gravity
             this.color = color;
         }
 
+        public float X
+        {
+            get
+            {
+                return x;
+            }
+        }
+        public float Y
+        {
+            get
+            {
+                return y;
+            }
+        }
+        public float Size
+        {
+            get
+            {
+                return size;
+            }
+        }
+        public float Density
+        {
+            get
+            {
+                return density;
+            }
+        }
         public float Mass
         {
             get
@@ -44,7 +73,10 @@ namespace Gravity
 
         internal virtual void Interact(Piece piece)
         {
-            Gravity(this, piece);
+            if (piece is Player)
+                piece.Interact(this);
+            else
+                Gravity(this, piece);
         }
 
         protected static void Gravity(Piece p1, Piece p2)
@@ -53,7 +85,7 @@ namespace Gravity
             float yDist = p1.y - p2.y;
             float distSqr = xDist * xDist + yDist * yDist;
             float distance = (float)Math.Sqrt(distSqr);
-            if (distance > ( p1.size + p2.size ) / 2f)
+            if (distance > (p1.size + p2.size) / 2f)
             {
                 float mult = Game.gravity * p1.Mass * p2.Mass / distSqr / distance;
                 xDist *= mult;
@@ -86,18 +118,29 @@ namespace Gravity
         private float adj(float dir, float pos)
         {
             float trg = -pos * Game.offMapPull;
-            return dir * ( 1 - Game.offMapPull ) + trg * Game.offMapPull;
+            return dir * (1 - Game.offMapPull) + trg * Game.offMapPull;
         }
 
         public virtual void Draw(Graphics graphics, Rectangle drawRectangle, float gameWidth, float gameHeight)
         {
             float xScale = drawRectangle.Width / gameWidth;
             float yScale = drawRectangle.Height / gameHeight;
+            float xDraw = (x - size / 2f) * xScale + drawRectangle.Width / 2f;
+            float yDraw = (y - size / 2f) * yScale + drawRectangle.Height / 2f;
+            xScale *= size;
+            yScale *= size;
 
-            float xDraw = ( x - size / 2f ) * xScale + drawRectangle.Width / 2f;
-            float yDraw = ( y - size / 2f ) * yScale + drawRectangle.Height / 2f;
-
-            graphics.FillEllipse(getBrush(color), xDraw, yDraw, size * xScale, size * yScale);
+            RectangleF drawPiece = new RectangleF(xDraw, yDraw, xScale, yScale);
+            if (drawPiece.IntersectsWith(drawRectangle))
+            {
+                graphics.FillEllipse(getBrush(color), drawPiece);
+            }
+            else
+            {
+                float size = (float)Math.Pow(Math.Sqrt(x * x + y * y) / (Game.gameSize / 5f), .75f);
+                using (Pen pen = new Pen(color, size))
+                    graphics.DrawLine(pen, xDraw + xScale / 2f, yDraw + yScale / 2f, drawRectangle.X + drawRectangle.Width / 2f, drawRectangle.Y + drawRectangle.Height / 2f);
+            }
         }
 
         private Brush getBrush(Color color)

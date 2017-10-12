@@ -20,9 +20,29 @@ namespace Gravity
                 return 1 / 4f;
             if (type == typeof(Player))
                 return 1;
+            if (type == typeof(PowerUp))
+                return 1;
             if (type == typeof(Target))
-                return 8;
+                return 4;
             throw new Exception();
+        }
+
+        internal override void Interact(Piece piece)
+        {
+            base.Interact(piece);
+
+            if ((x - piece.X) * (x - piece.X) + (y - piece.Y) * (y - piece.Y) < ((this.size + piece.Size) / 2f) * ((this.size + piece.Size) / 2f))
+                if (piece is PowerUp)
+                {
+                    game.AddScore(piece.Mass / getMass(Game.scoreSize, piece.Density));
+                    game.Remove(piece);
+                }
+                else if (piece is Enemy)
+                {
+                    game.AddScore(-piece.Mass / getMass(Game.avgSize, 1));
+                    game.Remove(piece);
+                    game.NewEnemy();
+                }
         }
 
         internal override void Step(float count)
