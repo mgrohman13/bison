@@ -36,7 +36,7 @@ namespace Gravity
             rectangle.Y += menuStrip.Height;
             rectangle.Height -= menuStrip.Height + this.panel1.Height;
             game = new Game(scoring, 1000 / 39f, this.RefreshGame, rectangle);
-            game.Start();
+            //game.Start();
             return game;
         }
 

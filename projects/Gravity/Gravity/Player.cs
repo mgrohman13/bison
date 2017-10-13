@@ -50,9 +50,9 @@ namespace Gravity
                 }
                 else if (piece is Enemy)
                 {
-                    //shield -= ((Enemy)piece).GetDmg();
-                    //game.Remove(piece);
-                    //game.NewEnemy();
+                    shield -= ((Enemy)piece).GetDmg();
+                    game.Remove(piece);
+                    game.NewEnemy();
                 }
         }
 
@@ -75,7 +75,7 @@ namespace Gravity
             if (shield >= 0)
                 this.color = GetShieldColor();
 
-            this.size = 25f * GetShieldPct() * 1.75f;
+            this.size = (float)(25f * Math.Pow(shield / 3f, .3f));
         }
 
         public System.Drawing.Color GetShieldColor()

@@ -148,7 +148,7 @@ namespace Gravity
             if (rand.Bool(.0015f * Math.Sqrt(Difficulty)))
                 NewPowerUp();
 
-            this.difficulty += rand.OE(.001f / (difficulty + 1f));
+            this.difficulty += rand.OE(.0005f / (difficulty + 1f));
             Console.WriteLine(difficulty);
         }
 
