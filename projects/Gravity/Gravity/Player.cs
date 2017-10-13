@@ -73,9 +73,9 @@ namespace Gravity
             //    shield += (float)Game.rand.OE(Math.Sqrt(game.Difficulty) * .002f / ( shield + 1 ));
 
             const float gameSizeSqr = Game.gameSize * Game.gameSize;
-            float val = (float)Math.Pow(( x * x + y * y + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
+            float val = (float)Math.Pow(( ( x * x + y * y ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
             float cur = (float)Math.Sqrt(shield + 1f);
-            val = Game.rand.OE((float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(game.Difficulty) / cur : -cur / 5f ) ));
+            val = Game.rand.OE((float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(game.Difficulty) / cur : -cur / 25f ) ));
             Console.WriteLine(val);
             shield += val;
 
