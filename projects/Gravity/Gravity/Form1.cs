@@ -23,8 +23,8 @@ namespace Gravity
 
             this.Bounds = Screen.PrimaryScreen.WorkingArea;
             int pad = menuStrip.Height + this.panel1.Height;
-            int min = //300;
-                    Math.Min(ClientSize.Width, ClientSize.Height - pad);
+            int min = 300;
+                    //Math.Min(ClientSize.Width, ClientSize.Height - pad);
             this.ClientSize = new Size(min, min + pad);
 
             game = GetNewGame(true);

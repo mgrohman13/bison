@@ -149,7 +149,7 @@ namespace Gravity
                 NewPowerUp();
 
             this.difficulty += rand.OE(.0005f / (difficulty + 1f));
-            Console.WriteLine(difficulty);
+            //Console.WriteLine(difficulty);
         }
 
 
