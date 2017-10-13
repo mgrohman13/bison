@@ -25,15 +25,15 @@ namespace Gravity
 
         internal override float GetGravity(Type type)
         {
-            if (type == typeof(Center))
+            if (typeof(Center).IsAssignableFrom(type))
                 return 1;
-            if (type == typeof(Enemy))
+            if (typeof(Enemy).IsAssignableFrom(type))
                 return 1 / 4f;
-            if (type == typeof(Player))
+            if (typeof(Player).IsAssignableFrom(type))
                 return 1;
-            if (type == typeof(PowerUp))
+            if (typeof(PowerUp).IsAssignableFrom(type))
                 return 1;
-            if (type == typeof(Target))
+            if (typeof(Target).IsAssignableFrom(type))
                 return 4;
             throw new Exception();
         }
@@ -72,15 +72,18 @@ namespace Gravity
             //else
             //    shield += (float)Game.rand.OE(Math.Sqrt(game.Difficulty) * .002f / ( shield + 1 ));
 
-            const float gameSizeSqr = Game.gameSize * Game.gameSize;
-            float val = (float)Math.Pow(( ( x * x + y * y ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
-            float cur = (float)Math.Sqrt(shield + 1f);
-            val = Game.rand.OE((float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(game.Difficulty) / cur : -cur / 25f ) ));
-            Console.WriteLine(val);
-            shield += val;
 
             if (shield >= 0)
-                this.color = GetShieldColor();
+            {
+                const float gameSizeSqr = Game.gameSize * Game.gameSize;
+                float val = (float)Math.Pow(( ( x * x + y * y ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
+                float cur = (float)Math.Sqrt(shield + 1f);
+                val = Game.rand.OE((float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(game.Difficulty) / cur : -cur / 25f ) ));
+                Console.WriteLine(val);
+                shield += val;
+                if (shield >= 0)
+                    this.color = GetShieldColor();
+            }
 
             this.size = (float)( 25f * Math.Pow(shield / 3f, .3f) );
         }

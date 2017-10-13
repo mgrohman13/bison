@@ -25,7 +25,7 @@ namespace Gravity
 
         internal override void Step(float count)
         {
-            this.density = (float)(1.1f / Math.Pow(game.Difficulty, .125f));
+            this.density = (float)( 1.1f / Math.Pow(game.Difficulty, .25f) );
         }
     }
 }
