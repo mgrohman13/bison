@@ -20,7 +20,7 @@ namespace Gravity
         internal void setTarget(float x, float y)
         {
             this.x = x;
-            this.y = y - size / 2f;
+            this.y = y;
         }
 
         internal override void Step(float count)

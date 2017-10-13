@@ -22,12 +22,16 @@ namespace Gravity
             InitializeComponent();
 
             this.Bounds = Screen.PrimaryScreen.WorkingArea;
-            int pad = menuStrip.Height + this.panel1.Height;
-            int min = 300;
-                    //Math.Min(ClientSize.Width, ClientSize.Height - pad);
-            this.ClientSize = new Size(min, min + pad);
+            SetSquare();
 
             game = GetNewGame(true);
+        }
+
+        private void SetSquare()
+        {
+            int pad = menuStrip.Height + this.panel1.Height;
+            int min = Math.Min(ClientSize.Width, ClientSize.Height - pad);
+            this.ClientSize = new Size(min, min + pad);
         }
 
         protected override BaseGame GetNewGame(bool scoring)
@@ -35,7 +39,7 @@ namespace Gravity
             Rectangle rectangle = this.ClientRectangle;
             rectangle.Y += menuStrip.Height;
             rectangle.Height -= menuStrip.Height + this.panel1.Height;
-            game = new Game(scoring, 1000 / 39f, this.RefreshGame, rectangle);
+            game = new Game(scoring, 25, this.RefreshGame, rectangle);
             //game.Start();
             return game;
         }
@@ -97,6 +101,7 @@ namespace Gravity
                     game.Paused = !game.Paused;
                 else
                     game.Start();
+                SetSquare();
             }
         }
 
