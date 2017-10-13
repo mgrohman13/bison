@@ -20,11 +20,12 @@ namespace Gravity
         internal void setTarget(float x, float y)
         {
             this.x = x;
-            this.y = y;
+            this.y = y - size / 2f;
         }
 
         internal override void Step(float count)
         {
+            this.density = (float)(1.1f / Math.Pow(game.Difficulty, .125f));
         }
     }
 }

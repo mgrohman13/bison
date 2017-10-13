@@ -85,7 +85,7 @@ namespace Gravity
             float yDist = p1.y - p2.y;
             float distSqr = xDist * xDist + yDist * yDist;
             float distance = (float)Math.Sqrt(distSqr);
-            if (distance > ( p1.size + p2.size ) / 2f)
+            if (distance > (p1.size + p2.size) / 2f)
             {
                 float mult = Game.gravity * p1.Mass * p2.Mass / distSqr / distance;
                 xDist *= mult;
@@ -118,15 +118,15 @@ namespace Gravity
         private float adj(float dir, float pos)
         {
             float trg = -pos * Game.offMapPull;
-            return dir * ( 1 - Game.offMapPull ) + trg * Game.offMapPull;
+            return dir * (1 - Game.offMapPull) + trg * Game.offMapPull;
         }
 
         public virtual void Draw(Graphics graphics, Rectangle drawRectangle, float gameWidth, float gameHeight)
         {
             float xScale = drawRectangle.Width / gameWidth;
             float yScale = drawRectangle.Height / gameHeight;
-            float xDraw = ( x - size / 2f ) * xScale + drawRectangle.Width / 2f;
-            float yDraw = ( y - size / 2f ) * yScale + drawRectangle.Height / 2f;
+            float xDraw = drawRectangle.X + (x - size / 2f) * xScale + drawRectangle.Width / 2f;
+            float yDraw = drawRectangle.Y + (y - size / 2f) * yScale + drawRectangle.Height / 2f;
             xScale *= size;
             yScale *= size;
 
@@ -137,7 +137,7 @@ namespace Gravity
             }
             else
             {
-                float size = (float)Math.Pow(Math.Sqrt(x * x + y * y) / ( Game.gameSize / 5f ), .75f);
+                float size = (float)Math.Pow(Math.Sqrt(x * x + y * y) / (Game.gameSize / 5f), .75f);
                 using (Pen pen = new Pen(color, size))
                     graphics.DrawLine(pen, xDraw + xScale / 2f, yDraw + yScale / 2f, drawRectangle.X + drawRectangle.Width / 2f, drawRectangle.Y + drawRectangle.Height / 2f);
             }

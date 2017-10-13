@@ -16,29 +16,30 @@ namespace Gravity
         public const float gravity = .5f;
         public const float offMapPull = .0025f;
         public const float avgSize = 30f;
-        public const float scoreSize = 50f;
+        public const float scoreSize = avgSize * 1.75f;
         public const float scoreDensity = .25f;
-
+        public const float enemyMult = 5f;
 
         private HashSet<Piece> pieces;
         private Player player;
         private Target target;
 
-        private float avgNum;
         private decimal score;
+        private float difficulty;
 
         private Rectangle drawRectangle;
 
-        public Game(float gameTick, MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, Rectangle rectangle) : base(gameTick, RefreshGame)
+        public Game(bool scoring, float gameTick, MattUtil.RealTimeGame.GameTicker.EventDelegate RefreshGame, Rectangle rectangle) : base(gameTick, RefreshGame)
         {
-            this.avgNum = 5f;
+            this.Scoring = scoring;
             this.score = 0;
+            this.difficulty = 1f;
 
             drawRectangle = rectangle;
 
             const float playerDist = gameSize / 10f;
             player = new Player(this, rand.Gaussian(playerDist), rand.Gaussian(playerDist), 25f, 1f);
-            target = new Target(this, rand.Gaussian(playerDist), rand.Gaussian(playerDist), 15f, 1f);
+            target = new Target(this, rand.Gaussian(playerDist), rand.Gaussian(playerDist), 15f, 1.125f);
             Piece center = new Center(this, 0, 0, 5f, 10f);
 
             //Console.WriteLine(Enemy.GetColor(player.Size, player.Density / 2f));
@@ -47,12 +48,14 @@ namespace Gravity
 
             pieces = new HashSet<Piece>() { center, player, target };
 
-            int amt = rand.GaussianOEInt(Difficulty, .1f, .1f, 3);
-            for (int a = 0 ; a < amt ; ++a)
+            int amt = rand.GaussianOEInt(Game.enemyMult, .1f, .1f, 3);
+            for (int a = 0; a < amt; ++a)
                 NewEnemy();
 
             NewPowerUp();
             NewPowerUp();
+
+            Step();
         }
 
         public Player Player
@@ -67,13 +70,13 @@ namespace Gravity
         {
             get
             {
-                return avgNum;
+                return difficulty;
             }
         }
 
         internal void AddScore(float score)
         {
-            this.score += (decimal)score;
+            this.score += (decimal)score * 100m;
         }
 
         public void NewEnemy()
@@ -122,37 +125,37 @@ namespace Gravity
 
         public override bool GameOver()
         {
-            return ( player.Shield <= 0 );
+            return (player.Shield <= 0);
         }
 
         public override void Step()
         {
             List<Piece> pieces = new List<Piece>(rand.Iterate(this.pieces));
             int enemyCount = pieces.OfType<Enemy>().Count();
-            for (int a = 0 ; a < pieces.Count ; ++a)
+            for (int a = 0; a < pieces.Count; ++a)
             {
                 bool exists = true;
-                for (int b = a + 1 ; b < pieces.Count && ( exists = this.pieces.Contains(pieces[a]) ) ; ++b)
+                for (int b = a + 1; b < pieces.Count && (exists = this.pieces.Contains(pieces[a])); ++b)
                     if (this.pieces.Contains(pieces[b]))
                         pieces[a].Interact(pieces[b]);
                 if (exists && this.pieces.Contains(pieces[a]))
                     pieces[a].Step(enemyCount);
             }
 
-            if (ExistChance(enemyCount, Difficulty, 1))
+            if (ExistChance(enemyCount, (float)(Math.Pow(Difficulty, .75) * Game.enemyMult), 1))
                 NewEnemy();
 
-            if (rand.Bool(.00075f * Math.Sqrt(Difficulty)))
+            if (rand.Bool(.0015f * Math.Sqrt(Difficulty)))
                 NewPowerUp();
 
-            this.avgNum += rand.OE(.0025f / ( avgNum + 5f ));
-            Console.WriteLine(avgNum);
+            this.difficulty += rand.OE(.001f / (difficulty + 1f));
+            Console.WriteLine(difficulty);
         }
 
 
         public static bool ExistChance(float value, float target, float power)
         {
-            return rand.Bool(.01 * Math.Pow(target / ( target + value ), 5 * power));
+            return rand.Bool(.01 * Math.Pow(target / (target + value), 5 * power));
         }
 
         protected override void OnEnd()
@@ -167,7 +170,7 @@ namespace Gravity
 
         internal void setTarget(int x, int y)
         {
-            target.setTarget(x * gameSize / drawRectangle.Width - gameSize / 2f, y * gameSize / drawRectangle.Height - gameSize / 2f);
+            target.setTarget(x * gameSize / drawRectangle.Width - gameSize / 2f - drawRectangle.X, y * gameSize / drawRectangle.Height - gameSize / 2f - drawRectangle.Y);
         }
 
         internal void setClientRectangle(Rectangle rectangle)

@@ -42,17 +42,17 @@ namespace Gravity
         {
             base.Interact(piece);
 
-            if (( x - piece.X ) * ( x - piece.X ) + ( y - piece.Y ) * ( y - piece.Y ) < ( ( this.size + piece.Size ) / 2f ) * ( ( this.size + piece.Size ) / 2f ))
+            if ((x - piece.X) * (x - piece.X) + (y - piece.Y) * (y - piece.Y) < ((this.size + piece.Size) / 2f) * ((this.size + piece.Size) / 2f))
                 if (piece is PowerUp)
                 {
-                    game.AddScore(piece.Mass / GetMass(Game.scoreSize, piece.Density));
+                    game.AddScore(piece.Size / Game.avgSize);
                     game.Remove(piece);
                 }
                 else if (piece is Enemy)
                 {
-                    shield -= ( (Enemy)piece ).GetDmg();
-                    game.Remove(piece);
-                    game.NewEnemy();
+                    //shield -= ((Enemy)piece).GetDmg();
+                    //game.Remove(piece);
+                    //game.NewEnemy();
                 }
         }
 
@@ -65,15 +65,17 @@ namespace Gravity
             this.yDir *= decay;
 
             float distSqr = x * x + y * y;
-            float gameSize = ( Game.gameSize / 2f );
+            float gameSize = (Game.gameSize / 2f);
             gameSize *= gameSize;
             if (distSqr > gameSize)
-                shield -= (float)( shield * .000025 * Math.Pow(distSqr / gameSize, .2) );
+                shield -= (float)(shield * .000025 * Math.Pow(distSqr / gameSize, .2));
             else
-                shield += (float)( Math.Sqrt(game.Difficulty) * .00075f / ( shield + 1 ) );
+                shield += (float)(Math.Sqrt(game.Difficulty) * .002f / (shield + 1));
 
             if (shield >= 0)
                 this.color = GetShieldColor();
+
+            this.size = 25f * GetShieldPct() * 1.75f;
         }
 
         public System.Drawing.Color GetShieldColor()
@@ -89,17 +91,17 @@ namespace Gravity
 
         public static float GetShieldPct(float shield)
         {
-            return (float)Math.Pow(shield / ( shield + 5f ), .65);
+            return (float)Math.Pow(shield / (shield + 5f), .65);
         }
 
         internal bool CheckCourse(float x2, float y2, float diameter)
         {
-            int iter = Game.Random.Round(500 / ( 1000f / 39f )) + 1;
+            int iter = Game.Random.Round(500 / (1000f / 39f)) + 1;
             float x1 = this.x - size / 2f, y1 = this.y - size / 2f, d1 = this.size, d2 = diameter, e1 = 0, e2 = 0;
-            for (int a = 0 ; a < iter ; ++a)
+            for (int a = 0; a < iter; ++a)
             {
-                float f1 = ( d1 - this.size ) / 2f;
-                float f2 = ( d2 - diameter ) / 2f;
+                float f1 = (d1 - this.size) / 2f;
+                float f2 = (d2 - diameter) / 2f;
                 if (CheckCourse(x1 - f1, y1 - f1, d1, x2 - f2, y2 - f2, d2))
                     return true;
                 x1 += xDir;
@@ -119,7 +121,7 @@ namespace Gravity
             float x = x1 - x2 + diff;
             float y = y1 - y2 + diff;
             diff = radius + pieceRadius;
-            return ( diff * diff > x * x + y * y );
+            return (diff * diff > x * x + y * y);
         }
     }
 }
