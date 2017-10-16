@@ -8,7 +8,7 @@ namespace Gravity
 {
     class Center : Piece
     {
-        public Center(Game game, float x, float y, float size, float density) : base(game, x, y, size, density, System.Drawing.Color.Red)
+        public Center(Game game, float x, float y, float size, float density) : base(game, x, y, size, density, System.Drawing.Color.Purple)
         {
         }
 
