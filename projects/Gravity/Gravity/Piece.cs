@@ -85,7 +85,7 @@ namespace Gravity
             float yDist = p1.y - p2.y;
             float distSqr = xDist * xDist + yDist * yDist;
             float distance = (float)Math.Sqrt(distSqr);
-            if (distance > (p1.size + p2.size) / 2f)
+            if (distance > ( p1.size + p2.size ) / 2f)
             {
                 float mult = Game.gravity * p1.Mass * p2.Mass / distSqr / distance;
                 xDist *= mult;
@@ -107,7 +107,7 @@ namespace Gravity
             y += yDir;
 
             float dist = Game.gameSize / 2f;
-            if (x * x + y * y > dist * dist)
+            if (x * x + y * y > dist * dist)//* Math.Sqrt(2))
             {
                 //Console.WriteLine(Math.Sqrt(x * x + y * y) / dist);
                 xDir = adj(xDir, x);
@@ -118,15 +118,15 @@ namespace Gravity
         private float adj(float dir, float pos)
         {
             float trg = -pos * Game.offMapPull;
-            return dir * (1 - Game.offMapPull) + trg * Game.offMapPull;
+            return dir * ( 1 - Game.offMapPull ) + trg * Game.offMapPull;
         }
 
         public virtual void Draw(Graphics graphics, Rectangle drawRectangle, float gameWidth, float gameHeight)
         {
             float xScale = drawRectangle.Width / gameWidth;
             float yScale = drawRectangle.Height / gameHeight;
-            float xDraw = drawRectangle.X + (x - size / 2f) * xScale + drawRectangle.Width / 2f;
-            float yDraw = drawRectangle.Y + (y - size / 2f) * yScale + drawRectangle.Height / 2f;
+            float xDraw = drawRectangle.X + ( x - size / 2f ) * xScale + drawRectangle.Width / 2f;
+            float yDraw = drawRectangle.Y + ( y - size / 2f ) * yScale + drawRectangle.Height / 2f;
             xScale *= size;
             yScale *= size;
 
@@ -137,9 +137,22 @@ namespace Gravity
             }
             else
             {
-                float size = (float)Math.Pow(Math.Sqrt(x * x + y * y) / (Game.gameSize / 5f), .75f);
+                float x1 = xDraw + xScale / 2f, y1 = yDraw + yScale / 2f, x2 = drawRectangle.X + drawRectangle.Width / 2f, y2 = drawRectangle.Y + drawRectangle.Height / 2f;
+
+                float dist = (float)Math.Sqrt(x * x + y * y);
+                float l = (float)Math.Pow(dist / ( Game.gameSize / 2f ), 1f);
+                float length = ( 1f - l / ( l + 15f ) ) / 2f;
+                float t = (float)Math.Sqrt(( x1 - x2 ) * ( x1 - x2 ) + ( y1 - y2 ) * ( y1 - y2 ));
+                float x3 = x2 + drawRectangle.Width * length * ( x1 - x2 ) / t;
+                float y3 = y2 + drawRectangle.Height * length * ( y1 - y2 ) / t;
+                x1 = ( x1 - x2 ) / t * ( Game.gameSize / 2f ) * xScale;
+                y1 = ( y1 - y2 ) / t * ( Game.gameSize / 2f ) * yScale;
+                x2 = x3;
+                y2 = y3;
+
+                float size = (float)( 2 + Math.Pow(this.size / Game.avgSize, 1.5f) );
                 using (Pen pen = new Pen(color, size))
-                    graphics.DrawLine(pen, xDraw + xScale / 2f, yDraw + yScale / 2f, drawRectangle.X + drawRectangle.Width / 2f, drawRectangle.Y + drawRectangle.Height / 2f);
+                    graphics.DrawLine(pen, x1, y1, x2, y2);
             }
         }
 
