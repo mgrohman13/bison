@@ -28,8 +28,8 @@ namespace Gravity
         {
             float avgMass = GetMass(Game.avgSize, 1);
             float mass = GetMass(size, density);
-            int scale = Game.rand.Round(255f * Math.Pow(avgMass / ( avgMass + mass ), grey ? 1.75 : 1.25));
-            return Color.FromArgb(grey ? scale : Game.rand.Round(( scale + 255 ) / 2f), scale, grey ? scale : 0);
+            int scale = Game.rand.Round(255f * Math.Pow(avgMass / (avgMass + mass), grey ? 1.75 : 1.25));
+            return Color.FromArgb(grey ? scale : Game.rand.Round((scale + 255) / 2f), scale, grey ? scale : 0);
         }
         public float GetDmg()
         {
@@ -42,23 +42,23 @@ namespace Gravity
 
             if (Game.rand.Bool(rate))
             {
-                this.density = this.density * ( 1 - rate ) + rate * densityRate;
-                densityRate = densityRate * ( 1 - rate ) + rate * Game.GetDensity(size);
+                this.density = this.density * (1 - rate) + rate * densityRate;
+                densityRate = densityRate * (1 - rate) + rate * Game.GetDensity(size);
 
                 this.size += sizeRate;
                 if (size > 0)
                 {
                     float inc = Game.rand.GaussianFloat();
                     inc = FlipInc(inc, size, Game.avgSize);
-                    inc = FlipInc(inc, count, (float)( Math.Pow(game.Difficulty, .75f) * Game.enemyMult ));
+                    inc = FlipInc(inc, count, (float)(Math.Pow(game.Difficulty, .75f) * Game.enemyMult));
                     float sqrt = sizeRate + inc;
                     if (sqrt < 0)
-                        sqrt = (float)-( Math.Pow(-sqrt + 1, .75) - 1 );
+                        sqrt = (float)-(Math.Pow(-sqrt + 1, .75) - 1);
                     else
-                        sqrt = (float)( Math.Pow(sqrt + 1, .75) - 1 );
+                        sqrt = (float)(Math.Pow(sqrt + 1, .75) - 1);
                     sizeRate = sqrt;
 
-                    rate = ( rate + GetRate() ) / 2f;
+                    rate = (rate + GetRate()) / 2f;
 
                     Console.WriteLine("{0}\t{1}\t{2}", color.R.ToString().PadLeft(3), sizeRate.ToString("+0.######;-0.######").PadRight(11), densityRate);
                 }
@@ -76,7 +76,7 @@ namespace Gravity
 
         private static float FlipInc(float inc, float value, float target)
         {
-            if (value < target == inc < 0 && Game.rand.Bool(Math.Abs(value - target) / ( value + target )))
+            if (value < target == inc < 0 && Game.rand.Bool(Math.Abs(value - target) / (value + target)))
                 inc *= -1;
             return inc;
         }
@@ -92,7 +92,7 @@ namespace Gravity
             if (typeof(PowerUp).IsAssignableFrom(type))
                 return 1;
             if (typeof(Target).IsAssignableFrom(type))
-                return (float)( 1 / 4.0 / Math.Pow(game.Difficulty, .25f) );
+                return (float)(1 / 4.0 / Math.Pow(game.Difficulty, .25f));
             throw new Exception();
         }
     }

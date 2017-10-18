@@ -85,7 +85,7 @@ namespace Gravity
             float yDist = p1.y - p2.y;
             float distSqr = xDist * xDist + yDist * yDist;
             float distance = (float)Math.Sqrt(distSqr);
-            if (distance > ( p1.size + p2.size ) / 2f)
+            if (distance > (p1.size + p2.size) / 2f)
             {
                 float mult = Game.gravity * p1.Mass * p2.Mass / distSqr / distance;
                 xDist *= mult;
@@ -118,34 +118,30 @@ namespace Gravity
         private float adj(float dir, float pos)
         {
             float trg = -pos * Game.offMapPull;
-            return dir * ( 1 - Game.offMapPull ) + trg * Game.offMapPull;
+            return dir * (1 - Game.offMapPull) + trg * Game.offMapPull;
         }
 
         public virtual void Draw(Graphics graphics, Rectangle drawRectangle)
         {
-            float xScale = drawRectangle.Width / Game.gameSize;
-            float yScale = drawRectangle.Height / Game.gameSize;
-            float xDraw = getCenter(drawRectangle, true) + ( x - size / 2f ) * xScale;
-            float yDraw = getCenter(drawRectangle, false) + ( y - size / 2f ) * yScale;
-
-            RectangleF drawPiece = new RectangleF(xDraw, yDraw, xScale * size, yScale * size);
+            float xScale, yScale;
+            RectangleF drawPiece = GetPieceRectangle(drawRectangle, out xScale, out yScale);
             if (drawPiece.IntersectsWith(drawRectangle))
             {
                 graphics.FillEllipse(getBrush(color), drawPiece);
             }
-            else
+            else if (size > 0)
             {
                 //determine length and direction
                 float x1 = getCenter(drawPiece, true), y1 = getCenter(drawPiece, false),
                         x2 = getCenter(drawRectangle, true), y2 = getCenter(drawRectangle, false);
                 float dist = (float)Math.Sqrt(x * x + y * y);
-                float l = (float)Math.Pow(dist / ( Game.gameSize / 2f ), 1f);
-                float length = ( 1f - l / ( l + 15f ) ) / 2f;
-                float t = (float)Math.Sqrt(( x1 - x2 ) * ( x1 - x2 ) + ( y1 - y2 ) * ( y1 - y2 ));
-                float x3 = x2 + drawRectangle.Width * length * ( x1 - x2 ) / t;
-                float y3 = y2 + drawRectangle.Height * length * ( y1 - y2 ) / t;
-                x2 = ( x1 - x2 ) / t * Game.gameSize / 2f * xScale + x2;
-                y2 = ( y1 - y2 ) / t * Game.gameSize / 2f * yScale + y2;
+                float l = (float)Math.Pow(dist / (Game.gameSize / 2f), 1f);
+                float length = (1f - l / (l + 15f)) / 2f;
+                float t = (float)Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+                float x3 = x2 + drawRectangle.Width * length * (x1 - x2) / t;
+                float y3 = y2 + drawRectangle.Height * length * (y1 - y2) / t;
+                x2 = (x1 - x2) / t * Game.gameSize / 2f * xScale + x2;
+                y2 = (y1 - y2) / t * Game.gameSize / 2f * yScale + y2;
                 x1 = x3;
                 y1 = y3;
 
@@ -180,15 +176,15 @@ namespace Gravity
                 }
 
                 //determine arrowhead
-                const float offset = (float)( Math.PI / 5.0 );
-                float len = (float)Math.Sqrt(( x1 - x2 ) * ( x1 - x2 ) + ( y1 - y2 ) * ( y1 - y2 )) / 3f;
-                float angle = (float)( Math.Atan2(y1 - y2, x1 - x2) - offset );
-                float xA1 = (float)( x2 + len * Math.Cos(angle) ), yA1 = (float)( y2 + len * Math.Sin(angle) );
+                const float offset = (float)(Math.PI / 5.0);
+                float len = (float)Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) / 3f;
+                float angle = (float)(Math.Atan2(y1 - y2, x1 - x2) - offset);
+                float xA1 = (float)(x2 + len * Math.Cos(angle)), yA1 = (float)(y2 + len * Math.Sin(angle));
                 angle += offset * 2f;
-                float xA2 = (float)( x2 + len * Math.Cos(angle) ), yA2 = (float)( y2 + len * Math.Sin(angle) );
+                float xA2 = (float)(x2 + len * Math.Cos(angle)), yA2 = (float)(y2 + len * Math.Sin(angle));
 
                 //draw
-                float s = (float)( 2 + Math.Pow(size / Game.avgSize, 1.5f) );
+                float s = (float)(2 + Math.Pow(size / Game.avgSize, 1.5f));
                 using (Pen pen = new Pen(color, s))
                 {
                     graphics.DrawLine(pen, x1, y1, x2, y2);
@@ -199,10 +195,23 @@ namespace Gravity
         }
         private float getCenter(RectangleF rect, bool x)
         {
-            return ( x ? rect.X + rect.Width / 2f : rect.Y + rect.Height / 2f );
+            return (x ? rect.X + rect.Width / 2f : rect.Y + rect.Height / 2f);
+        }
+        protected RectangleF GetPieceRectangle(Rectangle drawRectangle)
+        {
+            float xScale, yScale;
+            return GetPieceRectangle(drawRectangle, out xScale, out yScale);
+        }
+        protected RectangleF GetPieceRectangle(Rectangle drawRectangle, out float xScale, out float yScale)
+        {
+            xScale = drawRectangle.Width / Game.gameSize;
+            yScale = drawRectangle.Height / Game.gameSize;
+            float xDraw = getCenter(drawRectangle, true) + (x - size / 2f) * xScale;
+            float yDraw = getCenter(drawRectangle, false) + (y - size / 2f) * yScale;
+            return new RectangleF(xDraw, yDraw, xScale * size, yScale * size);
         }
 
-        private Brush getBrush(Color color)
+        protected Brush getBrush(Color color)
         {
             Brush brush;
             if (!brushes.TryGetValue(color, out brush))

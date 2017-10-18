@@ -45,7 +45,7 @@ namespace Gravity
             if ((x - piece.X) * (x - piece.X) + (y - piece.Y) * (y - piece.Y) < ((this.size + piece.Size) / 2f) * ((this.size + piece.Size) / 2f))
                 if (piece is PowerUp)
                 {
-                    game.AddScore(piece.Size / Game.avgSize);
+                    game.AddScore(piece.Size / Game.avgSize, piece);
                     game.Remove(piece);
                 }
                 else if (piece is Enemy)
