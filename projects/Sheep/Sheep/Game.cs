@@ -31,13 +31,28 @@ namespace Sheep
             this.height = height;
             this.yOffset = yOffset;
 
-            this.player = new Player(width / 2f, height * .91f);
-            this.target = new Target(width / 2f, height / 2f);
+            this.player = new Player(this, width / 2f, height * .91f);
+            this.target = new Target(this, width / 2f, height / 2f);
             this.sheeps = new HashSet<Sheep>();
             this.wolves = new HashSet<Wolf>();
 
-            for (int a = 0 ; a < 13 ; ++a)
-                sheeps.Add(new Sheep(rand.Gaussian(width / 2f, .13f), rand.Gaussian(height * .78f, .065f)));
+            for (int a = 0; a < 13; ++a)
+                sheeps.Add(new Sheep(this, rand.Gaussian(width / 2f, .13f), rand.Gaussian(height * .78f, .065f)));
+        }
+
+        public Player Player
+        {
+            get
+            {
+                return player;
+            }
+        }
+        public Target Target
+        {
+            get
+            {
+                return target;
+            }
         }
 
         public override decimal Score
@@ -63,25 +78,28 @@ namespace Sheep
 
         public override void Draw(Graphics graphics)
         {
-            player.Draw(graphics, yOffset);
             target.Draw(graphics, yOffset);
             foreach (Sheep sheep in sheeps)
                 sheep.Draw(graphics, yOffset);
             foreach (Wolf wolf in wolves)
                 wolf.Draw(graphics, yOffset);
+            player.Draw(graphics, yOffset);
         }
 
         public override bool GameOver()
         {
-            return ( sheeps.Count == 0 );
+            return (sheeps.Count == 0);
         }
 
         public override void Step()
         {
+            float sheepX = sheeps.Average(s => s.X);
+            float sheepY = sheeps.Average(s => s.Y);
+
             player.Step();
             target.Step();
             foreach (Sheep sheep in sheeps)
-                sheep.Step();
+                sheep.Step(sheepX, sheepY);
             foreach (Wolf wolf in wolves)
                 wolf.Step();
         }
@@ -93,6 +111,19 @@ namespace Sheep
         internal static Image LoadImage(string name)
         {
             return SetTransparentBackground(new Bitmap(PicLocation + name));
+        }
+        internal static Image LoadImage(string name, int x, int y, int width, int height)
+        {
+            Bitmap src = new Bitmap(PicLocation + name);
+            Rectangle cropRect = new Rectangle(x, y, width, height);
+            Bitmap target = new Bitmap(cropRect.Width, cropRect.Height);
+            using (Graphics g = Graphics.FromImage(target))
+            {
+                g.DrawImage(src, new Rectangle(0, 0, target.Width, target.Height),
+                                 cropRect,
+                                 GraphicsUnit.Pixel);
+            };
+            return SetTransparentBackground(target);
         }
         internal static Image SetTransparentBackground(Bitmap image)
         {

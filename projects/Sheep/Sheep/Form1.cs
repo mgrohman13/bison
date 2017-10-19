@@ -15,19 +15,20 @@ namespace Sheep
 {
     public partial class Form1 : BaseForm
     {
-        private const int width = 520, height = 390;
+        private const int width = 780, height = 650;
 
         public Form1()
         {
             InitializeComponent();
             game = GetNewGame(false);
+            game.Start();
             SetSize();
         }
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (game != null)
-                ( (Game)game ).SetTarget(e.X, e.Y - this.menuStrip.Height);
+            //if (game != null)
+            //    ((Game)game).SetTarget(e.X, e.Y - this.menuStrip.Height);
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -43,9 +44,10 @@ namespace Sheep
         {
             if (game != null)
             {
-                if (game.Started)
-                    game.Paused = !game.Paused;
-                else
+                ((Game)game).SetTarget(e.X, e.Y - this.menuStrip.Height);
+                if (!game.Started)
+                    //    game.Paused = !game.Paused;
+                    //else
                     game.Start();
             }
         }
