@@ -20,6 +20,19 @@ namespace randTest
         {
             rand.StartTick();
 
+            const float gameSize = 1500f, Difficulty = 1f;
+            foreach (float d in new float[] { 0f, .1f, .25f, .5f, .75f, 1f, 1.25f, (float)Math.Sqrt(2), 1.5f, 2f, 3f, 4f, 5f, 10f })
+            {
+                float dist = d * gameSize / 2f;
+                const float gameSizeSqr = gameSize * gameSize;
+                float val = (float)Math.Pow(( ( dist * dist ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
+                float cur = (float)Math.Sqrt(2.5f + 1f);
+                val = ( (float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(Difficulty) / cur : -cur / 25f ) ) );
+                Console.WriteLine(dist + "\t" + val.ToString("+0.00000000000;-0.00000000000"));
+            }
+            Console.ReadKey();
+            return;
+
 
             const float AlienShipFriendlyBulletDamageMult = 13f;
             const float BulletDamage = 3.9f;

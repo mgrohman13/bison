@@ -79,7 +79,7 @@ namespace MattUtil
         }
         private static double GetGaussianMax(double div)
         {
-            double a = (div - 1) / 2 / div;
+            double a = ( div - 1 ) / 2 / div;
             double b = a;
             double c = GetC(ref a, ref b);
             return Math.Abs(a * DoGaussian(c));
@@ -242,17 +242,17 @@ namespace MattUtil
 
             long ticks = DateTime.Now.Ticks;
             uint c = ShiftVal((uint)ticks);
-            uint f = ShiftVal((uint)(ticks >> 32));
+            uint f = ShiftVal((uint)( ticks >> 32 ));
 
             Thread.Sleep(0);
 
             ticks = Environment.WorkingSet;
             uint d = ShiftVal((uint)ticks);
-            uint g = ShiftVal((uint)(ticks >> 32));
+            uint g = ShiftVal((uint)( ticks >> 32 ));
 
             ticks = watch.ElapsedTicks;
             uint a = ShiftVal((uint)ticks);
-            uint e = ShiftVal((uint)(ticks >> 32));
+            uint e = ShiftVal((uint)( ticks >> 32 ));
 
             return new uint[] { a, b, c, d, e, f, g };
         }
@@ -266,7 +266,7 @@ namespace MattUtil
             lock (typeof(MTRandom))
                 unchecked
                 {
-                    return (counter = ShiftVal(value, counter + SHIFT_FACTOR));
+                    return ( counter = ShiftVal(value, counter + SHIFT_FACTOR) );
                 }
         }
         public static uint ShiftVal(uint value, uint seed)
@@ -275,11 +275,11 @@ namespace MattUtil
             {
                 value += seed;
                 //determine a shift and negation based on the less-predictable low-order bits
-                int shift = (int)(value % 124);
+                int shift = (int)( value % 124 );
                 int neg = shift / 31;
-                shift = (shift % 31) + 1;
+                shift = ( shift % 31 ) + 1;
                 //shift to both sides to retain a full 32 bits in the shifted value
-                return (value ^ ((((neg & 1) == 1 ? value : ~value) << shift) | ((neg > 1 ? value : ~value) >> (32 - shift))));
+                return ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) );
             }
         }
 
@@ -346,7 +346,7 @@ namespace MattUtil
 
             if (seedSize <= 0 || seedSize > MAX_SEED_SIZE)
                 throw new ArgumentOutOfRangeException("seedSize", seedSize,
-                        "seedSize must be greater than 0 and less than " + (MAX_SEED_SIZE + 1).ToString());
+                        "seedSize must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ).ToString());
 
             int timeSeedLength = timeSeed.Length;
             uint[] seed = new uint[seedSize];
@@ -370,7 +370,7 @@ namespace MattUtil
 
             //fill in the entirety of the seed length with time-based entropy
             int b = 0;
-            for (a = 0; a < seedSize; ++b)
+            for (a = 0 ; a < seedSize ; ++b)
             {
                 if (b >= timeSeedLength)
                 {
@@ -381,7 +381,7 @@ namespace MattUtil
             }
 
             //use any remaining uints left over in the timeSeed array 
-            for (; b < timeSeedLength; ++b)
+            for (; b < timeSeedLength ; ++b)
                 AddSeed(seed, ref a, timeSeed[b]);
 
             //provide a second time seed if we have only used one so far
@@ -389,7 +389,7 @@ namespace MattUtil
             if (seedSize <= timeSeedLength)
             {
                 b = 0;
-                for (timeSeed = TimeSeed(); b < timeSeedLength; ++b)
+                for (timeSeed = TimeSeed() ; b < timeSeedLength ; ++b)
                     AddSeed(seed, ref a, timeSeed[b]);
             }
             return seed;
@@ -419,7 +419,7 @@ namespace MattUtil
                 uint seedSize = (uint)seed.Length;
                 if (seedSize <= 0 || seedSize > MAX_SEED_SIZE)
                     throw new ArgumentOutOfRangeException("seed", seed,
-                            "seed length must be greater than 0 and less than " + (MAX_SEED_SIZE + 1));
+                            "seed length must be greater than 0 and less than " + ( MAX_SEED_SIZE + 1 ));
 
                 //reset fields
                 if (storeSeed)
@@ -434,7 +434,7 @@ namespace MattUtil
                 gaussianFloat = float.NaN;
 
                 //seed KISS and re-use same seed values within MT
-                uint a = 0, b = (seedSize & 1);
+                uint a = 0, b = ( seedSize & 1 );
                 lcgn = SeedKISS(LCGN_SEED, b++, seed, ref a);
                 mwc2 = SeedKISS(MWC2_SEED, b++, seed, ref a);
                 mwc1 = SeedKISS(MWC1_SEED, b++, seed, ref a);
@@ -443,12 +443,12 @@ namespace MattUtil
                 //initialize MT with a constant PRNG
                 SeedMT(SEED_FACTOR_1, INIT_SEED);
                 //use all seed values in combination with the results of another (different) PRNG pass
-                SeedMT(SEED_FACTOR_2, (5 - seedSize) << 1, seed, ref a);
+                SeedMT(SEED_FACTOR_2, ( 5 - seedSize ) << 1, seed, ref a);
                 //run a third and final pass to ensure all seed values are represented in all MT state values
                 SeedMT(SEED_FACTOR_3, m[LENGTH - 1]);
 
                 //ensure all seed values are represented in KISS as well
-                a = (a << 1) + LENGTH - 3;
+                a = ( a << 1 ) + LENGTH - 3;
                 b = m[LENGTH - 1];
                 lfsr = b = SeedAlg(lfsr, b, SEED_FACTOR_2, ++a);
                 lcgn = b = SeedAlg(lcgn, b, SEED_FACTOR_2, ++a);
@@ -468,7 +468,7 @@ namespace MattUtil
         {
             unchecked
             {
-                return (m[b] = GetSeed(seed, ref a)) + initSeed;
+                return ( m[b] = GetSeed(seed, ref a) ) + initSeed;
             }
         }
         private void SeedMT(uint seedFactor, uint initSeed)
@@ -481,11 +481,11 @@ namespace MattUtil
             unchecked
             {
                 m[0] += initSeed;
-                for (uint b = 1; b < LENGTH; ++b)
+                for (uint b = 1 ; b < LENGTH ; ++b)
                 {
                     m[b] = SeedAlg(m[b], m[b - 1], seedFactor, b);
                     if (seed != null)
-                        m[b] += GetSeed(seed, ref a) + ((4 + b - a) << 1);
+                        m[b] += GetSeed(seed, ref a) + ( ( 4 + b - a ) << 1 );
                 }
             }
         }
@@ -493,7 +493,7 @@ namespace MattUtil
         {
             unchecked
             {
-                return ((((prev >> 30) ^ prev) * seedFactor) ^ cur) + add;
+                return ( ( ( ( prev >> 30 ) ^ prev ) * seedFactor ) ^ cur ) + add;
             }
         }
         private uint EnsureNonZero(uint value)
@@ -523,7 +523,7 @@ namespace MattUtil
             unchecked
             {
                 //combining Marsaglia's KISS with the Mersenne Twister provdes higher quality random numbers with an obscene period>2^20060
-                uint value = (MersenneTwister() + MarsagliaKISS());
+                uint value = ( MersenneTwister() + MarsagliaKISS() );
 
                 uint timeVal;
                 lock (typeof(MTRandom))
@@ -533,9 +533,9 @@ namespace MattUtil
                     counter += value;
                 }
 
-                Console.Write(formatBits(value + timeVal, 32));
+                //Console.Write(formatBits(value + timeVal, 32));
 
-                return (value + timeVal);
+                return ( value + timeVal );
             }
         }
 
@@ -544,7 +544,7 @@ namespace MattUtil
             unchecked
             {
                 long ticks = watch.ElapsedTicks;
-                uint retVal = ShiftVal((uint)ticks + (uint)(ticks >> 32));
+                uint retVal = ShiftVal((uint)ticks + (uint)( ticks >> 32 ));
                 if (this.thread == null)
                     retVal = 0;
                 return retVal;
@@ -556,7 +556,7 @@ namespace MattUtil
         {
             unchecked
             {
-                return (LCG() + LFSR() + MWC());
+                return ( LCG() + LFSR() + MWC() );
             }
         }
 
@@ -564,7 +564,7 @@ namespace MattUtil
         private uint LCG()
         {
             lock (this)
-                return (lcgn = LCG(lcgn));
+                return ( lcgn = LCG(lcgn) );
         }
         public static uint LCG(uint lcgn)
         {
@@ -578,7 +578,7 @@ namespace MattUtil
         private uint LFSR()
         {
             lock (this)
-                return (lfsr = LFSR(lfsr));
+                return ( lfsr = LFSR(lfsr) );
         }
         public static uint LFSR(uint lfsr)
         {
@@ -588,14 +588,14 @@ namespace MattUtil
         {
             unchecked
             {
-                return (value ^ (value << shift));
+                return ( value ^ ( value << shift ) );
             }
         }
         private static uint XorRShift(uint value, int shift)
         {
             unchecked
             {
-                return (value ^ (value >> shift));
+                return ( value ^ ( value >> shift ) );
             }
         }
 
@@ -609,22 +609,22 @@ namespace MattUtil
         {
             unchecked
             {
-                return (MWC1(ref mwc1) << MWC_SHIFT) + MWC2(ref mwc2);
+                return ( MWC1(ref mwc1) << MWC_SHIFT ) + MWC2(ref mwc2);
             }
         }
         private static uint MWC1(ref uint mwc1)
         {
-            return (mwc1 = MWC(MWC_1_MULT, mwc1));
+            return ( mwc1 = MWC(MWC_1_MULT, mwc1) );
         }
         private static uint MWC2(ref uint mwc2)
         {
-            return (mwc2 = MWC(MWC_2_MULT, mwc2));
+            return ( mwc2 = MWC(MWC_2_MULT, mwc2) );
         }
         private static uint MWC(uint mult, uint value)
         {
             unchecked
             {
-                return (mult * (value & MWC_MASK) + (value >> MWC_SHIFT));
+                return ( mult * ( value & MWC_MASK ) + ( value >> MWC_SHIFT ) );
             }
         }
 
@@ -643,18 +643,18 @@ namespace MattUtil
                         //Console.WriteLine("MersenneTwister " + mersenneCount++);
                         //generate the next state of N 32-bit uints
                         uint b;
-                        for (b = 0; b < LENGTH - STEP; ++b)
+                        for (b = 0 ; b < LENGTH - STEP ; ++b)
                         {
-                            a = (m[b] & UPPER_MASK) | (m[b + 1] & LOWER_MASK);
-                            m[b] = m[b + STEP] ^ (a >> 1) ^ ODD_FACTOR[a & 1];
+                            a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
+                            m[b] = m[b + STEP] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
                         }
-                        for (; b < LENGTH - 1; ++b)
+                        for (; b < LENGTH - 1 ; ++b)
                         {
-                            a = (m[b] & UPPER_MASK) | (m[b + 1] & LOWER_MASK);
-                            m[b] = m[b + STEP - LENGTH] ^ (a >> 1) ^ ODD_FACTOR[a & 1];
+                            a = ( m[b] & UPPER_MASK ) | ( m[b + 1] & LOWER_MASK );
+                            m[b] = m[b + STEP - LENGTH] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
                         }
-                        a = (m[LENGTH - 1] & UPPER_MASK) | (m[0] & LOWER_MASK);
-                        m[LENGTH - 1] = m[STEP - 1] ^ (a >> 1) ^ ODD_FACTOR[a & 1];
+                        a = ( m[LENGTH - 1] & UPPER_MASK ) | ( m[0] & LOWER_MASK );
+                        m[LENGTH - 1] = m[STEP - 1] ^ ( a >> 1 ) ^ ODD_FACTOR[a & 1];
                         t = 0;
                     }
 
@@ -662,10 +662,10 @@ namespace MattUtil
                 }
 
                 //tempering
-                a ^= (a >> TEMPER_1);
-                a ^= (a << TEMPER_2) & TEMPER_MASK_2;
-                a ^= (a << TEMPER_3) & TEMPER_MASK_3;
-                a ^= (a >> TEMPER_4);
+                a ^= ( a >> TEMPER_1 );
+                a ^= ( a << TEMPER_2 ) & TEMPER_MASK_2;
+                a ^= ( a << TEMPER_3 ) & TEMPER_MASK_3;
+                a ^= ( a >> TEMPER_4 );
 
                 return a;
             }
@@ -725,7 +725,7 @@ namespace MattUtil
         /// </summary>
         public void NextBytes(byte[] buffer)
         {
-            for (int a = buffer.Length; --a > -1;)
+            for (int a = buffer.Length ; --a > -1 ;)
                 buffer[a] = (byte)NextBits(8);
         }
 
@@ -783,11 +783,11 @@ namespace MattUtil
             //take initial coherent 32 bit uints when we can
             ulong retVal;
             if (numBits > 32)
-                retVal = (((ulong)NextUInt()) << (numBits -= 32));
+                retVal = ( ( (ulong)NextUInt() ) << ( numBits -= 32 ) );
             else
                 retVal = 0;
             if (numBits == 32)
-                return (retVal | NextUInt());
+                return ( retVal | NextUInt() );
 
             lock (this)
             {
@@ -804,7 +804,7 @@ namespace MattUtil
                 else
                 {
                     //use all the remaining bits as high-roder bits
-                    retVal |= (((ulong)this.bits) << moreBits);
+                    retVal |= ( ( (ulong)this.bits ) << moreBits );
                     //reset the bits field with a new set of 32
                     this.bits = NextUInt();
                     this.bitCount = 32;
@@ -830,19 +830,70 @@ namespace MattUtil
         }
         private static uint MaskBits(uint bits, byte numBits)
         {
-            return (bits & (uint.MaxValue >> (32 - numBits)));
+            return ( bits & ( uint.MaxValue >> ( 32 - numBits ) ) );
         }
 
         private static string formatBits(ulong value, int numBits)
         {
             //if (numBits < 13) return "";
-            int val = (int)(65 + 58 * (value / (Math.Pow(2, numBits))));
-            if (val > 90 && val < 97) val = 32;
-            return ((char)val).ToString();
+            int val = (int)( 65 + 58 * ( value / ( Math.Pow(2, numBits) ) ) );
+            if (val > 90 && val < 97)
+                val = 32;
+            return ( (char)val ).ToString();
 
             //Console.WriteLine(numBits);
             //return Convert.ToString((long)value, 2).PadLeft(numBits, '0');
         }
+
+        //    public static String toAlphanumeric(BigInteger value)
+        //    {
+        //        if (value.signum() == -1)
+        //        {
+        //            value = value.negate().shiftLeft(1);
+        //            if (value.testBit(value.bitLength() - 2))
+        //            {
+        //                value = value.setBit(0);
+        //            }
+        //        }
+
+        //        StringBuilder builder = new StringBuilder();
+        //        do
+        //        {
+        //            builder.append(getChar(value.intValue() & 0x3F));
+        //        } while (( value = value.shiftRight(6) ).signum() == 1);
+        //        return builder.toString();
+        //    }
+        //    private static char getChar(int value)
+        //    {
+        //        if (value < 1)
+        //        {
+        //            // '-'
+        //            value += 45;
+        //        }
+        //        else if (value < 11)
+        //        {
+        //            // 0-9
+        //            value += 47;
+        //        }
+        //        else if (value < 37)
+        //        {
+        //            // A-Z
+        //            value += 54;
+        //        }
+        //        else if (value < 38)
+        //        {
+        //            // '_'
+        //            value += 58;
+        //        }
+        //        else
+        //        {
+        //            // a-z
+        //            value += 59;
+        //        }
+        //        return (char)value;
+        //    }
+
+        //}
 
         /// <summary>
         /// Returns a uniform random number from 0.0 through 2*average.
@@ -937,7 +988,7 @@ namespace MattUtil
             }
 
             //determine the number of bits we need
-            ulong range = (uint)(value2 - value1);
+            ulong range = (uint)( value2 - value1 );
             byte numBits = (byte)Math.Ceiling(Math.Log(range + 1) / LN_2);
 
             //throw out any values outside of the range in order to ensure a uniform distribution (worst-case expected retries <1)
@@ -963,7 +1014,7 @@ namespace MattUtil
                 value2 = temp;
             }
 
-            return DoubleHalf() * (value2 - value1) + value1;
+            return DoubleHalf() * ( value2 - value1 ) + value1;
         }
 
         /// <summary>
@@ -978,7 +1029,7 @@ namespace MattUtil
                 value2 = temp;
             }
 
-            return FloatHalf() * (value2 - value1) + value1;
+            return FloatHalf() * ( value2 - value1 ) + value1;
         }
 
         /// <summary>
@@ -1040,15 +1091,15 @@ namespace MattUtil
             if (average == 0)
                 return 0;
             //ensure that our result will be able to fit within the range of int
-            int limit = (isFloat ? OE_INT_FLOAT_LIMIT : OE_INT_LIMIT);
+            int limit = ( isFloat ? OE_INT_FLOAT_LIMIT : OE_INT_LIMIT );
             if (average > limit || average < -limit)
                 throw new ArgumentOutOfRangeException("average", average, "average must be from -" + limit + " through " + limit);
 
-            bool neg = (average < 0);
+            bool neg = ( average < 0 );
             if (neg)
                 average = -average;
 
-            int retVal = (int)(-oe / Math.Log(average / (average + 1)));
+            int retVal = (int)( -oe / Math.Log(average / ( average + 1 )) );
 
             if (neg)
                 retVal = -retVal;
@@ -1116,7 +1167,7 @@ namespace MattUtil
         /// </summary>
         public int GaussianCappedInt(double average, double devPct, int lowerCap)
         {
-            return GaussianCappedInt(average, devPct, lowerCap, (average == (float)average && devPct == (float)devPct));
+            return GaussianCappedInt(average, devPct, lowerCap, ( average == (float)average && devPct == (float)devPct ));
         }
 
         /// <summary>
@@ -1230,9 +1281,9 @@ namespace MattUtil
             //2 - the exact average to increase to almost twice what would be expected
             //However, the effect is negligible for a double result, as the probability of returning any exact value is inherintly extrememly low.
             if (result < lowerCap)
-                result = average - ((average - result) % (average - lowerCap));
-            else if (result > (average * 2.0 - lowerCap))
-                result = average + ((result - average) % (average - lowerCap));
+                result = average - ( ( average - result ) % ( average - lowerCap ) );
+            else if (result > ( average * 2.0 - lowerCap ))
+                result = average + ( ( result - average ) % ( average - lowerCap ) );
             return result;
         }
 
@@ -1296,7 +1347,7 @@ namespace MattUtil
 
         private void CheckGaussianInt(double average, double stdDev, bool isFloat)
         {
-            double gaussianMax = (isFloat ? GAUSSIAN_FLOAT_MAX : GAUSSIAN_MAX);
+            double gaussianMax = ( isFloat ? GAUSSIAN_FLOAT_MAX : GAUSSIAN_MAX );
             //ensure that our result will be able to fit within the range of int
             double max = Math.Abs(average) + Math.Abs(gaussianMax * stdDev);
             if (max >= int.MaxValue)
@@ -1372,7 +1423,7 @@ namespace MattUtil
 
                     //generates two at a time, so store one off and return the other
                     if (isFloat)
-                        this.gaussianFloat = (float)(a * c);
+                        this.gaussianFloat = (float)( a * c );
                     else
                         this.gaussian = a * c;
                     return b * c;
@@ -1400,7 +1451,7 @@ namespace MattUtil
         }
         private static double DoGaussian(double c)
         {
-            return Math.Sqrt((-2 * Math.Log(c)) / c);
+            return Math.Sqrt(( -2 * Math.Log(c) ) / c);
         }
 
         /// <summary>
@@ -1408,7 +1459,7 @@ namespace MattUtil
         /// </summary>
         public bool Bool()
         {
-            return (NextBits(1) != 0);
+            return ( NextBits(1) != 0 );
         }
 
         /// <summary>
@@ -1420,7 +1471,7 @@ namespace MattUtil
                 return Bool((float)chance);
 
             CheckBool(chance);
-            return (NextDouble() < chance);
+            return ( NextDouble() < chance );
         }
 
         /// <summary>
@@ -1429,7 +1480,7 @@ namespace MattUtil
         public bool Bool(float chance)
         {
             CheckBool(chance);
-            return (NextFloat() < chance);
+            return ( NextFloat() < chance );
         }
 
         private static void CheckBool(double chance)
@@ -1443,7 +1494,7 @@ namespace MattUtil
         /// </summary>
         public int Round(double number)
         {
-            return Round(number, (number == (float)number));
+            return Round(number, ( number == (float)number ));
         }
 
         /// <summary>
@@ -1587,7 +1638,7 @@ namespace MattUtil
                 throw new ArgumentOutOfRangeException("endY", endY, "endY must be greater than or equal to startY");
 
             int height = endY - startY + 1;
-            return Iterate((endX - startX + 1) * height)
+            return Iterate(( endX - startX + 1 ) * height)
                     .Select(coord => new Point(startX + coord / height, startY + coord % height));
         }
         /// <summary>
@@ -1625,7 +1676,7 @@ namespace MattUtil
             {
                 //select a random remaining object
                 int idx = RangeInt(min, max);
-                T next = (GetItem == null ? list[idx] : GetItem(list, idx));
+                T next = ( GetItem == null ? list[idx] : GetItem(list, idx) );
 
                 //yield return so that we don't fully shuffle the list unless the entire enumerable is walked
                 yield return next;
@@ -1637,7 +1688,7 @@ namespace MattUtil
                     if (idx < max)
                     {
                         //maintain remaining objects
-                        list[idx] = (GetItem == null ? list[max] : GetItem(list, max));
+                        list[idx] = ( GetItem == null ? list[max] : GetItem(list, max) );
                         list[max] = next;
                     }
                     --max;
@@ -1660,9 +1711,9 @@ namespace MattUtil
             int count = -1;
             ICollection<T> collection;
             //if we have both a count and random access, we do not have to walk the enumeration at all
-            IList<T> list = (choices as IList<T>);
+            IList<T> list = ( choices as IList<T> );
             if (list == null)
-                if ((collection = choices as ICollection<T>) == null)
+                if (( collection = choices as ICollection<T> ) == null)
                     //we must completely walk the enumeration to get the count, so put the results in a data structure with random access
                     list = choices.ToList();
                 else
@@ -1788,7 +1839,7 @@ namespace MattUtil
         /// </summary>
         public int WeightedInt(int max, double weight)
         {
-            return WeightedInt(max, weight, (weight == (float)weight));
+            return WeightedInt(max, weight, ( weight == (float)weight ));
         }
 
         /// <summary>
@@ -1837,7 +1888,7 @@ namespace MattUtil
         }
         private double Weighted(double max, double weight, out bool neg, bool isFloat)
         {
-            neg = (weight > 1);
+            neg = ( weight > 1 );
             if (neg)
                 weight = 2 - weight;
 
@@ -1850,7 +1901,7 @@ namespace MattUtil
             else
                 key = DoubleHalf(avg);
 
-            avg = (mid - avg) / (mid - key);
+            avg = ( mid - avg ) / ( mid - key );
 
             bool rand;
             if (isFloat)
@@ -1932,52 +1983,52 @@ namespace MattUtil
                 //randomly choose an algorithm or number of bits to permutate
                 switch (choose)
                 {
-                    case 0:
-                        //throwAway =
-                        Gaussian(false);
-                        break;
-                    case 1:
-                        //throwAway =
-                        Gaussian(true);
-                        break;
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                        throwAway = NextBits((byte)RangeInt(1, 31));
-                        break;
-                    case 7:
-                        throwAway = NextUInt();
-                        break;
-                    case 8:
-                    case 9:
-                    case 10:
-                        throwAway = MersenneTwister();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - MersenneTwister");
-                        break;
-                    case 11:
-                        throwAway = MarsagliaKISS();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - MarsagliaKISS");
-                        break;
-                    case 12:
-                        throwAway = LCG();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - LCG");
-                        break;
-                    case 13:
-                        throwAway = LFSR();
-                        //Console.WriteLine(formatBits(throwAway, 32) + " - LFSR");
-                        break;
-                    case 14:
-                        throwAway = MWC1(ref mwc1);
-                        //Console.WriteLine((formatBits(throwAway & 65535, 16)).PadLeft(32) + " - MWC1");
-                        break;
-                    case 15:
-                        throwAway = MWC2(ref mwc2);
-                        //Console.WriteLine((formatBits(throwAway & 65535, 16)).PadLeft(32) + " - MWC2");
-                        break;
-                    default:
-                        throw new Exception("internal error");
+                case 0:
+                    //throwAway =
+                    Gaussian(false);
+                    break;
+                case 1:
+                    //throwAway =
+                    Gaussian(true);
+                    break;
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                    throwAway = NextBits((byte)RangeInt(1, 31));
+                    break;
+                case 7:
+                    throwAway = NextUInt();
+                    break;
+                case 8:
+                case 9:
+                case 10:
+                    throwAway = MersenneTwister();
+                    //Console.WriteLine(formatBits(throwAway, 32) + " - MersenneTwister");
+                    break;
+                case 11:
+                    throwAway = MarsagliaKISS();
+                    //Console.WriteLine(formatBits(throwAway, 32) + " - MarsagliaKISS");
+                    break;
+                case 12:
+                    throwAway = LCG();
+                    //Console.WriteLine(formatBits(throwAway, 32) + " - LCG");
+                    break;
+                case 13:
+                    throwAway = LFSR();
+                    //Console.WriteLine(formatBits(throwAway, 32) + " - LFSR");
+                    break;
+                case 14:
+                    throwAway = MWC1(ref mwc1);
+                    //Console.WriteLine((formatBits(throwAway & 65535, 16)).PadLeft(32) + " - MWC1");
+                    break;
+                case 15:
+                    throwAway = MWC2(ref mwc2);
+                    //Console.WriteLine((formatBits(throwAway & 65535, 16)).PadLeft(32) + " - MWC2");
+                    break;
+                default:
+                    throw new Exception("internal error");
                 }
 
                 //Console.WriteLine(throwAway);

@@ -184,7 +184,7 @@ namespace Gravity
                 float xA2 = (float)(x2 + len * Math.Cos(angle)), yA2 = (float)(y2 + len * Math.Sin(angle));
 
                 //draw
-                float s = (float)(2 + Math.Pow(size / Game.avgSize, 1.5f));
+                float s = (float)(2 + Math.Pow(size / Game.avgSize, 1.75f));
                 using (Pen pen = new Pen(color, s))
                 {
                     graphics.DrawLine(pen, x1, y1, x2, y2);

@@ -707,19 +707,19 @@ namespace SpaceRunner
             if (IsReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-                lock (replay)
-                {
-                    Paused = true;
-                    SleepTick();
-                    Refresh();
-                    SleepTick();
-                }
-                lock (gameTicker)
-                    while (tickCount < position)
-                        lock (replay)
-                            this.Step();
+            lock (replay)
+            {
+                Paused = true;
                 SleepTick();
-                Paused = false;
+                Refresh();
+                SleepTick();
+            }
+            lock (gameTicker)
+                while (tickCount < position)
+                    lock (replay)
+                        this.Step();
+            SleepTick();
+            Paused = false;
 #if DEBUG
             }
             else
@@ -813,6 +813,8 @@ namespace SpaceRunner
             Game.objects.Clear();
             Game.objectSectors.Clear();
             Game.finishedSectors.Clear();
+            LifeDust.Reset();
+
             gLives.Clear();
             gAmmo.Clear();
             gAlienShips.Clear();
@@ -820,7 +822,14 @@ namespace SpaceRunner
             gFuel.Clear();
             gAlienShipStr.Clear();
             gScore.Clear();
-            LifeDust.Reset();
+
+            Asteroid.destr.Clear();
+            AlienShip.sms.Clear();
+            AlienShip.mtrrs.Clear();
+            AlienShip.trgps.Clear();
+            AlienShip.dirs.Clear();
+            AlienShip.spds.Clear();
+            AlienShip.actMovs.Clear();
         }
 
         private void GetMoveDirs(out float moveX, out float moveY)
@@ -1532,6 +1541,10 @@ namespace SpaceRunner
 
             using (var fs = new System.IO.StreamWriter(PicLocation + "..\\as.txt", false))
             {
+                foreach (Tuple<float, float> t in Asteroid.destr)
+                    fs.WriteLine(t.Item1 + "\t" + t.Item2);
+                fs.WriteLine();
+
                 for (int a = 0 ; a < this.tickCount ; ++a)
                 {
                     PrintD(fs, a, AlienShip.sms, "spm");

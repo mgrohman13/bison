@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace SpaceRunner
 {
@@ -103,9 +104,14 @@ namespace SpaceRunner
 #endif
         }
 
+        public static List<Tuple<float, float>> destr = new List<Tuple<float, float>>();
+
         private void HitPowerUp(GameObject obj)
         {
-            if (Game.GameRand.Gaussian(Size, Game.AsteroidHitPowerUpRandomness) > Game.PowerUpSize)
+            float r = Game.GameRand.Gaussian(Size, Game.AsteroidHitPowerUpRandomness);
+            if (( r > Game.PowerUpSize ) != ( Size > Game.PowerUpSize ))
+                destr.Add(new Tuple<float, float>(Size, r));
+            if (r > Game.PowerUpSize)
             {
                 obj.Die();
                 this.Die();

@@ -53,9 +53,9 @@ namespace SpaceRunner
             //Console.WriteLine(speedMult);
             //Console.WriteLine(moveTypeRatio);
             //Console.WriteLine(Game.GetPoint(this.targetAngle, (float)( Game.MapSize / Math.Sqrt(Game.AlienShipSpeedMult) / this.speedMult )));
-            //Add(trgps, Game.TickCount, Game.GetPoint(this.targetAngle, Game.MapSize / this.speedMult));
-            //Add(mtrrs, Game.TickCount, moveTypeRatio);
-            //Add(sms, Game.TickCount, speedMult);
+            Add(trgps, Game.TickCount, Game.GetPoint(this.targetAngle, Game.MapSize / this.speedMult));
+            Add(mtrrs, Game.TickCount, moveTypeRatio);
+            Add(sms, Game.TickCount, speedMult);
         }
 
         internal override decimal Score
@@ -152,9 +152,9 @@ namespace SpaceRunner
             GetTotalMove(out xMove, out yMove);
             towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(x + xMove, y + yMove);
 
-            //Add(dirs, Game.TickCount, new PointF(xDir, yDir));
-            //Add(spds, Game.TickCount, speed);
-            //Add(actMovs, Game.TickCount, new PointF(xMove, yMove));
+            Add(dirs, Game.TickCount, new PointF(xDir, yDir));
+            Add(spds, Game.TickCount, speed);
+            Add(actMovs, Game.TickCount, new PointF(xMove, yMove));
             //}
 
             Game.ShootAtPlayer(fireRate, ref coolDown, towardsPlayer, x, y, Size);
