@@ -747,8 +747,7 @@ namespace GalWar
                 foreach (KeyValuePair<Player, int> pair in playerGold)
                 {
                     Player player = pair.Key;
-                    //player cant move up any further
-                    double gold = moveOrderGold * pair.Value / 2.0;
+                    double gold = moveOrderGold * pair.Value;
                     player.AddGold(gold);
                     player.IncomeTotal += gold;
                 }

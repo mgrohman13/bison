@@ -84,7 +84,7 @@ namespace GalWar
 
         //trade rates
         public const double ProductionForGold = 1 / .3;
-        public static readonly double GoldProductionForGold = 1 / Math.Sqrt(.3);
+        public static readonly double GoldProductionForGold = Math.Sqrt(ProductionForGold);
         public const double GoldForProduction = 2;
         public const double PopulationForGoldLow = 1 / Income / 2.6;
         public const double PopulationForGoldMid = 1 / Income / 5.2;

@@ -1015,7 +1015,7 @@ namespace GalWarWin
             Tile tile = GetTile(e.Location);
             if (panning != null && sender != pnlHUD && tile != panning)
             {
-                //TODO:vector
+                // TODO: vector - left click drag to vector should not select target tile
                 Ship ship = GetSelectedShip();
                 if (panning == selected && ship != null && ship.Player.IsTurn)
                     VectorShip(ship, tile);
@@ -2136,8 +2136,8 @@ namespace GalWarWin
             if (!ended && Game.GetPlayers().Count < 2)
             {
                 ended = true;
-                TextForm.ShowForm(Game.GetGameResult());
                 Game.AutoSave();
+                TextForm.ShowForm(Game.GetGameResult());
             }
 
             RefreshCurrentPlayer();

@@ -40,8 +40,6 @@ namespace GalWar
         private static double GetTotCost(double att, double def, double hp, double speed, double trans, bool colony, double bombardDamage, double statResearchMult, double totalResearchMult)
         {
             const double SpeedPow = 1.3, AttDiv = 5.2;
-            //expect 169% attacking soldiers on average
-            const double AvgAttSoldiers = 1 + 1.69;
 
             double speedValue = Math.Pow(speed, SpeedPow) + SpeedAvg;
             if (speed < 1)
@@ -64,7 +62,7 @@ namespace GalWar
                     ( colony ? 520 : 0 )
                     +
                     (
-                        ( Math.Pow(trans * AvgAttSoldiers, 1 + Consts.InvadeNumbersPower) / AvgAttSoldiers )
+                        ( GetTransValue(trans) )
                         +
                         ( 13 * bombardDamage )
                     )
@@ -78,6 +76,13 @@ namespace GalWar
                 +
                 ( 104 * ( Math.Pow(1.69, speed - 1) - 1 ) )
             );
+        }
+
+        private static double GetTransValue(double trans)
+        {
+            //expect 169% attacking soldiers on average
+            const double AvgAttSoldiers = 1 + 1.69;
+            return Math.Pow(trans * AvgAttSoldiers, 1 + Consts.InvadeNumbersPower) / AvgAttSoldiers;
         }
 
         public static double GetStatValue(double stat)
@@ -366,7 +371,7 @@ namespace GalWar
             bombardDamage = ( deathStarStr ? SetBombardDamage(MakeStat(bombardDamageStr), att) : 0 );
         }
 
-        private static double GetDsStr(int research)
+        private static double GetDsResearchStr(int research)
         {
             return GetDsStr(GetAttDefStr(research));
         }
@@ -504,7 +509,7 @@ namespace GalWar
             if (designs != null && designs.Count > 0)
             {
                 upkeep = speed = att = colony = trans = ds = 0;
-                double speedStr = GetSpeedStr(research), transStr = GetTransStr(research), dsStr = GetDsStr(research);
+                double speedStr = GetSpeedStr(research), transStr = GetTransStr(research), dsStr = GetDsResearchStr(research);
                 double avgCost = designs.Average(sd => sd.GetTotCost());
                 double baseMultTot = 0, strMultTot = 0;
                 foreach (ShipDesign design in designs)
@@ -520,14 +525,14 @@ namespace GalWar
                     speed += ( design.Speed + SpeedAvg ) / ( speedStr + SpeedAvg ) * baseMult;
 
                     double costMult = Math.Sqrt(avgCost / totalCost);
-                    double nonDSPct = 1 - Consts.LimitPct(design.Speed / GetSpeedStr(design.Research) * design.BombardDamage / GetDsStr(design.Research) * costMult);
+                    double nonDSPct = 1 - Consts.LimitPct(design.Speed / GetSpeedStr(design.Research) * design.BombardDamage / GetDsResearchStr(design.Research) * costMult);
                     double strMult = design.GetNonColonyPct(research) * design.GetNonTransPct(research) * nonDSPct * baseMult;
                     strMultTot += strMult;
 
                     const double strAdd = 1.3;
                     att += ( design.Att + strAdd ) / ( (double)design.Def + strAdd ) * strMult;
 
-                    costMult = costMult * baseMult;
+                    costMult *= baseMult;
 
                     if (design.Colony)
                         colony += costMult;
@@ -1024,8 +1029,8 @@ namespace GalWar
             double defStr = GetStatValue(this.Def) * this.HP;
             double oldDefStr = GetStatValue(oldDesign.Def) * oldDesign.HP;
 
-            double transStr = this.Trans * this.Speed;
-            double oldTransStr = oldDesign.Trans * oldDesign.Speed;
+            double transStr = GetTransValue(this.Trans) * this.Speed;
+            double oldTransStr = GetTransValue(oldDesign.Trans) * oldDesign.Speed;
 
             double colonyStr = ( this.Colony ? 1 : 0 );
             double oldColonyStr = ( oldDesign.Colony ? 1 : 0 );
@@ -1033,23 +1038,32 @@ namespace GalWar
             double deathStr = this.BombardDamage * this.Speed;
             double oldDeathStr = oldDesign.BombardDamage * oldDesign.Speed;
 
-            return (
-                //must be at least as fast, and either
-                CompareForObsolete(this.Speed, oldDesign.Speed) &&
-                //be better in each stat category and have a lower cost and upkeep, or
-                ( ( CompareForObsolete(attStr, oldAttStr) && CompareForObsolete(defStr, oldDefStr) && CompareForObsolete(transStr, oldTransStr) &&
-                CompareForObsolete(colonyStr, oldColonyStr) && CompareForObsolete(deathStr, oldDeathStr) &&
-                CompareForObsolete(oldDesign.Cost, this.Cost) && CompareForObsolete(oldDesign.Upkeep, this.Upkeep) ) ||
-                //have a better value per total cost in each category and a similar cost and upkeep
-                ( CompareForObsolete(attStr / totCost, oldAttStr / oldTotCost) && CompareForObsolete(defStr / totCost, oldDefStr / oldTotCost) &&
-                CompareForObsolete(transStr / totCost, oldTransStr / oldTotCost) && CompareForObsolete(colonyStr / totCost, oldColonyStr / oldTotCost) &&
-                CompareForObsolete(deathStr / totCost, oldDeathStr / oldTotCost) &&
-                ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep, this.Research, oldDesign.Research) ) )
-            );
+            //must be at least as fast, and either
+            bool faster = CompareForObsolete(this.Speed, oldDesign.Speed);
+            //be better in each stat category and have a lower cost and upkeep, or
+            bool objectively = ( CompareForObsolete(attStr, oldAttStr) && CompareForObsolete(defStr, oldDefStr)
+                    && CompareForObsolete(transStr, oldTransStr) && CompareForObsolete(colonyStr, oldColonyStr) && CompareForObsolete(deathStr, oldDeathStr)
+                    && CompareForObsolete(oldDesign.Cost, this.Cost) && CompareForObsolete(oldDesign.Upkeep, this.Upkeep) );
+            //have a better value per total cost in each category and a similar cost and upkeep
+            bool similar = ( CompareForObsolete(attStr / totCost, oldAttStr / oldTotCost) && CompareForObsolete(defStr / totCost, oldDefStr / oldTotCost)
+                    && CompareForObsolete(transStr / totCost, oldTransStr / oldTotCost) && CompareForObsolete(colonyStr / totCost, oldColonyStr / oldTotCost)
+                    && CompareForObsolete(deathStr / totCost, oldDeathStr / oldTotCost)
+                    && ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep, this.Research, oldDesign.Research) );
+
+            ;
+            ;
+            ;
+            ;
+            ;
+            ;
+            ;
+            ;
+
+            return ( faster && ( objectively || similar ) );
         }
         private bool CompareForObsolete(double s1, double s2)
         {
-            return ( s2 < s1 || s2 == 0 || ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.21, .26) );
+            return ( s2 <= s1 || ( s2 - s1 ) / ( s2 + s1 ) < Game.Random.Weighted(.21, .26) );
         }
         private bool ObsoleteCost(double c1, double c2, double u1, double u2, double r1, double r2)
         {

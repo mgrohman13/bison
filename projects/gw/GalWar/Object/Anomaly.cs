@@ -132,12 +132,12 @@ namespace GalWar
                 armada += player.TotalGold / 3.0;
             }
 
-            double value = (armada / 52.0 + Consts.Income / 2.6 * (5 * pop + 2 * quality) / 7.0) / (double)Tile.Game.GetPlayers().Count;
+            double value = ( armada / 52.0 + Consts.Income / 2.6 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
             return Game.Random.GaussianOE(value, .26, .3, GenerateConsolationValue(value));
         }
         private static double GenerateConsolationValue(double value)
         {
-            double avg = (Math.Pow(value + 1, .78) - 1) * .52;
+            double avg = ( Math.Pow(value + 1, .78) - 1 ) * .52;
             return Game.Random.GaussianCapped(avg, .21, avg > 1 ? 1 : 0);
         }
 
@@ -152,13 +152,13 @@ namespace GalWar
         }
         private double GetAvgDesignResearch(Player player)
         {
-            return (1 * ((1 * player.ResearchGuess + 1 * player.ResearchDisplay + 2 * player.Research) / 4.0)
-                    + 1 * (player.LastResearched + this.value) + 2 * (Tile.Game.AvgResearch)) / 4.0;
+            return ( 1 * ( ( 1 * player.ResearchGuess + 1 * player.ResearchDisplay + 2 * player.Research ) / 4.0 )
+                    + 1 * ( player.LastResearched + this.value ) + 2 * ( Tile.Game.AvgResearch ) ) / 4.0;
         }
         private void CompensateDesign(Player player, ShipDesign design, double designResearch, double expectedShips)
         {
-            expectedShips *= (1 + Consts.RepairCostMult * .39);
-            double gold = (design.GetTotCost() - design.GetTotCost(Game.Random.Round(designResearch))) * expectedShips;
+            expectedShips *= ( 1 + Consts.RepairCostMult * .39 );
+            double gold = ( design.GetTotCost() - design.GetTotCost(Game.Random.Round(designResearch)) ) * expectedShips;
             //player.GoldIncome(gold);
         }
 
@@ -207,7 +207,7 @@ namespace GalWar
 
         private static double GetColonyWeight(Colony colony)
         {
-            return (colony.Planet.PlanetValue / 1.3 + colony.Population);
+            return ( colony.Planet.PlanetValue / 1.3 + colony.Population );
         }
 
         internal static HashSet<SpaceObject> GetAttInv(Tile target, bool inv)
@@ -291,7 +291,7 @@ namespace GalWar
         }
         private static int GetSpeed(Ship speedShip, Ship anomShip)
         {
-            return (anomShip == speedShip ? 0 : speedShip.CurSpeed);
+            return ( anomShip == speedShip ? 0 : speedShip.CurSpeed );
         }
 
         public enum AnomalyType
@@ -363,8 +363,8 @@ namespace GalWar
             if (!colonyDesigns.Any())
                 return false;
             int distance = player.GetColonies().Min(colony => Tile.GetDistance(this.Tile, colony.Tile));
-            double cost = colonyDesigns.Min(design => (design.Upkeep * distance / (double)design.Speed
-                    + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched)));
+            double cost = colonyDesigns.Min(design => ( design.Upkeep * distance / (double)design.Speed
+                    + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched) ));
 
             double amount = this.value - cost;
             double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
@@ -378,7 +378,7 @@ namespace GalWar
 
             Planet planet = Tile.Game.CreatePlanet(this.Tile);
             planet.ReduceQuality(planet.Quality -
-                    MattUtil.TBSUtil.FindValue(value => (amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult)),
+                    MattUtil.TBSUtil.FindValue(value => ( amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult) ),
                     0, Consts.NewPlanetQuality(), false));
             int production = Game.Random.Round(amount - Consts.GetColonizationCost(planet.PlanetValue, mult));
             player.NewColony(player == anomShip.Player ? handler : null, planet, 0, 0, production);
@@ -412,7 +412,7 @@ namespace GalWar
                         double terraformAmt = Consts.TerraformQuality * 1.0;//terraform doesnt always happen... hmmm
                         double apocalypseAmt = quality / 2.0;
 
-                        if (Game.Random.Bool(terraformAmt / (terraformAmt + apocalypseAmt)))
+                        if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
                             return DamageVictory(handler, anomShip);
                         return Terraform(handler, anomShip);
                     }
@@ -426,12 +426,12 @@ namespace GalWar
                 double forExplorer = this.value * Consts.PopulationForGoldHigh;
                 double diePct = Game.Random.GaussianCapped(.3, .169, .13);
 
-                double addAmt = forExplorer + (forExplorer * (2 *
-                        ((2 * quality + 1 * pop) / 3.0 / Consts.AverageQuality)
-                        + 4 * colonies + 1 * planets.Count) / 7.0);
+                double addAmt = forExplorer + ( forExplorer * ( 2 *
+                        ( ( 2 * quality + 1 * pop ) / 3.0 / Consts.AverageQuality )
+                        + 4 * colonies + 1 * planets.Count ) / 7.0 );
                 double killAmt = diePct * pop;
 
-                if (Game.Random.Bool(addAmt / (addAmt + killAmt)))
+                if (Game.Random.Bool(addAmt / ( addAmt + killAmt )))
                     return KillPop(handler, diePct, anomShip);
                 return AddPop(handler, addAmt, forExplorer, anomShip);
             }
@@ -448,7 +448,7 @@ namespace GalWar
                 double gold = double.NaN, mult = double.NaN, before = double.NaN;
                 if (planet.Colony != null)
                 {
-                    gold = Math.Sqrt((planet.Colony.Population + Consts.PlanetConstValue) / (planet.Quality + Consts.PlanetConstValue)) * Consts.AnomalyQualityCostMult;
+                    gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * Consts.AnomalyQualityCostMult;
 
                     mult = Consts.GetColonizationMult();
                     before = Consts.GetColonizationCost(planet.PlanetValue, mult);
@@ -549,7 +549,7 @@ namespace GalWar
         }
         private static bool CanTerraform(double cost, Ship anomShip)
         {
-            return (-cost < anomShip.Player.Gold);
+            return ( -cost < anomShip.Player.Gold );
         }
         private static int GetTerraformChance(double amt)
         {
@@ -583,7 +583,7 @@ namespace GalWar
 
             foreach (Player player in Tile.Game.GetPlayers())
             {
-                double amt = (addAmt - forExplorer) / (double)Tile.Game.GetPlayers().Count;
+                double amt = ( addAmt - forExplorer ) / (double)Tile.Game.GetPlayers().Count;
                 if (anomShip.Player == player)
                     amt += forExplorer;
 
@@ -600,21 +600,16 @@ namespace GalWar
 
         private static int GetPopChange(double amt, double upperCap)
         {
-            int lowerCap = 0;
-            if (amt > GetLowerCap(amt, upperCap))
+            int lowerCap = Game.Random.Round(2 * amt - upperCap);
+            while (amt < lowerCap)
             {
-                do
-                {
-                    lowerCap = GetLowerCap(amt, Game.Random.DoubleHalf(upperCap));
-                } while (amt < lowerCap);
+                lowerCap = Game.Random.RangeInt(0, lowerCap);
             }
             if (lowerCap < 1)
-                lowerCap = ((amt > 1) ? 1 : 0);
+            {
+                lowerCap = ( ( amt > 1 ) ? 1 : 0 );
+            }
             return Game.Random.GaussianCappedInt(amt, .039, lowerCap);
-        }
-        private static int GetLowerCap(double average, double upperCap)
-        {
-            return Game.Random.Round(2 * average - upperCap);
         }
 
         #endregion //GlobalEvent
@@ -623,7 +618,7 @@ namespace GalWar
 
         private bool Death(IEventHandler handler, Ship ship)
         {
-            int damage = ((ship.MaxHP < 2 || Game.Random.Bool()) ? (ship.MaxHP) : (1 + Game.Random.WeightedInt(ship.MaxHP - 2, .26)));
+            int damage = ( ( ship.MaxHP < 2 || Game.Random.Bool() ) ? ( ship.MaxHP ) : ( 1 + Game.Random.WeightedInt(ship.MaxHP - 2, .26) ) );
 
             handler.Explore(AnomalyType.Death, -damage);
 
@@ -669,47 +664,47 @@ namespace GalWar
             AnomalyType type;
             switch (Game.Random.Next(13))
             {
-                case 0:
-                    type = AnomalyType.Soldiers;
-                    break;
-                case 1:
-                case 2:
-                case 3:
-                    type = AnomalyType.PlanetDefenses;
-                    break;
-                case 4:
-                    type = AnomalyType.Production;
-                    break;
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    type = AnomalyType.Production;
-                    if (single != null && !(single.Buildable is PlanetDefense))
-                    {
-                        type = AnomalyType.SoldiersAndDefense;
-                        if (single.Buildable != null)
-                        {
-                            type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefense;
-                            notify = false;
-                        }
-                    }
-                    break;
-                case 9:
-                case 10:
-                case 11:
-                case 12:
+            case 0:
+                type = AnomalyType.Soldiers;
+                break;
+            case 1:
+            case 2:
+            case 3:
+                type = AnomalyType.PlanetDefenses;
+                break;
+            case 4:
+                type = AnomalyType.Production;
+                break;
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+                type = AnomalyType.Production;
+                if (single != null && !( single.Buildable is PlanetDefense ))
+                {
                     type = AnomalyType.SoldiersAndDefense;
-                    break;
-                default:
-                    throw new Exception();
+                    if (single.Buildable != null)
+                    {
+                        type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefense;
+                        notify = false;
+                    }
+                }
+                break;
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+                type = AnomalyType.SoldiersAndDefense;
+                break;
+            default:
+                throw new Exception();
             }
 
             if (type == AnomalyType.Production)
             {
                 if (single == null)
                 {
-                    colonies = colonies.Where(pair => (pair.Key.Buildable != null));
+                    colonies = colonies.Where(pair => ( pair.Key.Buildable != null ));
                     if (!colonies.Any())
                         return false;
                 }
@@ -743,20 +738,20 @@ namespace GalWar
         {
             switch (type)
             {
-                case AnomalyType.SoldiersAndDefense:
-                    colony.BuildPlanetDefense(value, true);
-                    break;
-                case AnomalyType.Soldiers:
-                    colony.BuildSoldiers(value);
-                    break;
-                case AnomalyType.PlanetDefenses:
-                    colony.BuildAttAndDef(value);
-                    break;
-                case AnomalyType.Production:
-                    colony.AddProduction(value);
-                    break;
-                default:
-                    throw new Exception();
+            case AnomalyType.SoldiersAndDefense:
+                colony.BuildPlanetDefense(value, true);
+                break;
+            case AnomalyType.Soldiers:
+                colony.BuildSoldiers(value);
+                break;
+            case AnomalyType.PlanetDefenses:
+                colony.BuildAttAndDef(value);
+                break;
+            case AnomalyType.Production:
+                colony.AddProduction(value);
+                break;
+            default:
+                throw new Exception();
             }
         }
 
@@ -796,7 +791,7 @@ namespace GalWar
                 Player oneInv, oneAtt;
                 bool twoInv, twoAtt;
                 GetAttInvPlayers(tile, anomShip, out oneInv, out twoInv, out oneAtt, out twoAtt);
-                if (!twoAtt && (oneAtt == null || oneAtt == anomShip.Player))
+                if (!twoAtt && ( oneAtt == null || oneAtt == anomShip.Player ))
                 {
                     if (notify)
                         handler.Explore(Anomaly.AnomalyType.Wormhole);
@@ -829,16 +824,16 @@ namespace GalWar
                     Planet planet = spaceObject as Planet;
                     if (ship != null)
                     {
-                        if (ship != anomShip && (!twoAtt || ship.Player == anomShip.Player))
+                        if (ship != anomShip && ( !twoAtt || ship.Player == anomShip.Player ))
                             AddPullChance(objects, ship.Player == anomShip.Player ? null : oneAtt, ship, .39, anomShip);
                     }
                     else if (planet != null)
                     {
-                        bool colony = (planet.Colony != null);
-                        if ((!twoInv || !colony) &&
+                        bool colony = ( planet.Colony != null );
+                        if (( !twoInv || !colony ) &&
                                 planets.All(p2 => planet == p2 || Tile.GetDistance(this.Tile, p2.Tile) > Consts.PlanetDistance))
-                            AddPullChance(objects, oneInv, planet, planetMult * Math.Sqrt((Consts.AverageQuality + planet.PlanetValue +
-                                    (colony ? (Consts.AverageQuality + planet.Colony.Population) / 2.1 : 0)) / Consts.AverageQuality), anomShip);
+                            AddPullChance(objects, oneInv, planet, planetMult * Math.Sqrt(( Consts.AverageQuality + planet.PlanetValue +
+                                    ( colony ? ( Consts.AverageQuality + planet.Colony.Population ) / 2.1 : 0 ) ) / Consts.AverageQuality), anomShip);
                         else
                         {
                         }
@@ -871,13 +866,13 @@ namespace GalWar
                 if (objects.Count == 0)
                     distMult *= 2.6;
                 double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * distMult;
-                avg = (Tile.Game.MapSize / 6.5 + 1.3) / (avg * avg + 9.1);
+                avg = ( Tile.Game.MapSize / 6.5 + 1.3 ) / ( avg * avg + 9.1 );
                 if (avg > 1)
                     avg = Math.Sqrt(avg);
                 else
                     avg *= avg;
                 int amt = Game.Random.OEInt(avg / (double)Tile.Game.GetSpaceObjects().Count());
-                if (amt > 0 && !(spaceObj is Ship && CanAttackAny((Ship)spaceObj, this.Tile, anomShip)))
+                if (amt > 0 && !( spaceObj is Ship && CanAttackAny((Ship)spaceObj, this.Tile, anomShip) ))
                     objects.Add(spaceObj, amt);
             }
         }
@@ -900,7 +895,7 @@ namespace GalWar
         {
             bool retVal = false;
             int create = Game.Random.OEInt(1.69);
-            for (int a = 0; a < create; ++a)
+            for (int a = 0 ; a < create ; ++a)
             {
                 Tile tile = MoveTile(this.Tile, 5.2, anomShip);
                 if (Tile.Game.CreateAnomaly(tile) != null)
@@ -917,7 +912,7 @@ namespace GalWar
 
         private Tile MoveTile(Tile tile, double avg, Ship anomShip)
         {
-            avg *= Math.Sqrt(.39 + Math.Sqrt(Tile.Game.MapSize) / 130.0 + (anomShip.CurSpeed + anomShip.MaxSpeed) / 16.9);
+            avg *= Math.Sqrt(.39 + Math.Sqrt(Tile.Game.MapSize) / 130.0 + ( anomShip.CurSpeed + anomShip.MaxSpeed ) / 16.9);
             return Tile.Game.GetRandomTile(tile, avg);
         }
 
@@ -983,7 +978,7 @@ namespace GalWar
                 if (anomShip.Dead)
                     pct += 2;
                 double gold = ConsolationValue();
-                gold += (this.value - gold) * pct / 4.0;
+                gold += ( this.value - gold ) * pct / 4.0;
 
                 if (anomShip.Dead)
                     anomShip.Player.AddGold(gold, true);
@@ -996,7 +991,7 @@ namespace GalWar
 
         private static double AttackShip(IEventHandler handler, Ship att, Ship def)
         {
-            if (!att.Dead && !def.Dead && Game.Random.Bool() && (Game.Random.Bool() || handler.ConfirmCombat(att, def)))
+            if (!att.Dead && !def.Dead && Game.Random.Bool() && ( Game.Random.Bool() || handler.ConfirmCombat(att, def) ))
                 return att.AttackAnomalyShip(handler, def);
             return 1;
         }
@@ -1013,14 +1008,14 @@ namespace GalWar
 
             Func<int, int, bool> DoChance = (add, max) =>
             {
-                return (Game.Random.Range(Math.Sqrt(add), add) <= max);
+                return ( Game.Random.Range(Math.Sqrt(add), add) <= max );
             };
-            bool canPop = (pop > 0 && ship.FreeSpace > 0 && (pop <= ship.FreeSpace || DoChance(pop, ship.FreeSpace)));
-            bool canHeal = (hp > 0 && ship.HP < ship.MaxHP && (ship.HP + hp <= ship.MaxHP || DoChance(hp, ship.MaxHP - ship.HP)));
-            if (ship.Population > 0 && soldiers / ship.Population > .01)
+            bool canPop = ( pop > 0 && ship.FreeSpace > 0 && ( pop <= ship.FreeSpace || DoChance(pop, ship.FreeSpace) ) );
+            bool canHeal = ( hp > 0 && ship.HP < ship.MaxHP && ( ship.HP + hp <= ship.MaxHP || DoChance(hp, ship.MaxHP - ship.HP) ) );
+            if (ship.Population > 0 && soldiers / (double)ship.Population > .01)
             {
                 double soldierChance = ship.GetSoldierPct() / 1.69;
-                soldierChance = 2.1 / (2.1 + soldiers / (double)ship.Population + soldierChance * soldierChance);
+                soldierChance = 2.1 / ( 2.1 + soldiers / (double)ship.Population + soldierChance * soldierChance );
                 if (canPop)
                     soldierChance /= 2.1;
                 if (canHeal)
@@ -1082,21 +1077,21 @@ namespace GalWar
             bool research, notify = true;
             switch (Game.Random.Next(13))
             {
-                case 1:
-                case 2:
-                case 3:
-                    research = handler.Explore(AnomalyType.AskResearchOrGold, value);
-                    notify = false;
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    research = true;
-                    break;
-                default:
-                    research = false;
-                    break;
+            case 1:
+            case 2:
+            case 3:
+                research = handler.Explore(AnomalyType.AskResearchOrGold, value);
+                notify = false;
+                break;
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                research = true;
+                break;
+            default:
+                research = false;
+                break;
             }
 
             if (research)

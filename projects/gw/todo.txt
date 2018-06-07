@@ -4,6 +4,7 @@ UI
 		final end game save include graphs
 		parse correctly for history button
 	graph select turns / smoothing
+	repair form income show only base-upkeep ?
 	rapid click to bombard
 	rally ships
 		current turn actual move always use zoc, friendly ship blocks
@@ -33,9 +34,11 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
+terraform check use actual values
 bombard free dmg based on attacker research??
 civ zoc?
 	rebalance?
+anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 buy gold on terraform event?
 anomaly global event could look at actual terraform colonies
 why do enemy colonies show repair amt?
@@ -52,6 +55,7 @@ using generate value instead of this value for compensation?
 focuspcts mathematically might make the other two overall more likely
 move order gold based on current average income?
 gold income for anomaly research randomness
+	rebalance OEPct?
 friendly bombard
 	never kill pop
 	confirm before completely destroy
