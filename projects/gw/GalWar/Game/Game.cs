@@ -235,21 +235,21 @@ namespace GalWar
             }
         }
 
-        private uint ID
+        public string ID
         {
             get
             {
-                return this._id;
+                return string.Format("{0:X8}", this._id);
             }
         }
 
-        private int currentPlayer
+        public int currentPlayer
         {
             get
             {
                 return this._currentPlayer;
             }
-            set
+            private set
             {
                 checked
                 {

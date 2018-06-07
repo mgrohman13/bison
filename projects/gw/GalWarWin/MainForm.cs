@@ -29,6 +29,7 @@ namespace GalWarWin
             private set
             {
                 _game = value;
+                log += "****** " + Game.ID + " " + Game.Turn + "_" + ( Game.currentPlayer + 1 ) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***\r\n\r\n";
             }
         }
 
@@ -2863,7 +2864,7 @@ namespace GalWarWin
         #region Log
 
         private int flushed = 0;
-        private string log = string.Empty;
+        private static string log = string.Empty;
 
         public void LogMsg(string format, params object[] args)
         {
