@@ -41,7 +41,7 @@ namespace GalWar
         //as pcts of population
         public const double PopulationGrowth = Math.E / 130.0;
         public const double Income = .13;
-        //emphasising a single value gives on average precisely double the income of when emphasizing the other two
+        //emphasizing a single value gives on average precisely double the income of when emphasizing the other two
         public static readonly double EmphasisValue = 8 / ( Math.Sqrt(33) - 1 );
 
         public const double SwitchBuildTypeLossPct = .39;       //  2.6

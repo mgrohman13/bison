@@ -220,6 +220,20 @@ namespace GalWar
             return null;
         }
 
+        public Player GetZOC()
+        {
+            var ships = GetNeighbors(this)//.Concat(new Tile[] { this })
+                    .Select(tile => tile.SpaceObject).OfType<Ship>();
+            if (ships.Count() > 0)
+            {
+                int def = ships.Max(ship => ship.Def);
+                var players = ships.Where(ship => ship.Def == def).Select(ship => ship.Player).Distinct();
+                if (players.Count() == 1)
+                    return players.Single();
+            }
+            return null;
+        }
+
         public override string ToString()
         {
             return "(" + this.X + "," + this.Y + ")";

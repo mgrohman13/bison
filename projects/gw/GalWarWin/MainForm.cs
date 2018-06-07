@@ -328,6 +328,23 @@ namespace GalWarWin
 
                     gameBounds = new Rectangle(gameBounds.X - ( gameBounds.Top % 2 == 0 ? 1 : 0 ), gameBounds.Y,
                             gameBounds.Width + ( gameBounds.Top % 2 == 0 ? 3 : 2 ), gameBounds.Height + 1);
+
+                    //foreach (Tile tile in Game.GetSpaceObjects().OfType<Ship>().SelectMany(ship => Tile.GetNeighbors(ship.Tile)))
+                    //{
+                    //    int x = tile.X, y = tile.Y;
+                    //    if (gameBounds.Contains(x, y))
+                    //    {
+                    //        Player zoc = tile.GetZOC();
+                    //        if (zoc != null && ( tile.SpaceObject is Ship ? zoc != tile.SpaceObject.Player : tile.SpaceObject == null ))
+                    //        {
+                    //            RectangleF rect = GetDrawRect(x, y);
+                    //            const float dim = 3f;
+                    //            using (Brush brush = new SolidBrush(Color.FromArgb(Game.Random.Round(zoc.Color.R / dim), Game.Random.Round(zoc.Color.G / dim), Game.Random.Round(zoc.Color.B / dim))))
+                    //                g.FillRectangle(brush, RectangleF.Inflate(rect, -1, -1));
+                    //        }
+                    //    }
+                    //}
+
                     foreach (Tile tile in drawTiles)
                         DrawObject(g, gameBounds, tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
 

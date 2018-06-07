@@ -792,6 +792,10 @@ namespace GalWar
             if (!Tile.IsNeighbor(from, to))
                 return false;
 
+            //Player zoc = from.GetZOC();
+            //if (zoc != null && zoc != player && zoc == to.GetZOC())
+            //    return false;
+
             //Zone of Control: cannot move from and to tiles that are both adjacent to the same enemy
             foreach (Tile neighbor in Tile.GetNeighbors(to))
             {
