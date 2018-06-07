@@ -153,7 +153,7 @@ namespace CityWar
             numUnits = us.Unit.Rows.Count;
             Dictionary<string, List<string>> tempRaces = new Dictionary<string, List<string>>();
             var unitsHave = new Dictionary<string, int>(numUnits);
-            for (int a = -1 ; ++a < numUnits ; )
+            for (int a = -1 ; ++a < numUnits ;)
             {
                 UnitSchema.UnitRow row = ( (UnitSchema.UnitRow)us.Unit.Rows[a] );
                 string race = row.Race;
@@ -818,7 +818,7 @@ namespace CityWar
 
             Stack<UndoDelegate> newCommandStack = new Stack<UndoDelegate>();
             Stack<object[]> newArgStack = new Stack<object[]>();
-            for (int i = newCommands.Count ; --i > -1 ; )
+            for (int i = newCommands.Count ; --i > -1 ;)
             {
                 newCommandStack.Push(newCommands[i]);
                 newArgStack.Push(newArgs[i]);
@@ -1356,13 +1356,16 @@ namespace CityWar
             const double shuffleValue = .169;
             Dictionary<Player, int> bonus = MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, shuffleValue);
             foreach (KeyValuePair<Player, int> pair in bonus)
-                AddMoveOrderDiff(pair.Key, pair.Value / 2.0);
+                AddMoveOrderDiff(pair.Key, pair.Value);
         }
         private void AddMoveOrderDiff(Player player, double diff)
         {
             //total difference between first and last moving player is worth 300 resources
             double amount = diff * 3.0 / ( players.Length - 1.0 );
-            player.CollectWizardPts(amount);
+            if (amount > 0)
+                player.CollectWizardPts(amount);
+            else
+                amount *= 2;
             player.BalanceForUnit(50 * amount, 0);
         }
 

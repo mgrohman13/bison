@@ -48,7 +48,7 @@ namespace Daemons
             //production centers
             const int min = 1;
             this.production = new List<ProductionCenter>();
-            int[] num = new[] { 
+            int[] num = new[] {
                 Random.GaussianCappedInt(newPlayers.Length / 2.0, Consts.ProdRand , min),
                 Random.GaussianCappedInt(newPlayers.Length, Consts.ProdRand, min),
                 Random.GaussianCappedInt(newPlayers.Length * 3 / 2.0, Consts.ProdRand, min)
@@ -529,8 +529,8 @@ namespace Daemons
                 {
                     double souls, arrows;
                     GetMoveDiff(out souls, out arrows);
-                    souls *= pair.Value / 2.0;
-                    arrows *= pair.Value / 2.0;
+                    souls *= pair.Value;
+                    arrows *= pair.Value;
                     pair.Key.AddSouls(souls);
                     pair.Key.MakeArrow(arrows);
                 }
