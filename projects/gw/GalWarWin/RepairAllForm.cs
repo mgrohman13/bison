@@ -29,7 +29,7 @@ namespace GalWarWin
             double population, production, gold;
             MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold, false);
             MainForm.FormatIncome(this.lblIncome, gold, true);
-            // TODO: ???
+            // TODO: repair form income show only base-upkeep ?
             gold -= MainForm.Game.CurrentPlayer.GetAutoRepairCost();
 
             double avg = 0, tot = 0;

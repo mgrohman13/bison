@@ -1,4 +1,9 @@
 UI
+	escape closes windows (log)
+	show before/after player on main window
+	text overlaying other text / same color
+	obsolete window has option to show all desings to compare
+		add more general design comparison window
 	replay
 		overwrites when currentPlayer decrements
 		final end game save include graphs
