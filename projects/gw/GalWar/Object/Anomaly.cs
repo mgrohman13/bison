@@ -79,7 +79,7 @@ namespace GalWar
             options.Add(GlobalEvent, 1);//med
             options.Add(LostColony, 2);//med
             options.Add(Death, 3);//always
-            options.Add(Production, 6);//high
+            options.Add(Production, 6);//always
             options.Add(SalvageShip, 13);//always
             options.Add(Pickup, 15);//low
             options.Add(Valuables, 16);//always
@@ -150,10 +150,10 @@ namespace GalWar
         {
             return Game.Random.GaussianOEInt(designResearch, .13, .013);
         }
-        private double GetAvgDesignResearch(Player player)
+        private double GetAvgDesignResearch(Player player, double value)
         {
             return ( 1 * ( ( 1 * player.ResearchGuess + 1 * player.ResearchDisplay + 2 * player.Research ) / 4.0 )
-                    + 1 * ( player.LastResearched + this.value ) + 2 * ( Tile.Game.AvgResearch ) ) / 4.0;
+                    + 1 * ( player.LastResearched + value ) + 2 * ( Tile.Game.AvgResearch ) ) / 4.0;
         }
         private void CompensateDesign(Player player, ShipDesign design, double designResearch, double expectedShips)
         {
@@ -313,7 +313,7 @@ namespace GalWar
             Production,
             SalvageShip,
             Soldiers,
-            SoldiersAndDefense,
+            SoldiersAndDefenses,
             Wormhole,
         }
 
@@ -650,15 +650,16 @@ namespace GalWar
         private bool Production(IEventHandler handler, Ship anomShip)
         {
             double total;
-            Dictionary<Colony, int> dict = GetPlayerColonyWeights(anomShip.Player, out total);
-            IEnumerable<KeyValuePair<Colony, int>> colonies = dict;
+            Dictionary<Colony, int> colonies = GetPlayerColonyWeights(anomShip.Player, out total);
 
             Colony single = null;
-            if (dict.Count == 1 || Game.Random.Bool())
-                single = Game.Random.SelectValue(dict);
+            if (colonies.Count == 1 || Game.Random.Bool())
+                single = Game.Random.SelectValue(colonies);
 
             double value = this.value;
             int production = Game.Random.Round(value / 1.3);
+
+            Func<Colony, bool> AllowProd = colony => ( colony.Buildable is ShipDesign || colony.Buildable is StoreProd );
 
             bool notify = true;
             AnomalyType type;
@@ -679,22 +680,25 @@ namespace GalWar
             case 6:
             case 7:
             case 8:
-                type = AnomalyType.Production;
-                if (single != null && !( single.Buildable is PlanetDefense ))
+                if (single != null)
                 {
-                    type = AnomalyType.SoldiersAndDefense;
-                    if (single.Buildable != null)
+                    type = AnomalyType.SoldiersAndDefenses;
+                    if (AllowProd(single))
                     {
-                        type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefense;
+                        type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                         notify = false;
                     }
+                }
+                else
+                {
+                    type = Game.Random.Bool() ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                 }
                 break;
             case 9:
             case 10:
             case 11:
             case 12:
-                type = AnomalyType.SoldiersAndDefense;
+                type = AnomalyType.SoldiersAndDefenses;
                 break;
             default:
                 throw new Exception();
@@ -702,19 +706,15 @@ namespace GalWar
 
             if (type == AnomalyType.Production)
             {
-                if (single == null)
-                {
-                    colonies = colonies.Where(pair => ( pair.Key.Buildable != null ));
-                    if (!colonies.Any())
-                        return false;
-                }
+                if (single == null ? !colonies.Keys.Any(AllowProd) : !AllowProd(single))
+                    type = AnomalyType.SoldiersAndDefenses;
                 else
-                {
-                    if (single.Buildable == null)
-                        return false;
-                }
-
-                value = production;
+                    value = production;
+            }
+            if (type == AnomalyType.Soldiers || type == AnomalyType.SoldiersAndDefenses)
+            {
+                if (single == null ? colonies.Keys.All(colony => colony.Population == 0) : single.Population == 0)
+                    type = AnomalyType.PlanetDefenses;
             }
 
             if (single == null)
@@ -738,7 +738,7 @@ namespace GalWar
         {
             switch (type)
             {
-            case AnomalyType.SoldiersAndDefense:
+            case AnomalyType.SoldiersAndDefenses:
                 colony.BuildPlanetDefense(value, true);
                 break;
             case AnomalyType.Soldiers:
@@ -824,7 +824,7 @@ namespace GalWar
                     Planet planet = spaceObject as Planet;
                     if (ship != null)
                     {
-                        if (ship != anomShip && ( !twoAtt || ship.Player == anomShip.Player ))
+                        if (!twoAtt || ship.Player == anomShip.Player)
                             AddPullChance(objects, ship.Player == anomShip.Player ? null : oneAtt, ship, .39, anomShip);
                     }
                     else if (planet != null)
@@ -834,9 +834,6 @@ namespace GalWar
                                 planets.All(p2 => planet == p2 || Tile.GetDistance(this.Tile, p2.Tile) > Consts.PlanetDistance))
                             AddPullChance(objects, oneInv, planet, planetMult * Math.Sqrt(( Consts.AverageQuality + planet.PlanetValue +
                                     ( colony ? ( Consts.AverageQuality + planet.Colony.Population ) / 2.1 : 0 ) ) / Consts.AverageQuality), anomShip);
-                        else
-                        {
-                        }
                     }
                     else if (spaceObject is Anomaly)
                     {
@@ -902,7 +899,6 @@ namespace GalWar
                 {
                     if (notify)
                         handler.Explore(Anomaly.AnomalyType.Wormhole);
-                    notify = false;
 
                     retVal = true;
                 }
@@ -954,7 +950,7 @@ namespace GalWar
                 max = temp;
             }
 
-            double designResearch = GetAvgDesignResearch(player);
+            double designResearch = GetAvgDesignResearch(player, this.value);
             ShipDesign design = new ShipDesign(player, GetDesignResearch(designResearch), min, max);
             CompensateDesign(player, design, designResearch, 1);
             Ship newShip = player.NewShip(handler, this.Tile, design);
@@ -1056,7 +1052,7 @@ namespace GalWar
 
                 double prod = ship.GetProdForHP(hp), gold = this.value - prod;
                 int result = ship.ProductionRepair(ref prod, ref gold, true, false);
-                if (result != hp || result != show)
+                if (result != show)
                 {
                 }
                 ship.Player.GoldIncome(prod + gold);
@@ -1096,9 +1092,10 @@ namespace GalWar
 
             if (research)
             {
-                double designResearch = GetAvgDesignResearch(anomShip.Player);
-                ShipDesign design = anomShip.Player.FreeResearch(handler, Game.Random.Round(this.value / 1.3), GetDesignResearch(designResearch));
-                CompensateDesign(anomShip.Player, design, designResearch, .65 + 1.3 * this.value / design.GetTotCost());
+                value = this.value / 1.3;
+                double designResearch = GetAvgDesignResearch(anomShip.Player, value);
+                ShipDesign design = anomShip.Player.FreeResearch(handler, Game.Random.Round(value), GetDesignResearch(designResearch));
+                CompensateDesign(anomShip.Player, design, designResearch, .65 + 1.3 * value / design.GetTotCost());
             }
             else
             {

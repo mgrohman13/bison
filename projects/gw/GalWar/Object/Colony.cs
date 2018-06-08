@@ -1315,7 +1315,11 @@ namespace GalWar
 
         internal void BuildSoldiers(double prod)
         {
-            this.Soldiers += Consts.GetExperience(prod / Consts.ProductionForSoldiers);
+            double soldiers = Consts.GetExperience(prod / Consts.ProductionForSoldiers);
+            if (this.Population == 0)
+                this.Player.AddGold(soldiers / Consts.SoldiersForGold);
+            else
+                this.Soldiers += soldiers;
         }
 
         public void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP, out double newSoldiers)

@@ -56,7 +56,7 @@ namespace GalWarWin
         }
         private void AddResearchLine(double pct)
         {
-            researchLines.Add(MattUtil.TBSUtil.FindValue(delegate(int value)
+            researchLines.Add(MattUtil.TBSUtil.FindValue(delegate (int value)
             {
                 return ( Consts.GetResearchVictoryChance(100.0 / value) > pct );
             }, 0, 100, false));
@@ -233,8 +233,8 @@ namespace GalWarWin
                 if (checks[popType][0])
                     popType = Graphs.GraphType.PopulationTrans;
 
-                float[, ,] d1 = null;
-                float[, ,] d2 = null;
+                float[,,] d1 = null;
+                float[,,] d2 = null;
                 Dictionary<int, Player> p1 = null;
                 Dictionary<int, Player> p2 = null;
                 float? maxY = null;
@@ -259,7 +259,7 @@ namespace GalWarWin
             }
         }
 
-        private void DrawGraph(Graphics g, Graphs.GraphType type, float[, ,] data, Dictionary<int, Player> playerIndexes, float? maxY)
+        private void DrawGraph(Graphics g, Graphs.GraphType type, float[,,] data, Dictionary<int, Player> playerIndexes, float? maxY)
         {
             float width = cbxType.Location.X - 3 * padding;
             float height = groupBox1.ClientSize.Height - 2 * padding;
@@ -335,7 +335,7 @@ namespace GalWarWin
 
             int count = 0;
             float sumX = 0, sumY = 0;
-            for (int i = List.Count ; --i >= 0 ; )
+            for (int i = List.Count ; --i >= 0 ;)
             {
                 if (GetTurn(List[i].X, xScale) == turn)
                 {
@@ -363,7 +363,7 @@ namespace GalWarWin
             return (int)( ( x - 2 * padding ) / xScale );
         }
 
-        private float GetMaxY(float[, ,] data)
+        private float GetMaxY(float[,,] data)
         {
             float maxY = 0;
             for (int x = 0 ; x < data.GetLength(0) ; ++x)

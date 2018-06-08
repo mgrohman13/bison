@@ -2264,7 +2264,7 @@ namespace GalWarWin
 
                 int telNum = selected.TeleporterNumber;
                 if (telNum > 0)
-                    lblTop.Text = "Wormhole " + telNum + ( lblTop.Text.Length > 0 ? " - " + lblTop.Text : "" );
+                    lblTop.Text = "Wormhole " + telNum + ( lblTop.Text.Length > 0 ? " - " + lblTop.Text : string.Empty );
 
                 if (player != null)
                     PlayerInfo(player);
@@ -2738,7 +2738,6 @@ namespace GalWarWin
                     return true;
                 }
 
-
             case Anomaly.AnomalyType.Death:
             case Anomaly.AnomalyType.Heal:
                 MessageBox.Show(FormatIncome((int)info[0]) + " HP!");
@@ -2774,7 +2773,6 @@ namespace GalWarWin
                 MessageBox.Show(player + " Ship!");
                 return true;
 
-
             case Anomaly.AnomalyType.Apocalypse:
             case Anomaly.AnomalyType.NewPlanet:
             case Anomaly.AnomalyType.PopulationGrowth:
@@ -2785,8 +2783,8 @@ namespace GalWarWin
             case Anomaly.AnomalyType.PlanetDefenses:
             case Anomaly.AnomalyType.Production:
             case Anomaly.AnomalyType.Soldiers:
-            case Anomaly.AnomalyType.SoldiersAndDefense:
-                string msg = "";
+            case Anomaly.AnomalyType.SoldiersAndDefenses:
+                string msg = string.Empty;
                 if (info.Length > 0)
                 {
                     SelectTile(( (Colony)info[0] ).Tile);
