@@ -431,7 +431,16 @@ namespace GalWarWin
 
                 if (spaceObject is Anomaly)
                 {
-                    g.FillRectangle(Brushes.White, Inflate(scale, rect, 1f, 1f, 1f, .6f, .13f));
+                    RectangleF anomaly = Inflate(scale, rect, 1f, 1f, 1f, .6f, .13f);
+                    if (scale <= GridScale)
+                    {
+                        anomaly = RectangleF.Inflate(anomaly, -1f, -1f);
+                        if (anomaly.Width < ( rect.Width > 3.5f ? 2f : 1f ))
+                            anomaly.Width = ( rect.Width > 3.5f ? 2f : 1f );
+                        if (anomaly.Height < ( rect.Height > 3.5f ? 2f : 1f ))
+                            anomaly.Height = ( rect.Height > 3.5f ? 2f : 1f );
+                    }
+                    g.FillRectangle(Brushes.White, anomaly);
                 }
                 else
                 {
@@ -455,7 +464,7 @@ namespace GalWarWin
                             foreach (Tile neighbor in Tile.GetNeighbors(tile))
                             {
                                 Planet planet = neighbor.SpaceObject as Planet;
-                                if (planet != null && planet.Colony != null && !planet.Colony.Player.IsTurn)
+                                if (planet != null && planet.Player != null && !planet.Player.IsTurn)
                                 {
                                     s = FormatInt(move) + "+";
                                     break;
@@ -1361,7 +1370,7 @@ namespace GalWarWin
                         if (ship.HP < ship.MaxHP && planet != null)
                         {
                             //can be production repaired
-                            if (planet.Colony != null && planet.Colony.Player.IsTurn && planet.Colony.RepairShip == null && planet.Colony.GetProductionIncome() > 0)
+                            if (planet.Colony != null && planet.Player.IsTurn && planet.Colony.RepairShip == null && planet.Colony.GetProductionIncome() > 0)
                                 return true;
                             if (!( ship.MaxPop > 0 ))
                                 break;
@@ -2005,8 +2014,8 @@ namespace GalWarWin
 
         private void lblGold_Click(object sender, EventArgs e)
         {
-            int i1, i2, ships = 0;
-            double d1, d2, income = 0, upkeep = 0, total;
+            int i1, i2, i3, ships = 0;
+            double d1, d2, d3, d4, income = 0, upkeep = 0, basic, total;
             foreach (Colony colony in Game.CurrentPlayer.GetColonies())
             {
                 double gold;
@@ -2020,6 +2029,7 @@ namespace GalWarWin
                 ships += ship.BaseUpkeep;
             }
             Game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
+            MainForm.Game.CurrentPlayer.GetTurnIncome(out d3, out i3, out d4, out basic, false);
 
             income = Player.RoundGold(income);
             upkeep = Player.RoundGold(upkeep);
@@ -2027,7 +2037,7 @@ namespace GalWarWin
 
             LabelsForm.ShowForm("Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(), "Ship Upk", ships.ToString(),
                     "Repairs", FormatDouble(Game.CurrentPlayer.GetAutoRepairCost()), string.Empty, string.Empty,
-                    "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep),
+                    "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep), //"Base", FormatIncome(basic),
                     "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total),
                     "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
         }
@@ -2187,6 +2197,11 @@ namespace GalWarWin
 
         private void RefreshCurrentPlayer()
         {
+            int playerIndex = Game.currentPlayer;
+            IEnumerable<Player> players = Game.GetPlayers();
+            lblPrev.BackColor = ( playerIndex > 0 ? players.ElementAt(playerIndex - 1).Color : Color.Black );
+            lblNext.BackColor = ( playerIndex + 1 < players.Count() ? players.ElementAt(playerIndex + 1).Color : Color.Black );
+
             lblPlayer.BackColor = Game.CurrentPlayer.Color;
             lblPlayer.Text = Game.Turn.ToString() + " - " + Game.CurrentPlayer.Name;
             RefreshPlayerInfo();
@@ -2709,34 +2724,21 @@ namespace GalWarWin
             case Anomaly.AnomalyType.AskProductionOrDefense:
                 SelectTile(( (Colony)info[0] ).Tile);
                 RefreshAll();
-                return ShowOption("Take +" + ( (int)info[1] ) + " producton or build defenses?");
+                return ShowOption("Take +" + ( (int)info[1] ) + " Producton or build Defenses?");
 
             case Anomaly.AnomalyType.AskResearchOrGold:
-                return ShowOption("Take research or +" + FormatDouble((double)info[0]) + " gold?");
+                return ShowOption("Take Research or +" + FormatDouble((double)info[0]) + " Gold?");
 
             case Anomaly.AnomalyType.AskTerraform:
                 SelectTile(( (Colony)info[0] ).Tile);
                 RefreshAll();
-                string inf = "Terraform planet?\r\n+" + info[1] + " Quality\r\n" +
-                        FormatIncome((double)info[2]) + " Gold (" + FormatIncome((double)info[3]) + ")\r\nChances: ";
-                double[] chances = (double[])info[4];
-                Array.Sort(chances);
-                for (int a = chances.Length ; --a >= 0 ;)
-                {
-                    inf += FormatDouble(chances[a]);
-                    if (a > 0)
-                        inf += ", ";
-                }
-                if ((bool)info[5])
-                {
-                    return ShowOption(inf);
-                }
-                else
-                {
-                    inf += "\r\n\r\nToo Expensive!";
-                    MessageBox.Show(inf);
-                    return true;
-                }
+                return ShowOption("Terraform Planet?\r\n+" + ( (int)info[1] ) + " Quality\r\n" + FormatIncome(-(double)info[2]) + " Gold");
+
+            case Anomaly.AnomalyType.Terraform:
+                SelectTile(( (Planet)info[0] ).Tile);
+                RefreshAll();
+                MessageBox.Show("+" + ( (int)info[1] ) + " Quality!");
+                return true;
 
             case Anomaly.AnomalyType.Death:
             case Anomaly.AnomalyType.Heal:
@@ -2759,11 +2761,11 @@ namespace GalWarWin
                 return true;
 
             case Anomaly.AnomalyType.PickupPopulation:
-                MessageBox.Show("Picked up " + info[0] + " population!");
+                MessageBox.Show("+" + info[0] + " Population!");
                 return true;
 
             case Anomaly.AnomalyType.PickupSoldiers:
-                MessageBox.Show("+" + FormatPct((double)info[0] / GetSelectedShip().Population) + " soldiers!");
+                MessageBox.Show("+" + FormatPct((double)info[0] / GetSelectedShip().Population) + " Soldiers!");
                 return true;
 
             case Anomaly.AnomalyType.SalvageShip:
@@ -2804,7 +2806,7 @@ namespace GalWarWin
         }
         private static void ShowExploreMessage(Anomaly.AnomalyType anomalyType, string msg)
         {
-            MessageBox.Show(msg + Game.CamelToSpaces(anomalyType.ToString()) + "!");
+            MessageBox.Show(msg + Game.CamelToSpaces(anomalyType.ToString()).Replace(" And ", " and ") + "!");
         }
 
         void IEventHandler.OnResearch(ShipDesign newDesign, HashSet<ShipDesign> obsolete)

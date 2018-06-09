@@ -106,5 +106,11 @@ namespace GalWarWin
                     ClickCell(column, this.items[rowIdx]);
             }
         }
+
+        private void BaseManagementForm_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+                this.Close();
+        }
     }
 }

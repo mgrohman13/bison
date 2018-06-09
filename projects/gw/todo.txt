@@ -1,15 +1,10 @@
 UI
-	escape closes windows (log)
-	show before/after player on main window
 	text overlaying other text / same color
-	obsolete window has option to show all desings to compare
-		add more general design comparison window
 	replay
 		overwrites when currentPlayer decrements
 		final end game save include graphs
 		parse correctly for history button
 	graph select turns / smoothing
-	repair form income show only base-upkeep ?
 	rapid click to bombard
 	rally ships
 		current turn actual move always use zoc, friendly ship blocks
@@ -26,12 +21,12 @@ UI
 		very large shows more info
 			different ship graphics for speed/type
 		very small shows clearer info
-			draw anomalies smaller
-			better distinction between ships and planets
 	management screens
-		re-do colony
-		designs?
+		designs
 			compare
+			new research window has option to show compare desings for all designs
+				toggle between obsolete/all?  visual discinction?
+		re-do colony
 		ships/colony view include enemy
 			multi select with all players
 	keyboard?
@@ -39,13 +34,20 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
-terraform check use actual values
+anomaly attinv inv
+	pop pickup dist algorithm
+	pull blocking ship
+	pull colony in danger
+	pull threatening ship
+	push trans/DS
+	consider redoing:
+		determine all att/inv, make change, determine again and comapre, maybe rollback
+anomaly gold balancing at full vs consolation value
+	other balancing
 bombard free dmg based on attacker research??
 civ zoc?
 	rebalance?
 anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
-buy gold on terraform event?
-anomaly global event could look at actual terraform colonies
 why do enemy colonies show repair amt?
 ship vector allow for waypoints/constant path
 population w/o trans graph should also average?

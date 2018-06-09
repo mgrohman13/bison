@@ -90,15 +90,19 @@ namespace GalWarWin
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
+            this.lblPrev = new System.Windows.Forms.Label();
+            this.lblNext = new System.Windows.Forms.Label();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
-            ( (System.ComponentModel.ISupportInitialize)( this.tbTurns ) ).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbTurns)).BeginInit();
             this.SuspendLayout();
             // 
             // pnlHUD
             // 
             this.pnlHUD.BackColor = System.Drawing.Color.White;
+            this.pnlHUD.Controls.Add(this.lblNext);
+            this.pnlHUD.Controls.Add(this.lblPrev);
             this.pnlHUD.Controls.Add(this.pnlBuild);
             this.pnlHUD.Controls.Add(this.btnColonies);
             this.pnlHUD.Controls.Add(this.btnShips);
@@ -130,7 +134,7 @@ namespace GalWarWin
             // 
             // pnlBuild
             // 
-            this.pnlBuild.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.pnlBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.pnlBuild.Location = new System.Drawing.Point(0, 375);
             this.pnlBuild.Name = "pnlBuild";
             this.pnlBuild.Size = new System.Drawing.Size(200, 230);
@@ -159,7 +163,7 @@ namespace GalWarWin
             // 
             // lblLoc
             // 
-            this.lblLoc.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.lblLoc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblLoc.Location = new System.Drawing.Point(0, 611);
             this.lblLoc.Name = "lblLoc";
             this.lblLoc.Size = new System.Drawing.Size(100, 23);
@@ -228,7 +232,7 @@ namespace GalWarWin
             // lbl7Inf
             // 
             this.lbl7Inf.AutoEllipsis = true;
-            this.lbl7Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl7Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl7Inf.Location = new System.Drawing.Point(74, 161);
             this.lbl7Inf.Name = "lbl7Inf";
             this.lbl7Inf.Size = new System.Drawing.Size(126, 23);
@@ -286,7 +290,7 @@ namespace GalWarWin
             // lbl1Inf
             // 
             this.lbl1Inf.AutoEllipsis = true;
-            this.lbl1Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl1Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl1Inf.Location = new System.Drawing.Point(74, 23);
             this.lbl1Inf.Name = "lbl1Inf";
             this.lbl1Inf.Size = new System.Drawing.Size(126, 23);
@@ -309,7 +313,7 @@ namespace GalWarWin
             // lbl2Inf
             // 
             this.lbl2Inf.AutoEllipsis = true;
-            this.lbl2Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl2Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl2Inf.Location = new System.Drawing.Point(74, 46);
             this.lbl2Inf.Name = "lbl2Inf";
             this.lbl2Inf.Size = new System.Drawing.Size(126, 23);
@@ -321,7 +325,7 @@ namespace GalWarWin
             // lbl6Inf
             // 
             this.lbl6Inf.AutoEllipsis = true;
-            this.lbl6Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl6Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl6Inf.Location = new System.Drawing.Point(74, 138);
             this.lbl6Inf.Name = "lbl6Inf";
             this.lbl6Inf.Size = new System.Drawing.Size(126, 23);
@@ -333,7 +337,7 @@ namespace GalWarWin
             // lbl3Inf
             // 
             this.lbl3Inf.AutoEllipsis = true;
-            this.lbl3Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl3Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl3Inf.Location = new System.Drawing.Point(74, 69);
             this.lbl3Inf.Name = "lbl3Inf";
             this.lbl3Inf.Size = new System.Drawing.Size(126, 23);
@@ -345,7 +349,7 @@ namespace GalWarWin
             // lbl5Inf
             // 
             this.lbl5Inf.AutoEllipsis = true;
-            this.lbl5Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl5Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl5Inf.Location = new System.Drawing.Point(74, 115);
             this.lbl5Inf.Name = "lbl5Inf";
             this.lbl5Inf.Size = new System.Drawing.Size(126, 23);
@@ -358,7 +362,7 @@ namespace GalWarWin
             // lbl4Inf
             // 
             this.lbl4Inf.AutoEllipsis = true;
-            this.lbl4Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lbl4Inf.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl4Inf.Location = new System.Drawing.Point(74, 92);
             this.lbl4Inf.Name = "lbl4Inf";
             this.lbl4Inf.Size = new System.Drawing.Size(126, 23);
@@ -370,7 +374,7 @@ namespace GalWarWin
             // 
             // pnlEconomy
             // 
-            this.pnlEconomy.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.pnlEconomy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlEconomy.AutoSize = true;
             this.pnlEconomy.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.pnlEconomy.Controls.Add(this.lblProdTot);
@@ -396,7 +400,7 @@ namespace GalWarWin
             // lblProdTot
             // 
             this.lblProdTot.AutoEllipsis = true;
-            this.lblProdTot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblProdTot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblProdTot.Location = new System.Drawing.Point(88, 69);
             this.lblProdTot.Name = "lblProdTot";
             this.lblProdTot.Size = new System.Drawing.Size(42, 23);
@@ -417,7 +421,7 @@ namespace GalWarWin
             // lblGold
             // 
             this.lblGold.AutoEllipsis = true;
-            this.lblGold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblGold.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGold.Location = new System.Drawing.Point(88, 23);
             this.lblGold.Name = "lblGold";
             this.lblGold.Size = new System.Drawing.Size(53, 23);
@@ -429,7 +433,7 @@ namespace GalWarWin
             // lblPopulation
             // 
             this.lblPopulation.AutoEllipsis = true;
-            this.lblPopulation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblPopulation.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPopulation.Location = new System.Drawing.Point(88, 0);
             this.lblPopulation.Name = "lblPopulation";
             this.lblPopulation.Size = new System.Drawing.Size(42, 23);
@@ -451,7 +455,7 @@ namespace GalWarWin
             // lblGoldInc
             // 
             this.lblGoldInc.AutoEllipsis = true;
-            this.lblGoldInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblGoldInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblGoldInc.Location = new System.Drawing.Point(144, 23);
             this.lblGoldInc.Name = "lblGoldInc";
             this.lblGoldInc.Size = new System.Drawing.Size(46, 23);
@@ -463,7 +467,7 @@ namespace GalWarWin
             // lblPopInc
             // 
             this.lblPopInc.AutoEllipsis = true;
-            this.lblPopInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblPopInc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPopInc.Location = new System.Drawing.Point(144, 0);
             this.lblPopInc.Name = "lblPopInc";
             this.lblPopInc.Size = new System.Drawing.Size(35, 23);
@@ -474,7 +478,7 @@ namespace GalWarWin
             // lblRsrchPct
             // 
             this.lblRsrchPct.AutoEllipsis = true;
-            this.lblRsrchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblRsrchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblRsrchPct.Location = new System.Drawing.Point(88, 46);
             this.lblRsrchPct.Name = "lblRsrchPct";
             this.lblRsrchPct.Size = new System.Drawing.Size(53, 23);
@@ -498,7 +502,7 @@ namespace GalWarWin
             // lblResearch
             // 
             this.lblResearch.AutoEllipsis = true;
-            this.lblResearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblResearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblResearch.Location = new System.Drawing.Point(144, 46);
             this.lblResearch.Name = "lblResearch";
             this.lblResearch.Size = new System.Drawing.Size(35, 23);
@@ -540,7 +544,7 @@ namespace GalWarWin
             // lblProduction
             // 
             this.lblProduction.AutoEllipsis = true;
-            this.lblProduction.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblProduction.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblProduction.Location = new System.Drawing.Point(144, 69);
             this.lblProduction.Name = "lblProduction";
             this.lblProduction.Size = new System.Drawing.Size(35, 23);
@@ -679,7 +683,7 @@ namespace GalWarWin
             // 
             // btnSaveGame
             // 
-            this.btnSaveGame.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.btnSaveGame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnSaveGame.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnSaveGame.Location = new System.Drawing.Point(0, 640);
             this.btnSaveGame.Name = "btnSaveGame";
@@ -691,7 +695,7 @@ namespace GalWarWin
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Location = new System.Drawing.Point(100, 611);
             this.btnCancel.Name = "btnCancel";
@@ -703,7 +707,7 @@ namespace GalWarWin
             // 
             // btnEndTurn
             // 
-            this.btnEndTurn.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.btnEndTurn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnEndTurn.Location = new System.Drawing.Point(0, 689);
             this.btnEndTurn.Name = "btnEndTurn";
             this.btnEndTurn.Size = new System.Drawing.Size(200, 23);
@@ -714,11 +718,11 @@ namespace GalWarWin
             // 
             // lblPlayer
             // 
-            this.lblPlayer.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.lblPlayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblPlayer.AutoEllipsis = true;
-            this.lblPlayer.Location = new System.Drawing.Point(0, 666);
+            this.lblPlayer.Location = new System.Drawing.Point(25, 666);
             this.lblPlayer.Name = "lblPlayer";
-            this.lblPlayer.Size = new System.Drawing.Size(200, 23);
+            this.lblPlayer.Size = new System.Drawing.Size(150, 23);
             this.lblPlayer.TabIndex = 17;
             this.lblPlayer.Text = "lblPlayer";
             this.lblPlayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -776,6 +780,26 @@ namespace GalWarWin
             this.tbTurns.MouseEnter += new System.EventHandler(this.tbTurns_MouseEnter);
             this.tbTurns.MouseLeave += new System.EventHandler(this.tbTurns_MouseLeave);
             // 
+            // lblPrev
+            // 
+            this.lblPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblPrev.AutoEllipsis = true;
+            this.lblPrev.Location = new System.Drawing.Point(0, 666);
+            this.lblPrev.Name = "lblPrev";
+            this.lblPrev.Size = new System.Drawing.Size(25, 23);
+            this.lblPrev.TabIndex = 58;
+            this.lblPrev.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblNext
+            // 
+            this.lblNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblNext.AutoEllipsis = true;
+            this.lblNext.Location = new System.Drawing.Point(175, 666);
+            this.lblNext.Name = "lblNext";
+            this.lblNext.Size = new System.Drawing.Size(25, 23);
+            this.lblNext.TabIndex = 59;
+            this.lblNext.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // MainForm
             // 
             this.AcceptButton = this.btnEndTurn;
@@ -803,7 +827,7 @@ namespace GalWarWin
             this.pnlInfo.ResumeLayout(false);
             this.pnlEconomy.ResumeLayout(false);
             this.pnlEconomy.PerformLayout();
-            ( (System.ComponentModel.ISupportInitialize)( this.tbTurns ) ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbTurns)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -870,6 +894,8 @@ namespace GalWarWin
         private System.Windows.Forms.Label lblProdTot;
         private System.Windows.Forms.Button btnColonies;
         private System.Windows.Forms.Button btnShips;
+        private System.Windows.Forms.Label lblNext;
+        private System.Windows.Forms.Label lblPrev;
     }
 }
 

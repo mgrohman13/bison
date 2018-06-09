@@ -76,7 +76,7 @@ namespace GalWar
             }
 
             Dictionary<ExploreType, int> options = new Dictionary<ExploreType, int>();
-            options.Add(GlobalEvent, 1);//med
+            options.Add(GlobalEvent, 1);//high
             options.Add(LostColony, 2);//med
             options.Add(Death, 3);//always
             options.Add(Production, 6);//always
@@ -100,7 +100,8 @@ namespace GalWar
                 }
                 else
                 {
-                    options.Remove(ExploreType);
+                    if (Game.Random.Bool())
+                        options.Remove(ExploreType);
                 }
             }
         }
@@ -210,11 +211,6 @@ namespace GalWar
             return ( colony.Planet.PlanetValue / 1.3 + colony.Population );
         }
 
-        internal static HashSet<SpaceObject> GetAttInv(Tile target, bool inv)
-        {
-            return GetAttInv(target, inv, null);
-        }
-
         private static void GetAttInvPlayers(Tile target, Ship anomShip, out Player oneInv, out bool twoInv, out Player oneAtt, out bool twoAtt)
         {
             GetAttInvPlayers(GetAttInv(target, true, anomShip), out oneInv, out twoInv);
@@ -237,7 +233,7 @@ namespace GalWar
                 }
         }
 
-        private static HashSet<SpaceObject> GetAttInv(Tile target, bool inv, Ship anomShip)
+        internal static HashSet<SpaceObject> GetAttInv(Tile target, bool inv, Ship anomShip)
         {
             HashSet<SpaceObject> retVal = new HashSet<SpaceObject>();
 
@@ -314,6 +310,7 @@ namespace GalWar
             SalvageShip,
             Soldiers,
             SoldiersAndDefenses,
+            Terraform,
             Wormhole,
         }
 
@@ -339,7 +336,7 @@ namespace GalWar
                 if (Game.Random.Bool() && Colony(handler, anomShip.Player, playerProximity, anomShip))
                     return true;
 
-                while (playerProximity.Count > 0)
+                while (playerProximity.Any())
                     if (Colony(handler, Game.Random.SelectValue(playerProximity), playerProximity, anomShip))
                         return true;
 
@@ -406,16 +403,17 @@ namespace GalWar
 
             if (Game.Random.Bool())
             {
-                foreach (var pair in GetTerraformColonies(anomShip))
-                    if (pair.Value.Item2 > 0 && CanTerraform(this.value + GetExpectCost(pair.Key, Consts.TerraformPlanetQuality()) * Consts.GetColonizationMult(), anomShip))
-                    {
-                        double terraformAmt = Consts.TerraformQuality * 1.0;//terraform doesnt always happen... hmmm
-                        double apocalypseAmt = quality / 2.0;
-
-                        if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
-                            return DamageVictory(handler, anomShip);
-                        return Terraform(handler, anomShip);
-                    }
+                int addQuality = Consts.TerraformPlanetQuality();
+                double cost;
+                Planet planet = GetTerraformPlanet(anomShip.Player, addQuality, out cost);
+                if (planet != null)
+                {
+                    double terraformAmt = addQuality;
+                    double apocalypseAmt = quality / 2.0;
+                    if (Game.Random.Bool(terraformAmt / ( terraformAmt + apocalypseAmt )))
+                        return DamageVictory(handler, anomShip);
+                    return Terraform(handler, planet, addQuality, cost);
+                }
                 return false;
             }
             else
@@ -450,7 +448,7 @@ namespace GalWar
                 {
                     gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * Consts.AnomalyQualityCostMult;
 
-                    mult = Consts.GetColonizationMult();
+                    mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
                     before = Consts.GetColonizationCost(planet.PlanetValue, mult);
                 }
 
@@ -461,8 +459,8 @@ namespace GalWar
                     gold *= before - Consts.GetColonizationCost(planet.PlanetValue, mult);
 
                     double amt;
-                    addGold.TryGetValue(planet.Colony.Player, out amt);
-                    addGold[planet.Colony.Player] = amt + gold;
+                    addGold.TryGetValue(planet.Player, out amt);
+                    addGold[planet.Player] = amt + gold;
                 }
             }
 
@@ -473,87 +471,49 @@ namespace GalWar
             return true;
         }
 
-        private bool Terraform(IEventHandler handler, Ship anomShip)
+        private bool Terraform(IEventHandler handler, Planet planet, int addQuality, double cost)
         {
-            double[] colonyChances;
-            Dictionary<Colony, int> colonies = GetTerraformColonies(anomShip, out colonyChances);
-            if (colonies.Count == 0)
-                return false;
-
-            while (colonies.Count > 0)
+            Colony colony = planet.Colony;
+            if (colony == null || handler.Explore(AnomalyType.AskTerraform, colony, addQuality, cost))
             {
-                Colony trgColony = Game.Random.SelectValue(colonies);
-
-                int addQuality = Consts.TerraformPlanetQuality();
-                double expectCost = GetExpectCost(trgColony, addQuality);
-                double actualCost = Player.RoundGold(this.value + expectCost * Consts.GetColonizationMult(), true);
-
-                bool canTerraform = CanTerraform(actualCost, anomShip);
-                canTerraform &= handler.Explore(AnomalyType.AskTerraform, trgColony, addQuality, actualCost, expectCost, colonyChances, canTerraform);
-                if (canTerraform)
-                {
-                    trgColony.Planet.ReduceQuality(-addQuality);
-                    trgColony.Player.AddGold(actualCost);
-                    return true;
-                }
+                if (colony != null)
+                    colony.Player.SpendGold(cost);
                 else
-                {
-                    colonies.Remove(trgColony);
-                    foreach (var pair in colonies.ToArray())
-                    {
-                        int amt = GetTerraformChance(.52 * pair.Value);
-                        if (amt > 0)
-                            colonies[pair.Key] = amt;
-                        else
-                            colonies.Remove(pair.Key);
-                    }
-                }
+                    handler.Explore(AnomalyType.Terraform, planet, addQuality);
+                planet.ReduceQuality(-addQuality);
             }
-
             return true;
         }
-        private Dictionary<Colony, int> GetTerraformColonies(Ship anomShip, out double[] colonyChances)
+        private Planet GetTerraformPlanet(Player player, int addQuality, out double cost)
         {
-            Dictionary<Colony, Tuple<double, int>> terraformColonies = GetTerraformColonies(anomShip);
-
-            colonyChances = new double[terraformColonies.Count];
-            Dictionary<Colony, int> retVal = new Dictionary<Colony, int>(terraformColonies.Count);
-
-            int idx = -1;
-            foreach (var pair in terraformColonies)
+            Colony colony;
+            double total;
+            Dictionary<Colony, int> colonies = GetPlayerColonyWeights(player, out total);
+            do
             {
-                colonyChances[++idx] = pair.Value.Item1;
-                if (pair.Value.Item2 > 0)
-                    retVal.Add(pair.Key, pair.Value.Item2);
-            }
+                colony = Game.Random.SelectValue(colonies);
+                colonies.Remove(colony);
+                double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
+                double before = Consts.GetColonizationCost(colony.Planet.PlanetValue, mult);
+                double after = Consts.GetColonizationCost(colony.Planet.PlanetValue + addQuality, mult);
+                cost = Player.RoundGold(after - before - this.value, true);
+            } while (cost > player.Gold && colonies.Any());
 
+            Planet retVal;
+            if (cost > player.Gold)
+            {
+                retVal = null;
+                cost = double.NaN;
+                Dictionary<Planet, int> uncolonized = Tile.Game.GetPlanets().Where(planet => planet.Colony == null).ToDictionary(planet => planet,
+                        planet => Game.Random.Round(planet.PlanetValue * ushort.MaxValue / (double)Tile.GetDistance(this.Tile, planet.Tile)));
+                if (uncolonized.Any())
+                    retVal = Game.Random.SelectValue(uncolonized);
+            }
+            else
+            {
+                retVal = colony.Planet;
+            }
             return retVal;
-        }
-        private Dictionary<Colony, Tuple<double, int>> GetTerraformColonies(Ship anomShip)
-        {
-            var colonies = new Dictionary<Colony, Tuple<double, int>>();
-
-            foreach (Colony colony in anomShip.Player.GetColonies())
-            {
-                double raw = .169 * Math.Sqrt(Tile.Game.MapSize) / (double)Tile.GetDistance(colony.Tile, this.Tile);
-                colonies.Add(colony, new Tuple<double, int>(raw, GetTerraformChance(raw)));
-            }
-
-            return colonies;
-        }
-        private static double GetExpectCost(Colony trgColony, int addQuality)
-        {
-            double before = Consts.GetColonizationCost(trgColony.Planet.PlanetValue, Consts.AnomalyQualityCostMult);
-            double after = Consts.GetColonizationCost(trgColony.Planet.PlanetValue + addQuality, Consts.AnomalyQualityCostMult);
-            return before - after;
-        }
-        private static bool CanTerraform(double cost, Ship anomShip)
-        {
-            return ( -cost < anomShip.Player.Gold );
-        }
-        private static int GetTerraformChance(double amt)
-        {
-            return Game.Random.GaussianOEInt(amt, .26, .13);
         }
 
         private bool KillPop(IEventHandler handler, double diePct, Ship anomShip)
@@ -764,24 +724,26 @@ namespace GalWar
             bool any = false;
 
             if (Game.Random.Bool())
-                any |= PullIn(handler, !any, anomShip);
+                any |= PullIn(handler, anomShip);
             if (Game.Random.Bool())
-                any |= PushShip(handler, !any, anomShip);
+                any |= PushShip(handler, anomShip);
             if (Game.Random.Bool())
-                any |= CreateAnomalies(handler, !any, anomShip);
+                any |= CreateAnomalies(handler, anomShip);
+            if (Game.Random.Bool())
+                any |= CreateTeleporter(handler, anomShip);
 
             if (any)
+            {
+                handler.Explore(AnomalyType.Wormhole);
+
                 anomShip.LoseMove();
-            else
-                any = CreateTeleporter(handler, anomShip);
-
-            if (any)
                 anomShip.Player.GoldIncome(ConsolationValue());
+            }
 
             return any;
         }
 
-        private bool PushShip(IEventHandler handler, bool notify, Ship anomShip)
+        private bool PushShip(IEventHandler handler, Ship anomShip)
         {
             Tile tile = GetRandomTile(anomShip);
             while (tile.SpaceObject is Anomaly)
@@ -793,9 +755,6 @@ namespace GalWar
                 GetAttInvPlayers(tile, anomShip, out oneInv, out twoInv, out oneAtt, out twoAtt);
                 if (!twoAtt && ( oneAtt == null || oneAtt == anomShip.Player ))
                 {
-                    if (notify)
-                        handler.Explore(Anomaly.AnomalyType.Wormhole);
-
                     anomShip.Teleport(tile);
                     return true;
                 }
@@ -803,7 +762,7 @@ namespace GalWar
             return false;
         }
 
-        private bool PullIn(IEventHandler handler, bool notify, Ship anomShip)
+        private bool PullIn(IEventHandler handler, Ship anomShip)
         {
             var objects = new Dictionary<SpaceObject, int>();
 
@@ -845,11 +804,8 @@ namespace GalWar
                     }
                 }
 
-            if (objects.Count > 0)
+            if (objects.Any())
             {
-                if (notify)
-                    handler.Explore(Anomaly.AnomalyType.Wormhole);
-
                 Game.Random.SelectValue(objects).Teleport(this.Tile);
                 return true;
             }
@@ -860,7 +816,7 @@ namespace GalWar
         {
             if (can == null || spaceObj.Player == null || spaceObj.Player == can)
             {
-                if (objects.Count == 0)
+                if (!objects.Any())
                     distMult *= 2.6;
                 double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * distMult;
                 avg = ( Tile.Game.MapSize / 6.5 + 1.3 ) / ( avg * avg + 9.1 );
@@ -888,20 +844,16 @@ namespace GalWar
             return false;
         }
 
-        private bool CreateAnomalies(IEventHandler handler, bool notify, Ship anomShip)
+        private bool CreateAnomalies(IEventHandler handler, Ship anomShip)
         {
             bool retVal = false;
             int create = Game.Random.OEInt(1.69);
+            Tile tile = this.Tile;
             for (int a = 0 ; a < create ; ++a)
             {
-                Tile tile = MoveTile(this.Tile, 5.2, anomShip);
+                tile = MoveTile(tile, 5.2, anomShip);
                 if (Tile.Game.CreateAnomaly(tile) != null)
-                {
-                    if (notify)
-                        handler.Explore(Anomaly.AnomalyType.Wormhole);
-
                     retVal = true;
-                }
             }
             return retVal;
         }
@@ -914,7 +866,7 @@ namespace GalWar
 
         private bool CreateTeleporter(IEventHandler handler, Ship anomShip)
         {
-            return Tile.Game.CreateTeleporter(handler, this.Tile, GetRandomTile(anomShip));
+            return Tile.Game.CreateTeleporter(handler, this.Tile, GetRandomTile(anomShip), anomShip);
         }
 
         #endregion //Wormhole

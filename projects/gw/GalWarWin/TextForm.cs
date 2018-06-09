@@ -30,6 +30,8 @@ namespace GalWarWin
         {
             if (e.Control && e.KeyCode == Keys.A)
                 textBox1.SelectAll();
+            else if (e.KeyCode == Keys.Escape)
+                this.Close();
         }
 
         public static void ShowForm()

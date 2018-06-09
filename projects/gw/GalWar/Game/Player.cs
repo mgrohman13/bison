@@ -407,7 +407,7 @@ namespace GalWar
         }
         private int GetPDStat(int cur, int add)
         {
-            return Math.Max(GetPDStat((cur + add * Consts.PlanetDefenseStatRndm) / (1 + Consts.PlanetDefenseStatRndm)), GetPDStat(add));
+            return Math.Max(GetPDStat(( cur + add * Consts.PlanetDefenseStatRndm ) / ( 1 + Consts.PlanetDefenseStatRndm )), GetPDStat(add));
         }
         private static int GetPDStat(double stat)
         {
@@ -509,7 +509,7 @@ namespace GalWar
 
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
             {
-                bool doObsolete = (this.ResearchFocusDesign != null);
+                bool doObsolete = ( this.ResearchFocusDesign != null );
                 int minResearch = this.LastResearched;
                 if (doObsolete)
                     minResearch = this.ResearchFocusDesign.Research
@@ -557,7 +557,7 @@ namespace GalWar
         {
             double storedResearch = this.Research - this.LastResearched;
             if (storedResearch < Consts.UpgDesignAbsMin)
-                storedResearch = Consts.UpgDesignAbsMin / (Math.Pow(Consts.UpgDesignAbsMin - storedResearch + 1, .3));
+                storedResearch = Consts.UpgDesignAbsMin / ( Math.Pow(Consts.UpgDesignAbsMin - storedResearch + 1, .3) );
 
             this.rChance = ResetResearchChance(storedResearch, Math.Sqrt(this.LastResearched) * Consts.NewDesignFactor);
 
@@ -567,7 +567,7 @@ namespace GalWar
         }
         private static double ResetResearchChance(double storedResearch, double factor)
         {
-            factor = storedResearch / (storedResearch + factor);
+            factor = storedResearch / ( storedResearch + factor );
             factor *= factor;
             if (Game.Random.Bool())
                 return Game.Random.DoubleFull(factor);
@@ -581,26 +581,26 @@ namespace GalWar
             Player[] research = Game.GetResearchDisplayOrder();
             //the maximum possible skew change can plausibly be accounted for by economy emphasis choices
             double totalIncome = GetTotalIncome();
-            double low = totalIncome / (1.0 + 2 * Consts.EmphasisValue);
-            double high = totalIncome * Consts.EmphasisValue / (Consts.EmphasisValue + 2);
-            double diff = (high - low) / research[0].ResearchDisplay;
+            double low = totalIncome / ( 1.0 + 2 * Consts.EmphasisValue );
+            double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
+            double diff = ( high - low ) / research[0].ResearchDisplay;
 
             double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchRndm);
-            bool sign = (rDisp > rDispTrg);
+            bool sign = ( rDisp > rDispTrg );
             if (sign)
                 rDisp -= add;
             else
                 rDisp += add;
 
-            if (sign != (rDisp > rDispTrg) || rDisp == rDispTrg)
+            if (sign != ( rDisp > rDispTrg ) || rDisp == rDispTrg)
             {
                 rDisp = rDispTrg;
                 double cap = Math.Max(3 / Consts.ResearchVictoryMin - rDispTrg - 1, 3 + rDispTrg - 3 * Consts.ResearchVictoryMin);
-                rDispTrg = (rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, cap) + 1) / 3.0;
+                rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, cap) + 1 ) / 3.0;
 
                 //rate is based on distance to new value
                 rDispChange = Consts.FLOAT_ERROR_ZERO + Game.Random.Weighted(1 -
-                        Consts.ResearchDisplayRndm / (Consts.ResearchDisplayRndm + 3 * Math.Abs(rDisp - rDispTrg)));
+                        Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3 * Math.Abs(rDisp - rDispTrg) ));
             }
         }
 
@@ -662,7 +662,7 @@ namespace GalWar
                         int sell = MattUtil.TBSUtil.FindValue(delegate (int hp)
                         {
                             int newAtt, newDef;
-                            return (colony.GetPlanetDefenseDisbandValue(hp, true, out newAtt, out newDef) + goldValue > -Consts.FLOAT_ERROR_ZERO);
+                            return ( colony.GetPlanetDefenseDisbandValue(hp, true, out newAtt, out newDef) + goldValue > -Consts.FLOAT_ERROR_ZERO );
                         }, 1, colony.HP, true);
 
                         Console.WriteLine("Sold " + sell + " hp from " + colony + " (" + colony.Tile + ")");
@@ -687,7 +687,7 @@ namespace GalWar
         }
         private bool NegativeGold()
         {
-            return (goldValue < 0);
+            return ( goldValue < 0 );
         }
 
         internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, int production)
@@ -826,7 +826,7 @@ namespace GalWar
         {
             get
             {
-                return (this == Game.CurrentPlayer);
+                return ( this == Game.CurrentPlayer );
             }
         }
 
@@ -887,7 +887,7 @@ namespace GalWar
         {
             double retVal = 0;
             foreach (Ship ship in this.ships)
-                retVal += (ship.GetStrength() * ship.HP / (double)ship.MaxHP);
+                retVal += ( ship.GetStrength() * ship.HP / (double)ship.MaxHP );
             return retVal;
         }
 
@@ -937,11 +937,11 @@ namespace GalWar
         {
             GetTurnIncome(out population, out research, out production, out gold, true);
         }
-        public void GetTurnIncome(out double population, out int research, out double production, out double gold, bool countRepair)
+        public void GetTurnIncome(out double population, out int research, out double production, out double gold, bool includeAll)
         {
-            GetTurnIncome(out population, out research, out production, out gold, false, countRepair);
+            GetTurnIncome(out population, out research, out production, out gold, false, includeAll);
         }
-        private void GetTurnIncome(out double population, out int research, out double production, out double gold, bool minGold, bool countRepair)
+        private void GetTurnIncome(out double population, out int research, out double production, out double gold, bool minGold, bool includeAll)
         {
             TurnException.CheckTurn(this);
 
@@ -955,10 +955,12 @@ namespace GalWar
             foreach (Ship ship in this.ships)
                 gold -= ship.Upkeep;
 
-            gold += this.goldOffset;
 
-            if (countRepair)
+            if (includeAll)
+            {
+                gold += this.goldOffset;
                 AutoRepairIncome(ref gold, minGold);
+            }
         }
 
         public ReadOnlyCollection<Colony> GetColonies()
@@ -1003,13 +1005,13 @@ namespace GalWar
         }
         private double GetResearchChance(int newResearch, ShipDesign researchFocusDesign, double rChance, double rDesignMult)
         {
-            double newResearchPct = Math.Pow(newResearch / (newResearch + Math.Sqrt(this.LastResearched) / Consts.NewResearchMult), Consts.NewResearchPower);
-            double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / (Consts.NumDesignsFactor + this.designs.Count), Consts.NumDesignsPower);
+            double newResearchPct = Math.Pow(newResearch / ( newResearch + Math.Sqrt(this.LastResearched) / Consts.NewResearchMult ), Consts.NewResearchPower);
+            double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / ( Consts.NumDesignsFactor + this.designs.Count ), Consts.NumDesignsPower);
 
             double chance = rChance * newResearchPct * numDesignsPct;
 
             if (researchFocusDesign != null)
-                chance *= rDesignMult * Math.Sqrt(this.LastResearched / (Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research));
+                chance *= rDesignMult * Math.Sqrt(this.LastResearched / ( Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research ));
 
             return Consts.LimitPct(chance);
         }
@@ -1034,7 +1036,7 @@ namespace GalWar
                     colonies.Add(colony, new Tuple<int, bool>(loss, oldPause));
                 }
             //can no longer focus research on upgrading design
-            bool researchFocus = (this.ResearchFocusDesign == obsoleteDesign);
+            bool researchFocus = ( this.ResearchFocusDesign == obsoleteDesign );
             if (researchFocus)
                 this.ResearchFocusDesign = null;
 

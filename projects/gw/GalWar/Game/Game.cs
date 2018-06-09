@@ -770,11 +770,11 @@ namespace GalWar
             return null;
         }
 
-        internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target)
+        internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target, Ship anomShip)
         {
-            double chance = GetTeleporters().Count + 1;
+            double chance = GetTeleporters().Count + 1.3;
             //check if the tiles are too close to be useful or if either tile already has a teleporter
-            if (CanCreateTeleporter(tile, target) && Random.Bool(1.0 / chance))
+            if (CanCreateTeleporter(tile, target) && Random.Bool(Math.Pow(1.0 / chance, 1.3)))
             {
                 //check this will not make any planets be too close
                 HashSet<Planet> planets = new HashSet<Planet>();
@@ -788,17 +788,15 @@ namespace GalWar
                 }
 
                 //check and make sure enemies cannot be attacked/invaded
-                foreach (Player p in this.players)
+                foreach (Player player in this.players)
                 {
-                    foreach (Colony c in p.GetColonies())
-                        if (!CheckAttInvPlayers(c.Planet, true, tile, target))
+                    foreach (Colony colony in player.GetColonies())
+                        if (!CheckAttInvPlayers(colony, true, tile, target, anomShip))
                             return false;
-                    if (!p.IsTurn)
-                        foreach (Ship s in p.GetShips())
-                            if (!CheckAttInvPlayers(s, false, tile, target))
+                    if (player != anomShip.Player)
+                        foreach (Ship ship in player.GetShips())
+                            if (!CheckAttInvPlayers(ship, false, tile, target, anomShip))
                                 return false;
-
-                    handler.Explore(Anomaly.AnomalyType.Wormhole);
 
                     CreateTeleporter(tile, target);
                     return true;
@@ -810,11 +808,11 @@ namespace GalWar
         {
             return ( Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null );
         }
-        private bool CheckAttInvPlayers(SpaceObject obj, bool inv, Tile t1, Tile t2)
+        private bool CheckAttInvPlayers(SpaceObject obj, bool inv, Tile t1, Tile t2, Ship anomShip)
         {
-            HashSet<SpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv);
+            HashSet<SpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv, anomShip);
             Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
-            HashSet<SpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv);
+            HashSet<SpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv, anomShip);
             RemoveTeleporter(teleporter);
             foreach (SpaceObject other in after)
                 if (other.Player != obj.Player && !before.Contains(other))
