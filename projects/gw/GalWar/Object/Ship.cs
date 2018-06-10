@@ -480,13 +480,23 @@ namespace GalWar
             this.HasRepaired = false;
         }
 
-        internal void LoseMove()
+        internal int LoseMove()
         {
             if (!this.Player.IsTurn)
                 throw new Exception();
 
+            int move = this.CurSpeed;
             this.Player.GoldIncome(GetUpkeepReturn());
             this.CurSpeed = 0;
+            return move;
+        }
+        internal void UndoLoseMove(int move)
+        {
+            if (!this.Player.IsTurn)
+                throw new Exception();
+
+            this.Player.GoldIncome(-GetUpkeepReturn(move));
+            this.CurSpeed = move;
         }
 
         public double GetUpkeepReturn()

@@ -1,4 +1,6 @@
 UI
+	reg auto save identify game ID
+		default save name too?
 	text overlaying other text / same color
 	replay
 		overwrites when currentPlayer decrements
@@ -34,14 +36,6 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
-anomaly attinv inv
-	pop pickup dist algorithm
-	pull blocking ship
-	pull colony in danger
-	pull threatening ship
-	push trans/DS
-	consider redoing:
-		determine all att/inv, make change, determine again and comapre, maybe rollback
 anomaly gold balancing at full vs consolation value
 	other balancing
 bombard free dmg based on attacker research??

@@ -777,7 +777,7 @@ namespace GalWar
             if (CanCreateTeleporter(tile, target) && Random.Bool(Math.Pow(1.0 / chance, 1.3)))
             {
                 //check this will not make any planets be too close
-                HashSet<Planet> planets = new HashSet<Planet>();
+                HashSet<Planet> planets = GetPlanets();
                 foreach (Planet p1 in planets)
                 {
                     int dist = Consts.PlanetDistance - Tile.GetDistance(tile, p1.Tile);
@@ -788,36 +788,21 @@ namespace GalWar
                 }
 
                 //check and make sure enemies cannot be attacked/invaded
-                foreach (Player player in this.players)
-                {
-                    foreach (Colony colony in player.GetColonies())
-                        if (!CheckAttInvPlayers(colony, true, tile, target, anomShip))
-                            return false;
-                    if (player != anomShip.Player)
-                        foreach (Ship ship in player.GetShips())
-                            if (!CheckAttInvPlayers(ship, false, tile, target, anomShip))
-                                return false;
-
-                    CreateTeleporter(tile, target);
+                Dictionary<SpaceObject, HashSet<SpaceObject>> before = Anomaly.GetAttInv(this);
+                Tuple<Tile, Tile> teleporter = CreateTeleporter(tile, target);
+                if (Anomaly.ValidateChange(before, anomShip))
                     return true;
-                }
+                else
+                    RemoveTeleporter(teleporter);
+            }
+            else if (!CanCreateTeleporter(tile, target))
+            {
             }
             return false;
         }
         private static bool CanCreateTeleporter(Tile tile, Tile target)
         {
             return ( Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null );
-        }
-        private bool CheckAttInvPlayers(SpaceObject obj, bool inv, Tile t1, Tile t2, Ship anomShip)
-        {
-            HashSet<SpaceObject> before = Anomaly.GetAttInv(obj.Tile, inv, anomShip);
-            Tuple<Tile, Tile> teleporter = CreateTeleporter(t1, t2);
-            HashSet<SpaceObject> after = Anomaly.GetAttInv(obj.Tile, inv, anomShip);
-            RemoveTeleporter(teleporter);
-            foreach (SpaceObject other in after)
-                if (other.Player != obj.Player && !before.Contains(other))
-                    return false;
-            return true;
         }
         private Tuple<Tile, Tile> CreateTeleporter(Tile t1, Tile t2)
         {

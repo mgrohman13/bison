@@ -99,36 +99,36 @@ namespace GalWar
             AssertException.Assert(ship != null);
             AssertException.Assert(ship.Vector != null);
 
-            return ( PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null)
-                    ?? PathFind(ship.Tile, ship.Vector, null) );
+            bool checkTarget = !( ship.Vector.SpaceObject != null && !( ship.Vector.SpaceObject is Ship && ship.Player == ship.Vector.SpaceObject.Player ) );
+            return ( PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null, checkTarget)
+                    ?? PathFind(ship.Tile, ship.Vector, null, checkTarget) );
         }
-        public static List<Tile> PathFind(Tile from, Tile to)
-        {
-            return PathFind(from, to, null);
-        }
-
-        public static List<Tile> PathFind(Tile from, Tile to, Player player)
+        public static List<Tile> PathFind(Tile from, Tile to, Player player, bool checkTarget, int? max = null)
         {
             AssertException.Assert(to != null);
             AssertException.Assert(from != null);
 
-            Rectangle bounds = from.Game.GetGameBounds(to, from);
-            int count = 0, max = bounds.Width * bounds.Height;
+            if (!max.HasValue)
+            {
+                Rectangle bounds = from.Game.GetGameBounds(to, from);
+                max = bounds.Right + bounds.Bottom - bounds.Top - bounds.Left + 13;
+            }
 
             return TBSUtil.PathFind(Game.Random, from, to, current =>
             {
-                if (++count > max)
+                if (GetDistance(current, from) + GetDistance(current, to) >= max)
                     return Enumerable.Empty<Tuple<Tile, int>>();
-                return Tile.GetNeighbors(current).Where(neighbor => CanMove(player, current, neighbor))
+                return Tile.GetNeighbors(current).Where(neighbor => CanMove(player, current, neighbor, checkTarget ? null : to))
                         .Select(neighbor => new Tuple<Tile, int>(neighbor, 1));
             }, GetDistance);
         }
-        private static bool CanMove(Player player, Tile current, Tile neighbor)
+        private static bool CanMove(Player player, Tile current, Tile neighbor, Tile skipZOC)
         {
             SpaceObject spaceObject;
             //a null player means we don't want to do any collision checking at all
-            return ( player == null || ( ( ( spaceObject = neighbor.SpaceObject ) == null
-                    || ( spaceObject is Ship && spaceObject.Player == player ) ) && Ship.CheckZOC(player, neighbor, current) ) );
+            return ( player == null || ( ( ( spaceObject = neighbor.SpaceObject ) == null || spaceObject is Anomaly
+                   || ( spaceObject is Ship && spaceObject.Player == player ) )
+                    && ( ( skipZOC != null && current == skipZOC ) || Ship.CheckZOC(player, neighbor, current) ) ) );
         }
 
         #endregion //static
