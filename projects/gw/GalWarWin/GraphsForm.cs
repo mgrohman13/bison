@@ -121,7 +121,7 @@ namespace GalWarWin
 
         internal static string GetArmadaString(double value)
         {
-            double maxArmada = double.MinValue;
+            double maxArmada = value;
             foreach (Player player in MainForm.Game.GetPlayers())
                 maxArmada = Math.Max(maxArmada, player.GetArmadaStrength());
             int place = GetPlace(maxArmada);

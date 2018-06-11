@@ -774,7 +774,7 @@ namespace GalWar
         {
             double chance = GetTeleporters().Count + 1.3;
             //check if the tiles are too close to be useful or if either tile already has a teleporter
-            if (CanCreateTeleporter(tile, target) && Random.Bool(Math.Pow(1.0 / chance, 1.3)))
+            if (CanCreateTeleporter(tile, target) && Random.Bool(Math.Pow(1.0 / chance, 1.69)))
             {
                 //check this will not make any planets be too close
                 HashSet<Planet> planets = GetPlanets();
@@ -903,7 +903,7 @@ namespace GalWar
                 //anomalies weigh less than even the smallest possible planet
                 const double AnomalyWeight = Consts.PlanetConstValue / 1.3;
                 //the total weight of all ships is always less than even a single anomaly
-                if (shipWeight != 0)
+                if (shipWeight > 0)
                     shipWeight = AnomalyWeight / 1.3 / shipWeight;
                 //population is weighted at its total's square root
                 if (popWeight > 0)

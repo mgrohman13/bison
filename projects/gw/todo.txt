@@ -1,4 +1,7 @@
 UI
+	tab order on combat calc
+	show research victory on main window
+	diff log file per id
 	reg auto save identify game ID
 		default save name too?
 	text overlaying other text / same color
@@ -36,6 +39,8 @@ UI
 		partial-mathematical-resolve until limit is reached
 		monte carlo?	
 
+god tier name
+	back to x3?
 anomaly gold balancing at full vs consolation value
 	other balancing
 bombard free dmg based on attacker research??

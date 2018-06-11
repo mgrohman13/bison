@@ -582,9 +582,7 @@ namespace GalWar
                 lowerCap = Game.Random.RangeInt(0, lowerCap);
             }
             if (lowerCap < 1)
-            {
                 lowerCap = ( ( amt > 1 ) ? 1 : 0 );
-            }
             return Game.Random.GaussianCappedInt(amt, .039, lowerCap);
         }
 

@@ -728,15 +728,19 @@ namespace GalWarWin
 
         private static float GetStatFromValue(float value)
         {
-            if (value < 1.5f)
+            if (value < Consts.FLOAT_ERROR_ONE)
                 return value;
 
             const float digit = .1f, div = 1f / digit;
-            int min = (int)Math.Floor(Math.Pow(value, 1f / 3f) * div) + 3, max = (int)Math.Ceiling(Math.Sqrt(value) * div);
+            int min = (int)Math.Floor(Math.Pow(value, 1f / 3f) * div + 2), max = (int)Math.Ceiling(Math.Sqrt(value) * div + 2);
             float stat = TBSUtil.FindValue(delegate (int test)
             {
                 return ( ShipDesign.GetStatValue(test / div) > value );
             }, min, max, true) / div;
+
+            if (( stat - min / 10.0 ) < Consts.FLOAT_ERROR_ZERO || ( max / 10.0 - stat ) < Consts.FLOAT_ERROR_ZERO)
+                throw new Exception();
+
             if (( ShipDesign.GetStatValue(stat) - value ) > ( value - ShipDesign.GetStatValue(stat - digit) ))
                 stat -= digit;
 
