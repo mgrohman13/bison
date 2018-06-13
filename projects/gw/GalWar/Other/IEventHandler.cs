@@ -12,7 +12,7 @@ namespace GalWar
 
         int MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost);
 
-        bool Continue();
+        bool Continue(bool friendly);
 
         bool ConfirmCombat(Combatant attacker, Combatant defender);
 

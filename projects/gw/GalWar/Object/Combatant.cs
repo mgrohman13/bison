@@ -137,7 +137,7 @@ namespace GalWar
         private static void CheckDestroy(Combatant combatant)
         {
             Ship ship = combatant as Ship;
-            if (ship != null && ship.HP == 0)
+            if (ship != null && ship.HP <= 0)
                 ship.Destroy(true, true);
         }
 

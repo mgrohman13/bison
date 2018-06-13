@@ -1,67 +1,80 @@
 UI
-	tab order on combat calc
-	show research victory on main window
-	diff log file per id
-	reg auto save identify game ID
-		default save name too?
-	text overlaying other text / same color
-	replay
-		overwrites when currentPlayer decrements
-		final end game save include graphs
-		parse correctly for history button
-	graph select turns / smoothing
-	rapid click to bombard
-	rally ships
-		current turn actual move always use zoc, friendly ship blocks
-			ensure shown path is path that will be taken this turn
-		allow viewing all shortest paths? constant path?
-		waypoints
-			left click drag to vector should not select target tile
-	measure distances
-	calculate pop growth
-		balancing between colonies
-	show enemy moves/attacks ignoring friendly ships, weight for HP?
-	main map
-		clean up drawing logic
-		very large shows more info
-			different ship graphics for speed/type
-		very small shows clearer info
-	management screens
-		designs
-			compare
-			new research window has option to show compare desings for all designs
-				toggle between obsolete/all?  visual discinction?
-		re-do colony
-		ships/colony view include enemy
-			multi select with all players
-	keyboard?
-	combat predict performance
-		partial-mathematical-resolve until limit is reached
-		monte carlo?	
 
-god tier name
-	back to x3?
+tab order on combat calc
+show research victory on main window
+diff log file per id
+log out turn #
+reg auto save identify game ID
+	default save name too?
+text overlaying other text / same color
+replay
+	overwrites when currentPlayer decrements
+	final end game save include graphs
+	parse correctly for history button
+graph select turns / smoothing
+rapid click to bombard
+rally ships
+	current turn actual move always use zoc, friendly ship blocks
+		ensure shown path is path that will be taken this turn
+	allow viewing all shortest paths? constant path?
+	waypoints
+		left click drag to vector should not select target tile
+measure distances
+calculate pop growth
+	balancing between colonies
+show enemy moves/attacks ignoring friendly ships, weight for HP?
+main map
+	clean up drawing logic
+	very large shows more info
+		different ship graphics for speed/type
+	very small shows clearer info
+management screens
+	designs
+		compare
+		new research window has option to show compare desings for all designs
+			toggle between obsolete/all?  visual discinction?
+	re-do colony
+	ships/colony view include enemy
+		multi select with all players
+keyboard?
+combat predict performance
+	partial-mathematical-resolve until limit is reached
+	monte carlo?	
+
+
+GAMEPLAY
+
+ds trg pct max out at .21?
+	consider making catapults more likely?
 anomaly gold balancing at full vs consolation value
-	other balancing
+	using generate value instead of this value for compensation?
+	other compensation/general balancing?
+	rebalance global event?
+	gold income for anomaly research randomness
+	rebalance research OEPct?
+anom design research randomness with higher values (any pct based randomness)
+1:1 vs reduced payouts... analyze
+	e.g. soldiers "other" gives full gold?
 bombard free dmg based on attacker research??
+	avg research?
 civ zoc?
 	rebalance?
 anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 why do enemy colonies show repair amt?
-ship vector allow for waypoints/constant path
 population w/o trans graph should also average?
 move start turn gold to after start turn ship
-	neg gold?
+rethink neg gold again
+	don't like random disbanding - no adv over manual
+	if keep impossible negative, make _goldValue a uint?
+	current impl could work if guarantee popup always shows if possibility of sale 
+	think of any start turn action?
 individual colony/planet have slightly different income ratios?
+	problem - people piling all excess pop on best planet
+	maybe only up to quality?
 verify last researched>current issues
 	upg ship > current?
 rchance > 1 throws off max
-ship upg algorithm
-using generate value instead of this value for compensation?
-focuspcts mathematically might make the other two overall more likely
 move order gold based on current average income?
-gold income for anomaly research randomness
-	rebalance OEPct?
 friendly bombard
 	never kill pop
 	confirm before completely destroy
@@ -70,24 +83,20 @@ new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate
 	pop,prod,etc.
-terrain from anomalies
-	non-permanent
-	slower move
-	impassable
-	damage
-	att/def bonus
-	random spread of tiles? apply effects to neighbors?
 directly upgrade existing ships?
 	to reduce repair cost?
 	improve stats?
 	obsolete designs?
 increase minimum research chance
-ship name value
-ship name mult too high
-anom design research randomness with higher values (any pct based randomness)
+ship names
+	ship name use value?
+	ship name mult too high?
+		back to x3?
+	god tier name?
 map size
-ExpForSoldiers should be * 1.3 not / 1.3?
-soldiers = meh
+soldiers
+	ExpForSoldiers should be * 1.3 not / 1.3?
+	soldiers = meh, completely redo?
 planetary defenses still not right
 	cost/eco/upg hiddenness?
 	upg = full OE
@@ -104,15 +113,10 @@ research victory pct decreases with higher research
 	also decrease max display skew appropriately
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
-	reduce impact of speed in egenral, while at it
-rethink neg gold again
-	don't like random disbanding - no adv over manual
-	if keep impossible negative, make _goldValue a uint?
-	current impl could work if guarantee popup always shows if possibility of sale 
-	think of any starrt turn action?
-1:1 vs reduced payouts... analyze
-	e.g. soldiers "other" gives full gold?
-rebalance global event?
+	reduce impact of speed in general, while at it
+
+
+SAVE FILES
 
 ShipClass order
 	order by tier, use in ShipsForm sort
@@ -127,6 +131,18 @@ clean up code
 	member order
 fix combatant/popcarrier/colony/pd hierarchy
 
+
+VAGUE
+
+terrain
+	from anomalies?
+	non-permanent
+	slower move
+	impassable
+	damage
+	att/def bonus
+	random spread of tiles?
+	apply effects to neighbors?
 influence
 anomaly neutral ships?
 known enemy designs

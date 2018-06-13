@@ -69,7 +69,7 @@ namespace GalWarAI
                 return max;
         }
 
-        bool IEventHandler.Continue()
+        bool IEventHandler.Continue(bool friendly)
         {
             //TODO
             return false;

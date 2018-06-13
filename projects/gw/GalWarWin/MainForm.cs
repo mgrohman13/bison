@@ -2707,9 +2707,9 @@ namespace GalWarWin
             return SliderForm.ShowForm(new MoveTroops(fromColony, max, totalPop, soldiers, extraCost));
         }
 
-        bool IEventHandler.Continue()
+        bool IEventHandler.Continue(bool friendly)
         {
-            return ShowOption("Planet population has been killed off.  Continue attacking?");
+            return ShowOption(friendly ? "This will destroy the planet!  Continue attacking?" : "Planet population has been killed off.  Continue attacking?");
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)

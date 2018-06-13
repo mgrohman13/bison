@@ -600,7 +600,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Tile == null || this.Tile.SpaceObject != this );
+                return ( this.Tile == null || this.Tile.SpaceObject != this || this.HP <= 0 );
             }
         }
 
@@ -858,18 +858,25 @@ namespace GalWar
         {
             rawExp += valueExp / GetValueExpForRawExp(1);
 
-            if (this.Population > 0 && this.HP > 0)
+            if (this.Dead)
             {
-                double soldiers = this.Population / Consts.PopulationForGoldMid;
-                soldiers *= rawExp / ( soldiers + this.GetCostLastResearched() );
-
-                soldiers *= GalWar.Colony.GetSoldierMult(this.Population, this.Soldiers, GetSoldiersForExp(soldiers));
-
-                rawExp -= soldiers;
-                this.Soldiers += Consts.GetExperience(GetSoldiersForExp(soldiers));
+                Player.GoldIncome(GetValueExpForRawExp(rawExp) / Consts.ExpForGold);
             }
+            else
+            {
+                if (this.Population > 0)
+                {
+                    double soldiers = this.Population / Consts.PopulationForGoldMid;
+                    soldiers *= rawExp / ( soldiers + this.GetCostLastResearched() );
 
-            this.curExp += Consts.GetExperience(rawExp);
+                    soldiers *= GalWar.Colony.GetSoldierMult(this.Population, this.Soldiers, GetSoldiersForExp(soldiers));
+
+                    rawExp -= soldiers;
+                    this.Soldiers += Consts.GetExperience(GetSoldiersForExp(soldiers));
+                }
+
+                this.curExp += Consts.GetExperience(rawExp);
+            }
         }
         private double GetSoldiersForExp(double exp)
         {
@@ -906,7 +913,7 @@ namespace GalWar
         {
             bool first = true;
             double needExp;
-            while (this.HP > 0 && !this.Dead && this.curExp > ( needExp = this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ))
+            while (!this.Dead && this.curExp > ( needExp = this.needExpMult * ( GetValue(this.NextExpType) - GetValue() ) ))
             {
                 if (first)
                 {
@@ -1267,11 +1274,11 @@ namespace GalWar
 
         private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage, ref double rawExp, ref double valueExp)
         {
-            colonyDamage = GetColonyDamage(planet, pct);
+            colonyDamage = GetColonyDamage(pct);
 
             int dmgBase = colonyDamage, tempPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
             double dmgMult = pct;
-            bool stopBombard = ( !friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue() );
+            bool stopBombard = ( !friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue(friendly) );
             if (stopBombard)
                 if (this.DeathStar)
                     dmgMult *= tempPop / (double)colonyDamage;
@@ -1279,13 +1286,17 @@ namespace GalWar
                     dmgBase = tempPop;
             planetDamage = GetPlanetDamage(dmgBase, dmgMult);
 
+            if (friendly && planetDamage > planet.Quality && !handler.Continue(friendly))
+            {
+                move left
+                planetDamage = planet.Quality;
+            }
+
             //bombard the planet first, since it might get destroyed
             int initQuality = BombardPlanet(handler, planet, planetDamage, ref rawExp, ref valueExp);
             //bombard the colony second, if it exists
             int initPop = BombardColony(handler, planet.Colony, colonyDamage, ref rawExp, ref valueExp);
 
-            if (friendly)
-                colonyDamage = initPop - colonyDamage;
             double moveLeftPlanetDmg = planetDamage;
             if (stopBombard && !planet.Dead)
             {
@@ -1300,12 +1311,9 @@ namespace GalWar
                 colonyDamage = initPop;
         }
 
-        private int GetColonyDamage(Planet planet, double pct)
+        private int GetColonyDamage(double pct)
         {
-            double damage = this.BombardDamage * pct;
-            if (planet.Player == this.Player)
-                damage *= planet.Colony.Population / (double)( planet.Colony.Population + ( 3 * planet.Quality + 1 * Consts.AverageQuality ) / 4.0 );
-            return GetBombardDamage(damage);
+            return GetBombardDamage(this.BombardDamage * pct);
         }
 
         private int GetBombardDamage(double damage)

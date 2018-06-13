@@ -108,7 +108,7 @@ namespace GalWar
             return retVal;
         }
 
-        bool IEventHandler.Continue()
+        bool IEventHandler.Continue(bool friendly)
         {
             callback = true;
 
@@ -116,7 +116,7 @@ namespace GalWar
 
             try
             {
-                retVal = handler.Continue();
+                retVal = handler.Continue(friendly);
             }
             catch (Exception e)
             {
