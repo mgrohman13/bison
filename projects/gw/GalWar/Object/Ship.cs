@@ -1215,10 +1215,15 @@ namespace GalWar
                 handler.OnBombard(this, planet, freeDmg, 0, 0);
 
             this.AddExperience(rawExp, valueExp);
-            if (planet.Colony != null)
-                planet.Colony.AddExperience(rawExp, valueExp);
-            else
-                this.Player.GoldIncome(-this.GetValueExpForRawExp(rawExp) - valueExp);
+            if (colony != null)
+                colony.AddExperience(rawExp, valueExp);
+            if (!enemy)
+            {
+                double gold = this.GetValueExpForRawExp(rawExp) + valueExp;
+                if (friendly)
+                    gold *= 2;
+                this.Player.GoldIncome(-gold);
+            }
 
             LevelUp(handler);
         }
@@ -1272,43 +1277,48 @@ namespace GalWar
             return this.BombardDamage * Consts.BombardFreeDmgMult / costPerHP;
         }
 
-        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int colonyDamage, out int planetDamage, ref double rawExp, ref double valueExp)
+        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int popKilled, out int qualityDestroyed, ref double rawExp, ref double valueExp)
         {
-            colonyDamage = GetColonyDamage(pct);
+            int initPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
+            int initQuality = planet.Quality;
 
-            int dmgBase = colonyDamage, tempPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
-            double dmgMult = pct;
-            bool stopBombard = ( !friendly && tempPop > 0 && colonyDamage > tempPop && !handler.Continue(friendly) );
-            if (stopBombard)
-                if (this.DeathStar)
-                    dmgMult *= tempPop / (double)colonyDamage;
-                else
-                    dmgBase = tempPop;
-            planetDamage = GetPlanetDamage(dmgBase, dmgMult);
+            int colonyDamage = popKilled = GetColonyDamage(pct);
+            int planetDamage = qualityDestroyed = GetPlanetDamage(colonyDamage, pct);
 
-            if (friendly && planetDamage > planet.Quality && !handler.Continue(friendly))
+            if (friendly)
             {
-                move left
-                planetDamage = planet.Quality;
+                popKilled = 0;
+                if (initQuality > 0 && initQuality < planetDamage && !handler.Continue(friendly))
+                    qualityDestroyed = initQuality;
+            }
+            else
+            {
+                int reducedPlanetDamage = Game.Random.Round(planetDamage * initPop / (double)colonyDamage);
+                if (initPop > 0 && initPop < colonyDamage && reducedPlanetDamage <= initQuality && !handler.Continue(friendly))
+                {
+                    popKilled = initPop;
+                    qualityDestroyed = reducedPlanetDamage;
+                }
             }
 
             //bombard the planet first, since it might get destroyed
-            int initQuality = BombardPlanet(handler, planet, planetDamage, ref rawExp, ref valueExp);
+            initQuality = BombardPlanet(handler, planet, qualityDestroyed, ref rawExp, ref valueExp);
             //bombard the colony second, if it exists
-            int initPop = BombardColony(handler, planet.Colony, colonyDamage, ref rawExp, ref valueExp);
+            initPop = BombardColony(handler, planet.Colony, popKilled, ref rawExp, ref valueExp);
 
-            double moveLeftPlanetDmg = planetDamage;
-            if (stopBombard && !planet.Dead)
+            double move = 0;
+            //planet quality overkill
+            if (planetDamage > initQuality)
+                move += ( 1 - ( initQuality / (double)planetDamage ) );
+            //colony population overkill
+            if (!friendly)
             {
-                initQuality = Math.Min(initQuality, planetDamage);
-                moveLeftPlanetDmg = planetDamage * colonyDamage / (double)tempPop;
+                //the 1 movement is split evenly between planet and colony damage
+                if (colonyDamage > initPop)
+                    move += ( 1 - ( initPop / (double)colonyDamage ) );
+                move /= 2.0;
             }
-            this.Player.GoldIncome(GetUpkeepReturn(GetBombardMoveLeft(moveLeftPlanetDmg, initQuality, colonyDamage, initPop, pct)));
-
-            if (planet.Dead)
-                colonyDamage = tempPop;
-            else if (colonyDamage > initPop)
-                colonyDamage = initPop;
+            this.Player.GoldIncome(GetUpkeepReturn(move * pct));
         }
 
         private int GetColonyDamage(double pct)
@@ -1342,17 +1352,14 @@ namespace GalWar
         private int BombardPlanet(IEventHandler handler, Planet planet, int planetDamage, ref double rawExp, ref double valueExp)
         {
             //quality has to drop to -1 to destroy planet
-            int initQuality = planet.Quality + 1;
+            int initQuality = Math.Min(planet.Quality + 1, planetDamage);
 
-            if (planetDamage > 0)
-            {
-                planet.ReduceQuality(planetDamage);
+            planet.ReduceQuality(planetDamage);
 
-                double exp = Math.Min(initQuality, planetDamage);
-                if (planet.Dead)
-                    exp += Consts.PlanetConstValue;
-                valueExp += exp * Consts.TroopExperienceMult;
-            }
+            double exp = initQuality;
+            if (planet.Dead)
+                exp += Consts.PlanetConstValue;
+            valueExp += exp * Consts.TroopExperienceMult;
 
             return initQuality;
         }
@@ -1362,29 +1369,14 @@ namespace GalWar
             int initPop = 0;
             if (colony != null)
             {
-                initPop = colony.Population;
+                initPop = Math.Min(colony.Population, colonyDamage);
 
-                if (colonyDamage > 0)
-                {
-                    valueExp += Math.Min(colony.Population, colonyDamage) * Consts.TroopExperienceMult;
-                    colony.LosePopulation(colonyDamage);
-                }
+                colony.LosePopulation(colonyDamage);
+
+                valueExp += initPop * Consts.TroopExperienceMult;
             }
 
             return initPop;
-        }
-
-        private static double GetBombardMoveLeft(double planetDamage, double quality, double colonyDamage, double pop, double pct)
-        {
-            //the 1 movement is split evenly between planet and colony damage
-            double move = 0;
-            //planet quality overkill
-            if (planetDamage > quality)
-                move += ( 1 - ( quality / planetDamage ) );
-            //colony population overkill
-            if (colonyDamage > pop)
-                move += ( 1 - ( pop / colonyDamage ) );
-            return move / 2.0 * pct;
         }
 
         public void Invade(IEventHandler handler, Colony target, int population, int gold)

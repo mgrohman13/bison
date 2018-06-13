@@ -1,5 +1,6 @@
 UI
 
+invade + bombard logging show max or actual quality dmg - consistency 
 tab order on combat calc
 show research victory on main window
 diff log file per id
@@ -75,10 +76,6 @@ verify last researched>current issues
 	upg ship > current?
 rchance > 1 throws off max
 move order gold based on current average income?
-friendly bombard
-	never kill pop
-	confirm before completely destroy
-	doesn't give free exp to both
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate
