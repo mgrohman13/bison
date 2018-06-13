@@ -692,6 +692,8 @@ namespace GalWarWin
 
         private Dictionary<Tile, float> GetMoves()
         {
+            gm1 = gm2 = 0;
+
             Dictionary<Tile, Point> temp = new Dictionary<Tile, Point>();
             Dictionary<Tile, float> totals = new Dictionary<Tile, float>();
             foreach (Player enemy in Game.GetPlayers())
@@ -723,19 +725,24 @@ namespace GalWarWin
                 totals = retVal;
             }
 
+            Console.WriteLine(gm1);
+            Console.WriteLine(gm2);
+
             return totals;
         }
 
+        private static int gm1, gm2;
         private static float GetStatFromValue(float value)
         {
             if (value < Consts.FLOAT_ERROR_ONE)
                 return value;
 
             const float digit = .1f, div = 1f / digit;
-            int min = (int)Math.Floor(Math.Pow(value, 1f / 3f) * div + 2), max = (int)Math.Ceiling(Math.Sqrt(value) * div + 2);
+            int min = (int)Math.Floor(Math.Pow(value, 1f / 3f) * div + 2), max = (int)Math.Ceiling(Math.Sqrt(value) * div + 1);
             float stat = TBSUtil.FindValue(delegate (int test)
             {
-                return ( ShipDesign.GetStatValue(test / div) > value );
+                ++gm1;
+                return ( ShipDesign.GetStatValue(test / div) >= value );
             }, min, max, true) / div;
 
             if (( stat - min / 10.0 ) < Consts.FLOAT_ERROR_ZERO || ( max / 10.0 - stat ) < Consts.FLOAT_ERROR_ZERO)
@@ -797,6 +804,7 @@ namespace GalWarWin
         {
             foreach (Tile neighbor in Tile.GetNeighbors(tile))
             {
+                ++gm2;
                 Point v1;
                 retVal.TryGetValue(neighbor, out v1);
                 int damage = v1.X;
