@@ -60,13 +60,9 @@ namespace GalWar
             }
             protected set
             {
-                checked
-                {
-                    if (this.HP > value)
-                        OnDamaged(this.HP - value);
-
-                    SetHP(value);
-                }
+                if (this.HP > value)
+                    OnDamaged(this.HP - value);
+                SetHP(value);
             }
         }
         protected void SetHP(int value)
@@ -137,7 +133,7 @@ namespace GalWar
         private static void CheckDestroy(Combatant combatant)
         {
             Ship ship = combatant as Ship;
-            if (ship != null && ship.HP <= 0)
+            if (ship != null && ship.HP == 0)
                 ship.Destroy(true, true);
         }
 

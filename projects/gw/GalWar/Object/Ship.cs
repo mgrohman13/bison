@@ -555,7 +555,7 @@ namespace GalWar
         }
         internal void Destroy(bool addGold, bool random)
         {
-            if (this.Dead)
+            if (this.Tile == null || this.Tile.SpaceObject != this)
                 throw new Exception();
 
             double destroyGold = GetDestroyGold();
@@ -600,7 +600,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Tile == null || this.Tile.SpaceObject != this || this.HP <= 0 );
+                return ( this.Tile == null || this.Tile.SpaceObject != this || this.HP == 0 );
             }
         }
 
@@ -1214,6 +1214,12 @@ namespace GalWar
             if (freeDmg != -1)
                 handler.OnBombard(this, planet, freeDmg, 0, 0);
 
+            ;
+            ;
+            ;
+            ;
+            ;
+
             this.AddExperience(rawExp, valueExp);
             if (colony != null)
                 colony.AddExperience(rawExp, valueExp);
@@ -1230,7 +1236,7 @@ namespace GalWar
 
         private double AttackColony(IEventHandler handler, Colony colony, out int freeDmg, ref double rawExp, ref double valueExp)
         {
-            double freeAvg = GetFreeDmg(colony.PlanetDefenseCostPerHP), combatAvg, avgDef;
+            double freeAvg = GetFreeDmg(colony), combatAvg, avgDef;
             Consts.GetDamageTable(this.Att, colony.Def, out combatAvg, out avgDef);
 
             double freePct = 0;
@@ -1246,7 +1252,6 @@ namespace GalWar
             double combatPct = 1;
             if (colony.HP > 0 && ( !this.DeathStar || handler.ConfirmCombat(this, colony) ))
             {
-
                 //log free damage, if any, before combat
                 if (freeDmg > 0)
                     handler.OnBombard(this, colony.Planet, freeDmg, 0, 0);
@@ -1262,18 +1267,9 @@ namespace GalWar
             return ( ( freePct * freeAvg + combatPct * combatAvg ) / ( freeAvg + combatAvg ) );
         }
 
-        public double GetFreeDmgGuess(Colony colony)
+        public double GetFreeDmg(Colony colony)
         {
-            double costPerHP;
-            if (colony.Player.IsTurn)
-                costPerHP = colony.PlanetDefenseCostPerHP;
-            else
-                costPerHP = ShipDesign.GetPlanetDefenseCost(colony.Att, colony.Def, this.Player.Game.CurrentPlayer.GetResearchGuess()
-                        * colony.Player.ResearchDisplay / this.Player.Game.CurrentPlayer.ResearchDisplay);
-            return GetFreeDmg(costPerHP);
-        }
-        private double GetFreeDmg(double costPerHP)
-        {
+            double costPerHP = colony.PlanetDefenseCostAvgResearch / colony.HP;
             return this.BombardDamage * Consts.BombardFreeDmgMult / costPerHP;
         }
 
@@ -1290,6 +1286,8 @@ namespace GalWar
                 popKilled = 0;
                 if (initQuality > 0 && initQuality < planetDamage && !handler.Continue(friendly))
                     qualityDestroyed = initQuality;
+                else
+                    ;
             }
             else
             {
@@ -1299,6 +1297,8 @@ namespace GalWar
                     popKilled = initPop;
                     qualityDestroyed = reducedPlanetDamage;
                 }
+                else
+                    ;
             }
 
             //bombard the planet first, since it might get destroyed

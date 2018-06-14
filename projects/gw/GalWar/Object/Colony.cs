@@ -740,7 +740,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Planet.Colony != this );
+                return ( this.Planet == null || this.Planet.Colony != this || this.Planet.Dead );
             }
         }
 

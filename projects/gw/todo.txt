@@ -1,5 +1,7 @@
 UI
 
+test exact vs oversize dictionary capacity for combat performance
+empirically test invasion values
 invade + bombard logging show max or actual quality dmg - consistency 
 tab order on combat calc
 show research victory on main window
@@ -45,23 +47,27 @@ combat predict performance
 
 GAMEPLAY
 
-ds trg pct max out at .21?
-	consider making catapults more likely?
+anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
 	using generate value instead of this value for compensation?
 	other compensation/general balancing?
 	rebalance global event?
 	gold income for anomaly research randomness
-	rebalance research OEPct?
-anom design research randomness with higher values (any pct based randomness)
+	anom design research randomness with higher values
+		any pct based / OE randomness?
+	anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
-bombard free dmg based on attacker research??
-	avg research?
-civ zoc?
-	rebalance?
-anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 why do enemy colonies show repair amt?
+verify last researched>current issues
+	upg ship > current?
+rchance > 1 throws off max
+
+
+BETWEEN GAMES
+	
+ds trg pct max out at .21?
+	consider making catapults more likely?
 population w/o trans graph should also average?
 move start turn gold to after start turn ship
 rethink neg gold again
@@ -69,21 +75,11 @@ rethink neg gold again
 	if keep impossible negative, make _goldValue a uint?
 	current impl could work if guarantee popup always shows if possibility of sale 
 	think of any start turn action?
-individual colony/planet have slightly different income ratios?
-	problem - people piling all excess pop on best planet
-	maybe only up to quality?
-verify last researched>current issues
-	upg ship > current?
-rchance > 1 throws off max
 move order gold based on current average income?
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate
 	pop,prod,etc.
-directly upgrade existing ships?
-	to reduce repair cost?
-	improve stats?
-	obsolete designs?
 increase minimum research chance
 ship names
 	ship name use value?
@@ -103,18 +99,16 @@ planetary defenses still not right
 	upg PD when lastresearched > current
 		cost uses last, upg uses current
 	global random PD upg factor across all planets for the turn
+	cost always tied to avg researcg,not personal??
 research victory pct decreases with higher research
 	10k=now
 	30k=85% instead of 67%?
 	uses real avg, graph calcs using average shown
 	also decrease max display skew appropriately
+	actual chance vs display discrepency?
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 	reduce impact of speed in general, while at it
-
-
-SAVE FILES
-
 ShipClass order
 	order by tier, use in ShipsForm sort
 6 tiers saved? return length?
@@ -122,15 +116,18 @@ graph dictionaries can be arrays
 standardize Tile.Game vs Player.Game calls
 remove static qualifiers to same class
 standardize dead checks
-test exact vs oversize dictionary capacity for combat performance
-empirically test invasion values
 clean up code
 	member order
 fix combatant/popcarrier/colony/pd hierarchy
 
 
-VAGUE
+FEATURES
 
+civ zoc?
+	rebalance?
+individual colony/planet have slightly different income ratios?
+	problem - people piling all excess pop on best planet
+	maybe only up to quality?
 terrain
 	from anomalies?
 	non-permanent
@@ -141,9 +138,14 @@ terrain
 	random spread of tiles?
 	apply effects to neighbors?
 influence
-anomaly neutral ships?
+neutral ships?
+	from anomaly?
 known enemy designs
 AI
 	integrate AI-algorithm guesses into game for player to use as well
 	event needs to be pulled out of other handler stuff and only show events for things visible to other players
 shroud
+directly upgrade existing ships?
+	to reduce repair cost?
+	improve stats?
+	obsolete designs?

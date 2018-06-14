@@ -188,10 +188,11 @@ namespace GalWarWin
         private double GetFreeDmg()
         {
             Ship attShip = ( attacker as Ship );
+            Colony defColony = ( defender as Colony );
             double freeDmg = 0;
-            bool showFree = ( attShip != null && defender is Colony );
+            bool showFree = ( attShip != null && defColony != null && defColony.HP > 0 );
             if (showFree)
-                freeDmg = attShip.GetFreeDmgGuess((Colony)defender);
+                freeDmg = attShip.GetFreeDmg(defColony);
             return freeDmg;
         }
 

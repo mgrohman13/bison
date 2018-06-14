@@ -113,7 +113,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Tile.SpaceObject != this );
+                return ( this.Tile == null || this.Tile.SpaceObject != this );
             }
         }
 

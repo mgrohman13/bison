@@ -18,50 +18,50 @@ namespace randTest
         [STAThread]
         static void Main(string[] args)
         {
-            rand.StartTick();
+            //rand.StartTick();
 
-            const float gameSize = 1500f, Difficulty = 1f;
-            foreach (float d in new float[] { 0f, .1f, .25f, .5f, .75f, 1f, 1.25f, (float)Math.Sqrt(2), 1.5f, 2f, 3f, 4f, 5f, 10f })
-            {
-                float dist = d * gameSize / 2f;
-                const float gameSizeSqr = gameSize * gameSize;
-                float val = (float)Math.Pow(( ( dist * dist ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
-                float cur = (float)Math.Sqrt(2.5f + 1f);
-                val = ( (float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(Difficulty) / cur : -cur / 25f ) ) );
-                Console.WriteLine(dist + "\t" + val.ToString("+0.00000000000;-0.00000000000"));
-            }
-            Console.ReadKey();
-            return;
+            //const float gameSize = 1500f, Difficulty = 1f;
+            //foreach (float d in new float[] { 0f, .1f, .25f, .5f, .75f, 1f, 1.25f, (float)Math.Sqrt(2), 1.5f, 2f, 3f, 4f, 5f, 10f })
+            //{
+            //    float dist = d * gameSize / 2f;
+            //    const float gameSizeSqr = gameSize * gameSize;
+            //    float val = (float)Math.Pow(( ( dist * dist ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
+            //    float cur = (float)Math.Sqrt(2.5f + 1f);
+            //    val = ( (float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(Difficulty) / cur : -cur / 25f ) ) );
+            //    Console.WriteLine(dist + "\t" + val.ToString("+0.00000000000;-0.00000000000"));
+            //}
+            //Console.ReadKey();
+            //return;
 
 
-            const float AlienShipFriendlyBulletDamageMult = 13f;
-            const float BulletDamage = 3.9f;
-            const float amt = AlienShipFriendlyBulletDamageMult * BulletDamage;
-            const float AlienShipLife = 260f;
-            const float AlienDamageRandomness = .078f;
-            const float AlienDamageOEPct = .26f;
+            //const float AlienShipFriendlyBulletDamageMult = 13f;
+            //const float BulletDamage = 3.9f;
+            //const float amt = AlienShipFriendlyBulletDamageMult * BulletDamage;
+            //const float AlienShipLife = 260f;
+            //const float AlienDamageRandomness = .078f;
+            //const float AlienDamageOEPct = .26f;
 
-            Console.WriteLine(amt.ToString().PadLeft(4) + " (" + ( AlienShipLife / amt ).ToString("0.0") + ") ");
-            Console.WriteLine();
+            //Console.WriteLine(amt.ToString().PadLeft(4) + " (" + ( AlienShipLife / amt ).ToString("0.0") + ") ");
+            //Console.WriteLine();
 
-            SortedDictionary<int, int> cnt = new SortedDictionary<int, int>();
-            const int tot = 1000000;
-            for (int a = 0 ; a < tot ; ++a)
-            {
-                float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
-                int rnded = rand.Round(dmg);
-                int val;
-                cnt.TryGetValue(rnded, out val);
-                cnt[rnded] = val + 1;
-            }
-            int culm = tot;
-            foreach (KeyValuePair<int, int> p in cnt)
-            {
-                //if (p.Value >= tot / 10000)
-                Console.WriteLine(p.Key.ToString().PadLeft(3) + "  (" + ( AlienShipLife / p.Key ).ToString("0.0") + ") "
-                        + p.Value.ToString().PadLeft(7) + " " + culm.ToString().PadLeft(7));
-                culm -= p.Value;
-            }
+            //SortedDictionary<int, int> cnt = new SortedDictionary<int, int>();
+            //const int tot = 1000000;
+            //for (int a = 0 ; a < tot ; ++a)
+            //{
+            //    float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
+            //    int rnded = rand.Round(dmg);
+            //    int val;
+            //    cnt.TryGetValue(rnded, out val);
+            //    cnt[rnded] = val + 1;
+            //}
+            //int culm = tot;
+            //foreach (KeyValuePair<int, int> p in cnt)
+            //{
+            //    //if (p.Value >= tot / 10000)
+            //    Console.WriteLine(p.Key.ToString().PadLeft(3) + "  (" + ( AlienShipLife / p.Key ).ToString("0.0") + ") "
+            //            + p.Value.ToString().PadLeft(7) + " " + culm.ToString().PadLeft(7));
+            //    culm -= p.Value;
+            //}
 
 
             //for (int testiter = 0 ; testiter < 1 ; ++testiter)
@@ -186,7 +186,7 @@ namespace randTest
             //}
 
 
-            //NormSDist();
+            NormSDist();
 
             //NCWDist();
 
@@ -273,86 +273,104 @@ namespace randTest
         }
         static void NormSDist()
         {
-            //Console.WriteLine(NormDense(0, 0, 1));
-            //Console.WriteLine(0.5 / NormSDist(-2.1));
-            //Console.WriteLine();
+            Console.WriteLine(NormDense(0, 0, 1));
+            Console.WriteLine(0.5 / NormSDist(-2.1));
+            Console.WriteLine();
 
-            //Console.WriteLine(1.0 / MTRandom.GAUSSIAN_MAX);
-            //Console.WriteLine(0.117 * MTRandom.GAUSSIAN_MAX);
+            Console.WriteLine(1.0 / MTRandom.GAUSSIAN_MAX);
+            Console.WriteLine(0.117 * MTRandom.GAUSSIAN_MAX);
+            Console.WriteLine();
 
             for (int n = 2 ; n < 101 ; ++n)
                 Console.WriteLine(TBSUtil.FindValue((v) => ( 0.5 / NormSDist(-1 / v) ), n, 2, 0).ToString().PadRight(21) + n);
+            Console.WriteLine();
 
             Action<double> Print = v => Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / v) ).ToString().PadRight(21), v);
-            //Print(3.0);
-            //Print(2.6);
-            //Print(2.1);
-            //Print(1.69);
-            //Print(1.3);
-            //Print(1.04);
-            //Print(1.0);
-            //Print(0.91);
-            //Print(0.78);
-            //Print(0.65);
-            //Print(0.52);
-            //Print(4.0 / 9.0);
-            //Print(0.39);
-            //Print(1.0 / 3.0);
-            //Print(0.3);
-            //Print(0.26);
-            //Print(0.21);
-            //Print(0.169);
-            //Print(0.13);
-            //Print(0.117);
-            //Print(0.104);
+            Print(3.0);
+            Print(2.6);
+            Print(2.1);
+            Print(1.69);
+            Print(1.3);
+            Print(1.04);
+            Print(1.0);
+            Print(0.91);
+            Print(0.78);
+            Print(0.65);
+            Print(0.52);
+            Print(4.0 / 9.0);
+            Print(0.39);
+            Print(1.0 / 3.0);
+            Print(0.3);
+            Print(0.26);
+            Print(0.21);
+            Print(0.169);
+            Print(0.13);
+            Print(0.117);
+            Print(0.104);
+            Console.WriteLine();
 
-            //////requires modification of FindValue conditional from (result <= target) to (result < target)
-            //////8.2923610758167
-            ////Console.WriteLine(TBSUtil.FindValue(z => NormSDist(z), 1, 3.65, 10.9));
-            ////Console.WriteLine();
-
-            //const double excelMax = 8.29230302795755;
-            //Console.WriteLine(excelMax);
-            //Console.WriteLine(( -Math.Log(NormDense(excelMax, 0, 1), 2) ) + "   Excel");
-            //Console.WriteLine(MTRandom.GAUSSIAN_MAX);
-            //Console.WriteLine(( -Math.Log(NormDense(MTRandom.GAUSSIAN_MAX, 0, 1), 2) ) + "   MTRandom");
-            //const double normSDistMax = 8.2923610758167;
-            //Console.WriteLine(normSDistMax);
-            //Console.WriteLine(( -Math.Log(NormDense(normSDistMax, 0, 1), 2) ) + "   NormSDist");
+            ////requires modification of FindValue conditional from (result <= target) to (result < target)
+            ////8.2923610758167
+            //Console.WriteLine(TBSUtil.FindValue(z => NormSDist(z), 1, 3.65, 10.9));
             //Console.WriteLine();
 
-            //double val = double.NaN;
-            //for (int a = -3 ; a < 2 ; ++a)
-            //{
-            //    double trg = 1.0 / Math.Pow(2.0, MTRandom.DOUBLE_BITS + a);
-            //    Console.WriteLine(NormDenseInv(trg, 0, 1).ToString("0.00000000000000") + "   " + ( MTRandom.DOUBLE_BITS + a ));
-            //    if (double.IsNaN(val))
-            //        val = NormDenseInv(trg, 0, 1);
-            //}
-            //Console.WriteLine();
+            const double excelMax = 8.29230302795755;
+            Console.WriteLine(excelMax);
+            Console.WriteLine(( -Math.Log(NormDense(excelMax, 0, 1), 2) ) + "   Excel");
+            Console.WriteLine(MTRandom.GAUSSIAN_MAX);
+            Console.WriteLine(( -Math.Log(NormDense(MTRandom.GAUSSIAN_MAX, 0, 1), 2) ) + "   MTRandom");
+            const double normSDistMax = 8.2923610758167;
+            Console.WriteLine(normSDistMax);
+            Console.WriteLine(( -Math.Log(NormDense(normSDistMax, 0, 1), 2) ) + "   NormSDist");
+            Console.WriteLine();
 
-            //while (true)
-            //{
-            //    //double v = -rand.OE(MTRandom.GAUSSIAN_MAX);
-            //    //double v2 = 1 - Math.Log10(NormSDist(v) * 2.0);
-            //    //Console.WriteLine(v + "  " + v2);
+            double val = double.NaN;
+            for (int a = -3 ; a < 2 ; ++a)
+            {
+                double trg = 1.0 / Math.Pow(2.0, MTRandom.DOUBLE_BITS + a);
+                Console.WriteLine(NormDenseInv(trg, 0, 1).ToString("0.00000000000000") + "   " + ( MTRandom.DOUBLE_BITS + a ));
+                if (double.IsNaN(val))
+                    val = NormDenseInv(trg, 0, 1);
+            }
+            Console.WriteLine();
 
-            //    double v3 = rand.OE(MTRandom.GAUSSIAN_MAX);
+            double min = 8, max = 10;
+            double mid;
+            while (( mid = max - min ) != min && mid != max)
+            {
+                mid = min + mid / 2;
+                if (mid == min || mid == max)
+                    break;
+                if (!double.IsNaN(AsymptoticSeries(-mid)))
+                    max = mid;
+                else if (true)
+                    min = mid;
+            }
+            Console.WriteLine(max);//8.68271440764326
+            Console.WriteLine();
 
-            //    //Console.WriteLine(v3);
-            //    //Console.WriteLine(AsymptoticSeries(v3));
-            //    //Console.WriteLine(NormSDist(v3));
-            //    //Console.WriteLine();
+            while (true)
+            {
+                //double v = -rand.OE(MTRandom.GAUSSIAN_MAX);
+                //double v2 = 1 - Math.Log10(NormSDist(v) * 2.0);
+                //Console.WriteLine(v + "  " + v2);
 
-            //    double d1 = NormSDist(-v3), d2 = NormSDist(v3);
-            //    Console.WriteLine(v3);
-            //    Console.WriteLine(d2);
-            //    Console.WriteLine(d1);
-            //    Console.WriteLine(d1 + d2);
-            //    Console.WriteLine();
+                double v3 = rand.OE(MTRandom.GAUSSIAN_MAX);
 
-            //    Thread.Sleep(2600);
-            //}
+                Console.WriteLine(v3);
+                Console.WriteLine(AsymptoticSeries(-v3));
+                Console.WriteLine(NormSDist(-v3));
+                Console.WriteLine();
+
+                //double d1 = NormSDist(-v3), d2 = NormSDist(v3);
+                //Console.WriteLine(v3);
+                //Console.WriteLine(d2);
+                //Console.WriteLine(d1);
+                //Console.WriteLine(d1 + d2);
+                //Console.WriteLine();
+
+                Thread.Sleep(rand.OEInt(3900));
+            }
         }
 
         //static double ContinuedFraction(double z)
@@ -380,7 +398,7 @@ namespace randTest
             double coefficient = 1;
             double prev = double.NaN;
             double erf = 1.0 / z;
-            for (int n = 1 ; prev != erf ; ++n)
+            for (int n = 1 ; prev != erf && !double.IsNaN(erf) ; ++n)
             {
                 coefficient *= -( 2.0 * n - 1.0 );
                 prev = erf;
@@ -390,10 +408,10 @@ namespace randTest
             return ( sign ? 1.0 - aln : aln );
         }
 
-        static double NormDist(double x, double mean, double stdDev)
-        {
-            return NormSDist(x - mean) / stdDev;
-        }
+        //static double NormDist(double x, double mean, double stdDev)
+        //{
+        //    return NormSDist(x - mean) / stdDev;
+        //}
         //ALGORITHM AS 66 APPL. STATIST. (1973) VOL.22, NO.3:
         //Hill,  I.D.  (1973).  Algorithm AS 66.  The normal  integral.
         //                      Appl. Statist.,22,424-427.
