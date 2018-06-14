@@ -316,16 +316,19 @@ namespace randTest
 
             const double excelMax = 8.29230302795755;
             Console.WriteLine(excelMax);
+            Console.WriteLine(NormSDist(-excelMax));
             Console.WriteLine(( -Math.Log(NormDense(excelMax, 0, 1), 2) ) + "   Excel");
             Console.WriteLine(MTRandom.GAUSSIAN_MAX);
+            Console.WriteLine(NormSDist(-MTRandom.GAUSSIAN_MAX));
             Console.WriteLine(( -Math.Log(NormDense(MTRandom.GAUSSIAN_MAX, 0, 1), 2) ) + "   MTRandom");
             const double normSDistMax = 8.2923610758167;
             Console.WriteLine(normSDistMax);
+            Console.WriteLine(NormSDist(-normSDistMax));
             Console.WriteLine(( -Math.Log(NormDense(normSDistMax, 0, 1), 2) ) + "   NormSDist");
             Console.WriteLine();
 
             double val = double.NaN;
-            for (int a = -3 ; a < 2 ; ++a)
+            for (int a = -3 ; a < 4 ; ++a)
             {
                 double trg = 1.0 / Math.Pow(2.0, MTRandom.DOUBLE_BITS + a);
                 Console.WriteLine(NormDenseInv(trg, 0, 1).ToString("0.00000000000000") + "   " + ( MTRandom.DOUBLE_BITS + a ));
@@ -347,6 +350,9 @@ namespace randTest
                     min = mid;
             }
             Console.WriteLine(max);//8.68271440764326
+            Console.WriteLine(AsymptoticSeries(-max));
+            Console.WriteLine(NormSDist(-max));
+            Console.WriteLine(( -Math.Log(NormDense(max, 0, 1), 2) ) + "   AsymptoticSeries");
             Console.WriteLine();
 
             while (true)
