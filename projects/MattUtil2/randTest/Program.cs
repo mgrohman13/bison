@@ -18,6 +18,17 @@ namespace randTest
         [STAThread]
         static void Main(string[] args)
         {
+            while (true)
+            {
+                try
+                {
+                    rand.GaussianOE(rand.OE(), rand.Weighted(1 / 3.0), rand.Weighted(1 / 3.0), rand.OE() / 3.0);
+                }
+                catch
+                {
+                }
+            }
+
             //rand.StartTick();
 
             //const float gameSize = 1500f, Difficulty = 1f;
@@ -350,30 +361,23 @@ namespace randTest
                     min = mid;
             }
             Console.WriteLine(max);//8.68271440764326
-            Console.WriteLine(AsymptoticSeries(-max));
             Console.WriteLine(NormSDist(-max));
+            Console.WriteLine(AsymptoticSeries(-max));
             Console.WriteLine(( -Math.Log(NormDense(max, 0, 1), 2) ) + "   AsymptoticSeries");
             Console.WriteLine();
 
             while (true)
             {
-                //double v = -rand.OE(MTRandom.GAUSSIAN_MAX);
-                //double v2 = 1 - Math.Log10(NormSDist(v) * 2.0);
-                //Console.WriteLine(v + "  " + v2);
-
                 double v3 = rand.OE(MTRandom.GAUSSIAN_MAX);
+
+                double d1 = NormSDist(-v3), d2 = NormSDist(v3);
 
                 Console.WriteLine(v3);
                 Console.WriteLine(AsymptoticSeries(-v3));
-                Console.WriteLine(NormSDist(-v3));
+                Console.WriteLine(d1);
+                Console.WriteLine(d2);
+                Console.WriteLine(d1 + d2);
                 Console.WriteLine();
-
-                //double d1 = NormSDist(-v3), d2 = NormSDist(v3);
-                //Console.WriteLine(v3);
-                //Console.WriteLine(d2);
-                //Console.WriteLine(d1);
-                //Console.WriteLine(d1 + d2);
-                //Console.WriteLine();
 
                 Thread.Sleep(rand.OEInt(3900));
             }
