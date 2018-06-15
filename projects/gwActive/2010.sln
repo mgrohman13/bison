@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalWar", "GalWar\GalWar.csproj", "{D4C91515-1065-4B47-8300-AC59CA0E6039}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalWarWin", "GalWarWin\GalWarWin.csproj", "{5A41CAA7-4D7F-4320-9BDF-2F4016758115}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalWarAI", "GalWarAI\GalWarAI.csproj", "{05592685-D42B-4DE5-9A43-5EBE6485771A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4C91515-1065-4B47-8300-AC59CA0E6039}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4C91515-1065-4B47-8300-AC59CA0E6039}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4C91515-1065-4B47-8300-AC59CA0E6039}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4C91515-1065-4B47-8300-AC59CA0E6039}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A41CAA7-4D7F-4320-9BDF-2F4016758115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A41CAA7-4D7F-4320-9BDF-2F4016758115}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A41CAA7-4D7F-4320-9BDF-2F4016758115}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A41CAA7-4D7F-4320-9BDF-2F4016758115}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05592685-D42B-4DE5-9A43-5EBE6485771A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05592685-D42B-4DE5-9A43-5EBE6485771A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05592685-D42B-4DE5-9A43-5EBE6485771A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05592685-D42B-4DE5-9A43-5EBE6485771A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

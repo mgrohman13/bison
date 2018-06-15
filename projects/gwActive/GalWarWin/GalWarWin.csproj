@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A41CAA7-4D7F-4320-9BDF-2F4016758115}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GalWarWin</RootNamespace>
+    <AssemblyName>GalWarWin</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MattUtil, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\MattUtil2\MattUtil\bin\Debug\MattUtil.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CombatForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CombatForm.Designer.cs">
+      <DependentUpon>CombatForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ColoniesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ColoniesForm.Designer.cs">
+      <DependentUpon>ColoniesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ResearchFocusForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ResearchFocusForm.Designer.cs">
+      <DependentUpon>ResearchFocusForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CostCalculatorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CostCalculatorForm.Designer.cs">
+      <DependentUpon>CostCalculatorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InputForm.Designer.cs">
+      <DependentUpon>InputForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InvadeCalculatorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvadeCalculatorForm.Designer.cs">
+      <DependentUpon>InvadeCalculatorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LabelsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LabelsForm.Designer.cs">
+      <DependentUpon>LabelsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GraphsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GraphsForm.Designer.cs">
+      <DependentUpon>GraphsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PlanetDefenseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlanetDefenseForm.Designer.cs">
+      <DependentUpon>PlanetDefenseForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProductionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ProductionForm.Designer.cs">
+      <DependentUpon>ProductionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="CombatForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CombatForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ColoniesForm.resx">
+      <DependentUpon>ColoniesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ResearchFocusForm.resx">
+      <DependentUpon>ResearchFocusForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CostCalculatorForm.resx">
+      <DependentUpon>CostCalculatorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InputForm.resx">
+      <DependentUpon>InputForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InvadeCalculatorForm.resx">
+      <DependentUpon>InvadeCalculatorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LabelsForm.resx">
+      <DependentUpon>LabelsForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GraphsForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GraphsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlanetDefenseForm.resx">
+      <DependentUpon>PlanetDefenseForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProductionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ProductionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RepairAllForm.resx">
+      <DependentUpon>RepairAllForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ResearchForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ResearchForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShipDesignSortForm.resx">
+      <DependentUpon>ShipDesignSortForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BaseManagementForm.resx">
+      <DependentUpon>BaseManagementForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sliders\SellPlanetDefenseControl.resx">
+      <DependentUpon>SellPlanetDefenseControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TextForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuildableControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>BuildableControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sliders\AutoRepairControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AutoRepairControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sliders\AutoRepairForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AutoRepairForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sliders\SliderForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SliderForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="RepairAllForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RepairAllForm.Designer.cs">
+      <DependentUpon>RepairAllForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ResearchForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ResearchForm.Designer.cs">
+      <DependentUpon>ResearchForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ShipDesignSortForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShipDesignSortForm.Designer.cs">
+      <DependentUpon>ShipDesignSortForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BaseManagementForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BaseManagementForm.Designer.cs">
+      <DependentUpon>BaseManagementForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ShipsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sliders\SellPlanetDefense.cs" />
+    <Compile Include="Sliders\SellPlanetDefenseControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Sliders\SellPlanetDefenseControl.Designer.cs">
+      <DependentUpon>SellPlanetDefenseControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TextForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TextForm.Designer.cs">
+      <DependentUpon>TextForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BuildableControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BuildableControl.Designer.cs">
+      <DependentUpon>BuildableControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Sliders\AutoRepairControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Sliders\AutoRepairControl.Designer.cs">
+      <DependentUpon>AutoRepairControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Sliders\AutoRepairForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sliders\AutoRepairForm.Designer.cs">
+      <DependentUpon>AutoRepairForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Sliders\BuyProd.cs">
+    </Compile>
+    <Compile Include="Sliders\SliderController.cs">
+    </Compile>
+    <Compile Include="Sliders\SellProd.cs">
+    </Compile>
+    <Compile Include="Sliders\GoldRepair.cs">
+    </Compile>
+    <Compile Include="Sliders\Invade.cs">
+    </Compile>
+    <Compile Include="Sliders\MoveTroops.cs">
+    </Compile>
+    <Compile Include="Sliders\SliderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sliders\SliderForm.Designer.cs">
+      <DependentUpon>SliderForm.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GalWarAI\GalWarAI.csproj">
+      <Project>{05592685-D42B-4DE5-9A43-5EBE6485771A}</Project>
+      <Name>GalWarAI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GalWar\GalWar.csproj">
+      <Project>{D4C91515-1065-4B47-8300-AC59CA0E6039}</Project>
+      <Name>GalWar</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
