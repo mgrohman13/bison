@@ -1293,7 +1293,7 @@ namespace GalWarWin
             showMoves = false;
             InvalidateMap();
 
-            if (CheckGold() && CheckMovedShips() && CheckRepairedShips())
+            if (CheckMovedShips() && CheckRepairedShips())
             {
                 CombatForm.FlushLog();
 
@@ -1337,14 +1337,6 @@ namespace GalWarWin
                 SelectTile(select.Tile);
             }
             Center();
-        }
-
-        private bool CheckGold()
-        {
-            bool end = true;
-            if (Game.CurrentPlayer.Gold < 0)
-                end = ShowOption("You are out of gold.  Partial production may be sold and one or more ships disbanded.  Are you sure you want to end your turn?", true);
-            return end;
         }
 
         private bool CheckMovedShips()
@@ -2240,6 +2232,11 @@ namespace GalWarWin
             chkResearch.Checked = Game.CurrentPlayer.ResearchEmphasis;
             chkProduction.Checked = Game.CurrentPlayer.ProductionEmphasis;
             emphasisEvent = true;
+
+            bool enabled = !Game.CurrentPlayer.NegativeGold();
+            chkGold.Enabled = enabled;
+            chkResearch.Enabled = enabled;
+            chkProduction.Enabled = enabled;
         }
 
         public static void FormatIncome(Label label, double income)

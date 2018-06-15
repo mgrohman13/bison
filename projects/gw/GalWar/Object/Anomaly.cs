@@ -134,6 +134,8 @@ namespace GalWar
             }
 
             double value = ( armada / 52.0 + Consts.Income / 2.6 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
+            if (value < 13)
+                value = 169 / ( 26.0 - value );
             return Game.Random.GaussianOE(value, .26, .3, GenerateConsolationValue(value));
         }
         private static double GenerateConsolationValue(double value)

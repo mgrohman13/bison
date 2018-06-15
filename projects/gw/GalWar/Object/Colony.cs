@@ -376,7 +376,7 @@ namespace GalWar
             this.DefenseHPChange = this.HP - defenseHPChange;
         }
 
-        internal void ClearChange()
+        public void ClearChange()
         {
             DoChange(0, 0, 0, 0);
         }
@@ -958,7 +958,6 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(production > 0);
-            AssertException.Assert(production / Consts.ProductionForGold < this.Player.Gold);
 
             TradeProduction(production, 1 / Consts.ProductionForGold);
 
@@ -1021,13 +1020,11 @@ namespace GalWar
             AssertException.Assert(CanBuild(oldBuild));
             AssertException.Assert(( this.Buildable != oldBuild ) || ( loss == 0 && this.PauseBuild != oldPause ));
             AssertException.Assert(loss >= 0);
-            double gold = loss / Consts.ProductionForGold;
-            AssertException.Assert(this.Player.Gold > gold);
 
             this.Buildable = oldBuild;
             this.PauseBuild = oldPause;
             this.production += loss;
-            this.Player.SpendGold(gold);
+            this.Player.SpendGold(loss / Consts.ProductionForGold);
 
             return this.Tile;
         }
@@ -1164,7 +1161,6 @@ namespace GalWar
             AssertException.Assert(production >= 0);
             AssertException.Assert(production <= this.production);
             AssertException.Assert(addGold >= 0);
-            AssertException.Assert(addGold <= this.Player.Gold);
             AssertException.Assert(goldIncome > -.1);
 
             this.HP += hp;

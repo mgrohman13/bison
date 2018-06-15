@@ -25,13 +25,14 @@ namespace GalWar
 
         internal void StartTurn(Player player)
         {
-            double f, quality, pd, armada, damaged;
-            LoopColonies(player, out f, out quality, out pd);
-            LoopShips(player, out armada, out damaged, out f);
+            double pop, quality, pd, armada, damaged, trans;
+            LoopColonies(player, out pop, out quality, out pd);
+            LoopShips(player, out armada, out damaged, out trans);
 
             AddNested(turnVals, GraphType.Quality, player, quality);
             AddNested(turnVals, GraphType.Armada, player, pd + armada);
             AddNested(turnVals, GraphType.ArmadaDamaged, player, pd + damaged);
+            AddNested(turnVals, GraphType.Population, player, pop);
         }
 
         private static void AddNested(Dictionary<byte, Dictionary<byte, float>> dictionary, GraphType graphType, Player player, double amount)
@@ -47,14 +48,15 @@ namespace GalWar
 
         internal void EndTurn(Player player)
         {
-            double quality, pd, armada, damaged, d1, d2;
-            LoopColonies(player, out d1, out quality, out pd);
-            LoopShips(player, out armada, out damaged, out d2);
+            double pop, quality, pd, armada, damaged, trans;
+            LoopColonies(player, out pop, out quality, out pd);
+            LoopShips(player, out armada, out damaged, out trans);
 
             //values subject to major fluctuation depending on who moved last get averaged out to reduce the effect of turn order
             EndTurn(GraphType.Quality, player, quality);
             EndTurn(GraphType.Armada, player, pd + armada);
             EndTurn(GraphType.ArmadaDamaged, player, pd + damaged);
+            EndTurn(GraphType.Population, player, pop);
         }
 
         private void EndTurn(GraphType graphType, Player player, double amount)
@@ -75,15 +77,15 @@ namespace GalWar
                     Add(playerGraphs, GraphType.Quality, player, turnVals[(byte)GraphType.Quality][(byte)player.ID]);
                     Add(playerGraphs, GraphType.Armada, player, turnVals[(byte)GraphType.Armada][(byte)player.ID]);
                     Add(playerGraphs, GraphType.ArmadaDamaged, player, turnVals[(byte)GraphType.ArmadaDamaged][(byte)player.ID]);
+                    Add(playerGraphs, GraphType.Population, player, turnVals[(byte)GraphType.Population][(byte)player.ID]);
 
                     Add(playerGraphs, GraphType.Research, player, research[player]);
                     Add(playerGraphs, GraphType.TotalIncome, player, player.IncomeTotal);
 
-                    double pop, trans, d1, d2, d3, d4;
-                    LoopColonies(player, out pop, out d1, out d2);
-                    LoopShips(player, out d3, out d4, out trans);
+                    double pop, quality, pd, armada, damaged, trans;
+                    LoopColonies(player, out pop, out quality, out pd);
+                    LoopShips(player, out armada, out damaged, out trans);
 
-                    Add(playerGraphs, GraphType.Population, player, pop);
                     Add(playerGraphs, GraphType.PopulationTrans, player, pop + trans);
                 }
                 else

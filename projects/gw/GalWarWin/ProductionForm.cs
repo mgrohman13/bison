@@ -184,7 +184,7 @@ namespace GalWarWin
             }
             else
             {
-                buy = Game.Random.Round(( this.colony.Player.Gold / Consts.GoldForProduction ) / 2.0);
+                buy = Math.Max(Game.Random.Round(( this.colony.Player.Gold / Consts.GoldForProduction ) / 2.0), 0);
             }
             return buy;
         }

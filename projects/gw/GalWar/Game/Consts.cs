@@ -176,9 +176,9 @@ namespace GalWar
             return Game.Random.GaussianOEInt(TerraformQuality, 2.1, PlanetQualityOE / AverageQuality, Game.Random.Round(PlanetConstValue));
         }
 
-        public static double GetMoveOrderGold(int numPlayers)
+        public static double GetMoveOrderGold(IEnumerable<Player> players)
         {
-            return MoveOrderGold / ( numPlayers - 1.0 );
+            return ( MoveOrderGold + players.Average(player => player.GetTotalIncome()) ) / 2.0 / ( players.Count() - 1.0 );
         }
 
         internal static double GetExperience(double experience)

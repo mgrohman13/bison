@@ -122,6 +122,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
+                CheckGold();
                 return this._goldEmphasis;
             }
             set
@@ -140,6 +141,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
+                CheckGold();
                 return _researchEmphasis;
             }
             set
@@ -158,6 +160,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
+                CheckGold();
                 return _productionEmphasis;
             }
             set
@@ -460,6 +463,7 @@ namespace GalWar
 
         internal void StartTurn(IEventHandler handler)
         {
+            //clear colony changes before research to account for PD upgrading
             foreach (Colony colony in this.colonies)
                 colony.ClearChange();
 
@@ -467,26 +471,32 @@ namespace GalWar
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = CheckResearch(out obsoleteDesigns);
 
-            //consolidate all gold to start the turn
-            double gold = this.TotalGold;
-            this.goldValue = 0;
-            this.goldOffset = 0;
-            AddGold(gold, true);
-
             //re-randomize research chance and display skew
             ResetResearchChance();
             RandResearchDisplay();
+
+            //gain any levels for exp acquired during enemy turns
+            foreach (Ship ship in this.ships)
+                ship.StartTurn(handler);
+
+            //consolidate all gold to start the turn
+            ConsolidateGold();
 
             //notify after randomization so the screen shows the correct chance
             if (newDesign != null)
                 handler.OnResearch(newDesign, obsoleteDesigns);
 
-            //build after notifying research
+            //change build prompt after everything else (true turn start)
             foreach (Colony colony in this.colonies)
                 colony.StartTurn(handler);
-            //gain any levels for exp acquired during enemy turns
-            foreach (Ship ship in this.ships)
-                ship.StartTurn(handler);
+        }
+
+        private void ConsolidateGold()
+        {
+            double gold = this.TotalGold;
+            this.goldValue = 0;
+            this.goldOffset = 0;
+            AddGold(gold, true);
         }
 
         internal ShipDesign FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
@@ -608,8 +618,6 @@ namespace GalWar
         {
             AutoRepairShips(handler);
 
-            CheckGold(handler);
-
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
 
@@ -625,68 +633,18 @@ namespace GalWar
             this.ResearchGuess += research;
         }
 
-        private void CheckGold(IEventHandler handler)
+        private void CheckGold()
         {
             if (NegativeGold())
             {
-                SellProduction(handler);
-                DisbandPD(handler);
-                DisbandShips(handler);
+                GoldEmphasis = true;
+                ResearchEmphasis = false;
+                ProductionEmphasis = false;
             }
         }
-        private void SellProduction(IEventHandler handler)
+        public bool NegativeGold()
         {
-            var production = this.colonies.Where(colony => colony.Production > 0).ToDictionary(colony => colony, colony => colony.Production);
-            int sold = 0;
-            while (NegativeGold() && production.Count > 0)
-            {
-                ++sold;
-                Colony colony = Game.Random.SelectValue<Colony>(production);
-
-                colony.SellProduction(handler, 1);
-
-                if (colony.Production > 0)
-                    production[colony] = colony.Production;
-                else
-                    production.Remove(colony);
-            }
-            Console.WriteLine("Sold " + sold + " production");
-        }
-        private void DisbandPD(IEventHandler handler)
-        {
-            foreach (Colony colony in Game.Random.Iterate(this.colonies))
-                if (NegativeGold())
-                {
-                    if (colony.HP > 0)
-                    {
-                        int sell = MattUtil.TBSUtil.FindValue(delegate (int hp)
-                        {
-                            int newAtt, newDef;
-                            return ( colony.GetPlanetDefenseDisbandValue(hp, true, out newAtt, out newDef) + goldValue > -Consts.FLOAT_ERROR_ZERO );
-                        }, 1, colony.HP, true);
-
-                        Console.WriteLine("Sold " + sell + " hp from " + colony + " (" + colony.Tile + ")");
-
-                        colony.DisbandPlanetDefense(handler, sell, true);
-                    }
-                }
-                else
-                {
-                    break;
-                }
-        }
-        private void DisbandShips(IEventHandler handler)
-        {
-            while (NegativeGold() && this.ships.Count > 0)
-            {
-                Ship ship = Game.Random.SelectValue(this.ships);
-                Console.WriteLine("Disbanded ship: " + ship);
-
-                ship.Disband(handler, null);
-            }
-        }
-        private bool NegativeGold()
-        {
+            TurnException.CheckTurn(this);
             return ( goldValue < 0 );
         }
 
@@ -1111,8 +1069,8 @@ namespace GalWar
         private void AutoRepairIncome(ref double gold, bool minGold)
         {
             double repairCost = GetAutoRepairCost(minGold);
-            if (repairCost > this.goldValue)
-                repairCost = this.goldValue;
+            if (repairCost > Math.Max(this.goldValue, 0))
+                repairCost = Math.Max(this.goldValue, 0);
             gold -= repairCost;
         }
 

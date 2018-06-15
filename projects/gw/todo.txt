@@ -1,5 +1,8 @@
 UI
 
+neg gold
+	display issues?
+	invade requires at least 1 - test
 test exact vs oversize dictionary capacity for combat performance
 empirically test invasion values
 invade + bombard logging show max or actual quality dmg - consistency 
@@ -66,26 +69,11 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 	
-ds trg pct max out at .21?
-	consider making catapults more likely?
-population w/o trans graph should also average?
-move start turn gold to after start turn ship
-rethink neg gold again
-	don't like random disbanding - no adv over manual
-	if keep impossible negative, make _goldValue a uint?
-	current impl could work if guarantee popup always shows if possibility of sale 
-	think of any start turn action?
-move order gold based on current average income?
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate
 	pop,prod,etc.
 increase minimum research chance
-ship names
-	ship name use value?
-	ship name mult too high?
-		back to x3?
-	god tier name?
 map size
 soldiers
 	ExpForSoldiers should be * 1.3 not / 1.3?
@@ -109,8 +97,6 @@ research victory pct decreases with higher research
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 	reduce impact of speed in general, while at it
-ShipClass order
-	order by tier, use in ShipsForm sort
 6 tiers saved? return length?
 graph dictionaries can be arrays
 standardize Tile.Game vs Player.Game calls

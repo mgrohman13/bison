@@ -730,7 +730,6 @@ namespace GalWar
             if (colony == null)
             {
                 AssertException.Assert(production == 0);
-                AssertException.Assert(addGold < this.Player.Gold);
                 AssertException.Assert(goldIncome > -.6);
             }
             else
@@ -1635,6 +1634,11 @@ namespace GalWar
         private double GetGoldRepairTarget()
         {
             return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
+        }
+
+        public int GetClassSort()
+        {   
+            return ShipNames.GetClassSort(this.name, this.mark);
         }
 
         public override string ToString()

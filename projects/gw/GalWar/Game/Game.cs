@@ -368,6 +368,7 @@ namespace GalWar
                 }
             //average the maximum and average design cost, reduce by StartGoldProdPct, and randomize 
             startProd = GetStartDouble(( startProd / count + max ) / 2.0 * ( 1 - Consts.StartGoldProdPct ));
+            double moveOrderGold = Consts.GetMoveOrderGold(this.players);
 
             for (this.currentPlayer = 0 ; this.currentPlayer < numPlayers ; ++this.currentPlayer)
             {
@@ -388,7 +389,7 @@ namespace GalWar
                 addProduction += startProd;
 
                 //other gold balancing
-                addGold += currentPlayer * Consts.GetMoveOrderGold(numPlayers) +
+                addGold += currentPlayer * moveOrderGold +
                         startDefense - ( homeworld.PlanetDefenseCostPerHP * homeworld.HP + homeworld.Soldiers * Consts.ProductionForSoldiers );
 
                 //calculations to offset AddProduction when currently building StoreProd
@@ -743,7 +744,7 @@ namespace GalWar
             Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
             if (playerGold.Count > 0)
             {
-                double moveOrderGold = Consts.GetMoveOrderGold(this.players.Count);
+                double moveOrderGold = Consts.GetMoveOrderGold(this.players);
                 foreach (KeyValuePair<Player, int> pair in playerGold)
                 {
                     Player player = pair.Key;

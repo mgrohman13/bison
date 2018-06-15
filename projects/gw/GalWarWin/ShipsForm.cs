@@ -120,7 +120,7 @@ namespace GalWarWin
                 return items.ThenBy(info => info.ship.Tile.Y).ThenBy(info => info.ship.Tile.X);
             }
 
-            private string sortClass;
+            private int sortClass;
             public Ship Class
             {
                 get
@@ -130,7 +130,7 @@ namespace GalWarWin
             }
             private void SetClass()
             {
-                sortClass = ship.ToString();
+                sortClass = ship.GetClassSort();
             }
             public static IOrderedEnumerable<ShipInfo> SortClass(IOrderedEnumerable<ShipInfo> items)
             {

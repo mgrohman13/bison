@@ -40,7 +40,7 @@ namespace GalWarWin.Sliders
 
         protected override int GetMaxInternal()
         {
-            return (int)( colony.Player.Gold / Consts.GoldForProduction );
+            return Math.Max((int)( colony.Player.Gold / Consts.GoldForProduction ), 0);
         }
 
         protected override double GetResult()
