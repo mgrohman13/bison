@@ -19,7 +19,7 @@ namespace GalWar
         public const double StartAnomalies = 13;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each indivual player's homeworld quality
-        public const double StartGold = AverageQuality * 910;
+        public const double StartGold = ( AverageQuality + Consts.PlanetConstValue ) * 910;
         //StartGoldProdPct is the percent of total starting gold that will be converted into starting production
         public const double StartGoldProdPct = .21;
         public const double StartResearch = 390;

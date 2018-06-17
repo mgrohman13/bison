@@ -1296,8 +1296,6 @@ namespace GalWar
                     popKilled = initPop;
                     qualityDestroyed = reducedPlanetDamage;
                 }
-                else
-                    ;
             }
 
             //bombard the planet first, since it might get destroyed
