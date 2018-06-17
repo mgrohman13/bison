@@ -237,6 +237,7 @@ namespace GalWarWin
             }
 
             private double sortTroops;
+            private double sortPop1, sortPop2;
             public string Troops
             {
                 get;
@@ -245,6 +246,8 @@ namespace GalWarWin
             private void SetTroops()
             {
                 sortTroops = ship.GetSoldierPct();
+                sortPop1 = ship.Population * ship.MaxSpeed;
+                sortPop2 = ship.MaxPop * ship.MaxSpeed;
                 string sldrs;
                 if (ship.Population > 0)
                     sldrs = " (" + MainForm.FormatPct(sortTroops) + ")";
@@ -258,10 +261,12 @@ namespace GalWarWin
             }
             public static IOrderedEnumerable<ShipInfo> SortTroops(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(info => info.ship.Population).ThenByDescending(info => info.sortTroops).ThenByDescending(info => info.ship.MaxPop);
+                return items.ThenByDescending(info => info.ship.Population).ThenByDescending(info => info.sortTroops).ThenByDescending(info => info.sortPop1)
+                        .ThenByDescending(info => info.sortPop2).ThenByDescending(info => info.ship.MaxPop);
             }
 
             private double sortSpecial;
+            private double bombardDamage;
             public string Special
             {
                 get;
@@ -269,17 +274,18 @@ namespace GalWarWin
             }
             private void SetSpecial()
             {
-                sortSpecial = ( ship.Colony ? ship.ColonizationValue : ship.BombardDamage * ship.MaxSpeed );
+                bombardDamage = ship.BombardDamage;
+                sortSpecial = ( ship.Colony ? ship.ColonizationValue : bombardDamage * ship.MaxSpeed );
                 if (ship.Colony)
                     Special = "Colony Ship (" + MainForm.FormatDouble(sortSpecial) + ")";
                 else if (ship.DeathStar)
-                    Special = "Death Star (" + MainForm.FormatInt(sortSpecial) + ")";
+                    Special = "Death Star (" + MainForm.FormatInt(bombardDamage) + ")";
                 else
                     Special = string.Empty;
             }
             public static IOrderedEnumerable<ShipInfo> SortSpecial(IOrderedEnumerable<ShipInfo> items)
             {
-                return items.ThenByDescending(info => info.ship.Colony).ThenByDescending(info => info.sortSpecial);
+                return items.ThenByDescending(info => info.ship.Colony).ThenByDescending(info => info.sortSpecial).ThenByDescending(info => info.bombardDamage);
             }
 
             private double sortUpk;

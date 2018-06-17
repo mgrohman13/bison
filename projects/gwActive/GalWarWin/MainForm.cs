@@ -2348,7 +2348,7 @@ namespace GalWarWin
                     btnGoldRepair.Text = ( ship.HasRepaired ? "Auto Repair" : "Repair Ship" );
                     double autoRepair = ship.AutoRepair;
                     if (autoRepair != 0)
-                        btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : FormatDouble(autoRepair));
+                        btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : autoRepair.ToString("0.00"));
                 }
             }
 

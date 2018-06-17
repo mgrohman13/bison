@@ -1,5 +1,8 @@
 UI
 
+display trying to wrap labels ugly
+fix bombard not combining on display
+info popups go with old mouse coord?  should be coord on panel?
 neg gold
 	display issues?
 	invade requires at least 1 - test
@@ -50,6 +53,7 @@ combat predict performance
 
 GAMEPLAY
 
+bombard combat get exp out instead of automatic add
 anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
 	using generate value instead of this value for compensation?
@@ -58,12 +62,11 @@ anomaly gold balancing at full vs consolation value
 	gold income for anomaly research randomness
 	anom design research randomness with higher values
 		any pct based / OE randomness?
+		research OK if last researched is redone
 	anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
 why do enemy colonies show repair amt?
-verify last researched>current issues
-	upg ship > current?
 rchance > 1 throws off max
 
 
@@ -88,12 +91,19 @@ planetary defenses still not right
 		cost uses last, upg uses current
 	global random PD upg factor across all planets for the turn
 	cost always tied to avg researcg,not personal??
-research victory pct decreases with higher research
-	10k=now
-	30k=85% instead of 67%?
-	uses real avg, graph calcs using average shown
-	also decrease max display skew appropriately
-	actual chance vs display discrepency?
+	buy defense?  produce but keep prod on ship?
+		rethink concept of prod in general?  stored per design?
+redo research?
+	research/upgrade randomness/hiding
+	verify last researched>current issues
+		upg ship > current?
+		make impossible again?
+	research victory pct decreases with higher research
+		10k=now
+		30k=85% instead of 67%?
+		uses real avg, graph calcs using average shown
+		also decrease max display skew appropriately
+		actual chance vs display discrepency?
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 	reduce impact of speed in general, while at it
