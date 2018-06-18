@@ -1112,7 +1112,7 @@ namespace GalWar
 
         private double GetPDCost(double att, double def)
         {
-            return ShipDesign.GetPlanetDefenseCost(att, def, this.Player.LastResearched);
+            return ShipDesign.GetPlanetDefenseCost(att, def, this.Player.Research);
         }
 
         public void DisbandPlanetDefense(IEventHandler handler, int hp, bool gold)

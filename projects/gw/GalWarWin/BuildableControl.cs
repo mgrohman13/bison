@@ -82,7 +82,7 @@ namespace GalWarWin
                         double att, def, hp, soldiers;
                         colony.GetPlanetDefenseInc(buildable, colony.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(),
                                 out att, out def, out hp, out soldiers);
-                        double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetLastResearched());
+                        double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetCurrentResearch());
                         string costLabel = handleCost(ref cost);
                         if (colony.Population > 1)
                             soldiers /= colony.Population;
@@ -154,7 +154,7 @@ namespace GalWarWin
         private static string GetBottomText(ShipDesign design)
         {
             return ( design.Colony ? "Colony Ship (" + MainForm.FormatDouble(
-                    design.GetColonizationValue(MainForm.Game.MapSize, MainForm.Game.CurrentPlayer.GetLastResearched())) + ")"
+                    design.GetColonizationValue(MainForm.Game)) + ")"
                     : ( design.DeathStar ? "Death Star (" + MainForm.FormatInt(design.BombardDamage) + ")" : string.Empty ) );
         }
 

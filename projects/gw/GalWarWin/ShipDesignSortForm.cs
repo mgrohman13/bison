@@ -41,7 +41,7 @@ namespace GalWarWin
                 int trans = form.cbTransport.Checked ? shipDesign.MaxTrans : 0;
                 bool colony = form.cbColony.Checked ? shipDesign.Colony : false;
                 double bombardDamage = ds ? shipDesign.BombardDamage : 0;
-                value = ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game.CurrentPlayer.GetLastResearched());
+                value = ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game);
             }
             else if (str)
             {
@@ -81,7 +81,7 @@ namespace GalWarWin
 
         private static double GetUpkeepPayoff(IShipStats shipDesign)
         {
-            return shipDesign.GetUpkeepPayoff(MainForm.Game.MapSize, MainForm.Game.CurrentPlayer.GetLastResearched());
+            return shipDesign.GetUpkeepPayoff(MainForm.Game);
         }
     }
 }

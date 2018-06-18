@@ -67,6 +67,8 @@ namespace GalWar
         public const double ResearchFactor = 1690;
         //inverse chance of a new design
         public const double NewDesignFactor = 13;
+        //minimum stored research mult
+        public const double MinStoredResearchFactor = 5.2;
         //mult and power of turn research income
         public const double NewResearchMult = 1.3;
         public const double NewResearchPower = .52;
@@ -222,7 +224,7 @@ namespace GalWar
 
         public static double GetSoldierUpkeep(PopCarrier popCarrier)
         {
-            return GetSoldierUpkeep(popCarrier.Tile.Game.MapSize, popCarrier.Soldiers);
+            return GetSoldierUpkeep(popCarrier.Player.Game.MapSize, popCarrier.Soldiers);
         }
         public static double GetSoldierUpkeep(double mapSize, double soldiers)
         {
@@ -251,26 +253,26 @@ namespace GalWar
             return ( zero + ( one - zero ) * pct );
         }
 
-        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int lastResearched, bool sqr)
+        public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, Game game, bool sqr)
         {
             double retVal = 1;
             if (colony)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 1.0 + 13 / (double)trans ), false, bombardDamage, lastResearched)
-                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, lastResearched);
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 1.0 + 13 / (double)trans ), false, bombardDamage, game.AvgResearch)
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, game.AvgResearch);
                 if (sqr)
                     retVal *= retVal;
             }
             return retVal;
         }
 
-        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int lastResearched, bool sqr)
+        public static double GetNonTransPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, Game game, bool sqr)
         {
             double retVal = 1;
             if (trans > 0)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamage, lastResearched)
-                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, lastResearched);
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, 0, colony, bombardDamage, game.AvgResearch)
+                        / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, game.AvgResearch);
                 if (sqr)
                     retVal *= retVal;
             }
@@ -410,6 +412,13 @@ namespace GalWar
             if (chance > .5)
                 chance /= ( chance + .5 );
             return chance;
+        }
+
+        public static double LimitMin(double value, double min)
+        {
+            if (value < min)
+                value = min * min / ( 2.0 * min - value );
+            return value;
         }
     }
 }

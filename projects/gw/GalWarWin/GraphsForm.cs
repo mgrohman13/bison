@@ -184,7 +184,7 @@ namespace GalWarWin
 
         internal static double GetResearch(Dictionary<Player, double> research, Player player)
         {
-            return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetResearchGuess();
+            return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetCurrentResearch();
         }
 
         private Label NewLabel(int x, int y, string text = "", Color? backColor = null, bool bold = false)

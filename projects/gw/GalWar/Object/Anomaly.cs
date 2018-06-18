@@ -134,8 +134,7 @@ namespace GalWar
             }
 
             double value = ( armada / 52.0 + Consts.Income / 2.6 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
-            if (value < 13)
-                value = 169 / ( 26.0 - value );
+            value = Consts.LimitMin(value, 13);
             return Game.Random.GaussianOE(value, .26, .3, GenerateConsolationValue(value));
         }
         private static double GenerateConsolationValue(double value)
@@ -155,8 +154,8 @@ namespace GalWar
         }
         private double GetAvgDesignResearch(Player player, double value)
         {
-            return ( 1 * ( ( 1 * player.ResearchGuess + 1 * player.ResearchDisplay + 2 * player.Research ) / 4.0 )
-                    + 1 * ( player.LastResearched + value ) + 2 * ( Tile.Game.AvgResearch ) ) / 4.0;
+            return ( 1 * ( ( 1 * player.ResearchDisplay + 3 * player.Research ) / 4.0 )
+                    + 1 * ( player.GetLastResearched() + value ) + 2 * ( Tile.Game.AvgResearch ) ) / 4.0;
         }
         private static void CompensateDesign(Player player, ShipDesign design, double designResearch, double expectedShips)
         {
@@ -379,7 +378,7 @@ namespace GalWar
                 return false;
             int distance = player.GetColonies().Min(colony => Tile.GetDistance(this.Tile, colony.Tile));
             double cost = colonyDesigns.Min(design => ( design.Upkeep * distance / (double)design.Speed
-                    + design.Cost - design.GetColonizationValue(Tile.Game.MapSize, player.LastResearched) ));
+                    + design.Cost - design.GetColonizationValue(Tile.Game) ));
 
             double amount = this.value - cost;
             double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;

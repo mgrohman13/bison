@@ -37,8 +37,8 @@ namespace GalWarWin
             {
                 this.lblOverflow.Visible = false;
 
-                int research = Game.Random.GaussianCappedInt(MainForm.Game.CurrentPlayer.GetLastResearched(),
-                        Consts.ResearchRndm, (int)Math.Min(MainForm.Game.CurrentPlayer.GetLastResearched(), Consts.StartResearch));
+                int research = Game.Random.GaussianCappedInt(MainForm.Game.AvgResearch,
+                        Consts.ResearchRndm, (int)Math.Min(MainForm.Game.AvgResearch, Consts.StartResearch));
                 SetValue(this.nudResearch, research);
 
                 double str = ShipDesign.GetAttDefStr(research);
@@ -115,7 +115,7 @@ namespace GalWarWin
             bool colony = (bool)this.cbCol.Checked;
             double BombardDamage = (double)this.nudDS.Value;
 
-            double upkeepPayoff = GetUpkeepPayoff(att, def, hp, speed, trans, colony, BombardDamage, research);
+            double upkeepPayoff = GetUpkeepPayoff(att, def, hp, speed, trans, colony, BombardDamage, MainForm.Game);
             double upkeep = Math.Round(totCost / upkeepPayoff * Consts.CostUpkeepPct);
             if (upkeep < 1)
                 upkeep = 1;
@@ -186,7 +186,7 @@ namespace GalWarWin
 
                 this.txtStr.Text = GraphsForm.GetArmadaString(ShipDesign.GetStrength(att, def, hp, speed));
                 this.txtCost.Text = MainForm.FormatDouble(totCost);
-                this.txtValue.Text = GraphsForm.GetArmadaString(ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, research));
+                this.txtValue.Text = GraphsForm.GetArmadaString(ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game));
 
             });
             return totCost;
@@ -194,7 +194,7 @@ namespace GalWarWin
 
         private int CalcResearch(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, double prod, int upk)
         {
-            int research = TBSUtil.FindValue(delegate(int r)
+            int research = TBSUtil.FindValue(delegate (int r)
             {
                 return ( GetProd(att, def, hp, speed, trans, colony, bombardDamage, r, upk) < prod );
             }, (int)this.nudResearch.Minimum, (int)this.nudResearch.Maximum, true);
@@ -213,14 +213,14 @@ namespace GalWarWin
         }
         private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int research, int upk, double totCost)
         {
-            return ( totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamage, research) );
+            return ( totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game) );
         }
 
-        private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int research)
+        private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, Game game)
         {
             return Consts.GetUpkeepPayoff(MainForm.Game.MapSize,
-                    Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, research, true),
-                    Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamage, research, true), speed);
+                    Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, game, true),
+                    Consts.GetNonTransPct(att, def, hp, speed, trans, colony, bombardDamage, game, true), speed);
         }
 
         private void MaintainDS(bool deathStar)

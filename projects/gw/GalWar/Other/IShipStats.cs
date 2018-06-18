@@ -55,6 +55,6 @@ namespace GalWar
         {
             get;
         }
-        double GetUpkeepPayoff(double mapSize, int lastResearched);
+        double GetUpkeepPayoff(Game game);
     }
 }

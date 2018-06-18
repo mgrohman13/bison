@@ -51,7 +51,7 @@ namespace GalWarWin
             totSoldiers /= count;
             planetQuality /= planets.Count;
 
-            count = (float)ShipDesign.GetTransStr(MainForm.Game.CurrentPlayer.GetLastResearched());
+            count = (float)ShipDesign.GetTransStr(MainForm.Game.AvgResearch);
             if (shipTrans == 0)
                 shipTrans = count;
             else

@@ -495,12 +495,17 @@ namespace GalWar
 
         #region internal
 
-        internal double AvgResearch
+        public double AvgResearch
         {
             get
             {
-                return this.players.Average(player => ( 1 * player.ResearchDisplay + 2 * player.ResearchGuess
-                        + 5 * player.Research + 13 * player.LastResearched ) / 21.0);
+                double avgResearch;
+                if (!this.players.Any())
+                    avgResearch = Consts.StartResearch / 2.0;
+                else
+                    avgResearch = this.players.Average(player => ( 2 * player.ResearchDisplay
+                            + 6 * player.Research + 13 * player.GetLastResearched() ) / 21.0);
+                return avgResearch;
             }
         }
 
@@ -1079,6 +1084,11 @@ namespace GalWar
             Result.Finalize(result);
 
             return result;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.ID.GetHashCode();
         }
 
         #endregion //   public

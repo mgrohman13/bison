@@ -28,8 +28,8 @@ namespace GalWar
         private byte _researchFocus, _pdAtt, _pdDef;
         private ushort _newResearch;
         private int _goldValue;
-        private uint _research, _lastResearched, _researchGuess;
-        private float _rChance, _rDesignMult, _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
+        private uint _research, _lastResearched;
+        private float _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
         private double _goldOffset;
 
         internal Player(int id, Game Game, StartingPlayer player, Planet planet,
@@ -63,28 +63,23 @@ namespace GalWar
                 this._lastResearched = (uint)research[2];
                 //the highest value is the actual starting research
                 this._research = (uint)research[3];
-                this._researchGuess = (uint)this.Research;
 
                 this._goldValue = 0;
                 this._goldOffset = 0;
-
-                this._rChance = float.NaN;
-                this._rDesignMult = float.NaN;
 
                 this._rDisp = 1;
                 this._rDispTrg = 1;
                 this._rDispChange = 1;
                 //gold and production are added in later
                 this._incomeTotal = this.Research;
-
-                this.designs = ShipDesign.GetStartDesigns(this, research);
-                foreach (ShipDesign design in this.designs)
-                    SetPlanetDefense(design);
-
-                ResetResearchChance();
-                //starting production is handled after all players have been created
-                NewColony(null, planet, population, 0, 0);
             }
+
+            this.designs = ShipDesign.GetStartDesigns(this, research);
+            foreach (ShipDesign design in this.designs)
+                SetPlanetDefense(design);
+
+            //starting production is handled after all players have been created
+            NewColony(null, planet, population, 0, 0);
         }
 
         internal int ID
@@ -241,23 +236,26 @@ namespace GalWar
         }
         private void AddResearch(int amount, bool random)
         {
+            if (random)
+                amount = Game.Random.GaussianOEInt(amount, Consts.ResearchRndm, Consts.ResearchRndm, 1);
+
+            UpgradePlanetDefense(Research, Research + amount);
+
             checked
             {
-                if (random)
-                    amount = Game.Random.GaussianOEInt(amount, Consts.ResearchRndm, Consts.ResearchRndm, 1);
-
-                UpgradePlanetDefense(Research, Research + amount);
-
                 this._research += (uint)amount;
             }
         }
-        internal int LastResearched
+        private int LastResearched
         {
             get
             {
-                return (int)this._lastResearched;
+                checked
+                {
+                    return (int)this._lastResearched;
+                }
             }
-            private set
+            set
             {
                 checked
                 {
@@ -265,25 +263,11 @@ namespace GalWar
                 }
             }
         }
-        internal int ResearchGuess
-        {
-            get
-            {
-                return (int)this._researchGuess;
-            }
-            private set
-            {
-                checked
-                {
-                    this._researchGuess = (uint)value;
-                }
-            }
-        }
-        public int GetResearchGuess()
+        public int GetCurrentResearch()
         {
             TurnException.CheckTurn(this);
 
-            return ResearchGuess;
+            return this.Research;
         }
 
         private double goldValue
@@ -298,35 +282,6 @@ namespace GalWar
                 {
                     VerifyRounded(value);
                     this._goldValue = (int)Math.Round(value * 10);
-                }
-            }
-        }
-
-        private double rChance
-        {
-            get
-            {
-                return this._rChance;
-            }
-            set
-            {
-                checked
-                {
-                    this._rChance = (float)value;
-                }
-            }
-        }
-        private double rDesignMult
-        {
-            get
-            {
-                return this._rDesignMult;
-            }
-            set
-            {
-                checked
-                {
-                    this._rDesignMult = (float)value;
                 }
             }
         }
@@ -441,7 +396,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return ShipDesign.GetPlanetDefenseCost(PDAtt, PDDef, this.LastResearched);
+                return ShipDesign.GetPlanetDefenseCost(PDAtt, PDDef, this.Research);
             }
         }
 
@@ -472,7 +427,6 @@ namespace GalWar
             ShipDesign newDesign = CheckResearch(out obsoleteDesigns);
 
             //re-randomize research chance and display skew
-            ResetResearchChance();
             RandResearchDisplay();
 
             //gain any levels for exp acquired during enemy turns
@@ -501,7 +455,6 @@ namespace GalWar
 
         internal ShipDesign FreeResearch(IEventHandler handler, int freeResearch, int designResearch)
         {
-            this.ResearchGuess += freeResearch;
             AddResearch(freeResearch, false);
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = NewShipDesign(false, designResearch, false, out obsoleteDesigns);
@@ -520,17 +473,17 @@ namespace GalWar
             if (Game.Random.Bool(GetResearchChance(this.newResearch)))
             {
                 bool doObsolete = ( this.ResearchFocusDesign != null );
-                int minResearch = this.LastResearched;
+                int minResearch = Game.Random.Round(GetLastResearched());
                 if (doObsolete)
                     minResearch = this.ResearchFocusDesign.Research
                             + Game.Random.GaussianCappedInt(Consts.UpgDesignResearch, Consts.UpgDesignRndm, Consts.UpgDesignMin);
                 int designResearch = Game.Random.RangeInt(minResearch, this.Research);
                 if (doObsolete)
                 {
-                    minResearch = this.ResearchFocusDesign.Research
-                            + Game.Random.GaussianCappedInt(Consts.UpgDesignMin, Consts.UpgDesignRndm, Consts.UpgDesignAbsMin);
-                    if (designResearch < minResearch)
-                        designResearch = minResearch;
+                    double upgResearch = designResearch - this.ResearchFocusDesign.Research;
+                    minResearch = Game.Random.GaussianCappedInt(Consts.UpgDesignMin, Consts.UpgDesignRndm, Consts.UpgDesignAbsMin);
+                    upgResearch = Consts.LimitMin(upgResearch, minResearch);
+                    designResearch = Game.Random.Round(upgResearch + this.ResearchFocusDesign.Research);
                 }
                 newDesign = NewShipDesign(true, designResearch, doObsolete, out obsoleteDesigns);
             }
@@ -541,7 +494,7 @@ namespace GalWar
         private ShipDesign NewShipDesign(bool useFocus, int designResearch, bool doObsolete, out HashSet<ShipDesign> obsoleteDesigns)
         {
             ShipDesign newDesign = new ShipDesign(this, useFocus, designResearch);
-            obsoleteDesigns = newDesign.GetObsolete(Game.MapSize, this.designs);
+            obsoleteDesigns = newDesign.GetObsolete(Game, this.designs);
             if (doObsolete)
                 obsoleteDesigns.Add(ResearchFocusDesign);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)
@@ -555,35 +508,34 @@ namespace GalWar
 
             SetPlanetDefense(newDesign);
             this.LastResearched = Math.Max(LastResearched, newDesign.Research);
-            if (useFocus && newDesign.Research > ResearchGuess)
-                ResearchGuess = newDesign.Research;
 
             if (doObsolete)
                 ResearchFocusDesign = newDesign;
             return newDesign;
         }
 
-        private void ResetResearchChance()
+        private void ResetResearchChance(out double rChance, out double rDesignMult)
         {
-            double storedResearch = this.Research - this.LastResearched;
-            if (storedResearch < Consts.UpgDesignAbsMin)
-                storedResearch = Consts.UpgDesignAbsMin / ( Math.Pow(Consts.UpgDesignAbsMin - storedResearch + 1, .3) );
+            double storedResearch = this.Research - GetLastResearched();
+            double min = Math.Sqrt(this.Research) * Consts.MinStoredResearchFactor;
+            storedResearch = Consts.LimitMin(storedResearch, min);
+            rChance = ResetResearchChance(storedResearch, Math.Sqrt(GetLastResearched()) * Consts.NewDesignFactor);
 
-            this.rChance = ResetResearchChance(storedResearch, Math.Sqrt(this.LastResearched) * Consts.NewDesignFactor);
-
-            this.rDesignMult = ResetResearchChance(storedResearch, Consts.UpgDesignResearch);
-            if (storedResearch < Consts.UpgDesignMin)
-                this.rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin);
+            rDesignMult = 1;
+            if (this.ResearchFocusDesign != null)
+            {
+                storedResearch = this.Research - this.ResearchFocusDesign.Research;
+                storedResearch = Consts.LimitMin(storedResearch, Consts.UpgDesignAbsMin);
+                rDesignMult = ResetResearchChance(storedResearch, Consts.UpgDesignResearch);
+                if (storedResearch < Consts.UpgDesignMin)
+                    rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin);
+            }
         }
         private static double ResetResearchChance(double storedResearch, double factor)
         {
             factor = storedResearch / ( storedResearch + factor );
             factor *= factor;
-            if (Game.Random.Bool())
-                return Game.Random.DoubleFull(factor);
-            if (Game.Random.Bool())
-                Game.Random.Weighted(factor);
-            return Game.Random.OE(factor);
+            return factor;
         }
 
         private void RandResearchDisplay()
@@ -630,7 +582,6 @@ namespace GalWar
                 colony.EndTurn(handler, ref gold, ref research);
             this.AddGold(gold);
             this.newResearch = research;
-            this.ResearchGuess += research;
         }
 
         private void CheckGold()
@@ -769,11 +720,13 @@ namespace GalWar
             }
         }
 
-        public int GetLastResearched()
+        internal double GetLastResearched()
         {
-            TurnException.CheckTurn(this);
-
-            return LastResearched;
+            double lastResearched = LastResearched;
+            lastResearched = ( 2.0 * lastResearched + 1.0 * this.designs.Max(design => design.Research) ) / 3.0;
+            if (lastResearched > this.Research)
+                lastResearched = ( 1.0 * lastResearched + 2.0 * this.Research ) / 3.0;
+            return lastResearched;
         }
 
         #endregion //internal
@@ -953,30 +906,23 @@ namespace GalWar
         {
             TurnException.CheckTurn(this);
 
-            return GetResearchChance(newResearch, researchFocusDesign, this.rChance, this.rDesignMult);
-        }
-        public double GetMaxResearchChance(int newResearch, ShipDesign researchFocusDesign)
-        {
-            TurnException.CheckTurn(this);
-
-            return GetResearchChance(newResearch, researchFocusDesign, 1, 1);
-        }
-        private double GetResearchChance(int newResearch, ShipDesign researchFocusDesign, double rChance, double rDesignMult)
-        {
-            double newResearchPct = Math.Pow(newResearch / ( newResearch + Math.Sqrt(this.LastResearched) / Consts.NewResearchMult ), Consts.NewResearchPower);
+            double newResearchPct = Math.Pow(newResearch / ( newResearch + Math.Sqrt(GetLastResearched()) / Consts.NewResearchMult ), Consts.NewResearchPower);
             double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / ( Consts.NumDesignsFactor + this.designs.Count ), Consts.NumDesignsPower);
+
+            double rChance, rDesignMult;
+            ResetResearchChance(out rChance, out rDesignMult);
 
             double chance = rChance * newResearchPct * numDesignsPct;
 
             if (researchFocusDesign != null)
-                chance *= rDesignMult * Math.Sqrt(this.LastResearched / ( Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research ));
+                chance *= rDesignMult * Math.Sqrt(this.Research / ( Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research ));
 
             return Consts.LimitPct(chance);
         }
 
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
         {
-            handler = new HandlerWrapper(handler, this.Game, false, true);
+            handler = new HandlerWrapper(handler, Game, false, true);
             TurnException.CheckTurn(this);
             AssertException.Assert(obsoleteDesign != null);
             AssertException.Assert(this.designs.Contains(obsoleteDesign));
@@ -1028,7 +974,7 @@ namespace GalWar
 
         public void AutoRepairShips(IEventHandler handler)
         {
-            handler = new HandlerWrapper(handler, this.Game, false);
+            handler = new HandlerWrapper(handler, Game, false);
             TurnException.CheckTurn(this);
 
             if (this.goldValue > 0)

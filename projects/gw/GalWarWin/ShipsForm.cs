@@ -414,7 +414,7 @@ namespace GalWarWin
             }
             private void SetValue()
             {
-                sortValue = ShipDesign.GetValue(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, sortResearch);
+                sortValue = ShipDesign.GetValue(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, MainForm.Game);
                 Value = GraphsForm.GetArmadaString(sortValue);
             }
             public static IOrderedEnumerable<ShipInfo> SortValue(IOrderedEnumerable<ShipInfo> items)

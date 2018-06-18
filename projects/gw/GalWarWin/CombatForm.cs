@@ -47,7 +47,7 @@ namespace GalWarWin
 
         private void SetRand(NumericUpDown nud, bool hp)
         {
-            double str = ShipDesign.GetAttDefStr(MainForm.Game.CurrentPlayer.GetLastResearched());
+            double str = ShipDesign.GetAttDefStr(MainForm.Game.AvgResearch);
             if (hp)
                 str = ShipDesign.GetHPStr(ShipDesign.MakeStat(str), ShipDesign.MakeStat(str));
             SetValue(nud, ShipDesign.MakeStat(str));

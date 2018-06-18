@@ -87,7 +87,7 @@ namespace GalWarWin
         }
         private double GetTotalCost(ShipDesign x)
         {
-            return ( x.Cost + x.Upkeep * x.GetUpkeepPayoff(colony.Player.Game.MapSize, colony.Player.GetLastResearched()) );
+            return ( x.Cost + x.Upkeep * x.GetUpkeepPayoff(colony.Player.Game) );
         }
 
         private Buildable GetSelectedDesign()

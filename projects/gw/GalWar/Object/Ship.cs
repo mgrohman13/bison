@@ -65,7 +65,7 @@ namespace GalWar
                 this._curExp = 0;
                 this._totalExp = 0;
 
-                this._cost = design.AdjustCost(this.Player.Game.MapSize, this.Player.LastResearched);
+                this._cost = design.AdjustCost(Player.Game);
 
                 this._expDiv = (float)GetValue();
 
@@ -159,7 +159,7 @@ namespace GalWar
         {
             get
             {
-                return ( ( this._moved ?? Enumerable.Empty<PointS>() ).Select(point => Tile.Game.GetTile(point.X, point.Y)) );
+                return ( ( this._moved ?? Enumerable.Empty<PointS>() ).Select(point => Player.Game.GetTile(point.X, point.Y)) );
             }
             private set
             {
@@ -437,12 +437,15 @@ namespace GalWar
             int att, def, hp, speed, trans;
             double ds;
             LevelUpStats(expType, out att, out def, out hp, out speed, out trans, out ds);
-            return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.Player.Game.AvgResearch);
+            return ShipDesign.GetValue(att, def, hp, speed, trans, this.Colony, ds, this.Player.Game);
         }
 
-        internal double GetCostLastResearched()
+        internal double TotalCost
         {
-            return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched);
+            get
+            {
+                return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Research);
+            }
         }
         internal double GetCostAvgResearch()
         {
@@ -631,7 +634,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            return GetCostLastResearched();
+            return TotalCost;
         }
 
         protected override void OnDamaged(int damage)
@@ -653,7 +656,7 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
 
             return ShipDesign.GetColonizationValue(this.cost, this.Att, this.Def, this.HP + repair, this.MaxHP,
-                    this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched);
+                    this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, Player.Game);
         }
 
         public int GetTotalExp()
@@ -866,7 +869,7 @@ namespace GalWar
                 if (this.Population > 0)
                 {
                     double soldiers = this.Population / Consts.PopulationForGoldMid;
-                    soldiers *= rawExp / ( soldiers + this.GetCostLastResearched() );
+                    soldiers *= rawExp / ( soldiers + this.TotalCost );
 
                     soldiers *= GalWar.Colony.GetSoldierMult(this.Population, this.Soldiers, GetSoldiersForExp(soldiers));
 
@@ -892,7 +895,7 @@ namespace GalWar
 
         internal double GetValueExpForRawExp(double experience)
         {
-            return experience * GetCostLastResearched() / GetValue();
+            return experience * TotalCost / GetValue();
         }
 
         internal void StartTurn(IEventHandler handler)
@@ -920,7 +923,7 @@ namespace GalWar
                     first = false;
                 }
 
-                double costInc = this.GetCostLastResearched();
+                double costInc = this.TotalCost;
 
                 double pct = this.HP / (double)this.MaxHP;
                 if (this.NextExpType == ExpType.HP)
@@ -942,7 +945,7 @@ namespace GalWar
                     this.DeathStar = true;
                 this.BombardDamage = ds;
 
-                costInc = this.GetCostLastResearched() - costInc;
+                costInc = this.TotalCost - costInc;
 
                 //add/subtract gold for level randomness and percent of ship injured
                 double goldIncome = ( this.needExpMult - pct ) * costInc / Consts.ExpForGold;
@@ -1037,7 +1040,7 @@ namespace GalWar
         }
         private double GetNonColonyPct(bool sqr)
         {
-            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched, sqr);
+            return Consts.GetNonColonyPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, Player.Game, sqr);
         }
 
         private double GetNonTransPct()
@@ -1046,7 +1049,7 @@ namespace GalWar
         }
         private double GetNonTransPct(bool sqr)
         {
-            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.LastResearched, sqr);
+            return Consts.GetNonTransPct(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, Player.Game, sqr);
         }
 
         private void GetNextLevel(IEventHandler handler)
@@ -1077,8 +1080,8 @@ namespace GalWar
                 if (this.DeathStar)
                 {
                     ds = GetExpChance(ref total, ref strInc, ExpType.DS,
-                            ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, 0, Player.LastResearched)
-                            / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched));
+                            ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, 0, Player.Research)
+                            / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.Research));
                     stats.Add(ExpType.DS, ds);
                 }
                 else if (this.MaxPop > 0)
@@ -1088,8 +1091,8 @@ namespace GalWar
                 }
 
                 int speed = GetExpChance(ref total, ref strInc, ExpType.Speed,
-                        Math.Sqrt(ShipDesign.GetTotCost(Att, Def, MaxHP, -1, MaxPop, Colony, BombardDamage, Player.LastResearched)
-                        / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.LastResearched))
+                        Math.Sqrt(ShipDesign.GetTotCost(Att, Def, MaxHP, -1, MaxPop, Colony, BombardDamage, Player.Research)
+                        / ShipDesign.GetTotCost(Att, Def, MaxHP, MaxSpeed, MaxPop, Colony, BombardDamage, Player.Research))
                         , Math.Sqrt(MaxSpeed / 6.5));
                 stats.Add(ExpType.Speed, speed);
 
@@ -1631,11 +1634,11 @@ namespace GalWar
 
         private double GetGoldRepairTarget()
         {
-            return ( this.GetCostLastResearched() * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
+            return ( this.TotalCost * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
         }
 
         public int GetClassSort()
-        {   
+        {
             return ShipNames.GetClassSort(this.name, this.mark);
         }
 
@@ -1754,7 +1757,7 @@ namespace GalWar
                 return MaxHP;
             }
         }
-        double IShipStats.GetUpkeepPayoff(double mapSize, int lastResearched)
+        double IShipStats.GetUpkeepPayoff(Game game)
         {
             TurnException.CheckTurn(Player);
             return GetUpkeepPayoff();
