@@ -55,6 +55,7 @@ combat predict performance
 
 GAMEPLAY
 
+DS speed level up breakpoint
 bombard combat get exp out instead of automatic add
 anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
@@ -73,7 +74,8 @@ rchance > 1 throws off max
 
 
 BETWEEN GAMES
-	
+
+increase colonization cost?
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate

@@ -426,7 +426,7 @@ namespace GalWar
             HashSet<ShipDesign> obsoleteDesigns;
             ShipDesign newDesign = CheckResearch(out obsoleteDesigns);
 
-            //re-randomize research chance and display skew
+            //randomize research display skew
             RandResearchDisplay();
 
             //gain any levels for exp acquired during enemy turns

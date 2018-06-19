@@ -376,7 +376,7 @@ namespace GalWar
             this.DefenseHPChange = this.HP - defenseHPChange;
         }
 
-        public void ClearChange()
+        internal void ClearChange()
         {
             DoChange(0, 0, 0, 0);
         }
@@ -493,7 +493,14 @@ namespace GalWar
 
         private double GetPct(bool emphasis)
         {
-            return emphasis ? Consts.EmphasisValue : 1;
+            double retVal = 1;
+            if (emphasis)
+            {
+                retVal = Consts.EmphasisValue;
+                if (Player.NegativeGold())
+                    retVal *= Math.Pow(-Player.Gold + 5.2, 0.39);
+            }
+            return retVal;
         }
 
         private void ResetRounding()

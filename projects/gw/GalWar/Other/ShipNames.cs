@@ -122,8 +122,6 @@ namespace GalWar
 
             double avgDS = Consts.GetBombardDamage(attDefStr) * speedStr;
 
-            //double value = ShipDesign.GetValue(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage,
-            //        RandValue((game.AvgResearch + design.Research) / 2.0));
             double value = ShipDesign.GetTotCost(design.Att, design.Def, design.HP, design.Speed, design.Trans, design.Colony, design.BombardDamage, 0);
             int tier = GetShipTier(game.GetPlayers().Count, RandValue(value));
 

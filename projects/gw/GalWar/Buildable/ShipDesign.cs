@@ -602,7 +602,7 @@ namespace GalWar
             double colTrg = .104;
 
             //target pct of ships that should be death stars increases with research
-            const double dsMin = .0091, dsMax = 0.21, dsResearch = 3900, dsPow = Math.PI;
+            const double dsMin = .0078, dsMax = 0.21, dsResearch = 3900, dsPow = Math.PI;
             double dsTrg = dsMin + Math.Pow(research / ( dsResearch + research ), dsPow) * ( dsMax - dsMin );
 
             if (IsFocusing(focus, FocusStat.Colony))
