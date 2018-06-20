@@ -47,6 +47,7 @@ management screens
 	re-do colony
 	ships/colony view include enemy
 		multi select with all players
+	ShipDesignSortForm to compare actual ships
 keyboard?
 combat predict performance
 	partial-mathematical-resolve until limit is reached
@@ -75,6 +76,7 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
+avg research change slowly (to hide immediate effect of LastReseached changes)
 increase colonization cost?
 new game parameters
 	num anomalies (start/rate)

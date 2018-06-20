@@ -19,11 +19,11 @@ namespace GalWar
 
         static ShipNames()
         {
-            attack = new ShipClass[] { ShipClass.Destroyer, ShipClass.Cruiser, ShipClass.BattleCruiser, ShipClass.Battleship, ShipClass.Dreadnought, ShipClass.Excalibur };
-            defense = new ShipClass[] { ShipClass.Warrior, ShipClass.Defender, ShipClass.Ironclad, ShipClass.Armor, ShipClass.Guardian, ShipClass.Avatar };
-            speed = new ShipClass[] { ShipClass.Scout, ShipClass.Fighter, ShipClass.Corvette, ShipClass.Frigate, ShipClass.Ranger, ShipClass.Phoenix };
-            transport = new ShipClass[] { ShipClass.Bireme, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Arbiter, ShipClass.MotherShip };
-            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Reaper, ShipClass.Demon };
+            attack = new ShipClass[] {      ShipClass.Destroyer,    ShipClass.Cruiser,      ShipClass.BattleCruiser,    ShipClass.Battleship,   ShipClass.Dreadnought,  ShipClass.Excalibur };
+            defense = new ShipClass[] {     ShipClass.Warrior,      ShipClass.Shield,       ShipClass.Ironclad,         ShipClass.Armor,        ShipClass.Guardian,     ShipClass.Immortal };
+            speed = new ShipClass[] {       ShipClass.Scout,        ShipClass.Fighter,      ShipClass.Corvette,         ShipClass.Frigate,      ShipClass.Ranger,       ShipClass.Phoenix };
+            transport = new ShipClass[] {   ShipClass.Bireme,       ShipClass.Carrack,      ShipClass.Galleon,          ShipClass.Transport,    ShipClass.Arbiter,      ShipClass.MotherShip };
+            deathStar = new ShipClass[] {   ShipClass.Catapult,     ShipClass.Trebuchet,    ShipClass.Cannon,           ShipClass.DeathStar,    ShipClass.Reaper,       ShipClass.Demon };
 
             if (attack.Length != length || defense.Length != length || speed.Length != length || transport.Length != length || deathStar.Length != length)
                 throw new Exception();
@@ -306,7 +306,7 @@ namespace GalWar
             Catapult,
 
             Cruiser,
-            Defender,
+            Shield,
             Fighter,
             Carrack,
             Trebuchet,
@@ -330,7 +330,7 @@ namespace GalWar
             Reaper,
 
             Excalibur,
-            Avatar,
+            Immortal,
             Phoenix,
             MotherShip,
             Demon,

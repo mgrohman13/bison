@@ -528,7 +528,7 @@ namespace GalWar
                 storedResearch = Consts.LimitMin(storedResearch, Consts.UpgDesignAbsMin);
                 rDesignMult = ResetResearchChance(storedResearch, Consts.UpgDesignResearch);
                 if (storedResearch < Consts.UpgDesignMin)
-                    rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin);
+                    rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin - storedResearch);
             }
         }
         private static double ResetResearchChance(double storedResearch, double factor)

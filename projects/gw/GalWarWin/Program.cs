@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using GalWar;
 using System.Drawing;
@@ -17,6 +18,26 @@ namespace GalWarWin
         {
             //kick off random ticker
             Game.Random.StartTick();
+
+
+            //MainForm mf = new MainForm();
+            //for (int b = 0 ; b < 100 ; ++b)
+            //{
+            //    mf.btnNewGame_Click(null, null);
+            //    Game game = MainForm.Game;
+            //    for (int a = 0 ; a < 6 ; ++a)
+            //    {
+            //        Colony colony = game.CurrentPlayer.GetColonies()[0];
+            //        int quality = colony.Planet.Quality;
+            //        int gold = (int)( game.CurrentPlayer.Gold * 10 );
+            //        int prod = colony.Production;
+            //        Console.WriteLine(a + "\t" + quality + "\t" + gold + "\t" + prod);
+            //        game.EndTurn(mf);
+            //    }
+            //    Console.WriteLine();
+            //}
+            //;
+
 
             //ShipDesign.Test();
             //return;
