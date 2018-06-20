@@ -24,7 +24,7 @@ namespace GalWarWin
 
         private void Init()
         {
-            MainForm.ColorForIncome(lblGold, MainForm.FormatDouble(MainForm.Game.CurrentPlayer.Gold));
+            MainForm.FormatIncome(lblGold, MainForm.Game.CurrentPlayer.Gold, true);
             int research;
             double population, production, gold;
             MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold, false);

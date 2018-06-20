@@ -1963,7 +1963,7 @@ namespace GalWarWin
                     troops = SliderForm.ShowForm(new MoveTroops(ship, colony, false));
 
             bool selectShip = true;
-            if (troops > 0 && gold > -1)
+            if (troops > 0 && gold > 0)
             {
                 ship.Invade(this, colony, troops, gold);
 

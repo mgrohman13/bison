@@ -498,7 +498,7 @@ namespace GalWar
             {
                 retVal = Consts.EmphasisValue;
                 if (Player.NegativeGold())
-                    retVal *= Math.Pow(-Player.Gold + 5.2, 0.39);
+                    retVal *= Math.Pow(( -Player.Gold - Player.TotalGold ) * Consts.AverageQuality * Consts.Income / Player.GetTotalIncome() / 91.0 + 1.69, 0.78);
             }
             return retVal;
         }

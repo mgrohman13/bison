@@ -25,7 +25,7 @@ namespace GalWar
         public const double StartResearch = 390;
         public const double StartRndm = .13;
         public const double StartMinMult = .65;
-        public const double MoveOrderGold = AverageQuality * Income;
+        public const double MoveOrderGold = AverageQuality * Income * 1.69;
         //a higher MoveOrderShuffle makes the move order change faster
         public const double MoveOrderShuffle = .13;
 
