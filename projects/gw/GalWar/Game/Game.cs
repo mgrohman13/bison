@@ -60,8 +60,7 @@ namespace GalWar
 
         private Graphs _graphs;
         public readonly StoreProd StoreProd;
-        public readonly Attack Attack;
-        public readonly Defense Defense;
+        public readonly PlanetDefense PlanetDefense;
 
         internal readonly ShipNames ShipNames;
 
@@ -99,8 +98,7 @@ namespace GalWar
                 AssertException.Assert(planetPct < .65);
 
                 this.StoreProd = new StoreProd();
-                this.Attack = new Attack();
-                this.Defense = new Defense();
+                this.PlanetDefense = new PlanetDefense();
 
                 this.ShipNames = new ShipNames(numPlayers);
 
@@ -376,7 +374,7 @@ namespace GalWar
                 Colony homeworld = CurrentPlayer.GetColonies()[0];
 
                 //starting soldiers and defense
-                homeworld.BuildPlanetDefense(startDefense, true);
+                homeworld.BuildPlanetDefense(startDefense);
 
                 //starting gold is divided by each indivual player's homeworld quality
                 double addGold = startGold / (double)homeworld.Planet.Quality;

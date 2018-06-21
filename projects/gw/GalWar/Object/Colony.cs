@@ -21,6 +21,7 @@ namespace GalWar
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
         private ushort _repair, _production;
+        private uint _defenseResearch;
         private float _soldierChange, _prodGuess, _researchRounding, _productionRounding;
 
         internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
@@ -46,6 +47,8 @@ namespace GalWar
                 this._repair = 0;
 
                 this._production = (ushort)production;
+
+                this._defenseResearch = 0;
 
                 this._soldierChange = 0;
                 this._prodGuess = 0;
@@ -217,6 +220,26 @@ namespace GalWar
                 checked
                 {
                     this._production = (ushort)value;
+                }
+            }
+        }
+
+        private int defenseResearch
+        {
+            get
+            {
+                checked
+                {
+                    if (this.HP == 0 || this._defenseResearch == 0)
+                        defenseResearch = Player.Research;
+                    return (int)this._defenseResearch;
+                }
+            }
+            set
+            {
+                checked
+                {
+                    this._defenseResearch = (uint)value;
                 }
             }
         }
@@ -914,7 +937,7 @@ namespace GalWar
             if (this.Buildable is PlanetDefense)
             {
                 double att, def, hp, soldiers;
-                GetPlanetDefenseInc(this.Buildable, production, out att, out def, out hp, out soldiers);
+                GetPlanetDefenseInc(production, out att, out def, out hp, out soldiers);
                 newAtt = (int)Math.Ceiling(att);
                 newDef = (int)Math.Ceiling(def);
                 newHP = (int)Math.Ceiling(hp);
@@ -1125,7 +1148,7 @@ namespace GalWar
 
         private double GetPDCost(double att, double def)
         {
-            return ShipDesign.GetPlanetDefenseCost(att, def, this.Player.Research);
+            return ShipDesign.GetPlanetDefenseCost(att, def, this.defenseResearch);
         }
 
         public void DisbandPlanetDefense(IEventHandler handler, int hp, bool gold)
@@ -1269,59 +1292,24 @@ namespace GalWar
             this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, this.Population, valueExp);
         }
 
-        internal void UpgradePlanetDefense(int oldResearch, int newResearch)
-        {
-            if (this.HP > 0)
-            {
-                double diff = ( ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, oldResearch) -
-                        ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, newResearch) );
-                diff *= this.HP * Consts.PlanetDefensesUpgradePct;
-                double total = Game.Random.GaussianOE(diff, 2.1 / diff, 13 / ( 13 + diff ));
-
-                double att = ShipDesign.GetStatValue(this.Att), def = ShipDesign.GetStatValue(this.Def);
-                att = total * att / ( att + def );
-                def = total - att;
-
-                BuildAttAndDef(att, def);
-            }
-        }
-
         internal void BuildPlanetDefense(double prodInc)
         {
-            BuildPlanetDefense(this.production + prodInc, false);
-            this.production = 0;
-        }
-        internal void BuildPlanetDefense(double prodInc, bool attAndDef)
-        {
-            if (prodInc > Consts.FLOAT_ERROR_ZERO)
+            if (this.Buildable is PlanetDefense)
             {
-                prodInc /= 2.0;
-
-                if (attAndDef)
-                    BuildAttAndDef(prodInc);
-                else
-                    BuildPlanetDefense(prodInc, this.Buildable);
-
-                BuildSoldiers(prodInc);
+                prodInc += this.production;
+                this.production = 0;
             }
-        }
-        internal void BuildAttAndDef(double prod)
-        {
-            BuildAttAndDef(prod / 2.0, prod / 2.0);
-        }
-        private void BuildAttAndDef(double att, double def)
-        {
-            bool rand = Game.Random.Bool();
-            BuildPlanetDefense(rand ? att : def, rand ? (Buildable)Player.Game.Attack : Player.Game.Defense);
-            BuildPlanetDefense(rand ? def : att, rand ? (Buildable)Player.Game.Defense : Player.Game.Attack);
-        }
-        private void BuildPlanetDefense(double prod, Buildable build)
-        {
-            double newAtt, newDef, newHP;
-            GetPlanetDefenseInc(build, prod, out newAtt, out newDef, out newHP);
-            ModPD(this.PlanetDefenseCost + prod, newAtt, newDef);
-        }
 
+            double newAtt, newDef, newHP;
+            GetPlanetDefenseInc(prodInc, out newAtt, out newDef, out newHP);
+            ModPD(this.PlanetDefenseCost + prodInc, newAtt, newDef);
+        }
+        internal void BuildSoldiersAndDefenses(double prodInc)
+        {
+            prodInc /= 2.0;
+            BuildPlanetDefense(prodInc);
+            BuildSoldiers(prodInc);
+        }
         internal void BuildSoldiers(double prod)
         {
             double soldiers = Consts.GetExperience(prod / Consts.ProductionForSoldiers);
@@ -1331,29 +1319,10 @@ namespace GalWar
                 this.Soldiers += soldiers;
         }
 
-        public void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP, out double newSoldiers)
+        public void GetPlanetDefenseInc(double prod, out double newAtt, out double newDef, out double newHP)
         {
             TurnException.CheckTurn(this.Player);
 
-            if (prod > Consts.FLOAT_ERROR_ZERO)
-            {
-                prod /= 2.0;
-
-                GetPlanetDefenseInc(buildable, prod, out newAtt, out newDef, out newHP);
-
-                newSoldiers = this.Soldiers + prod / Consts.ProductionForSoldiers;
-            }
-            else
-            {
-                newAtt = this.Att;
-                newDef = this.Def;
-                newHP = this.HP;
-
-                newSoldiers = this.Soldiers;
-            }
-        }
-        private void GetPlanetDefenseInc(Buildable buildable, double prod, out double newAtt, out double newDef, out double newHP)
-        {
             if (buildable is Attack)
                 ModPD(this.PlanetDefenseCost + prod, this.Att, this.Player.PDAtt,
                         this.Def, this.Def, out newAtt, out newDef, out newHP);

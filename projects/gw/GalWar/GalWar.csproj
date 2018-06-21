@@ -47,8 +47,6 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buildable\Attack.cs" />
-    <Compile Include="Buildable\Defense.cs" />
     <Compile Include="Buildable\PlanetDefense.cs" />
     <Compile Include="Object\Anomaly.cs" />
     <Compile Include="Object\Combatant.cs" />

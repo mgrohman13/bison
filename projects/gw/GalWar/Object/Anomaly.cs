@@ -714,13 +714,13 @@ namespace GalWar
             switch (type)
             {
             case AnomalyType.SoldiersAndDefenses:
-                colony.BuildPlanetDefense(value, true);
+                colony.BuildSoldiersAndDefenses(value);
                 break;
             case AnomalyType.Soldiers:
                 colony.BuildSoldiers(value);
                 break;
             case AnomalyType.PlanetDefenses:
-                colony.BuildAttAndDef(value);
+                colony.BuildPlanetDefense(value);
                 break;
             case AnomalyType.Production:
                 colony.AddProduction(value);

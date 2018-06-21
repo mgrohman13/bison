@@ -390,15 +390,6 @@ namespace GalWar
                 return this.PDDef;
             }
         }
-        public double PlanetDefenseCostPerHP
-        {
-            get
-            {
-                TurnException.CheckTurn(this);
-
-                return ShipDesign.GetPlanetDefenseCost(PDAtt, PDDef, this.Research);
-            }
-        }
 
         private void UpgradePlanetDefense(int oldResearch, int newResearch)
         {

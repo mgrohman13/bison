@@ -5,7 +5,7 @@ using System.Linq;
 namespace GalWar
 {
     [Serializable]
-    public abstract class PlanetDefense : Buildable
+    public class PlanetDefense : Buildable
     {
         internal PlanetDefense()
         {
@@ -57,6 +57,11 @@ namespace GalWar
         public override string GetProdText(string curProd)
         {
             return string.Empty;
+        }
+
+        public override string ToString()
+        {
+            return "Planet Defenses";
         }
     }
 }
