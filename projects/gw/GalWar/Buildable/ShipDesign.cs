@@ -14,7 +14,7 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, 0, false, 0, 0);
         }
 
-        public static double GetPlanetDefenseStrength(int stat1, int stat2)
+        public static double GetPlanetDefenseStrength(double stat1, double stat2)
         {
             return GetPlanetDefenseCost(stat1, stat2, 0);
         }
@@ -25,7 +25,7 @@ namespace GalWar
             return GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, researchMult, 1 / researchMult);
         }
 
-        internal static double GetPlanetDefenseCost(double stat1, double stat2, double research)
+        public static double GetPlanetDefenseCost(double stat1, double stat2, double research)
         {
             double researchMult = GetResearchMult(research);
             return GetTotCost(stat1, stat2, 1, -1, 0, false, 0, researchMult, researchMult) * Consts.PlanetDefensesCostMult;

@@ -51,7 +51,7 @@ namespace GalWarWin
                 this.lblUpkeepL.Visible = true;
 
                 this.lblUpkeepL.Text = "Upkeep";
-                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PlanetDefenseUpkeep);
+                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PDUpkeep);
 
                 if (colony.Buildable is PlanetDefense)
                 {

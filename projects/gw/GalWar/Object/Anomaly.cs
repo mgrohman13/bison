@@ -120,7 +120,7 @@ namespace GalWar
                 {
                     quality += planet.Quality;
                     pop += planet.Colony.Population;
-                    armada += planet.Colony.PlanetDefenseCostAvgResearch / 1.69 + planet.Colony.production / 2.1;
+                    armada += planet.Colony.PDCostAvgResearch / 1.69 + planet.Colony.production / 2.1;
                 }
             }
             foreach (Player player in Tile.Game.GetPlayers())
@@ -720,7 +720,7 @@ namespace GalWar
                 colony.BuildSoldiers(value);
                 break;
             case AnomalyType.PlanetDefenses:
-                colony.BuildPlanetDefense(value);
+                colony.BuildPlanetDefense(value, true);
                 break;
             case AnomalyType.Production:
                 colony.AddProduction(value);

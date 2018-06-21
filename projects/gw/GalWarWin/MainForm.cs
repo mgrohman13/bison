@@ -2490,7 +2490,7 @@ namespace GalWarWin
                     --attChange;
                 if (defChange == colony.Def)
                     --defChange;
-                double pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PlanetDefenseStrengthPerHP
+                double pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / colony.PDStrength
                         * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
                 string strChange = FormatUsuallyInt(pdChange);
                 if (strChange != "0")
@@ -2597,8 +2597,8 @@ namespace GalWarWin
 
         public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
         {
-            double newAtt, newDef, newHP, soldiers;
-            colony.GetPlanetDefenseInc(buildable, production, out newAtt, out newDef, out newHP, out soldiers);
+            double newAtt, newDef, newHP, newResearch, newProd;
+            colony.GetPlanetDefenseInc(production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out newResearch, out newProd, false);
             return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
         }
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)

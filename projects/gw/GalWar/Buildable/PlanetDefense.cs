@@ -45,7 +45,7 @@ namespace GalWar
 
         internal override void Build(IEventHandler handler, Colony colony, Tile tile)
         {
-            colony.BuildPlanetDefense(this.production);
+            colony.BuildPlanetDefense(this.production, false);
             this.production = 0;
         }
 

@@ -137,7 +137,7 @@ namespace GalWar
         public void MovePop(IEventHandler handler, int population, PopCarrier destination)
         {
             handler = new HandlerWrapper(handler, this.Player.Game, false);
-            TurnException.CheckTurn(Player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(destination != null);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= this.AvailablePop);
@@ -153,7 +153,7 @@ namespace GalWar
         }
         private Tile UndoMovePop(PopCarrier destination, int population, double soldiers)
         {
-            TurnException.CheckTurn(Player);
+            TurnException.CheckTurn(this.Player);
             AssertException.Assert(destination != null);
             AssertException.Assert(population > 0);
             AssertException.Assert(population <= destination.Population);

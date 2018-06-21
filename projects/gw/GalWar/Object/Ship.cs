@@ -1271,7 +1271,7 @@ namespace GalWar
 
         public double GetFreeDmg(Colony colony)
         {
-            double costPerHP = colony.PlanetDefenseCostAvgResearch / colony.HP;
+            double costPerHP = colony.PDCostAvgResearch / colony.HP;
             return this.BombardDamage * Consts.BombardFreeDmgMult / costPerHP;
         }
 
@@ -1665,7 +1665,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return GetProdForHP(MaxHP) / Consts.RepairCostMult;
             }
         }
@@ -1673,7 +1673,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return baseUpkeep;
             }
         }
@@ -1681,7 +1681,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return Colony;
             }
         }
@@ -1689,7 +1689,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return Population;
             }
         }
@@ -1697,7 +1697,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return MaxPop;
             }
         }
@@ -1705,7 +1705,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return BombardDamage;
             }
         }
@@ -1713,7 +1713,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return CurSpeed;
             }
         }
@@ -1721,7 +1721,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return MaxSpeed;
             }
         }
@@ -1729,7 +1729,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return Att;
             }
         }
@@ -1737,7 +1737,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return Def;
             }
         }
@@ -1745,7 +1745,7 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return HP;
             }
         }
@@ -1753,13 +1753,13 @@ namespace GalWar
         {
             get
             {
-                TurnException.CheckTurn(Player);
+                TurnException.CheckTurn(this.Player);
                 return MaxHP;
             }
         }
         double IShipStats.GetUpkeepPayoff(Game game)
         {
-            TurnException.CheckTurn(Player);
+            TurnException.CheckTurn(this.Player);
             return GetUpkeepPayoff();
         }
 

@@ -239,8 +239,6 @@ namespace GalWar
             if (random)
                 amount = Game.Random.GaussianOEInt(amount, Consts.ResearchRndm, Consts.ResearchRndm, 1);
 
-            UpgradePlanetDefense(Research, Research + amount);
-
             checked
             {
                 this._research += (uint)amount;
@@ -389,12 +387,6 @@ namespace GalWar
 
                 return this.PDDef;
             }
-        }
-
-        private void UpgradePlanetDefense(int oldResearch, int newResearch)
-        {
-            foreach (Colony colony in this.colonies)
-                colony.UpgradePlanetDefense(oldResearch, newResearch);
         }
 
         #endregion //fields and constructors

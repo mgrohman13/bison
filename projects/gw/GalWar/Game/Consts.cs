@@ -149,10 +149,10 @@ namespace GalWar
         public const double PlanetDefenseBuildRndm = Math.PI / 13.0;
         public const double PlanetDefensesCostMult = .78;
         //percent of research that automatically upgrades planet defenses
-        public const double PlanetDefensesUpgradePct = .52;
-        //PlanetDefensesUpkeepMult will be multiplied by ProdUpkeepMult
+        public const double PlanetDefensesUpgradeWeight = .21;
+        //PlanetDefensesUpkeepMult will be multiplied by GetProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
-        public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .39;
+        public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .91;
         public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
 
         public const double FLOAT_ERROR_ZERO = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 2 ) );

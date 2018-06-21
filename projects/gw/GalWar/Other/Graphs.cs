@@ -132,7 +132,7 @@ namespace GalWar
             armada = 0;
             foreach (Colony colony in player.GetColonies())
             {
-                armada += ( colony.PlanetDefenseStrength / 2.1 );
+                armada += ( colony.PDStrength / 2.1 );
                 pop += colony.Population;
                 quality += colony.Planet.PlanetValue;
             }

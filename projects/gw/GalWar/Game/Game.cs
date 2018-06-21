@@ -374,7 +374,7 @@ namespace GalWar
                 Colony homeworld = CurrentPlayer.GetColonies()[0];
 
                 //starting soldiers and defense
-                homeworld.BuildPlanetDefense(startDefense);
+                homeworld.BuildPlanetDefense(startDefense, true);
 
                 //starting gold is divided by each indivual player's homeworld quality
                 double addGold = startGold / (double)homeworld.Planet.Quality;
@@ -388,7 +388,7 @@ namespace GalWar
 
                 //other gold balancing
                 addGold += currentPlayer * moveOrderGold +
-                        startDefense - ( homeworld.PlanetDefenseCostPerHP * homeworld.HP + homeworld.Soldiers * Consts.ProductionForSoldiers );
+                        startDefense - ( homeworld.PDCostAvgResearch + homeworld.Soldiers * Consts.ProductionForSoldiers );
 
                 //calculations to offset AddProduction when currently building StoreProd
                 addProduction /= ( 1 - Consts.StoreProdLossPct );
@@ -504,6 +504,24 @@ namespace GalWar
                     avgResearch = this.players.Average(player => ( 2 * player.ResearchDisplay
                             + 6 * player.Research + 13 * player.GetLastResearched() ) / 21.0);
                 return avgResearch;
+            }
+        }
+        public double PDResearch
+        {
+            get
+            {
+                double minResearch;
+                if (!this.players.Any())
+                {
+                    minResearch = 0;
+                }
+                else
+                {
+                    minResearch = this.players.Min(player => player.ResearchDisplay);
+                    double diff = Math.Abs(AvgResearch - minResearch);
+                    minResearch = Math.Max(0, Math.Min(AvgResearch, minResearch) - diff);
+                }
+                return minResearch;
             }
         }
 
