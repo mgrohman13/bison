@@ -35,6 +35,7 @@ namespace GalWarWin
 
             this.lbxDesigns.Items.Add("Gold");
             this.lbxDesigns.Items.Add(colony.Player.Game.StoreProd);
+            this.lbxDesigns.Items.Add(colony.Player.Game.PlanetDefense);
             //this.lbxDesigns.Items.Add(colony.Player.Game.Attack);
             //this.lbxDesigns.Items.Add(colony.Player.Game.Defense);
             this.lbxDesigns.Items.Add(string.Empty);

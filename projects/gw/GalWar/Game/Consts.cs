@@ -77,7 +77,7 @@ namespace GalWar
         public const double NumDesignsPower = .65;
         //research for upgrading a design
         public const int UpgDesignResearch = 520;
-        public const double UpgDesignRndm = .117;
+        public const double UpgDesignRndm = Math.PI / 13.0;
         public const int UpgDesignMin = 260;
         public const int UpgDesignAbsMin = 169;
         //research income and display randomness
@@ -146,13 +146,13 @@ namespace GalWar
         public const double DeathStarPlanetDamage = .5;
 
         public const double PlanetDefenseStatRndm = .091;
-        public const double PlanetDefenseBuildRndm = Math.PI / 13.0;
+        public const double PlanetDefenseBuildRndm = .117;
         public const double PlanetDefensesCostMult = .78;
         //percent of research that automatically upgrades planet defenses
         public const double PlanetDefensesUpgradeWeight = .21;
         //PlanetDefensesUpkeepMult will be multiplied by GetProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
-        public const double PlanetDefensesAttackCostMult = PlanetDefensesUpkeepMult * .91;
+        public const double PlanetDefensesAttackCostMult = .91;
         public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
 
         public const double FLOAT_ERROR_ZERO = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 2 ) );

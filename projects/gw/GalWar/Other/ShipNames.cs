@@ -20,7 +20,7 @@ namespace GalWar
         static ShipNames()
         {
             attack = new ShipClass[] {      ShipClass.Destroyer,    ShipClass.Cruiser,      ShipClass.BattleCruiser,    ShipClass.Battleship,   ShipClass.Dreadnought,  ShipClass.Excalibur };
-            defense = new ShipClass[] {     ShipClass.Warrior,      ShipClass.Shield,       ShipClass.Ironclad,         ShipClass.Armor,        ShipClass.Guardian,     ShipClass.Immortal };
+            defense = new ShipClass[] {     ShipClass.Warrior,      ShipClass.Buckler,      ShipClass.Ironclad,         ShipClass.Armor,        ShipClass.Guardian,     ShipClass.Immortal };
             speed = new ShipClass[] {       ShipClass.Scout,        ShipClass.Fighter,      ShipClass.Corvette,         ShipClass.Frigate,      ShipClass.Ranger,       ShipClass.Phoenix };
             transport = new ShipClass[] {   ShipClass.Bireme,       ShipClass.Carrack,      ShipClass.Galleon,          ShipClass.Transport,    ShipClass.Arbiter,      ShipClass.MotherShip };
             deathStar = new ShipClass[] {   ShipClass.Catapult,     ShipClass.Trebuchet,    ShipClass.Cannon,           ShipClass.DeathStar,    ShipClass.Reaper,       ShipClass.Demon };
@@ -306,7 +306,7 @@ namespace GalWar
             Catapult,
 
             Cruiser,
-            Shield,
+            Buckler,
             Fighter,
             Carrack,
             Trebuchet,

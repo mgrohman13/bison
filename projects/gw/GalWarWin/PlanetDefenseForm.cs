@@ -64,13 +64,22 @@ namespace GalWarWin
                     this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.Buildable, colony.Production + production);
                 }
             }
-            else if (colony.DefenseAttChange != 0 || colony.DefenseDefChange != 0 || colony.DefenseHPChange != 0)
+            else
             {
                 this.lblUpkeep.Visible = true;
                 this.lblUpkeepL.Visible = true;
 
-                this.lblUpkeepL.Text = "Change";
-                this.lblUpkeep.Text = MainForm.GetBuildingDefense(colony, colony.DefenseAttChange, colony.DefenseDefChange, colony.DefenseHPChange);
+                this.lblUpkeepL.Text = "Cost";
+                this.lblUpkeep.Text = MainForm.FormatDouble(colony.PDCostAvgResearch);
+
+                if (colony.DefenseAttChange != 0 || colony.DefenseDefChange != 0 || colony.DefenseHPChange != 0)
+                {
+                    this.lblInc.Visible = true;
+                    this.lblIncL.Visible = true;
+
+                    this.lblIncL.Text = "Change";
+                    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.DefenseAttChange, colony.DefenseDefChange, colony.DefenseHPChange);
+                }
             }
         }
 

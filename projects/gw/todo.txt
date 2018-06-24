@@ -1,5 +1,6 @@
 UI
 
+new PD gold min/avg
 enemy colony ship value guess
 show player actual research and game avg research somewhere
 show research victory on main window

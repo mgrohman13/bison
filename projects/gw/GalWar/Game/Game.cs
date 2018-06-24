@@ -338,7 +338,8 @@ namespace GalWar
                 this.players.Add(new Player(id, this, players[id], GetHomeworld(startPop), startPop, startResearch));
             ShipNames.EndSetup();
 
-            double startDefense = GetStartDouble(startPop);
+            double startDefense = GetStartDouble(startPop) / 2.0;
+            int startDefenseSteps = (int)Math.Floor(startDefense / startPop * 3.0 / Consts.Income);
 
             //starting gold is based on the number and value of initial planets, must happen after GetHomeworld planet shuffling
             double startGold = Consts.StartGold;
@@ -374,7 +375,9 @@ namespace GalWar
                 Colony homeworld = CurrentPlayer.GetColonies()[0];
 
                 //starting soldiers and defense
-                homeworld.BuildPlanetDefense(startDefense, true);
+                homeworld.BuildSoldiers(startDefense);
+                for (int a = 0 ; a < startDefenseSteps ; ++a)
+                    homeworld.BuildPlanetDefense(startDefense / startDefenseSteps, true);
 
                 //starting gold is divided by each indivual player's homeworld quality
                 double addGold = startGold / (double)homeworld.Planet.Quality;
@@ -387,8 +390,7 @@ namespace GalWar
                 addProduction += startProd;
 
                 //other gold balancing
-                addGold += currentPlayer * moveOrderGold +
-                        startDefense - ( homeworld.PDCostAvgResearch + homeworld.Soldiers * Consts.ProductionForSoldiers );
+                addGold += currentPlayer * moveOrderGold + startDefense - homeworld.Soldiers * Consts.ProductionForSoldiers;
 
                 //calculations to offset AddProduction when currently building StoreProd
                 addProduction /= ( 1 - Consts.StoreProdLossPct );
