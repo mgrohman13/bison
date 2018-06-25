@@ -526,8 +526,8 @@ namespace GalWar
             Player[] research = Game.GetResearchDisplayOrder();
             //the maximum possible skew change can plausibly be accounted for by economy emphasis choices
             double totalIncome = GetTotalIncome();
-            double low = totalIncome / ( 1.0 + 2 * Consts.EmphasisValue );
-            double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2 );
+            double low = totalIncome / ( 1.0 + 2.0 * Consts.EmphasisValue );
+            double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2.0 );
             double diff = ( high - low ) / research[0].ResearchDisplay;
 
             double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchRndm);

@@ -66,6 +66,10 @@ namespace GalWarWin
         private MainForm(bool dialog)
         {
             InitializeComponent();
+            lblResearch.Parent = lblRsrchPct;
+            lblResearch.Location = new PointForm(56, 0);
+            lblRsrchTot.Parent = lblRsrchPct;
+            lblRsrchTot.Location = new PointForm(0, 0);
             MouseWheel += new MouseEventHandler(MainForm_MouseWheel);
             ResizeRedraw = true;
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
@@ -2223,7 +2227,8 @@ namespace GalWarWin
             FormatIncome(lblPopInc, population);
             FormatIncome(lblGoldInc, gold, true);
             FormatIncome(lblResearch, research);
-            lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research));
+            lblRsrchTot.Text = Game.CurrentPlayer.GetCurrentResearch().ToString();
+            lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research)) + new string(' ', lblResearch.Text.Length + 6);
             FormatIncome(lblProduction, production);
             lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.Production).ToString();
 

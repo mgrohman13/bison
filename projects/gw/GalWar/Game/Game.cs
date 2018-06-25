@@ -79,6 +79,7 @@ namespace GalWar
 
         private byte _currentPlayer;
         private ushort _turn;
+        private float _avgResearch;
         private readonly float _mapDeviation, _planetPct, _anomalyPct;
 
         public Game(Player.StartingPlayer[] players, double mapSize, double planetPct)
@@ -117,6 +118,8 @@ namespace GalWar
                 this._planetPct = (float)Random.GaussianCapped(planetPct / 210.0, .078, planetPct / 260.0);
                 double min = this.PlanetPct + 0.13;
                 this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
+
+                this._avgResearch = (float)GetStartDouble(Consts.StartResearch * .78);
 
                 CreateSpaceObjects(numPlayers, planetPct);
                 InitPlayers(players);
@@ -499,13 +502,14 @@ namespace GalWar
         {
             get
             {
-                double avgResearch;
-                if (!this.players.Any())
-                    avgResearch = Consts.StartResearch / 2.0;
-                else
-                    avgResearch = this.players.Average(player => ( 2 * player.ResearchDisplay
-                            + 6 * player.Research + 13 * player.GetLastResearched() ) / 21.0);
-                return avgResearch;
+                return this._avgResearch;
+            }
+            private set
+            {
+                checked
+                {
+                    this._avgResearch = (float)value;
+                }
             }
         }
         public double PDResearch
@@ -685,6 +689,7 @@ namespace GalWar
             var removed = RemoveTeleporters();
             if (removed != null)
                 anomalies = anomalies.Concat(new[] { removed.Item1, removed.Item2 });
+            AdjustAvgResearch();
 
             if (++this.currentPlayer >= this.players.Count)
                 NewRound();
@@ -1043,6 +1048,14 @@ namespace GalWar
                 if (Tile.GetDistance(center, test) == dist)
                     yield return test;
             }
+        }
+
+        private void AdjustAvgResearch()
+        {
+            double avgResearch = this.players.Average(player => ( 2 * player.ResearchDisplay + 6 * player.Research + 13 * player.GetLastResearched() ) / 21.0);
+            //adjust AvgResearch by the average player income at maximum emphasis every full turn round
+            double add = players.Average(player => player.GetTotalIncome()) * Consts.EmphasisValue / ( Consts.EmphasisValue + 2.0 ) / players.Count();
+            this.AvgResearch += Math.Sign(avgResearch - this.AvgResearch) * Random.Gaussian(add, Consts.ResearchRndm);
         }
 
         private void StartPlayerTurn(IEventHandler handler)

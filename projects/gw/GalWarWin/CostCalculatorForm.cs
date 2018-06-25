@@ -37,8 +37,8 @@ namespace GalWarWin
             {
                 this.lblOverflow.Visible = false;
 
-                int research = Game.Random.GaussianCappedInt(MainForm.Game.AvgResearch,
-                        Consts.ResearchRndm, (int)Math.Min(MainForm.Game.AvgResearch, Consts.StartResearch));
+                int research = Game.Random.GaussianOEInt(MainForm.Game.AvgResearch,
+                        Consts.ResearchRndm, Consts.ResearchRndm, (int)Math.Min(MainForm.Game.AvgResearch, Consts.StartResearch));
                 SetValue(this.nudResearch, research);
 
                 double str = ShipDesign.GetAttDefStr(research);

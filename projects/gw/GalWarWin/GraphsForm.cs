@@ -23,6 +23,8 @@ namespace GalWarWin
 
         private int y;
 
+        private static double lastAvgResearch = 0;
+
         List<int> researchLines = new List<int>();
 
         private GraphsForm()
@@ -67,10 +69,11 @@ namespace GalWarWin
             if (labels != null)
                 for (int a = 0 ; a < labels.GetLength(0) ; ++a)
                     for (int b = 0 ; b < labels.GetLength(1) ; ++b)
-                    {
-                        Controls.Remove(labels[a, b]);
-                        labels[a, b] = null;
-                    }
+                        if (labels[a, b] != null)
+                        {
+                            Controls.Remove(labels[a, b]);
+                            labels[a, b] = null;
+                        }
             if (win != null)
                 Controls.Remove(win);
 
@@ -88,8 +91,9 @@ namespace GalWarWin
                 winner = null;
 
             Dictionary<Player, double> research = MainForm.Game.GetResearch();
-            labels = new Label[8, players.Count];
+            labels = new Label[8, players.Count + 1];
             y = 32;
+            int researchX = 0;
             for (int i = 0 ; i < players.Count ; ++i)
             {
                 int x = 12;
@@ -107,6 +111,7 @@ namespace GalWarWin
                 x += 106;
                 labels[6, i] = NewLabel(x, y, GetStringDec(players[i].GetArmadaStrength(), div, place), players[i].Color);
                 x += 106;
+                researchX = x;
                 labels[7, i] = NewLabel(x, y, MainForm.FormatInt(GetResearch(research, players[i])), players[i].Color);
                 if (players[i] == winner)
                 {
@@ -115,6 +120,12 @@ namespace GalWarWin
                 }
                 y += 26;
             }
+
+            double avgResearch = MainForm.Game.AvgResearch;
+            labels[7, players.Count] = NewLabel(researchX, y, string.Format("{0}" // ({1})"
+                    , MainForm.FormatDouble(avgResearch), MainForm.FormatIncome(avgResearch - lastAvgResearch)), Color.Transparent);
+            lastAvgResearch = avgResearch;
+            y += 26;
 
             this.GraphsForm_SizeChanged(null, null);
         }

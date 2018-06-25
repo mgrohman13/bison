@@ -1,15 +1,14 @@
 UI
 
-new PD gold min/avg
+bulding PD gold min/avg
 enemy colony ship value guess
-show player actual research and game avg research somewhere
+research pct ugly - doesnt fit
 show research victory on main window
 display trying to wrap labels ugly
-fix bombard not combining on display
+fix bombard not combining on form display
 info popups go with old mouse coord?  should be coord on panel?
 neg gold
 	display issues?
-	invade requires at least 1 - test
 test exact vs oversize dictionary capacity for combat performance
 empirically test invasion values
 invade + bombard logging show max or actual quality dmg - consistency 
@@ -57,7 +56,6 @@ combat predict performance
 
 GAMEPLAY
 
-DS speed level up breakpoint
 bombard combat get exp out instead of automatic add
 anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
@@ -78,7 +76,6 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
-avg research change slowly (to hide immediate effect of LastReseached changes)
 increase colonization cost?
 new game parameters
 	num anomalies (start/rate)

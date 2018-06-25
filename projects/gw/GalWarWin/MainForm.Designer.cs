@@ -32,7 +32,8 @@ namespace GalWarWin
         private void InitializeComponent()
         {
             this.pnlHUD = new System.Windows.Forms.Panel();
-            this.pnlBuild = new GalWarWin.BuildableControl();
+            this.lblNext = new System.Windows.Forms.Label();
+            this.lblPrev = new System.Windows.Forms.Label();
             this.btnColonies = new System.Windows.Forms.Button();
             this.btnShips = new System.Windows.Forms.Button();
             this.lblLoc = new System.Windows.Forms.Label();
@@ -60,7 +61,7 @@ namespace GalWarWin
             this.label8 = new System.Windows.Forms.Label();
             this.lblGoldInc = new System.Windows.Forms.Label();
             this.lblPopInc = new System.Windows.Forms.Label();
-            this.lblRsrchPct = new System.Windows.Forms.Label();
+            this.lblRsrchTot = new System.Windows.Forms.Label();
             this.lblPlayerResearch = new System.Windows.Forms.Label();
             this.lblResearch = new System.Windows.Forms.Label();
             this.chkProduction = new System.Windows.Forms.CheckBox();
@@ -90,8 +91,8 @@ namespace GalWarWin
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
-            this.lblPrev = new System.Windows.Forms.Label();
-            this.lblNext = new System.Windows.Forms.Label();
+            this.lblRsrchPct = new System.Windows.Forms.Label();
+            this.pnlBuild = new GalWarWin.BuildableControl();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
@@ -132,14 +133,25 @@ namespace GalWarWin
             this.pnlHUD.TabIndex = 2;
             this.pnlHUD.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
             // 
-            // pnlBuild
+            // lblNext
             // 
-            this.pnlBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pnlBuild.Location = new System.Drawing.Point(0, 375);
-            this.pnlBuild.Name = "pnlBuild";
-            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
-            this.pnlBuild.TabIndex = 53;
-            this.pnlBuild.Visible = false;
+            this.lblNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblNext.AutoEllipsis = true;
+            this.lblNext.Location = new System.Drawing.Point(175, 666);
+            this.lblNext.Name = "lblNext";
+            this.lblNext.Size = new System.Drawing.Size(25, 23);
+            this.lblNext.TabIndex = 59;
+            this.lblNext.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblPrev
+            // 
+            this.lblPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblPrev.AutoEllipsis = true;
+            this.lblPrev.Location = new System.Drawing.Point(0, 666);
+            this.lblPrev.Name = "lblPrev";
+            this.lblPrev.Size = new System.Drawing.Size(25, 23);
+            this.lblPrev.TabIndex = 58;
+            this.lblPrev.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // btnColonies
             // 
@@ -384,7 +396,7 @@ namespace GalWarWin
             this.pnlEconomy.Controls.Add(this.label8);
             this.pnlEconomy.Controls.Add(this.lblGoldInc);
             this.pnlEconomy.Controls.Add(this.lblPopInc);
-            this.pnlEconomy.Controls.Add(this.lblRsrchPct);
+            this.pnlEconomy.Controls.Add(this.lblRsrchTot);
             this.pnlEconomy.Controls.Add(this.lblPlayerResearch);
             this.pnlEconomy.Controls.Add(this.lblResearch);
             this.pnlEconomy.Controls.Add(this.chkProduction);
@@ -392,6 +404,7 @@ namespace GalWarWin
             this.pnlEconomy.Controls.Add(this.chkResearch);
             this.pnlEconomy.Controls.Add(this.lblProduction);
             this.pnlEconomy.Controls.Add(this.chkGold);
+            this.pnlEconomy.Controls.Add(this.lblRsrchPct);
             this.pnlEconomy.Location = new System.Drawing.Point(4, 12);
             this.pnlEconomy.Name = "pnlEconomy";
             this.pnlEconomy.Size = new System.Drawing.Size(193, 92);
@@ -475,17 +488,18 @@ namespace GalWarWin
             this.lblPopInc.Text = "+999";
             this.lblPopInc.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblRsrchPct
+            // lblRsrchTot
             // 
-            this.lblRsrchPct.AutoEllipsis = true;
-            this.lblRsrchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRsrchPct.Location = new System.Drawing.Point(88, 46);
-            this.lblRsrchPct.Name = "lblRsrchPct";
-            this.lblRsrchPct.Size = new System.Drawing.Size(53, 23);
-            this.lblRsrchPct.TabIndex = 38;
-            this.lblRsrchPct.Text = "99%";
-            this.lblRsrchPct.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.lblRsrchPct.Click += new System.EventHandler(this.lblResearch_Click);
+            this.lblRsrchTot.AutoEllipsis = true;
+            this.lblRsrchTot.BackColor = System.Drawing.Color.Transparent;
+            this.lblRsrchTot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRsrchTot.Location = new System.Drawing.Point(88, 46);
+            this.lblRsrchTot.Name = "lblRsrchTot";
+            this.lblRsrchTot.Size = new System.Drawing.Size(42, 23);
+            this.lblRsrchTot.TabIndex = 38;
+            this.lblRsrchTot.Text = "99999";
+            this.lblRsrchTot.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblRsrchTot.Click += new System.EventHandler(this.lblResearch_Click);
             // 
             // lblPlayerResearch
             // 
@@ -502,6 +516,7 @@ namespace GalWarWin
             // lblResearch
             // 
             this.lblResearch.AutoEllipsis = true;
+            this.lblResearch.BackColor = System.Drawing.Color.Transparent;
             this.lblResearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblResearch.Location = new System.Drawing.Point(144, 46);
             this.lblResearch.Name = "lblResearch";
@@ -780,25 +795,26 @@ namespace GalWarWin
             this.tbTurns.MouseEnter += new System.EventHandler(this.tbTurns_MouseEnter);
             this.tbTurns.MouseLeave += new System.EventHandler(this.tbTurns_MouseLeave);
             // 
-            // lblPrev
+            // lblRsrchPct
             // 
-            this.lblPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblPrev.AutoEllipsis = true;
-            this.lblPrev.Location = new System.Drawing.Point(0, 666);
-            this.lblPrev.Name = "lblPrev";
-            this.lblPrev.Size = new System.Drawing.Size(25, 23);
-            this.lblPrev.TabIndex = 58;
-            this.lblPrev.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblRsrchPct.AutoEllipsis = true;
+            this.lblRsrchPct.BackColor = System.Drawing.Color.Transparent;
+            this.lblRsrchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRsrchPct.Location = new System.Drawing.Point(88, 46);
+            this.lblRsrchPct.Name = "lblRsrchPct";
+            this.lblRsrchPct.Size = new System.Drawing.Size(102, 23);
+            this.lblRsrchPct.TabIndex = 40;
+            this.lblRsrchPct.Text = "99%";
+            this.lblRsrchPct.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // lblNext
+            // pnlBuild
             // 
-            this.lblNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblNext.AutoEllipsis = true;
-            this.lblNext.Location = new System.Drawing.Point(175, 666);
-            this.lblNext.Name = "lblNext";
-            this.lblNext.Size = new System.Drawing.Size(25, 23);
-            this.lblNext.TabIndex = 59;
-            this.lblNext.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.pnlBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pnlBuild.Location = new System.Drawing.Point(0, 375);
+            this.pnlBuild.Name = "pnlBuild";
+            this.pnlBuild.Size = new System.Drawing.Size(200, 230);
+            this.pnlBuild.TabIndex = 53;
+            this.pnlBuild.Visible = false;
             // 
             // MainForm
             // 
@@ -869,7 +885,7 @@ namespace GalWarWin
         private System.Windows.Forms.CheckBox chkResearch;
         private System.Windows.Forms.CheckBox chkProduction;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.Label lblRsrchPct;
+        private System.Windows.Forms.Label lblRsrchTot;
         private System.Windows.Forms.Label lbl7Inf;
         private System.Windows.Forms.Label lbl7;
         private System.Windows.Forms.Button btnProdRepair;
@@ -896,6 +912,7 @@ namespace GalWarWin
         private System.Windows.Forms.Button btnShips;
         private System.Windows.Forms.Label lblNext;
         private System.Windows.Forms.Label lblPrev;
+        private System.Windows.Forms.Label lblRsrchPct;
     }
 }
 
