@@ -72,6 +72,7 @@ anomaly gold balancing at full vs consolation value
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
 why do enemy colonies show repair amt?
+	prod repair randomness?
 rchance > 1 throws off max
 
 
@@ -88,15 +89,9 @@ soldiers
 	ExpForSoldiers should be * 1.3 not / 1.3?
 	soldiers = meh, completely redo?
 planetary defenses still not right
-	cost/eco/upg hiddenness?
-	upg = full OE
 	split between soldiers?
 		random?
 	auto upg turns 1-7 into 13-7
-	upg PD when lastresearched > current
-		cost uses last, upg uses current
-	global random PD upg factor across all planets for the turn
-	cost always tied to avg researcg,not personal??
 	buy defense?  produce but keep prod on ship?
 		rethink concept of prod in general?  stored per design?
 research victory pct decreases with higher research
