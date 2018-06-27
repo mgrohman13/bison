@@ -1,9 +1,8 @@
 UI
 
+CostCalcForm DS/trans problems
 bulding PD gold min/avg
-enemy colony ship value guess
 research pct ugly - doesnt fit
-show research victory on main window
 display trying to wrap labels ugly
 fix bombard not combining on form display
 info popups go with old mouse coord?  should be coord on panel?
@@ -13,8 +12,6 @@ test exact vs oversize dictionary capacity for combat performance
 empirically test invasion values
 invade + bombard logging show max or actual quality dmg - consistency 
 tab order on combat calc
-diff log file per id
-log out turn #
 reg auto save identify game ID
 	default save name too?
 text overlaying other text / same color

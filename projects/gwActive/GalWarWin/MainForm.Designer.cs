@@ -32,6 +32,8 @@ namespace GalWarWin
         private void InitializeComponent()
         {
             this.pnlHUD = new System.Windows.Forms.Panel();
+            this.lblNext = new System.Windows.Forms.Label();
+            this.lblPrev = new System.Windows.Forms.Label();
             this.pnlBuild = new GalWarWin.BuildableControl();
             this.btnColonies = new System.Windows.Forms.Button();
             this.btnShips = new System.Windows.Forms.Button();
@@ -90,8 +92,6 @@ namespace GalWarWin
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btnAutosaveView = new System.Windows.Forms.Button();
             this.tbTurns = new System.Windows.Forms.TrackBar();
-            this.lblPrev = new System.Windows.Forms.Label();
-            this.lblNext = new System.Windows.Forms.Label();
             this.pnlHUD.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.pnlEconomy.SuspendLayout();
@@ -131,6 +131,26 @@ namespace GalWarWin
             this.pnlHUD.Size = new System.Drawing.Size(200, 712);
             this.pnlHUD.TabIndex = 2;
             this.pnlHUD.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MainForm_MouseMove);
+            // 
+            // lblNext
+            // 
+            this.lblNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblNext.AutoEllipsis = true;
+            this.lblNext.Location = new System.Drawing.Point(175, 666);
+            this.lblNext.Name = "lblNext";
+            this.lblNext.Size = new System.Drawing.Size(25, 23);
+            this.lblNext.TabIndex = 59;
+            this.lblNext.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblPrev
+            // 
+            this.lblPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblPrev.AutoEllipsis = true;
+            this.lblPrev.Location = new System.Drawing.Point(0, 666);
+            this.lblPrev.Name = "lblPrev";
+            this.lblPrev.Size = new System.Drawing.Size(25, 23);
+            this.lblPrev.TabIndex = 58;
+            this.lblPrev.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlBuild
             // 
@@ -779,26 +799,6 @@ namespace GalWarWin
             this.tbTurns.Scroll += new System.EventHandler(this.tbTurns_Scroll);
             this.tbTurns.MouseEnter += new System.EventHandler(this.tbTurns_MouseEnter);
             this.tbTurns.MouseLeave += new System.EventHandler(this.tbTurns_MouseLeave);
-            // 
-            // lblPrev
-            // 
-            this.lblPrev.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblPrev.AutoEllipsis = true;
-            this.lblPrev.Location = new System.Drawing.Point(0, 666);
-            this.lblPrev.Name = "lblPrev";
-            this.lblPrev.Size = new System.Drawing.Size(25, 23);
-            this.lblPrev.TabIndex = 58;
-            this.lblPrev.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // lblNext
-            // 
-            this.lblNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblNext.AutoEllipsis = true;
-            this.lblNext.Location = new System.Drawing.Point(175, 666);
-            this.lblNext.Name = "lblNext";
-            this.lblNext.Size = new System.Drawing.Size(25, 23);
-            this.lblNext.TabIndex = 59;
-            this.lblNext.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // MainForm
             // 

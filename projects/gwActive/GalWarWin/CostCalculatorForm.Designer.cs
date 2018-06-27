@@ -57,15 +57,16 @@
             this.txtCost = new System.Windows.Forms.TextBox();
             this.lblOverflow = new System.Windows.Forms.Label();
             this.cbDS = new System.Windows.Forms.CheckBox();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudProd ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudResearch ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudAtt ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDef ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudHP ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudSpeed ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudUpk ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudTrans ) ).BeginInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDS ) ).BeginInit();
+            this.txtColonyValue = new System.Windows.Forms.TextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.nudProd)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudResearch)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAtt)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDef)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudHP)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSpeed)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudUpk)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudTrans)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDS)).BeginInit();
             this.SuspendLayout();
             // 
             // nudProd
@@ -356,11 +357,11 @@
             this.cbCol.Size = new System.Drawing.Size(15, 14);
             this.cbCol.TabIndex = 58;
             this.cbCol.UseVisualStyleBackColor = true;
-            this.cbCol.CheckedChanged += new System.EventHandler(this.cb_CheckedChanged);
+            this.cbCol.CheckedChanged += new System.EventHandler(this.cbCol_CheckedChanged);
             // 
             // btnDone
             // 
-            this.btnDone.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnDone.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDone.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnDone.Location = new System.Drawing.Point(134, 350);
             this.btnDone.Name = "btnDone";
@@ -444,6 +445,14 @@
             this.cbDS.UseVisualStyleBackColor = true;
             this.cbDS.CheckedChanged += new System.EventHandler(this.cbDS_CheckedChanged);
             // 
+            // txtColonyValue
+            // 
+            this.txtColonyValue.Location = new System.Drawing.Point(130, 219);
+            this.txtColonyValue.Name = "txtColonyValue";
+            this.txtColonyValue.ReadOnly = true;
+            this.txtColonyValue.Size = new System.Drawing.Size(79, 20);
+            this.txtColonyValue.TabIndex = 71;
+            // 
             // CostCalculatorForm
             // 
             this.AcceptButton = this.btnDone;
@@ -451,6 +460,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnDone;
             this.ClientSize = new System.Drawing.Size(221, 385);
+            this.Controls.Add(this.txtColonyValue);
             this.Controls.Add(this.cbDS);
             this.Controls.Add(this.lblOverflow);
             this.Controls.Add(this.txtCost);
@@ -483,15 +493,15 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "CostCalculatorForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            ( (System.ComponentModel.ISupportInitialize)( this.nudProd ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudResearch ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudAtt ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDef ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudHP ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudSpeed ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudUpk ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudTrans ) ).EndInit();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudDS ) ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudProd)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudResearch)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudAtt)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDef)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudHP)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSpeed)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudUpk)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudTrans)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDS)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -528,5 +538,6 @@
         private System.Windows.Forms.TextBox txtCost;
         private System.Windows.Forms.Label lblOverflow;
         private System.Windows.Forms.CheckBox cbDS;
+        private System.Windows.Forms.TextBox txtColonyValue;
     }
 }
