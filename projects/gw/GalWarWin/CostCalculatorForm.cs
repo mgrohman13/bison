@@ -94,7 +94,7 @@ namespace GalWarWin
                     }
                     else
                     {
-                        int research = (int)Math.Round(GraphsForm.GetResearch(MainForm.Game.GetResearch(), ship.Player));
+                        int research = (int)Math.Round(GraphsForm.GetLastResearched(MainForm.Game.GetResearch(), ship.Player));
                         SetValue(this.nudResearch, research);
 
                         double totCost = Update(null);
@@ -121,6 +121,8 @@ namespace GalWarWin
                 upkeep = 1;
             SetValue(this.nudProd, totCost - upkeep * upkeepPayoff);
             SetValue(this.nudUpk, upkeep);
+
+            SetColony();
         }
 
         private void SetShipDesign(ShipDesign shipDesign)
@@ -188,6 +190,7 @@ namespace GalWarWin
                 this.txtCost.Text = MainForm.FormatDouble(totCost);
                 this.txtValue.Text = GraphsForm.GetArmadaString(ShipDesign.GetValue(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game));
 
+                SetColony();
             });
             return totCost;
         }
@@ -263,6 +266,22 @@ namespace GalWarWin
             return Consts.GetBombardDamage((double)this.nudAtt.Value);
         }
 
+        private void SetColony()
+        {
+            bool colony = (bool)this.cbCol.Checked;
+            double cost = (double)this.nudProd.Value;
+            int att = (int)this.nudAtt.Value;
+            int def = (int)this.nudDef.Value;
+            int hp = (int)this.nudHP.Value;
+            int speed = (int)this.nudSpeed.Value;
+            int trans = (int)this.nudTrans.Value;
+            double bombardDamage = (double)this.nudDS.Value;
+
+            this.txtColonyValue.Text = ( colony
+                    ? MainForm.FormatDouble(cost * Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game.CurrentPlayer.GetLastResearched(), false))
+                    : string.Empty );
+        }
+
         private void SetValue(NumericUpDown nud, double value)
         {
             if (nud.DecimalPlaces == 0 && (int)value != value)
@@ -312,10 +331,27 @@ namespace GalWarWin
 
         private void cbDS_CheckedChanged(object sender, EventArgs e)
         {
+            if (this.cbDS.Checked)
+            {
+                bool oldEvents = events;
+                events = false;
+                this.cbCol.Checked = false;
+                events = oldEvents;
+            }
+
             this.nudDS.DecimalPlaces = ( this.cbDS.Checked ? 0 : 1 );
             if (events && this.cbDS.Checked)
                 SetValue(this.nudDS, Game.Random.Round(GetBombardDamage() * ShipDesign.DeathStarAvg));
             MaintainDS(this.cbDS.Checked);
+            cb_CheckedChanged(sender, e);
+        }
+
+        private void cbCol_CheckedChanged(object sender, EventArgs e)
+        {
+            if (this.cbCol.Checked)
+                this.cbDS.Checked = false;
+
+            SetColony();
             cb_CheckedChanged(sender, e);
         }
 
@@ -359,6 +395,12 @@ namespace GalWarWin
         {
             form.SetShip(ship);
             return (int)form.nudResearch.Value;
+        }
+
+        public static double CalcColonizationValue(Ship ship)
+        {
+            form.SetShip(ship);
+            return double.Parse(form.txtColonyValue.Text);
         }
 
         private void label16_Click(object sender, EventArgs e)

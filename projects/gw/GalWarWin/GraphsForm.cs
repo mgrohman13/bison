@@ -197,6 +197,10 @@ namespace GalWarWin
         {
             return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetCurrentResearch();
         }
+        internal static double GetLastResearched(Dictionary<Player, double> research, Player player)
+        {
+            return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
+        }
 
         private Label NewLabel(int x, int y, string text = "", Color? backColor = null, bool bold = false)
         {

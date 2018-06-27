@@ -899,7 +899,9 @@ namespace GalWarWin
             saveFileDialog1.InitialDirectory = Path.GetDirectoryName(filePath);
             saveFileDialog1.FileName = Path.GetFileName(filePath);
 
+            Game oldGame = Game;
             Game = Game.LoadGame(filePath);
+            LoadLog(oldGame);
 
             dialogTile = _selected = panning = null;
             anomExp = null;
@@ -927,8 +929,9 @@ namespace GalWarWin
                 int min = int.MaxValue, max = int.MinValue;
                 foreach (string file in files)
                 {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
                     int turn;
-                    if (int.TryParse(Path.GetFileNameWithoutExtension(file), out turn))
+                    if (int.TryParse(fileName, out turn))
                     {
                         min = Math.Min(min, turn);
                         max = Math.Max(max, turn);
@@ -2180,6 +2183,21 @@ namespace GalWarWin
             RefreshSelectedInfo();
             InvalidateMap();
 
+            btnGraphs.Text = "View Empires";
+            Player winner;
+            double winChance = Game.GetResearchVictoryChance(out winner);
+            if (winChance > 0)
+            {
+                btnGraphs.Text += " (" + FormatPctWithCheck(winChance) + ")";
+                btnGraphs.BackColor = winner.Color;
+                btnGraphs.UseVisualStyleBackColor = false;
+            }
+            else
+            {
+                btnGraphs.BackColor = SystemColors.Control;
+                btnGraphs.UseVisualStyleBackColor = true;
+            }
+
             btnUndo.Enabled = Game.CanUndo();
 
             if (!suppressLog)
@@ -2395,18 +2413,21 @@ namespace GalWarWin
 
             if (ship.Colony)
             {
-                lblBottom.Text = "Colony Ship";
+                double colonizationValue;
+                string repair = string.Empty;
                 if (ship.Player.IsTurn)
                 {
-                    double colonizationValue = ship.ColonizationValue;
-                    string repair = string.Empty;
+                    colonizationValue = ship.ColonizationValue;
                     Colony repairedFrom = ship.GetRepairedFrom();
                     if (repairedFrom != null)
                         repair = " +" + FormatDouble(ship.GetColonizationValue(ship.GetHPForProd(repairedFrom.GetProductionIncome())) - colonizationValue);
-
-                    lblBottom.Text += " (" + FormatDouble(colonizationValue) + repair + ")";
-
                 }
+                else
+                {
+                    colonizationValue = CostCalculatorForm.CalcColonizationValue(ship);
+                }
+
+                lblBottom.Text += "Colony Ship (" + FormatDouble(colonizationValue) + repair + ")";
             }
             else if (ship.DeathStar)
             {
@@ -2887,11 +2908,15 @@ namespace GalWarWin
 
         public void LogMsg()
         {
+            LogMsg(Game);
+        }
+        private void LogMsg(Game game)
+        {
             log += "\r\n";
 
             try
             {
-                using (StreamWriter streamWriter = new StreamWriter(GetLogPath(), true))
+                using (StreamWriter streamWriter = new StreamWriter(GetLogPath(game), true))
                     streamWriter.Write(log.Substring(flushed));
                 flushed = log.Length;
             }
@@ -2906,12 +2931,24 @@ namespace GalWarWin
             return log;
         }
 
-        private string GetLogPath()
+        private string GetLogPath(Game game)
         {
-            return saveFileDialog1.InitialDirectory + "\\gw.log";
+            return saveFileDialog1.InitialDirectory + "\\" + game.ID + "_gw.log";
         }
 
-        #endregion //Log
+        private void LoadLog(Game oldGame)
+        {
+            if (oldGame != null && log.Trim().Length > 0)
+                LogMsg(oldGame);
+            log = string.Empty;
 
+            string logPath = GetLogPath(Game);
+            if (File.Exists(logPath))
+                using (StreamReader reader = new StreamReader(logPath))
+                    log = reader.ReadToEnd();
+        }
     }
+
+    #endregion //Log
+
 }
