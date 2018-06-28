@@ -937,10 +937,7 @@ namespace GalWar
             Ship newShip = player.NewShip(handler, this.Tile, design);
             player.GoldIncome(this.value - design.Cost);
             if (newShip.Player == anomShip.Player)
-            {
                 newShip.LoseMove();
-                newShip.Player.GoldIncome(-newShip.GetUpkeepReturn(newShip.MaxSpeed));
-            }
 
             if (anomShip.Player != player)
             {

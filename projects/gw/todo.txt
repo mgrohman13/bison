@@ -1,5 +1,6 @@
 UI
 
+min gold on ship build neg upkeep return
 CostCalcForm DS/trans problems
 bulding PD gold min/avg
 research pct ugly - doesnt fit
@@ -53,6 +54,7 @@ combat predict performance
 
 GAMEPLAY
 
+anom pull curplay lose move?
 bombard combat get exp out instead of automatic add
 anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
