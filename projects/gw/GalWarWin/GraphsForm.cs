@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -199,7 +200,7 @@ namespace GalWarWin
         }
         internal static double GetLastResearched(Dictionary<Player, double> research, Player player)
         {
-            return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetLastResearched();
+            return research[player] / research[MainForm.Game.CurrentPlayer] * MainForm.Game.CurrentPlayer.GetShipDesigns().Max(design => design.Research);
         }
 
         private Label NewLabel(int x, int y, string text = "", Color? backColor = null, bool bold = false)

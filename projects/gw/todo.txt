@@ -1,5 +1,9 @@
 UI
 
+ship moved path
+	teleport
+	undo bug?
+escape on ship management popup closes management
 min gold on ship build neg upkeep return
 CostCalcForm DS/trans problems
 bulding PD gold min/avg
@@ -75,6 +79,8 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
+level up uses full research?
+	change to last?
 increase colonization cost?
 new game parameters
 	num anomalies (start/rate)

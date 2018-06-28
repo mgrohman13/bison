@@ -64,18 +64,18 @@ namespace GalWarWin
             foreach (double v in def.Values)
                 maxDef = Math.Max(maxDef, v);
 
-            form.textBox1.Text = "Attacker:\r\n";
+            form.textBox1.Text = "Attacker:" + Environment.NewLine;
             foreach (var pair in att)
             {
                 int val = (int)Math.Ceiling(pair.Value / maxAtt * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
-                form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+                form.textBox1.Text += string.Format("{0} - {1}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
             }
 
-            form.textBox1.Text += "\r\nDefender:\r\n";
+            form.textBox1.Text += Environment.NewLine + "Defender:" + Environment.NewLine;
             foreach (var pair in def)
             {
                 int val = (int)Math.Ceiling(pair.Value / maxDef * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
-                form.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
+                form.textBox1.Text += string.Format("{0} - {1}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
             }
 
             form.ShowDialog();
@@ -87,9 +87,9 @@ namespace GalWarWin
             IDictionary<int, double> table = Consts.GetDamageTable(att, def, out avgAtt, out avgDef);
 
             form.textBox1.Text = avgAtt.ToString("+0.00").PadLeft(8);
-            form.textBox1.Text += "\r\n";
+            form.textBox1.Text += Environment.NewLine;
             form.textBox1.Text += avgDef.ToString("-0.00").PadLeft(8);
-            form.textBox1.Text += "\r\n\r\n";
+            form.textBox1.Text += Environment.NewLine + Environment.NewLine;
 
             double total = table.Values.Sum();
             foreach (var pair in table)
@@ -97,7 +97,7 @@ namespace GalWarWin
                 form.textBox1.Text += pair.Key.ToString("+#;-#;0").PadLeft(5);
                 form.textBox1.Text += ": ";
                 form.textBox1.Text += MainForm.FormatPct(pair.Value / total, true).PadLeft(4);
-                form.textBox1.Text += "\r\n";
+                form.textBox1.Text += Environment.NewLine;
             }
 
             form.ShowDialog();
@@ -107,7 +107,7 @@ namespace GalWarWin
         {
             form.textBox1.Text = string.Empty;
             foreach (Game.Result result in results)
-                form.textBox1.Text += result.Player.Name + " - " + result.Points.ToString() + "\r\n";
+                form.textBox1.Text += result.Player.Name + " - " + result.Points.ToString() + Environment.NewLine;
             form.textBox1.SelectAll();
 
             form.Size = new Size(300, 300);

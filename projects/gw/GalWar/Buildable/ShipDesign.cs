@@ -820,7 +820,7 @@ namespace GalWar
             double maxCost = Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
             double min = minCost * 1.3;
             if (maxCost > min)
-                return Game.Random.GaussianOE(maxCost, .169, 1.3, min);
+                return Game.Random.GaussianOE(maxCost, 1, 1, min);
             return min;
         }
 

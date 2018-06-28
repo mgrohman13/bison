@@ -278,7 +278,7 @@ namespace GalWarWin
             double bombardDamage = (double)this.nudDS.Value;
 
             this.txtColonyValue.Text = ( colony
-                    ? MainForm.FormatDouble(cost * Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game.CurrentPlayer.GetLastResearched(), false))
+                    ? MainForm.FormatDouble(cost * Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game, false))
                     : string.Empty );
         }
 
