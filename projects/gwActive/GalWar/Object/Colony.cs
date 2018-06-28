@@ -408,6 +408,11 @@ namespace GalWar
             double population = 0, production = 0;
             TurnStuff(ref population, ref production, ref gold, ref research, true, false);
 
+            if (this.Repair == 0)
+                this.ProdGuess += GetTotalIncome() / 3.0;
+            else if (this.RepairShip == null)
+                this.ProdGuess += GetTotalIncome() / 6.0;
+
             this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
 
             ResetRounding();
@@ -435,10 +440,6 @@ namespace GalWar
 
             if (built || this.Buildable is PlanetDefense)
                 this.ProdGuess = 0;
-            else if (this.Repair == 0)
-                this.ProdGuess += GetTotalIncome() / 3.0;
-            else if (this.RepairShip == null)
-                this.ProdGuess += GetTotalIncome() / 6.0;
 
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
         }

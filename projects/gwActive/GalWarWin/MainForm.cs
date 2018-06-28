@@ -29,7 +29,6 @@ namespace GalWarWin
             private set
             {
                 _game = value;
-                log += "****** " + Game.ID + " " + Game.Turn + "_" + ( Game.currentPlayer + 1 ) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***\r\n\r\n";
             }
         }
 
@@ -2765,7 +2764,7 @@ namespace GalWarWin
             case Anomaly.AnomalyType.AskTerraform:
                 SelectTile(( (Colony)info[0] ).Tile);
                 RefreshAll();
-                return ShowOption("Terraform Planet?\r\n+" + ( (int)info[1] ) + " Quality\r\n" + FormatIncome(-(double)info[2]) + " Gold");
+                return ShowOption("Terraform Planet?" + Environment.NewLine + "+" + ( (int)info[1] ) + " Quality" + Environment.NewLine + FormatIncome(-(double)info[2]) + " Gold");
 
             case Anomaly.AnomalyType.Terraform:
                 SelectTile(( (Planet)info[0] ).Tile);
@@ -2901,7 +2900,7 @@ namespace GalWarWin
 
         public void LogMsg(string format, params object[] args)
         {
-            log += string.Format(format, args) + "\r\n";
+            log += string.Format(format, args) + Environment.NewLine;
         }
 
         public void LogMsg()
@@ -2910,7 +2909,7 @@ namespace GalWarWin
         }
         private void LogMsg(Game game)
         {
-            log += "\r\n";
+            log += Environment.NewLine;
 
             try
             {
@@ -2926,7 +2925,11 @@ namespace GalWarWin
 
         public string GetLog()
         {
-            return log;
+            string retVal = log;
+            const int max = 65536;
+            if (retVal.Length > max)
+                retVal = retVal.Substring(retVal.IndexOf(Environment.NewLine + Environment.NewLine, retVal.Length - max)).TrimStart();
+            return retVal.TrimStart();
         }
 
         private string GetLogPath(Game game)
@@ -2938,12 +2941,15 @@ namespace GalWarWin
         {
             if (oldGame != null && log.Trim().Length > 0)
                 LogMsg(oldGame);
-            log = string.Empty;
+
+            log = "****** " + Game.ID + " " + Game.Turn + "_" + ( Game.currentPlayer + 1 ) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***" + Environment.NewLine;
+            LogMsg(Game);
 
             string logPath = GetLogPath(Game);
             if (File.Exists(logPath))
                 using (StreamReader reader = new StreamReader(logPath))
-                    log = reader.ReadToEnd();
+                    log += reader.ReadToEnd();
+            flushed = log.Length;
         }
     }
 
