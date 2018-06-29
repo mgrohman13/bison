@@ -1292,7 +1292,7 @@ namespace GalWar
             else
             {
                 int reducedPlanetDamage = Game.Random.Round(planetDamage * initPop / (double)colonyDamage);
-                if (initPop > 0 && initPop < colonyDamage && reducedPlanetDamage <= initQuality && !handler.Continue(friendly))
+                if (initPop > 0 && initPop < colonyDamage && reducedPlanetDamage <= initQuality && reducedPlanetDamage < planetDamage && !handler.Continue(friendly))
                 {
                     popKilled = initPop;
                     qualityDestroyed = reducedPlanetDamage;

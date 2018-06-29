@@ -74,6 +74,9 @@ anomaly gold balancing at full vs consolation value
 	e.g. soldiers "other" gives full gold?
 why do enemy colonies show repair amt?
 	prod repair randomness?
+production
+	allow storing separate per buildable
+	make repair a buildable
 rchance > 1 throws off max
 
 
