@@ -82,6 +82,7 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
+max design cost OE??
 level up uses full research?
 	change to last?
 increase colonization cost?

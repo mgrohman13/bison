@@ -1079,10 +1079,9 @@ namespace GalWarWin
                 lblLoc.Text = GetLoction(raw);
             }
         }
-        public static string GetLoction(Tile tile)
+        private static string GetLoction(Tile tile)
         {
-            return Tile.GetDistance(Game.Center, tile) + "  :  "
-                    + new Point(tile.X - Game.Center.X, tile.Y - Game.Center.Y);
+            return Tile.GetDistance(Game.Center, tile) + "  :  " + tile.GetLoction();
         }
         private void DragPan(PointForm point)
         {
@@ -2623,7 +2622,7 @@ namespace GalWarWin
         public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
         {
             double newAtt, newDef, newHP, newResearch, newProd;
-            colony.GetPlanetDefenseInc(production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out newResearch, out newProd, false, false);
+            colony.GetPlanetDefenseInc(buildable, production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out newResearch, out newProd, false, false);
             return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
         }
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)

@@ -7,64 +7,66 @@ namespace GalWar
     [Serializable]
     public abstract class Buildable
     {
-        [NonSerialized]
-        private double _production;
+        protected Colony colony;
+        private ushort _production;
 
-        protected Buildable()
+        protected Buildable(Colony colony)
         {
-            checked
-            {
-                this._production = double.NaN;
-            }
+            this.colony = colony;
         }
 
-        internal protected double production
+        public int Production
         {
             get
             {
+                if (!this.StoresProduction)
+                    throw new Exception();
                 return this._production;
             }
             protected set
             {
+                if (!this.StoresProduction)
+                    throw new Exception();
                 checked
                 {
-                    this._production = value;
+                    this._production = (ushort)value;
                 }
             }
         }
-
-        public abstract int Cost
-        {
-            get;
-        }
-
-        internal abstract bool NeedsTile
-        {
-            get;
-        }
-
-        internal abstract bool Multiple
-        {
-            get;
-        }
-
-        public virtual bool HandlesFraction
+        public virtual int? Cost
         {
             get
             {
-                return false;
+                return null;
             }
         }
-
-        internal void SetFraction(double production)
+        public abstract bool StoresProduction
         {
-            this.production = production;
+            get;
         }
 
-        internal abstract void Build(IEventHandler handler, Colony colony, Tile tile);
+        internal abstract bool Build(IEventHandler handler, double production);
 
-        internal abstract bool CanBeBuiltBy(Colony colony);
+        public string GetProdText(string curProd)
+        {
+            return curProd + ( this.Cost.HasValue ? " / " + this.Cost.Value.ToString() : string.Empty );
+        }
 
-        public abstract string GetProdText(string curProd);
+        internal abstract void GetTurnIncome(ref double production, ref double gold, bool minGold);
+
+        protected void LoseProduction(double loseProduction)
+        {
+            double production = this.production, gold = 0;
+            LoseProduction(loseProduction, ref production, ref gold, Consts.ProductionForGold);
+
+            this.production = RoundValue(production, ref gold, Consts.ProductionForGold);
+
+            this.Player.AddGold(gold);
+        }
+        protected void LoseProduction(double loseProduction, ref double production, ref double gold, double rate)
+        {
+            gold += loseProduction / rate;
+            production -= loseProduction;
+        }
     }
 }

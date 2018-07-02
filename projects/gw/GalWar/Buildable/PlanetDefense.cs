@@ -5,37 +5,14 @@ using System.Linq;
 namespace GalWar
 {
     [Serializable]
-    public class PlanetDefense : Buildable
+    public abstract class PlanetDefense : Buildable
     {
-        internal PlanetDefense()
+        internal PlanetDefense(Colony colony)
+            : base(colony)
         {
         }
 
-        public override int Cost
-        {
-            get
-            {
-                return 0;
-            }
-        }
-
-        internal override bool NeedsTile
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        internal override bool Multiple
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public override bool HandlesFraction
+        public override bool StoresProduction
         {
             get
             {
@@ -43,25 +20,12 @@ namespace GalWar
             }
         }
 
-        internal override void Build(IEventHandler handler, Colony colony, Tile tile)
+        internal override bool Build(IEventHandler handler, double production)
         {
-            colony.BuildPlanetDefense(this.production, false);
-            this.production = 0;
-        }
-
-        internal override bool CanBeBuiltBy(Colony colony)
-        {
-            return true;
-        }
-
-        public override string GetProdText(string curProd)
-        {
-            return string.Empty;
-        }
-
-        public override string ToString()
-        {
-            return "Planet Defenses";
+            production += this.Production;
+            this.Production = 0;
+            colony.BuildPlanetDefense(production);
+            return false;
         }
     }
 }

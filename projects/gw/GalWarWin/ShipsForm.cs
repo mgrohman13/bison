@@ -113,7 +113,7 @@ namespace GalWarWin
             }
             private void SetLocation()
             {
-                Location = MainForm.GetLoction(ship.Tile);
+                Location = ship.Tile.GetLoction();
             }
             public static IOrderedEnumerable<ShipInfo> SortLocation(IOrderedEnumerable<ShipInfo> items)
             {

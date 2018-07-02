@@ -234,6 +234,11 @@ namespace GalWar
             return null;
         }
 
+        public string GetLoction()
+        {
+            return new MattUtil.Point(this.X - Game.Center.X, this.Y - Game.Center.Y).ToString();
+        }
+
         public override string ToString()
         {
             return "(" + this.X + "," + this.Y + ")";

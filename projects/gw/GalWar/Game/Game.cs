@@ -59,8 +59,6 @@ namespace GalWar
         #region fields and constructors
 
         private Graphs _graphs;
-        public readonly StoreProd StoreProd;
-        public readonly PlanetDefense PlanetDefense;
 
         internal readonly ShipNames ShipNames;
 
@@ -97,9 +95,6 @@ namespace GalWar
                 AssertException.Assert(mapSize < 39);
                 AssertException.Assert(planetPct > .13);
                 AssertException.Assert(planetPct < .65);
-
-                this.StoreProd = new StoreProd();
-                this.PlanetDefense = new PlanetDefense();
 
                 this.ShipNames = new ShipNames(numPlayers);
 

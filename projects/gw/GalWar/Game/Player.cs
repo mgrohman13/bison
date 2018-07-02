@@ -360,14 +360,21 @@ namespace GalWar
         {
             this.PDAtt = GetPDStat(this.PDAtt, design.Att);
             this.PDDef = GetPDStat(this.PDDef, design.Def);
+
+            int min = Game.Random.GaussianCappedInt(Math.Max(PDAtt, PDDef) * Consts.PlanetDefenseStatRatio + 1, Consts.PlanetDefenseRndm, 1);
+            if (PDAtt < min)
+                PDAtt = min;
+            if (PDDef < min)
+                PDDef = min;
         }
         private int GetPDStat(int cur, int add)
         {
-            return Math.Max(GetPDStat(( cur + add * Consts.PlanetDefenseStatRndm ) / ( 1 + Consts.PlanetDefenseStatRndm )), GetPDStat(add));
+            double count = Math.Sqrt(designs.Count + 1);
+            return Math.Max(GetPDStat(( count * cur + add ) / ( count + 1 )), GetPDStat(add));
         }
         private static int GetPDStat(double stat)
         {
-            return Game.Random.GaussianOEInt(stat, Consts.PlanetDefenseStatRndm, Consts.PlanetDefenseStatRndm, 1);
+            return Game.Random.GaussianOEInt(stat + 1, Consts.PlanetDefenseRndm, Consts.PlanetDefenseRndm, 1);
         }
 
         public int PlanetDefenseAtt
@@ -559,11 +566,9 @@ namespace GalWar
             foreach (Ship ship in this.ships)
                 ship.EndTurn();
 
-            double gold = 0;
             int research = 0;
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
-                colony.EndTurn(handler, ref gold, ref research);
-            this.AddGold(gold);
+                colony.EndTurn(handler, ref research);
             this.newResearch = research;
         }
 

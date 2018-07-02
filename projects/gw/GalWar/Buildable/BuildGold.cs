@@ -1,35 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace GalWar
 {
-    [Serializable]
-    public class StoreProd : Buildable
+    public class BuildGold : Buildable
     {
-        internal StoreProd(Colony colony, int production)
+        internal BuildGold(Colony colony)
             : base(colony)
         {
-            this.Production = production;
         }
 
         public override bool StoresProduction
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
         internal override bool Build(IEventHandler handler, double production)
         {
-            this.Production += Game.Random.Round(production * ( 1 - Consts.StoreProdLossPct ));
+            colony.Player.AddGold(production / Consts.GoldProductionForGold);
             return false;
         }
 
         public override string ToString()
         {
-            return "Store Production";
+            return "Gold";
         }
     }
 }

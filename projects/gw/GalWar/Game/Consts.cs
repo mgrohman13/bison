@@ -57,8 +57,9 @@ namespace GalWar
         public const double BaseDesignHPMult = .3;
         //percent of upkeep returned when a ship doesnt move
         public const double UpkeepUnmovedReturn = .169;
-        //as a multiple of upkeep payoff
-        public const double MinCostMult = .91;
+        //as a multiple of and addition to upkeep payoff
+        public const double MinCostMult = 1.3;
+        public const double MinCostBuffer = 2.6;
         //as a multiple and a power of research
         public const double MaxCostMult = 65;
         public const double MaxCostPower = 0.21;
@@ -145,15 +146,15 @@ namespace GalWar
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
-        public const double PlanetDefenseStatRndm = .091;
-        public const double PlanetDefenseBuildRndm = .117;
+        public const double PlanetDefenseStatRatio = .91;
+        public const double PlanetDefenseRndm = .091;
         public const double PlanetDefensesCostMult = .78;
         //percent of research that automatically upgrades planet defenses
         public const double PlanetDefensesUpgradeWeight = .21;
         //PlanetDefensesUpkeepMult will be multiplied by GetProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .65;
         public const double PlanetDefensesAttackCostMult = .91;
-        public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 1.3;
+        public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 2.1;
 
         public const double FLOAT_ERROR_ZERO = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 2 ) );
         public const double FLOAT_ERROR_ONE = 1.0 + FLOAT_ERROR_ZERO;

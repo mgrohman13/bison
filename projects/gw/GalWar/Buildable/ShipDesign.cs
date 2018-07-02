@@ -5,7 +5,7 @@ using System.Linq;
 namespace GalWar
 {
     [Serializable]
-    public class ShipDesign : Buildable, IShipStats
+    public class ShipDesign : IShipStats
     {
         #region cost
 
@@ -160,7 +160,7 @@ namespace GalWar
                     design = player.ResearchFocusDesign;
                     if (design == null)
                     {
-                        designs = player.GetShipDesigns();
+                        designs = player.GetDesigns();
                         focus = player.ResearchFocus;
                     }
                 }
@@ -196,18 +196,12 @@ namespace GalWar
 
                     if (double.IsNaN(minCost))
                     {
-                        minCost = GetMinCost(player.Game) + MinCostBuffer;
+                        minCost = GetMinCost(player.Game);
                         maxCost = GetMaxCost(research, minCost);
                     }
                     else
                     {
-                        double absMin = GetAbsMinCost(player.Game) + MinCostBuffer;
-                        if (minCost < absMin)
-                        {
-                            minCost = absMin;
-                            //if (maxCost < minCost)
-                            //    maxCost = minCost;
-                        }
+                        minCost = Math.Max(minCost, GetMinCost(player.Game));
                     }
 
                     //  ------  Cost/Upkeep       ------
@@ -216,7 +210,9 @@ namespace GalWar
                     GetCost(player.Game, upkeepPct, out cost, out upkeep, ref upkRnd, focus);
                     while (cost > maxCost)
                     {
-                        switch (GetReduce(cost, hpMult, forceColony, forceTrans))
+                        ModifyStat ms = GetReduce(cost, hpMult, forceColony, forceTrans);
+                        Console.WriteLine(string.Format("Reduce: {0} {1} {2}", ms, cost, maxCost));
+                        switch (ms)
                         {
                         case ModifyStat.Att:
                             --this._att;
@@ -249,7 +245,9 @@ namespace GalWar
                     }
                     while (cost < minCost)
                     {
-                        switch (GetIncrease(hpMult))
+                        ModifyStat ms = GetIncrease(hpMult);
+                        Console.WriteLine(string.Format("Increase: {0} {1} {2}", ms, cost, minCost));
+                        switch (ms)
                         {
                         case ModifyStat.Att:
                             ++this._att;
@@ -438,7 +436,7 @@ namespace GalWar
             }
         }
 
-        public override int Cost
+        public int Cost
         {
             get
             {
@@ -806,22 +804,16 @@ namespace GalWar
         private double GetMinCost(Game game)
         {
             //random increase to absolute minimum
-            double minCost = GetAbsMinCost(game);
-            return Game.Random.GaussianOE(minCost * 1.3, .13, .039, minCost);
-        }
-        private const double MinCostBuffer = 2.1;
-        private double GetAbsMinCost(Game game)
-        {
-            return this.GetUpkeepPayoff(game) * Consts.MinCostMult + MinCostBuffer;
+            double upkPayoff = GetUpkeepPayoff(game);
+            return Game.Random.GaussianOE(upkPayoff * Consts.MinCostMult, ( Consts.MinCostMult - 1 ) / 1.69, .052, upkPayoff) + Consts.MinCostBuffer;
         }
         private static double GetMaxCost(int research, double minCost)
         {
             //max cost is more of a guideline than actual rule
             double maxCost = Math.Pow(research, Consts.MaxCostPower) * Consts.MaxCostMult;
-            double min = minCost * 1.3;
-            if (maxCost > min)
-                return Game.Random.GaussianOE(maxCost, 1, 1, min);
-            return min;
+            if (maxCost > minCost)
+                return minCost + Game.Random.OE(maxCost - minCost);
+            return minCost;
         }
 
         private void GetCost(Game game, double upkeepPct, out double cost, out int upkeep, ref double upkRnd, FocusStat focus)
@@ -1069,60 +1061,12 @@ namespace GalWar
 
         #endregion //internal
 
-        #region Buildable
-
-        internal override bool NeedsTile
-        {
-            get
-            {
-                return true;
-            }
-        }
-        internal override bool Multiple
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        internal override void Build(IEventHandler handler, Colony colony, Tile tile)
-        {
-            Ship ship = colony.Player.NewShip(handler, tile, this);
-
-            int max = Math.Min(colony.AvailablePop, ship.FreeSpace);
-            if (max > 0)
-            {
-                max = handler.MoveTroops(colony, max, colony.Population, colony.Soldiers, true);
-                if (max > 0)
-                {
-                    colony.MovePop(handler, max, ship);
-                    //costs more than a standard move
-                    colony.Player.GoldIncome(-max * Consts.Income);
-                    //troops can be moved again next turn
-                    ship.ResetMoved();
-                }
-            }
-        }
-
-        internal override bool CanBeBuiltBy(Colony colony)
-        {
-            return colony.Player.GetDesigns().Contains(this);
-        }
-
-        public override string GetProdText(string curProd)
-        {
-            return curProd + " / " + this.Cost.ToString();
-        }
+        #region public
 
         public override string ToString()
         {
             return ShipNames.GetName(this.Name, this.Mark);
         }
-
-        #endregion //Buildable
-
-        #region public
 
         public double GetStrength()
         {

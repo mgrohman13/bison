@@ -81,7 +81,7 @@ namespace GalWarWin
 
         private void Loc(int x, int y, int i, Colony colony)
         {
-            Label location = (Label)( controls[0, i] = NewLabel(x, y, MainForm.GetLoction(colony.Tile),
+            Label location = (Label)( controls[0, i] = NewLabel(x, y, colony.Tile.GetLoction(),
                     click: true, bold: colony.Tile == MainForm.GameForm.selected) );
             location.Click += new EventHandler((sender, e) =>
             {
