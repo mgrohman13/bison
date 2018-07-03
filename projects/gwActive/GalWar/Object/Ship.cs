@@ -934,13 +934,15 @@ namespace GalWar
                 int att, def, hp, speed, trans;
                 double ds;
                 LevelUpStats(this.NextExpType, out att, out def, out hp, out speed, out trans, out ds);
+                if (this.NextExpType == ExpType.DS && !this.DeathStar)
+                    this.DeathStar = true;
+                if (this.DeathStar && this.NextExpType != ExpType.DS && BombardDamage != ds)
+                    ;
                 this.Att = att;
                 this.Def = def;
                 this.MaxHP = hp;
                 this.MaxSpeed = speed;
                 this.maxPop = trans;
-                if (this.NextExpType == ExpType.DS && !this.DeathStar)
-                    this.DeathStar = true;
                 this.BombardDamage = ds;
 
                 costInc = this.GetCostLastResearched() - costInc;
@@ -1216,8 +1218,6 @@ namespace GalWar
             ;
             ;
             ;
-            ;
-            ;
 
             this.AddExperience(rawExp, valueExp);
             if (enemy && !colony.Dead && colony.Population > 0)
@@ -1297,27 +1297,60 @@ namespace GalWar
                 qualityDestroyed = GetPlanetDamage(initPop, 1);
                 if (initPop > 0)
                     planetDamage = Game.Random.Round(qualityDestroyed * colonyDamage / (double)initPop);
+                else
+                    ;
+            }
+            else
+            {
+                ;
+                ;
             }
 
             int reducedQuality = qualityDestroyed, reducedPop = popKilled;
             if (initPop < popKilled)
                 reducedQuality = Game.Random.Round(qualityDestroyed * initPop / (double)popKilled);
+            else
+                ;
             if (initQuality < qualityDestroyed)
                 reducedPop = Game.Random.Round(popKilled * initQuality / (double)qualityDestroyed);
+            else
+                ;
             if (initPop < popKilled && reducedQuality < qualityDestroyed && reducedQuality <= initQuality && enemy)
             {
+                ;
+                ;
+                ;
+                ;
+                ;
+                ;
                 if (!handler.Continue(planet, initPop, initQuality, 0, initQuality - reducedQuality, 0, initQuality - qualityDestroyed))
                 {
                     //stop attacking after population is killed off
                     popKilled = initPop;
                     qualityDestroyed = reducedQuality;
                 }
+                else
+                    ;
             }
             else if (initQuality < qualityDestroyed && !handler.Continue(planet, initPop, initQuality, initPop - reducedPop, 0, initPop - popKilled, initQuality - qualityDestroyed))
             {
+                ;
+                ;
+                ;
+                ;
+                ;
+                ;
                 //stop attacking to avoid destroying the planet          
                 popKilled = reducedPop;
                 qualityDestroyed = initQuality;
+            }
+            else
+            {
+                ;
+                ;
+                ;
+                ;
+                ;
             }
 
             //bombard the planet first, since it might get destroyed

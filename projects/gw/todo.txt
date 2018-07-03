@@ -1,5 +1,6 @@
 UI
 
+expand/contract boundaries shouldnt shift current view
 ship moved path
 	teleport
 	undo bug?
@@ -50,6 +51,7 @@ management screens
 	ships/colony view include enemy
 		multi select with all players
 	ShipDesignSortForm to compare actual ships
+	remembers sort
 keyboard?
 combat predict performance
 	partial-mathematical-resolve until limit is reached
@@ -60,6 +62,7 @@ GAMEPLAY
 
 anom pull curplay lose move?
 bombard combat get exp out instead of automatic add
+bombard friendly paying for value exp at full at fll rate vs exp rate?
 anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
 	using generate value instead of this value for compensation?
@@ -74,6 +77,7 @@ anomaly gold balancing at full vs consolation value
 	e.g. soldiers "other" gives full gold?
 why do enemy colonies show repair amt?
 	prod repair randomness?
+	hide ship cost during repair somehow?
 production
 	allow storing separate per buildable
 	make repair a buildable
@@ -100,6 +104,10 @@ planetary defenses still not right
 	auto upg turns 1-7 into 13-7
 	buy defense?  produce but keep prod on ship?
 		rethink concept of prod in general?  stored per design?
+	reducing stats/hp
+	hp ratio?
+		slighter more hp if stats not reduced?
+		random?
 research victory pct decreases with higher research
 	10k=now
 	30k=85% instead of 67%?
@@ -108,7 +116,8 @@ research victory pct decreases with higher research
 	actual chance vs display discrepency?
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
-	reduce impact of speed in general, while at it
+	reduce impact of speed in general, while at it?
+	att/def adjusts slightly?
 6 tiers saved? return length?
 graph dictionaries can be arrays
 standardize Tile.Game vs Player.Game calls
