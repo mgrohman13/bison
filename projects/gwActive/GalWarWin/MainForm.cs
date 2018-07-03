@@ -1903,7 +1903,7 @@ namespace GalWarWin
                 }
             }
 
-            if (bombard && ship.CurSpeed > 0 && ( !ship.Colony || ShowOption("Bombard planet?") ))
+            if (bombard && ship.CurSpeed > 0 && ship.DeathStar && ( !ship.Colony || ShowOption("Bombard planet?") ))
             {
                 if (ship.CurSpeed == 1)
                     SelectTile(planet.Tile);
@@ -1918,7 +1918,7 @@ namespace GalWarWin
         private bool BombardFriendly(Ship ship, Colony targetColony)
         {
             bool selectNext = true;
-            if (ShowOption("Bombard planet?"))
+            if (ship.DeathStar && ShowOption("Bombard planet?"))
             {
                 if (ship.CurSpeed == 1)
                     SelectTile(targetColony.Tile);
@@ -1984,7 +1984,7 @@ namespace GalWarWin
             {
                 if (colony.HP > 0 && ( !ship.DeathStar || !ShowOption("Bombard planet?") ))
                     CombatForm.ShowForm(ship, colony);
-                else
+                else if (ship.DeathStar || colony.Population > 0)
                     ship.Bombard(this, colony.Planet);
 
                 if (ship.CurSpeed == 0 && !planet.Dead)
@@ -2727,9 +2727,14 @@ namespace GalWarWin
             return SliderForm.ShowForm(new MoveTroops(fromColony, max, totalPop, soldiers, extraCost));
         }
 
-        bool IEventHandler.Continue(bool friendly)
+        bool IEventHandler.Continue(Planet planet, int initPop, int initQuality, int stopPop, int stopQuality, int finalPop, int finalQuality)
         {
-            return ShowOption(friendly ? "This will destroy the planet!  Continue attacking?" : "Planet population has been killed off.  Continue attacking?");
+            bool showPop = true; // ( planet.Player != null && !planet.Player.IsTurn );
+            string format = "{0}Quality: {2}{0}" + ( showPop ? ",    Population: {1}" : string.Empty );
+            Func<int, int, string> GetString = (pop, quality) => string.Format(format, Environment.NewLine, Math.Max(pop, 0).ToString().PadLeft(4), Math.Max(quality, -1).ToString().PadLeft(4));
+            return ShowOption(String.Format("Planet with{1}has been reduced to{2}{0}Continue attacking to {3}?",
+                    Environment.NewLine, GetString(initPop, initQuality), GetString(stopPop, stopQuality),
+                    finalQuality >= 0 ? "reduce Quality down to " + finalQuality : "destroy planet?"));
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)

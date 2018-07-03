@@ -1285,19 +1285,40 @@ namespace GalWar
             int colonyDamage = popKilled = GetColonyDamage(pct);
             int planetDamage = qualityDestroyed = GetPlanetDamage(colonyDamage, pct);
 
-            if (initQuality < qualityDestroyed && !handler.Continue(true))
+            if (friendly)
             {
-                popKilled = Game.Random.Round(popKilled * initQuality / (double)qualityDestroyed);
+                //friendly bombardment kills no population
+                popKilled = 0;
+            }
+            else if (initPop < popKilled && !this.DeathStar)
+            {
+                //non death stars can only kill as much quality as there is enemy population
+                popKilled = initPop;
+                qualityDestroyed = GetPlanetDamage(initPop, 1);
+                if (initPop > 0)
+                    planetDamage = Game.Random.Round(qualityDestroyed * colonyDamage / (double)initPop);
+            }
+
+            int reducedQuality = qualityDestroyed, reducedPop = popKilled;
+            if (initPop < popKilled)
+                reducedQuality = Game.Random.Round(qualityDestroyed * initPop / (double)popKilled);
+            if (initQuality < qualityDestroyed)
+                reducedPop = Game.Random.Round(popKilled * initQuality / (double)qualityDestroyed);
+            if (initPop < popKilled && reducedQuality < qualityDestroyed && reducedQuality <= initQuality && enemy)
+            {
+                if (!handler.Continue(planet, initPop, initQuality, 0, initQuality - reducedQuality, 0, initQuality - qualityDestroyed))
+                {
+                    //stop attacking after population is killed off
+                    popKilled = initPop;
+                    qualityDestroyed = reducedQuality;
+                }
+            }
+            else if (initQuality < qualityDestroyed && !handler.Continue(planet, initPop, initQuality, initPop - reducedPop, 0, initPop - popKilled, initQuality - qualityDestroyed))
+            {
+                //stop attacking to avoid destroying the planet          
+                popKilled = reducedPop;
                 qualityDestroyed = initQuality;
             }
-            int reducedPlanetDamage = Game.Random.Round(qualityDestroyed * initPop / (double)popKilled);
-            if (initPop < popKilled && enemy && reducedPlanetDamage <= initQuality && ( !this.DeathStar || !handler.Continue(false) ))
-            {
-                qualityDestroyed = reducedPlanetDamage;
-                popKilled = initPop;
-            }
-            if (friendly)
-                popKilled = 0;
 
             //bombard the planet first, since it might get destroyed
             initQuality = BombardPlanet(handler, planet, qualityDestroyed, ref rawExp, ref valueExp);

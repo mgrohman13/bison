@@ -108,7 +108,7 @@ namespace GalWar
             return retVal;
         }
 
-        bool IEventHandler.Continue(bool friendly)
+        bool IEventHandler.Continue(Planet planet, int initPop, int initQuality, int stopPop, int stopQuality, int finalPop, int finalQuality)
         {
             callback = true;
 
@@ -116,7 +116,7 @@ namespace GalWar
 
             try
             {
-                retVal = handler.Continue(friendly);
+                retVal = handler.Continue(planet, initPop, initQuality, stopPop, stopQuality, finalPop, finalQuality);
             }
             catch (Exception e)
             {
