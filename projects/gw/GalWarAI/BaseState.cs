@@ -69,7 +69,7 @@ namespace GalWarAI
                 return max;
         }
 
-        bool IEventHandler.Continue(bool friendly)
+        bool IEventHandler.Continue(Planet planet, int initPop, int initQuality, int stopPop, int stopQuality, int finalPop, int finalQuality)
         {
             //TODO
             return false;

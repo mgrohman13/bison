@@ -936,13 +936,15 @@ namespace GalWar
                 int att, def, hp, speed, trans;
                 double ds;
                 LevelUpStats(this.NextExpType, out att, out def, out hp, out speed, out trans, out ds);
+                if (this.NextExpType == ExpType.DS && !this.DeathStar)
+                    this.DeathStar = true;
+                if (this.DeathStar && this.NextExpType != ExpType.DS && BombardDamage != ds)
+                    ;
                 this.Att = att;
                 this.Def = def;
                 this.MaxHP = hp;
                 this.MaxSpeed = speed;
                 this.maxPop = trans;
-                if (this.NextExpType == ExpType.DS && !this.DeathStar)
-                    this.DeathStar = true;
                 this.BombardDamage = ds;
 
                 costInc = this.TotalCost - costInc;
@@ -1176,9 +1178,10 @@ namespace GalWar
             AssertException.Assert(planet != null);
             AssertException.Assert(Tile.IsNeighbor(this.Tile, planet.Tile));
             AssertException.Assert(this.CurSpeed > 0);
+            Colony colony = planet.Colony;
             bool friendly = ( this.Player == planet.Player );
-            if (friendly)
-                AssertException.Assert(this.DeathStar);
+            bool enemy = ( !friendly && colony != null );
+            AssertException.Assert(this.DeathStar || ( enemy && ( colony.HP > 0 || colony.Population > 0 ) ));
 
             //log initial state
             handler.OnBombard(this, planet, int.MinValue, int.MinValue, int.MinValue);
@@ -1188,9 +1191,7 @@ namespace GalWar
             //set freeDmg to 0 initially to ensure we log something, even if it is just "No Damage"
             int freeDmg = 0;
 
-            Colony colony = planet.Colony;
             double pct = 1, rawExp = 0, valueExp = 0;
-            bool enemy = ( !friendly && colony != null );
             if (enemy && colony.HP > 0)
                 pct = AttackColony(handler, colony, out freeDmg, ref rawExp, ref valueExp);
 
@@ -1202,7 +1203,7 @@ namespace GalWar
                 else
                 {
                     int colonyDamage, planetDamage;
-                    Bombard(handler, planet, friendly, pct, out colonyDamage, out planetDamage, ref rawExp, ref valueExp);
+                    Bombard(handler, planet, friendly, enemy, pct, out colonyDamage, out planetDamage, ref rawExp, ref valueExp);
 
                     if (freeDmg == -1 && ( colonyDamage != 0 || planetDamage != 0 ))
                         freeDmg = 0;
@@ -1216,20 +1217,19 @@ namespace GalWar
             if (freeDmg != -1)
                 handler.OnBombard(this, planet, freeDmg, 0, 0);
 
-            ;
-            ;
-            ;
-            ;
-            ;
-
             this.AddExperience(rawExp, valueExp);
-            if (colony != null)
+            if (enemy && !colony.Dead && colony.Population > 0)
+            {
                 colony.AddExperience(rawExp, valueExp);
-            if (!enemy)
+            }
+            else
             {
                 double gold = this.GetValueExpForRawExp(rawExp) + valueExp;
-                if (friendly)
+                if (friendly && !colony.Dead && colony.Population > 0)
+                {
+                    colony.AddExperience(rawExp, valueExp);
                     gold *= 2;
+                }
                 this.Player.GoldIncome(-gold);
             }
 
@@ -1275,7 +1275,7 @@ namespace GalWar
             return this.BombardDamage * Consts.BombardFreeDmgMult / costPerHP;
         }
 
-        private void Bombard(IEventHandler handler, Planet planet, bool friendly, double pct, out int popKilled, out int qualityDestroyed, ref double rawExp, ref double valueExp)
+        private void Bombard(IEventHandler handler, Planet planet, bool friendly, bool enemy, double pct, out int popKilled, out int qualityDestroyed, ref double rawExp, ref double valueExp)
         {
             int initPop = ( planet.Colony == null ? 0 : planet.Colony.Population );
             int initQuality = planet.Quality;
@@ -1285,20 +1285,37 @@ namespace GalWar
 
             if (friendly)
             {
+                //friendly bombardment kills no population
                 popKilled = 0;
-                if (initQuality > 0 && initQuality < planetDamage && !handler.Continue(friendly))
-                    qualityDestroyed = initQuality;
-                else
-                    ;
             }
-            else
+            else if (initPop < popKilled && !this.DeathStar)
             {
-                int reducedPlanetDamage = Game.Random.Round(planetDamage * initPop / (double)colonyDamage);
-                if (initPop > 0 && initPop < colonyDamage && reducedPlanetDamage <= initQuality && reducedPlanetDamage < planetDamage && !handler.Continue(friendly))
+                //non death stars can only kill as much quality as there is enemy population
+                popKilled = initPop;
+                qualityDestroyed = GetPlanetDamage(initPop, 1);
+                if (initPop > 0)
+                    planetDamage = Game.Random.Round(qualityDestroyed * colonyDamage / (double)initPop);
+            }
+
+            int reducedQuality = qualityDestroyed, reducedPop = popKilled;
+            if (initPop < popKilled)
+                reducedQuality = Game.Random.Round(qualityDestroyed * initPop / (double)popKilled);
+            if (initQuality < qualityDestroyed)
+                reducedPop = Game.Random.Round(popKilled * initQuality / (double)qualityDestroyed);
+            if (initPop < popKilled && reducedQuality < qualityDestroyed && reducedQuality <= initQuality && enemy)
+            {
+                if (!handler.Continue(planet, initPop, initQuality, 0, initQuality - reducedQuality, 0, initQuality - qualityDestroyed))
                 {
+                    //stop attacking after population is killed off
                     popKilled = initPop;
-                    qualityDestroyed = reducedPlanetDamage;
+                    qualityDestroyed = reducedQuality;
                 }
+            }
+            else if (initQuality < qualityDestroyed && !handler.Continue(planet, initPop, initQuality, initPop - reducedPop, 0, initPop - popKilled, initQuality - qualityDestroyed))
+            {
+                //stop attacking to avoid destroying the planet          
+                popKilled = reducedPop;
+                qualityDestroyed = initQuality;
             }
 
             //bombard the planet first, since it might get destroyed

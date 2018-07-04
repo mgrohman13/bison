@@ -695,7 +695,7 @@ namespace GalWarWin
 
         private Dictionary<Tile, float> GetMoves()
         {
-            gm1 = gm2 = 0;
+            gm1 = gm2 = gm3 = 0;
 
             Dictionary<Tile, Point> temp = new Dictionary<Tile, Point>();
             Dictionary<Tile, float> totals = new Dictionary<Tile, float>();
@@ -730,11 +730,12 @@ namespace GalWarWin
 
             Console.WriteLine(gm1);
             Console.WriteLine(gm2);
+            Console.WriteLine(gm3);
 
             return totals;
         }
 
-        private static int gm1, gm2;
+        private static int gm1, gm2, gm3;
         private static float GetStatFromValue(float value)
         {
             if (value < Consts.FLOAT_ERROR_ONE)
@@ -791,6 +792,10 @@ namespace GalWarWin
                     add = 1;
                     showPlayer = combatant.Player;
                 }
+                else
+                {
+                    ++gm3;
+                }
 
                 Ship ship = tile.SpaceObject as Ship;
                 if (showPlayer != null && ( tile.SpaceObject == null ||
@@ -805,29 +810,33 @@ namespace GalWarWin
 
         private void AddTiles(Dictionary<Tile, Point> retVal, Player enemy, Tile tile, int speed, bool ignoreZoc)
         {
-            foreach (Tile neighbor in Tile.GetNeighbors(tile))
-            {
-                ++gm2;
-                Point v1;
-                retVal.TryGetValue(neighbor, out v1);
-                int damage = v1.X;
-                int move = v1.Y;
-                int newDamage = Math.Max(speed, damage);
-                int newMove = speed - ( showAtt ? 1 : 0 );
+            if (speed > 0)
+                foreach (Tile neighbor in Tile.GetNeighbors(tile))
+                {
+                    ++gm2;
+                    Point v1;
+                    retVal.TryGetValue(neighbor, out v1);
+                    int damage = v1.X;
+                    int move = v1.Y;
+                    int newDamage = Math.Max(speed, damage);
+                    int newMove = speed - ( showAtt ? 1 : 0 );
 
-                Ship ship;
-                if (newMove > move && ( neighbor.SpaceObject == null || neighbor.SpaceObject is Anomaly ||
-                        ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
-                        && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
-                {
-                    retVal[neighbor] = new Point(newDamage, newMove);
-                    AddTiles(retVal, enemy, neighbor, newMove - ( showAtt ? 0 : 1 ), ignoreZoc);
+                    Ship ship;
+                    if (newMove > move && ( neighbor.SpaceObject == null || neighbor.SpaceObject is Anomaly ||
+                            ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
+                            && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
+                    {
+                        AddTiles(retVal, enemy, neighbor, newMove - ( showAtt ? 0 : 1 ), ignoreZoc);
+                    }
+                    else if (newDamage > damage)
+                    {
+                        retVal[neighbor] = new Point(newDamage, move);
+                    }
+                    else
+                    {
+                        gm3++;
+                    }
                 }
-                else if (newDamage > damage)
-                {
-                    retVal[neighbor] = new Point(newDamage, move);
-                }
-            }
         }
 
         #endregion //Drawing
@@ -1898,7 +1907,7 @@ namespace GalWarWin
                 }
             }
 
-            if (bombard && ship.CurSpeed > 0 && ( !ship.Colony || ShowOption("Bombard planet?") ))
+            if (bombard && ship.CurSpeed > 0 && ship.DeathStar && ( !ship.Colony || ShowOption("Bombard planet?") ))
             {
                 if (ship.CurSpeed == 1)
                     SelectTile(planet.Tile);
@@ -1913,7 +1922,7 @@ namespace GalWarWin
         private bool BombardFriendly(Ship ship, Colony targetColony)
         {
             bool selectNext = true;
-            if (ShowOption("Bombard planet?"))
+            if (ship.DeathStar && ShowOption("Bombard planet?"))
             {
                 if (ship.CurSpeed == 1)
                     SelectTile(targetColony.Tile);
@@ -1979,7 +1988,7 @@ namespace GalWarWin
             {
                 if (colony.HP > 0 && ( !ship.DeathStar || !ShowOption("Bombard planet?") ))
                     CombatForm.ShowForm(ship, colony);
-                else
+                else if (ship.DeathStar || colony.Population > 0)
                     ship.Bombard(this, colony.Planet);
 
                 if (ship.CurSpeed == 0 && !planet.Dead)
@@ -2728,9 +2737,14 @@ namespace GalWarWin
             return SliderForm.ShowForm(new MoveTroops(fromColony, max, totalPop, soldiers, extraCost));
         }
 
-        bool IEventHandler.Continue(bool friendly)
+        bool IEventHandler.Continue(Planet planet, int initPop, int initQuality, int stopPop, int stopQuality, int finalPop, int finalQuality)
         {
-            return ShowOption(friendly ? "This will destroy the planet!  Continue attacking?" : "Planet population has been killed off.  Continue attacking?");
+            bool showPop = true; // ( planet.Player != null && !planet.Player.IsTurn );
+            string format = "{0}Quality: {2}" + ( showPop ? ",    Population: {1}" : string.Empty ) + "{0}";
+            Func<int, int, string> GetString = (pop, quality) => string.Format(format, Environment.NewLine, Math.Max(pop, 0).ToString().PadLeft(4), Math.Max(quality, -1).ToString().PadLeft(4));
+            return ShowOption(String.Format("Planet with{1}has been reduced to{2}{0}Continue attacking to {3}?",
+                    Environment.NewLine, GetString(initPop, initQuality), GetString(stopPop, stopQuality),
+                    finalQuality >= 0 ? "reduce Quality down to " + finalQuality : "destroy planet?"));
         }
 
         bool IEventHandler.ConfirmCombat(Combatant attacker, Combatant defender)
