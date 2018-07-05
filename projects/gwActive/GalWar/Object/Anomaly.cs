@@ -598,13 +598,14 @@ namespace GalWar
 
             if (damage < ship.HP)
             {
+                int initPop = ship.Population;
                 double rawExp = 0, valueExp = 0;
 
                 ship.Damage(damage, ref rawExp, ref valueExp);
 
-                ship.Player.GoldIncome(ConsolationValue() + ship.GetDisbandValue(damage) - ship.GetValueExpForRawExp(rawExp) - valueExp);
+                ship.Player.GoldIncome(ConsolationValue() + ship.GetDisbandValue(damage) - ( ship.GetValueExpForRawExp(rawExp) + valueExp ) / Consts.ExpForGold);
 
-                ship.AddExperience(rawExp, valueExp);
+                ship.AddExperience(rawExp, valueExp, initPop);
                 ship.LevelUp(handler);
             }
             else
@@ -981,7 +982,7 @@ namespace GalWar
         {
             int pop = Game.Random.Round(this.value * Consts.PopulationForGoldHigh);
             int hp = Game.Random.Round(this.value / ship.GetProdForHP(1));
-            double soldiers = this.value / Consts.ExpForSoldiers;
+            double soldiers = this.value / Consts.ProductionForSoldiers;
 
             Func<int, int, bool> DoChance = (add, max) =>
             {
