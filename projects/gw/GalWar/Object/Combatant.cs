@@ -84,7 +84,7 @@ namespace GalWar
 
         protected abstract double GetKillExp();
 
-        internal abstract void AddExperience(double rawExp, double valueExp);
+        internal abstract void AddExperience(double rawExp, double valueExp, int initPop);
 
         #endregion //abstract
 
@@ -92,9 +92,19 @@ namespace GalWar
 
         protected double Combat(IEventHandler handler, Combatant defender)
         {
+            int thisPop = this.Population, defenderPop = defender.Population;
+            double rawExp = 0, valueExp = 0;
+            double pct = Combat(handler, defender, ref rawExp, ref valueExp);
+            //exp is always added in equal amount to both ships
+            this.AddExperience(rawExp, valueExp, thisPop);
+            defender.AddExperience(rawExp, valueExp, defenderPop);
+            return pct;
+        }
+        protected double Combat(IEventHandler handler, Combatant defender, ref double rawExp, ref double valueExp)
+        {
             handler.OnCombat(this, defender, int.MinValue, int.MinValue);
 
-            double pct = 0, rawExp = 0, valueExp = 0;
+            double pct = 0;
 
             int round = -1, rounds = this.Att;
             while (++round < rounds && this.HP > 0 && defender.HP > 0)
@@ -118,10 +128,6 @@ namespace GalWar
             //add kill exp before destroying so the player gets paid off for the exp
             rawExp += this.AddKillExp();
             rawExp += defender.AddKillExp();
-
-            //exp is always added in equal amount to both ships
-            this.AddExperience(rawExp, valueExp);
-            defender.AddExperience(rawExp, valueExp);
 
             CheckDestroy(this);
             CheckDestroy(defender);

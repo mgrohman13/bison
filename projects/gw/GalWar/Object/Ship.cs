@@ -856,46 +856,38 @@ namespace GalWar
             return this.GetExpForDamage(this.MaxHP) * Consts.ExperienceDestroyMult;
         }
 
-        internal override void AddExperience(double rawExp, double valueExp)
+        internal override void AddExperience(double rawExp, double valueExp, int initPop)
         {
-            rawExp += valueExp / GetValueExpForRawExp(1);
+            valueExp += GetValueExpForRawExp(rawExp);
 
             if (this.Dead)
             {
-                Player.GoldIncome(GetValueExpForRawExp(rawExp) / Consts.ExpForGold);
+                Player.GoldIncome(valueExp / Consts.ExpForGold);
             }
             else
             {
                 if (this.Population > 0)
                 {
                     double soldiers = this.Population / Consts.PopulationForGoldMid;
-                    soldiers *= rawExp / ( soldiers + this.TotalCost );
-
-                    soldiers *= GalWar.Colony.GetSoldierMult(this.Population, this.Soldiers, GetSoldiersForExp(soldiers));
-
-                    rawExp -= soldiers;
-                    this.Soldiers += Consts.GetExperience(GetSoldiersForExp(soldiers));
+                    soldiers *= valueExp / ( soldiers + TotalCost );
+                    this.Soldiers += GalWar.Colony.GetExperienceSoldiers(this.Population, this.Soldiers, initPop, soldiers, out valueExp);
                 }
 
-                this.curExp += Consts.GetExperience(rawExp);
+                this.curExp += Consts.GetExperience(valueExp / GetValueExpForRawExp(1));
             }
-        }
-        private double GetSoldiersForExp(double exp)
-        {
-            return GetValueExpForRawExp(exp) / Consts.ExpForSoldiers;
         }
 
         internal void AddAnomalyExperience(IEventHandler handler, double cost, bool funky, bool noChange)
         {
-            AddExperience(0, cost);
+            AddExperience(0, cost, this.Population);
             if (funky)
                 GetNextLevel(handler, funky, false);
             LevelUp(handler, funky, noChange);
         }
 
-        internal double GetValueExpForRawExp(double experience)
+        internal double GetValueExpForRawExp(double rawExp)
         {
-            return experience * TotalCost / GetValue();
+            return rawExp * TotalCost / GetValue();
         }
 
         internal void StartTurn(IEventHandler handler)
@@ -1191,6 +1183,8 @@ namespace GalWar
             //set freeDmg to 0 initially to ensure we log something, even if it is just "No Damage"
             int freeDmg = 0;
 
+            int thisPop = this.Population;
+            int colonyPop = ( colony == null ? 0 : colony.Population );
             double pct = 1, rawExp = 0, valueExp = 0;
             if (enemy && colony.HP > 0)
                 pct = AttackColony(handler, colony, out freeDmg, ref rawExp, ref valueExp);
@@ -1217,20 +1211,20 @@ namespace GalWar
             if (freeDmg != -1)
                 handler.OnBombard(this, planet, freeDmg, 0, 0);
 
-            this.AddExperience(rawExp, valueExp);
+            this.AddExperience(rawExp, valueExp, thisPop);
             if (enemy && !colony.Dead && colony.Population > 0)
             {
-                colony.AddExperience(rawExp, valueExp);
+                colony.AddExperience(rawExp, valueExp, colonyPop);
             }
             else
             {
                 double gold = this.GetValueExpForRawExp(rawExp) + valueExp;
                 if (friendly && !colony.Dead && colony.Population > 0)
                 {
-                    colony.AddExperience(rawExp, valueExp);
+                    colony.AddExperience(rawExp, valueExp, colonyPop);
                     gold *= 2;
                 }
-                this.Player.GoldIncome(-gold);
+                this.Player.GoldIncome(-gold / Consts.ExpForGold);
             }
 
             LevelUp(handler);
@@ -1258,7 +1252,7 @@ namespace GalWar
                 if (freeDmg > 0)
                     handler.OnBombard(this, colony.Planet, freeDmg, 0, 0);
 
-                combatPct = Combat(handler, colony);
+                combatPct = Combat(handler, colony, ref rawExp, ref valueExp);
 
                 //re-log intial state, since combat has broken up our logging
                 handler.OnBombard(this, colony.Planet, int.MinValue, int.MinValue, int.MinValue);

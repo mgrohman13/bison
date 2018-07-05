@@ -492,7 +492,7 @@ namespace GalWar
                 mult = this.Population / (double)initPop;
             this.Soldiers *= mult;
             ReduceDefenses(mult);
-            double exp = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
+            double valueExp = ( initAttackers - attackers ) + ( initPop - this.Population ) + reduceQuality;
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
 
@@ -501,12 +501,12 @@ namespace GalWar
                 throw new Exception();
 
             if (Planet.Dead)
-                exp += Consts.PlanetConstValue;
-            exp *= Consts.TroopExperienceMult;
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, initPop, exp);
+                valueExp += Consts.PlanetConstValue;
+            valueExp *= Consts.TroopExperienceMult;
+            this.AddExperience(0, valueExp, initPop);
             double shipValueExp;
-            attSoldiers += GetExperienceSoldiers(attackers, attSoldiers, initAttackers, exp, out shipValueExp);
-            ship.AddExperience(0, shipValueExp);
+            attSoldiers += GetExperienceSoldiers(attackers, attSoldiers, initAttackers, valueExp, out shipValueExp);
+            ship.AddExperience(0, shipValueExp, ship.Population);
 
             handler.OnInvade(ship, this, attackers, attSoldiers, goldSpent, attack, defense);
 
@@ -518,31 +518,32 @@ namespace GalWar
             }
         }
 
-        private static double GetExperienceSoldiers(Player player, int curPop, double curSoldiers, double initPop, double exp)
+        private static double GetExperienceSoldiers(Player player, int curPop, double curSoldiers, int initPop, double valueExp)
         {
             double other;
-            double soldiers = GetExperienceSoldiers(curPop, curSoldiers, initPop, exp, out other);
-            player.GoldIncome(other / Consts.SoldiersForGold);
+            double soldiers = GetExperienceSoldiers(curPop, curSoldiers, initPop, valueExp, out other);
+            player.GoldIncome(other / Consts.ExpForGold);
             return soldiers;
         }
-        private static double GetExperienceSoldiers(int curPop, double curSoldiers, double initPop, double exp, out double other)
+        internal static double GetExperienceSoldiers(int curPop, double curSoldiers, int initPop, double valueExp, out double other)
         {
-            double mult = ( initPop > 0 ? Math.Sqrt(curPop / initPop) : 0 ) * exp;
+            double mult = 0;
             if (curPop > 0)
-                mult *= GetSoldierMult(curPop, curSoldiers, GetSoldiersForExp(mult));
-            else
-                mult = 0;
-            other = ( exp - mult );
+            {
+                double pop = Math.Sqrt(( initPop + 13.0 ) / ( curPop + 13.0 )) * curPop;
+                mult = GetSoldierMult(pop, curSoldiers, GetSoldiersForExp(valueExp)) * valueExp;
+            }
+
+            other = valueExp - mult;
             return Consts.GetExperience(GetSoldiersForExp(mult));
         }
-        private static double GetSoldiersForExp(double exp)
+        private static double GetSoldiersForExp(double valueExp)
         {
-            return exp / Consts.ExpForSoldiers;
+            return valueExp / Consts.ExpForSoldiers;
         }
-
-        internal static double GetSoldierMult(int curPop, double curSoldiers, double addSoldiers)
+        private static double GetSoldierMult(double pop, double soldiers, double addSoldiers)
         {
-            return 1 / ( 1 + ( curSoldiers + addSoldiers ) / curPop );
+            return 1.3 / ( 1.3 + ( soldiers / 1.69 + addSoldiers ) / pop );
         }
 
         private void TroopBattle(ref int attackers, double attSoldiers, int gold, out double attack, out double defense)
@@ -1174,13 +1175,13 @@ namespace GalWar
         }
         protected override double GetKillExp()
         {
-            return GetExpForDamage(1 / GetPDHPCostAvgResearch());
+            return GetExpForDamage(13 / GetPDHPCostAvgResearch());
         }
 
-        internal override void AddExperience(double rawExp, double valueExp)
+        internal override void AddExperience(double rawExp, double valueExp, int initPop)
         {
             valueExp += rawExp * GetPDHPCostAvgResearch() / GetPDHPStrength();
-            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, this.Population, valueExp);
+            this.Soldiers += GetExperienceSoldiers(this.Player, this.Population, this.Soldiers, initPop, valueExp);
         }
 
         internal void BuildPlanetDefense(double prodInc, bool always)
