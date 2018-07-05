@@ -44,39 +44,51 @@ namespace GalWarWin
 
         internal static void ShowForm(Dictionary<ResultPoint, double> combatResults)
         {
-            var att = new SortedDictionary<int, double>();
-            var def = new SortedDictionary<int, double>();
-
-            foreach (var pair in combatResults)
+            string format = "#.000000000000E+00";
+            Action<Func<ResultPoint, int>> SetText = GetResult =>
             {
-                double value;
+                var dict = new SortedDictionary<int, double>();
+                foreach (var pair in combatResults)
+                {
+                    double value;
+                    dict.TryGetValue(GetResult(pair.Key), out value);
+                    dict[pair.Key.AttHP] = value + pair.Value;
+                }
+                double max = dict.Values.Max(), tot = dict.Values.Sum();
 
-                att.TryGetValue(pair.Key.AttHP, out value);
-                att[pair.Key.AttHP] = value + pair.Value;
+                form.textBox1.Text += Environment.NewLine;
+                foreach (var pair in dict)
+                {
+                    int val = (int)Math.Ceiling(pair.Value / max * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
+                    form.textBox1.Text += string.Format("{0}\t{1}\t{2}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"), ( pair.Value / tot ).ToString(format));
+                }
+                form.textBox1.Text += Environment.NewLine;
+            };
 
-                def.TryGetValue(pair.Key.DefHP, out value);
-                def[pair.Key.DefHP] = value + pair.Value;
-            }
+            form.textBox1.Text = "Attacker:";
+            SetText(resultPoint => resultPoint.AttHP);
+            form.textBox1.Text += "Defender:";
+            SetText(resultPoint => resultPoint.DefHP);
 
-            double maxAtt = 0, maxDef = 0;
-            foreach (double v in att.Values)
-                maxAtt = Math.Max(maxAtt, v);
-            foreach (double v in def.Values)
-                maxDef = Math.Max(maxDef, v);
-
-            form.textBox1.Text = "Attacker:" + Environment.NewLine;
-            foreach (var pair in att)
-            {
-                int val = (int)Math.Ceiling(pair.Value / maxAtt * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
-                form.textBox1.Text += string.Format("{0} - {1}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
-            }
-
-            form.textBox1.Text += Environment.NewLine + "Defender:" + Environment.NewLine;
-            foreach (var pair in def)
-            {
-                int val = (int)Math.Ceiling(pair.Value / maxDef * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
-                form.textBox1.Text += string.Format("{0} - {1}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"));
-            }
+            //int minAtt = combatResults.Keys.Min(resultPoint => resultPoint.AttHP);
+            //int maxAtt = combatResults.Keys.Max(resultPoint => resultPoint.AttHP);
+            //int minDef = combatResults.Keys.Min(resultPoint => resultPoint.DefHP);
+            //int maxDef = combatResults.Keys.Max(resultPoint => resultPoint.DefHP);
+            //double sum = combatResults.Values.Sum();
+            //form.textBox1.Text += Environment.NewLine + Environment.NewLine + "Table:" + Environment.NewLine;
+            //for (int att = minAtt ; att <= maxAtt ; att++)
+            //    form.textBox1.Text += "\t" + att;
+            //for (int def = minDef ; def <= maxDef ; def++)
+            //{
+            //    form.textBox1.Text += Environment.NewLine + def;
+            //    for (int att = minAtt ; att <= maxAtt ; att++)
+            //    {
+            //        ResultPoint resultPoint = new ResultPoint(att, def);
+            //        double chance;
+            //        combatResults.TryGetValue(resultPoint, out chance);
+            //        form.textBox1.Text += "\t" + ( chance / sum ).ToString(format);
+            //    }
+            //}
 
             form.ShowDialog();
         }
@@ -96,7 +108,7 @@ namespace GalWarWin
             {
                 form.textBox1.Text += pair.Key.ToString("+#;-#;0").PadLeft(5);
                 form.textBox1.Text += ": ";
-                form.textBox1.Text += MainForm.FormatPct(pair.Value / total, true).PadLeft(4);
+                form.textBox1.Text += ( pair.Value / total ).ToString("0.00%").PadLeft(6);
                 form.textBox1.Text += Environment.NewLine;
             }
 
