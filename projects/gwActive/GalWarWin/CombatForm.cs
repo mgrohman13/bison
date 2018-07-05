@@ -370,7 +370,7 @@ namespace GalWarWin
             var oldChances = new Dictionary<ResultPoint, double>(targetCap);
 
             ResultPoint rp = new ResultPoint(attHP, defHP);
-            chances.Add(rp, double.Epsilon * ( 1 << MTRandom.DOUBLE_BITS ));
+            chances.Add(rp, Math.Sqrt(double.Epsilon));
 
             //the code in this loop should be optimized for performance
             for (int round = -1 ; ++round < att ;)

@@ -1,5 +1,6 @@
 UI
 
+allow combat details always available (forces calc)
 expand/contract boundaries shouldnt shift current view
 ship moved path
 	teleport
@@ -90,6 +91,7 @@ max design cost OE??
 level up uses full research?
 	change to last?
 increase colonization cost?
+	grows over time?
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate

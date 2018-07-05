@@ -822,6 +822,7 @@ namespace GalWarWin
                             ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
                             && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
                     {
+                        retVal[neighbor] = new Point(newDamage, newMove);
                         AddTiles(retVal, enemy, neighbor, newMove - ( showAtt ? 0 : 1 ), ignoreZoc);
                     }
                     else if (newDamage > damage)
