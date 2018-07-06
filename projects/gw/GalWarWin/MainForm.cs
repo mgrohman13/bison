@@ -2912,7 +2912,7 @@ namespace GalWarWin
         #region Log
 
         private int flushed = 0;
-        private static string log = string.Empty;
+        private string log = string.Empty;
 
         public void LogMsg(string format, params object[] args)
         {
@@ -2958,14 +2958,15 @@ namespace GalWarWin
             if (oldGame != null && log.Trim().Length > 0)
                 LogMsg(oldGame);
 
-            log = "****** " + Game.ID + " " + Game.Turn + "_" + ( Game.currentPlayer + 1 ) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***" + Environment.NewLine;
-            LogMsg(Game);
-
+            log = string.Empty;
             string logPath = GetLogPath(Game);
             if (File.Exists(logPath))
                 using (StreamReader reader = new StreamReader(logPath))
                     log += reader.ReadToEnd();
             flushed = log.Length;
+
+            log += "****** " + Game.ID + " " + Game.Turn + "_" + ( Game.currentPlayer + 1 ) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***"
+                    + Environment.NewLine + Environment.NewLine;
         }
     }
 
