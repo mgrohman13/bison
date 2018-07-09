@@ -17,7 +17,7 @@ namespace GalWar
         private readonly HashSet<Buildable> building;
         private Buildable _buildable;
 
-        private bool _built;
+        private bool _built, _pauseBuild;
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
         private ushort _repair;
@@ -34,16 +34,17 @@ namespace GalWar
                 this._player = player;
 
                 //set the build intially to StoreProd so it can be changed to anything with no production loss
-                StoreProd storeProd = new StoreProd(production);
+                StoreProd storeProd = new StoreProd(this, production);
                 this.building = new HashSet<Buildable>();
-                this.building.Add(new BuildGold());
+                this.building.Add(new BuildGold(this));
                 this.building.Add(storeProd);
-                this.building.Add(new BuildAttack());
-                this.building.Add(new BuildDefense());
-                this.building.UnionWith(player.GetShipDesigns().Select(design => new BuildShip(design)));
+                this.building.Add(new BuildAttack(this));
+                this.building.Add(new BuildDefense(this));
+                this.building.UnionWith(player.GetShipDesigns().Select(design => new BuildShip(this, design)));
                 this._buildable = storeProd;
 
                 this._built = ( handler == null );
+                this._pauseBuild = false;
 
                 this._defenseAttChange = 0;
                 this._defenseDefChange = 0;
@@ -87,6 +88,22 @@ namespace GalWar
                     if (value == null || !this.building.Contains(value))
                         throw new Exception();
                     this._buildable = value;
+                }
+            }
+        }
+        public bool PauseBuild
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return ( this._pauseBuild && ( this.Buildable is ShipDesign ) );
+            }
+            private set
+            {
+                checked
+                {
+                    this._pauseBuild = value;
                 }
             }
         }
@@ -201,7 +218,7 @@ namespace GalWar
         {
             get
             {
-                return building.Sum(build => build.StoresProduction ? build.Production : 0);
+                return building.Sum(build => build.Production);
             }
         }
 
@@ -293,12 +310,14 @@ namespace GalWar
         internal void SetBuildable(Buildable newBuild, double losspct, bool pause)
         {
             this.Buildable = newBuild;
+            this.PauseBuild = pause;
 
             LoseProductionPct(losspct);
         }
         internal int SetBuildableCeilLoss(Buildable newBuild, double losspct, bool pause)
         {
             this.Buildable = newBuild;
+            this.PauseBuild = pause;
 
             int loss = (int)Math.Ceiling(this.production * losspct);
             LoseProduction(loss);
@@ -353,7 +372,8 @@ namespace GalWar
             ResetMoved();
 
             //modify real values
-            double population = 0, production = 0, gold = 0;
+            int production = 0;
+            double population = 0, gold = 0;
             TurnStuff(ref population, ref production, ref gold, ref research, true, false);
 
             if (this.Repair == 0)
@@ -361,14 +381,14 @@ namespace GalWar
             else if (this.RepairShip == null)
                 this.ProdGuess += GetTotalIncome() / 6.0;
 
-            this.Population += RoundValue(population, ref gold, Consts.PopulationForGoldHigh);
+            this.Population += RoundValue(population, true, false, ref gold, Consts.PopulationForGoldHigh);
 
             ResetRounding();
 
             //build planet defenses first so they can attack this turn
             bool buildFirst = ( this.Buildable is PlanetDefense ), built = false;
             if (buildFirst)
-                built = this.Buildable.Build(handler, this, production);
+                built = this.Buildable.Build(handler, production);
 
             if (!this.MinDefenses)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
@@ -384,7 +404,7 @@ namespace GalWar
 
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
-                built = this.Buildable.Build(handler, this, production);
+                built = this.Buildable.Build(handler, production);
 
             if (!( this.Buildable is PlanetDefense ))
                 UpgradePlanetDefense();
@@ -398,7 +418,7 @@ namespace GalWar
                 this.ProdGuess = 0;
         }
 
-        private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn, bool minGold)
+        private void TurnStuff(ref double population, ref int production, ref double gold, ref int research, bool doTurn, bool minGold)
         {
             //pay upkeep for stored production before adding production income
             gold -= Upkeep;
@@ -406,19 +426,15 @@ namespace GalWar
             double goldInc;
             int prodInt, researchInc;
             GetTurnValues(out prodInt, out goldInc, out researchInc);
-            double productionInc = prodInt;
 
+            double productionInc = prodInt;
             Ship repairShip = RepairShip;
             if (repairShip != null)
                 this.Repair += repairShip.ProductionRepair(ref productionInc, ref gold, doTurn, minGold);
-            if (this.Buildable == null)
-                LoseProduction(productionInc, ref productionInc, ref gold, Consts.GoldProductionForGold);
-            else if (this.Buildable is StoreProd)
-                LoseProduction(productionInc * Consts.StoreProdLossPct, ref productionInc, ref gold, Consts.ProductionForGold);
 
             //modify parameter values
             population += GetPopulationGrowth();
-            production += productionInc;
+            production += prodInt;
             gold += goldInc;
             research += researchInc;
         }
@@ -640,56 +656,29 @@ namespace GalWar
 
             return GetAddProduction(production, false);
         }
-
         internal void AddProduction(double production)
         {
             double goldAdded;
             int prodAdded;
             AddProduction(production, false, true, out goldAdded, out prodAdded);
         }
-        internal void AddProduction(double production, bool floor, out double goldAdded, out int prodAdded)
+        internal void AddProduction(double production, bool floor, bool random, out double goldAdded, out int prodAdded)
         {
-            AddProduction(production, floor, false, out goldAdded, out prodAdded);
+            double add = this.Buildable.GetAddProduction(production, false);
+            goldAdded = ( production - add ) / Consts.ProductionForGold;
+            prodAdded = RoundValue(add, random, floor, ref goldAdded, 1);
+            this.Buildable.AddProduction(prodAdded);
+            this.Player.AddGold(goldAdded);
         }
         internal void UndoAddProduction(int undo)
         {
-            if (undo > this.production || undo < 0)
+            if (undo > this.Production || undo < 0)
                 throw new Exception();
-            this.production -= undo;
-        }
-
-        private void AddProduction(double production, bool floor, bool random, out double goldAdded, out int prodAdded)
-        {
-            if (this.Buildable == null)
-                throw new Exception();
-
-            double loss = GetAddProductionLoss(production);
-            goldAdded = 0;
-            if (!random)
-            {
-                goldAdded = production - GetAddProduction(production, floor) - loss;
-                production -= goldAdded;
-            }
-
-            LoseProduction(loss, ref production, ref goldAdded, Consts.ProductionForGold);
-
-            prodAdded = RoundValue(production, ref goldAdded);
-            this.production += prodAdded;
-
-            this.Player.GoldIncome(goldAdded);
-        }
-        private double GetAddProductionLoss(double production)
-        {
-            if (production > 0 && this.Buildable is StoreProd)
-                return production * Consts.StoreProdLossPct;
-            return 0;
+            this.Buildable.AddProduction(-undo);
         }
         private int GetAddProduction(double production, bool floor)
         {
-            production -= GetAddProductionLoss(production);
-            if (floor)
-                return (int)Math.Floor(production);
-            return (int)Math.Round(production);
+            return (int)Math.Round(this.Buildable.GetAddProduction(production, floor) * Consts.FLOAT_ERROR_ONE);
         }
 
         #endregion //internal
@@ -798,8 +787,9 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            double popInc = 0, prodInc = 0;
-            TurnStuff(ref popInc, ref prodInc, ref gold, ref research, false, minGold);
+            int prodInt = 0;
+            double popInc = 0;
+            TurnStuff(ref popInc, ref prodInt, ref gold, ref research, false, minGold);
 
             if (minGold)
             {
@@ -809,7 +799,7 @@ namespace GalWar
                 //planet defense attack cost
                 int att = this.Att, def = this.Def, hp = this.HP;
                 if (this.Buildable is PlanetDefense)
-                    this.GetPlanetDefenseIncMinGold(this.Buildable.Production + prodInc, out att, out def, out hp);
+                    this.GetPlanetDefenseIncMinGold(this.Buildable.Production + prodInt, out att, out def, out hp);
                 if (hp > 0)
                     foreach (Tile tile in Tile.GetNeighbors(this.Tile))
                     {
@@ -819,11 +809,11 @@ namespace GalWar
                     }
             }
 
-            Buildable.GetTurnIncome(ref prodInc, ref gold, minGold);
+            Buildable.GetTurnIncome(ref production, ref gold, minGold);
 
             //modify parameter values
             population += popInc;
-            production += prodInc;
+            production += prodInt;
         }
 
         private void MinGold(double value, ref double gold, double rate)
@@ -849,19 +839,22 @@ namespace GalWar
             }
         }
 
-        private int RoundValue(double value, ref double gold)
+        private int RoundValue(double value, bool random, bool floor, ref double gold, double rate)
         {
-            return RoundValue(value, ref gold, 1);
-        }
+            if (floor && random)
+                throw new Exception();
 
-        private int RoundValue(double value, ref double gold, double rate)
-        {
-            int rounded = Game.Random.Round(value);
+            int rounded;
+            if (random)
+                rounded = Game.Random.Round(value);
+            else if (floor)
+                rounded = (int)Math.Floor(value * Consts.FLOAT_ERROR_ONE);
+            else
+                rounded = (int)Math.Round(value * Consts.FLOAT_ERROR_ONE);
+
             gold += ( value - rounded ) / rate;
             return rounded;
         }
-
-      
 
         public void SellProduction(IEventHandler handler, int production)
         {
@@ -1066,7 +1059,7 @@ namespace GalWar
             }
             else
             {
-                AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, out goldIncome, out production);
+                AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, false, out goldIncome, out production);
 
                 addGold = 0;
             }
@@ -1223,7 +1216,7 @@ namespace GalWar
             SetPD(newCost, newAtt, newDef);
 
             if (this.Buildable is PlanetDefense && production > Consts.FLOAT_ERROR_ZERO)
-                this.production += Game.Random.Round(production);
+                this.AddProduction(production);
             else
                 this.Player.GoldIncome(production);
         }

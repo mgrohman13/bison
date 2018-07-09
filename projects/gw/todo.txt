@@ -1,5 +1,6 @@
 UI
 
+test GraphsForm lastAvgResearch
 bombard attack confirm still shows free dmg even though after applied
 allow combat details always available (forces calc)
 expand/contract boundaries shouldnt shift current view

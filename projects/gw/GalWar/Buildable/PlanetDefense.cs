@@ -12,15 +12,7 @@ namespace GalWar
         {
         }
 
-        public override bool StoresProduction
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        internal override bool Build(IEventHandler handler, double production)
+        internal override bool Build(IEventHandler handler, int production)
         {
             production += this.Production;
             this.Production = 0;

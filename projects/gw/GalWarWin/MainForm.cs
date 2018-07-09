@@ -1317,6 +1317,7 @@ namespace GalWarWin
                     if (ship.GetRepairedFrom() != null)
                         check.Add(ship);
 
+                GraphsForm.UpdateAvgResearched(Game.CurrentPlayer);
                 IEnumerable<Tile> anomalies = Game.EndTurn(this);
 
                 foreach (Ship ship in check)

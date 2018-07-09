@@ -24,7 +24,7 @@ namespace GalWarWin
 
         private int y;
 
-        private static double lastAvgResearch = 0;
+        private static Dictionary<Player, double> lastAvgResearch = new Dictionary<Player, double>();
 
         List<int> researchLines = new List<int>();
 
@@ -122,10 +122,10 @@ namespace GalWarWin
                 y += 26;
             }
 
-            double avgResearch = MainForm.Game.AvgResearch;
+            double avgResearch = MainForm.Game.AvgResearch, lastAvgResearch;
+            GraphsForm.lastAvgResearch.TryGetValue(MainForm.Game.CurrentPlayer, out lastAvgResearch);
             labels[7, players.Count] = NewLabel(researchX, y, string.Format("{0}" // ({1})"
                     , MainForm.FormatDouble(avgResearch), MainForm.FormatIncome(avgResearch - lastAvgResearch)), Color.Transparent);
-            lastAvgResearch = avgResearch;
             y += 26;
 
             this.GraphsForm_SizeChanged(null, null);
@@ -510,6 +510,11 @@ namespace GalWarWin
 
                 RefreshGraph();
             }
+        }
+
+        public static void UpdateAvgResearched(Player player)
+        {
+            lastAvgResearch[player] = player.Game.AvgResearch;
         }
 
         public static void ShowForm()

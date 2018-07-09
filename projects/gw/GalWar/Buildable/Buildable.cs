@@ -19,14 +19,10 @@ namespace GalWar
         {
             get
             {
-                if (!this.StoresProduction)
-                    throw new Exception();
                 return this._production;
             }
             protected set
             {
-                if (!this.StoresProduction)
-                    throw new Exception();
                 checked
                 {
                     this._production = (ushort)value;
@@ -40,33 +36,26 @@ namespace GalWar
                 return null;
             }
         }
-        public abstract bool StoresProduction
-        {
-            get;
-        }
-
-        internal abstract bool Build(IEventHandler handler, double production);
-
         public string GetProdText(string curProd)
         {
             return curProd + ( this.Cost.HasValue ? " / " + this.Cost.Value.ToString() : string.Empty );
         }
 
-        internal abstract void GetTurnIncome(ref double production, ref double gold, bool minGold);
+        internal abstract bool Build(IEventHandler handler, int production);
 
-        protected void LoseProduction(double loseProduction)
+        internal virtual void GetTurnIncome(ref double production, ref double gold, bool minGold)
         {
-            double production = this.production, gold = 0;
-            LoseProduction(loseProduction, ref production, ref gold, Consts.ProductionForGold);
-
-            this.production = RoundValue(production, ref gold, Consts.ProductionForGold);
-
-            this.Player.AddGold(gold);
         }
-        protected void LoseProduction(double loseProduction, ref double production, ref double gold, double rate)
+        internal virtual double GetAddProduction(double production, bool floor)
         {
-            gold += loseProduction / rate;
-            production -= loseProduction;
+            if (floor)
+                return Math.Floor(production * Consts.FLOAT_ERROR_ONE);
+            else
+                return production;
+        }
+        internal void AddProduction(int production)
+        {
+            this.Production += production;
         }
     }
 }

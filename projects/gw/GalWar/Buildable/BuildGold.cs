@@ -12,18 +12,22 @@ namespace GalWar
         {
         }
 
-        public override bool StoresProduction
+        internal override bool Build(IEventHandler handler, int production)
         {
-            get
-            {
-                return false;
-            }
-        }
-
-        internal override bool Build(IEventHandler handler, double production)
-        {
+            if (this.Production != 0)
+                throw new Exception();
             colony.Player.AddGold(production / Consts.GoldProductionForGold);
             return false;
+        }
+        internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
+        {
+            gold += production / Consts.GoldProductionForGold;
+            production = 0;
+        }
+
+        internal override double GetAddProduction(double production, bool floor)
+        {
+            return 0;
         }
 
         public override string ToString()

@@ -709,7 +709,7 @@ namespace GalWar
             }
             else
             {
-                colony.AddProduction(DisbandValue, false, out goldIncome, out production);
+                colony.AddProduction(DisbandValue, false, false, out goldIncome, out production);
             }
 
             goldIncome += GetDestroyGold();
@@ -889,7 +889,7 @@ namespace GalWar
 
         internal double GetValueExpForRawExp(double rawExp)
         {
-            return rawExp * TotalCost / GetValue();
+            return rawExp * GetCostAvgResearch() / GetValue();
         }
 
         internal void StartTurn(IEventHandler handler)

@@ -22,21 +22,13 @@ namespace GalWar
                 return null;
             }
         }
-        public override bool StoresProduction
-        {
-            get
-            {
-                return true;
-            }
-        }
 
-        internal override bool Build(IEventHandler handler, double production)
+        internal override bool Build(IEventHandler handler, int production)
         {
             bool retVal = false;
 
-            production += this.Production;
-            this.Production = 0;
-            while (production >= this.Cost.Value)
+            this.Production += production;
+            while (this.Production >= this.Cost.Value)
             {
                 Tile tile = null;
                 foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))
@@ -70,36 +62,10 @@ namespace GalWar
                     }
                 }
 
-                production -= this.Cost.Value;
-                production *= ( 1 - Consts.CarryProductionLossPct );
+                this.Production -= this.Cost.Value;
             }
-            this.Production += Game.Random.Round(production);
 
             return retVal;
-        }
-
-        internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
-        {
-            double totalProd = this.Production + production;
-            while (totalProd > this.Cost)
-            {
-                totalProd -= this.Cost.Value;
-                double loss = totalProd * Consts.CarryProductionLossPct;
-                if (minGold)
-                    loss = Math.Floor(loss);
-                totalProd -= loss;
-                gold += loss / Consts.ProductionForGold - design.Upkeep * Consts.UpkeepUnmovedReturn;
-                if (minGold)
-                {
-                    int thisPop = colony.Population + (int)Math.Floor(colony.GetPopulationGrowth());
-                    int move = design.Trans;
-                    if (move > thisPop)
-                        move = thisPop + 1;
-                    gold -= Consts.GetMovePopCost(colony.Player.Game.MapSize, thisPop, colony.Soldiers);
-                }
-            }
-            if (minGold && gold > 0)
-                gold = 0;
         }
 
         public override string ToString()

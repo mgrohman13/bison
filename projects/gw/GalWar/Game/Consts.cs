@@ -44,12 +44,9 @@ namespace GalWar
         //emphasizing a single value gives on average precisely double the income of when emphasizing the other two
         public static readonly double EmphasisValue = 8 / ( Math.Sqrt(33) - 1 );
 
-        public const double SwitchBuildTypeLossPct = .39;       //  2.6
-        public const double SwitchBuildLossPct = .3;            //  3.3
-        public const double ManualObsoleteLossPct = .21;        //  4.8
-        public const double StoreProdLossPct = .169;            //  5.9
-        public const double CarryProductionLossPct = .091;      // 11.0
-        public const double AutomaticObsoleteLossPct = .065;    // 15.4
+        public const double SwitchBuildRatio = 2.0 / 1.0;
+        public const double StoreProdRatio = 4.0 / 3.0;
+        public const double ManualObsoleteRatio = 9.0 / 8.0;
 
         public const double CostMult = .104;
         public const double CostUpkeepPct = .21;
@@ -87,8 +84,8 @@ namespace GalWar
 
         //trade rates
         public const double ProductionForGold = 1 / .3;
-        public static readonly double GoldProductionForGold = Math.Sqrt(ProductionForGold);
-        public const double GoldForProduction = 2;
+        public static readonly double GoldProductionForGold = 1 / .6;
+        public const double GoldForProduction = 1 / .5;
         public const double PopulationForGoldLow = 1 / Income / 2.6;
         public const double PopulationForGoldMid = 1 / Income / 5.2;
         public const double PopulationForGoldHigh = 1 / Income / 13.0;

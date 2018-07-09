@@ -16,21 +16,15 @@ namespace GalWar
             this.ship = ship;
         }
 
-        public override bool StoresProduction
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        internal override bool Build(IEventHandler handler, double production)
+        internal override bool Build(IEventHandler handler, int prodInc)
         {
             double gold = 0;
+            double production = this.Production + prodInc;
+            this.Production = 0;
             ship.ProductionRepair(ref production, ref gold, true, false);
             colony.Player.AddGold(gold);
             colony.AddProduction(production);
-            return false;''
+            return false;
         }
 
         internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
