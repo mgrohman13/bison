@@ -870,7 +870,9 @@ namespace GalWar
                 {
                     double soldiers = this.Population / Consts.PopulationForGoldMid;
                     soldiers *= valueExp / ( soldiers + TotalCost );
-                    this.Soldiers += GalWar.Colony.GetExperienceSoldiers(this.Population, this.Soldiers, initPop, soldiers, out valueExp);
+                    double other;
+                    this.Soldiers += GalWar.Colony.GetExperienceSoldiers(this.Population, this.Soldiers, initPop, soldiers, out other);
+                    valueExp += other - soldiers;
                 }
 
                 this.curExp += Consts.GetExperience(valueExp / GetValueExpForRawExp(1));

@@ -281,7 +281,7 @@ namespace GalWarWin
                             newSize = 13f;
                         else if (newSize < 1f)
                             newSize = 1f;
-                        if (newSize != font.Size)
+                        if (Math.Abs(newSize - font.Size) > Consts.FLOAT_ERROR_ZERO * 13)
                         {
                             font.Dispose();
                             font = new Font("arial", newSize);
