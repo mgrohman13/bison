@@ -836,7 +836,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return this.goldValue + .05 / Consts.FLOAT_ERROR_ONE;
+                return this.goldValue + .025;
             }
         }
         internal double TotalGold

@@ -535,9 +535,9 @@ namespace GalWar
             double totalIncome = GetTotalIncome();
             double low = totalIncome / ( 1.0 + 2.0 * Consts.EmphasisValue );
             double high = totalIncome * Consts.EmphasisValue / ( Consts.EmphasisValue + 2.0 );
-            double diff = ( high - low ) / research[0].ResearchDisplay;
+            double diff = Consts.LimitMin(rDispChange * ( high - low ) / research[0].ResearchDisplay, 2.1 / research[0].ResearchDisplay);
 
-            double add = Game.Random.Gaussian(rDispChange * diff, Consts.ResearchRndm);
+            double add = Game.Random.Gaussian(diff, Consts.ResearchRndm);
             bool sign = ( rDisp > rDispTrg );
             if (sign)
                 rDisp -= add;
@@ -551,8 +551,7 @@ namespace GalWar
                 rDispTrg = ( rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, cap) + 1 ) / 3.0;
 
                 //rate is based on distance to new value
-                rDispChange = Consts.FLOAT_ERROR_ZERO + Game.Random.Weighted(1 -
-                        Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3 * Math.Abs(rDisp - rDispTrg) ));
+                rDispChange = Game.Random.Weighted(1 - Consts.ResearchDisplayRndm / ( Consts.ResearchDisplayRndm + 3 * Math.Abs(rDisp - rDispTrg) ));
             }
         }
 

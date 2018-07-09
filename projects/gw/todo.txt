@@ -62,6 +62,9 @@ combat predict performance
 
 GAMEPLAY
 
+enforce attacking with all avail pop
+free dmg/attack pct left takes into account att hp
+map center use colony prod/pd
 anom pull curplay lose move?
 bombard combat get exp out instead of automatic add
 bombard friendly paying for value exp at full at fll rate vs exp rate?
@@ -88,6 +91,7 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
+use wormhole verification for move order ganks?
 max design cost OE??
 level up uses full research?
 	change to last?
