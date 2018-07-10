@@ -12,11 +12,11 @@ namespace GalWar
         {
         }
 
-        internal override bool Build(IEventHandler handler, int production)
+        internal override bool Build(IEventHandler handler, double production)
         {
             production += this.Production;
             this.Production = 0;
-            colony.BuildPlanetDefense(production);
+            colony.BuildPlanetDefense(production, false);
             return false;
         }
     }

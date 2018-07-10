@@ -489,10 +489,9 @@ namespace GalWar
                 obsoleteDesigns.Add(ResearchFocusDesign);
             foreach (ShipDesign obsoleteDesign in obsoleteDesigns)
                 this.designs.Remove(obsoleteDesign);
-            //switch to the new production at AutomaticObsoleteLossPct
+            //switch obsolete designs to the new one automatically
             foreach (Colony colony in this.colonies)
-                if (obsoleteDesigns.Contains(colony.Buildable as ShipDesign))
-                    colony.SetBuildable(newDesign, Consts.AutomaticObsoleteLossPct, false);
+                colony.NewShipDesign(newDesign, obsoleteDesigns);
 
             this.designs.Add(newDesign);
 
@@ -917,28 +916,21 @@ namespace GalWar
 
             //remove design
             this.designs.Remove(obsoleteDesign);
-            //manualy marking a design as obsolete switches build to StoreProd at ManualObsoleteLossPct
-            Dictionary<Colony, Tuple<int, bool>> colonies = new Dictionary<Colony, Tuple<int, bool>>();
+            //manualy marking a design as obsolete allows switching build at ManualObsoleteRatio
+            var colonies = new Dictionary<Colony, Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>>();
             foreach (Colony colony in this.colonies)
-                if (colony.Buildable == obsoleteDesign)
-                {
-                    bool oldPause = colony.PauseBuild;
-                    int loss = colony.SetBuildableCeilLoss(Game.StoreProd, Consts.ManualObsoleteLossPct, false);
-                    colonies.Add(colony, new Tuple<int, bool>(loss, oldPause));
-                }
+                colonies.Add(colony, colony.MarkObsolete(handler, obsoleteDesign));
+
             //can no longer focus research on upgrading design
             bool researchFocus = ( this.ResearchFocusDesign == obsoleteDesign );
             if (researchFocus)
                 this.ResearchFocusDesign = null;
 
-            Game.PushUndoCommand(new Game.UndoCommand<ShipDesign, Dictionary<Colony, Tuple<int, bool>>, bool>(
-                     new Game.UndoMethod<ShipDesign, Dictionary<Colony, Tuple<int, bool>>, bool>(UndoMarkObsolete),
+            Game.PushUndoCommand(new Game.UndoCommand<ShipDesign, Dictionary<Colony, Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>>, bool>(
+                     new Game.UndoMethod<ShipDesign, Dictionary<Colony, Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>>, bool>(UndoMarkObsolete),
                      obsoleteDesign, colonies, researchFocus));
-
-            foreach (Colony colony in colonies.Keys)
-                colony.ChangeBuild(handler);
         }
-        private Tile UndoMarkObsolete(ShipDesign obsoleteDesign, Dictionary<Colony, Tuple<int, bool>> colonies, bool researchFocus)
+        private Tile UndoMarkObsolete(ShipDesign obsoleteDesign, Dictionary<Colony, Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>> colonies, bool researchFocus)
         {
             AssertException.Assert(!this.designs.Contains(obsoleteDesign));
             AssertException.Assert(obsoleteDesign != null);
@@ -946,10 +938,7 @@ namespace GalWar
 
             this.designs.Add(obsoleteDesign);
             foreach (var pair in colonies)
-            {
-                AssertException.Assert(pair.Key.Buildable is StoreProd);
-                pair.Key.UndoStartBuilding(obsoleteDesign, pair.Value.Item1, pair.Value.Item2);
-            }
+                pair.Key.UndoMarkObsolete(pair.Value);
             if (researchFocus)
                 this.ResearchFocusDesign = obsoleteDesign;
 

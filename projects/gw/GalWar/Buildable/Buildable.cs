@@ -41,7 +41,7 @@ namespace GalWar
             return curProd + ( this.Cost.HasValue ? " / " + this.Cost.Value.ToString() : string.Empty );
         }
 
-        internal abstract bool Build(IEventHandler handler, int production);
+        internal abstract bool Build(IEventHandler handler, double production);
 
         internal virtual void GetTurnIncome(ref double production, ref double gold, bool minGold)
         {

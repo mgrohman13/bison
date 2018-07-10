@@ -13,7 +13,7 @@ namespace GalWar
             this.Production = production;
         }
 
-        internal override bool Build(IEventHandler handler, int production)
+        internal override bool Build(IEventHandler handler, double production)
         {
             int addProd = Game.Random.Round(production / Consts.StoreProdRatio);
             colony.Player.AddGold(( production - addProd ) / Consts.ProductionForGold);

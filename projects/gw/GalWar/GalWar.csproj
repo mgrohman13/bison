@@ -52,7 +52,6 @@
     <Compile Include="Buildable\BuildGold.cs" />
     <Compile Include="Buildable\BuildShip.cs" />
     <Compile Include="Buildable\PlanetDefense.cs" />
-    <Compile Include="Buildable\RepairShip.cs" />
     <Compile Include="Object\Anomaly.cs" />
     <Compile Include="Object\Combatant.cs" />
     <Compile Include="Buildable\StoreProd.cs" />

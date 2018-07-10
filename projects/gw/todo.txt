@@ -81,17 +81,23 @@ anomaly gold balancing at full vs consolation value
 	free dmg vs too good?  no risk for attacker?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
-why do enemy colonies show repair amt?
-	prod repair randomness?
-	hide ship cost during repair somehow?
-production
-	allow storing separate per buildable
-	make repair a buildable
 rchance > 1 throws off max
 
 
 BETWEEN GAMES
 
+in progress
+	ProdGuess
+	prod per buildable
+		UI
+	turn inc calc
+		mingold - remove?
+	start game prod/pd
+	new colony prod has storeProd cut
+		hide cancel button for lossy switch (new colony and mark obsolete)
+prod repair randomness?
+hide ship cost during repair somehow?
+make repair a buildable
 use wormhole verification for move order ganks?
 max design cost OE??
 level up uses full research?

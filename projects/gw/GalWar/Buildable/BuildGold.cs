@@ -12,7 +12,7 @@ namespace GalWar
         {
         }
 
-        internal override bool Build(IEventHandler handler, int production)
+        internal override bool Build(IEventHandler handler, double production)
         {
             if (this.Production != 0)
                 throw new Exception();

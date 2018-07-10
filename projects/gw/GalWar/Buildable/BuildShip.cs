@@ -14,6 +14,20 @@ namespace GalWar
         {
             this.design = design;
         }
+        internal BuildShip(Colony colony, ShipDesign design, int production)
+            : base(colony)
+        {
+            this.design = design;
+            this.Production = production;
+        }
+
+        public ShipDesign ShipDesign
+        {
+            get
+            {
+                return design;
+            }
+        }
 
         public override int? Cost
         {
@@ -23,11 +37,11 @@ namespace GalWar
             }
         }
 
-        internal override bool Build(IEventHandler handler, int production)
+        internal override bool Build(IEventHandler handler, double production)
         {
             bool retVal = false;
 
-            this.Production += production;
+            this.Production += Game.Random.Round(production);
             while (this.Production >= this.Cost.Value)
             {
                 Tile tile = null;
