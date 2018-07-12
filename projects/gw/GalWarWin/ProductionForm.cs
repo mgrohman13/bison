@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -9,7 +10,7 @@ using GalWarWin.Sliders;
 
 namespace GalWarWin
 {
-    public partial class ProductionForm : Form, IComparer<ShipDesign>
+    public partial class ProductionForm : Form, IComparer<Buildable>
     {
         private static ProductionForm form = new ProductionForm();
 
@@ -33,27 +34,36 @@ namespace GalWarWin
         {
             this.lbxDesigns.Items.Clear();
 
-            this.lbxDesigns.Items.Add("Gold");
-            this.lbxDesigns.Items.Add(colony.Player.Game.StoreProd);
-            this.lbxDesigns.Items.Add(colony.Player.Game.PlanetDefense);
-            //this.lbxDesigns.Items.Add(colony.Player.Game.Attack);
-            //this.lbxDesigns.Items.Add(colony.Player.Game.Defense);
-            this.lbxDesigns.Items.Add(string.Empty);
+            SortedSet<Buildable> designs = new SortedSet<Buildable>(colony.Buildable, this);
+            this.lbxDesigns.Items.AddRange(designs.ToArray());
+            this.lbxDesigns.Items.Insert(4, string.Empty);
 
-            SortedSet<ShipDesign> designs = new SortedSet<ShipDesign>(colony.Player.GetShipDesigns(), this);
-            foreach (ShipDesign shipDesign in designs)
-                this.lbxDesigns.Items.Add(shipDesign);
-
-            if (colony.Buildable == null)
-                this.lbxDesigns.SelectedIndex = 0;
-            else if (this.lbxDesigns.Items.Contains(colony.Buildable))
-                this.lbxDesigns.SelectedItem = colony.Buildable;
-            else
-                this.lbxDesigns.SelectedItem = colony.Player.Game.StoreProd;
+            this.lbxDesigns.SelectedItem = colony.CurBuild;
         }
 
-        int IComparer<ShipDesign>.Compare(ShipDesign x, ShipDesign y)
+        int IComparer<Buildable>.Compare(Buildable b1, Buildable b2)
         {
+            Func<Buildable, int> TypeComp = b =>
+            {
+                if (b is BuildGold)
+                    return 0;
+                if (b is StoreProd)
+                    return 1;
+                if (b is BuildAttack)
+                    return 2;
+                if (b is BuildDefense)
+                    return 3;
+                if (b is BuildShip)
+                    return 4;
+                throw new Exception();
+            };
+            int retVal = TypeComp(b2) - TypeComp(b1);
+            if (retVal != 0)
+                return retVal;
+
+            ShipDesign x = ( (BuildShip)b1 ).ShipDesign;
+            ShipDesign y = ( (BuildShip)b2 ).ShipDesign;
+
             double xVal = 0, yVal = 0;
 
             if (this.rbCustom.Checked)
@@ -96,7 +106,7 @@ namespace GalWarWin
             if (this.lbxDesigns.SelectedIndex == 0)
                 return null;
             if (string.Empty.Equals(this.lbxDesigns.SelectedItem))
-                return colony.Buildable;
+                return colony.CurBuild;
             return (Buildable)this.lbxDesigns.SelectedItem;
         }
 
@@ -109,7 +119,7 @@ namespace GalWarWin
         {
             Buildable newBuild = GetSelectedDesign();
 
-            this.chkObsolete.Enabled = newBuild is ShipDesign;
+            this.chkObsolete.Enabled = newBuild is BuildShip;
 
             int lossAmt = GetLossAmt(newBuild);
 
@@ -120,18 +130,18 @@ namespace GalWarWin
                 this.lblProdLoss.Text = "-" + lossAmt + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Buildable.Production - lossAmt, this.chkPause.Checked);
+            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.CurBuild.Production - lossAmt, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 );
 
             if (setPause.HasValue)
             {
-                bool canPause = ( newBuild is ShipDesign );
+                bool canPause = ( newBuild is BuildShip );
                 this.chkPause.Enabled = canPause;
                 if (canPause)
                     if (setPause.Value)
-                        canPause = ( colony.PauseBuild && colony.Buildable == newBuild );
+                        canPause = ( colony.PauseBuild && colony.CurBuild == newBuild );
                     else
                         canPause = false;
                 this.chkPause.Checked = canPause;
@@ -154,7 +164,7 @@ namespace GalWarWin
             Buildable buildable = GetSelectedDesign();
             if (buildable != null)
             {
-                bool switchFirst = ( buildable != colony.Buildable );
+                bool switchFirst = ( buildable != colony.CurBuild );
                 int initial = GetInitialBuy(buildable, switchFirst);
                 int prod = SliderForm.ShowForm(new BuyProd(colony, buildable, GetLossAmt(buildable), initial));
                 if (prod > 0)
@@ -268,13 +278,9 @@ namespace GalWarWin
             else
             {
                 if (result == DialogResult.Abort)
-                    MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, (ShipDesign)form.GetSelectedDesign());
-
-                if (colony.CanBuild(colony.Buildable))
-                    buildable = colony.Buildable;
-                else
-                    buildable = MainForm.Game.StoreProd;
-                pause = colony.PauseBuild;
+                    MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, ( (BuildShip)form.GetSelectedDesign() ).ShipDesign);
+                buildable = colony.CurBuild;
+                pause = false;
             }
 
             return ( result != DialogResult.Cancel );

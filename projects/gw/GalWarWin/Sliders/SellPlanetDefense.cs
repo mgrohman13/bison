@@ -14,7 +14,7 @@ namespace GalWarWin.Sliders
             this.colony = colony;
 
             this.control = new SellPlanetDefenseControl(this.sellForProd_CheckedChanged);
-            this.control.SetProdEnabled(colony.Buildable != null);
+            this.control.SetProdEnabled(colony.CurBuild != null);
         }
 
         public bool Gold

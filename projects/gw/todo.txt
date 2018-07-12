@@ -98,6 +98,7 @@ in progress
 		hide cancel button for lossy switch (new colony and mark obsolete)
 	pause build
 	ManualObsoleteRatio?  other ratios?
+	mark obsolete during callback
 prod repair randomness?
 hide ship cost during repair somehow?
 round prod repair?

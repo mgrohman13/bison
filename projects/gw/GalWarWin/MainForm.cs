@@ -1270,7 +1270,7 @@ namespace GalWarWin
             Buildable buildable = null;
             if (colony != null && colony.Player.IsTurn)
             {
-                buildable = colony.Buildable;
+                buildable = colony.CurBuild;
                 production = colony.GetAddProduction(ship.DisbandValue);
             }
 
@@ -2563,8 +2563,8 @@ namespace GalWarWin
                 Ship repairShip = colony.RepairShip;
                 if (repairShip != null)
                     lbl6Inf.Text = "Repair +" + FormatDouble(repairShip.GetHPForProd(colony.GetProductionIncome()));
-                else if (colony.Buildable != null)
-                    lbl6Inf.Text = colony.Buildable.ToString();
+                else if (colony.CurBuild != null)
+                    lbl6Inf.Text = colony.CurBuild.ToString();
                 else
                     lbl6Inf.Text = "Gold";
 
@@ -2576,7 +2576,7 @@ namespace GalWarWin
 
         internal static string GetProdText(Colony colony)
         {
-            return GetProdText(colony, colony.Buildable, colony.Buildable.Production, colony.PauseBuild);
+            return GetProdText(colony, colony.CurBuild, colony.CurBuild.Production, colony.PauseBuild);
         }
 
         internal static string GetProdText(Colony colony, Buildable build, double production, bool paused)

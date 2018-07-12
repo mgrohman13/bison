@@ -111,7 +111,7 @@ namespace GalWarWin
 
         private void Defense(int x, int y, int i, Colony colony)
         {
-            Label defense = (Label)( controls[3, i] = NewLabel(x, y, click: !colony.MinDefenses, bold: colony.Buildable is PlanetDefense) );
+            Label defense = (Label)( controls[3, i] = NewLabel(x, y, click: !colony.MinDefenses, bold: colony.CurBuild is PlanetDefense) );
             if (!colony.MinDefenses)
             {
                 defense.Text = string.Format("{0} : {1}   ({2})", colony.Att, colony.Def, colony.HP);
@@ -140,15 +140,15 @@ namespace GalWarWin
             Ship repairShip = colony.RepairShip;
             if (repairShip != null)
                 buildText = "Repair +" + MainForm.FormatDouble(repairShip.GetHPForProd(colony.GetProductionIncome()));
-            else if (colony.Buildable != null)
-                buildText = colony.Buildable.ToString();
+            else if (colony.CurBuild != null)
+                buildText = colony.CurBuild.ToString();
             else
                 buildText = "Gold";
-            bool ship = ( colony.Buildable is build );
+            bool ship = ( colony.CurBuild is build );
             Label build = (Label)( controls[5, i] = NewLabel(x, y, buildText, big: true, click: ship, bold: ship && !colony.PauseBuild
-                    && ( colony.Production + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE ) >= colony.Buildable.Cost) );
+                    && ( colony.Production + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE ) >= colony.CurBuild.Cost) );
             if (ship)
-                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(colony.Buildable as ShipDesign));
+                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(colony.CurBuild as ShipDesign));
         }
 
         private void Production(int x, int y, int i, Colony colony)

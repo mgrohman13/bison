@@ -55,7 +55,7 @@ namespace GalWarAI
         Buildable IEventHandler.getNewBuild(Colony colony, int production, out bool pause)
         {
             //all buildable changes are handled explicitly
-            Buildable buildable = colony.Buildable;
+            Buildable buildable = colony.CurBuild;
             pause = colony.PauseBuild;
             return buildable;
         }

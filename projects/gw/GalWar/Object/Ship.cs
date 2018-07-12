@@ -711,7 +711,7 @@ namespace GalWar
             else
             {
                 colony.AddProduction(DisbandValue, false, false, out goldIncome, out production);
-                buildable = colony.Buildable;
+                buildable = colony.CurBuild;
             }
 
             goldIncome += GetDestroyGold();

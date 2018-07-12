@@ -55,7 +55,7 @@ namespace GalWar
             callback = true;
             special = true;
 
-            Buildable buildable = colony.Buildable, newBuild = buildable;
+            Buildable buildable = colony.CurBuild, newBuild = buildable;
             pause = colony.PauseBuild;
             try
             {
@@ -74,7 +74,7 @@ namespace GalWar
             if (colony.CanBuild(newBuild))
                 buildable = newBuild;
             else if (!colony.CanBuild(buildable))
-                buildable = colony.Building.OfType<StoreProd>().Single();
+                buildable = colony.Buildable.OfType<StoreProd>().Single();
             return buildable;
         }
 

@@ -635,7 +635,7 @@ namespace GalWar
             double value = this.value;
             int production = Game.Random.Round(value / 1.3);
 
-            Func<Colony, bool> AllowProd = colony => ( colony.Buildable is BuildShip || colony.Buildable is StoreProd );
+            Func<Colony, bool> AllowProd = colony => ( colony.CurBuild is BuildShip || colony.CurBuild is StoreProd );
 
             bool notify = true;
             AnomalyType type;

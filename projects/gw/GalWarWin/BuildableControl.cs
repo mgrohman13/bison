@@ -21,7 +21,7 @@ namespace GalWarWin
 
         public bool SetColony(Colony colony)
         {
-            return SetColony(colony, colony.Buildable, 0);
+            return SetColony(colony, colony.CurBuild, 0);
         }
         public bool SetBuildable(Buildable buildable)
         {
@@ -80,7 +80,7 @@ namespace GalWarWin
                         SetVisibility(true);
 
                         double att, def, hp, newResearch, newProd;
-                        colony.GetPlanetDefenseInc(colony.Buildable.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
+                        colony.GetPlanetDefenseInc(colony.CurBuild.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
                                 out att, out def, out hp, out newResearch, out newProd, false, false);
                         double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetCurrentResearch());
                         string costLabel = handleCost(ref cost);
@@ -164,7 +164,7 @@ namespace GalWarWin
         }
         public static ShipDesign GetShipDesign(Colony colony)
         {
-            return GetShipDesign(( colony != null && colony.Player.IsTurn ) ? colony.Buildable : null);
+            return GetShipDesign(( colony != null && colony.Player.IsTurn ) ? colony.CurBuild : null);
         }
         public static ShipDesign GetShipDesign(Buildable buildable)
         {
