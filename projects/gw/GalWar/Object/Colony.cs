@@ -34,7 +34,7 @@ namespace GalWar
                 this._player = player;
 
                 //set the build intially to StoreProd so it can be changed to anything with no production loss
-                StoreProd storeProd = new StoreProd(this, production);
+                StoreProd storeProd = new StoreProd(this);
                 this.buildable = new HashSet<Buildable>();
                 this.buildable.Add(new BuildGold(this));
                 this.buildable.Add(storeProd);
@@ -61,8 +61,13 @@ namespace GalWar
                 this._productionRounding = float.NaN;
 
                 ResetRounding();
+
+                double goldAdded;
+                int prodAdded;
                 if (handler != null)
-                    ChangeBuild(handler);
+                    ChangeBuild(handler, production, false, 1, out goldAdded, out prodAdded);
+                else
+                    AddProduction(production, false, true, 1, out goldAdded, out prodAdded);
             }
         }
 
@@ -295,10 +300,18 @@ namespace GalWar
         #endregion //fields and constructors
 
         #region internal
+
+        private void ChangeBuild(IEventHandler handler, double production, bool floor, double rate, out double goldAdded, out int prodAdded)
+        {
+            bool pause;
+            Buildable build = handler.getNewBuild(this, production, floor, out pause);
+            ChangeBuild(build, pause);
+            AddProduction(production, floor, false, rate, out goldAdded, out prodAdded);
+        }
         internal void ChangeBuild(IEventHandler handler)
         {
             bool newPause;
-            Buildable newBuild = handler.getNewBuild(this, 0, out newPause);
+            Buildable newBuild = handler.getNewBuild(this, 0, false, out newPause);
             ChangeBuild(newBuild, newPause);
         }
         private void ChangeBuild(Buildable newBuild)
@@ -318,8 +331,13 @@ namespace GalWar
             var obsoleteBuilds = this.buildable.OfType<BuildShip>().Where(buildShip => obsoleteDesigns.Contains(buildShip.ShipDesign));
             foreach (BuildShip buildShip in obsoleteBuilds)
                 this.buildable.Remove(buildShip);
-            BuildShip newBuild = new BuildShip(this, newDesign, obsoleteBuilds.Sum(buildShip => buildShip.Production));
+            BuildShip newBuild = new BuildShip(this, newDesign);
             this.buildable.Add(newBuild);
+
+            int production = obsoleteBuilds.Sum(buildShip => buildShip.Production);
+            int prodAdded = Game.Random.Round(production * Consts.AutomaticObsoleteRatio);
+            newBuild.AddProduction(prodAdded);
+            this.Player.AddGold(( production - prodAdded ) / Consts.ProductionForGold);
 
             if (obsoleteBuilds.Contains(this.CurBuild))
                 ChangeBuild(newBuild);
@@ -330,22 +348,27 @@ namespace GalWar
             this.buildable.Remove(obsoleteBuild);
 
             int oldProduction = obsoleteBuild.Production;
-            bool newPause, oldPause = this.PauseBuild;
             Buildable oldBuild = this.CurBuild;
-            Buildable newBuild = handler.getNewBuild(this, oldProduction, out newPause);
-            ChangeBuild(newBuild, newPause);
+            bool oldPause = this.PauseBuild;
 
-            //double prod = oldProduction, gold = 0;
-            //if (newBuild is BuildShip)
-            //    prod *= Consts.ManualObsoleteRatio;
-            //else
-            //    prod *= Consts.SwitchBuildRatio;
-
-            double goldAdded;
             int prodAdded;
-            AddProduction(oldProduction, true, false, out goldAdded, out prodAdded);
+            double goldAdded;
+            double production = oldProduction * Consts.ManualObsoleteRatio;
+            if (production * Consts.FLOAT_ERROR_ONE >= 1)
+            {
+                double gold = ( oldProduction - production ) / Consts.ProductionForGold;
+                ChangeBuild(handler, production, true, Consts.ProductionForGold, out goldAdded, out prodAdded);
+                goldAdded += gold;
+                this.Player.AddGold(gold);
+            }
+            else
+            {
+                prodAdded = 0;
+                goldAdded = oldProduction / Consts.ProductionForGold;
+                this.Player.AddGold(goldAdded);
+            }
 
-            return new Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>(obsoleteDesign, oldProduction, prodAdded, goldAdded, newBuild, oldBuild, oldPause);
+            return new Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>(obsoleteDesign, oldProduction, prodAdded, goldAdded, this.CurBuild, oldBuild, oldPause);
         }
         internal void UndoMarkObsolete(Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool> undoArgs)
         {
@@ -357,12 +380,15 @@ namespace GalWar
             Buildable oldBuild = undoArgs.Item6;
             bool oldPause = undoArgs.Item7;
 
-            this.buildable.Add(new BuildShip(this, obsoleteDesign, oldProduction));
+            BuildShip obsoleteBuild = new BuildShip(this, obsoleteDesign);
+            this.buildable.Add(obsoleteBuild);
+
+            obsoleteBuild.AddProduction(oldProduction);
             newBuild.AddProduction(-prodAdded);
             this.Player.AddGold(-goldAdded);
 
             if (oldBuild is BuildShip && ( (BuildShip)oldBuild ).ShipDesign == obsoleteDesign)
-                oldBuild = getBuildShip(obsoleteDesign);
+                oldBuild = obsoleteBuild;
             ChangeBuild(oldBuild, oldPause);
         }
         private BuildShip getBuildShip(ShipDesign shipDesign)
@@ -702,13 +728,13 @@ namespace GalWar
         {
             double goldAdded;
             int prodAdded;
-            AddProduction(production, false, true, out goldAdded, out prodAdded);
+            AddProduction(production, false, true, 1, out goldAdded, out prodAdded);
         }
-        internal void AddProduction(double production, bool floor, bool random, out double goldAdded, out int prodAdded)
+        internal void AddProduction(double production, bool floor, bool random, double rate, out double goldAdded, out int prodAdded)
         {
             double add = this.CurBuild.GetAddProduction(production, false);
             goldAdded = ( production - add ) / Consts.ProductionForGold;
-            prodAdded = RoundValue(add, random, floor, ref goldAdded, 1);
+            prodAdded = RoundValue(add, random, floor, ref goldAdded, rate);
             this.CurBuild.AddProduction(prodAdded);
             this.Player.AddGold(goldAdded);
         }
@@ -1026,7 +1052,7 @@ namespace GalWar
             }
             else
             {
-                AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, false, out goldIncome, out production);
+                AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, false, 1, out goldIncome, out production);
                 buildable = this.CurBuild;
 
                 addGold = 0;

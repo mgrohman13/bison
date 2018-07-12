@@ -14,12 +14,6 @@ namespace GalWar
         {
             this.design = design;
         }
-        internal BuildShip(Colony colony, ShipDesign design, int production)
-            : base(colony)
-        {
-            this.design = design;
-            this.Production = production;
-        }
 
         public ShipDesign ShipDesign
         {

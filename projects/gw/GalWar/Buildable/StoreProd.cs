@@ -7,10 +7,9 @@ namespace GalWar
     [Serializable]
     public class StoreProd : Buildable
     {
-        internal StoreProd(Colony colony, int production)
+        internal StoreProd(Colony colony)
             : base(colony)
         {
-            this.Production = production;
         }
 
         internal override bool Build(IEventHandler handler, double production)
