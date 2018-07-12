@@ -144,7 +144,7 @@ namespace GalWarWin
                 buildText = colony.Buildable.ToString();
             else
                 buildText = "Gold";
-            bool ship = ( colony.Buildable is ShipDesign );
+            bool ship = ( colony.Buildable is build );
             Label build = (Label)( controls[5, i] = NewLabel(x, y, buildText, big: true, click: ship, bold: ship && !colony.PauseBuild
                     && ( colony.Production + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE ) >= colony.Buildable.Cost) );
             if (ship)

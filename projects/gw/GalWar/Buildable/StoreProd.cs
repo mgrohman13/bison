@@ -15,21 +15,21 @@ namespace GalWar
 
         internal override bool Build(IEventHandler handler, double production)
         {
-            int addProd = Game.Random.Round(production / Consts.StoreProdRatio);
+            int addProd = Game.Random.Round(production * Consts.StoreProdRatio);
             colony.Player.AddGold(( production - addProd ) / Consts.ProductionForGold);
             this.Production += addProd;
             return false;
         }
         internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
         {
-            double addProd = production / Consts.StoreProdRatio;
+            double addProd = production * Consts.StoreProdRatio;
             gold += ( production - addProd ) / Consts.ProductionForGold;
             production = addProd;
         }
 
         internal override double GetAddProduction(double production, bool floor)
         {
-            return base.GetAddProduction(production / Consts.StoreProdRatio, floor);
+            return base.GetAddProduction(production * Consts.StoreProdRatio, floor);
         }
 
         public override string ToString()

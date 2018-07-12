@@ -52,11 +52,12 @@ namespace GalWarAI
             return Game.Random.SelectValue(options);
         }
 
-        void IEventHandler.getNewBuild(Colony colony, out Buildable buildable, out bool pause)
+        Buildable IEventHandler.getNewBuild(Colony colony, int production, out bool pause)
         {
             //all buildable changes are handled explicitly
-            buildable = colony.Buildable;
+            Buildable buildable = colony.Buildable;
             pause = colony.PauseBuild;
+            return buildable;
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost)

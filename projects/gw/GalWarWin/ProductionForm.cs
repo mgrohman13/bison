@@ -120,7 +120,7 @@ namespace GalWarWin
                 this.lblProdLoss.Text = "-" + lossAmt + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Production - lossAmt, this.chkPause.Checked);
+            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.Buildable.Production - lossAmt, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( colony.Player.GetShipDesigns().Count > 1 );
@@ -253,7 +253,7 @@ namespace GalWarWin
             }
         }
 
-        public static bool ShowForm(Colony colony, out Buildable buildable, out bool pause)
+        public static bool ShowForm(Colony colony, int production, out Buildable buildable, out bool pause)
         {
             MainForm.GameForm.SetLocation(form);
 

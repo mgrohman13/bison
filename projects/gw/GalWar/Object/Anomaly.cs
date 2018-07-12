@@ -120,7 +120,7 @@ namespace GalWar
                 {
                     quality += planet.Quality;
                     pop += planet.Colony.Population;
-                    armada += planet.Colony.PDCostAvgResearch / 1.69 + planet.Colony.production / 2.1;
+                    armada += planet.Colony.PDCostAvgResearch / 1.69 + planet.Colony.production2 / 2.1;
                 }
             }
             foreach (Player player in Tile.Game.GetPlayers())
@@ -635,7 +635,7 @@ namespace GalWar
             double value = this.value;
             int production = Game.Random.Round(value / 1.3);
 
-            Func<Colony, bool> AllowProd = colony => ( colony.Buildable is ShipDesign || colony.Buildable is StoreProd );
+            Func<Colony, bool> AllowProd = colony => ( colony.Buildable is BuildShip || colony.Buildable is StoreProd );
 
             bool notify = true;
             AnomalyType type;

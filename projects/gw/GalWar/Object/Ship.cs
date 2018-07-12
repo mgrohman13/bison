@@ -699,6 +699,7 @@ namespace GalWar
             int curSpeed = this.CurSpeed;
             int production = 0;
             double addGold = 0, goldIncome;
+            Buildable buildable = null;
 
             if (isGold)
             {
@@ -710,17 +711,18 @@ namespace GalWar
             else
             {
                 colony.AddProduction(DisbandValue, false, false, out goldIncome, out production);
+                buildable = colony.Buildable;
             }
 
             goldIncome += GetDestroyGold();
 
             Destroy(isGold);
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony, int, double, double, int, int, double, double>(
-                    new Game.UndoMethod<Colony, int, double, double, int, int, double, double>(UndoDisband),
-                    colony, population, soldiers, curExp, curSpeed, production, addGold, goldIncome));
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Colony, Buildable, int, double, double, int, int, double, double>(
+                    new Game.UndoMethod<Colony, Buildable, int, double, double, int, int, double, double>(UndoDisband),
+                    colony, buildable, population, soldiers, curExp, curSpeed, production, addGold, goldIncome));
         }
-        private Tile UndoDisband(Colony colony, int population, double soldiers, double curExp, int curSpeed, int production, double addGold, double goldIncome)
+        private Tile UndoDisband(Colony colony, Buildable buildable, int population, double soldiers, double curExp, int curSpeed, int production, double addGold, double goldIncome)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(population >= 0);
@@ -737,6 +739,7 @@ namespace GalWar
             }
             else
             {
+                AssertException.Assert(colony.CanBuild(buildable));
                 AssertException.Assert(production >= 0);
                 AssertException.Assert(addGold == 0);
                 AssertException.Assert(goldIncome > -.2);
@@ -748,7 +751,7 @@ namespace GalWar
             this.CurSpeed = curSpeed;
 
             if (colony != null)
-                colony.UndoAddProduction(production);
+                colony.UndoAddProduction(buildable, production);
             this.Player.AddGold(-addGold);
             this.Player.GoldIncome(-goldIncome);
 

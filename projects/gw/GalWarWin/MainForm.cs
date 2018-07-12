@@ -1150,21 +1150,22 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
 
-            Buildable buildable;
             bool pause;
-            ChangeBuild(colony, out buildable, out pause);
+            Buildable buildable = ChangeBuild(colony, 0, out pause);
             colony.StartBuilding(this, buildable, pause);
 
             saved = false;
             RefreshAll();
         }
 
-        private void ChangeBuild(Colony colony, out Buildable buildable, out bool pause)
+        private Buildable ChangeBuild(Colony colony, int production, out bool pause)
         {
             SelectTile(colony.Tile);
             RefreshAll();
 
-            ProductionForm.ShowForm(colony, out buildable, out pause);
+            Buildable buildable;
+            ProductionForm.ShowForm(colony, production, out buildable, out pause);
+            return buildable;
         }
 
         private void btnProdRepair_Click(object sender, EventArgs eventArgs)
@@ -2157,7 +2158,7 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
             if (colony != null && colony.Player.IsTurn)
-                CostCalculatorForm.ShowForm(colony.Buildable as ShipDesign);
+                CostCalculatorForm.ShowForm(BuildableControl.GetShipDesign(colony));
             else
                 CostCalculatorForm.ShowForm(GetSelectedShip());
         }
@@ -2257,7 +2258,7 @@ namespace GalWarWin
             lblRsrchTot.Text = Game.CurrentPlayer.GetCurrentResearch().ToString();
             lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research)) + new string(' ', lblResearch.Text.Length + 6);
             FormatIncome(lblProduction, production);
-            lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.Production).ToString();
+            lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.Production2).ToString();
 
             emphasisEvent = false;
             chkGold.Checked = Game.CurrentPlayer.GoldEmphasis;
@@ -2531,12 +2532,6 @@ namespace GalWarWin
                 if (strChange != "0")
                     lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : string.Empty);
 
-                if (colony.Repair > 0)
-                {
-                    lbl6.Text = "Repair";
-                    lbl6Inf.Text = "+" + colony.Repair;
-                }
-
                 lbl7.Text = "Production";
                 lbl7Inf.Text = FormatDouble(colony.ProdGuess);
             }
@@ -2581,7 +2576,7 @@ namespace GalWarWin
 
         internal static string GetProdText(Colony colony)
         {
-            return GetProdText(colony, colony.Buildable, colony.Production, colony.PauseBuild);
+            return GetProdText(colony, colony.Buildable, colony.Buildable.Production, colony.PauseBuild);
         }
 
         internal static string GetProdText(Colony colony, Buildable build, double production, bool paused)
@@ -2613,7 +2608,7 @@ namespace GalWarWin
             else
             {
                 if (build is StoreProd)
-                    prodInc -= prodInc * Consts.StoreProdLossPct;
+                    prodInc *= Consts.StoreProdRatio;
 
                 inc = FormatUsuallyInt(prodInc);
             }
@@ -2720,12 +2715,12 @@ namespace GalWarWin
             return GetSelectedTile();
         }
 
-        void IEventHandler.getNewBuild(Colony colony, out Buildable buildable, out bool pause)
+        Buildable IEventHandler.getNewBuild(Colony colony, int production, out bool pause)
         {
             showMoves = false;
             InvalidateMap();
 
-            ChangeBuild(colony, out buildable, out pause);
+            return ChangeBuild(colony, production, out pause);
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost)

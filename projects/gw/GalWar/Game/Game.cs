@@ -391,17 +391,17 @@ namespace GalWar
                 addGold += currentPlayer * moveOrderGold + startDefense - homeworld.Soldiers * Consts.ProductionForSoldiers;
 
                 //calculations to offset AddProduction when currently building StoreProd
-                addProduction /= ( 1 - Consts.StoreProdLossPct );
-                addGold -= addProduction * Consts.StoreProdLossPct / Consts.ProductionForGold;
+                addProduction /= Consts.StoreProdRatio;
+                addGold -= addProduction * ( 1 - Consts.StoreProdRatio ) / Consts.ProductionForGold;
 
                 //actually add in starting gold and production
                 CurrentPlayer.AddGold(addGold);
                 homeworld.AddProduction(addProduction);
 
                 //calculate current income total
-                CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + homeworld.production;
+                CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + homeworld.production2;
 
-                homeworld.ProdGuess = homeworld.production;
+                homeworld.ProdGuess = homeworld.production2;
             }
         }
         private static List<int> GetStartResearch()
@@ -1149,7 +1149,9 @@ namespace GalWar
         internal delegate Tile UndoMethod<T1, T2, T3>(T1 arg1, T2 arg2, T3 arg3);
         internal delegate Tile UndoMethod<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
         internal delegate Tile UndoMethod<T1, T2, T3, T4, T5, T6>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6);
+        internal delegate Tile UndoMethod<T1, T2, T3, T4, T5, T6, T7>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7);
         internal delegate Tile UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8);
+        internal delegate Tile UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9);
 
         internal interface IUndoCommand
         {
@@ -1213,6 +1215,16 @@ namespace GalWar
             {
             }
         }
+        internal class UndoCommand<T1, T2, T3, T4, T5, T6, T7> : UndoCommand<Tuple<T1, T2, T3, T4, T5, T6, T7>>
+        {
+            public UndoCommand(UndoMethod<T1, T2, T3, T4, T5, T6, T7> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
+                : base(delegate (Tuple<T1, T2, T3, T4, T5, T6, T7> args)
+                {
+                    return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4, args.Item5, args.Item6, args.Item7);
+                }, new Tuple<T1, T2, T3, T4, T5, T6, T7>(arg1, arg2, arg3, arg4, arg5, arg6, arg7))
+            {
+            }
+        }
         internal class UndoCommand<T1, T2, T3, T4, T5, T6, T7, T8> : UndoCommand<Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>>>
         {
             public UndoCommand(UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8)
@@ -1220,6 +1232,16 @@ namespace GalWar
                     {
                         return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4, args.Item5, args.Item6, args.Item7, args.Rest.Item1);
                     }, new Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8>>(arg1, arg2, arg3, arg4, arg5, arg6, arg7, new Tuple<T8>(arg8)))
+            {
+            }
+        }
+        internal class UndoCommand<T1, T2, T3, T4, T5, T6, T7, T8, T9> : UndoCommand<Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8, T9>>>
+        {
+            public UndoCommand(UndoMethod<T1, T2, T3, T4, T5, T6, T7, T8, T9> UndoMethod, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9)
+                : base(delegate (Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8, T9>> args)
+                    {
+                        return UndoMethod(args.Item1, args.Item2, args.Item3, args.Item4, args.Item5, args.Item6, args.Item7, args.Rest.Item1, args.Rest.Item2);
+                    }, new Tuple<T1, T2, T3, T4, T5, T6, T7, Tuple<T8, T9>>(arg1, arg2, arg3, arg4, arg5, arg6, arg7, new Tuple<T8, T9>(arg8, arg9)))
             {
             }
         }

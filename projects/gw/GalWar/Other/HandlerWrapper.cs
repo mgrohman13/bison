@@ -74,7 +74,7 @@ namespace GalWar
             if (colony.CanBuild(newBuild))
                 buildable = newBuild;
             else if (!colony.CanBuild(buildable))
-                buildable = StoreProd;
+                buildable = colony.Building.OfType<StoreProd>().Single();
             return buildable;
         }
 

@@ -86,6 +86,7 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
+round pop growth?
 in progress
 	ProdGuess
 	prod per buildable
@@ -95,8 +96,12 @@ in progress
 	start game prod/pd
 	new colony prod has storeProd cut
 		hide cancel button for lossy switch (new colony and mark obsolete)
+	pause build
+	ManualObsoleteRatio?  other ratios?
 prod repair randomness?
 hide ship cost during repair somehow?
+round prod repair?
+	and leftoever prod?
 make repair a buildable
 use wormhole verification for move order ganks?
 max design cost OE??

@@ -61,7 +61,7 @@ namespace GalWarWin
                     double d1 = 0, production = 0, d2 = 0;
                     int i = 0;
                     colony.GetTurnIncome(ref d1, ref production, ref d2, ref i, false);
-                    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.Buildable, colony.Production + production);
+                    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.Buildable, colony.Buildable.Production + production);
                 }
             }
             else

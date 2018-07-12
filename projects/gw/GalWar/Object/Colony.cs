@@ -92,6 +92,15 @@ namespace GalWar
                 }
             }
         }
+        public IEnumerable<Buildable> Building
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return new HashSet<Buildable>(this.building);
+            }
+        }
         public bool PauseBuild
         {
             get
@@ -201,7 +210,7 @@ namespace GalWar
             }
         }
 
-        internal int production
+        internal int production2
         {
             get
             {
@@ -294,7 +303,8 @@ namespace GalWar
         }
         private void ChangeBuild(Buildable newBuild)
         {
-            ChangeBuild(newBuild, this.PauseBuild);
+            if (this.Buildable != newBuild)
+                ChangeBuild(newBuild, false);
         }
         private void ChangeBuild(Buildable newBuild, bool pause)
         {
@@ -324,6 +334,12 @@ namespace GalWar
             Buildable oldBuild = this.Buildable;
             Buildable newBuild = handler.getNewBuild(this, oldProduction, out newPause);
             ChangeBuild(newBuild, newPause);
+
+            //double prod = oldProduction, gold = 0;
+            //if (newBuild is BuildShip)
+            //    prod *= Consts.ManualObsoleteRatio;
+            //else
+            //    prod *= Consts.SwitchBuildRatio;
 
             double goldAdded;
             int prodAdded;
@@ -652,14 +668,14 @@ namespace GalWar
             int newAtt, newDef;
             double gold = ( this.Population / Consts.PopulationForGoldLow )
                     + ( this.Soldiers / Consts.SoldiersForGold )
-                    + ( this.production / Consts.ProductionForGold )
+                    + ( this.production2 / Consts.ProductionForGold )
                     + ( this.GetActualDisbandValue(this.HP, out newAtt, out newDef) );
             this.Player.AddGold(gold, true);
 
             Console.WriteLine("Destroy Gold:  " + gold);
             Console.WriteLine("Population:  " + this.Population / Consts.PopulationForGoldLow);
             Console.WriteLine("Soldiers:  " + this.Soldiers / Consts.SoldiersForGold);
-            Console.WriteLine("Production:  " + this.production / Consts.ProductionForGold);
+            Console.WriteLine("Production:  " + this.production2 / Consts.ProductionForGold);
             Console.WriteLine("Planet Defense:  " + this.GetActualDisbandValue(this.HP, out newAtt, out newDef));
             Console.WriteLine();
 
@@ -669,6 +685,7 @@ namespace GalWar
             this.Population = 0;
             this.Soldiers = 0;
             this.building.Clear();
+            this.Buildable = null;
             this.HP = 0;
 
             this.Player.RemoveColony(this);
@@ -695,11 +712,14 @@ namespace GalWar
             this.Buildable.AddProduction(prodAdded);
             this.Player.AddGold(goldAdded);
         }
-        internal void UndoAddProduction(int undo)
+        internal void UndoAddProduction(Buildable buildable, int undo)
         {
-            if (undo > this.Production || undo < 0)
-                throw new Exception();
-            this.Buildable.AddProduction(-undo);
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(undo > buildable.Production || undo < 0);
+            AssertException.Assert(this.CanBuild(buildable));
+
+            buildable.AddProduction(-undo);
+            ChangeBuild(buildable);
         }
         private int GetAddProduction(double production, bool floor)
         {
@@ -738,13 +758,13 @@ namespace GalWar
             }
         }
 
-        public int Production
+        public int Production2
         {
             get
             {
                 TurnException.CheckTurn(this.Player);
 
-                return this.production;
+                return this.production2;
             }
         }
 
@@ -754,7 +774,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return this.PDUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production + Consts.GetSoldierUpkeep(this);
+                return this.PDUpkeep + Consts.GetProductionUpkeepMult(Player.Game.MapSize) * this.production2 + Consts.GetSoldierUpkeep(this);
             }
         }
 
@@ -822,29 +842,6 @@ namespace GalWar
             production += prodInc;
         }
 
-        private void MinGold(double value, ref double gold, double rate)
-        {
-            gold += ( value - (int)Math.Ceiling(value) ) / rate;
-        }
-
-        private void GetPlanetDefenseIncMinGold(double production, out int newAtt, out int newDef, out int newHP)
-        {
-            if (this.Buildable is PlanetDefense)
-            {
-                double att, def, hp, newResearch, newProd;
-                GetPlanetDefenseInc(production, this.Player.Research, out att, out def, out hp, out newResearch, out newProd, false, false);
-                newAtt = (int)Math.Ceiling(att);
-                newDef = (int)Math.Ceiling(def);
-                newHP = (int)Math.Ceiling(hp);
-            }
-            else
-            {
-                newAtt = this.Att;
-                newDef = this.Def;
-                newHP = this.HP;
-            }
-        }
-
         private int RoundValue(double value, bool random, bool floor, ref double gold, double rate)
         {
             if (floor && random)
@@ -862,55 +859,55 @@ namespace GalWar
             return rounded;
         }
 
-        public void SellProduction(IEventHandler handler, int production)
-        {
-            handler = new HandlerWrapper(handler, Player.Game, false, true);
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(production > 0);
-            AssertException.Assert(production <= this.production);
+        //public void SellProduction(IEventHandler handler, int production)
+        //{
+        //    handler = new HandlerWrapper(handler, Player.Game, false, true);
+        //    TurnException.CheckTurn(this.Player);
+        //    AssertException.Assert(production > 0);
+        //    AssertException.Assert(production <= this.production2);
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
-                    new Game.UndoMethod<int>(UndoSellProduction), production));
+        //    Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
+        //            new Game.UndoMethod<int>(UndoSellProduction), production));
 
-            TradeProduction(-production, 1 / Consts.ProductionForGold);
-        }
-        private Tile UndoSellProduction(int production)
-        {
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(production > 0);
+        //    TradeProduction(-production, 1 / Consts.ProductionForGold);
+        //}
+        //private Tile UndoSellProduction(int production)
+        //{
+        //    TurnException.CheckTurn(this.Player);
+        //    AssertException.Assert(production > 0);
 
-            TradeProduction(production, 1 / Consts.ProductionForGold);
+        //    TradeProduction(production, 1 / Consts.ProductionForGold);
 
-            return this.Tile;
-        }
-        public void BuyProduction(IEventHandler handler, int production)
-        {
-            handler = new HandlerWrapper(handler, Player.Game, false, true);
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(production > 0);
-            AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
+        //    return this.Tile;
+        //}
+        //public void BuyProduction(IEventHandler handler, int production)
+        //{
+        //    handler = new HandlerWrapper(handler, Player.Game, false, true);
+        //    TurnException.CheckTurn(this.Player);
+        //    AssertException.Assert(production > 0);
+        //    AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
-                    new Game.UndoMethod<int>(UndoBuyProduction), production));
+        //    Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
+        //            new Game.UndoMethod<int>(UndoBuyProduction), production));
 
-            TradeProduction(production, Consts.GoldForProduction);
-        }
+        //    TradeProduction(production, Consts.GoldForProduction);
+        //}
 
-        private Tile UndoBuyProduction(int production)
-        {
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(production > 0);
-            AssertException.Assert(production <= this.production);
+        //private Tile UndoBuyProduction(int production)
+        //{
+        //    TurnException.CheckTurn(this.Player);
+        //    AssertException.Assert(production > 0);
+        //    AssertException.Assert(production <= this.production2);
 
-            TradeProduction(-production, Consts.GoldForProduction);
+        //    TradeProduction(-production, Consts.GoldForProduction);
 
-            return this.Tile;
-        }
-        private void TradeProduction(int production, double rate)
-        {
-            this.production += production;
-            this.Player.SpendGold(production * rate);
-        }
+        //    return this.Tile;
+        //}
+        //private void TradeProduction(int production, double rate)
+        //{
+        //    this.production2 += production;
+        //    this.Player.SpendGold(production * rate);
+        //}
 
         public bool CanBuild(Buildable buildable)
         {
@@ -934,7 +931,7 @@ namespace GalWar
 
             double pct = production;
             if (oldBuild != newBuild)
-                pct /= Consts.SwitchBuildRatio;
+                pct *= Consts.SwitchBuildRatio;
             pct = newBuild.GetAddProduction(pct, true);
             return ( production - pct ) / production;
         }
@@ -1018,6 +1015,7 @@ namespace GalWar
 
             int production;
             double addGold, goldIncome;
+            Buildable buildable = null;
             if (gold)
             {
                 GetDisbandGoldValue(hp, out goldIncome, out addGold, out newAtt, out newDef);
@@ -1029,6 +1027,7 @@ namespace GalWar
             else
             {
                 AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, false, out goldIncome, out production);
+                buildable = this.Buildable;
 
                 addGold = 0;
             }
@@ -1040,24 +1039,26 @@ namespace GalWar
             this.Att -= newAtt;
             this.Def -= newDef;
 
-            Player.Game.PushUndoCommand(new Game.UndoCommand<int, int, int, int, double, double>(
-                    new Game.UndoMethod<int, int, int, int, double, double>(UndoDisbandPlanetDefense), newAtt, newDef, hp, production, addGold, goldIncome));
+            Player.Game.PushUndoCommand(new Game.UndoCommand<int, int, int, Buildable, int, double, double>(
+                    new Game.UndoMethod<int, int, int, Buildable, int, double, double>(UndoDisbandPlanetDefense), newAtt, newDef, hp, buildable, production, addGold, goldIncome));
         }
-        private Tile UndoDisbandPlanetDefense(int att, int def, int hp, int production, double addGold, double goldIncome)
+        private Tile UndoDisbandPlanetDefense(int att, int def, int hp, Buildable buildable, int production, double addGold, double goldIncome)
         {
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp >= 0);
             AssertException.Assert(att >= 0);
             AssertException.Assert(def >= 0);
             AssertException.Assert(production >= 0);
-            AssertException.Assert(production <= this.production);
+            AssertException.Assert(production <= buildable.Production);
             AssertException.Assert(addGold >= 0);
             AssertException.Assert(goldIncome > -.1);
+            AssertException.Assert(production == 0 || this.CanBuild(buildable));
 
             this.HP += hp;
             this.Att += att;
             this.Def += def;
-            this.UndoAddProduction(production);
+            if (this.CanBuild(buildable) && production > 0)
+                this.UndoAddProduction(buildable, production);
             this.Player.AddGold(-addGold);
             this.Player.GoldIncome(-goldIncome);
 

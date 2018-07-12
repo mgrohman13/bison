@@ -43,7 +43,7 @@ namespace GalWarWin
         {
             SetVisibility(false);
 
-            ShipDesign design = buildable as ShipDesign;
+            ShipDesign design = GetShipDesign();
             if (design != null)
             {
                 SetVisibility(true);
@@ -80,7 +80,7 @@ namespace GalWarWin
                         SetVisibility(true);
 
                         double att, def, hp, newResearch, newProd;
-                        colony.GetPlanetDefenseInc(colony.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
+                        colony.GetPlanetDefenseInc(colony.Buildable.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
                                 out att, out def, out hp, out newResearch, out newProd, false, false);
                         double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetCurrentResearch());
                         string costLabel = handleCost(ref cost);
@@ -158,9 +158,22 @@ namespace GalWarWin
                     : ( design.DeathStar ? "Death Star (" + MainForm.FormatInt(design.BombardDamage) + ")" : string.Empty ) );
         }
 
+        private ShipDesign GetShipDesign()
+        {
+            return GetShipDesign(this.buildable);
+        }
+        public static ShipDesign GetShipDesign(Colony colony)
+        {
+            return GetShipDesign(( colony != null && colony.Player.IsTurn ) ? colony.Buildable : null);
+        }
+        public static ShipDesign GetShipDesign(Buildable buildable)
+        {
+            return ( buildable is BuildShip ? ( (BuildShip)buildable ).ShipDesign : null );
+        }
+
         private void label_MouseClick(object sender, MouseEventArgs e)
         {
-            ShipDesign design = buildable as ShipDesign;
+            ShipDesign design = GetShipDesign();
             if (design != null && e.Button == MouseButtons.Right)
                 CostCalculatorForm.ShowForm(design);
         }

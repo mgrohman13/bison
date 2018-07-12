@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GalWar
 {
-    internal class BuildShip : Buildable
+    public class BuildShip : Buildable
     {
         private ShipDesign design;
 
@@ -25,6 +25,8 @@ namespace GalWar
         {
             get
             {
+                TurnException.CheckTurn(colony.Player);
+
                 return design;
             }
         }
@@ -33,6 +35,8 @@ namespace GalWar
         {
             get
             {
+                TurnException.CheckTurn(colony.Player);
+
                 return null;
             }
         }
@@ -84,6 +88,8 @@ namespace GalWar
 
         public override string ToString()
         {
+            TurnException.CheckTurn(colony.Player);
+
             return design.ToString();
         }
     }

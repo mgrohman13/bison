@@ -19,6 +19,8 @@ namespace GalWar
         {
             get
             {
+                TurnException.CheckTurn(colony.Player);
+
                 return this._production;
             }
             protected set
@@ -33,11 +35,15 @@ namespace GalWar
         {
             get
             {
+                TurnException.CheckTurn(colony.Player);
+
                 return null;
             }
         }
         public string GetProdText(string curProd)
         {
+            TurnException.CheckTurn(colony.Player);
+
             return curProd + ( this.Cost.HasValue ? " / " + this.Cost.Value.ToString() : string.Empty );
         }
 
