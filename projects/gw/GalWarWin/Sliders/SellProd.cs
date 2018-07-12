@@ -15,12 +15,12 @@ namespace GalWarWin.Sliders
 
         public override double GetInitial()
         {
-            return colony.Production / 2.0;
+            return colony.Production2 / 2.0;
         }
 
         protected override int GetMaxInternal()
         {
-            return colony.Production;
+            return colony.Production2;
         }
 
         protected override double GetResult()

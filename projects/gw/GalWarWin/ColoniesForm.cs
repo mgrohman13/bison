@@ -144,11 +144,11 @@ namespace GalWarWin
                 buildText = colony.CurBuild.ToString();
             else
                 buildText = "Gold";
-            bool ship = ( colony.CurBuild is build );
+            bool ship = ( colony.CurBuild is BuildShip );
             Label build = (Label)( controls[5, i] = NewLabel(x, y, buildText, big: true, click: ship, bold: ship && !colony.PauseBuild
-                    && ( colony.Production + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE ) >= colony.CurBuild.Cost) );
+                    && ( colony.Production2 + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE ) >= colony.CurBuild.Cost) );
             if (ship)
-                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(colony.CurBuild as ShipDesign));
+                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(( (BuildShip)colony.CurBuild ).ShipDesign));
         }
 
         private void Production(int x, int y, int i, Colony colony)
@@ -165,13 +165,8 @@ namespace GalWarWin
             Controls.Add(button);
             button.Click += new System.EventHandler((object sender, EventArgs e) =>
             {
-                Buildable buildable;
-                bool pause, ok;
-                int prod = colony.Production;
-                ok = ProductionForm.ShowForm(colony, out buildable, out pause);
-                colony.StartBuilding(MainForm.GameForm, buildable, pause);
-                if (ok || prod != colony.Production)
-                    LoadData();
+                MainForm.GameForm.ChangeBuild(colony);
+                LoadData();
             });
         }
 

@@ -52,7 +52,7 @@ namespace GalWarAI
             return Game.Random.SelectValue(options);
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, int production, out bool pause)
+        Buildable IEventHandler.getNewBuild(Colony colony, double production, bool floor, out bool pause)
         {
             //all buildable changes are handled explicitly
             Buildable buildable = colony.CurBuild;

@@ -394,8 +394,7 @@ namespace GalWar
             planet.ReduceQuality(planet.Quality -
                     MattUtil.TBSUtil.FindValue(value => ( amount > Consts.GetColonizationCost(Consts.PlanetConstValue + value, mult) ),
                     0, Consts.NewPlanetQuality(), false));
-            int production = Game.Random.Round(amount - Consts.GetColonizationCost(planet.PlanetValue, mult));
-            player.NewColony(player == anomShip.Player ? handler : null, planet, 0, 0, production);
+            player.NewColony(player == anomShip.Player ? handler : null, planet, 0, 0, amount - Consts.GetColonizationCost(planet.PlanetValue, mult));
 
             return true;
         }

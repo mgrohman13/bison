@@ -11,7 +11,7 @@ namespace GalWarWin
     public partial class BuildableControl : UserControl
     {
         private Colony colony;
-        private Buildable buildable;
+        private Buildable buildable; ShipDesign shipDesign;
         private int prodLoss;
 
         public BuildableControl()
@@ -21,16 +21,21 @@ namespace GalWarWin
 
         public bool SetColony(Colony colony)
         {
-            return SetColony(colony, colony.CurBuild, 0);
+            return SetColony(colony, colony.CurBuild, null, 0);
         }
         public bool SetBuildable(Buildable buildable)
         {
-            return SetColony(null, buildable, 0);
+            return SetColony(null, buildable, null, 0);
         }
-        public bool SetColony(Colony colony, Buildable buildable, int prodLoss)
+        public bool SetShipDesign(ShipDesign shipDesign)
+        {
+            return SetColony(null, buildable, shipDesign, 0);
+        }
+        public bool SetColony(Colony colony, Buildable buildable, ShipDesign shipDesign, int prodLoss)
         {
             this.colony = colony;
             this.buildable = buildable;
+            this.shipDesign = ( buildable is BuildShip ? ( (BuildShip)buildable ).ShipDesign : shipDesign );
             this.prodLoss = prodLoss;
             return RefreshBuildable();
         }

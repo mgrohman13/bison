@@ -5,6 +5,7 @@ using System.Text;
 
 namespace GalWar
 {
+    [Serializable]
     public class BuildShip : Buildable
     {
         private ShipDesign design;
@@ -39,8 +40,8 @@ namespace GalWar
         {
             bool retVal = false;
 
-            this.Production += Game.Random.Round(production);
-            while (this.Production >= this.Cost.Value)
+            this.production += Game.Random.Round(production);
+            while (this.production >= this.Cost.Value)
             {
                 Tile tile = null;
                 foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))
@@ -74,7 +75,7 @@ namespace GalWar
                     }
                 }
 
-                this.Production -= this.Cost.Value;
+                this.production -= this.Cost.Value;
             }
 
             return retVal;

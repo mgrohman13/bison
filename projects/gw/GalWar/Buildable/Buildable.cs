@@ -21,9 +21,23 @@ namespace GalWar
             {
                 TurnException.CheckTurn(colony.Player);
 
-                return this._production;
+                return production;
             }
             protected set
+            {
+                checked
+                {
+                    this._production = (ushort)value;
+                }
+            }
+        }
+        protected int production
+        {
+            get
+            {
+                return this._production;
+            }
+            set
             {
                 checked
                 {
@@ -61,7 +75,7 @@ namespace GalWar
         }
         internal void AddProduction(int production)
         {
-            this.Production += production;
+            this.production += production;
         }
     }
 }

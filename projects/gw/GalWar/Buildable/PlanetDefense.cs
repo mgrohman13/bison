@@ -14,8 +14,8 @@ namespace GalWar
 
         internal override bool Build(IEventHandler handler, double production)
         {
-            production += this.Production;
-            this.Production = 0;
+            production += this.production;
+            this.production = 0;
             colony.BuildPlanetDefense(production, false);
             return false;
         }

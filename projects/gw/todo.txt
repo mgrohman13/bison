@@ -94,9 +94,10 @@ in progress
 	turn inc calc
 		mingold - remove?
 	start game prod/pd
-	hide cancel button for lossy switch (new colony and mark obsolete)
 	pause build
-	mark obsolete during callback
+	buy/sell/obsolete during callback
+		allow sometimes
+		restrict at handler wrapper level
 prod repair randomness?
 hide ship cost during repair somehow?
 round prod repair?

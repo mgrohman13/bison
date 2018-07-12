@@ -50,7 +50,7 @@ namespace GalWar
             }
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, int production, out bool pause)
+        Buildable IEventHandler.getNewBuild(Colony colony, double production, bool floor, out bool pause)
         {
             callback = true;
             special = true;
@@ -59,7 +59,7 @@ namespace GalWar
             pause = colony.PauseBuild;
             try
             {
-                newBuild = handler.getNewBuild(colony, production, out pause);
+                newBuild = handler.getNewBuild(colony, production, floor, out pause);
             }
             catch (Exception e)
             {

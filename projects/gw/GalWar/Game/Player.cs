@@ -585,7 +585,7 @@ namespace GalWar
             return ( goldValue < 0 );
         }
 
-        internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, int production)
+        internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, double production)
         {
             Colony colony = new Colony(handler, this, planet, population, soldiers, production);
             this.colonies.Add(colony);

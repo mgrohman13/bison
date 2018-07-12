@@ -1465,14 +1465,12 @@ namespace GalWar
             this.Player.SpendGold(planet.ColonizationCost);
             this.Player.GoldIncome(-GetGoldCost(this.Population, this.Soldiers));
 
-            int production = Game.Random.Round(ColonizationValue);
-            this.Player.GoldIncome(ColonizationValue - production);
             this.Population = 0;
             this.Soldiers = 0;
 
             Destroy(false);
 
-            this.Player.NewColony(handler, planet, this.Population, this.Soldiers, production);
+            this.Player.NewColony(handler, planet, this.Population, this.Soldiers, ColonizationValue);
         }
 
         public void GoldRepair(IEventHandler handler, int hp)

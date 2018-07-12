@@ -5,6 +5,7 @@ using System.Text;
 
 namespace GalWar
 {
+    [Serializable]
     public class BuildGold : Buildable
     {
         internal BuildGold(Colony colony)
@@ -14,7 +15,7 @@ namespace GalWar
 
         internal override bool Build(IEventHandler handler, double production)
         {
-            if (this.Production != 0)
+            if (this.production != 0)
                 throw new Exception();
             colony.Player.AddGold(production / Consts.GoldProductionForGold);
             return false;

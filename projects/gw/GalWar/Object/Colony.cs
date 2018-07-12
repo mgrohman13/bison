@@ -23,7 +23,7 @@ namespace GalWar
         private short _defenseHPChange;
         private float _defenseResearch, _soldierChange, _prodGuess, _researchRounding, _productionRounding;
 
-        internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, int production)
+        internal Colony(IEventHandler handler, Player player, Planet planet, int population, double soldiers, double production)
             : base(null, 1, 1, 0, population, soldiers)
         {
             checked
@@ -40,7 +40,7 @@ namespace GalWar
                 this.buildable.Add(storeProd);
                 this.buildable.Add(new BuildAttack(this));
                 this.buildable.Add(new BuildDefense(this));
-                this.buildable.UnionWith(player.GetShipDesigns().Select(design => new BuildShip(this, design)));
+                this.buildable.UnionWith(player.GetDesigns().Select(design => new BuildShip(this, design)));
                 this._curBuild = storeProd;
 
                 this._repairShip = null;
@@ -59,16 +59,16 @@ namespace GalWar
 
                 this._researchRounding = float.NaN;
                 this._productionRounding = float.NaN;
-
-                ResetRounding();
-
-                double goldAdded;
-                int prodAdded;
-                if (handler != null)
-                    ChangeBuild(handler, production, false, 1, out goldAdded, out prodAdded);
-                else
-                    AddProduction(production, false, true, 1, out goldAdded, out prodAdded);
             }
+
+            ResetRounding();
+
+            double goldAdded;
+            int prodAdded;
+            if (handler != null)
+                ChangeBuild(handler, production, false, 1, out goldAdded, out prodAdded);
+            else
+                AddProduction(production, false, true, 1, out goldAdded, out prodAdded);
         }
 
         public override Player Player
@@ -85,9 +85,16 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
+                return this.curBuild;
+            }
+        }
+        private Buildable curBuild
+        {
+            get
+            {
                 return this._curBuild;
             }
-            private set
+            set
             {
                 checked
                 {
@@ -112,7 +119,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return ( this._pauseBuild && ( this.CurBuild is ShipDesign ) );
+                return ( this._pauseBuild && ( this.curBuild is ShipDesign ) );
             }
             private set
             {
@@ -316,13 +323,13 @@ namespace GalWar
         }
         private void ChangeBuild(Buildable newBuild)
         {
-            if (this.CurBuild != newBuild)
+            if (this.curBuild != newBuild)
                 ChangeBuild(newBuild, false);
         }
         private void ChangeBuild(Buildable newBuild, bool pause)
         {
             AssertException.Assert(CanBuild(newBuild));
-            this.CurBuild = newBuild;
+            this.curBuild = newBuild;
             this.PauseBuild = pause;
         }
 
@@ -339,7 +346,7 @@ namespace GalWar
             newBuild.AddProduction(prodAdded);
             this.Player.AddGold(( production - prodAdded ) / Consts.ProductionForGold);
 
-            if (obsoleteBuilds.Contains(this.CurBuild))
+            if (obsoleteBuilds.Contains(this.curBuild))
                 ChangeBuild(newBuild);
         }
         internal Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool> MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
@@ -348,7 +355,7 @@ namespace GalWar
             this.buildable.Remove(obsoleteBuild);
 
             int oldProduction = obsoleteBuild.Production;
-            Buildable oldBuild = this.CurBuild;
+            Buildable oldBuild = this.curBuild;
             bool oldPause = this.PauseBuild;
 
             int prodAdded;
@@ -368,7 +375,7 @@ namespace GalWar
                 this.Player.AddGold(goldAdded);
             }
 
-            return new Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>(obsoleteDesign, oldProduction, prodAdded, goldAdded, this.CurBuild, oldBuild, oldPause);
+            return new Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>(obsoleteDesign, oldProduction, prodAdded, goldAdded, this.curBuild, oldBuild, oldPause);
         }
         internal void UndoMarkObsolete(Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool> undoArgs)
         {
@@ -448,14 +455,14 @@ namespace GalWar
 
             this.ProdGuess += GetTotalIncome() / 3.0;
 
-            this.Population += RoundValue(population, true, false, ref gold, Consts.PopulationForGoldHigh);
+            this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
 
             ResetRounding();
 
             //build planet defenses first so they can attack this turn
-            bool buildFirst = ( this.CurBuild is PlanetDefense ), built = false;
+            bool buildFirst = ( this.curBuild is PlanetDefense ), built = false;
             if (buildFirst)
-                built = this.CurBuild.Build(handler, production);
+                built = this.curBuild.Build(handler, production);
 
             if (!this.MinDefenses)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
@@ -471,9 +478,9 @@ namespace GalWar
 
             //build ships after attacking so cleared tiles can be built on
             if (!buildFirst)
-                built = this.CurBuild.Build(handler, production);
+                built = this.curBuild.Build(handler, production);
 
-            if (!( this.CurBuild is PlanetDefense ))
+            if (!( this.curBuild is PlanetDefense ))
                 UpgradePlanetDefense();
 
             Player.AddGold(gold);
@@ -711,7 +718,7 @@ namespace GalWar
             this.Population = 0;
             this.Soldiers = 0;
             this.buildable.Clear();
-            this.CurBuild = null;
+            this.curBuild = null;
             this.HP = 0;
 
             this.Player.RemoveColony(this);
@@ -732,10 +739,10 @@ namespace GalWar
         }
         internal void AddProduction(double production, bool floor, bool random, double rate, out double goldAdded, out int prodAdded)
         {
-            double add = this.CurBuild.GetAddProduction(production, false);
+            double add = this.curBuild.GetAddProduction(production, false);
             goldAdded = ( production - add ) / Consts.ProductionForGold;
-            prodAdded = RoundValue(add, random, floor, ref goldAdded, rate);
-            this.CurBuild.AddProduction(prodAdded);
+            prodAdded = RoundValue(add, floor, random, ref goldAdded, rate);
+            this.curBuild.AddProduction(prodAdded);
             this.Player.AddGold(goldAdded);
         }
         internal void UndoAddProduction(Buildable buildable, int undo)
@@ -749,7 +756,7 @@ namespace GalWar
         }
         private int GetAddProduction(double production, bool floor)
         {
-            return (int)Math.Round(this.CurBuild.GetAddProduction(production, floor) * Consts.FLOAT_ERROR_ONE);
+            return (int)Math.Round(this.curBuild.GetAddProduction(production, floor) * Consts.FLOAT_ERROR_ONE);
         }
 
         #endregion //internal
@@ -861,14 +868,14 @@ namespace GalWar
             double popInc = 0, prodInc = 0;
             TurnStuff(ref popInc, ref prodInc, ref gold, ref research, false, minGold);
 
-            CurBuild.GetTurnIncome(ref prodInc, ref gold, minGold);
+            curBuild.GetTurnIncome(ref prodInc, ref gold, minGold);
 
             //modify parameter values
             population += popInc;
             production += prodInc;
         }
 
-        private int RoundValue(double value, bool random, bool floor, ref double gold, double rate)
+        private static int RoundValue(double value, bool floor, bool random, ref double addGold, double rate)
         {
             if (floor && random)
                 throw new Exception();
@@ -881,7 +888,7 @@ namespace GalWar
             else
                 rounded = (int)Math.Round(value * Consts.FLOAT_ERROR_ONE);
 
-            gold += ( value - rounded ) / rate;
+            addGold += ( value - rounded ) / rate;
             return rounded;
         }
 
@@ -1035,7 +1042,7 @@ namespace GalWar
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(hp >= 0);
             AssertException.Assert(hp <= this.HP);
-            AssertException.Assert(gold || this.CurBuild != null);
+            AssertException.Assert(gold || this.curBuild != null);
 
             int newAtt, newDef;
 
@@ -1053,7 +1060,7 @@ namespace GalWar
             else
             {
                 AddProduction(GetActualDisbandValue(hp, out newAtt, out newDef), true, false, 1, out goldIncome, out production);
-                buildable = this.CurBuild;
+                buildable = this.curBuild;
 
                 addGold = 0;
             }
@@ -1205,7 +1212,7 @@ namespace GalWar
             double newCost = GetPDHPCost(newAtt, newDef) * newHP;
             SetPD(newCost, newAtt, newDef);
 
-            if (this.CurBuild is PlanetDefense && production > Consts.FLOAT_ERROR_ZERO)
+            if (this.curBuild is PlanetDefense && production > Consts.FLOAT_ERROR_ZERO)
                 this.AddProduction(production);
             else
                 this.Player.GoldIncome(production);
@@ -1228,7 +1235,7 @@ namespace GalWar
 
         public void GetPlanetDefenseInc(double prodInc, double maxResearch, out double newAtt, out double newDef, out double newHP, out double newResearch, out double newProd, bool always, bool random)
         {
-            GetPlanetDefenseInc(this.CurBuild, prodInc, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out newProd, always, random);
+            GetPlanetDefenseInc(this.curBuild, prodInc, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out newProd, always, random);
         }
         public void GetPlanetDefenseInc(Buildable buildable, double prodInc, double maxResearch, out double newAtt, out double newDef, out double newHP, out double newResearch, out double newProd, bool always, bool random)
         {

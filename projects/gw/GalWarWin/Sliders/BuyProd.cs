@@ -27,7 +27,7 @@ namespace GalWarWin.Sliders
         {
             if (buildable is PlanetDefense)
             {
-                control.SetColony(colony, buildable, prodLoss);
+                control.SetColony(colony, buildable, null, prodLoss);
                 return control;
             }
             return null;

@@ -41,7 +41,7 @@ namespace GalWarWin
 
             MainForm.GameForm.SetLocation(form);
 
-            form.shipDesignForm1.SetBuildable(newDesign);
+            form.shipDesignForm1.SetShipDesign(newDesign);
             form.SetObsolete(obsolete);
             form.ShowDialog();
         }

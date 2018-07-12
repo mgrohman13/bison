@@ -1148,23 +1148,34 @@ namespace GalWarWin
 
         private void btnProduction_Click(object sender, EventArgs e)
         {
-            Colony colony = GetSelectedColony();
-
-            bool pause;
-            Buildable buildable = ChangeBuild(colony, 0, out pause);
-            colony.StartBuilding(this, buildable, pause);
-
-            saved = false;
-            RefreshAll();
+            ChangeBuild(GetSelectedColony());
         }
 
-        private Buildable ChangeBuild(Colony colony, int production, out bool pause)
+        private Buildable ChangeBuild(Colony colony, double production, bool floor, out bool pause)
+        {
+            return ChangeBuild(colony, true, production, floor, out pause);
+        }
+        public void ChangeBuild(Colony colony)
+        {
+            bool pause;
+            ChangeBuild(colony, false, 0, false, out pause);
+        }
+        private Buildable ChangeBuild(Colony colony, bool callback, double production, bool floor, out bool pause)
         {
             SelectTile(colony.Tile);
             RefreshAll();
 
-            Buildable buildable;
-            ProductionForm.ShowForm(colony, production, out buildable, out pause);
+            ShipDesign obsolete;
+            Buildable buildable = ProductionForm.ShowForm(colony, callback, production, floor, out pause, out obsolete);
+            if (!callback)
+            {
+                colony.StartBuilding(this, buildable, pause);
+                if (obsolete != null)
+                    MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, obsolete);
+            }
+
+            saved = false;
+            RefreshAll();
             return buildable;
         }
 
@@ -2715,12 +2726,12 @@ namespace GalWarWin
             return GetSelectedTile();
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, int production, out bool pause)
+        Buildable IEventHandler.getNewBuild(Colony colony, double production, bool floor, out bool pause)
         {
             showMoves = false;
             InvalidateMap();
 
-            return ChangeBuild(colony, production, out pause);
+            return ChangeBuild(colony, production, floor, out pause);
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost)
