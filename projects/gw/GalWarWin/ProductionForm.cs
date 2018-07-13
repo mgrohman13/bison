@@ -17,6 +17,7 @@ namespace GalWarWin
         private Colony colony;
         private bool callback, floor;
         private double addProd;
+        private SortedSet<Buildable> designs;
 
         private ProductionForm()
         {
@@ -31,7 +32,6 @@ namespace GalWarWin
             this.floor = floor;
 
             this.btnBuy.Enabled = !callback;
-            this.btnSell.Enabled = !callback;
             this.btnCancel.Enabled = !callback;
 
             this.rbValue.Checked = true;
@@ -43,7 +43,7 @@ namespace GalWarWin
         {
             this.lbxDesigns.Items.Clear();
 
-            SortedSet<Buildable> designs = new SortedSet<Buildable>(colony.Buildable, this);
+            designs = new SortedSet<Buildable>(colony.Buildable, this);
             this.lbxDesigns.Items.AddRange(designs.ToArray());
             this.lbxDesigns.Items.Insert(4, string.Empty);
 
@@ -163,29 +163,33 @@ namespace GalWarWin
 
         private double GetLossPct(Buildable buildable)
         {
-            return this.colony.GetLossPct(colony.CurBuild, buildable, (int)this.addProd);
+            return 0;
+            //return this.colony.GetLossPct(colony.CurBuild, buildable, (int)this.addProd);
         }
 
         private void btnBuy_Click(object sender, EventArgs e)
         {
-            Buildable buildable = GetSelectedDesign();
-            if (buildable != null)
-            {
-                bool switchFirst = ( buildable != colony.CurBuild );
-                int initial = GetInitialBuy(buildable, switchFirst);
-                int prod = SliderForm.ShowForm(new BuyProd(colony, buildable, GetLossAmt(buildable), initial));
-                if (prod > 0)
-                {
-                    if (switchFirst)
-                    {
-                        colony.StartBuilding(MainForm.GameForm, buildable, false);
-                        if (prod == initial)
-                            prod = GetInitialBuy(buildable, false);
-                    }
-                    //colony.BuyProduction(MainForm.GameForm, prod);
-                    RefreshBuild(false);
-                }
-            }
+            if (TradeProdForm.ShowForm(this.colony, designs))
+                RefreshBuild();
+
+            //Buildable buildable = GetSelectedDesign();
+            //if (buildable != null)
+            //{
+            //    bool switchFirst = ( buildable != colony.CurBuild );
+            //    int initial = GetInitialBuy(buildable, switchFirst);
+            //    int prod = SliderForm.ShowForm(new BuyProd(colony, buildable, GetLossAmt(buildable), initial));
+            //    if (prod > 0)
+            //    {
+            //        if (switchFirst)
+            //        {
+            //            colony.StartBuilding(MainForm.GameForm, buildable, false);
+            //            if (prod == initial)
+            //                prod = GetInitialBuy(buildable, false);
+            //        }
+            //        //colony.BuyProduction(MainForm.GameForm, prod);
+            //        RefreshBuild(false);
+            //    }
+            //}
         }
 
         private int GetInitialBuy(Buildable buildable, bool switchFirst)
@@ -210,8 +214,8 @@ namespace GalWarWin
         private int GetTotalProd(Buildable buildable, bool switchFirst)
         {
             int prod = colony.Production2;
-            if (switchFirst)
-                prod = LoseProduction(prod, this.colony.GetLossPct(colony.CurBuild, buildable, (int)this.addProd));
+            //if (switchFirst)
+            //    prod = LoseProduction(prod, this.colony.GetLossPct(colony.CurBuild, buildable, (int)this.addProd));
             return prod + GetIncome();
         }
 
@@ -249,15 +253,15 @@ namespace GalWarWin
             return (int)Math.Ceiling(cost / ( 1 - pct ));
         }
 
-        private void btnSell_Click(object sender, EventArgs e)
-        {
-            int prod = SliderForm.ShowForm(new SellProd(colony));
-            if (prod > 0)
-            {
-                //colony.SellProduction(MainForm.GameForm, prod);
-                RefreshBuild(null);
-            }
-        }
+        //private void btnSell_Click(object sender, EventArgs e)
+        //{
+        //    int prod = SliderForm.ShowForm(new SellProd(colony));
+        //    if (prod > 0)
+        //    {
+        //        //colony.SellProduction(MainForm.GameForm, prod);
+        //        RefreshBuild(null);
+        //    }
+        //}
 
         private void chkObsolete_CheckedChanged(object sender, EventArgs e)
         {

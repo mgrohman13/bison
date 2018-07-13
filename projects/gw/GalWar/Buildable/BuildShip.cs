@@ -32,7 +32,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(colony.Player);
 
-                return null;
+                return design.Cost;
             }
         }
 

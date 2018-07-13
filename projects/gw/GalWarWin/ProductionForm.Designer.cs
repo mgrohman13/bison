@@ -34,7 +34,6 @@ namespace GalWarWin
             this.btnOK = new System.Windows.Forms.Button();
             this.lblProd = new System.Windows.Forms.Label();
             this.btnBuy = new System.Windows.Forms.Button();
-            this.btnSell = new System.Windows.Forms.Button();
             this.chkObsolete = new System.Windows.Forms.CheckBox();
             this.rbStr = new System.Windows.Forms.RadioButton();
             this.rbValue = new System.Windows.Forms.RadioButton();
@@ -46,8 +45,8 @@ namespace GalWarWin
             // 
             // lbxDesigns
             // 
-            this.lbxDesigns.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom )
-                        | System.Windows.Forms.AnchorStyles.Left ) ) );
+            this.lbxDesigns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lbxDesigns.FormattingEnabled = true;
             this.lbxDesigns.Location = new System.Drawing.Point(0, 39);
             this.lbxDesigns.Name = "lbxDesigns";
@@ -58,7 +57,7 @@ namespace GalWarWin
             // 
             // lblProdLoss
             // 
-            this.lblProdLoss.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblProdLoss.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblProdLoss.AutoEllipsis = true;
             this.lblProdLoss.Location = new System.Drawing.Point(230, 23);
             this.lblProdLoss.Name = "lblProdLoss";
@@ -69,7 +68,7 @@ namespace GalWarWin
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Location = new System.Drawing.Point(230, 293);
             this.btnCancel.Name = "btnCancel";
@@ -80,7 +79,7 @@ namespace GalWarWin
             // 
             // btnOK
             // 
-            this.btnOK.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Location = new System.Drawing.Point(130, 293);
             this.btnOK.Name = "btnOK";
@@ -91,7 +90,7 @@ namespace GalWarWin
             // 
             // lblProd
             // 
-            this.lblProd.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.lblProd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblProd.AutoEllipsis = true;
             this.lblProd.Location = new System.Drawing.Point(130, 23);
             this.lblProd.Name = "lblProd";
@@ -102,29 +101,18 @@ namespace GalWarWin
             // 
             // btnBuy
             // 
-            this.btnBuy.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.btnBuy.Location = new System.Drawing.Point(130, 0);
+            this.btnBuy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnBuy.Location = new System.Drawing.Point(130, 1);
             this.btnBuy.Name = "btnBuy";
-            this.btnBuy.Size = new System.Drawing.Size(100, 23);
+            this.btnBuy.Size = new System.Drawing.Size(200, 23);
             this.btnBuy.TabIndex = 3;
-            this.btnBuy.Text = "Buy";
+            this.btnBuy.Text = "Buy/Sell";
             this.btnBuy.UseVisualStyleBackColor = true;
             this.btnBuy.Click += new System.EventHandler(this.btnBuy_Click);
             // 
-            // btnSell
-            // 
-            this.btnSell.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
-            this.btnSell.Location = new System.Drawing.Point(230, 0);
-            this.btnSell.Name = "btnSell";
-            this.btnSell.Size = new System.Drawing.Size(100, 23);
-            this.btnSell.TabIndex = 4;
-            this.btnSell.Text = "Sell";
-            this.btnSell.UseVisualStyleBackColor = true;
-            this.btnSell.Click += new System.EventHandler(this.btnSell_Click);
-            // 
             // chkObsolete
             // 
-            this.chkObsolete.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chkObsolete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkObsolete.AutoSize = true;
             this.chkObsolete.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkObsolete.Checked = true;
@@ -188,7 +176,7 @@ namespace GalWarWin
             // 
             // chkPause
             // 
-            this.chkPause.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chkPause.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkPause.AutoSize = true;
             this.chkPause.Checked = true;
             this.chkPause.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -201,7 +189,7 @@ namespace GalWarWin
             // 
             // sdForm
             // 
-            this.sdForm.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.sdForm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.sdForm.Location = new System.Drawing.Point(130, 62);
             this.sdForm.Name = "sdForm";
             this.sdForm.Size = new System.Drawing.Size(200, 230);
@@ -220,7 +208,6 @@ namespace GalWarWin
             this.Controls.Add(this.rbStr);
             this.Controls.Add(this.chkObsolete);
             this.Controls.Add(this.btnBuy);
-            this.Controls.Add(this.btnSell);
             this.Controls.Add(this.lblProd);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
@@ -244,7 +231,6 @@ namespace GalWarWin
         private System.Windows.Forms.Label lblProd;
         public BuildableControl sdForm;
         private System.Windows.Forms.Button btnBuy;
-        private System.Windows.Forms.Button btnSell;
         private System.Windows.Forms.CheckBox chkObsolete;
         private System.Windows.Forms.RadioButton rbStr;
         private System.Windows.Forms.RadioButton rbValue;

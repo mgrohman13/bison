@@ -75,6 +75,8 @@ namespace GalWar
         }
         internal void AddProduction(int production)
         {
+            AssertException.Assert(-production <= this.production);
+
             this.production += production;
         }
     }

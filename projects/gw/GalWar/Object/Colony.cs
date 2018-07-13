@@ -349,9 +349,9 @@ namespace GalWar
             if (obsoleteBuilds.Contains(this.curBuild))
                 ChangeBuild(newBuild);
         }
-        internal Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool> MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
+        internal Tuple<BuildShip, int, int, double, Buildable, Buildable, bool> MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
         {
-            BuildShip obsoleteBuild = getBuildShip(obsoleteDesign);
+            BuildShip obsoleteBuild = GetBuildShip(obsoleteDesign);
             this.buildable.Remove(obsoleteBuild);
 
             int oldProduction = obsoleteBuild.Production;
@@ -375,11 +375,11 @@ namespace GalWar
                 this.Player.AddGold(goldAdded);
             }
 
-            return new Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool>(obsoleteDesign, oldProduction, prodAdded, goldAdded, this.curBuild, oldBuild, oldPause);
+            return new Tuple<BuildShip, int, int, double, Buildable, Buildable, bool>(obsoleteBuild, oldProduction, prodAdded, goldAdded, this.curBuild, oldBuild, oldPause);
         }
-        internal void UndoMarkObsolete(Tuple<ShipDesign, int, int, double, Buildable, Buildable, bool> undoArgs)
+        internal void UndoMarkObsolete(Tuple<BuildShip, int, int, double, Buildable, Buildable, bool> undoArgs)
         {
-            ShipDesign obsoleteDesign = undoArgs.Item1;
+            BuildShip obsoleteBuild = undoArgs.Item1;
             int oldProduction = undoArgs.Item2;
             int prodAdded = undoArgs.Item3;
             double goldAdded = undoArgs.Item4;
@@ -387,18 +387,15 @@ namespace GalWar
             Buildable oldBuild = undoArgs.Item6;
             bool oldPause = undoArgs.Item7;
 
-            BuildShip obsoleteBuild = new BuildShip(this, obsoleteDesign);
-            this.buildable.Add(obsoleteBuild);
+            AssertException.Assert(obsoleteBuild.Production == oldProduction);
 
-            obsoleteBuild.AddProduction(oldProduction);
+            this.buildable.Add(obsoleteBuild);
             newBuild.AddProduction(-prodAdded);
             this.Player.AddGold(-goldAdded);
 
-            if (oldBuild is BuildShip && ( (BuildShip)oldBuild ).ShipDesign == obsoleteDesign)
-                oldBuild = obsoleteBuild;
             ChangeBuild(oldBuild, oldPause);
         }
-        private BuildShip getBuildShip(ShipDesign shipDesign)
+        private BuildShip GetBuildShip(ShipDesign shipDesign)
         {
             return this.buildable.OfType<BuildShip>().Where(buildShip => buildShip.ShipDesign == shipDesign).Single();
         }
@@ -892,55 +889,98 @@ namespace GalWar
             return rounded;
         }
 
-        //public void SellProduction(IEventHandler handler, int production)
-        //{
-        //    handler = new HandlerWrapper(handler, Player.Game, false, true);
-        //    TurnException.CheckTurn(this.Player);
-        //    AssertException.Assert(production > 0);
-        //    AssertException.Assert(production <= this.production2);
+        public void TradeProduction(IEventHandler handler, Dictionary<Buildable, int> trade)
+        {
+            handler = new HandlerWrapper(handler, Player.Game, false, true);
+            double addGold, goldIncome;
+            AssertException.Assert(GetTradeProduction(trade, out goldIncome));
 
-        //    Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
-        //            new Game.UndoMethod<int>(UndoSellProduction), production));
+            TradeProduction(trade);
 
-        //    TradeProduction(-production, 1 / Consts.ProductionForGold);
-        //}
-        //private Tile UndoSellProduction(int production)
-        //{
-        //    TurnException.CheckTurn(this.Player);
-        //    AssertException.Assert(production > 0);
+            if (goldIncome > 0)
+                addGold = Player.FloorGold(goldIncome);
+            else
+                addGold = -Player.CeilGold(-goldIncome);
+            goldIncome -= addGold;
 
-        //    TradeProduction(production, 1 / Consts.ProductionForGold);
+            Player.AddGold(addGold);
+            Player.GoldIncome(goldIncome);
 
-        //    return this.Tile;
-        //}
-        //public void BuyProduction(IEventHandler handler, int production)
-        //{
-        //    handler = new HandlerWrapper(handler, Player.Game, false, true);
-        //    TurnException.CheckTurn(this.Player);
-        //    AssertException.Assert(production > 0);
-        //    AssertException.Assert(production * Consts.GoldForProduction < this.Player.Gold);
+            Player.Game.PushUndoCommand(new Game.UndoCommand<Dictionary<Buildable, int>, double, double>(
+                    new Game.UndoMethod<Dictionary<Buildable, int>, double, double>(UndoTradeProduction), trade, addGold, goldIncome));
+        }
+        private Tile UndoTradeProduction(Dictionary<Buildable, int> trade, double addGold, double goldIncome)
+        {
+            trade = trade.ToDictionary(pair => pair.Key, pair => -pair.Value);
 
-        //    Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
-        //            new Game.UndoMethod<int>(UndoBuyProduction), production));
+            //just for Assert
+            double unused;
+            GetTradeProduction(trade, out unused);
 
-        //    TradeProduction(production, Consts.GoldForProduction);
-        //}
+            TradeProduction(trade);
 
-        //private Tile UndoBuyProduction(int production)
-        //{
-        //    TurnException.CheckTurn(this.Player);
-        //    AssertException.Assert(production > 0);
-        //    AssertException.Assert(production <= this.production2);
+            Player.AddGold(-addGold);
+            Player.GoldIncome(-goldIncome);
 
-        //    TradeProduction(-production, Consts.GoldForProduction);
+            return this.Tile;
+        }
+        private void TradeProduction(Dictionary<Buildable, int> trade)
+        {
+            foreach (KeyValuePair<Buildable, int> pair in trade)
+                pair.Key.AddProduction(pair.Value);
+        }
 
-        //    return this.Tile;
-        //}
-        //private void TradeProduction(int production, double rate)
-        //{
-        //    this.production2 += production;
-        //    this.Player.SpendGold(production * rate);
-        //}
+        public bool GetTradeProduction(Dictionary<Buildable, int> trade, out double gold)
+        {
+            TurnException.CheckTurn(this.Player);
+            AssertException.Assert(trade.Count == this.buildable.Count && !trade.Keys.Except(this.buildable).Any() && !this.buildable.Except(trade.Keys).Any());
+            foreach (KeyValuePair<Buildable, int> pair in trade)
+            {
+                AssertException.Assert(CanBuild(pair.Key));
+                if (pair.Key is BuildGold)
+                    AssertException.Assert(pair.Value == 0);
+                AssertException.Assert(-pair.Value <= pair.Key.Production);
+            }
+
+            StoreProd storeProd = trade.Keys.OfType<StoreProd>().Single();
+            Func<Func<int, bool>, int> Sum = Check => trade.Where(pair => pair.Key != storeProd && Check(pair.Value)).Sum(pair => pair.Value);
+
+            double sell = -Sum(amt => amt < 0);
+            double buy = Sum(amt => amt > 0);
+            int tradeStore = trade[storeProd];
+            if (tradeStore < 0)
+            {
+                buy += tradeStore;
+                if (buy < 0)
+                {
+                    sell -= buy;
+                    buy = 0;
+                }
+            }
+            else if (tradeStore > 0)
+            {
+                sell -= tradeStore / Consts.StoreProdRatio / Consts.SwitchBuildRatio;
+                if (sell < 0)
+                {
+                    buy -= sell * Consts.SwitchBuildRatio;
+                    sell = 0;
+                }
+            }
+
+            double sellValue = sell * Consts.SwitchBuildRatio;
+            if (buy * Consts.FLOAT_ERROR_ONE >= sellValue)
+            {
+                buy -= sellValue;
+                gold = -buy * Consts.GoldForProduction;
+            }
+            else
+            {
+                sell -= buy / Consts.SwitchBuildRatio;
+                gold = sell / Consts.ProductionForGold;
+            }
+
+            return ( gold > 0 || ( Player.RoundGold(-gold) < Player.Gold && !( tradeStore > 0 && -gold * Consts.FLOAT_ERROR_ONE > 1 / Consts.StoreProdRatio * Consts.GoldForProduction ) ) );
+        }
 
         public bool CanBuild(Buildable buildable)
         {
@@ -954,19 +994,6 @@ namespace GalWar
             AssertException.Assert(CanBuild(newBuild));
 
             ChangeBuild(newBuild, pause);
-        }
-
-        public double GetLossPct(Buildable oldBuild, Buildable newBuild, int production)
-        {
-            TurnException.CheckTurn(this.Player);
-            AssertException.Assert(CanBuild(oldBuild));
-            AssertException.Assert(CanBuild(newBuild));
-
-            double pct = production;
-            if (oldBuild != newBuild)
-                pct *= Consts.SwitchBuildRatio;
-            pct = newBuild.GetAddProduction(pct, true);
-            return ( production - pct ) / production;
         }
 
         public override string ToString()
@@ -1212,10 +1239,17 @@ namespace GalWar
             double newCost = GetPDHPCost(newAtt, newDef) * newHP;
             SetPD(newCost, newAtt, newDef);
 
-            if (this.curBuild is PlanetDefense && production > Consts.FLOAT_ERROR_ZERO)
-                this.AddProduction(production);
+            if (production > Consts.FLOAT_ERROR_ZERO)
+            {
+                PlanetDefense apply = this.curBuild as PlanetDefense;
+                if (apply == null)
+                    apply = Game.Random.SelectValue(this.buildable.OfType<PlanetDefense>());
+                apply.AddProduction(Game.Random.Round(production));
+            }
             else
+            {
                 this.Player.GoldIncome(production);
+            }
         }
 
         internal void BuildSoldiersAndDefenses(double prodInc)

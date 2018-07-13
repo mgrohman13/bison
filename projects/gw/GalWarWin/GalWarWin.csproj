@@ -117,6 +117,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TradeProdForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TradeProdForm.Designer.cs">
+      <DependentUpon>TradeProdForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="CombatForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>CombatForm.cs</DependentUpon>
@@ -205,6 +211,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="TradeProdForm.resx">
+      <DependentUpon>TradeProdForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
