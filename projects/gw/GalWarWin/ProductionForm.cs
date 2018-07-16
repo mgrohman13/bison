@@ -50,6 +50,36 @@ namespace GalWarWin
             this.lbxDesigns.SelectedItem = colony.CurBuild;
         }
 
+        private void lbxDesigns_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            object item = ( (ListBox)( sender ) ).Items[e.Index];
+            Buildable build = item as Buildable;
+            bool bold = false;
+
+            using (Brush brush = new SolidBrush(e.ForeColor))
+            {
+                Font font = e.Font;
+                if (bold)
+                    font = new Font(e.Font, FontStyle.Bold);
+                e.DrawBackground();
+                e.Graphics.DrawString(item.ToString(), font, brush, e.Bounds);
+
+                if (build != null && build.Production > 0)
+                {
+                    string draw = string.Format("{1}{2}", build, build.Production, string.Empty);
+                    float x = e.Bounds.Right - e.Graphics.MeasureString(draw, font).Width;
+                    e.Graphics.DrawString(draw, font, brush, x, e.Bounds.Y);
+                }
+
+                e.DrawFocusRectangle();
+                if (bold)
+                    font.Dispose();
+            }
+        }
+        //private void lbxDesigns_MeasureItem(object sender, MeasureItemEventArgs e)
+        //{
+        //}
+
         int IComparer<Buildable>.Compare(Buildable b1, Buildable b2)
         {
             Func<Buildable, int> TypeComp = b =>
@@ -112,11 +142,10 @@ namespace GalWarWin
 
         private Buildable GetSelectedDesign()
         {
-            if (this.lbxDesigns.SelectedIndex == 0)
-                return null;
-            if (string.Empty.Equals(this.lbxDesigns.SelectedItem))
-                return colony.CurBuild;
-            return (Buildable)this.lbxDesigns.SelectedItem;
+            Buildable selected = this.lbxDesigns.SelectedItem as Buildable;
+            if (selected == null)
+                selected = colony.CurBuild;
+            return selected;
         }
 
         private void lbxDesigns_SelectedIndexChanged(object sender, EventArgs e)
@@ -128,16 +157,16 @@ namespace GalWarWin
         {
             Buildable newBuild = GetSelectedDesign();
 
-            int lossAmt = GetLossAmt(newBuild);
+            int prod = GetAddProd(newBuild);
 
-            this.sdForm.SetColony(colony, newBuild, null, lossAmt);
+            this.sdForm.SetColony(colony, newBuild, null, prod);
             this.chkObsolete.Checked = false;
 
-            if (lossAmt > 0)
-                this.lblProdLoss.Text = "-" + lossAmt + " production";
+            if (prod > 0)
+                this.lblProdLoss.Text = "+" + prod + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.CurBuild.Production - lossAmt, this.chkPause.Checked);
+            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.CurBuild.Production - prod, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( !this.callback && newBuild is BuildShip && colony.Player.GetShipDesigns().Count > 1 );
@@ -153,115 +182,24 @@ namespace GalWarWin
                         canPause = false;
                 this.chkPause.Checked = canPause;
             }
+
+            this.lbxDesigns.Invalidate();
         }
 
-        private int GetLossAmt(Buildable newBuild)
+        private int GetAddProd(Buildable newBuild)
         {
-            int lossAmt = (int)Math.Ceiling(GetLossPct(newBuild) * colony.Production2);
-            return lossAmt;
-        }
-
-        private double GetLossPct(Buildable buildable)
-        {
-            return 0;
-            //return this.colony.GetLossPct(colony.CurBuild, buildable, (int)this.addProd);
+            double value = newBuild.GetAddProduction(this.addProd, floor);
+            return (int)Math.Round(value * Consts.FLOAT_ERROR_ONE);
         }
 
         private void btnBuy_Click(object sender, EventArgs e)
         {
             if (TradeProdForm.ShowForm(this.colony, designs))
+            {
                 RefreshBuild();
-
-            //Buildable buildable = GetSelectedDesign();
-            //if (buildable != null)
-            //{
-            //    bool switchFirst = ( buildable != colony.CurBuild );
-            //    int initial = GetInitialBuy(buildable, switchFirst);
-            //    int prod = SliderForm.ShowForm(new BuyProd(colony, buildable, GetLossAmt(buildable), initial));
-            //    if (prod > 0)
-            //    {
-            //        if (switchFirst)
-            //        {
-            //            colony.StartBuilding(MainForm.GameForm, buildable, false);
-            //            if (prod == initial)
-            //                prod = GetInitialBuy(buildable, false);
-            //        }
-            //        //colony.BuyProduction(MainForm.GameForm, prod);
-            //        RefreshBuild(false);
-            //    }
-            //}
-        }
-
-        private int GetInitialBuy(Buildable buildable, bool switchFirst)
-        {
-            int buy;
-            if (buildable.Cost > 0 && buildable.Cost < int.MaxValue)
-            {
-                int amount = 0;
-                int prod = GetTotalProd(buildable, switchFirst);
-                do
-                {
-                    buy = GetCost(buildable, ++amount) - prod;
-                } while (buy <= 0);
+                MainForm.GameForm.RefreshAll();
             }
-            else
-            {
-                buy = Math.Max(Game.Random.Round(( this.colony.Player.Gold / Consts.GoldForProduction ) / 2.0), 0);
-            }
-            return buy;
         }
-
-        private int GetTotalProd(Buildable buildable, bool switchFirst)
-        {
-            int prod = colony.Production2;
-            //if (switchFirst)
-            //    prod = LoseProduction(prod, this.colony.GetLossPct(colony.CurBuild, buildable, (int)this.addProd));
-            return prod + GetIncome();
-        }
-
-        private static int LoseProduction(int prod, double loss)
-        {
-            return (int)( prod * ( 1 - loss ) );
-        }
-
-        private int GetIncome()
-        {
-            int income = colony.GetProductionIncome();
-            Ship repairShip = colony.RepairShip;
-            if (repairShip != null)
-            {
-                income -= (int)Math.Ceiling(repairShip.GetProdForHP(repairShip.MaxHP - repairShip.HP));
-                if (income < 0)
-                    income = 0;
-            }
-            return income;
-        }
-
-        private int GetCost(Buildable buildable, int amount)
-        {
-            int cost = 0;
-            while (--amount > -1)
-            {
-                cost = MultForLossPct(cost, 1);
-                cost += buildable.Cost.Value;
-            }
-            return cost;
-        }
-
-        private static int MultForLossPct(int cost, double pct)
-        {
-            return (int)Math.Ceiling(cost / ( 1 - pct ));
-        }
-
-        //private void btnSell_Click(object sender, EventArgs e)
-        //{
-        //    int prod = SliderForm.ShowForm(new SellProd(colony));
-        //    if (prod > 0)
-        //    {
-        //        //colony.SellProduction(MainForm.GameForm, prod);
-        //        RefreshBuild(null);
-        //    }
-        //}
 
         private void chkObsolete_CheckedChanged(object sender, EventArgs e)
         {

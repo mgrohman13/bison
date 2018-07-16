@@ -968,7 +968,7 @@ namespace GalWar
             }
 
             double sellValue = sell * Consts.SwitchBuildRatio;
-            if (buy * Consts.FLOAT_ERROR_ONE >= sellValue)
+            if (buy > sellValue)
             {
                 buy -= sellValue;
                 gold = -buy * Consts.GoldForProduction;
@@ -979,7 +979,7 @@ namespace GalWar
                 gold = sell / Consts.ProductionForGold;
             }
 
-            return ( gold > 0 || ( Player.RoundGold(-gold) < Player.Gold && !( tradeStore > 0 && -gold * Consts.FLOAT_ERROR_ONE > 1 / Consts.StoreProdRatio * Consts.GoldForProduction ) ) );
+            return ( gold > 0 || ( Player.RoundGold(-gold) < Player.Gold && !( tradeStore > 0 && -gold * Consts.FLOAT_ERROR_ONE > Consts.GoldForProduction ) ) );
         }
 
         public bool CanBuild(Buildable buildable)

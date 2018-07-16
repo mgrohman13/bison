@@ -66,7 +66,7 @@ namespace GalWar
         internal virtual void GetTurnIncome(ref double production, ref double gold, bool minGold)
         {
         }
-        internal virtual double GetAddProduction(double production, bool floor)
+        public virtual double GetAddProduction(double production, bool floor)
         {
             if (floor)
                 return Math.Floor(production * Consts.FLOAT_ERROR_ONE);

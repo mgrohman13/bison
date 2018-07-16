@@ -44,10 +44,10 @@ namespace GalWar
         //emphasizing a single value gives on average precisely double the income of when emphasizing the other two
         public static readonly double EmphasisValue = 8 / ( Math.Sqrt(33) - 1 );
 
-        public const double SwitchBuildRatio = 5.0 / 8.0;           //0.625
-        public const double ManualObsoleteRatio = StoreProdRatio;   //0.800
-        public const double StoreProdRatio = 4.0 / 5.0;             //0.800
-        public const double AutomaticObsoleteRatio = 19.0 / 20.0;   //0.950
+        public const double SwitchBuildRatio = 3.0 / 5.0;                       //0.6
+        public const double ManualObsoleteRatio = StoreProdRatio;               //0.8
+        public const double StoreProdRatio = 4.0 / 5.0;                         //0.8
+        public static readonly double AutomaticObsoleteRatio = Math.Sqrt(.91);  //0.954
 
         public const double CostMult = .104;
         public const double CostUpkeepPct = .21;

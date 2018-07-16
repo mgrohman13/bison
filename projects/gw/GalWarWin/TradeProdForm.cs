@@ -105,15 +105,15 @@ namespace GalWarWin
 
         private void lblGoldDiff_Click(object sender, EventArgs e)
         {
+            Dictionary<Buildable, int> trade = BuildTrade();
             double gold;
-            bool allow = this.colony.GetTradeProduction(BuildTrade(), out gold);
+            this.colony.GetTradeProduction(trade, out gold);
             if (-gold > colony.Player.Gold)
             {
                 BuildableRow row = this.rows.OrderByDescending(r => r.GetDiff()).First();
                 Buildable build = row.Build;
                 int prod = MattUtil.TBSUtil.FindValue(value =>
                 {
-                    Dictionary<Buildable, int> trade = BuildTrade();
                     trade[build] = value - build.Production;
                     this.colony.GetTradeProduction(trade, out gold);
                     return ( -gold < colony.Player.Gold );
@@ -241,9 +241,9 @@ namespace GalWarWin
             {
                 if (build is StoreProd)
                 {
+                    Dictionary<Buildable, int> trade = BuildTrade();
                     int prod = MattUtil.TBSUtil.FindValue(value =>
                     {
-                        Dictionary<Buildable, int> trade = BuildTrade();
                         trade[build] = value - build.Production;
                         double gold;
                         this.colony.GetTradeProduction(trade, out gold);

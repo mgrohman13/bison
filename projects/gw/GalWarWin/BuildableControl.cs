@@ -11,8 +11,9 @@ namespace GalWarWin
     public partial class BuildableControl : UserControl
     {
         private Colony colony;
-        private Buildable buildable; ShipDesign shipDesign;
-        private int prodLoss;
+        private Buildable buildable;
+        private ShipDesign shipDesign;
+        private int addProd;
 
         public BuildableControl()
         {
@@ -21,7 +22,7 @@ namespace GalWarWin
 
         public bool SetColony(Colony colony)
         {
-            return SetColony(colony, colony.CurBuild, null, 0);
+            return SetColony(colony, null, null, 0);
         }
         public bool SetBuildable(Buildable buildable)
         {
@@ -29,22 +30,18 @@ namespace GalWarWin
         }
         public bool SetShipDesign(ShipDesign shipDesign)
         {
-            return SetColony(null, buildable, shipDesign, 0);
+            return SetColony(null, null, shipDesign, 0);
         }
-        public bool SetColony(Colony colony, Buildable buildable, ShipDesign shipDesign, int prodLoss)
+        public bool SetColony(Colony colony, Buildable buildable, ShipDesign shipDesign, int addProd)
         {
             this.colony = colony;
-            this.buildable = buildable;
-            this.shipDesign = ( buildable is BuildShip ? ( (BuildShip)buildable ).ShipDesign : shipDesign );
-            this.prodLoss = prodLoss;
+            this.buildable = buildable ?? ( colony != null ? colony.CurBuild : null );
+            this.shipDesign = shipDesign ?? ( this.buildable is BuildShip ? ( (BuildShip)this.buildable ).ShipDesign : null );
+            this.addProd = addProd;
             return RefreshBuildable();
         }
 
         public bool RefreshBuildable()
-        {
-            return RefreshBuildable(0);
-        }
-        public bool RefreshBuildable(double buyProd)
         {
             SetVisibility(false);
 
@@ -85,7 +82,7 @@ namespace GalWarWin
                         SetVisibility(true);
 
                         double att, def, hp, newResearch, newProd;
-                        colony.GetPlanetDefenseInc(colony.CurBuild.Production - prodLoss + buyProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
+                        colony.GetPlanetDefenseInc(colony.CurBuild.Production + addProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
                                 out att, out def, out hp, out newResearch, out newProd, false, false);
                         double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetCurrentResearch());
                         string costLabel = handleCost(ref cost);
@@ -165,15 +162,7 @@ namespace GalWarWin
 
         private ShipDesign GetShipDesign()
         {
-            return GetShipDesign(this.buildable);
-        }
-        public static ShipDesign GetShipDesign(Colony colony)
-        {
-            return GetShipDesign(( colony != null && colony.Player.IsTurn ) ? colony.CurBuild : null);
-        }
-        public static ShipDesign GetShipDesign(Buildable buildable)
-        {
-            return ( buildable is BuildShip ? ( (BuildShip)buildable ).ShipDesign : null );
+            return this.shipDesign;
         }
 
         private void label_MouseClick(object sender, MouseEventArgs e)

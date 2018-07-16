@@ -282,11 +282,7 @@
     <Compile Include="Sliders\AutoRepairForm.Designer.cs">
       <DependentUpon>AutoRepairForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Sliders\BuyProd.cs">
-    </Compile>
     <Compile Include="Sliders\SliderController.cs">
-    </Compile>
-    <Compile Include="Sliders\SellProd.cs">
     </Compile>
     <Compile Include="Sliders\GoldRepair.cs">
     </Compile>

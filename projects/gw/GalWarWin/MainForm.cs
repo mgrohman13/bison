@@ -2169,7 +2169,7 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
             if (colony != null && colony.Player.IsTurn)
-                CostCalculatorForm.ShowForm(BuildableControl.GetShipDesign(colony));
+                CostCalculatorForm.ShowForm(colony.CurBuild is BuildShip ? ( (BuildShip)colony.CurBuild ).ShipDesign : null);
             else
                 CostCalculatorForm.ShowForm(GetSelectedShip());
         }
@@ -2574,10 +2574,10 @@ namespace GalWarWin
                 Ship repairShip = colony.RepairShip;
                 if (repairShip != null)
                     lbl6Inf.Text = "Repair +" + FormatDouble(repairShip.GetHPForProd(colony.GetProductionIncome()));
-                else if (colony.CurBuild != null)
-                    lbl6Inf.Text = colony.CurBuild.ToString();
-                else
+                else if (colony.CurBuild is BuildGold)
                     lbl6Inf.Text = "Gold";
+                else
+                    lbl6Inf.Text = colony.CurBuild.ToString();
 
                 lbl7Inf.Text = GetProdText(colony);
             }
@@ -2593,20 +2593,17 @@ namespace GalWarWin
         internal static string GetProdText(Colony colony, Buildable build, double production, bool paused)
         {
             string retVal = string.Empty;
-            if (build != null)
-            {
-                retVal = FormatUsuallyInt(production);
-                if (!paused)
-                    retVal = build.GetProdText(retVal);
-            }
+            retVal = FormatUsuallyInt(production);
+            if (!paused)
+                retVal = build.GetProdText(retVal);
 
             double prodInc = colony.GetAfterRepairProdInc();
 
             string inc;
-            if (build == null)
+            if (build is BuildGold)
             {
+                retVal = string.Empty;
                 prodInc /= Consts.GoldProductionForGold;
-
                 inc = FormatDouble(prodInc);
             }
             else if (build is PlanetDefense)

@@ -26,7 +26,7 @@ namespace GalWar
             production = 0;
         }
 
-        internal override double GetAddProduction(double production, bool floor)
+        public override double GetAddProduction(double production, bool floor)
         {
             return 0;
         }

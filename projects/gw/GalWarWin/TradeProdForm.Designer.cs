@@ -203,7 +203,6 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "TradeProdForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "TradeProdForm";
             ((System.ComponentModel.ISupportInitialize)(this.nudProd)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudShips)).EndInit();
             this.ResumeLayout(false);

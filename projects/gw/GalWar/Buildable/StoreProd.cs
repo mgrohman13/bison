@@ -26,7 +26,7 @@ namespace GalWar
             production = addProd;
         }
 
-        internal override double GetAddProduction(double production, bool floor)
+        public override double GetAddProduction(double production, bool floor)
         {
             return base.GetAddProduction(production * Consts.StoreProdRatio, floor);
         }

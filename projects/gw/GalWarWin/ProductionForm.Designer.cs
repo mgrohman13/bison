@@ -47,11 +47,13 @@ namespace GalWarWin
             // 
             this.lbxDesigns.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.lbxDesigns.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.lbxDesigns.FormattingEnabled = true;
             this.lbxDesigns.Location = new System.Drawing.Point(0, 39);
             this.lbxDesigns.Name = "lbxDesigns";
             this.lbxDesigns.Size = new System.Drawing.Size(130, 277);
             this.lbxDesigns.TabIndex = 2;
+            this.lbxDesigns.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.lbxDesigns_DrawItem);
             this.lbxDesigns.SelectedIndexChanged += new System.EventHandler(this.lbxDesigns_SelectedIndexChanged);
             this.lbxDesigns.DoubleClick += new System.EventHandler(this.lbxDesigns_DoubleClick);
             // 

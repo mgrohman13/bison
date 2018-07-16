@@ -98,6 +98,7 @@ in progress
 	buy/sell/obsolete during callback
 		allow sometimes
 		restrict at handler wrapper level
+	notify when could complete with stored
 prod repair randomness?
 hide ship cost during repair somehow?
 round prod repair?
