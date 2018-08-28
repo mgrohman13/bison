@@ -89,13 +89,18 @@ namespace CityWar
 
             CreateMap(radius);
 
+            List<string> races = new List<string>();
             //pick 3 random starting units
             Dictionary<string, string>[] startUnits = new Dictionary<string, string>[3];
             for (int a = 0 ; a < 3 ; ++a)
             {
-                UnitSchema.UnitRow row = ( (UnitSchema.UnitRow)us.Unit.Rows[Random.Next(numUnits)] );
+                if (!races.Any())
+                    races = Races.Keys.ToList();
+                string race = Random.SelectValue(races);
+                races.Remove(race);
+                string unit = Random.SelectValue(Races[race]);
                 //this should come after freeUnits is set to 0 but before actualy initialized
-                startUnits[a] = GetForRaces(row.Name);
+                startUnits[a] = GetForRaces(unit);
             }
             double totalStartCost = newPlayers.Average(player => startUnits.Sum(
                     dict => Unit.CreateTempUnit(this, dict[player.Race]).BaseTotalCost));
@@ -1132,7 +1137,7 @@ namespace CityWar
 
         private void FreeUnit(bool removed)
         {
-            List<string> units = new List<string>();
+            Dictionary<string, string> units = new Dictionary<string, string>();
             foreach (string race in Races.Keys)
             {
                 int baseCost;
@@ -1142,17 +1147,23 @@ namespace CityWar
                 while (freeUnits[addUnit] / 2.6f > Random.Gaussian(baseCost = Unit.CreateTempUnit(this, addUnit).BaseTotalCost));
                 freeUnits[addUnit] += Random.GaussianOEInt(65, 1, .21);
                 if (freeUnits[addUnit] >= baseCost)
-                    units.Add(addUnit);
+                    units.Add(race, addUnit);
             }
             //dont place free units when someone has no capturables
             if (!removed && units.Count > 0)
             {
-                Dictionary<string, string> forRaces = GetForRaces(Random.SelectValue(units));
-                foreach (string unit in forRaces.Values)
+                if (units.Count < Races.Count)
+                {
+                    Dictionary<string, string> forRaces = GetForRaces(Random.SelectValue(units.Values));
+                    foreach (string race in Races.Keys)
+                        if (!units.ContainsKey(race))
+                            units.Add(race, forRaces[race]);
+                }
+                foreach (string unit in units.Values)
                     freeUnits[unit] -= Unit.CreateTempUnit(this, unit).BaseTotalCost;
-                double avg = players.Average(player => Unit.CreateTempUnit(this, forRaces[player.Race]).BaseTotalCost);
+                double avg = players.Average(player => Unit.CreateTempUnit(this, units[player.Race]).BaseTotalCost);
                 foreach (Player player in players)
-                    player.FreeUnit(forRaces[player.Race], avg);
+                    player.FreeUnit(units[player.Race], avg);
             }
         }
         private Dictionary<string, string> GetForRaces(string targetName)
