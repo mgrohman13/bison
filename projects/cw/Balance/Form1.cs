@@ -34,7 +34,7 @@ namespace balance
         {
             string[] input = this.txtInput.Text.Split('\t');
 
-            for (int a = -1 ; ++a < input.Length ; )
+            for (int a = -1 ; ++a < input.Length ;)
                 input[a] = input[a].Trim();
 
             fireEvent = false;
@@ -245,7 +245,7 @@ namespace balance
             }
         }
 
-        private Attack CreateAttack(string type, int length, int damage, int divide)
+        private static Attack CreateAttack(string type, int length, int damage, int divide)
         {
             MattUtil.EnumFlags<TargetType> target = new MattUtil.EnumFlags<TargetType>();
             if (type.Contains("A"))
@@ -305,6 +305,74 @@ namespace balance
             if (double.IsNaN(gc))
                 return "-";
             return gc.ToString();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.txtOutput.Text = GetAllOutput(this.units);
+        }
+        private static string GetAllOutput(Units units)
+        {
+            StringBuilder output = new StringBuilder("");
+            foreach (UnitSchema.UnitRow row in Game.Random.Iterate(units.us.Unit))
+            {
+                output.Append(row.Name + ( row.IsThree ? "*" : "" ) + "\t");
+                output.Append(( row.People + row.Cost ).ToString() + "\t");
+                output.Append(row.Cost.ToString() + "\t");
+                output.Append(row.CostType + "\t");
+                output.Append(row.People.ToString() + "\t");
+                output.Append(Math.Round(row.People / (double)( row.People + row.Cost ) * 10) + "\t");
+                output.Append(row.Race + "\t");
+                output.Append(row.Type + "\t");
+                output.Append(row.Hits + "\t");
+                output.Append(row.Armor + "\t");
+                output.Append(row.Regen + "\t");
+                output.Append(row.Move + "\t");
+                output.Append("\t\t");
+
+                Abilities ability;
+                if (row.Special == "Aircraft")
+                    ability = Abilities.Aircraft;
+                else if (row.Special == "AircraftCarrier")
+                    ability = Abilities.AircraftCarrier;
+                else
+                    ability = Abilities.None;
+                Attack[] Attacks = new Attack[row.GetAttackRows().Length];
+                double weaponMove = CityWar.Balance.getMove(getType(row.Type), row.Move, row.Special == "Aircraft");
+                string[] attacknames = new string[3];
+                double[] attackValues = new double[3];
+                int idx = 0;
+                foreach (UnitSchema.AttackRow attackRow in row.GetAttackRows())
+                {
+                    output.Append(attackRow.Target_Type + "\t");
+                    output.Append(attackRow.Damage + "\t");
+                    output.Append(attackRow.Divide_By + "\t");
+                    output.Append(attackRow.Length + "\t");
+                    attacknames[idx] = attackRow.Name;
+                    attackValues[idx] = CityWar.Balance.weapon(attackRow.Length, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, ( row.Special == "Aircraft" ), row.IsThree, idx + 1);
+                    Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+                    ++idx;
+                }
+                while (idx++ < 4)
+                    output.Append("\t\t\t\t");
+
+                output.Append(( ( row.Special == "Aircraft" ) ? "X" : "" ) + "\t");
+                output.Append(( ( row.Special == "AircraftCarrier" ) ? "X" : "" ) + "\t");
+                output.Append(attacknames[0] + "\t");
+                output.Append(attacknames[1] + "\t");
+                output.Append(attacknames[2] + "\t");
+                double gc;
+                CityWar.Balance.getCost(new UnitTypes(), row.Move, row.Regen, ability, row.Armor, getType(row.Type), Attacks, row.IsThree, row.Hits, out gc);
+                double hw = CityWar.Balance.hitWorth(row.Hits, row.Armor) / CityWar.Balance.hitWorth(1, CityWar.Balance.AverageArmor);
+                output.Append(gc + "\t");
+                output.Append(hw + "\t");
+                output.Append(attackValues[0] + "\t");
+                output.Append(attackValues[1] + "\t");
+                output.Append(attackValues[2] + "\t");
+                output.Append(Environment.NewLine);
+            }
+
+            return output.ToString();
         }
 
         private void textBox_TextChanged(object sender, EventArgs e)

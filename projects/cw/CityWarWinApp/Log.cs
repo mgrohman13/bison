@@ -57,7 +57,8 @@ namespace CityWarWinApp
         {
             textBox1.Text = log;
             textBox1.Select();
-            textBox1.Select(log.Length - 3, 1);
+            if (log.Length > 3)
+                textBox1.Select(log.Length - 3, 1);
             textBox1.ScrollToCaret();
         }
 

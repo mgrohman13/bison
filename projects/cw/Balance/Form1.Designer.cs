@@ -81,6 +81,7 @@ namespace balance
             this.label1 = new System.Windows.Forms.Label();
             this.txtPplPercent = new System.Windows.Forms.TextBox();
             this.txtPctError = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnCalculate
@@ -486,13 +487,13 @@ namespace balance
             // 
             // btnSave
             // 
-            this.btnSave.Visible = false;
             this.btnSave.Location = new System.Drawing.Point(668, 127);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(69, 23);
             this.btnSave.TabIndex = 72;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Visible = false;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // txtPpl
@@ -526,12 +527,23 @@ namespace balance
             this.txtPctError.Size = new System.Drawing.Size(50, 20);
             this.txtPctError.TabIndex = 78;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(662, 12);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 79;
+            this.button1.Text = "GetText";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnCalculate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(749, 162);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.txtPctError);
             this.Controls.Add(this.txtPplPercent);
             this.Controls.Add(this.label1);
@@ -648,6 +660,7 @@ namespace balance
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtPplPercent;
 		private System.Windows.Forms.TextBox txtPctError;
+        private System.Windows.Forms.Button button1;
     }
 }
 

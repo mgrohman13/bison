@@ -479,8 +479,12 @@ namespace CityWar
             }
             set
             {
-                this._regenPct = Game.Random.GaussianCapped(value,
-                        Math.Abs(this._regenPct - value) / value * .169, Math.Max(double.Epsilon, 2 * value - 1));
+                if (value > float.Epsilon)
+                    value = Game.Random.GaussianCapped(value,
+                            Math.Abs(this._regenPct - value) / value * .169, Math.Max(float.Epsilon, 2 * value - 1));
+                else
+                    value = Math.Max(value, double.Epsilon);
+                this._regenPct = value;
             }
         }
 
