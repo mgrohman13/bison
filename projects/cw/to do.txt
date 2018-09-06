@@ -11,6 +11,8 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
+	use work/upkeep to balance ground move randomness
+	increase death divide (too much death vs other resources?)
 	winning player leave behind city spots?
 	trading capturables generates more income
 	portal income comes out of inc
