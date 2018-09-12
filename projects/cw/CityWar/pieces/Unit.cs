@@ -742,7 +742,7 @@ namespace CityWar
                     if (move)
                         u.ActualMove(t);
 
-                    u.BalanceForMove(minMove, move, chance);
+                    u.BalanceForMove(minMove, needed, move);
 
                     //cant undo a random move
                     undoPieces.Add(u, false);
@@ -785,7 +785,7 @@ namespace CityWar
                 double chance = useMove / (double)needed;
                 move = Game.Random.Bool(chance);
 
-                BalanceForMove(useMove, move, chance);
+                BalanceForMove(useMove, needed, move);
 
                 //cant undo a random move
                 canUndo = false;
@@ -801,12 +801,12 @@ namespace CityWar
 
             return move;
         }
-        private void BalanceForMove(int usedMove, bool moved, double chance)
+        private void BalanceForMove(int used, int needed, bool moved)
         {
             if (moved)
-                owner.AddUpkeep(.91 * Player.GetUpkeep(this) * ( 1 - chance ) * usedMove / (double)MaxMove, .13);
+                owner.AddUpkeep(1.3 * Player.GetUpkeep(this) * ( needed - used ) / (double)MaxMove, .13);
             else
-                owner.AddWork(.65 * WorkRegen * usedMove);
+                owner.AddWork(.65 * WorkRegen * used);
         }
         private bool ActualMove(Tile t)
         {
