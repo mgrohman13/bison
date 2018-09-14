@@ -208,15 +208,27 @@ namespace CityWar
 
             //attacking player gets work back for overkill, defender pays upkeep to retalliate
             if (owner.Owner == owner.Owner.Game.CurrentPlayer)
-                owner.Owner.AddWork(owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length);
+            {
+                double work = owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length;
+                owner.Owner.AddWork(work);
+            }
             else
-                owner.Owner.AddUpkeep(.39 * Player.GetUpkeep(owner) * ( 1 - overkill ) / owner.Attacks.Length, .169);
+            {
+                double upkeep = .39 * Player.GetUpkeep(owner) * ( 1 - overkill ) / owner.Attacks.Length;
+                owner.Owner.AddUpkeep(upkeep, .169);
+            }
 
             double relicValue = ( GetAverageDamage(this.damage, this.Pierce, armor, hits) - damage ) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
-                owner.Owner.AddRelic(unit.RandedCost * relicValue);
+            {
+                relicValue *= unit.RandedCost;
+                owner.Owner.AddRelic(relicValue);
+            }
             else
-                unit.Owner.AddRelic(unit.InverseCost * -relicValue);
+            {
+                relicValue *= -unit.InverseCost;
+                unit.Owner.AddRelic(relicValue);
+            }
 
             unit.Wound(damage);
 
