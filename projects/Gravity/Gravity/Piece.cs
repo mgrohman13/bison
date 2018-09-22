@@ -98,6 +98,10 @@ namespace Gravity
                 float g2 = p2.GetGravity(p1.GetType()) / p2.Mass;
                 p2.xDir += g2 * xDist;
                 p2.yDir += g2 * yDist;
+
+                if (float.IsNaN(p1.xDir) || float.IsNaN(p1.yDir) || float.IsNaN(p2.xDir) || float.IsNaN(p2.yDir))
+                {
+                }
             }
         }
 

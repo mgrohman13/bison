@@ -8,7 +8,7 @@ namespace Gravity
 {
     class Player : Piece
     {
-        private const int shieldTime = 1500;
+        private const int shieldTime = Game.dTime;
 
         private float shield;
 
@@ -52,7 +52,11 @@ namespace Gravity
             if (( x - piece.X ) * ( x - piece.X ) + ( y - piece.Y ) * ( y - piece.Y ) < ( ( this.size + piece.Size ) / 2f ) * ( ( this.size + piece.Size ) / 2f ))
                 if (piece is PowerUp)
                 {
-                    game.AddScore(piece.Size / Game.avgSize, piece);
+                    PowerUp pu = (PowerUp)piece;
+                    if (pu.Type)
+                        game.AddScore(piece.Size / Game.avgSize, piece);
+                    else
+                        game.ScoreMeter(piece.Size / Game.avgSize, piece);
                     game.Remove(piece);
                 }
                 else if (piece is Enemy)

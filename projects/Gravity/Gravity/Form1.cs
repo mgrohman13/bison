@@ -29,7 +29,7 @@ namespace Gravity
 
         private void SetSquare()
         {
-            int pad = menuStrip.Height + this.panel1.Height;
+            int pad = menuStrip.Height + this.panel1.Height + this.panel2.Height;
             int min = Math.Min(ClientSize.Width, ClientSize.Height - pad);
             this.ClientSize = new Size(min, min + pad);
             setClientRectangle();
@@ -39,7 +39,7 @@ namespace Gravity
         {
             if (game != null)
             {
-                ( (Game)game ).setClientRectangle(new Rectangle(0, menuStrip.Height, ClientSize.Width, ClientSize.Height - menuStrip.Height - this.panel1.Height));
+                ( (Game)game ).setClientRectangle(new Rectangle(0, menuStrip.Height + this.panel2.Height, ClientSize.Width, ClientSize.Height - menuStrip.Height - this.panel1.Height - this.panel2.Height));
             }
         }
 
@@ -65,6 +65,7 @@ namespace Gravity
         {
             base.RefreshGame();
             panel1.Invalidate();
+            panel2.Invalidate();
 
             this.Invoke((MethodInvoker)delegate
             {
@@ -122,6 +123,27 @@ namespace Gravity
                         float x = Player.GetShieldPct(a) * panel1.Width;
                         e.Graphics.DrawLine(pen, x, 0, x, panel1.Height);
                     }
+            }
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+            if (game != null && !game.GameOver())
+            {
+                float w = panel2.Width / 2;
+                float meter = ( (Gravity.Game)game ).DifficultyMeter;
+                if (meter < 0)
+                {
+                    float pct = -Player.GetShieldPct(-meter);
+                    e.Graphics.FillRectangle(Brushes.Green, w, 0, -pct * w, panel2.Height);
+                }
+                else
+                {
+                    float pct = Player.GetShieldPct(meter);
+                    e.Graphics.FillRectangle(Brushes.Red, w * ( 1 - pct ), 0, w * pct, panel2.Height);
+                }
+
+                this.label2.Text = "Difficulty - " + ( ( ( (Gravity.Game)game ).Difficulty - 1f ) * 500f ).ToString("0");
             }
         }
     }

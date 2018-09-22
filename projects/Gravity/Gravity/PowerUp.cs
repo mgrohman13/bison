@@ -9,10 +9,12 @@ namespace Gravity
 {
     class PowerUp : Piece
     {
+        public readonly bool Type;
         private float gravity;
 
-        public PowerUp(Game game, float x, float y, float size, float density) : base(game, x, y, size, density, Color.Green)
+        public PowerUp(Game game, bool type, float x, float y, float size, float density) : base(game, x, y, size, density, type ? Color.Purple : Color.Green)
         {
+            this.Type = type;
             this.gravity = Game.rand.Weighted(1 / 8f);
         }
 
@@ -20,7 +22,7 @@ namespace Gravity
         {
             base.Step(count);
 
-            this.size -= Game.rand.OE(size * .0001f + .01f);
+            this.size -= Game.rand.OE(size * .00025f + .01f);
             if (size <= 0)
                 game.Remove(this);
         }
