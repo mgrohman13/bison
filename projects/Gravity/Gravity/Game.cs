@@ -133,7 +133,7 @@ namespace Gravity
             if (neg)
                 amt = -amt;
             else
-                amt *= .975f;
+                amt *= .95f;
             amt = rand.GaussianOE(amt, .25f, .15f);
             if (neg)
                 amt = -amt;
@@ -214,14 +214,14 @@ namespace Gravity
 
             float factor = 1f;
             if (this.dMeter > 0)
-                factor *= ( 2f + dMeter ) / 2f;
+                factor *= ( 3f + dMeter ) / 1.5f;
             else
-                factor /= ( 2f - dMeter );
+                factor /= ( 4f - dMeter ) / 4f;
 
-            this.difficulty += rand.OE(factor * .00125f / ( difficulty + 1f ));
+            this.difficulty += rand.OE(factor * .0005f / ( difficulty + 1f ));
             //Console.WriteLine(difficulty);
 
-            float f = ( this.dMeter > 0 ? .0005f : .0001f );
+            float f = ( this.dMeter > 0 ? .001f : .00075f );
             this.dMeter *= ( 1 - f );
 
             float pc = (float)( Game.powerUpChance * Math.Sqrt(Difficulty) );
