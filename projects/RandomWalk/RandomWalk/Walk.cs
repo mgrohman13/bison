@@ -100,13 +100,13 @@ namespace RandomWalk
             }
         }
 
-        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct, double max)
+        public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct, double max, double x, double y)
         {
-            string info = string.Format("{9}\t{0}\tsize: {1}\tsingleDimension: {2}\ttension:{3}\tdeviation:{4}\tinterval:{5}\tintDevPct:{6}\tintOePct:{7}\tmax:{8}",
+            string info = string.Format("{9}\t{0}\tsize: {1}\tsingleDimension: {2}\ttension:{3}\tdeviation:{4}\tinterval:{5}\tintDevPct:{6}\tintOePct:{7}\tmax:{8}\tx:{10}\ty:{11}",
                     string.Format("R: {0} G: {1} B: {2}", color.R.ToString().PadLeft(3), color.G.ToString().PadLeft(3), color.B.ToString().PadLeft(3)),
                     size, singleDimension,
                     PadDouble(tension), PadDouble(deviation), PadDouble(interval, 4), PadDouble(intDevPct, 0), PadDouble(intOePct, 0), PadDouble(max, 4),
-                    DateTime.Now.TimeOfDay);
+                    DateTime.Now.TimeOfDay, PadDouble(x, 2), PadDouble(y, 2));
             WriteLine(info);
 
             this.Color = color;
@@ -123,7 +123,7 @@ namespace RandomWalk
             this.Invalidate = Invalidate;
 
             this.points = new List<PointD>();
-            Restart();
+            Restart(x, y);
         }
 
         public static void WriteLine(string info)
@@ -178,10 +178,10 @@ namespace RandomWalk
             }
         }
 
-        public void Restart()
+        public void Restart(double x, double y)
         {
-            this.x = rand.Gaussian(7.8);
-            this.y = rand.Gaussian(7.8);
+            this.x = x;
+            this.y = y;
             lock (this)
             {
                 this.points.Clear();
@@ -213,10 +213,10 @@ namespace RandomWalk
                 }
 
                 double val = active ? max : Math.Sqrt(max);
-                val = Count / (Count + val);
+                val = Count / ( Count + val );
                 if (active)
                     val *= val;
-                while (rand.Bool(val) && (!active || Count > 1))
+                while (rand.Bool(val) && ( !active || Count > 1 ))
                     Decay();
 
                 Invalidate();

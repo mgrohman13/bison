@@ -15,7 +15,7 @@ namespace RandomWalk
     public partial class ViewForm : Form
     {
         private const double avg = 5.2;
-        private double minX = -13, minY = -13, maxX = 13, maxY = 13, speed = 1;
+        private double minX = -13, minY = -13, maxX = 13, maxY = 13, speed = 1, tmx = -13, tmy = -13, txx = 13, txy = 13;
         private List<Walk> walks;
 
         public ViewForm()
@@ -44,12 +44,12 @@ namespace RandomWalk
                     Walk.WriteLine("wait: " + sleep);
                     Thread.Sleep(sleep);
                     lock (walks)
-                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / (this.walks.Count + avg)))
+                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
                         {
                             int idx = Walk.rand.Next(this.walks.Count);
                             this.walks[idx].Deactivate();
                         }
-                        else if (Walk.rand.Bool(avg / (this.walks.Count + avg)))
+                        else if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
                         {
                             this.walks.Add(RandWalk());
                         }
@@ -64,7 +64,7 @@ namespace RandomWalk
                 while (true)
                 {
                     Thread.Sleep(39);
-                    double minX = -13, minY = -13, maxX = 13, maxY = 13;
+                    double minX = tmx, minY = tmy, maxX = txx, maxY = txy;
                     lock (walks)
                         foreach (PointD point in walks.SelectMany(walk => walk.Points))
                         {
@@ -78,8 +78,24 @@ namespace RandomWalk
                     {
                         bool change = Walk.rand.Bool(.00039);
                         if (change)
-                            speed = (speed + 1 + Walk.rand.RangeInt(-1, 1) * Walk.rand.OE(.52)) / 2.0;
-                        double factor = speed * Math.Abs(speed) * .39 / (walks.Count * walks.Count);
+                        {
+                            speed = ( speed + 1 + Walk.rand.RangeInt(-1, 1) * Walk.rand.OE(.52) ) / 2.0;
+
+                            if (Walk.rand.Bool(.21))
+                            {
+                                Func<double, bool, double> adjMin = (v, n) => ( v + ( n ? -1 : 1 ) * Walk.rand.Gaussian(13, 1) ) / 2.0;
+                                tmx = adjMin(tmx, true);
+                                tmy = adjMin(tmy, true);
+                                txx = adjMin(txx, false);
+                                txy = adjMin(txy, false);
+                                Walk.WriteLine("tmx: " + tmx);
+                                Walk.WriteLine("txx: " + txx);
+                                Walk.WriteLine("tmy: " + tmy);
+                                Walk.WriteLine("txy: " + txy);
+                            }
+                        }
+
+                        double factor = speed * Math.Abs(speed) * .39 / ( walks.Count * walks.Count );
                         if (change)
                         {
                             Walk.WriteLine("speed:  " + speed);
@@ -89,7 +105,7 @@ namespace RandomWalk
                             return v1;
                         if (factor > 1)
                             return v2;
-                        double newVal = (v1 * (1 - factor)) + (v2 * factor);
+                        double newVal = ( v1 * ( 1 - factor ) ) + ( v2 * factor );
                         if (v1 != newVal)
                             mod = true;
                         return newVal;
@@ -128,15 +144,20 @@ namespace RandomWalk
 
                 walks.Clear();
                 int num = Walk.rand.GaussianOEInt(avg, .169, .21, 1);
-                for (int a = 0; a < num; ++a)
+                for (int a = 0 ; a < num ; ++a)
                     walks.Add(RandWalk());
             }
         }
 
         private Walk RandWalk()
         {
+            Func<double, double, double> getStart = (min, max) => ( min + max ) / Math.PI + Walk.rand.Gaussian(max - min) / 3.9;
+            double x = getStart(minX, maxX);
+            double y = getStart(minY, maxY);
             Walk walk = new Walk(Invalidate, RandomColor(), Walk.rand.GaussianOEInt(3.0, .26, .26, 1), Walk.rand.Bool(),
-                    Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(Walk.rand.OE(520), 2.6, .26));
+                    Walk.rand.OE(.52), Walk.rand.OE(),
+                    Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13),
+                    Walk.rand.GaussianOE(Walk.rand.OE(520), 2.6, .26), x, y);
             walk.Start();
             return walk;
         }
@@ -162,7 +183,7 @@ namespace RandomWalk
         {
             try
             {
-                Func<double, double, double, double> Scale = (s, x, m) => s / (x - m);
+                Func<double, double, double, double> Scale = (s, x, m) => s / ( x - m );
                 double scaleX = Scale(ClientSize.Width, maxX, minX);
                 double scaleY = Scale(ClientSize.Height, maxY, minY);
 
@@ -170,7 +191,7 @@ namespace RandomWalk
                     foreach (Walk walk in walks.ToArray())
                         using (Pen pen = new Pen(walk.Color, walk.Size))
                         {
-                            Func<double, double, double, float> GetP = (p, m, s) => (float)((p - m) * s);
+                            Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
                             PointF[] points = walk.Points.Select(point =>
                                     new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
                             if (points.Length > 1)
