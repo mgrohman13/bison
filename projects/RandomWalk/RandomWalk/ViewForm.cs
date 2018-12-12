@@ -15,7 +15,7 @@ namespace RandomWalk
     public partial class ViewForm : Form
     {
         private const double avg = 5.2;
-        private double minX = -13, minY = -13, maxX = 13, maxY = 13;
+        private double minX = -13, minY = -13, maxX = 13, maxY = 13, speed = 1;
         private List<Walk> walks;
 
         public ViewForm()
@@ -41,18 +41,16 @@ namespace RandomWalk
                 while (true)
                 {
                     int sleep = Walk.rand.OEInt(13000);
-                    Console.WriteLine("wait: " + sleep);
+                    Walk.WriteLine("wait: " + sleep);
                     Thread.Sleep(sleep);
                     lock (walks)
-                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / ( this.walks.Count + avg )))
+                        if (this.walks.Any(w => w.Active) && Walk.rand.Bool(this.walks.Count / (this.walks.Count + avg)))
                         {
-                            Console.WriteLine("deactivate");
                             int idx = Walk.rand.Next(this.walks.Count);
                             this.walks[idx].Deactivate();
                         }
-                        else if (Walk.rand.Bool(avg / ( this.walks.Count + avg )))
+                        else if (Walk.rand.Bool(avg / (this.walks.Count + avg)))
                         {
-                            Console.WriteLine("add");
                             this.walks.Add(RandWalk());
                         }
                 }
@@ -62,7 +60,7 @@ namespace RandomWalk
 
             Thread t2 = new Thread(() =>
             {
-                int i = 0;
+                //int i = 0;
                 while (true)
                 {
                     Thread.Sleep(39);
@@ -78,10 +76,20 @@ namespace RandomWalk
                     bool mod = false;
                     Func<double, double, double> Mod = new Func<double, double, double>((v1, v2) =>
                     {
-                        const double factor = .0169;
-                        double newVal = ( v1 * ( 1 - factor ) ) + ( v2 * factor );
-                        if (Math.Abs(v2 - newVal) < .039)
-                            newVal = v2;
+                        bool change = Walk.rand.Bool(.00039);
+                        if (change)
+                            speed = (speed + 1 + Walk.rand.RangeInt(-1, 1) * Walk.rand.OE(.52)) / 2.0;
+                        double factor = speed * Math.Abs(speed) * .39 / (walks.Count * walks.Count);
+                        if (change)
+                        {
+                            Walk.WriteLine("speed:  " + speed);
+                            Walk.WriteLine("factor: " + factor);
+                        }
+                        if (factor < 0)
+                            return v1;
+                        if (factor > 1)
+                            return v2;
+                        double newVal = (v1 * (1 - factor)) + (v2 * factor);
                         if (v1 != newVal)
                             mod = true;
                         return newVal;
@@ -92,8 +100,6 @@ namespace RandomWalk
                     this.maxY = Mod(this.maxY, maxY);
                     if (mod)
                         Invalidate();
-                    else
-                        Console.WriteLine(++i);
                 }
             });
             t2.IsBackground = true;
@@ -115,12 +121,14 @@ namespace RandomWalk
         {
             lock (walks)
             {
+                Walk.ID = Walk.rand.NextUInt();
+
                 foreach (Walk walk in walks)
                     walk.Stop();
 
                 walks.Clear();
                 int num = Walk.rand.GaussianOEInt(avg, .169, .21, 1);
-                for (int a = 0 ; a < num ; ++a)
+                for (int a = 0; a < num; ++a)
                     walks.Add(RandWalk());
             }
         }
@@ -128,7 +136,7 @@ namespace RandomWalk
         private Walk RandWalk()
         {
             Walk walk = new Walk(Invalidate, RandomColor(), Walk.rand.GaussianOEInt(3.0, .26, .26, 1), Walk.rand.Bool(),
-                    Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(169, .26, .13));
+                    Walk.rand.OE(.52), Walk.rand.OE(), Walk.rand.OE(780), Walk.rand.Weighted(.26), Walk.rand.Weighted(.13), Walk.rand.GaussianOE(Walk.rand.OE(520), 2.6, .26));
             walk.Start();
             return walk;
         }
@@ -154,7 +162,7 @@ namespace RandomWalk
         {
             try
             {
-                Func<double, double, double, double> Scale = (s, x, m) => s / ( x - m );
+                Func<double, double, double, double> Scale = (s, x, m) => s / (x - m);
                 double scaleX = Scale(ClientSize.Width, maxX, minX);
                 double scaleY = Scale(ClientSize.Height, maxY, minY);
 
@@ -162,7 +170,7 @@ namespace RandomWalk
                     foreach (Walk walk in walks.ToArray())
                         using (Pen pen = new Pen(walk.Color, walk.Size))
                         {
-                            Func<double, double, double, float> GetP = (p, m, s) => (float)( ( p - m ) * s );
+                            Func<double, double, double, float> GetP = (p, m, s) => (float)((p - m) * s);
                             PointF[] points = walk.Points.Select(point =>
                                     new PointF(GetP(point.X, minX, scaleX), GetP(point.Y, minY, scaleY))).ToArray();
                             if (points.Length > 1)
@@ -171,15 +179,16 @@ namespace RandomWalk
                             }
                             else if (points.Length == 0)
                             {
-                                Console.WriteLine("remove");
+                                Walk.WriteLine("remove");
                                 this.walks.Remove(walk);
                             }
                         }
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception.StackTrace);
-                Console.WriteLine();
+                Walk.WriteLine("");
+                Walk.WriteLine(exception.StackTrace);
+                Walk.WriteLine("");
             }
         }
 

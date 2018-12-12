@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace RandomWalk
     public class Walk
     {
         public static MTRandom rand;
+        public static ulong ID;
         static Walk()
         {
             rand = new MTRandom();
@@ -100,15 +102,12 @@ namespace RandomWalk
 
         public Walk(Action Invalidate, Color color, int size, bool singleDimension, double tension, double deviation, double interval, double intDevPct, double intOePct, double max)
         {
-            string info = string.Format("color:{0}\tsize:{1}\tsingleDimension:{2}\ttension:{3}\tdeviation:{4}\tinterval:{5}\tIntDevPct:{6}\tIntOePct:{7}\tmax:{8}",
-                    color, size, singleDimension, tension, deviation, interval, intDevPct, intOePct, max);
-            Console.WriteLine(info);
-            string today = DateTime.Now.ToString().Replace('/', '_').Replace(":", "_");
-            using (var fileStream = new System.IO.StreamWriter("walks_" + today + ".txt", true))
-            {
-                fileStream.WriteLine(info);
-                fileStream.Flush();
-            }
+            string info = string.Format("{9}\t{0}\tsize: {1}\tsingleDimension: {2}\ttension:{3}\tdeviation:{4}\tinterval:{5}\tintDevPct:{6}\tintOePct:{7}\tmax:{8}",
+                    string.Format("R: {0} G: {1} B: {2}", color.R.ToString().PadLeft(3), color.G.ToString().PadLeft(3), color.B.ToString().PadLeft(3)),
+                    size, singleDimension,
+                    PadDouble(tension), PadDouble(deviation), PadDouble(interval, 4), PadDouble(intDevPct, 0), PadDouble(intOePct, 0), PadDouble(max, 4),
+                    DateTime.Now.TimeOfDay);
+            WriteLine(info);
 
             this.Color = color;
             this.Size = size;
@@ -127,9 +126,37 @@ namespace RandomWalk
             Restart();
         }
 
+        public static void WriteLine(string info)
+        {
+            lock (typeof(Walk))
+            {
+                Console.WriteLine(info);
+                using (var fileStream = new System.IO.StreamWriter("walks_" + ID + ".txt", true))
+                {
+                    fileStream.WriteLine(info);
+                    fileStream.Flush();
+                }
+            }
+        }
+
+        private string PadDouble(double val)
+        {
+            return PadDouble(val, 1);
+        }
+        private string PadDouble(double val, int digits)
+        {
+            return val.ToString(
+                //(digits == 0 ? "" : "0") +
+                "." + new string('0', 11 - digits)).PadLeft(13);
+        }
+
         public void Deactivate()
         {
-            this.active = false;
+            if (active)
+            {
+                Walk.WriteLine("deactivate");
+                this.active = false;
+            }
         }
 
         public void Start()
@@ -153,8 +180,8 @@ namespace RandomWalk
 
         public void Restart()
         {
-            this.x = 0;
-            this.y = 0;
+            this.x = rand.Gaussian(7.8);
+            this.y = rand.Gaussian(7.8);
             lock (this)
             {
                 this.points.Clear();
@@ -186,7 +213,10 @@ namespace RandomWalk
                 }
 
                 double val = active ? max : Math.Sqrt(max);
-                if (rand.Bool(Count / ( Count + val )))
+                val = Count / (Count + val);
+                if (active)
+                    val *= val;
+                while (rand.Bool(val) && (!active || Count > 1))
                     Decay();
 
                 Invalidate();
