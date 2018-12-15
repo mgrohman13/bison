@@ -40,6 +40,7 @@ namespace GalWar
                 this.buildable.Add(storeProd);
                 this.buildable.Add(new BuildAttack(this));
                 this.buildable.Add(new BuildDefense(this));
+                this.buildable.Add(new BuildSoldiers(this));
                 this.buildable.UnionWith(player.GetDesigns().Select(design => new BuildShip(this, design)));
                 this._curBuild = storeProd;
 
@@ -119,7 +120,7 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this.Player);
 
-                return ( this._pauseBuild && ( this.curBuild is ShipDesign ) );
+                return ( this._pauseBuild && ( this.curBuild is BuildShip ) );
             }
             private set
             {
@@ -226,7 +227,7 @@ namespace GalWar
         {
             get
             {
-                return buildable.Sum(build => build.Production);
+                return buildable.Sum(build => build.production);
             }
         }
 
@@ -447,12 +448,13 @@ namespace GalWar
             ResetMoved();
 
             //modify real values
-            double population = 0, production = 0, gold = 0;
-            TurnStuff(ref population, ref production, ref gold, ref research, true, false);
+            double population = 0, production = 0, gold = 0, soldiers;
+            TurnStuff(ref population, ref production, ref gold, ref research, out soldiers, true, false);
 
             this.ProdGuess += GetTotalIncome() / 3.0;
 
             this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
+            BuildSoldiers(soldiers * Consts.ProductionForSoldiers, false);
 
             ResetRounding();
 
@@ -488,14 +490,14 @@ namespace GalWar
                 this.ProdGuess = 0;
         }
 
-        private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, bool doTurn, bool minGold)
+        private void TurnStuff(ref double population, ref double production, ref double gold, ref int research, out double soldiers, bool doTurn, bool minGold)
         {
             //pay upkeep for stored production before adding production income
             gold -= Upkeep;
 
             double goldInc;
             int prodInt, researchInc;
-            GetTurnValues(out prodInt, out goldInc, out researchInc);
+            GetTurnValues(out prodInt, out goldInc, out researchInc, out soldiers);
 
             double prodInc = prodInt;
             Ship repairShip = RepairShip;
@@ -509,20 +511,32 @@ namespace GalWar
             research += researchInc;
         }
 
-        public void GetTurnValues(out int production, out double gold, out int research)
+        public void GetTurnValues(out int production, out double gold, out int research, out double soldiers)
         {
             TurnException.CheckTurn(this.Player);
 
-            GetTurnValues(this.Population, out production, out gold, out research);
+            GetTurnValues(this.Population, out production, out gold, out research, out soldiers);
         }
 
-        private void GetTurnValues(int population, out int production, out double gold, out int research)
+        private void GetTurnValues(int population, out int production, out double gold, out int research, out double soldiers)
         {
-            double income = GetTotalIncome(population);
+            double income = this.GetTotalIncome(population);
 
-            double researchPct = GetPct(this.Player.ResearchEmphasis);
-            double productionPct = GetPct(this.Player.ProductionEmphasis);
-            double totalPct = GetPct(this.Player.GoldEmphasis) + researchPct + productionPct;
+            if (population > 0)
+            {
+                soldiers = income * this.Planet.soldierInc;
+                soldiers *= GetSoldierMult(population, this.Soldiers, soldiers / Consts.ExpForSoldiers);
+                income -= soldiers;
+                soldiers /= Consts.ExpForSoldiers;
+            }
+            else
+            {
+                soldiers = 0;
+            }
+
+            double researchPct = this.GetPct(this.Player.ResearchEmphasis);
+            double productionPct = this.GetPct(this.Player.ProductionEmphasis) * this.Planet.prodMult;
+            double totalPct = this.GetPct(this.Player.GoldEmphasis) + researchPct + productionPct;
             researchPct /= totalPct;
             productionPct /= totalPct;
 
@@ -852,9 +866,9 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            double gold;
+            double gold, soldiers;
             int production, research;
-            GetTurnValues(population, out production, out gold, out research);
+            GetTurnValues(population, out production, out gold, out research, out soldiers);
             return production;
         }
 
@@ -862,8 +876,8 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            double popInc = 0, prodInc = 0;
-            TurnStuff(ref popInc, ref prodInc, ref gold, ref research, false, minGold);
+            double popInc = 0, prodInc = 0, soldiers;
+            TurnStuff(ref popInc, ref prodInc, ref gold, ref research, out soldiers, false, minGold);
 
             curBuild.GetTurnIncome(ref prodInc, ref gold, minGold);
 
@@ -1212,7 +1226,7 @@ namespace GalWar
             if (prodInc > Consts.FLOAT_ERROR_ZERO)
             {
                 double newAtt, newDef, newHP, newResearch, production;
-                GetPlanetDefenseInc(prodInc, this.Player.Research, out newAtt, out newDef, out newHP, out newResearch, out production, always, true);
+                GetPlanetDefenseInc(prodInc, this.Player.Research, out newAtt, out newDef, out newHP, out newResearch, out production, always);
                 SetPD(newAtt, newDef, newHP, newResearch, production);
             }
         }
@@ -1224,7 +1238,7 @@ namespace GalWar
                 if (maxResearch > this.defenseResearch * Consts.FLOAT_ERROR_ONE)
                 {
                     double newAtt, newDef, newHP, newResearch, production;
-                    GetPlanetDefenseInc(0, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out production, false, true);
+                    GetPlanetDefenseInc(0, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out production, false);
                     SetPD(newAtt, newDef, newHP, newResearch, production);
                 }
                 else
@@ -1239,37 +1253,50 @@ namespace GalWar
             double newCost = GetPDHPCost(newAtt, newDef) * newHP;
             SetPD(newCost, newAtt, newDef);
 
-            if (production > Consts.FLOAT_ERROR_ZERO)
-            {
-                PlanetDefense apply = this.curBuild as PlanetDefense;
-                if (apply == null)
-                    apply = Game.Random.SelectValue(this.buildable.OfType<PlanetDefense>());
-                apply.AddProduction(Game.Random.Round(production));
-            }
-            else
-            {
-                this.Player.GoldIncome(production);
-            }
+            PlanetDefense apply = this.curBuild as PlanetDefense;
+            if (apply == null)
+                apply = Game.Random.SelectValue(this.buildable.OfType<PlanetDefense>());
+            AddBuildProd(apply, production);
         }
 
         internal void BuildSoldiersAndDefenses(double prodInc)
         {
             prodInc /= 2.0;
             BuildPlanetDefense(prodInc, true);
-            BuildSoldiers(prodInc);
+            BuildSoldiers(prodInc, true);
         }
-        internal void BuildSoldiers(double prod)
+        internal void BuildSoldiers(double prod, bool always)
         {
-            double soldiers = Consts.GetExperience(prod / Consts.ProductionForSoldiers);
-            if (this.Population == 0)
-                this.Player.AddGold(soldiers / Consts.SoldiersForGold);
+            BuildSoldiers build = this.buildable.OfType<BuildSoldiers>().Single();
+
+            if (this.Population > 0 && ( this.curBuild != build || always ))
+            {
+                prod += build.production;
+                double add = GetMultedAdd(prod, always, true);
+                prod -= add;
+
+                build.AddProduction(-build.production);
+                AddBuildProd(build, prod);
+                this.Soldiers += Consts.GetExperience(add / Consts.ProductionForSoldiers);
+            }
             else
-                this.Soldiers += soldiers;
+            {
+                AddBuildProd(build, prod);
+            }
+        }
+        private void AddBuildProd(Buildable build, double production)
+        {
+            double gold = 0;
+            if (production > Consts.FLOAT_ERROR_ZERO)
+                build.AddProduction(RoundValue(production, false, true, ref gold, 1));
+            else
+                gold = production;
+            this.Player.GoldIncome(gold);
         }
 
-        public void GetPlanetDefenseInc(double prodInc, double maxResearch, out double newAtt, out double newDef, out double newHP, out double newResearch, out double newProd, bool always, bool random)
+        private void GetPlanetDefenseInc(double prodInc, double maxResearch, out double newAtt, out double newDef, out double newHP, out double newResearch, out double newProd, bool always)
         {
-            GetPlanetDefenseInc(this.curBuild, prodInc, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out newProd, always, random);
+            GetPlanetDefenseInc(this.curBuild, prodInc, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out newProd, always, true);
         }
         public void GetPlanetDefenseInc(Buildable buildable, double prodInc, double maxResearch, out double newAtt, out double newDef, out double newHP, out double newResearch, out double newProd, bool always, bool random)
         {
@@ -1278,22 +1305,7 @@ namespace GalWar
             always |= ( buildable is PlanetDefense && this.MinDefenses );
 
             double maxHPTot = ( this.PDCost + prodInc ) / ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, maxResearch);
-            double mult = this.GetTotalIncome() / 3.0;
-            double add = ( maxHPTot - this.HP ) * GetPDHPCostAvgResearch() / mult;
-            if (add > 1)
-            {
-                add = Math.Pow(add, .78);
-                if (random)
-                    add = Game.Random.GaussianCappedInt(add, Consts.PlanetDefenseRndm, 1);
-            }
-            else
-            {
-                if (always)
-                    add = 1;
-                else
-                    add = 0;
-            }
-            add *= mult;
+            double add = GetMultedAdd(( maxHPTot - this.HP ) * GetPDHPCostAvgResearch(), always, random);
 
             if (add > Consts.FLOAT_ERROR_ZERO)
             {
@@ -1339,6 +1351,22 @@ namespace GalWar
             if (random)
                 stat = Game.Random.GaussianCapped(stat, Consts.PlanetDefenseRndm, 1);
             return stat;
+        }
+        private double GetMultedAdd(double add, bool always, bool random)
+        {
+            double mult = this.GetTotalIncome() / 3.0;
+            add /= mult;
+            if (add > 1)
+            {
+                add = Math.Pow(add, .78);
+                if (random)
+                    add = Game.Random.GaussianCappedInt(add, Consts.PlanetDefenseRndm, 1);
+            }
+            else
+            {
+                add = ( always ? 1 : 0 );
+            }
+            return add * mult;
         }
 
         private void ReduceDefenses(double mult)

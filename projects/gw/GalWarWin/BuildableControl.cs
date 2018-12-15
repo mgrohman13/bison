@@ -82,7 +82,7 @@ namespace GalWarWin
                         SetVisibility(true);
 
                         double att, def, hp, newResearch, newProd;
-                        colony.GetPlanetDefenseInc(colony.CurBuild.Production + addProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
+                        colony.GetPlanetDefenseInc(buildable, buildable.Production + addProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
                                 out att, out def, out hp, out newResearch, out newProd, false, false);
                         double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetCurrentResearch());
                         string costLabel = handleCost(ref cost);

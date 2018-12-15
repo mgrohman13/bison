@@ -2047,11 +2047,11 @@ namespace GalWarWin
         private void lblGold_Click(object sender, EventArgs e)
         {
             int i1, i2, i3, ships = 0;
-            double d1, d2, d3, d4, income = 0, upkeep = 0, basic, total;
+            double d1, d2, d3, d4, d5, income = 0, upkeep = 0, basic, total;
             foreach (Colony colony in Game.CurrentPlayer.GetColonies())
             {
                 double gold;
-                colony.GetTurnValues(out i1, out gold, out i2);
+                colony.GetTurnValues(out i1, out gold, out i2, out d5);
                 income += gold;
                 upkeep += colony.Upkeep;
             }
@@ -2613,11 +2613,21 @@ namespace GalWarWin
                 if (prodInc > 0)
                     prodInc = -1;
             }
+            else if (build is BuildSoldiers)
+            {
+                prodInc += production;
+                double soldiers, d1;
+                int i1, i2;
+                colony.GetTurnValues(out i1, out d1, out i2, out soldiers);
+                soldiers += prodInc / Consts.ProductionForSoldiers;
+                inc = GetBuildingSoldiers(colony.Population, colony.GetPopulationGrowth(), colony.Soldiers, soldiers);
+                if (prodInc > 0)
+                    prodInc = -1;
+            }
             else
             {
                 if (build is StoreProd)
                     prodInc *= Consts.StoreProdRatio;
-
                 inc = FormatUsuallyInt(prodInc);
             }
 
@@ -2650,11 +2660,20 @@ namespace GalWarWin
                     newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
         }
 
+        public static string GetBuildingSoldiers(double curPop, double popInc, double curSoldiers, double soldierInc)
+        {
+            double soldiers = ( curSoldiers + soldierInc ) / ( curPop + popInc ) - curSoldiers / curPop;
+            string soldierChange = FormatPct(soldiers, true);
+            if (soldierChange != "0.0%" && soldiers > 0)
+                soldierChange = "+" + soldierChange;
+            return soldierChange;
+        }
+
         private void AnomalyInfo(Anomaly anomaly)
         {
             lblTop.Text = "Anomaly";
             lbl1.Text = "Planet";
-            lbl1Inf.Text = FormatPct(Game.GetAnomalyPlanetChance(anomaly.Tile), true);
+            lbl1Inf.Text = FormatPct(Game.GetPlanetChance(anomaly), true);
         }
 
         private void PlayerInfo(Player player)

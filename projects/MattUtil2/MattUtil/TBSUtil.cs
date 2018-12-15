@@ -10,7 +10,7 @@ namespace MattUtil
 {
     public static class TBSUtil
     {
-        public static Dictionary<Player, int> RandMoveOrder<Player>(MTRandom random, IList<Player> players, double shuffle)
+        public static Dictionary<Player, int> RandMoveOrder<Player>(MTRandom random, IList<Player> players, double shuffle, Func<int, int, bool> validate)
         {
             Dictionary<Player, int> retVal = new Dictionary<Player, int>();
 
@@ -24,7 +24,7 @@ namespace MattUtil
                     int index = random.Next(1, playerLength);
                     int swap = index - 1;
 
-                    if (!affected[index] && !affected[swap])
+                    if (!affected[index] && !affected[swap] && ( validate == null || validate(index, swap) ))
                     {
                         Player player = players[index];
                         Player next = players[swap];

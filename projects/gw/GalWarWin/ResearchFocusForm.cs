@@ -103,7 +103,12 @@ namespace GalWarWin
 
         private void lbxUpgrade_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.sdUpgrade.SetBuildable((Buildable)this.lbxUpgrade.SelectedItem);
+            Buildable buildable = ( this.lbxUpgrade.SelectedItem as Buildable );
+            if (buildable != null)
+                this.sdUpgrade.SetBuildable(buildable);
+            ShipDesign design = ( this.lbxUpgrade.SelectedItem as ShipDesign );
+            if (design != null)
+                this.sdUpgrade.SetShipDesign(design);
 
             RefreshChance();
         }

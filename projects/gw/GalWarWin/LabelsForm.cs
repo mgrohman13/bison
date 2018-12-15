@@ -116,17 +116,22 @@ namespace GalWarWin
 
         public static void ShowColonyIncome(Colony colony)
         {
-            double population = 0, production = 0, gold = 0, origGold;
+            double population = 0, production = 0, gold = 0, origGold, soldiers;
             int research = 0, origProd;
             colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
-            colony.GetTurnValues(out origProd, out origGold, out research);
+            colony.GetTurnValues(out origProd, out origGold, out research, out soldiers);
             gold = Player.RoundGold(gold);
             production = Player.RoundGold(production);
 
-            ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research), 
+            if (colony.CurBuild is BuildSoldiers)
+                soldiers += ( colony.CurBuild.Production + colony.GetAfterRepairProdInc() ) / Consts.ProductionForSoldiers;
+            string soldierChange = MainForm.GetBuildingSoldiers(colony.Population, population, colony.Soldiers, soldiers);
+
+            ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research),
                     "Upkeep", MainForm.FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
                     "Gold", ShowOrig(origGold, gold), "Research", MainForm.FormatDouble(research),
-                    "Production", ShowOrig(origProd, production));
+                    "Production", ShowOrig(origProd, production),
+                    "Soldiers", soldierChange);
         }
         private static string ShowOrig(double orig, double mod)
         {

@@ -31,7 +31,7 @@ namespace GalWar
                 }
             }
         }
-        protected int production
+        protected internal int production
         {
             get
             {

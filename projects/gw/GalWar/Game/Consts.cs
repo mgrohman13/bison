@@ -88,9 +88,9 @@ namespace GalWar
         public static readonly double GoldProductionForGold = Math.Sqrt(3);
         public const double GoldForProduction = 1 / .5;
         public const double PopulationForGoldLow = 1 / Income / 2.6;
-        public const double PopulationForGoldMid = 1 / Income / 5.2;
-        public const double PopulationForGoldHigh = 1 / Income / 13.0;
-        public const double ProductionForSoldiers = .91;
+        public const double PopulationForGoldMid = 1 / Income / 6.5;
+        public const double PopulationForGoldHigh = 1 / Income / 16.9;
+        public const double ProductionForSoldiers = 1 / PopulationForGoldMid;
         public const double SoldierUpkeepMult = .26;
         public const double MoveSoldiersCost = .39;
         public const double ExpForSoldiers = ProductionForSoldiers / 1.3;
@@ -125,7 +125,7 @@ namespace GalWar
 
         public const double DisbandPct = RepairCostMult;
         public const double ColonizationCostRndm = .078;
-        public const double AnomalyQualityCostMult = 1.69;
+        public const double AnomalyQualityCostMult = 1.3;
         public const double TerraformQuality = AverageQuality * .65;
 
         public const double InvadeStrength = 1;
@@ -201,9 +201,10 @@ namespace GalWar
             return ( 1 + growth * PopulationGrowth );
         }
 
-        internal static double GetColonizationMult()
+        internal static double GetColonizationMult(Game game)
         {
-            return Game.Random.GaussianOE(1, ColonizationCostRndm, ColonizationCostRndm, .39);
+            double turnMult = 1 + Math.Log(( 130 + game.Turn ) / 130.0);
+            return Game.Random.GaussianOE(turnMult, ColonizationCostRndm, Consts.LimitPct(ColonizationCostRndm * Math.Sqrt(turnMult)), .39);
         }
 
         internal static double GetColonizationCost(double value, double mult)

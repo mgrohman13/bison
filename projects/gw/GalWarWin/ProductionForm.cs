@@ -45,7 +45,7 @@ namespace GalWarWin
 
             designs = new SortedSet<Buildable>(colony.Buildable, this);
             this.lbxDesigns.Items.AddRange(designs.ToArray());
-            this.lbxDesigns.Items.Insert(4, string.Empty);
+            this.lbxDesigns.Items.Insert(5, string.Empty);
 
             this.lbxDesigns.SelectedItem = colony.CurBuild;
         }
@@ -92,8 +92,10 @@ namespace GalWarWin
                     return 2;
                 if (b is BuildDefense)
                     return 3;
-                if (b is BuildShip)
+                if (b is BuildSoldiers)
                     return 4;
+                if (b is BuildShip)
+                    return 5;
                 throw new Exception();
             };
             int retVal = TypeComp(b1) - TypeComp(b2);
@@ -166,7 +168,7 @@ namespace GalWarWin
                 this.lblProdLoss.Text = "+" + prod + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, colony.CurBuild.Production - prod, this.chkPause.Checked);
+            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, newBuild.Production - prod, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = ( !this.callback && newBuild is BuildShip && colony.Player.GetShipDesigns().Count > 1 );

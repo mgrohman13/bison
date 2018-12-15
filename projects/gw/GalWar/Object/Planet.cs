@@ -14,6 +14,8 @@ namespace GalWar
         private short _quality;
         private float _colonizationCostMult;
 
+        private float _prodMult, _soldierInc;
+
         internal Planet(Tile tile)
             : base(tile)
         {
@@ -23,8 +25,14 @@ namespace GalWar
 
                 this._quality = (short)Consts.NewPlanetQuality();
                 ResetCostMult();
+
+                this._prodMult = 1f;
+                this._soldierInc = 0f;
+
+                SetPlanetValues(1);
             }
         }
+
 
         public Colony Colony
         {
@@ -57,7 +65,11 @@ namespace GalWar
             {
                 checked
                 {
+                    if (value >= 0)
+                        SetPlanetValues(Math.Abs(this.Quality - value) / ( Math.Max(Quality, value) + Consts.PlanetConstValue ));
+
                     this._quality = (short)value;
+
                 }
             }
         }
@@ -68,11 +80,37 @@ namespace GalWar
                 return this._colonizationCostMult;
             }
         }
+        internal double prodMult
+        {
+            get
+            {
+                return this._prodMult;
+            }
+        }
+        internal double soldierInc
+        {
+            get
+            {
+                return this._soldierInc;
+            }
+        }
+
         private void ResetCostMult()
         {
             checked
             {
-                this._colonizationCostMult = (float)Consts.GetColonizationMult();
+                this._colonizationCostMult = (float)Consts.GetColonizationMult(Tile.Game);
+            }
+        }
+        private void SetPlanetValues(double variation)
+        {
+            variation = Math.Sqrt(variation);
+            double prodMult = Game.Random.GaussianCapped(1, .169, .52);
+            double soldierInc = Game.Random.Weighted(.091, .13);
+            checked
+            {
+                this._prodMult = (float)( this._prodMult * ( 1 - variation ) + prodMult * variation );
+                this._soldierInc = (float)( this._soldierInc * ( 1 - variation ) + soldierInc * variation );
             }
         }
 

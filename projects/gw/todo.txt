@@ -1,5 +1,7 @@
 UI
 
+MainForm.GetBuildingSoldiers account for incremental logic
+MoveTroops.ShowProd needs to use modified soldiers
 test GraphsForm lastAvgResearch
 bombard attack confirm still shows free dmg even though after applied
 allow combat details always available (forces calc)
@@ -65,11 +67,9 @@ GAMEPLAY
 
 enforce attacking with all avail pop
 free dmg/attack pct left takes into account att hp
-map center use colony prod/pd
 anom pull curplay lose move?
 bombard combat get exp out instead of automatic add
 bombard friendly paying for value exp at full at fll rate vs exp rate?
-anomaly individual planet pct
 anomaly gold balancing at full vs consolation value
 	using generate value instead of this value for compensation?
 	other compensation/general balancing?
@@ -87,6 +87,7 @@ rchance > 1 throws off max
 BETWEEN GAMES
 
 round pop growth?
+	meh
 in progress
 	ProdGuess
 	prod per buildable
@@ -99,31 +100,22 @@ in progress
 		allow sometimes
 		restrict at handler wrapper level
 	notify when could complete with stored
-prod repair randomness?
-hide ship cost during repair somehow?
-round prod repair?
-	and leftoever prod?
-make repair a buildable
-use wormhole verification for move order ganks?
-max design cost OE??
-level up uses full research?
-	change to last?
-increase colonization cost?
-	grows over time?
+prod repair
+	prod repair randomness?
+	hide ship cost during repair somehow?
+	round prod repair?
+		and leftoever prod?
+	make repair a buildable?
+are fine?
+	max design cost OE??
+	level up uses full research?
+		change to last?
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate
 	pop,prod,etc.
 map size
-soldiers
-	ExpForSoldiers should be * 1.3 not / 1.3?
-	soldiers = meh, completely redo?
 planetary defenses still not right
-	split between soldiers?
-		random?
-	auto upg turns 1-7 into 13-7
-	buy defense?  produce but keep prod on ship?
-		rethink concept of prod in general?  stored per design?
 	reducing stats/hp
 	hp ratio?
 		slighter more hp if stats not reduced?
@@ -152,7 +144,7 @@ FEATURES
 
 civ zoc?
 	rebalance?
-individual colony/planet have slightly different income ratios?
+more individual colony/planet variation?
 	problem - people piling all excess pop on best planet
 	maybe only up to quality?
 terrain

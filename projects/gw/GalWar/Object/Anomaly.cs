@@ -10,18 +10,34 @@ namespace GalWar
     {
         #region Explore
 
+        private float _planetChance;
+
         [NonSerialized]
-        private double _value;
+        private double _value = double.NaN;
         [NonSerialized]
-        private bool _usedValue;
+        private bool _usedValue = false;
 
         internal Anomaly(Tile tile)
             : base(tile)
         {
             checked
             {
-                this._usedValue = false;
-                this._value = double.NaN;
+                this._planetChance = Game.Random.GaussianOE(1f, .39f, .26f);
+            }
+        }
+
+        internal double planetChance
+        {
+            get
+            {
+                return this._planetChance;
+            }
+            set
+            {
+                checked
+                {
+                    this._planetChance = (float)value;
+                }
             }
         }
 
@@ -68,7 +84,7 @@ namespace GalWar
             this.value = GenerateValue();
             this.Tile.SpaceObject = null;
 
-            Planet planet = Tile.Game.CreateAnomalyPlanet(handler, this.Tile);
+            Planet planet = Tile.Game.CreateAnomalyPlanet(handler, this);
             if (planet != null)
             {
                 ship.Player.GoldIncome(ConsolationValue());
@@ -381,7 +397,7 @@ namespace GalWar
                     + design.Cost - design.GetColonizationValue(Tile.Game) ));
 
             double amount = this.value - cost;
-            double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
+            double mult = Consts.GetColonizationMult(Tile.Game) * Consts.AnomalyQualityCostMult;
             if (amount < Consts.GetColonizationCost(Consts.PlanetConstValue, mult))
                 return false;
 
@@ -464,7 +480,7 @@ namespace GalWar
                 {
                     gold = Math.Sqrt(( planet.Colony.Population + Consts.PlanetConstValue ) / ( planet.Quality + Consts.PlanetConstValue )) * Consts.AnomalyQualityCostMult;
 
-                    mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
+                    mult = Consts.GetColonizationMult(Tile.Game) * Consts.AnomalyQualityCostMult;
                     before = Consts.GetColonizationCost(planet.PlanetValue, mult);
                 }
 
@@ -509,7 +525,7 @@ namespace GalWar
             {
                 colony = Game.Random.SelectValue(colonies);
                 colonies.Remove(colony);
-                double mult = Consts.GetColonizationMult() * Consts.AnomalyQualityCostMult;
+                double mult = Consts.GetColonizationMult(Tile.Game) * Consts.AnomalyQualityCostMult;
                 double before = Consts.GetColonizationCost(colony.Planet.PlanetValue, mult);
                 double after = Consts.GetColonizationCost(colony.Planet.PlanetValue + addQuality, mult);
                 cost = Player.RoundGold(after - before - this.value, true);
@@ -717,7 +733,7 @@ namespace GalWar
                 colony.BuildSoldiersAndDefenses(value);
                 break;
             case AnomalyType.Soldiers:
-                colony.BuildSoldiers(value);
+                colony.BuildSoldiers(value, true);
                 break;
             case AnomalyType.PlanetDefenses:
                 colony.BuildPlanetDefense(value, true);

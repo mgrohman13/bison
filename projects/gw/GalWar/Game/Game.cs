@@ -319,7 +319,7 @@ namespace GalWar
         private Planet NewPlanet()
         {
             Tile tile = GetRandomTile();
-            if (tile.SpaceObject == null && Random.Bool(GetPlanetChance(tile, false)))
+            if (tile.SpaceObject == null && Random.Bool(GetPlanetChance(tile)))
                 return CreatePlanet(tile);
             return null;
         }
@@ -373,9 +373,11 @@ namespace GalWar
                 Colony homeworld = CurrentPlayer.GetColonies()[0];
 
                 //starting soldiers and defense
-                homeworld.BuildSoldiers(startDefense);
                 for (int a = 0 ; a < startDefenseSteps ; ++a)
+                {
+                    homeworld.BuildSoldiers(startDefense / startDefenseSteps, true);
                     homeworld.BuildPlanetDefense(startDefense / startDefenseSteps, true);
+                }
 
                 //starting gold is divided by each indivual player's homeworld quality
                 double addGold = startGold / (double)homeworld.Planet.Quality;
@@ -467,13 +469,13 @@ namespace GalWar
                     double chance = 1, anomPlanetRate = 0;
                     foreach (var pair in distanceChances)
                     {
-                        anomPlanetRate += chance * pair.Value * GetPlanetChance(pair.Key, true);
+                        anomPlanetRate += chance * pair.Value * GetPlanetChance(pair.Key);
                         chance *= ( 1 - pair.Value );
                     }
-                    anomPlanetRate += chance * GetPlanetChance(planetDist, true);
+                    anomPlanetRate += chance * GetPlanetChance(planetDist);
 
                     //store final chance to become a planet
-                    anomalies.Add(anomaly, anomPlanetRate);
+                    anomalies.Add(anomaly, Consts.LimitPct(anomPlanetRate * anomaly.planetChance));
                 }
             }
 
@@ -764,7 +766,18 @@ namespace GalWar
 
         private void RandMoveOrder()
         {
-            Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
+            Dictionary<SpaceObject, HashSet<SpaceObject>> attInv = Anomaly.GetAttInv(this);
+            Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle, (index, swap) =>
+            {
+                Player attacker = this.players[index];
+                Player defender = this.players[swap];
+                bool allow = !attInv.Where(pair => pair.Key.Player == defender).SelectMany(pair => pair.Value).Where(spaceObject => spaceObject.Player == attacker).Any();
+                if (allow)
+                    ;
+                else
+                    ;
+                return allow;
+            });
             if (playerGold.Count > 0)
             {
                 double moveOrderGold = Consts.GetMoveOrderGold(this.players);
@@ -835,37 +848,45 @@ namespace GalWar
             return teleporter;
         }
 
-        internal Planet CreateAnomalyPlanet(IEventHandler handler, Tile tile)
+        internal Planet CreateAnomalyPlanet(IEventHandler handler, Anomaly anomaly)
         {
-            if (Random.Bool(GetPlanetChance(tile, true)))
+            if (Random.Bool(GetPlanetChance(anomaly)))
             {
                 handler.Explore(Anomaly.AnomalyType.NewPlanet);
-                return CreatePlanet(tile);
+                return CreatePlanet(anomaly.Tile);
             }
             return null;
         }
-        public double GetAnomalyPlanetChance(Tile tile)
+        private double GetPlanetChance(Tile tile)
         {
-            return GetPlanetChance(tile, true);
+            return GetPlanetChance(tile, null);
         }
-        public double GetPlanetChance(Tile tile, bool anomaly)
+        public double GetPlanetChance(Anomaly anomaly)
+        {
+            return GetPlanetChance(anomaly.Tile, anomaly.planetChance);
+        }
+        private double GetPlanetChance(int dist)
+        {
+            return GetPlanetChance(dist, 1);
+        }
+        private double GetPlanetChance(Tile tile, double? anomChance)
         {
             int dist = int.MaxValue;
             foreach (Planet planet in GetPlanets())
                 dist = Math.Min(dist, Tile.GetDistance(tile, planet.Tile));
-            return GetPlanetChance(dist, anomaly);
+            return GetPlanetChance(dist, anomChance);
         }
-        private double GetPlanetChance(int dist, bool anomaly)
+        private double GetPlanetChance(int dist, double? anomChance)
         {
             double value = 0;
             if (dist > Consts.PlanetDistance)
             {
                 value = .91 + dist - Consts.PlanetDistance - 1;
                 value = Math.Sqrt(value / ( 9.1 + Math.Pow(MapSize, .21) + value ));
-                if (anomaly)
-                    value *= this.PlanetPct / this.AnomalyPct;
+                if (anomChance.HasValue)
+                    value *= anomChance.Value * this.PlanetPct / this.AnomalyPct;
             }
-            return value;
+            return Consts.LimitPct(value);
         }
         internal bool CheckPlanetDistance(Tile tile)
         {
@@ -920,6 +941,7 @@ namespace GalWar
                     }
                     else if (planet != null && planet.Colony != null)
                     {
+                        shipWeight += GetProdWeight(planet.Colony);
                         popWeight += planet.Colony.Population;
                     }
                 }
@@ -988,7 +1010,18 @@ namespace GalWar
         }
         private static double GetShipWeight(Ship ship)
         {
-            return ( 2.6 * ship.GetStrength() + ship.GetValue() ) * Math.Sqrt(ship.HP / (double)ship.MaxHP);
+            return GetCenterdWeight(ship.GetStrength(), ship.GetValue(), ship.HP / (double)ship.MaxHP);
+        }
+        private static double GetProdWeight(Colony colony)
+        {
+            int att = colony.Player.PDAtt, def = colony.Player.PDDef;
+            double prodMult = ShipDesign.GetPlanetDefenseStrength(att, def) / ShipDesign.GetPlanetDefenseCost(att, def, colony.Player.GetLastResearched());
+            double str = colony.PDStrength + colony.production2 * prodMult;
+            return GetCenterdWeight(str, str, 1);
+        }
+        private static double GetCenterdWeight(double str, double value, double pct)
+        {
+            return ( 2.6 * str + value ) * pct;
         }
 
         public Rectangle GetGameBounds(params Tile[] include)
