@@ -361,7 +361,9 @@ namespace GalWar
             this.PDAtt = GetPDStat(this.PDAtt, design.Att);
             this.PDDef = GetPDStat(this.PDDef, design.Def);
 
-            int min = Game.Random.GaussianCappedInt(Math.Max(PDAtt, PDDef) * Consts.PlanetDefenseStatRatio + 1, Consts.PlanetDefenseRndm, 1);
+            int min = Math.Max(PDAtt, PDDef);
+            if (min * Consts.PlanetDefenseStatRatio > 1)
+                min = Game.Random.GaussianCappedInt(min * Consts.PlanetDefenseStatRatio, Consts.PlanetDefenseRndm, 1);
             if (PDAtt < min)
                 PDAtt = min;
             if (PDDef < min)

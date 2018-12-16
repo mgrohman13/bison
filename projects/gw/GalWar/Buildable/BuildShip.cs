@@ -36,12 +36,12 @@ namespace GalWar
             }
         }
 
-        internal override bool Build(IEventHandler handler, double production)
+        internal override List<Ship> Build(IEventHandler handler, double production)
         {
-            bool retVal = false;
+            var retVal = new List<Ship>();
 
             this.production += Game.Random.Round(production);
-            while (this.production >= this.Cost.Value)
+            while (this.production >= this.Cost.Value && !colony.PauseBuild)
             {
                 Tile tile = null;
                 foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))
@@ -57,9 +57,9 @@ namespace GalWar
                 //invalid selection; just ask again
                 if (tile.SpaceObject != null || !Tile.IsNeighbor(colony.Tile, tile))
                     continue;
-                retVal = true;
 
                 Ship ship = colony.Player.NewShip(handler, tile, design);
+                retVal.Add(ship);
 
                 int max = Math.Min(colony.AvailablePop, ship.FreeSpace);
                 if (max > 0)

@@ -144,7 +144,7 @@ namespace GalWar
         //multiplyer to planet quality lost when bombarded by a death star
         public const double DeathStarPlanetDamage = .5;
 
-        public const double PlanetDefenseStatRatio = .91;
+        public const double PlanetDefenseStatRatio = .78;
         public const double PlanetDefenseRndm = .091;
         public const double PlanetDefensesCostMult = .78;
         //percent of research that automatically upgrades planet defenses
@@ -297,8 +297,7 @@ namespace GalWar
             {
 
                 if (( max == attackers ) && ( min == 1 ) && max - min > 1)
-                {
-                }
+                    ;
 
                 double lowPct = 0, highPct = 0;
                 if (max == attackers)

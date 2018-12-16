@@ -273,9 +273,9 @@ namespace GalWarWin
                 this.lblInf.Text = string.Empty;
                 if (build is PlanetDefense)
                 {
-                    double att, def, hp, newResearch, newProd;
+                    double att, def, hp, d1, d2, d3;
                     colony.GetPlanetDefenseInc(build, prod + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
-                            out att, out def, out hp, out newResearch, out newProd, false, false);
+                            out att, out def, out hp, out d1, out d2, out d3, false, false);
                     this.lblInf.Text = string.Format("{0} : {1}   ({2})", MainForm.FormatUsuallyInt(att), MainForm.FormatUsuallyInt(def), MainForm.FormatUsuallyInt(hp));
                 }
 

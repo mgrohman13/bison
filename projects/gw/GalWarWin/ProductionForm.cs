@@ -88,11 +88,11 @@ namespace GalWarWin
                     return 0;
                 if (b is StoreProd)
                     return 1;
-                if (b is BuildAttack)
-                    return 2;
-                if (b is BuildDefense)
-                    return 3;
                 if (b is BuildSoldiers)
+                    return 2;
+                if (b is BuildAttack)
+                    return 3;
+                if (b is BuildDefense)
                     return 4;
                 if (b is BuildShip)
                     return 5;

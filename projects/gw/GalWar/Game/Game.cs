@@ -335,14 +335,11 @@ namespace GalWar
             foreach (int id in Random.Iterate(numPlayers))
                 this.players.Add(new Player(id, this, players[id], GetHomeworld(startPop), startPop, startResearch));
             ShipNames.EndSetup();
-
-            double startDefense = GetStartDouble(startPop) / 2.0;
-            int startDefenseSteps = (int)Math.Floor(startDefense / startPop * 3.0 / Consts.Income);
+            //remove temporary starting teleporters to allow actual distance calculations
+            this._teleporters.Clear();
 
             //starting gold is based on the number and value of initial planets, must happen after GetHomeworld planet shuffling
             double startGold = Consts.StartGold;
-            //remove temporary starting teleporters to allow actual distance calculations
-            this._teleporters.Clear();
             //homeworlds count as single planets regardless of quality, anomalies count as their chance of being a planet,
             //and actual current uncolonized planets count as their planet value
             double numPlanets = numPlayers + CountAnomPlanets() + GetPlanets().Where(planet => planet.Colony == null)
@@ -367,6 +364,10 @@ namespace GalWar
             startProd = GetStartDouble(( startProd / count + max ) / 2.0 * ( 1 - Consts.StartGoldProdPct ));
             double moveOrderGold = Consts.GetMoveOrderGold(this.players);
 
+            double startSoldiers = GetStartDouble(startPop / 1.69);
+            double startDefense = GetStartDouble(( startSoldiers + startProd ) / 2.6);
+            int startDefenseSteps = (int)Math.Floor(( startDefense / Colony.GetMultedProd(startPop * Consts.Income) - 1 ) / Consts.FLOAT_ERROR_ONE);
+
             for (this.currentPlayer = 0 ; this.currentPlayer < numPlayers ; ++this.currentPlayer)
             {
                 //will always have exactly one colony at this point, the homeworld
@@ -375,7 +376,7 @@ namespace GalWar
                 //starting soldiers and defense
                 for (int a = 0 ; a < startDefenseSteps ; ++a)
                 {
-                    homeworld.BuildSoldiers(startDefense / startDefenseSteps, true);
+                    homeworld.BuildSoldiers(startSoldiers / startDefenseSteps, false);
                     homeworld.BuildPlanetDefense(startDefense / startDefenseSteps, true);
                 }
 
@@ -389,8 +390,8 @@ namespace GalWar
                 //starting production
                 addProduction += startProd;
 
-                //other gold balancing
-                addGold += currentPlayer * moveOrderGold + startDefense - homeworld.Soldiers * Consts.ProductionForSoldiers;
+                //turn order balancing
+                addGold += currentPlayer * moveOrderGold;
 
                 //calculations to offset AddProduction when currently building StoreProd
                 addProduction /= Consts.StoreProdRatio;
@@ -833,8 +834,7 @@ namespace GalWar
                     RemoveTeleporter(teleporter);
             }
             else if (!CanCreateTeleporter(tile, target))
-            {
-            }
+                ;
             return false;
         }
         private static bool CanCreateTeleporter(Tile tile, Tile target)
@@ -1010,18 +1010,18 @@ namespace GalWar
         }
         private static double GetShipWeight(Ship ship)
         {
-            return GetCenterdWeight(ship.GetStrength(), ship.GetValue(), ship.HP / (double)ship.MaxHP);
+            return GetCenterWeight(ship.GetStrength(), ship.GetValue(), ship.HP / (double)ship.MaxHP);
         }
         private static double GetProdWeight(Colony colony)
         {
             int att = colony.Player.PDAtt, def = colony.Player.PDDef;
             double prodMult = ShipDesign.GetPlanetDefenseStrength(att, def) / ShipDesign.GetPlanetDefenseCost(att, def, colony.Player.GetLastResearched());
             double str = colony.PDStrength + colony.production2 * prodMult;
-            return GetCenterdWeight(str, str, 1);
+            return GetCenterWeight(str, str, 1);
         }
-        private static double GetCenterdWeight(double str, double value, double pct)
+        private static double GetCenterWeight(double str, double value, double pct)
         {
-            return ( 2.6 * str + value ) * pct;
+            return ( 2.6 * str + value ) * Math.Sqrt(pct);
         }
 
         public Rectangle GetGameBounds(params Tile[] include)

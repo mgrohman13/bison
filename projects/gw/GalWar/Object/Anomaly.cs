@@ -706,6 +706,8 @@ namespace GalWar
             {
                 if (single == null ? colonies.Keys.All(colony => colony.Population == 0) : single.Population == 0)
                     type = AnomalyType.PlanetDefenses;
+                else
+                    ;
             }
 
             if (single == null)
@@ -1023,8 +1025,7 @@ namespace GalWar
                     return true;
                 }
                 else
-                {
-                }
+                    ;
             }
 
             if (canPop && canHeal)
@@ -1051,9 +1052,10 @@ namespace GalWar
 
                 double prod = ship.GetProdForHP(hp), gold = this.value - prod;
                 int result = ship.ProductionRepair(ref prod, ref gold, true, false);
+                if (result != hp)
+                    ;
                 if (result != show)
-                {
-                }
+                    ;
                 ship.Player.GoldIncome(prod + gold);
                 return true;
             }

@@ -13,12 +13,12 @@ namespace GalWar
         {
         }
 
-        internal override bool Build(IEventHandler handler, double production)
+        internal override List<Ship> Build(IEventHandler handler, double production)
         {
             if (this.production != 0)
                 throw new Exception();
             colony.Player.AddGold(production / Consts.GoldProductionForGold);
-            return false;
+            return null;
         }
         internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
         {

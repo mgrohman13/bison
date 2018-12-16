@@ -2627,7 +2627,10 @@ namespace GalWarWin
             else
             {
                 if (build is StoreProd)
+                {
+                    retVal = FormatUsuallyInt(production);
                     prodInc *= Consts.StoreProdRatio;
+                }
                 inc = FormatUsuallyInt(prodInc);
             }
 
@@ -2645,8 +2648,8 @@ namespace GalWarWin
 
         public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
         {
-            double newAtt, newDef, newHP, newResearch, newProd;
-            colony.GetPlanetDefenseInc(buildable, production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out newResearch, out newProd, false, false);
+            double newAtt, newDef, newHP, d1, d2, d3;
+            colony.GetPlanetDefenseInc(buildable, production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out d1, out d2, out d3, false, false);
             return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
         }
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)

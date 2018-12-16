@@ -28,11 +28,9 @@ namespace GalWar
 
                 this._prodMult = 1f;
                 this._soldierInc = 0f;
-
                 SetPlanetValues(1);
             }
         }
-
 
         public Colony Colony
         {
@@ -65,11 +63,10 @@ namespace GalWar
             {
                 checked
                 {
-                    if (value >= 0)
+                    if (value >= 0 && !this.Dead)
                         SetPlanetValues(Math.Abs(this.Quality - value) / ( Math.Max(Quality, value) + Consts.PlanetConstValue ));
 
                     this._quality = (short)value;
-
                 }
             }
         }
@@ -104,14 +101,12 @@ namespace GalWar
         }
         private void SetPlanetValues(double variation)
         {
-            variation = Math.Sqrt(variation);
-            double prodMult = Game.Random.GaussianCapped(1, .169, .52);
-            double soldierInc = Game.Random.Weighted(.091, .13);
-            checked
-            {
-                this._prodMult = (float)( this._prodMult * ( 1 - variation ) + prodMult * variation );
-                this._soldierInc = (float)( this._soldierInc * ( 1 - variation ) + soldierInc * variation );
-            }
+            if (Game.Random.Bool(Math.Pow(variation, 1.3)))
+                checked
+                {
+                    this._prodMult = Game.Random.GaussianCapped(1f, .169f, .52f);
+                    this._soldierInc = Game.Random.Weighted(.091f, .13f);
+                }
         }
 
         #endregion //fields and constructors

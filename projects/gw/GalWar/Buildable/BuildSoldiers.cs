@@ -12,10 +12,10 @@ namespace GalWar
         {
         }
 
-        internal override bool Build(IEventHandler handler, double production)
+        internal override List<Ship> Build(IEventHandler handler, double production)
         {
-            colony.BuildSoldiers(production, true);
-            return false;
+            colony.BuildSoldiers(production, false);
+            return null;
         }
 
         public override string ToString()

@@ -66,10 +66,12 @@ combat predict performance
 GAMEPLAY
 
 enforce attacking with all avail pop
-free dmg/attack pct left takes into account att hp
 anom pull curplay lose move?
-bombard combat get exp out instead of automatic add
-bombard friendly paying for value exp at full at fll rate vs exp rate?
+bombard
+	free dmg/attack pct left takes into account att hp
+	bombard combat get exp out instead of automatic add
+	bombard friendly paying for value exp at full rate vs exp rate?
+	free dmg vs too good?  no risk for attacker?
 anomaly gold balancing at full vs consolation value
 	using generate value instead of this value for compensation?
 	other compensation/general balancing?
@@ -78,7 +80,6 @@ anomaly gold balancing at full vs consolation value
 	anom design research randomness with higher values
 		any pct based / OE randomness?
 	anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
-	free dmg vs too good?  no risk for attacker?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
 rchance > 1 throws off max
@@ -89,23 +90,15 @@ BETWEEN GAMES
 round pop growth?
 	meh
 in progress
-	ProdGuess
 	prod per buildable
 		UI
 	turn inc calc
 		mingold - remove?
-	start game prod/pd
-	pause build
 	buy/sell/obsolete during callback
 		allow sometimes
 		restrict at handler wrapper level
 	notify when could complete with stored
-prod repair
-	prod repair randomness?
-	hide ship cost during repair somehow?
-	round prod repair?
-		and leftoever prod?
-	make repair a buildable?
+prod repair hide ship cost/prod similar to build PD/soldiers
 are fine?
 	max design cost OE??
 	level up uses full research?
@@ -116,6 +109,7 @@ new game parameters
 	pop,prod,etc.
 map size
 planetary defenses still not right
+	upg pd uses prod on buildable (and so start no longer needs always)
 	reducing stats/hp
 	hp ratio?
 		slighter more hp if stats not reduced?

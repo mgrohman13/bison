@@ -58,10 +58,10 @@ namespace GalWar
         {
             TurnException.CheckTurn(colony.Player);
 
-            return curProd + ( this.Cost.HasValue ? " / " + this.Cost.Value.ToString() : string.Empty );
+            return ( this.Cost.HasValue ? curProd + " / " + this.Cost.Value.ToString() : string.Empty );
         }
 
-        internal abstract bool Build(IEventHandler handler, double production);
+        internal abstract List<Ship> Build(IEventHandler handler, double production);
 
         internal virtual void GetTurnIncome(ref double production, ref double gold, bool minGold)
         {
