@@ -336,7 +336,7 @@ namespace GalWar
 
         internal void NewShipDesign(ShipDesign newDesign, HashSet<ShipDesign> obsoleteDesigns)
         {
-            var obsoleteBuilds = this.buildable.OfType<BuildShip>().Where(buildShip => obsoleteDesigns.Contains(buildShip.ShipDesign));
+            var obsoleteBuilds = this.buildable.OfType<BuildShip>().Where(buildShip => obsoleteDesigns.Contains(buildShip.ShipDesign)).ToList();
             foreach (BuildShip buildShip in obsoleteBuilds)
                 this.buildable.Remove(buildShip);
             BuildShip newBuild = new BuildShip(this, newDesign);
@@ -1083,7 +1083,7 @@ namespace GalWar
         {
             handler = new HandlerWrapper(handler, Player.Game, false);
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(hp >= 0);
+            AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.HP);
             AssertException.Assert(gold || this.curBuild != null);
 
@@ -1308,7 +1308,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            always |= ( buildable is PlanetDefense && this.MinDefenses );
+            always |= ( buildable is PlanetDefense && this.MinDefenses && prodInc > 1 / Consts.FLOAT_ERROR_ONE );
 
             double maxHPTot = ( this.PDCost + prodInc ) / ShipDesign.GetPlanetDefenseCost(this.Att, this.Def, maxResearch);
             add = GetMultedAdd(( maxHPTot - this.HP ) * GetPDHPCostAvgResearch(), always, random);
@@ -1338,7 +1338,9 @@ namespace GalWar
                 double att = newAtt, def = newDef, hp = newHP;
                 newResearch = TBSUtil.FindValue(research => ShipDesign.GetPlanetDefenseCost(att, def, research) * hp,
                         this.PDCost + prodInc, Math.Max(Player.Game.PDResearch, maxResearch), Math.Min(Player.Game.PDResearch, maxResearch));
-                if (newResearch / Player.Game.PDResearch < Consts.FLOAT_ERROR_ONE || maxResearch / newResearch < Consts.FLOAT_ERROR_ONE)
+                if (newResearch / Player.Game.PDResearch < Consts.FLOAT_ERROR_ONE)
+                    ;
+                if (maxResearch / newResearch < Consts.FLOAT_ERROR_ONE)
                     ;
                 newProd = this.PDCost + prodInc - ShipDesign.GetPlanetDefenseCost(att, def, newResearch) * hp;
             }
@@ -1384,7 +1386,7 @@ namespace GalWar
 
         private void ReduceDefenses(double mult)
         {
-            double totalCost = this.PDCost;
+            double totalCost = GetPDHPCost() * this.HP;
 
             if (!this.MinDefenses && ( mult > Consts.FLOAT_ERROR_ZERO && mult < 1 - Consts.FLOAT_ERROR_ZERO ))
             {
@@ -1401,7 +1403,7 @@ namespace GalWar
                 this.HP = 0;
             }
 
-            this.Player.AddGold(( totalCost - this.PDCost ) * Consts.DisbandPct);
+            this.Player.AddGold(( totalCost - ( GetPDHPCost() * this.HP ) ) * Consts.DisbandPct);
         }
 
         private static void ModPD(double trgCost, double trgResearch, int att, double trgAtt, int def, double trgDef,

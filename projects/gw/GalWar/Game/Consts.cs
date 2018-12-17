@@ -27,7 +27,7 @@ namespace GalWar
         public const double StartMinMult = .65;
         public const double MoveOrderGold = AverageQuality * Income * 1.69;
         //a higher MoveOrderShuffle makes the move order change faster
-        public const double MoveOrderShuffle = .13;
+        public const double MoveOrderShuffle = .169;
 
         public const int PlanetQualityMin = 0;
         public const int PlanetQualityMax = 390;

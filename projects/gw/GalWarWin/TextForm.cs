@@ -52,7 +52,7 @@ namespace GalWarWin
                 {
                     double value;
                     dict.TryGetValue(GetResult(pair.Key), out value);
-                    dict[pair.Key.AttHP] = value + pair.Value;
+                    dict[GetResult(pair.Key)] = value + pair.Value;
                 }
                 double max = dict.Values.Max(), tot = dict.Values.Sum();
 

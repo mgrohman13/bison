@@ -51,7 +51,7 @@ namespace GalWarWin
 
         private MainForm dialog;
 
-        private static bool emphasisEvent = true;
+        private static bool emphasisEvent = true, showDist = false;
 
         private static Ship anomExp = null, vector = null;
 
@@ -290,7 +290,7 @@ namespace GalWarWin
 
                     Rectangle gameBounds = GetGameBounds();
 
-                    if (scale > GridScale)
+                    if (scale > GridScale && !showDist)
                     {
                         int capacity = ( ( gameBounds.Width + 3 ) * ( gameBounds.Height + 1 ) * 2 ) / 3;
                         List<RectangleF> rects = new List<RectangleF>(capacity);
@@ -348,6 +348,20 @@ namespace GalWarWin
                     //        }
                     //    }
                     //}
+
+                    if (showDist)
+                    {
+                        //Enumerable.Range(gameBounds.X,gameBounds.Width ).SelectMany(x=>Enumerable.Range(gameBounds.Y, gameBounds.Height ).Select(y=>new Point (x,y)))  
+                        double max = Game.Random.Iterate(gameBounds.X, gameBounds.Right, gameBounds.Y, gameBounds.Bottom).Max(p => Tile.GetDistance(Game.GetTile(p), Game.Center));
+                        foreach (Point p in Game.Random.Iterate(gameBounds.X, gameBounds.Right, gameBounds.Y, gameBounds.Bottom))
+                        {
+                            RectangleF rect = GetDrawRect(p.X, p.Y);
+                            double dist = Tile.GetDistance(Game.Center, Game.GetTile(p));
+                            int val = Game.Random.Round(255 * dist / max);
+                            using (Brush brush = new SolidBrush(Color.FromArgb(val, val, val)))
+                                g.FillRectangle(brush, rect);
+                        }
+                    }
 
                     foreach (Tile tile in drawTiles)
                         DrawObject(g, gameBounds, tile, moves, minQuality, maxQuality, minPop, maxPop, minStr, maxStr);
@@ -430,6 +444,9 @@ namespace GalWarWin
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
                     }
                     g.FillRectangle(brush, RectangleF.Inflate(rect, .5f, .5f));
+                    if (showDist)
+                        using (Pen pen = new Pen(Color.White, 2f))
+                            g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
                 }
 
                 if (spaceObject is Anomaly)
@@ -851,6 +868,7 @@ namespace GalWarWin
 
             showAtt = ( showMoves ? !showAtt : false );
             showMoves = true;
+            showDist = false;
             InvalidateMap();
         }
         private void SetScale(float value)
@@ -2087,10 +2105,21 @@ namespace GalWarWin
 
         private void lblLoc_Click(object sender, EventArgs e)
         {
-            Point start = new Point(-Game.Center.X, -Game.Center.Y);
-            LabelsForm.ShowForm("Start", start.ToString(), string.Empty, string.Empty, "Galaxy Size", FormatDouble(Game.MapDeviation),
-                    "Anomalies", FormatPct(Game.AnomalyPct, true), "Planets", FormatPct(Game.PlanetPct / Game.AnomalyPct, true),
-                    string.Empty, string.Empty, "Prod/Upk", FormatDouble(1 / Consts.GetProductionUpkeepMult(Game.MapSize)));
+            MouseButtons button = ( (MouseEventArgs)e ).Button;
+            if (button == MouseButtons.Left)
+            {
+                Point start = new Point(-Game.Center.X, -Game.Center.Y);
+                LabelsForm.ShowForm("Start", start.ToString(), string.Empty, string.Empty, "Galaxy Size", FormatDouble(Game.MapDeviation),
+                        "Anomalies", FormatPct(Game.AnomalyPct, true), "Planets", FormatPct(Game.PlanetPct / Game.AnomalyPct, true),
+                        string.Empty, string.Empty, "Prod/Upk", FormatDouble(1 / Consts.GetProductionUpkeepMult(Game.MapSize)));
+            }
+            else if (button == MouseButtons.Right)
+            {
+                showDist = !showDist;
+                if (showDist)
+                    showMoves = false;
+                InvalidateMap();
+            }
         }
 
         private void lblTop_Click(object sender, EventArgs e)
@@ -2537,8 +2566,12 @@ namespace GalWarWin
                     --attChange;
                 if (defChange == colony.Def)
                     --defChange;
-                double pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / ( colony.PDStrength / colony.HP )
+                double pdChange = colony.DefenseHPChange;
+                if (colony.PDStrength > 0)
+                    pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / ( colony.PDStrength / colony.HP )
                         * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
+                else
+                    ;
                 string strChange = FormatUsuallyInt(pdChange);
                 if (strChange != "0")
                     lbl4Inf.Text += string.Format(" ({1}{0})", strChange, pdChange > 0 ? "+" : string.Empty);

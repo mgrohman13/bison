@@ -1,5 +1,9 @@
 UI
 
+reseach pct chance squeezed in
+trade prod - default to use stored?
+	shortut to do more easily?
+show friendly colony planet stats
 MainForm.GetBuildingSoldiers account for incremental logic
 MoveTroops.ShowProd needs to use modified soldiers
 test GraphsForm lastAvgResearch
@@ -65,6 +69,9 @@ combat predict performance
 
 GAMEPLAY
 
+end turn gold goes negative before colonies produce and effs up income
+center, anom value - include soldiers
+prevent pop pickup event when adjacent to enemy planet
 enforce attacking with all avail pop
 anom pull curplay lose move?
 bombard
@@ -82,6 +89,7 @@ anomaly gold balancing at full vs consolation value
 	anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
+rounding gold balancing vs none
 rchance > 1 throws off max
 
 
@@ -98,7 +106,13 @@ in progress
 		allow sometimes
 		restrict at handler wrapper level
 	notify when could complete with stored
-prod repair hide ship cost/prod similar to build PD/soldiers
+prod repair
+	hide similar to build PD/soldiers
+	randomness
+	round prod repair? and leftoever prod?
+	make repair a buildable?
+notification when current build reaches point where sotre prod could complete it
+	also use when less than one more turn away (could gold buy)
 are fine?
 	max design cost OE??
 	level up uses full research?
@@ -151,6 +165,9 @@ terrain
 	random spread of tiles?
 	apply effects to neighbors?
 influence
+	controls anomalies, nuetral planets?
+	zoc?
+	spread by something that requires upkeep
 neutral ships?
 	from anomaly?
 known enemy designs
