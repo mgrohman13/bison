@@ -32,6 +32,9 @@ namespace GalWar
         private float _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
         private double _goldOffset;
 
+        [NonSerialized]
+        private double _negativeGoldMult = double.NaN;
+
         internal Player(int id, Game Game, StartingPlayer player, Planet planet,
                 int population, List<int> research)
         {
@@ -398,6 +401,20 @@ namespace GalWar
             }
         }
 
+        internal double negativeGoldMult
+        {
+            get
+            {
+                if (double.IsNaN(this._negativeGoldMult) || this._negativeGoldMult < 1)
+                    return GetNegativeGoldMult();
+                return this._negativeGoldMult;
+            }
+            private set
+            {
+                this._negativeGoldMult = value;
+            }
+        }
+
         #endregion //fields and constructors
 
         #region internal
@@ -560,6 +577,9 @@ namespace GalWar
         {
             AutoRepairShips(handler);
 
+            //set a constant negativeGoldMult so income always matches what was displayed at turn end
+            this.negativeGoldMult = GetNegativeGoldMult();
+
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
 
@@ -570,6 +590,34 @@ namespace GalWar
             foreach (Colony colony in Game.Random.Iterate<Colony>(this.colonies))
                 colony.EndTurn(handler, ref research);
             this.newResearch = research;
+
+            this.negativeGoldMult = double.NaN;
+        }
+
+        private double GetNegativeGoldMult()
+        {
+            double mult = 1;
+            if (this.NegativeGold())
+            {
+                mult = this.goldOffset;
+                if (mult > 0)
+                    mult *= 1.69;
+                else
+                    ;
+                mult = -( 2.1 * this.goldValue + mult + 13 );
+                double incomeMult = Math.Sqrt(Consts.AverageQuality * Consts.Income / ( this.GetTotalIncome() + 3.9 ));
+                if (mult > 0)
+                    mult *= incomeMult;
+                else
+                    mult /= incomeMult;
+                mult /= 91;
+                if (mult > 1)
+                    mult = Math.Pow(mult, .78);
+                else
+                    ;
+                mult = 1 + Consts.LimitMin(mult, .52);
+            }
+            return mult;
         }
 
         private void CheckGold()

@@ -1,5 +1,10 @@
+Player.AutoRepairShips() breakpoints
+AdjustCenter neighbors.Count>2
+
 UI
 
+notification when current build reaches point where sotre prod could complete it
+	also use when less than one more turn away (could gold buy)
 reseach pct chance squeezed in
 trade prod - default to use stored?
 	shortut to do more easily?
@@ -69,11 +74,13 @@ combat predict performance
 
 GAMEPLAY
 
-end turn gold goes negative before colonies produce and effs up income
-center, anom value - include soldiers
-prevent pop pickup event when adjacent to enemy planet
+salvage ship
+	prevent enemy attack?
+	prevent death star near planet?
+punish neg gold
+	interest?
+	take cut of income > emphasis pct?  GoldProductionForGold?
 enforce attacking with all avail pop
-anom pull curplay lose move?
 bombard
 	free dmg/attack pct left takes into account att hp
 	bombard combat get exp out instead of automatic add
@@ -95,24 +102,17 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
-round pop growth?
-	meh
 in progress
-	prod per buildable
-		UI
 	turn inc calc
 		mingold - remove?
 	buy/sell/obsolete during callback
 		allow sometimes
 		restrict at handler wrapper level
-	notify when could complete with stored
 prod repair
 	hide similar to build PD/soldiers
 	randomness
 	round prod repair? and leftoever prod?
 	make repair a buildable?
-notification when current build reaches point where sotre prod could complete it
-	also use when less than one more turn away (could gold buy)
 are fine?
 	max design cost OE??
 	level up uses full research?

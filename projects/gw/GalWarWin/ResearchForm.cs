@@ -30,9 +30,7 @@ namespace GalWarWin
             if (this.Width < 400)
                 this.Width += 200;
 
-            ShipDesign design = this.lbxDesigns.SelectedItem as ShipDesign;
-            if (design != null)
-                sdObsolete.SetShipDesign(design);
+            sdObsolete.SetShipDesign((ShipDesign)this.lbxDesigns.SelectedItem);
         }
 
         public static void ShowForm(ShipDesign newDesign, HashSet<ShipDesign> obsolete)

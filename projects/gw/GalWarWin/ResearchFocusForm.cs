@@ -103,9 +103,7 @@ namespace GalWarWin
 
         private void lbxUpgrade_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ShipDesign design = ( this.lbxUpgrade.SelectedItem as ShipDesign );
-            if (design != null)
-                this.sdUpgrade.SetShipDesign(design);
+            this.sdUpgrade.SetShipDesign((ShipDesign)this.lbxUpgrade.SelectedItem);
 
             RefreshChance();
         }

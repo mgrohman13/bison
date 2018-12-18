@@ -125,18 +125,20 @@ namespace GalWar
 
         private double GenerateValue()
         {
+            const double soldierMult = Consts.ProductionForSoldiers / 2.6;
             double quality = 0, pop = 0, armada = 0;
             foreach (Planet planet in Tile.Game.GetPlanets())
             {
-                if (planet.Colony == null)
+                Colony colony = planet.Colony;
+                if (colony == null)
                 {
                     quality += planet.Quality / 2.6;
                 }
                 else
                 {
                     quality += planet.Quality;
-                    pop += planet.Colony.Population;
-                    armada += planet.Colony.PDCostAvgResearch / 1.69 + planet.Colony.production2 / 2.1;
+                    pop += colony.Population;
+                    armada += colony.PDCostAvgResearch / 1.69 + colony.production2 / 2.1 + colony.Soldiers * soldierMult;
                 }
             }
             foreach (Player player in Tile.Game.GetPlayers())
@@ -144,7 +146,7 @@ namespace GalWar
                 foreach (Ship ship in player.GetShips())
                 {
                     pop += ship.Population / 1.3;
-                    armada += ship.GetCostAvgResearch();
+                    armada += ship.GetCostAvgResearch() + ship.Soldiers * soldierMult;
                 }
                 armada += player.TotalGold / 3.0;
             }
@@ -925,7 +927,7 @@ namespace GalWar
         {
             handler.Explore(AnomalyType.Experience, ship);
 
-            ship.AddAnomalyExperience(handler, this.value, Game.Random.Bool(), Game.Random.Bool());
+            ship.AddAnomalyExperience(handler, this.value, Game.Random.Bool() && !CanInvade(ship), Game.Random.Bool());
 
             return true;
         }
@@ -1008,7 +1010,15 @@ namespace GalWar
             };
             bool canPop = ( pop > 0 && ship.FreeSpace > 0 && ( pop <= ship.FreeSpace || DoChance(pop, ship.FreeSpace) ) );
             bool canHeal = ( hp > 0 && ship.HP < ship.MaxHP && ( ship.HP + hp <= ship.MaxHP || DoChance(hp, ship.MaxHP - ship.HP) ) );
-            if (ship.Population > 0 && soldiers / (double)ship.Population > .01)
+            bool canSoldiers = ( ship.Population > 0 && soldiers / (double)ship.Population > .01 );
+
+            if (( canPop || canSoldiers ) && CanInvade(ship))
+            {
+                canPop = false;
+                canSoldiers = false;
+            }
+
+            if (canSoldiers)
             {
                 double soldierChance = ship.GetSoldierPct() / 1.69;
                 soldierChance = 2.1 / ( 2.1 + soldiers / (double)ship.Population + soldierChance * soldierChance );
@@ -1060,6 +1070,14 @@ namespace GalWar
                 return true;
             }
 
+            return false;
+        }
+
+        private bool CanInvade(Ship ship)
+        {
+            foreach (Planet planet in Tile.Game.GetPlanets())
+                if (planet.Colony != null && planet.Player != ship.Player && ( Tile.GetDistance(planet.Tile, ship.Tile) - 1 <= ship.CurSpeed ))
+                    return true;
             return false;
         }
 

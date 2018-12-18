@@ -554,13 +554,7 @@ namespace GalWar
             {
                 retVal = Consts.EmphasisValue;
                 if (this.Player.NegativeGold())
-                {
-                    double mult = Math.Pow(-( this.Player.Gold + this.Player.TotalGold ) * Consts.AverageQuality * Consts.Income / this.Player.GetTotalIncome() / 91.0 + 1.69, 0.78);
-                    if (mult > 1)
-                        retVal *= mult;
-                    else
-                        ;
-                }
+                    retVal *= this.Player.negativeGoldMult;
             }
             return retVal;
         }
@@ -1083,7 +1077,7 @@ namespace GalWar
         {
             handler = new HandlerWrapper(handler, Player.Game, false);
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(hp > 0);
+            AssertException.Assert(hp >= 0);
             AssertException.Assert(hp <= this.HP);
             AssertException.Assert(gold || this.curBuild != null);
 

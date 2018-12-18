@@ -35,7 +35,7 @@ namespace GalWar
                 number = -number;
             }
 
-            if (number > 3999 || number == 0)
+            if (number > 3999 || number < 1)
             {
                 retVal += number.ToString();
             }
@@ -934,15 +934,16 @@ namespace GalWar
                 {
                     Ship ship = ( spaceObject as Ship );
                     Planet planet = ( spaceObject as Planet );
+                    Colony colony = ( planet == null ? null : planet.Colony );
                     if (ship != null)
                     {
                         shipWeight += GetShipWeight(ship);
-                        popWeight += ship.Population;
+                        popWeight += GetPopWeight(ship);
                     }
-                    else if (planet != null && planet.Colony != null)
+                    if (colony != null)
                     {
-                        shipWeight += GetProdWeight(planet.Colony);
-                        popWeight += planet.Colony.Population;
+                        shipWeight += GetProdWeight(colony);
+                        popWeight += GetPopWeight(colony);
                     }
                 }
 
@@ -970,17 +971,18 @@ namespace GalWar
                 int distance = Tile.GetDistance(centerTile, spaceObject.Tile);
                 if (distance > 0)
                 {
-                    double weight;
+                    double weight = 0;
                     Ship ship = ( spaceObject as Ship );
                     Planet planet = ( spaceObject as Planet );
+                    Colony colony = ( planet == null ? null : planet.Colony );
                     if (ship != null)
-                        weight = shipWeight * GetShipWeight(ship) + popWeight * ship.Population;
-                    else if (planet != null)
-                        weight = planet.PlanetValue + ( planet.Colony == null ? 0 : popWeight * planet.Colony.Population );
-                    else if (spaceObject is Anomaly)
-                        weight = anomalyWeight;
-                    else
-                        throw new Exception();
+                        weight += shipWeight * GetShipWeight(ship) + popWeight * GetPopWeight(ship);
+                    if (planet != null)
+                        weight += planet.PlanetValue;
+                    if (colony != null)
+                        weight += shipWeight * GetProdWeight(colony) + popWeight * GetPopWeight(colony);
+                    if (spaceObject is Anomaly)
+                        weight += anomalyWeight;
 
                     HashSet<Tile> neighbors = Tile.GetNeighbors(centerTile);
                     neighbors.RemoveWhere(neighbor => ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance ));
@@ -1015,9 +1017,13 @@ namespace GalWar
         private static double GetProdWeight(Colony colony)
         {
             int att = colony.Player.PDAtt, def = colony.Player.PDDef;
-            double prodMult = ShipDesign.GetPlanetDefenseStrength(att, def) / ShipDesign.GetPlanetDefenseCost(att, def, colony.Player.GetLastResearched());
+            double prodMult = ShipDesign.GetPlanetDefenseStrength(att, def) / ShipDesign.GetPlanetDefenseCost(att, def, colony.Player.Game.AvgResearch);
             double str = colony.PDStrength + colony.production2 * prodMult;
             return GetCenterWeight(str, str, 1);
+        }
+        private double GetPopWeight(PopCarrier carrier)
+        {
+            return carrier.Population * Math.Sqrt(1.0 + carrier.Soldiers);
         }
         private static double GetCenterWeight(double str, double value, double pct)
         {

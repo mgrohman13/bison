@@ -306,8 +306,7 @@ namespace GalWarWin
                         }
                         //Console.WriteLine(rects.Count + "\t" + capacity);
                         if (capacity < rects.Count)
-                        {
-                        }
+                            ;
                         using (Pen pen = new Pen(Color.White, 1f))
                             g.DrawRectangles(pen, rects.ToArray());
                     }
@@ -351,15 +350,13 @@ namespace GalWarWin
 
                     if (showDist)
                     {
-                        //Enumerable.Range(gameBounds.X,gameBounds.Width ).SelectMany(x=>Enumerable.Range(gameBounds.Y, gameBounds.Height ).Select(y=>new Point (x,y)))  
-                        double max = Game.Random.Iterate(gameBounds.X, gameBounds.Right, gameBounds.Y, gameBounds.Bottom).Max(p => Tile.GetDistance(Game.GetTile(p), Game.Center));
-                        foreach (Point p in Game.Random.Iterate(gameBounds.X, gameBounds.Right, gameBounds.Y, gameBounds.Bottom))
+                        IEnumerable<Point> allTiles = Game.Random.Iterate(gameBounds.Left, gameBounds.Right, gameBounds.Top, gameBounds.Bottom);
+                        double max = allTiles.Max(p => Tile.GetDistance(Game.GetTile(p), Game.Center));
+                        foreach (Point p in allTiles)
                         {
-                            RectangleF rect = GetDrawRect(p.X, p.Y);
-                            double dist = Tile.GetDistance(Game.Center, Game.GetTile(p));
-                            int val = Game.Random.Round(255 * dist / max);
+                            int val = Game.Random.Round(255 * Tile.GetDistance(Game.Center, Game.GetTile(p)) / max);
                             using (Brush brush = new SolidBrush(Color.FromArgb(val, val, val)))
-                                g.FillRectangle(brush, rect);
+                                g.FillRectangle(brush, GetDrawRect(p.X, p.Y));
                         }
                     }
 
@@ -2116,8 +2113,7 @@ namespace GalWarWin
             else if (button == MouseButtons.Right)
             {
                 showDist = !showDist;
-                if (showDist)
-                    showMoves = false;
+                showMoves = false;
                 InvalidateMap();
             }
         }
@@ -2567,7 +2563,7 @@ namespace GalWarWin
                 if (defChange == colony.Def)
                     --defChange;
                 double pdChange = colony.DefenseHPChange;
-                if (colony.PDStrength > 0)
+                if (colony.HP > 0)
                     pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / ( colony.PDStrength / colony.HP )
                         * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
                 else
