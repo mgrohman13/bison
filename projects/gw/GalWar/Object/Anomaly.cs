@@ -125,20 +125,20 @@ namespace GalWar
 
         private double GenerateValue()
         {
-            const double soldierMult = Consts.ProductionForSoldiers / 2.6;
+            const double soldierMult = Consts.ProductionForSoldiers / Math.PI;
             double quality = 0, pop = 0, armada = 0;
             foreach (Planet planet in Tile.Game.GetPlanets())
             {
                 Colony colony = planet.Colony;
                 if (colony == null)
                 {
-                    quality += planet.Quality / 2.6;
+                    quality += planet.PlanetValue / 3.9;
                 }
                 else
                 {
-                    quality += planet.Quality;
+                    quality += planet.PlanetValue;
                     pop += colony.Population;
-                    armada += colony.PDCostAvgResearch / 1.69 + colony.production2 / 2.1 + colony.Soldiers * soldierMult;
+                    armada += colony.PDCostAvgResearch / 2.6 + colony.production2 / 1.69 + colony.Soldiers * soldierMult;
                 }
             }
             foreach (Player player in Tile.Game.GetPlayers())
@@ -146,9 +146,9 @@ namespace GalWar
                 foreach (Ship ship in player.GetShips())
                 {
                     pop += ship.Population / 1.3;
-                    armada += ship.GetCostAvgResearch() + ship.Soldiers * soldierMult;
+                    armada += ship.GetCostAvgResearch() + ship.Soldiers * soldierMult / 1.3;
                 }
-                armada += player.TotalGold / 3.0;
+                armada += player.TotalGold / 2.1;
             }
 
             double value = ( armada / 52.0 + Consts.Income / 2.6 * ( 5 * pop + 2 * quality ) / 7.0 ) / (double)Tile.Game.GetPlayers().Count;
@@ -681,6 +681,8 @@ namespace GalWar
                         type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                         notify = false;
                     }
+                    else
+                        ;
                 }
                 else
                 {
@@ -708,8 +710,6 @@ namespace GalWar
             {
                 if (single == null ? colonies.Keys.All(colony => colony.Population == 0) : single.Population == 0)
                     type = AnomalyType.PlanetDefenses;
-                else
-                    ;
             }
 
             if (single == null)
@@ -927,7 +927,15 @@ namespace GalWar
         {
             handler.Explore(AnomalyType.Experience, ship);
 
-            ship.AddAnomalyExperience(handler, this.value, Game.Random.Bool() && !CanInvade(ship), Game.Random.Bool());
+            bool funky = Game.Random.Bool();
+            if (funky)
+            {
+                if (CanInvade(ship))
+                    funky = false;
+                else
+                    ;
+            }
+            ship.AddAnomalyExperience(handler, this.value, funky, Game.Random.Bool());
 
             return true;
         }
@@ -1014,8 +1022,31 @@ namespace GalWar
 
             if (( canPop || canSoldiers ) && CanInvade(ship))
             {
+                if (canPop)
+                    ;
+                else
+                    ;
+                if (canSoldiers)
+                    ;
+                else
+                    ;
                 canPop = false;
                 canSoldiers = false;
+            }
+            else
+            {
+                if (canPop)
+                    ;
+                else
+                    ;
+                if (canSoldiers)
+                    ;
+                else
+                    ;
+                if (CanInvade(ship))
+                    ;
+                else
+                    ;
             }
 
             if (canSoldiers)

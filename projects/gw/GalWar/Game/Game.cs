@@ -772,12 +772,7 @@ namespace GalWar
             {
                 Player attacker = this.players[index];
                 Player defender = this.players[swap];
-                bool allow = !attInv.Where(pair => pair.Key.Player == defender).SelectMany(pair => pair.Value).Where(spaceObject => spaceObject.Player == attacker).Any();
-                if (allow)
-                    ;
-                else
-                    ;
-                return allow;
+                return !attInv.Where(pair => pair.Key.Player == defender).SelectMany(pair => pair.Value).Where(spaceObject => spaceObject.Player == attacker).Any();
             });
             if (playerGold.Count > 0)
             {
@@ -1023,7 +1018,7 @@ namespace GalWar
         }
         private double GetPopWeight(PopCarrier carrier)
         {
-            return carrier.Population * Math.Sqrt(1.0 + carrier.Soldiers);
+            return carrier.Population * Math.Sqrt(1.0 + carrier.GetSoldierPct());
         }
         private static double GetCenterWeight(double str, double value, double pct)
         {

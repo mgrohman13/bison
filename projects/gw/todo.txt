@@ -1,8 +1,7 @@
-Player.AutoRepairShips() breakpoints
-AdjustCenter neighbors.Count>2
-
 UI
 
+gold income repair reduction account for low/neg gold
+show turns wormhole lasted
 notification when current build reaches point where sotre prod could complete it
 	also use when less than one more turn away (could gold buy)
 reseach pct chance squeezed in
@@ -74,6 +73,8 @@ combat predict performance
 
 GAMEPLAY
 
+AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
+anomaly prod add to non-active?
 salvage ship
 	prevent enemy attack?
 	prevent death star near planet?

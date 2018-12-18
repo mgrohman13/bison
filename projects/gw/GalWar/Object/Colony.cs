@@ -755,7 +755,7 @@ namespace GalWar
         internal void UndoAddProduction(Buildable buildable, int undo)
         {
             TurnException.CheckTurn(this.Player);
-            AssertException.Assert(undo > buildable.Production || undo < 0);
+            AssertException.Assert(undo <= buildable.Production && undo >= 0);
             AssertException.Assert(this.CanBuild(buildable));
 
             buildable.AddProduction(-undo);
@@ -1237,10 +1237,8 @@ namespace GalWar
                     GetPlanetDefenseInc(0, maxResearch, out newAtt, out newDef, out newHP, out newResearch, out added, out production, false);
                     SetPD(newAtt, newDef, newHP, newResearch, added, production);
                 }
-                else
-                    ;
             }
-            else
+            else if (!( this.Player.Research > this.defenseResearch ))
                 ;
         }
         private void SetPD(double newAtt, double newDef, double newHP, double newResearch, double added, double production)
@@ -1316,16 +1314,12 @@ namespace GalWar
                     stat = false;
                 else if (random && Game.Random.Bool())
                     stat = Game.Random.Bool();
-                else
-                    ;
                 double trgAtt = this.Player.PDAtt, trgDef = this.Player.PDDef;
                 if (stat.HasValue)
                     if (stat.Value)
                         trgDef = AdjustStatRatio(trgDef, random);
                     else
                         trgAtt = AdjustStatRatio(trgAtt, random);
-                else
-                    ;
 
                 ModPD(this.PDCostAvgResearch + add, Player.Game.AvgResearch, this.Att, trgAtt, this.Def, trgDef, out newAtt, out newDef, out newHP);
 
@@ -1333,8 +1327,6 @@ namespace GalWar
                 newResearch = TBSUtil.FindValue(research => ShipDesign.GetPlanetDefenseCost(att, def, research) * hp,
                         this.PDCost + prodInc, Math.Max(Player.Game.PDResearch, maxResearch), Math.Min(Player.Game.PDResearch, maxResearch));
                 if (newResearch / Player.Game.PDResearch < Consts.FLOAT_ERROR_ONE)
-                    ;
-                if (maxResearch / newResearch < Consts.FLOAT_ERROR_ONE)
                     ;
                 newProd = this.PDCost + prodInc - ShipDesign.GetPlanetDefenseCost(att, def, newResearch) * hp;
             }

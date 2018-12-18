@@ -406,7 +406,7 @@ namespace GalWar
             get
             {
                 if (double.IsNaN(this._negativeGoldMult) || this._negativeGoldMult < 1)
-                    return GetNegativeGoldMult();
+                    this._negativeGoldMult = GetNegativeGoldMult();
                 return this._negativeGoldMult;
             }
             private set
@@ -579,6 +579,8 @@ namespace GalWar
 
             //set a constant negativeGoldMult so income always matches what was displayed at turn end
             this.negativeGoldMult = GetNegativeGoldMult();
+            if (negativeGoldMult < 1)
+                ;
 
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
@@ -597,7 +599,7 @@ namespace GalWar
         private double GetNegativeGoldMult()
         {
             double mult = 1;
-            if (this.NegativeGold())
+            if (goldValue < 0)
             {
                 mult = this.goldOffset;
                 if (mult > 0)
@@ -632,7 +634,7 @@ namespace GalWar
         public bool NegativeGold()
         {
             TurnException.CheckTurn(this);
-            return ( goldValue < 0 );
+            return ( this.negativeGoldMult > 1 );
         }
 
         internal Colony NewColony(IEventHandler handler, Planet planet, int population, double soldiers, double production)
