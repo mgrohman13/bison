@@ -725,7 +725,7 @@ namespace GalWar
             this.Population = 0;
             this.Soldiers = 0;
             this.buildable.Clear();
-            this.curBuild = null;
+            this.curBuild.AddProduction(-curBuild.production);
             this.HP = 0;
 
             this.Player.RemoveColony(this);
@@ -1152,7 +1152,7 @@ namespace GalWar
         }
         private double GetActualDisbandValue(int hp, out int newAtt, out int newDef)
         {
-            double oldCost = this.PDCost;
+            double oldCost = ( GetPDHPCost() * this.HP );
 
             newAtt = this.Att;
             newDef = this.Def;

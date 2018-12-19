@@ -99,6 +99,7 @@ anomaly gold balancing at full vs consolation value
 	e.g. soldiers "other" gives full gold?
 rounding gold balancing vs none
 rchance > 1 throws off max
+[NonSerialized] fields should deserialize to standard values (NaN vs 0)
 
 
 BETWEEN GAMES

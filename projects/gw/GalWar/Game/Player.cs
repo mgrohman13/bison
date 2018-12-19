@@ -405,8 +405,10 @@ namespace GalWar
         {
             get
             {
-                if (double.IsNaN(this._negativeGoldMult) || this._negativeGoldMult < 1)
-                    this._negativeGoldMult = GetNegativeGoldMult();
+                if (double.IsNaN(this._negativeGoldMult) || this._negativeGoldMult == 0)
+                    return GetNegativeGoldMult();
+                else
+                    AssertException.Assert(this._negativeGoldMult * Consts.FLOAT_ERROR_ONE >= 1);
                 return this._negativeGoldMult;
             }
             private set
@@ -599,7 +601,7 @@ namespace GalWar
         private double GetNegativeGoldMult()
         {
             double mult = 1;
-            if (goldValue < 0)
+            if (this.goldValue < 0)
             {
                 mult = this.goldOffset;
                 if (mult > 0)
