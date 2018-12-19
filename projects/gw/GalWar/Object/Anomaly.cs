@@ -815,13 +815,20 @@ namespace GalWar
                     Planet planet = spaceObject as Planet;
                     if (ship != null)
                     {
-                        AddPullChance(objects, ship, .39 * Math.Sqrt(ship.GetValue() / shipValue));
+                        AddPullChance(objects, ship, Math.Pow(ship.GetValue() / shipValue, .65));
                     }
                     else if (planet != null)
                     {
                         if (planets.All(p2 => planet == p2 || Tile.GetDistance(this.Tile, p2.Tile) > Consts.PlanetDistance))
-                            AddPullChance(objects, planet, .91 * Math.Sqrt(( Consts.AverageQuality + planet.PlanetValue +
-                                    ( planet.Colony != null ? ( Consts.AverageQuality + planet.Colony.Population ) / 2.1 : 0 ) ) / Consts.AverageQuality));
+                        {
+                            double mult = Consts.AverageQuality + planet.PlanetValue;
+                            if (planet.Colony != null)
+                                mult += Consts.AverageQuality / 2.6 + planet.Quality / 1.69 + planet.Colony.Population / 1.3;
+                            mult /= Consts.AverageQuality + Consts.PlanetConstValue;
+                            if (planet.Colony != null)
+                                mult = Math.Pow(mult, 1.3);
+                            AddPullChance(objects, planet, 1.69 * mult);
+                        }
                     }
                     else if (spaceObject is Anomaly)
                     {
@@ -846,8 +853,11 @@ namespace GalWar
 
                 if (ValidateChange(before, anomShip))
                     return true;
-                else
-                    pull.Teleport(oldTile);
+
+                pull.Teleport(oldTile);
+
+                while (Game.Random.Bool() && objects.Any())
+                    objects.Remove(Game.Random.SelectValue(objects.Keys));
             }
 
             return false;
@@ -855,8 +865,8 @@ namespace GalWar
         private void AddPullChance(Dictionary<SpaceObject, int> objects, SpaceObject spaceObj, double distMult)
         {
             if (!objects.Any())
-                distMult *= 2.1;
-            double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * distMult;
+                distMult += 1.3;
+            double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * distMult * .39;
             avg = ( Tile.Game.MapSize / 6.5 + 1.3 ) / ( avg * avg + 9.1 );
             if (avg > 1)
                 avg = Math.Sqrt(avg);

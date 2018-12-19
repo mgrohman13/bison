@@ -33,7 +33,7 @@ namespace GalWar
         public const int PlanetQualityMax = 390;
         public const double PlanetQualityOE = 65;
         public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
-        public const double PlanetConstValue = .52 / PopulationGrowth;
+        public const double PlanetConstValue = .65 / PopulationGrowth;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
         public const int HomeworldDistance = 8;

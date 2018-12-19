@@ -73,6 +73,7 @@ combat predict performance
 
 GAMEPLAY
 
+double comparisons with player.Gold (e.g. AutoRepairShips)
 AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
 anomaly prod add to non-active?
 salvage ship
