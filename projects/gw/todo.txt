@@ -73,6 +73,7 @@ combat predict performance
 
 GAMEPLAY
 
+mark obsolete when curbuild is type but does not have prod >1 does not switch
 double comparisons with player.Gold (e.g. AutoRepairShips)
 AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
 anomaly prod add to non-active?
