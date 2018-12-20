@@ -362,7 +362,7 @@ namespace GalWar
             int prodAdded;
             double goldAdded;
             double production = oldProduction * Consts.ManualObsoleteRatio;
-            if (production * Consts.FLOAT_ERROR_ONE >= 1)
+            if (production * Consts.FLOAT_ERROR_ONE >= 1 || this.curBuild == obsoleteBuild)
             {
                 double gold = ( oldProduction - production ) / Consts.ProductionForGold;
                 ChangeBuild(handler, production, true, Consts.ProductionForGold, out goldAdded, out prodAdded);

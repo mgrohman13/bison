@@ -211,7 +211,7 @@ namespace GalWar
                     while (cost > maxCost)
                     {
                         ModifyStat ms = GetReduce(cost, hpMult, forceColony, forceTrans);
-                        Console.WriteLine(string.Format("Reduce: {0} {1} {2}", ms, cost, maxCost));
+                        //Console.WriteLine(string.Format("Reduce: {0} {1} {2}", ms, cost, maxCost));
                         switch (ms)
                         {
                         case ModifyStat.Att:
@@ -246,7 +246,7 @@ namespace GalWar
                     while (cost < minCost)
                     {
                         ModifyStat ms = GetIncrease(hpMult);
-                        Console.WriteLine(string.Format("Increase: {0} {1} {2}", ms, cost, minCost));
+                        //Console.WriteLine(string.Format("Increase: {0} {1} {2}", ms, cost, minCost));
                         switch (ms)
                         {
                         case ModifyStat.Att:
@@ -1037,14 +1037,22 @@ namespace GalWar
                     && CompareForObsolete(deathStr / totCost, oldDeathStr / oldTotCost)
                     && ObsoleteCost(this.Cost, oldDesign.Cost, this.Upkeep, oldDesign.Upkeep, this.Research, oldDesign.Research) );
 
-            ;
-            ;
-            ;
-            ;
-            ;
-            ;
-            ;
-            ;
+            if (faster && objectively && similar)
+                ;
+            if (!faster && objectively && similar)
+                ;
+            if (faster && !objectively && similar)
+                ;
+            if (!faster && !objectively && similar)
+                ;
+            if (faster && objectively && !similar)
+                ;
+            if (!faster && objectively && !similar)
+                ;
+            if (faster && !objectively && !similar)
+                ;
+            if (!faster && !objectively && !similar)
+                ;
 
             return ( faster && ( objectively || similar ) );
         }

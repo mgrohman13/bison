@@ -1,5 +1,6 @@
 UI
 
+select different research upgrade no longer shows diff chance
 rotate
 gold income repair reduction account for low/neg gold
 show turns wormhole lasted
@@ -117,7 +118,7 @@ in progress
 prod repair
 	hide similar to build PD/soldiers
 	randomness
-	round prod repair? and leftoever prod?
+	round prod repair? and leftoever prod? use existing prod rounding?
 	make repair a buildable?
 are fine?
 	max design cost OE??
