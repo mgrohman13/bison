@@ -1,5 +1,6 @@
 UI
 
+rotate
 gold income repair reduction account for low/neg gold
 show turns wormhole lasted
 notification when current build reaches point where sotre prod could complete it
@@ -73,6 +74,7 @@ combat predict performance
 
 GAMEPLAY
 
+auto repair now slowly creep up with research rather than using last
 mark obsolete when curbuild is type but does not have prod >1 does not switch
 double comparisons with player.Gold (e.g. AutoRepairShips)
 AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
@@ -126,12 +128,15 @@ new game parameters
 	differentiate starting and planet rate
 	pop,prod,etc.
 map size
+build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
 planetary defenses still not right
 	upg pd uses prod on buildable (and so start no longer needs always)
 	reducing stats/hp
 	hp ratio?
 		slighter more hp if stats not reduced?
 		random?
+	standardize mindefenses, hp, str, cost checks
+	combine back att and def?
 research victory pct decreases with higher research
 	10k=now
 	30k=85% instead of 67%?

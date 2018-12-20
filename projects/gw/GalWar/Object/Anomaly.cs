@@ -823,11 +823,11 @@ namespace GalWar
                         {
                             double mult = Consts.AverageQuality + planet.PlanetValue;
                             if (planet.Colony != null)
-                                mult += Consts.AverageQuality / 2.6 + planet.Quality / 1.69 + planet.Colony.Population / 1.3;
+                                mult += Consts.AverageQuality / 3.9 + planet.Quality / 1.69 + planet.Colony.Population / 1.3;
                             mult /= Consts.AverageQuality + Consts.PlanetConstValue;
                             if (planet.Colony != null)
                                 mult = Math.Pow(mult, 1.3);
-                            AddPullChance(objects, planet, 1.69 * mult);
+                            AddPullChance(objects, planet, 2.1 * mult);
                         }
                     }
                     else if (spaceObject is Anomaly)
@@ -867,7 +867,7 @@ namespace GalWar
             if (!objects.Any())
                 distMult += 1.3;
             double avg = Tile.GetDistance(this.Tile, spaceObj.Tile) * distMult * .39;
-            avg = ( Tile.Game.MapSize / 6.5 + 1.3 ) / ( avg * avg + 9.1 );
+            avg = ( Math.Sqrt(Tile.Game.MapSize) * 6.5 + 13 ) / ( avg * avg + 13 );
             if (avg > 1)
                 avg = Math.Sqrt(avg);
             else
