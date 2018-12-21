@@ -75,9 +75,6 @@ combat predict performance
 
 GAMEPLAY
 
-auto repair now slowly creep up with research rather than using last
-mark obsolete when curbuild is type but does not have prod >1 does not switch
-double comparisons with player.Gold (e.g. AutoRepairShips)
 AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
 anomaly prod add to non-active?
 salvage ship
@@ -102,7 +99,7 @@ anomaly gold balancing at full vs consolation value
 	anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
-rounding gold balancing vs none
+rand rounded gold balancing or not - why? rate?
 rchance > 1 throws off max
 [NonSerialized] fields should deserialize to standard values (NaN vs 0)
 

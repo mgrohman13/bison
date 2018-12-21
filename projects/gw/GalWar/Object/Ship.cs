@@ -451,6 +451,10 @@ namespace GalWar
         {
             return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
         }
+        internal double GetCostLastResearch()
+        {
+            return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.GetLastResearched());
+        }
 
         private double RepairCost
         {
@@ -1407,7 +1411,7 @@ namespace GalWar
             {
                 AssertException.Assert(population == this.AvailablePop);
                 AssertException.Assert(gold > 0);
-                AssertException.Assert(gold < this.Player.Gold);
+                AssertException.Assert(this.Player.HasGold(gold));
             }
             else
             {
@@ -1460,7 +1464,7 @@ namespace GalWar
             AssertException.Assert(planet.Colony == null);
             AssertException.Assert(this.AvailablePop == this.Population);
             AssertException.Assert(this.Population > 0);
-            AssertException.Assert(planet.ColonizationCost < this.Player.Gold);
+            AssertException.Assert(this.Player.HasGold(planet.ColonizationCost));
 
             this.Player.SpendGold(planet.ColonizationCost);
             this.Player.GoldIncome(-GetGoldCost(this.Population, this.Soldiers));
@@ -1480,7 +1484,7 @@ namespace GalWar
             AssertException.Assert(hp > 0);
             AssertException.Assert(hp <= this.MaxHP - HP);
             AssertException.Assert(!this.HasRepaired);
-            AssertException.Assert(GetGoldForHP(hp) < this.Player.Gold);
+            AssertException.Assert(this.Player.HasGold(GetGoldForHP(hp)));
 
             Player.Game.PushUndoCommand(new Game.UndoCommand<int>(
                     new Game.UndoMethod<int>(UndoGoldRepair), hp));
@@ -1648,7 +1652,7 @@ namespace GalWar
 
         private double GetGoldRepairTarget()
         {
-            return ( this.TotalCost * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
+            return ( this.GetCostLastResearch() * ( 1 - Consts.CostUpkeepPct ) / (double)this.MaxHP );
         }
 
         public int GetClassSort()

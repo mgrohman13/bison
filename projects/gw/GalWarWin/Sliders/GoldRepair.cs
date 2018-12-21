@@ -21,9 +21,9 @@ namespace GalWarWin.Sliders
         {
             this.ship = ship;
 
-            this.max = TBSUtil.FindValue(delegate(int hp)
+            this.max = TBSUtil.FindValue(delegate (int hp)
             {
-                return ( ship.GetGoldForHP(hp) < ship.Player.Gold );
+                return ship.Player.HasGold(ship.GetGoldForHP(hp));
             }, 0, ship.MaxHP - ship.HP, false);
         }
         public GoldRepair(int maxHP, double repairCost)
@@ -65,7 +65,7 @@ namespace GalWarWin.Sliders
 
         private int GetOptimalProd()
         {
-            return FindValue(delegate(int repair)
+            return FindValue(delegate (int repair)
             {
                 if (ship == null)
                     return Consts.GoldForProduction * this.repairCost * repair - Consts.GetGoldRepairCost(repair, this.maxHP, this.repairCost);
@@ -75,7 +75,7 @@ namespace GalWarWin.Sliders
 
         private int GetOptimalColony()
         {
-            return FindValue(delegate(int repair)
+            return FindValue(delegate (int repair)
             {
                 return ship.GetColonizationValue(repair) - ship.GetGoldForHP(repair);
             });
@@ -84,7 +84,7 @@ namespace GalWarWin.Sliders
         private delegate double FindValueDelegate(int value);
         private int FindValue(FindValueDelegate FindValue)
         {
-            return TBSUtil.FindValue(delegate(int value)
+            return TBSUtil.FindValue(delegate (int value)
             {
                 if (value < this.max)
                     return ( FindValue(value) > FindValue(value + 1) );

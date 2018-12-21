@@ -1924,7 +1924,7 @@ namespace GalWarWin
             {
                 double goldCost = planet.ColonizationCost;
                 string cost = FormatDouble(goldCost);
-                if (goldCost > ship.Player.Gold)
+                if (!ship.Player.HasGold(goldCost))
                 {
                     MessageBox.Show("You need " + cost + " gold to colonize this planet.");
                 }

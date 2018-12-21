@@ -989,7 +989,7 @@ namespace GalWar
                 gold = sell / Consts.ProductionForGold;
             }
 
-            return ( gold > 0 || ( Player.RoundGold(-gold) < Player.Gold && !( tradeStore > 0 && -gold * Consts.FLOAT_ERROR_ONE > Consts.GoldForProduction ) ) );
+            return ( gold > 0 || ( Player.HasGold(-gold) && !( tradeStore > 0 && -gold * Consts.FLOAT_ERROR_ONE > Consts.GoldForProduction ) ) );
         }
 
         public bool CanBuild(Buildable buildable)

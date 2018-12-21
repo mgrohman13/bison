@@ -997,7 +997,7 @@ namespace GalWar
             }
 
             //mult just ensures we don't overload 32 bit ints
-            double mult = 99 / max / max;
+            double mult = byte.MaxValue / max / max;
 
             Dictionary<Tile, int> chances = new Dictionary<Tile, int>();
             foreach (var pair in directions)

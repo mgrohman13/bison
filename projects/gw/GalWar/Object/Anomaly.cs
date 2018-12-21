@@ -208,7 +208,7 @@ namespace GalWar
                 }
                 avgDist /= totDist;
 
-                retVal.Add(player, Game.Random.Round(ushort.MaxValue / avgDist));
+                retVal.Add(player, Game.Random.Round(byte.MaxValue / avgDist));
             }
             return retVal;
         }
@@ -218,7 +218,7 @@ namespace GalWar
             var colonies = new Dictionary<Colony, int>();
             foreach (Colony colony in player.GetColonies())
             {
-                int weight = Game.Random.Round(GetColonyWeight(colony) * ushort.MaxValue / (double)Tile.GetDistance(this.Tile, colony.Tile));
+                int weight = Game.Random.Round(GetColonyWeight(colony) * byte.MaxValue / (double)Tile.GetDistance(this.Tile, colony.Tile));
                 colonies.Add(colony, weight);
                 total += weight;
             }
@@ -531,15 +531,15 @@ namespace GalWar
                 double before = Consts.GetColonizationCost(colony.Planet.PlanetValue, mult);
                 double after = Consts.GetColonizationCost(colony.Planet.PlanetValue + addQuality, mult);
                 cost = Player.RoundGold(after - before - this.value, true);
-            } while (cost > player.Gold && colonies.Any());
+            } while (!player.HasGold(cost) && colonies.Any());
 
             Planet retVal;
-            if (cost > player.Gold)
+            if (!player.HasGold(cost))
             {
                 retVal = null;
                 cost = double.NaN;
                 Dictionary<Planet, int> uncolonized = Tile.Game.GetPlanets().Where(planet => planet.Colony == null).ToDictionary(planet => planet,
-                        planet => Game.Random.Round(planet.PlanetValue * ushort.MaxValue / (double)Tile.GetDistance(this.Tile, planet.Tile)));
+                        planet => Game.Random.Round(planet.PlanetValue * byte.MaxValue / (double)Tile.GetDistance(this.Tile, planet.Tile)));
                 if (uncolonized.Any())
                     retVal = Game.Random.SelectValue(uncolonized);
             }

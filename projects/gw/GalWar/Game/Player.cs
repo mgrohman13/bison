@@ -601,7 +601,7 @@ namespace GalWar
         private double GetNegativeGoldMult()
         {
             double mult = 1;
-            if (this.goldValue < 0)
+            if (!HasGold(0))
             {
                 mult = this.goldOffset;
                 if (mult > 0)
@@ -787,8 +787,14 @@ namespace GalWar
             {
                 TurnException.CheckTurn(this);
 
-                return this.goldValue + .025;
+                return this.goldValue * Consts.FLOAT_ERROR_ONE;
             }
+        }
+        public bool HasGold(double value)
+        {
+            TurnException.CheckTurn(this);
+
+            return ( RoundGold(value) < Gold );
         }
         internal double TotalGold
         {
@@ -906,7 +912,6 @@ namespace GalWar
             foreach (Ship ship in this.ships)
                 gold -= ship.Upkeep;
 
-
             if (includeAll)
             {
                 gold += this.goldOffset;
@@ -1007,16 +1012,16 @@ namespace GalWar
             handler = new HandlerWrapper(handler, Game, false);
             TurnException.CheckTurn(this);
 
-            if (this.goldValue > 0)
+            if (!NegativeGold())
                 foreach (Ship ship in Game.Random.Iterate(this.ships))
                     if (ship.DoAutoRepair)
                     {
-                        double cost = this.goldValue / GetAutoRepairCost();
+                        double cost = this.Gold / GetAutoRepairCost();
                         if (cost < 1)
                             ship.AutoRepair = ship.GetAutoRepairForHP(ship.GetHPForGold(cost * ship.GetGoldForHP(ship.GetAutoRepairHP())));
 
                         int hp = Game.Random.Round(ship.GetAutoRepairHP());
-                        while (hp > 0 && ship.GetGoldForHP(hp) > this.Gold)
+                        while (hp > 0 && !this.HasGold(ship.GetGoldForHP(hp)))
                             --hp;
                         if (hp > 0)
                             ship.GoldRepair(handler, hp);
@@ -1045,8 +1050,8 @@ namespace GalWar
         private void AutoRepairIncome(ref double gold, bool minGold)
         {
             double repairCost = GetAutoRepairCost(minGold);
-            if (repairCost > Math.Max(this.goldValue, 0))
-                repairCost = Math.Max(this.goldValue, 0);
+            if (repairCost > Math.Max(this.Gold, 0))
+                repairCost = Math.Max(this.Gold, 0);
             gold -= repairCost;
         }
 

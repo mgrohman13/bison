@@ -108,7 +108,7 @@ namespace GalWarWin
             Dictionary<Buildable, int> trade = BuildTrade();
             double gold;
             this.colony.GetTradeProduction(trade, out gold);
-            if (-gold > colony.Player.Gold)
+            if (!colony.Player.HasGold(-gold))
             {
                 BuildableRow row = this.rows.OrderByDescending(r => r.GetDiff()).First();
                 Buildable build = row.Build;
@@ -116,7 +116,7 @@ namespace GalWarWin
                 {
                     trade[build] = value - build.Production;
                     this.colony.GetTradeProduction(trade, out gold);
-                    return ( -gold < colony.Player.Gold );
+                    return colony.Player.HasGold(-gold);
                 }, 0, build.Production + row.GetDiff(), false);
                 row.setValue(prod);
             }
