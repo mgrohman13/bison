@@ -54,8 +54,10 @@ namespace NCWMap
             //balance amt given to each tier including units
             if (Program.Random.Bool())
             {
-                if (Program.Random.Next(9) < 4)
-                    AddResource(0, 0, 6, ref resources);
+                int amt = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 1 }, { 2, 2 }, { 4, 3 } });
+                Console.WriteLine(amt);
+                if (amt > 0)
+                    AddResource(0, 0, amt, ref resources);
             }
             else
             {

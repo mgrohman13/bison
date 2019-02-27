@@ -23,6 +23,15 @@ namespace NCWMap
             Random.StartTick();
 
 
+            //int[] res = new int[7];
+            //for (int a = 0 ; a < 2430000 ; a++)
+            //{
+            //    int amt = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 1 }, { 2, 2 }, { 4, 3 } });
+            //    res[amt]++;
+            //}
+            //;
+
+
             //for (int att = 2 ; att <= 6 ; ++att)
             //    for (int def = 1 ; def <= 4 ; ++def)
             //        if (att >= def)
@@ -214,9 +223,9 @@ namespace NCWMap
 
 
             CreateTerrain();
+            CreateCitySpots();
             CreateResources();
             CreatePlayers();
-            CreateCitySpots();
         }
         //private static void AddPick(Tile tile, int idx, double amt)
         //{
@@ -256,7 +265,7 @@ namespace NCWMap
             //find the largest block
             Tile main = null;
             int count = int.MinValue;
-            foreach (Tile tile in EnumMap())
+            foreach (Tile tile in RandMap())
                 if (tile.Water == water && ( main == null || !CanReach(tile, main, water) ))
                 {
                     int cur = EnumMap().Count(t2 => t2.Water == water && CanReach(tile, t2, water));
@@ -264,6 +273,9 @@ namespace NCWMap
                     {
                         main = tile;
                         count = cur;
+                    }
+                    else if (count == cur)
+                    {
                     }
                 }
 
@@ -323,26 +335,24 @@ namespace NCWMap
             for (int a = 0 ; a < 2 ; ++a)
                 for (int x = 0 ; x < 3 ; ++x)
                     for (int y = 0 ; y < 3 ; ++y)
-                        CreateResource(GetSectorTile(x, y));
+                        CreateResource(() => GetSectorTile(x, y));
 
             //6 more randomly throughout map
             for (int b = 0 ; b < 6 ; ++b)
-                CreateResource(GetRandomTile());
+                CreateResource(() => GetRandomTile());
         }
-        private static void CreateResource(Tile tile)
+        private static void CreateResource(Func<Tile> getTile)
         {
-            int type, amt;
+            Tile tile;
+            int type = 0, amt = 0;
+            do
+                tile = getTile();
+            while (tile.Inf != null && !int.TryParse(tile.Inf[1], out type));
+
             if (tile.Inf == null)
-            {
                 type = Random.RangeInt(1, 3);
-                amt = 0;
-            }
             else
-            {
-                //we haven't placed anything else yet so the only tile info is another resource
-                type = int.Parse(tile.Inf[1]);
                 amt = int.Parse(tile.Inf[2]) * 6 + int.Parse(tile.Inf[3]);
-            }
 
             amt += GetResourceAmt();
 
@@ -368,7 +378,7 @@ namespace NCWMap
 
         private static void CreatePlayers()
         {
-            Dictionary<string, Tile> tiles = PlayerStartTiles(new[] { "GRN", "BLK", "PNK", "YLW", "BLE", "RED" });
+            Dictionary<string, Tile> tiles = PlayerStartTiles(new[] { "BLE", "BLK", "GRN", "PNK", "RED", "YLW" });
             PlayerResources(tiles);
         }
         private static Dictionary<string, Tile> PlayerStartTiles(string[] players)
