@@ -55,23 +55,30 @@ namespace NCWMap
             if (Program.Random.Bool())
             {
                 int amt = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 1 }, { 2, 2 }, { 4, 3 } });
-                Console.WriteLine(amt);
                 if (amt > 0)
+                {
+                    Console.WriteLine("T1: " + amt);
                     AddResource(0, 0, amt, ref resources);
+                }
             }
             else
             {
                 if (Program.Random.Next(3) < 1)
+                {
+                    Console.WriteLine("T2: 4");
                     AddResource(1, 0, 4, ref resources);
+                }
             }
 
             //give in chunks of whole units while possible
             while (resources >= 6)
             {
+                Console.WriteLine("resources: " + resources);
                 int tier = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 6 }, { 1, 3 }, { 2, 2 } });
                 AddResource(tier, 0, GetTierCost(tier), ref resources);
             }
             //remaining are evenly distributed
+            Console.WriteLine("last: " + resources);
             while (resources >= 1)
                 AddResource(Program.Random.Next(3), 0, 1, ref resources);
         }

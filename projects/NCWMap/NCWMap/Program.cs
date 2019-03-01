@@ -41,7 +41,7 @@ namespace NCWMap
             //                    if (divFlag == 0 && def == 2)
             //                        def = 3;
             //                    bool divDef = ( divFlag == 0 );
-            //                    double[] r = new double[26];
+            //                     double[] r = new double[26];
             //                    for (int attHP = 1 ; attHP <= (int)Math.Ceiling(def * 2.5) ; ++attHP)
             //                        r[-attHP + 10] = new BattleResult(att, def, divDef, attHP, 16).AttKill;
             //                    for (int defHP = 1 ; defHP <= (int)Math.Ceiling(att * 2.5) ; ++defHP)
@@ -134,9 +134,10 @@ namespace NCWMap
             //    r2[tier - 1] += tier * 12;
             //    for (int b = 0 ; b < 3 ; ++b)
             //    {
+            //        int r = res[b] / 6;
             //        int v;
-            //        dist[b].TryGetValue(res[b], out v);
-            //        dist[b][res[b]] = v + 1;
+            //        dist[b].TryGetValue(r, out v);
+            //        dist[b][r] = v + 1;
             //    }
             //}
             //total = 0;
@@ -151,10 +152,56 @@ namespace NCWMap
             Random.Dispose();
         }
 
+        private static int step, countWater;
+        public static bool DoStep()
+        {
+            switch (step)
+            {
+            case 0:
+                foreach (Tile tile in Map)
+                    tile.Water = ( Random.Next(3) == 0 );
+                Console.WriteLine("InitWater: " + EnumMap().Count(t => t.Water));
+                break;
+            case 1:
+                KeepLargest(false);
+                break;
+            case 2:
+                countWater = KeepLargest(true);
+                break;
+            case 3:
+                FillWater(countWater);
+                break;
+            case 4:
+                DoMore();
+                break;
+            case 5:
+                CreateCitySpots();
+                break;
+            case 6:
+                for (int a = 0 ; a < 2 ; ++a)
+                    for (int x = 0 ; x < 3 ; ++x)
+                        for (int y = 0 ; y < 3 ; ++y)
+                            CreateResource(() => GetSectorTile(x, y));
+                break;
+            case 7:
+                for (int b = 0 ; b < 6 ; ++b)
+                    CreateResource(() => GetRandomTile());
+                break;
+            case 8:
+                CreatePlayers();
+                break;
+            default:
+                return true;
+            }
+
+            step++;
+            return false;
+        }
+
         public static void DoMore()
         {
             int turn = 1, turns = Random.OEInt(39);
-            Console.WriteLine(turns);
+            Console.WriteLine("DoMore total: " + turns);
             while (turn <= turns)
             {
                 turn++;
@@ -181,7 +228,8 @@ namespace NCWMap
                     foreach (Point point in Random.Iterate(n1.Count, n2.Count))
                         if (TrySwap(n1[point.X], n2[point.Y]))
                         {
-                            Console.WriteLine(turn--);
+                            turn--;
+                            Console.WriteLine("DoMore: " + turn);
                             break;
                         }
                 }
@@ -221,11 +269,14 @@ namespace NCWMap
             //    if (tile.Inf.Length == 2)
             //        tile.Inf[0] = double.Parse(tile.Inf[0]).ToString("0.000");
 
+            Players = null;
+            InitMap();
+            step = 0;
 
-            CreateTerrain();
-            CreateCitySpots();
-            CreateResources();
-            CreatePlayers();
+            //CreateTerrain();
+            //CreateCitySpots();
+            //CreateResources();
+            //CreatePlayers();
         }
         //private static void AddPick(Tile tile, int idx, double amt)
         //{
@@ -276,13 +327,19 @@ namespace NCWMap
                     }
                     else if (count == cur)
                     {
+                        Console.WriteLine("KeepLargest tie: " + count);
                     }
                 }
 
             //remove all others
+            int removed = 0;
             foreach (Tile tile in Map)
                 if (tile.Water == water && !CanReach(tile, main, water))
+                {
+                    ++removed;
                     tile.Water = !water;
+                }
+            Console.WriteLine("KeepLargest removed: " + removed);
 
             return count;
         }
@@ -290,8 +347,10 @@ namespace NCWMap
         {
             int targetWater = Random.Round(18 * 18 / 3.0);
             bool water = true;
+            Console.WriteLine("FillWater: " + countWater + " (" + targetWater + ")");
             if (countWater > targetWater)
             {
+                Console.WriteLine("FillWater SWAP");
                 //we actually need land to creep in on the excess water instead
                 countWater = 18 * 18 - countWater;
                 targetWater = 18 * 18 - targetWater;
@@ -343,20 +402,31 @@ namespace NCWMap
         }
         private static void CreateResource(Func<Tile> getTile)
         {
-            Tile tile;
+            Tile tile = null;
             int type = 0, amt = 0;
             do
+            {
+                if (tile != null && tile.Inf != null)
+                    Console.WriteLine("CreateResource select: " + tile.Inf[0] + " (" + tile.X + "," + tile.Y + ")");
                 tile = getTile();
+            }
             while (tile.Inf != null && !int.TryParse(tile.Inf[1], out type));
 
-            if (tile.Inf == null)
+            bool isNew = ( tile.Inf == null );
+            if (isNew)
                 type = Random.RangeInt(1, 3);
             else
                 amt = int.Parse(tile.Inf[2]) * 6 + int.Parse(tile.Inf[3]);
 
+            if (!isNew)
+                Console.WriteLine("CreateResource add: " + amt + " (" + tile.X + "," + tile.Y + ")");
+
             amt += GetResourceAmt();
 
             tile.Inf = new string[] { "T", type.ToString(), ( amt / 6 ).ToString(), ( amt % 6 ).ToString() };
+
+            if (!isNew)
+                Console.WriteLine("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3]);
         }
         private static int GetResourceAmt()
         {
@@ -395,7 +465,10 @@ namespace NCWMap
                         break;
                     }
                 if (tile == null)
+                {
+                    Console.WriteLine("PlayerStartTiles RE-TRY");
                     return PlayerStartTiles(players);
+                }
 
                 result.Add(player, tile);
             }

@@ -135,8 +135,11 @@ namespace NCWMap
 
         private void ShowMap_Click(object sender, EventArgs e)
         {
-            Program.DoMore();
-            this.Refresh();
+            //Program.DoMore();
+            if (Program.DoStep())
+                MessageBox.Show("done");
+            else
+                this.Refresh();
         }
     }
 }
