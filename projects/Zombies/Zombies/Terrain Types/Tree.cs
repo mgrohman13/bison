@@ -7,7 +7,7 @@ namespace Zombies.Terrain_Types
         char cc = '!';
 
         public Tree(int x, int y)
-            : base(x, y,1)
+            : base(x, y, 1)
         {
             base.symbol = cc;
             base.view = 2;
@@ -22,7 +22,7 @@ namespace Zombies.Terrain_Types
 
         bool move()
         {
-            return (Program.rand.Next(2) == 0);
+            return ( Program.rand.Next(2) == 0 );
         }
 
         public override bool ZombieMove()
@@ -49,7 +49,7 @@ namespace Zombies.Terrain_Types
         {
             if (Program.rand.Next(39) == 0)
             {
-                Program.map[x, y] = new Rubble(x, y, true, Visible, Program.round(fire * 1.3));
+                Program.map[x, y] = new Rubble(x, y, Program.rand.Next(13) != 0, Visible, Program.round(fire * 1.3));
                 return true;
             }
             else if (Program.rand.Next(3) == 0)
@@ -57,15 +57,15 @@ namespace Zombies.Terrain_Types
                 Program.map[x, y] = new Floor(x, y, Visible, Program.round(fire * 2.1));
                 return true;
             }
-            else if (Program.rand.Next(39) == 0)
+            else if (Program.rand.Next(21) == 0)
                 fire--;
 
             return false;
         }
 
-		public override string ToString()
-		{
-			return "Tree";
-		}
-	}
+        public override string ToString()
+        {
+            return "Tree";
+        }
+    }
 }

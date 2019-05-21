@@ -10,7 +10,7 @@ namespace Zombies.Terrain_Types
         public int toMap;
 
         public Door(int x, int y, int map, int mapNum)
-            : base(x, y,5)
+            : base(x, y, 5)
         {
             base.symbol = cc;
             base.view = 3;
@@ -23,7 +23,7 @@ namespace Zombies.Terrain_Types
         }
 
         public Door(int x, int y, int map, int mapNum, bool add)
-            : base(x, y,6)
+            : base(x, y, 6)
         {
             base.symbol = Convert.ToChar(9553);
             base.view = 3;
@@ -37,7 +37,7 @@ namespace Zombies.Terrain_Types
         }
 
         public Door(int map, int mapNum)
-            : base(-1, -1,6)
+            : base(-1, -1, 6)
         {
             this.toMap = map;
             this.mapNum = mapNum;
@@ -74,9 +74,9 @@ namespace Zombies.Terrain_Types
             return false;
         }
 
-		public override string ToString()
-		{
-			return "Door";
-		}
-	}
+        public override string ToString()
+        {
+            return "Door";
+        }
+    }
 }

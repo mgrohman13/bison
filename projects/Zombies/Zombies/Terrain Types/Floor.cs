@@ -7,7 +7,7 @@ namespace Zombies.Terrain_Types
         char cc = ' ';
 
         public Floor(int x, int y)
-            : base(x, y,6)
+            : base(x, y, 6)
         {
             base.symbol = cc;
             base.view = 1;
@@ -30,7 +30,7 @@ namespace Zombies.Terrain_Types
         }
 
         public Floor(int x, int y, bool visible, int fire)
-            : base(x, y,6)
+            : base(x, y, 6)
         {
             base.symbol = cc;
             base.view = 1;
@@ -72,9 +72,9 @@ namespace Zombies.Terrain_Types
             return false;
         }
 
-		public override string ToString()
-		{
-			return "Floor";
-		}
-	}
+        public override string ToString()
+        {
+            return "Floor";
+        }
+    }
 }

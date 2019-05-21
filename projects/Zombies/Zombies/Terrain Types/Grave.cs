@@ -7,7 +7,7 @@ namespace Zombies.Terrain_Types
         char cc = Convert.ToChar(127);
 
         public Grave(int x, int y)
-            : base(x, y,3)
+            : base(x, y, 3)
         {
             base.symbol = cc;
             base.view = 2;
@@ -24,7 +24,7 @@ namespace Zombies.Terrain_Types
         {
             if (player)
             {
-                explore(1, 0, 0, 0, 0, 100);
+                explore(.91, 8, 2, 1, 0, 95);//    10.0    86.4
             }
 
             return true;
@@ -52,25 +52,25 @@ namespace Zombies.Terrain_Types
 
         public override bool fireStuff()
         {
-            if (Program.rand.Next(26) == 0)
-            {
-                Program.map[x, y] = new Rubble(x, y, true, Visible, Program.round(fire * 1.3));
-                return true;
-            }
-            else if (Program.rand.Next(39) == 0)
+            if (Program.rand.Next(39) == 0)
             {
                 Program.map[x, y] = new Floor(x, y, Visible, Program.round(fire * 2.1));
                 return true;
             }
-            else if (Program.rand.Next(3) != 0)
+            else if (Program.rand.Next(13) == 0)
+            {
+                Program.map[x, y] = new Rubble(x, y, Program.rand.Next(6) != 0, Visible, Program.round(fire * 1.3));
+                return true;
+            }
+            else if (Program.rand.Next(21) != 0)
                 fire--;
 
-           return false;
+            return false;
         }
 
-		public override string ToString()
-		{
-			return "Grave";
-		}
-	}
+        public override string ToString()
+        {
+            return "Grave";
+        }
+    }
 }

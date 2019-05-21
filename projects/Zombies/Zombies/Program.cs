@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Zombies.Terrain_Types;
 
@@ -46,6 +47,8 @@ namespace Zombies
             rand.StartTick();
 
             Console.CursorVisible = false;
+            Console.SetWindowSize(width, height + 4);
+            Console.SetBufferSize(width, height + 4);
 
             do
             {
@@ -59,7 +62,7 @@ namespace Zombies
                 exp = 0;
                 output = "";
 
-                newMap(1, 0);
+                newMap(-1, 0);
                 int index = maps.IndexOf(map);
                 zombies = new List<Zombie>();
                 createMap(0, 0);
@@ -607,7 +610,9 @@ _skip:
             map = new Terrain[width, height];
             zombies = new List<Zombie>();
 
-            int numDoors = round(1.3 + random(1.3));
+            int numDoors = round(1.5 + random(2));
+            if (numDoors == 1 && doors.Any() && doors.Select(d => d.toMap).Max() <= maps.Count)
+                numDoors = 2;
 
             for (int c = 1 ; c <= numDoors ; c++)
             {
@@ -812,7 +817,7 @@ _skip:
             int towers = round(random((double)width * (double)height / 666.0));
             for (int c = 0 ; c < towers ; c++)
             {
-                int x = rand.Next(width), y = rand.Next(height);
+                int x = rand.Next(width - 2) + 1, y = rand.Next(height - 2) + 1;
                 map[x, y] = new Tower(x, y);
             }
 

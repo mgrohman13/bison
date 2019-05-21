@@ -26,7 +26,7 @@ namespace Zombies.Terrain_Types
         {
             if (!explored && player)
             {
-                explore(1.3, 13, 13, 48, 3, 0);//    100.1    000.0
+                explore(1, 15, 25, 60, 2, 5);//    100.0    5.0
 
                 explored = true;
 
@@ -61,7 +61,7 @@ namespace Zombies.Terrain_Types
 
         public override bool fireStuff()
         {
-            if (Program.rand.Next(6) == 0)
+            if (Program.rand.Next(9) == 0)
             {
                 Program.map[x, y] = new Floor(x, y, Visible, fire);
                 return true;
@@ -72,9 +72,9 @@ namespace Zombies.Terrain_Types
             return false;
         }
 
-		public override string ToString()
-		{
-			return "Chest";
-		}
-	}
+        public override string ToString()
+        {
+            return "Chest";
+        }
+    }
 }

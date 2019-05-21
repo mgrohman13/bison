@@ -26,7 +26,7 @@ namespace Zombies.Terrain_Types
         {
             if (!explored && player)
             {
-                explore(3.9, 21, 13, 6, 3, 39);//    167.7,     152.1
+                explore(3.9, 20, 15, 10, 4, 40);//    175.5     156.0
 
                 explored = true;
 
@@ -61,12 +61,12 @@ namespace Zombies.Terrain_Types
 
         public override bool fireStuff()
         {
-            if (Program.rand.Next(6) == 0)
+            if (Program.rand.Next(9) == 0)
             {
-                Program.map[x, y] = new Rubble(x, y, explored, Visible, Program.round(fire * 2.1));
+                Program.map[x, y] = new Rubble(x, y, explored && Program.rand.Next(6) != 0, Visible, Program.round(fire * 2.1));
                 return true;
             }
-            else if (Program.rand.Next(13) == 0)
+            else if (Program.rand.Next(21) == 0)
                 fire--;
 
             return false;

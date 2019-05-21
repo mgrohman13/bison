@@ -7,7 +7,7 @@ namespace Zombies.Terrain_Types
         char cc = Convert.ToChar(9608);
 
         public Wall(int x, int y)
-            : base(x, y,6)
+            : base(x, y, 6)
         {
             base.symbol = cc;
             base.view = 3;
@@ -15,10 +15,10 @@ namespace Zombies.Terrain_Types
             color = ConsoleColor.Gray;
         }
 
-		public override bool CanMove()
-		{
-			return false;
-		}
+        public override bool CanMove()
+        {
+            return false;
+        }
 
         public override bool Move()
         {
@@ -37,14 +37,14 @@ namespace Zombies.Terrain_Types
 
         public override bool fireStuff()
         {
-            if (Program.rand.Next(13) == 0)
-            {
-                Program.map[x, y] = new Rubble(x, y, false, Visible, Program.round(fire * 1.3));
-                return true;
-            }
-            else if (Program.rand.Next(39) == 0)
+            if (Program.rand.Next(39) == 0)
             {
                 Program.map[x, y] = new Floor(x, y, Visible, Program.round(fire * 2.1));
+                return true;
+            }
+            else if (Program.rand.Next(13) == 0)
+            {
+                Program.map[x, y] = new Rubble(x, y, Program.rand.Next(13) == 0, Visible, Program.round(fire * 1.3));
                 return true;
             }
             else if (Program.rand.Next(10) != 0)
@@ -53,9 +53,9 @@ namespace Zombies.Terrain_Types
             return false;
         }
 
-		public override string ToString()
-		{
-			return "Wall";
-		}
-	}
+        public override string ToString()
+        {
+            return "Wall";
+        }
+    }
 }

@@ -10,7 +10,7 @@ namespace Zombies.Terrain_Types
         int range;
 
         public Tower(int x, int y)
-            : base(x, y,2)
+            : base(x, y, 2)
         {
             base.symbol = cc;
             base.view = 2;
@@ -63,7 +63,7 @@ namespace Zombies.Terrain_Types
             {
                 if (y != 0)
                     Program.map[x, y - 1].TowerTop(false);
-                Program.map[x, y] = new Rubble(x, y, explored, Visible, Program.round(fire * 2.1));
+                Program.map[x, y] = new Rubble(x, y, explored && Program.rand.Next(13) != 0, Visible, Program.round(fire * 2.1));
                 return true;
             }
             else if (Program.rand.Next(13) == 0)
@@ -72,9 +72,9 @@ namespace Zombies.Terrain_Types
             return false;
         }
 
-		public override string ToString()
-		{
-			return "Tower";
-		}
-	}
+        public override string ToString()
+        {
+            return "Tower";
+        }
+    }
 }

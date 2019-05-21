@@ -151,7 +151,7 @@ namespace Zombies
         }
         public void draw()
         {
-            if (Visible && invalidated)
+            if (invalidated)
             {
                 Console.SetCursorPosition(x, y);
                 Console.ForegroundColor = Color;
@@ -273,7 +273,7 @@ namespace Zombies
                     Program.map[x, y - 1].startFire();
 
                 if (fireStuff())
-                    return;
+                    break;
 
                 startFire();
             }
