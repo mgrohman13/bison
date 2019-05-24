@@ -53,6 +53,7 @@
     <Compile Include="Buildable\BuildShip.cs" />
     <Compile Include="Buildable\BuildSoldiers.cs" />
     <Compile Include="Buildable\PlanetDefense.cs" />
+    <Compile Include="Game\Wormhole.cs" />
     <Compile Include="Object\Anomaly.cs" />
     <Compile Include="Object\Combatant.cs" />
     <Compile Include="Buildable\StoreProd.cs" />

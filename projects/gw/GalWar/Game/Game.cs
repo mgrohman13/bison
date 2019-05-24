@@ -66,7 +66,7 @@ namespace GalWar
         private readonly List<Result> deadPlayers, winningPlayers;
 
         private readonly Dictionary<PointS, SpaceObject> _spaceObjects;
-        private readonly List<Tuple<PointS, PointS>> _teleporters;
+        private readonly List<Wormhole> _wormholes;
 
         [NonSerialized]
         private Stack<IUndoCommand> _undoStack;
@@ -100,7 +100,7 @@ namespace GalWar
 
                 this._spaceObjects = new Dictionary<PointS, SpaceObject>();
                 this.players = new List<Player>(numPlayers);
-                this._teleporters = new List<Tuple<PointS, PointS>>();
+                this._wormholes = new List<Wormhole>();
                 this.deadPlayers = new List<Result>(numPlayers - 1);
                 this.winningPlayers = new List<Result>(numPlayers - 1);
 
@@ -162,35 +162,25 @@ namespace GalWar
                 return this._spaceObjects.TryGetValue(GetPointS(x, y), out spaceObject);
             }
         }
-        public List<Tuple<Tile, Tile>> GetTeleporters()
+
+        public ReadOnlyCollection<Wormhole> GetWormholes()
         {
-            checked
-            {
-                return _teleporters.ConvertAll(teleporter => new Tuple<Tile, Tile>(
-                        GetTile(teleporter.Item1.X, teleporter.Item1.Y), GetTile(teleporter.Item2.X, teleporter.Item2.Y)));
-            }
+            return _wormholes.AsReadOnly();
         }
-        private void AddTeleporter(Tuple<Tile, Tile> teleporter)
+        private void AddWormhole(Wormhole wormhole)
         {
-            checked
-            {
-                this._teleporters.Add(GetPointSTeleporter(teleporter));
-            }
+            this._wormholes.Add(wormhole);
         }
-        private bool RemoveTeleporter(Tuple<Tile, Tile> teleporter)
+        private bool RemoveWormhole(Wormhole wormhole)
         {
-            checked
-            {
-                return this._teleporters.Remove(GetPointSTeleporter(teleporter));
-            }
+            return this._wormholes.Remove(wormhole);
         }
-        private static Tuple<PointS, PointS> GetPointSTeleporter(Tuple<Tile, Tile> teleporter)
+        private void SetWormholes(IEnumerable<Wormhole> wormholes)
         {
-            checked
-            {
-                return new Tuple<PointS, PointS>(GetPointS(teleporter.Item1), GetPointS(teleporter.Item2));
-            }
+            this._wormholes.Clear();
+            this._wormholes.AddRange(wormholes);
         }
+
         public Tile Center
         {
             get
@@ -291,15 +281,11 @@ namespace GalWar
 
         private void CreateSpaceObjects(int numPlayers, double planetPct)
         {
-            //temporary starting teleporters to space out initial map generation somewhat
-            double avgTeleporters = Math.Pow(MapSize, .26) / Math.PI;
-            int teleporters = Random.GaussianOEInt(avgTeleporters, .065, .065, ( ( avgTeleporters > 1 ) ? 1 : 0 ));
-            for (int a = 0 ; a < teleporters ; ++a)
-            {
-                Tile t1 = GetRandomTile(), t2 = GetRandomTile();
-                if (CanCreateTeleporter(t1, t2))
-                    CreateTeleporter(t1, t2);
-            }
+            //temporary starting wormholes to space out initial map generation somewhat
+            double avgWormholes = Math.Pow(MapSize, .26) / Math.PI;
+            int wormholes = Random.GaussianOEInt(avgWormholes, .065, .065, ( ( avgWormholes > 1 ) ? 1 : 0 ));
+            for (int a = 0 ; a < wormholes ; ++a)
+                CreateWormhole(GetRandomTile(), GetRandomTile());
 
             //first create homeworlds
             while (GetPlanets().Count < numPlayers)
@@ -335,8 +321,8 @@ namespace GalWar
             foreach (int id in Random.Iterate(numPlayers))
                 this.players.Add(new Player(id, this, players[id], GetHomeworld(startPop), startPop, startResearch));
             ShipNames.EndSetup();
-            //remove temporary starting teleporters to allow actual distance calculations
-            this._teleporters.Clear();
+            //remove temporary starting wormholes to allow actual distance calculations
+            SetWormholes(Enumerable.Empty<Wormhole>());
 
             //starting gold is based on the number and value of initial planets, must happen after GetHomeworld planet shuffling
             double startGold = Consts.StartGold;
@@ -684,9 +670,9 @@ namespace GalWar
             CheckResearchVictory();
             var anomalies = CreateAnomalies().Select(anomaly => anomaly.Tile);
             AdjustCenter(1 / (double)this.players.Count);
-            var removed = RemoveTeleporters();
+            var removed = RemoveWormhole();
             if (removed != null)
-                anomalies = anomalies.Concat(new[] { removed.Item1, removed.Item2 });
+                anomalies = anomalies.Concat(removed);
             AdjustAvgResearch();
 
             if (++this.currentPlayer >= this.players.Count)
@@ -787,60 +773,110 @@ namespace GalWar
             }
         }
 
-        private Tuple<Tile, Tile> RemoveTeleporters()
+        private IEnumerable<Tile> RemoveWormhole()
         {
-            List<Tuple<Tile, Tile>> teleporters = GetTeleporters();
-            if (teleporters.Count > 0)
+            IEnumerable<Wormhole> wormholes = GetWormholes();
+            int count = wormholes.Sum(w => w.Tiles.Count());
+            if (count > 0)
             {
-                double chance = teleporters.Count / ( 65.0 + teleporters.Count );
+                double chance = count / ( 130.0 + count );
                 if (PlayerTurnChance(chance))
-                {
-                    var remove = Random.SelectValue(teleporters);
-                    RemoveTeleporter(remove);
-                    return remove;
-                }
+                    return RemoveWormholeExit(Random.SelectValue(wormholes));
             }
             return null;
         }
-
-        internal bool CreateTeleporter(IEventHandler handler, Tile tile, Tile target, Ship anomShip)
+        private List<Tile> RemoveWormholeExit(Wormhole wormhole)
         {
-            double chance = GetTeleporters().Count + 1.3;
-            //check if the tiles are too close to be useful or if either tile already has a teleporter
-            if (CanCreateTeleporter(tile, target) && Random.Bool(Math.Pow(1.0 / chance, 1.69)))
+            List<Tile> removed = wormhole.Tiles.ToList();
+            if (wormhole.Remove())
+                RemoveWormhole(wormhole);
+            else
+                ;
+            return removed;
+        }
+
+        internal bool CreateWormhole(IEventHandler handler, Tile tile, Tile target, Ship anomShip)
+        {
+            double chance = GetWormholes().Sum(w => w.Tiles.Count());
+            chance = Math.Pow(2.1 / ( 2.6 + chance ), 1.69);
+            if (tile.Wormhole != null || target.Wormhole != null)
+                chance = 1;
+            if (tile != target && ( tile.Wormhole == null || tile.Wormhole != target.Wormhole ) && Random.Bool(chance))
             {
+                //check if any tiles are next to each other
+                var all = new Tile[] { tile, target }.SelectMany(t =>
+                {
+                    IEnumerable<Tile> ret = new Tile[] { t };
+                    if (t.Wormhole != null)
+                        ret = ret.Concat(t.Wormhole.Tiles);
+                    return ret;
+                });
+                foreach (Tile t1 in all)
+                    foreach (Tile t2 in all)
+                        if (t1 != t2 && Tile.IsRawNeighbor(t1, t2.X, t2.Y))
+                            return false;
+
+                List<Wormhole> old = GetWormholes().ToList();
+                Dictionary<SpaceObject, HashSet<SpaceObject>> before = Anomaly.GetAttInv(this);
+
+                CreateWormhole(tile, target);
+
+                bool valid = true;
                 //check this will not make any planets be too close
                 HashSet<Planet> planets = GetPlanets();
                 foreach (Planet p1 in planets)
-                {
-                    int dist = Consts.PlanetDistance - Tile.GetDistance(tile, p1.Tile);
-                    if (dist > 0)
-                        foreach (Planet p2 in planets)
-                            if (p1 != p2 && Tile.GetDistance(target, p2.Tile) < dist)
-                                return false;
-                }
-
+                    foreach (Planet p2 in planets)
+                        if (p1 != p2 && Tile.GetDistance(p1.Tile, p2.Tile) <= Consts.PlanetDistance)
+                        {
+                            valid = false;
+                            break;
+                        }
                 //check and make sure enemies cannot be attacked/invaded
-                Dictionary<SpaceObject, HashSet<SpaceObject>> before = Anomaly.GetAttInv(this);
-                Tuple<Tile, Tile> teleporter = CreateTeleporter(tile, target);
-                if (Anomaly.ValidateChange(before, anomShip))
+                if (valid)
+                {
+                    valid = Anomaly.ValidateChange(before, anomShip);
+                    if (valid)
+                        ;
+                    else
+                        ;
+                }
+                else
+                    ;
+
+                if (valid)
                     return true;
                 else
-                    RemoveTeleporter(teleporter);
+                    SetWormholes(old);
             }
-            else if (!CanCreateTeleporter(tile, target))
+            else if (!( tile != target ))
                 ;
+            else if (!( tile.Wormhole == null || tile.Wormhole != target.Wormhole ))
+            {
+                if (tile.Wormhole == null)
+                    ;
+                else
+                    ;
+                if (target.Wormhole == null)
+                    ;
+                else
+                    ;
+            }
             return false;
         }
-        private static bool CanCreateTeleporter(Tile tile, Tile target)
+        private void CreateWormhole(Tile t1, Tile t2)
         {
-            return ( Tile.GetDistance(tile, target) > 1 && tile.Teleporter == null && target.Teleporter == null );
-        }
-        private Tuple<Tile, Tile> CreateTeleporter(Tile t1, Tile t2)
-        {
-            var teleporter = new Tuple<Tile, Tile>(t1, t2);
-            AddTeleporter(teleporter);
-            return teleporter;
+            IEnumerable<Wormhole> merge = GetWormholes().Where(w => w.Tiles.Contains(t1) || w.Tiles.Contains(t2)).ToList();
+
+            IEnumerable<Tile> tiles = new Tile[] { t1, t2 };
+            tiles = tiles.Union(merge.SelectMany(w => w.Tiles)).Distinct().ToList();
+
+            foreach (Wormhole r in merge)
+                RemoveWormhole(r);
+
+            int turn = this.Turn;
+            if (merge.Any())
+                turn = merge.Min(w => w.CreatedTurn);
+            AddWormhole(new Wormhole(tiles, turn));
         }
 
         internal Planet CreateAnomalyPlanet(IEventHandler handler, Anomaly anomaly)
@@ -1032,16 +1068,13 @@ namespace GalWar
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, tile);
             foreach (SpaceObject spaceObject in GetSpaceObjects())
                 FindBounds(ref minX, ref minY, ref maxX, ref maxY, spaceObject.Tile);
-            FindTeleporterBounds(ref minX, ref minY, ref maxX, ref maxY);
+            FindWormholeBounds(ref minX, ref minY, ref maxX, ref maxY);
             return new Rectangle(minX, minY, maxX - minX, maxY - minY);
         }
-        private void FindTeleporterBounds(ref int minX, ref int minY, ref int maxX, ref int maxY)
+        private void FindWormholeBounds(ref int minX, ref int minY, ref int maxX, ref int maxY)
         {
-            foreach (Tuple<Tile, Tile> teleporter in GetTeleporters())
-            {
-                FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item1);
-                FindBounds(ref minX, ref minY, ref maxX, ref maxY, teleporter.Item2);
-            }
+            foreach (Tile wormhole in GetWormholes().SelectMany(w => w.Tiles))
+                FindBounds(ref minX, ref minY, ref maxX, ref maxY, wormhole);
         }
         private static void FindBounds(ref int minX, ref int minY, ref int maxX, ref int maxY, Tile tile)
         {
@@ -1062,7 +1095,7 @@ namespace GalWar
         public IEnumerable<Tile> GetDistanceTiles(Tile center, int dist)
         {
             int minX = center.X, minY = center.Y, maxX = center.X, maxY = center.Y;
-            FindTeleporterBounds(ref minX, ref minY, ref maxX, ref maxY);
+            FindWormholeBounds(ref minX, ref minY, ref maxX, ref maxY);
             minX -= dist;
             minY -= dist;
             maxX += dist;
@@ -1070,7 +1103,7 @@ namespace GalWar
 
             //Expected iterations per returned value is i=n/(3*(SQRT(n)-1)) where n=(maxX-minX+1)*(maxY-minY+1), or O(SQRT(n)).
             //Because n is O(dist^2), the operation time to return a single value from this loop, i, is O(dist).
-            //Teleporters may increase the value of n with respect to dist, but reduce i with respect to values of n.
+            //Wormholes may increase the value of n with respect to dist, but reduce i with respect to values of n.
             foreach (Point p in Random.Iterate(minX, maxX, minY, maxY))
             {
                 Tile test = GetTile(p);
@@ -1084,6 +1117,9 @@ namespace GalWar
             double avgResearch = this.players.Average(player => ( 2 * player.ResearchDisplay + 6 * player.Research + 13 * player.GetLastResearched() ) / 21.0);
             //adjust AvgResearch by the average player income at maximum emphasis every full turn round
             double add = players.Average(player => player.GetTotalIncome()) * Consts.EmphasisValue / ( Consts.EmphasisValue + 2.0 ) / players.Count();
+            //Console.WriteLine("this.AvgResearch " + this.AvgResearch.ToString(".000").PadLeft(10));
+            //Console.WriteLine("avgResearch      " + avgResearch.ToString(".000").PadLeft(10));
+            //Console.WriteLine("add              " + ( Math.Sign(avgResearch - this.AvgResearch) * add ).ToString(".000").PadLeft(10));
             this.AvgResearch += Math.Sign(avgResearch - this.AvgResearch) * Random.Gaussian(add, Consts.ResearchRndm);
         }
 
@@ -1104,6 +1140,21 @@ namespace GalWar
         {
             Game game = TBSUtil.LoadGame<Game>(filePath);
             game.OnDeserialization();
+
+            //game._wormholes = new List<GalWar.Wormhole>();
+            //int v = Random.OEInt(13);
+            //for (int a = 0 ; a < v ; ++a)
+            //{
+            //    Tile t;
+            //    if (game.GetWormholes().Any() && Random.Bool())
+            //        t = Random.SelectValue(game.GetWormholes().SelectMany(w => w.Tiles));
+            //    else
+            //        t = game.GetRandomTile();
+            //    game.CreateWormhole(null, game.GetRandomTile(), t, Random.SelectValue(game.GetSpaceObjects().OfType<Ship>()));
+            //    if (Random.Bool())
+            //        game.RemoveWormhole();
+            //}
+
             return game;
         }
         private void OnDeserialization()

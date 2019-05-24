@@ -116,8 +116,8 @@ namespace GalWarWin
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left )
-                        | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.chkSmooth);
             this.groupBox1.Controls.Add(this.checkBox1);
             this.groupBox1.Controls.Add(this.cbxType);
@@ -132,7 +132,7 @@ namespace GalWarWin
             // 
             // chkSmooth
             // 
-            this.chkSmooth.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.chkSmooth.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkSmooth.Location = new System.Drawing.Point(850, 73);
             this.chkSmooth.Name = "chkSmooth";
             this.chkSmooth.Size = new System.Drawing.Size(130, 21);
@@ -144,7 +144,7 @@ namespace GalWarWin
             // 
             // checkBox1
             // 
-            this.checkBox1.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox1.Location = new System.Drawing.Point(850, 46);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(130, 21);
@@ -155,7 +155,7 @@ namespace GalWarWin
             // 
             // cbxType
             // 
-            this.cbxType.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.cbxType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbxType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxType.FormattingEnabled = true;
             this.cbxType.Location = new System.Drawing.Point(850, 19);
@@ -166,7 +166,7 @@ namespace GalWarWin
             // 
             // btnDone
             // 
-            this.btnDone.Anchor = ( (System.Windows.Forms.AnchorStyles)( ( System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right ) ) );
+            this.btnDone.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDone.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnDone.Location = new System.Drawing.Point(905, 653);
             this.btnDone.Name = "btnDone";
@@ -203,6 +203,7 @@ namespace GalWarWin
             this.Controls.Add(this.label7);
             this.Name = "GraphsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.SizeChanged += new System.EventHandler(this.GraphsForm_SizeChanged);
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
 

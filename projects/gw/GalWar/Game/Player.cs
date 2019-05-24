@@ -29,7 +29,7 @@ namespace GalWar
         private ushort _newResearch;
         private int _goldValue;
         private uint _research, _lastResearched;
-        private float _rDisp, _rDispTrg, _rDispChange, _incomeTotal;
+        private float _rDisp, _rDispTrg, _rDispChange, _lastAvgResearch, _incomeTotal;
         private double _goldOffset;
 
         [NonSerialized]
@@ -329,6 +329,19 @@ namespace GalWar
                 }
             }
         }
+        public double LastAvgResearch
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this._lastAvgResearch;
+            }
+            private set
+            {
+                this._lastAvgResearch = (float)value;
+            }
+        }
 
         public double IncomeTotal
         {
@@ -578,6 +591,8 @@ namespace GalWar
         internal void EndTurn(IEventHandler handler)
         {
             AutoRepairShips(handler);
+
+            this.LastAvgResearch = Game.AvgResearch;
 
             //set a constant negativeGoldMult so income always matches what was displayed at turn end
             this.negativeGoldMult = GetNegativeGoldMult();

@@ -184,12 +184,14 @@ namespace GalWar
 
         private Tile GetRandomTile(Ship anomShip, int move)
         {
+            var anomalies = Enumerable.Empty<Tile>();
             if (Game.Random.Bool())
-            {
-                var anomalies = Tile.Game.GetSpaceObjects().OfType<Anomaly>();
-                if (anomalies.Any())
-                    return MoveTile(Game.Random.SelectValue(anomalies).Tile, 2.1, anomShip, move);
-            }
+                anomalies = anomalies.Union(Tile.Game.GetSpaceObjects().OfType<Anomaly>().Select(a => a.Tile));
+            if (Game.Random.Bool())
+                anomalies = anomalies.Union(Tile.Game.GetWormholes().SelectMany(w => w.Tiles));
+
+            if (anomalies.Any())
+                return MoveTile(Game.Random.SelectValue(anomalies), 2.1, anomShip, move);
             return Tile.Game.GetRandomTile();
         }
 
@@ -763,7 +765,7 @@ namespace GalWar
             if (Game.Random.Bool())
                 any |= PushShip(handler, anomShip, move);
             if (Game.Random.Bool())
-                any |= CreateTeleporter(handler, anomShip, move);
+                any |= CreateWormhole(handler, anomShip, move);
             if (Game.Random.Bool())
                 any |= PullIn(handler, anomShip, move);
             if (Game.Random.Bool())
@@ -897,9 +899,9 @@ namespace GalWar
             return Tile.Game.GetRandomTile(tile, avg);
         }
 
-        private bool CreateTeleporter(IEventHandler handler, Ship anomShip, int move)
+        private bool CreateWormhole(IEventHandler handler, Ship anomShip, int move)
         {
-            return Tile.Game.CreateTeleporter(handler, this.Tile, GetRandomTile(anomShip, move), anomShip);
+            return Tile.Game.CreateWormhole(handler, this.Tile, GetRandomTile(anomShip, move), anomShip);
         }
 
         internal static bool ValidateChange(Dictionary<SpaceObject, HashSet<SpaceObject>> beforeAttInv, Ship anomShip)

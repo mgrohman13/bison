@@ -27,10 +27,10 @@ namespace GalWar
                     if (IsRawNeighbor(tile, x2, y2))
                         neighbors.Add(tile.Game.GetTile(x2, y2));
                 }
-            //add teleport destination if there is one
-            Tile teleporter = tile.Teleporter;
-            if (teleporter != null)
-                neighbors.Add(teleporter);
+            //add wormhole destination if there is one
+            Wormhole wormhole = tile.Wormhole;
+            if (wormhole != null)
+                neighbors.UnionWith(wormhole.Tiles.Except(new Tile[] { tile }));
             return neighbors;
         }
 
@@ -39,7 +39,16 @@ namespace GalWar
             AssertException.Assert(tile1 != null);
             AssertException.Assert(tile2 != null);
 
-            return ( IsRawNeighbor(tile1, tile2.X, tile2.Y) || tile1.Teleporter == tile2 );
+            bool isNeighbor = IsRawNeighbor(tile1, tile2.X, tile2.Y);
+            if (!isNeighbor && tile1 != tile2)
+            {
+                Wormhole wormhole = tile1.Wormhole;
+                if (wormhole != null)
+                    isNeighbor = wormhole.Tiles.Contains(tile2);
+            }
+            else if (tile1 == tile2)
+                ;
+            return isNeighbor;
         }
 
         public static int GetDistance(Tile tile1, Tile tile2)
@@ -47,40 +56,46 @@ namespace GalWar
             AssertException.Assert(tile1 != null);
             AssertException.Assert(tile2 != null);
 
-            return GetDistance(tile1.X, tile1.Y, tile2.X, tile2.Y, tile1.Game.GetTeleporters());
+            return GetDistance(tile1.X, tile1.Y, tile2.X, tile2.Y, tile1.Game.GetWormholes());
         }
 
-        private static bool IsRawNeighbor(Tile tile, int x2, int y2)
+        public static bool IsRawNeighbor(Tile tile, int x2, int y2)
         {
             return ( GetRawDistance(tile.X, tile.Y, x2, y2) == 1 );
         }
-        private static int GetDistance(int x1, int y1, int x2, int y2, ICollection<Tuple<Tile, Tile>> teleporters)
+        private static int GetDistance(int x1, int y1, int x2, int y2, ICollection<Wormhole> wormholes)
         {
             int dist = GetRawDistance(x1, y1, x2, y2);
-            if (dist > 1 && teleporters != null && teleporters.Count > 0)
+            if (dist > 1 && wormholes != null && wormholes.Count > 0)
             {
-                ICollection<Tuple<Tile, Tile>> subset = null;
-                if (teleporters.Count > 1)
-                    subset = new HashSet<Tuple<Tile, Tile>>(teleporters);
-                foreach (var teleporter in teleporters)
+                ICollection<Wormhole> subset = null;
+                if (wormholes.Count > 1)
+                    subset = new HashSet<Wormhole>(wormholes);
+                foreach (var wormhole in wormholes)
                 {
                     if (subset != null)
-                        subset.Remove(teleporter);
-                    dist = Math.Min(dist, GetTeleporterDistance(x1, y1, x2, y2, teleporter, dist, subset));
-                    if (dist > 1)
-                        dist = Math.Min(dist, GetTeleporterDistance(x2, y2, x1, y1, teleporter, dist, subset));
+                        subset.Remove(wormhole);
+                    dist = Math.Min(dist, GetWormholeDistance(x1, y1, x2, y2, wormhole, dist, subset));
                     if (dist == 1)
-                        break;
+                        return 1;
                 }
             }
             return dist;
         }
-        private static int GetTeleporterDistance(int x1, int y1, int x2, int y2, Tuple<Tile, Tile> teleporter, int cutoff, ICollection<Tuple<Tile, Tile>> teleporters)
+        private static int GetWormholeDistance(int x1, int y1, int x2, int y2, Wormhole wormhole, int minDist, ICollection<Wormhole> subset)
         {
-            int dist = 1 + GetDistance(x1, y1, teleporter.Item1.X, teleporter.Item1.Y, teleporters);
-            if (dist < cutoff)
-                dist += GetDistance(x2, y2, teleporter.Item2.X, teleporter.Item2.Y, teleporters);
-            return dist;
+            foreach (Tile t1 in wormhole.Tiles)
+            {
+                int dist = 1 + GetDistance(x1, y1, t1.X, t1.Y, subset);
+                if (dist < minDist)
+                {
+                    dist += wormhole.Tiles.Min(t2 => t1 == t2 ? minDist : GetDistance(x2, y2, t2.X, t2.Y, subset));
+                    if (dist == 1)
+                        return 1;
+                    minDist = Math.Min(minDist, dist);
+                }
+            }
+            return minDist;
         }
         private static int GetRawDistance(int x1, int y1, int x2, int y2)
         {
@@ -187,33 +202,31 @@ namespace GalWar
 
         #region public
 
-        public Tile Teleporter
+        public Wormhole Wormhole
         {
             get
             {
                 int index;
-                return GetTeleporter(out index);
+                return GetWormhole(out index);
             }
         }
-        public int TeleporterNumber
+        public int WormholeNumber
         {
             get
             {
                 int index;
-                GetTeleporter(out index);
+                GetWormhole(out index);
                 return index;
             }
         }
-        private Tile GetTeleporter(out int number)
+        private Wormhole GetWormhole(out int number)
         {
             number = 0;
-            foreach (Tuple<Tile, Tile> teleporter in Game.GetTeleporters())
+            foreach (Wormhole wormhole in Game.GetWormholes())
             {
                 ++number;
-                if (teleporter.Item1 == this)
-                    return teleporter.Item2;
-                else if (teleporter.Item2 == this)
-                    return teleporter.Item1;
+                if (wormhole.Tiles.Contains(this))
+                    return wormhole;
             }
 
             number = -1;

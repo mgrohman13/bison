@@ -24,8 +24,6 @@ namespace GalWarWin
 
         private int y;
 
-        private static Dictionary<Player, double> lastAvgResearch = new Dictionary<Player, double>();
-
         List<int> researchLines = new List<int>();
 
         private GraphsForm()
@@ -122,10 +120,9 @@ namespace GalWarWin
                 y += 26;
             }
 
-            double avgResearch = MainForm.Game.AvgResearch, lastAvgResearch;
-            GraphsForm.lastAvgResearch.TryGetValue(MainForm.Game.CurrentPlayer, out lastAvgResearch);
-            labels[7, players.Count] = NewLabel(researchX, y, string.Format("{0}" // ({1})"
-                    , MainForm.FormatDouble(avgResearch), MainForm.FormatIncome(avgResearch - lastAvgResearch)), Color.Transparent);
+            double avgResearch = MainForm.Game.AvgResearch, lastAvgResearch = MainForm.Game.CurrentPlayer.LastAvgResearch;
+            labels[7, players.Count] = NewLabel(researchX, y, string.Format("{0} ({1})",
+                    MainForm.FormatInt(avgResearch), MainForm.FormatIncome(avgResearch - lastAvgResearch)), Color.Transparent);
             y += 26;
 
             this.GraphsForm_SizeChanged(null, null);
@@ -512,11 +509,6 @@ namespace GalWarWin
             }
         }
 
-        public static void UpdateAvgResearched(Player player)
-        {
-            lastAvgResearch[player] = player.Game.AvgResearch;
-        }
-
         public static void ShowForm()
         {
             form.Location = MainForm.GameForm.Location;
@@ -531,8 +523,8 @@ namespace GalWarWin
 
         private void GraphsForm_SizeChanged(object sender, EventArgs e)
         {
-            groupBox1.Height = this.ClientSize.Height - y - 13;
-            groupBox1.Location = new Point(groupBox1.Location.X, y + 13);
+            groupBox1.Height = this.ClientSize.Height - y;
+            groupBox1.Location = new Point(groupBox1.Location.X, y);
             RefreshGraph();
         }
 

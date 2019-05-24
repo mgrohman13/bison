@@ -314,7 +314,7 @@ namespace GalWarWin
                     HashSet<Tile> drawTiles = new HashSet<Tile>();
                     if (selected != null)
                         drawTiles.Add(selected);
-                    drawTiles.UnionWith(Game.GetTeleporters().SelectMany(teleporter => new[] { teleporter.Item1, teleporter.Item2 }));
+                    drawTiles.UnionWith(Game.GetWormholes().SelectMany(wormhole => wormhole.Tiles));
                     if (isDialog && dialogTile != null)
                     {
                         drawTiles.Add(dialogTile);
@@ -429,13 +429,13 @@ namespace GalWarWin
                 SpaceObject spaceObject = tile.SpaceObject;
                 RectangleF rect = GetDrawRect(x, y);
 
-                int telNum = tile.TeleporterNumber;
+                int telNum = tile.WormholeNumber;
                 if (telNum > 0)
                 {
                     Brush brush = Brushes.DarkGray;
-                    if (Game.GetTeleporters().Count > 1)
+                    if (Game.GetWormholes().Count > 1)
                     {
-                        float telCount = Game.GetTeleporters().Count + 1f;
+                        float telCount = Game.GetWormholes().Count + 1f;
                         float min = 520f / telCount / telCount;
                         int color = (int)( .5f + min + telNum * ( 255f - min ) / telCount );
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
@@ -1344,7 +1344,6 @@ namespace GalWarWin
                     if (ship.GetRepairedFrom() != null)
                         check.Add(ship);
 
-                GraphsForm.UpdateAvgResearched(Game.CurrentPlayer);
                 IEnumerable<Tile> anomalies = Game.EndTurn(this);
 
                 foreach (Ship ship in check)
@@ -2123,14 +2122,31 @@ namespace GalWarWin
             Tile selected = GetSelectedTile();
             if (selected != null)
             {
-                Tile teleporter = selected.Teleporter;
-                if (teleporter != null)
+                Wormhole wormhole = selected.Wormhole;
+                if (wormhole != null)
                 {
-                    Tile center = GetTile(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
-                    if (Math.Abs(teleporter.X - center.X) + Math.Abs(teleporter.Y - center.Y) < 3 || !SelectedVisible())
-                        teleporter = selected;
+                    Tile next = null;
+                    foreach (Tile t in wormhole.Tiles)
+                        if (next == null)
+                        {
+                            if (t == selected)
+                                next = selected;
+                        }
+                        else
+                        {
+                            next = t;
+                            break;
+                        }
+                    if (next == null || next == selected)
+                        next = wormhole.Tiles.First(t => t != selected);
 
-                    Center(teleporter);
+                    Tile center = GetTile(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
+                    if (Math.Abs(next.X - center.X) + Math.Abs(next.Y - center.Y) < 3 || !SelectedVisible())
+                        next = selected;
+
+                    SelectTile(next);
+                    Center(next);
+                    RefreshSelectedInfo();
                     InvalidateMap();
                 }
             }
@@ -2354,8 +2370,15 @@ namespace GalWarWin
                     player = PlanetInfo(planet);
                 else if (anomaly != null)
                     AnomalyInfo(anomaly);
+                else if (selected.Wormhole != null)
+                {
+                    lbl1.Text = "Exits";
+                    lbl1Inf.Text = selected.Wormhole.Tiles.Count().ToString();
+                    lbl2.Text = "Age";
+                    lbl2Inf.Text = ( Game.Turn - selected.Wormhole.CreatedTurn ).ToString();
+                }
 
-                int telNum = selected.TeleporterNumber;
+                int telNum = selected.WormholeNumber;
                 if (telNum > 0)
                     lblTop.Text = "Wormhole " + telNum + ( lblTop.Text.Length > 0 ? " - " + lblTop.Text : string.Empty );
 
