@@ -71,7 +71,8 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
             this.Name = "Dialog";
-            this.Text = "Dialog";
+            this.Text = "New Count";
+            this.Shown += new System.EventHandler(this.Dialog_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

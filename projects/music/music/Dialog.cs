@@ -16,5 +16,11 @@ namespace music
         {
             InitializeComponent();
         }
+
+        private void Dialog_Shown(object sender, EventArgs e)
+        {
+            textBox1.Focus();
+            textBox1.SelectAll();
+        }
     }
 }

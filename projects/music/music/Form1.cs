@@ -99,11 +99,8 @@ namespace music
 
                 Refresh1();
                 dataGridView1.Columns[0].ReadOnly = false;
-                dataGridView1.Columns[0].SortMode = DataGridViewColumnSortMode.Automatic;
                 dataGridView1.Columns[1].ReadOnly = true;
-                dataGridView1.Columns[1].SortMode = DataGridViewColumnSortMode.Automatic;
-
-                //dataGridView1.Sort(dataGridView1.Columns[1], ListSortDirection.Ascending);
+                dataGridView1.Columns[2].ReadOnly = true;
 
                 Refresh2();
             }
@@ -117,7 +114,6 @@ namespace music
         {
             int num = (int)dataGridView2.Rows[e.RowIndex].Cells[0].Value;
             d.textBox1.Text = num.ToString();
-            d.textBox1.SelectAll();
             if (d.ShowDialog() == DialogResult.OK)
             {
                 int newVal;
@@ -142,7 +138,7 @@ namespace music
         private void button2_Click(object sender, EventArgs e)
         {
             this.progressBar1.Value = 0;
-            this.progressBar1.Maximum = songs.Count;
+            this.progressBar1.Maximum = songs.Values.Sum(s => Math.Abs(s.files.Count - s.copies));
             this.progressBar1.Visible = true;
             this.progressBar1.Refresh();
 
@@ -159,6 +155,9 @@ namespace music
                     s.files.Remove(sf);
                     files.Remove(sf.num);
                     cur--;
+
+                    this.progressBar1.Value++;
+                    this.progressBar1.Refresh();
                 }
 
                 while (cur < tar)
@@ -193,10 +192,10 @@ namespace music
 
                     min = Math.Min(min, val);
                     max = Math.Max(max, val);
-                }
 
-                this.progressBar1.Value++;
-                this.progressBar1.Refresh();
+                    this.progressBar1.Value++;
+                    this.progressBar1.Refresh();
+                }
             }
 
             button1_Click(sender, e);
@@ -212,9 +211,12 @@ namespace music
         }
         private string NewPath(SongFile sf, int newNum)
         {
-            return this.dir + newNum.ToString(new string('0', this.numSize)) + "_ " + sf.song.name + Path.GetExtension(sf.path);
+            return this.dir + FormatNum(newNum) + "_ " + sf.song.name + Path.GetExtension(sf.path);
         }
-
+        private string FormatNum(int num)
+        {
+            return num.ToString(new string('0', this.numSize));
+        }
 
         private void Refresh1()
         {
@@ -222,9 +224,10 @@ namespace music
         }
         private void Refresh2()
         {
-            dataGridView2.DataSource = songs.Values.GroupBy(s => s.Copies).Select(g => new Tuple<int, int>(g.Key, g.Count())).OrderBy(t => t.Item1).ToList();
+            dataGridView2.DataSource = songs.Values.GroupBy(s => s.Copies).Select(g => new Tuple<int, int, int>(g.Key, g.Count(), g.Key * g.Count())).OrderBy(t => t.Item1).ToList();
             dataGridView2.Columns[0].HeaderText = "Group";
             dataGridView2.Columns[1].HeaderText = "Songs";
+            dataGridView2.Columns[2].HeaderText = "Total";
         }
 
         private void Form1_MouseWheel(object sender, MouseEventArgs e)
@@ -284,6 +287,14 @@ namespace music
                 get
                 {
                     return name;
+                }
+            }
+
+            public string Numbers
+            {
+                get
+                {
+                    return files.Select(sf => sf.num).OrderBy(n => n).Select(n => form.FormatNum(n.Value)).Aggregate((s1, s2) => s1 + " " + s2);
                 }
             }
 
