@@ -118,26 +118,41 @@ namespace NCWMap
             //};
             //int[] r2 = new int[3];
             //InitMap();
-            //int total = 1000000;
+            //int total = 100000;
             //for (int a = 0 ; a < total ; ++a)
             //{
             //    int[] res = new int[3];
-            //    Player p = new Player("", Map[0, 0], Random.Next(6));
-            //    for (int b = 0 ; b < 3 ; ++b)
+
+
+            //    Dictionary<string, Tile> players = new Dictionary<string, Tile> {
+            //        { "1", new Tile(0, 0) },
+            //        { "2", new Tile(0, 0) },
+            //        { "3", new Tile(0, 0) },
+            //        { "4", new Tile(0, 0) },
+            //        { "5", new Tile(0, 0) },
+            //        { "6", new Tile(0, 0) },
+            //    };
+            //    PlayerResources(players);
+            //    SubtractPlayerExtra();
+
+            //    foreach (Player p in Players)
             //    {
-            //        int amt = p.Resources[b, 0] * 6 + p.Resources[b, 1];
-            //        res[b] += amt;
-            //        r2[b] += amt;
-            //    }
-            //    int tier = int.Parse(p.Unit[0].ToString());
-            //    res[tier - 1] += tier * 12;
-            //    r2[tier - 1] += tier * 12;
-            //    for (int b = 0 ; b < 3 ; ++b)
-            //    {
-            //        int r = res[b] / 6;
-            //        int v;
-            //        dist[b].TryGetValue(r, out v);
-            //        dist[b][r] = v + 1;
+            //        for (int b = 0 ; b < 3 ; ++b)
+            //        {
+            //            int amt = p.Resources[b, 0] * 6 + p.Resources[b, 1];
+            //            res[b] += amt;
+            //            r2[b] += amt;
+            //        }
+            //        int tier = int.Parse(p.Unit[0].ToString());
+            //        res[tier - 1] += tier * 12;
+            //        r2[tier - 1] += tier * 12;
+            //        for (int b = 0 ; b < 3 ; ++b)
+            //        {
+            //            int r = res[b] / 6;
+            //            int v;
+            //            dist[b].TryGetValue(r, out v);
+            //            dist[b][r] = v + 1;
+            //        }
             //    }
             //}
             //total = 0;
@@ -189,6 +204,9 @@ namespace NCWMap
                 break;
             case 8:
                 CreatePlayers();
+                break;
+            case 9:
+                SubtractPlayerExtra();
                 break;
             default:
                 return true;
@@ -479,14 +497,58 @@ namespace NCWMap
         }
         private static void PlayerResources(Dictionary<string, Tile> players)
         {
+            int add = Random.RangeInt(1, 6) * Random.RangeInt(0, 5) + Random.RangeInt(0, 5);
+
             int idx = 0;
             Players = new Player[players.Count];
             foreach (var pair in Random.Iterate(players))
             {
                 //starting resources and units are generated and stored in Player object
-                Players[idx] = new Player(pair.Key, pair.Value, idx);
+                Players[idx] = new Player(pair.Key, pair.Value, idx, add);
                 ++idx;
             }
+        }
+
+        private static void SubtractPlayerExtra()
+        {
+            while (Random.Next(6 * 6 * 6) > 0)
+            {
+                List<Player> order = Random.Iterate(Players).ToList();
+                int startIdx = Random.Next(3);
+
+                bool subtract = true;
+                int idx = startIdx;
+                foreach (Player player in order)
+                {
+                    if (GetPlayerExtra(player)[idx] == 0)
+                    {
+                        subtract = false;
+                        break;
+                    }
+                    idx++;
+                    if (idx == 3)
+                        idx = 0;
+                }
+                if (subtract)
+                {
+                    idx = startIdx;
+                    foreach (Player player in order)
+                    {
+                        player.Resources[idx, 0]--;
+                        idx++;
+                        if (idx == 3)
+                            idx = 0;
+                    }
+                }
+            }
+        }
+
+        private static Dictionary<int, int> GetPlayerExtra(Player player)
+        {
+            var extra = new Dictionary<int, int>();
+            for (int a = 0 ; a < 3 ; a++)
+                extra.Add(a, player.Resources[a, 0] % ( 2 * ( a + 1 ) ));
+            return extra;
         }
 
         private static void CreateCitySpots()

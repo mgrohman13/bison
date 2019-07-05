@@ -13,7 +13,7 @@ namespace NCWMap
         public string Unit;
         public readonly int[,] Resources;
 
-        public Player(string name, Tile tile, int order)
+        public Player(string name, Tile tile, int order, int add)
         {
             this.Name = name;
             this.Unit = null;
@@ -21,7 +21,7 @@ namespace NCWMap
 
             int tier = SelectUnit(tile);
             DistResources(GetTierCost(tier));
-            BalanceOrder(order);
+            BalanceOrder(order, add);
             for (int a = 0 ; a < 3 ; ++a)
                 AddOne(a);
         }
@@ -83,10 +83,11 @@ namespace NCWMap
                 AddResource(Program.Random.Next(3), 0, 1, ref resources);
         }
 
-        private int BalanceOrder(int order)
+        private int BalanceOrder(int order, int add)
         {
             //turn order balancing
-            order *= 2;
+            order *= 1;
+            order += add;
             while (order >= 1)
                 AddResource(Program.Random.Next(3), 1, 1, ref order);
             return order;
