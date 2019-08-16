@@ -174,6 +174,7 @@ namespace SpaceRunner
         internal const float FireTimeMult = 1 / GameSpeed * 3900f;
         internal const float FireTimePower = 1.69f;
         internal const float FireTimeAmmoAdd = 1.69f;
+        internal const float FireTimeRandomness = .091f;
 
         private const float DeadBlinkDiv = DeathTime / ( -.5f + 5f );
 
@@ -361,7 +362,7 @@ namespace SpaceRunner
         private decimal score;
         private float life, fuel;
         private int ammo;
-        private int deadCounter, fireCounter;
+        private int deadCounter, fireCounter, fireMax;
         private bool turbo;
         private float? fire;
 
@@ -546,7 +547,7 @@ namespace SpaceRunner
                 Rectangle bounds = GetBarRect(centerX, centerY, PlayerSize);
                 bounds.Height += 2;
                 bounds.Y += bounds.Height;
-                float coolDown = ( ammo < 1 ? 1 : fireCounter / GetCoolDown() );
+                float coolDown = ( ammo < 1 ? 1 : fireCounter / (float)fireMax );
                 DrawBar(graphics, Pens.White, Brushes.Cyan, bounds, coolDown);
             }
         }
@@ -707,19 +708,19 @@ namespace SpaceRunner
             if (IsReplay && position > tickCount && position <= replay.Length)
             {
 #endif
-            lock (replay)
-            {
-                Paused = true;
+                lock (replay)
+                {
+                    Paused = true;
+                    SleepTick();
+                    Refresh();
+                    SleepTick();
+                }
+                lock (gameTicker)
+                    while (tickCount < position)
+                        lock (replay)
+                            this.Step();
                 SleepTick();
-                Refresh();
-                SleepTick();
-            }
-            lock (gameTicker)
-                while (tickCount < position)
-                    lock (replay)
-                        this.Step();
-            SleepTick();
-            Paused = false;
+                Paused = false;
 #if DEBUG
             }
             else
@@ -1278,7 +1279,7 @@ namespace SpaceRunner
                     if (--ammo < 1)
                         fireCounter = -1;
                     else
-                        fireCounter = GameRand.Round(GetCoolDown());
+                        fireCounter = fireMax = GetCoolDown();
                     float dirX, dirY;
                     GetDirs(out dirX, out dirY, fire.Value);
                     Bullet.NewBullet(this, 0, 0, dirX, dirY, TotalSpeed, PlayerSize, Bullet.FriendlyStatus.Friend);
@@ -1300,9 +1301,9 @@ namespace SpaceRunner
             return ( !Dead && fireCounter < 0 && ammo > 0 );
         }
 
-        private float GetCoolDown()
+        private int GetCoolDown()
         {
-            return (float)( FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower) );
+            return GameRand.GaussianOEInt(FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower), FireTimeRandomness, FireTimeRandomness);
         }
 
         private float MoveAndCollide(float xSpeed, float ySpeed)
