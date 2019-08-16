@@ -18,16 +18,41 @@ namespace randTest
         [STAThread]
         static void Main(string[] args)
         {
-            while (true)
-            {
-                try
-                {
-                    rand.GaussianOE(rand.OE(), rand.Weighted(1 / 3.0), rand.Weighted(1 / 3.0), rand.OE() / 3.0);
-                }
-                catch
-                {
-                }
-            }
+            rand.NextUInt();
+            rand.StartTick();
+            rand.NextUInt();
+            Console.ReadKey(true);
+
+            //int b = 0;
+            //while (++b > 0)
+            //{
+            //    Console.WriteLine();
+            //    Write(rand.NextUInt());
+            //}
+
+            //for (ushort a = 0 ; a <= MTRandom.MAX_SEED_SIZE ; ++a)
+            //    try
+            //    {
+            //        rand.StoreSeed = true;
+            //        rand.SetSeed(MTRandom.GenerateSeed(a));
+            //        Write(rand.Seed[0]);
+            //        Console.WriteLine();
+            //        Write(rand.NextUInt());
+            //        Console.WriteLine();
+            //        Console.WriteLine();
+            //    }
+            //    catch { }
+
+            //while (true)
+            //{
+            //    try
+            //    {
+            //        rand.GaussianOE(rand.OE(), rand.Weighted(1 / 3.0), rand.Weighted(1 / 3.0), rand.OE() / 3.0);
+            //    }
+            //    catch
+            //    {
+            //    }
+            //}
 
             //rand.StartTick();
 
@@ -197,7 +222,7 @@ namespace randTest
             //}
 
 
-            NormSDist();
+            //NormSDist();
 
             //NCWDist();
 
@@ -207,7 +232,37 @@ namespace randTest
 
             //TickTest();
 
-            //SeedTest();
+            //bool ver = rand.Bool();
+
+            //SeedTest(true, ver);
+
+            //int tot = 0, c = 0;
+            //while (rand.Next(100) != 0)
+            //{
+            //    c++;
+            //    tot += SeedTest(false, ver);
+            //}
+
+            //Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine(( tot / (double)c ) / ( 16.0 * ( MTRandom.LENGTH + 4 ) ));
+
+            //if (!ver)
+            //{
+            //    tot = c = 0;
+            //    while (rand.Next(10000) != 0)
+            //    {
+            //        c++;
+            //        tot += rand.GaussianInt() == 0 ? 0 : 1;
+            //    }
+            //    Console.WriteLine(tot / (double)c);
+            //}
+            //else
+            //{
+            //    Console.WriteLine((double)1);
+            //}
+
+            //SeedTest(true, ver);
 
             //CWPortalStart();
 
@@ -801,17 +856,79 @@ namespace randTest
         #endregion //TickTest
 
         #region SeedTest
-        //static void SeedTest()
+        //static int SeedTest(bool write, bool ver)
         //{
-        //    Console.BufferHeight *= 2;
-        //    Console.BufferWidth *= 2;
-        //    const double AvgSeedSize = 520;
+        //    Console.WriteLine();
+        //    if (write)
+        //    {
+        //        Console.BufferHeight *= 2;
+        //        Console.BufferWidth *= 2;
+        //    }
+
+        //    const double AvgSeedSize = 390;
         //    const int max = MTRandom.MAX_SEED_SIZE - 1;
-        //    uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
-        //    Write(new MTRandom(true, seed));
-        //    seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
-        //    Write(new MTRandom(true, seed));
+
+        //    ushort sl = (ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 );
+        //    Console.WriteLine();
+        //    Console.WriteLine(sl);
+
+        //    uint[] seed;
+        //    if (ver)
+        //        seed = MTRandom.GenerateSeed(sl);
+        //    else
+        //        seed = new uint[sl];
+
+        //    MTRandom r1 = new MTRandom(true, seed);
+        //    MTRandom r2 = new MTRandom(true, seed);
+
+        //    int d1 = 0;
+        //    d1 += DiffBits(r1.lcgn, r2.lcgn);
+        //    d1 += DiffBits(r1.lfsr, r2.lfsr);
+        //    d1 += DiffBits(r1.mwc1, r2.mwc1);
+        //    d1 += DiffBits(r1.mwc2, r2.mwc2);
+        //    for (int a = 0 ; a < MTRandom.LENGTH ; ++a)
+        //        d1 += DiffBits(r1.m[a], r2.m[a]);
+
+        //    MTRandom r3 = null;
+        //    while (r3 == null)
+        //    {
+        //        try
+        //        {
+        //            if (ver)
+        //                seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
+        //            else
+        //                seed = new uint[sl + rand.GaussianInt()];
+        //            r3 = new MTRandom(true, seed);
+        //        }
+        //        catch { }
+        //    }
+
+        //    Console.WriteLine(seed.Length);
+        //    if (write)
+        //        Console.WriteLine();
+
+        //    int d2 = 0;
+        //    d2 += DiffBits(r1.lcgn, r3.lcgn);
+        //    d2 += DiffBits(r1.lfsr, r3.lfsr);
+        //    d2 += DiffBits(r1.mwc1, r3.mwc1);
+        //    d2 += DiffBits(r1.mwc2, r3.mwc2);
+        //    for (int a = 0 ; a < MTRandom.LENGTH ; ++a)
+        //        d2 += DiffBits(r1.m[a], r3.m[a]);
+
+        //    if (write)
+        //    {
+        //        Write(r1);
+        //        Write(r2);
+        //        Write(r3);
+        //    }
+
+        //    Console.WriteLine(d1);
+        //    Console.WriteLine(d2);
+        //    Console.WriteLine(16 * ( MTRandom.LENGTH + 4 ));
+
+        //    return d2;
         //}
+
         //static void Write(MTRandom rand)
         //{
         //    Console.WriteLine("seed:");
@@ -833,6 +950,12 @@ namespace randTest
         static void Write(uint seed)
         {
             Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
+        }
+
+        private static int DiffBits(uint v1, uint v2)
+        {
+            uint diff = v1 ^ v2;
+            return Convert.ToString(diff, 2).Replace("0", "").Length;
         }
         #endregion //SeedTest
 

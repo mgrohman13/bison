@@ -86,7 +86,7 @@ namespace MattUtil
         }
 
         //the maximum number of seed values that can be incorporated into the generator's initial state
-        public const ushort MAX_SEED_SIZE = LENGTH + 3;
+        public const ushort MAX_SEED_SIZE = LENGTH + 4;
 
         //constants for float generation and conversion
         public const byte FLOAT_BITS = 24;
@@ -266,7 +266,8 @@ namespace MattUtil
             lock (typeof(MTRandom))
                 unchecked
                 {
-                    return ( counter = ShiftVal(value, counter + SHIFT_FACTOR) );
+                    counter = ShiftVal(value, counter + SHIFT_FACTOR);
+                    return counter;
                 }
         }
         public static uint ShiftVal(uint value, uint seed)
@@ -275,11 +276,14 @@ namespace MattUtil
             {
                 value += seed;
                 //determine a shift and negation based on the less-predictable low-order bits
-                int shift = (int)( value % 124 );
+                int shift = (int)( value % ( 31 * 4 ) );
                 int neg = shift / 31;
                 shift = ( shift % 31 ) + 1;
                 //shift to both sides to retain a full 32 bits in the shifted value
-                return ( value ^ ( ( ( ( neg & 1 ) == 1 ? value : ~value ) << shift ) | ( ( neg > 1 ? value : ~value ) >> ( 32 - shift ) ) ) );
+                uint v1 = ( ( neg & 1 ) == 1 ? value : ~value ) << ( shift );
+                uint v2 = ( ( neg & 2 ) == 2 ? value : ~value ) >> ( 32 - shift );
+                value ^= v1 | v2;
+                return value;
             }
         }
 
@@ -351,8 +355,10 @@ namespace MattUtil
             int timeSeedLength = timeSeed.Length;
             uint[] seed = new uint[seedSize];
 
+            int a = 0, b;
+            bool c = true;
+
             //pick up some initial system-based entropy, both in the seed and in the ShiftVal counter
-            int a = 0;
             Process process = Process.GetCurrentProcess();
             AddShiftedSeed(seed, ref a, process.PagedMemorySize64);
             AddShiftedSeed(seed, ref a, new object());
@@ -369,11 +375,11 @@ namespace MattUtil
             AddShiftedSeed(seed, ref a, process.NonpagedSystemMemorySize64);
 
             //fill in the entirety of the seed length with time-based entropy
-            int b = 0;
-            for (a = 0 ; a < seedSize ; ++b)
+            for (b = 0 ; a < seedSize ; ++b)
             {
-                if (b >= timeSeedLength)
+                if (b == timeSeedLength)
                 {
+                    c = false;
                     timeSeed = TimeSeed();
                     b = 0;
                 }
@@ -386,12 +392,13 @@ namespace MattUtil
 
             //provide a second time seed if we have only used one so far
             //so that the total time taken to execute this method provides minor entropy
-            if (seedSize <= timeSeedLength)
+            if (c)
             {
-                b = 0;
-                for (timeSeed = TimeSeed() ; b < timeSeedLength ; ++b)
+                timeSeed = TimeSeed();
+                for (b = 0 ; b < timeSeedLength ; ++b)
                     AddSeed(seed, ref a, timeSeed[b]);
             }
+
             return seed;
         }
         private static void AddShiftedSeed(uint[] seed, ref int a, object value)
@@ -403,7 +410,7 @@ namespace MattUtil
         {
             unchecked
             {
-                if (a >= seed.Length)
+                if (a == seed.Length)
                     a = 0;
                 seed[a++] += value;
             }
@@ -456,10 +463,11 @@ namespace MattUtil
                 mwc1 = b = SeedAlg(mwc1, b, SEED_FACTOR_2, ++a);
 
                 //ensure non-zero MT, LFSR, and MWCs (LCG can be zero)
-                m[1] = EnsureNonZero(m[1]);
-                lfsr = EnsureNonZero(lfsr);
-                mwc1 = EnsureNonZero(mwc1);
-                mwc2 = EnsureNonZero(mwc2);
+                for (b = 0 ; b < LENGTH ; ++b)
+                    m[b] = EnsureNonZero(m[b], ++a);
+                lfsr = EnsureNonZero(lfsr, ++a);
+                mwc1 = EnsureNonZero(mwc1, ++a);
+                mwc2 = EnsureNonZero(mwc2, ++a);
 
                 NextUInt();
             }
@@ -481,6 +489,8 @@ namespace MattUtil
             unchecked
             {
                 m[0] += initSeed;
+                if (seed != null)
+                    m[0] += GetSeed(seed, ref a);
                 for (uint b = 1 ; b < LENGTH ; ++b)
                 {
                     m[b] = SeedAlg(m[b], m[b - 1], seedFactor, b);
@@ -496,15 +506,15 @@ namespace MattUtil
                 return ( ( ( ( prev >> 30 ) ^ prev ) * seedFactor ) ^ cur ) + add;
             }
         }
-        private uint EnsureNonZero(uint value)
+        private uint EnsureNonZero(uint value, uint seed)
         {
             if (value == 0)
-                value = SEED_FACTOR_3;
+                value = ShiftVal(SHIFT_FACTOR, seed);
             return value;
         }
         private uint GetSeed(uint[] seed, ref uint a)
         {
-            if (a >= seed.Length)
+            if (a == seed.Length)
                 a = 0;
             return seed[a++];
         }
