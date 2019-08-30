@@ -498,6 +498,7 @@ namespace NCWMap
         private static void PlayerResources(Dictionary<string, Tile> players)
         {
             int add = Random.RangeInt(1, 6) * Random.RangeInt(0, 5) + Random.RangeInt(0, 5);
+            Console.WriteLine("PlayerResources: " + add);
 
             int idx = 0;
             Players = new Player[players.Count];
@@ -531,6 +532,7 @@ namespace NCWMap
                 }
                 if (subtract)
                 {
+                    Console.WriteLine("SubtractPlayerExtra");
                     idx = startIdx;
                     foreach (Player player in order)
                     {
@@ -547,7 +549,17 @@ namespace NCWMap
         {
             var extra = new Dictionary<int, int>();
             for (int a = 0 ; a < 3 ; a++)
-                extra.Add(a, player.Resources[a, 0] % ( 2 * ( a + 1 ) ));
+            {
+                int e = player.Resources[a, 0] % ( 2 * ( a + 1 ) );
+                if (a == 0 && e == 0 && player.Resources[a, 0] > 0 && Random.Next(6) == 0)
+                    e = 1;
+                if (e > 0 && player.Resources[a, 0] == 1 && player.Resources[a, 1] == 0)
+                {
+                    Console.WriteLine("GetPlayerExtra prevent: " + player.Name);
+                    e = 0;
+                }
+                extra.Add(a, e);
+            }
             return extra;
         }
 

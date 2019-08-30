@@ -23,14 +23,18 @@ namespace testwin
         //const float BulletDamage = 3.9f;
         //const float amt = AlienShipFriendlyBulletDamageMult * BulletDamage;
         //const int AlienShipLife = 260;
-        //const float AlienDamageRandomness = .078f;
-        //const float AlienDamageOEPct = .26f;
+        //const float AlienDamageRandomness = .21f;
+        //const float AlienDamageOEPct = .21f;
         //const float MoraleMax = .25f;// 1 - .0091f;
         //const int tot = 100000;
 
-        //float[] results;
+        //public const int PlanetQualityMin = 0;
+        //public const int PlanetQualityMax = 390;
+        //public const double PlanetQualityOE = 65;
+        //public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
 
         int flag;
+        //float[] results;
 
         public Form1()
         {
@@ -64,9 +68,10 @@ namespace testwin
             //for (int a = 0 ; a < tot ; ++a)
             //{
             //    //float dmg = rand.GaussianOE(amt, AlienDamageRandomness, AlienDamageOEPct);
-            //    float dmg;
+            //    float dmg = (float)( rand.OE(PlanetQualityOE) + rand.Range(PlanetQualityMin, PlanetQualityMax) );
+            //    //float dmg;
             //    //if (b)
-            //    dmg = rand.Weighted(rand.Weighted(rand.DoubleHalf(1))) * AlienShipLife;
+            //    //dmg = rand.Weighted(rand.Weighted(rand.DoubleHalf(1))) * AlienShipLife;
             //    //dmg = rand.Weighted(AlienShipLife, MoraleMax);
             //    //else
             //    //    dmg = rand.DoubleHalf(rand.DoubleHalf(AlienShipLife));
@@ -81,7 +86,7 @@ namespace testwin
         {
             try
             {
-                //base.OnPaint(e);
+                base.OnPaint(e);
 
                 //draw1(e.Graphics);
                 //draw2(e.Graphics);
@@ -125,6 +130,8 @@ namespace testwin
         //    float smooth = (float)trackBar1.Value;
         //    float mult = mVal / ( ClientSize.Width - 1f );
         //    float max = 1f;
+        //    int xAvg = rand.Round(AverageQuality / mult);
+        //    g.DrawLine(Pens.Black, xAvg, 0, xAvg, Height);
         //    float[] cache = new float[ClientSize.Width];
         //    for (int x = 0 ; x < ClientSize.Width ; ++x)
         //    {
@@ -143,7 +150,6 @@ namespace testwin
         //    g.DrawLines(Pens.Black, points);
         //    //MessageBox.Show(max.ToString());
         //}
-
         private void draw3(Graphics gr)
         {
             if (flag % 96 < 48)
@@ -238,13 +244,12 @@ namespace testwin
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            //    int width = rand.Round(ClientSize.Width / 6f);
-            //    if (trackBar1.Value > width)
-            //        trackBar1.Value = width;
-            //    trackBar1.Maximum = width;
+            //int width = rand.Round(ClientSize.Width / 6f);
+            //if (trackBar1.Value > width)
+            //    trackBar1.Value = width;
+            //trackBar1.Maximum = width;
             this.Invalidate();
         }
-
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
             this.Invalidate();

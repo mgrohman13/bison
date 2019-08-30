@@ -1365,7 +1365,7 @@ namespace CityWar
         {
             //a lower shuffleValue makes the move order change faster
             const double shuffleValue = .169;
-            Dictionary<Player, int> bonus = MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, shuffleValue);
+            Dictionary<Player, int> bonus = MattUtil.TBSUtil.RandMoveOrder<Player>(Random, players, shuffleValue, (a, b) => true);
             foreach (KeyValuePair<Player, int> pair in bonus)
                 AddMoveOrderDiff(pair.Key, pair.Value);
         }
