@@ -112,8 +112,11 @@ namespace SpaceRunner
         protected override void Collide(GameObject obj)
         {
             LifeDust ld = obj as LifeDust;
+            Asteroid a = obj as Asteroid;
             if (ld != null && ld.HitBy(this))
                 ld.Die();
+            else if (a != null)
+                a.ExplosionPush(this);
         }
 
         protected override void HitPlayer()

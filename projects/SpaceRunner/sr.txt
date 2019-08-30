@@ -1,4 +1,3 @@
-LifeDustSpacing too high
 restart game with fire/turbo on
 improve asteroid collisions
 	momentum partially/randomly conserved
@@ -14,4 +13,5 @@ replay speeds
 	fast as possible
 resume from replay
 player bump collision with alien ship?
-alien ship fuel modifies movetype?
+more OEs
+	life dust size

@@ -83,6 +83,7 @@ namespace SpaceRunner
 
         protected override void Collide(GameObject obj)
         {
+            Asteroid a = obj as Asteroid;
             //only hit objects whose center is within the explosion
             if (!( obj is FuelExplosion ) && Game.GetDistanceSqr(this.x, this.y, obj.X, obj.Y) < this.Size * this.Size)
             {
@@ -95,6 +96,10 @@ namespace SpaceRunner
                         Explosion.NewExplosion(Game, obj.Size, Game.ExplosionSize, obj);
                     obj.Die();
                 }
+            }
+            else if (a != null)
+            {
+                a.ExplosionPush(this);
             }
         }
 

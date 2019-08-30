@@ -154,6 +154,17 @@ namespace SpaceRunner
             }
         }
 
+        internal void ExplosionPush(GameObject obj)
+        {
+            //if (Game.GameRand.Bool(Game.AsteroidExplosionPushChance))
+            //{
+            //    float xDist = this.x - obj.X, yDist = this.y - obj.Y;
+            //    Game.NormalizeDirs(ref xDist, ref yDist, Game.ExplosionSpeed);
+            //    this.xDir += xDist;
+            //    this.yDir += yDist;
+            //}
+        }
+
         protected override void HitPlayer()
         {
             base.HitPlayer();

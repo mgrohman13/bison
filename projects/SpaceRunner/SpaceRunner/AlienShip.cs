@@ -47,8 +47,8 @@ namespace SpaceRunner
             this.speedMult = RandVal(Game.AlienShipSpeedMult, 1);
             this.coolDown = -1;
 
-            targetAngle = game.GetRandomAngle();
-            moveTypeRatio = game.GameRand.Weighted(game.GameRand.Weighted(game.GameRand.DoubleHalf(1)));
+            targetAngle = StartTargetAngle();
+            moveTypeRatio = StartMoveTypeRatio();
 
             //Console.WriteLine(speedMult);
             //Console.WriteLine(moveTypeRatio);
@@ -56,6 +56,14 @@ namespace SpaceRunner
             Add(trgps, Game.TickCount, Game.GetPoint(this.targetAngle, Game.MapSize / this.speedMult));
             Add(mtrrs, Game.TickCount, moveTypeRatio);
             Add(sms, Game.TickCount, speedMult);
+        }
+        private float StartTargetAngle()
+        {
+            return Game.GetRandomAngle();
+        }
+        private float StartMoveTypeRatio()
+        {
+            return Game.GameRand.Weighted(Game.GameRand.Weighted(Game.GameRand.DoubleHalf(1)));
         }
 
         internal override decimal Score
@@ -214,7 +222,11 @@ namespace SpaceRunner
                 fireRate += RandVal(Game.AlienShipFireRateInc);
                 break;
             case PowerUp.PowerUpType.Fuel:
-                speedMult += RandVal(Game.AlienShipSpeedMultInc);
+                float speedInc = RandVal(Game.AlienShipSpeedMultInc);
+                float weight = speedInc / ( speedMult + speedInc );
+                targetAngle = Combine(targetAngle, StartTargetAngle(), weight);
+                moveTypeRatio = Combine(moveTypeRatio, StartMoveTypeRatio(), weight);
+                speedMult += speedInc;
                 break;
             case PowerUp.PowerUpType.Life:
                 AddLife(Game.AlienShipLifeInc);
@@ -225,6 +237,10 @@ namespace SpaceRunner
 #endif
             }
             Game.RemoveObject(powerUp);
+        }
+        private float Combine(float cur, float val, float weight)
+        {
+            return ( Game.GameRand.Bool(weight) ? val : cur );
         }
 
         private void CollectLifeDust(GameObject obj)
@@ -249,6 +265,10 @@ namespace SpaceRunner
                 Damage(damage, Game.GetPlayerObject(), this);
                 Game.HitPlayer(damage, false);
             }
+
+            //GameObject player = Game.GetPlayerObject();
+            //BumpCollision(player);
+            //Game.BumpPlayer(player.X, player.Y);
         }
 
         private float RandVal(float value, float? lowerCap = null)

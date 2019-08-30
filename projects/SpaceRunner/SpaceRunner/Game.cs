@@ -174,7 +174,7 @@ namespace SpaceRunner
         internal const float FireTimeMult = 1 / GameSpeed * 3900f;
         internal const float FireTimePower = 1.69f;
         internal const float FireTimeAmmoAdd = 1.69f;
-        internal const float FireTimeRandomness = .091f;
+        internal const float FireTimeRandomness = (float)( Math.PI / 26.0 ); // .120830484
 
         private const float DeadBlinkDiv = DeathTime / ( -.5f + 5f );
 
@@ -247,6 +247,7 @@ namespace SpaceRunner
         internal const float AsteroidHitPowerUpRandomness = .052f;
         internal const float AsteroidRotateConst = GameSpeed * .0065f;
         internal const float AsteroidRotateMult = GameSpeed / AsteroidPieceSpeed * .0169f;
+        internal const float AsteroidExplosionPushChance = GameTick * .021f;
 
         internal const float BulletSize = (float)( Math.PI );               // 3.14159274
         //speed added to the speed of the object firing the bullet
@@ -287,7 +288,7 @@ namespace SpaceRunner
         internal const float LifeDustClumpOEPct = .13f;
         internal const float LifeDustAmtRandomness = .3f;
         //standard deviation for initial spacing between objects in a clump
-        internal const float LifeDustSpacing = 5.2f;
+        internal const float LifeDustSpacing = LifeDustSize * 1.69f;
         //standard deviation for initial speed of the entire clump
         internal const float LifeDustClumpSpeed = GameSpeed * .39f;
         //standard deviation for initial speed of each individual
@@ -1190,7 +1191,7 @@ namespace SpaceRunner
         {
             float moveX, moveY;
             GetMoveDirs(out moveX, out moveY);
-            return new GameObject.DummyObject(moveX, moveY);
+            return new GameObject.DummyObject(moveX, moveY, PlayerSize);
         }
 
         public override void Step()
@@ -1303,7 +1304,7 @@ namespace SpaceRunner
 
         private int GetCoolDown()
         {
-            return GameRand.GaussianOEInt(FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower), FireTimeRandomness, FireTimeRandomness);
+            return GameRand.GaussianInt(FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower), FireTimeRandomness);
         }
 
         private float MoveAndCollide(float xSpeed, float ySpeed)
@@ -1503,6 +1504,12 @@ namespace SpaceRunner
             return true;
         }
 
+        internal void BumpPlayer(float x, float y)
+        {
+            foreach (GameObject obj in objects)
+                obj.Move(x, y);
+        }
+
         private void CreateObjects(float alienShips)
         {
             if (GameRand.Bool(TotalSpeed * AlienCreationRate))
@@ -1560,7 +1567,6 @@ namespace SpaceRunner
 
 
         }
-
 
         void PrintD<T>(System.IO.StreamWriter fs, int tc, Dictionary<int, List<T>> d, string line)
         {

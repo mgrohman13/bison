@@ -41,13 +41,13 @@ namespace SpaceRunner
         {
         }
 
-        private GameObject(float xDir, float yDir)
-            : this(0, 0, xDir, yDir)
+        private GameObject(float xDir, float yDir, float size)
+            : this(0, 0, xDir, yDir, size)
         {
         }
 
-        private GameObject(float x, float y, float xDir, float yDir)
-            : this(null, x, y, xDir, yDir, 0, 0, null, float.NaN, false)
+        private GameObject(float x, float y, float xDir, float yDir, float size)
+            : this(null, x, y, xDir, yDir, 0, size, null, float.NaN, false)
         {
         }
 
@@ -262,7 +262,7 @@ namespace SpaceRunner
                 obj.Move(-xDif, -yDif);
         }
 
-        private void Move(float xDir, float yDir)
+        internal void Move(float xDir, float yDir)
         {
             x += xDir;
             y += yDir;
@@ -321,11 +321,11 @@ namespace SpaceRunner
         internal class DummyObject : GameObject
         {
             internal DummyObject(float x, float y, float xDir, float yDir)
-                : base(x, y, xDir, yDir)
+                : base(x, y, xDir, yDir, 0f)
             {
             }
-            internal DummyObject(float xDir, float yDir)
-                : base(xDir, yDir)
+            internal DummyObject(float xDir, float yDir, float size)
+                : base(xDir, yDir, size)
             {
             }
             internal override decimal Score
