@@ -949,7 +949,7 @@ namespace SpaceRunner
         {
             if (--coolDown < 0 && GameRand.Bool(fireRate))
             {
-                coolDown = GameRand.Round(1f + 3f * BulletSize / ( speed + BulletSpeed ));
+                coolDown = GetMinFireTime(speed);
 
                 float xDir = -x, yDir = -y;
                 //half the time, adjust for the player's movement
@@ -963,6 +963,10 @@ namespace SpaceRunner
                 GetDirs(out xDir, out yDir, bulletAngle);
                 Bullet.NewBullet(this, x, y, xDir, yDir, speed, size, Bullet.FriendlyStatus.Enemy);
             }
+        }
+        private int GetMinFireTime(float speed)
+        {
+            return GameRand.Round(1f + 3f * BulletSize / ( speed + BulletSpeed ));
         }
 
         internal void AdjustForPlayerSpeed(ref float xDir, ref float yDir, float speed, float spacing)
@@ -1304,7 +1308,9 @@ namespace SpaceRunner
 
         private int GetCoolDown()
         {
-            return GameRand.GaussianInt(FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower), FireTimeRandomness);
+            int coolDown = GameRand.GaussianInt(FireTimeMult / Math.Pow(ammo + FireTimeAmmoAdd, FireTimePower), FireTimeRandomness);
+            int min = GetMinFireTime(TotalSpeed) + 2;
+            return Math.Max(coolDown, min);
         }
 
         private float MoveAndCollide(float xSpeed, float ySpeed)

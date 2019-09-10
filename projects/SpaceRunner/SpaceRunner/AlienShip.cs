@@ -137,10 +137,10 @@ namespace SpaceRunner
                 //Add(dirs, Game.TickCount, new PointF(0, 0));
                 //Add(spds, Game.TickCount, 0);
                 //Add(actMovs, Game.TickCount, new PointF(trgX - x, trgY - y));
-                Console.WriteLine("hold: " + target);
+                //Console.WriteLine("hold: " + target);
                 towardsPlayer = Game.GetDistance(x, y) - Game.GetDistance(trgX, trgY);
-                Console.WriteLine("towardsPlayer: " + towardsPlayer);
-                Console.WriteLine("tick: " + Game.TickCount);
+                //Console.WriteLine("towardsPlayer: " + towardsPlayer);
+                //Console.WriteLine("tick: " + Game.TickCount);
                 //x = trgX;
                 //y = trgY;
                 //xDir = yDir = 0;
