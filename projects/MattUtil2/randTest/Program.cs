@@ -15,44 +15,146 @@ namespace randTest
     {
         static MTRandom rand = new MTRandom();
 
+        static float _prodMult, _soldierInc;
+
+        static void dot(double variation)
+        {
+            double prodMult = rand.Gaussian(1, 0.169 * Math.Pow((1 - variation) / variation, .5));
+            double soldierInc = rand.Weighted(.091, .13);
+            checked
+            {
+                _prodMult = (float)(_prodMult * (1 - variation) + prodMult * variation);
+                _soldierInc = (float)(_soldierInc * (1 - variation) + soldierInc * variation);
+            }
+        }
+
         [STAThread]
         static void Main(string[] args)
         {
-            rand.NextUInt();
             rand.StartTick();
-            rand.NextUInt();
-            Console.ReadKey(true);
 
-            //int b = 0;
-            //while (++b > 0)
+
+            //rand.NextUInt();
+            //rand.StartTick();
+            //rand.NextUInt();
+            //Console.ReadKey(true);
+
+            ////int b = 0;
+            ////while (++b > 0)
+            ////{
+            ////    Console.WriteLine();
+            ////    Write(rand.NextUInt());
+            ////}
+
+            ////for (ushort a = 0 ; a <= MTRandom.MAX_SEED_SIZE ; ++a)
+            ////    try
+            ////    {
+            ////        rand.StoreSeed = true;
+            ////        rand.SetSeed(MTRandom.GenerateSeed(a));
+            ////        Write(rand.Seed[0]);
+            ////        Console.WriteLine();
+            ////        Write(rand.NextUInt());
+            ////        Console.WriteLine();
+            ////        Console.WriteLine();
+            ////    }
+            ////    catch { }
+
+            ////while (true)
+            ////{
+            ////    try
+            ////    {
+            ////        rand.GaussianOE(rand.OE(), rand.Weighted(1 / 3.0), rand.Weighted(1 / 3.0), rand.OE() / 3.0);
+            ////    }
+            ////    catch
+            ////    {
+            ////    }
+            ////}
+
+
+            //bool ver = rand.Bool();
+
+            //SeedTest(true, ver);
+
+            //int tot = 0, c = 0;
+            //while (rand.Next(100) != 0)
             //{
-            //    Console.WriteLine();
-            //    Write(rand.NextUInt());
+            //    c++;
+            //    tot += SeedTest(false, ver);
             //}
 
-            //for (ushort a = 0 ; a <= MTRandom.MAX_SEED_SIZE ; ++a)
-            //    try
-            //    {
-            //        rand.StoreSeed = true;
-            //        rand.SetSeed(MTRandom.GenerateSeed(a));
-            //        Write(rand.Seed[0]);
-            //        Console.WriteLine();
-            //        Write(rand.NextUInt());
-            //        Console.WriteLine();
-            //        Console.WriteLine();
-            //    }
-            //    catch { }
+            //Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine(( tot / (double)c ) / ( 16.0 * ( MTRandom.LENGTH + 4 ) ));
 
-            //while (true)
+            //if (!ver)
             //{
-            //    try
+            //    tot = c = 0;
+            //    while (rand.Next(10000) != 0)
             //    {
-            //        rand.GaussianOE(rand.OE(), rand.Weighted(1 / 3.0), rand.Weighted(1 / 3.0), rand.OE() / 3.0);
+            //        c++;
+            //        tot += rand.GaussianInt() == 0 ? 0 : 1;
             //    }
-            //    catch
-            //    {
-            //    }
+            //    Console.WriteLine(tot / (double)c);
             //}
+            //else
+            //{
+            //    Console.WriteLine((double)1);
+            //}
+
+            //SeedTest(true, ver);
+
+
+            //for (int f = 0 ; f < 2 ; ++f)
+            //{
+            //    double pd = .05;
+            //    double sd = .005;
+
+            //    var pms = new SortedDictionary<int, int>();
+            //    var sis = new SortedDictionary<int, int>();
+
+            //    for (int b = 0 ; b < 10000 ; ++b)
+            //    {
+            //        dot(1);
+            //        int c = 1;
+            //        if (f == 1)
+            //            c = 100;// rand.GaussianOEInt(39, 1, .52, 2);
+            //        for (int a = 0 ; a < c ; ++a)
+            //            dot(1.0 / c);
+
+            //        int v1 = rand.Round(_prodMult / pd);
+            //        int v2 = rand.Round(_soldierInc / sd);
+            //        int t;
+            //        pms.TryGetValue(v1, out t);
+            //        pms[v1] = t + 1;
+            //        sis.TryGetValue(v2, out t);
+            //        sis[v2] = t + 1;
+            //    }
+
+            //    foreach (var dict in new SortedDictionary<int, int>[] { pms })//, sis })
+            //    {
+            //        double s = 0;
+            //        foreach (var pair in dict)
+            //            s += Math.Pow(Math.Abs(pair.Key * pd - 1), 2) * pair.Value;
+            //        Console.WriteLine(Math.Sqrt(s) / 100);
+
+            //        //int e = dict.Keys.Max();
+            //        //for (int d = 0 ; d < e ; ++d)
+            //        //{
+            //        //    int t;
+            //        //    dict.TryGetValue(d, out t);
+            //        //    Console.Write(d * pd);
+            //        //    Console.Write(" ");
+            //        //    Console.WriteLine(t);
+            //        //}
+            //        //Console.WriteLine();
+            //    }
+
+            //    //Console.WriteLine();
+            //}
+
+            //Console.ReadKey();
+            //return;
+
 
             //rand.StartTick();
 
@@ -61,9 +163,9 @@ namespace randTest
             //{
             //    float dist = d * gameSize / 2f;
             //    const float gameSizeSqr = gameSize * gameSize;
-            //    float val = (float)Math.Pow(( ( dist * dist ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
+            //    float val = (float)Math.Pow(((dist * dist) * 4f + gameSizeSqr) / (gameSizeSqr * 3f), .25f) - 1f;
             //    float cur = (float)Math.Sqrt(2.5f + 1f);
-            //    val = ( (float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(Difficulty) / cur : -cur / 25f ) ) );
+            //    val = ((float)(.005f * Math.Log(Math.Abs(val) + 1f) * (val < 0 ? Math.Sqrt(Difficulty) / cur : -cur / 25f)));
             //    Console.WriteLine(dist + "\t" + val.ToString("+0.00000000000;-0.00000000000"));
             //}
             //Console.ReadKey();
@@ -232,37 +334,7 @@ namespace randTest
 
             //TickTest();
 
-            //bool ver = rand.Bool();
-
-            //SeedTest(true, ver);
-
-            //int tot = 0, c = 0;
-            //while (rand.Next(100) != 0)
-            //{
-            //    c++;
-            //    tot += SeedTest(false, ver);
-            //}
-
-            //Console.WriteLine();
-            //Console.WriteLine();
-            //Console.WriteLine(( tot / (double)c ) / ( 16.0 * ( MTRandom.LENGTH + 4 ) ));
-
-            //if (!ver)
-            //{
-            //    tot = c = 0;
-            //    while (rand.Next(10000) != 0)
-            //    {
-            //        c++;
-            //        tot += rand.GaussianInt() == 0 ? 0 : 1;
-            //    }
-            //    Console.WriteLine(tot / (double)c);
-            //}
-            //else
-            //{
-            //    Console.WriteLine((double)1);
-            //}
-
-            //SeedTest(true, ver);
+            //SeedTest();
 
             //CWPortalStart();
 
@@ -285,9 +357,79 @@ namespace randTest
             //    new MTRandom().StartTick(0);
 
 
+            FactRand(new float[] { 3f, 1 / 2f, 2f }, .7f, .8f);
+
+
             rand.StopTick();
             Console.ReadKey(true);
         }
+
+        #region FactRand
+        private static void FactRand(float[] scenario, float minDiff, float maxDiff)
+        {
+            float[] vals = new float[] { 1 / 6f, 1 / 4f, 1 / 3f, 1 / 2f, 3 / 4f, 1f, 4 / 3f, 3 / 2f, 2f, 3f, 4f, 6f };
+            float tot = 1;
+            float scenAvg = scenario.Aggregate((a, b) => a * b);
+            string[] resources = new string[] { "iron", "copper", "stone", "coal", "uranium", "oil" };
+            for (int a = 0; a < 6; ++a)
+            {
+                if (a == 0)
+                    Console.WriteLine("res\tfreq\tsize\trich\ttot");
+                Console.Write(resources[a] + '\t');
+                float row = 1;
+                bool match = true;
+                for (int b = 0; b < 3; ++b)
+                {
+                    float mult;
+                    do
+                    {
+                        float avg = scenario[b];
+                        mult = rand.GaussianCapped(avg, .26f, Math.Min(vals[0], avg * avg / vals[vals.Length - 1]));
+                        if (rand.Bool())
+                            mult = avg * avg / mult;
+                    } while (mult < vals[0] || mult > vals[vals.Length - 1]);
+                    for (int c = 1; true; c++)
+                    {
+                        float max = vals[c];
+                        if (max > mult)
+                        {
+                            float min = vals[c - 1];
+                            if (min > mult)
+                                throw new Exception();
+                            float chance = (mult - min) / (max - min);
+                            float val = (rand.Bool(chance) ? max : min);
+                            row *= val;
+                            Console.Write(string.Format("{0:P0}", val).PadLeft(4));
+                            match &= (val == scenario[b]);
+                            break;
+                        }
+                    }
+                    Console.Write('\t');
+                }
+                Console.Write(row);
+                Console.WriteLine();
+                row /= scenAvg;
+                tot *= row;
+                if (match || row < minDiff / 2f || row > maxDiff * 2f)
+                {
+                    tot = 1;
+                    a = -1;
+                    Console.WriteLine();
+                }
+                else if (a == 5)
+                {
+                    tot = (float)Math.Pow(tot, 1 / 6.0);
+                    Console.WriteLine("tot\t\t\t\t" + tot);
+                    if (tot > maxDiff || tot < minDiff)
+                    {
+                        tot = 1;
+                        a = -1;
+                        Console.WriteLine();
+                    }
+                }
+            }
+        }
+        #endregion
 
         #region NCWDist
         static void NCWDist()
@@ -297,24 +439,24 @@ namespace randTest
             double[] a1 = new double[n];
             a1[0] = 1;
             a1[1] = 1;
-            for (int a = 2 ; a < n ; ++a)
-                a1[a] = a1[a - 1] * ( 5.0 / 6.0 );
+            for (int a = 2; a < n; ++a)
+                a1[a] = a1[a - 1] * (5.0 / 6.0);
             //PMF for one
             double[] a2 = new double[n];
-            for (int a = 0 ; a + 1 < n ; ++a)
+            for (int a = 0; a + 1 < n; ++a)
                 a2[a] = a1[a] - a1[a + 1];
             //PMF for sum of two
             a1 = new double[n];
-            for (int a = n - 1 ; a >= 0 ; --a)
-                for (int b = n - 1 - a ; b >= 0 ; --b)
+            for (int a = n - 1; a >= 0; --a)
+                for (int b = n - 1 - a; b >= 0; --b)
                     a1[a + b] += a2[a] * a2[b];
             //account for final offset
             a2 = new double[n];
-            for (int a = 1 ; a + 1 < n ; ++a)
-                a2[a] = ( a1[a - 1] + a1[a + 1] ) / 2.0;
+            for (int a = 1; a + 1 < n; ++a)
+                a2[a] = (a1[a - 1] + a1[a + 1]) / 2.0;
 
             double s1 = 0, s2 = 0;
-            for (int a = 0 ; a < n ; a++)
+            for (int a = 0; a < n; a++)
             {
                 s1 += a2[a];
                 s2 += a * a2[a];
@@ -330,11 +472,11 @@ namespace randTest
         #region NormSDist
         static double NormDense(double x, double mean, double stdDev)
         {
-            return Math.Exp(Math.Pow(x - mean, 2.0) / ( -2.0 * Math.Pow(stdDev, 2.0) )) / ( stdDev * Math.Sqrt(2.0 * Math.PI) );
+            return Math.Exp(Math.Pow(x - mean, 2.0) / (-2.0 * Math.Pow(stdDev, 2.0))) / (stdDev * Math.Sqrt(2.0 * Math.PI));
         }
         static double NormDenseInv(double y, double mean, double stdDev)
         {
-            double retVal = stdDev * Math.Sqrt(2.0 * Math.Log(1.0 / ( y * stdDev )) - Math.Log(2.0 * Math.PI));
+            double retVal = stdDev * Math.Sqrt(2.0 * Math.Log(1.0 / (y * stdDev)) - Math.Log(2.0 * Math.PI));
             return mean + retVal; //alternatively: mean - retVal
         }
         static void NormSDist()
@@ -347,11 +489,11 @@ namespace randTest
             Console.WriteLine(0.117 * MTRandom.GAUSSIAN_MAX);
             Console.WriteLine();
 
-            for (int n = 2 ; n < 101 ; ++n)
-                Console.WriteLine(TBSUtil.FindValue((v) => ( 0.5 / NormSDist(-1 / v) ), n, 2, 0).ToString().PadRight(21) + n);
+            for (int n = 2; n < 101; ++n)
+                Console.WriteLine(TBSUtil.FindValue((v) => (0.5 / NormSDist(-1 / v)), n, 2, 0).ToString().PadRight(21) + n);
             Console.WriteLine();
 
-            Action<double> Print = v => Console.WriteLine("{0}{1}", ( 0.5 / NormSDist(-1 / v) ).ToString().PadRight(21), v);
+            Action<double> Print = v => Console.WriteLine("{0}{1}", (0.5 / NormSDist(-1 / v)).ToString().PadRight(21), v);
             Print(3.0);
             Print(2.6);
             Print(2.1);
@@ -383,21 +525,21 @@ namespace randTest
             const double excelMax = 8.29230302795755;
             Console.WriteLine(excelMax);
             Console.WriteLine(NormSDist(-excelMax));
-            Console.WriteLine(( -Math.Log(NormDense(excelMax, 0, 1), 2) ) + "   Excel");
+            Console.WriteLine((-Math.Log(NormDense(excelMax, 0, 1), 2)) + "   Excel");
             Console.WriteLine(MTRandom.GAUSSIAN_MAX);
             Console.WriteLine(NormSDist(-MTRandom.GAUSSIAN_MAX));
-            Console.WriteLine(( -Math.Log(NormDense(MTRandom.GAUSSIAN_MAX, 0, 1), 2) ) + "   MTRandom");
+            Console.WriteLine((-Math.Log(NormDense(MTRandom.GAUSSIAN_MAX, 0, 1), 2)) + "   MTRandom");
             const double normSDistMax = 8.2923610758167;
             Console.WriteLine(normSDistMax);
             Console.WriteLine(NormSDist(-normSDistMax));
-            Console.WriteLine(( -Math.Log(NormDense(normSDistMax, 0, 1), 2) ) + "   NormSDist");
+            Console.WriteLine((-Math.Log(NormDense(normSDistMax, 0, 1), 2)) + "   NormSDist");
             Console.WriteLine();
 
             double val = double.NaN;
-            for (int a = -3 ; a < 4 ; ++a)
+            for (int a = -3; a < 4; ++a)
             {
                 double trg = 1.0 / Math.Pow(2.0, MTRandom.DOUBLE_BITS + a);
-                Console.WriteLine(NormDenseInv(trg, 0, 1).ToString("0.00000000000000") + "   " + ( MTRandom.DOUBLE_BITS + a ));
+                Console.WriteLine(NormDenseInv(trg, 0, 1).ToString("0.00000000000000") + "   " + (MTRandom.DOUBLE_BITS + a));
                 if (double.IsNaN(val))
                     val = NormDenseInv(trg, 0, 1);
             }
@@ -405,7 +547,7 @@ namespace randTest
 
             double min = 8, max = 10;
             double mid;
-            while (( mid = max - min ) != min && mid != max)
+            while ((mid = max - min) != min && mid != max)
             {
                 mid = min + mid / 2;
                 if (mid == min || mid == max)
@@ -418,7 +560,7 @@ namespace randTest
             Console.WriteLine(max);//8.68271440764326
             Console.WriteLine(NormSDist(-max));
             Console.WriteLine(AsymptoticSeries(-max));
-            Console.WriteLine(( -Math.Log(NormDense(max, 0, 1), 2) ) + "   AsymptoticSeries");
+            Console.WriteLine((-Math.Log(NormDense(max, 0, 1), 2)) + "   AsymptoticSeries");
             Console.WriteLine();
 
             while (true)
@@ -457,20 +599,20 @@ namespace randTest
         //z>~8.7
         static double AsymptoticSeries(double z)
         {
-            bool sign = ( z > 0 );
+            bool sign = (z > 0);
             if (!sign)
                 z = -z;
             double coefficient = 1;
             double prev = double.NaN;
             double erf = 1.0 / z;
-            for (int n = 1 ; prev != erf && !double.IsNaN(erf) ; ++n)
+            for (int n = 1; prev != erf && !double.IsNaN(erf); ++n)
             {
-                coefficient *= -( 2.0 * n - 1.0 );
+                coefficient *= -(2.0 * n - 1.0);
                 prev = erf;
                 erf += coefficient / Math.Pow(z, 2.0 * n + 1);
             }
-            double aln = erf * Math.Exp(-( z * z ) / 2.0) / Math.Sqrt(2.0 * Math.PI);
-            return ( sign ? 1.0 - aln : aln );
+            double aln = erf * Math.Exp(-(z * z) / 2.0) / Math.Sqrt(2.0 * Math.PI);
+            return (sign ? 1.0 - aln : aln);
         }
 
         //static double NormDist(double x, double mean, double stdDev)
@@ -492,24 +634,24 @@ namespace randTest
             double LOWER_TAIL_IS_ONE = MTRandom.GAUSSIAN_MAX; //I.e., alnorm(8.5,0) = .999999999999+
 
             double aln;
-            bool up = ( z < 0.0 );
+            bool up = (z < 0.0);
             if (up)
                 z = -z;
 
             Func<double> y = () => Math.Exp(-0.5 * z * z) / Math.Sqrt(2.0 * Math.PI);
 
             //Evaluates the tail area of the standard normal curve from z to infinity if up, or from -infinity to z if not up
-            if (z < LOWER_TAIL_IS_ONE || ( up && z < UPPER_TAIL_IS_ZERO ))
+            if (z < LOWER_TAIL_IS_ONE || (up && z < UPPER_TAIL_IS_ZERO))
             {
                 //double y = ;
                 if (z > FORMULA_BREAK)
                     aln = y() /
-                            ( z - 3.8052E-8 + 1.00000615302 /
-                            ( z + 3.98064794E-4 + 1.98615381364 /
-                            ( z - 0.151679116635 + 5.29330324926 /
-                            ( z + 4.8385912808 - 15.1508972451 /
-                            ( z + 0.742380924027 + 30.789933034 /
-                            ( z + 3.99019417011 ) ) ) ) ) );
+                            (z - 3.8052E-8 + 1.00000615302 /
+                            (z + 3.98064794E-4 + 1.98615381364 /
+                            (z - 0.151679116635 + 5.29330324926 /
+                            (z + 4.8385912808 - 15.1508972451 /
+                            (z + 0.742380924027 + 30.789933034 /
+                            (z + 3.99019417011))))));
                 else
                     aln = 1.0 - BlackScholes(z);
             }
@@ -520,8 +662,8 @@ namespace randTest
                     //7/8/92
                     //Uses asymptotic expansion for exp(-z*z/2)/alnorm(z)
                     //Agrees with continued fraction to 11 s.f. when z >= 16 and coefficients through 706 are used
-                    double w = 1.0 / ( z * z ); //1/z^2
-                    aln = y() / ( z * ( 1 + w * ( 1 + w * ( -2 + w * ( 10 + w * ( -74 + w * ( 706 + w * ( -8162 + w * 110410 ) ) ) ) ) ) ) );
+                    double w = 1.0 / (z * z); //1/z^2
+                    aln = y() / (z * (1 + w * (1 + w * (-2 + w * (10 + w * (-74 + w * (706 + w * (-8162 + w * 110410))))))));
                     //https://oeis.org/A000698
                 }
                 else
@@ -534,14 +676,14 @@ namespace randTest
         }
         static double BlackScholes(double z)
         {
-            int sign = ( z >= 0 ? 1 : -1 );
+            int sign = (z >= 0 ? 1 : -1);
             z = Math.Abs(z) / Math.Sqrt(2.0);
             double coefficient = 1.0;
             double prev = double.NaN;
             double erf = z;
-            for (int n = 1 ; prev != erf ; n++)
+            for (int n = 1; prev != erf; n++)
             {
-                coefficient *= ( -2.0 * n + 1.0 ) / ( n * ( 2.0 * n + 1.0 ) );
+                coefficient *= (-2.0 * n + 1.0) / (n * (2.0 * n + 1.0));
                 prev = erf;
                 erf += coefficient * Math.Pow(z, 2.0 * n + 1.0);
             }
@@ -577,20 +719,20 @@ namespace randTest
             Func<XComShip.Weapon> PWTLauncher = () => new XComShip.Weapon("PWTLauncher", 2, 200, 60, 1, 24);
 
             XComShip.Weapon.setDifficulty(Superhuman);
-            for (int numBs = 1 ; numBs <= 3 ; ++numBs)
+            for (int numBs = 1; numBs <= 3; ++numBs)
             {
                 //Console.WriteLine(numBs);
                 //Console.WriteLine();
                 //Console.WriteLine();
                 XComShip[] xcom = new XComShip[numBs];
-                for (int b = 0 ; b < numBs ; ++b)
+                for (int b = 0; b < numBs; ++b)
                     xcom[b] = new XComShip(Barracuda(), PWTLauncher(), PWTLauncher());
                 XComShipSim(FleetSupplyCruiser(), xcom);
                 XComShipSim(Battleship(), xcom);
                 XComShipSim(Dreadnought(), xcom);
             }
 
-            for (int a = 0 ; a < 5 ; ++a)
+            for (int a = 0; a < 5; ++a)
             {
                 XComShip.Weapon.setDifficulty(a);
 
@@ -632,7 +774,7 @@ namespace randTest
                 {
                     XComShip alien = ap.Clone(true);
                     XComShip[] xcom = new XComShip[xp.Length];
-                    for (int a = 0 ; a < xp.Length ; ++a)
+                    for (int a = 0; a < xp.Length; ++a)
                         xcom[a] = xp[a].Clone(false);
                     lock (typeof(Program))
                         ++tries;
@@ -663,7 +805,7 @@ namespace randTest
                         alive = alive.Where(s => s.curHits > 0).ToList();
                     } while (alien.curHits > 0 && alive.Any());
 
-                    for (int b = 0 ; b < xcom.Length ; ++b)
+                    for (int b = 0; b < xcom.Length; ++b)
                         if (xcom[b].curHits <= 0)
                             lock (typeof(Program))
                                 ++killed[b];
@@ -675,7 +817,7 @@ namespace randTest
 
             Parallel.Invoke(Enumerable.Repeat<Action>(action, Math.Max(1, rand.Round(Environment.ProcessorCount / 1.95))).ToArray());
             Console.WriteLine(tries.ToString("000000"));
-            for (int c = 0 ; c < killed.Length ; ++c)
+            for (int c = 0; c < killed.Length; ++c)
             {
                 XComShip ship = c < xp.Length ? xp[c] : ap;
                 Console.WriteLine("{0:000.0%} - {1} {2} {3}", killed[c] / (double)tries, ship.name, ship.weapons[0].name, ship.weapons.Count > 1 ? ship.weapons[1].name : "");
@@ -727,21 +869,21 @@ namespace randTest
                     string dName = null;
                     switch (difficulty)
                     {
-                    case 0:
-                        dName = "Beginner";
-                        break;
-                    case 1:
-                        dName = "Experienced";
-                        break;
-                    case 2:
-                        dName = "Veteran";
-                        break;
-                    case 3:
-                        dName = "Genius";
-                        break;
-                    case 4:
-                        dName = "Superhuman";
-                        break;
+                        case 0:
+                            dName = "Beginner";
+                            break;
+                        case 1:
+                            dName = "Experienced";
+                            break;
+                        case 2:
+                            dName = "Veteran";
+                            break;
+                        case 3:
+                            dName = "Genius";
+                            break;
+                        case 4:
+                            dName = "Superhuman";
+                            break;
                     }
                     Console.WriteLine();
                     Console.WriteLine(dName);
@@ -756,7 +898,7 @@ namespace randTest
                     this.dmg = dmg;
                     this.range = range;
                     this.acc = 60.0 / 101.0;
-                    this.reload = rand.Round(1.5 * ( reload - 2.0 * difficulty ));
+                    this.reload = rand.Round(1.5 * (reload - 2.0 * difficulty));
                 }
                 public Weapon(string name, int shots, int dmg, int range, double acc, int reload)
                 {
@@ -813,13 +955,13 @@ namespace randTest
         {
             const double AvgSeedSize = 520;
             const int max = MTRandom.MAX_SEED_SIZE - 1;
-            uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
+            uint[] seed = MTRandom.GenerateSeed((ushort)(rand.WeightedInt(max, (AvgSeedSize - 1.0) / max) + 1));
             ParameterizedThreadStart func = (object param) =>
             {
                 MTRandom r;
                 lock (typeof(Program))
                     r = (MTRandom)param;
-                for (int a = 0 ; a < 3 ; ++a)
+                for (int a = 0; a < 3; ++a)
                 {
                     Console.WriteLine(r.OEFloat());
                     Thread.Sleep(3);
@@ -856,6 +998,36 @@ namespace randTest
         #endregion //TickTest
 
         #region SeedTest
+        //static void SeedTest()
+        //{
+        //    Console.BufferHeight *= 2;
+        //    Console.BufferWidth *= 2;
+        //    const double AvgSeedSize = 520;
+        //    const int max = MTRandom.MAX_SEED_SIZE - 1;
+        //    uint[] seed = MTRandom.GenerateSeed((ushort)( rand.WeightedInt(max, ( AvgSeedSize - 1.0 ) / max) + 1 ));
+        //    Write(new MTRandom(true, seed));
+        //    seed[rand.Next(seed.Length)] ^= ( (uint)1 << rand.Next(32) );
+        //    Write(new MTRandom(true, seed));
+        //}
+        //static void Write(MTRandom rand)
+        //{
+        //    Console.WriteLine("seed:");
+        //    foreach (uint seed in rand.Seed)
+        //        Write(seed);
+        //    Console.WriteLine();
+        //    Console.WriteLine();
+        //    Console.WriteLine("state:");
+        //    Write(rand.lcgn);
+        //    Write(rand.lfsr);
+        //    Write(rand.mwc1);
+        //    Write(rand.mwc2);
+        //    Console.WriteLine();
+        //    foreach (uint v in rand.m)
+        //        Write(v);
+        //    Console.WriteLine();
+        //    Console.WriteLine();
+        //}
+
         //static int SeedTest(bool write, bool ver)
         //{
         //    Console.WriteLine();
@@ -928,35 +1100,16 @@ namespace randTest
 
         //    return d2;
         //}
-
-        //static void Write(MTRandom rand)
+        //static void Write(uint seed)
         //{
-        //    Console.WriteLine("seed:");
-        //    foreach (uint seed in rand.Seed)
-        //        Write(seed);
-        //    Console.WriteLine();
-        //    Console.WriteLine();
-        //    Console.WriteLine("state:");
-        //    Write(rand.lcgn);
-        //    Write(rand.lfsr);
-        //    Write(rand.mwc1);
-        //    Write(rand.mwc2);
-        //    Console.WriteLine();
-        //    foreach (uint v in rand.m)
-        //        Write(v);
-        //    Console.WriteLine();
-        //    Console.WriteLine();
+        //    Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
         //}
-        static void Write(uint seed)
-        {
-            Console.Write(Convert.ToString(seed, 2).PadLeft(32, '0'));
-        }
 
-        private static int DiffBits(uint v1, uint v2)
-        {
-            uint diff = v1 ^ v2;
-            return Convert.ToString(diff, 2).Replace("0", "").Length;
-        }
+        //private static int DiffBits(uint v1, uint v2)
+        //{
+        //    uint diff = v1 ^ v2;
+        //    return Convert.ToString(diff, 2).Replace("0", "").Length;
+        //}
         #endregion //SeedTest
 
         #region CWPortalStart
@@ -1009,7 +1162,7 @@ namespace randTest
             const double StartAmt = .26;
             int upper = (int)Math.Ceiling(baseUnitCost - portalTurnInc + portalTurnInc * StartAmt);
             int[] val = new int[upper + 1];
-            for (int x = 0 ; x < max ; ++x)
+            for (int x = 0; x < max; ++x)
             {
                 int l = rand.Round(rand.Weighted(baseUnitCost - portalTurnInc, StartAmt) + portalTurnInc * StartAmt);
                 sum += l;
@@ -1020,9 +1173,9 @@ namespace randTest
 
             Console.WriteLine("{0} - {1} - {2}", name, sum / max, StartAmt * baseUnitCost);
             Console.WriteLine();
-            for (int x = (int)( portalTurnInc * StartAmt ) ; x <= upper ; ++x)
+            for (int x = (int)(portalTurnInc * StartAmt); x <= upper; ++x)
                 Console.WriteLine("{0} - {1} - {3}", x.ToString("000"), val[x].ToString(format),
-                        ( ( max - runtot ) / ( 1.0 + upper - x ) ).ToString(format), ( runtot += val[x] ).ToString(format));
+                        ((max - runtot) / (1.0 + upper - x)).ToString(format), (runtot += val[x]).ToString(format));
             Console.WriteLine();
             Console.WriteLine(baseUnitCost);
             Console.WriteLine();
@@ -1038,7 +1191,7 @@ namespace randTest
             ThreadStart func = () =>
             {
                 int[] r = new int[count];
-                for (int a = 0 ; a < 222222 ; ++a)
+                for (int a = 0; a < 222222; ++a)
                     lock (e)
                         foreach (int i in e)
                         {
@@ -1059,9 +1212,9 @@ namespace randTest
             };
             const int tests = 13;
             Thread[] threads = new Thread[tests];
-            for (int a = 0 ; a < tests ; ++a)
+            for (int a = 0; a < tests; ++a)
                 threads[a] = new Thread(func);
-            for (int a = 0 ; a < tests ; ++a)
+            for (int a = 0; a < tests; ++a)
                 threads[a].Start();
         }
         #endregion //IterateTest
@@ -1132,17 +1285,17 @@ namespace randTest
             while (true)
             {
                 ++count;
-                val = ( min + max ) / 2.0;
-                if (isFloat ? ( (float)val == (float)min || (float)val == (float)max ) : ( val == min || val == max ))
+                val = (min + max) / 2.0;
+                if (isFloat ? ((float)val == (float)min || (float)val == (float)max) : (val == min || val == max))
                 {
-                    if (Math.Abs(( min * min ) - n) < Math.Abs(( max * max ) - n))
+                    if (Math.Abs((min * min) - n) < Math.Abs((max * max) - n))
                         val = min;
                     else
                         val = max;
                     break;
                 }
                 double sqr = val * val;
-                if (isFloat ? ( (float)sqr == (float)n ) : ( sqr == n ))
+                if (isFloat ? ((float)sqr == (float)n) : (sqr == n))
                 {
                     Console.WriteLine("break");
                     break;
@@ -1181,7 +1334,7 @@ namespace randTest
             ThreadRun(() => DaeRandTest(1));
             ThreadRun(() => DaeRandTest(1 - .0091));
             ThreadRun(() => DaeRandTest(.5));
-            ThreadRun(() => DaeRandTest(Math.Pow(.00117, 1 / Math.Pow(1 / .39, 1.3)) * ( 1.0 + .169 * 1.3 )));
+            ThreadRun(() => DaeRandTest(Math.Pow(.00117, 1 / Math.Pow(1 / .39, 1.3)) * (1.0 + .169 * 1.3)));
             ThreadRun(() => DaeRandTest(.00117));
             ThreadRun(() => DaeRandTest(float.Epsilon));
             ThreadRun(() => DaeRandTest(Math.Pow(double.Epsilon, 1 / Math.Pow(1 / .39, 1.3)) * 2));
@@ -1227,7 +1380,7 @@ namespace randTest
             const double closest = 1.046319547648739;
             const int d = 1300000;
             double tot = 0;
-            for (int b = 0 ; b < d ; ++b)
+            for (int b = 0; b < d; ++b)
             {
                 double morale = GetMorale();
                 tot += morale;
@@ -1248,8 +1401,8 @@ namespace randTest
             double val;
             while (true)
             {
-                val = ( min + max ) / 2.0;
-                if (( val == min || val == max ))
+                val = (min + max) / 2.0;
+                if ((val == min || val == max))
                     return val;
 
                 if (DaeReserveMorale(val))
@@ -1278,11 +1431,11 @@ namespace randTest
                 daeCnt[test] = cnt + 1;
                 return rand.Bool();
             }
-            return ( m1 < m2 );
+            return (m1 < m2);
         }
         static double LoseMorale(double Morale, double mult)
         {
-            return Math.Pow(Morale / ( 1.0 + .169 * mult ), Math.Pow(1 / .39, mult));
+            return Math.Pow(Morale / (1.0 + .169 * mult), Math.Pow(1 / .39, mult));
         }
         static double[] DaeReserveMoraleRand(double test, double morale)
         {
@@ -1361,7 +1514,7 @@ namespace randTest
         {
             Tile tile = null;
             //try three times to find a neighbor that has already been initialized
-            for (int i = 0 ; i < 3 ; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 tile = GetTileIn(map, x, y, rand.Next(6), width, height);
                 if (tile != null)
@@ -1381,34 +1534,34 @@ namespace randTest
             bool odd = y % 2 > 0;
             switch (direction)
             {
-            case 0:
-                if (odd)
+                case 0:
+                    if (odd)
+                        --x;
+                    --y;
+                    break;
+                case 1:
+                    if (!odd)
+                        ++x;
+                    --y;
+                    break;
+                case 2:
                     --x;
-                --y;
-                break;
-            case 1:
-                if (!odd)
+                    break;
+                case 3:
                     ++x;
-                --y;
-                break;
-            case 2:
-                --x;
-                break;
-            case 3:
-                ++x;
-                break;
-            case 4:
-                if (odd)
-                    --x;
-                ++y;
-                break;
-            case 5:
-                if (!odd)
-                    ++x;
-                ++y;
-                break;
-            default:
-                throw new Exception();
+                    break;
+                case 4:
+                    if (odd)
+                        --x;
+                    ++y;
+                    break;
+                case 5:
+                    if (!odd)
+                        ++x;
+                    ++y;
+                    break;
+                default:
+                    throw new Exception();
             }
             if (x < 0 || x >= width || y < 0 || y >= height)
                 return null;
@@ -1428,13 +1581,13 @@ namespace randTest
                 else
                     Console.BufferWidth = Console.WindowWidth = width;
                 if (height > Console.WindowHeight)
-                    Console.WindowHeight = ( Console.BufferHeight = height + 1 ) - 1;
+                    Console.WindowHeight = (Console.BufferHeight = height + 1) - 1;
                 else
-                    Console.BufferHeight = ( Console.WindowHeight = height ) + 1;
+                    Console.BufferHeight = (Console.WindowHeight = height) + 1;
 
                 Terrain[,] res = new Terrain[width, height];
-                for (int y = 0 ; y < height ; ++y)
-                    for (int x = 0 ; x < width ; ++x)
+                for (int y = 0; y < height; ++y)
+                    for (int x = 0; x < width; ++x)
                         res[x, y] = new Terrain();
 
                 DoStat(width, height, res, Terrain.GetHeight, Terrain.SetHeight);
@@ -1443,16 +1596,16 @@ namespace randTest
 
                 float equator = rand.FloatHalf(), eqDif = rand.GaussianCapped(1f - Math.Abs(.5f - equator), .169f, .39f);
 
-                for (int y = 0 ; y < height ; ++y)
-                    for (int x = 0 ; x < width ; ++x)
+                for (int y = 0; y < height; ++y)
+                    for (int x = 0; x < width; ++x)
                     {
                         float h = 0, t = 0, r = 0, count = 0;
-                        for (int a = -2 ; a < 3 ; ++a)
+                        for (int a = -2; a < 3; ++a)
                             if (x + a >= 0 && x + a < width)
-                                for (int b = -2 ; b < 3 ; ++b)
+                                for (int b = -2; b < 3; ++b)
                                     if (y + b >= 0 && y + b < height)
                                     {
-                                        float mult = 1 / ( a * a + b * b + .3f );
+                                        float mult = 1 / (a * a + b * b + .3f);
                                         h += Terrain.GetHeight(res[x + a, y + b]) * mult;
                                         t += Terrain.GetTemp(res[x + a, y + b]) * mult;
                                         r += Terrain.GetRain(res[x + a, y + b]) * mult;
@@ -1462,7 +1615,7 @@ namespace randTest
                         t /= count;
                         r /= count;
 
-                        double pow = .5 + 3 * Math.Abs(( y + .5 ) / height - equator) * eqDif;
+                        double pow = .5 + 3 * Math.Abs((y + .5) / height - equator) * eqDif;
                         t = (float)Math.Pow(t, pow * pow);
                         DrawTerrain(h, t, r);
                     }
@@ -1475,14 +1628,14 @@ namespace randTest
         {
             if (height > .39 && height < .5)
             {
-                rain = (float)Math.Pow(rain, 1 + ( height - .5 ) * 7.8);
+                rain = (float)Math.Pow(rain, 1 + (height - .5) * 7.8);
             }
             else if (height > .75 && height < .87)
             {
-                rain = (float)Math.Pow(rain, 1 + ( .75 - height ) * 3.9);
+                rain = (float)Math.Pow(rain, 1 + (.75 - height) * 3.9);
                 temp -= .13f;
                 if (temp > 0)
-                    temp = (float)Math.Pow(temp, 1 + ( height - .75 ) * 6.5);
+                    temp = (float)Math.Pow(temp, 1 + (height - .75) * 6.5);
                 temp += .13f;
             }
 
@@ -1490,7 +1643,7 @@ namespace randTest
             rain *= temp;
 
             if (height > .87)
-                if (height % .02f < ( height - .87f ) / 5f && height < .98)
+                if (height % .02f < (height - .87f) / 5f && height < .98)
                     Console.BackgroundColor = ConsoleColor.DarkGray; // mountain
                 else if (temp < 6 || height > .98)
                     Console.BackgroundColor = ConsoleColor.White; // glacier 
@@ -1504,24 +1657,24 @@ namespace randTest
                 Console.BackgroundColor = ConsoleColor.Blue; // sea
             else if (height > .97)
                 Console.BackgroundColor = ConsoleColor.White; // alpine glacier
-            else if (( temp > 100 ) && ( ( rain < ( temp - 100 ) * ( temp - 100 ) / 1000f ) ))
+            else if ((temp > 100) && ((rain < (temp - 100) * (temp - 100) / 1000f)))
                 if (rain < temp - 313)
                     Console.BackgroundColor = ConsoleColor.Red; // sub. desert
                 else
                     Console.BackgroundColor = ConsoleColor.DarkRed; // temp. grass / desert
-            else if (( temp > 300 ) && ( rain < 25 + 490 / ( 1.0 + Math.Pow(Math.E, ( 390 - temp ) / 26.0) ) ))
-                if (rain < 260 + ( temp - 333 ) * ( temp - 333 ) / 260f)
+            else if ((temp > 300) && (rain < 25 + 490 / (1.0 + Math.Pow(Math.E, (390 - temp) / 26.0))))
+                if (rain < 260 + (temp - 333) * (temp - 333) / 260f)
                     Console.BackgroundColor = ConsoleColor.Yellow; // trop. seas. forest / savannah
                 else
                     Console.BackgroundColor = ConsoleColor.Cyan; // trop. rain forest
-            else if (rain < ( temp - 65 ) / 2.1f)
+            else if (rain < (temp - 65) / 2.1f)
                 Console.BackgroundColor = ConsoleColor.DarkYellow; // woodland / shrubland
-            else if (( temp > 200 ) || ( ( temp > 130 ) && ( rain < 21 + 196 / ( 1.0 + Math.Pow(Math.E, ( 169 - temp ) / 13.0) ) ) ))
-                if (( temp < 169 ) || rain < 125 + 10 * Math.Sqrt(temp - 169))
+            else if ((temp > 200) || ((temp > 130) && (rain < 21 + 196 / (1.0 + Math.Pow(Math.E, (169 - temp) / 13.0)))))
+                if ((temp < 169) || rain < 125 + 10 * Math.Sqrt(temp - 169))
                     Console.BackgroundColor = ConsoleColor.Green; // temp. dec. forest
                 else
                     Console.BackgroundColor = ConsoleColor.DarkCyan; // temp. rain forest
-            else if (( temp > 100 ) || ( rain < 120 / ( 1.0 + Math.Pow(Math.E, ( 78 - temp ) / 13.0) ) ))
+            else if ((temp > 100) || (rain < 120 / (1.0 + Math.Pow(Math.E, (78 - temp) / 13.0))))
                 Console.BackgroundColor = ConsoleColor.DarkGreen; // taiga
             else
                 Console.BackgroundColor = ConsoleColor.Gray; // tundra
@@ -1534,18 +1687,18 @@ namespace randTest
             float cur = 1, frq = 1.95f, amp = 1.5f;
             Dictionary<Point, float> points = new Dictionary<Point, float>();
             //int lim = rand.Round(Math.Sqrt(width * height / 1300.0));
-            for (int dim = rand.Round(res.Length / frq) ; dim > 2 ; dim = rand.GaussianInt(dim / frq, .03f))
+            for (int dim = rand.Round(res.Length / frq); dim > 2; dim = rand.GaussianInt(dim / frq, .03f))
             {
                 cur *= rand.Gaussian(amp, .03f);
 
                 points.Clear();
-                for (int a = 0 ; a < dim ; ++a)
+                for (int a = 0; a < dim; ++a)
                     points[new Point(rand.Next(width), rand.Next(height))] = rand.DoubleHalf(cur);
                 if (points.Count < rand.OEInt())
                     continue;
 
-                for (int y = 0 ; y < height ; ++y)
-                    for (int x = 0 ; x < width ; ++x)
+                for (int y = 0; y < height; ++y)
+                    for (int x = 0; x < width; ++x)
                     {
                         int modX = x + rand.GaussianInt(), modY = y + rand.GaussianInt();
 
@@ -1553,8 +1706,8 @@ namespace randTest
                         float sum = 0;
                         foreach (KeyValuePair<Point, float> pair in points)
                         {
-                            int distX = ( pair.Key.X - modX );
-                            int distY = ( pair.Key.Y - modY );
+                            int distX = (pair.Key.X - modX);
+                            int distY = (pair.Key.Y - modY);
                             int dist = distX * distX + distY * distY;
                             if (dist < found)
                             {
