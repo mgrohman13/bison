@@ -384,7 +384,7 @@ namespace randTest
                     do
                     {
                         float avg = scenario[b];
-                        mult = rand.GaussianCapped(avg, .26f, Math.Min(vals[0], avg * avg / vals[vals.Length - 1]));
+                        mult = rand.GaussianCapped(avg, .39f, Math.Min(vals[0], avg * avg / vals[vals.Length - 1]));
                         if (rand.Bool())
                             mult = avg * avg / mult;
                     } while (mult < vals[0] || mult > vals[vals.Length - 1]);
