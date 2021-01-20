@@ -1,0 +1,164 @@
+{
+  "_health_values": {
+    "_player": 100,
+    "_seamoth": 300,
+    "_prawn": 600,
+    "_cyclops": 1500
+  },
+  "CaveCrawler": {
+    "size": 1.0,
+    "health": 3.9531973856097773,
+    "damage": 1.9038931311287375,
+    "_wiki_damage": 5
+  },
+  "CaveCrawler_03": {
+    "size": 1.0,
+    "health": 8.23548722708256,
+    "damage": 3.7894856575283788,
+    "_wiki_damage": 5,
+    "_comment": "Blood Crawler?"
+  },
+  "Biter": {
+    "size": 1.0,
+    "health": 4.176998000339295,
+    "damage": 1.8412542868615178,
+    "_wiki_damage": 7
+  },
+  "Biter_02": {
+    "size": 2.5257612770259703,
+    "health": 16.402092171774648,
+    "damage": 3.1715804164032533,
+    "_wiki_damage": 7,
+    "_comment": "Blighter?"
+  },
+  "BoneShark": {
+    "size": 2.8424191062359139,
+    "health": 7.9160905890849165,
+    "damage": 3.0361577808071263,
+    "_wiki_damage": 30
+  },
+  "LavaLizard": {
+    "size": 1.0,
+    "health": 4.1421658710867355,
+    "damage": 1.8556685749974917,
+    "_wiki_damage": 30
+  },
+  "SandShark": {
+    "size": 1.0,
+    "health": 4.2599541586124667,
+    "damage": 2.0756000637459109,
+    "_wiki_damage": 30
+  },
+  "SpineEel": {
+    "size": 1.0,
+    "health": 4.4058224106792965,
+    "damage": 1.972611355888156,
+    "_wiki_damage": 30
+  },
+  "Stalker": {
+    "size": 1.0,
+    "health": 4.1442404618054161,
+    "damage": 1.5105458958572586,
+    "_wiki_damage": 30
+  },
+  "CrabSnake": {
+    "size": 1.0,
+    "health": 4.2592736701167615,
+    "damage": 1.8981709262502318,
+    "_wiki_damage": 35
+  },
+  "Mesmer": {
+    "size": 1.0,
+    "health": 3.7525695454552266,
+    "damage": 1.9186931719475022,
+    "_wiki_damage": 35
+  },
+  "CrabSquid": {
+    "size": 1.0,
+    "health": 4.1954589551860035,
+    "damage": 1.9027561615286475,
+    "_wiki_damage": 40
+  },
+  "Shocker": {
+    "size": 1.0,
+    "health": 4.3280019022251164,
+    "damage": 1.82570994971111,
+    "_wiki_damage_1": 15,
+    "_wiki_damage_2": 45,
+    "_cap": 2.2222222222222223
+  },
+  "Warper": {
+    "size": 1.0,
+    "health": 4.58245576333919,
+    "damage": 1.2952269669707519,
+    "_wiki_damage_1": 5,
+    "_wiki_damage_2": 65,
+    "_cap": 1.4285714285714286
+  },
+  "ReaperLeviathan": {
+    "size": 1.0,
+    "health": 3.694236824646346,
+    "damage": 2.0746697797909954,
+    "_wiki_damage": 80,
+    "_cap": 2.5
+  },
+  "GhostLeviathan": {
+    "size": 1.0,
+    "health": 4.1264209171412656,
+    "damage": 1.8922675725797737,
+    "_wiki_damage_player": 85,
+    "_wiki_damage_seamoth": 43,
+    "_wiki_damage_prawn": 14,
+    "_wiki_damage_cyclops": 220,
+    "_comment": "damage multiplyer vs. cyclops?",
+    "_cap": 2.3529411764705883
+  },
+  "GhostLeviathanVoid": {
+    "size": 1.0,
+    "health": 4.1149903014282785,
+    "damage": 1.9893375961474313,
+    "_wiki_damage_player": 85,
+    "_wiki_damage_seamoth": 43,
+    "_wiki_damage_prawn": 14,
+    "_wiki_damage_cyclops": 220,
+    "_comment": "damage multiplyer vs. cyclops?",
+    "_cap": 2.3529411764705883
+  },
+  "SeaDragon": {
+    "size": 0.88556334473325471,
+    "health": 4.0696254397628264,
+    "damage": 2.2422326051742472,
+    "_wiki_damage_1": 20,
+    "_wiki_damage_2": 40,
+    "_wiki_damage_3": 80,
+    "_comment": "can also insta kill",
+    "_cap": "-"
+  },
+  "Bleeder": {
+    "size": 1.0,
+    "health": 4.5604084390404207,
+    "damage": 2.1175985034738787,
+    "_wiki_damage": 5,
+    "_comment": "constant low damage"
+  },
+  "GasoPod": {
+    "size": 1.0,
+    "health": 4.2766874789324376,
+    "damage": 1.0615213452854935,
+    "_comment": "constant high damage",
+    "_cap": "-"
+  },
+  "Crash": {
+    "size": 1.0,
+    "health": 4.6861163767867113,
+    "damage": 0.96392057863022385,
+    "_comment": "damage varies, can be 100+",
+    "_cap": "-"
+  },
+  "SeaTreader": {
+    "size": 1.0,
+    "health": 3.5645866045572512,
+    "damage": 2.2016543829573889,
+    "_wiki_damage": 40
+  }
+}
