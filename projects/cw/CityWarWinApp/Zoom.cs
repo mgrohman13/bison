@@ -16,30 +16,34 @@ namespace CityWarWinApp
 
         const int timerTime = 1300;
 
-        public Zoom(Map main, float zoom, bool zoomIn)
+        public Zoom(Map main, float zoom, bool? zoomIn, float delta)
         {
             InitializeComponent();
+            this.MouseWheel += new MouseEventHandler(zoomForm_MouseWheel);
 
             this.main = main;
             this.zoom = zoom;
 
-            showZoom(zoomIn);
+            showZoom(zoomIn, delta);
         }
 
-        private void showZoom(bool zoomIn)
+        private void showZoom(bool? zoomIn, float delta)
         {
-            float factor = 1f + Game.Random.GaussianCapped(.13f, .039f);
-            if (zoomIn)
+            if (zoomIn.HasValue)
+                delta = 260f * (zoomIn.Value ? 1f : -1f);
+
+            float factor = 1f + Game.Random.GaussianCapped(Math.Abs(delta) * .00091f, .039f);
+            if (delta >= 0)
                 zoom *= factor;
             else
                 zoom /= factor;
 
-            if (zoom < 30f)
-                zoom = 30f;
-            else if (zoom > 300f)
-                zoom = 300f;
+            if (zoom < 26f)
+                zoom = 26f;
+            else if (zoom > 390f)
+                zoom = 390f;
 
-            this.lblZoom.Text = string.Format("{0}%", ( (float)( 100f * zoom / Map.startZoom ) ).ToString("0"));
+            this.lblZoom.Text = string.Format("{0}%", ((float)(100f * zoom / Map.startZoom)).ToString("0"));
 
             Refresh();
 
@@ -58,9 +62,14 @@ namespace CityWarWinApp
         private void zoomForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 'z' || e.KeyChar == 'Z')
-                showZoom(true);
+                showZoom(true, 0f);
             else if (e.KeyChar == 'x' || e.KeyChar == 'X')
-                showZoom(false);
+                showZoom(false, 0f);
+        }
+
+        private void zoomForm_MouseWheel(object sender, MouseEventArgs e)
+        {
+            showZoom(null, e.Delta);
         }
     }
 }

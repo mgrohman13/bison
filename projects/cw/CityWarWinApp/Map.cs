@@ -89,8 +89,8 @@ namespace CityWarWinApp
         {
             InitializeComponent();
             this.panelPieces.Initialize(GetPiecesForPiecesPanel, GetDrawFlagsForPiece, GetTextForPiece, () => Brushes.DarkMagenta);
-            this.MouseWheel += new MouseEventHandler(this.panelPieces.PiecesPanel_MouseWheel);
-            MouseWheel += new MouseEventHandler(MainMap_MouseWheel);
+            //this.MouseWheel += new MouseEventHandler(this.panelPieces.PiecesPanel_MouseWheel);
+            this.MouseWheel += new MouseEventHandler(MainMap_MouseWheel);
             this.ResizeRedraw = false;
 
             //reduce flickering
@@ -183,7 +183,7 @@ namespace CityWarWinApp
                 return true;
             }
             //if the piece is an aircraft, and has not already been OKed, call the Tile.CheckAircraft instance method
-            else if (piece.Ability == Abilities.Aircraft && !( unit != null && !unit.IsRanded )
+            else if (piece.Ability == Abilities.Aircraft && !(unit != null && !unit.IsRanded)
                 && !okToMove.Contains(piece) && toTile.CheckAircraft(moveMod, piece, ref CanGetCarrier))
             {
                 //if moving may cause it to die, show a dialog asking confirmation
@@ -229,12 +229,12 @@ namespace CityWarWinApp
             this.lblPpl.Text = currentPlayer.Population.ToString();
 
             //bold work when you are broke and may lose some resources
-            bool small = ( currentPlayer.GetTurnUpkeep() < currentPlayer.Work );
+            bool small = (currentPlayer.GetTurnUpkeep() < currentPlayer.Work);
             this.lblWork.Font = new System.Drawing.Font("Arial", small ? 9.75F : 11.25F,
                     small ? FontStyle.Regular : FontStyle.Bold);
 
             //bold magic when you can afford a wizard
-            small = ( currentPlayer.Magic < Player.WizardCost );
+            small = (currentPlayer.Magic < Player.WizardCost);
             this.lblWizard.Font = new System.Drawing.Font("Arial", small ? 9.75F : 11.25F,
                     small ? FontStyle.Regular : FontStyle.Bold);
         }
@@ -284,7 +284,7 @@ namespace CityWarWinApp
                     this.btnRest.Text = "Rest";
 
                 //if the current player occupies the selected tile, show the grouping buttons
-                bool group = ( owner == Game.CurrentPlayer );
+                bool group = (owner == Game.CurrentPlayer);
                 this.btnGroup.Visible = group;
                 this.btnUngroup.Visible = group;
             }
@@ -296,21 +296,21 @@ namespace CityWarWinApp
             const float mult = 0.288675f;
 
             //change the scroll speed based on the zoom
-            scrollSpeed = (float)( Math.Sqrt(Zoom * startZoom) / 2.6f );
+            scrollSpeed = (float)(Math.Sqrt(Zoom * startZoom) / 2.6f);
 
             //calculate side and cross length of the hexes
             side = Zoom * mult;
             middle = Zoom / 4f;
 
             //see if there is enough room to scroll each axis
-            xAxis = ( ( Zoom * Game.Diameter ) > this.ClientSize.Width - panelWidth );
-            yAxis = ( ( side * 3 * Game.Diameter ) > this.ClientSize.Height );
+            xAxis = ((Zoom * Game.Diameter) > this.ClientSize.Width - panelWidth);
+            yAxis = ((side * 3 * Game.Diameter) > this.ClientSize.Height);
 
             //get the maximum values for offX and offY
             if (xAxis)
-                topX = ( (float)Game.Diameter + .5f ) * (float)Zoom - ( (float)ClientSize.Width - panelWidth - 24f );
+                topX = ((float)Game.Diameter + .5f) * (float)Zoom - ((float)ClientSize.Width - panelWidth - 24f);
             if (yAxis)
-                topY = ( (float)Game.Diameter + 1f / 3f ) * ( (float)Zoom * 3f * mult ) - (float)ClientSize.Height + 26f;
+                topY = ((float)Game.Diameter + 1f / 3f) * ((float)Zoom * 3f * mult) - (float)ClientSize.Height + 26f;
 
             //get the font for city and wizard numbers on a tile
             if (tileInfoFont != null)
@@ -338,18 +338,18 @@ namespace CityWarWinApp
             selected = new Point(tile.X, tile.Y);
 
             //get the x and y distances to use
-            float y = (float)ClientSize.Height / 2f, xx = ( (float)( ClientSize.Width - panelWidth ) ) / 2f;
+            float y = (float)ClientSize.Height / 2f, xx = ((float)(ClientSize.Width - panelWidth)) / 2f;
 
             //set the offY
             if (yAxis)
-                offY = ( side * ( 3f * (float)tile.Y + 2f ) - y + 13f );
+                offY = (side * (3f * (float)tile.Y + 2f) - y + 13f);
 
             //set the offX
             if (xAxis)
                 if (tile.Y % 2 == 0)
                     offX = (float)tile.X * Zoom + Zoom - xx + 13f;
                 else
-                    offX = ( 2f * (float)tile.X * Zoom + Zoom - 2f * ( xx + 13f ) ) / 2f;
+                    offX = (2f * (float)tile.X * Zoom + Zoom - 2f * (xx + 13f)) / 2f;
 
             //check maximums/minimums
             if (xAxis)
@@ -431,7 +431,7 @@ namespace CityWarWinApp
 
         private bool CheckModifier(Keys key)
         {
-            return ( ( Control.ModifierKeys & key ) != Keys.None );
+            return ((Control.ModifierKeys & key) != Keys.None);
         }
 
         private void panelPieces_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -469,7 +469,8 @@ namespace CityWarWinApp
                 {
                     try
                     {
-                        InfoForm.Close();
+                        if (InfoForm != null)
+                            InfoForm.Close();
                     }
                     catch
                     {
@@ -544,8 +545,8 @@ namespace CityWarWinApp
                     zoom_9mid_2zoom_3 = zoom_9mid_2 + zoom_3;
 
                 //get the range of hexes that need to be drawn
-                int minX = (int)( offX / _zoom ) - 2, maxX = (int)( ( offX + (float)( ClientSize.Width - panelWidth ) ) / _zoom ) + 1;
-                int minY = (int)( offY / ( side3 ) ) - 2, maxY = (int)( ( offY + ClientSize.Height ) / ( side3 ) ) + 1;
+                int minX = (int)(offX / _zoom) - 2, maxX = (int)((offX + (float)(ClientSize.Width - panelWidth)) / _zoom) + 1;
+                int minY = (int)(offY / (side3)) - 2, maxY = (int)((offY + ClientSize.Height) / (side3)) + 1;
                 if (minX < -1)
                     minX = -1;
                 if (minY < -1)
@@ -556,8 +557,8 @@ namespace CityWarWinApp
                     maxY = Game.Diameter;
 
                 //draw the hexes
-                for (int X = minX ; ++X < maxX ;)
-                    for (int Y = minY ; ++Y < maxY ;)
+                for (int X = minX; ++X < maxX;)
+                    for (int Y = minY; ++Y < maxY;)
                     {
                         //get the current tile being drawn
                         Tile thisTile = Game.GetTile(X, Y);
@@ -567,24 +568,24 @@ namespace CityWarWinApp
                             Brush theBrush;
                             switch (thisTile.Terrain)
                             {
-                            case Terrain.Forest:
-                                theBrush = Brushes.Green;
-                                break;
-                            case Terrain.Mountain:
-                                theBrush = Brushes.Gold;
-                                break;
-                            case Terrain.Plains:
-                                theBrush = Brushes.Gray;
-                                break;
-                            case Terrain.Water:
-                                theBrush = Brushes.Blue;
-                                break;
-                            default:
-                                throw new Exception();
+                                case Terrain.Forest:
+                                    theBrush = Brushes.Green;
+                                    break;
+                                case Terrain.Mountain:
+                                    theBrush = Brushes.Gold;
+                                    break;
+                                case Terrain.Plains:
+                                    theBrush = Brushes.Gray;
+                                    break;
+                                case Terrain.Water:
+                                    theBrush = Brushes.Blue;
+                                    break;
+                                default:
+                                    throw new Exception();
                             }
 
                             //caulculate the upper left hand corner of the hex
-                            float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
+                            float xVal = (float)X * mid4 - OffX + (Y % 2 == 0 ? mid2 : 0f);
                             float yVal = (float)Y * side3 - OffY;
 
                             //draw the terrain hexegon
@@ -623,7 +624,7 @@ namespace CityWarWinApp
                     //show the selected tile
                     if (selected.X > minX && selected.X < maxX && selected.Y > minY && selected.Y < maxY)
                     {
-                        float XVal = (float)selected.X * mid4 - OffX + ( selected.Y % 2 == 0 ? mid2 : 0f );
+                        float XVal = (float)selected.X * mid4 - OffX + (selected.Y % 2 == 0 ? mid2 : 0f);
                         float YVal = (float)selected.Y * side3 - OffY;
                         PointF[] points = new PointF[6];
                         points[0] = new PointF(XVal, YVal);
@@ -636,8 +637,8 @@ namespace CityWarWinApp
                     }
 
                     //draw the units
-                    for (int X = minX ; ++X < maxX ;)
-                        for (int Y = minY ; ++Y < maxY ;)
+                    for (int X = minX; ++X < maxX;)
+                        for (int Y = minY; ++Y < maxY;)
                         {
                             Tile thisTile = Game.GetTile(X, Y);
                             if (thisTile != null)
@@ -645,7 +646,7 @@ namespace CityWarWinApp
                                 Image pic = thisTile.GetPieceImage();
                                 if (pic != null)
                                 {
-                                    float xVal = (float)X * mid4 - OffX + ( Y % 2 == 0 ? mid2 : 0f );
+                                    float xVal = (float)X * mid4 - OffX + (Y % 2 == 0 ? mid2 : 0f);
                                     float yVal = (float)Y * side3 - OffY;
                                     e.Graphics.DrawImage(pic, xVal + zoom_9, yVal - zoom_9zoom_6_m);
                                 }
@@ -660,7 +661,7 @@ namespace CityWarWinApp
                             List<PointF> points = new List<PointF>();
                             foreach (Tile t in path.Path)
                             {
-                                float xVal = (float)t.X * mid4 - OffX + ( t.Y % 2 == 0 ? mid2 : 0f );
+                                float xVal = (float)t.X * mid4 - OffX + (t.Y % 2 == 0 ? mid2 : 0f);
                                 float yVal = (float)t.Y * side3 - OffY;
                                 points.Add(new PointF(xVal + mid2, yVal + side2 / 2f));
                             }
@@ -730,12 +731,12 @@ namespace CityWarWinApp
             }
 
             //enable the timer if scrolling
-            timerGraphics.Enabled = ( up || down || left || right );
+            timerGraphics.Enabled = (up || down || left || right);
 
             //get the x and y coordinates of the hex over which the mouse resides
-            int y = (int)Math.Round(( (float)e.Y + offY - 13f + side ) / side / 3f) - 1;
-            int x = ( y % 2 == 0 ? (int)Math.Round(( (float)e.X + offX - 13f ) / Zoom) - 1
-                : (int)Math.Round(( (float)e.X + offX - 13f + Zoom / 2f ) / Zoom) - 1 );
+            int y = (int)Math.Round(((float)e.Y + offY - 13f + side) / side / 3f) - 1;
+            int x = (y % 2 == 0 ? (int)Math.Round(((float)e.X + offX - 13f) / Zoom) - 1
+                : (int)Math.Round(((float)e.X + offX - 13f + Zoom / 2f) / Zoom) - 1);
 
             //show the x and y of the mouse, if it's within range
             if (x >= 0 && x < Game.Diameter && y >= 0 && y < Game.Diameter)
@@ -754,9 +755,9 @@ namespace CityWarWinApp
         {
             if (e.X < ClientSize.Width - panelWidth)
             {
-                int y = (int)Math.Round(( (float)e.Y + offY - 13f + side ) / side / 3f) - 1;
-                int x = ( y % 2 == 0 ? (int)Math.Round(( (float)e.X + offX - 13f ) / Zoom) - 1
-                    : (int)Math.Round(( (float)e.X + offX - 13f + Zoom / 2f ) / Zoom) - 1 );
+                int y = (int)Math.Round(((float)e.Y + offY - 13f + side) / side / 3f) - 1;
+                int x = (y % 2 == 0 ? (int)Math.Round(((float)e.X + offX - 13f) / Zoom) - 1
+                    : (int)Math.Round(((float)e.X + offX - 13f + Zoom / 2f) / Zoom) - 1);
 
                 if (x >= 0 && y >= 0 && x < Game.Diameter && y < Game.Diameter)
                 {
@@ -781,7 +782,7 @@ namespace CityWarWinApp
                                 if (Control.ModifierKeys != Keys.None && selectedTile != null && selectedTile.IsNeighbor(x, y))
                                 {
                                     selectedUnits = selectedTile.FindAllUnits(unit =>
-                                            ( unit.Group == selectedTile.CurrentGroup && unit.Owner == Game.CurrentPlayer && unit.Movement > 0 ));
+                                            (unit.Group == selectedTile.CurrentGroup && unit.Owner == Game.CurrentPlayer && unit.Movement > 0));
                                     if (selectedUnits.Length == 0)
                                         selectedUnits = null;
                                 }
@@ -800,7 +801,7 @@ namespace CityWarWinApp
                                     if (selectedTile.IsNeighbor(x, y))
                                     {
                                         //check that the destination is not occupied by an enemy
-                                        if (!( clicked.OccupiedByUnit(out occ) && cur != occ ) || !selectedTile.OccupiedByUnit())
+                                        if (!(clicked.OccupiedByUnit(out occ) && cur != occ) || !selectedTile.OccupiedByUnit())
                                         {
                                             //check for potential aircraft death
                                             foreach (Piece p in selectedTile.GetSelectedPieces())
@@ -891,15 +892,6 @@ namespace CityWarWinApp
             RefreshResources();
         }
 
-        private void MainMap_MouseWheel(object sender, MouseEventArgs e)
-        {
-            ////z zooms in, x zooms out
-            //if (e.KeyChar == 'z' || e.KeyChar == 'Z')
-            //    new Zoom(this, Zoom, true).Show();
-            //else if (e.KeyChar == 'x' || e.KeyChar == 'X')
-            //    new Zoom(this, Zoom, false).Show();
-        }
-
         #endregion
 
         #region Key Events
@@ -942,9 +934,17 @@ namespace CityWarWinApp
         {
             //z zooms in, x zooms out
             if (e.KeyChar == 'z' || e.KeyChar == 'Z')
-                new Zoom(this, Zoom, true).Show();
+                new Zoom(this, Zoom, true, 0f).Show();
             else if (e.KeyChar == 'x' || e.KeyChar == 'X')
-                new Zoom(this, Zoom, false).Show();
+                new Zoom(this, Zoom, false, 0f).Show();
+        }
+
+        private void MainMap_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (ModifierKeys == Keys.Shift)
+                new Zoom(this, Zoom, null, e.Delta).Show();
+            else
+                this.panelPieces.PiecesPanel_MouseWheel(sender, e);
         }
 
         #endregion
@@ -1018,7 +1018,7 @@ namespace CityWarWinApp
             }
 
             //check if the timer should still be enabled
-            this.timerGraphics.Enabled = ( left || right || up || down );
+            this.timerGraphics.Enabled = (left || right || up || down);
 
             //repaint the map
             this.Invalidate(invalidateRectangle, false);
@@ -1051,7 +1051,7 @@ namespace CityWarWinApp
         private void lblResource_MouseLeave(object sender, EventArgs e)
         {
             up = false;
-            this.timerGraphics.Enabled = ( left || right || down );
+            this.timerGraphics.Enabled = (left || right || down);
         }
 
         private void MainMap_FormClosing(object sender, FormClosingEventArgs e)
@@ -1252,7 +1252,7 @@ namespace CityWarWinApp
         private IEnumerable<Unit> OrderByRegen(IEnumerable<Unit> units, Func<Unit, double> keySelector = null)
         {
             units = Game.Random.Iterate(units);
-            Func<Unit, double> secondary = ( unit => unit.MaxMove * unit.WorkRegen );
+            Func<Unit, double> secondary = (unit => unit.MaxMove * unit.WorkRegen);
             if (keySelector == null)
                 return units.OrderBy(secondary);
             else

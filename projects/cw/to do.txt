@@ -3,12 +3,14 @@ in between games
 	swap hydra g/w attacks?  shouldn't need rebalance? but is it best human water v water unit?
 	larger map avg?
 		reduce wiz pts?
+	num of wiz pts fluctuates throughout game
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
 	revamp to balance all at once and use all target units based on types
+	flamethrower not hit W (dragon too?)
 
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
@@ -18,11 +20,13 @@ gameplay
 	trading capturables generates more income
 	portal income comes out of inc
 	SplitPortalCost - see comment
+	swap portal ratios w/ pop ratio?
 	get relic when no capt?
 	group move from different hexes
 	teleporters?
 	exp?
 requiring rebalance
+	consider differentiating underwater/surface
 	tough for fae to dump air
 	unit abilities
 	better terrains

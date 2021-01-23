@@ -135,8 +135,8 @@ namespace CityWar
         }
         public static int GetMinDamage(double damage, double divide, double armor)
         {
-            int minDamage = (int)( damage * ( 1 - DamMultPercent ) - armor / divide );
-            return ( minDamage > 0 ? minDamage : 0 );
+            int minDamage = (int)(damage * (1 - DamMultPercent) - armor / divide);
+            return (minDamage > 0 ? minDamage : 0);
         }
 
         public double GetAverageDamage(Unit enemy, out double killPct, out double avgRelic)
@@ -202,7 +202,7 @@ namespace CityWar
             }
             else if (damage > hits)
             {
-                overkill = ( damage - hits ) / (double)damage;
+                overkill = (damage - hits) / (double)damage;
                 damage = hits;
             }
 
@@ -214,11 +214,11 @@ namespace CityWar
             }
             else
             {
-                double upkeep = .39 * Player.GetUpkeep(owner) * ( 1 - overkill ) / owner.Attacks.Length;
+                double upkeep = .39 * Player.GetUpkeep(owner) * (1 - overkill) / owner.Attacks.Length;
                 owner.Owner.AddUpkeep(upkeep, .169);
             }
 
-            double relicValue = ( GetAverageDamage(this.damage, this.Pierce, armor, hits) - damage ) / RelicDivide / unit.MaxHits;
+            double relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, hits) - damage) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;
@@ -279,28 +279,33 @@ namespace CityWar
             avgRelic = 0;
             double avgDamage = 0, total = 0;
 
-            double avgDmgForRelic = -1;
-            if (doRelic)
-                avgDmgForRelic = GetAverageDamage(damage, divide, targetArmor, targetHits);
-
             double damMult = damage * DamMultPercent;
             double damStatic = damage - damMult - targetArmor / divide;
 
             int oeLimit = MattUtil.MTRandom.GetOEIntMax(damMult);
 
+            if ((int)Math.Floor(damStatic) >= targetHits)
+            {
+                killPct = 1;
+                return targetHits;
+            }
             if (!doRelic && damStatic >= 0 && (int)Math.Ceiling(damStatic) + oeLimit < targetHits)
                 return damage - targetArmor / divide;
 
+            double avgDmgForRelic = -1;
+            if (doRelic)
+                avgDmgForRelic = GetAverageDamage(damage, divide, targetArmor, targetHits);
+
             int baseDmg = (int)Math.Floor(damStatic);
             double roundChance = damStatic - baseDmg;
-            damMult /= ( damMult + 1 );
+            damMult /= (damMult + 1);
             double oeChance = damMult;
-            for (int oe = 0 ; oe <= oeLimit ; ++oe)
+            for (int oe = 0; oe <= oeLimit; ++oe)
             {
-                for (int round = 0 ; round < 2 ; ++round)
+                for (int round = 0; round < 2; ++round)
                 {
-                    double chance = oeChance * ( round == 0 ? 1 - roundChance : roundChance );
-                    int totDamage = Math.Max(Math.Min(baseDmg + ( round == 0 ? 0 : 1 ) + oe, targetHits), 0);
+                    double chance = oeChance * (round == 0 ? 1 - roundChance : roundChance);
+                    int totDamage = Math.Max(Math.Min(baseDmg + (round == 0 ? 0 : 1) + oe, targetHits), 0);
 
                     if (totDamage == targetHits)
                         killPct += chance;
