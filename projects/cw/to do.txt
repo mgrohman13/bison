@@ -13,6 +13,9 @@ balance
 	flamethrower not hit W (dragon too?)
 
 gameplay
+	move order diff is wrong??
+	relic more random?  keep double?
+	portal recruit type units
 	in multi hex battles, units only attacking immobile can be retalliated against
 	allow gamble move to use in between 1-full move
 	increase death divide (too much death vs other resources?)
@@ -25,6 +28,8 @@ gameplay
 	group move from different hexes
 	teleporters?
 	exp?
+	persist is3 attacks
+	show capturable build subset
 requiring rebalance
 	consider differentiating underwater/surface
 	tough for fae to dump air

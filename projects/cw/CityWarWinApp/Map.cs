@@ -1100,6 +1100,8 @@ namespace CityWarWinApp
         {
             this.timerGraphics.Enabled = false;
 
+            Tile selectedTile = Game.GetTile(selected.X, selected.Y);
+
             ////get currently selected pieces
             //Piece[] selPieces;
             //if (selected.X != -1 && selected.Y != -1)
@@ -1107,19 +1109,22 @@ namespace CityWarWinApp
             //else
             //    selPieces = new Piece[0];
 
-            //get the next piece based on the currently selected ones
-            Piece u = Game.CurrentPlayer.NextPiece(Game.GetTile(selected.X, selected.Y).CurrentGroup);
-            if (u == null)
+            if (selectedTile != null)
             {
-                //if no pieces have move left
-                Game.GetTile(selected.X, selected.Y).CurrentGroup = int.MinValue;
-                CenterOnSelected();
-            }
-            else
-            {
-                //center on the next unit
-                u.Tile.CurrentGroup = u.Group;
-                CenterOn(u.Tile);
+                //get the next piece based on the currently selected ones
+                Piece u = Game.CurrentPlayer.NextPiece(selectedTile.CurrentGroup);
+                if (u == null)
+                {
+                    //if no pieces have move left
+                    selectedTile.CurrentGroup = int.MinValue;
+                    CenterOnSelected();
+                }
+                else
+                {
+                    //center on the next unit
+                    u.Tile.CurrentGroup = u.Group;
+                    CenterOn(u.Tile);
+                }
             }
         }
 
