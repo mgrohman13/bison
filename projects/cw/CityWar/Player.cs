@@ -15,8 +15,8 @@ namespace CityWar
 
         public const int WizardCost = 1300, RelicCost = 300;
         public const int TradeDown = 9, TradeUp = 30;
-        public const double WorkMult = ( TradeDown + ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
-        public const double UpkeepMult = ( TradeUp - ( TradeUp - TradeDown ) / 3.0 ) / 10.0;
+        public const double WorkMult = (TradeDown + (TradeUp - TradeDown) / 3.0) / 10.0;
+        public const double UpkeepMult = (TradeUp - (TradeUp - TradeDown) / 3.0) / 10.0;
         public const double TurnUpkPct = .13;
 
         private static float zoom = -1;
@@ -70,13 +70,13 @@ namespace CityWar
             if (city)
             {
                 //stronger starting units means the concentrated armies of wizard players is more of a threat
-                double mult = ( Math.Pow(totalStartCost, .39) * 10.4 );
+                double mult = (Math.Pow(totalStartCost, .39) * 10.4);
                 int[] prodPop = AddStartResources(Game.Random.Round(5.2 * mult), ref magic,
                         Game.Random.Round(2.6 * mult), Game.Random.Round(3.9 * mult), 2);
                 this.production += prodPop[0];
                 this.population += prodPop[1];
 
-                for (int a = -1 ; ++a < 3 ; )
+                for (int a = -1; ++a < 3;)
                 {
                     Tile t = RandomStartTile(false);
 
@@ -110,7 +110,7 @@ namespace CityWar
                 new Wizard(this, t, out unused);
                 new Relic(this, t);
 
-                for (int i = -1 ; ++i < startUnits.Length ; )
+                for (int i = -1; ++i < startUnits.Length;)
                     thisTotal += Unit.NewUnit(startUnits[i], t, this).BaseTotalCost;
             }
 
@@ -126,7 +126,7 @@ namespace CityWar
             foreach (int val in Game.Random.Iterate(numOthers))
             {
                 if (numOthers > 1)
-                    addAmt = Game.Random.RangeInt(0, Game.Random.Round(2 * totalAmt / (double)( numOthers-- )));
+                    addAmt = Game.Random.RangeInt(0, Game.Random.Round(2 * totalAmt / (double)(numOthers--)));
                 else
                     addAmt = totalAmt;
                 retVal[val] = addAmt;
@@ -136,7 +136,7 @@ namespace CityWar
         }
         private Tile RandomStartTile(bool canEdge)
         {
-            return game.RandomTile(neighbor => ( canEdge || neighbor != null ) && ( neighbor == null || !neighbor.Occupied() ));
+            return game.RandomTile(neighbor => (canEdge || neighbor != null) && (neighbor == null || !neighbor.Occupied()));
         }
 
         #endregion //fields and constructors
@@ -164,7 +164,7 @@ namespace CityWar
 
             //find the last index of a piece that is selected and start there
             int index;
-            for (index = count ; --index > -1 ; )
+            for (index = count; --index > -1;)
                 if (pieces[index].Group == currentGroup)
                     break;
 
@@ -334,20 +334,20 @@ namespace CityWar
         {
             switch (resource)
             {
-            case "Air":
-                return air;
-            case "Death":
-                return death;
-            case "Earth":
-                return earth;
-            case "Nature":
-                return nature;
-            case "Production":
-                return production;
-            case "Water":
-                return water;
-            default:
-                throw new Exception();
+                case "Air":
+                    return air;
+                case "Death":
+                    return death;
+                case "Earth":
+                    return earth;
+                case "Nature":
+                    return nature;
+                case "Production":
+                    return production;
+                case "Water":
+                    return water;
+                default:
+                    throw new Exception();
             }
         }
 
@@ -401,7 +401,7 @@ namespace CityWar
         {
             get
             {
-                return ( pieces.Count < 1 );
+                return (pieces.Count < 1);
             }
         }
 
@@ -433,7 +433,7 @@ namespace CityWar
             //the capturing player gets stuck with some of the other players upkeep
             int wizards, portals, cities, relics, units;
             this.GetCounts(out wizards, out portals, out cities, out relics, out units);
-            double transferAmt = this.upkeep / ( wizards + portals + cities + relics ) / 2.1;
+            double transferAmt = this.upkeep / (wizards + portals + cities + relics) / 2.1;
             this.AddUpkeep(-transferAmt);
             p.AddUpkeep(transferAmt);
 
@@ -508,67 +508,67 @@ namespace CityWar
 
         internal void CollectWizardPts(double points, Terrain? terrain = null)
         {
-            Action<int> population = ( amt => this.population += amt );
-            Action<int> production = ( amt => this.production += amt );
-            Action<int> magic = ( amt => this.magic += amt );
-            Action<int> relic = ( amt => this.relic += amt );
-            Action<int> death = ( amt => this.death += amt );
-            Action<int> air = ( amt => this.air += amt );
-            Action<int> earth = ( amt => this.earth += amt );
-            Action<int> nature = ( amt => this.nature += amt );
-            Action<int> water = ( amt => this.water += amt );
+            Action<int> population = (amt => this.population += amt);
+            Action<int> production = (amt => this.production += amt);
+            Action<int> magic = (amt => this.magic += amt);
+            Action<int> relic = (amt => this.relic += amt);
+            Action<int> death = (amt => this.death += amt);
+            Action<int> air = (amt => this.air += amt);
+            Action<int> earth = (amt => this.earth += amt);
+            Action<int> nature = (amt => this.nature += amt);
+            Action<int> water = (amt => this.water += amt);
 
             Dictionary<Action<int>, int> typeFuncs;
             if (terrain == null)
             {
                 //not really wizard points, but for turn order balancing
-                //total: 182
+                //total: 131
                 typeFuncs = new Dictionary<Action<int>, int>() {
-                    { magic, 7 },
-                    { relic, 7 },
-                    { death, 12 },
-                    { air, 18 },
-                    { earth, 18 },
-                    { nature, 18 },
-                    { water, 18 },
-                    { population, 42 },
-                    { production, 42 },
+                    { relic, 3 },
+                    { magic, 5 },
+                    { air, 13 },
+                    { earth, 13 },
+                    { nature, 13 },
+                    { water, 13 },
+                    { death, 15 },
+                    { population, 27 },
+                    { production, 29 },
                 };
             }
             else
             {
                 //for actual wizard points
-                //total: 100
+                //total: 137
                 typeFuncs = new Dictionary<Action<int>, int>() {
-                    { population, 1 },
                     { production, 1 },
-                    { magic, 3 },
-                    { relic, 6 },
-                    { death, 13 },
-                    //these will really be 16 or 28, based on terrain
-                    { air, 19 },
-                    { earth, 19 },
-                    { nature, 19 },
-                    { water, 19 },
+                    { population, 2 },
+                    { magic, 4 },
+                    { relic, 9 },
+                    { death, 17 },
+                    //these will really be 22 or 38, based on terrain
+                    { air, 26 },
+                    { earth, 26 },
+                    { nature, 26 },
+                    { water, 26 },
                 };
-                const int mod = 3;
+                const int mod = 4;
                 Action<int> terrainFunc;
                 switch (terrain.Value)
                 {
-                case Terrain.Forest:
-                    terrainFunc = nature;
-                    break;
-                case Terrain.Mountain:
-                    terrainFunc = earth;
-                    break;
-                case Terrain.Plains:
-                    terrainFunc = air;
-                    break;
-                case Terrain.Water:
-                    terrainFunc = water;
-                    break;
-                default:
-                    throw new Exception();
+                    case Terrain.Forest:
+                        terrainFunc = nature;
+                        break;
+                    case Terrain.Mountain:
+                        terrainFunc = earth;
+                        break;
+                    case Terrain.Plains:
+                        terrainFunc = air;
+                        break;
+                    case Terrain.Water:
+                        terrainFunc = water;
+                        break;
+                    default:
+                        throw new Exception();
                 }
                 typeFuncs[terrainFunc] += mod * 4;
                 typeFuncs[air] -= mod;
@@ -578,10 +578,10 @@ namespace CityWar
             }
 
             int whole = (int)points;
-            double fraction = ( whole == points ? 1 : points - whole++ );
+            double fraction = (whole == points ? 1 : points - whole++);
             while (--whole > -1)
             {
-                double avg = 50 * ( whole == 0 ? fraction : 1 );
+                double avg = 50 * (whole == 0 ? fraction : 1);
                 Game.Random.SelectValue(typeFuncs)(Game.Random.GaussianCappedInt(avg, .21, avg > 2 ? Game.Random.Round(avg * .52) : 0));
             }
         }
@@ -665,24 +665,24 @@ namespace CityWar
             }
 
             double total = 0;
-            for (int idx = 0 ; idx < 5 ; ++idx)
+            for (int idx = 0; idx < 5; ++idx)
             {
                 elmDbl[idx] = GetTotalPortalCost(elmDbl[idx], elmInt[idx]);
                 total += elmDbl[idx];
             }
 
             int totInt = 0;
-            for (int idx = 0 ; idx < 4 ; ++idx)
+            for (int idx = 0; idx < 4; ++idx)
             {
                 elmInt[idx] = (int)Math.Round(elmDbl[idx] * Portal.AvgPortalCost * 5.0 / total);
                 totInt += elmInt[idx];
             }
             elmInt[4] = Portal.AvgPortalCost * 5 - totInt;
 
-            for (int idx = 0 ; idx < 5 ; ++idx)
+            for (int idx = 0; idx < 5; ++idx)
             {
                 int totalCost = elmInt[idx];
-                int element = GetPortalElementCost(other[idx] / ( other[idx] + ppl[idx] ), totalCost);
+                int element = GetPortalElementCost(other[idx] / (other[idx] + ppl[idx]), totalCost);
                 int magic = totalCost - element;
                 portalCosts.Add(getIdxCT(idx), new int[] { magic, element });
             }
@@ -692,7 +692,7 @@ namespace CityWar
         private static double GetTotalPortalCost(double totCost, int numUnits)
         {
             //the greater the number of units and their cost, the greater the total cost of the portal
-            return Math.Pow(totCost * ( numUnits + 1 ), .39);
+            return Math.Pow(totCost * (numUnits + 1), .39);
         }
         public static int GetPortalElementCost(double elemPct, double totalCost)
         {
@@ -703,43 +703,43 @@ namespace CityWar
             elemPct *= elemPct;
             if (elemPct <= .26)
                 return 1;
-            elemPct = ( 0.65 * ( elemPct - 0.26 ) );
+            elemPct = (0.65 * (elemPct - 0.26));
             return (int)Math.Ceiling(elemPct * totalCost);
         }
         private static int getCTIdx(CostType costType)
         {
             switch (costType)
             {
-            case CostType.Air:
-                return 0;
-            case CostType.Earth:
-                return 1;
-            case CostType.Nature:
-                return 2;
-            case CostType.Water:
-                return 3;
-            case CostType.Death:
-                return 4;
-            default:
-                return -1;
+                case CostType.Air:
+                    return 0;
+                case CostType.Earth:
+                    return 1;
+                case CostType.Nature:
+                    return 2;
+                case CostType.Water:
+                    return 3;
+                case CostType.Death:
+                    return 4;
+                default:
+                    return -1;
             }
         }
         private static CostType getIdxCT(int idx)
         {
             switch (idx)
             {
-            case 0:
-                return CostType.Air;
-            case 1:
-                return CostType.Earth;
-            case 2:
-                return CostType.Nature;
-            case 3:
-                return CostType.Water;
-            case 4:
-                return CostType.Death;
-            default:
-                throw new Exception();
+                case 0:
+                    return CostType.Air;
+                case 1:
+                    return CostType.Earth;
+                case 2:
+                    return CostType.Nature;
+                case 3:
+                    return CostType.Water;
+                case 4:
+                    return CostType.Death;
+                default:
+                    throw new Exception();
             }
         }
 
@@ -820,28 +820,28 @@ namespace CityWar
                 string[] split = name.Split(' ');
                 switch (split[0])
                 {
-                case "Air":
-                    portalColor = Color.Gray;
-                    break;
-                case "Death":
-                    portalColor = Color.Black;
-                    break;
-                case "Earth":
-                    portalColor = Color.Gold;
-                    break;
-                case "Nature":
-                    portalColor = Color.Green;
-                    break;
-                case "Water":
-                    portalColor = Color.Blue;
-                    break;
+                    case "Air":
+                        portalColor = Color.Gray;
+                        break;
+                    case "Death":
+                        portalColor = Color.Black;
+                        break;
+                    case "Earth":
+                        portalColor = Color.Gold;
+                        break;
+                    case "Nature":
+                        portalColor = Color.Green;
+                        break;
+                    case "Water":
+                        portalColor = Color.Blue;
+                        break;
                 }
                 loadName = split[1];
             }
 
             Bitmap pic;
             //dont bother saving a const pic if the name ends with unit; it will never be drawn in a panel
-            bool file = ( constPic || name.EndsWith("Unit") );
+            bool file = (constPic || name.EndsWith("Unit"));
             if (file)
                 pic = LoadPicFromFile(loadName, portalColor);
             else
@@ -949,7 +949,7 @@ namespace CityWar
         {
             if (low >= 0 && low < high)
                 while (value > low && value < high)
-                    value += ( Game.Random.Bool() ? -1 : 1 );
+                    value += (Game.Random.Bool() ? -1 : 1);
             return value;
         }
 
@@ -991,7 +991,7 @@ namespace CityWar
         }
         private int Trade(bool up, int amt, string id)
         {
-            if (this != game.CurrentPlayer || ( up && work < 1 ) || ( !up && amt < 1 ))
+            if (this != game.CurrentPlayer || (up && work < 1) || (!up && amt < 1))
                 return amt;
 
             if (up)
@@ -1070,14 +1070,14 @@ namespace CityWar
 
         private void PayUpkeep()
         {
-            double payment = -( GetTurnUpkeep() );
+            double payment = -(GetTurnUpkeep());
             AddWork(payment);
 
             //unit upkeep
             double total = 0;
             foreach (Piece p in pieces)
             {
-                Unit u = ( p as Unit );
+                Unit u = (p as Unit);
                 if (u != null && u.Type != UnitType.Immobile)
                     total += GetUpkeep(u);
             }
@@ -1085,7 +1085,7 @@ namespace CityWar
         }
         internal static double GetUpkeep(Unit u)
         {
-            return ( u.RandedCost * UpkeepMult / 210.0 );
+            return (u.RandedCost * UpkeepMult / 210.0);
         }
 
         private void CheckNegativeWork()
@@ -1096,45 +1096,45 @@ namespace CityWar
                 int amt;
                 switch (Game.Random.Next(16))
                 {
-                case 0:
-                case 1:
-                    amt = death;
-                    TradeDeath(false);
-                    break;
-                case 2:
-                    amt = air;
-                    TradeAir(false);
-                    break;
-                case 3:
-                    amt = earth;
-                    TradeEarth(false);
-                    break;
-                case 4:
-                    amt = nature;
-                    TradeNature(false);
-                    break;
-                case 5:
-                    amt = water;
-                    TradeWater(false);
-                    break;
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    amt = production;
-                    TradeProduction(false);
-                    break;
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                    amt = population;
-                    TradePopulation(false);
-                    break;
-                default:
-                    throw new Exception();
+                    case 0:
+                    case 1:
+                        amt = death;
+                        TradeDeath(false);
+                        break;
+                    case 2:
+                        amt = air;
+                        TradeAir(false);
+                        break;
+                    case 3:
+                        amt = earth;
+                        TradeEarth(false);
+                        break;
+                    case 4:
+                        amt = nature;
+                        TradeNature(false);
+                        break;
+                    case 5:
+                        amt = water;
+                        TradeWater(false);
+                        break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                        amt = production;
+                        TradeProduction(false);
+                        break;
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                    case 14:
+                    case 15:
+                        amt = population;
+                        TradePopulation(false);
+                        break;
+                    default:
+                        throw new Exception();
                 }
                 //if you did not have enough of the chosen standard resource, you may lose some magic or relic
                 while (Game.Random.Bool(1 - GetRandVal(amt)))
@@ -1142,22 +1142,22 @@ namespace CityWar
                     {
                         switch (Game.Random.Next(8))
                         {
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                            amt = magic;
-                            TradeMagic();
-                            break;
-                        case 5:
-                        case 6:
-                        case 7:
-                            amt = relic;
-                            TradeRelic();
-                            break;
-                        default:
-                            throw new Exception();
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                                amt = magic;
+                                TradeMagic();
+                                break;
+                            case 5:
+                            case 6:
+                            case 7:
+                                amt = relic;
+                                TradeRelic();
+                                break;
+                            default:
+                                throw new Exception();
                         }
                     }
                     else
@@ -1265,55 +1265,55 @@ namespace CityWar
                     pop += 2;
                     //+13
                 }
-                else if (( portal = capturable as Portal ) != null)
+                else if ((portal = capturable as Portal) != null)
                 {
                     //avg cost 1000 (673-1461)
                     //avg roi 17.57 (15.64-19.51)
                     int amt = portal.Income;
 
                     int type = 0, position = 0;
-                    for ( ; amt > 0 ; --amt)
+                    for (; amt > 0; --amt)
                         switch (++position % 6)
                         {
-                        case 1:
-                            ++type;
-                            break;
-                        case 2:
-                            ++elemental;
-                            break;
-                        case 3:
-                            ++type;
-                            break;
-                        case 4:
-                            ++magic;
-                            break;
-                        case 5:
-                            ++type;
-                            break;
-                        case 0:
-                            ++elemental;
-                            break;
+                            case 1:
+                                ++type;
+                                break;
+                            case 2:
+                                ++elemental;
+                                break;
+                            case 3:
+                                ++type;
+                                break;
+                            case 4:
+                                ++magic;
+                                break;
+                            case 5:
+                                ++type;
+                                break;
+                            case 0:
+                                ++elemental;
+                                break;
                         }
 
                     switch (portal.Type)
                     {
-                    case CostType.Air:
-                        air += type;
-                        break;
-                    case CostType.Death:
-                        death += type;
-                        break;
-                    case CostType.Earth:
-                        earth += type;
-                        break;
-                    case CostType.Nature:
-                        nature += type;
-                        break;
-                    case CostType.Water:
-                        water += type;
-                        break;
-                    default:
-                        throw new Exception();
+                        case CostType.Air:
+                            air += type;
+                            break;
+                        case CostType.Death:
+                            death += type;
+                            break;
+                        case CostType.Earth:
+                            earth += type;
+                            break;
+                        case CostType.Nature:
+                            nature += type;
+                            break;
+                        case CostType.Water:
+                            water += type;
+                            break;
+                        default:
+                            throw new Exception();
                     }
                 }
                 else
@@ -1322,20 +1322,20 @@ namespace CityWar
                 //the actual resource for the element is based off of the terrain type
                 switch (capturable.Tile.Terrain)
                 {
-                case Terrain.Forest:
-                    nature += elemental;
-                    break;
-                case Terrain.Mountain:
-                    earth += elemental;
-                    break;
-                case Terrain.Plains:
-                    air += elemental;
-                    break;
-                case Terrain.Water:
-                    water += elemental;
-                    break;
-                default:
-                    throw new Exception();
+                    case Terrain.Forest:
+                        nature += elemental;
+                        break;
+                    case Terrain.Mountain:
+                        earth += elemental;
+                        break;
+                    case Terrain.Plains:
+                        air += elemental;
+                        break;
+                    case Terrain.Water:
+                        water += elemental;
+                        break;
+                    default:
+                        throw new Exception();
                 }
             }
         }
@@ -1355,7 +1355,7 @@ namespace CityWar
                 Portal portal = (Portal)remove;
                 int m, e;
                 Player.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out m, out e);
-                double magicPct = m / (double)( m + e ), elementPct = e / (double)( m + e );
+                double magicPct = m / (double)(m + e), elementPct = e / (double)(m + e);
                 double diff = portal.GetPortalValue() - portalAvg;
                 const double mult = .87;
                 magic += Game.Random.Round(diff * mult * magicPct);
@@ -1370,15 +1370,15 @@ namespace CityWar
         {
             //if you have enough resources, you will lose those instead of a unit
             int loseUnits = RemoveResources();
-            for (int i = 0 ; i < loseUnits ; ++i)
+            for (int i = 0; i < loseUnits; ++i)
                 if (pieces.Any())
                 {
                     //all of the players pieces will be units if this method is called
                     Unit unit = (Unit)Game.Random.SelectValue(pieces);
                     double reimburse = GetReimbursement(i == 0, unit.InverseCost, unit.GetHealthPct());
 
-                    int costReimbursement = Game.Random.Round(( unit.BaseOtherCost * reimburse ) / unit.BaseTotalCost);
-                    int pplReimbursement = Game.Random.Round(( unit.BasePplCost * reimburse ) / unit.BaseTotalCost);
+                    int costReimbursement = Game.Random.Round((unit.BaseOtherCost * reimburse) / unit.BaseTotalCost);
+                    int pplReimbursement = Game.Random.Round((unit.BasePplCost * reimburse) / unit.BaseTotalCost);
                     Spend(-costReimbursement, unit.CostType, -pplReimbursement);
 
                     unit.Tile.Remove(unit);
@@ -1388,7 +1388,7 @@ namespace CityWar
         private const double noCapLoseAmt = 1000 / 3.0;
         private double GetReimbursement(bool first, double cost, double healthPct)
         {
-            return ( cost * healthPct - ( first ? noCapLoseAmt : 0 ) );
+            return (cost * healthPct - (first ? noCapLoseAmt : 0));
         }
         private int RemoveResources()
         {

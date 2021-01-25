@@ -21,6 +21,8 @@ gameplay
 	increase death divide (too much death vs other resources?)
 	winning player leave behind city spots?
 	trading capturables generates more income
+		reset move on increment?
+		income on increment?
 	portal income comes out of inc
 	SplitPortalCost - see comment
 	swap portal ratios w/ pop ratio?
@@ -30,6 +32,7 @@ gameplay
 	exp?
 	persist is3 attacks
 	show capturable build subset
+
 requiring rebalance
 	consider differentiating underwater/surface
 	tough for fae to dump air
@@ -70,3 +73,4 @@ interface
 	clean up balance build summon form
 	ensure player color differences
 	graphic artifacts
+	group, full cboxes reset on end turn

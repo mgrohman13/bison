@@ -92,7 +92,7 @@ namespace CityWar
             List<string> races = new List<string>();
             //pick 3 random starting units
             Dictionary<string, string>[] startUnits = new Dictionary<string, string>[3];
-            for (int a = 0 ; a < 3 ; ++a)
+            for (int a = 0; a < 3; ++a)
             {
                 if (!races.Any())
                     races = Races.Keys.ToList();
@@ -116,7 +116,7 @@ namespace CityWar
             foreach (Player current in randOrder)
             {
                 string[] raceUnits = new string[3];
-                for (int a = 0 ; a < 3 ; ++a)
+                for (int a = 0; a < 3; ++a)
                     raceUnits[a] = startUnits[a][current.Race];
                 current.NewPlayer(this, city = !city, raceUnits, totalStartCost);
                 addWork = Math.Max(addWork, (int)Math.Ceiling(current.GetTurnUpkeep()) - current.Work);
@@ -134,10 +134,10 @@ namespace CityWar
 
             //create wizard points and possibly some starting city spots
             double avg = MapSize / 52.0;
-            int wizspots = 1 + Random.GaussianCappedInt(avg, .078, (int)( avg / 1.3 ));
-            for (int a = 0 ; a < wizspots ; ++a)
+            int wizspots = 1 + Random.GaussianCappedInt(avg, .078, (int)(avg / 1.3));
+            for (int a = 0; a < wizspots; ++a)
                 CreateWizardPts();
-            for (int a = 0 ; a < numPlayers ; ++a)
+            for (int a = 0; a < numPlayers; ++a)
                 CreateCitySpot();
 
             //	Start the game!
@@ -158,9 +158,9 @@ namespace CityWar
             numUnits = us.Unit.Rows.Count;
             Dictionary<string, List<string>> tempRaces = new Dictionary<string, List<string>>();
             var unitsHave = new Dictionary<string, int>(numUnits);
-            for (int a = -1 ; ++a < numUnits ;)
+            for (int a = -1; ++a < numUnits;)
             {
-                UnitSchema.UnitRow row = ( (UnitSchema.UnitRow)us.Unit.Rows[a] );
+                UnitSchema.UnitRow row = ((UnitSchema.UnitRow)us.Unit.Rows[a]);
                 string race = row.Race;
                 string name = row.Name;
                 if (!tempRaces.ContainsKey(race))
@@ -186,7 +186,7 @@ namespace CityWar
 
         public bool CanUndoCommand()
         {
-            return ( UndoCommands.Count > 0 );
+            return (UndoCommands.Count > 0);
         }
         public Tile UndoCommand()
         {
@@ -325,7 +325,7 @@ namespace CityWar
             //find all adjacent attackers that might be able to participate
             foreach (Unit attacker in GetAttackers(defender.Tile))
                 //check if the potential attacker can target the defender and is not already in the battle with an equal or shorter length weapon
-                if (CanTarget(attacker, defender, out minLength) && !( attackers.TryGetValue(attacker, out hasLength) && hasLength <= minLength ))
+                if (CanTarget(attacker, defender, out minLength) && !(attackers.TryGetValue(attacker, out hasLength) && hasLength <= minLength))
                 {
                     //add the found attacker to the battle with the minimum length weapon it might use
                     attackers[attacker] = minLength;
@@ -339,13 +339,13 @@ namespace CityWar
         }
         private bool CanStartBattle(Unit attacker)
         {
-            return ( attacker.Owner == CurrentPlayer && attacker.Movement > 0 );
+            return (attacker.Owner == CurrentPlayer && attacker.Movement > 0);
         }
         private void AddDefenders(HashSet<Unit> defenders, Player enemy, Unit attacker, int length = int.MaxValue, Dictionary<Unit, int> attackers = null)
         {
             //find all adjacent defenders that can either retalliate against or be targeted by this attacker
             foreach (Unit defender in FindNeighborUnits(attacker.Tile, defender =>
-                    defender.Owner == enemy && ( CanTarget(defender, attacker, length) || CanTarget(attacker, defender) ) && !defenders.Contains(defender)))
+                    defender.Owner == enemy && (CanTarget(defender, attacker, length) || CanTarget(attacker, defender)) && !defenders.Contains(defender)))
             {
                 //add the found defender to the battle
                 defenders.Add(defender);
@@ -368,7 +368,7 @@ namespace CityWar
         {
             minLength = unit.Attacks.Where(attack => attack.Length >= length && attack.CanTarget(target))
                     .Select(attack => attack.Length).DefaultIfEmpty(int.MaxValue).Min();
-            return ( minLength != int.MaxValue );
+            return (minLength != int.MaxValue);
         }
 
         public bool EndBattle(Battle b)
@@ -442,7 +442,7 @@ namespace CityWar
             if (piece != null)
                 if (canUndo)
                 {
-                    Unit u = ( piece as Unit );
+                    Unit u = (piece as Unit);
                     if (u != null)
                         AddTileUnit(u.Tile, u);
 
@@ -575,7 +575,7 @@ namespace CityWar
 
             //undo all pieces that moved from the same tile to the same tile at once
             if (UndoCommands.Count > 0 && UndoCommands.Peek() == UndoMovePieces
-                && UndoArgs.Peek()[0] == from && ( (Piece)UndoArgs.Peek()[1] ).Tile == movedTile)
+                && UndoArgs.Peek()[0] == from && ((Piece)UndoArgs.Peek()[1]).Tile == movedTile)
             {
                 UndoCommands.Pop();
                 return UndoMovePieceSetGroup(UndoArgs.Pop(), group);
@@ -588,13 +588,13 @@ namespace CityWar
             int length = selPieces.Length;
             if (length < 1)
                 return;
-            for (int i = 0 ; i < length ; ++i)
+            for (int i = 0; i < length; ++i)
                 if (selPieces[i].Owner != players[currentPlayer])
                     return;
 
             bool any = false;
             Dictionary<Piece, double> undoInfo = new Dictionary<Piece, double>();
-            for (int i = 0 ; i < length ; ++i)
+            for (int i = 0; i < length; ++i)
             {
                 Piece curPiece = selPieces[i];
                 double info = curPiece.Heal();
@@ -626,7 +626,7 @@ namespace CityWar
                 p.UndoHeal(undoInfo[p]);
 
                 Unit u;
-                if (( u = p as Unit ) != null && u.Dead)
+                if ((u = p as Unit) != null && u.Dead)
                 {
                     dead.Add(p);
                 }
@@ -652,22 +652,22 @@ namespace CityWar
                     int element;
                     switch (piece.Tile.Terrain)
                     {
-                    case Terrain.Forest:
-                        element = piece.Owner.Nature;
-                        break;
-                    case Terrain.Mountain:
-                        element = piece.Owner.Earth;
-                        break;
-                    case Terrain.Plains:
-                        element = piece.Owner.Air;
-                        break;
-                    case Terrain.Water:
-                        element = piece.Owner.Water;
-                        break;
-                    default:
-                        throw new Exception();
+                        case Terrain.Forest:
+                            element = piece.Owner.Nature;
+                            break;
+                        case Terrain.Mountain:
+                            element = piece.Owner.Earth;
+                            break;
+                        case Terrain.Plains:
+                            element = piece.Owner.Air;
+                            break;
+                        case Terrain.Water:
+                            element = piece.Owner.Water;
+                            break;
+                        default:
+                            throw new Exception();
                     }
-                    wizCheck = ( element < 0 );
+                    wizCheck = (element < 0);
                 }
 
                 if (wizCheck || piece.Owner.Work < 0)
@@ -817,13 +817,13 @@ namespace CityWar
                 {
                     removeArgs.AddRange(args);
                     if (undoTerrain)
-                        RemoveUndosForTile(( (Wizard)args[0] ).Tile);
+                        RemoveUndosForTile(((Wizard)args[0]).Tile);
                 }
             }
 
             Stack<UndoDelegate> newCommandStack = new Stack<UndoDelegate>();
             Stack<object[]> newArgStack = new Stack<object[]>();
-            for (int i = newCommands.Count ; --i > -1 ;)
+            for (int i = newCommands.Count; --i > -1;)
             {
                 newCommandStack.Push(newCommands[i]);
                 newArgStack.Push(newArgs[i]);
@@ -838,10 +838,10 @@ namespace CityWar
         {
             if (undo == UndoChangeTerrain)
             {
-                Tile tile = ( (Wizard)args[0] ).Tile;
+                Tile tile = ((Wizard)args[0]).Tile;
                 foreach (object piece in pieces)
                 {
-                    Unit u = ( piece as Unit );
+                    Unit u = (piece as Unit);
                     if (u != null && UnitTiles.ContainsKey(u) && UnitTiles[u].Contains(tile))
                         return true;
                 }
@@ -861,18 +861,18 @@ namespace CityWar
             Piece p;
             System.Collections.IDictionary dictionary;
             System.Collections.IEnumerable enumberable;
-            if (( p = arg as Piece ) != null)
+            if ((p = arg as Piece) != null)
             {
                 yield return p;
             }
-            else if (( dictionary = arg as System.Collections.IDictionary ) != null)
+            else if ((dictionary = arg as System.Collections.IDictionary) != null)
             {
                 foreach (Piece piece in FindAllPieces(dictionary.Keys))
                     yield return piece;
                 foreach (Piece piece in FindAllPieces(dictionary.Values))
                     yield return piece;
             }
-            else if (( enumberable = arg as System.Collections.IEnumerable ) != null)
+            else if ((enumberable = arg as System.Collections.IEnumerable) != null)
             {
                 foreach (object obj in enumberable)
                     foreach (Piece piece in FindAllPieces(obj))
@@ -937,7 +937,7 @@ namespace CityWar
         }
         private static int GetMapSize(int Diameter)
         {
-            double numHexes = GetNumHexes(( Diameter + 1 ) / 2);
+            double numHexes = GetNumHexes((Diameter + 1) / 2);
             int mapSize = (int)numHexes;
             if (numHexes != mapSize)
                 throw new Exception();
@@ -945,7 +945,7 @@ namespace CityWar
         }
         public static double GetNumHexes(double radius)
         {
-            return 3 * radius * ( radius - 1 ) + 1;
+            return 3 * radius * (radius - 1) + 1;
         }
 
         public Tile GetTile(int x, int y)
@@ -982,7 +982,7 @@ namespace CityWar
 
         internal void CreateWizardPts()
         {
-            Tile tile = RandomTile(neighbor => neighbor == null || ( neighbor.WizardPoints < 1 && !neighbor.HasWizard() ));
+            Tile tile = RandomTile(neighbor => neighbor == null || (neighbor.WizardPoints < 1 && !neighbor.HasWizard()));
             tile.MakeWizPts();
         }
 
@@ -991,7 +991,7 @@ namespace CityWar
             while (true)
             {
                 Tile tile = map[Random.Next(Diameter), Random.Next(Diameter)];
-                if (tile != null && ( ValidNeighbor == null || tile.GetNeighbors(true, true).All(ValidNeighbor) ))
+                if (tile != null && (ValidNeighbor == null || tile.GetNeighbors(true, true).All(ValidNeighbor)))
                     return tile;
             }
         }
@@ -1040,7 +1040,7 @@ namespace CityWar
             //remove from the players array
             int removedIndex = players.Length - 1;
             Player[] newPlayers = new Player[players.Length - 1];
-            for (int a = 0, b = -1 ; a < newPlayers.Length ; ++a)
+            for (int a = 0, b = -1; a < newPlayers.Length; ++a)
                 if (players[++b] == player)
                 {
                     --a;
@@ -1180,15 +1180,15 @@ namespace CityWar
                 else
                 {
                     double raceTotal = race.Value.Sum(name => freeUnits[name]);
-                    double target = targetUnit.BaseTotalCost + ( raceTotal - avgRaceTotal ) / (double)race.Value.Length;
+                    double target = targetUnit.BaseTotalCost + (raceTotal - avgRaceTotal) / (double)race.Value.Length;
                     double minTarget = targetUnit.BaseTotalCost / 1.69;
 
-                    bool isHigh = ( target > targetUnit.BaseTotalCost );
-                    Func<double> ReverseTarget = ( () => 2 * targetUnit.BaseTotalCost - target );
+                    bool isHigh = (target > targetUnit.BaseTotalCost);
+                    Func<double> ReverseTarget = (() => 2 * targetUnit.BaseTotalCost - target);
                     if (isHigh)
                         target = ReverseTarget();
                     if (target < minTarget)
-                        target = minTarget / ( Math.Pow(1 + minTarget - target, .52) );
+                        target = minTarget / (Math.Pow(1 + minTarget - target, .52));
                     if (isHigh)
                         target = ReverseTarget();
 
@@ -1200,14 +1200,14 @@ namespace CityWar
                             double baseCost = Unit.CreateTempUnit(this, name).BaseTotalCost;
 
                             double chance = Math.Abs(target - baseCost) / target;
-                            chance = 1 / ( .039 + chance );
+                            chance = 1 / (.039 + chance);
                             chance *= chance;
 
                             double pct = freeUnits[name] / baseCost;
                             if (pct >= 1)
                                 pct *= 1.3 * pct;
                             if (pct < 0)
-                                chance *= .052 / ( 1 - 6.5 * pct );
+                                chance *= .052 / (1 - 6.5 * pct);
                             else
                                 chance *= .26 + pct;
 
@@ -1322,24 +1322,24 @@ namespace CityWar
                     Terrain terrain;
                     switch (Random.Next(6))
                     {
-                    case 0:
-                        terrain = Terrain.Forest;
-                        break;
-                    case 1:
-                        terrain = Terrain.Mountain;
-                        break;
-                    case 2:
-                        terrain = Terrain.Plains;
-                        break;
-                    case 3:
-                        terrain = Terrain.Water;
-                        break;
-                    default:
-                        terrain = tile.Terrain;
-                        break;
+                        case 0:
+                            terrain = Terrain.Forest;
+                            break;
+                        case 1:
+                            terrain = Terrain.Mountain;
+                            break;
+                        case 2:
+                            terrain = Terrain.Plains;
+                            break;
+                        case 3:
+                            terrain = Terrain.Water;
+                            break;
+                        default:
+                            terrain = tile.Terrain;
+                            break;
                     }
 
-                    for (int a = 0 ; a < amt ; ++a)
+                    for (int a = 0; a < amt; ++a)
                     {
                         tile.Terrain = terrain;
                         tile = Random.SelectValue(tile.GetNeighbors());
@@ -1351,7 +1351,7 @@ namespace CityWar
         private void CreateCitySpot()
         {
             int amt = Random.OEInt(Math.Sqrt(GetMapSize(Diameter - 2) / 910.0));
-            for (int a = 0 ; a < amt ; ++a)
+            for (int a = 0; a < amt; ++a)
             {
                 //select a tile not on the map edge
                 Tile tile = RandomTile(neighbor => neighbor != null);
@@ -1371,13 +1371,15 @@ namespace CityWar
         }
         private void AddMoveOrderDiff(Player player, double diff)
         {
-            //total difference between first and last moving player is worth 300 resources
-            double amount = diff * 3.0 / ( players.Length - 1.0 );
+            //total difference between first and last moving player is worth 260 resources
+            double amount = diff * 260.0 / (players.Length - 1.0);
             if (amount > 0)
-                player.CollectWizardPts(amount);
-            else
-                amount *= 2;
-            player.BalanceForUnit(50 * amount, 0);
+            {
+                double pts = Random.DoubleHalf(amount);
+                player.CollectWizardPts(pts / 50.0);
+                amount -= pts;
+            }
+            player.BalanceForUnit(amount, 0);
         }
 
         #endregion //increment turn
@@ -1395,8 +1397,8 @@ namespace CityWar
                 else
                     nullTiles = y - Diameter / 2;
 
-                int compX = x - ( radius % 2 == 1 && y % 2 == 1 ? 1 : 0 );
-                if (compX >= nullTiles / 2 && compX < Diameter - ( nullTiles + 1 ) / 2)
+                int compX = x - (radius % 2 == 1 && y % 2 == 1 ? 1 : 0);
+                if (compX >= nullTiles / 2 && compX < Diameter - (nullTiles + 1) / 2)
                 {
                     this.map[x, y] = new Tile(this, x, y);
                     this.map[x, y] = CreateTile(coord.X, coord.Y);
@@ -1407,7 +1409,7 @@ namespace CityWar
         {
             Tile tile = null;
             //try three times to find a neighbor that has already been initialized
-            for (int i = 0 ; i < 3 ; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 tile = GetTile(x, y).GetTileIn(Random.Next(6));
                 if (tile != null)
