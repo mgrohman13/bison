@@ -32,6 +32,8 @@ gameplay
 	exp?
 	persist is3 attacks
 	show capturable build subset
+	aircraft fuel?
+	wind shield
 
 requiring rebalance
 	consider differentiating underwater/surface
