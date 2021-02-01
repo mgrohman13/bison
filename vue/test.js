@@ -221,12 +221,22 @@ app.consts = {
   startUnitDev: .65,
   startUnits: 6,
 
-  cityCost: 2 / 3,
-  cityInc: function (size, cities) {
-    var avg = Math.pow(size + .13, .39) / Math.sqrt(cities + 1.3) / 1.69;
+  cityCost:function (tile) {
+    var cities = tile.player.count(v => v instanceof City);
+    var cost = app.random.gaussianOEInt(1.3 + Math.pow(tile.size + 2.1, .78) * Math.pow(cities / 5.2, 1.69), .169, .065, 1);
+    var cur = tile.unmoved.length;
+    if (cur < cost)
+        if(app.random.bool(cur * cur / cost / cost))
+            cost = cur;
+        else
+            cost = -1;
+    return cost;
+  },
+  cityInc: function (size, units) {
+    var avg = Math.pow(size + .13, .39) / Math.sqrt(units / 52 + 1.3) / 1.69;
     return app.random.gaussianOEInt(avg, .13, .13, 0);
   },
-  enemyCityDiv: 3.9,
+  enemyUnitDiv: 2.6,
 
   tileStarChance: 1 / 13,
   tileSize: function () {
@@ -263,7 +273,7 @@ class Game {
       var tile;
       do {
         tile = this.tile(start.x, start.y, app.consts.startUnitDev);
-      } while (tile.space < 1)
+      } while (tile.star || tile.space < 1)
       new Unit(this.player, tile);
     }
 
@@ -273,7 +283,7 @@ class Game {
         var x = (a === 0 ? 0 : a === 1 ? this.width - 1 : app.random.next(this.width));
         var y = (a === 2 ? 0 : a === 3 ? this.height - 1 : app.random.next(this.height));
         enemy = this.map(x, y);
-      } while (enemy.player);
+      } while (enemy.star || enemy.player);
       new City(this.players[1], enemy);
     }
 
@@ -356,12 +366,10 @@ class Tile {
   };
   get size() {
     if (this.star)
-      return null;
+      throw new Error('Tile.size');
     return this._size;
   };
   get space() {
-    if (this.star)
-      return Number.MAX_VALUE;
     return this.size - this.count;
   };
 
@@ -375,18 +383,24 @@ class Tile {
   get city() { return this._city; };
   get units() { return [...this._units]; };
   get count() { return this.units.length; };
+  get unmoved() {
+    return this.units.filter(unit => !unit.moved);
+  }
 
   inc() {
     this._size++;
   };
 
   build() {
-    if (!this.city && !this.star && this.space === 0 && this.units.every(u => !u.moved)) {
-      var cost = app.random.round((this.size - 1) * app.consts.cityCost);
-      var used = app.random.shuffle(this.units).slice(0, cost);
-      used.forEach(u => u.die());
-      this.units.forEach(u => u.moved = true);
-      new City(this.player, this);
+    if (this.player && !this.city && !this.star) {
+      var cost = app.consts.cityCost(this);
+      if (cost > -1) {
+        new City(this.player, this);
+        var used = app.random.shuffle(this.units).slice(0, cost);
+        used.forEach(u => u.die());
+      } else {
+        this.markMoved();
+      }
     }
   };
 
@@ -397,8 +411,10 @@ class Tile {
     if (tile.player && tile.player != this.player) {
       this.attack(tile);
     } else {
-      var move = app.random.shuffle(this.units.filter(unit => !unit.moved));
-      var amt = Math.min(move.length, tile.space);
+      var move = app.random.shuffle(this.unmoved);
+      var amt = move.length;
+      if (!tile.star)
+        amt = Math.min(amt, tile.space);
       if (amt) {
         move = move.slice(0, amt);
         move.forEach(function (unit) {
@@ -418,7 +434,7 @@ class Tile {
       });
     };
 
-    var att = r(this.units.filter(unit => !unit.moved));
+    var att = r(this.unmoved);
     if (att.length) {
       var def = r(tile.units);
       if (def.length) {
@@ -450,15 +466,20 @@ class Tile {
         tile.capture(this.player);
         this.move(tile);
       } else {
-        att.forEach(u => u.unit.moved = true);
+        this.markMoved();
       }
-    }
+    };
   };
+
+    markMoved() {
+        this.units.forEach(u => u.moved = true);
+    };
 
   capture(player) {
     if (this.city) {
       this.city.die();
-      new City(player, this);
+      if (app.random.bool())
+        new City(player, this);
     }
   };
 
@@ -509,6 +530,7 @@ class Player {
   get color() { return this._color; };
   get pieces() { return [...this._pieces]; };
 
+
   add(piece) {
     this._pieces.push(piece);
   };
@@ -519,14 +541,18 @@ class Player {
     this._pieces.splice(a, 1);
   };
 
+    count(f) {
+        return this.pieces.reduce(function (s, v) {
+            return s + (f(v) ? 1 : 0);
+        }, 0);
+    };
+
   end() {
-    var cities = this.pieces.reduce(function (s, v) {
-      return s + ((v instanceof City) ? 1 : 0);
-    }, 0);
+    var units = this.count(v => v instanceof Unit);
     if (this !== this.game.player)
-      cities /= app.consts.enemyCityDiv;
+      units /= app.consts.enemyUnitDiv;
     this.pieces.forEach(function (piece) {
-      piece.end(cities);
+      piece.end(units);
     });
   };
 
@@ -536,8 +562,9 @@ class Player {
       .filter(function (value, index, self) {
         return self.indexOf(value) === index;
       }).forEach(function (tile) {
-        tile.build();
         if (app.random.bool(tile.star ? .5 : tile.count / tile.size)) {
+          if (app.random.bool())
+            tile.build();
           var targets = this.game.player.pieces.filter(target => target instanceof City);
           // targets.reduce();
           var min = Number.MAX_VALUE;
@@ -595,17 +622,19 @@ class Piece {
 class City extends Piece {
   constructor(player, tile) {
     super(player, tile);
+    if (tile.star)
+        throw new Error('City.constructor');
   };
 
-  end(cities) {
+  end(units) {
     super.end();
 
-    var amt = app.consts.cityInc(this.tile.size, cities);
+    var amt = app.consts.cityInc(this.tile.size, units);
     if (amt) {
       if (amt <= this.tile.space)
         for (var a = 0; a < amt; a++)
           new Unit(this.player, this.tile);
-      else if (app.random.bool(amt / (amt + Math.pow(this.tile.size, .26))))
+      else if (app.random.bool(amt / (amt + Math.pow(this.tile.size, .26) / 3.9)))
         this.tile.inc();
     }
   };
