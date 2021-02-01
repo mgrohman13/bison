@@ -96,7 +96,8 @@
                 </div>
                 <div class="tileSize">
                   <i class="fas fa-star-of-life" v-if="t.star"></i>
-                  {{t.size}} </div>
+                  <span v-if="!t.star">{{t.size}}</span>
+                </div>
               </div>
             </td>
           </tr>
