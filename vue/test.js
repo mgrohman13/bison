@@ -1,48 +1,75 @@
-var app = {};
+let app = {};
 
 
 app.random = {
-  counter: 0x9638eb07,
+  counter: 0xAD17FE14704E2,
 
   mutate: function () {
-    this.counter = (this.counter + 0x6a292917) >>> 0;
-    var t = this.oeInt(1000);
+    this.counter = (this.counter + 0x073B7B6E1CA03) % 0x10000000000000;
+    let t = this.oeInt(1000);
     // console.log(t);
     setTimeout(this.mutate.bind(this), t);
   },
 
   random: function () {
-    var value = new Date().getTime();
-    value = (value + (value / 0xFFFFFFFF)) >>> 0;
-    this.log(value);
+    const bits = 26;
+    const mask = 0x3FFFFFF
+    const mult = 0x4000000;
 
-    value = (value + this.counter) >>> 0;
-    this.log(value);
+    function log(val) {
+      // console.log(val.toString(2).padStart(32, '0').match(/.{1,4}/g).join('-'));
+    };
+    function shift(value) {
+      log(value);
+      const max = bits - 1;
+      let shift = value % (max * 4);
+      let neg = (shift / max) >>> 0;
+      shift = (shift % max) + 1;
+      // console.log(neg);
+      // console.log(shift);
+      let v1 = ((((neg & 1) === 1 ? value : ~value) & mask) << shift) >>> 0;
+      let v2 = ((((neg & 2) === 2 ? value : ~value) & mask)) >>> (bits - shift);
+      log(v1);
+      log(v2);
+      value = ((value ^ (v1 | v2)) & mask) >>> 0;
+      log(value);
+      return value;
+    };
 
-    var shift = value % (31 * 4);
-    var neg = (shift / 31) >>> 0;
-    shift = (shift % 31) + 1;
-    // console.log(shift);
-    // console.log(neg);
-    var v1 = (((neg & 1) === 1 ? value : ~value) << shift) >>> 0;
-    var v2 = ((neg & 2) === 2 ? value : ~value) >>> (32 - shift);
-    value = (value ^ (v1 | v2)) >>> 0;
-    this.log(value);
+    let time = new Date().getTime();
+    let timeUp = (time / mult) >>> 0;
+    let timeLow = (time & mask) >>> 0;
+    let counterUp = (this.counter / mult) >>> 0;
+    let counterLow = (this.counter & mask) >>> 0;
+    log(timeLow);
+    log(counterLow);
+    let upper = shift(timeLow + counterLow);
+    // console.log('\n');
+    log(timeUp);
+    log(counterUp);
+    let lower = shift(timeUp + counterUp);
 
-    // TODO: preserve/use additional >32 double precision bits
-    var random = (Math.random() * 0x100000000) >>> 0;
-    this.log(random);
-    value = (value + random) >>> 0;
-    this.log(value);
-
-    this.counter = (value + 0xf0267afa) >>> 0;
-    this.log(this.counter);
-
-    return value / 0x100000000;
-  },
-
-  log: function (val) {
-    // console.log(val.toString(2).padStart(32, '0').match(/.{1,4}/g).join('-'));
+    const fullMult = 0x10000000000000;
+    let random = Math.random();
+    let randomUp = ((random * 0x100000000)) >>> (32 - bits);
+    let randomLow = ((random * fullMult) & mask) >>> 0;
+    // console.log('\n');
+    log(randomUp);
+    log(upper);
+    randomUp = ((randomUp + upper) & mask) >>> 0;
+    log(randomUp);
+    // console.log('\n');
+    log(randomLow);
+    log(lower);
+    randomLow = ((randomLow + lower) & mask) >>> 0;
+    log(randomLow);
+    let result = ((randomUp * mult) + (randomLow & mask));
+    this.counter = (result + 0xB91DB057A1873) % fullMult;
+    result /= fullMult;
+    // console.log('\n');
+    // console.log(this.counter.toString(16).padStart(13, '0'));
+    // console.log(result);
+    return result;
   },
 
   float: function (max = 1) {
@@ -57,7 +84,7 @@ app.random = {
   },
 
   round: function (avg) {
-    var result = Math.floor(avg);
+    let result = Math.floor(avg);
     avg -= result;
     if (this.bool(avg))
       result++;
@@ -76,7 +103,7 @@ app.random = {
       throw new Error(`random.rangeInt ${min} ${max}`);
 
     if (min > max) {
-      var temp = min;
+      let temp = min;
       min = max;
       max = temp;
     }
@@ -85,7 +112,7 @@ app.random = {
 
   range: function (min, max) {
     if (min > max) {
-      var temp = min;
+      let temp = min;
       min = max;
       max = temp;
     }
@@ -108,13 +135,13 @@ app.random = {
     if (average === cap)
       return average;
 
-    var a, b, c = 0;
+    let a, b, c = 0;
     while (c > 1 || c === 0) {
       a = this.float() * 2 - 1;
       b = this.float() * 2 - 1;
       c = a * a + b * b;
     }
-    var result = average + average * dev * a * Math.sqrt((-2 * Math.log(c)) / c);
+    let result = average + average * dev * a * Math.sqrt((-2 * Math.log(c)) / c);
 
     if (!isNaN(cap)) {
       if (cap > average)
@@ -136,9 +163,9 @@ app.random = {
 
         cap++;
         if (result > average) {
-          var upperDbl = average * 2 - cap;
-          var upperCap = Math.ceil(upperDbl);
-          var diff = upperCap - upperDbl;
+          let upperDbl = average * 2 - cap;
+          let upperCap = Math.ceil(upperDbl);
+          let diff = upperCap - upperDbl;
           result = this.round(result + diff);
           if (result <= upperCap)
             result = this.round(result - diff)
@@ -159,14 +186,14 @@ app.random = {
   },
 
   gaussianOEInt: function (average, dev, oe, cap) {
-    var a = this.splitAvg(average, oe, cap);
+    let a = this.splitAvg(average, oe, cap);
     if (!isNaN(a[2]))
       a[2] = Math.ceil(a[2]);
     return this.gaussianInt(a[0], dev, a[2]) + this.oeInt(a[1]);
   },
 
   gaussianOE: function (average, dev, oe, cap) {
-    var a = this.splitAvg(average, oe, cap);
+    let a = this.splitAvg(average, oe, cap);
     return this.gaussian(a[0], dev, a[2]) + this.oe(a[1]);
   },
 
@@ -185,8 +212,8 @@ app.random = {
   },
 
   shuffle: function (array) {
-    for (var a = array.length; a > 1;) {
-      var b = this.next(a);
+    for (let a = array.length; a > 1;) {
+      let b = this.next(a);
       a--;
       if (a !== b)
         [array[a], array[b]] = [array[b], array[a]];
@@ -196,12 +223,13 @@ app.random = {
 
 };
 app.random.mutate();
+// Math.random = app.random.float;
 
 
-// var serialize = function (o) {
-//   var j = {};
-//   var p = Object.getPrototypeOf(o);
-//   for (var k of Object.getOwnPropertyNames(p)) {
+// let serialize = function (o) {
+//   let j = {};
+//   let p = Object.getPrototypeOf(o);
+//   for (let k of Object.getOwnPropertyNames(p)) {
 //     const desc = Object.getOwnPropertyDescriptor(p, k);
 //     const hasGetter = desc && typeof desc.get === 'function';
 //     if (hasGetter) {
@@ -221,19 +249,19 @@ app.consts = {
   startUnitDev: .65,
   startUnits: 6,
 
-  cityCost:function (tile) {
-    var cities = tile.player.count(v => v instanceof City);
-    var cost = app.random.gaussianOEInt(1.3 + Math.pow(tile.size + 2.1, .78) * Math.pow(cities / 5.2, 1.69), .169, .065, 1);
-    var cur = tile.unmoved.length;
+  cityCost: function (tile) {
+    let cities = tile.player.count(v => v instanceof City);
+    let cost = app.random.gaussianOEInt(1.3 + Math.pow(tile.size + 2.1, .78) * Math.pow(cities / 5.2, 1.69), .169, .065, 1);
+    let cur = tile.unmoved.length;
     if (cur < cost)
-        if(app.random.bool(cur * cur / cost / cost))
-            cost = cur;
-        else
-            cost = -1;
+      if (app.random.bool(cur * cur / cost / cost))
+        cost = cur;
+      else
+        cost = -1;
     return cost;
   },
   cityInc: function (size, units) {
-    var avg = Math.pow(size + .13, .39) / Math.sqrt(units / 52 + 1.3) / 1.69;
+    let avg = Math.pow(size + .13, .39) / Math.sqrt(units / 52 + 1.3) / 1.69;
     return app.random.gaussianOEInt(avg, .13, .13, 0);
   },
   enemyUnitDiv: 2.6,
@@ -248,6 +276,33 @@ Object.freeze(app.consts);
 
 class Game {
   constructor() {
+
+    // while (true) {
+    //   let v1 = app.random.next(0x10000000000000);
+    //   let v2 = app.random.next(0x10000000000000);
+    //   let v3 = app.random.next(0x10000000000000);
+    //   let b1 = v1.toString(2).padStart(52, '0');
+    //   let b2 = v2.toString(2).padStart(52, '0');
+    //   let b3 = v3.toString(2).padStart(52, '0');
+
+    //   let add = (v2 + v3) % 0x10000000000000;
+    //   let addB = add.toString(2).padStart(52, '0');
+
+    //   if ((b1.match(/0/g) || []).length == 26 && (b2.match(/0/g) || []).length == 26 && (b3.match(/0/g) || []).length == 26 && (addB.match(/0/g) || []).length == 26) {
+    //     console.log((b1.match(/1/g) || []).length);
+    //     console.log(v1.toString(16).padStart(13, '0'));
+    //     console.log((b2.match(/1/g) || []).length);
+    //     console.log(v2.toString(16).padStart(13, '0'));
+    //     console.log((b3.match(/1/g) || []).length);
+    //     console.log(v3.toString(16).padStart(13, '0'));
+    //     // console.log(val);
+    //     // console.log(binary);
+
+
+    //     break;
+    //   }
+    // }
+
     this._players = [];
     this._players.push(new Player(this, 'player', '#0000FF'));
     this._players.push(new Player(this, 'enemy ', '#FF0000'));
@@ -257,31 +312,31 @@ class Game {
     this._height = app.consts.dimension(app.consts.heightMult);
     this._map = [[]];
 
-    for (var x = 0; x < this.width; x++) {
+    for (let x = 0; x < this.width; x++) {
       this._map[x] = [];
-      for (var y = 0; y < this.height; y++) {
+      for (let y = 0; y < this.height; y++) {
         this._map[x][y] = new Tile(this, x, y);
       }
     }
 
-    var start;
+    let start;
     do {
       start = this.center(app.consts.startDev);
     } while (start.star);
     new City(this.player, start);
-    for (var a = 0; a < app.consts.startUnits; a++) {
-      var tile;
+    for (let a = 0; a < app.consts.startUnits; a++) {
+      let tile;
       do {
         tile = this.tile(start.x, start.y, app.consts.startUnitDev);
       } while (tile.star || tile.space < 1)
       new Unit(this.player, tile);
     }
 
-    for (var a = 0; a < 4; a++) {
-      var enemy = null;
+    for (let a = 0; a < 4; a++) {
+      let enemy = null;
       do {
-        var x = (a === 0 ? 0 : a === 1 ? this.width - 1 : app.random.next(this.width));
-        var y = (a === 2 ? 0 : a === 3 ? this.height - 1 : app.random.next(this.height));
+        let x = (a === 0 ? 0 : a === 1 ? this.width - 1 : app.random.next(this.width));
+        let y = (a === 2 ? 0 : a === 3 ? this.height - 1 : app.random.next(this.height));
         enemy = this.map(x, y);
       } while (enemy.star || enemy.player);
       new City(this.players[1], enemy);
@@ -304,13 +359,13 @@ class Game {
     return this._map[x][y];
   };
   center = function (dev) {
-    var f = function (v) {
+    let f = function (v) {
       return (v - 1) / 2;
     };
     return this.tile(f(this.width), f(this.height), dev);
   };
   tile = function (x, y, dev) {
-    var f = function (v, c) {
+    let f = function (v, c) {
       return app.random.gaussianInt(v, dev / v, Math.max(2, 2 * v - c + 3));
     };
     return this.map(f(x, this.width), f(y, this.height));
@@ -329,7 +384,7 @@ class Game {
     this._turn++;
     this.player.end();
 
-    for (var a = 1; a < this.players.length; a++) {
+    for (let a = 1; a < this.players.length; a++) {
       this.players[a].play();
       this.players[a].end();
     }
@@ -393,10 +448,10 @@ class Tile {
 
   build() {
     if (this.player && !this.city && !this.star) {
-      var cost = app.consts.cityCost(this);
+      let cost = app.consts.cityCost(this);
       if (cost > -1) {
         new City(this.player, this);
-        var used = app.random.shuffle(this.units).slice(0, cost);
+        let used = app.random.shuffle(this.units).slice(0, cost);
         used.forEach(u => u.die());
       } else {
         this.markMoved();
@@ -411,8 +466,8 @@ class Tile {
     if (tile.player && tile.player != this.player) {
       this.attack(tile);
     } else {
-      var move = app.random.shuffle(this.unmoved);
-      var amt = move.length;
+      let move = app.random.shuffle(this.unmoved);
+      let amt = move.length;
       if (!tile.star)
         amt = Math.min(amt, tile.space);
       if (amt) {
@@ -426,7 +481,7 @@ class Tile {
   };
 
   attack(tile) {
-    var r = function (a) {
+    let r = function (a) {
       return app.random.shuffle(a).map(function (u) {
         return { unit: u, roll: app.random.next(6), };
       }).sort(function (a, b) {
@@ -434,23 +489,23 @@ class Tile {
       });
     };
 
-    var att = r(this.unmoved);
+    let att = r(this.unmoved);
     if (att.length) {
-      var def = r(tile.units);
+      let def = r(tile.units);
       if (def.length) {
         if (att.length >= def.length)
           att.reverse();
         else
           def.reverse();
 
-        var m = function (a) {
+        let m = function (a) {
           return a.map(b => b.roll + 1);
         };
         console.log('\n');
         console.log(`${this.player.name} ${m(att)}`);
         console.log(`${tile.player.name} ${m(def)}`);
 
-        for (var a = 0; a < Math.min(att.length, def.length); a++) {
+        for (let a = 0; a < Math.min(att.length, def.length); a++) {
           if (att[a].roll > def[a].roll) {
             def[a].unit.die();
           } else if (def[a].roll > att[a].roll) {
@@ -471,9 +526,9 @@ class Tile {
     };
   };
 
-    markMoved() {
-        this.units.forEach(u => u.moved = true);
-    };
+  markMoved() {
+    this.units.forEach(u => u.moved = true);
+  };
 
   capture(player) {
     if (this.city) {
@@ -505,7 +560,7 @@ class Tile {
         throw new Error(`Tile.remove City`);
       this._city = null;
     } else {
-      var a = this.units.indexOf(piece);
+      let a = this.units.indexOf(piece);
       if (a < 0)
         throw new Error(`Tile.remove Unit`);
       this._units.splice(a, 1);
@@ -535,20 +590,20 @@ class Player {
     this._pieces.push(piece);
   };
   remove(piece) {
-    var a = this.pieces.indexOf(piece);
+    let a = this.pieces.indexOf(piece);
     if (a < 0)
       throw new Error(`Player.remove`);
     this._pieces.splice(a, 1);
   };
 
-    count(f) {
-        return this.pieces.reduce(function (s, v) {
-            return s + (f(v) ? 1 : 0);
-        }, 0);
-    };
+  count(f) {
+    return this.pieces.reduce(function (s, v) {
+      return s + (f(v) ? 1 : 0);
+    }, 0);
+  };
 
   end() {
-    var units = this.count(v => v instanceof Unit);
+    let units = this.count(v => v instanceof Unit);
     if (this !== this.game.player)
       units /= app.consts.enemyUnitDiv;
     this.pieces.forEach(function (piece) {
@@ -557,7 +612,7 @@ class Player {
   };
 
   play() {
-    var moves = [];
+    let moves = [];
     this.pieces.filter(piece => piece instanceof Unit).map(piece => piece.tile)
       .filter(function (value, index, self) {
         return self.indexOf(value) === index;
@@ -565,21 +620,21 @@ class Player {
         if (app.random.bool(tile.star ? .5 : tile.count / tile.size)) {
           if (app.random.bool())
             tile.build();
-          var targets = this.game.player.pieces.filter(target => target instanceof City);
+          let targets = this.game.player.pieces.filter(target => target instanceof City);
           // targets.reduce();
-          var min = Number.MAX_VALUE;
+          let min = Number.MAX_VALUE;
           targets.forEach(function (target) {
             min = Math.min(min, tile.distance(target.tile));
           });
           targets = targets.filter(target => min === tile.distance(target.tile));
-          var target = targets[app.random.next(targets.length)].tile;
+          let target = targets[app.random.next(targets.length)].tile;
           moves.push({ from: tile, to: target });
         }
       }.bind(this));
     app.random.shuffle(moves);
     moves.forEach(function (o) {
-      var x = Math.sign(o.to.x - o.from.x);
-      var y = Math.sign(o.to.y - o.from.y);
+      let x = Math.sign(o.to.x - o.from.x);
+      let y = Math.sign(o.to.y - o.from.y);
       if (x !== 0 && (y === 0 || app.random.bool()))
         y = 0;
       else
@@ -623,16 +678,16 @@ class City extends Piece {
   constructor(player, tile) {
     super(player, tile);
     if (tile.star)
-        throw new Error('City.constructor');
+      throw new Error('City.constructor');
   };
 
   end(units) {
     super.end();
 
-    var amt = app.consts.cityInc(this.tile.size, units);
+    let amt = app.consts.cityInc(this.tile.size, units);
     if (amt) {
       if (amt <= this.tile.space)
-        for (var a = 0; a < amt; a++)
+        for (let a = 0; a < amt; a++)
           new Unit(this.player, this.tile);
       else if (app.random.bool(amt / (amt + Math.pow(this.tile.size, .26) / 3.9)))
         this.tile.inc();
@@ -645,32 +700,12 @@ class Unit extends Piece {
   };
 }
 
-// function Game() {
-
-// };
-
-// function Tile() { };
-// Tile.prototype = {
-//   player: null,
-//   city:null,
-//   pieces:[],
-// };
-
-// function Player() { };
-// Player.prototype = {
-//   pieces:[],
-// };
-
-// function Piece() { };
-// Piece.prototype = {
-
-// };
 
 app.on = false;
 // Vue.config.errorHandler = (err, vm, info) => {
 //   console.error(err);
 // };
-var v = new Vue({
+let v = new Vue({
   el: '#app',
   data: app,
   // config: {
@@ -712,23 +747,23 @@ var v = new Vue({
 
     test: function () {
       // game.values.push(Math.random());
-      // var avg = game.random.range(3, 21);
-      // var dev = game.random.float();
-      // var oe = game.random.float();
-      // var cap = game.random.next(26);
+      // let avg = game.random.range(3, 21);
+      // let dev = game.random.float();
+      // let oe = game.random.float();
+      // let cap = game.random.next(26);
       // game.values.push(avg); game.values.push(dev); game.values.push(oe); game.values.push(cap);
       // game.arr = [];
-      // var min = 0;
-      // var aa = 0;
-      // for (var a = 0; a < 10000; a++) {
-      //   var v = game.random.gaussianOEInt(avg, dev, oe, cap);
+      // let min = 0;
+      // let aa = 0;
+      // for (let a = 0; a < 10000; a++) {
+      //   let v = game.random.gaussianOEInt(avg, dev, oe, cap);
       //   game.arr[v] = (game.arr[v] || 0) + 1;
       //   if (v < min) min = v;
       //   aa += v;
       // }
       // aa /= 10000;
       // game.values.push(aa);
-      // for (var a = min; a < game.arr.length; a++) {
+      // for (let a = min; a < game.arr.length; a++) {
       //   if (game.arr[a]) {
       //     game.values.push(a);
       //     game.values.push(game.arr[a]);
