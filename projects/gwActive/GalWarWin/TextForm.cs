@@ -52,7 +52,7 @@ namespace GalWarWin
                 {
                     double value;
                     dict.TryGetValue(GetResult(pair.Key), out value);
-                    dict[pair.Key.AttHP] = value + pair.Value;
+                    dict[GetResult(pair.Key)] = value + pair.Value;
                 }
                 double max = dict.Values.Max(), tot = dict.Values.Sum();
 
@@ -60,7 +60,7 @@ namespace GalWarWin
                 foreach (var pair in dict)
                 {
                     int val = (int)Math.Ceiling(pair.Value / max * 999 / GalWar.Consts.FLOAT_ERROR_ONE);
-                    form.textBox1.Text += string.Format("{0}\t{1}\t{2}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"), ( pair.Value / tot ).ToString(format));
+                    form.textBox1.Text += string.Format("{0}\t{1}\t{2}" + Environment.NewLine, pair.Key.ToString().PadLeft(5, ' '), val.ToString("000"), (pair.Value / tot).ToString(format));
                 }
                 form.textBox1.Text += Environment.NewLine;
             };
@@ -108,7 +108,7 @@ namespace GalWarWin
             {
                 form.textBox1.Text += pair.Key.ToString("+#;-#;0").PadLeft(5);
                 form.textBox1.Text += ": ";
-                form.textBox1.Text += ( pair.Value / total ).ToString("0.00%").PadLeft(6);
+                form.textBox1.Text += (pair.Value / total).ToString("0.00%").PadLeft(6);
                 form.textBox1.Text += Environment.NewLine;
             }
 
@@ -132,7 +132,7 @@ namespace GalWarWin
             if (this.Width != 300 || this.Height != 300)
             {
                 Rectangle screen = Screen.FromControl(this).WorkingArea;
-                this.Location = new Point(( screen.Width - this.Width ) / 2, 0);
+                this.Location = new Point((screen.Width - this.Width) / 2, 0);
                 this.Height = screen.Height;
             }
         }

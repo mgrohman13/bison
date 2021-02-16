@@ -19,11 +19,11 @@ namespace GalWar
 
         static ShipNames()
         {
-            attack = new ShipClass[] {      ShipClass.Destroyer,ShipClass.Cruiser,  ShipClass.BattleCruiser,ShipClass.Battleship,   ShipClass.Dreadnought,  ShipClass.Excalibur };
-            defense = new ShipClass[] {     ShipClass.Warrior,  ShipClass.Defender, ShipClass.Ironclad,     ShipClass.Armor,        ShipClass.Guardian,     ShipClass.Avatar };
-            speed = new ShipClass[] {       ShipClass.Scout,    ShipClass.Fighter,  ShipClass.Corvette,     ShipClass.Frigate,      ShipClass.Ranger,       ShipClass.Phoenix };
-            transport = new ShipClass[] {   ShipClass.Bireme,   ShipClass.Carrack,  ShipClass.Galleon,      ShipClass.Transport,    ShipClass.Arbiter,      ShipClass.MotherShip };
-            deathStar = new ShipClass[] {   ShipClass.Catapult, ShipClass.Trebuchet,ShipClass.Cannon,       ShipClass.DeathStar,    ShipClass.Reaper,       ShipClass.Demon };
+            attack = new ShipClass[] { ShipClass.Destroyer, ShipClass.Cruiser, ShipClass.BattleCruiser, ShipClass.Battleship, ShipClass.Dreadnought, ShipClass.Excalibur };
+            defense = new ShipClass[] { ShipClass.Warrior, ShipClass.Defender, ShipClass.Ironclad, ShipClass.Armor, ShipClass.Guardian, ShipClass.Avatar };
+            speed = new ShipClass[] { ShipClass.Scout, ShipClass.Fighter, ShipClass.Corvette, ShipClass.Frigate, ShipClass.Ranger, ShipClass.Phoenix };
+            transport = new ShipClass[] { ShipClass.Bireme, ShipClass.Carrack, ShipClass.Galleon, ShipClass.Transport, ShipClass.Arbiter, ShipClass.MotherShip };
+            deathStar = new ShipClass[] { ShipClass.Catapult, ShipClass.Trebuchet, ShipClass.Cannon, ShipClass.DeathStar, ShipClass.Reaper, ShipClass.Demon };
 
             if (attack.Length != length || defense.Length != length || speed.Length != length || transport.Length != length || deathStar.Length != length)
                 throw new Exception();
@@ -31,7 +31,7 @@ namespace GalWar
 
         internal static string GetName(int name, int mark)
         {
-            return Game.CamelToSpaces(( (ShipClass)name ).ToString()) + " " + Game.NumberToRoman(mark);
+            return Game.CamelToSpaces(((ShipClass)name).ToString()) + " " + Game.NumberToRoman(mark);
         }
 
         #endregion static
@@ -147,7 +147,7 @@ namespace GalWar
                 return 0;
 
             double avg = double.NaN;
-            for (int a = 0 ; a < length ; ++a)
+            for (int a = 0; a < length; ++a)
             {
                 Tier tier = this.tiers[a];
                 if (tier == null)
@@ -156,12 +156,6 @@ namespace GalWar
                 if (tier.Count < numPlayers || value < tier.Max)
                     return a;
 
-                if (double.IsNaN(avg))
-                    avg = tier.Avg;
-                else
-                    avg = ( avg + tier.Avg ) / 2.0;
-                avg *= mult;
-
                 int b = a + 1;
                 if (b < length)
                 {
@@ -169,6 +163,12 @@ namespace GalWar
                     if (next != null && value > next.Min)
                         continue;
                 }
+
+                if (double.IsNaN(avg))
+                    avg = tier.Avg;
+                else
+                    avg = (avg + tier.Avg) / 2.0;
+                avg *= mult;
 
                 if (value < avg)
                     return a;
@@ -270,7 +270,7 @@ namespace GalWar
             {
                 get
                 {
-                    return ( this.total / (double)this.Count );
+                    return (this.total / (double)this.Count);
                 }
             }
 
