@@ -525,7 +525,7 @@ namespace Daemons
         private void ChangeMoveOrder()
         {
             if (this.players.Count > 1)
-                foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, .26))
+                foreach (KeyValuePair<Player, int> pair in MattUtil.TBSUtil.RandMoveOrder<Player>(Random, this.players, .26, (a, b) => true))
                 {
                     double souls, arrows;
                     GetMoveDiff(out souls, out arrows);
