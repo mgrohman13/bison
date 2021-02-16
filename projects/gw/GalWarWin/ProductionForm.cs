@@ -52,7 +52,7 @@ namespace GalWarWin
 
         private void lbxDesigns_DrawItem(object sender, DrawItemEventArgs e)
         {
-            object item = ( (ListBox)( sender ) ).Items[e.Index];
+            object item = ((ListBox)(sender)).Items[e.Index];
             Buildable build = item as Buildable;
             bool bold = false;
 
@@ -82,6 +82,9 @@ namespace GalWarWin
 
         int IComparer<Buildable>.Compare(Buildable b1, Buildable b2)
         {
+            if (b1 == b2)
+                return 0;
+
             Func<Buildable, int> TypeComp = b =>
             {
                 if (b is BuildGold)
@@ -102,8 +105,8 @@ namespace GalWarWin
             if (retVal != 0)
                 return retVal;
 
-            ShipDesign x = ( (BuildShip)b1 ).ShipDesign;
-            ShipDesign y = ( (BuildShip)b2 ).ShipDesign;
+            ShipDesign x = ((BuildShip)b1).ShipDesign;
+            ShipDesign y = ((BuildShip)b2).ShipDesign;
 
             double xVal = 0, yVal = 0;
 
@@ -131,15 +134,15 @@ namespace GalWarWin
         }
         private double GetStrength(ShipDesign x)
         {
-            return ( x.GetStrength() / GetTotalCost(x) );
+            return (x.GetStrength() / GetTotalCost(x));
         }
         private double GetTrans(ShipDesign x)
         {
-            return ( x.Trans * x.Speed / GetTotalCost(x) );
+            return (x.Trans * x.Speed / GetTotalCost(x));
         }
         private double GetTotalCost(ShipDesign x)
         {
-            return ( x.Cost + x.Upkeep * x.GetUpkeepPayoff(colony.Player.Game) );
+            return (x.Cost + x.Upkeep * x.GetUpkeepPayoff(colony.Player.Game));
         }
 
         private Buildable GetSelectedDesign()
@@ -171,15 +174,15 @@ namespace GalWarWin
             this.lblProd.Text = MainForm.GetProdText(colony, newBuild, newBuild.Production - prod, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
-            this.chkObsolete.Enabled = ( !this.callback && newBuild is BuildShip && colony.Player.GetShipDesigns().Count > 1 );
+            this.chkObsolete.Enabled = (!this.callback && newBuild is BuildShip && colony.Player.GetShipDesigns().Count > 1);
 
             if (setPause.HasValue)
             {
-                bool canPause = ( newBuild is BuildShip );
+                bool canPause = (newBuild is BuildShip);
                 this.chkPause.Enabled = canPause;
                 if (canPause)
                     if (setPause.Value)
-                        canPause = ( colony.PauseBuild && colony.CurBuild == newBuild );
+                        canPause = (colony.PauseBuild && colony.CurBuild == newBuild);
                     else
                         canPause = false;
                 this.chkPause.Checked = canPause;
@@ -233,7 +236,7 @@ namespace GalWarWin
                 buildable = colony.CurBuild;
                 pause = colony.PauseBuild;
                 if (!callback && result == DialogResult.Abort)
-                    obsolete = ( (BuildShip)form.GetSelectedDesign() ).ShipDesign;
+                    obsolete = ((BuildShip)form.GetSelectedDesign()).ShipDesign;
             }
 
             return buildable;
