@@ -168,12 +168,6 @@ namespace GalWar
                 if (tier.Count < numPlayers || value < tier.Max)
                     return a;
 
-                if (double.IsNaN(avg))
-                    avg = tier.Avg;
-                else
-                    avg = ( avg + tier.Avg ) / 2.0;
-                avg *= mult;
-
                 int b = a + 1;
                 if (b < length)
                 {
@@ -181,6 +175,12 @@ namespace GalWar
                     if (next != null && value > next.Min)
                         continue;
                 }
+
+                if (double.IsNaN(avg))
+                    avg = tier.Avg;
+                else
+                    avg = (avg + tier.Avg) / 2.0;
+                avg *= mult;
 
                 if (value < avg)
                     return a;
