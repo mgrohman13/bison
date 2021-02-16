@@ -248,12 +248,13 @@ namespace CityWar
 
         private static double unit(double hits, double regeneration, double a1Worth, double a2Worth, double a3Worth, double avgDmg)
         {
-            // 3.9 =div for surviving attacks versus having attacks
             return Math.Sqrt(hits * ( a1Worth + a2Worth + a3Worth + regen(regeneration, avgDmg) ));
         }
 
         private static double regen(double regeneration, double avgDmg)
         {
+            //TODO: remove AverageDamage, rebalance
+            // 3.9 =div for surviving attacks versus having attacks
             return regeneration / avgDmg * AverageDamage / 3.9;
         }
 

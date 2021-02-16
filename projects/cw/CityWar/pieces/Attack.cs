@@ -14,11 +14,11 @@ namespace CityWar
         private const double DamMultPercent = .39;
 
         //unit cost : death when killed
-        public const double DeathDivide = 7;
+        public const double DeathDivide = 7.8;
         //unit cost : death for disband
-        internal const double DisbandDivide = 3;
+        internal const double DisbandDivide = 3.9;
         //unit cost : relic for wounding
-        internal const double RelicDivide = 5;
+        internal const double RelicDivide = 5.2;
 
         //percentage of unused attacks that adds to work
         internal const double OverkillPercent = 1 / 1.3;

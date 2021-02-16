@@ -467,7 +467,7 @@ namespace CityWar
 
         internal void AddRelic(double amt)
         {
-            relic += Game.Random.Round(amt);
+            relic += Game.Random.GaussianInt(amt, .26);
         }
         internal void AddDeath(double amt)
         {

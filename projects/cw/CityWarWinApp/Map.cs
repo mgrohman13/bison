@@ -1349,7 +1349,7 @@ namespace CityWarWinApp
                 deathValue += unit.InverseCost / Attack.DeathDivide;
             }
             if (MessageBox.Show(string.Format("Are you sure you want to disband the {0} selected units for {1} death? ({2})", units.Length,
-                    disbandAmount.ToString("0"), deathValue.ToString("0")), "Disband", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    disbandAmount.ToString("0.0"), deathValue.ToString("0.0")), "Disband", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 saved = false;
 
