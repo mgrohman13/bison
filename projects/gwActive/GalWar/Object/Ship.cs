@@ -1313,12 +1313,6 @@ namespace GalWar
                 ;
             if (initPop < popKilled && reducedQuality < qualityDestroyed && reducedQuality <= initQuality && enemy)
             {
-                ;
-                ;
-                ;
-                ;
-                ;
-                ;
                 if (!handler.Continue(planet, initPop, initQuality, 0, initQuality - reducedQuality, 0, initQuality - qualityDestroyed))
                 {
                     //stop attacking after population is killed off
@@ -1335,13 +1329,14 @@ namespace GalWar
                 ;
                 ;
                 ;
-                ;
                 //stop attacking to avoid destroying the planet          
                 popKilled = reducedPop;
                 qualityDestroyed = initQuality;
             }
             else
             {
+                ;
+                ;
                 ;
                 ;
                 ;

@@ -740,7 +740,7 @@ namespace GalWar
 
         private void RandMoveOrder()
         {
-            Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle);
+            Dictionary<Player, int> playerGold = TBSUtil.RandMoveOrder<Player>(Random, this.players, Consts.MoveOrderShuffle, (a, b) => true);
             if (playerGold.Count > 0)
             {
                 double moveOrderGold = Consts.GetMoveOrderGold(this.players.Count);
