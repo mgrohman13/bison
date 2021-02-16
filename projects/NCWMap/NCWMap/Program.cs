@@ -103,15 +103,23 @@ namespace NCWMap
             //}
 
 
-            //SortedDictionary<int, int> algDist = new SortedDictionary<int, int>();
-            //int algTot = 1000000;
-            //for (int a = 0 ; a < algTot ; ++a)
-            //{
-            //    int amt = GetResourceAmt(), num;
-            //    algDist.TryGetValue(amt, out num);
-            //    algDist[amt] = num + 1;
-            //}
-
+            SortedDictionary<int, int> algDist = new SortedDictionary<int, int>();
+            int algTot = 10000000;
+            for (int a = 0; a < algTot; a++)
+            {
+                int amt = GetResourceAmt(), num;
+                algDist.TryGetValue(amt, out num);
+                algDist[amt] = num + 1;
+            }
+            Console.WriteLine(algDist.Sum(p => p.Key * p.Value) / (double)algTot);
+            Console.WriteLine();
+            for (int b = 0; b <= algDist.Keys.Max(); b++)
+            {
+                int v;
+                algDist.TryGetValue(b, out v);
+                Console.WriteLine(b + "\t" + v);
+            }
+            ;
 
             //SortedDictionary<int, int>[] dist = new SortedDictionary<int, int>[] {
             //        new SortedDictionary<int, int>(), new SortedDictionary<int, int>(), new SortedDictionary<int, int>()
@@ -172,44 +180,44 @@ namespace NCWMap
         {
             switch (step)
             {
-            case 0:
-                foreach (Tile tile in Map)
-                    tile.Water = ( Random.Next(3) == 0 );
-                Console.WriteLine("InitWater: " + EnumMap().Count(t => t.Water));
-                break;
-            case 1:
-                KeepLargest(false);
-                break;
-            case 2:
-                countWater = KeepLargest(true);
-                break;
-            case 3:
-                FillWater(countWater);
-                break;
-            case 4:
-                DoMore();
-                break;
-            case 5:
-                CreateCitySpots();
-                break;
-            case 6:
-                for (int a = 0 ; a < 2 ; ++a)
-                    for (int x = 0 ; x < 3 ; ++x)
-                        for (int y = 0 ; y < 3 ; ++y)
-                            CreateResource(() => GetSectorTile(x, y));
-                break;
-            case 7:
-                for (int b = 0 ; b < 6 ; ++b)
-                    CreateResource(() => GetRandomTile());
-                break;
-            case 8:
-                CreatePlayers();
-                break;
-            case 9:
-                SubtractPlayerExtra();
-                break;
-            default:
-                return true;
+                case 0:
+                    foreach (Tile tile in Map)
+                        tile.Water = (Random.Next(3) == 0);
+                    Console.WriteLine("InitWater: " + EnumMap().Count(t => t.Water));
+                    break;
+                case 1:
+                    KeepLargest(false);
+                    break;
+                case 2:
+                    countWater = KeepLargest(true);
+                    break;
+                case 3:
+                    FillWater(countWater);
+                    break;
+                case 4:
+                    DoMore();
+                    break;
+                case 5:
+                    CreateCitySpots();
+                    break;
+                case 6:
+                    for (int a = 0; a < 2; ++a)
+                        for (int x = 0; x < 3; ++x)
+                            for (int y = 0; y < 3; ++y)
+                                CreateResource(() => GetSectorTile(x, y));
+                    break;
+                case 7:
+                    for (int b = 0; b < 6; ++b)
+                        CreateResource(() => GetRandomTile());
+                    break;
+                case 8:
+                    CreatePlayers();
+                    break;
+                case 9:
+                    SubtractPlayerExtra();
+                    break;
+                default:
+                    return true;
             }
 
             step++;
@@ -313,15 +321,15 @@ namespace NCWMap
         private static void InitMap()
         {
             Map = new Tile[18, 18];
-            for (int x = 0 ; x < 18 ; ++x)
-                for (int y = 0 ; y < 18 ; ++y)
+            for (int x = 0; x < 18; ++x)
+                for (int y = 0; y < 18; ++y)
                     Map[x, y] = new Tile(x, y);
         }
         private static int InitWater()
         {
             //all tiles have a chance of initially being water
             foreach (Tile tile in Map)
-                tile.Water = ( Random.Next(3) == 0 );
+                tile.Water = (Random.Next(3) == 0);
 
             //select the largest block of contiuous land as the mainland
             KeepLargest(false);
@@ -335,7 +343,7 @@ namespace NCWMap
             Tile main = null;
             int count = int.MinValue;
             foreach (Tile tile in RandMap())
-                if (tile.Water == water && ( main == null || !CanReach(tile, main, water) ))
+                if (tile.Water == water && (main == null || !CanReach(tile, main, water)))
                 {
                     int cur = EnumMap().Count(t2 => t2.Water == water && CanReach(tile, t2, water));
                     if (count < cur)
@@ -402,20 +410,20 @@ namespace NCWMap
         }
         private static bool CanReach(Tile t1, Tile t2, bool water)
         {
-            return ( t1 == t2 || null != TBSUtil.PathFind(Random, t1, t2,
-                    t => t.GetNeighbors().Where(n => n.Water == water).Select(n => Tuple.Create(n, 1)), Tile.GetDistance) );
+            return (t1 == t2 || null != TBSUtil.PathFind(Random, t1, t2,
+                    t => t.GetNeighbors().Where(n => n.Water == water).Select(n => Tuple.Create(n, 1)), Tile.GetDistance));
         }
 
         private static void CreateResources()
         {
             //each map sector gets 2 resources
-            for (int a = 0 ; a < 2 ; ++a)
-                for (int x = 0 ; x < 3 ; ++x)
-                    for (int y = 0 ; y < 3 ; ++y)
+            for (int a = 0; a < 2; ++a)
+                for (int x = 0; x < 3; ++x)
+                    for (int y = 0; y < 3; ++y)
                         CreateResource(() => GetSectorTile(x, y));
 
             //6 more randomly throughout map
-            for (int b = 0 ; b < 6 ; ++b)
+            for (int b = 0; b < 6; ++b)
                 CreateResource(() => GetRandomTile());
         }
         private static void CreateResource(Func<Tile> getTile)
@@ -430,7 +438,7 @@ namespace NCWMap
             }
             while (tile.Inf != null && !int.TryParse(tile.Inf[1], out type));
 
-            bool isNew = ( tile.Inf == null );
+            bool isNew = (tile.Inf == null);
             if (isNew)
                 type = Random.RangeInt(1, 3);
             else
@@ -441,7 +449,7 @@ namespace NCWMap
 
             amt += GetResourceAmt();
 
-            tile.Inf = new string[] { "T", type.ToString(), ( amt / 6 ).ToString(), ( amt % 6 ).ToString() };
+            tile.Inf = new string[] { "T", type.ToString(), (amt / 6).ToString(), (amt % 6).ToString() };
 
             if (!isNew)
                 Console.WriteLine("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3]);
@@ -548,9 +556,9 @@ namespace NCWMap
         private static Dictionary<int, int> GetPlayerExtra(Player player)
         {
             var extra = new Dictionary<int, int>();
-            for (int a = 0 ; a < 3 ; a++)
+            for (int a = 0; a < 3; a++)
             {
-                int e = player.Resources[a, 0] % ( 2 * ( a + 1 ) );
+                int e = player.Resources[a, 0] % (2 * (a + 1));
                 if (a == 0 && e == 0 && player.Resources[a, 0] > 0 && Random.Next(6) == 0)
                     e = 1;
                 if (e > 0 && player.Resources[a, 0] == 1 && player.Resources[a, 1] == 0)
