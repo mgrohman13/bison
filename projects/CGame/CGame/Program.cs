@@ -63,7 +63,7 @@ namespace CGame
             RandValue(ref Width, 13, 75);
 
             Console.WindowHeight = Height + 7;
-            Console.BufferWidth = 80;
+            //Console.BufferWidth = 80;
             Console.BufferWidth = Console.WindowWidth = Math.Max(Width + 4, 41);
 
             TotalSides = Height + Width;
@@ -80,16 +80,16 @@ namespace CGame
 
             double sizeFactor = Math.Pow(mapMult, 1.0 / 3);
             double wallFactor = Math.Pow(avgWalls / NumWalls, 1.0 / 4);
-            double startFactor = Math.Pow(2 * avgEnemies / ( avgEnemies + StartEnemies ), 1.0 / 5);
+            double startFactor = Math.Pow(2 * avgEnemies / (avgEnemies + StartEnemies), 1.0 / 5);
             EnemiesPerTurn = 1.69 * sizeFactor * wallFactor * startFactor;
 
             EnemySpeed = Math.Min(Math.Max(mapMult * 3.0, Math.Max(EnemiesPerTurn, 1) * 1.69), 6.5);
             RandValue(ref EnemySpeed, Math.Min(Math.Max(EnemiesPerTurn, 1) * 1.3, EnemySpeed / 1.3),
                     Math.Min(Math.Max(EnemySpeed * 2.1, 3.9), 7.8));
 
-            PlayerMoveSL = ( 1.0 / mapMult / 260.0 );
-            BulletMoveSL = ( PlayerMoveSL / 1.69 );
-            BulletKillSL = ( .03 / EnemiesPerTurn );
+            PlayerMoveSL = (1.0 / mapMult / 260.0);
+            BulletMoveSL = (PlayerMoveSL / 1.69);
+            BulletKillSL = (.03 / EnemiesPerTurn);
 
             Console.WriteLine("mapSize \t{0:0000}\t{1:0.00}\t{2:0.00}", mapSize, mapSize / AvgHeight / AvgWidth, sizeFactor);
             Console.WriteLine("NumWalls\t  {0:00}\t{1:0.00}\t{2:0.00}", NumWalls, NumWalls / avgWalls, wallFactor);
@@ -101,13 +101,13 @@ namespace CGame
         static void RandValue(ref int value, int min, int max)
         {
             int diff = max - min;
-            value = min + Random.WeightedInt(diff, ( value - min ) / (float)diff);
+            value = min + Random.WeightedInt(diff, (value - min) / (float)diff);
         }
 
         static void RandValue(ref double value, double min, double max)
         {
             double diff = max - min;
-            value = min + Random.Weighted(diff, ( value - min ) / diff);
+            value = min + Random.Weighted(diff, (value - min) / diff);
         }
 
         static void Main(string[] args)
@@ -137,7 +137,7 @@ namespace CGame
                     int livesOld = lives;
                     double scoreOld = score;
 
-input:
+                    input:
                     if (ProcessInput())
                     {
                         quit = true;
@@ -148,13 +148,13 @@ input:
                     double chance = 1, total = 0;
                     foreach (double value in killers.Values)
                     {
-                        chance *= ( 1 - value );
+                        chance *= (1 - value);
                         total += value;
                     }
                     if (livesOld > lives)
                         chance = 1;
                     else
-                        chance = ( 1 - chance );
+                        chance = (1 - chance);
                     if (chance > .005)
                     {
                         if (ConfirmChance(total, chance, livesOld))
@@ -190,11 +190,11 @@ input:
                     if (input.Length > 0)
                         switch (input[0])
                         {
-                        case 'e':
-                        case 'q':
-                            if (input.Length == 1 || 'x' == input[1] || 'u' == input[1])
-                                quit = true;
-                            break;
+                            case 'e':
+                            case 'q':
+                                if (input.Length == 1 || 'x' == input[1] || 'u' == input[1])
+                                    quit = true;
+                                break;
                         }
                 if (quit)
                     break;
@@ -232,11 +232,11 @@ input:
 
         static void LayoutWalls()
         {
-            for (int a = 0 ; a < NumWalls ; ++a)
+            for (int a = 0; a < NumWalls; ++a)
                 RandomPoint(Wall);
 
             Point? failed;
-            while (( failed = TestWalls() ).HasValue)
+            while ((failed = TestWalls()).HasValue)
             {
                 int x = failed.Value.x;
                 int y = failed.Value.y;
@@ -244,24 +244,24 @@ input:
                 {
                     switch (Random.Next(4))
                     {
-                    case 0:
-                        if (( x + 1 ) < Width)
-                            ++x;
-                        break;
-                    case 1:
-                        if (x > 0)
-                            --x;
-                        break;
-                    case 2:
-                        if (( y + 1 ) < Height)
-                            ++y;
-                        break;
-                    case 3:
-                        if (y > 0)
-                            --y;
-                        break;
-                    default:
-                        throw new Exception();
+                        case 0:
+                            if ((x + 1) < Width)
+                                ++x;
+                            break;
+                        case 1:
+                            if (x > 0)
+                                --x;
+                            break;
+                        case 2:
+                            if ((y + 1) < Height)
+                                ++y;
+                            break;
+                        case 3:
+                            if (y > 0)
+                                --y;
+                            break;
+                        default:
+                            throw new Exception();
                     }
                 } while (PointIs(x, y, Empty));
 
@@ -313,8 +313,8 @@ input:
         static void PathFind()
         {
             Tile[,] map = new Tile[Width, Height];
-            for (int x = 0 ; x < Width ; ++x)
-                for (int y = 0 ; y < Height ; ++y)
+            for (int x = 0; x < Width; ++x)
+                for (int y = 0; y < Height; ++y)
                 {
                     if (PointIs(x, y, Path))
                         SetPoint(x, y, Empty);
@@ -329,10 +329,10 @@ input:
                 List<Tile> neighbors = new List<Tile>();
                 Action<bool, bool, Func<int, bool>> traverse = (bool dir, bool fwd, Func<int, bool> check) =>
                 {
-                    for (int a = 0 ; check(fwd ? ++a : --a) ;)
+                    for (int a = 0; check(fwd ? ++a : --a);)
                     {
-                        int x = tileX + ( dir ? a : 0 );
-                        int y = tileY + ( dir ? 0 : a );
+                        int x = tileX + (dir ? a : 0);
+                        int y = tileY + (dir ? 0 : a);
                         if (PointIs(x, y, Wall))
                             break;
                         neighbors.Add(map[x, y]);
@@ -360,10 +360,10 @@ input:
                 Action<bool, int, int> mark = (bool dir, int b, int c) =>
                 {
                     int max = Math.Max(b, c);
-                    for (int d = Math.Min(b, c) ; d <= max ; ++d)
+                    for (int d = Math.Min(b, c); d <= max; ++d)
                     {
-                        int x = ( dir ? d : tileX );
-                        int y = ( dir ? tileY : d );
+                        int x = (dir ? d : tileX);
+                        int y = (dir ? tileY : d);
                         if (PointIs(x, y, Empty))
                             SetPoint(x, y, Path);
                     }
@@ -389,7 +389,7 @@ input:
             }
             public override bool Equals(object obj)
             {
-                return point.Equals(( (Tile)obj ).point);
+                return point.Equals(((Tile)obj).point);
             }
             public static bool operator ==(Tile t1, Tile t2)
             {
@@ -397,7 +397,7 @@ input:
             }
             public static bool operator !=(Tile t1, Tile t2)
             {
-                return !( t1.Equals(t2) );
+                return !(t1.Equals(t2));
             }
             public override int GetHashCode()
             {
@@ -413,20 +413,20 @@ input:
         {
             //top numbers
             Console.Write("\n   ");
-            for (int x = 0 ; x < Width ; ++x)
-                Console.Write(( (int)( x / 10 ) ).ToString());
+            for (int x = 0; x < Width; ++x)
+                Console.Write(((int)(x / 10)).ToString());
             Console.Write("\n   ");
-            for (int x = 0 ; x < Width ; ++x)
-                Console.Write(( (int)( x % 10 ) ).ToString());
+            for (int x = 0; x < Width; ++x)
+                Console.Write(((int)(x % 10)).ToString());
             Console.Write("\n\n");
 
-            for (int x = Width ; x < TotalSides ; ++x)
+            for (int x = Width; x < TotalSides; ++x)
             {
                 //side numbers
                 Console.Write("{0} ", x);
 
                 //map
-                for (int y = 0 ; y < Width ; ++y)
+                for (int y = 0; y < Width; ++y)
                 {
                     char c = GetPoint(y, x - Width);
                     Console.Write(c);
@@ -460,43 +460,43 @@ input:
                 bool xFlag = false, dirFlag = false, fireBullet = false;
                 switch (input[0])
                 {
-                case 'w':
-                    mod = playerY;
-                    other = playerX;
-                    xFlag = false;
-                    dirFlag = false;
-                    fireBullet = true;
-                    break;
-                case 's':
-                    mod = playerY;
-                    other = playerX;
-                    xFlag = false;
-                    dirFlag = true;
-                    fireBullet = true;
-                    break;
-                case 'a':
-                    mod = playerX;
-                    other = playerY;
-                    xFlag = true;
-                    dirFlag = false;
-                    fireBullet = true;
-                    break;
-                case 'd':
-                    mod = playerX;
-                    other = playerY;
-                    xFlag = true;
-                    dirFlag = true;
-                    fireBullet = true;
-                    break;
-                case 'e':
-                case 'q':
-                    if (input.Length > 1 && ( 'x' == input[1] || 'u' == input[1] ))
-                        //returning true signifies the game loop should exit prematurely
-                        return true;
-                    break;
+                    case 'w':
+                        mod = playerY;
+                        other = playerX;
+                        xFlag = false;
+                        dirFlag = false;
+                        fireBullet = true;
+                        break;
+                    case 's':
+                        mod = playerY;
+                        other = playerX;
+                        xFlag = false;
+                        dirFlag = true;
+                        fireBullet = true;
+                        break;
+                    case 'a':
+                        mod = playerX;
+                        other = playerY;
+                        xFlag = true;
+                        dirFlag = false;
+                        fireBullet = true;
+                        break;
+                    case 'd':
+                        mod = playerX;
+                        other = playerY;
+                        xFlag = true;
+                        dirFlag = true;
+                        fireBullet = true;
+                        break;
+                    case 'e':
+                    case 'q':
+                        if (input.Length > 1 && ('x' == input[1] || 'u' == input[1]))
+                            //returning true signifies the game loop should exit prematurely
+                            return true;
+                        break;
                 }
                 if (fireBullet)
-                    MovePlayer(ref mod, other, xFlag, dirFlag ? ( xFlag ? Width : Height ) - 1 : 0,
+                    MovePlayer(ref mod, other, xFlag, dirFlag ? (xFlag ? Width : Height) - 1 : 0,
                             BulletMoveSL, BulletCollisions);
                 else
                     //no decent input was given, so recurse
@@ -525,7 +525,7 @@ input:
 
         static void MovePlayer(ref int mod, int other, bool xFlag, int num, double scoreLoss, CollisionHandler Collisions)
         {
-            bool dirFlag = ( num > mod );
+            bool dirFlag = (num > mod);
             while (num != mod)
             {
                 //move towards the destination
@@ -538,16 +538,16 @@ input:
                 //check for collisions
                 switch (Collisions(xFlag ? mod : other, xFlag ? other : mod))
                 {
-                case Collision.ROLLBACK:
-                    //rollback the last move
-                    score += scoreLoss;
-                    if (dirFlag)
-                        --mod;
-                    else
-                        ++mod;
-                    return;
-                case Collision.STOP:
-                    return;
+                    case Collision.ROLLBACK:
+                        //rollback the last move
+                        score += scoreLoss;
+                        if (dirFlag)
+                            --mod;
+                        else
+                            ++mod;
+                        return;
+                    case Collision.STOP:
+                        return;
                 }
             }
         }
@@ -558,10 +558,10 @@ input:
             if (PointIs(x, y, Empty))
             {
                 //show the bullet path
-                SetPoint(x, y, ( y == playerY ? BulletHorizontal : BulletVertical ));
+                SetPoint(x, y, (y == playerY ? BulletHorizontal : BulletVertical));
                 return Collision.MOVE;
             }
-            else if (( enemy = GetEnemy(x, y) ) > 0)
+            else if ((enemy = GetEnemy(x, y)) > 0)
             {
                 score -= BulletKillSL * enemy;
                 SetPoint(x, y, Empty);
@@ -622,8 +622,8 @@ input:
             double chance = 0;
             double tot = m1;
             if (Math.Abs(x - playerX) + Math.Abs(y - playerY) <= speed)
-                for (int rand = 0 ; rand < 5 ; ++rand)
-                    for (int rBool = 0 ; rBool < ( rand > 3 ? 2 : 1 ) ; ++rBool)
+                for (int rand = 0; rand < 5; ++rand)
+                    for (int rBool = 0; rBool < (rand > 3 ? 2 : 1); ++rBool)
                     {
                         double add = 0;
                         int xDif, yDif, flag;
@@ -632,11 +632,11 @@ input:
                             add = 1;
                         else if (speed > 1)
                             if (move.x > -1 && move.x < Width && move.y > -1 && move.y < Height
-                                    && ( orig.Equals(move) || PointIs(move.x, move.y, Empty) ))
+                                    && (orig.Equals(move) || PointIs(move.x, move.y, Empty)))
                                 add = GetKillChance(orig, speed - 1, move.x, move.y);
                             else
-                                tot -= ( rand > 3 ? m2 : 1 );
-                        chance += add * ( rand > 3 ? m3 : 2 );
+                                tot -= (rand > 3 ? m2 : 1);
+                        chance += add * (rand > 3 ? m3 : 2);
                     }
             return chance / tot;
         }
@@ -646,7 +646,7 @@ input:
             --Console.CursorTop;
             --Console.WindowTop;
 
-            double scoreLoss = ( total - chance + livesOld - lives ) * NegativeLifeScore;
+            double scoreLoss = (total - chance + livesOld - lives) * NegativeLifeScore;
             Console.Write("Hit chance {0:0}%{1}, continue? (y/n)", chance * 100,
                     scoreLoss > .05 ? string.Format(" (-{0:0.0})", scoreLoss) : "");
 
@@ -658,7 +658,7 @@ input:
             Console.Write(b.ToString());
             Console.CursorLeft = 0;
 
-            return ( k != ConsoleKey.Y );
+            return (k != ConsoleKey.Y);
         }
 
         static void DamagePlayer(Dictionary<Point, double> killers)
@@ -675,7 +675,7 @@ input:
         {
             if (lives < --livesOld)
             {
-                score += ( lives - livesOld ) * NegativeLifeScore;
+                score += (lives - livesOld) * NegativeLifeScore;
                 lives = livesOld;
             }
 
@@ -690,16 +690,16 @@ input:
         {
             const double m1 = 8.0 / BaseNewLife;
             const double m2 = BaseNewLife / 2.0;
-            double avg = value + ( Math.Sqrt(value * m1 + 1) + 1 ) * m2;
+            double avg = value + (Math.Sqrt(value * m1 + 1) + 1) * m2;
             value += Random.GaussianCapped((float)avg - value, .09, 1);
             nextLife = Random.Round(value);
-            score += ( nextLife - avg ) * NextLifeScoreMult;
+            score += (nextLife - avg) * NextLifeScoreMult;
         }
 
         static void MoveEnemies()
         {
             foreach (Point p in Random.Iterate(enemies))
-                for (int speed = GetEnemy(p) ; speed > 0 ; --speed)
+                for (int speed = GetEnemy(p); speed > 0; --speed)
                     MoveEnemy(p);
         }
 
@@ -709,9 +709,9 @@ input:
             Point move = GetEnemyMove(p, out xDif, out yDif, out flag, Random.Next(ChaseValue), Random.Bool());
             int x = move.x, y = move.y;
 
-actualmove:
-//check the edges of the playing area
-            if (!( x < 0 || y < 0 || x >= Width || y >= Height ))
+            actualmove:
+            //check the edges of the playing area
+            if (!(x < 0 || y < 0 || x >= Width || y >= Height))
                 if (PointIs(x, y, Empty))
                 {
                     SetPoint(x, y, GetPoint(p));
@@ -729,7 +729,7 @@ actualmove:
                         else
                             ++x;
                         //try the other direction
-                        if (yDif > 0 || ( 0 == yDif && Random.Bool() ))
+                        if (yDif > 0 || (0 == yDif && Random.Bool()))
                             ++y;
                         else
                             --y;
@@ -742,7 +742,7 @@ actualmove:
                         else
                             ++y;
                         //try the other direction
-                        if (xDif > 0 || ( 0 == xDif && Random.Bool() ))
+                        if (xDif > 0 || (0 == xDif && Random.Bool()))
                             ++x;
                         else
                             --x;
@@ -767,41 +767,41 @@ actualmove:
 
             switch (rand)
             {
-            //completely random direction
-            case 0:
-                --eX;
-                break;
-            case 1:
-                ++eX;
-                break;
-            case 2:
-                --eY;
-                break;
-            case 3:
-                ++eY;
-                break;
+                //completely random direction
+                case 0:
+                    --eX;
+                    break;
+                case 1:
+                    ++eX;
+                    break;
+                case 2:
+                    --eY;
+                    break;
+                case 3:
+                    ++eY;
+                    break;
 
-            //towards the player
-            default:
-                xDif = playerX - eX;
-                yDif = playerY - eY;
-                if (( Math.Abs(xDif) > Math.Abs(yDif) ) || ( ( Math.Abs(xDif) == Math.Abs(yDif) ) && rBool ))
-                {
-                    flag = 1;
-                    if (xDif > 0)
-                        ++eX;
+                //towards the player
+                default:
+                    xDif = playerX - eX;
+                    yDif = playerY - eY;
+                    if ((Math.Abs(xDif) > Math.Abs(yDif)) || ((Math.Abs(xDif) == Math.Abs(yDif)) && rBool))
+                    {
+                        flag = 1;
+                        if (xDif > 0)
+                            ++eX;
+                        else
+                            --eX;
+                    }
                     else
-                        --eX;
-                }
-                else
-                {
-                    flag = 2;
-                    if (yDif > 0)
-                        ++eY;
-                    else
-                        --eY;
-                }
-                break;
+                    {
+                        flag = 2;
+                        if (yDif > 0)
+                            ++eY;
+                        else
+                            --eY;
+                    }
+                    break;
             }
 
             return new Point(eX, eY);
@@ -823,7 +823,7 @@ actualmove:
         static void CreateEnemies()
         {
             while (newEnemies > 0)
-                NewEnemy(1 + Random.WeightedInt(8, ( EnemySpeed - 1 ) / 8.0));
+                NewEnemy(1 + Random.WeightedInt(8, (EnemySpeed - 1) / 8.0));
         }
 
         static void NewEnemy(int speed)
@@ -834,24 +834,24 @@ actualmove:
             {
                 switch (Random.Next(4))
                 {
-                case 0:
-                    eX = 0;
-                    eY = Random.Next(Height);
-                    break;
-                case 1:
-                    eX = Width - 1;
-                    eY = Random.Next(Height);
-                    break;
-                case 2:
-                    eY = 0;
-                    eX = Random.Next(Width);
-                    break;
-                case 3:
-                    eY = Height - 1;
-                    eX = Random.Next(Width);
-                    break;
-                default:
-                    throw new Exception();
+                    case 0:
+                        eX = 0;
+                        eY = Random.Next(Height);
+                        break;
+                    case 1:
+                        eX = Width - 1;
+                        eY = Random.Next(Height);
+                        break;
+                    case 2:
+                        eY = 0;
+                        eX = Random.Next(Width);
+                        break;
+                    case 3:
+                        eY = Height - 1;
+                        eX = Random.Next(Width);
+                        break;
+                    default:
+                        throw new Exception();
                 }
             } while (!PointIs(eX, eY, Empty));
 
@@ -892,9 +892,9 @@ actualmove:
 
         static bool PointIs(int x, int y, char type)
         {
-            bool retVal = ( GetPoint(x, y) == type );
+            bool retVal = (GetPoint(x, y) == type);
             if (!retVal && type == Empty)
-                retVal = ( GetPoint(x, y) == Path );
+                retVal = (GetPoint(x, y) == Path);
             return retVal;
         }
 
@@ -943,7 +943,7 @@ actualmove:
             }
             public override bool Equals(object obj)
             {
-                return ( obj is Point && GetHashCode() == obj.GetHashCode() );
+                return (obj is Point && GetHashCode() == obj.GetHashCode());
             }
             public override int GetHashCode()
             {
