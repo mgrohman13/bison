@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MattUtil">
-      <HintPath>..\..\MattUtil2\MattUtil\bin\Release\MattUtil.dll</HintPath>
+      <HintPath>..\..\MattUtil2\MattUtil\bin\Debug\MattUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
