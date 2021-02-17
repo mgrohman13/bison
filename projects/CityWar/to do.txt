@@ -1,3 +1,5 @@
+show race on end game
+
 in between games
 	"security" of public fields
 	larger map avg?
