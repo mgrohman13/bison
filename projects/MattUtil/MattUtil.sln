@@ -1,9 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MattUtil", "MattUtil\MattUtil.csproj", "{531F3166-D160-4185-B555-1A279F10FA7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "randTest", "randTest\randTest.csproj", "{EDD09CC3-43F5-467C-8A32-B4086B4CEDEC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RandTest", "randTest\RandTest.csproj", "{EDD09CC3-43F5-467C-8A32-B4086B4CEDEC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ideas", "Ideas\Ideas.csproj", "{585F359D-B388-4B8C-BCCD-D78B158FC1BC}"
 EndProject
@@ -28,5 +30,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {338992B4-4BDE-44DC-903F-D61B4865DA9E}
 	EndGlobalSection
 EndGlobal
