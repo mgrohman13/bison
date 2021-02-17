@@ -1,1 +1,2 @@
 use tbsutil engine
+show wall hits as blue hit in game summary?
