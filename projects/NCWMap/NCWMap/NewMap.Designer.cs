@@ -30,15 +30,17 @@
         {
             this.SuspendLayout();
             // 
-            // ShowMap
+            // NewMap
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(284, 262);
-            this.Name = "ShowMap";
+            this.ClientSize = new System.Drawing.Size(584, 561);
+            this.Name = "NewMap";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.NewMap_Load);
             this.Click += new System.EventHandler(this.ShowMap_Click);
+            this.Resize += new System.EventHandler(this.NewMap_Resize);
             this.ResumeLayout(false);
 
         }
