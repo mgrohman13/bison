@@ -58,7 +58,8 @@ namespace Trogdor
             Random.StartTick();
 
             if (!File.Exists(ScoresFile))
-                File.Create(ScoresFile);
+                using (File.Create(ScoresFile))
+                    ;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -103,7 +104,7 @@ namespace Trogdor
             {
                 MainForm.Invalidate();
 
-                int timeDiff = (int)( ( totalTime += FrameRate ) - watch.ElapsedMilliseconds );
+                int timeDiff = (int)((totalTime += FrameRate) - watch.ElapsedMilliseconds);
                 if (timeDiff > 0)
                     System.Threading.Thread.Sleep(timeDiff);
                 else if (timeDiff < maxSlow)
@@ -212,7 +213,7 @@ namespace Trogdor
         static uint[] GetUInts(double value)
         {
             uint main = (uint)value;
-            uint dec = uint.Parse(( (string)( value.ToString() + ".0" ) ).Split('.')[1].PadRight(9).Substring(0, 9));
+            uint dec = uint.Parse(((string)(value.ToString() + ".0")).Split('.')[1].PadRight(9).Substring(0, 9));
 
             shift(ref main, true);
             shift(ref dec, true);
@@ -284,10 +285,10 @@ namespace Trogdor
             foreach (char c in value)
             {
                 uint val = Convert.ToUInt32(c) ^ (uint)c.GetHashCode();
-                result += val >> ( 32 - counter );
+                result += val >> (32 - counter);
                 result += val << counter;
                 if (++counter == maxShift)
-                    counter = (int)( ( result >> otherShift ) % maxShift );
+                    counter = (int)((result >> otherShift) % maxShift);
             }
             return result;
         }
