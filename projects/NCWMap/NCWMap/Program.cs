@@ -13,6 +13,8 @@ namespace NCWMap
         public static Tile[,] Map;
         public static Player[] Players;
 
+        private static bool log = true;
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -21,6 +23,7 @@ namespace NCWMap
         {
             Random = new MTRandom();
             Random.StartTick();
+            log = false;
 
 
             //int[] res = new int[7];
@@ -103,23 +106,23 @@ namespace NCWMap
             //}
 
 
-            SortedDictionary<int, int> algDist = new SortedDictionary<int, int>();
-            int algTot = 10000000;
-            for (int a = 0; a < algTot; a++)
-            {
-                int amt = GetResourceAmt(), num;
-                algDist.TryGetValue(amt, out num);
-                algDist[amt] = num + 1;
-            }
-            Console.WriteLine(algDist.Sum(p => p.Key * p.Value) / (double)algTot);
-            Console.WriteLine();
-            for (int b = 0; b <= algDist.Keys.Max(); b++)
-            {
-                int v;
-                algDist.TryGetValue(b, out v);
-                Console.WriteLine(b + "\t" + v);
-            }
-            ;
+            //SortedDictionary<int, int> algDist = new SortedDictionary<int, int>();
+            //int algTot = 1000000;
+            //for (int a = 0; a < algTot; a++)
+            //{
+            //    int amt = GetResourceAmt(), num;
+            //    algDist.TryGetValue(amt, out num);
+            //    algDist[amt] = num + 1;
+            //}
+            //Console.WriteLine(algDist.Sum(p => p.Key * p.Value) / (double)algTot);
+            //Console.WriteLine();
+            //for (int b = 0; b <= algDist.Keys.Max(); b++)
+            //{
+            //    int v;
+            //    algDist.TryGetValue(b, out v);
+            //    Console.WriteLine(b + "\t" + (v / (double)algTot));
+            //}
+            //;
 
             //SortedDictionary<int, int>[] dist = new SortedDictionary<int, int>[] {
             //        new SortedDictionary<int, int>(), new SortedDictionary<int, int>(), new SortedDictionary<int, int>()
@@ -127,7 +130,7 @@ namespace NCWMap
             //int[] r2 = new int[3];
             //InitMap();
             //int total = 100000;
-            //for (int a = 0 ; a < total ; ++a)
+            //for (int a = 0; a < total; ++a)
             //{
             //    int[] res = new int[3];
 
@@ -145,7 +148,7 @@ namespace NCWMap
 
             //    foreach (Player p in Players)
             //    {
-            //        for (int b = 0 ; b < 3 ; ++b)
+            //        for (int b = 0; b < 3; ++b)
             //        {
             //            int amt = p.Resources[b, 0] * 6 + p.Resources[b, 1];
             //            res[b] += amt;
@@ -154,7 +157,7 @@ namespace NCWMap
             //        int tier = int.Parse(p.Unit[0].ToString());
             //        res[tier - 1] += tier * 12;
             //        r2[tier - 1] += tier * 12;
-            //        for (int b = 0 ; b < 3 ; ++b)
+            //        for (int b = 0; b < 3; ++b)
             //        {
             //            int r = res[b] / 6;
             //            int v;
@@ -164,10 +167,11 @@ namespace NCWMap
             //    }
             //}
             //total = 0;
-            //for (int b = 0 ; b < 3 ; ++b)
+            //for (int b = 0; b < 3; ++b)
             //    total += r2[b];
 
 
+            log = true;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Calculator());
@@ -183,7 +187,7 @@ namespace NCWMap
                 case 0:
                     foreach (Tile tile in Map)
                         tile.Water = (Random.Next(3) == 0);
-                    Console.WriteLine("InitWater: " + EnumMap().Count(t => t.Water));
+                    Log("InitWater: " + EnumMap().Count(t => t.Water));
                     break;
                 case 1:
                     KeepLargest(false);
@@ -227,7 +231,7 @@ namespace NCWMap
         public static void DoMore()
         {
             int turn = 1, turns = Random.OEInt(39);
-            Console.WriteLine("DoMore total: " + turns);
+            Log("DoMore total: " + turns);
             while (turn <= turns)
             {
                 turn++;
@@ -255,7 +259,7 @@ namespace NCWMap
                         if (TrySwap(n1[point.X], n2[point.Y]))
                         {
                             turn--;
-                            Console.WriteLine("DoMore: " + turn);
+                            Log("DoMore: " + turn);
                             break;
                         }
                 }
@@ -353,7 +357,7 @@ namespace NCWMap
                     }
                     else if (count == cur)
                     {
-                        Console.WriteLine("KeepLargest tie: " + count);
+                        Log("KeepLargest tie: " + count);
                     }
                 }
 
@@ -365,7 +369,7 @@ namespace NCWMap
                     ++removed;
                     tile.Water = !water;
                 }
-            Console.WriteLine("KeepLargest removed: " + removed);
+            Log("KeepLargest removed: " + removed);
 
             return count;
         }
@@ -373,10 +377,10 @@ namespace NCWMap
         {
             int targetWater = Random.Round(18 * 18 / 3.0);
             bool water = true;
-            Console.WriteLine("FillWater: " + countWater + " (" + targetWater + ")");
+            Log("FillWater: " + countWater + " (" + targetWater + ")");
             if (countWater > targetWater)
             {
-                Console.WriteLine("FillWater SWAP");
+                Log("FillWater SWAP");
                 //we actually need land to creep in on the excess water instead
                 countWater = 18 * 18 - countWater;
                 targetWater = 18 * 18 - targetWater;
@@ -433,7 +437,7 @@ namespace NCWMap
             do
             {
                 if (tile != null && tile.Inf != null)
-                    Console.WriteLine("CreateResource select: " + tile.Inf[0] + " (" + tile.X + "," + tile.Y + ")");
+                    Log("CreateResource select: " + tile.Inf[0] + " (" + tile.X + "," + tile.Y + ")");
                 tile = getTile();
             }
             while (tile.Inf != null && !int.TryParse(tile.Inf[1], out type));
@@ -445,14 +449,14 @@ namespace NCWMap
                 amt = int.Parse(tile.Inf[2]) * 6 + int.Parse(tile.Inf[3]);
 
             if (!isNew)
-                Console.WriteLine("CreateResource add: " + amt + " (" + tile.X + "," + tile.Y + ")");
+                Log("CreateResource add: " + amt + " (" + tile.X + "," + tile.Y + ")");
 
             amt += GetResourceAmt();
 
             tile.Inf = new string[] { "T", type.ToString(), (amt / 6).ToString(), (amt % 6).ToString() };
 
             if (!isNew)
-                Console.WriteLine("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3]);
+                Log("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3]);
         }
         private static int GetResourceAmt()
         {
@@ -492,7 +496,7 @@ namespace NCWMap
                     }
                 if (tile == null)
                 {
-                    Console.WriteLine("PlayerStartTiles RE-TRY");
+                    Log("PlayerStartTiles RE-TRY");
                     return PlayerStartTiles(players);
                 }
 
@@ -506,7 +510,7 @@ namespace NCWMap
         private static void PlayerResources(Dictionary<string, Tile> players)
         {
             int add = Random.RangeInt(1, 6) * Random.RangeInt(0, 5) + Random.RangeInt(0, 5);
-            Console.WriteLine("PlayerResources: " + add);
+            Log("PlayerResources: " + add);
 
             int idx = 0;
             Players = new Player[players.Count];
@@ -540,7 +544,7 @@ namespace NCWMap
                 }
                 if (subtract)
                 {
-                    Console.WriteLine("SubtractPlayerExtra");
+                    Log("SubtractPlayerExtra " + order[0] + " " + startIdx);
                     idx = startIdx;
                     foreach (Player player in order)
                     {
@@ -563,7 +567,7 @@ namespace NCWMap
                     e = 1;
                 if (e > 0 && player.Resources[a, 0] == 1 && player.Resources[a, 1] == 0)
                 {
-                    Console.WriteLine("GetPlayerExtra prevent: " + player.Name);
+                    Log("GetPlayerExtra prevent: " + player.Name);
                     e = 0;
                 }
                 extra.Add(a, e);
@@ -604,6 +608,12 @@ namespace NCWMap
         private static int RandSector(int sector)
         {
             return Random.RangeInt(sector * 6, sector * 6 + 5);
+        }
+
+        public static void Log(Object msg)
+        {
+            if (log)
+                Console.WriteLine(msg);
         }
     }
 }

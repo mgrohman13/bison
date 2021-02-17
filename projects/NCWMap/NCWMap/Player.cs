@@ -22,7 +22,7 @@ namespace NCWMap
             int tier = SelectUnit(tile);
             DistResources(GetTierCost(tier));
             BalanceOrder(order, add);
-            for (int a = 0 ; a < 3 ; ++a)
+            for (int a = 0; a < 3; ++a)
                 AddOne(a);
         }
 
@@ -57,7 +57,7 @@ namespace NCWMap
                 int amt = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 1 }, { 2, 2 }, { 4, 3 } });
                 if (amt > 0)
                 {
-                    Console.WriteLine("T1: " + amt);
+                    Program.Log("T1: " + amt);
                     AddResource(0, 0, amt, ref resources);
                 }
             }
@@ -65,7 +65,7 @@ namespace NCWMap
             {
                 if (Program.Random.Next(3) < 1)
                 {
-                    Console.WriteLine("T2: 4");
+                    Program.Log("T2: 4");
                     AddResource(1, 0, 4, ref resources);
                 }
             }
@@ -73,12 +73,12 @@ namespace NCWMap
             //give in chunks of whole units while possible
             while (resources >= 6)
             {
-                Console.WriteLine("resources: " + resources);
+                Program.Log("resources: " + resources);
                 int tier = Program.Random.SelectValue(new Dictionary<int, int> { { 0, 6 }, { 1, 3 }, { 2, 2 } });
                 AddResource(tier, 0, GetTierCost(tier), ref resources);
             }
             //remaining are evenly distributed
-            Console.WriteLine("last: " + resources);
+            Program.Log("last: " + resources);
             while (resources >= 1)
                 AddResource(Program.Random.Next(3), 0, 1, ref resources);
         }
@@ -95,7 +95,7 @@ namespace NCWMap
 
         private static int GetTierCost(int tier)
         {
-            return ( tier + 1 ) * 2;
+            return (tier + 1) * 2;
         }
         private void AddOne(int tier)
         {
