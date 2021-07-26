@@ -1,0 +1,184 @@
+{
+  "cragfield": {
+    "reaperRate": 1.0,
+    "ghostRate": 0.0
+  },
+  "crashzone": {
+    "reaperRate": 1.7,
+    "ghostRate": 0.0,
+	"_comment" : "already has reapers"
+  },
+  "dunes": {
+    "reaperRate": 1.9,
+    "ghostRate": 0.0,
+	"_comment" : "already has reapers"
+  },
+  "grassyplateaus": {
+    "reaperRate": 0.45,
+    "ghostRate": 0.0
+  },
+  "kelp": {
+    "reaperRate": 0.40,
+    "ghostRate": 0.0
+  },
+  "kooshzone": {
+    "reaperRate": 1.0,
+    "ghostRate": 0.0
+  },
+  "mesas": {
+    "reaperRate": 1.0,
+    "ghostRate": 0.0
+  },
+  "mountains": {
+    "reaperRate": 1.8,
+    "ghostRate": 0.0,
+	"_comment" : "already has reapers"
+  },
+  "mushroomforest": {
+    "reaperRate": 0.65,
+    "ghostRate": 0.0
+  },
+  "safeshallows": {
+    "reaperRate": 0.35,
+    "ghostRate": 0.0
+  },
+  "seatreaderpath": {
+    "reaperRate": 1.0,
+    "ghostRate": 0.0
+  },
+  "sparsereef": {
+    "reaperRate": 0.70,
+    "ghostRate": 0.0
+  },
+  "underwaterislands": {
+    "reaperRate": 0.75,
+    "ghostRate": 0.0
+  },
+
+  "jellyshroomcaves": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0,
+	"_comment" : "buff snakes instead?"
+  },
+
+  "bloodkelp": {
+    "reaperRate": 0.5,
+    "ghostRate": 0.8,
+	"ghostJuvenile": false,
+	"_comment" : "buff crabsquid? already has ghost"
+  },
+  "deepgrandreef": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.7,
+	"ghostJuvenile": true,
+	"_comment" : "buff crabsquid?"
+  },
+  "grandreef": {
+    "reaperRate": 0.4,
+    "ghostRate": 0.9,
+	"ghostJuvenile": false,
+	"_comment" : "see deepgrandreef? already has ghost"
+  },
+
+  "bonesfield": {
+    "reaperRate": 0.0,
+    "ghostRate": 1.9,
+	"ghostJuvenile": true,
+	"_comment" : "already has ghost"
+  },
+  "canyon": {
+    "reaperRate": 0.0,
+    "ghostRate": 1.0,
+	"ghostJuvenile": true,
+  },
+  "ghosttree": {
+    "reaperRate": 0.0,
+    "ghostRate": 1.8,
+	"ghostJuvenile": true,
+	"_comment" : "already has ghost"
+  },
+  "lostrivercorridor": {
+    "reaperRate": 0.0,
+    "ghostRate": 1.0,
+	"ghostJuvenile": true,
+  },
+  "lostriverjunction": {
+    "reaperRate": 0.0,
+    "ghostRate": 1.7,
+	"ghostJuvenile": true,
+	"_comment" : "already has ghost"
+  },
+  "skeletoncave": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.7,
+	"ghostJuvenile": true,
+  },
+  "treecove": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.8,
+	"ghostJuvenile": true,
+  },
+
+  "activelavazone": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0,
+	"ghostJuvenile": false,
+	"_comment" : "decide"
+  },
+  "inactivelavazone": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0,
+	"ghostJuvenile": false,
+	"_comment" : "decide"
+  },
+
+
+  "aurora": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "crashhome": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "floatingislands": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "fragment": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "lavazone": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "medkit": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "precursor": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "prisonaquarium": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "shipinterior": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "shipspecial": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "supplycrate": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+  "unassigned": {
+    "reaperRate": 0.0,
+    "ghostRate": 0.0
+  },
+}

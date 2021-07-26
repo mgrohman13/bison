@@ -1,0 +1,8 @@
+{
+	"spawnTime" :		 600,
+	"activeCount" :		   1.5,
+	"leashRoam" :		   1.0,
+	"leviathanDamage" :	   0.625,
+	"playerDamage" :	   1.6,
+	"vehicleDamage" :	   2.0,
+}

@@ -1,0 +1,11 @@
+{
+	"Id": "leaviathanprowl.mod",
+	"DisplayName": "Leaviathan Prowl",
+	"Author": "mgrohman13",
+	"Version": "1.0.0",
+	"Requires": [],
+	"Enable": true,
+	"AssemblyName": "LeaviathanProwl.dll",
+	"EntryMethod": "LeaviathanProwl.Load.LoadAndPatch",
+	"Config": {}
+}
