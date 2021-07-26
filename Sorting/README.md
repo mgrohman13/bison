@@ -13,7 +13,7 @@ Sorting algorithms:
 **Cocktail** - a bubble sort that alternates each direction  
 **Odd-Even** - standard odd-even sort  
 **Bubble** - optimized bubble sort that breaks out early when the list is sorted  
-**Bozo Sort** - This is an optimized bozo sort that can actually evebntually finish on a human timescale.  It only swaps elements if they are out of order.  A true bozo sort always swaps the two randomly chosen elements.  
+**Bozo Sort** - This is an optimized bozo sort that can actually eventually finish on a human timescale.  It only swaps elements if they are out of order.  A true bozo sort always swaps the two randomly chosen elements.  
 **Stooge Sort** - the stooge sort is horribly inefficient but surprisingly ingenious  
 **Radix LSD** - does no comparisons, relies on sorting integer data  
 **Radix MSD** - does no comparisons, relies on sorting integer data  
