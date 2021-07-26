@@ -1,5 +1,6 @@
 UI
 
+hide invade ok button when 0 gold
 select different research upgrade no longer shows diff chance
 rotate
 gold income repair reduction account for low/neg gold
@@ -75,6 +76,11 @@ combat predict performance
 
 GAMEPLAY
 
+shit type chances
+	increase old research penalty to weight
+revisit research chances
+	upgrade?
+	num designs more impactful
 AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
 anomaly prod add to non-active?
 salvage ship
@@ -85,6 +91,7 @@ punish neg gold
 	take cut of income > emphasis pct?  GoldProductionForGold?
 enforce attacking with all avail pop
 bombard
+	free dmg use non-player-specific cost
 	free dmg/attack pct left takes into account att hp
 	bombard combat get exp out instead of automatic add
 	bombard friendly paying for value exp at full rate vs exp rate?

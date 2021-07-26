@@ -344,8 +344,8 @@ namespace randTest
 
             //CWMapGen();
 
-            //GenerateTerrain();
-
+            GenerateTerrain();
+            Console.ReadKey(true);
 
             //rand = null;
             //while (true)
@@ -356,12 +356,13 @@ namespace randTest
             //for (int a = 0 ; a < 13 ; ++a)
             //    new MTRandom().StartTick(0);
 
-
-            FactRand(new float[] { 3f, 1 / 2f, 2f }, .7f, .8f);
-
+            do
+            {
+                Console.WriteLine();
+                FactRand(new float[] { 1 / 3f, 3f, 1f }, 3f / 12f, 4f / 12f);
+            } while (Console.ReadKey(true).KeyChar != 'q');
 
             rand.StopTick();
-            Console.ReadKey(true);
         }
 
         #region FactRand
@@ -410,7 +411,8 @@ namespace randTest
                 Console.WriteLine();
                 row /= scenAvg;
                 tot *= row;
-                if (match || row < minDiff / 2f || row > maxDiff * 2f)
+                double maxMult = Math.Sqrt(3);
+                if (match || row < minDiff / maxMult || row > maxDiff * maxMult)
                 {
                     tot = 1;
                     a = -1;

@@ -169,7 +169,7 @@ namespace GalWar
 
                 bool anomalyShip = !double.IsNaN(minCost);
 
-                this._research = (ushort)research;
+                this._research = (uint)research;
                 do
                 {
                     this._statsNotInit = true;
