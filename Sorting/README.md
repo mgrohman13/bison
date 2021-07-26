@@ -1,4 +1,4 @@
-Graphical visualizer of different sorting algorithms.  Supports generating and sorting differnt distributions of random data.  All sorts are implemented in-place, and the number of comparisons and swaps are counted.
+Graphical visualizer of different sorting algorithms.  Supports generating and sorting different distributions of random data.  All sorts are implemented in-place, and the number of comparisons and swaps are counted.
 
 Sorting algorithms:  
 **QuickSort** - standard quick sort with randomly chosen pivot  
