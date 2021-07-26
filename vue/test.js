@@ -6,9 +6,11 @@ app.random = {
 
   mutate: function () {
     this.counter = (this.counter + 0x073B7B6E1CA03) % 0x10000000000000;
-    let t = this.oeInt(1000);
-    // console.log(t);
+    // console.log(this.counter.toString(16).padStart(13, '0'));
+    let t = this.oeInt(996) + 4;
+    console.log(t);
     setTimeout(this.mutate.bind(this), t);
+    // console.log(this.counter.toString(16).padStart(13, '0'));
   },
 
   random: function () {
@@ -38,6 +40,7 @@ app.random = {
 
     let time = new Date().getTime();
     let timeUp = (time / mult) >>> 0;
+    // console.log(timeUp);
     let timeLow = (time & mask) >>> 0;
     let counterUp = (this.counter / mult) >>> 0;
     let counterLow = (this.counter & mask) >>> 0;
@@ -103,18 +106,14 @@ app.random = {
       throw new Error(`random.rangeInt ${min} ${max}`);
 
     if (min > max) {
-      let temp = min;
-      min = max;
-      max = temp;
+      [min, max] = [max, min];
     }
     return Math.floor(min + this.float(max - min + 1));
   },
 
   range: function (min, max) {
     if (min > max) {
-      let temp = min;
-      min = max;
-      max = temp;
+      [min, max] = [max, min];
     }
     return min + this.float(max - min);
   },
@@ -213,8 +212,7 @@ app.random = {
 
   shuffle: function (array) {
     for (let a = array.length; a > 1;) {
-      let b = this.next(a);
-      a--;
+      let b = this.next(a--);
       if (a !== b)
         [array[a], array[b]] = [array[b], array[a]];
     }
