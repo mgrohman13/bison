@@ -1,0 +1,119 @@
+<html>
+
+<head>
+  <script src="https://kit.fontawesome.com/c1f840eaf1.js" crossorigin="anonymous"></script>
+
+  <style>
+    div.main {
+      width: 90%;
+      height: 90%;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      /* flex-flow: column nowrap; */
+
+    }
+
+    div.map {
+      flex-grow: 100;
+      /*flex-direction: column; */
+    }
+
+    div.right {
+      flex-grow: 1;
+      /* flex-direction: column; */
+    }
+
+    table.map {
+      width: 100%;
+      height: 100%;
+    }
+
+    td.tile {}
+
+    div.tile {
+      width: 90%;
+      height: 90%;
+
+      position: relative;
+
+      border-style: inset;
+      border-width: 3px;
+      border-radius: 10px;
+      /* border-color: black; */
+      /* padding: 10px; */
+    }
+
+    div.selected {
+      border-style: solid;
+      border-color: blue;
+      /* border-style. */
+    }
+
+    div.tileStuff {
+      /* flex-grow: 100; */
+      text-align: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    div.tileSize {
+      /* flex-grow: 1;
+      align-self: flex-end; */
+      /* text-align: center;
+      vertical-align: text-bottom;
+      padding: 0px 5px 5px 0px; */
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <!-- <pre v-for="v in values">{{ v }}</pre> -->
+    <div v-if="!on">
+      <button v-on:click="start">New Game</button>
+      <button v-on:click="load">Load</button>
+    </div>
+    <div v-if="on" class="main">
+      <div class="map">
+        <table class="map">
+          <tr v-for="y in game.height">
+            <td class="tile" v-for="x in game.width">
+              <div v-for="t in [game.map(x - 1, y - 1)]" v-on:click.left="select(t)" v-on:click.right.prevent="move(t)"
+                v-bind:class="{ tile: true, selected: t.selected }">
+                <div class="tileStuff">
+                  <span v-if=" t.player" v-bind:style="{ color: t.player.color}">
+                    <i class="fab fa-fort-awesome" v-if="t.city" style="margin-bottom: 5px;"></i>
+                    <br>
+                    <i class="fas fa-male" v-if="t.units.length"> {{t.units.length}}</i>
+                  </span>
+                </div>
+                <div class="tileSize">
+                  <i class="fas fa-star-of-life" v-if="t.star"></i>
+                  <span v-if="!t.star">{{t.size}}</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="right">
+        <button v-on:click="start">Restart</button>
+        <button v-on:click="end">End Turn</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2"></script> -->
+  <script src="test.js"></script>
+
+</body>
+
+</html>
