@@ -580,7 +580,7 @@ namespace GalWarWin
                 double pct = ship.HP / (double)ship.MaxHP;
                 if (pct < 1)
                 {
-                    Pen pen = Pens.Black;
+                    Pen pen = Pen pen = new Pen(Color.Black, 2f);
                     if (ship.Player.IsTurn && !ship.HasRepaired && ship.AutoRepair == 0)
                         pen = new Pen(Color.White, 2f);
 
