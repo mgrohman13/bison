@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "renamePics", "renamePics\renamePics.csproj", "{6F0EA7B1-9FD9-4465-B158-34FD8D7F260B}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rename", "Rename\Rename.csproj", "{14FCB500-CB34-4434-AEA9-B19DAB8BCE95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6F0EA7B1-9FD9-4465-B158-34FD8D7F260B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F0EA7B1-9FD9-4465-B158-34FD8D7F260B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F0EA7B1-9FD9-4465-B158-34FD8D7F260B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F0EA7B1-9FD9-4465-B158-34FD8D7F260B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14FCB500-CB34-4434-AEA9-B19DAB8BCE95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14FCB500-CB34-4434-AEA9-B19DAB8BCE95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14FCB500-CB34-4434-AEA9-B19DAB8BCE95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14FCB500-CB34-4434-AEA9-B19DAB8BCE95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA95D5A9-F57E-4655-BECF-DF872EE7C5B6}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6F0EA7B1-9FD9-4465-B158-34FD8D7F260B}</ProjectGuid>
+    <ProjectGuid>{14FCB500-CB34-4434-AEA9-B19DAB8BCE95}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>renamePics</RootNamespace>
@@ -53,9 +53,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MattUtil, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MattUtil2\MattUtil\bin\Debug\MattUtil.dll</HintPath>
+    <Reference Include="MattUtil">
+      <HintPath>..\..\MattUtil\MattUtil\bin\Release\MattUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
