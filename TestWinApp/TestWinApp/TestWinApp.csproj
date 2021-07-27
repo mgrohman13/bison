@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6A340AD7-2C5F-4BBA-9EFC-24A2CDC62F54}</ProjectGuid>
+    <ProjectGuid>{C9639F1D-8306-4EA9-A776-11B574B67FC0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>testwin</RootNamespace>
@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MattUtil">
-      <HintPath>..\..\MattUtil2\MattUtil\bin\Debug\MattUtil.dll</HintPath>
+      <HintPath>..\..\MattUtil\MattUtil\bin\Release\MattUtil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
