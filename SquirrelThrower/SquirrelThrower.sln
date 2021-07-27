@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "squirrels", "game1\squirrels.csproj", "{14F6D892-C607-4F79-A3D5-EBB9BEDB3B89}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SquirrelThrower", "SquirrelThrower\SquirrelThrower.csproj", "{A0C9375D-C46D-4C1A-B0A3-9D4DD70ED870}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{14F6D892-C607-4F79-A3D5-EBB9BEDB3B89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{14F6D892-C607-4F79-A3D5-EBB9BEDB3B89}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{14F6D892-C607-4F79-A3D5-EBB9BEDB3B89}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{14F6D892-C607-4F79-A3D5-EBB9BEDB3B89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0C9375D-C46D-4C1A-B0A3-9D4DD70ED870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0C9375D-C46D-4C1A-B0A3-9D4DD70ED870}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0C9375D-C46D-4C1A-B0A3-9D4DD70ED870}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0C9375D-C46D-4C1A-B0A3-9D4DD70ED870}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1774446C-3797-47D9-AB58-D25EB6DFBF07}
 	EndGlobalSection
 EndGlobal
