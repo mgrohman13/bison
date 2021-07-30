@@ -92,7 +92,7 @@ namespace Gravity
             if (typeof(PowerUp).IsAssignableFrom(type))
                 return 1;
             if (typeof(Target).IsAssignableFrom(type))
-                return (float)( 1 / 4.0 / Math.Pow(game.Difficulty, .25f) );
+                return (float)( 1 / 3.0 / Math.Pow(game.Difficulty, .35) );
             throw new Exception();
         }
     }

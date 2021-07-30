@@ -53,10 +53,10 @@ namespace Gravity
             pieces = new HashSet<Piece>() { center, player, target };
 
             int amt = rand.GaussianOEInt(Game.enemyMult, .1f, .1f, 3);
-            for (int a = 0 ; a < amt ; ++a)
+            for (int a = 0; a < amt; ++a)
                 NewEnemy();
 
-            Func<bool, bool> none = ( type => !pieces.OfType<PowerUp>().Where(pu => ( type == pu.Type )).Any() );
+            Func<bool, bool> none = (type => !pieces.OfType<PowerUp>().Where(pu => (type == pu.Type)).Any());
             while (none(true) || none(false) || rand.Bool())
                 NewPowerUp(1.05f);
 
@@ -92,13 +92,13 @@ namespace Gravity
         internal void ScoreMeter(float amt, Piece p)
         {
             float old = this.dMeter;
-            AddMeter((float)( -Math.Sqrt(amt * avgSize / scoreSize) ));
+            AddMeter((float)(-Math.Sqrt(amt * avgSize / scoreSize)));
             float text = old - this.dMeter;
             AddText(p, "+" + rand.Round(text * 100f).ToString(), text, false, true, false);
         }
         internal void AddText(Piece p, string text, float sizeFactor, bool r, bool g, bool b)
         {
-            pieces.Add(new Text(this, p.X, p.Y, text, (float)( 10f * Math.Pow(sizeFactor, .15f) ), r, g, b));
+            pieces.Add(new Text(this, p.X, p.Y, text, (float)(10f * Math.Pow(sizeFactor, .15f)), r, g, b));
         }
 
         public void NewEnemy()
@@ -110,7 +110,7 @@ namespace Gravity
             if (player.CheckCourse(x - size / 2f, y - size / 2f, size))
                 NewEnemy();
             else
-                pieces.Add(rand.Bool(Difficulty / ( Difficulty + 2.5f )) ? new Danger(this, x, y, size, GetDensity(size)) : new Enemy(this, x, y, size, GetDensity(size)));
+                pieces.Add(rand.Bool(Difficulty / (Difficulty + 2.5f)) ? new Danger(this, x, y, size, GetDensity(size)) : new Enemy(this, x, y, size, GetDensity(size)));
         }
         private void NewPowerUp(float div)
         {
@@ -119,7 +119,7 @@ namespace Gravity
             {
                 PowerUp pu = new PowerUp(this, false, rand.Gaussian(dist), rand.Gaussian(dist), rand.GaussianOE(scoreSize, .1f, .15f), rand.OE(rand.Weighted(scoreDensity)));
                 this.pieces.Add(pu);
-                AddMeter((float)( Math.Sqrt(pu.Size / scoreSize) / div ));
+                AddMeter((float)(Math.Sqrt(pu.Size / scoreSize) / div));
             }
             if (rand.Bool())
             {
@@ -129,7 +129,7 @@ namespace Gravity
         }
         private void AddMeter(float amt)
         {
-            bool neg = ( amt < 0 );
+            bool neg = (amt < 0);
             if (neg)
                 amt = -amt;
             else
@@ -182,25 +182,25 @@ namespace Gravity
 
         public override bool GameOver()
         {
-            return ( player.Shield <= 0 );
+            return (player.Shield <= 0);
         }
 
         public override void Step()
         {
             List<Piece> pieces = new List<Piece>(rand.Iterate(this.pieces));
             int enemyCount = pieces.OfType<Enemy>().Count();
-            for (int a = 0 ; a < pieces.Count ; ++a)
+            for (int a = 0; a < pieces.Count; ++a)
             {
                 bool exists = true;
-                if (!( pieces[a] is Text ))
-                    for (int b = a + 1 ; b < pieces.Count && ( exists = this.pieces.Contains(pieces[a]) ) ; ++b)
-                        if (!( pieces[b] is Text ) && this.pieces.Contains(pieces[b]))
+                if (!(pieces[a] is Text))
+                    for (int b = a + 1; b < pieces.Count && (exists = this.pieces.Contains(pieces[a])); ++b)
+                        if (!(pieces[b] is Text) && this.pieces.Contains(pieces[b]))
                             pieces[a].Interact(pieces[b]);
                 if (exists && this.pieces.Contains(pieces[a]))
                     pieces[a].Step(enemyCount);
             }
 
-            if (ExistChance(enemyCount, (float)( Math.Pow(Difficulty, .75f) * Game.enemyMult ), 1))
+            if (ExistChance(enemyCount, (float)(Math.Pow(Difficulty, .75f) * Game.enemyMult), 1))
                 NewEnemy();
 
 
@@ -214,17 +214,17 @@ namespace Gravity
 
             float factor = 1f;
             if (this.dMeter > 0)
-                factor *= ( 3f + dMeter ) / 1.5f;
+                factor *= (3f + dMeter) / 1.5f;
             else
-                factor /= ( 4f - dMeter ) / 4f;
+                factor /= (4f - dMeter) / 4f;
 
-            this.difficulty += rand.OE(factor * .0005f / ( difficulty + 1f ));
+            this.difficulty += rand.OE(factor * .0005f / (difficulty + 1f));
             //Console.WriteLine(difficulty);
 
-            float f = ( this.dMeter > 0 ? .001f : .00075f );
-            this.dMeter *= ( 1 - f );
+            float f = (this.dMeter > 0 ? .001f : .00065f);
+            this.dMeter *= (1 - f);
 
-            float pc = (float)( Game.powerUpChance * Math.Sqrt(Difficulty) );
+            float pc = (float)(Game.powerUpChance * Math.Sqrt(Difficulty));
             if (rand.Bool(pc * 2f))
                 NewPowerUp(3f);
             AddMeter(rand.OE(pc / 3f));
@@ -233,7 +233,7 @@ namespace Gravity
 
         public static bool ExistChance(float value, float target, float power)
         {
-            return rand.Bool(.01 * Math.Pow(target / ( target + value ), 5 * power));
+            return rand.Bool(.01 * Math.Pow(target / (target + value), 5 * power));
         }
 
         protected override void OnEnd()
@@ -248,7 +248,7 @@ namespace Gravity
 
         internal void setTarget(int x, int y)
         {
-            target.setTarget(( x - drawRectangle.X ) * gameSize / drawRectangle.Width - gameSize / 2f, ( y - drawRectangle.Y ) * gameSize / drawRectangle.Height - gameSize / 2f);
+            target.setTarget((x - drawRectangle.X) * gameSize / drawRectangle.Width - gameSize / 2f, (y - drawRectangle.Y) * gameSize / drawRectangle.Height - gameSize / 2f);
         }
 
         internal void setClientRectangle(Rectangle rectangle)

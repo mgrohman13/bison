@@ -27,11 +27,11 @@ namespace Gravity
         {
             float diff = game.DifficultyMeter;
             if (diff < 0)
-                diff = 1f / ( 1f - diff );
+                diff = 1f / (1f - diff);
             else
                 diff++;
-            this.size = (float)( 15 / Math.Pow(diff, .1) );
-            this.density = (float)( 1f / Math.Pow(game.Difficulty, .25) / Math.Pow(diff, .1) );
+            this.size = (float)(15 / Math.Pow(diff, .15));
+            this.density = (float)(1 / Math.Pow(game.Difficulty, .25) / Math.Pow(diff, .15));
         }
 
     }

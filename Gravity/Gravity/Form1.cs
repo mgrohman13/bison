@@ -118,7 +118,7 @@ namespace Gravity
                 using (Brush brush = new SolidBrush(player.GetShieldColor()))
                     e.Graphics.FillRectangle(brush, 0, 0, player.GetShieldPct() * panel1.Width, panel1.Height);
                 using (Pen pen = new Pen(Color.Black, 2))
-                    for (float a = .5f ; a < 10 ; a = (float)Math.Floor(a + 1))
+                    for (float a = .5f ; a <= 10 ; a = (float)Math.Floor(a + 1))
                     {
                         float x = Player.GetShieldPct(a) * panel1.Width;
                         e.Graphics.DrawLine(pen, x, 0, x, panel1.Height);

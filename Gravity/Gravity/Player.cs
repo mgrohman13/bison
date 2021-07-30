@@ -35,7 +35,7 @@ namespace Gravity
             if (typeof(Center).IsAssignableFrom(type))
                 return 1;
             if (typeof(Enemy).IsAssignableFrom(type))
-                return 1 / 4f;
+                return 1 / 3f;
             if (typeof(Player).IsAssignableFrom(type))
                 return 1;
             if (typeof(PowerUp).IsAssignableFrom(type))
