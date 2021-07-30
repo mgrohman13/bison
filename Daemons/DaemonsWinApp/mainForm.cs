@@ -1,18 +1,17 @@
+using Daemons;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
-using Daemons;
 
 namespace DaemonsWinApp
 {
     public partial class MainForm : Form
     {
         public static MainForm instance;
+        public static string SavePath;
 
         public static bool shift = false;
 
@@ -41,16 +40,47 @@ namespace DaemonsWinApp
             this.MaximumSize = this.Size;
 
             RefreshAll();
+
+            SetupSavePath();
+        }
+
+        private void SetupSavePath()
+        {
+            SavePath = string.Empty;
+            try
+            {
+                if (File.Exists("savepath.txt"))
+                {
+                    using (StreamReader reader = new StreamReader("savepath.txt"))
+                        SavePath = reader.ReadLine();
+                    if (!Directory.Exists(SavePath))
+                        SavePath = string.Empty;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                SavePath = string.Empty;
+            }
+
+            if (SavePath != string.Empty)
+            {
+                if (!(SavePath.EndsWith("\\") || SavePath.EndsWith("/")))
+                    SavePath += "\\";
+                openFileDialog1.InitialDirectory = saveFileDialog1.InitialDirectory = SavePath;
+            }
+            openFileDialog1.FileName = saveFileDialog1.FileName = "d.dae";
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             try
             {
-                for (int x = 0 ; x <= game.Width ; x++)
+                for (int x = 0; x <= game.Width; x++)
                     e.Graphics.DrawLine(Pens.Black, new Point(x * size + offset, offset),
                             new Point(x * size + offset, offset + game.Height * size));
-                for (int y = 0 ; y <= game.Height ; y++)
+                for (int y = 0; y <= game.Height; y++)
                     e.Graphics.DrawLine(Pens.Black, new Point(offset, y * size + offset),
                             new Point(offset + game.Width * size, y * size + offset));
 
@@ -58,8 +88,8 @@ namespace DaemonsWinApp
                     using (Pen p = new Pen(Color.Black, 3))
                         e.Graphics.DrawRectangle(p, selected.X * size + offset, selected.Y * size + offset, size, size);
 
-                for (int x = 0 ; x < game.Width ; x++)
-                    for (int y = 0 ; y < game.Height ; y++)
+                for (int x = 0; x < game.Width; x++)
+                    for (int y = 0; y < game.Height; y++)
                     {
                         Tile tile = game.GetTile(x, y);
 
@@ -75,7 +105,7 @@ namespace DaemonsWinApp
                             if (units.Any())
                             {
                                 units = units.GroupBy(unit => unit.Owner).OrderByDescending(group => Tile.GetArmyStr(group)).First();
-                                attackers = tile.GetUnits().Where(unit => ( unit.Owner != ( (IGrouping<Player, Unit>)units ).Key ));
+                                attackers = tile.GetUnits().Where(unit => (unit.Owner != ((IGrouping<Player, Unit>)units).Key));
                             }
                         }
                         Bitmap picAttacker = Tile.GetBestPic(attackers);
@@ -117,31 +147,31 @@ namespace DaemonsWinApp
                             Brush brush;
                             switch (productionCenter.Type)
                             {
-                            case ProductionType.Archer:
-                                if (productionCenter.Used)
-                                    brush = Brushes.Yellow;
-                                else
-                                    brush = Brushes.Orange;
-                                break;
+                                case ProductionType.Archer:
+                                    if (productionCenter.Used)
+                                        brush = Brushes.Yellow;
+                                    else
+                                        brush = Brushes.Orange;
+                                    break;
 
-                            case ProductionType.Infantry:
-                                if (productionCenter.Used)
-                                    brush = Brushes.Lime;
-                                else
-                                    brush = Brushes.Green;
-                                break;
+                                case ProductionType.Infantry:
+                                    if (productionCenter.Used)
+                                        brush = Brushes.Lime;
+                                    else
+                                        brush = Brushes.Green;
+                                    break;
 
-                            case ProductionType.Knight:
-                                if (productionCenter.Used)
-                                    brush = Brushes.Cyan;
-                                else
-                                    brush = Brushes.Blue;
-                                break;
+                                case ProductionType.Knight:
+                                    if (productionCenter.Used)
+                                        brush = Brushes.Cyan;
+                                    else
+                                        brush = Brushes.Blue;
+                                    break;
 
-                            default:
-                                throw new Exception("go home");
+                                default:
+                                    throw new Exception("go home");
                             }
-                            e.Graphics.FillEllipse(brush, newX, ( y + 1 ) * size + offset - 16, 13, 13);
+                            e.Graphics.FillEllipse(brush, newX, (y + 1) * size + offset - 16, 13, 13);
                             newX += 16;
                         }
                     }
@@ -193,30 +223,30 @@ namespace DaemonsWinApp
             }
 
             List<Unit>[] types = new List<Unit>[4];
-            for (int a = 0 ; a < types.Length ; a++)
+            for (int a = 0; a < types.Length; a++)
                 types[a] = new List<Unit>();
             foreach (Unit unit in units)
                 switch (unit.Type)
                 {
-                case UnitType.Archer:
-                    types[1].Add(unit);
-                    break;
+                    case UnitType.Archer:
+                        types[1].Add(unit);
+                        break;
 
-                case UnitType.Daemon:
-                    types[3].Add(unit);
-                    break;
+                    case UnitType.Daemon:
+                        types[3].Add(unit);
+                        break;
 
-                case UnitType.Indy:
-                case UnitType.Infantry:
-                    types[0].Add(unit);
-                    break;
+                    case UnitType.Indy:
+                    case UnitType.Infantry:
+                        types[0].Add(unit);
+                        break;
 
-                case UnitType.Knight:
-                    types[2].Add(unit);
-                    break;
+                    case UnitType.Knight:
+                        types[2].Add(unit);
+                        break;
 
-                default:
-                    throw new Exception("I need sleep.");
+                    default:
+                        throw new Exception("I need sleep.");
                 }
 
             Label[] pics = new[] { this.lblUnit1, this.lblUnit2, this.lblUnit3, this.lblUnit4 };
@@ -233,13 +263,13 @@ namespace DaemonsWinApp
             if (units.All(unit => unit.Owner == player.Key))
                 active = player.Key.GetActive(types);
             int num = 0;
-            for (int a = 0 ; a < types.Length ; a++)
+            for (int a = 0; a < types.Length; a++)
                 if (types[a].Count > 0)
                 {
                     infos[num].Text = string.Format("{0} / {1} / {2}", types[a].Count(unit => unit.Healed),
-                            types[a].Count(unit => ( unit.Movement > 0 )), types[a].Count());
-                    infos[num].Font = new Font("Microsoft Sans Serif", 11.25f, ( active.Contains(a) ? FontStyle.Bold : FontStyle.Regular ));
-                    infos[num].ForeColor = ( active.Contains(a) ? Color.Black : Color.Gray );
+                            types[a].Count(unit => (unit.Movement > 0)), types[a].Count());
+                    infos[num].Font = new Font("Microsoft Sans Serif", 11.25f, (active.Contains(a) ? FontStyle.Bold : FontStyle.Regular));
+                    infos[num].ForeColor = (active.Contains(a) ? Color.Black : Color.Gray);
                     pics[num++].Image = types[a].GroupBy(unit => unit.Owner).OrderByDescending((g) => Tile.GetArmyStr(g)).First().First().GetPic();
                 }
         }
@@ -255,9 +285,9 @@ namespace DaemonsWinApp
         {
             if (selected != null)
             {
-                this.btnBuild.Visible = ( selected.GetProduction(true).Any()
+                this.btnBuild.Visible = (selected.GetProduction(true).Any()
                         && selected.GetUnits(game.GetCurrentPlayer(), true).Any()
-                        && selected.Unoccupied(game.GetCurrentPlayer()) );
+                        && selected.Unoccupied(game.GetCurrentPlayer()));
                 this.btnFight.Visible = selected.CanBattle();
             }
         }
@@ -288,7 +318,7 @@ namespace DaemonsWinApp
 
             if (result == DialogResult.Yes)
             {
-                game.EndTurn();
+                game.EndTurn(AutoSavePath());
 
                 selected = null;
                 RefreshAll();
@@ -296,6 +326,11 @@ namespace DaemonsWinApp
                 if (game.GetPlayers().Count == 1)
                     TextForm.ShowDialog(game, false);
             }
+        }
+
+        private static string AutoSavePath()
+        {
+            return SavePath + "Auto/";
         }
 
         void RefreshLog()
@@ -315,7 +350,7 @@ namespace DaemonsWinApp
                     return;
             }
 
-            int x = ( e.X - offset ) / size, y = ( e.Y - offset ) / size;
+            int x = (e.X - offset) / size, y = (e.Y - offset) / size;
 
             if (x >= 0 && y >= 0 && x < game.Width && y < game.Height)
             {
@@ -368,7 +403,7 @@ namespace DaemonsWinApp
 
         void mainForm_MouseDown(object sender, MouseEventArgs e)
         {
-            int x = ( e.X - offset ) / size, y = ( e.Y - offset ) / size;
+            int x = (e.X - offset) / size, y = (e.Y - offset) / size;
 
             if (x >= 0 && y >= 0 && x < game.Width && y < game.Height)
             {
@@ -462,11 +497,11 @@ namespace DaemonsWinApp
 
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.game.AutoSave();
+            this.game.AutoSave(AutoSavePath());
 
             if (this.game.CombatLog.Length > 0)
             {
-                string logFile = "../../../combat.txt";
+                string logFile = SavePath + "combat.txt";
                 using (System.IO.StreamWriter sw = new System.IO.StreamWriter(logFile, true))
                 {
                     sw.WriteLine();
