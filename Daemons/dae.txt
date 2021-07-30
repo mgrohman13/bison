@@ -1,5 +1,3 @@
-savepath
-
 souls int?
 
 Unit.Retreated(retreated, this); at end of retreat check but not in between
@@ -24,7 +22,6 @@ show str,morale,souls
 	always show selected stats regardeless of use type
 hotkeys
 shortcut to customize all
-auto save location
 show battles
 
 review Consts usage
