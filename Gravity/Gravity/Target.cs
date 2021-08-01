@@ -25,14 +25,9 @@ namespace Gravity
 
         internal override void Step(float count)
         {
-            float diff = game.DifficultyMeter;
-            if (diff < 0)
-                diff = 1f / (1f - diff);
-            else
-                diff++;
-            this.size = (float)(15 / Math.Pow(diff, .15));
-            this.density = (float)(1 / Math.Pow(game.Difficulty, .25) / Math.Pow(diff, .15));
+            float diff = game.DiffMult(.5f, .6f);
+            this.size = (float)(15 / Math.Sqrt(diff));
+            this.density = 1 / diff;
         }
-
     }
 }

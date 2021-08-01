@@ -49,7 +49,7 @@ namespace Gravity
         {
             base.Interact(piece);
 
-            if (( x - piece.X ) * ( x - piece.X ) + ( y - piece.Y ) * ( y - piece.Y ) < ( ( this.size + piece.Size ) / 2f ) * ( ( this.size + piece.Size ) / 2f ))
+            if ((x - piece.X) * (x - piece.X) + (y - piece.Y) * (y - piece.Y) < ((this.size + piece.Size) / 2f) * ((this.size + piece.Size) / 2f))
                 if (piece is PowerUp)
                 {
                     PowerUp pu = (PowerUp)piece;
@@ -61,7 +61,7 @@ namespace Gravity
                 }
                 else if (piece is Enemy)
                 {
-                    float dmg = ( (Enemy)piece ).GetDmg();
+                    float dmg = ((Enemy)piece).GetDmg();
                     shield -= dmg;
                     game.Remove(piece);
                     game.NewEnemy();
@@ -80,8 +80,8 @@ namespace Gravity
             if (--shieldTick < 0)
             {
                 float diff = this.shield - this.shieldPrev;
-                bool pos = ( diff > 0 );
-                game.AddText(this, ( pos ? "+" : "" ) + Game.rand.Round(diff * 100).ToString(), diff, !pos, false, pos);
+                bool pos = (diff > 0);
+                game.AddText(this, (pos ? "+" : "") + Game.rand.Round(diff * 100).ToString(), diff, !pos, false, pos);
                 ResetShieldTick();
             }
         }
@@ -99,23 +99,15 @@ namespace Gravity
             this.xDir *= decay;
             this.yDir *= decay;
 
-            //double distSqr =;
-            //double gameSize =;
-            //gameSize *= gameSize;
-            //if (distSqr > gameSize)
-            //    shield -= (float)Game.rand.OE(shield * .000025 * Math.Pow(distSqr / gameSize, .2));
-            //else
-            //    shield += (float)Game.rand.OE(Math.Sqrt(game.Difficulty) * .002f / ( shield + 1 ));
-
-
             if (shield >= 0)
             {
                 const float gameSizeSqr = Game.gameSize * Game.gameSize;
-                float val = (float)Math.Pow(( ( x * x + y * y ) * 4f + gameSizeSqr ) / ( gameSizeSqr * 3f ), .25f) - 1f;
+                float val = (float)Math.Pow(((x * x + y * y) * 4f + gameSizeSqr) / (gameSizeSqr * 3f), .25f) - 1f;
                 float cur = (float)Math.Sqrt(shield + 1f);
-                val = (float)( .005f * Math.Log(Math.Abs(val) + 1f) * ( val < 0 ? Math.Sqrt(game.Difficulty) / cur : -cur / 25f ) );
-                if (Game.rand.Bool(25 / 1000f))
-                    Console.WriteLine(string.Format("{0:0.000}\t\t{1:+#.00E+0;-#.00E+0}", shield, val));
+                float mult = (val < 0 ? game.DiffMult(.5f, .9f, true) / cur : cur / -25f);
+                val = (float)(.004f * Math.Log(Math.Abs(val) + 1f) * mult);
+                //if (Game.rand.Bool(25 / 1000f))
+                //    Console.WriteLine(string.Format("{0:0.000}\t\t{1:+#.00E+0;-#.00E+0}", shield, val));
                 val = Game.rand.OE(val);
                 shield += val;
                 if (shield >= 0)
@@ -124,7 +116,7 @@ namespace Gravity
                 ShowShield();
             }
 
-            this.size = (float)( 25f * Math.Pow(shield / 3f, .3f) );
+            this.size = (float)(25f * Math.Pow(shield / 3f, .3f));
         }
 
         public System.Drawing.Color GetShieldColor()
@@ -140,17 +132,17 @@ namespace Gravity
 
         public static float GetShieldPct(float shield)
         {
-            return (float)Math.Pow(shield / ( shield + 5f ), .65);
+            return (float)Math.Pow(shield / (shield + 5f), Math.Log(2) / Math.Log(3));
         }
 
         internal bool CheckCourse(float x2, float y2, float diameter)
         {
-            int iter = Game.Random.Round(500 / ( 1000f / 39f )) + 1;
+            int iter = Game.Random.Round(500 / (1000f / 39f)) + 1;
             float x1 = this.x - size / 2f, y1 = this.y - size / 2f, d1 = this.size, d2 = diameter, e1 = 0, e2 = 0;
-            for (int a = 0 ; a < iter ; ++a)
+            for (int a = 0; a < iter; ++a)
             {
-                float f1 = ( d1 - this.size ) / 2f;
-                float f2 = ( d2 - diameter ) / 2f;
+                float f1 = (d1 - this.size) / 2f;
+                float f2 = (d2 - diameter) / 2f;
                 if (CheckCourse(x1 - f1, y1 - f1, d1, x2 - f2, y2 - f2, d2))
                     return true;
                 x1 += xDir;
@@ -170,7 +162,7 @@ namespace Gravity
             float x = x1 - x2 + diff;
             float y = y1 - y2 + diff;
             diff = radius + pieceRadius;
-            return ( diff * diff > x * x + y * y );
+            return (diff * diff > x * x + y * y);
         }
     }
 }

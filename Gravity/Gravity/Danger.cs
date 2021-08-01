@@ -12,21 +12,18 @@ namespace Gravity
 
         public Danger(Game game, float x, float y, float size, float density) : base(game, x, y, size, density)
         {
-            Console.WriteLine("new Danger");
             this.mult = Game.rand.GaussianOE(2.5f, .35f, .15f);
+            Console.WriteLine("new Danger - " + mult);
         }
 
         internal override float GetGravity(Type type)
         {
-            float mult = this.mult * game.Difficulty;
-            float gravity = base.GetGravity(type);
+            float mult = this.mult * game.DiffMult(.5f, .1f);
             if (type == typeof(Enemy))
-                gravity /= (float)Math.Sqrt(mult);
-            else if (type == typeof(Player))
-                gravity *= mult;
-            else
-                gravity *= (float)Math.Sqrt(mult);
-            return gravity;
+                return 1 / mult;
+            if (type == typeof(Player))
+                return mult;
+            return (float)(Math.Sqrt(mult) * base.GetGravity(type));
         }
     }
 }

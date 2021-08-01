@@ -22,6 +22,7 @@ namespace Gravity
         public const float scoreSize = avgSize * 1.75f;
         public const float scoreDensity = .25f;
         public const float enemyMult = 5f;
+        public const float powerUpDecay = .00065f;
 
         private HashSet<Piece> pieces;
         private Player player;
@@ -71,14 +72,6 @@ namespace Gravity
             }
         }
 
-        public float Difficulty
-        {
-            get
-            {
-                return difficulty;
-            }
-        }
-
         internal void AddScore(float amt, Piece p)
         {
             float mult = 100f * scoreSize / avgSize;
@@ -91,9 +84,9 @@ namespace Gravity
         }
         internal void ScoreMeter(float amt, Piece p)
         {
-            float old = this.dMeter;
+            float old = this.DifficultyMeter;
             AddMeter((float)(-Math.Sqrt(amt * avgSize / scoreSize)));
-            float text = old - this.dMeter;
+            float text = old - this.DifficultyMeter;
             AddText(p, "+" + rand.Round(text * 100f).ToString(), text, false, true, false);
         }
         internal void AddText(Piece p, string text, float sizeFactor, bool r, bool g, bool b)
@@ -108,9 +101,16 @@ namespace Gravity
             float x = rand.Gaussian(enemyDist);
             float y = rand.Gaussian(enemyDist);
             if (player.CheckCourse(x - size / 2f, y - size / 2f, size))
+            {
                 NewEnemy();
+            }
             else
-                pieces.Add(rand.Bool(Difficulty / (Difficulty + 2.5f)) ? new Danger(this, x, y, size, GetDensity(size)) : new Enemy(this, x, y, size, GetDensity(size)));
+            {
+                float dangerPct = .15f * DiffMult(.9f, .2f);
+                dangerPct /= (dangerPct + 1f);
+                float density = GetDensity(size);
+                pieces.Add(rand.Bool(dangerPct) ? new Danger(this, x, y, size, density) : new Enemy(this, x, y, size, density));
+            }
         }
         private void NewPowerUp(float div)
         {
@@ -145,11 +145,33 @@ namespace Gravity
             return rand.GaussianOE((float)Math.Sqrt(size / avgSize), .15f, .35f);
         }
 
+        public float EnemyMult()
+        {
+            return (float)(DiffMult(1, .3f) * Game.enemyMult);
+        }
+
+        public float DiffMult(float power, float meterPct = .5f, bool flipMeter = false)
+        {
+            float diff = this.DifficultyMeter * (flipMeter ? -1 : 1);
+            if (diff < 0)
+                diff = 1f / (1f - diff);
+            else
+                diff++;
+            return (float)(Math.Pow(this.Difficulty, power * (1 - meterPct)) * Math.Pow(diff, 1.5 * power * meterPct));
+        }
+
         public float DifficultyMeter
         {
             get
             {
                 return dMeter;
+            }
+        }
+        public float Difficulty
+        {
+            get
+            {
+                return difficulty;
             }
         }
 
@@ -200,36 +222,33 @@ namespace Gravity
                     pieces[a].Step(enemyCount);
             }
 
-            if (ExistChance(enemyCount, (float)(Math.Pow(Difficulty, .75f) * Game.enemyMult), 1))
+            if (ExistChance(enemyCount, EnemyMult(), 1))
                 NewEnemy();
-
 
             if (--this.dTick < 0)
             {
-                float diff = this.difficulty - this.dInc;
-                AddText(player, "-" + rand.Round(diff * 500f).ToString(), diff * 5f, true, true, true);
-                this.dInc = this.difficulty;
+                float diff = this.Difficulty - this.dInc;
+                AddText(player, "+" + rand.Round(diff * 500f).ToString(), diff * 5f, true, true, true);
+                this.dInc = this.Difficulty;
                 this.dTick = Game.dTime;
             }
 
             float factor = 1f;
-            if (this.dMeter > 0)
-                factor *= (3f + dMeter) / 1.5f;
+            if (this.DifficultyMeter > 0)
+                factor *= (3f + DifficultyMeter) / 1.5f;
             else
-                factor /= (4f - dMeter) / 4f;
+                factor /= (4f - DifficultyMeter) / 4f;
+            this.difficulty += rand.OE(factor * .0005f / (Difficulty + 1f));
+            //Console.WriteLine(difficulty); 
 
-            this.difficulty += rand.OE(factor * .0005f / (difficulty + 1f));
-            //Console.WriteLine(difficulty);
-
-            float f = (this.dMeter > 0 ? .001f : .00065f);
+            float f = (this.DifficultyMeter > 0 ? .0009f : powerUpDecay);
             this.dMeter *= (1 - f);
 
-            float pc = (float)(Game.powerUpChance * Math.Sqrt(Difficulty));
+            float pc = (float)(Game.powerUpChance * DiffMult(.3f, .2f, true));
             if (rand.Bool(pc * 2f))
                 NewPowerUp(3f);
             AddMeter(rand.OE(pc / 3f));
         }
-
 
         public static bool ExistChance(float value, float target, float power)
         {
@@ -242,7 +261,7 @@ namespace Gravity
 
         internal void Remove(Piece piece)
         {
-            Console.WriteLine("remove " + piece);
+            //Console.WriteLine("remove " + piece);
             pieces.Remove(piece);
         }
 

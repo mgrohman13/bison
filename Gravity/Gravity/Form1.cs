@@ -39,7 +39,7 @@ namespace Gravity
         {
             if (game != null)
             {
-                ( (Game)game ).setClientRectangle(new Rectangle(0, menuStrip.Height + this.panel2.Height, ClientSize.Width, ClientSize.Height - menuStrip.Height - this.panel1.Height - this.panel2.Height));
+                ((Game)game).setClientRectangle(new Rectangle(0, menuStrip.Height + this.panel2.Height, ClientSize.Width, ClientSize.Height - menuStrip.Height - this.panel1.Height - this.panel2.Height));
             }
         }
 
@@ -55,7 +55,7 @@ namespace Gravity
         {
             if (game != null)
             {
-                ( (Game)game ).setTarget(e.X, e.Y);
+                ((Game)game).setTarget(e.X, e.Y);
                 if (!game.Started || !game.Running || game.Paused)
                     RefreshGame();
             }
@@ -114,15 +114,23 @@ namespace Gravity
         {
             if (game != null && !game.GameOver())
             {
-                Player player = ( (Game)game ).Player;
+                Player player = ((Game)game).Player;
                 using (Brush brush = new SolidBrush(player.GetShieldColor()))
                     e.Graphics.FillRectangle(brush, 0, 0, player.GetShieldPct() * panel1.Width, panel1.Height);
                 using (Pen pen = new Pen(Color.Black, 2))
-                    for (float a = .5f ; a <= 10 ; a = (float)Math.Floor(a + 1))
+                {
+                    float[] ticks = new float[] /**/ { .5f, 1, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30 };
+                    byte[] labels = new byte[]  /**/ { 001, 1, 1, 1, 1, 1, 1, 1, 01, 01, 01, 01 };
+                    for (int a = 0; a < ticks.Length; a++)
                     {
-                        float x = Player.GetShieldPct(a) * panel1.Width;
+                        float b = ticks[a];
+                        float x = Player.GetShieldPct(b) * panel1.Width;
                         e.Graphics.DrawLine(pen, x, 0, x, panel1.Height);
+                        if (labels[a] != 0)
+                            e.Graphics.DrawString(b.ToString(), this.label1.Font, Brushes.Black, x, 0);
                     }
+
+                }
             }
         }
 
@@ -131,7 +139,7 @@ namespace Gravity
             if (game != null && !game.GameOver())
             {
                 float w = panel2.Width / 2;
-                float meter = ( (Gravity.Game)game ).DifficultyMeter;
+                float meter = ((Gravity.Game)game).DifficultyMeter;
                 if (meter < 0)
                 {
                     float pct = -Player.GetShieldPct(-meter);
@@ -140,11 +148,16 @@ namespace Gravity
                 else
                 {
                     float pct = Player.GetShieldPct(meter);
-                    e.Graphics.FillRectangle(Brushes.Red, w * ( 1 - pct ), 0, w * pct, panel2.Height);
+                    e.Graphics.FillRectangle(Brushes.Red, w * (1 - pct), 0, w * pct, panel2.Height);
                 }
 
-                this.label2.Text = "Difficulty - " + ( ( ( (Gravity.Game)game ).Difficulty - 1f ) * 500f ).ToString("0");
+                this.label2.Text = "Difficulty - " + ((((Gravity.Game)game).Difficulty - 1f) * 500f).ToString("0");
             }
+        }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            SetSquare();
         }
     }
 }

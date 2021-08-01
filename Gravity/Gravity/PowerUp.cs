@@ -22,7 +22,7 @@ namespace Gravity
         {
             base.Step(count);
 
-            this.size -= Game.rand.OE(size * .00065f + .0035f);
+            this.size -= Game.rand.OE(size * Game.powerUpDecay + .0035f);
             if (size <= 0)
                 game.Remove(this);
         }
