@@ -76,7 +76,7 @@ namespace Gravity
 
         private static float FlipInc(float inc, float value, float target)
         {
-            if (value < target == inc < 0 && Game.rand.Bool(Math.Abs(value - target) / (value + target)))
+            if (((value < target) == (inc < 0)) && Game.rand.Bool(Math.Abs(value - target) / (value + target)))
                 inc *= -1;
             return inc;
         }

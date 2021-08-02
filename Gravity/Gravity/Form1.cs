@@ -159,5 +159,50 @@ namespace Gravity
         {
             SetSquare();
         }
+
+        private void Form1_Paint(object sender, PaintEventArgs e)
+        {
+            //Rectangle drawRectangle = new Rectangle(0, menuStrip.Height + this.panel2.Height, ClientSize.Width, ClientSize.Height - menuStrip.Height - this.panel1.Height - this.panel2.Height);
+            ////float xScale = drawRectangle.Width / Game.gameSize;
+            ////float yScale = drawRectangle.Height / Game.gameSize;
+            //float max = getS(0);
+
+            //for (int a = 0; true; a++)
+            //{
+            //    float dist = (float)(Game.gameSize * Math.Sqrt(2) * a / 256.0) / 2;
+
+            //    float val = getS(dist);
+            //    if (val == -1) break;
+
+            //    byte v = (byte)(256 - val / max * 256f);
+            //    Console.WriteLine(v);
+            //    Pen b = new Pen(Color.FromArgb(v, v, 255), (float)(drawRectangle.Width * Math.Sqrt(2) / 256.0 / 2.0));
+
+            //    float p = (float)(drawRectangle.Width * Math.Sqrt(2) * a / 256.0);
+
+            //    RectangleF r = new RectangleF(-p / 2f + drawRectangle.Width / 2f, menuStrip.Height + this.panel2.Height - p / 2f + drawRectangle.Height / 2f, p, p);
+            //    e.Graphics.DrawEllipse(b, r);
+
+            //    if (highlight(max, val, new double[] { .01, .1, .2, .3, .4, .5, .6, .7, .8, .9, .99 }))
+            //    {
+            //        e.Graphics.DrawEllipse(Pens.Black, r);
+            //    }
+            //}
+        }
+        //private static bool highlight(float max, float val, double[] vs)
+        //{
+        //    return vs.Any(v => Math.Abs(val / max - v) < .0028);
+        //}
+        //private float getS(float dist)
+        //{
+        //    const float gameSizeSqr = Game.gameSize * Game.gameSize;
+        //    float val = (float)Math.Pow((dist * dist * 4f + gameSizeSqr) / (gameSizeSqr * 3f), .25f) - 1f;
+        //    //float cur = (float)Math.Sqrt(shield + 1f);
+        //    //float mult = (val < 0 ? game.DiffMult(.5f, .9f, true) / cur : cur / -25f);
+        //    if (val >= 0)
+        //        return -1;
+        //    val = (float)(.004f * Math.Log(Math.Abs(val) + 1f) * 1);
+        //    return val;
+        //}
     }
 }
