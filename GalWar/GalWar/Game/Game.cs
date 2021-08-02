@@ -691,7 +691,7 @@ namespace GalWar
         {
             if (AutoSavePath != null)
             {
-                TBSUtil.SaveGame(this, AutoSavePath, turn + ".gws");
+                TBSUtil.SaveGame(this, AutoSavePath, this.ID + "_" + turn + ".gws");
 
                 Graphs temp = this.Graphs;
                 this.Graphs = null;

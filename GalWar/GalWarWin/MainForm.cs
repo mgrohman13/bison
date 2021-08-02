@@ -580,7 +580,7 @@ namespace GalWarWin
                 double pct = ship.HP / (double)ship.MaxHP;
                 if (pct < 1)
                 {
-                    Pen pen = Pen pen = new Pen(Color.Black, 2f);
+                    Pen pen = new Pen(Color.Black, 2f);
                     if (ship.Player.IsTurn && !ship.HasRepaired && ship.AutoRepair == 0)
                         pen = new Pen(Color.White, 2f);
 
@@ -953,7 +953,7 @@ namespace GalWarWin
                 int min = int.MaxValue, max = int.MinValue;
                 foreach (string file in files)
                 {
-                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    string fileName = Path.GetFileNameWithoutExtension(file).Split('_')[0];
                     int turn;
                     if (int.TryParse(fileName, out turn))
                     {
@@ -980,7 +980,7 @@ namespace GalWarWin
             int turn;
             while (( Game == null ? -1 : Game.Turn ) != ( turn = (int)tbTurns.Value ))
             {
-                string filePath = GetAutosaveFolder() + "\\" + turn + ".gws";
+                string filePath = GetAutosaveFolder() + "\\" + turn + "_1.gws";
                 if (File.Exists(filePath))
                     try
                     {
