@@ -1,10 +1,5 @@
-show race on end game
-
 in between games
 	"security" of public fields
-	larger map avg?
-		reduce wiz pts?
-	num of wiz pts fluctuates throughout game
 
 balance
 	separate out no attacks, no move, and 'all' to be used individualy
@@ -48,6 +43,7 @@ requiring rebalance
 	regen overvalued? (shouldnt have AverageDamage mult)
 
 interface
+	show race on end game
 	show more map info - e.g. unit value?  capts?
 	show total income on summary
 	show retaliation upjkeep cost

@@ -25,10 +25,10 @@ namespace CityWarWinApp
 
             this.Bounds = Map.GetScreenBounds();
 
-            for (int i = -1 ; ++i < Controls.Count ;)
+            for (int i = -1; ++i < Controls.Count;)
             {
-                Controls[i].Location = new Point(Controls[i].Location.X + ( this.Width - insideX ) / 2,
-                    Controls[i].Location.Y + ( this.Height - insideY ) / 2);
+                Controls[i].Location = new Point(Controls[i].Location.X + (this.Width - insideX) / 2,
+                    Controls[i].Location.Y + (this.Height - insideY) / 2);
 
                 Controls[i].BackColor = MainMenu.back;
                 Controls[i].ForeColor = MainMenu.fore;
@@ -88,9 +88,9 @@ namespace CityWarWinApp
 
                     groups = realPlayers.GroupBy(player => player.Race);
                 } while (players.All(player => player.Race == Player.Random) && players.Count >= cbxRace.Items.Count - 1 &&
-                        ( groups.Count() != cbxRace.Items.Count - 1 || groups.Max(group => group.Count()) - groups.Min(group => group.Count()) > 1 ));
+                        (groups.Count() != cbxRace.Items.Count - 1 || groups.Max(group => group.Count()) - groups.Min(group => group.Count()) > 1));
 
-                Map.Game = new Game(realPlayers, Game.Random.GaussianCappedInt((double)this.nudSize.Value, .104, (int)this.nudSize.Minimum));
+                Map.Game = new Game(realPlayers, Game.Random.GaussianCappedInt((double)this.nudSize.Value, .104, Game.Random.Round((double)this.nudSize.Minimum)));
             }
             catch (ArgumentOutOfRangeException aoore)
             {
@@ -110,7 +110,7 @@ namespace CityWarWinApp
 
         private void lbxPlayers_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Player p = ( (Player)this.lbxPlayers.SelectedItem );
+            Player p = ((Player)this.lbxPlayers.SelectedItem);
             if (p == null)
                 return;
             this.lblColor.BackColor = p.Color;
@@ -126,7 +126,7 @@ namespace CityWarWinApp
             // check if the item exists
             if (e.Index >= 0 && e.Index < this.lbxPlayers.Items.Count)
             {
-                Player p = ( (Player)this.lbxPlayers.Items[e.Index] );
+                Player p = ((Player)this.lbxPlayers.Items[e.Index]);
 
                 // Draw the background of the ListBox control for each item.
                 //e.DrawBackground();
@@ -182,7 +182,7 @@ namespace CityWarWinApp
 
         private void lblDelete_Click(object sender, EventArgs e)
         {
-            Player p = ( (Player)this.lbxPlayers.SelectedItem );
+            Player p = ((Player)this.lbxPlayers.SelectedItem);
             players.Remove(p);
             this.lbxPlayers.Items.Remove(p);
 

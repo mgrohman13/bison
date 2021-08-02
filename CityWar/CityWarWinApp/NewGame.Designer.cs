@@ -44,14 +44,14 @@ namespace CityWarWinApp
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.cbxRace = new System.Windows.Forms.ComboBox();
-            ( (System.ComponentModel.ISupportInitialize)( this.nudSize ) ).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSize)).BeginInit();
             this.SuspendLayout();
             // 
             // lblCancel
             // 
             this.lblCancel.BackColor = System.Drawing.Color.Black;
             this.lblCancel.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.lblCancel.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblCancel.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCancel.ForeColor = System.Drawing.Color.White;
             this.lblCancel.Location = new System.Drawing.Point(62, 439);
             this.lblCancel.Name = "lblCancel";
@@ -67,7 +67,7 @@ namespace CityWarWinApp
             // 
             this.lblStart.BackColor = System.Drawing.Color.Black;
             this.lblStart.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.lblStart.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            this.lblStart.Font = new System.Drawing.Font("Arial", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblStart.ForeColor = System.Drawing.Color.White;
             this.lblStart.Location = new System.Drawing.Point(62, 379);
             this.lblStart.Name = "lblStart";
@@ -94,21 +94,21 @@ namespace CityWarWinApp
             65536});
             this.nudSize.Location = new System.Drawing.Point(213, 9);
             this.nudSize.Maximum = new decimal(new int[] {
-            21,
+            26 ,
             0,
             0,
             0});
             this.nudSize.Minimum = new decimal(new int[] {
-            6,
+            65,
             0,
             0,
-            0});
+            65536});
             this.nudSize.Name = "nudSize";
             this.nudSize.Size = new System.Drawing.Size(65, 28);
             this.nudSize.TabIndex = 6;
             this.nudSize.UpDownAlign = System.Windows.Forms.LeftRightAlignment.Left;
             this.nudSize.Value = new decimal(new int[] {
-            104,
+            117,
             0,
             0,
             65536});
@@ -284,7 +284,7 @@ namespace CityWarWinApp
             this.Controls.Add(this.lblStart);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "NewGame";
-            ( (System.ComponentModel.ISupportInitialize)( this.nudSize ) ).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSize)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -300,13 +300,13 @@ namespace CityWarWinApp
         private System.Windows.Forms.ListBox lbxPlayers;
         private System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.Label lblColor;
-		private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtName;
         private System.Windows.Forms.Label lblEdit;
         private System.Windows.Forms.Label lblAddNew;
         private System.Windows.Forms.Label lblDelete;
         private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.ComboBox cbxRace;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox cbxRace;
     }
 }

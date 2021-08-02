@@ -133,10 +133,10 @@ namespace CityWar
             }
 
             //create wizard points and possibly some starting city spots
-            double avg = MapSize / 52.0;
-            int wizspots = 1 + Random.GaussianCappedInt(avg, .078, (int)(avg / 1.3));
+            double avg = NumWizSpots();
+            int wizspots = Random.GaussianCappedInt(avg, .117, 1);
             for (int a = 0; a < wizspots; ++a)
-                CreateWizardPts();
+                CreateWizardPts(true);
             for (int a = 0; a < numPlayers; ++a)
                 CreateCitySpot();
 
@@ -145,6 +145,11 @@ namespace CityWar
             currentPlayer = 0;
             players[0].StartTurn();
         }
+        private double NumWizSpots()
+        {
+            return 1 + MapSize / 78.0;
+        }
+
         private int GetInitUnitsHave(string name)
         {
             int needed = Unit.CreateTempUnit(this, name).BaseTotalCost;
@@ -980,10 +985,23 @@ namespace CityWar
 
         #region internal methods
 
-        internal void CreateWizardPts()
+        internal void CreateWizardPts(bool alwaysOne = false)
         {
-            Tile tile = RandomTile(neighbor => neighbor == null || (neighbor.WizardPoints < 1 && !neighbor.HasWizard()));
-            tile.MakeWizPts();
+            int create = 1;
+            if (!alwaysOne)
+            {
+                int count = map.OfType<Tile>().Count(t => t.WizardPoints > 0);
+                double target = NumWizSpots();
+                //if (count < target)
+                //    target += Math.Pow(1 / (count + 1.0), 2.6); 
+                double avg = Math.Pow((target + 1) / (count + 2.0), 1.3);
+                create = Game.Random.GaussianOEInt(avg, .26, .13, count == 0 ? 1 : 0);
+            }
+            for (int a = 0; a < create; a++)
+            {
+                Tile tile = RandomTile(neighbor => neighbor == null || (neighbor.WizardPoints < 1 && !neighbor.HasWizard()));
+                tile.MakeWizPts();
+            }
         }
 
         internal Tile RandomTile(Func<Tile, bool> ValidNeighbor = null)
