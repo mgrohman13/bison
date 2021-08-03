@@ -10,7 +10,6 @@ balance
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
 	allow gamble move to use in between 1-full move
-	winning player leave behind city spots?
 	trading capturables generates more income
 		reset move on increment?
 		income on increment?

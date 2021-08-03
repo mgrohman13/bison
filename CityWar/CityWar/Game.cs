@@ -1317,6 +1317,8 @@ namespace CityWar
                     {
                         piece.Tile.Remove(piece);
                         win.Remove(piece, true);
+                        if (piece is City && Game.Random.Bool())
+                            MakeCitySpot(piece.Tile);
                     }
             }
         }
@@ -1375,8 +1377,13 @@ namespace CityWar
                 Tile tile = RandomTile(neighbor => neighbor != null);
                 //don't try again if it is on or next to an existing city
                 if (tile.GetNeighbors(true).All(neighbor => !neighbor.HasCity()))
-                    tile.MakeCitySpot(Random.GaussianOEInt(7.8, .39, .169, 1));
+                    MakeCitySpot(tile);
             }
+        }
+
+        private static void MakeCitySpot(Tile tile)
+        {
+            tile.MakeCitySpot(Random.GaussianOEInt(7.8, .39, .169, 1));
         }
 
         private void ChangeMoveOrder()
