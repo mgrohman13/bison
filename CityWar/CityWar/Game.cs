@@ -1105,6 +1105,8 @@ namespace CityWar
                 CreateCitySpot();
                 ChangeMoveOrder();
                 Player.SubtractCommonUpkeep(this.players);
+                foreach (Capturable c in this.players.SelectMany<Player, Piece>(p => p.GetPieces()).OfType<Capturable>())
+                    c.EarnedIncome = false;
             }
 
             ++turn;

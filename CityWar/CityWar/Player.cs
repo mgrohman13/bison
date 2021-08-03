@@ -1233,111 +1233,112 @@ namespace CityWar
             prod += 5;
 
             foreach (Capturable capturable in capturables)
-            {
-                int elemental = 0;
-
-                Portal portal;
-                if (capturable is Wizard)
+                if (!capturable.EarnedIncome)
                 {
-                    //cost 1300
-                    //roi 16.25-43.33
-                    elemental += 30;
-                    //rest: +10 (roi 32.50)
-                    //find: +50
+                    int elemental = 0;
 
-                    //88.01% collection needed for average portal roi (52.67% for relic)
-                }
-                else if (capturable is City)
-                {
-                    prod += 13;
-                    magic += 7;
-                    elemental += 6;
-                    pop += 3;
-                    death += 1;
-                    //+30
-                }
-                else if (capturable is Relic)
-                {
-                    //cost 300
-                    //roi 23.08
-                    magic += 6;
-                    elemental += 5;
-                    pop += 2;
-                    //+13
-                }
-                else if ((portal = capturable as Portal) != null)
-                {
-                    //avg cost 1000 (673-1461)
-                    //avg roi 17.57 (15.64-19.51)
-                    int amt = portal.Income;
-
-                    int type = 0, position = 0;
-                    for (; amt > 0; --amt)
-                        switch (++position % 6)
-                        {
-                            case 1:
-                                ++type;
-                                break;
-                            case 2:
-                                ++elemental;
-                                break;
-                            case 3:
-                                ++type;
-                                break;
-                            case 4:
-                                ++magic;
-                                break;
-                            case 5:
-                                ++type;
-                                break;
-                            case 0:
-                                ++elemental;
-                                break;
-                        }
-
-                    switch (portal.Type)
+                    Portal portal;
+                    if (capturable is Wizard)
                     {
-                        case CostType.Air:
-                            air += type;
+                        //cost 1300
+                        //roi 16.25-43.33
+                        elemental += 30;
+                        //rest: +10 (roi 32.50)
+                        //find: +50
+
+                        //88.01% collection needed for average portal roi (52.67% for relic)
+                    }
+                    else if (capturable is City)
+                    {
+                        prod += 13;
+                        magic += 7;
+                        elemental += 6;
+                        pop += 3;
+                        death += 1;
+                        //+30
+                    }
+                    else if (capturable is Relic)
+                    {
+                        //cost 300
+                        //roi 23.08
+                        magic += 6;
+                        elemental += 5;
+                        pop += 2;
+                        //+13
+                    }
+                    else if ((portal = capturable as Portal) != null)
+                    {
+                        //avg cost 1000 (673-1461)
+                        //avg roi 17.57 (15.64-19.51)
+                        int amt = portal.Income;
+
+                        int type = 0, position = 0;
+                        for (; amt > 0; --amt)
+                            switch (++position % 6)
+                            {
+                                case 1:
+                                    ++type;
+                                    break;
+                                case 2:
+                                    ++elemental;
+                                    break;
+                                case 3:
+                                    ++type;
+                                    break;
+                                case 4:
+                                    ++magic;
+                                    break;
+                                case 5:
+                                    ++type;
+                                    break;
+                                case 0:
+                                    ++elemental;
+                                    break;
+                            }
+
+                        switch (portal.Type)
+                        {
+                            case CostType.Air:
+                                air += type;
+                                break;
+                            case CostType.Death:
+                                death += type;
+                                break;
+                            case CostType.Earth:
+                                earth += type;
+                                break;
+                            case CostType.Nature:
+                                nature += type;
+                                break;
+                            case CostType.Water:
+                                water += type;
+                                break;
+                            default:
+                                throw new Exception();
+                        }
+                    }
+                    else
+                        throw new Exception();
+
+                    //the actual resource for the element is based off of the terrain type
+                    switch (capturable.Tile.Terrain)
+                    {
+                        case Terrain.Forest:
+                            nature += elemental;
                             break;
-                        case CostType.Death:
-                            death += type;
+                        case Terrain.Mountain:
+                            earth += elemental;
                             break;
-                        case CostType.Earth:
-                            earth += type;
+                        case Terrain.Plains:
+                            air += elemental;
                             break;
-                        case CostType.Nature:
-                            nature += type;
-                            break;
-                        case CostType.Water:
-                            water += type;
+                        case Terrain.Water:
+                            water += elemental;
                             break;
                         default:
                             throw new Exception();
                     }
                 }
-                else
-                    throw new Exception();
-
-                //the actual resource for the element is based off of the terrain type
-                switch (capturable.Tile.Terrain)
-                {
-                    case Terrain.Forest:
-                        nature += elemental;
-                        break;
-                    case Terrain.Mountain:
-                        earth += elemental;
-                        break;
-                    case Terrain.Plains:
-                        air += elemental;
-                        break;
-                    case Terrain.Water:
-                        water += elemental;
-                        break;
-                    default:
-                        throw new Exception();
-                }
-            }
         }
 
         #endregion //income and upkeep

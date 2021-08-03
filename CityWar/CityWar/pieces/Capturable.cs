@@ -8,6 +8,8 @@ namespace CityWar
     {
         #region fields and constructors
 
+        private bool earnedIncome = false;
+
         protected Capturable(int maxMove, Player owner, Tile tile, string name)
             : this(maxMove, owner, tile, name, Abilities.None)
         {
@@ -30,7 +32,7 @@ namespace CityWar
 
             if (name == "Wizard")
             {
-                return ( owner.Magic >= Player.WizardCost );
+                return (owner.Magic >= Player.WizardCost);
             }
             else if (name.EndsWith(" Portal"))
             {
@@ -38,11 +40,11 @@ namespace CityWar
                 int magic, element;
                 Player.SplitPortalCost(Owner.Game, Owner.Race, poralType, out magic, out element);
 
-                return ( owner.Magic >= magic ) && ( owner.GetResource(poralType.ToString()) >= element );
+                return (owner.Magic >= magic) && (owner.GetResource(poralType.ToString()) >= element);
             }
 
             Unit unit = Unit.CreateTempUnit(owner.Game, name);
-            return ( owner.Population >= unit.BasePplCost && owner.GetResource(unit.CostType.ToString()) >= unit.BaseOtherCost );
+            return (owner.Population >= unit.BasePplCost && owner.GetResource(unit.CostType.ToString()) >= unit.BaseOtherCost);
         }
 
         #endregion //public methods and properties
@@ -94,7 +96,7 @@ namespace CityWar
             {
                 owner.SpendMagic(-Player.WizardCost);
             }
-            else if (( portal = piece as Portal ) != null)
+            else if ((portal = piece as Portal) != null)
             {
                 CostType poralType = portal.Type;
                 int magic, element;
@@ -105,7 +107,7 @@ namespace CityWar
             }
             else
             {
-                Unit unit = ( (Unit)piece );
+                Unit unit = ((Unit)piece);
                 owner.Spend(-unit.BaseOtherCost, unit.CostType, -unit.BasePplCost);
                 owner.Remove(unit, false);
                 tile.Remove(unit);
@@ -113,6 +115,23 @@ namespace CityWar
 
             piece.Tile.Remove(piece);
             piece.Owner.Remove(piece, false);
+        }
+
+        internal override void ResetMove()
+        {
+            earnedIncome = true;
+        }
+
+        public bool EarnedIncome
+        {
+            get
+            {
+                return earnedIncome;
+            }
+            internal set
+            {
+                this.earnedIncome = false;
+            }
         }
 
         #endregion //internal methods

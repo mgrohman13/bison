@@ -9,11 +9,6 @@ balance
 
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
-	allow gamble move to use in between 1-full move
-	trading capturables generates more income
-		reset move on increment?
-		income on increment?
-	portal income comes out of inc
 	swap portal ratios w/ pop ratio?
 		SplitPortalCost - see comment
 	get relic when no capt?
@@ -22,6 +17,9 @@ gameplay
 	exp?
 	persist is3 attacks
 	show capturable build subset
+	portal income rounding comes out of inc
+		requires new variable in case of magic ratio change?
+	allow gamble move to use in between 1-full move
 
 requiring rebalance
 	consider differentiating underwater/surface
