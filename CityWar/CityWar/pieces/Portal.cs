@@ -11,7 +11,7 @@ namespace CityWar
 
         public const int AvgPortalCost = 1000;
         public const double UnitCostPct = .21;
-        public const double ValuePct = ( 1 - UnitCostPct );
+        public const double ValuePct = (1 - UnitCostPct);
         public const double StartAmt = .26;
         public const double IncomeDiv = 65;
 
@@ -38,7 +38,7 @@ namespace CityWar
             this.units = GetStartValues();
 
             //pay for starting amount and income rounding
-            PayUpkeep(GetResourceValue() + ( this.Income - income ) * 21);
+            PayUpkeep(GetResourceValue() + (this.Income - income) * 21);
         }
 
         #endregion //fields and constructors
@@ -51,8 +51,8 @@ namespace CityWar
             int m, e;
             Player.SplitPortalCost(owner.Game, owner.Race, Type, out m, out e);
             double resourceValue = GetResourceValue();
-            int magic = Game.Random.Round(resourceValue * m / (double)( m + e ));
-            int element = Game.Random.Round(resourceValue * e / (double)( m + e ));
+            int magic = Game.Random.Round(resourceValue * m / (double)(m + e));
+            int element = Game.Random.Round(resourceValue * e / (double)(m + e));
 
             owner.SpendMagic(-magic);
             owner.Spend(-element, Type, 0);
@@ -77,7 +77,12 @@ namespace CityWar
 
         public override bool CapableBuild(string name)
         {
-            return ( name == "Wizard" );
+            if (name == "Wizard")
+                return true;
+            Unit unit = Unit.CreateTempUnit(owner.Game, name);
+            if (!RaceCheck(unit))
+                return false;
+            return (this.Type == unit.CostType);
         }
 
         protected override bool CanMoveChild(Tile t)
@@ -97,7 +102,7 @@ namespace CityWar
 
             double inc = GetTurnInc();
             int needed = Unit.CreateTempUnit(owner.Game, unit).BaseTotalCost;
-            units[unit] += Game.Random.GaussianOEInt(inc, .26 / ( 1.3 + units.Count ), .091 * ( needed - units[unit] ) / ( needed + inc ));
+            units[unit] += Game.Random.GaussianOEInt(inc, .26 / (1.3 + units.Count), .091 * (needed - units[unit]) / (needed + inc));
 
             while (units[unit] >= needed)
             {

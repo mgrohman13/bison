@@ -8,7 +8,6 @@ balance
 	revamp to balance all at once and use all target units based on types
 
 gameplay
-	portal recruit type units
 	in multi hex battles, units only attacking immobile can be retalliated against
 	allow gamble move to use in between 1-full move
 	winning player leave behind city spots?
