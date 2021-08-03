@@ -138,6 +138,8 @@ namespace CityWar
 
         #region abstract members
 
+        public virtual List<string> GetBuildList() { return new List<string>(); }
+
         public abstract bool CapableBuild(string name);
         protected bool raceCheck(string name)
         {

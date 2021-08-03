@@ -21,7 +21,7 @@ namespace CityWar
         private static List<string> InitUnits(Tile tile)
         {
             double baseWaterChance = Math.Pow(1.3 + CountNeighbors(tile, terrain => terrain == Terrain.Water), tile.Terrain == Terrain.Water ? 1.69 : 1.3);
-            baseWaterChance = 1 - 1 / ( 1.0 + 13 * baseWaterChance / ( 5.2 + CountNeighbors(tile, terrain => true) ) );
+            baseWaterChance = 1 - 1 / (1.0 + 13 * baseWaterChance / (5.2 + CountNeighbors(tile, terrain => true)));
 
             IEnumerable<string> units = Enumerable.Empty<string>();
             foreach (IEnumerable<Unit> race in Game.Races.Select(pair => pair.Value.Select(name => Unit.CreateTempUnit(tile.Game, name))))
@@ -40,15 +40,15 @@ namespace CityWar
                         return avgChance;
                     switch (unit.Type)
                     {
-                    case UnitType.Air:
-                    case UnitType.Ground:
-                    case UnitType.Immobile:
-                        return otherChance;
-                    case UnitType.Amphibious:
-                    case UnitType.Water:
-                        return waterChance;
-                    default:
-                        throw new Exception();
+                        case UnitType.Air:
+                        case UnitType.Ground:
+                        case UnitType.Immobile:
+                            return otherChance;
+                        case UnitType.Amphibious:
+                        case UnitType.Water:
+                            return waterChance;
+                        default:
+                            throw new Exception();
                     }
                 };
 
@@ -83,7 +83,13 @@ namespace CityWar
         }
         private static double GetTargetPct(double avgPct, double havePct, int haveCount, int targetCount)
         {
-            return ( ( avgPct * ( haveCount + targetCount ) ) - ( havePct * haveCount ) ) / targetCount;
+            return ((avgPct * (haveCount + targetCount)) - (havePct * haveCount)) / targetCount;
+        }
+
+        public override List<string> GetBuildList()
+        {
+            //if (this.owner != current) return null;
+            return this.units.Where(u => Unit.CreateTempUnit(owner.Game, u).Race == this.owner.Race).ToList();
         }
 
         #endregion //fields and constructors
@@ -126,25 +132,25 @@ namespace CityWar
             {
                 switch (unit.Type)
                 {
-                case UnitType.Air:
-                case UnitType.Amphibious:
-                case UnitType.Immobile:
-                    //can always build air, amphibious, and immobile units
-                    return true;
-                case UnitType.Ground:
-                    //can only build ground when next to ground
-                    if (CountNeighbors(this.Tile, terrain => terrain != Terrain.Water) > 0)
+                    case UnitType.Air:
+                    case UnitType.Amphibious:
+                    case UnitType.Immobile:
+                        //can always build air, amphibious, and immobile units
                         return true;
-                    else
-                        break;
-                case UnitType.Water:
-                    //can only build water when next to water
-                    if (CountNeighbors(this.Tile, terrain => terrain == Terrain.Water) > 0)
-                        return true;
-                    else
-                        break;
-                default:
-                    throw new Exception();
+                    case UnitType.Ground:
+                        //can only build ground when next to ground
+                        if (CountNeighbors(this.Tile, terrain => terrain != Terrain.Water) > 0)
+                            return true;
+                        else
+                            break;
+                    case UnitType.Water:
+                        //can only build water when next to water
+                        if (CountNeighbors(this.Tile, terrain => terrain == Terrain.Water) > 0)
+                            return true;
+                        else
+                            break;
+                    default:
+                        throw new Exception();
                 }
             }
 
@@ -176,7 +182,7 @@ namespace CityWar
             }
 
             //can only build death units if no other magic units can be built
-            return ( death && costType == CostType.Death );
+            return (death && costType == CostType.Death);
         }
 
         protected override bool CanMoveChild(Tile t)

@@ -2,20 +2,21 @@ in between games
 	"security" of public fields
 
 balance
-	separate out no attacks, no move, and 'all' to be used individualy
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
 	revamp to balance all at once and use all target units based on types
+	regen overvalued? (shouldnt have AverageDamage mult)
+	separate out no attacks, no move, and 'all' to be used individualy
+		really will use?
 
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
-	group move from different hexes
 	exp?
 	persist is3 attacks
-	show capturable build subset
 	portal income rounding comes out of inc
 		requires new variable in case of magic ratio change?
 	allow gamble move to use in between 1-full move
+	group move from different hexes
 	teleporters
 		come up with way to be different from galwar wormholes
 
@@ -23,17 +24,17 @@ requiring rebalance
 	unit abilities
 		aircraft fuel?
 		wind shield
+	flamethrower not hit W (dragon too?)
+	bonus to element units on terrain?
+	attack bonuses, not just armor?
+	transport units?
+	consider differentiating underwater/surface
+		adds enough value for the complication?
 	better terrains
 		add new (e.g. hills, impassible)?
 		make forest more of an overlay
 		multiple on same tile?
-	transport units?
-	bonus to element units on terrain?
-	attack bonuses, not just armor?
-	flamethrower not hit W (dragon too?)
-	regen overvalued? (shouldnt have AverageDamage mult)
-	consider differentiating underwater/surface
-		adds enough value for the complication?
+		what about elements?
 		
 interface
 	show race on end game

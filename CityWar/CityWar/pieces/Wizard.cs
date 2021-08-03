@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CityWar
 {
@@ -28,14 +29,14 @@ namespace CityWar
                     double chance;
                     switch (Unit.CreateTempUnit(game, u).CostType)
                     {
-                    case CostType.Death:
-                        chance = .6;
-                        break;
-                    default:
-                        chance = .4;
-                        break;
-                    case CostType.Production:
-                        continue;
+                        case CostType.Death:
+                            chance = .6;
+                            break;
+                        default:
+                            chance = .4;
+                            break;
+                        case CostType.Production:
+                            continue;
                     }
                     if (Game.Random.Bool(chance))
                     {
@@ -47,6 +48,11 @@ namespace CityWar
                     return InitUnits(game);
             }
             return units;
+        }
+
+        public override List<string> GetBuildList()
+        {
+            return this.units.Where(u => Unit.CreateTempUnit(owner.Game, u).Race == this.owner.Race).ToList();
         }
 
         #endregion //fields and constructors
@@ -87,7 +93,7 @@ namespace CityWar
         protected override bool CanMoveChild(Tile t)
         {
             Player p;
-            return ( !( t.Occupied(out p) && p != owner ) );
+            return (!(t.Occupied(out p) && p != owner));
         }
 
         protected override bool DoMove(Tile t, bool gamble, out bool canUndo)

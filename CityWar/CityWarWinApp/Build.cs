@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -48,6 +49,7 @@ namespace CityWarWinApp
             List<double> costs = new List<double>(us.Unit.Count);
             Dictionary<double, UnitSchema.UnitRow> costRef = new Dictionary<double, UnitSchema.UnitRow>(costs.Count);
 
+            //HashSet<string> all = new HashSet<string>();
             foreach (UnitSchema.UnitRow r in us.Unit)
             {
                 bool can = false;
@@ -62,7 +64,9 @@ namespace CityWarWinApp
                 if (!can)
                     continue;
 
-                double theCost = (double)( r.Cost ) * 1.00001 + (double)( r.People );
+                //all.Add(r.Name);
+
+                double theCost = (double)(r.Cost) * 1.00001 + (double)(r.People);
                 while (costRef.ContainsKey(theCost))
                     theCost += .000001;
 
@@ -87,36 +91,36 @@ namespace CityWarWinApp
 
             if (canPortal)
             {
-                double[] totals = new double[5];
-                double[] counts = new double[5];
-                foreach (UnitSchema.UnitRow r in us.Unit)
-                {
-                    int i = -1;
-                    switch (r.CostType)
-                    {
-                    case "W":
-                        i = 0;
-                        break;
-                    case "A":
-                        i = 1;
-                        break;
-                    case "E":
-                        i = 2;
-                        break;
-                    case "D":
-                        i = 3;
-                        break;
-                    case "N":
-                        i = 4;
-                        break;
-                    }
-                    if (i > -1)
-                    {
-                        double div = Math.Sqrt(r.Cost + r.People);
-                        totals[i] += r.Cost / div;
-                        counts[i] += r.People / div;
-                    }
-                }
+                //double[] totals = new double[5];
+                //double[] counts = new double[5];
+                //foreach (UnitSchema.UnitRow r in us.Unit)
+                //{
+                //    int i = -1;
+                //    switch (r.CostType)
+                //    {
+                //    case "W":
+                //        i = 0;
+                //        break;
+                //    case "A":
+                //        i = 1;
+                //        break;
+                //    case "E":
+                //        i = 2;
+                //        break;
+                //    case "D":
+                //        i = 3;
+                //        break;
+                //    case "N":
+                //        i = 4;
+                //        break;
+                //    }
+                //    if (i > -1)
+                //    {
+                //        double div = Math.Sqrt(r.Cost + r.People);
+                //        totals[i] += r.Cost / div;
+                //        counts[i] += r.People / div;
+                //    }
+                //}
 
 
                 Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
@@ -127,30 +131,30 @@ namespace CityWarWinApp
                     Color backColor;
                     switch (costType)
                     {
-                    case CostType.Water:
-                        backColor = this.lblWater.BackColor;
-                        break;
-                    case CostType.Air:
-                        backColor = this.lblAir.BackColor;
-                        break;
-                    case CostType.Earth:
-                        backColor = this.lblEarth.BackColor;
-                        break;
-                    case CostType.Death:
-                        backColor = this.lblDeath.BackColor;
-                        break;
-                    case CostType.Nature:
-                        backColor = this.lblNature.BackColor;
-                        break;
-                    default:
-                        throw new Exception();
+                        case CostType.Water:
+                            backColor = this.lblWater.BackColor;
+                            break;
+                        case CostType.Air:
+                            backColor = this.lblAir.BackColor;
+                            break;
+                        case CostType.Earth:
+                            backColor = this.lblEarth.BackColor;
+                            break;
+                        case CostType.Death:
+                            backColor = this.lblDeath.BackColor;
+                            break;
+                        case CostType.Nature:
+                            backColor = this.lblNature.BackColor;
+                            break;
+                        default:
+                            throw new Exception();
                     }
 
                     int[] cost = portalCost[costType];
                     int wizAmt = cost[0];
                     int otherAmt = cost[1];
 
-                    enabled = ( capts[0].Owner.Magic >= wizAmt ) && ( (int)capts[0].Owner.GetResource(costType.ToString()) >= otherAmt );
+                    enabled = (capts[0].Owner.Magic >= wizAmt) && ((int)capts[0].Owner.GetResource(costType.ToString()) >= otherAmt);
 
                     newBox(Xs[0], y, Ws[0], costType.ToString() + " Portal");
                     newBox(Xs[1], y, Ws[1], wizAmt.ToString(), this.lblWizard.BackColor, HorizontalAlignment.Right);
@@ -161,11 +165,15 @@ namespace CityWarWinApp
                 }
             }
 
-            enabled = ( capts[0].Owner.Magic >= Player.WizardCost );
+            enabled = (capts[0].Owner.Magic >= Player.WizardCost);
 
             newBox(Xs[0], y, Ws[0], "Wizard");
-            newBox(Xs[1], y, ( Ws[1] * 3 ) / 2, Player.WizardCost.ToString(), lblWizard.BackColor);
+            newBox(Xs[1], y, (Ws[1] * 3) / 2, Player.WizardCost.ToString(), lblWizard.BackColor);
             newButton(Xs[3], y, "Summon", "Wizard", new EventHandler(build_Click));
+
+
+            ShowBuildList<Wizard>(ref y, "ALWAYS:", new List<string>());
+            ShowBuildList<City>(ref y, "ALSO:", costRef.Values.Select(r => r.Name));
 
             y += 29;
 
@@ -177,9 +185,9 @@ namespace CityWarWinApp
             if (y > maxY)
                 y = maxY;
 
-            newButton(( this.ClientSize.Width ) / 2 - new Button().Width - 6, y,
+            newButton((this.ClientSize.Width) / 2 - new Button().Width - 6, y,
                 "Cancel", null, new EventHandler(close_Click));
-            btnTrade = newButton(( this.ClientSize.Width ) / 2 + 6, y,
+            btnTrade = newButton((this.ClientSize.Width) / 2 + 6, y,
                "Trade", null, new EventHandler(trade_Click));
 
             ShowResources();
@@ -187,6 +195,22 @@ namespace CityWarWinApp
             SetupScrollBars();
 
             btnTrade.Select();
+        }
+
+        private int ShowBuildList<T>(ref int y, string label, IEnumerable<string> filter) where T : Capturable
+        {
+            IEnumerable<string> build = capts.OfType<T>().SelectMany(c => c.GetBuildList()).Where(n => !filter.Contains(n)).Distinct().OrderBy(s => Unit.CreateTempUnit(Map.Game, s).BaseTotalCost);
+            if (build.Any())
+            {
+                y += 45;
+                newBox(Xs[0], y, Ws[0], label);
+                foreach (string u in build)
+                {
+                    y += 29;
+                    newBox(Xs[0], y, Ws[0], u);
+                }
+            }
+            return y;
         }
 
         //private void SortedInsert(List<double> collection, double value)
@@ -223,46 +247,46 @@ namespace CityWarWinApp
             CostType costType;
             switch (r.CostType)
             {
-            case "A":
-                costType = CostType.Air;
-                break;
-            case "D":
-                costType = CostType.Death;
-                break;
-            case "E":
-                costType = CostType.Earth;
-                break;
-            case "N":
-                costType = CostType.Nature;
-                break;
-            case "W":
-                costType = CostType.Water;
-                break;
-            default:
-                costType = CostType.Production;
-                break;
+                case "A":
+                    costType = CostType.Air;
+                    break;
+                case "D":
+                    costType = CostType.Death;
+                    break;
+                case "E":
+                    costType = CostType.Earth;
+                    break;
+                case "N":
+                    costType = CostType.Nature;
+                    break;
+                case "W":
+                    costType = CostType.Water;
+                    break;
+                default:
+                    costType = CostType.Production;
+                    break;
             }
 
             UnitType type;
             switch (r.Type)
             {
-            case "A":
-                type = UnitType.Air;
-                break;
-            case "GWA":
-                type = UnitType.Immobile;
-                break;
-            case "GW":
-                type = UnitType.Amphibious;
-                break;
-            case "G":
-                type = UnitType.Ground;
-                break;
-            case "W":
-                type = UnitType.Water;
-                break;
-            default:
-                throw new Exception();
+                case "A":
+                    type = UnitType.Air;
+                    break;
+                case "GWA":
+                    type = UnitType.Immobile;
+                    break;
+                case "GW":
+                    type = UnitType.Amphibious;
+                    break;
+                case "G":
+                    type = UnitType.Ground;
+                    break;
+                case "W":
+                    type = UnitType.Water;
+                    break;
+                default:
+                    throw new Exception();
             }
 
             Color color = getColor(costType);
@@ -279,7 +303,7 @@ namespace CityWarWinApp
                 ++x;
             }
 
-            newButton(Xs[3], y, ( r.CostType != "" ? "Summon" : "Build" ),
+            newButton(Xs[3], y, (r.CostType != "" ? "Summon" : "Build"),
                 r.Name, new EventHandler(build_Click));
         }
 
@@ -288,26 +312,26 @@ namespace CityWarWinApp
             Color color;
             switch (costType)
             {
-            case CostType.Air:
-                color = lblAir.BackColor;
-                break;
-            case CostType.Death:
-                color = this.lblDeath.BackColor;
-                break;
-            case CostType.Earth:
-                color = this.lblEarth.BackColor;
-                break;
-            case CostType.Nature:
-                color = this.lblNature.BackColor;
-                break;
-            case CostType.Production:
-                color = this.lblProd.BackColor;
-                break;
-            case CostType.Water:
-                color = this.lblWater.BackColor;
-                break;
-            default:
-                throw new Exception();
+                case CostType.Air:
+                    color = lblAir.BackColor;
+                    break;
+                case CostType.Death:
+                    color = this.lblDeath.BackColor;
+                    break;
+                case CostType.Earth:
+                    color = this.lblEarth.BackColor;
+                    break;
+                case CostType.Nature:
+                    color = this.lblNature.BackColor;
+                    break;
+                case CostType.Production:
+                    color = this.lblProd.BackColor;
+                    break;
+                case CostType.Water:
+                    color = this.lblWater.BackColor;
+                    break;
+                default:
+                    throw new Exception();
             }
 
             return color;
@@ -366,18 +390,18 @@ namespace CityWarWinApp
             Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
             foreach (Control control in Controls)
             {
-                if (control is Button && ( control.Tag is string ) && ( (string)control.Tag != "" ))
+                if (control is Button && (control.Tag is string) && ((string)control.Tag != ""))
                     if ((string)control.Tag == "Wizard")
-                        control.Visible = ( capts[0].Owner.Magic >= Player.WizardCost );
-                    else if (( (string)control.Tag ).EndsWith(" Portal"))
+                        control.Visible = (capts[0].Owner.Magic >= Player.WizardCost);
+                    else if (((string)control.Tag).EndsWith(" Portal"))
                     {
-                        CostType poralType = (CostType)Enum.Parse(typeof(CostType), ( (string)control.Tag ).Split(' ')[0]);
+                        CostType poralType = (CostType)Enum.Parse(typeof(CostType), ((string)control.Tag).Split(' ')[0]);
                         int[] cost = portalCost[poralType];
                         int wiz = cost[0];
                         int other = cost[1];
 
-                        control.Visible = ( capts[0].Owner.Magic >= wiz ) &&
-                            ( (int)capts[0].Owner.GetResource(poralType.ToString()) >= other );
+                        control.Visible = (capts[0].Owner.Magic >= wiz) &&
+                            ((int)capts[0].Owner.GetResource(poralType.ToString()) >= other);
                     }
                     else
                     {
@@ -415,7 +439,7 @@ namespace CityWarWinApp
 
         void build_Click(object sender, EventArgs e)
         {
-            string unit = ( (string)( (Button)sender ).Tag );
+            string unit = ((string)((Button)sender).Tag);
 
             foreach (Capturable c in capts)
                 if (c.CapableBuild(unit))
@@ -497,14 +521,14 @@ namespace CityWarWinApp
             int maxH = int.MinValue;
 
             foreach (Control c in this.Controls)
-                if (!( c is ScrollBar ))
+                if (!(c is ScrollBar))
                 {
                     maxW = Math.Max(maxW, c.Location.X + c.Width);
                     maxH = Math.Max(maxH, c.Location.Y + c.Height);
                 }
 
-            this.sbVer.Visible = ( maxH > height );
-            this.sbHor.Visible = ( maxW > width );
+            this.sbVer.Visible = (maxH > height);
+            this.sbHor.Visible = (maxW > width);
 
             int scrollBarOffset = 33 + sbVer.LargeChange;
 
@@ -531,13 +555,13 @@ namespace CityWarWinApp
             foreach (Control c in this.Controls)
             {
                 bool isScrollingHeader;
-                if (( isScrollingHeader = ( !vertical && ( c is Label ) && ( c.Tag as string ) == "header" ) )
-                    || ( c is TextBox ) || ( c is Button && c.Tag != null ))
+                if ((isScrollingHeader = (!vertical && (c is Label) && (c.Tag as string) == "header"))
+                    || (c is TextBox) || (c is Button && c.Tag != null))
                 {
-                    c.Location = new Point(c.Location.X - ( vertical ? 0 : diff ), c.Location.Y - ( vertical ? diff : 0 ));
+                    c.Location = new Point(c.Location.X - (vertical ? 0 : diff), c.Location.Y - (vertical ? diff : 0));
                     if (!isScrollingHeader)
-                        c.Visible = ( ( c.Location.Y + c.Height ) < btnTrade.Location.Y ) &&
-                            ( c.Location.Y > ( label1.Location.Y + label1.Height ) );
+                        c.Visible = ((c.Location.Y + c.Height) < btnTrade.Location.Y) &&
+                            (c.Location.Y > (label1.Location.Y + label1.Height));
                 }
             }
         }
