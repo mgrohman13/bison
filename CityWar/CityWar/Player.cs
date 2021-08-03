@@ -697,14 +697,14 @@ namespace CityWar
         public static int GetPortalElementCost(double elemPct, double totalCost)
         {
             ////the more population the units cost, the less magic the portal costs
-            //return (int)Math.Ceiling(( 1 - ( elemPct * elemPct * .666 + .21 ) ) * totalCost);
+            return (int)Math.Ceiling((1 - (elemPct * elemPct * .666 + .21)) * totalCost);
 
-            //the more population the units cost, the more magic the portal costs
-            elemPct *= elemPct;
-            if (elemPct <= .26)
-                return 1;
-            elemPct = (0.65 * (elemPct - 0.26));
-            return (int)Math.Ceiling(elemPct * totalCost);
+            ////the more population the units cost, the more magic the portal costs
+            //elemPct *= elemPct;
+            //if (elemPct <= .26)
+            //    return 1;
+            //elemPct = (0.65 * (elemPct - 0.26));
+            //return (int)Math.Ceiling(elemPct * totalCost);
         }
         private static int getCTIdx(CostType costType)
         {

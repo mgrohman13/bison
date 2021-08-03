@@ -70,11 +70,11 @@ namespace CityWarWinApp
 
         private static void PrintCosts(Dictionary<CostType, int[]> dictionary)
         {
-            Console.WriteLine("{0} - {1}", dictionary[CostType.Air][0], dictionary[CostType.Air][1]);
-            Console.WriteLine("{0} - {1}", dictionary[CostType.Death][0], dictionary[CostType.Death][1]);
-            Console.WriteLine("{0} - {1}", dictionary[CostType.Earth][0], dictionary[CostType.Earth][1]);
-            Console.WriteLine("{0} - {1}", dictionary[CostType.Nature][0], dictionary[CostType.Nature][1]);
-            Console.WriteLine("{0} - {1}", dictionary[CostType.Water][0], dictionary[CostType.Water][1]);
+            Console.WriteLine("{0}\t{1}", dictionary[CostType.Air][0], dictionary[CostType.Air][1]);
+            Console.WriteLine("{0}\t{1}", dictionary[CostType.Death][0], dictionary[CostType.Death][1]);
+            Console.WriteLine("{0}\t{1}", dictionary[CostType.Earth][0], dictionary[CostType.Earth][1]);
+            Console.WriteLine("{0}\t{1}", dictionary[CostType.Nature][0], dictionary[CostType.Nature][1]);
+            Console.WriteLine("{0}\t{1}", dictionary[CostType.Water][0], dictionary[CostType.Water][1]);
         }
     }
 }

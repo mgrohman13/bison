@@ -9,8 +9,6 @@ balance
 
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
-	swap portal ratios w/ pop ratio?
-		SplitPortalCost - see comment
 	get relic when no capt?
 	group move from different hexes
 	teleporters?
@@ -23,8 +21,6 @@ gameplay
 
 requiring rebalance
 	consider differentiating underwater/surface
-	tough for fae to dump air
-		solve w/ portal cost swap?
 	unit abilities
 		aircraft fuel?
 		wind shield
