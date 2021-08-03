@@ -9,18 +9,17 @@ balance
 
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
-	get relic when no capt?
 	group move from different hexes
-	teleporters?
 	exp?
 	persist is3 attacks
 	show capturable build subset
 	portal income rounding comes out of inc
 		requires new variable in case of magic ratio change?
 	allow gamble move to use in between 1-full move
+	teleporters
+		come up with way to be different from galwar wormholes
 
 requiring rebalance
-	consider differentiating underwater/surface
 	unit abilities
 		aircraft fuel?
 		wind shield
@@ -33,7 +32,9 @@ requiring rebalance
 	attack bonuses, not just armor?
 	flamethrower not hit W (dragon too?)
 	regen overvalued? (shouldnt have AverageDamage mult)
-
+	consider differentiating underwater/surface
+		adds enough value for the complication?
+		
 interface
 	show race on end game
 	show more map info - e.g. unit value?  capts?

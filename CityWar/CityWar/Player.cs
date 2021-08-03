@@ -13,7 +13,7 @@ namespace CityWar
     {
         #region fields and constructors
 
-        public const int WizardCost = 1300, RelicCost = 300;
+        public const int WizardCost = 1300, RelicCost = 300, NoCaptRelicPenalty = 33;
         public const int TradeDown = 9, TradeUp = 30;
         public const double WorkMult = (TradeDown + (TradeUp - TradeDown) / 3.0) / 10.0;
         public const double UpkeepMult = (TradeUp - (TradeUp - TradeDown) / 3.0) / 10.0;
@@ -759,29 +759,32 @@ namespace CityWar
                 GetRelic();
             }
         }
-        private void GetRelic()
+        private bool GetRelic()
         {
             if (relicOffset < 0)
                 relicOffset = Game.Random.RangeInt(0, RelicCost);
 
             if (relic - relicOffset >= RelicCost)
             {
-                Capturable cur = RandomCapturable();
+                Piece cur = RandomCapturable();
+                bool noCapts = (cur == null);
+                if (noCapts && relic - relicOffset >= RelicCost + NoCaptRelicPenalty)
+                    cur = Game.Random.SelectValue(pieces);
+
                 if (cur != null)
                 {
-
-                    int old = this.pieces.OfType<Relic>().Count();
-
                     relicOffset = int.MinValue;
-                    relic -= RelicCost;
+                    _relic -= RelicCost + (noCapts ? NoCaptRelicPenalty : 0);
                     new Relic(this, cur.Tile);
 
-                    if (old + 2 <= this.pieces.OfType<Relic>().Count())
-                    {
-                    }
-
+                    bool another = GetRelic();
+                    if (another)
+                    { }
+                    return true;
                 }
             }
+
+            return false;
         }
         private Capturable RandomCapturable()
         {
