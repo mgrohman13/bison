@@ -203,32 +203,39 @@ namespace MattUtil
 
         public static bool operator ==(EnumFlags<T> e1, T e2)
         {
-            return e1.Equals(e2);
+            return NullSafeEqual(e1, e2);
         }
 
         public static bool operator ==(T e1, EnumFlags<T> e2)
         {
-            return e2.Equals(e1);
+            return NullSafeEqual(e2, e1);
         }
 
         public static bool operator ==(EnumFlags<T> e1, EnumFlags<T> e2)
         {
-            return e1.Equals(e2);
+            return NullSafeEqual(e1, e2);
         }
 
         public static bool operator !=(EnumFlags<T> e1, T e2)
         {
-            return !e1.Equals(e2);
+            return !NullSafeEqual(e1, e2);
         }
 
         public static bool operator !=(T e1, EnumFlags<T> e2)
         {
-            return !e2.Equals(e1);
+            return !NullSafeEqual(e2, e1);
         }
 
         public static bool operator !=(EnumFlags<T> e1, EnumFlags<T> e2)
         {
-            return !e1.Equals(e2);
+            return !NullSafeEqual(e1, e2);
+        }
+
+        private static bool NullSafeEqual(object obj1, object obj2)
+        {
+            if (obj1 is null)
+                return (obj2 is null);
+            return obj1.Equals(obj2);
         }
 
         public override bool Equals(object obj)
