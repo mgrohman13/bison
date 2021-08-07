@@ -2,9 +2,9 @@ in between games
 	"security" of public fields
 
 balance
+	schema-based length handing
 	bug when reading after saving a unit
 	allow 1/3 heal to calc isthree
-	revamp to balance all at once and use all target units based on types
 	regen overvalued? (shouldnt have AverageDamage mult)
 	separate out no attacks, no move, and 'all' to be used individualy
 		really will use?

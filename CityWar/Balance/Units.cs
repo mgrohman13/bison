@@ -11,7 +11,7 @@ namespace balance
 {
     public partial class Units : Form
     {
-        public const double minError = 3000;
+        public const double minError = 400;
 
         int[] Xs = { 12, 78, 114, 180, 246, 312, 348, 384, 420, 595, 770, 945 };
         int[] Ws = { 60, 30, 60, 60, 60, 30, 30, 30, 169, 169, 169 };
@@ -86,9 +86,9 @@ namespace balance
                 y += 29;
             }
 
-            newButton(( this.ClientSize.Width ) / 2 + 6, y,
+            newButton((this.ClientSize.Width) / 2 + 6, y,
            "Read", "", new EventHandler(read_Click), true);
-            newButton(( this.ClientSize.Width ) / 2 - new Button().Width - 6, y,
+            newButton((this.ClientSize.Width) / 2 - new Button().Width - 6, y,
                 rebalanceAll ? "Balance" : "Write", "", new EventHandler(write_Click), true);
 
             this.Text = "units - " + us.Unit.Count;
@@ -101,15 +101,17 @@ namespace balance
 
         void write_Click(object sender, EventArgs e)
         {
-            if (rebalanceAll)
-            {
-                RebalanceAll();
-            }
-            else
-            {
-                us.WriteXml("..\\..\\..\\Units.xml");
-                MessageBox.Show("written");
-            }
+            us.WriteXml("..\\..\\..\\Units.xml");
+            Form1.unitTypes = new UnitTypes();
+            //if (rebalanceAll)
+            //{
+            RebalanceAll();
+            //}
+            //else
+            //{
+            us.WriteXml("..\\..\\..\\Units.xml");
+            MessageBox.Show("written");
+            //}
         }
 
         private void RebalanceAll()
@@ -143,7 +145,7 @@ namespace balance
                     UnitSchema.AttackRow[] attackRows = row.GetAttackRows();
                     int numAttacks = attackRows.Length;
                     Attack[] attacks = new Attack[numAttacks];
-                    for (int i = 0 ; i < numAttacks ; ++i)
+                    for (int i = 0; i < numAttacks; ++i)
                     {
                         UnitSchema.AttackRow attackRow = attackRows[i];
 
@@ -158,7 +160,7 @@ namespace balance
 
                         attacks[i] = new Attack(targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
                     }
-                    units[--count] = new BalUnit(row.Move, row.Regen, ability, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name);
+                    units[--count] = new BalUnit(row.Move, row.Regen, ability, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name, row.People / (double)(row.People + row.Cost));
                 }
 
                 bool balanced = false, accepted = false, randing = false;
@@ -188,7 +190,8 @@ namespace balance
                     balanced = true;
                     foreach (BalUnit unit in units)
                     {
-                        double cost = CityWar.Balance.getCost(unit.MaxMove, unit.BaseRegen, unit.Ability, unit.BaseArmor, unit.Type, unit.Attacks, unit.isThree, unit.maxHits, costMult);
+                        Form1.unitTypes.SetCostMult(costMult);
+                        double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
                         double ActCost = Math.Round(cost);
                         //inverse percent error
                         double invPctErr = ActCost / Math.Abs(cost - ActCost);
@@ -198,7 +201,7 @@ namespace balance
                         if (accepted && temp == 0)
                             if (high == -1)
                                 //intial upper bound guess
-                                temp = costMult * ( ActCost + ActCost / minError ) / cost + 1 / minError;
+                                temp = costMult * (ActCost + ActCost / minError) / cost + 1 / minError;
                             else if (randing && invPctErr <= minError)
                                 //whether we are too high or too low
                                 temp = cost - ActCost;
@@ -210,7 +213,7 @@ namespace balance
                             if (!accepted)
                             {
                                 //immediately step to near the next whole-integer cost
-                                costMult *= ( ( (int)cost + 1 ) - ( (int)cost + 1 ) / minError ) / cost;
+                                costMult *= (((int)cost + 1) - ((int)cost + 1) / minError) / cost;
                                 costMult += Game.Random.DoubleHalf(1 / minError);
                             }
                             break;
@@ -260,8 +263,8 @@ namespace balance
                     else if (balanced)
                     {
                         balanced = false;
-                        accepted = ( MessageBox.Show(units[0].name + " - " + firstCost,
-                                "Accept Balance", MessageBoxButtons.YesNo) == DialogResult.Yes );
+                        accepted = (MessageBox.Show(units[0].name + " - " + firstCost,
+                                "Accept Balance", MessageBoxButtons.YesNo) == DialogResult.Yes);
                         if (accepted)
                             //set an intial lower bound guess
                             low = costMult - 1 / minError;
@@ -271,10 +274,25 @@ namespace balance
                     }
                 }
 
-                us.Clear();
-                us.CostMult.AddCostMultRow(costMult);
+                us.Balance.Clear();
+                us.Balance.AddBalanceRow(costMult);
+
+                foreach (BalUnit unit in units)
+                {
+                    Form1.unitTypes.SetCostMult(costMult);
+                    double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
+                    UnitSchema.UnitRow row = us.Unit.FindByName(unit.name);
+                    row.People = Game.Random.Round(cost * unit.pplPct);
+                    row.Cost = (int)Math.Round(cost - row.People);
+                    if (unit.pplPct > .999)
+                    {
+                        row.People += row.Cost;
+                        row.Cost = 0;
+                    }
+                }
+
                 us.WriteXml("..\\..\\..\\Units.xml");
-                rebalanceAll = false;
+                rebalanceAll = true;
                 getAll();
             }
             else
@@ -285,7 +303,7 @@ namespace balance
 
         struct BalUnit
         {
-            public BalUnit(int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, CityWar.UnitType Type, Attack[] Attacks, bool isThree, int maxHits, string name)
+            public BalUnit(int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, CityWar.UnitType Type, Attack[] Attacks, bool isThree, int maxHits, string name, double pplPct)
             {
                 this.MaxMove = MaxMove;
                 this.BaseRegen = BaseRegen;
@@ -296,6 +314,11 @@ namespace balance
                 this.isThree = isThree;
                 this.maxHits = maxHits;
                 this.name = name;
+                this.pplPct = pplPct;
+
+                Console.WriteLine(this.pplPct);
+                this.pplPct = Math.Round(this.pplPct, 1);
+                Console.WriteLine(this.pplPct);
             }
             public int MaxMove;
             public int BaseRegen;
@@ -306,6 +329,7 @@ namespace balance
             public bool isThree;
             public int maxHits;
             public string name;
+            public double pplPct;
         }
 
         void read_Click(object sender, EventArgs e)
@@ -313,7 +337,7 @@ namespace balance
             try
             {
                 us.ReadXml("..\\..\\..\\Units.xml");
-                rebalanceAll = false;
+                rebalanceAll = true;
                 getAll();
             }
             catch
@@ -326,7 +350,7 @@ namespace balance
 
         void b_Click(object sender, EventArgs e)
         {
-            us.Unit.RemoveUnitRow(us.Unit.FindByName((string)( (Button)sender ).Tag));
+            us.Unit.RemoveUnitRow(us.Unit.FindByName((string)((Button)sender).Tag));
 
             getAll();
         }

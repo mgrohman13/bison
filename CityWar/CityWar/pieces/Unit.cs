@@ -141,7 +141,7 @@ namespace CityWar
         {
             get
             {
-                return ( hits <= 0 );
+                return (hits <= 0);
             }
         }
 
@@ -175,7 +175,7 @@ namespace CityWar
             {
                 double heal = MaxRegen * regenPct;
                 int result = (int)heal;
-                if (owner.HealRound < ( heal % 1 ))
+                if (owner.HealRound < (heal % 1))
                     ++result;
                 return result;
             }
@@ -185,7 +185,7 @@ namespace CityWar
         {
             get
             {
-                return ( MaxRegen + Regen ) * .5;
+                return (MaxRegen + Regen) * .5;
             }
         }
 
@@ -200,7 +200,7 @@ namespace CityWar
         public double GetDisbandAmount()
         {
             double healthPct = GetHealthPct();
-            return InverseCost / Attack.DeathDivide * ( 1 - healthPct ) + InverseCost / Attack.DisbandDivide * healthPct;
+            return InverseCost / Attack.DeathDivide * (1 - healthPct) + InverseCost / Attack.DisbandDivide * healthPct;
         }
 
         public double GetHealthPct()
@@ -244,7 +244,7 @@ namespace CityWar
             }
             else
             {
-                this.regenPct *= 1 - damage / (double)( damage + hits );
+                this.regenPct *= 1 - damage / (double)(damage + hits);
                 if (IsThree)
                     tile.hasCenterPiece = false;
                 tile.AdjustPiece(this);
@@ -265,13 +265,13 @@ namespace CityWar
                 --movement;
 
                 int regen = Regen;
-                owner.AddWork(( MaxRegen - regen ) * .5);
+                owner.AddWork((MaxRegen - regen) * .5);
 
                 hits += regen;
                 double pctWork = 0;
                 if (hits > MaxHits)
                 {
-                    pctWork = ( hits - MaxHits ) / (double)regen;
+                    pctWork = (hits - MaxHits) / (double)regen;
                     owner.AddWork(hits - MaxHits);
                     hits = MaxHits;
                 }
@@ -288,7 +288,7 @@ namespace CityWar
             ++movement;
 
             int regen = Regen;
-            owner.AddWork(-( MaxRegen - regen ) * .5);
+            owner.AddWork(-(MaxRegen - regen) * .5);
 
             int work = Game.Random.Round(pctWork * regen);
             Owner.AddWork(-work);
@@ -331,7 +331,7 @@ namespace CityWar
                         if (newHits > MaxHits)
                             newHits = MaxHits;
 
-                        double needed = ( newHits - hits ) / (double)MaxHits / 3.9;
+                        double needed = (newHits - hits) / (double)MaxHits / 3.9;
                         double pplNeeded = needed * BasePplCost * randedCostMult;
                         needed *= BaseOtherCost * randedCostMult;
 
@@ -412,7 +412,7 @@ namespace CityWar
                         const double power = .666;
 
                         double sign = Math.Sign(pct - .5);
-                        double greenPct = Math.Pow(( 2.0 * pct - 1.0 ) * sign, power) * sign / 2.0 + 1.0 / 2.0;
+                        double greenPct = Math.Pow((2.0 * pct - 1.0) * sign, power) * sign / 2.0 + 1.0 / 2.0;
 
                         _healthBrush = new SolidBrush(Color.FromArgb(255, Game.Random.Round(255 * greenPct), 0));
                     }
@@ -456,9 +456,9 @@ namespace CityWar
                 if (IsThree && this.attacks.Length < 3)
                 {
                     attacks = new Attack[3];
-                    for (int a = 0 ; a < this.attacks.Length ; ++a)
+                    for (int a = 0; a < this.attacks.Length; ++a)
                         attacks[a] = this.attacks[a];
-                    for (int b = this.attacks.Length ; b < 3 ; ++b)
+                    for (int b = this.attacks.Length; b < 3; ++b)
                         attacks[b] = GetAttack(GetAttackRow());
                 }
                 else
@@ -466,8 +466,8 @@ namespace CityWar
                     attacks = this.attacks;
                 }
 
-                return Balance.getCost(owner.Game.UnitTypes, MaxMove, MaxRegen, Ability,
-                        BaseArmor, Type, attacks, IsThree, MaxHits) / (double)( BaseTotalCost );
+                return Balance.GetCost(owner.Game.UnitTypes, Type, IsThree, Ability,
+                        MaxHits, BaseArmor, MaxRegen, MaxMove, attacks) / (double)(BaseTotalCost);
             }
         }
 
@@ -493,7 +493,7 @@ namespace CityWar
             if (IsThree)
             {
                 int curAttacks = this.attacks.Length;
-                int newAttacks = ( 3 * hits + MaxHits - 1 ) / MaxHits;
+                int newAttacks = (3 * hits + MaxHits - 1) / MaxHits;
 
                 if (curAttacks > newAttacks)
                 {
@@ -503,9 +503,9 @@ namespace CityWar
                 {
                     UnitSchema.AttackRow attackRow = GetAttackRow();
                     Attack[] attacks = new Attack[newAttacks];
-                    for (int a = 0 ; a < curAttacks ; ++a)
+                    for (int a = 0; a < curAttacks; ++a)
                         attacks[a] = this.attacks[a];
-                    for (int b = curAttacks ; b < newAttacks ; ++b)
+                    for (int b = curAttacks; b < newAttacks; ++b)
                     {
                         attacks[b] = GetAttack(attackRow);
                         attacks[b].SetOwner(this);
@@ -577,7 +577,7 @@ namespace CityWar
             UnitSchema.AttackRow[] attackRows = unitRow.GetAttackRows();
             int numAttacks = attackRows.Length;
             Attack[] attacks = new Attack[numAttacks];
-            for (int i = 0 ; i < numAttacks ; ++i)
+            for (int i = 0; i < numAttacks; ++i)
             {
                 attacks[i] = GetAttack(attackRows[i]);
             }
@@ -595,14 +595,7 @@ namespace CityWar
         }
         private static Attack GetAttack(UnitSchema.AttackRow attackRow)
         {
-            EnumFlags<TargetType> targets = new EnumFlags<TargetType>();
-            if (attackRow.Target_Type.Contains("G"))
-                targets.Add(TargetType.Ground);
-            if (attackRow.Target_Type.Contains("W"))
-                targets.Add(TargetType.Water);
-            if (attackRow.Target_Type.Contains("A"))
-                targets.Add(TargetType.Air);
-            return new Attack(attackRow.Name, targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+            return new Attack(attackRow.Name, UnitTypes.GetAttackTargets(attackRow.Target_Type), attackRow.Length, attackRow.Damage, attackRow.Divide_By);
         }
 
         #endregion //new units
@@ -617,14 +610,14 @@ namespace CityWar
             this.regen = RandStat(this.regen, true);
 
             int oldHits = this.maxHits;
-            int newHits = ( IsThree ? 3 * RandStat(oldHits / 3.0, true) : RandStat(oldHits, true) );
-            int hitInc = ( IsThree ? 3 : 1 );
+            int newHits = (IsThree ? 3 * RandStat(oldHits / 3.0, true) : RandStat(oldHits, true));
+            int hitInc = (IsThree ? 3 : 1);
             do
             {
                 this.maxHits = newHits;
                 newHits -= hitInc;
             } while (newHits > 0 && randedCostMult > maxMult);
-            while (randedCostMult < ( 1 / maxMult ))
+            while (randedCostMult < (1 / maxMult))
             {
                 newHits += hitInc;
                 this.maxHits = newHits;
@@ -689,7 +682,7 @@ namespace CityWar
             {
                 //only reduce movement if any attacks were used
                 --movement;
-                Owner.AddWork(Attack.OverkillPercent * WorkRegen * ( attacks.Length - usedAttacks ) / (double)attacks.Length);
+                Owner.AddWork(Attack.OverkillPercent * WorkRegen * (attacks.Length - usedAttacks) / (double)attacks.Length);
             }
         }
 
@@ -804,7 +797,7 @@ namespace CityWar
         private void BalanceForMove(int used, int needed, bool moved)
         {
             if (moved)
-                owner.AddUpkeep(1.3 * Player.GetUpkeep(this) * ( needed - used ) / (double)MaxMove, .13);
+                owner.AddUpkeep(1.3 * Player.GetUpkeep(this) * (needed - used) / (double)MaxMove, .13);
             else
                 owner.AddWork(.65 * WorkRegen * used);
         }
@@ -821,7 +814,7 @@ namespace CityWar
         protected override bool CanMoveChild(Tile t)
         {
             Player p;
-            return ( GetNeeded(t) > -1 && ( Ability != Abilities.Aircraft || !t.Occupied(out p) || p == owner ) );
+            return (GetNeeded(t) > -1 && (Ability != Abilities.Aircraft || !t.Occupied(out p) || p == owner));
         }
 
         private int GetNeeded(Tile t)
@@ -832,20 +825,20 @@ namespace CityWar
             if (Type == UnitType.Air || Type == UnitType.Immobile)
                 return 1;
 
-            if (( Type == UnitType.Water || Type == UnitType.Amphibious ) && t.Terrain == Terrain.Water)
+            if ((Type == UnitType.Water || Type == UnitType.Amphibious) && t.Terrain == Terrain.Water)
                 return 1;
 
-            if (( Type == UnitType.Ground || Type == UnitType.Amphibious ) && t.Terrain != Terrain.Water)
+            if ((Type == UnitType.Ground || Type == UnitType.Amphibious) && t.Terrain != Terrain.Water)
                 switch (t.Terrain)
                 {
-                case Terrain.Plains:
-                    return 1;
-                case Terrain.Forest:
-                    return 2;
-                case Terrain.Mountain:
-                    return 3;
-                default:
-                    throw new Exception();
+                    case Terrain.Plains:
+                        return 1;
+                    case Terrain.Forest:
+                        return 2;
+                    case Terrain.Mountain:
+                        return 3;
+                    default:
+                        throw new Exception();
                 }
 
             //not the right unit type to move on that terrain
@@ -860,7 +853,7 @@ namespace CityWar
         {
             int origCount = pieces.Count();
             pieces = pieces.Where(piece => piece.MaxMove > 0 && piece.Owner == piece.Owner.Game.CurrentPlayer
-                    && ( !( piece is Unit ) || ( (Unit)piece ).GetNeeded(clicked) != -1 ));
+                    && (!(piece is Unit) || ((Unit)piece).GetNeeded(clicked) != -1));
             if (clicked == null || pieces.GroupBy(piece => piece.Tile).Count() != 1)
                 return;
 
@@ -912,7 +905,7 @@ namespace CityWar
             //determine if the odd y distance will save an extra x move or not
             if (xDist < 1)
                 xDist = 0;
-            else if (( yDist % 2 != 0 ) && ( ( y2 % 2 == 0 ) == ( x2 < x1 ) ))
+            else if ((yDist % 2 != 0) && ((y2 % 2 == 0) == (x2 < x1)))
                 --xDist;
             return yDist + xDist;
         }
