@@ -11,7 +11,7 @@ namespace UnitBalance
 {
     public partial class Units : Form
     {
-        public const double minError = 400;
+        public static double minError = 480;
 
         int[] Xs = { 12, 78, 114, 180, 246, 312, 348, 384, 420, 595, 770, 945 };
         int[] Ws = { 60, 30, 60, 60, 60, 30, 30, 30, 169, 169, 169 };
