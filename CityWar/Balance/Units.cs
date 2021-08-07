@@ -7,7 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using CityWar;
 
-namespace balance
+namespace UnitBalance
 {
     public partial class Units : Form
     {
@@ -27,6 +27,8 @@ namespace balance
 
         public void getAll()
         {
+            Form1.unitTypes = new UnitTypes();
+
             this.Controls.Clear();
             InitializeComponent();
 
@@ -60,7 +62,7 @@ namespace balance
                 if (r.Type == "A")
                     type = UnitType.Air;
                 else if (r.Type == "GWA")
-                    type = UnitType.All;
+                    type = UnitType.Immobile;
                 else if (r.Type == "GW")
                     type = UnitType.Amphibious;
                 else if (r.Type == "G")
@@ -378,24 +380,5 @@ namespace balance
 
             b.Visible = enabled;
         }
-    }
-
-    public enum CostType
-    {
-        Air,
-        Death,
-        Earth,
-        Nature,
-        Production,
-        Water
-    }
-
-    public enum UnitType
-    {
-        Ground,
-        Water,
-        Air,
-        Amphibious,
-        All
     }
 }

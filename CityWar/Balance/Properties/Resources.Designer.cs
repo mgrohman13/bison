@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Balance.Properties {
+namespace UnitBalance.Properties {
     using System;
     
     

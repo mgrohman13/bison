@@ -148,10 +148,9 @@ namespace CityWar
             EnumFlags<TargetType> a3Type, double a3Length, double a3Damage, double a3Divide,
             bool isThree, bool carry, bool air, bool immobile, out double gc)
         {
-            double avgDmg = GetAverageDamage(unitTypes.GetAverageDamage(type), unitTypes.GetAverageAP(type), armor);
-
             //hits
-            double hitWorth = Hit(health, avgDmg);
+            double avgDmg = GetAverageDamage(unitTypes.GetAverageDamage(type), unitTypes.GetAverageAP(type), armor);
+            double hitWorth = HitWorth(health, avgDmg);
 
             //damage
             double weapon1, weapon2, weapon3;
@@ -193,11 +192,20 @@ namespace CityWar
             return result;
         }
 
-        private static double Hit(double hits, double avgDmg)
+        public static double HitWorth(UnitTypes unitTypes, UnitType type, double health, double armor)
         {
-            return hits / avgDmg;
+            double avgDmg = GetAverageDamage(unitTypes.GetAverageDamage(type), unitTypes.GetAverageAP(type), armor);
+            return HitWorth(health, avgDmg);
+        }
+        public static double HitWorth(double health, double avgDmg)
+        {
+            return health / avgDmg;
         }
 
+        public static double Weapon(UnitTypes unitTypes, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, bool isThree, int num)
+        {
+            return Weapon(unitTypes, type, targets, damage, divide, length, move, GetWeaponDiv(unitTypes), air, isThree, num);
+        }
         public static double Weapon(UnitTypes unitTypes, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, double weaponDiv, bool air, bool isThree, int num)
         {
             double result = 0;
@@ -261,7 +269,7 @@ namespace CityWar
             return cost;
         }
 
-        private static double GetAverageDamage(double damage, double divide, double armor)
+        public static double GetAverageDamage(double damage, double divide, double armor)
         {
             return Attack.GetAverageDamage(damage, divide, armor, int.MaxValue);
         }

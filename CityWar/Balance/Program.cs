@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using CityWar;
 
-namespace balance
+namespace UnitBalance
 {
     static class Program
     {

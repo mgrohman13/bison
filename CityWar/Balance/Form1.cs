@@ -7,8 +7,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using CityWar;
+using MattUtil;
 
-namespace balance
+namespace UnitBalance
 {
     //this code sucks, I know
     public partial class Form1 : Form
@@ -91,7 +92,7 @@ namespace balance
         {
             try
             {
-                CityWar.UnitType type = UnitTypes.GetType(this.txtType.Text);
+                UnitType type = UnitTypes.GetType(this.txtType.Text);
 
                 int hits = int.Parse(this.txtHits.Text);
                 int armor = int.Parse(this.txtArmor.Text);
@@ -133,18 +134,6 @@ namespace balance
                     ++attacks;
                 }
 
-                //calculated values
-                this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
-                CityWar.UnitType unitType = UnitTypes.GetType(this.txtType.Text);
-                double hitArmor = CityWar.Balance.GetArmor(unitType, armor);
-                //this.txtHitWorth.Tag = CityWar.Balance.hitWorth(hits, hitArmor) / CityWar.Balance.hitWorth(1, CityWar.Balance.AverageArmor);
-                this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
-                double weaponMove = CityWar.Balance.GetMove(unitType, move, air);
-                bool isThree = this.txtName.Text.Contains("*");
-                //ShowWeaponValue(this.txtDamage1, this.txtType1, damage1, divide1, length1, weaponMove, air, isThree, 1);
-                //ShowWeaponValue(this.txtDamage2, this.txtType2, damage2, divide2, length2, weaponMove, air, isThree, 2);
-                //ShowWeaponValue(this.txtDamage3, this.txtType3, damage3, divide3, length3, weaponMove, air, isThree, 3);
-
                 Abilities ability;
                 if (air)
                     ability = Abilities.Aircraft;
@@ -161,7 +150,18 @@ namespace balance
                 if (damage3 > 0)
                     Attacks[2] = CreateAttack(this.txtType3.Text, length3, damage3, divide3);
 
-                double cost = CityWar.Balance.GetCost(unitTypes, type, this.txtName.Text.Contains("*"), ability, hits, armor, regen, move, Attacks, out gc);
+                //calculated values
+                this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
+                UnitType unitType = UnitTypes.GetType(this.txtType.Text);
+                this.txtHitWorth.Tag = HitWorth(unitType, hits, armor);
+                this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
+                double weaponMove = Balance.GetMove(unitType, move, air);
+                bool isThree = this.txtName.Text.Contains("*");
+                ShowWeaponValue(this.txtDamage1, this.txtType1, unitType, Attacks[0]?.Target, damage1, divide1, length1, move, air, isThree, 1);
+                ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks[1]?.Target, damage2, divide2, length2, weaponMove, air, isThree, 2);
+                ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks[2]?.Target, damage3, divide3, length3, weaponMove, air, isThree, 3);
+
+                double cost = Balance.GetCost(unitTypes, type, this.txtName.Text.Contains("*"), ability, hits, armor, regen, move, Attacks, out gc);
 
                 double ActCost = Math.Round(cost);
 
@@ -204,32 +204,39 @@ namespace balance
             }
         }
 
-        //private static void ShowWeaponValue(TextBox txtValue, TextBox txtType, int damage, int divide, int length, double weaponMove, bool air, bool isThree, int num)
-        //{
-        //    double value;
-        //    if (txtType.Text == "-" || txtType.Text == "")
-        //        value = double.NaN;
-        //    else
-        //        value = CityWar.Balance.weapon(txtType.Text.Length, damage, divide, length, weaponMove, air, isThree, num);
-        //    ShowWeaponValue(txtValue, value);
-        //}
-        //private static void ShowWeaponValue(TextBox txtValue, double value)
-        //{
-        //    if (double.IsNaN(value))
-        //    {
-        //        txtValue.Tag = "-";
-        //        txtValue.Text = "";
-        //    }
-        //    else
-        //    {
-        //        txtValue.Tag = value;
-        //        txtValue.Text = value.ToString("0.0");
-        //    }
-        //}
+        private static double HitWorth(UnitType unitType, int hits, int armor)
+        {
+            double hitArmor = Balance.GetArmor(unitType, armor);
+            double hitDiv = Balance.HitWorth(1, Balance.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(null), unitTypes.GetAverageArmor(null)));
+            return Balance.HitWorth(unitTypes, unitType, hits, hitArmor) / hitDiv;
+        }
+
+        private static void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, bool isThree, int num)
+        {
+            double value;
+            if (txtType.Text == "-" || txtType.Text == "")
+                value = double.NaN;
+            else
+                value = Balance.Weapon(unitTypes, type, targets, damage, divide, length, move, air, isThree, num);
+            ShowWeaponValue(txtValue, value);
+        }
+        private static void ShowWeaponValue(TextBox txtValue, double value)
+        {
+            if (double.IsNaN(value))
+            {
+                txtValue.Tag = "-";
+                txtValue.Text = "";
+            }
+            else
+            {
+                txtValue.Tag = value;
+                txtValue.Text = value.ToString("0.0");
+            }
+        }
 
         private static Attack CreateAttack(string type, int length, int damage, int divide)
         {
-            MattUtil.EnumFlags<TargetType> target = new MattUtil.EnumFlags<TargetType>();
+            EnumFlags<TargetType> target = new EnumFlags<TargetType>();
             if (type.Contains("A"))
                 target.Add(TargetType.Air);
             if (type.Contains("G"))
@@ -296,12 +303,16 @@ namespace balance
         private static string GetAllOutput(Units units)
         {
             StringBuilder output = new StringBuilder("");
-            foreach (UnitSchema.UnitRow row in Game.Random.Iterate(units.us.Unit))
+            string r = null;
+            foreach (UnitSchema.UnitRow row in units.us.Unit.OrderBy(u => u.Race).ThenBy(u => u.Cost + u.People).ThenBy(u => u.Name))
             {
+                if (r != null && r != row.Race)
+                    output.Append(Environment.NewLine);
+
                 output.Append(row.Name + (row.IsThree ? "*" : "") + "\t");
                 output.Append((row.People + row.Cost).ToString() + "\t");
                 output.Append(row.Cost.ToString() + "\t");
-                output.Append(row.CostType + "\t");
+                output.Append((row.CostType == "" ? "' " : row.CostType) + "\t");
                 output.Append(row.People.ToString() + "\t");
                 output.Append(Math.Round(row.People / (double)(row.People + row.Cost) * 10) + "\t");
                 output.Append(row.Race + "\t");
@@ -320,7 +331,8 @@ namespace balance
                 else
                     ability = Abilities.None;
                 Attack[] Attacks = new Attack[row.GetAttackRows().Length];
-                double weaponMove = CityWar.Balance.GetMove(UnitTypes.GetType(row.Type), row.Move, row.Special == "Aircraft");
+                UnitType type = UnitTypes.GetType(row.Type);
+                double weaponMove = Balance.GetMove(type, row.Move, row.Special == "Aircraft");
                 string[] attacknames = new string[3];
                 double[] attackValues = new double[3];
                 int idx = 0;
@@ -331,27 +343,29 @@ namespace balance
                     output.Append(attackRow.Divide_By + "\t");
                     output.Append(attackRow.Length + "\t");
                     attacknames[idx] = attackRow.Name;
-                    //attackValues[idx] = CityWar.Balance.weapon(attackRow.Length, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, ( row.Special == "Aircraft" ), row.IsThree, idx + 1);
                     Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+                    attackValues[idx] = Balance.Weapon(unitTypes, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, (row.Special == "Aircraft"), row.IsThree, idx + 1);
                     ++idx;
                 }
-                while (idx++ < 4)
-                    output.Append("\t\t\t\t");
+                while (idx++ < 3)
+                    output.Append("'-\t'-\t'-\t'-\t");
 
-                output.Append(((row.Special == "Aircraft") ? "X" : "") + "\t");
-                output.Append(((row.Special == "AircraftCarrier") ? "X" : "") + "\t");
+                output.Append(((row.Special == "Aircraft") ? "X" : "' ") + "\t");
+                output.Append(((row.Special == "AircraftCarrier") ? "X" : "' ") + "\t");
                 output.Append(attacknames[0] + "\t");
                 output.Append(attacknames[1] + "\t");
                 output.Append(attacknames[2] + "\t");
                 double gc;
-                CityWar.Balance.GetCost(unitTypes, UnitTypes.GetType(row.Type), row.IsThree, ability, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
-                double hw = 0;// CityWar.Balance.hitWorth(row.Hits, row.Armor) / CityWar.Balance.hitWorth(1, CityWar.Balance.AverageArmor);
-                output.Append(gc + "\t");
+                Balance.GetCost(unitTypes, type, row.IsThree, ability, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
+                double hw = HitWorth(type, row.Hits, row.Armor);
+                output.Append((double.IsNaN(gc) ? "-" : gc.ToString()) + "\t");
                 output.Append(hw + "\t");
                 output.Append(attackValues[0] + "\t");
                 output.Append(attackValues[1] + "\t");
                 output.Append(attackValues[2] + "\t");
                 output.Append(Environment.NewLine);
+
+                r = row.Race;
             }
 
             return output.ToString();

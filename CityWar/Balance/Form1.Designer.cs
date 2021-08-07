@@ -1,4 +1,4 @@
-namespace balance
+namespace UnitBalance
 {
     partial class Form1
     {

@@ -1,14 +1,6 @@
 in between games
 	"security" of public fields
 
-balance
-	schema-based length handing
-	bug when reading after saving a unit
-	allow 1/3 heal to calc isthree
-	regen overvalued? (shouldnt have AverageDamage mult)
-	separate out no attacks, no move, and 'all' to be used individualy
-		really will use?
-
 gameplay
 	in multi hex battles, units only attacking immobile can be retalliated against
 	exp?
@@ -20,11 +12,18 @@ gameplay
 	teleporters
 		come up with way to be different from galwar wormholes
 
-requiring rebalance
-	unit abilities
-		aircraft fuel?
-		wind shield
+balance
 	flamethrower not hit W (dragon too?)
+	schema-based length handing
+	bug when reading after saving a unit
+	allow 1/3 heal to calc isthree
+	regen overvalued? (shouldnt have AverageDamage mult)
+	unit abilities
+		aircraft fuel
+		wind shield
+		regen
+		wraith/spirit?
+		attack types
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	transport units?
@@ -35,7 +34,9 @@ requiring rebalance
 		make forest more of an overlay
 		multiple on same tile?
 		what about elements?
-		
+	separate out no attacks, no move, and 'all' to be used individualy
+		really will use?
+
 interface
 	show race on end game
 	show more map info - e.g. unit value?  capts?
