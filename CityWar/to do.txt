@@ -14,10 +14,9 @@ gameplay
 
 balance
 	flamethrower not hit W (dragon too?)
+	take into account race?
+		1/2 mult for same?
 	schema-based length handing
-	bug when reading after saving a unit
-	allow 1/3 heal to calc isthree
-	regen overvalued? (shouldnt have AverageDamage mult)
 	unit abilities
 		aircraft fuel
 		wind shield
@@ -26,6 +25,8 @@ balance
 		attack types
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
+	allow 1/3 heal to calc isthree
+		???
 	transport units?
 	consider differentiating underwater/surface
 		adds enough value for the complication?

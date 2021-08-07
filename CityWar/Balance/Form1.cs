@@ -157,9 +157,9 @@ namespace UnitBalance
                 this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
                 double weaponMove = Balance.GetMove(unitType, move, air);
                 bool isThree = this.txtName.Text.Contains("*");
-                ShowWeaponValue(this.txtDamage1, this.txtType1, unitType, Attacks[0]?.Target, damage1, divide1, length1, move, air, isThree, 1);
-                ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks[1]?.Target, damage2, divide2, length2, weaponMove, air, isThree, 2);
-                ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks[2]?.Target, damage3, divide3, length3, weaponMove, air, isThree, 3);
+                ShowWeaponValue(this.txtDamage1, this.txtType1, unitType, Attacks, damage1, divide1, length1, move, air, isThree, 1);
+                ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks, damage2, divide2, length2, weaponMove, air, isThree, 2);
+                ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks, damage3, divide3, length3, weaponMove, air, isThree, 3);
 
                 double cost = Balance.GetCost(unitTypes, type, this.txtName.Text.Contains("*"), ability, hits, armor, regen, move, Attacks, out gc);
 
@@ -211,13 +211,13 @@ namespace UnitBalance
             return Balance.HitWorth(unitTypes, unitType, hits, hitArmor) / hitDiv;
         }
 
-        private static void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, bool isThree, int num)
+        private static void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, Attack[] Attacks, double damage, double divide, double length, double move, bool air, bool isThree, int num)
         {
             double value;
             if (txtType.Text == "-" || txtType.Text == "")
                 value = double.NaN;
             else
-                value = Balance.Weapon(unitTypes, type, targets, damage, divide, length, move, air, isThree, num);
+                value = Balance.Weapon(unitTypes, type, Attacks[num - 1].Target, damage, divide, length, move, air, isThree, num);
             ShowWeaponValue(txtValue, value);
         }
         private static void ShowWeaponValue(TextBox txtValue, double value)

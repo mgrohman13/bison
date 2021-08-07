@@ -243,8 +243,8 @@ namespace CityWar
         private static double Regen(UnitTypes unitTypes, double regeneration, double avgDmg)
         {
             //TODO: remove AverageDamage?, rebalance
-            // 3.9 =div for surviving attacks versus having attacks
-            return regeneration / avgDmg * unitTypes.GetAverageDamage() / 3.9;
+            // 5.2 =div for surviving attacks versus having attacks
+            return regeneration / avgDmg * unitTypes.GetAverageDamage() / 5.2;
         }
 
         private static double Final(UnitTypes unitTypes, double unit, double move, double type)

@@ -11,7 +11,7 @@ namespace UnitBalance
 {
     public partial class Units : Form
     {
-        public static double minError = 480;
+        public static double minError = 500;
 
         int[] Xs = { 12, 78, 114, 180, 246, 312, 348, 384, 420, 595, 770, 945 };
         int[] Ws = { 60, 30, 60, 60, 60, 30, 30, 30, 169, 169, 169 };
@@ -105,15 +105,7 @@ namespace UnitBalance
         {
             us.WriteXml("..\\..\\..\\Units.xml");
             Form1.unitTypes = new UnitTypes();
-            //if (rebalanceAll)
-            //{
             RebalanceAll();
-            //}
-            //else
-            //{
-            us.WriteXml("..\\..\\..\\Units.xml");
-            MessageBox.Show("written");
-            //}
         }
 
         private void RebalanceAll()
@@ -172,6 +164,7 @@ namespace UnitBalance
                 {
                     if (accepted)
                     {
+                        double prev = costMult;
                         if (high == -1)
                             //we are searching for a lower bound outside of the balanced range
                             costMult = low;
@@ -181,6 +174,8 @@ namespace UnitBalance
                         else
                             //we are searching for an upper bound outside of the balanced range
                             costMult = high;
+                        if (prev == costMult)
+                            return;
                     }
 
                     //for debugging...
@@ -294,6 +289,7 @@ namespace UnitBalance
                 }
 
                 us.WriteXml("..\\..\\..\\Units.xml");
+                MessageBox.Show("written");
                 rebalanceAll = true;
                 getAll();
             }
