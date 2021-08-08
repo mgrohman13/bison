@@ -154,7 +154,7 @@ namespace UnitBalance
 
                         attacks[i] = new Attack(targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
                     }
-                    units[--count] = new BalUnit(row.Move, row.Regen, ability, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name, row.People / (double)(row.People + row.Cost));
+                    units[--count] = new BalUnit(row.Race, row.Move, row.Regen, ability, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name, row.People / (double)(row.People + row.Cost));
                 }
 
                 bool balanced = false, accepted = false, randing = false;
@@ -188,7 +188,7 @@ namespace UnitBalance
                     foreach (BalUnit unit in units)
                     {
                         Form1.unitTypes.SetCostMult(costMult);
-                        double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
+                        double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
                         double ActCost = Math.Round(cost);
                         //inverse percent error
                         double invPctErr = ActCost / Math.Abs(cost - ActCost);
@@ -277,7 +277,7 @@ namespace UnitBalance
                 foreach (BalUnit unit in units)
                 {
                     Form1.unitTypes.SetCostMult(costMult);
-                    double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
+                    double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
                     UnitSchema.UnitRow row = us.Unit.FindByName(unit.name);
                     row.People = Game.Random.Round(cost * unit.pplPct);
                     row.Cost = (int)Math.Round(cost - row.People);
@@ -301,8 +301,9 @@ namespace UnitBalance
 
         struct BalUnit
         {
-            public BalUnit(int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, CityWar.UnitType Type, Attack[] Attacks, bool isThree, int maxHits, string name, double pplPct)
+            public BalUnit(string Race, int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, CityWar.UnitType Type, Attack[] Attacks, bool isThree, int maxHits, string name, double pplPct)
             {
+                this.Race = Race;
                 this.MaxMove = MaxMove;
                 this.BaseRegen = BaseRegen;
                 this.Ability = Ability;
@@ -318,6 +319,7 @@ namespace UnitBalance
                 this.pplPct = Math.Round(this.pplPct, 1);
                 Console.WriteLine(this.pplPct);
             }
+            public string Race;
             public int MaxMove;
             public int BaseRegen;
             public Abilities Ability;

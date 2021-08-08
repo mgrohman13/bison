@@ -9,67 +9,16 @@ namespace CityWar
     public class UnitTypes
     {
         private UnitSchema schema;
-        private Dictionary<UnitType, UnitTypeCalc> unitTypes;
 
         public UnitTypes()
         {
             schema = new UnitSchema();
             schema.ReadXml(Game.ResourcePath + "Units.xml");
-            CalculateTypes();
         }
 
         public UnitSchema GetSchema()
         {
             return schema;
-        }
-
-        public void CalculateTypes()
-        {
-            unitTypes = new Dictionary<UnitType, UnitTypeCalc>();
-            foreach (UnitSchema.UnitRow row in schema.Unit)
-            {
-                UnitType type = GetType(row.Type);
-                if (!unitTypes.ContainsKey(type))
-                    unitTypes.Add(type, new UnitTypeCalc());
-                UnitTypeCalc calc = unitTypes[type];
-
-                calc.armor += row.Armor;
-                calc.move += row.Move;
-                calc.types += row.GetAttackRows().Length;
-                calc.count++;
-
-                for (int a = 0; a < row.GetAttackRows().Length; a++)
-                {
-                    UnitSchema.AttackRow att = row.GetAttackRows()[a];
-                    EnumFlags<TargetType> targets = GetAttackTargets(att.Target_Type);
-                    double weight = (1.0 / targets.Count);
-                    weight *= Balance.IsThreeMult(row.IsThree, a + 1);
-                    foreach (TargetType targType in targets)
-                    {
-                        if (!calc.targetTypes.ContainsKey(targType))
-                            calc.targetTypes.Add(targType, new TargetTypeCalc());
-                        TargetTypeCalc c = calc.targetTypes[targType];
-
-                        c.damage += att.Damage * weight;
-                        c.length += att.Length * weight;
-                        c.pierce += att.Divide_By * weight;
-                        c.count += weight;
-                    }
-                }
-            }
-
-            foreach (UnitTypeCalc u in unitTypes.Values)
-            {
-                u.armor /= u.count;
-                u.move /= u.count;
-                u.types /= u.count;
-                foreach (TargetTypeCalc t in u.targetTypes.Values)
-                {
-                    t.damage /= t.count;
-                    t.length /= t.count;
-                    t.pierce /= t.count;
-                }
-            }
         }
 
         public void SetCostMult(double costMult)
@@ -111,102 +60,144 @@ namespace CityWar
                 targets.Add(TargetType.Air);
             return targets;
         }
-        public double GetAverageArmor(EnumFlags<TargetType> targets)
+
+        public double GetAverageArmor()
+        {
+            return GetAverageArmor(null, null);
+        }
+        public double GetAverageArmor(string race, EnumFlags<TargetType> targets)
         {
             double armor = 0, count = 0;
-            foreach (KeyValuePair<UnitType, UnitTypeCalc> calc in unitTypes)
+            CheckUnits(race, targets, (weight, unit) =>
             {
-                double weight = 1;
-                if (targets == null || Target(calc.Key, targets, out weight))
-                {
-                    double typeVal, addArmor, movMult;
-                    Balance.GetValues(calc.Key, out typeVal, out addArmor, out movMult);
-                    weight *= calc.Value.count;
-                    armor += (calc.Value.armor + addArmor) * weight;
-                    count += weight;
-                }
-            }
+                double typeVal, addArmor, movMult;
+                Balance.GetValues(GetType(unit.Type), out typeVal, out addArmor, out movMult);
+                armor += (unit.Armor + addArmor) * weight;
+                count += weight;
+            });
             return armor / count;
         }
-        public double GetAverageAP(UnitType? type)
-        {
-            double pierce = 0, count = 0;
-            foreach (KeyValuePair<UnitType, UnitTypeCalc> t in unitTypes)
-                foreach (KeyValuePair<TargetType, TargetTypeCalc> calc in t.Value.targetTypes)
-                {
-                    double weight = 1;
-                    if (!type.HasValue || Target(type.Value, new EnumFlags<TargetType>(calc.Key), out weight))
-                    {
-                        weight *= calc.Value.count;
-                        pierce += calc.Value.pierce * weight;
-                        count += weight;
-                    }
-                }
-            return pierce / count;
-        }
-        public double GetAverageDamage()
-        {
-            return GetAverageDamage(null);
-        }
-        public double GetAverageDamage(UnitType? type)
-        {
-            double damage = 0, count = 0;
-            foreach (KeyValuePair<UnitType, UnitTypeCalc> t in unitTypes)
-                foreach (KeyValuePair<TargetType, TargetTypeCalc> calc in t.Value.targetTypes)
-                {
-                    double weight = 1;
-                    if (!type.HasValue || Target(type.Value, new EnumFlags<TargetType>(calc.Key), out weight))
-                    {
-                        weight *= calc.Value.count;
-                        damage += calc.Value.damage * weight;
-                        count += weight;
-                    }
-                }
-            return damage / count;
-        }
-        public double GetAverageLength()
-        {
-            double length = 0, count = 0;
-            foreach (KeyValuePair<UnitType, UnitTypeCalc> t in unitTypes)
-                foreach (KeyValuePair<TargetType, TargetTypeCalc> calc in t.Value.targetTypes)
-                {
-                    double weight = calc.Value.count;
-                    length += calc.Value.length * weight;
-                    count += weight;
-                }
-            return length / count;
-        }
+
         public double GetAverageMove()
         {
             double move = 0, count = 0;
-            foreach (KeyValuePair<UnitType, UnitTypeCalc> calc in unitTypes)
+            CheckUnits(null, null, (weight, unit) =>
             {
-                double weight = calc.Value.count;
-                move += calc.Value.move * weight;
+                move += unit.Move * weight;
                 count += weight;
-            }
+            });
             return move / count;
         }
-        public double GetAverageDamageType()
+
+        public double GetAverageTargets()
         {
             double type = 0, count = 0;
-            foreach (KeyValuePair<UnitType, UnitTypeCalc> calc in unitTypes)
+            CheckUnits(null, null, (weight, unit) =>
             {
-                double weight = calc.Value.count;
-                type += calc.Value.types * weight;
+                type += unit.GetAttackRows().Length * weight;
                 count += weight;
-            }
+            });
             return type / count;
         }
-        public double GetMaxLength()
+
+        public double GetAverageDamage()
         {
-            return schema.Attack.Max(a => a.Length);
+            return GetAverageDamage(null, null);
+        }
+        public double GetAverageDamage(string race, UnitType? type)
+        {
+            double damage = 0, count = 0;
+            CheckAttacks(race, type, (weight, attack) =>
+            {
+                damage += weight * attack.Damage;
+                count += weight;
+            });
+            return damage / count;
         }
 
-        private static bool Target(UnitType type, EnumFlags<TargetType> targets, out double weight)
+        public double GetAverageAP()
         {
-            weight = 1;
-            switch (type)
+            return GetAverageAP(null, null);
+        }
+        public double GetAverageAP(string race, UnitType? type)
+        {
+            double pierce = 0, count = 0;
+            CheckAttacks(race, type, (weight, attack) =>
+            {
+                pierce += weight * attack.Divide_By;
+                count += weight;
+            });
+            return pierce / count;
+        }
+
+        public double GetAverageLength()
+        {
+            double length = 0, count = 0;
+            CheckAttacks(null, null, (weight, attack) =>
+            {
+                length += weight * attack.Length;
+                count += weight;
+            });
+            return length / count;
+
+        }
+        public double GetLengthPct(string race, UnitType? type, double length)
+        {
+            double low = GetLengthPct(race, type, (int)length);
+            if ((int)length == length)
+                return low;
+            double high = GetLengthPct(race, type, (int)length + 1);
+            double offset = length - (int)length;
+            return low * (1 - offset) + high * offset;
+        }
+        public double GetLengthPct(string race, UnitType? type, int length)
+        {
+            double pct = 0, count = 0;
+            CheckAttacks(race, type, (weight, attack) =>
+            {
+                double add = 0;
+                if (attack.Length < length)
+                    add = 1;
+                else if (attack.Length == length)
+                    add = .5;
+                pct += weight * add;
+                count += weight;
+            });
+            return pct / count;
+        }
+
+        private void CheckUnits(string race, EnumFlags<TargetType> targets, Action<double, UnitSchema.UnitRow> Callback)
+        {
+            foreach (UnitSchema.UnitRow unit in schema.Unit)
+            {
+                UnitType unitType = GetType(unit.Type);
+                double weight = 1;
+                if (Target(race, unit, unitType, targets, ref weight))
+                    Callback(weight, unit);
+            }
+        }
+        private void CheckAttacks(string race, UnitType? type, Action<double, UnitSchema.AttackRow> Callback)
+        {
+            foreach (UnitSchema.UnitRow unit in schema.Unit)
+            {
+                UnitSchema.AttackRow[] attacks = unit.GetAttackRows();
+                for (int attNum = 0; attNum < attacks.Length; attNum++)
+                {
+                    UnitSchema.AttackRow attack = attacks[attNum];
+                    EnumFlags<TargetType> targets = GetAttackTargets(attack.Target_Type);
+                    double weight = Balance.IsThreeMult(unit.IsThree, attNum + 1);
+                    if (Target(race, unit, type, targets, ref weight))
+                        Callback(weight, attack);
+                }
+            }
+        }
+        private static bool Target(string race, UnitSchema.UnitRow unit, UnitType? unitType, EnumFlags<TargetType> targets, ref double weight)
+        {
+            if (race == unit.Race)
+                weight /= 2;
+            if (!unitType.HasValue || targets == null)
+                return true;
+            switch (unitType)
             {
                 case UnitType.Air:
                     return targets.Contains(TargetType.Air);
@@ -217,23 +208,13 @@ namespace CityWar
                 case UnitType.Amphibious:
                     double g = targets.Contains(TargetType.Ground) ? 1 : 0;
                     double w = targets.Contains(TargetType.Water) ? 1 : 0;
-                    weight = (g + w) / 2.0;
+                    weight *= (g + w) / 2.0;
                     return (weight > 0);
                 case UnitType.Immobile:
                     return true;
                 default:
                     throw new Exception();
             }
-        }
-
-        private class UnitTypeCalc
-        {
-            public Dictionary<TargetType, TargetTypeCalc> targetTypes = new Dictionary<TargetType, TargetTypeCalc>();
-            public double move = 0, armor = 0, types = 0, count = 0;
-        }
-        private class TargetTypeCalc
-        {
-            public double damage = 0, pierce = 0, length = 0, count = 0;
         }
     }
 }

@@ -466,7 +466,7 @@ namespace CityWar
                     attacks = this.attacks;
                 }
 
-                return Balance.GetCost(owner.Game.UnitTypes, Type, IsThree, Ability,
+                return Balance.GetCost(owner.Game.UnitTypes, Race, Type, IsThree, Ability,
                         MaxHits, BaseArmor, MaxRegen, MaxMove, attacks) / (double)(BaseTotalCost);
             }
         }

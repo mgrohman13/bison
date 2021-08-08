@@ -14,9 +14,6 @@ gameplay
 
 balance
 	flamethrower not hit W (dragon too?)
-	take into account race?
-		1/2 mult for same?
-	schema-based length handing
 	unit abilities
 		aircraft fuel
 		wind shield

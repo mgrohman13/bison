@@ -153,7 +153,7 @@ namespace UnitBalance
                 //calculated values
                 this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
                 UnitType unitType = UnitTypes.GetType(this.txtType.Text);
-                this.txtHitWorth.Tag = HitWorth(unitType, hits, armor);
+                this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor);
                 this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
                 double weaponMove = Balance.GetMove(unitType, move, air);
                 bool isThree = this.txtName.Text.Contains("*");
@@ -161,7 +161,7 @@ namespace UnitBalance
                 ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks, damage2, divide2, length2, weaponMove, air, isThree, 2);
                 ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks, damage3, divide3, length3, weaponMove, air, isThree, 3);
 
-                double cost = Balance.GetCost(unitTypes, type, this.txtName.Text.Contains("*"), ability, hits, armor, regen, move, Attacks, out gc);
+                double cost = Balance.GetCost(unitTypes, race, type, this.txtName.Text.Contains("*"), ability, hits, armor, regen, move, Attacks, out gc);
 
                 double ActCost = Math.Round(cost);
 
@@ -204,20 +204,20 @@ namespace UnitBalance
             }
         }
 
-        private static double HitWorth(UnitType unitType, int hits, int armor)
+        private static double HitWorth(string race, UnitType unitType, int hits, int armor)
         {
             double hitArmor = Balance.GetArmor(unitType, armor);
-            double hitDiv = Balance.HitWorth(1, Balance.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(null), unitTypes.GetAverageArmor(null)));
-            return Balance.HitWorth(unitTypes, unitType, hits, hitArmor) / hitDiv;
+            double hitDiv = Balance.HitWorth(1, Balance.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), unitTypes.GetAverageArmor()));
+            return Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor) / hitDiv;
         }
 
-        private static void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, Attack[] Attacks, double damage, double divide, double length, double move, bool air, bool isThree, int num)
+        private void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, Attack[] Attacks, double damage, double divide, double length, double move, bool air, bool isThree, int num)
         {
             double value;
             if (txtType.Text == "-" || txtType.Text == "")
                 value = double.NaN;
             else
-                value = Balance.Weapon(unitTypes, type, Attacks[num - 1].Target, damage, divide, length, move, air, isThree, num);
+                value = Balance.Weapon(unitTypes, race, type, Attacks[num - 1].Target, damage, divide, length, move, air, isThree, num);
             ShowWeaponValue(txtValue, value);
         }
         private static void ShowWeaponValue(TextBox txtValue, double value)
@@ -344,7 +344,7 @@ namespace UnitBalance
                     output.Append(attackRow.Length + "\t");
                     attacknames[idx] = attackRow.Name;
                     Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
-                    attackValues[idx] = Balance.Weapon(unitTypes, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, (row.Special == "Aircraft"), row.IsThree, idx + 1);
+                    attackValues[idx] = Balance.Weapon(unitTypes, row.Race, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, (row.Special == "Aircraft"), row.IsThree, idx + 1);
                     ++idx;
                 }
                 while (idx++ < 3)
@@ -356,8 +356,8 @@ namespace UnitBalance
                 output.Append(attacknames[1] + "\t");
                 output.Append(attacknames[2] + "\t");
                 double gc;
-                Balance.GetCost(unitTypes, type, row.IsThree, ability, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
-                double hw = HitWorth(type, row.Hits, row.Armor);
+                Balance.GetCost(unitTypes, row.Race, type, row.IsThree, ability, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
+                double hw = HitWorth(row.Race, type, row.Hits, row.Armor);
                 output.Append((double.IsNaN(gc) ? "-" : gc.ToString()) + "\t");
                 output.Append(hw + "\t");
                 output.Append(attackValues[0] + "\t");
