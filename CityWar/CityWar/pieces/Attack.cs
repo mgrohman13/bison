@@ -191,7 +191,7 @@ namespace CityWar
                 return -1;
 
             Used = true;
-            owner.Attacked(Length);
+            owner.Attacked(unit.Type == UnitType.Immobile ? int.MaxValue : Length);
 
             int hits = unit.Hits, armor = unit.Armor;
             int damage = DoDamage(armor), retVal = damage;

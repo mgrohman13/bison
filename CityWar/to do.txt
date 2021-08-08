@@ -2,7 +2,6 @@ in between games
 	"security" of public fields
 
 gameplay
-	in multi hex battles, units only attacking immobile can be retalliated against
 	exp?
 	persist is3 attacks
 	portal income rounding comes out of inc
@@ -13,7 +12,7 @@ gameplay
 		come up with way to be different from galwar wormholes
 
 balance
-	flamethrower not hit W (dragon too?)
+	GetAverageDamage calculate actual damage for each unit 
 	unit abilities
 		aircraft fuel
 		wind shield
