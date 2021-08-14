@@ -733,6 +733,8 @@ namespace CityWarWinApp
 
             //enable the timer if scrolling
             timerGraphics.Enabled = (up || down || left || right);
+            //if (!timerGraphics.Enabled)
+            //    Console.WriteLine("MainMap_MouseMove");
 
             //get the x and y coordinates of the hex over which the mouse resides
             int y = (int)Math.Round(((float)e.Y + offY - 13f + side) / side / 3f) - 1;
@@ -748,8 +750,12 @@ namespace CityWarWinApp
 
         private void MainMap_MouseLeave(object sender, EventArgs e)
         {
-            //stop scrolling if the mouse leaves the window
-            timerGraphics.Enabled = false;
+            if (this.FormBorderStyle != FormBorderStyle.None)
+            {
+                //stop scrolling if the mouse leaves the window
+                timerGraphics.Enabled = false;
+                //Console.WriteLine("MainMap_MouseLeave");
+            }
         }
 
         private void MainMap_MouseUp(object sender, MouseEventArgs e)
@@ -1277,6 +1283,9 @@ namespace CityWarWinApp
             foreach (Piece p in Game.CurrentPlayer.GetPieces())
                 if (!CheckAircraft(p, p.Movement, 0))
                     return;
+
+            this.chbGamble.Checked = false;
+            this.chbGroup.Checked = false;
 
             saved = false;
 
