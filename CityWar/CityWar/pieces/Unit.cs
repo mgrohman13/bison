@@ -26,6 +26,7 @@ namespace CityWar
         public readonly int BaseOtherCost, BasePplCost;
 
         private Attack[] attacks;
+        private Attack[] isThreeAttacks;
         private bool randed;
         private int maxHits, armor, regen;
         private bool recoverRegen;
@@ -359,6 +360,8 @@ namespace CityWar
             {
                 foreach (Attack attack in this.attacks)
                     attack.RandStats();
+                if (IsThree && isThreeAttacks == null)
+                    isThreeAttacks = new Attack[] { attacks[1], attacks[2] };
 
                 if (IsAir())
                 {
@@ -510,7 +513,7 @@ namespace CityWar
                     for (int a = 0; a < this.attacks.Length; ++a)
                         attacks[a] = this.attacks[a];
                     for (int b = this.attacks.Length; b < 3; ++b)
-                        attacks[b] = GetAttack(GetAttackRow());
+                        attacks[b] = GetAttack(b);
                 }
                 else
                 {
@@ -552,13 +555,12 @@ namespace CityWar
                 }
                 else if (curAttacks < newAttacks && newAttacks <= 3)
                 {
-                    UnitSchema.AttackRow attackRow = GetAttackRow();
                     Attack[] attacks = new Attack[newAttacks];
                     for (int a = 0; a < curAttacks; ++a)
                         attacks[a] = this.attacks[a];
                     for (int b = curAttacks; b < newAttacks; ++b)
                     {
-                        attacks[b] = GetAttack(attackRow);
+                        attacks[b] = GetAttack(b);
                         attacks[b].SetOwner(this);
                     }
                     this.attacks = attacks;
@@ -621,9 +623,7 @@ namespace CityWar
             int numAttacks = attackRows.Length;
             Attack[] attacks = new Attack[numAttacks];
             for (int i = 0; i < numAttacks; ++i)
-            {
                 attacks[i] = GetAttack(attackRows[i]);
-            }
 
             int shield;
             int fuel;
@@ -663,9 +663,20 @@ namespace CityWar
             }
             return abilities;
         }
+        private Attack GetAttack(int a)
+        {
+            return GetAttack(isThreeAttacks == null ? GetAttackRow() : null, isThreeAttacks, a);
+        }
         private static Attack GetAttack(UnitSchema.AttackRow attackRow)
         {
-            return new Attack(attackRow.Name, UnitTypes.GetAttackTargets(attackRow.Target_Type), attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+            return GetAttack(attackRow, null, -1);
+        }
+        private static Attack GetAttack(UnitSchema.AttackRow attackRow, Attack[] isThreeAttacks, int a)
+        {
+            if (isThreeAttacks != null)
+                return isThreeAttacks[a - 1];
+            else
+                return new Attack(attackRow.Name, UnitTypes.GetAttackTargets(attackRow.Target_Type), attackRow.Length, attackRow.Damage, attackRow.Divide_By);
         }
 
         #endregion //new units

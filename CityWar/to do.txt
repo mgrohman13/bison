@@ -3,7 +3,6 @@ in between games
 
 gameplay
 	exp?
-	persist is3 attacks
 	portal income rounding comes out of inc
 		requires new variable in case of magic ratio change?
 	allow gamble move to use in between 1-full move
@@ -46,12 +45,10 @@ interface
 	show race on end game
 	show more map info - e.g. unit value?  capts?
 	show total income on summary
-	show retaliation upjkeep cost
+	show retaliation upkeep cost
 	form can close without exiting app
 	show appeared wizard points, cities
 		changed map?
-	view units array on capts
-		maybe only freindly and observed?
 	show GC
 		maybe relative to selected/avail attacks
 	pathfinding
@@ -59,8 +56,7 @@ interface
 		easy move along path
 		option to avoid occupied tiles
 		drag to reposition route
-	mousewheel zoom
-		but pieces panel scroll?
+	better zoom
 	battles
 		always show selected attack in attackers lbx
 		select next attack algorithm
