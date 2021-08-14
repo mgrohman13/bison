@@ -6,27 +6,31 @@ namespace CityWar
 {
     public static class Balance
     {
-        private const double AirMoveDiv = 2.6;
         private const double AttackTargetsPower = .39;
 
-        public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, Abilities ability, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks)
+        public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, EnumFlags<Ability> abilities, int shield, int fuel, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks)
         {
             double gc;
-            return GetCost(unitTypes, race, type, isThree, ability, maxHits, baseArmor, baseRegen, maxMove, attacks, out gc);
+            return GetCost(unitTypes, race, type, isThree, abilities, shield, fuel, maxHits, baseArmor, baseRegen, maxMove, attacks, out gc);
         }
-        public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, Abilities ability, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks, out double gc)
+        public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, EnumFlags<Ability> abilities, int shield, int fuel, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks, out double gc)
         {
             double costMult = unitTypes.GetCostMult();
             double weaponDiv = GetWeaponDiv(unitTypes);
 
-            if ((baseRegen < 1 || maxHits < 1) ||
-                (type == UnitType.Immobile ? (maxMove > 0 || ability == Abilities.Aircraft || attacks.Length > 0 || isThree)
-                : (maxMove < 1 || attacks.Length < 1)))
+            bool air = abilities.Contains(Ability.Aircraft);
+            if (baseRegen < 1 || maxHits < 1)
+                throw new Exception();
+            if (air && abilities.Contains(Ability.AircraftCarrier))
+                throw new Exception();
+            if (abilities.Contains(Ability.Shield) ? shield <= 0 || shield >= 100 : shield != 0)
+                throw new Exception();
+            if (type == UnitType.Immobile ? maxMove > 0 || air || attacks.Length > 0 || isThree
+                    : maxMove < 1 || attacks.Length < 1)
                 throw new Exception();
 
             double move = maxMove;
             double regen = baseRegen;
-            bool air = ability == Abilities.Aircraft;
             double armor = baseArmor;
 
             if (move > 0)
@@ -34,12 +38,15 @@ namespace CityWar
             else
                 // 3 =div for immobile regen since it costs resources
                 regen /= 3;
+            if (air)
+                // aircraft can only heal at a carrier
+                regen /= 1.69;
 
             double typeVal, addArmor, movMult;
             GetValues(type, out typeVal, out addArmor, out movMult);
 
             armor = ModArmor(armor, addArmor);
-            move = ModMove(move, air, movMult);
+            move = ModMove(move, air, fuel, movMult);
 
             EnumFlags<TargetType>[] targets = new EnumFlags<TargetType>[] { null, null, null };
             double[] length = new double[] { 0, 0, 0 };
@@ -65,7 +72,7 @@ namespace CityWar
                 targets[0], length[0], damage[0], divide[0],
                 targets[1], length[1], damage[1], divide[1],
                 targets[2], length[2], damage[2], divide[2],
-                isThree, ability == Abilities.AircraftCarrier, air, type == UnitType.Immobile, out gc);
+                isThree, abilities.Contains(Ability.AircraftCarrier), air, fuel, shield, type == UnitType.Immobile, out gc);
         }
 
         public static double GetArmor(UnitType type, double armor)
@@ -75,11 +82,11 @@ namespace CityWar
             return ModArmor(armor, addArmor);
         }
 
-        public static double GetMove(UnitType type, double move, bool air)
+        public static double GetMove(UnitType type, double move, bool air, int fuel)
         {
             double typeVal, addArmor, movMult;
             GetValues(type, out typeVal, out addArmor, out movMult);
-            return ModMove(move, air, movMult);
+            return ModMove(move, air, fuel, movMult);
         }
 
         public static void GetValues(UnitType type, out double typeVal, out double addArmor, out double movMult)
@@ -134,22 +141,29 @@ namespace CityWar
             return armor;
         }
 
-        private static double ModMove(double move, bool air, double movMult)
+        private static double ModMove(double move, bool air, int fuel, double movMult)
         {
-            if (air)
-                move /= AirMoveDiv;
             move *= movMult;
+            if (air)
+                move /= GetAirMoveDiv(move, fuel);
             return move;
+        }
+
+        private static double GetAirMoveDiv(double move, int fuel)
+        {
+            move += .91;
+            double val = move / (move + fuel);
+            return 1 + 5.2 * val;
         }
 
         private static double CaulculateCost(UnitTypes unitTypes, string race, UnitType type, double costMult, double weaponDiv, double unitType, double health, double armor, double regeneration, double movement,
             EnumFlags<TargetType> a1Type, double a1Length, double a1Damage, double a1Divide,
             EnumFlags<TargetType> a2Type, double a2Length, double a2Damage, double a2Divide,
             EnumFlags<TargetType> a3Type, double a3Length, double a3Damage, double a3Divide,
-            bool isThree, bool carry, bool air, bool immobile, out double gc)
+            bool isThree, bool carry, bool air, int fuel, int shield, bool immobile, out double gc)
         {
             //hits
-            double avgDmg = GetAverageDamage(unitTypes.GetAverageDamage(race, type), unitTypes.GetAverageAP(race, type), armor);
+            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield);
             double hitWorth = HitWorth(health, avgDmg);
 
             //damage
@@ -163,15 +177,15 @@ namespace CityWar
             }
             else
             {
-                weapon1 = Weapon(unitTypes, race, type, a1Type, a1Damage, a1Divide, a1Length, movement, weaponDiv, air, isThree, 1);
-                weapon2 = Weapon(unitTypes, race, type, a2Type, a2Damage, a2Divide, a2Length, movement, weaponDiv, air, isThree, 2);
-                weapon3 = Weapon(unitTypes, race, type, a3Type, a3Damage, a3Divide, a3Length, movement, weaponDiv, air, isThree, 3);
+                weapon1 = Weapon(unitTypes, race, type, a1Type, a1Damage, a1Divide, a1Length, movement, weaponDiv, air, fuel, isThree, 1);
+                weapon2 = Weapon(unitTypes, race, type, a2Type, a2Damage, a2Divide, a2Length, movement, weaponDiv, air, fuel, isThree, 2);
+                weapon3 = Weapon(unitTypes, race, type, a3Type, a3Damage, a3Divide, a3Length, movement, weaponDiv, air, fuel, isThree, 3);
             }
 
             if (immobile)
                 gc = double.NaN;
             else
-                gc = (hitWorth + Regen(unitTypes, regeneration, avgDmg)) / (weapon1 + weapon2 + weapon3) * unitTypes.GetAverageDamage(race, type);
+                gc = (hitWorth + Regen(unitTypes, regeneration, avgDmg)) / (weapon1 + weapon2 + weapon3) * unitTypes.GetAverageDamage();
 
             //total
             double result = Unit(unitTypes, hitWorth, regeneration, weapon1, weapon2, weapon3, avgDmg);
@@ -192,9 +206,9 @@ namespace CityWar
             return result;
         }
 
-        public static double HitWorth(UnitTypes unitTypes, string race, UnitType type, double health, double armor)
+        public static double HitWorth(UnitTypes unitTypes, string race, UnitType type, double health, double armor, int shield)
         {
-            double avgDmg = GetAverageDamage(unitTypes.GetAverageDamage(race, type), unitTypes.GetAverageAP(race, type), armor);
+            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield);
             return HitWorth(health, avgDmg);
         }
         public static double HitWorth(double health, double avgDmg)
@@ -202,20 +216,20 @@ namespace CityWar
             return health / avgDmg;
         }
 
-        public static double Weapon(UnitTypes unitTypes, string race, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, bool isThree, int num)
+        public static double Weapon(UnitTypes unitTypes, string race, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, int fuel, bool isThree, int num)
         {
-            return Weapon(unitTypes, race, type, targets, damage, divide, length, move, GetWeaponDiv(unitTypes), air, isThree, num);
+            return Weapon(unitTypes, race, type, targets, damage, divide, length, move, GetWeaponDiv(unitTypes), air, fuel, isThree, num);
         }
-        public static double Weapon(UnitTypes unitTypes, string race, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, double weaponDiv, bool air, bool isThree, int num)
+        public static double Weapon(UnitTypes unitTypes, string race, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, double weaponDiv, bool air, int fuel, bool isThree, int num)
         {
             double result = 0;
             if (damage > 0)
             {
                 //damage
-                result = GetAverageDamage(damage, divide, unitTypes.GetAverageArmor(race, targets));
+                result = unitTypes.GetAverageDamage(race, targets, damage, divide);
                 //length
                 double pct = unitTypes.GetLengthPct(race, type, length);
-                result *= Math.Pow(move * (air ? AirMoveDiv : 1) + unitTypes.GetAverageMove(), pct)
+                result *= Math.Pow(move * (air ? GetAirMoveDiv(move, fuel) : 1) + unitTypes.GetAverageMove(), pct)
                     / Math.Pow(unitTypes.GetAverageMove(), pct);
                 //target
                 double count = targets == null ? unitTypes.GetAverageTargets() : targets.Count;
@@ -225,6 +239,7 @@ namespace CityWar
             }
             return result / weaponDiv;
         }
+
         public static double IsThreeMult(bool isThree, int num)
         {
             if (isThree && num > 1)
@@ -265,17 +280,12 @@ namespace CityWar
             }
 
             return cost;
-        }
-
-        public static double GetAverageDamage(double damage, double divide, double armor)
-        {
-            return Attack.GetAverageDamage(damage, divide, armor, int.MaxValue);
-        }
+        } 
 
         private static double GetWeaponDiv(UnitTypes unitTypes)
         {
             double averageDamage = unitTypes.GetAverageDamage();
-            return Weapon(unitTypes, null, null, null, averageDamage, unitTypes.GetAverageAP(), unitTypes.GetAverageLength(), unitTypes.GetAverageMove(), 1, false, false, -1) / averageDamage;
+            return Weapon(unitTypes, null, null, null, averageDamage, unitTypes.GetAverageAP(), unitTypes.GetAverageLength(), unitTypes.GetAverageMove(), 1, false, int.MaxValue, false, -1) / averageDamage;
         }
     }
 }

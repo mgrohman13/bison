@@ -14,11 +14,19 @@ gameplay
 balance
 	GetAverageDamage calculate actual damage for each unit 
 	unit abilities
-		aircraft fuel
-		wind shield
-		regen
-		wraith/spirit?
-		attack types
+		wraith/spirit (shield?)
+		slow heal
+		attack/unit types
+		other
+			regen
+			trample
+			poison
+			decay
+			blind
+			splash
+			psi
+			drain
+			zombify
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	allow 1/3 heal to calc isthree
@@ -32,7 +40,7 @@ balance
 		multiple on same tile?
 		what about elements?
 	separate out no attacks, no move, and 'all' to be used individualy
-		really will use?
+		really will use? (carrier defend air??)
 
 interface
 	show race on end game

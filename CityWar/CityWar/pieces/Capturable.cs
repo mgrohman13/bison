@@ -11,10 +11,10 @@ namespace CityWar
         private bool earnedIncome = false;
 
         protected Capturable(int maxMove, Player owner, Tile tile, string name)
-            : this(maxMove, owner, tile, name, Abilities.None)
+            : this(maxMove, owner, tile, name, Ability.None)
         {
         }
-        protected Capturable(int maxMove, Player owner, Tile tile, string name, Abilities ability)
+        protected Capturable(int maxMove, Player owner, Tile tile, string name, Ability ability)
             : base(maxMove, owner, tile, name, ability)
         {
             owner.Add(this);

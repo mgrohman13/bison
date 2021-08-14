@@ -85,7 +85,7 @@ namespace CityWarWinApp
 
         private void Battle_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (( e.X > Width / 2 && panelDefenders.ScrollBarEnabled ) || !panelAttackers.ScrollBarEnabled)
+            if ((e.X > Width / 2 && panelDefenders.ScrollBarEnabled) || !panelAttackers.ScrollBarEnabled)
                 panelDefenders.PiecesPanel_MouseWheel(sender, e);
             else
                 panelAttackers.PiecesPanel_MouseWheel(sender, e);
@@ -94,7 +94,7 @@ namespace CityWarWinApp
         private Piece[] GetPieces(bool attacker)
         {
             List<Piece> result = new List<Piece>();
-            foreach (Unit u in ( attacker ? battle.GetAttackers() : battle.GetDefenders() ))
+            foreach (Unit u in (attacker ? battle.GetAttackers() : battle.GetDefenders()))
                 if (!hideUnits.Contains(u))
                     result.Add(u);
             return result.ToArray();
@@ -148,7 +148,7 @@ namespace CityWarWinApp
             });
 
             string left = string.Format("{0} / {1}", unused, total);
-            string right = ( unit.Length != int.MinValue && unit.Length != int.MaxValue ? unit.Length.ToString() : null );
+            string right = (unit.Length != int.MinValue && unit.Length != int.MaxValue ? unit.Length.ToString() : null);
             return new Tuple<string, string>(left, right);
         }
 
@@ -222,7 +222,7 @@ namespace CityWarWinApp
             {
                 Unit clicked = panelDefenders.GetClickedPiece(e) as Unit;
                 Attack attack = GetSelectedAttack();
-                if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1))
+                if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1, 1))
                 {
                     int oldHits = clicked.Hits;
                     int damage = Map.Game.AttackUnit(battle, attack, clicked);
@@ -260,10 +260,10 @@ namespace CityWarWinApp
             Unit[] attackers = battle.GetAttackers();
             Unit[] defenders = battle.GetDefenders();
 
-            bool doAttacks = ( validAttacks == null );
+            bool doAttacks = (validAttacks == null);
             if (doAttacks)
                 validAttacks = new Dictionary<Unit, HashSet<Attack>>();
-            bool doCounts = ( totalCounts == null );
+            bool doCounts = (totalCounts == null);
             if (doCounts)
                 totalCounts = new Dictionary<Unit, int>();
 
@@ -471,7 +471,7 @@ namespace CityWarWinApp
                 foreach (Unit attacker in battle.GetAttackers())
                     ValidAttacks(attacker, attack =>
                     {
-                        if (!attack.Used && ( cbAttAll.Checked || ShowAttack(retalliation, attacker, attack) ))
+                        if (!attack.Used && (cbAttAll.Checked || ShowAttack(retalliation, attacker, attack)))
                             showAttacks.Add(attack);
                     });
 
@@ -479,7 +479,7 @@ namespace CityWarWinApp
         }
         private static bool ShowAttack(Attack retalliation, Unit attacker, Attack attack)
         {
-            return ( !retalliation.CanAttack(attacker) && retalliation.CanAttack(attacker, attack.Length) );
+            return (!retalliation.CanAttack(attacker) && retalliation.CanAttack(attacker, attack.Length));
         }
         private static void SetItems(ListBox listBox, SortedSet<Attack> showAttacks)
         {
@@ -523,7 +523,7 @@ namespace CityWarWinApp
                             break;
                         }
                     unitInfo = new UnitInfo(clicked, panelAttackers.PointToScreen(e.Location),
-                            battle.CanRetalliate ? clicked.Movement - ( used ? 1 : 0 ) : -1);
+                            battle.CanRetalliate ? clicked.Movement - (used ? 1 : 0) : -1);
                     unitInfo.Show();
                 }
             }
@@ -581,13 +581,13 @@ namespace CityWarWinApp
             if (y == null)
                 return -1;
 
-            int retVal = ( y.Length - x.Length );
+            int retVal = (y.Length - x.Length);
             if (retVal == 0)
             {
-                retVal = ( y.Pierce - x.Pierce );
+                retVal = (y.Pierce - x.Pierce);
                 if (retVal == 0)
                 {
-                    retVal = ( y.Damage - x.Damage );
+                    retVal = (y.Damage - x.Damage);
                     if (retVal == 0)
                     {
                         retVal = CityWar.Battle.CompareUnits(x.Owner, y.Owner);
@@ -595,7 +595,7 @@ namespace CityWarWinApp
                         {
                             if (x.Owner != y.Owner)
                                 throw new Exception();
-                            retVal = ( Array.IndexOf(x.Owner.Attacks, x) - Array.IndexOf(y.Owner.Attacks, y) );
+                            retVal = (Array.IndexOf(x.Owner.Attacks, x) - Array.IndexOf(y.Owner.Attacks, y));
                         }
                     }
                 }

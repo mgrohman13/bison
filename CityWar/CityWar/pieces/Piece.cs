@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MattUtil;
 
 namespace CityWar
 {
@@ -9,7 +10,7 @@ namespace CityWar
     {
         #region fields and constructors
 
-        public readonly Abilities Ability;
+        protected EnumFlags<Ability> abilities;
         public readonly int MaxMove;
 
         private readonly string name;
@@ -19,9 +20,13 @@ namespace CityWar
         protected int movement;
         protected int group;
 
-        protected Piece(int maxMove, Player owner, Tile tile, string name, Abilities ability)
+        protected Piece(int maxMove, Player owner, Tile tile, string name, Ability ability)
+            : this(maxMove, owner, tile, name, new EnumFlags<Ability>(ability))
         {
-            this.Ability = ability;
+        }
+        protected Piece(int maxMove, Player owner, Tile tile, string name, EnumFlags<Ability> abilities)
+        {
+            this.abilities = abilities;
             this.MaxMove = maxMove;
 
             this.name = name;
@@ -41,7 +46,7 @@ namespace CityWar
             if (tile.IsNeighbor(t))
             {
                 Player occupying;
-                if (!t.OccupiedByUnit(out occupying) || ( owner == occupying ))
+                if (!t.OccupiedByUnit(out occupying) || (owner == occupying))
                     return CanMoveChild(t);
             }
             return false;
@@ -88,7 +93,7 @@ namespace CityWar
         {
             get
             {
-                return ( this.path == null ? null : this.path.ToList() );
+                return (this.path == null ? null : this.path.ToList());
             }
             internal set
             {
@@ -101,6 +106,24 @@ namespace CityWar
             return name;
         }
 
+        public Boolean IsAir()
+        {
+            return IsAbility(Ability.Aircraft);
+        }
+
+        public bool IsAbility(Ability ability)
+        {
+            return abilities.Contains(ability);
+        }
+
+        public EnumFlags<Ability> Abilities
+        {
+            get
+            {
+                return new EnumFlags<Ability>(abilities);
+            }
+        }
+
         #endregion //public methods and properties
 
         #region moving
@@ -109,7 +132,7 @@ namespace CityWar
         {
             if (CanMove(t))
             {
-                if (Path != null && ( Path.Count < 2 || Path[1] != t ))
+                if (Path != null && (Path.Count < 2 || Path[1] != t))
                     Path = null;
                 return DoMove(t, gamble, out canUndo);
             }
@@ -133,20 +156,20 @@ namespace CityWar
             List<Unit> units = null;
             bool anyUnits = false, unitsMoved = false;
             //move units as a group so they either all make it or all dont
-            if (!t.HasCity() && ( t.Terrain == Terrain.Forest || t.Terrain == Terrain.Mountain ))
+            if (!t.HasCity() && (t.Terrain == Terrain.Forest || t.Terrain == Terrain.Mountain))
             {
                 //collect units that may not make it
                 units = new List<Unit>();
                 foreach (Piece p in pieces)
                 {
                     Unit u = p as Unit;
-                    if (u != null && ( u.Type == UnitType.Amphibious || u.Type == UnitType.Ground ))
+                    if (u != null && (u.Type == UnitType.Amphibious || u.Type == UnitType.Ground))
                         units.Add(u);
                 }
 
                 //move them, if any
                 anyUnits = units.Count > 0;
-                unitsMoved = ( anyUnits && Unit.UnitGroupMove(units, t, undoPieces, gamble) );
+                unitsMoved = (anyUnits && Unit.UnitGroupMove(units, t, undoPieces, gamble));
             }
 
             bool any = unitsMoved;
@@ -169,6 +192,8 @@ namespace CityWar
             if (oldMove < 1)
                 throw new Exception();
 
+            if (IsAir())
+                ((Unit)this).Fuel += oldMove - movement;
             movement = oldMove;
 
             if (tile != from)
@@ -197,10 +222,11 @@ namespace CityWar
     }
 
     [Serializable]
-    public enum Abilities
+    public enum Ability
     {
-        AircraftCarrier,
-        Aircraft,
-        None
+        None = 0x0,
+        AircraftCarrier = 0x1,
+        Aircraft = 0x2,
+        Shield = 0x4,
     }
 }

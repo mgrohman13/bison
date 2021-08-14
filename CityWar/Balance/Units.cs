@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using CityWar;
+using MattUtil;
 
 namespace UnitBalance
 {
@@ -116,13 +117,9 @@ namespace UnitBalance
                 BalUnit[] units = new BalUnit[count];
                 foreach (UnitSchema.UnitRow row in Game.Random.Iterate(us.Unit))
                 {
-                    Abilities ability;
-                    if (row.Special == "AircraftCarrier")
-                        ability = Abilities.AircraftCarrier;
-                    else if (row.Special == "Aircraft")
-                        ability = Abilities.Aircraft;
-                    else
-                        ability = Abilities.None;
+                    int shield, fuel;
+                    EnumFlags<Ability> abilities = Unit.GetAbilities(row, out shield, out fuel);
+
                     CityWar.UnitType type;
                     if (row.Type == "A")
                         type = CityWar.UnitType.Air;
@@ -154,7 +151,7 @@ namespace UnitBalance
 
                         attacks[i] = new Attack(targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
                     }
-                    units[--count] = new BalUnit(row.Race, row.Move, row.Regen, ability, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name, row.People / (double)(row.People + row.Cost));
+                    units[--count] = new BalUnit(row.Race, row.Move, row.Regen, abilities, shield, fuel, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name, row.People / (double)(row.People + row.Cost));
                 }
 
                 bool balanced = false, accepted = false, randing = false;
@@ -188,7 +185,7 @@ namespace UnitBalance
                     foreach (BalUnit unit in units)
                     {
                         Form1.unitTypes.SetCostMult(costMult);
-                        double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
+                        double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Abilities, unit.Shield, unit.Fuel, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
                         double ActCost = Math.Round(cost);
                         //inverse percent error
                         double invPctErr = ActCost / Math.Abs(cost - ActCost);
@@ -277,7 +274,7 @@ namespace UnitBalance
                 foreach (BalUnit unit in units)
                 {
                     Form1.unitTypes.SetCostMult(costMult);
-                    double cost = CityWar.Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Ability, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
+                    double cost = Balance.GetCost(Form1.unitTypes, unit.Race, unit.Type, unit.isThree, unit.Abilities, unit.Shield, unit.Fuel, unit.maxHits, unit.BaseArmor, unit.BaseRegen, unit.MaxMove, unit.Attacks);
                     UnitSchema.UnitRow row = us.Unit.FindByName(unit.name);
                     row.People = Game.Random.Round(cost * unit.pplPct);
                     row.Cost = (int)Math.Round(cost - row.People);
@@ -301,12 +298,14 @@ namespace UnitBalance
 
         struct BalUnit
         {
-            public BalUnit(string Race, int MaxMove, int BaseRegen, Abilities Ability, int BaseArmor, CityWar.UnitType Type, Attack[] Attacks, bool isThree, int maxHits, string name, double pplPct)
+            public BalUnit(string Race, int MaxMove, int BaseRegen, EnumFlags<Ability> Abilities, int Shield, int Fuel, int BaseArmor, CityWar.UnitType Type, Attack[] Attacks, bool isThree, int maxHits, string name, double pplPct)
             {
                 this.Race = Race;
                 this.MaxMove = MaxMove;
                 this.BaseRegen = BaseRegen;
-                this.Ability = Ability;
+                this.Abilities = Abilities;
+                this.Shield = Shield;
+                this.Fuel = Fuel;
                 this.BaseArmor = BaseArmor;
                 this.Type = Type;
                 this.Attacks = Attacks;
@@ -319,17 +318,19 @@ namespace UnitBalance
                 this.pplPct = Math.Round(this.pplPct, 1);
                 Console.WriteLine(this.pplPct);
             }
-            public string Race;
-            public int MaxMove;
-            public int BaseRegen;
-            public Abilities Ability;
-            public int BaseArmor;
-            public CityWar.UnitType Type;
-            public Attack[] Attacks;
-            public bool isThree;
-            public int maxHits;
-            public string name;
-            public double pplPct;
+            public readonly string Race;
+            public readonly int MaxMove;
+            public readonly int BaseRegen;
+            public readonly EnumFlags<Ability> Abilities;
+            public readonly int Shield;
+            public readonly int Fuel;
+            public readonly int BaseArmor;
+            public readonly CityWar.UnitType Type;
+            public readonly Attack[] Attacks;
+            public readonly bool isThree;
+            public readonly int maxHits;
+            public readonly string name;
+            public readonly double pplPct;
         }
 
         void read_Click(object sender, EventArgs e)
@@ -358,7 +359,7 @@ namespace UnitBalance
         private void newBox(int x, int y, int width, string text)
         {
             TextBox box = new TextBox();
-            box.Location = new Point(x, y);
+            box.Location = new System.Drawing.Point(x, y);
             box.Width = width;
             box.ReadOnly = true;
             box.BackColor = Color.Silver;
@@ -369,7 +370,7 @@ namespace UnitBalance
         private void newButton(int x, int y, string text, string tag, EventHandler eh, bool enabled)
         {
             Button b = new Button();
-            b.Location = new Point(x, y);
+            b.Location = new System.Drawing.Point(x, y);
             b.Text = text;
             b.BackColor = Color.Silver;
             b.Tag = tag;

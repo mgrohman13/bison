@@ -12,6 +12,9 @@ namespace CityWarWinApp
 {
     partial class UnitInfo : Form
     {
+        Font f1 = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+        Font f2 = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+
         public UnitInfo(Piece piece, Point location, int currentMove)
         {
             InitializeComponent();
@@ -36,7 +39,9 @@ namespace CityWarWinApp
                 this.txtCost.Text = unit.RandedCost.ToString("0");
                 this.txtHits.Text = string.Format("{0} / {1}", unit.Hits, unit.MaxHits);
                 this.txtMove.Text = GetMoveString(currentMove, unit);
-                this.txtRegen.Text = GetModString(unit.Regen.ToString(), unit.MaxRegen.ToString());
+                int regen = unit.Regen;
+                this.txtRegen.Font = (unit.IsAir() && !unit.Tile.HasCarrier()) ? f2 : f1;
+                this.txtRegen.Text = GetModString(regen.ToString(), unit.MaxRegen.ToString());
                 if (!unit.RegenRecover)
                     this.txtRegen.Text += " -";
                 this.txtType.Text = unit.Type.ToString();
@@ -80,6 +85,24 @@ namespace CityWarWinApp
                     }
                 }
             }
+
+            this.Height = unit.Abilities.ToInt() == 0 ? 350 : 450;
+            this.txtSpecial.Clear();
+            foreach (Ability a in unit.Abilities)
+            {
+                switch (a)
+                {
+                    case Ability.Aircraft:
+                        this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1}\n", unit.Fuel, unit.MaxFuel);
+                        break;
+                    case Ability.AircraftCarrier:
+                        this.txtSpecial.Text += "Aircraft Carrier\n";
+                        break;
+                    case Ability.Shield:
+                        this.txtSpecial.Text += string.Format("Shield - {0}%", unit.Shield);
+                        break;
+                }
+            }
         }
 
         private static string GetModString(string actual, string orig)
@@ -94,7 +117,7 @@ namespace CityWarWinApp
         {
             if (currentMove == -1)
                 currentMove = piece.Movement;
-            return ( currentMove != piece.MaxMove || piece.Owner == piece.Owner.Game.CurrentPlayer )
+            return (currentMove != piece.MaxMove || piece.Owner == piece.Owner.Game.CurrentPlayer)
                     ? string.Format("{0} / {1}", currentMove, piece.MaxMove) : piece.MaxMove.ToString();
         }
     }

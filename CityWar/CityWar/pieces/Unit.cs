@@ -1,9 +1,9 @@
+using MattUtil;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.Serialization;
-using MattUtil;
 
 namespace CityWar
 {
@@ -30,12 +30,15 @@ namespace CityWar
         private int maxHits, armor, regen;
         private bool recoverRegen;
 
+        private int shield, fuel, maxFuel;
+
         private int _hits;
         private double _regenPct;
 
-        private Unit(string race, string name, Tile tile, Player owner, int otherCost, int pplCost, CostType costType, Abilities ability,
+        private Unit(string race, string name, Tile tile, Player owner, int otherCost, int pplCost, CostType costType,
+                EnumFlags<Ability> abilities, int shield, int fuel,
                 bool isThree, UnitType Type, int hits, int armor, int regen, int move, Attack[] attacks)
-            : base(move, owner, tile, name, ability)
+            : base(move, owner, tile, name, abilities)
         {
             this.Type = Type;
             this.CostType = costType;
@@ -43,6 +46,7 @@ namespace CityWar
             this.IsThree = isThree;
             this.BaseOtherCost = otherCost;
             this.BasePplCost = pplCost;
+            this.maxFuel = fuel;
 
             this.attacks = attacks;
             this.randed = false;
@@ -50,6 +54,9 @@ namespace CityWar
             this.armor = armor;
             this.regen = regen;
             this.recoverRegen = true;
+
+            this.shield = shield;
+            this.Fuel = fuel;
 
             this._hits = hits;
             this._regenPct = 1;
@@ -141,7 +148,7 @@ namespace CityWar
         {
             get
             {
-                return (hits <= 0);
+                return (hits <= 0 || !owner.GetPieces().Contains(this));
             }
         }
 
@@ -158,6 +165,14 @@ namespace CityWar
             get
             {
                 return BaseArmor + tile.GetArmorBonus(Type);
+            }
+        }
+
+        public int Shield
+        {
+            get
+            {
+                return shield;
             }
         }
 
@@ -197,6 +212,25 @@ namespace CityWar
             }
         }
 
+        public int Fuel
+        {
+            get
+            {
+                return fuel;
+            }
+            internal set
+            {
+                fuel = value;
+            }
+        }
+        public int MaxFuel
+        {
+            get
+            {
+                return maxFuel;
+            }
+        }
+
         public double GetDisbandAmount()
         {
             double healthPct = GetHealthPct();
@@ -214,7 +248,7 @@ namespace CityWar
 
         internal bool CaptureCity()
         {
-            if (Ability == Abilities.Aircraft || movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
+            if (IsAir() || movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
                 return false;
 
             movement = 0;
@@ -267,17 +301,25 @@ namespace CityWar
                 int regen = Regen;
                 owner.AddWork((MaxRegen - regen) * .5);
 
-                hits += regen;
                 double pctWork = 0;
-                if (hits > MaxHits)
+                if (IsAir() && !tile.HasCarrier())
                 {
-                    pctWork = (hits - MaxHits) / (double)regen;
-                    owner.AddWork(hits - MaxHits);
-                    hits = MaxHits;
+                    owner.AddWork(regen);
+                    pctWork = 1;
                 }
-                if (IsThree)
-                    tile.hasCenterPiece = false;
-                tile.AdjustPiece(this);
+                else
+                {
+                    hits += regen;
+                    if (hits > MaxHits)
+                    {
+                        pctWork = (hits - MaxHits) / (double)regen;
+                        owner.AddWork(hits - MaxHits);
+                        hits = MaxHits;
+                    }
+                    if (IsThree)
+                        tile.hasCenterPiece = false;
+                    tile.AdjustPiece(this);
+                }
 
                 return pctWork;
             }
@@ -311,16 +353,25 @@ namespace CityWar
 
         internal override void ResetMove()
         {
-            if (randed && Ability == Abilities.Aircraft && !tile.HasCarrier())
-            {
-                Disband();
-            }
-            else
+            if (!randed)
+                RandStats();
+            if (!Dead)
             {
                 foreach (Attack attack in this.attacks)
                     attack.RandStats();
-                if (!randed)
-                    RandStats();
+
+                if (IsAir())
+                {
+                    if (tile.HasCarrier())
+                    {
+                        owner.AddUpkeep((maxFuel - Fuel) / Player.WorkMult * Player.UpkeepMult * .39);
+                        Fuel = maxFuel;
+                    }
+                    else if (Fuel <= 0)
+                        Disband();
+                    else
+                        Fuel--;
+                }
 
                 if (!Dead)
                 {
@@ -349,12 +400,12 @@ namespace CityWar
                         this.recoverRegen = true;
 
                     movement = MaxMove;
-                }
 
-                if (IsThree)
-                    tile.hasCenterPiece = false;
-                tile.AdjustPiece(this);
+                    tile.AdjustPiece(this);
+                }
             }
+
+            tile.hasCenterPiece = false;
         }
 
         internal Stack<double> Disband()
@@ -466,7 +517,7 @@ namespace CityWar
                     attacks = this.attacks;
                 }
 
-                return Balance.GetCost(owner.Game.UnitTypes, Race, Type, IsThree, Ability,
+                return Balance.GetCost(owner.Game.UnitTypes, Race, Type, IsThree, Abilities, shield, maxFuel,
                         MaxHits, BaseArmor, MaxRegen, MaxMove, attacks) / (double)(BaseTotalCost);
             }
         }
@@ -538,14 +589,6 @@ namespace CityWar
             UnitSchema schema = game.UnitTypes.GetSchema();
             UnitSchema.UnitRow unitRow = schema.Unit.FindByName(name);
 
-            Abilities ability;
-            if (unitRow.Special == "AircraftCarrier")
-                ability = Abilities.AircraftCarrier;
-            else if (unitRow.Special == "Aircraft")
-                ability = Abilities.Aircraft;
-            else
-                ability = Abilities.None;
-
             CostType costType;
             if (unitRow.CostType == "A")
                 costType = CostType.Air;
@@ -582,7 +625,10 @@ namespace CityWar
                 attacks[i] = GetAttack(attackRows[i]);
             }
 
-            Unit unit = new Unit(unitRow.Race, name, tile, owner, unitRow.Cost, unitRow.People, costType, ability,
+            int shield;
+            int fuel;
+            EnumFlags<Ability> abilities = GetAbilities(unitRow, out shield, out fuel);
+            Unit unit = new Unit(unitRow.Race, name, tile, owner, unitRow.Cost, unitRow.People, costType, abilities, shield, fuel,
                     unitRow.IsThree, type, unitRow.Hits, unitRow.Armor, unitRow.Regen, unitRow.Move, attacks);
 
             if (add)
@@ -592,6 +638,30 @@ namespace CityWar
             }
 
             return unit;
+        }
+        public static EnumFlags<Ability> GetAbilities(UnitSchema.UnitRow unit, out int shield, out int fuel)
+        {
+            shield = 0;
+            fuel = int.MaxValue;
+            EnumFlags<Ability> abilities = new EnumFlags<Ability>();
+            foreach (UnitSchema.SpecialRow s in unit.GetSpecialRows())
+            {
+                if (s.Special == "Aircraft")
+                {
+                    abilities.Add(Ability.Aircraft);
+                    fuel = s.Value;
+                }
+                else if (s.Special == "AircraftCarrier")
+                {
+                    abilities.Add(Ability.AircraftCarrier);
+                }
+                else if (s.Special == "Shield")
+                {
+                    abilities.Add(Ability.Shield);
+                    shield = s.Value;
+                }
+            }
+            return abilities;
         }
         private static Attack GetAttack(UnitSchema.AttackRow attackRow)
         {
@@ -605,6 +675,18 @@ namespace CityWar
         private void RandStats()
         {
             const double maxMult = 1.3;
+
+            if (IsAbility(Ability.Shield))
+            {
+                bool flip = shield > 50;
+                if (flip)
+                    shield = 100 - shield;
+                shield = RandStat(shield, true);
+                if (flip)
+                    shield = 100 - shield;
+            }
+            if (IsAir())
+                maxFuel = RandStat(maxFuel, true);
 
             this.armor = RandStat(this.armor, false);
             this.regen = RandStat(this.regen, true);
@@ -682,6 +764,8 @@ namespace CityWar
             {
                 //only reduce movement if any attacks were used
                 --movement;
+                if (IsAir())
+                    --Fuel;
                 Owner.AddWork(Attack.OverkillPercent * WorkRegen * (attacks.Length - usedAttacks) / (double)attacks.Length);
             }
         }
@@ -732,6 +816,8 @@ namespace CityWar
                 {
                     //subtract the value that was used to roll for success
                     u.movement -= minMove;
+                    if (u.IsAir())
+                        u.Fuel -= minMove;
                     if (move)
                         u.ActualMove(t);
 
@@ -759,6 +845,8 @@ namespace CityWar
             canUndo = true;
             if (movement < 1)
                 return false;
+            if (IsAir() && Fuel < 1)
+                return false;
 
             int needed = GetNeeded(t);
             if (needed < 0)
@@ -785,9 +873,12 @@ namespace CityWar
             }
             else
             {
-                movement -= needed;
+                useMove = needed;
+                movement -= useMove;
                 move = true;
             }
+            if (IsAir())
+                Fuel -= useMove;
 
             if (move)
                 canUndo &= ActualMove(t);
@@ -814,7 +905,7 @@ namespace CityWar
         protected override bool CanMoveChild(Tile t)
         {
             Player p;
-            return (GetNeeded(t) > -1 && (Ability != Abilities.Aircraft || !t.Occupied(out p) || p == owner));
+            return (GetNeeded(t) > -1 && (!IsAir() || !t.Occupied(out p) || p == owner));
         }
 
         private int GetNeeded(Tile t)

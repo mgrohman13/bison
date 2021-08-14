@@ -15,7 +15,7 @@ namespace CityWarWinApp
         {
             InitializeComponent();
             this.pictureBox1.Image = p.Owner.GetConstPic(p.ToString());
-            this.lblText.Text = "This action will cause your " + p.ToString() +
+            this.lblText.Text = "This action may cause your " + p.ToString() +
                 " to die!  Continue anyways?";
         }
     }

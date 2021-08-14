@@ -26,7 +26,8 @@ namespace UnitBalance
         //non visible info
         string costType = "";
         string race;
-        bool air, carry;
+        EnumFlags<Ability> abilities;
+        int shield, fuel;
         string a1Name, a2Name, a3Name;
         double gc = -1;
 
@@ -73,8 +74,17 @@ namespace UnitBalance
             this.txtDivide3.Text = input[++i];
             this.txtLength3.Text = input[++i];
 
-            air = (input[++i].Length > 0);
-            carry = (input[++i].Length > 0);
+            abilities = new EnumFlags<Ability>();
+            int.TryParse(input[++i], out fuel);
+            if (fuel > 0)
+                abilities.Add(Ability.Aircraft);
+            else
+                fuel = int.MaxValue;
+            if (input[++i].Length > 0)
+                abilities.Add(Ability.AircraftCarrier);
+            int.TryParse(input[++i].Replace("%", ""), out shield);
+            if (shield > 0)
+                abilities.Add(Ability.Shield);
 
             a1Name = input[++i];
             a2Name = input[++i];
@@ -134,13 +144,7 @@ namespace UnitBalance
                     ++attacks;
                 }
 
-                Abilities ability;
-                if (air)
-                    ability = Abilities.Aircraft;
-                else if (carry)
-                    ability = Abilities.AircraftCarrier;
-                else
-                    ability = Abilities.None;
+                bool air = abilities.Contains(Ability.Aircraft);
 
                 Attack[] Attacks = new Attack[attacks];
                 if (damage1 > 0)
@@ -153,15 +157,15 @@ namespace UnitBalance
                 //calculated values
                 this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
                 UnitType unitType = UnitTypes.GetType(this.txtType.Text);
-                this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor);
+                this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor, shield);
                 this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
-                double weaponMove = Balance.GetMove(unitType, move, air);
+                double weaponMove = Balance.GetMove(unitType, move, air, fuel);
                 bool isThree = this.txtName.Text.Contains("*");
                 ShowWeaponValue(this.txtDamage1, this.txtType1, unitType, Attacks, damage1, divide1, length1, move, air, isThree, 1);
                 ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks, damage2, divide2, length2, weaponMove, air, isThree, 2);
                 ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks, damage3, divide3, length3, weaponMove, air, isThree, 3);
 
-                double cost = Balance.GetCost(unitTypes, race, type, this.txtName.Text.Contains("*"), ability, hits, armor, regen, move, Attacks, out gc);
+                double cost = Balance.GetCost(unitTypes, race, type, this.txtName.Text.Contains("*"), abilities, shield, fuel, hits, armor, regen, move, Attacks, out gc);
 
                 double ActCost = Math.Round(cost);
 
@@ -204,11 +208,11 @@ namespace UnitBalance
             }
         }
 
-        private static double HitWorth(string race, UnitType unitType, int hits, int armor)
+        private static double HitWorth(string race, UnitType unitType, int hits, int armor, int shield)
         {
             double hitArmor = Balance.GetArmor(unitType, armor);
-            double hitDiv = Balance.HitWorth(1, Balance.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), unitTypes.GetAverageArmor()));
-            return Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor) / hitDiv;
+            double hitDiv = Balance.HitWorth(1, Attack.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), armor, 0, int.MaxValue));
+            return Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor, shield) / hitDiv;
         }
 
         private void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, Attack[] Attacks, double damage, double divide, double length, double move, bool air, bool isThree, int num)
@@ -217,7 +221,7 @@ namespace UnitBalance
             if (txtType.Text == "-" || txtType.Text == "")
                 value = double.NaN;
             else
-                value = Balance.Weapon(unitTypes, race, type, Attacks[num - 1].Target, damage, divide, length, move, air, isThree, num);
+                value = Balance.Weapon(unitTypes, race, type, Attacks[num - 1].Target, damage, divide, length, move, air, fuel, isThree, num);
             ShowWeaponValue(txtValue, value);
         }
         private static void ShowWeaponValue(TextBox txtValue, double value)
@@ -249,52 +253,54 @@ namespace UnitBalance
         //output to be pasted into excel
         private string getOutput(int ppl, int other)
         {
-            StringBuilder output = new StringBuilder("");
-            output.Append(this.txtName.Text + "\t");
-            output.Append((ppl + other).ToString() + "\t");
-            output.Append(other.ToString() + "\t");
-            output.Append(costType + "\t");
-            output.Append(ppl.ToString() + "\t");
-            output.Append(this.txtPplPercent.Text + "\t");
-            output.Append(race + "\t");
-            output.Append(this.txtType.Text + "\t");
-            output.Append(this.txtHits.Text + "\t");
-            output.Append(this.txtArmor.Text + "\t");
-            output.Append(this.txtRegen.Text + "\t");
-            output.Append(this.txtMove.Text + "\t");
-            output.Append("\t\t");
-            output.Append(this.txtType1.Text + "\t");
-            output.Append(this.txtNumber1.Text + "\t");
-            output.Append(this.txtDivide1.Text + "\t");
-            output.Append(this.txtLength1.Text + "\t");
-            output.Append(this.txtType2.Text + "\t");
-            output.Append(this.txtNumber2.Text + "\t");
-            output.Append(this.txtDivide2.Text + "\t");
-            output.Append(this.txtLength2.Text + "\t");
-            output.Append(this.txtType3.Text + "\t");
-            output.Append(this.txtNumber3.Text + "\t");
-            output.Append(this.txtDivide3.Text + "\t");
-            output.Append(this.txtLength3.Text + "\t");
-            output.Append((air ? "X" : "") + "\t");
-            output.Append((carry ? "X" : "") + "\t");
-            output.Append(a1Name + "\t");
-            output.Append(a2Name + "\t");
-            output.Append(a3Name + "\t");
-            output.Append(GC() + "\t");
-            output.Append(txtHitWorth.Tag + "\t");
-            output.Append(this.txtDamage1.Tag + "\t");
-            output.Append(this.txtDamage2.Tag + "\t");
-            output.Append(this.txtDamage3.Tag + "\t");
+            return this.txtName.Text;
 
-            return output.ToString().Trim();
+            //StringBuilder output = new StringBuilder("");
+            //output.Append(this.txtName.Text + "\t");
+            //output.Append((ppl + other).ToString() + "\t");
+            //output.Append(other.ToString() + "\t");
+            //output.Append(costType + "\t");
+            //output.Append(ppl.ToString() + "\t");
+            //output.Append(this.txtPplPercent.Text + "\t");
+            //output.Append(race + "\t");
+            //output.Append(this.txtType.Text + "\t");
+            //output.Append(this.txtHits.Text + "\t");
+            //output.Append(this.txtArmor.Text + "\t");
+            //output.Append(this.txtRegen.Text + "\t");
+            //output.Append(this.txtMove.Text + "\t");
+            //output.Append("\t\t");
+            //output.Append(this.txtType1.Text + "\t");
+            //output.Append(this.txtNumber1.Text + "\t");
+            //output.Append(this.txtDivide1.Text + "\t");
+            //output.Append(this.txtLength1.Text + "\t");
+            //output.Append(this.txtType2.Text + "\t");
+            //output.Append(this.txtNumber2.Text + "\t");
+            //output.Append(this.txtDivide2.Text + "\t");
+            //output.Append(this.txtLength2.Text + "\t");
+            //output.Append(this.txtType3.Text + "\t");
+            //output.Append(this.txtNumber3.Text + "\t");
+            //output.Append(this.txtDivide3.Text + "\t");
+            //output.Append(this.txtLength3.Text + "\t");
+            //output.Append((air ? "X" : "") + "\t");
+            //output.Append((carry ? "X" : "") + "\t");
+            //output.Append(a1Name + "\t");
+            //output.Append(a2Name + "\t");
+            //output.Append(a3Name + "\t");
+            //output.Append(GC() + "\t");
+            //output.Append(txtHitWorth.Tag + "\t");
+            //output.Append(this.txtDamage1.Tag + "\t");
+            //output.Append(this.txtDamage2.Tag + "\t");
+            //output.Append(this.txtDamage3.Tag + "\t");
+
+            //return output.ToString().Trim();
         }
 
-        private string GC()
-        {
-            if (double.IsNaN(gc))
-                return "-";
-            return gc.ToString();
-        }
+        //private string GC()
+        //{
+        //    if (double.IsNaN(gc))
+        //        return "-";
+        //    return gc.ToString();
+        //}
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -323,17 +329,13 @@ namespace UnitBalance
                 output.Append(row.Move + "\t");
                 output.Append("\t\t");
 
-                Abilities ability;
-                if (row.Special == "Aircraft")
-                    ability = Abilities.Aircraft;
-                else if (row.Special == "AircraftCarrier")
-                    ability = Abilities.AircraftCarrier;
-                else
-                    ability = Abilities.None;
+                int shield, fuel;
+                EnumFlags<Ability> abilities = Unit.GetAbilities(row, out shield, out fuel);
+
                 Attack[] Attacks = new Attack[row.GetAttackRows().Length];
                 UnitType type = UnitTypes.GetType(row.Type);
-                double weaponMove = Balance.GetMove(type, row.Move, row.Special == "Aircraft");
-                string[] attacknames = new string[3];
+                double weaponMove = Balance.GetMove(type, row.Move, abilities.Contains(Ability.Aircraft), fuel);
+                string[] attacknames = new string[] { "'-", "'-", "'-" };
                 double[] attackValues = new double[3];
                 int idx = 0;
                 foreach (UnitSchema.AttackRow attackRow in row.GetAttackRows())
@@ -344,21 +346,22 @@ namespace UnitBalance
                     output.Append(attackRow.Length + "\t");
                     attacknames[idx] = attackRow.Name;
                     Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
-                    attackValues[idx] = Balance.Weapon(unitTypes, row.Race, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, (row.Special == "Aircraft"), row.IsThree, idx + 1);
+                    attackValues[idx] = Balance.Weapon(unitTypes, row.Race, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, abilities.Contains(Ability.Aircraft), fuel, row.IsThree, idx + 1);
                     ++idx;
                 }
                 while (idx++ < 3)
                     output.Append("'-\t'-\t'-\t'-\t");
 
-                output.Append(((row.Special == "Aircraft") ? "X" : "' ") + "\t");
-                output.Append(((row.Special == "AircraftCarrier") ? "X" : "' ") + "\t");
+                output.Append((abilities.Contains(Ability.Aircraft) ? fuel.ToString() : "' ") + "\t");
+                output.Append((abilities.Contains(Ability.AircraftCarrier) ? "X" : "' ") + "\t");
+                output.Append((abilities.Contains(Ability.Shield) ? (shield / 100.0).ToString() : "' ") + "\t");
                 output.Append(attacknames[0] + "\t");
                 output.Append(attacknames[1] + "\t");
                 output.Append(attacknames[2] + "\t");
                 double gc;
-                Balance.GetCost(unitTypes, row.Race, type, row.IsThree, ability, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
-                double hw = HitWorth(row.Race, type, row.Hits, row.Armor);
-                output.Append((double.IsNaN(gc) ? "-" : gc.ToString()) + "\t");
+                Balance.GetCost(unitTypes, row.Race, type, row.IsThree, abilities, shield, fuel, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
+                double hw = HitWorth(row.Race, type, row.Hits, row.Armor, shield);
+                output.Append((double.IsNaN(gc) ? "'-" : gc.ToString()) + "\t");
                 output.Append(hw + "\t");
                 output.Append(attackValues[0] + "\t");
                 output.Append(attackValues[1] + "\t");
@@ -386,44 +389,57 @@ namespace UnitBalance
         {
             if (this.txtMove.Text == "0")
                 this.txtPpl.Text = "0";
-
-            string special = "";
-            if (air)
-                special = "Aircraft";
-            else if (carry)
-                special = "AircraftCarrier";
+            string name = this.txtName.Text.Trim('*');
             try
             {
-                units.us.Unit.RemoveUnitRow(units.us.Unit.FindByName(this.txtName.Text.Trim('*')));
+                units.us.Unit.RemoveUnitRow(units.us.Unit.FindByName(name));
             }
             catch
             {
             }
-            units.us.Unit.AddUnitRow(this.txtName.Text.Trim('*'), int.Parse(this.txtCost.Text),
+
+            units.us.Unit.AddUnitRow(name, int.Parse(this.txtCost.Text),
                 this.txtType.Text, int.Parse(this.txtHits.Text), int.Parse(this.txtArmor.Text),
                 int.Parse(this.txtRegen.Text), int.Parse(this.txtMove.Text), costType,
-                this.txtName.Text.Contains("*"), special, int.Parse(this.txtPpl.Text), race);
+                this.txtName.Text.Contains("*"), int.Parse(this.txtPpl.Text), race);
+
+            UnitSchema.UnitRow unit = units.us.Unit.FindByName(name);
 
             if (this.txtType1.Text != "-" && this.txtType1.Text != "")
             {
                 units.us.Attack.AddAttackRow(this.txtType1.Text, int.Parse(this.txtLength1.Text),
-                    int.Parse(this.txtNumber1.Text), int.Parse(this.txtDivide1.Text), units.us.Unit.FindByName(this.txtName.Text.Trim('*')), a1Name);
+                    int.Parse(this.txtNumber1.Text), int.Parse(this.txtDivide1.Text), unit, a1Name);
 
                 if (this.txtType2.Text != "-" && this.txtType2.Text != "")
                 {
                     units.us.Attack.AddAttackRow(this.txtType2.Text, int.Parse(this.txtLength2.Text),
-                        int.Parse(this.txtNumber2.Text), int.Parse(this.txtDivide2.Text), units.us.Unit.FindByName(this.txtName.Text.Trim('*')), a2Name);
+                        int.Parse(this.txtNumber2.Text), int.Parse(this.txtDivide2.Text), unit, a2Name);
 
                     if (this.txtType3.Text != "-" && this.txtType3.Text != "")
                     {
                         units.us.Attack.AddAttackRow(this.txtType3.Text, int.Parse(this.txtLength3.Text),
-                            int.Parse(this.txtNumber3.Text), int.Parse(this.txtDivide3.Text), units.us.Unit.FindByName(this.txtName.Text.Trim('*')), a3Name);
+                            int.Parse(this.txtNumber3.Text), int.Parse(this.txtDivide3.Text), unit, a3Name);
                     }
                 }
             }
 
-            units.getAll();
+            foreach (Ability special in abilities)
+                if (special != Ability.None)
+                {
+                    int value = -1;
+                    switch (special)
+                    {
+                        case Ability.Shield:
+                            value = shield;
+                            break;
+                        case Ability.Aircraft:
+                            value = fuel;
+                            break;
+                    }
+                    units.us.Special.AddSpecialRow(unit, special.ToString(), value);
+                }
 
+            units.getAll();
             this.txtOutput.SelectAll();
         }
     }

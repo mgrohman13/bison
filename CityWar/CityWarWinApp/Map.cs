@@ -123,26 +123,26 @@ namespace CityWarWinApp
         #region Check Aircraft
 
         //check if moving an aircraft might end up destroying it
-        public static bool CheckAircraft(Piece piece, int moveMod)
+        public static bool CheckAircraft(Piece piece, int moveMod, int fuelMod)
         {
-            return CheckAircraft(piece, moveMod, piece.Tile);
+            return CheckAircraft(piece, moveMod, fuelMod, piece.Tile);
         }
-        static bool CheckAircraft(Piece piece, int moveMod, Tile toTile)
+        static bool CheckAircraft(Piece piece, int moveMod, int fuelMod, Tile toTile)
         {
             //not enough movement, so this is immaterial
             if (piece.Movement < 1)
                 return true;
 
-            return CheckAircraft(piece, moveMod, toTile, null);
+            return CheckAircraft(piece, moveMod, fuelMod, toTile, null);
         }
-        static bool CheckAircraft(Piece piece, int moveMod, Tile toTile, Dictionary<Tile, Tile> CanGetCarrier)
+        static bool CheckAircraft(Piece piece, int moveMod, int fuelMod, Tile toTile, Dictionary<Tile, Tile> CanGetCarrier)
         {
             //cant move if it isn't your turn
             if (piece.Owner != Game.CurrentPlayer)
                 return true;
 
             Unit unit = piece as Unit;
-            if (piece.Ability == Abilities.AircraftCarrier)
+            if (piece.IsAbility(Ability.AircraftCarrier))
             {
                 //store variables for the Tile.CheckAircraft instance method
                 Tile.MovedCarrier = piece;
@@ -151,9 +151,9 @@ namespace CityWarWinApp
 
                 //if this piece is a carrier, check each aircraft the player owns
                 foreach (Piece aircraft in piece.Owner.GetPieces())
-                    if (aircraft.Ability == Abilities.Aircraft)
+                    if (aircraft.IsAir())
                         //call recursively for the aircraft
-                        if (!CheckAircraft(aircraft, 0, aircraft.Tile, CanGetCarrier))
+                        if (!CheckAircraft(aircraft, 0, 0, aircraft.Tile, CanGetCarrier))
                         {
                             Tile.MovedCarrier = null;
                             Tile.MovedToTile = null;
@@ -161,7 +161,7 @@ namespace CityWarWinApp
 
                             //make sure that the carrier could have reached the aircraft were it not to move
                             //do this by simply checking again with the static variables cleared
-                            if (CheckAircraft(aircraft, 0, toTile, CanGetCarrier))
+                            if (CheckAircraft(aircraft, 0, 0, toTile, CanGetCarrier))
                             {
                                 //the carrier can save the aircraft by not moving
                                 return false;
@@ -183,8 +183,8 @@ namespace CityWarWinApp
                 return true;
             }
             //if the piece is an aircraft, and has not already been OKed, call the Tile.CheckAircraft instance method
-            else if (piece.Ability == Abilities.Aircraft && !(unit != null && !unit.IsRanded)
-                && !okToMove.Contains(piece) && toTile.CheckAircraft(moveMod, piece, ref CanGetCarrier))
+            else if (piece.IsAir() && !(unit != null && !unit.IsRanded)
+               && !okToMove.Contains(piece) && toTile.CheckAircraft(moveMod, fuelMod, piece, ref CanGetCarrier))
             {
                 //if moving may cause it to die, show a dialog asking confirmation
                 if (new Aircraft(piece).ShowDialog() == DialogResult.OK)
@@ -265,7 +265,7 @@ namespace CityWarWinApp
                         this.btnBuildPiece.Visible = true;
 
                     //if the tile has a neutral city and any pieces have full move, show the capture city button
-                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && p.Ability != Abilities.Aircraft)
+                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && p.IsAir())
                         this.btnCaptureCity.Visible = true;
 
                     //if any selected pieces are units, show the disband units button
@@ -507,7 +507,8 @@ namespace CityWarWinApp
 
         private Tuple<string, string> GetTextForPiece(Piece piece)
         {
-            return new Tuple<string, string>(string.Format("{0} / {1}", piece.Movement, piece.MaxMove), null);
+            string fuel = piece.IsAir() ? string.Format(" ({0})", ((Unit)piece).Fuel) : "";
+            return new Tuple<string, string>(string.Format("{0} / {1}{2}", piece.Movement, piece.MaxMove, fuel), null);
         }
 
         #endregion
@@ -805,7 +806,7 @@ namespace CityWarWinApp
                                         {
                                             //check for potential aircraft death
                                             foreach (Piece p in selectedTile.GetSelectedPieces())
-                                                if (p.CanMove(clicked) && !CheckAircraft(p, 1, clicked))
+                                                if (p.CanMove(clicked) && !CheckAircraft(p, 1, 1, clicked))
                                                     //if any aircraft shouldn't be moved, don't move anything
                                                     return;
 
@@ -1160,11 +1161,10 @@ namespace CityWarWinApp
                 return;
             }
 
-
             //check each piece for aircraft
             bool can = true;
             foreach (Piece p in selPieces)
-                if (!CheckAircraft(p, 1))
+                if (!CheckAircraft(p, 1, 0))
                 {
                     can = false;
                     break;
@@ -1203,7 +1203,7 @@ namespace CityWarWinApp
             Tile tile = Game.GetTile(selected.X, selected.Y);
             int curGroup = tile.CurrentGroup;
             Unit[] availUnits = tile.FindAllUnits(unit => unit.Group == curGroup && unit.MaxMove != 0
-                    && unit.Movement == unit.MaxMove && unit.Ability != Abilities.Aircraft);
+                    && unit.Movement == unit.MaxMove && !unit.IsAir());
 
             //find the best unit to use
             Unit capture = availUnits[0];
@@ -1275,7 +1275,7 @@ namespace CityWarWinApp
 
             //check for any dying aircraft
             foreach (Piece p in Game.CurrentPlayer.GetPieces())
-                if (!CheckAircraft(p, int.MaxValue))
+                if (!CheckAircraft(p, p.Movement, 0))
                     return;
 
             saved = false;

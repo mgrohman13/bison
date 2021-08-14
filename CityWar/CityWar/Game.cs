@@ -344,7 +344,7 @@ namespace CityWar
         }
         private bool CanStartBattle(Unit attacker)
         {
-            return (attacker.Owner == CurrentPlayer && attacker.Movement > 0);
+            return (attacker.Owner == CurrentPlayer && attacker.Movement > 0 && (!attacker.IsAir() || attacker.Fuel > 0));
         }
         private void AddDefenders(HashSet<Unit> defenders, Player enemy, Unit attacker, int length = int.MaxValue, Dictionary<Unit, int> attackers = null)
         {

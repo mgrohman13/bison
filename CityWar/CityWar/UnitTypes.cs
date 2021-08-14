@@ -102,17 +102,36 @@ namespace CityWar
 
         public double GetAverageDamage()
         {
-            return GetAverageDamage(null, null);
-        }
-        public double GetAverageDamage(string race, UnitType? type)
-        {
             double damage = 0, count = 0;
-            CheckAttacks(race, type, (weight, attack) =>
+            CheckAttacks(null, null, (weight, attack) =>
             {
                 damage += weight * attack.Damage;
                 count += weight;
             });
             return damage / count;
+        }
+        public double GetAverageDamage(string race, UnitType? type, double armor, int shield)
+        {
+            double damage = 0, count = 0;
+            CheckAttacks(race, type, (weight, attack) =>
+            {
+                damage += weight * Attack.GetAverageDamage(attack.Damage, attack.Divide_By, armor, shield, int.MaxValue);
+                count += weight;
+            });
+            return damage / count;
+        }
+
+        public double GetAverageDamage(string race, EnumFlags<TargetType> targets, double damage, double divide)
+        {
+            double tot = 0, count = 0;
+            CheckUnits(race, targets, (weight, unit) =>
+            {
+                double typeVal, addArmor, movMult;
+                Balance.GetValues(GetType(unit.Type), out typeVal, out addArmor, out movMult);
+                tot += weight * Attack.GetAverageDamage(damage, divide, unit.Armor + addArmor, 0, int.MaxValue);
+                count += weight;
+            });
+            return tot / count;
         }
 
         public double GetAverageAP()

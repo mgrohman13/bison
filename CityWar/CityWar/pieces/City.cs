@@ -12,7 +12,7 @@ namespace CityWar
         private readonly List<string> units = new List<string>();
 
         internal City(Player owner, Tile tile)
-            : base(0, owner, tile, "City", Abilities.AircraftCarrier)
+            : base(0, owner, tile, "City", Ability.AircraftCarrier)
         {
             this.units = InitUnits(tile);
         }

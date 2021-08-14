@@ -91,7 +91,7 @@ namespace CityWar
                 {
                     foreach (Piece p in this.pieces)
                         if (p is Relic)
-                            ( (Relic)p ).ChangedTerrain(value);
+                            ((Relic)p).ChangedTerrain(value);
                     terrain = value;
                 }
             }
@@ -100,7 +100,7 @@ namespace CityWar
         public bool IsNeighbor(int x, int y)
         {
             Tile neighbor = Game.GetTile(x, y);
-            return ( neighbor != null && IsNeighbor(neighbor) );
+            return (neighbor != null && IsNeighbor(neighbor));
         }
         public bool IsNeighbor(Tile t)
         {
@@ -123,34 +123,34 @@ namespace CityWar
             bool odd = y % 2 > 0;
             switch (direction)
             {
-            case 0:
-                if (odd)
+                case 0:
+                    if (odd)
+                        --x;
+                    --y;
+                    break;
+                case 1:
+                    if (!odd)
+                        ++x;
+                    --y;
+                    break;
+                case 2:
                     --x;
-                --y;
-                break;
-            case 1:
-                if (!odd)
+                    break;
+                case 3:
                     ++x;
-                --y;
-                break;
-            case 2:
-                --x;
-                break;
-            case 3:
-                ++x;
-                break;
-            case 4:
-                if (odd)
-                    --x;
-                ++y;
-                break;
-            case 5:
-                if (!odd)
-                    ++x;
-                ++y;
-                break;
-            default:
-                throw new Exception();
+                    break;
+                case 4:
+                    if (odd)
+                        --x;
+                    ++y;
+                    break;
+                case 5:
+                    if (!odd)
+                        ++x;
+                    ++y;
+                    break;
+                default:
+                    throw new Exception();
             }
 
             if (x < 0 || x >= Game.Diameter || y < 0 || y >= Game.Diameter)
@@ -165,7 +165,7 @@ namespace CityWar
         }
         public bool HasCity()
         {
-            return ( cityTime > 0 || pieces.OfType<City>().Any() );
+            return (cityTime > 0 || pieces.OfType<City>().Any());
         }
 
         public Image GetPieceImage()
@@ -180,7 +180,7 @@ namespace CityWar
             {
                 string pieceName = centerPiece.ToString();
                 //a dot is placed on the image for a capturable if there are any units with it
-                if (( centerPiece is Capturable ) && this.OccupiedByUnit())
+                if ((centerPiece is Capturable) && this.OccupiedByUnit())
                     pieceName += "Unit";
                 return centerPiece.Owner.GetPic(pieceName);
             }
@@ -200,7 +200,7 @@ namespace CityWar
         }
         private bool IsSelected(Piece p)
         {
-            return ( p.Group == CurrentGroup && p.Owner == Game.CurrentPlayer );
+            return (p.Group == CurrentGroup && p.Owner == Game.CurrentPlayer);
         }
         public Unit[] GetAllUnits()
         {
@@ -315,7 +315,7 @@ namespace CityWar
 
                 //find the last selected piece
                 int last = -1;
-                for ( ; a < count ; ++a)
+                for (; a < count; ++a)
                     if (pieces[a].Group == CurrentGroup)
                         last = a;
 
@@ -333,7 +333,7 @@ namespace CityWar
 
                 //select all pieces in between
                 CurrentGroup = Game.NewGroup();
-                for (a = min ; a <= max ; ++a)
+                for (a = min; a <= max; ++a)
                     pieces[a].Group = CurrentGroup;
             }
             else if (ctrl)
@@ -494,7 +494,7 @@ namespace CityWar
             foreach (Piece p in pieces.ToArray())
                 if (p.Owner != owner)
                 {
-                    ( (Capturable)p ).Capture(owner);
+                    ((Capturable)p).Capture(owner);
                     canUndo = false;
                 }
             return canUndo;
@@ -516,13 +516,9 @@ namespace CityWar
             cityTime = time;
         }
 
-        internal bool HasCarrier()
+        public bool HasCarrier()
         {
-            foreach (Piece p in pieces)
-                if (p.Ability == Abilities.AircraftCarrier)
-                    return true;
-
-            return false;
+            return pieces.Any(p => p.IsAbility(Ability.AircraftCarrier));
         }
 
         public Dictionary<Piece, bool> MoveSelectedPieces(Tile tile, bool gamble)
@@ -559,8 +555,8 @@ namespace CityWar
         private bool CanMove(Tile tile)
         {
             Player thisP, tileP;
-            return ( IsNeighbor(tile) && Occupied(out thisP) &&
-                    ( !tile.OccupiedByUnit(out tileP) || thisP == tileP ) && this.GetSelectedPieces().Length > 0 );
+            return (IsNeighbor(tile) && Occupied(out thisP) &&
+                    (!tile.OccupiedByUnit(out tileP) || thisP == tileP) && this.GetSelectedPieces().Length > 0);
         }
 
         internal void Reset()
@@ -574,10 +570,10 @@ namespace CityWar
         }
         internal static bool MatchesTerrain(CostType costType, Terrain terrain)
         {
-            return ( ( terrain == Terrain.Forest && costType == CostType.Nature )
-                    || ( terrain == Terrain.Mountain && costType == CostType.Earth )
-                    || ( terrain == Terrain.Plains && costType == CostType.Air )
-                    || ( terrain == Terrain.Water && costType == CostType.Water ) );
+            return ((terrain == Terrain.Forest && costType == CostType.Nature)
+                    || (terrain == Terrain.Mountain && costType == CostType.Earth)
+                    || (terrain == Terrain.Plains && costType == CostType.Air)
+                    || (terrain == Terrain.Water && costType == CostType.Water));
         }
 
         #endregion //internal methods
@@ -625,7 +621,7 @@ namespace CityWar
                 foreach (Piece p in pieces)
                 {
                     Portal portal;
-                    if (( portal = p as Portal ) != null)
+                    if ((portal = p as Portal) != null)
                     {
                         int portalCost = portal.Cost;
                         if (portalCost > cost)
@@ -651,7 +647,7 @@ namespace CityWar
             foreach (Piece p in pieces)
             {
                 Unit unit;
-                if (( unit = p as Unit ) != null)
+                if ((unit = p as Unit) != null)
                 {
                     //unit type all takes precedence
                     if (unit.Type == UnitType.Immobile)
@@ -695,7 +691,7 @@ namespace CityWar
             int index = -1, compValue = -1;
             while (min < max)
             {
-                index = ( max - min ) / 2 + min;
+                index = (max - min) / 2 + min;
                 compValue = compare(p, pieces[index]);
                 if (compValue < 0)
                 {
@@ -715,7 +711,7 @@ namespace CityWar
             if (min < count)
             {
                 //if min was the index in the last iteration we already have the compare result and dont need to call again
-                if (( min == index ? compValue : compare(p, pieces[min]) ) > 0)
+                if ((min == index ? compValue : compare(p, pieces[min])) > 0)
                     ++min;
                 pieces.Insert(min, p);
             }
@@ -751,44 +747,45 @@ namespace CityWar
                 //higher values show up higher in the list
                 if (u.Type == UnitType.Immobile)
                     return 7;
-                switch (u.Ability)
-                {
-                case Abilities.Aircraft:
-                    return 6;
-                case Abilities.AircraftCarrier:
-                    return 5;
-                }
+                foreach (Ability a in u.Abilities)
+                    switch (a)
+                    {
+                        case Ability.Aircraft:
+                            return 6;
+                        case Ability.AircraftCarrier:
+                            return 5;
+                    }
                 switch (u.Type)
                 {
-                case UnitType.Air:
-                    return 4;
-                case UnitType.Ground:
-                    return 3;
-                case UnitType.Amphibious:
-                    return 2;
-                case UnitType.Water:
-                    return 1;
+                    case UnitType.Air:
+                        return 4;
+                    case UnitType.Ground:
+                        return 3;
+                    case UnitType.Amphibious:
+                        return 2;
+                    case UnitType.Water:
+                        return 1;
                 }
             }
 
             //give ample padding to make sure wizards are always above portals, etc.
             Relic r;
-            if (( r = piece as Relic ) != null)
+            if ((r = piece as Relic) != null)
             {
                 return 100000000 + r.CanBuildCount;
             }
             City c;
-            if (( c = piece as City ) != null)
+            if ((c = piece as City) != null)
             {
                 return 400000000 + c.CanBuildCount;
             }
             Portal p;
-            if (( p = piece as Portal ) != null)
+            if ((p = piece as Portal) != null)
             {
                 return 700000000 + p.Cost;
             }
             Wizard w;
-            if (( w = piece as Wizard ) != null)
+            if ((w = piece as Wizard) != null)
             {
                 return 1000000000 + w.CanBuildCount;
             }
@@ -805,32 +802,37 @@ namespace CityWar
         public static Tile MovedToTile;
         public static int MoveModifier;
 
-        public bool CheckAircraft(int moveMod, Piece p, ref Dictionary<Tile, Tile> CanGetCarrier)
+        public bool CheckAircraft(int moveMod, int fuelMod, Piece p, ref Dictionary<Tile, Tile> CanGetCarrier)
         {
             //returning true means the aircraft will die
-            if (p.Ability == Abilities.Aircraft)
+            if (p.IsAir())
             {
+                int fuel = ((Unit)p).Fuel - fuelMod;
+                if (fuel < 0)
+                    fuel = 0;
                 int move = p.Movement - moveMod;
                 if (move < 0)
                     move = 0;
-                return ( CheckAircraft(move, p.Owner, ref CanGetCarrier) );
+                return (CheckAircraft(fuel, move, p.MaxMove, p.Owner, ref CanGetCarrier));
             }
             return false;
         }
 
-        private bool CheckAircraft(int move, Player owner, ref Dictionary<Tile, Tile> CanGetCarrier)
+        private bool CheckAircraft(int fuel, int move, int maxMove, Player owner, ref Dictionary<Tile, Tile> CanGetCarrier)
         {
             //collect all tiles that contain or can be reached by friendly carriers this turn
             if (CanGetCarrier == null)
             {
+                int turns = (fuel - move + maxMove) / (maxMove + 1);
                 CanGetCarrier = new Dictionary<Tile, Tile>();
                 foreach (Piece piece in owner.GetPieces())
-                    if (piece.Ability == Abilities.AircraftCarrier)
+                    if (piece.IsAbility(Ability.AircraftCarrier))
                     {
+                        int carrierMove = piece.Movement + piece.MaxMove * turns;
                         if (piece == MovedCarrier)
-                            AddTilesInRange(CanGetCarrier, piece, MovedToTile, piece.Movement - MoveModifier);
+                            AddTilesInRange(CanGetCarrier, piece, MovedToTile, carrierMove - MoveModifier);
                         else
-                            AddTilesInRange(CanGetCarrier, piece, piece.Tile, piece.Movement);
+                            AddTilesInRange(CanGetCarrier, piece, piece.Tile, carrierMove);
                     }
             }
 
@@ -839,7 +841,11 @@ namespace CityWar
 
             //find the distance to the nearest tile where the aircraft can land
             //check if a friendly carrier can move into the tile this turn
-            return ( move < FindDistance(tile => CanGetCarrierCopy.ContainsKey(tile), move) );
+            int distance = FindDistance(tile => CanGetCarrierCopy.ContainsKey(tile), fuel);
+            if (distance > move)
+                fuel--;
+            fuel -= (distance - move - 1) / maxMove;
+            return (fuel < distance);
         }
         private void AddTilesInRange(Dictionary<Tile, Tile> CanGetCarrier, Piece piece, Tile tile, int move)
         {
@@ -850,15 +856,15 @@ namespace CityWar
                     {
                         int newMove = move;
                         Player occupying;
-                        UnitType carrierType = ( piece is Unit ? ( (Unit)piece ).Type : UnitType.Immobile );
+                        UnitType carrierType = (piece is Unit ? ((Unit)piece).Type : UnitType.Immobile);
                         Terrain terrain = t.Terrain;
                         //check if the carrier can move onto the tile
-                        if (!( tile.OccupiedByUnit(out occupying) && occupying != piece.Owner ) &&
-                            ( carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
-                            ( ( carrierType == UnitType.Water || carrierType == UnitType.Amphibious ) && terrain == Terrain.Water ) ||
-                            ( ( carrierType == UnitType.Ground || carrierType == UnitType.Amphibious ) && ( terrain == Terrain.Plains ||
-                            ( --newMove > -1 && ( terrain == Terrain.Forest ||
-                            ( --newMove > -1 && terrain == Terrain.Mountain ) ) ) ) ) ))
+                        if (!(tile.OccupiedByUnit(out occupying) && occupying != piece.Owner) &&
+                            (carrierType == UnitType.Air || carrierType == UnitType.Immobile ||
+                            ((carrierType == UnitType.Water || carrierType == UnitType.Amphibious) && terrain == Terrain.Water) ||
+                            ((carrierType == UnitType.Ground || carrierType == UnitType.Amphibious) && (terrain == Terrain.Plains ||
+                            (--newMove > -1 && (terrain == Terrain.Forest ||
+                            (--newMove > -1 && terrain == Terrain.Mountain)))))))
                             //if so, add the tile and check its neighbors
                             AddTilesInRange(CanGetCarrier, piece, t, newMove);
                     }
