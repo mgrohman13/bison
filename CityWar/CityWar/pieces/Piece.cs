@@ -228,5 +228,6 @@ namespace CityWar
         AircraftCarrier = 0x1,
         Aircraft = 0x2,
         Shield = 0x4,
+        Regen = 0x8,
     }
 }

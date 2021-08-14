@@ -11,17 +11,15 @@ gameplay
 		come up with way to be different from galwar wormholes
 
 balance
-	GetAverageDamage calculate actual damage for each unit 
-	unit abilities
+	unit abilities 
+		weaken
 		wraith/spirit (shield?)
-		slow heal
+		slow heal ("degenerate"? wraith/spirit+?)
 		attack/unit types
 		other
-			regen
 			trample
 			poison
 			decay
-			blind
 			splash
 			psi
 			drain

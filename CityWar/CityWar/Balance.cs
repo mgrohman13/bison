@@ -41,6 +41,8 @@ namespace CityWar
             if (air)
                 // aircraft can only heal at a carrier
                 regen /= 1.69;
+            if (abilities.Contains(Ability.Regen))
+                regen *= 1 + 1.3;
 
             double typeVal, addArmor, movMult;
             GetValues(type, out typeVal, out addArmor, out movMult);
@@ -280,7 +282,7 @@ namespace CityWar
             }
 
             return cost;
-        } 
+        }
 
         private static double GetWeaponDiv(UnitTypes unitTypes)
         {

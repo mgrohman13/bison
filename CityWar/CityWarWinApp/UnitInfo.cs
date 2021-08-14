@@ -86,20 +86,25 @@ namespace CityWarWinApp
                 }
             }
 
-            this.Height = unit.Abilities.ToInt() == 0 ? 350 : 450;
+            this.Height = piece.Abilities.ToInt() == 0 ? 170 : 250;
             this.txtSpecial.Clear();
-            foreach (Ability a in unit.Abilities)
+            foreach (Ability a in piece.Abilities)
             {
+                if (this.txtSpecial.Text.Length > 0)
+                    this.txtSpecial.Text += "\r\n";
                 switch (a)
                 {
                     case Ability.Aircraft:
-                        this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1}\n", unit.Fuel, unit.MaxFuel);
+                        this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1}", unit.Fuel, unit.MaxFuel);
                         break;
                     case Ability.AircraftCarrier:
-                        this.txtSpecial.Text += "Aircraft Carrier\n";
+                        this.txtSpecial.Text += "Aircraft Carrier";
                         break;
                     case Ability.Shield:
                         this.txtSpecial.Text += string.Format("Shield - {0}%", unit.Shield);
+                        break;
+                    case Ability.Regen:
+                        this.txtSpecial.Text += "Regenerates";
                         break;
                 }
             }

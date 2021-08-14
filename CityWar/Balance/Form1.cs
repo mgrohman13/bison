@@ -63,16 +63,19 @@ namespace UnitBalance
             this.txtNumber1.Text = input[++i];
             this.txtDivide1.Text = input[++i];
             this.txtLength1.Text = input[++i];
+            ++i; //attack special
 
             this.txtType2.Text = input[++i];
             this.txtNumber2.Text = input[++i];
             this.txtDivide2.Text = input[++i];
             this.txtLength2.Text = input[++i];
+            ++i; //attack special
 
             this.txtType3.Text = input[++i];
             this.txtNumber3.Text = input[++i];
             this.txtDivide3.Text = input[++i];
             this.txtLength3.Text = input[++i];
+            ++i; //attack special
 
             abilities = new EnumFlags<Ability>();
             int.TryParse(input[++i], out fuel);
@@ -85,11 +88,12 @@ namespace UnitBalance
             int.TryParse(input[++i].Replace("%", ""), out shield);
             if (shield > 0)
                 abilities.Add(Ability.Shield);
+            if (input[++i].Length > 0)
+                abilities.Add(Ability.Regen);
 
             a1Name = input[++i];
             a2Name = input[++i];
             a3Name = input[++i];
-
 
             fireEvent = true;
 
@@ -344,17 +348,19 @@ namespace UnitBalance
                     output.Append(attackRow.Damage + "\t");
                     output.Append(attackRow.Divide_By + "\t");
                     output.Append(attackRow.Length + "\t");
+                    output.Append("'-\t"); //attack special
                     attacknames[idx] = attackRow.Name;
                     Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
                     attackValues[idx] = Balance.Weapon(unitTypes, row.Race, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, abilities.Contains(Ability.Aircraft), fuel, row.IsThree, idx + 1);
                     ++idx;
                 }
                 while (idx++ < 3)
-                    output.Append("'-\t'-\t'-\t'-\t");
+                    output.Append("'-\t'-\t'-\t'-\t'-\t");
 
                 output.Append((abilities.Contains(Ability.Aircraft) ? fuel.ToString() : "' ") + "\t");
                 output.Append((abilities.Contains(Ability.AircraftCarrier) ? "X" : "' ") + "\t");
                 output.Append((abilities.Contains(Ability.Shield) ? (shield / 100.0).ToString() : "' ") + "\t");
+                output.Append((abilities.Contains(Ability.Regen) ? "X" : "' ") + "\t");
                 output.Append(attacknames[0] + "\t");
                 output.Append(attacknames[1] + "\t");
                 output.Append(attacknames[2] + "\t");

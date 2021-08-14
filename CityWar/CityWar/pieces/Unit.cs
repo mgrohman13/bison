@@ -310,22 +310,34 @@ namespace CityWar
                 }
                 else
                 {
-                    hits += regen;
-                    if (hits > MaxHits)
-                    {
-                        pctWork = (hits - MaxHits) / (double)regen;
-                        owner.AddWork(hits - MaxHits);
-                        hits = MaxHits;
-                    }
-                    if (IsThree)
-                        tile.hasCenterPiece = false;
-                    tile.AdjustPiece(this);
+                    Heal(regen, ref pctWork);
                 }
 
                 return pctWork;
             }
             return -1;
         }
+
+        private void Heal(int regen)
+        {
+            owner.AddWork((MaxRegen - regen) * .5);
+            double pctWork = 0;
+            Heal(regen, ref pctWork);
+        }
+        private void Heal(int regen, ref double pctWork)
+        {
+            hits += regen;
+            if (hits > MaxHits)
+            {
+                pctWork = (hits - MaxHits) / (double)regen;
+                owner.AddWork(hits - MaxHits);
+                hits = MaxHits;
+            }
+            if (IsThree)
+                tile.hasCenterPiece = false;
+            tile.AdjustPiece(this);
+        }
+
         internal override void UndoHeal(double pctWork)
         {
             ++movement;
@@ -396,6 +408,8 @@ namespace CityWar
 
                     while (movement > 0)
                         Heal();
+                    if (IsAbility(Ability.Regen))
+                        Heal(this.Regen);
 
                     if (this.recoverRegen)
                         this.regenPct = Math.Pow(regenPct, RegenRecoverPower);
@@ -647,19 +661,10 @@ namespace CityWar
             foreach (UnitSchema.SpecialRow s in unit.GetSpecialRows())
             {
                 if (s.Special == "Aircraft")
-                {
-                    abilities.Add(Ability.Aircraft);
                     fuel = s.Value;
-                }
-                else if (s.Special == "AircraftCarrier")
-                {
-                    abilities.Add(Ability.AircraftCarrier);
-                }
                 else if (s.Special == "Shield")
-                {
-                    abilities.Add(Ability.Shield);
                     shield = s.Value;
-                }
+                abilities.Add((Ability)Enum.Parse(typeof(Ability), s.Special));
             }
             return abilities;
         }
