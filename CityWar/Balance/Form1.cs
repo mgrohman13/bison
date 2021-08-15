@@ -161,7 +161,7 @@ namespace UnitBalance
                 //calculated values
                 this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
                 UnitType unitType = UnitTypes.GetType(this.txtType.Text);
-                this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor, shield);
+                this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor, shield, regen, abilities, air, move);
                 this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
                 double weaponMove = Balance.GetMove(unitType, move, air, fuel);
                 bool isThree = this.txtName.Text.Contains("*");
@@ -212,11 +212,14 @@ namespace UnitBalance
             }
         }
 
-        private static double HitWorth(string race, UnitType unitType, int hits, int armor, int shield)
+        private static double HitWorth(string race, UnitType type, int health, double armor, int shield, double regeneration, EnumFlags<Ability> abilities, bool air, double move)
         {
-            double hitArmor = Balance.GetArmor(unitType, armor);
-            double hitDiv = Balance.HitWorth(1, Attack.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), armor, 0, int.MaxValue));
-            return Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor, shield) / hitDiv;
+            regeneration = Balance.ModRegen(abilities, air, move, regeneration);
+            armor = Balance.GetArmor(type, armor);
+            //double hitDiv = Balance.HitWorth(1, Attack.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), unitTypes.GetAverageArmor(), 0, int.MaxValue));
+            //double  Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor, shield) / hitDiv;
+            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield);
+            return Balance.HitWorth(unitTypes, Balance.HitWorth(health, avgDmg), regeneration, avgDmg);
         }
 
         private void ShowWeaponValue(TextBox txtValue, TextBox txtType, UnitType type, Attack[] Attacks, double damage, double divide, double length, double move, bool air, bool isThree, int num)
@@ -366,7 +369,7 @@ namespace UnitBalance
                 output.Append(attacknames[2] + "\t");
                 double gc;
                 Balance.GetCost(unitTypes, row.Race, type, row.IsThree, abilities, shield, fuel, row.Hits, row.Armor, row.Regen, row.Move, Attacks, out gc);
-                double hw = HitWorth(row.Race, type, row.Hits, row.Armor, shield);
+                double hw = HitWorth(row.Race, type, row.Hits, row.Armor, shield, row.Regen, abilities, abilities.Contains(Ability.Aircraft), row.Move);
                 output.Append((double.IsNaN(gc) ? "'-" : gc.ToString()) + "\t");
                 output.Append(hw + "\t");
                 output.Append(attackValues[0] + "\t");

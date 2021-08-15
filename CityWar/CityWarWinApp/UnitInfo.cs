@@ -86,28 +86,31 @@ namespace CityWarWinApp
                 }
             }
 
-            this.Height = piece.Abilities.ToInt() == 0 ? 170 : 250;
+            this.Height = piece.Abilities == Ability.None ? 170 : 250;
             this.txtSpecial.Clear();
             foreach (Ability a in piece.Abilities)
-            {
-                if (this.txtSpecial.Text.Length > 0)
-                    this.txtSpecial.Text += "\r\n";
-                switch (a)
+                if (a != Ability.None)
                 {
-                    case Ability.Aircraft:
-                        this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1}", unit.Fuel, unit.MaxFuel);
-                        break;
-                    case Ability.AircraftCarrier:
-                        this.txtSpecial.Text += "Aircraft Carrier";
-                        break;
-                    case Ability.Shield:
-                        this.txtSpecial.Text += string.Format("Shield - {0}%", unit.Shield);
-                        break;
-                    case Ability.Regen:
-                        this.txtSpecial.Text += "Regenerates";
-                        break;
+                    if (this.txtSpecial.Text.Length > 0)
+                        this.txtSpecial.Text += "\r\n";
+                    switch (a)
+                    {
+                        case Ability.Aircraft:
+                            this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1}", unit.Fuel, unit.MaxFuel);
+                            break;
+                        case Ability.AircraftCarrier:
+                            this.txtSpecial.Text += "Aircraft Carrier";
+                            break;
+                        case Ability.Shield:
+                            this.txtSpecial.Text += string.Format("Shield - {0}%", unit.Shield);
+                            break;
+                        case Ability.Regen:
+                            this.txtSpecial.Text += "Regenerates";
+                            break;
+                        default:
+                            throw new Exception();
+                    }
                 }
-            }
         }
 
         private static string GetModString(string actual, string orig)
