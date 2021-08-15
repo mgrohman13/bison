@@ -28,7 +28,7 @@ namespace CityWar
             double regen = baseRegen;
             double armor = baseArmor;
 
-            regen = ModRegen(abilities, air, move, regen);
+            regen = ModRegen(abilities, move, regen);
 
             double typeVal, addArmor, movMult;
             GetValues(type, out typeVal, out addArmor, out movMult);
@@ -56,21 +56,21 @@ namespace CityWar
                 }
 
             //do the actual cost calculation
-            return CaulculateCost(unitTypes, race, type, costMult, weaponDiv, typeVal, maxHits, armor, regen, move,
+            return CaulculateCost(unitTypes, race, type, costMult, weaponDiv, typeVal, maxHits, armor, regen, move, baseRegen, maxMove,
                 targets[0], length[0], damage[0], divide[0],
                 targets[1], length[1], damage[1], divide[1],
                 targets[2], length[2], damage[2], divide[2],
-                isThree, abilities.Contains(Ability.AircraftCarrier), air, fuel, shield, type == UnitType.Immobile, out gc);
+                isThree, abilities, fuel, shield, type == UnitType.Immobile, out gc);
         }
 
-        public static double ModRegen(EnumFlags<Ability> abilities, bool air, double move, double regen)
+        public static double ModRegen(EnumFlags<Ability> abilities, double move, double regen)
         {
             if (move > 0)
                 regen *= move;
             else
                 // 3 =div for immobile regen since it costs resources
                 regen /= 3;
-            if (air)
+            if (abilities.Contains(Ability.Aircraft))
                 // aircraft can only heal at a carrier
                 regen /= 1.69;
             if (abilities.Contains(Ability.Regen))
@@ -159,12 +159,15 @@ namespace CityWar
             return 1 + 5.2 * val;
         }
 
-        private static double CaulculateCost(UnitTypes unitTypes, string race, UnitType type, double costMult, double weaponDiv, double unitType, double health, double armor, double regeneration, double movement,
+        private static double CaulculateCost(UnitTypes unitTypes, string race, UnitType type, double costMult, double weaponDiv, double unitType, double health, double armor, double regeneration, double movement, int baseRegen, int maxMove,
             EnumFlags<TargetType> a1Type, double a1Length, double a1Damage, double a1Divide,
             EnumFlags<TargetType> a2Type, double a2Length, double a2Damage, double a2Divide,
             EnumFlags<TargetType> a3Type, double a3Length, double a3Damage, double a3Divide,
-            bool isThree, bool carry, bool air, int fuel, int shield, bool immobile, out double gc)
+            bool isThree, EnumFlags<Ability> abilities, int fuel, int shield, bool immobile, out double gc)
         {
+            bool carry = abilities.Contains(Ability.AircraftCarrier);
+            bool air = abilities.Contains(Ability.Aircraft);
+
             //hits
             double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield);
             double hitWorth = HitWorth(health, avgDmg);
@@ -202,8 +205,9 @@ namespace CityWar
 
             if (!immobile)
             {
-                // 10 =turns for a unit's regen to pay for itself
-                result += 10 * regeneration / Player.WorkMult;
+                double mult = abilities.Contains(Ability.Regen) ? 2 : 1;
+                // 7.8 =turns for a unit's regen to pay for itself
+                result += 7.8 * baseRegen * maxMove * mult / Player.WorkMult;
             }
 
             return result;
@@ -213,7 +217,7 @@ namespace CityWar
         {
             double fullAvgDmg = unitTypes.GetAverageDamage();
             double mult = Attack.GetAverageDamage(fullAvgDmg, unitTypes.GetAverageAP(), unitTypes.GetAverageArmor(), 0, int.MaxValue);
-            return hitWorth * (3 * fullAvgDmg + Regen(unitTypes, regeneration, avgDmg)) / (3 * fullAvgDmg) * mult;
+            return hitWorth * (3 * fullAvgDmg + Regen(unitTypes, regeneration, avgDmg)) / (3 * fullAvgDmg + unitTypes.GetAverageRegen()) * mult;
         }
 
         public static double HitWorth(double health, double avgDmg)
@@ -261,8 +265,8 @@ namespace CityWar
 
         public static double Regen(UnitTypes unitTypes, double regeneration, double avgDmg)
         {
-            // 5.2 =div for surviving attacks versus having attacks
-            return regeneration / avgDmg * unitTypes.GetAverageDamage() / 5.2;
+            // 3.9 =div for surviving attacks versus having attacks
+            return regeneration / avgDmg * unitTypes.GetAverageDamage() / 3.9;
         }
 
         private static double Final(UnitTypes unitTypes, double unit, double move, double type)

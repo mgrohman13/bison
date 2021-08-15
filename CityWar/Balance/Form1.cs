@@ -214,7 +214,7 @@ namespace UnitBalance
 
         private static double HitWorth(string race, UnitType type, int health, double armor, int shield, double regeneration, EnumFlags<Ability> abilities, bool air, double move)
         {
-            regeneration = Balance.ModRegen(abilities, air, move, regeneration);
+            regeneration = Balance.ModRegen(abilities, move, regeneration);
             armor = Balance.GetArmor(type, armor);
             //double hitDiv = Balance.HitWorth(1, Attack.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), unitTypes.GetAverageArmor(), 0, int.MaxValue));
             //double  Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor, shield) / hitDiv;

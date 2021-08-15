@@ -134,6 +134,17 @@ namespace CityWar
             return tot / count;
         }
 
+        internal double GetAverageRegen()
+        {
+            double regen = 0, count = 0;
+            CheckUnits(null, null, (weight, unit) =>
+            {
+                regen += weight * Balance.ModRegen(Unit.GetAbilities(unit, out _, out _), unit.Move, unit.Regen);
+                count += weight;
+            });
+            return regen / count;
+        }
+
         public double GetAverageAP()
         {
             return GetAverageAP(null, null);

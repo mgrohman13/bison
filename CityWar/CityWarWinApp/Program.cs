@@ -51,14 +51,14 @@ namespace CityWarWinApp
 
             Game.Random.ToString();
 
-            //Player p1 = new Player("Dwarf", System.Drawing.Color.FloralWhite, "hi");
-            //Player p2 = new Player("Fae", System.Drawing.Color.FloralWhite, "hi");
-            //Player p3 = new Player("Human", System.Drawing.Color.FloralWhite, "hi");
-            //Game g = new Game(new[] { p1, p2, p3 }, 13);
+            Player p1 = new Player("Dwarf", System.Drawing.Color.FloralWhite, "hi");
+            Player p2 = new Player("Fae", System.Drawing.Color.FloralWhite, "hi");
+            Player p3 = new Player("Human", System.Drawing.Color.FloralWhite, "hi");
+            Game g = new Game(new[] { p1, p2, p3 }, 13);
 
-            //PrintCosts(Player.SplitPortalCost(g, "Dwarf"));
-            //PrintCosts(Player.SplitPortalCost(g, "Fae"));
-            //PrintCosts(Player.SplitPortalCost(g, "Human"));
+            PrintCosts(Player.SplitPortalCost(g, "Dwarf"));
+            PrintCosts(Player.SplitPortalCost(g, "Fae"));
+            PrintCosts(Player.SplitPortalCost(g, "Human"));
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
