@@ -1284,8 +1284,8 @@ namespace CityWarWinApp
                 if (!CheckAircraft(p, p.Movement, 0))
                     return;
 
-            this.chbGamble.Checked = false;
-            this.chbGroup.Checked = false;
+            this.chbGamble.Checked = true;
+            this.chbGroup.Checked = true;
 
             saved = false;
 

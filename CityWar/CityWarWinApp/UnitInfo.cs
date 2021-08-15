@@ -86,7 +86,7 @@ namespace CityWarWinApp
                 }
             }
 
-            this.Height = piece.Abilities == Ability.None ? 170 : 250;
+            this.Height = piece.Abilities == Ability.None ? 180 : 250;
             this.txtSpecial.Clear();
             foreach (Ability a in piece.Abilities)
                 if (a != Ability.None)
