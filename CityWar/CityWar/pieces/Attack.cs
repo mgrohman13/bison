@@ -149,13 +149,11 @@ namespace CityWar
 
         public static double GetAverageDamage(double damage, double divide, double targetArmor, int shield, int targetHits)
         {
-            double kill;
-            return GetAverageDamage(damage, divide, targetArmor, shield, targetHits, out kill);
+            return GetAverageDamage(damage, divide, targetArmor, shield, targetHits, out _);
         }
         public static double GetAverageDamage(double damage, double divide, double targetArmor, int shield, int targetHits, out double kill)
         {
-            double relic;
-            return DamageThrows(damage, divide, targetArmor, shield, targetHits, out kill, out relic, false);
+            return DamageThrows(damage, divide, targetArmor, shield, targetHits, out kill, out _, false);
         }
 
         public string GetTargetString()

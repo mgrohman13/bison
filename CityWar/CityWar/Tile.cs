@@ -238,8 +238,7 @@ namespace CityWar
 
         public bool Occupied()
         {
-            Player p;
-            return Occupied(false, out p);
+            return Occupied(false, out _);
         }
         public bool Occupied(out Player occupying)
         {
@@ -247,8 +246,7 @@ namespace CityWar
         }
         public bool OccupiedByUnit()
         {
-            Player p;
-            return Occupied(true, out p);
+            return Occupied(true, out _);
         }
         public bool OccupiedByUnit(out Player occupying)
         {

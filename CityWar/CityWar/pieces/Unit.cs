@@ -302,16 +302,11 @@ namespace CityWar
                 int regen = Regen;
                 owner.AddWork((MaxRegen - regen) * .5);
 
-                double pctWork = 0;
+                double pctWork = 1;
                 if (IsAir() && !tile.HasCarrier())
-                {
                     owner.AddWork(regen);
-                    pctWork = 1;
-                }
                 else
-                {
-                    Heal(regen, ref pctWork);
-                }
+                    Heal(regen, out pctWork);
 
                 return pctWork;
             }
@@ -320,12 +315,12 @@ namespace CityWar
 
         private void Heal(int regen)
         {
-            owner.AddWork((MaxRegen - regen) * .5);
-            double pctWork = 0;
-            Heal(regen, ref pctWork);
+            owner.AddWork((MaxRegen - regen) * .5 * this.MaxMove);
+            Heal(regen * this.MaxMove, out _);
         }
-        private void Heal(int regen, ref double pctWork)
+        private void Heal(int regen, out double pctWork)
         {
+            pctWork = 0;
             hits += regen;
             if (hits > MaxHits)
             {
@@ -412,9 +407,15 @@ namespace CityWar
                         Heal(this.Regen);
 
                     if (this.recoverRegen)
+                    {
                         this.regenPct = Math.Pow(regenPct, RegenRecoverPower);
+                    }
                     else
+                    {
+                        if (IsAbility(Ability.Regen))
+                            this.regenPct = Math.Pow(regenPct, .91);
                         this.recoverRegen = true;
+                    }
 
                     movement = MaxMove;
 
@@ -535,7 +536,7 @@ namespace CityWar
                 }
 
                 return Balance.GetCost(owner.Game.UnitTypes, Race, Type, IsThree, Abilities, shield, maxFuel,
-                        MaxHits, BaseArmor, MaxRegen, MaxMove, attacks) / (double)(BaseTotalCost);
+                        MaxHits, BaseArmor, MaxRegen, MaxMove, attacks, out _) / (double)(BaseTotalCost);
             }
         }
 

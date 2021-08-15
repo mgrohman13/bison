@@ -177,31 +177,31 @@ namespace UnitBalance
                 //check that the rounding is within an acceptable percent error
                 double invPctErr = ActCost / Math.Abs(cost - ActCost);
                 this.txtPctError.Text = invPctErr.ToString("0");
-                if (invPctErr > Units.minError || units.rebalanceAll)
-                {
-                    double pplPercent = double.Parse(this.txtPplPercent.Text);
-                    int ppl = (int)Math.Round(pplPercent / 10 * ActCost);
-                    int other = (int)Math.Round((10 - pplPercent) / 10 * ActCost);
+                //if (invPctErr > Units.minError || units.rebalanceAll)
+                //{
+                double pplPercent = double.Parse(this.txtPplPercent.Text);
+                int ppl = (int)Math.Round(pplPercent / 10 * ActCost);
+                int other = (int)Math.Round((10 - pplPercent) / 10 * ActCost);
 
-                    while (ppl + other > ActCost)
-                        --other;
-                    while (ppl + other < ActCost)
-                        ++other;
+                while (ppl + other > ActCost)
+                    --other;
+                while (ppl + other < ActCost)
+                    ++other;
 
-                    this.txtOutput.Text = getOutput(ppl, other);
-                    this.txtCost.Text = other.ToString();
-                    this.txtPpl.Text = ppl.ToString();
+                this.txtOutput.Text = getOutput(ppl, other);
+                this.txtCost.Text = other.ToString();
+                this.txtPpl.Text = ppl.ToString();
 
-                    this.btnSave.Visible = true;
-                }
-                else
-                {
-                    this.txtCost.Text = cost.ToString("0.0");
-                    this.txtCost.Text = cost.ToString();
-                    this.btnSave.Visible = false;
+                this.btnSave.Visible = true;
+                //}
+                //else
+                //{
+                //    this.txtCost.Text = cost.ToString("0.0");
+                //    this.txtCost.Text = cost.ToString();
+                //    this.btnSave.Visible = false;
 
-                    this.txtOutput.Clear();
-                }
+                //    this.txtOutput.Clear();
+                //}
 
                 //if (units.rebalanceAll)
                 //    this.btnSave_Click(null, null);

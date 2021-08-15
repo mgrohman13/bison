@@ -106,8 +106,7 @@ namespace CityWar
 
                 Tile t = RandomStartTile(true);
 
-                bool unused;
-                new Wizard(this, t, out unused);
+                new Wizard(this, t, out _);
                 new Relic(this, t);
 
                 for (int i = -1; ++i < startUnits.Length;)
@@ -431,8 +430,8 @@ namespace CityWar
         internal void LostCapt(Capturable c, Player p)
         {
             //the capturing player gets stuck with some of the other players upkeep
-            int wizards, portals, cities, relics, units;
-            this.GetCounts(out wizards, out portals, out cities, out relics, out units);
+            int wizards, portals, cities, relics;
+            this.GetCounts(out wizards, out portals, out cities, out relics, out _);
             double transferAmt = this.upkeep / (wizards + portals + cities + relics) / 2.1;
             this.AddUpkeep(-transferAmt);
             p.AddUpkeep(transferAmt);

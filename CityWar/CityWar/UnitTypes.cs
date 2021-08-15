@@ -70,8 +70,8 @@ namespace CityWar
             double armor = 0, count = 0;
             CheckUnits(race, targets, (weight, unit) =>
             {
-                double typeVal, addArmor, movMult;
-                Balance.GetValues(GetType(unit.Type), out typeVal, out addArmor, out movMult);
+                double addArmor;
+                Balance.GetValues(GetType(unit.Type), out _, out addArmor, out _);
                 armor += (unit.Armor + addArmor) * weight;
                 count += weight;
             });
@@ -126,8 +126,8 @@ namespace CityWar
             double tot = 0, count = 0;
             CheckUnits(race, targets, (weight, unit) =>
             {
-                double typeVal, addArmor, movMult;
-                Balance.GetValues(GetType(unit.Type), out typeVal, out addArmor, out movMult);
+                double addArmor;
+                Balance.GetValues(GetType(unit.Type), out _, out addArmor, out _);
                 tot += weight * Attack.GetAverageDamage(damage, divide, unit.Armor + addArmor, 0, int.MaxValue);
                 count += weight;
             });

@@ -11,6 +11,7 @@ gameplay
 		come up with way to be different from galwar wormholes
 
 balance
+	hitworth output (+others?)
 	unit abilities 
 		weaken
 		wraith/spirit (shield?)
@@ -31,6 +32,7 @@ balance
 	transport units?
 	consider differentiating underwater/surface
 		adds enough value for the complication?
+		just add submerged ability?
 	better terrains
 		add new (e.g. hills, impassible)?
 		make forest more of an overlay

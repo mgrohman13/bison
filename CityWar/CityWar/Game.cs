@@ -74,9 +74,7 @@ namespace CityWar
             this.turn = 1;
             this.currentPlayer = -1;
 
-            UnitSchema us;
-            int numUnits;
-            this.freeUnits = InitRaces(out us, out numUnits);
+            this.freeUnits = InitRaces();
 
             //ensure the map is big enough for all the players
             const int HexesPerPlayer = 13;
@@ -156,11 +154,11 @@ namespace CityWar
             //~1/28 will be outside [-needed,needed]
             return Random.GaussianInt(needed / 2.1);
         }
-        private Dictionary<string, int> InitRaces(out UnitSchema us, out int numUnits)
+        private Dictionary<string, int> InitRaces()
         {
             //initialize units
-            us = UnitTypes.GetSchema();
-            numUnits = us.Unit.Rows.Count;
+            UnitSchema us = UnitTypes.GetSchema();
+            int numUnits = us.Unit.Rows.Count;
             Dictionary<string, List<string>> tempRaces = new Dictionary<string, List<string>>();
             var unitsHave = new Dictionary<string, int>(numUnits);
             for (int a = -1; ++a < numUnits;)
@@ -1120,8 +1118,8 @@ namespace CityWar
 
             foreach (Player player in this.players)
             {
-                int wizards, portals, cities, relics, units;
-                player.GetCounts(out wizards, out portals, out cities, out relics, out units);
+                int wizards, portals, cities, relics;
+                player.GetCounts(out wizards, out portals, out cities, out relics, out _);
 
                 counts[typeof(Relic)].Add(player, relics);
                 counts[typeof(City)].Add(player, cities);
@@ -1458,9 +1456,7 @@ namespace CityWar
 
         public void OnDeserialization(object sender)
         {
-            UnitSchema us;
-            int numUnits;
-            InitRaces(out us, out numUnits);
+            InitRaces();
         }
 
         #endregion

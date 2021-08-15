@@ -8,11 +8,6 @@ namespace CityWar
     {
         private const double AttackTargetsPower = .39;
 
-        public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, EnumFlags<Ability> abilities, int shield, int fuel, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks)
-        {
-            double gc;
-            return GetCost(unitTypes, race, type, isThree, abilities, shield, fuel, maxHits, baseArmor, baseRegen, maxMove, attacks, out gc);
-        }
         public static double GetCost(UnitTypes unitTypes, string race, UnitType type, bool isThree, EnumFlags<Ability> abilities, int shield, int fuel, int maxHits, int baseArmor, int baseRegen, int maxMove, Attack[] attacks, out double gc)
         {
             double costMult = unitTypes.GetCostMult();
@@ -79,15 +74,15 @@ namespace CityWar
 
         public static double GetArmor(UnitType type, double armor)
         {
-            double typeVal, addArmor, movMult;
-            GetValues(type, out typeVal, out addArmor, out movMult);
+            double addArmor;
+            GetValues(type, out _, out addArmor, out _);
             return ModArmor(armor, addArmor);
         }
 
         public static double GetMove(UnitType type, double move, bool air, int fuel)
         {
-            double typeVal, addArmor, movMult;
-            GetValues(type, out typeVal, out addArmor, out movMult);
+            double movMult;
+            GetValues(type, out _, out _, out movMult);
             return ModMove(move, air, fuel, movMult);
         }
 
