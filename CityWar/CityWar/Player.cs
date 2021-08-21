@@ -1360,7 +1360,7 @@ namespace CityWar
                 Player.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out m, out e);
                 double magicPct = m / (double)(m + e), elementPct = e / (double)(m + e);
                 double diff = portal.GetPortalValue() - portalAvg;
-                const double mult = .87;
+                const double mult = 1;
                 magic += Game.Random.Round(diff * mult * magicPct);
                 Spend(-Game.Random.Round(diff * mult * elementPct), portal.Type, 0);
             }
