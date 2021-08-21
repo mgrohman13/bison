@@ -233,6 +233,7 @@ namespace CityWar
 
                 if (players.Length > 0 && currentPlayer >= players.Length)
                 {
+                    currentPlayer = -1;
                     //a new round of turns
                     IncrementTurn();
                     currentPlayer = 0;
@@ -975,6 +976,8 @@ namespace CityWar
                         return winningPlayers[max];
                     return defeatedPlayers[max];
                 }
+                if (currentPlayer == -1)
+                    return null;
                 return players[currentPlayer];
             }
         }
@@ -1086,12 +1089,15 @@ namespace CityWar
             var capts = new[] { typeof(Relic), typeof(City), typeof(Portal), typeof(Wizard) };
 
             var counts = GetPlayerCounts(capts);
-            var win = GetWinner(counts);
+            Player win = GetWinner(counts);
+            bool removed = false;
 
             //these must happen in this order
-            var removed = RemoveUnits(dead, counts);
+            if (win == null)
+                removed = RemoveUnits(dead, counts);
             FreeUnit(removed);
-            RemoveCapturables(dead, capts, counts, win, removed);
+            if (win == null && !removed)
+                RemoveCapturables(dead, capts, counts);
             KillPlayers(dead);
             WinGame(win);
 
@@ -1243,15 +1249,14 @@ namespace CityWar
         }
 
         private void RemoveCapturables(List<Player> dead, IEnumerable<Type> capts,
-                Dictionary<Type, Dictionary<Player, int>> counts, Player win, bool removed)
+                Dictionary<Type, Dictionary<Player, int>> counts)
         {
-            if (win == null && !removed)
-                foreach (Type type in capts)
-                    if (counts[type].All(pair => pair.Value > 0))
-                    {
-                        RemoveCapturables(dead, type);
-                        break;
-                    }
+            foreach (Type type in capts)
+                if (counts[type].All(pair => pair.Value > 0))
+                {
+                    RemoveCapturables(dead, type);
+                    break;
+                }
         }
         private void RemoveCapturables(List<Player> dead, Type type)
         {
