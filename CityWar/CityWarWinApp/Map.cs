@@ -130,7 +130,7 @@ namespace CityWarWinApp
         static bool CheckAircraft(Piece piece, int moveMod, int fuelMod, Tile toTile)
         {
             //not enough movement, so this is immaterial
-            if (piece.Movement < 1)
+            if (piece.Movement < 1 || (piece.IsAir() && ((Unit)piece).Fuel < 1))
                 return true;
 
             return CheckAircraft(piece, moveMod, fuelMod, toTile, null);
@@ -265,7 +265,7 @@ namespace CityWarWinApp
                         this.btnBuildPiece.Visible = true;
 
                     //if the tile has a neutral city and any pieces have full move, show the capture city button
-                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && p.IsAir())
+                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && !p.IsAir())
                         this.btnCaptureCity.Visible = true;
 
                     //if any selected pieces are units, show the disband units button

@@ -300,7 +300,7 @@ namespace CityWar
                 for (int round = 0; round < 2; ++round)
                 {
                     double chance = oeChance * (round == 0 ? 1 - roundChance : roundChance);
-                    int totDamage = Math.Max(Math.Min(baseDmg + (round == 0 ? 0 : 1) + oe, targetHits), 0);
+                    int totDamage = Math.Max(baseDmg + (round == 0 ? 0 : 1) + oe, 0);
 
                     for (int shieldRound = 0; shieldRound < 2; ++shieldRound)
                     {
@@ -315,6 +315,8 @@ namespace CityWar
                             td = Math.Max(sbd + (shieldRound == 0 ? 0 : 1), 0);
                         }
 
+                        if (td > targetHits)
+                            td = targetHits;
                         if (td == targetHits)
                             killPct += c;
                         if (doRelic)

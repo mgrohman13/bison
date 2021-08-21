@@ -2,6 +2,8 @@ in between games
 	"security" of public fields
 
 gameplay
+	give free units to nocapt players?
+	winning player leave behind anything else?
 	exp?
 	portal income rounding comes out of inc
 		requires new variable in case of magic ratio change?
@@ -11,6 +13,18 @@ gameplay
 		come up with way to be different from galwar wormholes
 
 balance
+	elemental cost similiarities
+	human costs
+	aircraft
+		refuel mid turn?
+		regen undervalued
+		die with fuel
+		engagers fuel min >= 4
+		better balance in GetAirMoveDiv?
+	leviathan regen
+	behemoth range
+	fort not too useful vs e.g. engagers
+		cheaper?
 	unit abilities 
 		weaken
 		wraith/spirit (shield?)
@@ -41,9 +55,10 @@ balance
 		really will use? (carrier defend air??)
 
 interface
-	show race on end game
+	aircraft "range" calc, 2-way and 1-way
+	show turn order, wiz/cty start, and race on end game
 	show more map info - e.g. unit value?  capts?
-	show total income on summary
+	show resource/total income on summary
 	show retaliation upkeep cost
 	form can close without exiting app
 	show appeared wizard points, cities
@@ -74,3 +89,7 @@ interface
 	ensure player color differences
 	graphic artifacts
 	group, full cboxes reset on end turn
+	giant thumb
+	troll leg
+	hydra hp
+	

@@ -368,7 +368,11 @@ namespace CityWar
                 foreach (Attack attack in this.attacks)
                     attack.RandStats();
                 if (IsThree && isThreeAttacks == null)
-                    isThreeAttacks = new Attack[] { attacks[1], attacks[2] };
+                {
+                    isThreeAttacks = new Attack[] { attacks[1] ?? GetAttack(GetAttackRow()), attacks[2] ?? GetAttack(GetAttackRow()) };
+                    foreach (Attack attack in this.isThreeAttacks)
+                        attack.RandStats();
+                }
 
                 if (IsAir())
                 {

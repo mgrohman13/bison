@@ -85,7 +85,7 @@ namespace CityWarWinApp
                 int hits = int.Parse(this.txtHits.Text);
                 int arm = int.Parse(this.txtArmor.Text);
                 double kill;
-                double avg = CityWar.Attack.GetAverageDamage(dmg, ap, arm, hits, 0, out kill);
+                double avg = CityWar.Attack.GetAverageDamage(dmg, ap, arm, 0, hits, out kill);
                 kill *= 100;
                 this.txtAverage.Text = string.Format("{0}({1})", avg.ToString("0.00"), CityWar.Attack.GetMinDamage(dmg, ap, arm, 0));
                 this.txtKill.Text = kill.ToString("0") + "%";
