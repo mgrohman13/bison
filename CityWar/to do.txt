@@ -2,23 +2,23 @@ in between games
 	"security" of public fields
 
 gameplay
+	better startUnit overall cost balance across each race
 	give free units to nocapt players?
 	winning player leave behind anything else?
-	exp?
 	portal income rounding comes out of inc
 		requires new variable in case of magic ratio change?
 	allow gamble move to use in between 1-full move
 	group move from different hexes
 	teleporters
 		come up with way to be different from galwar wormholes
+	exp?
 
 balance
 	elemental cost similiarities
 	human costs
 	aircraft
 		refuel mid turn?
-		regen undervalued
-		die with fuel
+		regen undervalued?
 		engagers fuel min >= 4
 		better balance in GetAirMoveDiv?
 	leviathan regen
@@ -55,6 +55,7 @@ balance
 		really will use? (carrier defend air??)
 
 interface
+	log shield, relic
 	aircraft "range" calc, 2-way and 1-way
 	show turn order, wiz/cty start, and race on end game
 	show more map info - e.g. unit value?  capts?

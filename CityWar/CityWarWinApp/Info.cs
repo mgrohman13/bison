@@ -150,7 +150,7 @@ namespace CityWarWinApp
         private Label CreateLabel()
         {
             Label lbl = new Label();
-            lbl.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            lbl.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             lbl.BackColor = System.Drawing.Color.Black;
             lbl.ForeColor = System.Drawing.Color.Silver;
             lbl.TabIndex = 0;
@@ -162,7 +162,7 @@ namespace CityWarWinApp
         private ListBox CreateListBox()
         {
             ListBox lbx = new ListBox();
-            lbx.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ( (byte)( 0 ) ));
+            lbx.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             lbx.BackColor = System.Drawing.Color.Silver;
             lbx.ForeColor = System.Drawing.Color.Black;
             lbx.FormattingEnabled = true;
@@ -178,7 +178,7 @@ namespace CityWarWinApp
             foreach (ListBox lbxCurrent in have)
             {
                 lbxCurrent.Items.Clear();
-                foreach (string unit in ( (ListBox)lbxCurrent.Tag ).Items)
+                foreach (string unit in ((ListBox)lbxCurrent.Tag).Items)
                     lbxCurrent.Items.Add(Map.Game.GetUnitHas(unit));
             }
         }
@@ -204,9 +204,10 @@ namespace CityWarWinApp
                 this.lbxCities.Items.Add(cities);
                 this.lbxWizards.Items.Add(wizards);
                 this.lbxPortals.Items.Add(portals);
-                this.lbxResources.Items.Add(p.GetTotalResources().ToString("0"));
                 int airInc = 0, deathInc = 0, earthInc = 0, natureInc = 0, prodInc = 0, waterInc = 0, magicInc = 0, popInc = 0;
                 p.GenerateIncome(ref airInc, ref deathInc, ref earthInc, ref natureInc, ref prodInc, ref waterInc, ref magicInc, ref popInc);
+                int sum = airInc + deathInc + earthInc + natureInc + prodInc + waterInc + popInc;
+                this.lbxResources.Items.Add(p.GetTotalResources().ToString("0") + " +" + sum);
                 this.lbxMagic.Items.Add(p.Magic + " +" + magicInc);
             }
         }
@@ -216,7 +217,7 @@ namespace CityWarWinApp
             // check if the item exists
             if (e.Index >= 0 && e.Index < this.lbxOrder.Items.Count)
             {
-                Player p = ( (Player)this.lbxOrder.Items[e.Index] );
+                Player p = ((Player)this.lbxOrder.Items[e.Index]);
 
                 // Draw the background of the ListBox control for each item.
                 //e.DrawBackground();
@@ -227,7 +228,7 @@ namespace CityWarWinApp
 
                 // Draw the current item text based on the current Font and the custom brush settings.
                 float width = e.Graphics.MeasureString(p.Name, e.Font).Width;
-                e.Graphics.DrawString(p.Name, e.Font, new SolidBrush(p.InverseColor), e.Bounds.X + ( e.Bounds.Width - width ), e.Bounds.Y, StringFormat.GenericDefault);
+                e.Graphics.DrawString(p.Name, e.Font, new SolidBrush(p.InverseColor), e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y, StringFormat.GenericDefault);
 
                 // If the ListBox has focus, draw a focus rectangle around the selected item.
                 e.DrawFocusRectangle();
@@ -241,7 +242,7 @@ namespace CityWarWinApp
             // check if the item exists
             if (e.Index >= 0 && e.Index < this.lbxOrder.Items.Count)
             {
-                Player p = ( (Player)this.lbxOrder.Items[e.Index] );
+                Player p = ((Player)this.lbxOrder.Items[e.Index]);
 
                 // Draw the background of the ListBox control for each item.
                 //e.DrawBackground();
@@ -252,7 +253,7 @@ namespace CityWarWinApp
 
                 // Draw the current item text based on the current Font and the custom brush settings.
                 float width = e.Graphics.MeasureString(box.Items[e.Index].ToString(), e.Font).Width;
-                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, new SolidBrush(p.InverseColor), e.Bounds.X + ( e.Bounds.Width - width ), e.Bounds.Y, StringFormat.GenericDefault);
+                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, new SolidBrush(p.InverseColor), e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y, StringFormat.GenericDefault);
 
                 // If the ListBox has focus, draw a focus rectangle around the selected item.
                 e.DrawFocusRectangle();
@@ -283,7 +284,7 @@ namespace CityWarWinApp
 
                 // Draw the current item text based on the current Font and the custom brush settings.
                 float width = e.Graphics.MeasureString(box.Items[e.Index].ToString(), e.Font).Width;
-                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, new SolidBrush(fore), e.Bounds.X + ( e.Bounds.Width - width ), e.Bounds.Y, StringFormat.GenericDefault);
+                e.Graphics.DrawString(box.Items[e.Index].ToString(), e.Font, new SolidBrush(fore), e.Bounds.X + (e.Bounds.Width - width), e.Bounds.Y, StringFormat.GenericDefault);
 
                 // If the ListBox has focus, draw a focus rectangle around the selected item.
                 e.DrawFocusRectangle();

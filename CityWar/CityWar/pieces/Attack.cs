@@ -213,7 +213,7 @@ namespace CityWar
             else
             {
                 double upkeep = .39 * Player.GetUpkeep(owner) * (1 - overkill) / owner.Attacks.Length;
-                owner.Owner.AddUpkeep(upkeep, .169);
+                owner.Owner.AddUpkeep(upkeep, .21);
             }
 
             double relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, unit.Shield, hits) - damage) / RelicDivide / unit.MaxHits;

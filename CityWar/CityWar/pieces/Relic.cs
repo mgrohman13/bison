@@ -95,6 +95,7 @@ namespace CityWar
 
         internal override void ResetMove()
         {
+            base.ResetMove();
         }
 
         internal override double Heal()

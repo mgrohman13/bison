@@ -101,7 +101,7 @@ namespace CityWar
                 startUnits[a] = GetForRaces(unit);
             }
             double totalStartCost = newPlayers.Average(player => startUnits.Sum(
-                    dict => Unit.CreateTempUnit(this, dict[player.Race]).BaseTotalCost));
+                    dict => GetUnitNeeds(dict[player.Race])));
 
             foreach (string[] race in Races.Values)
                 foreach (string name in race)
@@ -150,7 +150,7 @@ namespace CityWar
 
         private int GetInitUnitsHave(string name)
         {
-            int needed = Unit.CreateTempUnit(this, name).BaseTotalCost;
+            int needed = GetUnitNeeds(name);
             //~1/28 will be outside [-needed,needed]
             return Random.GaussianInt(needed / 2.1);
         }
@@ -1109,8 +1109,6 @@ namespace CityWar
                 CreateCitySpot();
                 ChangeMoveOrder();
                 Player.SubtractCommonUpkeep(this.players);
-                foreach (Capturable c in this.players.SelectMany<Player, Piece>(p => p.GetPieces()).OfType<Capturable>())
-                    c.EarnedIncome = false;
             }
 
             ++turn;
@@ -1168,7 +1166,7 @@ namespace CityWar
                 string addUnit;
                 do
                     addUnit = Random.SelectValue(Races[race]);
-                while (freeUnits[addUnit] / 2.6f > Random.Gaussian(baseCost = Unit.CreateTempUnit(this, addUnit).BaseTotalCost));
+                while (freeUnits[addUnit] / 2.6f > Random.Gaussian(baseCost = GetUnitNeeds(addUnit)));
                 freeUnits[addUnit] += Random.GaussianOEInt(65, 1, .21);
                 if (freeUnits[addUnit] >= baseCost)
                     units.Add(race, addUnit);
@@ -1184,8 +1182,8 @@ namespace CityWar
                             units.Add(race, forRaces[race]);
                 }
                 foreach (string unit in units.Values)
-                    freeUnits[unit] -= Unit.CreateTempUnit(this, unit).BaseTotalCost;
-                double avg = players.Average(player => Unit.CreateTempUnit(this, units[player.Race]).BaseTotalCost);
+                    freeUnits[unit] -= GetUnitNeeds(unit);
+                double avg = players.Average(player => GetUnitNeeds(units[player.Race]));
                 foreach (Player player in players)
                     player.FreeUnit(units[player.Race], avg);
             }
@@ -1216,34 +1214,28 @@ namespace CityWar
                     if (isHigh)
                         target = ReverseTarget();
 
-                    IDictionary<string, int> dict = null;
-                    try
+                    IDictionary<string, int> dict = race.Value.ToDictionary(name => name, name =>
                     {
-                        dict = race.Value.ToDictionary(name => name, name =>
-                        {
-                            double baseCost = Unit.CreateTempUnit(this, name).BaseTotalCost;
+                        double baseCost = GetUnitNeeds(name);
 
-                            double chance = Math.Abs(target - baseCost) / target;
-                            chance = 1 / (.039 + chance);
-                            chance *= chance;
+                        double chance = Math.Abs(target - baseCost) / target;
+                        chance = 1 / (.039 + chance);
+                        chance *= chance;
 
-                            double pct = freeUnits[name] / baseCost;
-                            if (pct >= 1)
-                                pct *= 1.3 * pct;
-                            if (pct < 0)
-                                chance *= .052 / (1 - 6.5 * pct);
-                            else
-                                chance *= .26 + pct;
+                        double pct = freeUnits[name] / baseCost;
+                        if (pct >= 1)
+                            pct *= 1.3 * pct;
+                        if (pct <= 0)
+                            chance *= .052 / (1 - 6.5 * pct);
+                        else
+                            chance *= .26 + pct;
 
-                            return Random.Round(chance * short.MaxValue);
-                        });
+                        return Random.Round(chance * short.MaxValue);
+                    });
+                    if (dict.Values.Any(v => v > 0))
                         return Random.SelectValue(dict);
-                    }
-                    catch (Exception exception)
-                    {
-                        Console.WriteLine(exception);
+                    else
                         return Random.SelectValue(race.Value);
-                    }
                 }
             });
         }

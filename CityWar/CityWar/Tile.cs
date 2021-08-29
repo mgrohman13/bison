@@ -456,7 +456,7 @@ namespace CityWar
             if (cityTime == 0)
             {
                 //get the city
-                player.AddUpkeep(390, .052);
+                player.AddUpkeep(390, .039);
                 new City(player, this);
 
                 cityTime = -1;
@@ -560,6 +560,8 @@ namespace CityWar
         internal void Reset()
         {
             madeCity = false;
+            foreach (Capturable c in this.pieces.OfType<Capturable>())
+                c.EarnedIncome = false;
         }
 
         internal bool MatchesTerrain(CostType costType)

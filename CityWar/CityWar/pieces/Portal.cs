@@ -101,8 +101,10 @@ namespace CityWar
             string unit = Game.Random.SelectValue(units.Keys);
 
             double inc = GetTurnInc();
-            int needed = Unit.CreateTempUnit(owner.Game, unit).BaseTotalCost;
-            units[unit] += Game.Random.GaussianOEInt(inc, .26 / (1.3 + units.Count), .091 * (needed - units[unit]) / (needed + inc));
+            int needed = owner.Game.GetUnitNeeds(unit);
+
+            if (!EarnedIncome) 
+                units[unit] += Game.Random.GaussianOEInt(inc, .26 / (1.3 + units.Count), .091 * (needed - units[unit]) / (needed + inc)); 
 
             while (units[unit] >= needed)
             {
@@ -111,6 +113,8 @@ namespace CityWar
 
                 PayUpkeep(needed * UnitCostPct);
             }
+
+            base.ResetMove();
         }
         internal void PayUpkeep(double upkeep)
         {

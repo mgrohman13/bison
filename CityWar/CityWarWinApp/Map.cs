@@ -69,7 +69,9 @@ namespace CityWarWinApp
         float offX = 0, offY = 0, scrollSpeed;
 
         //zooming - set the starting zoom
-        float _zoom = Game.Random.GaussianCapped(startZoom, .091f, 30f), topX, topY, side, middle;
+        //float _zoom = Game.Random.GaussianCapped(startZoom, .091f, 30f);
+        float _zoom = 106;
+        float topX, topY, side, middle;
         Font tileInfoFont;
         public float Zoom
         {

@@ -81,7 +81,7 @@ namespace CityWar
                     Tile t = RandomStartTile(false);
 
                     new City(this, t);
-                    thisTotal += Unit.NewUnit(startUnits[a], t, this).BaseTotalCost;
+                    thisTotal += Unit.NewUnit(startUnits[a], t, this).RandedCost;
                 }
             }
             else
@@ -110,7 +110,7 @@ namespace CityWar
                 new Relic(this, t);
 
                 for (int i = -1; ++i < startUnits.Length;)
-                    thisTotal += Unit.NewUnit(startUnits[i], t, this).BaseTotalCost;
+                    thisTotal += Unit.NewUnit(startUnits[i], t, this).RandedCost;
             }
 
             BalanceForUnit(totalStartCost, thisTotal);
@@ -410,7 +410,7 @@ namespace CityWar
             if (avg > 0)
                 AddWork(avg * WorkMult);
             else
-                AddUpkeep(-avg * UpkeepMult, .039);
+                AddUpkeep(-avg * UpkeepMult, .052);
         }
 
         internal void Add(Piece p)
@@ -497,7 +497,7 @@ namespace CityWar
         internal Unit FreeUnit(string name, double avgCost)
         {
             Unit unit = FreeUnit(name, RandomCapturable());
-            BalanceForUnit(avgCost, unit.BaseTotalCost);
+            BalanceForUnit(avgCost, unit.RandedCost);
             return unit;
         }
         internal Unit FreeUnit(string unit, Capturable cur)
@@ -587,12 +587,10 @@ namespace CityWar
 
         internal void EndTurn()
         {
+            GenerateIncome(ref air, ref death, ref earth, ref nature, ref production, ref water, ref magic, ref population);
             foreach (Piece piece in pieces.ToArray())
                 piece.ResetMove();
-
-            GenerateIncome(ref air, ref death, ref earth, ref nature, ref production, ref water, ref magic, ref population);
             PayUpkeep();
-
             healRound = Game.Random.NextDouble();
         }
 
@@ -1235,7 +1233,7 @@ namespace CityWar
             prod += 5;
 
             foreach (Capturable capturable in capturables)
-                if (!capturable.EarnedIncome)
+                if (!capturable.EarnedIncome || capturable.Owner.game.CurrentPlayer != capturable.Owner)
                 {
                     int elemental = 0;
 
@@ -1243,12 +1241,12 @@ namespace CityWar
                     if (capturable is Wizard)
                     {
                         //cost 1300
-                        //roi 16.25-43.33
+                        //roi 43.33
                         elemental += 30;
                         //rest: +10 (roi 32.50)
-                        //find: +50
+                        //find: +50 (roi 16.25)
 
-                        //88.01% collection needed for average portal roi (52.67% for relic)
+                        //88% collection needed for average portal roi (53% for relic)
                     }
                     else if (capturable is City)
                     {
@@ -1270,8 +1268,8 @@ namespace CityWar
                     }
                     else if ((portal = capturable as Portal) != null)
                     {
-                        //avg cost 1000 (673-1461)
-                        //avg roi 17.57 (15.64-19.51)
+                        //avg cost 1000 
+                        //avg roi 17.5
                         int amt = portal.Income;
 
                         int type = 0, position = 0;

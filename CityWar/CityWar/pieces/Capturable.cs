@@ -130,7 +130,7 @@ namespace CityWar
             }
             internal set
             {
-                this.earnedIncome = false;
+                this.earnedIncome = value;
             }
         }
 

@@ -121,6 +121,8 @@ namespace CityWar
                 Heal();
 
             movement = MaxMove;
+
+            base.ResetMove();
         }
 
         #endregion //overrides

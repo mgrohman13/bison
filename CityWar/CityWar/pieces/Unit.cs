@@ -289,6 +289,8 @@ namespace CityWar
         {
             owner.AddDeath(InverseCost / Attack.DeathDivide);
             owner.AddWork(WorkRegen * movement);
+            if (IsAir())
+                owner.AddWork(Fuel * .39);
             Tile.Remove(this);
             Owner.Remove(this, false);
         }
@@ -378,7 +380,8 @@ namespace CityWar
                 {
                     if (tile.HasCarrier())
                     {
-                        owner.AddUpkeep((maxFuel - Fuel) / Player.WorkMult * Player.UpkeepMult * .39);
+                        double upkeep = (maxFuel - Fuel) / Player.WorkMult * Player.UpkeepMult * .39;
+                        owner.AddUpkeep(upkeep, .169);
                         Fuel = maxFuel;
                     }
                     else if (Fuel <= 0)
@@ -428,6 +431,8 @@ namespace CityWar
             }
 
             tile.hasCenterPiece = false;
+
+            //base.ResetMove();
         }
 
         internal Stack<double> Disband()
@@ -909,9 +914,15 @@ namespace CityWar
         private void BalanceForMove(int used, int needed, bool moved)
         {
             if (moved)
-                owner.AddUpkeep(1.3 * Player.GetUpkeep(this) * (needed - used) / (double)MaxMove, .13);
+            {
+                double balance = 1.3 * Player.GetUpkeep(this) * (needed - used) / (double)MaxMove;
+                owner.AddUpkeep(balance, .13);
+            }
             else
-                owner.AddWork(.65 * WorkRegen * used);
+            {
+                double balance = .65 * WorkRegen * used;
+                owner.AddWork(balance);
+            }
         }
         private bool ActualMove(Tile t)
         {
