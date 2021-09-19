@@ -247,15 +247,11 @@ namespace NCWMap
                         Tile tile = GetCoastal(new HashSet<Tile>(), start, !t1.Water, 3);
                         if (tile != null)
                         {
+                            t2 = tile;
                             n2 = tile.GetNeighbors().Where(n => n.Water != tile.Water).ToList();
-                            if (n2.Any())
-                            {
-                                t2 = tile;
-                                break;
-                            }
                         }
                     }
-                    if (t2 == null)
+                    if (t2 == null || !n2.Any())
                         throw new Exception();
 
                     foreach (Point point in Random.Iterate(n1.Count, n2.Count))

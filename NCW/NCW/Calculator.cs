@@ -117,5 +117,10 @@ namespace NCWMap
         {
             new NewMap().ShowDialog();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            new Balance().ShowDialog();
+        }
     }
 }
