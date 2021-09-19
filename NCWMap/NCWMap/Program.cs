@@ -242,8 +242,10 @@ namespace NCWMap
                 {
                     Tile t2 = null;
                     List<Tile> n2 = null;
-                    foreach (Tile tile in RandMap())
-                        if (t1.Water != tile.Water)
+                    foreach (Tile start in RandMap())
+                    {
+                        Tile tile = GetCoastal(new HashSet<Tile>(), start, !t1.Water, 3);
+                        if (tile != null)
                         {
                             n2 = tile.GetNeighbors().Where(n => n.Water != tile.Water).ToList();
                             if (n2.Any())
@@ -252,6 +254,7 @@ namespace NCWMap
                                 break;
                             }
                         }
+                    }
                     if (t2 == null)
                         throw new Exception();
 
@@ -265,6 +268,32 @@ namespace NCWMap
                 }
             }
         }
+
+        private static Tile GetCoastal(HashSet<Tile> visited, Tile tile, bool targetWater, int depth)
+        {
+            if (visited.Contains(tile))
+                return null;
+            visited.Add(tile);
+            if (--depth < 0)
+                return null;
+            foreach (Tile a in Random.Iterate(tile.GetNeighbors()))
+            {
+                if (a.Water != tile.Water)
+                {
+                    if (a.Water == targetWater)
+                        return a;
+                    return tile;
+                }
+            }
+            foreach (Tile a in Random.Iterate(tile.GetNeighbors()))
+            {
+                Tile b = GetCoastal(visited, a, targetWater, depth);
+                if (b != null)
+                    return b;
+            }
+            return null;
+        }
+
         private static bool TrySwap(Tile s1, Tile s2)
         {
             s1.Water = !s1.Water;
