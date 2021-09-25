@@ -24,50 +24,8 @@ namespace NCWMap
 
         private static string run()
         {
-            string[,,] output = new string[6, Bal.units.Count, Bal.units.Count];
-            Dictionary<string, Double> unitWorth = new Dictionary<string, Double>();
-
-            for (int b = 0; b < Bal.units.Count; b++)
-            {
-                Bal.Unit u1 = Bal.units[b];
-                double total = 1.0;
-                double count = 0.0;
-                for (int c = 0; c < Bal.units.Count; c++)
-                {
-                    Bal.Unit u2 = Bal.units[c];
-                    double[] unitOut = u1.getUnitRow(u2);
-                    for (int a = 0; a < 6; a++)
-                    {
-                        if (unitOut[a] != 0.0)
-                        {
-                            output[a, b, c] = unitOut[a].ToString();
-                        }
-                    }
-                    if (u1.name == u2.name)
-                    {
-                        continue;
-                    }
-
-                    int mult;
-                    if ((u1.type != u2.type) && ((u1.cantAttack(u2)) || (u2.cantAttack(u1))
-                            || ((u1.type != Bal.Type.A) && (u2.type != Bal.Type.A))))
-                    {
-                        mult = 2;
-                    }
-                    else
-                    {
-                        mult = 4;
-                    }
-                    total *= Math.Pow(unitOut[0], mult);
-                    count += mult;
-                    if (unitOut[1] > 0.0)
-                    {
-                        total *= unitOut[1];
-                        count += 1.0;
-                    }
-                }
-                unitWorth.Add(u1.name, Math.Pow(total, 1.0 / count));
-            }
+            Dictionary<string, double> unitWorth;
+            string[,,] output = getOutput(out unitWorth);
 
             double[,,] dmgs = new double[2, MAX, MAX];
             foreach (Object element in Bal.units)
@@ -156,6 +114,75 @@ namespace NCWMap
             }
 
             return o.ToString();
+        }
+
+        private static string[,,] getOutput(out Dictionary<string, Double> unitWorth)
+        {
+            string[,,] output = new string[6, Bal.units.Count, Bal.units.Count];
+            unitWorth = new Dictionary<string, Double>();
+
+            for (int b = 0; b < Bal.units.Count; b++)
+            {
+                Bal.Unit u1 = Bal.units[b];
+                double total = 1.0;
+                double count = 0.0;
+                for (int c = 0; c < Bal.units.Count; c++)
+                {
+                    Bal.Unit u2 = Bal.units[c];
+                    double[] unitOut = u1.getUnitRow(u2);
+                    for (int a = 0; a < 6; a++)
+                    {
+                        if (unitOut[a] != 0.0)
+                        {
+                            output[a, b, c] = unitOut[a].ToString();
+                        }
+                    }
+                    if (u1.name == u2.name)
+                    {
+                        continue;
+                    }
+
+                    const double singleDiv = 6, airDiv = 2, alDiv = 4, gwDiv = 4;
+                    double v1 = log(unitOut[0]);
+                    double v2 = log(unitOut[1]);
+                    double costMult = u2.cost / (double)u1.cost;
+                    double sdMult = (singleDiv - 1) / singleDiv;
+                    v1 = Math.Pow(v1, sdMult) * Math.Pow(log(unitOut[2]) * costMult, 1 / singleDiv);
+                    v2 = Math.Pow(v2, sdMult) * Math.Pow(log(unitOut[3]) * costMult, 1 / singleDiv);
+                    double value = v1;
+                    double mult = 1;
+                    if (u1.type != u2.type)
+                    {
+                        if (u1.type == Bal.Type.A || u2.type == Bal.Type.A)
+                        {
+                            if (u1.cantAttack(u2) || u2.cantAttack(u1))
+                            {
+                                value = Math.Pow(value, 1 / airDiv) * Math.Pow(v2, 1 / alDiv);
+                                mult = 1 / airDiv + 1 / alDiv;
+                            }
+                        }
+                        else
+                        {
+                            mult /= gwDiv;
+                        }
+                    }
+
+                    total *= Math.Pow(value, mult);
+                    count += mult / 2.0;
+                }
+                unitWorth.Add(u1.name, Math.Pow(total, 1.0 / count));
+            }
+
+            return output;
+        }
+
+        private static double log(double v)
+        {
+            bool flip = v < 1;
+            if (flip) v = 1 / v;
+            v = 1 + Math.Log(v);
+            if (flip) v = 1 / v;
+            return v;
         }
 
         private static void parseInput(string input)
@@ -300,15 +327,15 @@ namespace NCWMap
         private class Unit
         {
 
-            public string name;
-            public Bal.Type type;
+            public readonly string name;
+            public readonly Bal.Type type;
+            public readonly int cost;
+            public readonly int attack;
+            public readonly int defense;
+            public readonly int hits;
+            public readonly int move;
 
-            private int cost;
-            private int attack;
-            private int defense;
-            private int hits;
-            private int move;
-            private Bal.Unit.Special special;
+            private readonly Bal.Unit.Special special;
 
             public Unit(string input)
             {
@@ -604,7 +631,7 @@ namespace NCWMap
                         }
                     }
 
-                    if (this.targTypes != null && this.targTypes.Contains(Bal.Type.A))
+                    if (this.targTypes != null && this.targTypes.Contains(Bal.Type.A) && (attBonus > 0 || defDiv > 1))
                     {
                         this.attackAir = true;
                     }
