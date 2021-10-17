@@ -121,20 +121,34 @@ namespace NCWMap
             string[,,] output = new string[6, Bal.units.Count, Bal.units.Count];
             unitWorth = new Dictionary<string, Double>();
 
-            for (int b = 0; b < Bal.units.Count; b++)
+            double ttk = 1, ttkc = 0;
+            for (int a = 0; a < Bal.units.Count; a++)
+                for (int b = 0; b < Bal.units.Count; b++)
+                {
+                    Bal.Unit u1 = Bal.units[a];
+                    Bal.Unit u2 = Bal.units[b];
+                    if (u1.type != Bal.Type.A && u2.type == Bal.Type.A && u1.cantAttack(u2))
+                    {
+                        ttk *= GetTTK(u1, u2, 1);
+                        ttkc++;
+                    }
+                }
+            ttk = Math.Pow(ttk, 1 / ttkc);
+
+            for (int c = 0; c < Bal.units.Count; c++)
             {
-                Bal.Unit u1 = Bal.units[b];
+                Bal.Unit u1 = Bal.units[c];
                 double total = 1.0;
                 double count = 0.0;
-                for (int c = 0; c < Bal.units.Count; c++)
+                for (int d = 0; d < Bal.units.Count; d++)
                 {
-                    Bal.Unit u2 = Bal.units[c];
+                    Bal.Unit u2 = Bal.units[d];
                     double[] unitOut = u1.getUnitRow(u2);
-                    for (int a = 0; a < 6; a++)
+                    for (int e = 0; e < 6; e++)
                     {
-                        if (unitOut[a] != 0.0)
+                        if (unitOut[e] != 0.0)
                         {
-                            output[a, b, c] = unitOut[a].ToString();
+                            output[e, c, d] = unitOut[e].ToString();
                         }
                     }
                     if (u1.name == u2.name)
@@ -142,7 +156,7 @@ namespace NCWMap
                         continue;
                     }
 
-                    const double singleDiv = 6, airDiv = 2, alDiv = 4, gwDiv = 4;
+                    const double singleDiv = 6, airDiv = 3, attkDiv = 3, alDiv = 5, gwDiv = 4;
                     double v1 = log(unitOut[0]);
                     double v2 = log(unitOut[1]);
                     double costMult = u2.cost / (double)u1.cost;
@@ -157,8 +171,8 @@ namespace NCWMap
                         {
                             if (u1.cantAttack(u2) || u2.cantAttack(u1))
                             {
-                                value = Math.Pow(value, 1 / airDiv) * Math.Pow(v2, 1 / alDiv);
-                                mult = 1 / airDiv + 1 / alDiv;
+                                mult = 1 / airDiv + 1 / attkDiv + 1 / alDiv;
+                                value = Math.Pow(value, 1 / airDiv / mult) * Math.Pow(log(GetTTK(u1, u2, ttk)), 1 / attkDiv / mult) * Math.Pow(v2, 1 / alDiv / mult);
                             }
                         }
                         else
@@ -175,7 +189,12 @@ namespace NCWMap
 
             return output;
         }
-
+        private static double GetTTK(Unit u1, Unit u2, double div)
+        {
+            if (u2.cantAttack(u1))
+                return 1 / GetTTK(u2, u1, div);
+            return (u1.hits * 6) / (u2.move * u2.getUnitRow(u1)[4]) / div * u2.cost / (double)u1.cost;
+        }
         private static double log(double v)
         {
             bool flip = v < 1;
@@ -550,6 +569,7 @@ namespace NCWMap
 
                 private const string _ATTACK_AIR = "can attack A";
                 private const string _PLUS = "+";
+                private const string _MINUS = "-";
                 private const string _REGEN_S = "regens ";
                 private const string _REGEN_E = " HP";
                 private const string _VS = " vs ";
@@ -591,15 +611,12 @@ namespace NCWMap
                             string[] p2 = p1[0].Split(new String[] { _SPACE }, StringSplitOptions.None);
 
                             bool[] attDef = parseAttDef(p2[1]);
-                            int value = Parse(_PLUS, p2[0]);
+                            bool neg = input.Contains(_MINUS);
+                            int value = Parse(neg ? _MINUS : _PLUS, p2[0]) * (neg ? -1 : 1);
                             if (attDef[0])
-                            {
                                 this.attBonus = value;
-                            }
                             if (attDef[1])
-                            {
                                 this.defBonus = value;
-                            }
 
                             parseTargets(p1[1]);
                         }
