@@ -1210,7 +1210,7 @@ namespace CityWar
                     if (isHigh)
                         target = ReverseTarget();
                     if (target < minTarget)
-                        target = minTarget / (Math.Pow(1 + minTarget - target, .52));
+                        target = minTarget / (Math.Pow(1 + 5.2 * (minTarget - target) / minTarget, .52));
                     if (isHigh)
                         target = ReverseTarget();
 

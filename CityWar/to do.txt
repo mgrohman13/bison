@@ -14,6 +14,7 @@ gameplay
 	exp?
 
 balance
+	hummer->humvee
 	elemental cost similiarities
 	human costs
 	aircraft
