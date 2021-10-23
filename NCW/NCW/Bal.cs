@@ -469,18 +469,12 @@ namespace NCWMap
                 if (cantAttack(other))
                 {
                     retVal[0] = onlyO;
-                    if (value > onlyO)
-                    {
-                        retVal[1] = value;
-                    }
+                    retVal[1] = Math.Max(value, onlyO); 
                 }
                 else if (other.cantAttack(this))
                 {
-                    retVal[0] = onlyT;
-                    if (value < onlyT)
-                    {
-                        retVal[1] = value;
-                    }
+                    retVal[0] = onlyT; 
+                    retVal[1] = Math.Min(value, onlyT); 
                 }
                 else
                 {
