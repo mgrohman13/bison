@@ -45,7 +45,9 @@ namespace GalWar
                 this.Name = player.Name;
                 this.Color = player.Color;
                 this.AI = player.AI;
+                this.PlanetDefenses = new PlanetDefenses(this);
 
+                this.designs = new List<ShipDesign>();
                 this.colonies = new List<Colony>();
                 this.ships = new List<Ship>();
 
@@ -76,9 +78,11 @@ namespace GalWar
             }
 
             List<ShipDesign> startDesigns = ShipDesign.GetStartDesigns(this, research);
-            this.designs = new List<ShipDesign>();
-            this.PlanetDefenses = new PlanetDefenses(this, startDesigns);
-            this.designs = startDesigns;
+            foreach (ShipDesign design in startDesigns)
+            {
+                this.PlanetDefenses.SetPlanetDefense(design);
+                this.designs.Add(design);
+            }
 
             //starting production is handled after all players have been created
             NewColony(null, planet, population, 0, 0);
@@ -359,6 +363,15 @@ namespace GalWar
                 return this.PlanetDefenses.Def;
             }
         }
+        public int PlanetDefenseHP
+        {
+            get
+            {
+                TurnException.CheckTurn(this);
+
+                return this.PlanetDefenses.HP;
+            }
+        }
 
         internal double negativeGoldMult
         {
@@ -473,10 +486,9 @@ namespace GalWar
             foreach (Colony colony in this.colonies)
                 colony.NewShipDesign(newDesign, obsoleteDesigns);
 
-            this.designs.Add(newDesign);
-
-            this.PlanetDefenses.SetPlanetDefense(newDesign);
             this.LastResearched = Math.Max(LastResearched, newDesign.Research);
+            this.PlanetDefenses.SetPlanetDefense(newDesign);
+            this.designs.Add(newDesign);
 
             if (doObsolete)
                 ResearchFocusDesign = newDesign;

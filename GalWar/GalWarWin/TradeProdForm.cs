@@ -271,13 +271,12 @@ namespace GalWarWin
                 this.lblCost.Text = build.Cost.HasValue ? "/ " + build.Cost.Value.ToString() : string.Empty;
 
                 this.lblInf.Text = string.Empty;
-                //if (build is BuildInfrastructure)
-                //{
-                //    double att, def, hp, d1, d2, d3;
-                //    colony.GetPlanetDefenseInc(build, prod + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
-                //            out att, out def, out hp, out d1, out d2, out d3, false, false);
-                //    this.lblInf.Text = string.Format("{0} : {1}   ({2})", MainForm.FormatUsuallyInt(att), MainForm.FormatUsuallyInt(def), MainForm.FormatUsuallyInt(hp));
-                //}
+                if (build is BuildInfrastructure)
+                {
+                    colony.GetUpgMins(out int PD, out int soldier);
+                    this.lblInf.Text = string.Format("PD: {0}  Sldr: {1}",
+                            MainForm.FormatUsuallyInt(PD), MainForm.FormatUsuallyInt(soldier));
+                }
 
                 MainForm.FormatIncome(this.lblDiff, GetDiff());
 

@@ -12,7 +12,6 @@ namespace GalWar
         private Colony _colony;
 
         private short _quality;
-
         private float _colonizationCostMult, _prodMult, _infrastructureInc;
 
         internal Planet(Tile tile)
@@ -114,7 +113,11 @@ namespace GalWar
             if (Game.Random.Bool(chance))
                 this.prodMult = Game.Random.GaussianCapped(1f, .078f, .65f);
             if (Game.Random.Bool(chance))
-                this.infrastructureInc = Game.Random.GaussianCapped(.104f, .39f, .026f);
+                // min = 0.021
+                // avg = 0.11791
+                // max = 0.252
+                this.infrastructureInc = Game.Random.GaussianCapped(.052f, .39f, .021f)
+                        + Game.Random.Weighted(.169f, .39f);
         }
 
         #endregion //fields and constructors

@@ -89,9 +89,9 @@ namespace GalWarWin
             {
                 if (b is BuildGold)
                     return 0;
-                if (b is BuildInfrastructure)
-                    return 1;
                 if (b is StoreProd)
+                    return 1;
+                if (b is BuildInfrastructure)
                     return 2;
                 if (b is BuildShip)
                     return 3;

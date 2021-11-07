@@ -59,6 +59,10 @@ namespace GalWar
                 this._infrastructureRounding = float.NaN;
                 this._researchRounding = float.NaN;
                 this._productionRounding = float.NaN;
+
+                this._upgPDTrgStr = float.NaN;
+                this._upgPD = float.NaN;
+                this._upgSoldiers = float.NaN;
             }
 
             ResetRounding();
@@ -290,7 +294,6 @@ namespace GalWar
                 }
             }
         }
-
         private double researchRounding
         {
             get
@@ -316,6 +319,48 @@ namespace GalWar
                 checked
                 {
                     this._productionRounding = (float)value;
+                }
+            }
+        }
+        private double upgPDTrgStr
+        {
+            get
+            {
+                return this._upgPDTrgStr;
+            }
+            set
+            {
+                checked
+                {
+                    this._upgPDTrgStr = (float)value;
+                }
+            }
+        }
+        private double upgPD
+        {
+            get
+            {
+                return this._upgPD;
+            }
+            set
+            {
+                checked
+                {
+                    this._upgPD = (float)value;
+                }
+            }
+        }
+        private double upgSoldiers
+        {
+            get
+            {
+                return this._upgSoldiers;
+            }
+            set
+            {
+                checked
+                {
+                    this._upgSoldiers = (float)value;
                 }
             }
         }
@@ -468,10 +513,16 @@ namespace GalWar
             TurnStuff(ref population, ref production, ref gold, ref research, out infrastructure, true, false);
 
             this.ProdGuess += GetTotalIncome() / 3.0;
-
             this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
 
             ResetRounding();
+
+            //build planet defenses first so they can attack this turn
+            bool buildFirst = !(this.curBuild is BuildShip);
+            List<Ship> builtShips = null;
+            if (buildFirst)
+                builtShips = this.curBuild.Build(handler, production);
+            ApplyInfrastructure(infrastructure);
 
             if (!this.MinDefenses)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
@@ -485,14 +536,12 @@ namespace GalWar
                     }
                 }
 
-            ApplyInfrastructure();
-            GetInfrastructure().AddProduction(infrastructure);
-            List<Ship> builtShips = this.curBuild.Build(handler, production);
-
+            //build ships after attacking so cleared tiles can be built on
+            if (!buildFirst)
+                builtShips = this.curBuild.Build(handler, production);
             Player.AddGold(gold);
 
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
-
             if (builtShips != null && builtShips.Any())
             {
                 double cost = builtShips.Average(ship => ship.GetCostAvgResearch());
@@ -877,9 +926,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            double gold;
-            int production, research, infrastructure;
-            GetTurnValues(population, out production, out gold, out research, out infrastructure);
+            GetTurnValues(population, out int production, out _, out _, out _);
             return production;
         }
 
@@ -1248,12 +1295,9 @@ namespace GalWar
 
         private void SetUpgFactors()
         {
-            checked
-            {
-                this._upgPDTrgStr = (float)this.GetPDHPStrength(Player.PlanetDefenses.Att, Player.PlanetDefenses.Def) * Player.PlanetDefenses.HP;
-                this._upgPD = Game.Random.GaussianCapped(1f, .26f);
-                this._upgSoldiers = Game.Random.GaussianCapped(1f, .26f);
-            }
+            this.upgPDTrgStr = this.GetPDHPStrength(Player.PlanetDefenses.Att, Player.PlanetDefenses.Def) * Player.PlanetDefenses.HP;
+            this.upgPD = Game.Random.GaussianCapped(1f, .26f);
+            this.upgSoldiers = Game.Random.GaussianCapped(1f, .26f);
         }
         public void GetUpgMins(out int PD, out int soldier)
         {
@@ -1261,7 +1305,7 @@ namespace GalWar
 
             BuildInfrastructure infrastructure = GetInfrastructure();
 
-            double pdMult = 2 / (1 + 2 * this.PDStrength / _upgPDTrgStr);
+            double pdMult = 2 / (1 + 2 * this.PDStrength / this.upgPDTrgStr);
             pdMult *= (Consts.ResearchFactor + this.Player.Research - this.defenseResearch) / Consts.ResearchFactor;
             pdMult *= pdMult;
 
@@ -1272,18 +1316,23 @@ namespace GalWar
                 soldierMult *= soldierMult;
             }
 
-            PD = (int)Math.Ceiling(GetTotalIncome() / pdMult * _upgPD + Consts.FLOAT_ERROR_ZERO);
-            soldier = (int)Math.Ceiling(GetTotalIncome() / soldierMult * _upgSoldiers + Consts.FLOAT_ERROR_ZERO);
+            PD = (int)Math.Ceiling(GetTotalIncome() / pdMult * this.upgPD + Consts.FLOAT_ERROR_ZERO);
+            soldier = (int)Math.Ceiling(GetTotalIncome() / soldierMult * this.upgSoldiers + Consts.FLOAT_ERROR_ZERO);
         }
 
-        internal void ApplyInfrastructure()
+        internal void ApplyInfrastructure(int infrastructure)
         {
-            BuildInfrastructure infrastructure = GetInfrastructure();
+            BuildInfrastructure build = GetInfrastructure();
+            build.AddProduction(infrastructure);
+
+            int prod = build.production;
+            double avg = Game.Random.GaussianCapped(prod / 2.0, Consts.PlanetDefenseRndm);
             GetUpgMins(out int PD, out int soldier);
-            if (infrastructure.production >= PD)
-                BuildPlanetDefense(0, infrastructure.production / 2.0);
-            else if (infrastructure.production >= soldier)
-                BuildSoldiers(0, infrastructure.production / 2.0);
+
+            if (prod >= PD)
+                BuildPlanetDefense(0, avg);
+            else if (prod >= soldier)
+                BuildSoldiers(0, avg);
         }
 
         internal void BuildSoldiersAndDefenses(double prodInc)
@@ -1330,8 +1379,7 @@ namespace GalWar
         }
         internal void BuildPlanetDefense(double addProd, double avg)
         {
-            BuildInfrastructure build = GetInfrastructure();
-            addProd += build.production;
+            addProd += GetInfrastructure().production;
 
             double trgAtt = this.Player.PlanetDefenses.Att, trgDef = this.Player.PlanetDefenses.Def;
 
@@ -1355,7 +1403,7 @@ namespace GalWar
         {
             double totalCost = GetPDHPCost() * this.HP;
 
-            if (!this.MinDefenses && (mult > Consts.FLOAT_ERROR_ZERO && mult < 1 - Consts.FLOAT_ERROR_ZERO))
+            if (!this.MinDefenses && (mult > Consts.FLOAT_ERROR_ZERO && mult < 1 / Consts.FLOAT_ERROR_ONE))
             {
                 double newAtt, newDef;
                 ModPD(totalCost * mult, this.defenseResearch, this.Att, 1, this.Def, 1, out newAtt, out newDef, out _);
@@ -1418,11 +1466,6 @@ namespace GalWar
             }
 
             newHP = GetPDHP(trgCost, trgResearch, newAtt, newDef);
-
-            //if (att < trgAtt && def > 1 && att == newAtt)
-            //    ModPD(trgCost, att, att, def, 1, out newAtt, out newDef, out newHP);
-            //else if (def < trgDef && att > 1 && def == newDef)
-            //    ModPD(trgCost, att, 1, def, def, out newAtt, out newDef, out newHP);
         }
         private static bool TestPD(double trgCost, double trgResearch, double minAtt, double minDef)
         {
@@ -1445,8 +1488,10 @@ namespace GalWar
         {
             att = SetPDStat(newAtt, this.Att, this.Player.PlanetDefenses.Att);
             def = SetPDStat(newDef, this.Def, this.Player.PlanetDefenses.Def);
-            hp = Game.Random.GaussianCappedInt(GetPDHP(newCost, newResearch, att, def), Consts.PlanetDefenseRndm, 0);
-            if (hp < 1)
+            double avg = GetPDHP(newCost, newResearch, att, def);
+            if (avg > 1)
+                hp = Game.Random.GaussianCappedInt(avg, Consts.PlanetDefenseRndm, 1);
+            else
                 hp = 1;
         }
         private static int SetPDStat(double target, int current, int max)

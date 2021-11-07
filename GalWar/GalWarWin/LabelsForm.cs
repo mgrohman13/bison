@@ -123,10 +123,6 @@ namespace GalWarWin
             gold = Player.RoundGold(gold);
             production = Player.RoundGold(production);
 
-            //if (colony.CurBuild is BuildSoldiers)
-            //    soldiers += ( colony.CurBuild.Production + colony.GetAfterRepairProdInc() ) / Consts.ProductionForSoldiers;
-            //string soldierChange = MainForm.GetBuildingSoldiers(colony.Population, population, colony.Soldiers, soldiers);
-
             ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research),
                     "Upkeep", MainForm.FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
                     "Gold", ShowOrig(origGold, gold), "Research", MainForm.FormatDouble(research),

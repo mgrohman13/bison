@@ -2060,12 +2060,11 @@ namespace GalWarWin
 
         private void lblGold_Click(object sender, EventArgs e)
         {
-            int i1, i2, i3, i4, ships = 0;
-            double d1, d2, d3, d4, income = 0, upkeep = 0, basic, total;
+            int ships = 0;
+            double income = 0, upkeep = 0;
             foreach (Colony colony in Game.CurrentPlayer.GetColonies())
             {
-                double gold;
-                colony.GetTurnValues(out i1, out gold, out i2, out i4);
+                colony.GetTurnValues(out _, out double gold, out _, out _);
                 income += gold;
                 upkeep += colony.Upkeep;
             }
@@ -2074,8 +2073,8 @@ namespace GalWarWin
                 upkeep += ship.Upkeep;
                 ships += ship.BaseUpkeep;
             }
-            Game.CurrentPlayer.GetTurnIncome(out d1, out i1, out d2, out total);
-            MainForm.Game.CurrentPlayer.GetTurnIncome(out d3, out i3, out d4, out basic, false);
+            Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out double total);
+            MainForm.Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out _, false);
 
             income = Player.RoundGold(income);
             upkeep = Player.RoundGold(upkeep);
@@ -2695,15 +2694,6 @@ namespace GalWarWin
             return string.Format("{3}{0}:{4}{1} ({5}{2})", FormatUsuallyInt(newAtt), FormatUsuallyInt(newDef), FormatUsuallyInt(newHP),
                     newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
         }
-
-        //public static string GetBuildingSoldiers(double curPop, double popInc, double curSoldiers, double soldierInc)
-        //{
-        //    double soldiers = (curSoldiers + soldierInc) / (curPop + popInc) - curSoldiers / curPop;
-        //    string soldierChange = FormatPct(soldiers, true);
-        //    if (soldierChange != "0.0%" && soldiers > 0)
-        //        soldierChange = "+" + soldierChange;
-        //    return soldierChange;
-        //}
 
         private void AnomalyInfo(Anomaly anomaly)
         {

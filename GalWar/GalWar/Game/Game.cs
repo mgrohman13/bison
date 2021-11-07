@@ -499,24 +499,6 @@ namespace GalWar
                 }
             }
         }
-        public double PDResearch
-        {
-            get
-            {
-                double minResearch;
-                if (!this.players.Any())
-                {
-                    minResearch = 0;
-                }
-                else
-                {
-                    minResearch = this.players.Min(player => player.ResearchDisplay);
-                    double diff = Math.Abs(AvgResearch - minResearch);
-                    minResearch = Math.Max(0, Math.Min(AvgResearch, minResearch) - diff);
-                }
-                return minResearch;
-            }
-        }
 
         internal void RemovePlanet(Planet planet)
         {

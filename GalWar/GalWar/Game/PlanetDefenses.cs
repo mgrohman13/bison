@@ -8,20 +8,21 @@ namespace GalWar
     [Serializable]
     class PlanetDefenses
     {
-        private Player owner;
+        private readonly Player owner;
 
         private byte _att, _def;
         private ushort _hp;
 
-        public PlanetDefenses(Player owner, List<ShipDesign> designs)
+        public PlanetDefenses(Player owner)
         {
-            this._att = 1;
-            this._def = 1;
-            this._hp = 1;
+            checked
+            {
+                this.owner = owner;
 
-            this.owner = owner;
-            foreach (ShipDesign design in designs)
-                SetPlanetDefense(design);
+                this._att = 1;
+                this._def = 1;
+                this._hp = 1;
+            }
         }
 
         internal int Att
@@ -78,6 +79,8 @@ namespace GalWar
             int min = Math.Max(att, def);
             if (min * Consts.PlanetDefenseStatRatio > 1)
                 min = Game.Random.GaussianCappedInt(min * Consts.PlanetDefenseStatRatio, Consts.PlanetDefenseRndm, 1);
+            else
+                min = 1;
             if (att < min)
                 att = min;
             if (def < min)

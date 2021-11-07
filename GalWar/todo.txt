@@ -138,6 +138,14 @@ buildable/repair/pd rework
 	standardize mindefenses, hp, str, cost checks
 	auto infrastructure power?
 	reduce sold/pd cost?
+	display PD target stats
+	turnstuff refs for infrstrctr
+	avg gold
+	pdform show infrstr inc info 
+	buildable form show inc info for both 
+	tradeprodform click auto buy for infrastructure 
+	UI indication PD happes first
+		(or allow do both with 1/4?)
 	
 rework the rework
 	minimum value to upg PD, soldiers	
