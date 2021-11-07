@@ -47,12 +47,10 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buildable\BuildAttack.cs" />
-    <Compile Include="Buildable\BuildDefense.cs" />
     <Compile Include="Buildable\BuildGold.cs" />
     <Compile Include="Buildable\BuildShip.cs" />
-    <Compile Include="Buildable\BuildSoldiers.cs" />
-    <Compile Include="Buildable\PlanetDefense.cs" />
+    <Compile Include="Buildable\BuildInfrastructure.cs" />
+    <Compile Include="Game\PlanetDefenses.cs" />
     <Compile Include="Game\Wormhole.cs" />
     <Compile Include="Object\Anomaly.cs" />
     <Compile Include="Object\Combatant.cs" />

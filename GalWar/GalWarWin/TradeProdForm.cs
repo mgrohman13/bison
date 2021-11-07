@@ -95,7 +95,7 @@ namespace GalWarWin
         {
             MainForm.GameForm.SetLocation(form);
             form.SetColony(colony, buildable);
-            bool doTrade = ( form.ShowDialog() == DialogResult.OK );
+            bool doTrade = (form.ShowDialog() == DialogResult.OK);
 
             if (doTrade)
                 form.colony.TradeProduction(MainForm.GameForm, form.BuildTrade());
@@ -201,24 +201,24 @@ namespace GalWarWin
                     this.controls.Add(newControl);
                     switch (newControl.Name)
                     {
-                    case "lblName":
-                        this.lblName = (Label)newControl;
-                        break;
-                    case "lblCost":
-                        this.lblCost = (Label)newControl;
-                        break;
-                    case "lblInf":
-                        this.lblInf = (Label)newControl;
-                        break;
-                    case "lblDiff":
-                        this.lblDiff = (Label)newControl;
-                        break;
-                    case "nudProd":
-                        this.nudProd = (NumericUpDown)newControl;
-                        break;
-                    case "nudShips":
-                        this.nudShips = (NumericUpDown)newControl;
-                        break;
+                        case "lblName":
+                            this.lblName = (Label)newControl;
+                            break;
+                        case "lblCost":
+                            this.lblCost = (Label)newControl;
+                            break;
+                        case "lblInf":
+                            this.lblInf = (Label)newControl;
+                            break;
+                        case "lblDiff":
+                            this.lblDiff = (Label)newControl;
+                            break;
+                        case "nudProd":
+                            this.nudProd = (NumericUpDown)newControl;
+                            break;
+                        case "nudShips":
+                            this.nudShips = (NumericUpDown)newControl;
+                            break;
                     }
                 }
                 this.lblName.Click += LblName_Click;
@@ -226,10 +226,10 @@ namespace GalWarWin
 
                 this.nudProd.Value = build.Production;
 
-                if (!( build is BuildGold ))
+                if (!(build is BuildGold))
                 {
                     this.lblCost.TextAlign = this.lblDiff.TextAlign = ContentAlignment.MiddleRight;
-                    this.lblInf.Visible = ( build is PlanetDefense );
+                    this.lblInf.Visible = (build is BuildInfrastructure);
                     this.lblCost.Visible = build.Cost.HasValue;
                     this.nudShips.Visible = build.Cost.HasValue;
 
@@ -247,7 +247,7 @@ namespace GalWarWin
                         trade[build] = value - build.Production;
                         double gold;
                         this.colony.GetTradeProduction(trade, out gold);
-                        return ( gold > -Consts.FLOAT_ERROR_ZERO );
+                        return (gold > -Consts.FLOAT_ERROR_ZERO);
                     }, 0, build.Production, false);
                     this.nudProd.Value = prod;
                 }
@@ -271,13 +271,13 @@ namespace GalWarWin
                 this.lblCost.Text = build.Cost.HasValue ? "/ " + build.Cost.Value.ToString() : string.Empty;
 
                 this.lblInf.Text = string.Empty;
-                if (build is PlanetDefense)
-                {
-                    double att, def, hp, d1, d2, d3;
-                    colony.GetPlanetDefenseInc(build, prod + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
-                            out att, out def, out hp, out d1, out d2, out d3, false, false);
-                    this.lblInf.Text = string.Format("{0} : {1}   ({2})", MainForm.FormatUsuallyInt(att), MainForm.FormatUsuallyInt(def), MainForm.FormatUsuallyInt(hp));
-                }
+                //if (build is BuildInfrastructure)
+                //{
+                //    double att, def, hp, d1, d2, d3;
+                //    colony.GetPlanetDefenseInc(build, prod + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
+                //            out att, out def, out hp, out d1, out d2, out d3, false, false);
+                //    this.lblInf.Text = string.Format("{0} : {1}   ({2})", MainForm.FormatUsuallyInt(att), MainForm.FormatUsuallyInt(def), MainForm.FormatUsuallyInt(hp));
+                //}
 
                 MainForm.FormatIncome(this.lblDiff, GetDiff());
 
@@ -285,13 +285,13 @@ namespace GalWarWin
                 {
                     if (sender == this.nudShips)
                     {
-                        prod = ( ships * build.Cost.Value - (int)colony.GetAfterRepairProdInc() );
+                        prod = (ships * build.Cost.Value - (int)colony.GetAfterRepairProdInc());
                         if (prod < 0)
                             prod = 0;
                     }
                     else
                     {
-                        ships = ( prod + (int)colony.GetAfterRepairProdInc() ) / build.Cost.Value;
+                        ships = (prod + (int)colony.GetAfterRepairProdInc()) / build.Cost.Value;
                         if (ships < 0)
                             ships = 0;
                         this.nudShips.Value = ships;

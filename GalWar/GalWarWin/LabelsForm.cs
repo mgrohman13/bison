@@ -51,16 +51,16 @@ namespace GalWarWin
                 lbl.Show();
             }
 
-            for (int b = 0 ; b < a ; ++b)
+            for (int b = 0; b < a; ++b)
             {
                 Label lbl = this.labels[b];
-                if (( b & 1 ) == 0)
+                if ((b & 1) == 0)
                     lbl.Width = 65;
                 else
                     lbl.Location = new Point(69, lbl.Location.Y);
             }
             int minDiff = int.MaxValue, infoWidth = int.MinValue, valueWidth = int.MinValue;
-            for (int b = 0 ; b < a ; ++b)
+            for (int b = 0; b < a; ++b)
             {
                 Label lbl = this.labels[b];
                 int diff = lbl.Width;
@@ -68,7 +68,7 @@ namespace GalWarWin
                 int width = lbl.Width;
                 lbl.AutoSize = false;
 
-                if (( b & 1 ) == 0)
+                if ((b & 1) == 0)
                 {
                     diff -= width;
                     if (diff < minDiff)
@@ -82,10 +82,10 @@ namespace GalWarWin
                         valueWidth = width;
                 }
             }
-            for (int b = 0 ; b < a ; ++b)
+            for (int b = 0; b < a; ++b)
             {
                 Label lbl = this.labels[b];
-                if (( b & 1 ) == 0)
+                if ((b & 1) == 0)
                 {
                     lbl.Width = infoWidth;
                 }
@@ -107,8 +107,8 @@ namespace GalWarWin
             label.AutoEllipsis = true;
             label.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 
-            label.Location = new System.Drawing.Point(( text ? 3 : 69 ), this.labels[this.labels.Count - 1].Location.Y + 23);
-            label.Size = new System.Drawing.Size(( text ? 65 : 40 ), 23);
+            label.Location = new System.Drawing.Point((text ? 3 : 69), this.labels[this.labels.Count - 1].Location.Y + 23);
+            label.Size = new System.Drawing.Size((text ? 65 : 40), 23);
 
             this.Controls.Add(label);
             return label;
@@ -116,22 +116,22 @@ namespace GalWarWin
 
         public static void ShowColonyIncome(Colony colony)
         {
-            double population = 0, production = 0, gold = 0, origGold, soldiers;
-            int research = 0, origProd;
+            double population = 0, production = 0, gold = 0, origGold;
+            int research = 0, origProd, infrastructure;
             colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
-            colony.GetTurnValues(out origProd, out origGold, out research, out soldiers);
+            colony.GetTurnValues(out origProd, out origGold, out research, out infrastructure);
             gold = Player.RoundGold(gold);
             production = Player.RoundGold(production);
 
-            if (colony.CurBuild is BuildSoldiers)
-                soldiers += ( colony.CurBuild.Production + colony.GetAfterRepairProdInc() ) / Consts.ProductionForSoldiers;
-            string soldierChange = MainForm.GetBuildingSoldiers(colony.Population, population, colony.Soldiers, soldiers);
+            //if (colony.CurBuild is BuildSoldiers)
+            //    soldiers += ( colony.CurBuild.Production + colony.GetAfterRepairProdInc() ) / Consts.ProductionForSoldiers;
+            //string soldierChange = MainForm.GetBuildingSoldiers(colony.Population, population, colony.Soldiers, soldiers);
 
             ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research),
                     "Upkeep", MainForm.FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
                     "Gold", ShowOrig(origGold, gold), "Research", MainForm.FormatDouble(research),
                     "Production", ShowOrig(origProd, production),
-                    "Soldiers", soldierChange);
+                    "Infrastructure", infrastructure.ToString());
         }
         private static string ShowOrig(double orig, double mod)
         {

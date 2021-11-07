@@ -76,7 +76,7 @@ combat predict performance
 
 GAMEPLAY
 
-shit type chances
+ship type chances
 	increase old research penalty to weight
 revisit research chances
 	upgrade?
@@ -113,45 +113,63 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
+prod repair
+	hide similar to build PD/soldiers
+	randomness
+	round prod repair? and leftoever prod? use existing prod rounding?
+	make repair a buildable?
+	build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
+	
+buildable/repair/pd rework
+	repair ship use infra 
+		automatically all adjacent? cbox on ship?
+	random pcts per planet?
+	display planet values?
+	trading prods
+	upk
+		increase store upk accordingly with its reduction
+		decrease infr?
+	show constant infrastructure inc
+	show defenseResearch
+	reducing pd stats/hp
+	hp ratio?
+		slighter more hp if stats not reduced?
+		random?
+	standardize mindefenses, hp, str, cost checks
+	auto infrastructure power?
+	reduce sold/pd cost?
+	
+rework the rework
+	minimum value to upg PD, soldiers	
+		based on cur vs trg
+		defenseResearch outdatedness
+		planet tot income
+		persistent random factor(s) - global to all planets for player?
+			throw min val and persist that?
+	prod guess - take into acct infrastrctr
+	starting value iterations
+	
+		
+research victory pct decreases with higher research
+	10k=now
+	30k=85% instead of 67%?
+	uses real avg, graph calcs using average shown
+	also decrease max display skew appropriately
+	actual chance vs display discrepency?	
+trans upk payoff problem
+	upkeep IS more severe, but cost ends up being reduced
+	reduce impact of speed in general, while at it?
+	att/def adjusts slightly?
 in progress
 	turn inc calc
 		mingold - remove?
 	buy/sell/obsolete during callback
 		allow sometimes
 		restrict at handler wrapper level
-prod repair
-	hide similar to build PD/soldiers
-	randomness
-	round prod repair? and leftoever prod? use existing prod rounding?
-	make repair a buildable?
 are fine?
 	max design cost OE??
 	level up uses full research?
 		change to last?
-new game parameters
-	num anomalies (start/rate)
-	differentiate starting and planet rate
-	pop,prod,etc.
-map size
-build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
-planetary defenses still not right
-	upg pd uses prod on buildable (and so start no longer needs always)
-	reducing stats/hp
-	hp ratio?
-		slighter more hp if stats not reduced?
-		random?
-	standardize mindefenses, hp, str, cost checks
-	combine back att and def?
-research victory pct decreases with higher research
-	10k=now
-	30k=85% instead of 67%?
-	uses real avg, graph calcs using average shown
-	also decrease max display skew appropriately
-	actual chance vs display discrepency?
-trans upk payoff problem
-	upkeep IS more severe, but cost ends up being reduced
-	reduce impact of speed in general, while at it?
-	att/def adjusts slightly?
 6 tiers saved? return length?
 graph dictionaries can be arrays
 standardize Tile.Game vs Player.Game calls
@@ -160,6 +178,11 @@ standardize dead checks
 clean up code
 	member order
 fix combatant/popcarrier/colony/pd hierarchy
+new game parameters
+	num anomalies (start/rate)
+	differentiate starting and planet rate
+	pop,prod,etc.
+map size
 
 
 FEATURES

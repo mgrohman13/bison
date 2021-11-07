@@ -19,7 +19,7 @@ namespace GalWar
         public const double StartAnomalies = 13;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each indivual player's homeworld quality
-        public const double StartGold = ( AverageQuality + Consts.PlanetConstValue ) * 910;
+        public const double StartGold = (AverageQuality + Consts.PlanetConstValue) * 910;
         //StartGoldProdPct is the percent of total starting gold that will be converted into starting production
         public const double StartGoldProdPct = .21;
         public const double StartResearch = 390;
@@ -32,7 +32,7 @@ namespace GalWar
         public const int PlanetQualityMin = 0;
         public const int PlanetQualityMax = 390;
         public const double PlanetQualityOE = 65;
-        public const double AverageQuality = ( PlanetQualityMin + PlanetQualityMax ) / 2.0 + PlanetQualityOE;
+        public const double AverageQuality = (PlanetQualityMin + PlanetQualityMax) / 2.0 + PlanetQualityOE;
         public const double PlanetConstValue = .65 / PopulationGrowth;
         //as minimum number of hexes in between planets
         public const int PlanetDistance = 3;
@@ -42,7 +42,7 @@ namespace GalWar
         public const double PopulationGrowth = Math.E / 130.0;
         public const double Income = .13;
         //emphasizing a single value gives on average precisely double the income of when emphasizing the other two
-        public static readonly double EmphasisValue = 8 / ( Math.Sqrt(33) - 1 );
+        public static readonly double EmphasisValue = 8 / (Math.Sqrt(33) - 1);
 
         public const double SwitchBuildRatio = 3.0 / 5.0;                       //0.6
         public const double ManualObsoleteRatio = StoreProdRatio;               //0.8
@@ -51,7 +51,7 @@ namespace GalWar
 
         public const double CostMult = .104;
         public const double CostUpkeepPct = .21;
-        public const double ProdUpkeepMult = 1 / ( 1 / CostUpkeepPct - 1 ) / 1.3;
+        public const double ProdUpkeepMult = 1 / (1 / CostUpkeepPct - 1) / 1.3;
         public const double BaseDesignHPMult = .3;
         //percent of upkeep returned when a ship doesnt move
         public const double UpkeepUnmovedReturn = .169;
@@ -146,15 +146,13 @@ namespace GalWar
 
         public const double PlanetDefenseStatRatio = .78;
         public const double PlanetDefenseRndm = .091;
-        public const double PlanetDefensesCostMult = .78;
-        //percent of research that automatically upgrades planet defenses
-        public const double PlanetDefensesUpgradeWeight = .21;
+        public const double PlanetDefensesCostMult = .52;
         //PlanetDefensesUpkeepMult will be multiplied by GetProductionUpkeepMult
-        public const double PlanetDefensesUpkeepMult = .65;
-        public const double PlanetDefensesAttackCostMult = .91;
+        public const double PlanetDefensesUpkeepMult = .52;
+        public const double PlanetDefensesAttackCostMult = 1.69;
         public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 2.1;
 
-        public const double FLOAT_ERROR_ZERO = 1.0 / ( 1 << ( MTRandom.FLOAT_BITS - 2 ) );
+        public const double FLOAT_ERROR_ZERO = 1.0 / (1 << (MTRandom.FLOAT_BITS - 2));
         public const double FLOAT_ERROR_ONE = 1.0 + FLOAT_ERROR_ZERO;
 
         public static double GetResearchVictoryChance(double mult)
@@ -162,7 +160,7 @@ namespace GalWar
             //research victory can happen when the top player exceeds a certain multiple of the second place player
             if (mult > Consts.ResearchVictoryMin)
             {
-                double chance = ( mult - Consts.ResearchVictoryMin ) / ( Consts.ResearchVictoryMult - Consts.ResearchVictoryMin );
+                double chance = (mult - Consts.ResearchVictoryMin) / (Consts.ResearchVictoryMult - Consts.ResearchVictoryMin);
                 return Math.Pow(Consts.LimitPct(chance), Consts.ResearchVictoryPow);
             }
             return 0;
@@ -179,7 +177,7 @@ namespace GalWar
 
         public static double GetMoveOrderGold(IEnumerable<Player> players)
         {
-            return ( MoveOrderGold + players.Average(player => player.GetTotalIncome()) ) / 2.0 / ( players.Count() - 1.0 );
+            return (MoveOrderGold + players.Average(player => player.GetTotalIncome())) / 2.0 / (players.Count() - 1.0);
         }
 
         internal static double GetExperience(double experience)
@@ -198,18 +196,18 @@ namespace GalWar
 
             //plus 1 constant as a bonus for acquiring new planets before population exceeds quality on existing planets
             //and to make even pitiful planets have a small carrying capacity
-            return ( 1 + growth * PopulationGrowth );
+            return (1 + growth * PopulationGrowth);
         }
 
         internal static double GetColonizationMult(Game game)
         {
-            double turnMult = 1 + Math.Log(( 130 + game.Turn ) / 130.0);
+            double turnMult = 1 + Math.Log((130 + game.Turn) / 130.0);
             return Game.Random.GaussianOE(turnMult, ColonizationCostRndm, Consts.LimitPct(ColonizationCostRndm * Math.Sqrt(turnMult)), .39);
         }
 
         internal static double GetColonizationCost(double value, double mult)
         {
-            return 0.78 * mult * value * Math.Pow(value / ( AverageQuality + PlanetConstValue ), .65);
+            return 0.78 * mult * value * Math.Pow(value / (AverageQuality + PlanetConstValue), .65);
         }
 
         public static double GetMovePopCost(double mapSize, int population, double soldiers)
@@ -245,12 +243,12 @@ namespace GalWar
         //upkeep payoff is the number of turns the ship is expected to live
         private static double GetUpkeepPayoff(double mapSize, double nonColonyPct, double nonTransPct, double speed)
         {
-            return ( .78 * Math.Sqrt(mapSize) * ScalePct(.39, 1, nonColonyPct) * ScalePct(1.69, 1, nonTransPct) * ( 4.2 / ( speed + 2.1 ) ) );
+            return (.78 * Math.Sqrt(mapSize) * ScalePct(.39, 1, nonColonyPct) * ScalePct(1.69, 1, nonTransPct) * (4.2 / (speed + 2.1)));
         }
 
         internal static double ScalePct(double zero, double one, double pct)
         {
-            return ( zero + ( one - zero ) * pct );
+            return (zero + (one - zero) * pct);
         }
 
         public static double GetNonColonyPct(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, Game game, bool sqr)
@@ -258,7 +256,7 @@ namespace GalWar
             double retVal = 1;
             if (colony)
             {
-                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / ( 1.0 + 13 / (double)trans ), false, bombardDamage, game.AvgResearch)
+                retVal = ShipDesign.GetTotCost(att, def, hp, speed, trans / (1.0 + 13 / (double)trans), false, bombardDamage, game.AvgResearch)
                         / ShipDesign.GetTotCost(att, def, hp, speed, trans, colony, bombardDamage, game.AvgResearch);
                 if (sqr)
                     retVal *= retVal;
@@ -290,13 +288,13 @@ namespace GalWar
         {
             int min, max;
             double maxStr = GetInvadeStrength(attackers, soldiers, gold, defenseBase, out min);
-            double minStr = GetInvadeStrength(attackers, soldiers, gold, defenseBase * ( 1 + InvadeMultRandMax ), out max);
-            double avgStr = ( maxStr + minStr ) / 2.0;
+            double minStr = GetInvadeStrength(attackers, soldiers, gold, defenseBase * (1 + InvadeMultRandMax), out max);
+            double avgStr = (maxStr + minStr) / 2.0;
 
             if (attackers > 1)
             {
 
-                if (( max == attackers ) && ( min == 1 ) && max - min > 1)
+                if ((max == attackers) && (min == 1) && max - min > 1)
                     ;
 
                 double lowPct = 0, highPct = 0;
@@ -304,7 +302,7 @@ namespace GalWar
                     lowPct = FindInvadeStrengthPct(attackers, soldiers, gold, defenseBase, false);
                 if (min == 1)
                     highPct = FindInvadeStrengthPct(attackers, soldiers, gold, defenseBase, true);
-                avgStr = minStr * lowPct + maxStr * highPct + avgStr * ( 1 - lowPct - highPct );
+                avgStr = minStr * lowPct + maxStr * highPct + avgStr * (1 - lowPct - highPct);
             }
 
             return avgStr;
@@ -318,19 +316,19 @@ namespace GalWar
                 int retVal = TBSUtil.FindValue(delegate (int value)
                 {
                     int ret;
-                    GetInvadeStrength(attackers, soldiers, gold, defenseBase * ( 1 + interval * value ), out ret);
-                    return ( high ? ret > 1 : ret < attackers );
+                    GetInvadeStrength(attackers, soldiers, gold, defenseBase * (1 + interval * value), out ret);
+                    return (high ? ret > 1 : ret < attackers);
                 }, 0, max, high);
                 if (!high)
-                    retVal = ( max - retVal );
-                return retVal / ( 1.0 + max );
+                    retVal = (max - retVal);
+                return retVal / (1.0 + max);
             }
         }
 
         private static double GetInvadeStrength(int attackers, double soldiers, int gold, double totalDefense, out int initialWave)
         {
             double attack = GetInvadeStrengthBase(attackers, soldiers, InvadeStrength, InvadeNumbersPower);
-            initialWave = TBSUtil.FindValue(value => ( value * GetInvadeStrength(value, attack, gold) > totalDefense ), 1, attackers, true);
+            initialWave = TBSUtil.FindValue(value => (value * GetInvadeStrength(value, attack, gold) > totalDefense), 1, attackers, true);
             return GetInvadeStrength(initialWave, attack, gold);
         }
         private static double GetInvadeStrength(int initialWave, double attack, int gold)
@@ -354,13 +352,13 @@ namespace GalWar
         private static double GetInvadeStrengthBase(int troops, double soldiers, double strength, double power)
         {
             if (troops > 0)
-                return strength * Math.Pow(troops + soldiers, power) * ( 1 + soldiers / (double)troops );
+                return strength * Math.Pow(troops + soldiers, power) * (1 + soldiers / (double)troops);
             throw new Exception();
         }
 
         private static double RandomizeInvadeStrength(double str)
         {
-            return str * ( 1 + Game.Random.DoubleHalf(InvadeMultRandMax) );
+            return str * (1 + Game.Random.DoubleHalf(InvadeMultRandMax));
         }
 
         public static int GetPlanetDamage(int population)
@@ -374,8 +372,8 @@ namespace GalWar
                 return 0;
             if (damage >= ship.MaxHP)
                 return ship.Population;
-            return ( damage / (double)ship.MaxHP * ship.MaxPop * Consts.TransLossMult
-                    * Math.Pow(ship.Population / (double)ship.MaxPop, Consts.TransLossPctPower) );
+            return (damage / (double)ship.MaxHP * ship.MaxPop * Consts.TransLossMult
+                    * Math.Pow(ship.Population / (double)ship.MaxPop, Consts.TransLossPctPower));
         }
 
         public static double GetBombardDamage(double att)
@@ -388,8 +386,8 @@ namespace GalWar
             avgAtt = 0;
             avgDef = 0;
             IDictionary<int, double> damageTable = new SortedDictionary<int, double>();
-            for (int a = 0 ; a <= att ; ++a)
-                for (int d = 0 ; d <= def ; ++d)
+            for (int a = 0; a <= att; ++a)
+                for (int d = 0; d <= def; ++d)
                 {
                     int damage = a - d;
                     if (damage > 0)
@@ -400,7 +398,7 @@ namespace GalWar
                     damageTable.TryGetValue(damage, out val);
                     damageTable[damage] = val + 1;
                 }
-            double mult = att / ( att + 1.0 ) / ( def + 1.0 );
+            double mult = att / (att + 1.0) / (def + 1.0);
             avgAtt *= mult;
             avgDef *= mult;
             return damageTable;
@@ -409,14 +407,14 @@ namespace GalWar
         public static double LimitPct(double chance)
         {
             if (chance > .5)
-                chance /= ( chance + .5 );
+                chance /= (chance + .5);
             return chance;
         }
 
         public static double LimitMin(double value, double min)
         {
             if (value < min)
-                value = min * min / ( 2.0 * min - value );
+                value = min * min / (2.0 * min - value);
             return value;
         }
     }

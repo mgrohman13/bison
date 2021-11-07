@@ -740,10 +740,10 @@ namespace GalWar
                     colony.BuildSoldiersAndDefenses(value);
                     break;
                 case AnomalyType.Soldiers:
-                    colony.BuildSoldiers(value, true);
+                    colony.BuildSoldiers(value);
                     break;
                 case AnomalyType.PlanetDefenses:
-                    colony.BuildPlanetDefense(value, true);
+                    colony.BuildPlanetDefense(value);
                     break;
                 case AnomalyType.Production:
                     colony.AddProduction(value);

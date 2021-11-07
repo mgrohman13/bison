@@ -54,11 +54,20 @@ namespace GalWar
                 return null;
             }
         }
+
+        public virtual double Upkeep
+        {
+            get
+            {
+                return production * Consts.GetProductionUpkeepMult(colony.Player.Game.MapSize);
+            }
+        }
+
         public string GetProdText(string curProd)
         {
             TurnException.CheckTurn(colony.Player);
 
-            return ( this.Cost.HasValue ? curProd + " / " + this.Cost.Value.ToString() : string.Empty );
+            return (this.Cost.HasValue ? curProd + " / " + this.Cost.Value.ToString() : curProd);
         }
 
         internal abstract List<Ship> Build(IEventHandler handler, double production);

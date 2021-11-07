@@ -45,7 +45,7 @@ namespace GalWarWin
 
             designs = new SortedSet<Buildable>(colony.Buildable, this);
             this.lbxDesigns.Items.AddRange(designs.ToArray());
-            this.lbxDesigns.Items.Insert(5, string.Empty);
+            this.lbxDesigns.Items.Insert(3, string.Empty);
 
             this.lbxDesigns.SelectedItem = colony.CurBuild;
         }
@@ -89,16 +89,12 @@ namespace GalWarWin
             {
                 if (b is BuildGold)
                     return 0;
-                if (b is StoreProd)
+                if (b is BuildInfrastructure)
                     return 1;
-                if (b is BuildSoldiers)
+                if (b is StoreProd)
                     return 2;
-                if (b is BuildAttack)
-                    return 3;
-                if (b is BuildDefense)
-                    return 4;
                 if (b is BuildShip)
-                    return 5;
+                    return 3;
                 throw new Exception();
             };
             int retVal = TypeComp(b1) - TypeComp(b2);

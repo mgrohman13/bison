@@ -44,7 +44,7 @@ namespace GalWar
                 int[] values = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
                 string[] numerals = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
 
-                for (int i = 0 ; i < values.Length ; ++i)
+                for (int i = 0; i < values.Length; ++i)
                     while (number >= values[i])
                     {
                         number -= values[i];
@@ -112,7 +112,7 @@ namespace GalWar
                 planetPct *= Math.Sqrt(MapSize);
                 this._planetPct = (float)Random.GaussianCapped(planetPct / 210.0, .078, planetPct / 260.0);
                 double min = this.PlanetPct + 0.13;
-                this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + ( numPlayers + 6.5 ) * .013, .169, min);
+                this._anomalyPct = (float)Random.GaussianCapped(min + MapSize * .000169 + (numPlayers + 6.5) * .013, .169, min);
 
                 this._avgResearch = (float)GetStartDouble(Consts.StartResearch * .78);
 
@@ -217,7 +217,7 @@ namespace GalWar
         {
             get
             {
-                return ( this._undoStack ?? ( this._undoStack = new Stack<IUndoCommand>() ) );
+                return (this._undoStack ?? (this._undoStack = new Stack<IUndoCommand>()));
             }
         }
 
@@ -283,22 +283,22 @@ namespace GalWar
         {
             //temporary starting wormholes to space out initial map generation somewhat
             double avgWormholes = Math.Pow(MapSize, .26) / Math.PI;
-            int wormholes = Random.GaussianOEInt(avgWormholes, .065, .065, ( ( avgWormholes > 1 ) ? 1 : 0 ));
-            for (int a = 0 ; a < wormholes ; ++a)
+            int wormholes = Random.GaussianOEInt(avgWormholes, .065, .065, ((avgWormholes > 1) ? 1 : 0));
+            for (int a = 0; a < wormholes; ++a)
                 CreateWormhole(GetRandomTile(), GetRandomTile());
 
             //first create homeworlds
             while (GetPlanets().Count < numPlayers)
                 NewPlanet();
             //starting planets are actually just chances to create one after homeworlds
-            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ( ( planetPct > 1 ) ? 1 : 0 ));
-            for (int a = 0 ; a < startPlanets ; ++a)
+            int startPlanets = Random.GaussianOEInt(planetPct, .13, .091, ((planetPct > 1) ? 1 : 0));
+            for (int a = 0; a < startPlanets; ++a)
                 NewPlanet();
 
             //starting anomalies
             double anomalyPct = this.AnomalyPct * Consts.StartAnomalies;
-            int startAnomalies = Random.GaussianOEInt(anomalyPct, .39, .13, ( ( anomalyPct > 1 ) ? 1 : 0 ));
-            for (int a = 0 ; a < startAnomalies ; ++a)
+            int startAnomalies = Random.GaussianOEInt(anomalyPct, .39, .13, ((anomalyPct > 1) ? 1 : 0));
+            for (int a = 0; a < startAnomalies; ++a)
                 CreateAnomaly();
         }
 
@@ -329,7 +329,7 @@ namespace GalWar
             //homeworlds count as single planets regardless of quality, anomalies count as their chance of being a planet,
             //and actual current uncolonized planets count as their planet value
             double numPlanets = numPlayers + CountAnomPlanets() + GetPlanets().Where(planet => planet.Colony == null)
-                    .Sum(planet => planet.PlanetValue / ( Consts.AverageQuality + Consts.PlanetConstValue ));
+                    .Sum(planet => planet.PlanetValue / (Consts.AverageQuality + Consts.PlanetConstValue));
             //divide starting gold by the number of planets per player, and randomize 
             startGold = GetStartDouble(startGold * numPlayers / numPlanets);
 
@@ -343,27 +343,30 @@ namespace GalWar
                     startProd += design.Cost * weight;
                     count += weight;
                     //non-conoly ships only have a half-chance of increasing the maximum
-                    if (design.Cost > max && ( design.Colony || Random.Bool() ))
+                    if (design.Cost > max && (design.Colony || Random.Bool()))
                         max = design.Cost;
                 }
             //average the maximum and average design cost, reduce by StartGoldProdPct, and randomize 
-            startProd = GetStartDouble(( startProd / count + max ) / 2.0 * ( 1 - Consts.StartGoldProdPct ));
+            startProd = GetStartDouble((startProd / count + max) / 2.0 * (1 - Consts.StartGoldProdPct));
             double moveOrderGold = Consts.GetMoveOrderGold(this.players);
 
             double startSoldiers = GetStartDouble(startPop / 1.69);
-            double startDefense = GetStartDouble(( startSoldiers + startProd ) / 2.6);
-            int startDefenseSteps = (int)Math.Floor(( startDefense / Colony.GetMultedProd(startPop * Consts.Income) - 1 ) / Consts.FLOAT_ERROR_ONE);
+            double startDefense = GetStartDouble((startSoldiers + startProd) / 2.6);
+            int startDefenseSteps = 3;
 
-            for (this.currentPlayer = 0 ; this.currentPlayer < numPlayers ; ++this.currentPlayer)
+            for (this.currentPlayer = 0; this.currentPlayer < numPlayers; ++this.currentPlayer)
             {
                 //will always have exactly one colony at this point, the homeworld
                 Colony homeworld = CurrentPlayer.GetColonies()[0];
 
                 //starting soldiers and defense
-                for (int a = 0 ; a < startDefenseSteps ; ++a)
+                for (int a = 0; a < startDefenseSteps; a++)
                 {
-                    homeworld.BuildSoldiers(startSoldiers / startDefenseSteps, false);
-                    homeworld.BuildPlanetDefense(startDefense / startDefenseSteps, true);
+                    double pct = .65;
+                    double pd = startDefense / startDefenseSteps;
+                    homeworld.BuildPlanetDefense(pd, pd * pct);
+                    double sold = startSoldiers / startDefenseSteps;
+                    homeworld.BuildSoldiers(sold, sold * pct);
                 }
 
                 //starting gold is divided by each indivual player's homeworld quality
@@ -381,7 +384,7 @@ namespace GalWar
 
                 //calculations to offset AddProduction when currently building StoreProd
                 addProduction /= Consts.StoreProdRatio;
-                addGold -= addProduction * ( 1 - Consts.StoreProdRatio ) / Consts.ProductionForGold;
+                addGold -= addProduction * (1 - Consts.StoreProdRatio) / Consts.ProductionForGold;
 
                 //actually add in starting gold and production
                 CurrentPlayer.AddGold(addGold);
@@ -410,7 +413,7 @@ namespace GalWar
             List<Planet> homeworlds;
 
             //we may need to add another valid homeworld
-            while (( homeworlds = GetAvailableHomeworlds(startPop) ).Count == 0)
+            while ((homeworlds = GetAvailableHomeworlds(startPop)).Count == 0)
             {
                 //we dont want to change the number of planets, so take one out first
                 this.RemovePlanet(Random.SelectValue(GetPlanets().Where(planet => planet.Colony == null)));
@@ -427,7 +430,7 @@ namespace GalWar
             //planets can only be used as homeworlds if they have enough quality to support the initial population
             return GetPlanets().Where(planet => planet.Quality > startPop && planet.Colony == null
                     //and are far enough away from other homeworlds
-                    && colonies.All(colony => ( Tile.GetDistance(planet.Tile, colony.Tile) > Consts.HomeworldDistance ))).ToList();
+                    && colonies.All(colony => (Tile.GetDistance(planet.Tile, colony.Tile) > Consts.HomeworldDistance))).ToList();
         }
         private double CountAnomPlanets()
         {
@@ -448,7 +451,7 @@ namespace GalWar
                         {
                             double value;
                             distanceChances.TryGetValue(dist, out value);
-                            distanceChances[dist] = 1 - ( ( 1 - value ) * ( 1 - pair.Value ) );
+                            distanceChances[dist] = 1 - ((1 - value) * (1 - pair.Value));
                         }
                     }
 
@@ -457,7 +460,7 @@ namespace GalWar
                     foreach (var pair in distanceChances)
                     {
                         anomPlanetRate += chance * pair.Value * GetPlanetChance(pair.Key);
-                        chance *= ( 1 - pair.Value );
+                        chance *= (1 - pair.Value);
                     }
                     anomPlanetRate += chance * GetPlanetChance(planetDist);
 
@@ -640,7 +643,7 @@ namespace GalWar
         private Player[] GetOrder(Func<Player, double> Func)
         {
             Player[] players = this.players.ToArray();
-            Array.Sort<Player>(players, (p1, p2) => ( Math.Sign(Func(p2) - Func(p1)) ));
+            Array.Sort<Player>(players, (p1, p2) => (Math.Sign(Func(p2) - Func(p1))));
             return players;
         }
 
@@ -695,7 +698,7 @@ namespace GalWar
 
                 Graphs temp = this.Graphs;
                 this.Graphs = null;
-                TBSUtil.SaveGame(this, AutoSavePath + "/../replay/" + this.ID, turn + "_" + ( currentPlayer + 1 ) + ".gws");
+                TBSUtil.SaveGame(this, AutoSavePath + "/../replay/" + this.ID, turn + "_" + (currentPlayer + 1) + ".gws");
                 this.Graphs = temp;
             }
         }
@@ -779,7 +782,7 @@ namespace GalWar
             int count = wormholes.Sum(w => w.Tiles.Count());
             if (count > 0)
             {
-                double chance = count / ( 130.0 + count );
+                double chance = count / (130.0 + count);
                 if (PlayerTurnChance(chance))
                     return RemoveWormholeExit(Random.SelectValue(wormholes));
             }
@@ -798,10 +801,10 @@ namespace GalWar
         internal bool CreateWormhole(IEventHandler handler, Tile tile, Tile target, Ship anomShip)
         {
             double chance = GetWormholes().Sum(w => w.Tiles.Count());
-            chance = Math.Pow(2.1 / ( 2.6 + chance ), 1.69);
+            chance = Math.Pow(2.1 / (2.6 + chance), 1.69);
             if (tile.Wormhole != null || target.Wormhole != null)
                 chance = 1;
-            if (tile != target && ( tile.Wormhole == null || tile.Wormhole != target.Wormhole ) && Random.Bool(chance))
+            if (tile != target && (tile.Wormhole == null || tile.Wormhole != target.Wormhole) && Random.Bool(chance))
             {
                 //check if any tiles are next to each other
                 var all = new Tile[] { tile, target }.SelectMany(t =>
@@ -848,9 +851,9 @@ namespace GalWar
                 else
                     SetWormholes(old);
             }
-            else if (!( tile != target ))
+            else if (!(tile != target))
                 ;
-            else if (!( tile.Wormhole == null || tile.Wormhole != target.Wormhole ))
+            else if (!(tile.Wormhole == null || tile.Wormhole != target.Wormhole))
             {
                 if (tile.Wormhole == null)
                     ;
@@ -913,7 +916,7 @@ namespace GalWar
             if (dist > Consts.PlanetDistance)
             {
                 value = .91 + dist - Consts.PlanetDistance - 1;
-                value = Math.Sqrt(value / ( 9.1 + Math.Pow(MapSize, .21) + value ));
+                value = Math.Sqrt(value / (9.1 + Math.Pow(MapSize, .21) + value));
                 if (anomChance.HasValue)
                     value *= anomChance.Value * this.PlanetPct / this.AnomalyPct;
             }
@@ -935,7 +938,7 @@ namespace GalWar
         {
             List<Anomaly> anomalies = new List<Anomaly>();
             int create = Random.OEInt(this.AnomalyPct / (double)this.players.Count);
-            for (int a = 0 ; a < create ; ++a)
+            for (int a = 0; a < create; ++a)
             {
                 Anomaly anomaly = CreateAnomaly();
                 if (anomaly != null)
@@ -963,9 +966,9 @@ namespace GalWar
                 double shipWeight = 0, popWeight = 0;
                 foreach (SpaceObject spaceObject in this.GetSpaceObjects())
                 {
-                    Ship ship = ( spaceObject as Ship );
-                    Planet planet = ( spaceObject as Planet );
-                    Colony colony = ( planet == null ? null : planet.Colony );
+                    Ship ship = (spaceObject as Ship);
+                    Planet planet = (spaceObject as Planet);
+                    Colony colony = (planet == null ? null : planet.Colony);
                     if (ship != null)
                     {
                         shipWeight += GetShipWeight(ship);
@@ -987,7 +990,7 @@ namespace GalWar
                 if (popWeight > 0)
                     popWeight = 1 / Math.Sqrt(popWeight);
 
-                for (int a = 0 ; a < amt ; ++a)
+                for (int a = 0; a < amt; ++a)
                     AdjustCenter(shipWeight, popWeight, AnomalyWeight);
             }
         }
@@ -1003,9 +1006,9 @@ namespace GalWar
                 if (distance > 0)
                 {
                     double weight = 0;
-                    Ship ship = ( spaceObject as Ship );
-                    Planet planet = ( spaceObject as Planet );
-                    Colony colony = ( planet == null ? null : planet.Colony );
+                    Ship ship = (spaceObject as Ship);
+                    Planet planet = (spaceObject as Planet);
+                    Colony colony = (planet == null ? null : planet.Colony);
                     if (ship != null)
                         weight += shipWeight * GetShipWeight(ship) + popWeight * GetPopWeight(ship);
                     if (planet != null)
@@ -1016,7 +1019,7 @@ namespace GalWar
                         weight += anomalyWeight;
 
                     HashSet<Tile> neighbors = Tile.GetNeighbors(centerTile);
-                    neighbors.RemoveWhere(neighbor => ( Tile.GetDistance(neighbor, spaceObject.Tile) >= distance ));
+                    neighbors.RemoveWhere(neighbor => (Tile.GetDistance(neighbor, spaceObject.Tile) >= distance));
 
                     //sqrt because final values will be squared
                     weight *= distance / Math.Sqrt(neighbors.Count);
@@ -1047,7 +1050,7 @@ namespace GalWar
         }
         private static double GetProdWeight(Colony colony)
         {
-            int att = colony.Player.PDAtt, def = colony.Player.PDDef;
+            int att = colony.Player.PlanetDefenses.Att, def = colony.Player.PlanetDefenses.Def;
             double prodMult = ShipDesign.GetPlanetDefenseStrength(att, def) / ShipDesign.GetPlanetDefenseCost(att, def, colony.Player.Game.AvgResearch);
             double str = colony.PDStrength + colony.production2 * prodMult;
             return GetCenterWeight(str, str, 1);
@@ -1058,7 +1061,7 @@ namespace GalWar
         }
         private static double GetCenterWeight(double str, double value, double pct)
         {
-            return ( 2.6 * str + value ) * Math.Sqrt(pct);
+            return (2.6 * str + value) * Math.Sqrt(pct);
         }
 
         public Rectangle GetGameBounds(params Tile[] include)
@@ -1114,9 +1117,9 @@ namespace GalWar
 
         private void AdjustAvgResearch()
         {
-            double avgResearch = this.players.Average(player => ( 2 * player.ResearchDisplay + 6 * player.Research + 13 * player.GetLastResearched() ) / 21.0);
+            double avgResearch = this.players.Average(player => (2 * player.ResearchDisplay + 6 * player.Research + 13 * player.GetLastResearched()) / 21.0);
             //adjust AvgResearch by the average player income at maximum emphasis every full turn round
-            double add = players.Average(player => player.GetTotalIncome()) * Consts.EmphasisValue / ( Consts.EmphasisValue + 2.0 ) / players.Count();
+            double add = players.Average(player => player.GetTotalIncome()) * Consts.EmphasisValue / (Consts.EmphasisValue + 2.0) / players.Count();
             //Console.WriteLine("this.AvgResearch " + this.AvgResearch.ToString(".000").PadLeft(10));
             //Console.WriteLine("avgResearch      " + avgResearch.ToString(".000").PadLeft(10));
             //Console.WriteLine("add              " + ( Math.Sign(avgResearch - this.AvgResearch) * add ).ToString(".000").PadLeft(10));
@@ -1182,13 +1185,13 @@ namespace GalWar
             {
                 result.Add(victory);
                 //if one of the last two players gained a research victory, we will need to manually add the loser
-                foundCurrent = ( victory.Player == this.players[0] );
+                foundCurrent = (victory.Player == this.players[0]);
             }
 
             if (!foundCurrent)
                 result.Add(new Result(this.players[0], false));
 
-            for (int i = this.deadPlayers.Count ; --i > -1 ;)
+            for (int i = this.deadPlayers.Count; --i > -1;)
                 result.Add(this.deadPlayers[i]);
 
             //add in the final point score
@@ -1208,7 +1211,7 @@ namespace GalWar
 
         public bool CanUndo()
         {
-            return ( undoStack.Count > 0 );
+            return (undoStack.Count > 0);
         }
 
         public Tile Undo(IEventHandler handler)
@@ -1349,7 +1352,7 @@ namespace GalWar
                     this.Player = player;
                     //extra points are awarded for gaining a research victory as quickly as possible
                     double mult = Math.Pow(player.Game.MapSize, Consts.PointsTilesPower) / (double)player.Game.Turn;
-                    this._points = (sbyte)Random.Round(mult * ( won ? Consts.WinPointsMult : Consts.LosePointsMult ));
+                    this._points = (sbyte)Random.Round(mult * (won ? Consts.WinPointsMult : Consts.LosePointsMult));
                 }
             }
             public int Points
@@ -1373,9 +1376,9 @@ namespace GalWar
                 int add = -1;
                 int min = int.MaxValue;
                 //adds in (x^2+x)/2 points, where x is the inverse index
-                for (int i = results.Count ; --i > -1 ;)
+                for (int i = results.Count; --i > -1;)
                 {
-                    int newPoints = results[i].Points + ( points += ( ++add ) );
+                    int newPoints = results[i].Points + (points += (++add));
                     results[i].Points = newPoints;
                     min = Math.Min(min, newPoints);
                 }

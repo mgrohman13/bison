@@ -53,16 +53,16 @@ namespace GalWarWin
                 this.lblUpkeepL.Text = "Upkeep";
                 this.lblUpkeep.Text = MainForm.FormatDouble(colony.PDUpkeep);
 
-                if (colony.CurBuild is PlanetDefense)
-                {
-                    this.lblInc.Visible = true;
-                    this.lblIncL.Visible = true;
+                //if (colony.CurBuild is BuildInfrastructure)
+                //{
+                //    this.lblInc.Visible = true;
+                //    this.lblIncL.Visible = true;
 
-                    double d1 = 0, production = 0, d2 = 0;
-                    int i = 0;
-                    colony.GetTurnIncome(ref d1, ref production, ref d2, ref i, false);
-                    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.CurBuild, colony.CurBuild.Production + production);
-                }
+                //    double d1 = 0, production = 0, d2 = 0;
+                //    int i = 0;
+                //    colony.GetTurnIncome(ref d1, ref production, ref d2, ref i, false);
+                //    this.lblInc.Text = MainForm.GetBuildingDefense(colony, colony.CurBuild, colony.CurBuild.Production + production);
+                //}
             }
             else
             {

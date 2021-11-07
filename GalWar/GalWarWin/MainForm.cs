@@ -193,7 +193,7 @@ namespace GalWarWin
 
         private void SetBtnShowMovesText()
         {
-            btnShowMoves.Text = ( ( showMoves && !showAtt ) ? "Enemy Attacks" : "Enemy Moves" );
+            btnShowMoves.Text = ((showMoves && !showAtt) ? "Enemy Attacks" : "Enemy Moves");
         }
 
         private int ClientHeight
@@ -217,23 +217,23 @@ namespace GalWarWin
         }
         private void Center(bool always)
         {
-            if (selected != null && ( always || !SelectedVisible() ))
+            if (selected != null && (always || !SelectedVisible()))
                 Center(selected);
             else
                 VerifyScalePan();
         }
         private void Center(Tile tile)
         {
-            Tile center = GetTile(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
-            panX += ( center.X - tile.X ) * scale;
-            panY += ( center.Y - tile.Y ) * scale;
+            Tile center = GetTile(new PointForm((this.Width - pnlHUD.Width) / 2, this.Height / 2));
+            panX += (center.X - tile.X) * scale;
+            panY += (center.Y - tile.Y) * scale;
             VerifyScalePan();
         }
         private bool SelectedVisible()
         {
             Rectangle gameBounds = GetGameBounds();
             int x = selected.X, y = selected.Y;
-            return ( x > gameBounds.Left + 1 && x < gameBounds.Right - 1 && y > gameBounds.Top + 1 && y < gameBounds.Bottom - 1 );
+            return (x > gameBounds.Left + 1 && x < gameBounds.Right - 1 && y > gameBounds.Top + 1 && y < gameBounds.Bottom - 1);
         }
 
         private const float ShipDetailScale = 9.1f;
@@ -261,11 +261,11 @@ namespace GalWarWin
                     {
                         Ship ship;
                         Planet planet;
-                        if (( ship = ( obj as Ship ) ) != null)
+                        if ((ship = (obj as Ship)) != null)
                         {
                             GetVals(ref minStr, ref maxStr, (float)ship.GetStrength() * ship.HP / (float)ship.MaxHP);
                         }
-                        else if (( planet = ( obj as Planet ) ) != null)
+                        else if ((planet = (obj as Planet)) != null)
                         {
                             GetVals(ref minQuality, ref maxQuality, planet.Quality);
                             Colony colony = planet.Colony;
@@ -292,13 +292,13 @@ namespace GalWarWin
 
                     if (scale > GridScale && !showDist)
                     {
-                        int capacity = ( ( gameBounds.Width + 3 ) * ( gameBounds.Height + 1 ) * 2 ) / 3;
+                        int capacity = ((gameBounds.Width + 3) * (gameBounds.Height + 1) * 2) / 3;
                         List<RectangleF> rects = new List<RectangleF>(capacity);
-                        for (int y = gameBounds.Top ; y <= gameBounds.Bottom ; ++y)
+                        for (int y = gameBounds.Top; y <= gameBounds.Bottom; ++y)
                         {
                             //we can skip drawing every 3rd rectangle as a decent optimization
-                            int skip = ( y % 2 == 0 ? 1 : 0 );
-                            for (int x = gameBounds.Left ; x <= gameBounds.Right ; ++x)
+                            int skip = (y % 2 == 0 ? 1 : 0);
+                            for (int x = gameBounds.Left; x <= gameBounds.Right; ++x)
                                 if (++skip == 3 && x != gameBounds.Right)
                                     skip = 0;
                                 else
@@ -329,8 +329,8 @@ namespace GalWarWin
                         drawTiles.UnionWith(moves.Keys);
                     }
 
-                    gameBounds = new Rectangle(gameBounds.X - ( gameBounds.Top % 2 == 0 ? 1 : 0 ), gameBounds.Y,
-                            gameBounds.Width + ( gameBounds.Top % 2 == 0 ? 3 : 2 ), gameBounds.Height + 1);
+                    gameBounds = new Rectangle(gameBounds.X - (gameBounds.Top % 2 == 0 ? 1 : 0), gameBounds.Y,
+                            gameBounds.Width + (gameBounds.Top % 2 == 0 ? 3 : 2), gameBounds.Height + 1);
 
                     //foreach (Tile tile in Game.GetSpaceObjects().OfType<Ship>().SelectMany(ship => Tile.GetNeighbors(ship.Tile)))
                     //{
@@ -386,7 +386,7 @@ namespace GalWarWin
                                     float x = rect.Left + rect.Width / 2f, y = rect.Top + rect.Height / 2f;
                                     int dist = path.Count() - 1;
                                     g.DrawString(dist.ToString(), font, brush, x, y);
-                                    g.DrawString(Math.Ceiling(( dist - selectedShip.CurSpeed ) / (double)selectedShip.MaxSpeed).ToString(),
+                                    g.DrawString(Math.Ceiling((dist - selectedShip.CurSpeed) / (double)selectedShip.MaxSpeed).ToString(),
                                             font, brush, x, y + g.MeasureString(dist.ToString(), font).Height + 3f);
                                 }
                         }
@@ -437,7 +437,7 @@ namespace GalWarWin
                     {
                         float telCount = Game.GetWormholes().Count + 1f;
                         float min = 520f / telCount / telCount;
-                        int color = (int)( .5f + min + telNum * ( 255f - min ) / telCount );
+                        int color = (int)(.5f + min + telNum * (255f - min) / telCount);
                         brush = new SolidBrush(Color.FromArgb(color, color, color));
                     }
                     g.FillRectangle(brush, RectangleF.Inflate(rect, .5f, .5f));
@@ -452,10 +452,10 @@ namespace GalWarWin
                     if (scale <= GridScale)
                     {
                         anomaly = RectangleF.Inflate(anomaly, -1f, -1f);
-                        if (anomaly.Width < ( rect.Width > 3.5f ? 2f : 1f ))
-                            anomaly.Width = ( rect.Width > 3.5f ? 2f : 1f );
-                        if (anomaly.Height < ( rect.Height > 3.5f ? 2f : 1f ))
-                            anomaly.Height = ( rect.Height > 3.5f ? 2f : 1f );
+                        if (anomaly.Width < (rect.Width > 3.5f ? 2f : 1f))
+                            anomaly.Width = (rect.Width > 3.5f ? 2f : 1f);
+                        if (anomaly.Height < (rect.Height > 3.5f ? 2f : 1f))
+                            anomaly.Height = (rect.Height > 3.5f ? 2f : 1f);
                     }
                     g.FillRectangle(Brushes.White, anomaly);
                 }
@@ -463,9 +463,9 @@ namespace GalWarWin
                 {
                     Ship ship;
                     Planet planet;
-                    if (( ship = ( spaceObject as Ship ) ) != null)
+                    if ((ship = (spaceObject as Ship)) != null)
                         DrawShip(g, scale, rect, ship, minStr, maxStr);
-                    else if (( planet = ( spaceObject as Planet ) ) != null)
+                    else if ((planet = (spaceObject as Planet)) != null)
                         DrawPlanet(g, scale, rect, planet, minQuality, maxQuality, minPop, maxPop);
                 }
 
@@ -476,7 +476,7 @@ namespace GalWarWin
                     float move;
                     if (moves.TryGetValue(tile, out move))
                     {
-                        string s = ( showAtt ? FormatDouble(move) : FormatInt(move) );
+                        string s = (showAtt ? FormatDouble(move) : FormatInt(move));
                         if (showAtt)
                             foreach (Tile neighbor in Tile.GetNeighbors(tile))
                             {
@@ -495,7 +495,7 @@ namespace GalWarWin
         }
         private static RectangleF GetDrawRect(int x, int y)
         {
-            return new RectangleF(panX + scale * x + ( y % 2 == 0 ? 0f : scale / 2f ), panY + scale * y, scale, scale);
+            return new RectangleF(panX + scale * x + (y % 2 == 0 ? 0f : scale / 2f), panY + scale * y, scale, scale);
         }
 
         private Rectangle GetGameBounds()
@@ -517,8 +517,8 @@ namespace GalWarWin
             Ship ship;
             if (tile == selected || tile == dialogTile)
                 size = 3f;
-            else if (spaceObject is Planet || ( scale > GridScale && ( ship = ( spaceObject as Ship ) ) != null && ship.Player.IsTurn && ship.CurSpeed > 0 )
-                    || ( isDialog && ValidDialogTile(tile, spaceObject) ))
+            else if (spaceObject is Planet || (scale > GridScale && (ship = (spaceObject as Ship)) != null && ship.Player.IsTurn && ship.CurSpeed > 0)
+                    || (isDialog && ValidDialogTile(tile, spaceObject)))
                 size = 2f;
             if (scale <= GridScale)
                 size -= 1f;
@@ -607,17 +607,17 @@ namespace GalWarWin
         {
             if (scale <= GridScale)
             {
-                float big = 1f - ( 1f - ( smallInvsPct + inc ) ) / 3f;
-                if (big > ( scale - 1f ) / scale)
-                    big = ( scale - 1f ) / scale;
-                smallInvsPct = .5f + 2f / scale + ( smallInvsPct - .5f ) / 3f;
+                float big = 1f - (1f - (smallInvsPct + inc)) / 3f;
+                if (big > (scale - 1f) / scale)
+                    big = (scale - 1f) / scale;
+                smallInvsPct = .5f + 2f / scale + (smallInvsPct - .5f) / 3f;
                 if (smallInvsPct > big)
                     smallInvsPct = big;
                 inc = big - smallInvsPct;
                 if (inc < 0f)
                     inc = 0f;
             }
-            float inflate = ( -scale * ( 1f - ( smallInvsPct + inc * ( ( (float)Math.Sqrt(value) - min + 1f ) / ( max - min + 1f ) ) ) ) );
+            float inflate = (-scale * (1f - (smallInvsPct + inc * (((float)Math.Sqrt(value) - min + 1f) / (max - min + 1f)))));
             rect.Inflate(inflate, inflate);
             if (rect.Width < 1f)
                 rect.Width = 1f;
@@ -648,7 +648,7 @@ namespace GalWarWin
             if (started)
             {
                 Rectangle bounds = Game.GetGameBounds();
-                int inflate = (int)( Game.GetSpaceObjects().OfType<Ship>().Select(ship => ship.MaxSpeed).DefaultIfEmpty(1).Max() * 1.3f + 2.1f );
+                int inflate = (int)(Game.GetSpaceObjects().OfType<Ship>().Select(ship => ship.MaxSpeed).DefaultIfEmpty(1).Max() * 1.3f + 2.1f);
                 bounds.Inflate(inflate, inflate);
                 int minX = bounds.Left, minY = bounds.Top, maxX = bounds.Right, maxY = bounds.Bottom;
 
@@ -666,7 +666,7 @@ namespace GalWarWin
 
                 if (panning)
                 {
-                    float minPanX = width - scale * ( xDiameter + minX ) - padding;
+                    float minPanX = width - scale * (xDiameter + minX) - padding;
                     float maxPanX = padding - scale * minX;
                     //check min last so the map is anchored at the top
                     if (panX > maxPanX)
@@ -674,7 +674,7 @@ namespace GalWarWin
                     if (panX < minPanX)
                         panX = minPanX;
 
-                    float minPanY = height - scale * ( yDiameter + minY ) - padding;
+                    float minPanY = height - scale * (yDiameter + minY) - padding;
                     float maxPanY = padding - scale * minY;
                     //check max last so the map is anchored at the right
                     if (panY < minPanY)
@@ -704,7 +704,7 @@ namespace GalWarWin
             width = ClientSize.Width - pnlHUD.Width;
             height = ClientHeight;
             padding = 3f;
-            return Math.Min(( height - padding * 2 ) / yDiameter, ( width - padding * 2 ) / xDiameter);
+            return Math.Min((height - padding * 2) / yDiameter, (width - padding * 2) / xDiameter);
         }
 
         private Dictionary<Tile, float> GetMoves()
@@ -760,18 +760,18 @@ namespace GalWarWin
             float stat = TBSUtil.FindValue(delegate (int test)
             {
                 ++gm1;
-                return ( ShipDesign.GetStatValue(test / div) >= value );
+                return (ShipDesign.GetStatValue(test / div) >= value);
             }, min, max, true) / div;
 
-            if (( stat - min / 10.0 ) < Consts.FLOAT_ERROR_ZERO || ( max / 10.0 - stat ) < Consts.FLOAT_ERROR_ZERO)
+            if ((stat - min / 10.0) < Consts.FLOAT_ERROR_ZERO || (max / 10.0 - stat) < Consts.FLOAT_ERROR_ZERO)
                 throw new Exception();
 
-            if (( ShipDesign.GetStatValue(stat) - value ) > ( value - ShipDesign.GetStatValue(stat - digit) ))
+            if ((ShipDesign.GetStatValue(stat) - value) > (value - ShipDesign.GetStatValue(stat - digit)))
                 stat -= digit;
 
             const float adj = digit / 10f, half = .5f;
             if (Math.Abs(stat % 1f - half) < half * Consts.FLOAT_ERROR_ZERO)
-                if (( ShipDesign.GetStatValue(stat + half) - value ) > ( value - ShipDesign.GetStatValue(stat - half) ))
+                if ((ShipDesign.GetStatValue(stat + half) - value) > (value - ShipDesign.GetStatValue(stat - half)))
                     stat -= adj;
                 else
                     stat += adj;
@@ -786,7 +786,7 @@ namespace GalWarWin
 
             Colony colony;
             float statValue = 0;
-            if (showAtt && ( ( colony = combatant as Colony ) == null || colony.HP > 0 ))
+            if (showAtt && ((colony = combatant as Colony) == null || colony.HP > 0))
                 statValue = (float)ShipDesign.GetStatValue(combatant.Att);
 
             foreach (KeyValuePair<Tile, Point> pair in temp)
@@ -812,8 +812,8 @@ namespace GalWarWin
                 }
 
                 Ship ship = tile.SpaceObject as Ship;
-                if (showPlayer != null && ( tile.SpaceObject == null ||
-                        ( !showAtt && tile.SpaceObject is Anomaly ) || ( ship != null && ship.Player == showPlayer ) ))
+                if (showPlayer != null && (tile.SpaceObject == null ||
+                        (!showAtt && tile.SpaceObject is Anomaly) || (ship != null && ship.Player == showPlayer)))
                 {
                     float val;
                     totals.TryGetValue(tile, out val);
@@ -833,15 +833,15 @@ namespace GalWarWin
                     int damage = v1.X;
                     int move = v1.Y;
                     int newDamage = Math.Max(speed, damage);
-                    int newMove = speed - ( showAtt ? 1 : 0 );
+                    int newMove = speed - (showAtt ? 1 : 0);
 
                     Ship ship;
-                    if (newMove > move && ( neighbor.SpaceObject == null || neighbor.SpaceObject is Anomaly ||
-                            ( ( ship = neighbor.SpaceObject as Ship ) != null && ship.Player == enemy ) )
-                            && ( ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor) ))
+                    if (newMove > move && (neighbor.SpaceObject == null || neighbor.SpaceObject is Anomaly ||
+                            ((ship = neighbor.SpaceObject as Ship) != null && ship.Player == enemy))
+                            && (ignoreZoc || Ship.CheckZOC(enemy, tile, neighbor)))
                     {
                         retVal[neighbor] = new Point(newDamage, newMove);
-                        AddTiles(retVal, enemy, neighbor, newMove - ( showAtt ? 0 : 1 ), ignoreZoc);
+                        AddTiles(retVal, enemy, neighbor, newMove - (showAtt ? 0 : 1), ignoreZoc);
                     }
                     else if (newDamage > damage)
                     {
@@ -863,14 +863,14 @@ namespace GalWarWin
             if (scale < TextScale)
                 SetScale(TextScale);
 
-            showAtt = ( showMoves ? !showAtt : false );
+            showAtt = (showMoves ? !showAtt : false);
             showMoves = true;
             showDist = false;
             InvalidateMap();
         }
         private void SetScale(float value)
         {
-            scale = (float)( value * Consts.FLOAT_ERROR_ONE );
+            scale = (float)(value * Consts.FLOAT_ERROR_ONE);
             VerifyScale();
         }
 
@@ -968,7 +968,7 @@ namespace GalWarWin
                 tbTurns.Minimum = min;
                 tbTurns.Value = min;
 
-                tbTurns.TickFrequency = ( max - min ) / 39;
+                tbTurns.TickFrequency = (max - min) / 39;
 
                 tbTurns_Scroll(null, null);
                 tbTurns_MouseLeave(null, null);
@@ -978,7 +978,7 @@ namespace GalWarWin
         private void tbTurns_Scroll(object sender, EventArgs e)
         {
             int turn;
-            while (( Game == null ? -1 : Game.Turn ) != ( turn = (int)tbTurns.Value ))
+            while ((Game == null ? -1 : Game.Turn) != (turn = (int)tbTurns.Value))
             {
                 string filePath = GetAutosaveFolder() + "\\" + turn + "_1.gws";
                 if (File.Exists(filePath))
@@ -1141,8 +1141,8 @@ namespace GalWarWin
 
             VerifyScale();
 
-            panY -= ( scale - oldScale ) * tile.Y;
-            panX -= ( scale - oldScale ) * ( tile.X + ( tile.Y % 2 != 0 ? 1 : 0 ) );
+            panY -= (scale - oldScale) * tile.Y;
+            panX -= (scale - oldScale) * (tile.X + (tile.Y % 2 != 0 ? 1 : 0));
 
             VerifyPan();
             InvalidateMap();
@@ -1156,8 +1156,8 @@ namespace GalWarWin
         {
             if (Game == null)
                 return null;
-            int y = (int)Math.Floor(( point.Y - panY ) / scale);
-            int x = (int)Math.Floor(( ( point.X - panX ) - ( y % 2 == 0 ? 0 : scale / 2f ) ) / scale);
+            int y = (int)Math.Floor((point.Y - panY) / scale);
+            int x = (int)Math.Floor(((point.X - panX) - (y % 2 == 0 ? 0 : scale / 2f)) / scale);
             return Game.GetTile(x, y);
         }
 
@@ -1201,7 +1201,7 @@ namespace GalWarWin
             {
                 SelectTileDialog(selected, false);
                 if (selected != null)
-                    colony.RepairShip = ( GetSelectedTile().SpaceObject as Ship );
+                    colony.RepairShip = (GetSelectedTile().SpaceObject as Ship);
             }
             else
             {
@@ -1215,7 +1215,7 @@ namespace GalWarWin
         private void SelectTileDialog(Tile tile, bool build)
         {
             if (build)
-                dialog.pnlBuild.SetColony(( (Planet)tile.SpaceObject ).Colony);
+                dialog.pnlBuild.SetColony(((Planet)tile.SpaceObject).Colony);
             dialog.pnlBuild.Visible = build;
             dialog.btnCancel.Visible = true;
 
@@ -1323,7 +1323,7 @@ namespace GalWarWin
             UnHold(selected);
             movedTroops.RemoveWhere(delegate (Tuple<PopCarrier, PopCarrier> moved)
             {
-                return ( selected == moved.Item1 || selected == moved.Item2 );
+                return (selected == moved.Item1 || selected == moved.Item2);
             });
 
             saved = false;
@@ -1418,7 +1418,7 @@ namespace GalWarWin
                             //can be production repaired
                             if (planet.Colony != null && planet.Player.IsTurn && planet.Colony.RepairShip == null && planet.Colony.GetProductionIncome() > 0)
                                 return true;
-                            if (!( ship.MaxPop > 0 ))
+                            if (!(ship.MaxPop > 0))
                                 break;
                         }
                         if (ship.MaxPop > 0)
@@ -1453,7 +1453,7 @@ namespace GalWarWin
                             }
 
                             //can transfer population
-                            if (popCarrier != null && ( CanTransfer(ship, popCarrier) || ( CanTransfer(popCarrier, ship) ) )
+                            if (popCarrier != null && (CanTransfer(ship, popCarrier) || (CanTransfer(popCarrier, ship)))
                                     && !AlreadyTransfered(ship, popCarrier) && !AlreadyTransfered(popCarrier, ship))
                                 return true;
                         }
@@ -1468,7 +1468,7 @@ namespace GalWarWin
         }
         private static bool CanTransfer(PopCarrier from, PopCarrier to)
         {
-            return ( from.AvailablePop > 0 && to.FreeSpace > 0 );
+            return (from.AvailablePop > 0 && to.FreeSpace > 0);
         }
         private bool CanBeInvaded(Colony colony)
         {
@@ -1479,15 +1479,15 @@ namespace GalWarWin
 
                 foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))
                 {
-                    Ship ship = ( neighbor.SpaceObject as Ship );
-                    if (ship != null && !ship.Player.IsTurn && ( ship.Population > 0 || ship.DeathStar ))
+                    Ship ship = (neighbor.SpaceObject as Ship);
+                    if (ship != null && !ship.Player.IsTurn && (ship.Population > 0 || ship.DeathStar))
                         return true;
                 }
 
                 foreach (SpaceObject spaceObject in Game.GetSpaceObjects())
                 {
-                    Ship ship = ( spaceObject as Ship );
-                    if (ship != null && !ship.Player.IsTurn && ( ship.Population > 0 || ship.DeathStar ))
+                    Ship ship = (spaceObject as Ship);
+                    if (ship != null && !ship.Player.IsTurn && (ship.Population > 0 || ship.DeathStar))
                     {
                         var totals = new Dictionary<Tile, float>();
                         AddShip(totals, new Dictionary<Tile, Point>(), ship.Player, ship, ship.MaxSpeed);
@@ -1571,8 +1571,8 @@ namespace GalWarWin
         }
         private bool DoSelect(SpaceObject spaceObject)
         {
-            Ship ship = ( spaceObject as Ship );
-            bool retVal = ( ship == null );
+            Ship ship = (spaceObject as Ship);
+            bool retVal = (ship == null);
             if (retVal)
             {
                 Colony colony = (Colony)spaceObject;
@@ -1609,7 +1609,7 @@ namespace GalWarWin
 
                 scale = GetScale(minX, minY, maxX, maxY);
                 VerifyScale();
-                selected = Game.GetTile(Game.Random.Round(( minX + maxX ) / 2f), Game.Random.Round(( minY + maxY ) / 2f));
+                selected = Game.GetTile(Game.Random.Round((minX + maxX) / 2f), Game.Random.Round((minY + maxY) / 2f));
                 Center();
                 float t1 = panX, t2 = panY;
                 SelectTile(Game.Random.SelectValue(anomalies));
@@ -1709,7 +1709,7 @@ namespace GalWarWin
 
                         bool selectNext = true;
 
-                        if (selectedTile != null && ( ship == null || ship.Player.IsTurn ))
+                        if (selectedTile != null && (ship == null || ship.Player.IsTurn))
                             if (Tile.IsNeighbor(clickedTile, selectedTile))
                                 selectNext &= RightClick(clickedTile, ref ship);
                             else if (clickedTile == selectedTile)
@@ -1724,7 +1724,7 @@ namespace GalWarWin
                             else if (oldSpeed == 0 || !ship.Player.IsTurn || !Tile.IsNeighbor(ship.Tile, planet.Tile))
                                 defender = planet.Colony;
                             if (defender != null && ship.Player != defender.Player &&
-                                    !( ship.Player.IsTurn && defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile) ))
+                                    !(ship.Player.IsTurn && defender is Colony && ship.AvailablePop > 0 && Tile.IsNeighbor(defender.Tile, ship.Tile)))
                             {
                                 Colony defCol = defender as Colony;
                                 if (defCol != null && ship.Population > 0)
@@ -1761,7 +1761,7 @@ namespace GalWarWin
                             }
                         }
 
-                        if (selectNext && ( selectedTile == null || ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed ))
+                        if (selectNext && (selectedTile == null || ship == null || !ship.Player.IsTurn || !HasMoveLeft(ship) || ship.CurSpeed == oldSpeed))
                             SelectNext();
 
                         saved = false;
@@ -1790,12 +1790,12 @@ namespace GalWarWin
                     {
                         if (isBuild)
                         {
-                            return ( spaceObject == null );
+                            return (spaceObject == null);
                         }
                         else
                         {
-                            Ship ship = ( spaceObject as Ship );
-                            return ( ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn );
+                            Ship ship = (spaceObject as Ship);
+                            return (ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn);
                         }
                     }
                 }
@@ -1809,7 +1809,7 @@ namespace GalWarWin
             SpaceObject spaceObject = GetSelectedSpaceObject();
 
             bool switchTroops = false;
-            Planet planet = ( spaceObject as Planet );
+            Planet planet = (spaceObject as Planet);
             if (planet != null && planet.Colony != null && adjacentTile.SpaceObject is Ship)
             {
                 spaceObject = adjacentTile.SpaceObject;
@@ -1818,7 +1818,7 @@ namespace GalWarWin
             }
 
             Ship ship;
-            if (( ship = ( spaceObject as Ship ) ) != null)
+            if ((ship = (spaceObject as Ship)) != null)
             {
                 if (ship.Player.IsTurn)
                 {
@@ -1829,14 +1829,14 @@ namespace GalWarWin
                     Anomaly trgAnomaly = null;
                     if (adjacentTile.SpaceObject == null)
                         TargetTile(adjacentTile, ship);
-                    else if (( trgShip = ( adjacentTile.SpaceObject as Ship ) ) != null)
+                    else if ((trgShip = (adjacentTile.SpaceObject as Ship)) != null)
                         selectNext &= TargetShip(trgShip, ship, switchTroops);
-                    else if (( trgPlanet = ( adjacentTile.SpaceObject as Planet ) ) != null)
+                    else if ((trgPlanet = (adjacentTile.SpaceObject as Planet)) != null)
                         selectNext &= TargetPlanet(trgPlanet, ship, switchTroops);
-                    else if (( trgAnomaly = ( adjacentTile.SpaceObject as Anomaly ) ) != null)
+                    else if ((trgAnomaly = (adjacentTile.SpaceObject as Anomaly)) != null)
                         selectNext &= targetAnomaly(selectNext, ship, trgAnomaly);
 
-                    if (trgShip == null && !selectNext && !( trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0 ))
+                    if (trgShip == null && !selectNext && !(trgPlanet != null && trgPlanet.Colony != null && trgPlanet.Colony.HP > 0))
                         refShip = null;
                 }
             }
@@ -1935,7 +1935,7 @@ namespace GalWarWin
                 }
             }
 
-            if (bombard && ship.CurSpeed > 0 && ship.DeathStar && ( !ship.Colony || ShowOption("Bombard planet?") ))
+            if (bombard && ship.CurSpeed > 0 && ship.DeathStar && (!ship.Colony || ShowOption("Bombard planet?")))
             {
                 if (ship.CurSpeed == 1)
                     SelectTile(planet.Tile);
@@ -2012,9 +2012,9 @@ namespace GalWarWin
                 if (!planet.Dead)
                     selectShip = false;
             }
-            else if (ship.CurSpeed > 0 && ( colony.HP > 0 || ship.AvailablePop == 0 || ShowOption("Bombard planet?") ))
+            else if (ship.CurSpeed > 0 && (colony.HP > 0 || ship.AvailablePop == 0 || ShowOption("Bombard planet?")))
             {
-                if (colony.HP > 0 && ( !ship.DeathStar || !ShowOption("Bombard planet?") ))
+                if (colony.HP > 0 && (!ship.DeathStar || !ShowOption("Bombard planet?")))
                     CombatForm.ShowForm(ship, colony);
                 else if (ship.DeathStar || colony.Population > 0)
                     ship.Bombard(this, colony.Planet);
@@ -2060,12 +2060,12 @@ namespace GalWarWin
 
         private void lblGold_Click(object sender, EventArgs e)
         {
-            int i1, i2, i3, ships = 0;
-            double d1, d2, d3, d4, d5, income = 0, upkeep = 0, basic, total;
+            int i1, i2, i3, i4, ships = 0;
+            double d1, d2, d3, d4, income = 0, upkeep = 0, basic, total;
             foreach (Colony colony in Game.CurrentPlayer.GetColonies())
             {
                 double gold;
-                colony.GetTurnValues(out i1, out gold, out i2, out d5);
+                colony.GetTurnValues(out i1, out gold, out i2, out i4);
                 income += gold;
                 upkeep += colony.Upkeep;
             }
@@ -2101,7 +2101,7 @@ namespace GalWarWin
 
         private void lblLoc_Click(object sender, EventArgs e)
         {
-            MouseButtons button = ( (MouseEventArgs)e ).Button;
+            MouseButtons button = ((MouseEventArgs)e).Button;
             if (button == MouseButtons.Left)
             {
                 Point start = new Point(-Game.Center.X, -Game.Center.Y);
@@ -2140,7 +2140,7 @@ namespace GalWarWin
                     if (next == null || next == selected)
                         next = wormhole.Tiles.First(t => t != selected);
 
-                    Tile center = GetTile(new PointForm(( this.Width - pnlHUD.Width ) / 2, this.Height / 2));
+                    Tile center = GetTile(new PointForm((this.Width - pnlHUD.Width) / 2, this.Height / 2));
                     if (Math.Abs(next.X - center.X) + Math.Abs(next.Y - center.Y) < 3 || !SelectedVisible())
                         next = selected;
 
@@ -2175,17 +2175,17 @@ namespace GalWarWin
 
         private PopCarrier GetSelectedPopCarrier()
         {
-            return ( GetSelectedSpaceObject() as PopCarrier );
+            return (GetSelectedSpaceObject() as PopCarrier);
         }
 
         private Ship GetSelectedShip()
         {
-            return ( GetSelectedSpaceObject() as Ship );
+            return (GetSelectedSpaceObject() as Ship);
         }
 
         private Planet GetSelectedPlanet()
         {
-            return ( GetSelectedSpaceObject() as Planet );
+            return (GetSelectedSpaceObject() as Planet);
         }
 
         private Colony GetSelectedColony()
@@ -2210,7 +2210,7 @@ namespace GalWarWin
         {
             Colony colony = GetSelectedColony();
             if (colony != null && colony.Player.IsTurn)
-                CostCalculatorForm.ShowForm(colony.CurBuild is BuildShip ? ( (BuildShip)colony.CurBuild ).ShipDesign : null);
+                CostCalculatorForm.ShowForm(colony.CurBuild is BuildShip ? ((BuildShip)colony.CurBuild).ShipDesign : null);
             else
                 CostCalculatorForm.ShowForm(GetSelectedShip());
         }
@@ -2287,8 +2287,8 @@ namespace GalWarWin
         {
             int playerIndex = Game.currentPlayer;
             IEnumerable<Player> players = Game.GetPlayers();
-            lblPrev.BackColor = ( playerIndex > 0 ? players.ElementAt(playerIndex - 1).Color : Color.Black );
-            lblNext.BackColor = ( playerIndex + 1 < players.Count() ? players.ElementAt(playerIndex + 1).Color : Color.Black );
+            lblPrev.BackColor = (playerIndex > 0 ? players.ElementAt(playerIndex - 1).Color : Color.Black);
+            lblNext.BackColor = (playerIndex + 1 < players.Count() ? players.ElementAt(playerIndex + 1).Color : Color.Black);
 
             lblPlayer.BackColor = Game.CurrentPlayer.Color;
             lblPlayer.Text = Game.Turn.ToString() + " - " + Game.CurrentPlayer.Name;
@@ -2334,12 +2334,12 @@ namespace GalWarWin
             ColorForIncome(label, FormatIncome(income, forceDouble));
 
             if (label.TextAlign == ContentAlignment.MiddleRight)
-                label.Width = ( label.Text.Contains(".") ? 46 : 35 );
+                label.Width = (label.Text.Contains(".") ? 46 : 35);
         }
 
         public static void ColorForIncome(Label label, String text)
         {
-            label.ForeColor = ( text.StartsWith("-") ? Color.DarkRed : Color.Black );
+            label.ForeColor = (text.StartsWith("-") ? Color.DarkRed : Color.Black);
             label.Text = text;
         }
 
@@ -2350,7 +2350,7 @@ namespace GalWarWin
 
         public static string FormatIncome(double income, bool forceDouble)
         {
-            return ( income > 0 ? "+" : string.Empty ) + ( forceDouble ? FormatDouble(income) : FormatUsuallyInt(income) );
+            return (income > 0 ? "+" : string.Empty) + (forceDouble ? FormatDouble(income) : FormatUsuallyInt(income));
         }
 
         private void RefreshSelectedInfo()
@@ -2375,12 +2375,12 @@ namespace GalWarWin
                     lbl1.Text = "Exits";
                     lbl1Inf.Text = selected.Wormhole.Tiles.Count().ToString();
                     lbl2.Text = "Age";
-                    lbl2Inf.Text = ( Game.Turn - selected.Wormhole.CreatedTurn ).ToString();
+                    lbl2Inf.Text = (Game.Turn - selected.Wormhole.CreatedTurn).ToString();
                 }
 
                 int telNum = selected.WormholeNumber;
                 if (telNum > 0)
-                    lblTop.Text = "Wormhole " + telNum + ( lblTop.Text.Length > 0 ? " - " + lblTop.Text : string.Empty );
+                    lblTop.Text = "Wormhole " + telNum + (lblTop.Text.Length > 0 ? " - " + lblTop.Text : string.Empty);
 
                 if (player != null)
                     PlayerInfo(player);
@@ -2429,12 +2429,12 @@ namespace GalWarWin
                 btnGoldRepair.Visible = true;
                 btnDisband.Visible = true;
 
-                bool repair = ( ship.HP < ship.MaxHP );
+                bool repair = (ship.HP < ship.MaxHP);
                 btnGoldRepair.Enabled = repair;
 
                 if (repair)
                 {
-                    btnGoldRepair.Text = ( ship.HasRepaired ? "Auto Repair" : "Repair Ship" );
+                    btnGoldRepair.Text = (ship.HasRepaired ? "Auto Repair" : "Repair Ship");
                     double autoRepair = ship.AutoRepair;
                     if (autoRepair != 0)
                         btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : autoRepair.ToString("0.00"));
@@ -2587,7 +2587,7 @@ namespace GalWarWin
                     --defChange;
                 double pdChange = colony.DefenseHPChange;
                 if (colony.HP > 0)
-                    pdChange = colony.HP - ( colony.HP - colony.DefenseHPChange ) / ( colony.PDStrength / colony.HP )
+                    pdChange = colony.HP - (colony.HP - colony.DefenseHPChange) / (colony.PDStrength / colony.HP)
                         * ShipDesign.GetPlanetDefenseStrength(colony.Att - attChange, colony.Def - defChange);
                 else
                     ;
@@ -2658,36 +2658,17 @@ namespace GalWarWin
                 prodInc /= Consts.GoldProductionForGold;
                 inc = FormatDouble(prodInc);
             }
-            else if (build is PlanetDefense)
-            {
-                prodInc += production;
-                inc = GetBuildingDefense(colony, build, prodInc);
-                if (prodInc > 0)
-                    prodInc = -1;
-            }
-            else if (build is BuildSoldiers)
-            {
-                prodInc += production;
-                double soldiers, d1;
-                int i1, i2;
-                colony.GetTurnValues(out i1, out d1, out i2, out soldiers);
-                soldiers += prodInc / Consts.ProductionForSoldiers;
-                inc = GetBuildingSoldiers(colony.Population, colony.GetPopulationGrowth(), colony.Soldiers, soldiers);
-                if (prodInc > 0)
-                    prodInc = -1;
-            }
             else
             {
                 if (build is StoreProd)
-                {
-                    retVal = FormatUsuallyInt(production);
                     prodInc *= Consts.StoreProdRatio;
-                }
+                else if (build is BuildInfrastructure)
+                    prodInc += colony.GetInfrastructureIncome();
                 inc = FormatUsuallyInt(prodInc);
             }
 
             double incDbl;
-            if (prodInc != 0 && ( !double.TryParse(inc.TrimEnd('%'), out incDbl) || incDbl != 0 ))
+            if (prodInc != 0 && (!double.TryParse(inc.TrimEnd('%'), out incDbl) || incDbl != 0))
             {
                 if (retVal.Length > 0)
                     retVal += " ";
@@ -2698,12 +2679,12 @@ namespace GalWarWin
             return retVal;
         }
 
-        public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
-        {
-            double newAtt, newDef, newHP, d1, d2, d3;
-            colony.GetPlanetDefenseInc(buildable, production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out d1, out d2, out d3, false, false);
-            return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
-        }
+        //public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
+        //{
+        //    double newAtt, newDef, newHP, d1, d2, d3;
+        //    colony.GetPlanetDefenseInc(buildable, production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out d1, out d2, out d3, false, false);
+        //    return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
+        //}
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)
         {
             if (colony.MinDefenses)
@@ -2715,14 +2696,14 @@ namespace GalWarWin
                     newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
         }
 
-        public static string GetBuildingSoldiers(double curPop, double popInc, double curSoldiers, double soldierInc)
-        {
-            double soldiers = ( curSoldiers + soldierInc ) / ( curPop + popInc ) - curSoldiers / curPop;
-            string soldierChange = FormatPct(soldiers, true);
-            if (soldierChange != "0.0%" && soldiers > 0)
-                soldierChange = "+" + soldierChange;
-            return soldierChange;
-        }
+        //public static string GetBuildingSoldiers(double curPop, double popInc, double curSoldiers, double soldierInc)
+        //{
+        //    double soldiers = (curSoldiers + soldierInc) / (curPop + popInc) - curSoldiers / curPop;
+        //    string soldierChange = FormatPct(soldiers, true);
+        //    if (soldierChange != "0.0%" && soldiers > 0)
+        //        soldierChange = "+" + soldierChange;
+        //    return soldierChange;
+        //}
 
         private void AnomalyInfo(Anomaly anomaly)
         {
@@ -2745,7 +2726,7 @@ namespace GalWarWin
 
         public static bool ShowOption(string message, bool alert)
         {
-            return ( MessageBox.Show(message, string.Empty, MessageBoxButtons.OKCancel, alert ? MessageBoxIcon.Warning : MessageBoxIcon.None) == DialogResult.OK );
+            return (MessageBox.Show(message, string.Empty, MessageBoxButtons.OKCancel, alert ? MessageBoxIcon.Warning : MessageBoxIcon.None) == DialogResult.OK);
         }
 
         public static string FormatInt(double value)
@@ -2781,7 +2762,7 @@ namespace GalWarWin
         public static string FormatPct(double pct, bool place)
         {
             pct *= 100;
-            return ( place ? FormatDouble(pct) : FormatInt(pct) ) + "%";
+            return (place ? FormatDouble(pct) : FormatInt(pct)) + "%";
         }
 
         #endregion //Refresh
@@ -2819,7 +2800,7 @@ namespace GalWarWin
         bool IEventHandler.Continue(Planet planet, int initPop, int initQuality, int stopPop, int stopQuality, int finalPop, int finalQuality)
         {
             bool showPop = true; // ( planet.Player != null && !planet.Player.IsTurn );
-            string format = "{0}Quality: {2}" + ( showPop ? ",    Population: {1}" : string.Empty ) + "{0}";
+            string format = "{0}Quality: {2}" + (showPop ? ",    Population: {1}" : string.Empty) + "{0}";
             Func<int, int, string> GetString = (pop, quality) => string.Format(format, Environment.NewLine, Math.Max(pop, 0).ToString().PadLeft(4), Math.Max(quality, -1).ToString().PadLeft(4));
             return ShowOption(String.Format("Planet with{1}has been reduced to{2}{0}Continue attacking to {3}?",
                     Environment.NewLine, GetString(initPop, initQuality), GetString(stopPop, stopQuality),
@@ -2847,83 +2828,83 @@ namespace GalWarWin
             switch (anomalyType)
             {
 
-            case Anomaly.AnomalyType.AskProductionOrDefense:
-                SelectTile(( (Colony)info[0] ).Tile);
-                RefreshAll();
-                return ShowOption("Take +" + ( (int)info[1] ) + " Producton or build Defenses?");
-
-            case Anomaly.AnomalyType.AskResearchOrGold:
-                return ShowOption("Take Research or +" + FormatDouble((double)info[0]) + " Gold?");
-
-            case Anomaly.AnomalyType.AskTerraform:
-                SelectTile(( (Colony)info[0] ).Tile);
-                RefreshAll();
-                return ShowOption("Terraform Planet?" + Environment.NewLine + "+" + ( (int)info[1] ) + " Quality" + Environment.NewLine + FormatIncome(-(double)info[2]) + " Gold");
-
-            case Anomaly.AnomalyType.Terraform:
-                SelectTile(( (Planet)info[0] ).Tile);
-                RefreshAll();
-                MessageBox.Show("+" + ( (int)info[1] ) + " Quality!");
-                return true;
-
-            case Anomaly.AnomalyType.Death:
-            case Anomaly.AnomalyType.Heal:
-                MessageBox.Show(FormatIncome((int)info[0]) + " HP!");
-                return true;
-
-            case Anomaly.AnomalyType.Experience:
-                anomExp = (Ship)info[0];
-                return true;
-
-            case Anomaly.AnomalyType.Gold:
-                MessageBox.Show("+" + FormatDouble((double)info[0]) + " Gold!");
-                return true;
-
-            case Anomaly.AnomalyType.LostColony:
-                string str = "Hostile";
-                if (( (Player)info[0] ).IsTurn)
-                    str = "Friendly";
-                MessageBox.Show(str + " Colony!");
-                return true;
-
-            case Anomaly.AnomalyType.PickupPopulation:
-                MessageBox.Show("+" + info[0] + " Population!");
-                return true;
-
-            case Anomaly.AnomalyType.PickupSoldiers:
-                MessageBox.Show("+" + FormatPct((double)info[0] / GetSelectedShip().Population) + " Soldiers!");
-                return true;
-
-            case Anomaly.AnomalyType.SalvageShip:
-                string player = "Hostile";
-                if (( (Player)info[0] ).IsTurn)
-                    player = "Friendly";
-                MessageBox.Show(player + " Ship!");
-                return true;
-
-            case Anomaly.AnomalyType.Apocalypse:
-            case Anomaly.AnomalyType.NewPlanet:
-            case Anomaly.AnomalyType.PopulationGrowth:
-            case Anomaly.AnomalyType.Wormhole:
-                ShowExploreMessage(anomalyType);
-                return true;
-
-            case Anomaly.AnomalyType.PlanetDefenses:
-            case Anomaly.AnomalyType.Production:
-            case Anomaly.AnomalyType.Soldiers:
-            case Anomaly.AnomalyType.SoldiersAndDefenses:
-                string msg = string.Empty;
-                if (info.Length > 0)
-                {
-                    SelectTile(( (Colony)info[0] ).Tile);
+                case Anomaly.AnomalyType.AskProductionOrDefense:
+                    SelectTile(((Colony)info[0]).Tile);
                     RefreshAll();
-                    msg = "+" + FormatUsuallyInt((double)info[1]) + " ";
-                }
-                ShowExploreMessage(anomalyType, msg);
-                return true;
+                    return ShowOption("Take +" + ((int)info[1]) + " Producton or build Defenses?");
 
-            default:
-                throw new Exception();
+                case Anomaly.AnomalyType.AskResearchOrGold:
+                    return ShowOption("Take Research or +" + FormatDouble((double)info[0]) + " Gold?");
+
+                case Anomaly.AnomalyType.AskTerraform:
+                    SelectTile(((Colony)info[0]).Tile);
+                    RefreshAll();
+                    return ShowOption("Terraform Planet?" + Environment.NewLine + "+" + ((int)info[1]) + " Quality" + Environment.NewLine + FormatIncome(-(double)info[2]) + " Gold");
+
+                case Anomaly.AnomalyType.Terraform:
+                    SelectTile(((Planet)info[0]).Tile);
+                    RefreshAll();
+                    MessageBox.Show("+" + ((int)info[1]) + " Quality!");
+                    return true;
+
+                case Anomaly.AnomalyType.Death:
+                case Anomaly.AnomalyType.Heal:
+                    MessageBox.Show(FormatIncome((int)info[0]) + " HP!");
+                    return true;
+
+                case Anomaly.AnomalyType.Experience:
+                    anomExp = (Ship)info[0];
+                    return true;
+
+                case Anomaly.AnomalyType.Gold:
+                    MessageBox.Show("+" + FormatDouble((double)info[0]) + " Gold!");
+                    return true;
+
+                case Anomaly.AnomalyType.LostColony:
+                    string str = "Hostile";
+                    if (((Player)info[0]).IsTurn)
+                        str = "Friendly";
+                    MessageBox.Show(str + " Colony!");
+                    return true;
+
+                case Anomaly.AnomalyType.PickupPopulation:
+                    MessageBox.Show("+" + info[0] + " Population!");
+                    return true;
+
+                case Anomaly.AnomalyType.PickupSoldiers:
+                    MessageBox.Show("+" + FormatPct((double)info[0] / GetSelectedShip().Population) + " Soldiers!");
+                    return true;
+
+                case Anomaly.AnomalyType.SalvageShip:
+                    string player = "Hostile";
+                    if (((Player)info[0]).IsTurn)
+                        player = "Friendly";
+                    MessageBox.Show(player + " Ship!");
+                    return true;
+
+                case Anomaly.AnomalyType.Apocalypse:
+                case Anomaly.AnomalyType.NewPlanet:
+                case Anomaly.AnomalyType.PopulationGrowth:
+                case Anomaly.AnomalyType.Wormhole:
+                    ShowExploreMessage(anomalyType);
+                    return true;
+
+                case Anomaly.AnomalyType.PlanetDefenses:
+                case Anomaly.AnomalyType.Production:
+                case Anomaly.AnomalyType.Soldiers:
+                case Anomaly.AnomalyType.SoldiersAndDefenses:
+                    string msg = string.Empty;
+                    if (info.Length > 0)
+                    {
+                        SelectTile(((Colony)info[0]).Tile);
+                        RefreshAll();
+                        msg = "+" + FormatUsuallyInt((double)info[1]) + " ";
+                    }
+                    ShowExploreMessage(anomalyType, msg);
+                    return true;
+
+                default:
+                    throw new Exception();
             }
         }
         private static void ShowExploreMessage(Anomaly.AnomalyType anomalyType)
@@ -3043,7 +3024,7 @@ namespace GalWarWin
                     log += reader.ReadToEnd();
             flushed = log.Length;
 
-            log += "****** " + Game.ID + " " + Game.Turn + "_" + ( Game.currentPlayer + 1 ) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***"
+            log += "****** " + Game.ID + " " + Game.Turn + "_" + (Game.currentPlayer + 1) + " - " + DateTime.Now.ToString("MM/dd/yyyy h:mm tt") + " ***"
                     + Environment.NewLine + Environment.NewLine;
         }
     }

@@ -36,8 +36,8 @@ namespace GalWarWin
         private void LoadData()
         {
             if (controls != null)
-                for (int a = 0 ; a < controls.GetLength(0) ; ++a)
-                    for (int b = 0 ; b < controls.GetLength(1) ; ++b)
+                for (int a = 0; a < controls.GetLength(0); ++a)
+                    for (int b = 0; b < controls.GetLength(1); ++b)
                     {
                         Controls.Remove(controls[a, b]);
                         controls[a, b] = null;
@@ -81,8 +81,8 @@ namespace GalWarWin
 
         private void Loc(int x, int y, int i, Colony colony)
         {
-            Label location = (Label)( controls[0, i] = NewLabel(x, y, colony.Tile.GetLoction(),
-                    click: true, bold: colony.Tile == MainForm.GameForm.selected) );
+            Label location = (Label)(controls[0, i] = NewLabel(x, y, colony.Tile.GetLoction(),
+                    click: true, bold: colony.Tile == MainForm.GameForm.selected));
             location.Click += new EventHandler((sender, e) =>
             {
                 MainForm.GameForm.SelectTile(colony.Tile);
@@ -94,7 +94,7 @@ namespace GalWarWin
 
         private void Quality(int x, int y, int i, Colony colony)
         {
-            Label quality = (Label)( controls[1, i] = NewLabel(x, y, colony.Planet.Quality.ToString(), bold: true) );
+            Label quality = (Label)(controls[1, i] = NewLabel(x, y, colony.Planet.Quality.ToString(), bold: true));
             double pct = colony.Population / (double)colony.Planet.Quality;
             if (pct < 1)
                 quality.Text += " (" + MainForm.FormatPctWithCheck(pct) + ")";
@@ -102,7 +102,7 @@ namespace GalWarWin
 
         private void Population(int x, int y, int i, Colony colony)
         {
-            Label pop = (Label)( controls[2, i] = NewLabel(x, y, big: true) );
+            Label pop = (Label)(controls[2, i] = NewLabel(x, y, big: true));
             MainForm.FormatIncome(pop, colony.GetPopulationGrowth(), true);
             if (pop.Text == "0.0")
                 pop.Text = string.Empty;
@@ -111,7 +111,7 @@ namespace GalWarWin
 
         private void Defense(int x, int y, int i, Colony colony)
         {
-            Label defense = (Label)( controls[3, i] = NewLabel(x, y, click: !colony.MinDefenses, bold: colony.CurBuild is PlanetDefense) );
+            Label defense = (Label)(controls[3, i] = NewLabel(x, y, click: !colony.MinDefenses, bold: colony.CurBuild is BuildInfrastructure));
             if (!colony.MinDefenses)
             {
                 defense.Text = string.Format("{0} : {1}   ({2})", colony.Att, colony.Def, colony.HP);
@@ -128,7 +128,7 @@ namespace GalWarWin
             double population = 0, production = 0, gold = 0;
             int research = 0;
             colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
-            Label inc = (Label)( controls[4, i] = NewLabel(x, y, click: true) );
+            Label inc = (Label)(controls[4, i] = NewLabel(x, y, click: true));
             MainForm.FormatIncome(inc, production + gold + research, true);
             inc.Text += " (" + colony.GetProductionIncome() + ")";
             inc.Click += new System.EventHandler((object sender, EventArgs e) => LabelsForm.ShowColonyIncome(colony));
@@ -144,11 +144,11 @@ namespace GalWarWin
                 buildText = colony.CurBuild.ToString();
             else
                 buildText = "Gold";
-            bool ship = ( colony.CurBuild is BuildShip );
-            Label build = (Label)( controls[5, i] = NewLabel(x, y, buildText, big: true, click: ship, bold: ship && !colony.PauseBuild
-                    && ( colony.Production2 + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE ) >= colony.CurBuild.Cost) );
+            bool ship = (colony.CurBuild is BuildShip);
+            Label build = (Label)(controls[5, i] = NewLabel(x, y, buildText, big: true, click: ship, bold: ship && !colony.PauseBuild
+                    && (colony.Production2 + colony.GetAfterRepairProdInc() * Consts.FLOAT_ERROR_ONE) >= colony.CurBuild.Cost));
             if (ship)
-                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(( (BuildShip)colony.CurBuild ).ShipDesign));
+                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(((BuildShip)colony.CurBuild).ShipDesign));
         }
 
         private void Production(int x, int y, int i, Colony colony)
@@ -158,7 +158,7 @@ namespace GalWarWin
 
         private void ProdButton(int x, int y, int i, Colony colony)
         {
-            Button button = (Button)( controls[7, i] = new Button() );
+            Button button = (Button)(controls[7, i] = new Button());
             button.Location = new Point(x, y);
             button.Size = new Size(width, 23);
             button.Text = "Production";

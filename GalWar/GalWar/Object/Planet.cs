@@ -12,9 +12,8 @@ namespace GalWar
         private Colony _colony;
 
         private short _quality;
-        private float _colonizationCostMult;
 
-        private float _prodMult, _soldierInc;
+        private float _colonizationCostMult, _prodMult, _infrastructureInc;
 
         internal Planet(Tile tile)
             : base(tile)
@@ -24,10 +23,7 @@ namespace GalWar
                 this._colony = null;
 
                 this._quality = (short)Consts.NewPlanetQuality();
-                ResetCostMult();
 
-                this._prodMult = 1f;
-                this._soldierInc = 0f;
                 SetPlanetValues(1);
             }
         }
@@ -42,11 +38,8 @@ namespace GalWar
             {
                 checked
                 {
-                    if (( value == null ) == ( this.Colony == null ))
+                    if ((value == null) == (this.Colony == null))
                         throw new Exception();
-
-                    if (value == null && !this.Dead)
-                        ResetCostMult();
 
                     this._colony = value;
                 }
@@ -64,7 +57,7 @@ namespace GalWar
                 checked
                 {
                     if (value >= 0 && !this.Dead)
-                        SetPlanetValues(Math.Abs(this.Quality - value) / ( Math.Max(Quality, value) + Consts.PlanetConstValue ));
+                        SetPlanetValues(Math.Abs(Quality - value) / (Math.Max(Quality, value) + Consts.PlanetConstValue));
 
                     this._quality = (short)value;
                 }
@@ -76,6 +69,13 @@ namespace GalWar
             {
                 return this._colonizationCostMult;
             }
+            set
+            {
+                checked
+                {
+                    this._colonizationCostMult = (float)value;
+                }
+            }
         }
         internal double prodMult
         {
@@ -83,30 +83,38 @@ namespace GalWar
             {
                 return this._prodMult;
             }
+            private set
+            {
+                checked
+                {
+                    this._prodMult = (float)value;
+                }
+            }
         }
-        internal double soldierInc
+        internal double infrastructureInc
         {
             get
             {
-                return this._soldierInc;
+                return this._infrastructureInc;
+            }
+            private set
+            {
+                checked
+                {
+                    this._infrastructureInc = (float)value;
+                }
             }
         }
 
-        private void ResetCostMult()
-        {
-            checked
-            {
-                this._colonizationCostMult = (float)Consts.GetColonizationMult(Tile.Game);
-            }
-        }
         private void SetPlanetValues(double variation)
         {
-            if (Game.Random.Bool(Math.Pow(variation, 1.3)))
-                checked
-                {
-                    this._prodMult = Game.Random.GaussianCapped(1f, .169f, .52f);
-                    this._soldierInc = Game.Random.Weighted(.091f, .13f);
-                }
+            double chance = Math.Pow(variation, 1.3);
+            if (Game.Random.Bool(chance))
+                this.colonizationCostMult = Consts.GetColonizationMult(Tile.Game);
+            if (Game.Random.Bool(chance))
+                this.prodMult = Game.Random.GaussianCapped(1f, .078f, .65f);
+            if (Game.Random.Bool(chance))
+                this.infrastructureInc = Game.Random.GaussianCapped(.104f, .39f, .026f);
         }
 
         #endregion //fields and constructors
@@ -146,7 +154,7 @@ namespace GalWar
         {
             get
             {
-                return ( this.Tile == null || this.Tile.SpaceObject != this );
+                return (this.Tile == null || this.Tile.SpaceObject != this);
             }
         }
 

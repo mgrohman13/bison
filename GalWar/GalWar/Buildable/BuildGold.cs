@@ -27,7 +27,7 @@ namespace GalWar
         }
 
         public override double GetAddProduction(double production, bool floor)
-        {
+        { 
             return 0;
         }
 

@@ -35,8 +35,8 @@ namespace GalWarWin
         public bool SetColony(Colony colony, Buildable buildable, ShipDesign shipDesign, int addProd)
         {
             this.colony = colony;
-            this.buildable = buildable ?? ( colony != null ? colony.CurBuild : null );
-            this.shipDesign = shipDesign ?? ( this.buildable is BuildShip ? ( (BuildShip)this.buildable ).ShipDesign : null );
+            this.buildable = buildable ?? (colony != null ? colony.CurBuild : null);
+            this.shipDesign = shipDesign ?? (this.buildable is BuildShip ? ((BuildShip)this.buildable).ShipDesign : null);
             this.addProd = addProd;
             return RefreshBuildable();
         }
@@ -74,59 +74,52 @@ namespace GalWarWin
             }
             else
             {
-                PlanetDefense planetDefense = buildable as PlanetDefense;
+                BuildInfrastructure planetDefense = buildable as BuildInfrastructure;
                 if (planetDefense != null)
                 {
                     if (colony != null && colony.Player.IsTurn)
                     {
                         SetVisibility(true);
 
-                        double att, def, hp, d1, d2, d3;
-                        colony.GetPlanetDefenseInc(buildable, buildable.Production + addProd + colony.GetAfterRepairProdInc(), MainForm.Game.CurrentPlayer.GetCurrentResearch(),
-                                out att, out def, out hp, out d1, out d2, out d3, false, false);
-                        double cost = ShipDesign.GetPlanetDefenseCost(att, def, MainForm.Game.CurrentPlayer.GetCurrentResearch());
-                        string costLabel = handleCost(ref cost);
-                        //if (colony.Population > 1)
-                        //    soldiers /= colony.Population;
+                        colony.GetUpgMins(out int PD, out int soldier);
 
-                        this.label1.Text = "Attack";
-                        this.label2.Text = "Defense";
-                        this.label3.Text = "HP";
-                        this.label4.Text = costLabel;
+                        this.label1.Text = "Defenses";
+                        this.label2.Text = "Soldiers";
+                        this.label3.Visible = false;
+                        this.label4.Visible = false;
                         this.label5.Visible = false;
                         this.label6.Visible = false;
-                        this.label7.Text = "Max Att";
-                        this.label8.Text = "Max Def";
+                        this.label7.Visible = false;
+                        this.label8.Visible = false;
 
-                        this.lblTop.Text = "Planetary Defenses";
-                        this.lblInf1.Text = MainForm.FormatUsuallyInt(att);
-                        this.lblInf2.Text = MainForm.FormatUsuallyInt(def);
-                        this.lblInf3.Text = MainForm.FormatDouble(hp);
-                        this.lblInf4.Text = MainForm.FormatDouble(cost);
+                        this.lblInf1.Text = MainForm.FormatUsuallyInt(PD);
+                        this.lblInf2.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
+                        this.lblInf3.Visible = false;
+                        this.lblInf4.Visible = false;
                         this.lblInf5.Visible = false;
                         this.lblInf6.Visible = false;
-                        this.lblInf7.Text = MainForm.Game.CurrentPlayer.PlanetDefenseAtt.ToString();
-                        this.lblInf8.Text = MainForm.Game.CurrentPlayer.PlanetDefenseDef.ToString();
+                        this.lblInf7.Visible = false;
+                        this.lblInf8.Visible = false;
                         this.lblBottom.Visible = false;
                     }
                     else
                     {
-                        //double cost = MainForm.Game.CurrentPlayer.PlanetDefenseCostPerHP;
-                        //string costLabel = handleCost(ref cost);
+                        ////double cost = MainForm.Game.CurrentPlayer.PlanetDefenseCostPerHP;
+                        ////string costLabel = handleCost(ref cost);
 
-                        //this.label1.Visible = true;
-                        //this.label1.Text = costLabel;
-                        this.label2.Visible = true;
-                        this.label2.Text = "Attack";
-                        this.label3.Visible = true;
-                        this.label3.Text = "Defense";
+                        ////this.label1.Visible = true;
+                        ////this.label1.Text = costLabel;
+                        //this.label2.Visible = true;
+                        //this.label2.Text = "Attack";
+                        //this.label3.Visible = true;
+                        //this.label3.Text = "Defense";
 
-                        //this.lblInf1.Visible = true;
-                        //this.lblInf1.Text = MainForm.FormatDouble(cost);
-                        this.lblInf2.Visible = true;
-                        this.lblInf2.Text = MainForm.Game.CurrentPlayer.PlanetDefenseAtt.ToString();
-                        this.lblInf3.Visible = true;
-                        this.lblInf3.Text = MainForm.Game.CurrentPlayer.PlanetDefenseDef.ToString();
+                        ////this.lblInf1.Visible = true;
+                        ////this.lblInf1.Text = MainForm.FormatDouble(cost);
+                        //this.lblInf2.Visible = true;
+                        //this.lblInf2.Text = MainForm.Game.CurrentPlayer.PlanetDefenseAtt.ToString();
+                        //this.lblInf3.Visible = true;
+                        //this.lblInf3.Text = MainForm.Game.CurrentPlayer.PlanetDefenseDef.ToString();
                     }
 
                     return true;
@@ -155,9 +148,9 @@ namespace GalWarWin
 
         private static string GetBottomText(ShipDesign design)
         {
-            return ( design.Colony ? "Colony Ship (" + MainForm.FormatDouble(
+            return (design.Colony ? "Colony Ship (" + MainForm.FormatDouble(
                     design.GetColonizationValue(MainForm.Game)) + ")"
-                    : ( design.DeathStar ? "Death Star (" + MainForm.FormatInt(design.BombardDamage) + ")" : string.Empty ) );
+                    : (design.DeathStar ? "Death Star (" + MainForm.FormatInt(design.BombardDamage) + ")" : string.Empty));
         }
 
         private ShipDesign GetShipDesign()
