@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
@@ -13,7 +14,7 @@ namespace GalWarWin
         private Colony colony;
         private Buildable buildable;
         private ShipDesign shipDesign;
-        private int addProd;
+        private bool? addProd;
 
         public BuildableControl()
         {
@@ -22,17 +23,17 @@ namespace GalWarWin
 
         public bool SetColony(Colony colony)
         {
-            return SetColony(colony, null, null, 0);
+            return SetColony(colony, null, null, null);
         }
         public bool SetBuildable(Buildable buildable)
         {
-            return SetColony(null, buildable, null, 0);
+            return SetColony(null, buildable, null, null);
         }
         public bool SetShipDesign(ShipDesign shipDesign)
         {
-            return SetColony(null, null, shipDesign, 0);
+            return SetColony(null, null, shipDesign, null);
         }
-        public bool SetColony(Colony colony, Buildable buildable, ShipDesign shipDesign, int addProd)
+        public bool SetColony(Colony colony, Buildable buildable, ShipDesign shipDesign, bool? addProd)
         {
             this.colony = colony;
             this.buildable = buildable ?? (colony != null ? colony.CurBuild : null);
@@ -74,36 +75,76 @@ namespace GalWarWin
             }
             else
             {
-                BuildInfrastructure planetDefense = buildable as BuildInfrastructure;
-                if (planetDefense != null)
+                colony.GetInfrastructure(this.addProd, out Dictionary<Ship, double> rs,
+                        out double att, out double def, out double hp, out double soldiers);
+                bool pd = (att > Consts.FLOAT_ERROR_ZERO || def > Consts.FLOAT_ERROR_ZERO || hp > Consts.FLOAT_ERROR_ZERO);
+                double repair = rs.Values.Sum();
+                bool any = (repair > Consts.FLOAT_ERROR_ZERO) || (pd) || (soldiers > Consts.FLOAT_ERROR_ZERO);
+                if (any || buildable is BuildInfrastructure)
                 {
                     if (colony != null && colony.Player.IsTurn)
                     {
-                        SetVisibility(true);
+                        SetVisibility(false);
 
+                        int prod = colony.GetInfrastructureIncome(this.addProd);
                         colony.GetUpgMins(out int PD, out int soldier);
 
-                        this.label1.Text = "Defenses";
-                        this.label2.Text = "Soldiers";
-                        this.label3.Visible = false;
-                        this.label4.Visible = false;
-                        this.label5.Visible = false;
-                        this.label6.Visible = false;
-                        this.label7.Visible = false;
-                        this.label8.Visible = false;
+                        this.lblTop.Text = "Infrastructure";
 
-                        this.lblInf1.Text = MainForm.FormatUsuallyInt(PD);
-                        this.lblInf2.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
-                        this.lblInf3.Visible = false;
-                        this.lblInf4.Visible = false;
-                        this.lblInf5.Visible = false;
-                        this.lblInf6.Visible = false;
-                        this.lblInf7.Visible = false;
-                        this.lblInf8.Visible = false;
-                        this.lblBottom.Visible = false;
+                        this.label1.Text = "Production";
+                        this.label2.Text = "PD Prod";
+                        this.label3.Text = "Sldr Prod";
+                        this.label4.Text = "Repair";
+                        this.label5.Text = "Attack";
+                        this.label6.Text = "Defense";
+                        this.label7.Text = "HP";
+                        this.label8.Text = "Soldiers";
+
+                        this.lblInf1.Text = string.Format("{0} {1}",
+                                colony.GetInfrastructureProd(this.addProd) - prod,
+                                MainForm.FormatIncome(prod, false));
+                        this.lblInf2.Text = MainForm.FormatUsuallyInt(PD);
+                        this.lblInf3.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
+                        this.lblInf4.Text = MainForm.FormatDouble(repair);
+                        this.lblInf5.Text = MainForm.FormatIncome(att);
+                        this.lblInf6.Text = MainForm.FormatIncome(def);
+                        this.lblInf7.Text = MainForm.FormatIncome(hp);
+                        this.lblInf8.Text = MainForm.GetBuildingSoldiers(colony, soldiers);
+
+                        this.lblTop.Show();
+                        this.label1.Show();
+                        this.label2.Show();
+                        this.label3.Show();
+                        this.lblInf1.Show();
+                        this.lblInf2.Show();
+                        this.lblInf3.Show();
+                        if (repair > Consts.FLOAT_ERROR_ZERO)
+                        {
+                            this.label4.Show();
+                            this.lblInf4.Show();
+                        }
+                        if (pd)
+                        {
+                            this.label5.Show();
+                            this.label6.Show();
+                            this.label7.Show();
+                            this.lblInf5.Show();
+                            this.lblInf6.Show();
+                            this.lblInf7.Show();
+                        }
+                        if (soldiers > Consts.FLOAT_ERROR_ZERO)
+                        {
+                            this.label8.Show();
+                            this.lblInf8.Show();
+                        }
+
+                        return any;
                     }
                     else
                     {
+                        this.lblTop.Show();
+                        this.lblTop.Text = "huh???";
+                        return true;
                         ////double cost = MainForm.Game.CurrentPlayer.PlanetDefenseCostPerHP;
                         ////string costLabel = handleCost(ref cost);
 
@@ -121,8 +162,6 @@ namespace GalWarWin
                         //this.lblInf3.Visible = true;
                         //this.lblInf3.Text = MainForm.Game.CurrentPlayer.PlanetDefenseDef.ToString();
                     }
-
-                    return true;
                 }
             }
 
@@ -143,7 +182,10 @@ namespace GalWarWin
         private void SetVisibility(bool visible)
         {
             foreach (Control control in this.Controls)
-                control.Visible = visible;
+                if (visible)
+                    control.Show();
+                else
+                    control.Hide();
         }
 
         private static string GetBottomText(ShipDesign design)

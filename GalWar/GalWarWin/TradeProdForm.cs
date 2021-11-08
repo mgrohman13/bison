@@ -284,13 +284,13 @@ namespace GalWarWin
                 {
                     if (sender == this.nudShips)
                     {
-                        prod = (ships * build.Cost.Value - (int)colony.GetAfterRepairProdInc());
+                        prod = (ships * build.Cost.Value - colony.GetProductionIncome());
                         if (prod < 0)
                             prod = 0;
                     }
                     else
                     {
-                        ships = (prod + (int)colony.GetAfterRepairProdInc()) / build.Cost.Value;
+                        ships = (prod + colony.GetProductionIncome()) / build.Cost.Value;
                         if (ships < 0)
                             ships = 0;
                         this.nudShips.Value = ships;

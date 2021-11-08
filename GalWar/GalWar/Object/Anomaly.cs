@@ -138,7 +138,7 @@ namespace GalWar
                 {
                     quality += planet.PlanetValue;
                     pop += colony.Population;
-                    armada += colony.PDCostAvgResearch / 2.6 + colony.production2 / 1.69 + colony.Soldiers * soldierMult;
+                    armada += colony.PDCostAvgResearch / 2.6 + colony.totalProd / 1.69 + colony.Soldiers * soldierMult;
                 }
             }
             foreach (Player player in Tile.Game.GetPlayers())
@@ -1104,13 +1104,15 @@ namespace GalWar
                 int show = Math.Min(hp, ship.MaxHP - ship.HP);
                 handler.Explore(AnomalyType.Heal, show);
 
-                double prod = ship.GetProdForHP(hp), gold = this.value - prod;
-                int result = ship.ProductionRepair(ref prod, ref gold, true, false);
+                double prod = this.value;
+                double result = ship.ProductionRepair(ref prod, ship.GetProdForHP(hp), true);
+                if (result != (int)result)
+                    ;
                 if (result != hp)
                     ;
                 if (result != show)
                     ;
-                ship.Player.GoldIncome(prod + gold);
+                ship.Player.GoldIncome(prod);
                 return true;
             }
 

@@ -20,7 +20,7 @@ namespace GalWar
         private PointS? _vector;
         private PointS[] _moved;
 
-        private bool _vectorZOC, _hasRepaired;
+        private bool _vectorZOC, _hasRepaired, _prodRepair;
         private byte _expType, _upkeep, _curSpeed, _maxSpeed;
         private ushort _maxHP, _maxTrans, _bombardDamage, _repair;
         private float _autoRepair, _needExpMult, _curExp, _totalExp;
@@ -363,6 +363,25 @@ namespace GalWar
                 }
             }
         }
+        public bool ProdRepair
+        {
+            get
+            {
+                TurnException.CheckTurn(this.Player);
+
+                return this._prodRepair;
+            }
+            set
+            {
+                checked
+                {
+                    TurnException.CheckTurn(this.Player);
+
+                    this._prodRepair = value;
+                }
+            }
+        }
+
 
         private double needExpMult
         {
@@ -513,43 +532,18 @@ namespace GalWar
             return speedLeft / (double)MaxSpeed * Consts.UpkeepUnmovedReturn * this.baseUpkeep;
         }
 
-        internal int ProductionRepair(ref double production, ref double gold, bool doRepair, bool minGold)
+        internal double ProductionRepair(ref double prod, double useProd, bool doRepair)
         {
-            int retVal = 0;
-            double hp = GetHPForProd(production, !doRepair);
-
+            double hp = GetHPForProd(useProd, !doRepair);
             if (doRepair)
             {
                 int repairHP = Game.Random.Round(hp);
                 this.HP += repairHP;
-                hp = repairHP;
-
                 this.Repair += repairHP;
-                retVal = repairHP;
+                hp = repairHP;
             }
-            else if (minGold)
-            {
-                hp = Math.Ceiling(hp);
-            }
-            else
-            {
-                int low = (int)(hp * Consts.FLOAT_ERROR_ONE);
-                if (hp != low)
-                {
-                    gold += (hp - low) * (production - GetProdForHP(low + 1));
-                    production = (low + 1 - hp) * (production - GetProdForHP(low));
-                    return retVal;
-                }
-            }
-
-            production -= GetProdForHP(hp);
-            if (production < 0)
-            {
-                gold += production;
-                production = 0;
-            }
-
-            return retVal;
+            prod -= GetProdForHP(hp);
+            return hp;
         }
 
         internal void Destroy(bool addGold)
@@ -1524,7 +1518,7 @@ namespace GalWar
             foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
             {
                 Planet planet = (neighbor.SpaceObject as Planet);
-                if (planet != null && planet.Player == this.Player && planet.Colony.RepairShip == this)
+                if (planet != null && planet.Player == this.Player && this.ProdRepair && this.HP < this.MaxHP)
                     return planet.Colony;
             }
             return null;

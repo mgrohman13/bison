@@ -1194,23 +1194,23 @@ namespace GalWarWin
             return buildable;
         }
 
-        private void btnProdRepair_Click(object sender, EventArgs eventArgs)
-        {
-            Colony colony = GetSelectedColony();
-            if (colony.RepairShip == null)
-            {
-                SelectTileDialog(selected, false);
-                if (selected != null)
-                    colony.RepairShip = (GetSelectedTile().SpaceObject as Ship);
-            }
-            else
-            {
-                colony.RepairShip = null;
-            }
+        //private void btnProdRepair_Click(object sender, EventArgs eventArgs)
+        //{
+        //    Colony colony = GetSelectedColony();
+        //    if (colony.RepairShip == null)
+        //    {
+        //        SelectTileDialog(selected, false);
+        //        if (selected != null)
+        //            colony.RepairShip = (GetSelectedTile().SpaceObject as Ship);
+        //    }
+        //    else
+        //    {
+        //        colony.RepairShip = null;
+        //    }
 
-            saved = false;
-            RefreshAll();
-        }
+        //    saved = false;
+        //    RefreshAll();
+        //}
 
         private void SelectTileDialog(Tile tile, bool build)
         {
@@ -1416,7 +1416,8 @@ namespace GalWarWin
                         if (ship.HP < ship.MaxHP && planet != null)
                         {
                             //can be production repaired
-                            if (planet.Colony != null && planet.Player.IsTurn && planet.Colony.RepairShip == null && planet.Colony.GetProductionIncome() > 0)
+                            if (planet.Colony != null && planet.Player.IsTurn && !ship.ProdRepair &&
+                                    planet.Colony.GetInfrastructureProd(null) > 0)
                                 return true;
                             if (!(ship.MaxPop > 0))
                                 break;
@@ -2309,7 +2310,7 @@ namespace GalWarWin
             lblRsrchTot.Text = Game.CurrentPlayer.GetCurrentResearch().ToString();
             lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research)) + new string(' ', lblResearch.Text.Length + 6);
             FormatIncome(lblProduction, production);
-            lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.Production2).ToString();
+            lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.TotalProd).ToString();
 
             emphasisEvent = false;
             chkGold.Checked = Game.CurrentPlayer.GoldEmphasis;
@@ -2415,7 +2416,7 @@ namespace GalWarWin
             lbl7Inf.Text = string.Empty;
             lblBottom.Text = string.Empty;
 
-            btnProdRepair.Visible = false;
+            //btnProdRepair.Visible = false;
             btnProduction.Visible = false;
             btnGoldRepair.Visible = false;
             btnDisband.Visible = false;
@@ -2532,32 +2533,32 @@ namespace GalWarWin
                 if (!isDialog)
                 {
                     btnProduction.Visible = true;
-                    btnProdRepair.Visible = true;
+                    //btnProdRepair.Visible = true;
 
                     bool visible = pnlBuild.SetColony(colony);
                     pnlBuild.Visible = visible;
                 }
 
-                if (colony.RepairShip == null)
-                {
-                    bool enabled = false;
-                    foreach (Tile tile in Tile.GetNeighbors(colony.Tile))
-                    {
-                        Ship ship = tile.SpaceObject as Ship;
-                        if (ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn)
-                        {
-                            enabled = true;
-                            break;
-                        }
-                    }
-                    btnProdRepair.Enabled = enabled;
-                    btnProdRepair.Text = "Repair Ship";
-                }
-                else
-                {
-                    btnProdRepair.Enabled = true;
-                    btnProdRepair.Text = "Stop Repair";
-                }
+                //if (colony.RepairShip == null)
+                //{
+                //    bool enabled = false;
+                //    foreach (Tile tile in Tile.GetNeighbors(colony.Tile))
+                //    {
+                //        Ship ship = tile.SpaceObject as Ship;
+                //        if (ship != null && ship.HP < ship.MaxHP && ship.Player.IsTurn)
+                //        {
+                //            enabled = true;
+                //            break;
+                //        }
+                //    }
+                //    //btnProdRepair.Enabled = enabled;
+                //    //btnProdRepair.Text = "Repair Ship";
+                //}
+                //else
+                //{
+                //    btnProdRepair.Enabled = true;
+                //    btnProdRepair.Text = "Stop Repair";
+                //}
             }
 
             lbl2.Text = "Population";
@@ -2618,37 +2619,49 @@ namespace GalWarWin
             if (colony.Player.IsTurn)
             {
                 lbl5Inf.Text += " (" + colony.GetProductionIncome() + ")";
-
                 lbl5.BorderStyle = BorderStyle.FixedSingle;
 
                 lbl6.Text = "Building";
-                Ship repairShip = colony.RepairShip;
-                if (repairShip != null)
-                    lbl6Inf.Text = "Repair +" + FormatDouble(repairShip.GetHPForProd(colony.GetProductionIncome()));
-                else if (colony.CurBuild is BuildGold)
-                    lbl6Inf.Text = "Gold";
-                else
-                    lbl6Inf.Text = colony.CurBuild.ToString();
 
-                lbl7Inf.Text = GetProdText(colony);
+                lbl6Inf.Text = GetProdNameText(colony);
+                lbl7Inf.Text = GetProdIncText(colony);
             }
 
             return colony.Player;
         }
 
-        internal static string GetProdText(Colony colony)
+        internal static string GetProdNameText(Colony colony)
         {
-            return GetProdText(colony, colony.CurBuild, colony.CurBuild.Production, colony.PauseBuild);
+            colony.GetInfrastructure(null, out Dictionary<Ship, double> rs,
+                    out double att, out double def, out double hp, out double soldiers);
+            double repair = rs.Values.Sum();
+            string text;
+            if (repair > Consts.FLOAT_ERROR_ZERO)
+                text = "Repair +" + FormatDouble(repair);
+            else if (att > Consts.FLOAT_ERROR_ZERO || def > Consts.FLOAT_ERROR_ZERO || hp > Consts.FLOAT_ERROR_ZERO)
+                text = GetBuildingDefense(colony, att, def, hp);
+            else if (soldiers > Consts.FLOAT_ERROR_ZERO)
+                text = GetBuildingSoldiers(colony, soldiers);
+            else if (colony.CurBuild is BuildGold)
+                text = "Gold";
+            else
+                text = colony.CurBuild.ToString();
+            return text;
         }
 
-        internal static string GetProdText(Colony colony, Buildable build, double production, bool paused)
+        internal static string GetProdIncText(Colony colony)
+        {
+            return GetProdIncText(colony, colony.CurBuild, colony.CurBuild.Production, colony.PauseBuild);
+        }
+
+        internal static string GetProdIncText(Colony colony, Buildable build, double production, bool paused)
         {
             string retVal = string.Empty;
             retVal = FormatUsuallyInt(production);
             if (!paused)
                 retVal = build.GetProdText(retVal);
 
-            double prodInc = colony.GetAfterRepairProdInc();
+            double prodInc = colony.GetProductionIncome();
 
             string inc;
             if (build is BuildGold)
@@ -2662,7 +2675,7 @@ namespace GalWarWin
                 if (build is StoreProd)
                     prodInc *= Consts.StoreProdRatio;
                 else if (build is BuildInfrastructure)
-                    prodInc += colony.GetInfrastructureIncome();
+                    prodInc = colony.GetInfrastructureIncome(true);
                 inc = FormatUsuallyInt(prodInc);
             }
 
@@ -2678,21 +2691,20 @@ namespace GalWarWin
             return retVal;
         }
 
-        //public static string GetBuildingDefense(Colony colony, Buildable buildable, double production)
-        //{
-        //    double newAtt, newDef, newHP, d1, d2, d3;
-        //    colony.GetPlanetDefenseInc(buildable, production, MainForm.Game.CurrentPlayer.GetCurrentResearch(), out newAtt, out newDef, out newHP, out d1, out d2, out d3, false, false);
-        //    return GetBuildingDefense(colony, newAtt - colony.Att, newDef - colony.Def, newHP - colony.HP);
-        //}
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)
         {
-            if (colony.MinDefenses)
-            {
-                ++newAtt;
-                ++newDef;
-            }
             return string.Format("{3}{0}:{4}{1} ({5}{2})", FormatUsuallyInt(newAtt), FormatUsuallyInt(newDef), FormatUsuallyInt(newHP),
                     newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
+        }
+        public static string GetBuildingSoldiers(Colony colony, double soldierInc)
+        {
+            double curPop = colony.Population, popInc = colony.GetPopulationGrowth(), curSoldiers = colony.Soldiers;
+
+            double soldiers = (curSoldiers + soldierInc) / (curPop + popInc) - curSoldiers / curPop;
+            string soldierChange = FormatPct(soldiers, true);
+            if (soldierChange != "0.0%" && soldiers > 0)
+                soldierChange = "+" + soldierChange;
+            return soldierChange;
         }
 
         private void AnomalyInfo(Anomaly anomaly)

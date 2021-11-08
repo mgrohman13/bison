@@ -70,7 +70,7 @@ namespace GalWarWin
             this.lblProduction = new System.Windows.Forms.Label();
             this.chkGold = new System.Windows.Forms.CheckBox();
             this.btnProduction = new System.Windows.Forms.Button();
-            this.btnProdRepair = new System.Windows.Forms.Button();
+            //this.btnProdRepair = new System.Windows.Forms.Button();
             this.btnGoldRepair = new System.Windows.Forms.Button();
             this.btnDisband = new System.Windows.Forms.Button();
             this.lblBottom = new System.Windows.Forms.Label();
@@ -111,7 +111,7 @@ namespace GalWarWin
             this.pnlHUD.Controls.Add(this.pnlInfo);
             this.pnlHUD.Controls.Add(this.pnlEconomy);
             this.pnlHUD.Controls.Add(this.btnProduction);
-            this.pnlHUD.Controls.Add(this.btnProdRepair);
+            //this.pnlHUD.Controls.Add(this.btnProdRepair);
             this.pnlHUD.Controls.Add(this.btnGoldRepair);
             this.pnlHUD.Controls.Add(this.btnDisband);
             this.pnlHUD.Controls.Add(this.lblBottom);
@@ -586,16 +586,16 @@ namespace GalWarWin
             this.btnProduction.Text = "Production";
             this.btnProduction.UseVisualStyleBackColor = true;
             this.btnProduction.Click += new System.EventHandler(this.btnProduction_Click);
-            // 
-            // btnProdRepair
-            // 
-            this.btnProdRepair.Location = new System.Drawing.Point(0, 329);
-            this.btnProdRepair.Name = "btnProdRepair";
-            this.btnProdRepair.Size = new System.Drawing.Size(200, 23);
-            this.btnProdRepair.TabIndex = 1;
-            this.btnProdRepair.Text = "Repair Ship";
-            this.btnProdRepair.UseVisualStyleBackColor = true;
-            this.btnProdRepair.Click += new System.EventHandler(this.btnProdRepair_Click);
+            //// 
+            //// btnProdRepair
+            //// 
+            //this.btnProdRepair.Location = new System.Drawing.Point(0, 329);
+            //this.btnProdRepair.Name = "btnProdRepair";
+            //this.btnProdRepair.Size = new System.Drawing.Size(200, 23);
+            //this.btnProdRepair.TabIndex = 1;
+            //this.btnProdRepair.Text = "Repair Ship";
+            //this.btnProdRepair.UseVisualStyleBackColor = true;
+            //this.btnProdRepair.Click += new System.EventHandler(this.btnProdRepair_Click);
             // 
             // btnGoldRepair
             // 
@@ -888,7 +888,7 @@ namespace GalWarWin
         private System.Windows.Forms.Label lblRsrchTot;
         private System.Windows.Forms.Label lbl7Inf;
         private System.Windows.Forms.Label lbl7;
-        private System.Windows.Forms.Button btnProdRepair;
+        //private System.Windows.Forms.Button btnProdRepair;
         private System.Windows.Forms.Button btnNewGame;
         private System.Windows.Forms.Button btnLoadGame;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;

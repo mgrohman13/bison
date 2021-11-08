@@ -160,14 +160,14 @@ namespace GalWarWin
 
             int prod = GetAddProd(newBuild);
 
-            this.sdForm.SetColony(colony, newBuild, null, prod);
+            this.sdForm.SetColony(colony, newBuild, null, newBuild is BuildInfrastructure);
             this.chkObsolete.Checked = false;
 
             if (prod > 0)
                 this.lblProdLoss.Text = "+" + prod + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdText(colony, newBuild, newBuild.Production - prod, this.chkPause.Checked);
+            this.lblProd.Text = MainForm.GetProdIncText(colony, newBuild, newBuild.Production - prod, this.chkPause.Checked);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = (!this.callback && newBuild is BuildShip && colony.Player.GetShipDesigns().Count > 1);

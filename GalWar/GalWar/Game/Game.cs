@@ -391,9 +391,9 @@ namespace GalWar
                 homeworld.AddProduction(addProduction);
 
                 //calculate current income total
-                CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + homeworld.production2;
+                CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + homeworld.totalProd;
 
-                homeworld.ProdGuess = homeworld.production2;
+                homeworld.ProdGuess = homeworld.totalProd;
             }
         }
         private static List<int> GetStartResearch()
@@ -1034,7 +1034,7 @@ namespace GalWar
         {
             int att = colony.Player.PlanetDefenses.Att, def = colony.Player.PlanetDefenses.Def;
             double prodMult = ShipDesign.GetPlanetDefenseStrength(att, def) / ShipDesign.GetPlanetDefenseCost(att, def, colony.Player.Game.AvgResearch);
-            double str = colony.PDStrength + colony.production2 * prodMult;
+            double str = colony.PDStrength + colony.totalProd * prodMult;
             return GetCenterWeight(str, str, 1);
         }
         private double GetPopWeight(PopCarrier carrier)

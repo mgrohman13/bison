@@ -113,50 +113,31 @@ rchance > 1 throws off max
 
 BETWEEN GAMES
 
-prod repair
-	hide similar to build PD/soldiers
-	randomness
-	round prod repair? and leftoever prod? use existing prod rounding?
-	make repair a buildable?
-	build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
 	
-buildable/repair/pd rework
-	repair ship use infra 
-		automatically all adjacent? cbox on ship?
-	random pcts per planet?
+buildable/repair/pd rework 
+	prod repair
+		build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
+	UI needs ship repair cbox 
 	display planet values?
-	trading prods
-	upk
-		increase store upk accordingly with its reduction
-		decrease infr?
-	show constant infrastructure inc
 	show defenseResearch
 	reducing pd stats/hp
 	hp ratio?
 		slighter more hp if stats not reduced?
 		random?
 	standardize mindefenses, hp, str, cost checks
-	auto infrastructure power?
-	reduce sold/pd cost?
 	display PD target stats
 	turnstuff refs for infrstrctr
-	avg gold
+	avg gold (also remove min)
 	pdform show infrstr inc info 
-	buildable form show inc info for both 
 	tradeprodform click auto buy for infrastructure 
-	UI indication PD happes first
-		(or allow do both with 1/4?)
-	
-rework the rework
-	minimum value to upg PD, soldiers	
-		based on cur vs trg
-		defenseResearch outdatedness
-		planet tot income
-		persistent random factor(s) - global to all planets for player?
-			throw min val and persist that?
-	prod guess - take into acct infrastrctr
-	starting value iterations
-	
+	suspend PD/sldr build?
+		needs downside - increased upk at minimum, prob more
+	prod guess
+	game starting values
+	test new planet infrstrctr over time
+	reuse ship design max cost functionality for infrastructure (use min of mins) 
+	double check quick prod text summary makes sense
+		+colony summary
 		
 research victory pct decreases with higher research
 	10k=now
