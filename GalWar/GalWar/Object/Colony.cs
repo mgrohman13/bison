@@ -1315,6 +1315,7 @@ namespace GalWar
                     if (apply)
                         useProd = Game.Random.GaussianCapped(useProd, Consts.PlanetDefenseRndm);
                     double res = ship.ProductionRepair(ref prod, useProd, apply);
+                    //avg should use lost prod in ProductionRepair
                     repairShips.Add(ship, res);
                 }
                 if (apply)

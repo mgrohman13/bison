@@ -55,8 +55,10 @@ namespace GalWarWin
 
                 //if (colony.CurBuild is BuildInfrastructure)
                 //{
-                //    this.lblInc.Visible = true;
-                //    this.lblIncL.Visible = true;
+                this.lblInc.Visible = true;
+                this.lblIncL.Visible = true;
+
+                this.lblInc.Text = string.Format("{0} {1}", colony.GetInfrastructureProd(false), MainForm.FormatIncome(colony.GetInfrastructureIncome(null)));
 
                 //    double d1 = 0, production = 0, d2 = 0;
                 //    int i = 0;

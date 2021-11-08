@@ -1,5 +1,6 @@
 UI
 
+highlight when could build with prod store
 hide invade ok button when 0 gold
 select different research upgrade no longer shows diff chance
 rotate
@@ -114,6 +115,7 @@ rchance > 1 throws off max
 BETWEEN GAMES
 
 	
+startGold power
 buildable/repair/pd rework 
 	prod repair
 		build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
@@ -138,6 +140,9 @@ buildable/repair/pd rework
 	reuse ship design max cost functionality for infrastructure (use min of mins) 
 	double check quick prod text summary makes sense
 		+colony summary
+	upg PD / sold stored values store income?
+	manual/new prod interaction
+	next ships in reapair line pick up extra prod after last maxxed
 		
 research victory pct decreases with higher research
 	10k=now

@@ -100,9 +100,9 @@ namespace GalWarWin
                         this.label7.Text = "HP";
                         this.label8.Text = "Soldiers";
 
-                        this.lblInf1.Text = string.Format("{0} {1}",
+                        this.lblInf1.Text = string.Format("{0} {1} ({2})",
                                 colony.GetInfrastructureProd(this.addProd) - prod,
-                                MainForm.FormatIncome(prod, false));
+                                MainForm.FormatIncome(prod, false), MainForm.FormatInt(colony.GetInfrastructureIncome(false)));
                         this.lblInf2.Text = MainForm.FormatUsuallyInt(PD);
                         this.lblInf3.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
                         this.lblInf4.Text = MainForm.FormatDouble(repair);

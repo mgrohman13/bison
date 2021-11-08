@@ -43,6 +43,7 @@ namespace GalWar
                 this._moved = null;
 
                 this._hasRepaired = false;
+                this._prodRepair = true;
 
                 this._expType = byte.MaxValue;
 
