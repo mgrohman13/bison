@@ -2,6 +2,7 @@ in between games
 	"security" of public fields
 
 gameplay
+	victory points? (relic)
 	better startUnit overall cost balance across each race
 	give free units to nocapt players?
 	winning player leave behind anything else?
