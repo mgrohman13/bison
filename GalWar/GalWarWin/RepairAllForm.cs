@@ -25,9 +25,7 @@ namespace GalWarWin
         private void Init()
         {
             MainForm.FormatIncome(lblGold, MainForm.Game.CurrentPlayer.Gold, true);
-            int research;
-            double population, production, gold;
-            MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold, false);
+            MainForm.Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out double gold, out _);
             MainForm.FormatIncome(this.lblIncome, gold, true);
 
             double avg = 0, tot = 0;
@@ -98,9 +96,9 @@ namespace GalWarWin
         private bool DoAutoRepair(Ship ship)
         {
             double autoRepair = ship.AutoRepair;
-            return ( autoRepair > 0 || ( this.rbSet.Checked &&
-                    ( ( this.cbManual.Checked && double.IsNaN(autoRepair) )
-                    || ( this.cbOff.Checked && autoRepair == 0 ) ) ) );
+            return (autoRepair > 0 || (this.rbSet.Checked &&
+                    ((this.cbManual.Checked && double.IsNaN(autoRepair))
+                    || (this.cbOff.Checked && autoRepair == 0))));
         }
 
         private double GetAutoRepair(Ship ship, double value)

@@ -72,7 +72,7 @@ namespace GalWar
 
         internal abstract List<Ship> Build(IEventHandler handler, double production);
 
-        internal virtual void GetTurnIncome(ref double production, ref double gold, bool minGold)
+        internal virtual void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
         {
         }
         public virtual double GetAddProduction(double production, bool floor)

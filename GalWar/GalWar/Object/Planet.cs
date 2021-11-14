@@ -116,8 +116,8 @@ namespace GalWar
                 // min = 0.021
                 // avg = 0.11791
                 // max = 0.252
-                this.infrastructureInc = Game.Random.GaussianCapped(.052f, .39f, .021f)
-                        + Game.Random.Weighted(.169f, .39f);
+                this.infrastructureInc = Game.Random.GaussianCapped(Consts.InfrastructureGaussianAvg, .39f, .021f)
+                        + Game.Random.Weighted(Consts.InfrastructureMax, Consts.InfrastructureWeight);
         }
 
         #endregion //fields and constructors

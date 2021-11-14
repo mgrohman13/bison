@@ -1093,7 +1093,10 @@ namespace GalWar
                 if (funky)
                     stats = FunkyChance(total, ds, trans, speed);
 
-                this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
+                if (stats.Values.Sum() == 0)
+                    this.NextExpType = ExpType.HP;
+                else
+                    this.NextExpType = Game.Random.SelectValue<ExpType>(stats);
             }
         }
         private static int GetStatExpChance(int stat, int other)

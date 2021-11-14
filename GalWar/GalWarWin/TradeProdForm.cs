@@ -16,6 +16,7 @@ namespace GalWarWin
 
         private Colony colony;
         private SortedSet<Buildable> buildable;
+        private Buildable selected;
 
         private int height;
         private Control[] template;
@@ -32,10 +33,11 @@ namespace GalWarWin
             rows = new List<BuildableRow>();
         }
 
-        private void SetColony(Colony colony, SortedSet<Buildable> buildable)
+        private void SetColony(Colony colony, SortedSet<Buildable> buildable, Buildable selected)
         {
             this.colony = colony;
             this.buildable = buildable;
+            this.selected = selected;
 
             LoadBuilding();
             RefreshTrade(null);
@@ -52,7 +54,7 @@ namespace GalWarWin
             int y = -26;
             foreach (Buildable build in buildable)
             {
-                BuildableRow row = new BuildableRow(template, y, nud_ValueChanged, BuildTrade, colony, build);
+                BuildableRow row = new BuildableRow(template, y, nud_ValueChanged, BuildTrade, colony, build, selected);
                 rows.Add(row);
                 foreach (Control control in row.GetControls())
                     this.Controls.Add(control);
@@ -69,12 +71,13 @@ namespace GalWarWin
                 foreach (BuildableRow row in rows)
                     row.Refresh(sender);
 
-                double gold;
-                bool allow = this.colony.GetTradeProduction(BuildTrade(), out gold);
-                if (gold > 0)
+                bool allow = this.colony.GetTradeProduction(BuildTrade(), out double gold);
+                if (gold > Consts.FLOAT_ERROR_ZERO)
                     gold = Player.FloorGold(gold);
-                else
+                else if (gold < -Consts.FLOAT_ERROR_ZERO)
                     gold = -Player.CeilGold(-gold);
+                else
+                    gold = 0;
 
                 this.lblCurGold.Text = "/ " + MainForm.FormatDouble(colony.Player.Gold);
                 MainForm.FormatIncome(this.lblGoldDiff, gold);
@@ -91,10 +94,10 @@ namespace GalWarWin
             return trade;
         }
 
-        internal static bool ShowForm(Colony colony, SortedSet<Buildable> buildable)
+        internal static bool ShowForm(Colony colony, SortedSet<Buildable> buildable, Buildable selected)
         {
             MainForm.GameForm.SetLocation(form);
-            form.SetColony(colony, buildable);
+            form.SetColony(colony, buildable, selected);
             bool doTrade = (form.ShowDialog() == DialogResult.OK);
 
             if (doTrade)
@@ -136,6 +139,7 @@ namespace GalWarWin
         {
             private Colony colony;
             private Buildable build;
+            private Buildable selected;
 
             private Label lblName, lblCost, lblInf, lblDiff;
             private NumericUpDown nudProd, nudShips;
@@ -151,10 +155,11 @@ namespace GalWarWin
                 }
             }
 
-            public BuildableRow(Control[] template, int y, EventHandler ValueChanged, Func<Dictionary<Buildable, int>> BuildTrade, Colony colony, Buildable build)
+            public BuildableRow(Control[] template, int y, EventHandler ValueChanged, Func<Dictionary<Buildable, int>> BuildTrade, Colony colony, Buildable build, Buildable selected)
             {
                 this.colony = colony;
                 this.build = build;
+                this.selected = selected;
 
                 this.controls = new List<Control>();
                 this.BuildTrade = BuildTrade;
@@ -223,6 +228,7 @@ namespace GalWarWin
                 }
                 this.lblName.Click += LblName_Click;
                 this.lblDiff.Click += LblDiff_Click;
+                this.lblInf.Click += LblInf_Click;
 
                 this.nudProd.Value = build.Production;
 
@@ -230,8 +236,8 @@ namespace GalWarWin
                 {
                     this.lblCost.TextAlign = this.lblDiff.TextAlign = ContentAlignment.MiddleRight;
                     this.lblInf.Visible = (build is BuildInfrastructure);
-                    this.lblCost.Visible = build.Cost.HasValue;
-                    this.nudShips.Visible = build.Cost.HasValue;
+                    this.lblCost.Visible = (build is BuildShip);
+                    this.nudShips.Visible = (build is BuildShip);
 
                     Refresh(null);
                 }
@@ -262,6 +268,12 @@ namespace GalWarWin
                 this.nudProd.Value = build.Production;
             }
 
+            private void LblInf_Click(object sender, EventArgs e)
+            {
+                if (build is BuildInfrastructure)
+                    Refresh(sender);
+            }
+
             public void Refresh(object sender)
             {
                 int ships = (int)this.nudShips.Value;
@@ -282,20 +294,33 @@ namespace GalWarWin
 
                 if (build.Cost.HasValue)
                 {
-                    if (sender == this.nudShips)
+                    if (sender == this.lblInf)
                     {
-                        prod = (ships * build.Cost.Value - colony.GetProductionIncome());
-                        if (prod < 0)
-                            prod = 0;
+                        prod = build.Cost.Value - colony.GetInfrastructureIncome(selected == build);
+                        if (prod < this.nudProd.Value)
+                            prod = (int)this.nudProd.Value;
                     }
-                    else
+                    else if (sender == this.nudShips)
                     {
-                        ships = (prod + colony.GetProductionIncome()) / build.Cost.Value;
+                        prod = ships * build.Cost.Value;
+                        if (selected == build)
+                            prod -= colony.GetProductionIncome();
+                    }
+                    else if (sender != this.nudProd)
+                    {
+                        ships = prod;
+                        if (selected == build)
+                            ships += colony.GetProductionIncome();
+                        ships /= build.Cost.Value;
                         if (ships < 0)
                             ships = 0;
-                        this.nudShips.Value = ships;
+                        if (ships != this.nudShips.Value)
+                            this.nudShips.Value = ships;
                     }
-                    this.nudProd.Value = prod;
+                    if (prod < 0)
+                        prod = 0;
+                    if (prod != this.nudProd.Value)
+                        this.nudProd.Value = prod;
                 }
             }
 

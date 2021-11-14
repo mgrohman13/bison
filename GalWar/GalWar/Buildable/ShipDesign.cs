@@ -922,6 +922,8 @@ namespace GalWar
         private ModifyStat GetIncrease(double hpMult)
         {
             Dictionary<ModifyStat, int> stats = BalanceAttDef(this.Att, this.Def, this.HP, hpMult);
+            if (stats.Values.Sum() == 0)
+                return ModifyStat.None;
             return Game.Random.SelectValue<ModifyStat>(stats);
         }
 
@@ -1048,11 +1050,7 @@ namespace GalWar
             if (faster && objectively && !similar)
                 ;
             if (!faster && objectively && !similar)
-                ;
-            if (faster && !objectively && !similar)
-                ;
-            if (!faster && !objectively && !similar)
-                ;
+                ; 
 
             return (faster && (objectively || similar));
         }

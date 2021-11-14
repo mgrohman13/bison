@@ -126,10 +126,10 @@ namespace GalWarWin
         private void Income(int x, int y, int i, Colony colony)
         {
             double population = 0, production = 0, gold = 0;
-            int research = 0;
-            colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
+            int research = 0, infrastructure = 0;
+            colony.GetTurnIncome(ref population, ref production, ref gold, ref research, ref infrastructure);
             Label inc = (Label)(controls[4, i] = NewLabel(x, y, click: true));
-            MainForm.FormatIncome(inc, production + gold + research, true);
+            MainForm.FormatIncome(inc, production + gold + research + infrastructure, true);
             inc.Text += " (" + colony.GetProductionIncome() + ")";
             inc.Click += new System.EventHandler((object sender, EventArgs e) => LabelsForm.ShowColonyIncome(colony));
         }

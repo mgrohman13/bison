@@ -19,9 +19,11 @@ namespace GalWar
         public const double StartAnomalies = 13;
         public const double StartPopulation = 130;
         //StartGold will be divided by the number of planets per player and by each indivual player's homeworld quality
-        public const double StartGold = (AverageQuality + Consts.PlanetConstValue) * 910;
+        public static readonly double StartGold = Math.Pow(AverageQuality + Consts.PlanetConstValue, StartGoldPower) * 1300;
         //StartGoldProdPct is the percent of total starting gold that will be converted into starting production
-        public const double StartGoldProdPct = .21;
+        public const double StartGoldProdPct = .26;
+        //StartGoldPower will be applied to the number of planets per player and homeworld quality multipliers
+        public const double StartGoldPower = 1.43;
         public const double StartResearch = 390;
         public const double StartRndm = .13;
         public const double StartMinMult = .65;
@@ -38,12 +40,19 @@ namespace GalWar
         public const int PlanetDistance = 3;
         public const int HomeworldDistance = 8;
 
+        public const float InfrastructureGaussianAvg = .052f;
+        public const float InfrastructureMax = .169f;
+        public const float InfrastructureWeight = .39f;
+        public const float InfrastructureAvg = InfrastructureGaussianAvg + InfrastructureMax * InfrastructureWeight;
+        public const double InfrastructurePow = .78;
+
         //as pcts of population
         public const double PopulationGrowth = Math.E / 130.0;
         public const double Income = .13;
         //emphasizing a single value gives on average precisely double the income of when emphasizing the other two
         public static readonly double EmphasisValue = 8 / (Math.Sqrt(33) - 1);
 
+        public const double SellInfrastructurePenalty = 2 / 3.0;                //0.667
         public const double SwitchBuildRatio = 3.0 / 5.0;                       //0.6
         public const double ManualObsoleteRatio = StoreProdRatio;               //0.8
         public const double StoreProdRatio = 4.0 / 5.0;                         //0.8

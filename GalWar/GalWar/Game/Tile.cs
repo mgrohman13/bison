@@ -18,8 +18,8 @@ namespace GalWar
 
             var neighbors = new HashSet<Tile>();
             //loop through the nine regional tiles in the square grid
-            for (int x = -1 ; x <= 1 ; ++x)
-                for (int y = -1 ; y <= 1 ; ++y)
+            for (int x = -1; x <= 1; ++x)
+                for (int y = -1; y <= 1; ++y)
                 {
                     int x2 = tile.X + x;
                     int y2 = tile.Y + y;
@@ -46,8 +46,6 @@ namespace GalWar
                 if (wormhole != null)
                     isNeighbor = wormhole.Tiles.Contains(tile2);
             }
-            else if (tile1 == tile2)
-                ;
             return isNeighbor;
         }
 
@@ -61,7 +59,7 @@ namespace GalWar
 
         public static bool IsRawNeighbor(Tile tile, int x2, int y2)
         {
-            return ( GetRawDistance(tile.X, tile.Y, x2, y2) == 1 );
+            return (GetRawDistance(tile.X, tile.Y, x2, y2) == 1);
         }
         private static int GetDistance(int x1, int y1, int x2, int y2, ICollection<Wormhole> wormholes)
         {
@@ -104,7 +102,7 @@ namespace GalWar
             //determine if the odd y distance will save an extra x move or not
             if (xDist < 1)
                 xDist = 0;
-            else if (( yDist % 2 != 0 ) && ( ( y2 % 2 != 0 ) == ( x2 < x1 ) ))
+            else if ((yDist % 2 != 0) && ((y2 % 2 != 0) == (x2 < x1)))
                 --xDist;
             return yDist + xDist;
         }
@@ -114,9 +112,9 @@ namespace GalWar
             AssertException.Assert(ship != null);
             AssertException.Assert(ship.Vector != null);
 
-            bool checkTarget = !( ship.Vector.SpaceObject != null && !( ship.Vector.SpaceObject is Ship && ship.Player == ship.Vector.SpaceObject.Player ) );
-            return ( PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null, checkTarget)
-                    ?? PathFind(ship.Tile, ship.Vector, null, checkTarget) );
+            bool checkTarget = !(ship.Vector.SpaceObject != null && !(ship.Vector.SpaceObject is Ship && ship.Player == ship.Vector.SpaceObject.Player));
+            return (PathFind(ship.Tile, ship.Vector, ship.VectorZOC ? ship.Player : null, checkTarget)
+                    ?? PathFind(ship.Tile, ship.Vector, null, checkTarget));
         }
         public static List<Tile> PathFind(Tile from, Tile to, Player player, bool checkTarget, int? max = null)
         {
@@ -141,9 +139,9 @@ namespace GalWar
         {
             SpaceObject spaceObject;
             //a null player means we don't want to do any collision checking at all
-            return ( player == null || ( ( ( spaceObject = neighbor.SpaceObject ) == null || spaceObject is Anomaly
-                   || ( spaceObject is Ship && spaceObject.Player == player ) )
-                    && ( ( skipZOC != null && current == skipZOC ) || Ship.CheckZOC(player, neighbor, current) ) ) );
+            return (player == null || (((spaceObject = neighbor.SpaceObject) == null || spaceObject is Anomaly
+                   || (spaceObject is Ship && spaceObject.Player == player))
+                    && ((skipZOC != null && current == skipZOC) || Ship.CheckZOC(player, neighbor, current))));
         }
 
         #endregion //static
@@ -190,7 +188,7 @@ namespace GalWar
             {
                 checked
                 {
-                    if (( value is Colony ) || ( ( value == null ) == ( SpaceObject == null ) ))
+                    if ((value is Colony) || ((value == null) == (SpaceObject == null)))
                         throw new Exception();
 
                     Game.SetSpaceObject(X, Y, value);
@@ -263,15 +261,15 @@ namespace GalWar
 
         public override int GetHashCode()
         {
-            return ( ( ( this.X << 16 ) | this.Y ) ^ Game.GetHashCode() );
+            return (((this.X << 16) | this.Y) ^ Game.GetHashCode());
         }
 
         public override bool Equals(object obj)
         {
-            Tile tile = ( obj as Tile );
-            bool equals = ( tile != null );
+            Tile tile = (obj as Tile);
+            bool equals = (tile != null);
             if (equals)
-                equals = ( this.X == tile.X && this.Y == tile.Y && this.Game == tile.Game );
+                equals = (this.X == tile.X && this.Y == tile.Y && this.Game == tile.Game);
             return equals;
         }
 

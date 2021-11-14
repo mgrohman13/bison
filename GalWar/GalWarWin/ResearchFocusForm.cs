@@ -52,9 +52,7 @@ namespace GalWarWin
 
         private void RefreshChance()
         {
-            int research;
-            double population, production, gold;
-            MainForm.Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
+            MainForm.Game.CurrentPlayer.GetTurnIncome(out _, out int research, out _, out _, out _);
 
             this.lblChance.Text = string.Format("{0}", MainForm.FormatPctWithCheck(MainForm.Game.CurrentPlayer.GetResearchChance(research, GetResearchFocusDesign())));
         }

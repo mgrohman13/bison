@@ -331,7 +331,7 @@ namespace GalWar
             double numPlanets = numPlayers + CountAnomPlanets() + GetPlanets().Where(planet => planet.Colony == null)
                     .Sum(planet => planet.PlanetValue / (Consts.AverageQuality + Consts.PlanetConstValue));
             //divide starting gold by the number of planets per player, and randomize 
-            startGold = GetStartDouble(startGold * numPlayers / numPlanets);
+            startGold = GetStartDouble(startGold * Math.Pow(numPlayers / numPlanets, Consts.StartGoldPower));
 
             //starting production is based initial ship design costs
             double startProd = 0, count = 0, max = double.MinValue;
@@ -342,7 +342,7 @@ namespace GalWar
                     double weight = design.Colony ? 1.69 : 1;
                     startProd += design.Cost * weight;
                     count += weight;
-                    //non-conoly ships only have a half-chance of increasing the maximum
+                    //non-colony ships only have a half-chance of increasing the maximum
                     if (design.Cost > max && (design.Colony || Random.Bool()))
                         max = design.Cost;
                 }
@@ -370,7 +370,7 @@ namespace GalWar
                 }
 
                 //starting gold is divided by each indivual player's homeworld quality
-                double addGold = startGold / (double)homeworld.Planet.Quality;
+                double addGold = startGold / Math.Pow(homeworld.Planet.Quality, Consts.StartGoldPower);
 
                 //some starting gold automatically turns into production
                 double addProduction = addGold * Consts.StartGoldProdPct;
@@ -539,9 +539,7 @@ namespace GalWar
         public Player CurrentPlayer
         {
             get
-            {
-                if (this.currentPlayer == byte.MaxValue)
-                    throw new InvalidOperationException();
+            { 
                 return this.players[this.currentPlayer];
             }
         }
@@ -820,9 +818,7 @@ namespace GalWar
                 if (valid)
                 {
                     valid = Anomaly.ValidateChange(before, anomShip);
-                    if (valid)
-                        ;
-                    else
+                    if (!valid)
                         ;
                 }
                 else

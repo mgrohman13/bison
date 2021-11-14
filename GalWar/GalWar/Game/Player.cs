@@ -855,23 +855,7 @@ namespace GalWar
             return retVal;
         }
 
-        public double GetMinGold()
-        {
-            int research;
-            double population, production, gold;
-            GetTurnIncome(out population, out research, out production, out gold, true, true);
-            return gold;
-        }
-
-        public void GetTurnIncome(out double population, out int research, out double production, out double gold)
-        {
-            GetTurnIncome(out population, out research, out production, out gold, true);
-        }
-        public void GetTurnIncome(out double population, out int research, out double production, out double gold, bool includeAll)
-        {
-            GetTurnIncome(out population, out research, out production, out gold, false, includeAll);
-        }
-        private void GetTurnIncome(out double population, out int research, out double production, out double gold, bool minGold, bool includeAll)
+        public void GetTurnIncome(out double population, out int research, out double production, out double gold, out int infrastructure)
         {
             TurnException.CheckTurn(this);
 
@@ -879,17 +863,15 @@ namespace GalWar
             production = 0;
             gold = 0;
             research = 0;
+            infrastructure = 0;
 
             foreach (Colony colony in this.colonies)
-                colony.GetTurnIncome(ref population, ref production, ref gold, ref research, minGold);
+                colony.GetTurnIncome(ref population, ref production, ref gold, ref research, ref infrastructure);
             foreach (Ship ship in this.ships)
                 gold -= ship.Upkeep;
 
-            if (includeAll)
-            {
-                gold += this.goldOffset;
-                AutoRepairIncome(ref gold, minGold);
-            }
+            gold += this.goldOffset;
+            AutoRepairIncome(ref gold);
         }
 
         public ReadOnlyCollection<Colony> GetColonies()
@@ -1002,17 +984,11 @@ namespace GalWar
         }
         public double GetAutoRepairCost()
         {
-            return GetAutoRepairCost(false);
-        }
-        public double GetAutoRepairCost(bool minGold)
-        {
             double cost = 0;
             foreach (Ship ship in this.ships)
                 if (ship.DoAutoRepair)
                 {
                     double hp = ship.GetAutoRepairHP();
-                    if (minGold)
-                        hp = Math.Ceiling(hp);
                     double gold = ship.GetGoldForHP(hp);
                     if (Math.Abs(hp - Math.Round(hp)) < hp * Consts.FLOAT_ERROR_ZERO)
                         gold = Player.RoundGold(gold);
@@ -1020,9 +996,9 @@ namespace GalWar
                 }
             return cost;
         }
-        private void AutoRepairIncome(ref double gold, bool minGold)
+        private void AutoRepairIncome(ref double gold)
         {
-            double repairCost = GetAutoRepairCost(minGold);
+            double repairCost = GetAutoRepairCost();
             if (repairCost > Math.Max(this.Gold, 0))
                 repairCost = Math.Max(this.Gold, 0);
             gold -= repairCost;

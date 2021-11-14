@@ -51,7 +51,7 @@ namespace GalWarAI
                 Tile t;
                 if (newShipMovement.TryGetValue(s, out t))
                     if (t == s.Tile)
-                        value = new Tuple<Tile, int>(( value = ShipMovement[s] ).Item1, value.Item2 + 1);
+                        value = new Tuple<Tile, int>((value = ShipMovement[s]).Item1, value.Item2 + 1);
                     else
                         value = new Tuple<Tile, int>(t, 0);
                 else
@@ -68,10 +68,10 @@ namespace GalWarAI
             foreach (Ship s in LoopShips(false))
                 newShipMovement[s] = s.Tile;
 
-            int research;
-            double population, production, gold;
-            game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
-            this.Research += research;
+            //int research;
+            //double population, production, gold;
+            //game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
+            //this.Research += research;
         }
 
         private void TransitionState(IEventHandler humanHandler)
@@ -88,9 +88,9 @@ namespace GalWarAI
             //finish game
             if (game.GetPlayers().Count == 2)
             {
-                Player enemy = game.GetPlayers().First<Player>(delegate(Player p)
+                Player enemy = game.GetPlayers().First<Player>(delegate (Player p)
                 {
-                    return ( !p.IsTurn );
+                    return (!p.IsTurn);
                 });
 
                 //personality		
@@ -234,7 +234,7 @@ namespace GalWarAI
                 TileInfluence inf = TileInfluence.GetInfluence(game, this, p.Tile);
                 int qualRank = inf.GetInfluence(TileInfluence.InfluenceType.Quality).GetRank(game.CurrentPlayer),
                     popRank = inf.GetInfluence(TileInfluence.InfluenceType.Population).GetRank(game.CurrentPlayer);
-                if (( qualRank == 0 || popRank == 0 ) && qualRank < 2 && popRank < 2)
+                if ((qualRank == 0 || popRank == 0) && qualRank < 2 && popRank < 2)
                     ColonizePlanet.Add(p);
             }
         }
@@ -243,10 +243,10 @@ namespace GalWarAI
         {
             //TODO: resolve main goals
             //this.colonizePlanets
-            ColonizePlanet.RemoveAll(delegate(Planet p)
+            ColonizePlanet.RemoveAll(delegate (Planet p)
             {
                 //TODO: check viability?
-                return ( p.Colony != null );
+                return (p.Colony != null);
             });
 
             //TODO: Question: How do you free up gold needed in tactics BEFORE resolve economy and finalize?
@@ -270,7 +270,7 @@ namespace GalWarAI
         [NonSerialized]
         private Dictionary<Colony, Dictionary<Player, double>> cacheThreat = null;
         private Tuple<Player, int> cacheTurnsToVictory = null;
-        private Dictionary<Graphs.GraphType, Tuple<float[, ,], Dictionary<Player, int>>> cacheGraph = null;
+        private Dictionary<Graphs.GraphType, Tuple<float[,,], Dictionary<Player, int>>> cacheGraph = null;
         private void ClearCache()
         {
             cacheThreat = null;
@@ -303,18 +303,18 @@ namespace GalWarAI
 
                         double moveStrThreat = 1;
                         double moveInvThreat = 1;
-                        double buildStr = ( c.GetTotalIncome() / 3 * 3.9 + Math.Sqrt(game.CurrentPlayer.GetPopulation()) * 1.3 ) * GetStrPerProd();
+                        double buildStr = (c.GetTotalIncome() / 3 * 3.9 + Math.Sqrt(game.CurrentPlayer.GetPopulation()) * 1.3) * GetStrPerProd();
                         foreach (Tuple<Ship, double> pair in GetShipsWithin(c.Tile, 5.2))
                             if (pair.Item1.Player == p)
                             {
                                 Ship s = pair.Item1;
                                 Tuple<Tile, int> move = ShipMovement[s];
-                                double value = ( Tile.GetDistance(move.Item1, c.Tile) - Tile.GetDistance(s.Tile, c.Tile) )
-                                        / s.MaxSpeed / ( move.Item2 * move.Item2 + 1 ) / pair.Item2;
+                                double value = (Tile.GetDistance(move.Item1, c.Tile) - Tile.GetDistance(s.Tile, c.Tile))
+                                        / s.MaxSpeed / (move.Item2 * move.Item2 + 1) / pair.Item2;
                                 if (value > 0)
                                 {
                                     moveStrThreat += value * s.GetStrength();
-                                    moveInvThreat += value * ( s.BombardDamage * s.MaxSpeed * 3.9 + s.Population );
+                                    moveInvThreat += value * (s.BombardDamage * s.MaxSpeed * 3.9 + s.Population);
                                 }
                             }
                         moveStrThreat /= buildStr;
@@ -322,9 +322,9 @@ namespace GalWarAI
 
                         TileInfluence inf = TileInfluence.GetInfluence(game, this, c.Tile);
                         TileInfluence.Influence armada = inf.GetInfluence(TileInfluence.InfluenceType.Armada);
-                        double strThreat = Math.Pow(( armada.GetValue(p) + 1 ) / ( armada.GetValue(game.CurrentPlayer) + buildStr / 3.9 + 1 ), 1.3);
+                        double strThreat = Math.Pow((armada.GetValue(p) + 1) / (armada.GetValue(game.CurrentPlayer) + buildStr / 3.9 + 1), 1.3);
 
-                        double invDistThreat = ( 7.8 + .52 ) / ( GetInvadeDist(c, 7.8, p) + .52 );
+                        double invDistThreat = (7.8 + .52) / (GetInvadeDist(c, 7.8, p) + .52);
                         double invInfThreat = 1;
                         invInfThreat += inf.GetInfluence(TileInfluence.InfluenceType.Transport).GetValue(p);
                         invInfThreat += inf.GetInfluence(TileInfluence.InfluenceType.DeathStar).GetValue(p) * 3.9;
@@ -421,7 +421,7 @@ namespace GalWarAI
                 //personality		
                 //PlanetCreationRate
                 int maxTurns = (int)Math.Round(1.3 / 104);
-                for (int a = 0 ; a <= maxTurns ; ++a)
+                for (int a = 0; a <= maxTurns; ++a)
                 {
                     Player top = null;
                     double maxR = -1, secondR = -1;
@@ -447,7 +447,7 @@ namespace GalWarAI
 
                         //grow pop
                         List<Tuple<int, double>> playerColonies = colonies[p];
-                        for (int b = 0 ; b < playerColonies.Count ; ++b)
+                        for (int b = 0; b < playerColonies.Count; ++b)
                         {
                             Tuple<int, double> colony = playerColonies[b];
                             double growth = Consts.GetPopulationGrowth(colony.Item2, colony.Item1);
@@ -471,20 +471,20 @@ namespace GalWarAI
             return cacheTurnsToVictory;
         }
 
-        private Tuple<float[, ,], Dictionary<Player, int>> GetGraph(Graphs.GraphType type)
+        private Tuple<float[,,], Dictionary<Player, int>> GetGraph(Graphs.GraphType type)
         {
             if (cacheGraph == null)
-                cacheGraph = new Dictionary<Graphs.GraphType, Tuple<float[, ,], Dictionary<Player, int>>>();
+                cacheGraph = new Dictionary<Graphs.GraphType, Tuple<float[,,], Dictionary<Player, int>>>();
 
-            Tuple<float[, ,], Dictionary<Player, int>> retVal;
+            Tuple<float[,,], Dictionary<Player, int>> retVal;
             if (!cacheGraph.TryGetValue(type, out retVal))
             {
                 Dictionary<int, Player> playerIndexes;
-                float[, ,] graph = game.Graphs.Get(type, out playerIndexes);
+                float[,,] graph = game.Graphs.Get(type, out playerIndexes);
                 var reverse = new Dictionary<Player, int>();
                 foreach (KeyValuePair<int, Player> pair in playerIndexes)
                     reverse[pair.Value] = pair.Key;
-                retVal = new Tuple<float[, ,], Dictionary<Player, int>>(graph, reverse);
+                retVal = new Tuple<float[,,], Dictionary<Player, int>>(graph, reverse);
                 cacheGraph[type] = retVal;
             }
             return retVal;
@@ -509,8 +509,8 @@ namespace GalWarAI
         internal double GetInvadeDist(Colony c, double max, Player enemy)
         {
             double turns = max;
-            foreach (Ship s in ( enemy == null ? LoopShipsNotPlayer(c.Player) : LoopShips(enemy) ))
-                if (( s.Population > 0 || s.DeathStar ))
+            foreach (Ship s in (enemy == null ? LoopShipsNotPlayer(c.Player) : LoopShips(enemy)))
+                if ((s.Population > 0 || s.DeathStar))
                     turns = Math.Min(turns, GetShipDistance(s, c.Tile));
             return turns;
         }
@@ -527,7 +527,7 @@ namespace GalWarAI
 
         internal double GetShipDistance(Ship s, Tile t)
         {
-            return ( Tile.GetDistance(s.Tile, t) - 1 ) / s.MaxSpeed;
+            return (Tile.GetDistance(s.Tile, t) - 1) / s.MaxSpeed;
         }
 
         internal double GetAvgTurnsToFill(Colony c)
@@ -545,7 +545,7 @@ namespace GalWarAI
                     }
                     else
                     {
-                        turns += ( quality - pop ) / growth;
+                        turns += (quality - pop) / growth;
                         break;
                     }
                     pop += growth;
@@ -614,7 +614,7 @@ namespace GalWarAI
         }
         internal IEnumerable<Ship> LoopShips(bool? friendly)
         {
-            foreach (Player p in ( friendly.HasValue ? LoopPlayers(friendly.Value) : LoopPlayers() ))
+            foreach (Player p in (friendly.HasValue ? LoopPlayers(friendly.Value) : LoopPlayers()))
                 foreach (Ship s in LoopShips(p))
                     yield return s;
         }
@@ -635,7 +635,7 @@ namespace GalWarAI
         }
         internal IEnumerable<Colony> LoopColonies(bool? friendly)
         {
-            foreach (Player p in ( friendly.HasValue ? LoopPlayers(friendly.Value) : LoopPlayers() ))
+            foreach (Player p in (friendly.HasValue ? LoopPlayers(friendly.Value) : LoopPlayers()))
                 foreach (Colony c in LoopColonies(p))
                     yield return c;
         }

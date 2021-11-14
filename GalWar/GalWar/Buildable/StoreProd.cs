@@ -28,7 +28,7 @@ namespace GalWar
             this.production += addProd;
             return null;
         }
-        internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
+        internal override void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
         {
             double addProd = production * Consts.StoreProdRatio;
             gold += (production - addProd) / Consts.ProductionForGold;

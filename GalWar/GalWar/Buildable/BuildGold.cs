@@ -20,14 +20,14 @@ namespace GalWar
             colony.Player.AddGold(production / Consts.GoldProductionForGold);
             return null;
         }
-        internal override void GetTurnIncome(ref double production, ref double gold, bool minGold)
+        internal override void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
         {
             gold += production / Consts.GoldProductionForGold;
             production = 0;
         }
 
         public override double GetAddProduction(double production, bool floor)
-        { 
+        {
             return 0;
         }
 

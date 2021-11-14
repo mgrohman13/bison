@@ -75,11 +75,10 @@ namespace GalWarWin
             }
             else
             {
-                colony.GetInfrastructure(this.addProd, out Dictionary<Ship, double> rs,
+                colony.GetInfrastructure(this.addProd, out double repairCost, out double repairHP,
                         out double att, out double def, out double hp, out double soldiers);
                 bool pd = (att > Consts.FLOAT_ERROR_ZERO || def > Consts.FLOAT_ERROR_ZERO || hp > Consts.FLOAT_ERROR_ZERO);
-                double repair = rs.Values.Sum();
-                bool any = (repair > Consts.FLOAT_ERROR_ZERO) || (pd) || (soldiers > Consts.FLOAT_ERROR_ZERO);
+                bool any = (repairHP > Consts.FLOAT_ERROR_ZERO) || (pd) || (soldiers > Consts.FLOAT_ERROR_ZERO);
                 if (any || buildable is BuildInfrastructure)
                 {
                     if (colony != null && colony.Player.IsTurn)
@@ -89,28 +88,6 @@ namespace GalWarWin
                         int prod = colony.GetInfrastructureIncome(this.addProd);
                         colony.GetUpgMins(out int PD, out int soldier);
 
-                        this.lblTop.Text = "Infrastructure";
-
-                        this.label1.Text = "Production";
-                        this.label2.Text = "PD Prod";
-                        this.label3.Text = "Sldr Prod";
-                        this.label4.Text = "Repair";
-                        this.label5.Text = "Attack";
-                        this.label6.Text = "Defense";
-                        this.label7.Text = "HP";
-                        this.label8.Text = "Soldiers";
-
-                        this.lblInf1.Text = string.Format("{0} {1} ({2})",
-                                colony.GetInfrastructureProd(this.addProd) - prod,
-                                MainForm.FormatIncome(prod, false), MainForm.FormatInt(colony.GetInfrastructureIncome(false)));
-                        this.lblInf2.Text = MainForm.FormatUsuallyInt(PD);
-                        this.lblInf3.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
-                        this.lblInf4.Text = MainForm.FormatDouble(repair);
-                        this.lblInf5.Text = MainForm.FormatIncome(att);
-                        this.lblInf6.Text = MainForm.FormatIncome(def);
-                        this.lblInf7.Text = MainForm.FormatIncome(hp);
-                        this.lblInf8.Text = MainForm.GetBuildingSoldiers(colony, soldiers);
-
                         this.lblTop.Show();
                         this.label1.Show();
                         this.label2.Show();
@@ -118,10 +95,29 @@ namespace GalWarWin
                         this.lblInf1.Show();
                         this.lblInf2.Show();
                         this.lblInf3.Show();
-                        if (repair > Consts.FLOAT_ERROR_ZERO)
+
+                        this.lblTop.Text = "Infrastructure";
+                        this.label1.Text = "Production";
+                        this.label2.Text = "PD Prod";
+                        this.label3.Text = "Sldr Prod";
+
+                        this.lblInf1.Text = string.Format("{0} {1} ({2})",
+                                colony.GetInfrastructureProd(this.addProd) - prod,
+                                MainForm.FormatIncome(prod, false), MainForm.FormatInt(colony.GetInfrastructureIncome(false)));
+                        this.lblInf2.Text = MainForm.FormatUsuallyInt(PD);
+                        this.lblInf3.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
+
+                        if (repairHP > Consts.FLOAT_ERROR_ZERO)
                         {
-                            this.label4.Show();
-                            this.lblInf4.Show();
+                            this.label5.Show();
+                            this.lblInf5.Show();
+                            this.label6.Show();
+                            this.lblInf6.Show();
+
+                            this.label5.Text = "Repair";
+                            this.label6.Text = "Cost";
+                            this.lblInf5.Text = MainForm.FormatIncome(repairHP);
+                            this.lblInf6.Text = MainForm.FormatIncome(-repairCost);
                         }
                         if (pd)
                         {
@@ -131,11 +127,21 @@ namespace GalWarWin
                             this.lblInf5.Show();
                             this.lblInf6.Show();
                             this.lblInf7.Show();
+
+                            this.label5.Text = "Attack";
+                            this.label6.Text = "Defense";
+                            this.label7.Text = "HP";
+                            this.lblInf5.Text = MainForm.FormatIncome(att);
+                            this.lblInf6.Text = MainForm.FormatIncome(def);
+                            this.lblInf7.Text = MainForm.FormatIncome(hp);
                         }
                         if (soldiers > Consts.FLOAT_ERROR_ZERO)
                         {
                             this.label8.Show();
                             this.lblInf8.Show();
+
+                            this.label5.Text = "Soldiers";
+                            this.lblInf5.Text = MainForm.GetBuildingSoldiers(colony, soldiers);
                         }
 
                         return any;

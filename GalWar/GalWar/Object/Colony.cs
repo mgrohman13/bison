@@ -472,7 +472,8 @@ namespace GalWar
 
             TurnStuff(out double population, out int production, out double gold, ref research, out int infrastructure);
 
-            this.ProdGuess += GetTotalIncome() / 3.0;
+            double income = GetTotalIncome();
+            this.ProdGuess += (income - Math.Pow(income * Consts.InfrastructureAvg, Consts.InfrastructurePow)) / 3.0;
             this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
 
             ResetRounding();
@@ -506,8 +507,6 @@ namespace GalWar
             {
                 double cost = builtShips.Average(ship => ship.GetCostAvgResearch());
                 ProdGuess -= cost * builtShips.Count;
-                if (ProdGuess > cost && Tile.GetNeighbors(this.Tile).Any(tile => tile.SpaceObject == null))
-                    ProdGuess = Math.Max(cost, ProdGuess * Consts.StoreProdRatio);
             }
             if (ProdGuess < 0)
                 ProdGuess = 0;
@@ -533,7 +532,7 @@ namespace GalWar
         private void GetTurnValues(int population, out int production, out double gold, out int research, out int infrastructure)
         {
             double income = this.GetTotalIncome(population);
-            infrastructure = MTRandom.Round(Math.Pow(income * this.Planet.infrastructureInc, .78), this.infrastructureRounding);
+            infrastructure = MTRandom.Round(Math.Pow(income * this.Planet.infrastructureInc, Consts.InfrastructurePow), this.infrastructureRounding);
             income -= infrastructure;
 
             if (income > 0)
@@ -875,18 +874,19 @@ namespace GalWar
             return infrastructure;
         }
 
-        public void GetTurnIncome(ref double population, ref double production, ref double gold, ref int research, bool minGold)
+        public void GetTurnIncome(ref double population, ref double production, ref double gold, ref int research, ref int infrastructure)
         {
             TurnException.CheckTurn(this.Player);
 
-            TurnStuff(out double popInc, out int prodInt, out double goldInc, ref research, out int infrastructure);
+            TurnStuff(out double popInc, out int prodInt, out double goldInc, ref research, out int infrInc);
             double prodInc = prodInt;
-            curBuild.GetTurnIncome(ref prodInc, ref goldInc, minGold);
+            curBuild.GetTurnIncome(ref prodInc, ref goldInc, ref infrInc);
 
             //modify parameter values
             population += popInc;
             production += prodInc;
             gold += goldInc;
+            infrastructure += infrInc;
         }
 
         private static int RoundValue(double value, bool floor, bool random, ref double addGold, double rate)
@@ -960,10 +960,13 @@ namespace GalWar
             }
 
             StoreProd storeProd = trade.Keys.OfType<StoreProd>().Single();
-            Func<Func<int, bool>, int> Sum = Check => trade.Where(pair => pair.Key != storeProd && Check(pair.Value)).Sum(pair => pair.Value);
+            BuildInfrastructure infrastructure = GetInfrastructure();
+            Func<Func<KeyValuePair<Buildable, int>, bool>, int> Sum = Check => trade.Where(pair => pair.Key != storeProd && Check(pair)).Sum(pair => pair.Value);
 
-            double sell = -Sum(amt => amt < 0);
-            double buy = Sum(amt => amt > 0);
+            double sell = -Sum(p => p.Value < 0 && p.Key != infrastructure);
+            double sellInfrastructure = -Sum(p => p.Value < 0 && p.Key == infrastructure);
+            sell += sellInfrastructure * Consts.SellInfrastructurePenalty;
+            double buy = Sum(p => p.Value > 0);
             int tradeStore = trade[storeProd];
             if (tradeStore < 0)
             {
@@ -1258,16 +1261,17 @@ namespace GalWar
                 soldierMult *= soldierMult;
             }
 
-            PD = (int)Math.Ceiling(GetTotalIncome() / pdMult * this.upgPD + Consts.FLOAT_ERROR_ZERO);
-            soldier = (int)Math.Ceiling(GetTotalIncome() / soldierMult * this.upgSoldiers + Consts.FLOAT_ERROR_ZERO);
+            double incomeMult = Math.Sqrt((this.GetTotalIncome() + Consts.PlanetConstValue * Consts.Income) * Consts.AverageQuality * Consts.Income);
+            PD = (int)Math.Ceiling(incomeMult / pdMult * this.upgPD + Consts.FLOAT_ERROR_ZERO);
+            soldier = (int)Math.Ceiling(incomeMult / soldierMult * this.upgSoldiers + Consts.FLOAT_ERROR_ZERO);
         }
 
-        public void GetInfrastructure(bool? addProd, out Dictionary<Ship, double> repairShips,
+        public void GetInfrastructure(bool? addProd, out double repairCost, out double repairHP,
                 out double att, out double def, out double hp, out double soldiers)
         {
             TurnException.CheckTurn(this.Player);
 
-            GetInfrastructure(GetInfrastructureProd(addProd), false, out repairShips,
+            GetInfrastructure(GetInfrastructureProd(addProd), false, out repairCost, out repairHP,
                     out att, out def, out hp, out soldiers);
             if (!this.MinDefenses)
             {
@@ -1278,12 +1282,13 @@ namespace GalWar
         }
         private void ApplyInfrastructure(int infrastructure)
         {
-            GetInfrastructure(infrastructure, true, out _, out _, out _, out _, out _);
+            GetInfrastructure(infrastructure, true, out _, out _, out _, out _, out _, out _);
         }
-        private void GetInfrastructure(int infrastructure, bool apply, out Dictionary<Ship, double> repairShips,
+        private void GetInfrastructure(int infrastructure, bool apply, out double repairCost, out double repairHP,
              out double att, out double def, out double hp, out double soldiers)
         {
-            repairShips = new Dictionary<Ship, double>();
+            repairCost = 0;
+            repairHP = 0;
             att = this.Att;
             def = this.Def;
             hp = this.HP;
@@ -1308,16 +1313,17 @@ namespace GalWar
             double count = repair.Count;
             if (count > 0)
             {
-                double gold = 0;
+                prod -= avg;
+                repairCost = avg;
                 foreach (Ship ship in repair)
                 {
                     double useProd = avg / count--;
                     if (apply)
                         useProd = Game.Random.GaussianCapped(useProd, Consts.PlanetDefenseRndm);
-                    double res = ship.ProductionRepair(ref prod, useProd, apply);
-                    //avg should use lost prod in ProductionRepair
-                    repairShips.Add(ship, res);
+                    repairHP += ship.ProductionRepair(ref avg, useProd, apply);
                 }
+                prod += avg;
+                repairCost -= avg;
                 if (apply)
                     SetBuildProd(prod, false);
             }
@@ -1486,9 +1492,9 @@ namespace GalWar
 
             newHP = GetPDHP(trgCost, trgResearch, newAtt, newDef);
         }
-        private static bool TestPD(double trgCost, double trgResearch, double minAtt, double minDef)
+        private static bool TestPD(double trgCost, double trgResearch, double s1, double s2)
         {
-            return (GetPDHP(trgCost, trgResearch, minAtt, minDef) > ShipDesign.GetHPStr(minAtt, minDef));
+            return (GetPDHP(trgCost, trgResearch, s1, s2) > ShipDesign.GetHPStr(s1, s2));
         }
         private static double GetPDHP(double trgCost, double trgResearch, double s1, double s2)
         {
@@ -1511,7 +1517,7 @@ namespace GalWar
             if (avg > 1)
                 hp = Game.Random.GaussianCappedInt(avg, Consts.PlanetDefenseRndm, 1);
             else
-                hp = 1;
+                hp = Game.Random.Round(avg);
         }
         private static int SetPDStat(double target, int current, int max)
         {

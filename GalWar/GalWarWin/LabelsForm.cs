@@ -117,8 +117,8 @@ namespace GalWarWin
         public static void ShowColonyIncome(Colony colony)
         {
             double population = 0, production = 0, gold = 0, origGold;
-            int research = 0, origProd, infrastructure;
-            colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
+            int research = 0, origProd, infrastructure = 0;
+            colony.GetTurnIncome(ref population, ref production, ref gold, ref research, ref infrastructure);
             colony.GetTurnValues(out origProd, out origGold, out research, out infrastructure);
             gold = Player.RoundGold(gold);
             production = Player.RoundGold(production);

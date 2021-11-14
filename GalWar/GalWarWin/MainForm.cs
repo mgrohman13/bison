@@ -2074,8 +2074,7 @@ namespace GalWarWin
                 upkeep += ship.Upkeep;
                 ships += ship.BaseUpkeep;
             }
-            Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out double total);
-            MainForm.Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out _, false);
+            Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out double total, out _);
 
             income = Player.RoundGold(income);
             upkeep = Player.RoundGold(upkeep);
@@ -2084,8 +2083,7 @@ namespace GalWarWin
             LabelsForm.ShowForm("Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(), "Ship Upk", ships.ToString(),
                     "Repairs", FormatDouble(Game.CurrentPlayer.GetAutoRepairCost()), string.Empty, string.Empty,
                     "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep), //"Base", FormatIncome(basic),
-                    "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total),
-                    "Minimum", FormatIncome(Game.CurrentPlayer.GetMinGold()));
+                    "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total));
         }
 
         private void lblResearch_Click(object sender, EventArgs e)
@@ -2302,7 +2300,8 @@ namespace GalWarWin
 
             int research;
             double population, production, gold;
-            Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold);
+            Game.CurrentPlayer.GetTurnIncome(out population, out research, out production, out gold, out int infrastructure);
+            production += infrastructure;
 
             FormatIncome(lblPopInc, population);
             FormatIncome(lblGoldInc, gold, true);
@@ -2606,9 +2605,9 @@ namespace GalWarWin
             if (colony.Player.IsTurn)
             {
                 double population = 0, production = 0, gold = 0;
-                int research = 0;
-                colony.GetTurnIncome(ref population, ref production, ref gold, ref research, false);
-                income = production + gold + research;
+                int research = 0, infrastructure = 0;
+                colony.GetTurnIncome(ref population, ref production, ref gold, ref research, ref infrastructure);
+                income = production + gold + research + infrastructure;
             }
             else
             {
@@ -2632,20 +2631,35 @@ namespace GalWarWin
 
         internal static string GetProdNameText(Colony colony)
         {
-            colony.GetInfrastructure(null, out Dictionary<Ship, double> rs,
+            colony.GetInfrastructure(null, out double repairCost, out double repairHP,
                     out double att, out double def, out double hp, out double soldiers);
-            double repair = rs.Values.Sum();
             string text;
-            if (repair > Consts.FLOAT_ERROR_ZERO)
-                text = "Repair +" + FormatDouble(repair);
+            bool parens = false;
+            if (repairHP > Consts.FLOAT_ERROR_ZERO)
+            {
+                text = "Repair +" + FormatDouble(repairHP);
+                parens = !(colony.CurBuild is BuildInfrastructure);
+            }
             else if (att > Consts.FLOAT_ERROR_ZERO || def > Consts.FLOAT_ERROR_ZERO || hp > Consts.FLOAT_ERROR_ZERO)
+            {
                 text = GetBuildingDefense(colony, att, def, hp);
+                parens = !(colony.CurBuild is BuildInfrastructure);
+            }
             else if (soldiers > Consts.FLOAT_ERROR_ZERO)
+            {
                 text = GetBuildingSoldiers(colony, soldiers);
+                parens = !(colony.CurBuild is BuildInfrastructure);
+            }
             else if (colony.CurBuild is BuildGold)
+            {
                 text = "Gold";
+            }
             else
+            {
                 text = colony.CurBuild.ToString();
+            }
+            if (parens)
+                text = "(" + text + ")";
             return text;
         }
 
@@ -2693,7 +2707,7 @@ namespace GalWarWin
 
         public static string GetBuildingDefense(Colony colony, double newAtt, double newDef, double newHP)
         {
-            return string.Format("{3}{0}:{4}{1} ({5}{2})", FormatUsuallyInt(newAtt), FormatUsuallyInt(newDef), FormatUsuallyInt(newHP),
+            return string.Format("{3}{0}:{4}{1},{5}{2}", FormatUsuallyInt(newAtt), FormatUsuallyInt(newDef), FormatUsuallyInt(newHP),
                     newAtt > 0 ? "+" : string.Empty, newDef > 0 ? "+" : string.Empty, newHP > 0 ? "+" : string.Empty);
         }
         public static string GetBuildingSoldiers(Colony colony, double soldierInc)

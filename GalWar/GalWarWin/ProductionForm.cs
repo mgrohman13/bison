@@ -195,7 +195,7 @@ namespace GalWarWin
 
         private void btnBuy_Click(object sender, EventArgs e)
         {
-            if (TradeProdForm.ShowForm(this.colony, designs))
+            if (TradeProdForm.ShowForm(this.colony, designs, form.GetSelectedDesign()))
             {
                 RefreshBuild();
                 MainForm.GameForm.RefreshAll();

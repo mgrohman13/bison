@@ -49,6 +49,8 @@ namespace GalWarWin.Sliders
 
             checkRB.Checked = true;
             this.txtDefault.Enabled = false;
+
+            this.cbxProdRepair.Checked = ship.ProdRepair;
         }
         private void AutoRepairForm_Shown(object sender, EventArgs e)
         {
@@ -226,13 +228,18 @@ namespace GalWarWin.Sliders
                 value = 0;
             else if (value > 1000)
                 value = 1000;
-            value = ( ship.MaxHP - ship.HP ) / value;
+            value = (ship.MaxHP - ship.HP) / value;
             RefreshValues(sender, value);
         }
         private void setTurn(double value)
         {
-            value = ( ship.MaxHP - ship.HP ) / value;
+            value = (ship.MaxHP - ship.HP) / value;
             SetValue(this.txtTurn, value);
+        }
+
+        private void cbxProdRepair_CheckedChanged(object sender, EventArgs e)
+        {
+            ship.ProdRepair = this.cbxProdRepair.Checked;
         }
     }
 }

@@ -176,11 +176,14 @@ namespace GalWar
             return (1 * ((1 * player.ResearchDisplay + 3 * player.Research) / 4.0)
                     + 1 * (player.GetLastResearched() + value) + 2 * (Tile.Game.AvgResearch)) / 4.0;
         }
-        private static void CompensateDesign(Player player, ShipDesign design, double designResearch, double expectedShips)
+        private void CompensateDesign(Player player, ShipDesign design, double designResearch, double expectedShips)
         {
             expectedShips *= (1 + Consts.RepairCostMult * .39);
             double gold = (design.GetTotCost() - design.GetTotCost(Game.Random.Round(designResearch))) * expectedShips;
-            //player.GoldIncome(gold);
+            double consolation = ConsolationValue();
+            if (gold > consolation)
+                gold = consolation + Math.Pow(gold - consolation + 1, .13) - 1;
+            player.GoldIncome(gold);
         }
 
         private Tile GetRandomTile(Ship anomShip, int move)
@@ -213,6 +216,8 @@ namespace GalWar
 
                 retVal.Add(player, Game.Random.Round(byte.MaxValue / avgDist));
             }
+            if (retVal.Values.Sum() == 0)
+                return GetPlayerProximity();
             return retVal;
         }
         private Dictionary<Colony, int> GetPlayerColonyWeights(Player player, out double total)
@@ -325,20 +330,6 @@ namespace GalWar
                                 if (canAttack)
                                     attackers.Add(attShip);
                             }
-                            else
-                            {
-                                double count = game.GetSpaceObjects().Count();
-                                if (Game.Random.Bool(1 / count / count))
-                                {
-                                    path = Tile.PathFind(attShip.Tile, target, attShip.Player, false);
-                                    if (path != null && ((attShip.CurSpeed - path.Count) > (inv ? -3 : -2)))
-                                        throw new Exception();
-                                    else if (path == null)
-                                        ;
-                                    else if (attShip.CurSpeed - path.Count > -4)
-                                        ;
-                                }
-                            }
                         }
             return attackers;
         }
@@ -381,7 +372,7 @@ namespace GalWar
             if (Game.Random.Bool() && Colony(handler, anomShip.Player, playerProximity, anomShip))
                 return true;
 
-            while (playerProximity.Any())
+            while (playerProximity.Values.Sum() > 0)
                 if (Colony(handler, Game.Random.SelectValue(playerProximity), playerProximity, anomShip))
                     return true;
 

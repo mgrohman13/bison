@@ -1,5 +1,10 @@
 UI
 
+rethink prod text summary for infrastructure when not curBuild
+pdform show infrstr inc info 
+	sell pd show new min
+display planet level rand values?
+show defenseResearch? PD target stats?
 highlight when could build with prod store
 hide invade ok button when 0 gold
 select different research upgrade no longer shows diff chance
@@ -77,6 +82,10 @@ combat predict performance
 
 GAMEPLAY
 
+double check upkeep values
+sell soldiers?
+	also on trans? only planet?
+test new planet infrstrctr over time
 ship type chances
 	increase old research penalty to weight
 revisit research chances
@@ -110,40 +119,12 @@ anomaly gold balancing at full vs consolation value
 rand rounded gold balancing or not - why? rate?
 rchance > 1 throws off max
 [NonSerialized] fields should deserialize to standard values (NaN vs 0)
+standardize mindefenses, hp, str, cost checks
+more likely multi-tile wormholes
 
 
 BETWEEN GAMES
 
-	
-startGold power
-buildable/repair/pd rework 
-	prod repair
-		build soldier, pd randonly round 0-1 (build only, not upgrade, automatic)
-	UI needs ship repair cbox 
-	display planet values?
-	show defenseResearch
-	reducing pd stats/hp
-	hp ratio?
-		slighter more hp if stats not reduced?
-		random?
-	standardize mindefenses, hp, str, cost checks
-	display PD target stats
-	turnstuff refs for infrstrctr
-	avg gold (also remove min)
-	pdform show infrstr inc info 
-	tradeprodform click auto buy for infrastructure 
-	suspend PD/sldr build?
-		needs downside - increased upk at minimum, prob more
-	prod guess
-	game starting values
-	test new planet infrstrctr over time
-	reuse ship design max cost functionality for infrastructure (use min of mins) 
-	double check quick prod text summary makes sense
-		+colony summary
-	upg PD / sold stored values store income?
-	manual/new prod interaction
-	next ships in reapair line pick up extra prod after last maxxed
-		
 research victory pct decreases with higher research
 	10k=now
 	30k=85% instead of 67%?
@@ -177,6 +158,7 @@ new game parameters
 	differentiate starting and planet rate
 	pop,prod,etc.
 map size
+negative gold?
 
 
 FEATURES
