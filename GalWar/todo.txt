@@ -1,5 +1,10 @@
 UI
 
+colony reshow ship repair amount to enemies? (since prod guess updates accordingly)
+show total prod reapir cost for ship
+disable infrastructure repair when moving into planet
+	only if fully rep;airs?
+	reenable on move away
 rethink prod text summary for infrastructure when not curBuild
 pdform show infrstr inc info 
 	sell pd show new min
@@ -82,6 +87,8 @@ combat predict performance
 
 GAMEPLAY
 
+doublecheck total income
+anomaly production with storeprod working? - display value seems not to 
 double check upkeep values
 sell soldiers?
 	also on trans? only planet?
@@ -164,6 +171,7 @@ negative gold?
 FEATURES
 
 civ zoc?
+	move through friendly?
 	rebalance?
 more individual colony/planet variation?
 	problem - people piling all excess pop on best planet

@@ -539,7 +539,7 @@ namespace GalWar
         public Player CurrentPlayer
         {
             get
-            { 
+            {
                 return this.players[this.currentPlayer];
             }
         }
@@ -741,7 +741,8 @@ namespace GalWar
             {
                 Player attacker = this.players[index];
                 Player defender = this.players[swap];
-                return !attInv.Where(pair => pair.Key.Player == defender).SelectMany(pair => pair.Value).Where(spaceObject => spaceObject.Player == attacker).Any();
+                bool allow = !attInv.Where(pair => pair.Key.Player == defender).SelectMany(pair => pair.Value).Where(spaceObject => spaceObject.Player == attacker).Any();
+                return allow;
             });
             if (playerGold.Count > 0)
             {

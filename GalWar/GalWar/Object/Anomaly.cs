@@ -182,7 +182,9 @@ namespace GalWar
             double gold = (design.GetTotCost() - design.GetTotCost(Game.Random.Round(designResearch))) * expectedShips;
             double consolation = ConsolationValue();
             if (gold > consolation)
-                gold = consolation + Math.Pow(gold - consolation + 1, .13) - 1;
+                gold = consolation + Math.Pow(gold - consolation + 1, .91) - 1;
+            if (gold > value)
+                gold = value + Math.Pow(gold - consolation + 1, .13) - 1;
             player.GoldIncome(gold);
         }
 

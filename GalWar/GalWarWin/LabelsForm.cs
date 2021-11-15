@@ -123,7 +123,7 @@ namespace GalWarWin
             gold = Player.RoundGold(gold);
             production = Player.RoundGold(production);
 
-            ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research),
+            ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research + infrastructure),
                     "Upkeep", MainForm.FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
                     "Gold", ShowOrig(origGold, gold), "Research", MainForm.FormatDouble(research),
                     "Production", ShowOrig(origProd, production),
