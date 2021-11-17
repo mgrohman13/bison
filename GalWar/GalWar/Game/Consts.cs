@@ -10,10 +10,6 @@ namespace GalWar
         public const double WinPointsMult = 130;
         public const double LosePointsMult = -6.5;
         public const double PointsTilesPower = .39;
-        //ResearchVictoryMult is a multiple of the second place players research
-        public const double ResearchVictoryMult = 1.69;
-        public const double ResearchVictoryMin = 1.39;
-        public const double ResearchVictoryPow = Math.PI;
 
         //StartAnomalies is the number of turn-rounds for which we immediately create anomalies
         public const double StartAnomalies = 13;
@@ -164,15 +160,24 @@ namespace GalWar
         public const double FLOAT_ERROR_ZERO = 1.0 / (1 << (MTRandom.FLOAT_BITS - 2));
         public const double FLOAT_ERROR_ONE = 1.0 + FLOAT_ERROR_ZERO;
 
-        public static double GetResearchVictoryChance(double mult)
+        public static double GetResearchVictoryChance(double div, double avgResearch)
         {
+            double mult = GetResearchVictoryMult(avgResearch);
+            double min = mult;
             //research victory can happen when the top player exceeds a certain multiple of the second place player
-            if (mult > Consts.ResearchVictoryMin)
+            if (div > min)
             {
-                double chance = (mult - Consts.ResearchVictoryMin) / (Consts.ResearchVictoryMult - Consts.ResearchVictoryMin);
-                return Math.Pow(Consts.LimitPct(chance), Consts.ResearchVictoryPow);
+                double target = mult * mult;
+                double chance = (div - min) / (target - min);
+                chance = Math.Pow(Consts.LimitPct(chance), Math.PI);
+                if (chance > .01)
+                    return chance;
             }
             return 0;
+        }
+        public static double GetResearchVictoryMult(double avgResearch)
+        {
+            return 1 + Math.Pow(3000 / avgResearch, 0.91);
         }
 
         internal static int NewPlanetQuality()

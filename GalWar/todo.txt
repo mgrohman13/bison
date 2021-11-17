@@ -132,12 +132,6 @@ more likely multi-tile wormholes
 
 BETWEEN GAMES
 
-research victory pct decreases with higher research
-	10k=now
-	30k=85% instead of 67%?
-	uses real avg, graph calcs using average shown
-	also decrease max display skew appropriately
-	actual chance vs display discrepency?	
 trans upk payoff problem
 	upkeep IS more severe, but cost ends up being reduced
 	reduce impact of speed in general, while at it?

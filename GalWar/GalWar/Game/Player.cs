@@ -521,15 +521,34 @@ namespace GalWar
 
         private void RandResearchDisplay()
         {
-            Player[] research = Game.GetResearchDisplayOrder();
+            Player[] research = Game.GetRealResearchOrder();
+
+            bool sign = (rDisp > rDispTrg);
+            //top 2 players start to use the same research display offset when a research victory gets close
+            if (this == research[0] || this == research[1])
+            {
+                double otherDisp = (this == research[0] ? research[1] : research[0]).rDisp;
+                if (sign != (rDisp > otherDisp))
+                {
+                    double rvMult = Consts.GetResearchVictoryMult(Game.AvgResearch);
+                    double rvStart = 1 + (rvMult - 1) / 2.0;
+                    double rvDiv = (double)research[0].Research / (double)research[1].Research;
+                    if (rvDiv > rvStart)
+                    {
+                        double chance = (rvDiv - rvStart) / (rvMult - rvStart);
+                        if (Game.Random.Bool(Consts.LimitPct(chance)))
+                            sign = !sign;
+                    }
+                }
+            }
+
             //the maximum possible skew change can plausibly be accounted for by economy emphasis choices
             double totalIncome = GetTotalIncome();
             double low = totalIncome / (1.0 + 2.0 * Consts.EmphasisValue);
             double high = totalIncome * Consts.EmphasisValue / (Consts.EmphasisValue + 2.0);
             double diff = Consts.LimitMin(rDispChange * (high - low) / research[0].ResearchDisplay, 2.1 / research[0].ResearchDisplay);
-
             double add = Game.Random.Gaussian(diff, Consts.ResearchRndm);
-            bool sign = (rDisp > rDispTrg);
+
             if (sign)
                 rDisp -= add;
             else
@@ -537,8 +556,9 @@ namespace GalWar
 
             if (sign != (rDisp > rDispTrg) || rDisp == rDispTrg)
             {
+                double mult = Consts.GetResearchVictoryMult(Game.AvgResearch);
                 rDisp = rDispTrg;
-                double cap = Math.Max(3 / Consts.ResearchVictoryMin - rDispTrg - 1, 3 + rDispTrg - 3 * Consts.ResearchVictoryMin);
+                double cap = Math.Max(3 / mult - rDispTrg - 1, 3 + rDispTrg - 3 * mult);
                 rDispTrg = (rDispTrg + Game.Random.GaussianCapped(1, Consts.ResearchDisplayRndm, cap) + 1) / 3.0;
 
                 //rate is based on distance to new value

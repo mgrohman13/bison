@@ -102,13 +102,13 @@ namespace GalWarAI
                 {
                     //TODO: determine if reasearch victory is potenitially quicker than killing
                 }
-                if (quality > enemyQuality * Consts.ResearchVictoryMult)
-                {
-                    if (GetThreatLevel() > 130)
-                        return new Defend(game, this, humanHandler);
-                    else
-                        return new Wait(game, this, humanHandler);
-                }
+                //if (quality > enemyQuality * Consts.ResearchVictoryMult)
+                //{
+                //    if (GetThreatLevel() > 130)
+                //        return new Defend(game, this, humanHandler);
+                //    else
+                //        return new Wait(game, this, humanHandler);
+                //}
 
                 //kill last
                 return new TotalWar(enemy, game, this, humanHandler);
@@ -147,8 +147,8 @@ namespace GalWarAI
             int enemyQuality;
             GetQuality(out quality, out enemyQuality);
             //achieve victory
-            if (quality > enemyQuality * Consts.ResearchVictoryMult)
-                return true;
+            //if (quality > enemyQuality * Consts.ResearchVictoryMult)
+            //    return true;
 
             double turns;
             double enemyTurns;
@@ -458,11 +458,11 @@ namespace GalWarAI
                         totalPop[p] = playerPop;
                     }
 
-                    if (maxR > secondR * Consts.ResearchVictoryMult)
-                    {
-                        cacheTurnsToVictory = new Tuple<Player, int>(top, a);
-                        return cacheTurnsToVictory;
-                    }
+                    //if (maxR > secondR * Consts.ResearchVictoryMult)
+                    //{
+                    //    cacheTurnsToVictory = new Tuple<Player, int>(top, a);
+                    //    return cacheTurnsToVictory;
+                    //}
                 }
 
                 cacheTurnsToVictory = new Tuple<Player, int>(null, int.MaxValue);

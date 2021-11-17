@@ -28,6 +28,28 @@ namespace GalWarWin
 
         private GraphsForm()
         {
+            //List<int> rs = new List<int>(new int[] { 1, 390 });
+            //for (int a = 1000; a < 9001; a += 1000)
+            //    rs.Add(a);
+            //for (int a = 10000; a < 100001; a += 10000)
+            //    rs.Add(a);
+            //rs.Add(500000);
+            //rs.Add(1000000);
+            //foreach (int avgR in rs)
+            //{
+            //    string resS = avgR + "\t";
+            //    for (double pct = 0; pct < .91; pct += .1)
+            //    {
+            //        int res = MattUtil.TBSUtil.FindValue(delegate (int value)
+            //        {
+            //            return (Consts.GetResearchVictoryChance(100.0 / value, avgR) > pct);
+            //        }, 0, 100, false);
+            //        resS += res / 100.0 + "\t";
+            //    }
+            //    Console.WriteLine(resS);
+            //}
+
+
             InitializeComponent();
 
             cbxType.Items.Add(Graphs.GraphType.Population);
@@ -49,25 +71,40 @@ namespace GalWarWin
 
         private void GetResearchLines()
         {
-            AddResearchLine(0);
-            AddResearchLine(.01);
-            AddResearchLine(.1);
-            researchLines.Add(50);
-            researchLines.Add(( researchLines[0] + 101 ) / 2);
-        }
-        private void AddResearchLine(double pct)
-        {
-            researchLines.Add(MattUtil.TBSUtil.FindValue(delegate (int value)
+            int min = AddResearchLine(0);
+            if (min >= 50)
             {
-                return ( Consts.GetResearchVictoryChance(100.0 / value) > pct );
-            }, 0, 100, false));
+                researchLines.Add((researchLines[0] + 101) / 2);
+                int next = FindResearchLine(.1);
+                if (min - next > 1 && next > 51)
+                    researchLines.Add(next);
+                AddResearchLine(.5);
+            }
+            else
+            {
+                researchLines.Add(75);
+            }
+            researchLines.Add(50);
+        }
+        private int AddResearchLine(double pct)
+        {
+            int line = FindResearchLine(pct);
+            researchLines.Add(line);
+            return line;
+        }
+        private int FindResearchLine(double pct)
+        {
+            return MattUtil.TBSUtil.FindValue(delegate (int value)
+            {
+                return (Consts.GetResearchVictoryChance(100.0 / value, MainForm.Game.AvgResearch) > pct);
+            }, 0, 100, false);
         }
 
         private void LoadData()
         {
             if (labels != null)
-                for (int a = 0 ; a < labels.GetLength(0) ; ++a)
-                    for (int b = 0 ; b < labels.GetLength(1) ; ++b)
+                for (int a = 0; a < labels.GetLength(0); ++a)
+                    for (int b = 0; b < labels.GetLength(1); ++b)
                         if (labels[a, b] != null)
                         {
                             Controls.Remove(labels[a, b]);
@@ -93,7 +130,7 @@ namespace GalWarWin
             labels = new Label[8, players.Count + 1];
             y = 32;
             int researchX = 0;
-            for (int i = 0 ; i < players.Count ; ++i)
+            for (int i = 0; i < players.Count; ++i)
             {
                 int x = 12;
                 labels[0, i] = NewLabel(x, y, players[i].Name, players[i].Color);
@@ -140,7 +177,7 @@ namespace GalWarWin
 
         private static int GetPlace(double max)
         {
-            return ( MainForm.FormatInt(max).Length - 2 ) / 3;
+            return (MainForm.FormatInt(max).Length - 2) / 3;
         }
 
         private static long GetDiv(int place)
@@ -154,7 +191,7 @@ namespace GalWarWin
         private static long GetValue(double value, bool ceil, long div)
         {
             value /= div;
-            return (long)( ceil ? Math.Ceiling(value) : Math.Round(value) ) * div;
+            return (long)(ceil ? Math.Ceiling(value) : Math.Round(value)) * div;
         }
 
         private static string GetString(long value, long div, int place)
@@ -164,7 +201,7 @@ namespace GalWarWin
 
         private static string GetStringDec(double value, long div, int place)
         {
-            bool dec = ( Math.Round(value / div) < 100 );
+            bool dec = (Math.Round(value / div) < 100);
             if (div > 1)
             {
                 if (dec)
@@ -290,7 +327,7 @@ namespace GalWarWin
                 if (!maxY.HasValue)
                     maxY = GetMaxY(data);
 
-                float xScale = width / (float)( Math.Ceiling(maxX) );
+                float xScale = width / (float)(Math.Ceiling(maxX));
                 float yScale = height / (float)Math.Ceiling(maxY.Value);
 
                 if (xScale > 0 && yScale > 0)
@@ -299,15 +336,15 @@ namespace GalWarWin
 
                     Dictionary<int, List<PointF>> points = new Dictionary<int, List<PointF>>();
                     int yLen = data.GetLength(1);
-                    for (int y = 0 ; y < yLen ; ++y)
+                    for (int y = 0; y < yLen; ++y)
                         points.Add(y, new List<PointF>());
 
                     bool smooth = false;//( checks.ContainsKey(type) ? checks[type][1] : chbSmooth.Checked );
-                    for (int x = 0 ; x < xLen ; ++x)
-                        for (int y = 0 ; y < yLen ; ++y)
+                    for (int x = 0; x < xLen; ++x)
+                        for (int y = 0; y < yLen; ++y)
                             AddPoint(points, y, GetPoint(data[x, y, 0], data[x, y, 1], xScale, yScale), smooth, xScale);
                     if (smooth)
-                        for (int y = 0 ; y < yLen ; ++y)
+                        for (int y = 0; y < yLen; ++y)
                         {
                             PointF point = GetPoint(data[xLen - 1, y, 0], data[xLen - 1, y, 1], xScale, yScale);
                             SmoothPoints(points, y, GetTurn(point.X, xScale), xScale);
@@ -334,8 +371,8 @@ namespace GalWarWin
             {
                 PointF l1 = List[List.Count - 1];
                 PointF l2 = List[List.Count - 2];
-                float slope = ( l1.Y - l2.Y ) / ( l1.X - l2.X );
-                if (Math.Abs(( ( point.Y - l1.Y ) / ( point.X - l1.X ) ) - slope) < 0.001)
+                float slope = (l1.Y - l2.Y) / (l1.X - l2.X);
+                if (Math.Abs(((point.Y - l1.Y) / (point.X - l1.X)) - slope) < 0.001)
                     List.RemoveAt(List.Count - 1);
             }
 
@@ -348,7 +385,7 @@ namespace GalWarWin
 
             int count = 0;
             float sumX = 0, sumY = 0;
-            for (int i = List.Count ; --i >= 0 ;)
+            for (int i = List.Count; --i >= 0;)
             {
                 if (GetTurn(List[i].X, xScale) == turn)
                 {
@@ -364,7 +401,7 @@ namespace GalWarWin
 
             if (count > 0)
             {
-                for (int i = 0 ; i < count && List.Count > 1 ; ++i)
+                for (int i = 0; i < count && List.Count > 1; ++i)
                     List.RemoveAt(List.Count - 1);
                 AddPoint(points, player, new PointF(sumX / count, sumY / count), false, xScale);
             }
@@ -373,14 +410,14 @@ namespace GalWarWin
         const float padding = 21;
         private int GetTurn(float x, float xScale)
         {
-            return (int)( ( x - 2 * padding ) / xScale );
+            return (int)((x - 2 * padding) / xScale);
         }
 
         private float GetMaxY(float[,,] data)
         {
             float maxY = 0;
-            for (int x = 0 ; x < data.GetLength(0) ; ++x)
-                for (int y = 0 ; y < data.GetLength(1) ; ++y)
+            for (int x = 0; x < data.GetLength(0); ++x)
+                for (int y = 0; y < data.GetLength(1); ++y)
                     maxY = Math.Max(maxY, data[x, y, 1]);
             return (float)Math.Floor(maxY) + 1f;
         }
@@ -435,7 +472,7 @@ namespace GalWarWin
             value = GetValue(y, ceil, div);
             if (height > 0)
             {
-                y = (float)( value / Consts.FLOAT_ERROR_ONE );
+                y = (float)(value / Consts.FLOAT_ERROR_ONE);
                 yScale = height / (float)Math.Ceiling(y);
             }
 
@@ -476,18 +513,18 @@ namespace GalWarWin
             Graphs.GraphType type = (Graphs.GraphType)cbxType.SelectedItem;
             switch (type)
             {
-            case Graphs.GraphType.Armada:
-                checkBox1.Text = "Account For Damage";
-                break;
-            case Graphs.GraphType.Population:
-                checkBox1.Text = "Include Transports";
-                break;
-            case Graphs.GraphType.Quality:
-                checkBox1.Text = "Overlay Population";
-                break;
-            case Graphs.GraphType.Research:
-                checkBox1.Text = "Total Income";
-                break;
+                case Graphs.GraphType.Armada:
+                    checkBox1.Text = "Account For Damage";
+                    break;
+                case Graphs.GraphType.Population:
+                    checkBox1.Text = "Include Transports";
+                    break;
+                case Graphs.GraphType.Quality:
+                    checkBox1.Text = "Overlay Population";
+                    break;
+                case Graphs.GraphType.Research:
+                    checkBox1.Text = "Total Income";
+                    break;
             }
 
             checkBox1.Checked = checks[type][0];

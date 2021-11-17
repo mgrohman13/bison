@@ -698,35 +698,24 @@ namespace GalWar
 
         private void CheckResearchVictory()
         {
-            //use real research
-            Player[] researchOrder = GetRealResearchOrder();
-            if (researchOrder.Length > 1)
+            double chance = GetResearchVictoryChance(out Player winner);
+            if (chance > 0 && PlayerTurnChance(chance))
             {
-                Player winner = researchOrder[0];
-                double chance = GetResearchVictoryChance(winner.Research, researchOrder[1].Research);
-                if (chance > 0 && PlayerTurnChance(chance))
-                {
-                    winner.Destroy();
-                    RemovePlayer(winner);
-                    this.winningPlayers.Add(new Result(winner, true));
-                }
+                winner.Destroy();
+                RemovePlayer(winner);
+                this.winningPlayers.Add(new Result(winner, true));
             }
         }
         public double GetResearchVictoryChance(out Player winner)
         {
-            //use research display values
-            Player[] researchOrder = GetResearchDisplayOrder();
+            Player[] researchOrder = GetRealResearchOrder();
             if (researchOrder.Length > 1)
             {
                 winner = researchOrder[0];
-                return GetResearchVictoryChance(winner.ResearchDisplay, researchOrder[1].ResearchDisplay);
+                return Consts.GetResearchVictoryChance(winner.Research / (double)researchOrder[1].Research, AvgResearch);
             }
             winner = null;
             return 0;
-        }
-        private double GetResearchVictoryChance(double first, double second)
-        {
-            return Consts.GetResearchVictoryChance(first / second);
         }
 
         private bool PlayerTurnChance(double roundChance)
