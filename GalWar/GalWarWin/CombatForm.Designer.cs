@@ -61,9 +61,10 @@ namespace GalWarWin
             // btnAttack
             // 
             this.btnAttack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAttack.Location = new System.Drawing.Point(12, 247);
+            this.btnAttack.Location = new System.Drawing.Point(18, 380);
+            this.btnAttack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnAttack.Name = "btnAttack";
-            this.btnAttack.Size = new System.Drawing.Size(100, 23);
+            this.btnAttack.Size = new System.Drawing.Size(150, 35);
             this.btnAttack.TabIndex = 0;
             this.btnAttack.Text = "Attack";
             this.btnAttack.UseVisualStyleBackColor = true;
@@ -73,9 +74,10 @@ namespace GalWarWin
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(118, 247);
+            this.btnCancel.Location = new System.Drawing.Point(177, 380);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(100, 23);
+            this.btnCancel.Size = new System.Drawing.Size(150, 35);
             this.btnCancel.TabIndex = 1;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -83,9 +85,10 @@ namespace GalWarWin
             // lblAttack
             // 
             this.lblAttack.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAttack.Location = new System.Drawing.Point(12, 32);
+            this.lblAttack.Location = new System.Drawing.Point(18, 49);
+            this.lblAttack.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAttack.Name = "lblAttack";
-            this.lblAttack.Size = new System.Drawing.Size(97, 23);
+            this.lblAttack.Size = new System.Drawing.Size(146, 35);
             this.lblAttack.TabIndex = 2;
             this.lblAttack.Text = "lblAttack";
             this.lblAttack.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -93,9 +96,10 @@ namespace GalWarWin
             // lblAttHP
             // 
             this.lblAttHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAttHP.Location = new System.Drawing.Point(12, 55);
+            this.lblAttHP.Location = new System.Drawing.Point(18, 85);
+            this.lblAttHP.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAttHP.Name = "lblAttHP";
-            this.lblAttHP.Size = new System.Drawing.Size(97, 23);
+            this.lblAttHP.Size = new System.Drawing.Size(146, 35);
             this.lblAttHP.TabIndex = 4;
             this.lblAttHP.Text = "lblAttHP";
             this.lblAttHP.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -104,9 +108,10 @@ namespace GalWarWin
             // 
             this.lblDefense.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDefense.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDefense.Location = new System.Drawing.Point(121, 32);
+            this.lblDefense.Location = new System.Drawing.Point(182, 49);
+            this.lblDefense.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDefense.Name = "lblDefense";
-            this.lblDefense.Size = new System.Drawing.Size(97, 23);
+            this.lblDefense.Size = new System.Drawing.Size(146, 35);
             this.lblDefense.TabIndex = 7;
             this.lblDefense.Text = "lblDefense";
             this.lblDefense.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -115,9 +120,10 @@ namespace GalWarWin
             // 
             this.lblDefHP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDefHP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDefHP.Location = new System.Drawing.Point(121, 55);
+            this.lblDefHP.Location = new System.Drawing.Point(182, 85);
+            this.lblDefHP.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDefHP.Name = "lblDefHP";
-            this.lblDefHP.Size = new System.Drawing.Size(97, 23);
+            this.lblDefHP.Size = new System.Drawing.Size(146, 35);
             this.lblDefHP.TabIndex = 9;
             this.lblDefHP.Text = "lblDefHP";
             this.lblDefHP.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -126,10 +132,11 @@ namespace GalWarWin
             // 
             this.btnSwap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSwap.Location = new System.Drawing.Point(118, 179);
+            this.btnSwap.Location = new System.Drawing.Point(177, 275);
+            this.btnSwap.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnSwap.Name = "btnSwap";
-            this.btnSwap.Size = new System.Drawing.Size(100, 23);
-            this.btnSwap.TabIndex = 2;
+            this.btnSwap.Size = new System.Drawing.Size(150, 35);
+            this.btnSwap.TabIndex = 5;
             this.btnSwap.Text = "Swap";
             this.btnSwap.UseVisualStyleBackColor = true;
             this.btnSwap.Click += new System.EventHandler(this.btnSwap_Click);
@@ -138,9 +145,10 @@ namespace GalWarWin
             // 
             this.lblAttKill.AutoEllipsis = true;
             this.lblAttKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAttKill.Location = new System.Drawing.Point(12, 124);
+            this.lblAttKill.Location = new System.Drawing.Point(18, 191);
+            this.lblAttKill.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAttKill.Name = "lblAttKill";
-            this.lblAttKill.Size = new System.Drawing.Size(97, 23);
+            this.lblAttKill.Size = new System.Drawing.Size(146, 35);
             this.lblAttKill.TabIndex = 14;
             this.lblAttKill.Text = "lblAttKill";
             this.lblAttKill.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -149,9 +157,10 @@ namespace GalWarWin
             // 
             this.lblAttDmg.AutoEllipsis = true;
             this.lblAttDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAttDmg.Location = new System.Drawing.Point(12, 101);
+            this.lblAttDmg.Location = new System.Drawing.Point(18, 155);
+            this.lblAttDmg.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAttDmg.Name = "lblAttDmg";
-            this.lblAttDmg.Size = new System.Drawing.Size(97, 23);
+            this.lblAttDmg.Size = new System.Drawing.Size(146, 35);
             this.lblAttDmg.TabIndex = 12;
             this.lblAttDmg.Text = "lblAttDmg";
             this.lblAttDmg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -161,9 +170,10 @@ namespace GalWarWin
             this.lblDefKill.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDefKill.AutoEllipsis = true;
             this.lblDefKill.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDefKill.Location = new System.Drawing.Point(121, 124);
+            this.lblDefKill.Location = new System.Drawing.Point(182, 191);
+            this.lblDefKill.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDefKill.Name = "lblDefKill";
-            this.lblDefKill.Size = new System.Drawing.Size(97, 23);
+            this.lblDefKill.Size = new System.Drawing.Size(146, 35);
             this.lblDefKill.TabIndex = 15;
             this.lblDefKill.Text = "lblDefKill";
             this.lblDefKill.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -173,9 +183,10 @@ namespace GalWarWin
             this.lblDefDmg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDefDmg.AutoEllipsis = true;
             this.lblDefDmg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDefDmg.Location = new System.Drawing.Point(121, 101);
+            this.lblDefDmg.Location = new System.Drawing.Point(182, 155);
+            this.lblDefDmg.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDefDmg.Name = "lblDefDmg";
-            this.lblDefDmg.Size = new System.Drawing.Size(97, 23);
+            this.lblDefDmg.Size = new System.Drawing.Size(146, 35);
             this.lblDefDmg.TabIndex = 13;
             this.lblDefDmg.Text = "lblDefDmg";
             this.lblDefDmg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -183,9 +194,10 @@ namespace GalWarWin
             // lblAttPlayer
             // 
             this.lblAttPlayer.AutoEllipsis = true;
-            this.lblAttPlayer.Location = new System.Drawing.Point(12, 9);
+            this.lblAttPlayer.Location = new System.Drawing.Point(18, 14);
+            this.lblAttPlayer.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblAttPlayer.Name = "lblAttPlayer";
-            this.lblAttPlayer.Size = new System.Drawing.Size(97, 23);
+            this.lblAttPlayer.Size = new System.Drawing.Size(146, 35);
             this.lblAttPlayer.TabIndex = 10;
             this.lblAttPlayer.Text = "lblAttPlayer";
             this.lblAttPlayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -193,9 +205,10 @@ namespace GalWarWin
             // lblDefPlayer
             // 
             this.lblDefPlayer.AutoEllipsis = true;
-            this.lblDefPlayer.Location = new System.Drawing.Point(121, 9);
+            this.lblDefPlayer.Location = new System.Drawing.Point(182, 14);
+            this.lblDefPlayer.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDefPlayer.Name = "lblDefPlayer";
-            this.lblDefPlayer.Size = new System.Drawing.Size(97, 23);
+            this.lblDefPlayer.Size = new System.Drawing.Size(146, 35);
             this.lblDefPlayer.TabIndex = 11;
             this.lblDefPlayer.Text = "lblDefPlayer";
             this.lblDefPlayer.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -204,17 +217,19 @@ namespace GalWarWin
             // 
             this.btnEdit.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnEdit.Location = new System.Drawing.Point(12, 179);
+            this.btnEdit.Location = new System.Drawing.Point(18, 275);
+            this.btnEdit.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(100, 23);
-            this.btnEdit.TabIndex = 3;
+            this.btnEdit.Size = new System.Drawing.Size(150, 35);
+            this.btnEdit.TabIndex = 4;
             this.btnEdit.Text = "Edit";
             this.btnEdit.UseVisualStyleBackColor = true;
             this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
             // 
             // nudAttack
             // 
-            this.nudAttack.Location = new System.Drawing.Point(12, 32);
+            this.nudAttack.Location = new System.Drawing.Point(18, 49);
+            this.nudAttack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nudAttack.Maximum = new decimal(new int[] {
             99,
             0,
@@ -226,8 +241,8 @@ namespace GalWarWin
             0,
             0});
             this.nudAttack.Name = "nudAttack";
-            this.nudAttack.Size = new System.Drawing.Size(97, 20);
-            this.nudAttack.TabIndex = 4;
+            this.nudAttack.Size = new System.Drawing.Size(146, 26);
+            this.nudAttack.TabIndex = 8;
             this.nudAttack.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.nudAttack.Value = new decimal(new int[] {
             1,
@@ -239,7 +254,8 @@ namespace GalWarWin
             // 
             // nudAttHP
             // 
-            this.nudAttHP.Location = new System.Drawing.Point(12, 55);
+            this.nudAttHP.Location = new System.Drawing.Point(18, 85);
+            this.nudAttHP.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nudAttHP.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -251,8 +267,8 @@ namespace GalWarWin
             0,
             0});
             this.nudAttHP.Name = "nudAttHP";
-            this.nudAttHP.Size = new System.Drawing.Size(97, 20);
-            this.nudAttHP.TabIndex = 6;
+            this.nudAttHP.Size = new System.Drawing.Size(146, 26);
+            this.nudAttHP.TabIndex = 9;
             this.nudAttHP.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.nudAttHP.Value = new decimal(new int[] {
             1,
@@ -264,7 +280,8 @@ namespace GalWarWin
             // 
             // nudDefHP
             // 
-            this.nudDefHP.Location = new System.Drawing.Point(121, 55);
+            this.nudDefHP.Location = new System.Drawing.Point(182, 85);
+            this.nudDefHP.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nudDefHP.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -276,8 +293,8 @@ namespace GalWarWin
             0,
             0});
             this.nudDefHP.Name = "nudDefHP";
-            this.nudDefHP.Size = new System.Drawing.Size(97, 20);
-            this.nudDefHP.TabIndex = 7;
+            this.nudDefHP.Size = new System.Drawing.Size(146, 26);
+            this.nudDefHP.TabIndex = 11;
             this.nudDefHP.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.nudDefHP.Value = new decimal(new int[] {
             1,
@@ -289,7 +306,8 @@ namespace GalWarWin
             // 
             // nudDefense
             // 
-            this.nudDefense.Location = new System.Drawing.Point(121, 32);
+            this.nudDefense.Location = new System.Drawing.Point(182, 49);
+            this.nudDefense.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nudDefense.Maximum = new decimal(new int[] {
             99,
             0,
@@ -301,8 +319,8 @@ namespace GalWarWin
             0,
             0});
             this.nudDefense.Name = "nudDefense";
-            this.nudDefense.Size = new System.Drawing.Size(97, 20);
-            this.nudDefense.TabIndex = 5;
+            this.nudDefense.Size = new System.Drawing.Size(146, 26);
+            this.nudDefense.TabIndex = 10;
             this.nudDefense.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.nudDefense.Value = new decimal(new int[] {
             1,
@@ -317,10 +335,11 @@ namespace GalWarWin
             this.btnLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnLog.AutoSize = true;
-            this.btnLog.Location = new System.Drawing.Point(60, 208);
+            this.btnLog.Location = new System.Drawing.Point(90, 320);
+            this.btnLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnLog.Name = "btnLog";
-            this.btnLog.Size = new System.Drawing.Size(74, 23);
-            this.btnLog.TabIndex = 8;
+            this.btnLog.Size = new System.Drawing.Size(111, 35);
+            this.btnLog.TabIndex = 6;
             this.btnLog.Text = "Combat Log";
             this.btnLog.UseVisualStyleBackColor = true;
             this.btnLog.Click += new System.EventHandler(this.btnLog_Click);
@@ -330,10 +349,11 @@ namespace GalWarWin
             this.chkLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.chkLog.AutoSize = true;
-            this.chkLog.Location = new System.Drawing.Point(140, 212);
+            this.chkLog.Location = new System.Drawing.Point(210, 328);
+            this.chkLog.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkLog.Name = "chkLog";
-            this.chkLog.Size = new System.Drawing.Size(78, 17);
-            this.chkLog.TabIndex = 9;
+            this.chkLog.Size = new System.Drawing.Size(113, 24);
+            this.chkLog.TabIndex = 7;
             this.chkLog.Text = "Auto Show";
             this.chkLog.UseVisualStyleBackColor = true;
             // 
@@ -342,10 +362,11 @@ namespace GalWarWin
             this.btnDetails.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDetails.AutoSize = true;
-            this.btnDetails.Location = new System.Drawing.Point(64, 150);
+            this.btnDetails.Location = new System.Drawing.Point(96, 231);
+            this.btnDetails.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnDetails.Name = "btnDetails";
-            this.btnDetails.Size = new System.Drawing.Size(74, 23);
-            this.btnDetails.TabIndex = 16;
+            this.btnDetails.Size = new System.Drawing.Size(111, 35);
+            this.btnDetails.TabIndex = 2;
             this.btnDetails.Text = "Details";
             this.btnDetails.UseVisualStyleBackColor = true;
             this.btnDetails.Visible = false;
@@ -356,9 +377,10 @@ namespace GalWarWin
             this.lblInfDef.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblInfDef.AutoEllipsis = true;
             this.lblInfDef.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblInfDef.Location = new System.Drawing.Point(121, 78);
+            this.lblInfDef.Location = new System.Drawing.Point(182, 120);
+            this.lblInfDef.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblInfDef.Name = "lblInfDef";
-            this.lblInfDef.Size = new System.Drawing.Size(97, 23);
+            this.lblInfDef.Size = new System.Drawing.Size(146, 35);
             this.lblInfDef.TabIndex = 17;
             this.lblInfDef.Text = "lblInfDef";
             this.lblInfDef.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -368,9 +390,10 @@ namespace GalWarWin
             this.lblInfAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblInfAtt.AutoEllipsis = true;
             this.lblInfAtt.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblInfAtt.Location = new System.Drawing.Point(12, 78);
+            this.lblInfAtt.Location = new System.Drawing.Point(18, 120);
+            this.lblInfAtt.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblInfAtt.Name = "lblInfAtt";
-            this.lblInfAtt.Size = new System.Drawing.Size(97, 23);
+            this.lblInfAtt.Size = new System.Drawing.Size(146, 35);
             this.lblInfAtt.TabIndex = 18;
             this.lblInfAtt.Text = "lblInfAtt";
             this.lblInfAtt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -380,10 +403,11 @@ namespace GalWarWin
             this.btnChances.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnChances.AutoSize = true;
-            this.btnChances.Location = new System.Drawing.Point(144, 150);
+            this.btnChances.Location = new System.Drawing.Point(216, 231);
+            this.btnChances.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnChances.Name = "btnChances";
-            this.btnChances.Size = new System.Drawing.Size(74, 23);
-            this.btnChances.TabIndex = 19;
+            this.btnChances.Size = new System.Drawing.Size(111, 35);
+            this.btnChances.TabIndex = 3;
             this.btnChances.Text = "Chances";
             this.btnChances.UseVisualStyleBackColor = true;
             this.btnChances.Click += new System.EventHandler(this.btnChances_Click);
@@ -391,10 +415,10 @@ namespace GalWarWin
             // CombatForm
             // 
             this.AcceptButton = this.btnAttack;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(230, 282);
+            this.ClientSize = new System.Drawing.Size(345, 434);
             this.Controls.Add(this.btnChances);
             this.Controls.Add(this.lblInfAtt);
             this.Controls.Add(this.lblInfDef);
@@ -420,6 +444,7 @@ namespace GalWarWin
             this.Controls.Add(this.btnAttack);
             this.Controls.Add(this.btnCancel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "CombatForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CombatForm_FormClosing);

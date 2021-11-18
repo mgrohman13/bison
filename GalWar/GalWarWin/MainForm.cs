@@ -2150,6 +2150,13 @@ namespace GalWarWin
             }
         }
 
+        private void lbl3_Click(object sender, EventArgs e)
+        {
+            Ship ship = GetSelectedShip();
+            if (ship != null && ship.Player.IsTurn && ship.HP < ship.MaxHP)
+                LabelsForm.ShowShipRepair(ship);
+        }
+
         private void lbl4_Click(object sender, EventArgs e)
         {
             Colony colony = GetSelectedColony();
@@ -2395,6 +2402,7 @@ namespace GalWarWin
             lbl2Inf.ForeColor = Color.Black;
             lbl5Inf.ForeColor = Color.Black;
 
+            lbl3.BorderStyle = BorderStyle.None;
             lbl4.BorderStyle = BorderStyle.None;
             lbl5.BorderStyle = BorderStyle.None;
 
@@ -2437,6 +2445,8 @@ namespace GalWarWin
                     double autoRepair = ship.AutoRepair;
                     if (autoRepair != 0)
                         btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : autoRepair.ToString("0.00"));
+
+                    lbl3.BorderStyle = BorderStyle.FixedSingle;
                 }
             }
 

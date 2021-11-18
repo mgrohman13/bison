@@ -122,20 +122,42 @@ namespace GalWarWin
             colony.GetTurnValues(out origProd, out origGold, out research, out infrastructure);
             gold = Player.RoundGold(gold);
             production = Player.RoundGold(production);
+            double actualInfr = Math.Pow(colony.GetTotalIncome() * colony.Planet.InfrastructureInc, Consts.InfrastructurePow) / colony.GetTotalIncome();
 
-            ShowForm("Income", ShowOrig(colony.GetTotalIncome(), production + gold + research + infrastructure),
-                    "Upkeep", MainForm.FormatDouble(-colony.Upkeep), string.Empty, string.Empty,
-                    "Gold", ShowOrig(origGold, gold), "Research", MainForm.FormatDouble(research),
-                    "Production", ShowOrig(origProd, production),
-                    "Infrastructure", infrastructure.ToString());
+            ShowForm(
+                "Income", ShowOrig(colony.GetTotalIncome(), production + gold + research + infrastructure),
+                "Upkeep", MainForm.FormatDouble(-colony.Upkeep),
+                string.Empty, string.Empty,
+                "Gold", ShowOrig(origGold, gold),
+                "Research", MainForm.FormatDouble(research),
+                "Production", ShowOrig(origProd, production),
+                "Infrastructure", infrastructure.ToString(),
+                string.Empty, string.Empty,
+                "Prod Rate", MainForm.FormatPct(colony.Planet.ProdMult),
+                "Auto Infrst", ShowOrig(colony.Planet.InfrastructureInc * 10, actualInfr * 10, d => MainForm.FormatPct(d / 10), d => MainForm.FormatPctWithCheck(d / 10)));
         }
         private static string ShowOrig(double orig, double mod)
         {
-            orig = Player.RoundGold(orig);
-            string retVal = MainForm.FormatDouble(mod);
-            if (orig != mod)
-                retVal = string.Format("({0}) {1}", MainForm.FormatUsuallyInt(orig), retVal);
+            return ShowOrig(orig, mod, MainForm.FormatUsuallyInt, MainForm.FormatDouble);
+        }
+        private static string ShowOrig(double orig, double mod, Func<double, string> FormatOrig, Func<double, string> FormatMod)
+        {
+            string retVal = FormatMod(mod);
+            if (Player.RoundGold(orig) != Player.RoundGold(mod))
+                retVal = string.Format("({0}) {1}", FormatOrig(orig), retVal);
             return retVal;
+        }
+
+        internal static void ShowShipRepair(Ship ship)
+        {
+            double repair = ship.MaxHP - ship.HP;
+            double prod = ship.GetProdForHP(repair);
+            double gold1 = ship.GetGoldForHP(1) * repair;
+            double autoHP = ship.GetAutoRepairHP();
+            double goldAuto = ship.GetGoldForHP(autoHP) * repair / autoHP;
+            ShowForm("Production", MainForm.FormatUsuallyInt(prod),
+                    "Min Gold", MainForm.FormatUsuallyInt(gold1),
+                    "Auto Gold", MainForm.FormatUsuallyInt(goldAuto));
         }
 
         public static void ShowForm(params string[] info)

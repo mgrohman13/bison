@@ -76,6 +76,16 @@ namespace GalWar
                 }
             }
         }
+        public double ProdMult
+        {
+            get
+            {
+                if (Colony != null)
+                    TurnException.CheckTurn(Colony.Player);
+
+                return prodMult;
+            }
+        }
         internal double prodMult
         {
             get
@@ -88,6 +98,16 @@ namespace GalWar
                 {
                     this._prodMult = (float)value;
                 }
+            }
+        }
+        public double InfrastructureInc
+        {
+            get
+            {
+                if (Colony != null)
+                    TurnException.CheckTurn(Colony.Player);
+
+                return infrastructureInc;
             }
         }
         internal double infrastructureInc

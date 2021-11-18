@@ -780,7 +780,7 @@ namespace GalWar
             AssertException.Assert(tile.SpaceObject == null);
 
             Move(tile, true);
-            this.Moved = this.Moved.Except(new[] { this.Tile });
+            this.Moved = this.Moved.Take(this.Moved.Count() - 1);
 
             return this.Tile;
         }

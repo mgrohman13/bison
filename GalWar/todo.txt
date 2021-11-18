@@ -1,59 +1,42 @@
 UI
 
-colony reshow ship repair amount to enemies? (since prod guess updates accordingly)
-show total prod reapir cost for ship
-disable infrastructure repair when moving into planet
-	only if fully rep;airs?
-	reenable on move away
-rethink prod text summary for infrastructure when not curBuild
-pdform show infrstr inc info 
-	sell pd show new min
-display planet level rand values?
-show defenseResearch? PD target stats?
-highlight when could build with prod store
-hide invade ok button when 0 gold
 select different research upgrade no longer shows diff chance
-rotate
+test GraphsForm lastAvgResearch
+
+neg gold - display issues?
+rethink prod text summary for infrastructure when not curBuild?
 gold income repair reduction account for low/neg gold
-show turns wormhole lasted
+reseach pct chance squeezed in - ugly - doesnt fit
+rapid click to bombard
+pdform
+	show actual inc info if triggering
+	sell pd show new min
+	show defenseResearch?
+	PD target stats?
 notification when current build reaches point where sotre prod could complete it
-	also use when less than one more turn away (could gold buy)
-reseach pct chance squeezed in
+	also use when less than one more turn away - could gold buy?
+colony reshow ship repair amount to enemies? (since prod guess updates accordingly)
+hide invade ok button when 0 gold
 trade prod - default to use stored?
 	shortut to do more easily?
-show friendly colony planet stats
-MainForm.GetBuildingSoldiers account for incremental logic
 MoveTroops.ShowProd needs to use modified soldiers
-test GraphsForm lastAvgResearch
 bombard attack confirm still shows free dmg even though after applied
 allow combat details always available (forces calc)
 expand/contract boundaries shouldnt shift current view
-ship moved path
-	teleport
-	undo bug?
-escape on ship management popup closes management
+escape on ship management popup (repair) closes management
 min gold on ship build neg upkeep return
 CostCalcForm DS/trans problems
-bulding PD gold min/avg
-research pct ugly - doesnt fit
 display trying to wrap labels ugly
-fix bombard not combining on form display
+fix bombard log not combining on form display
 info popups go with old mouse coord?  should be coord on panel?
-neg gold
-	display issues?
 test exact vs oversize dictionary capacity for combat performance
 empirically test invasion values
-invade + bombard logging show max or actual quality dmg - consistency 
-tab order on combat calc
-reg auto save identify game ID
-	default save name too?
 text overlaying other text / same color
 replay
 	overwrites when currentPlayer decrements
 	final end game save include graphs
 	parse correctly for history button
 graph select turns / smoothing
-rapid click to bombard
 rally ships
 	current turn actual move always use zoc, friendly ship blocks
 		ensure shown path is path that will be taken this turn
@@ -63,11 +46,13 @@ rally ships
 measure distances
 calculate pop growth
 	balancing between colonies
-show enemy moves/attacks ignoring friendly ships, weight for HP?
+show enemy moves/attacks
+	option to ignore friendly ships
+	weight for HP?
 main map
 	clean up drawing logic
 	very large shows more info
-		different ship graphics for speed/type
+		different ship graphics for speed/type?
 	very small shows clearer info
 management screens
 	designs
@@ -83,6 +68,7 @@ keyboard?
 combat predict performance
 	partial-mathematical-resolve until limit is reached
 	monte carlo?	
+rotate
 
 
 GAMEPLAY

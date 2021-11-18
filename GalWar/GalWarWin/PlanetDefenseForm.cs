@@ -58,7 +58,12 @@ namespace GalWarWin
                 this.lblInc.Visible = true;
                 this.lblIncL.Visible = true;
 
-                this.lblInc.Text = string.Format("{0} {1}", colony.GetInfrastructureProd(false), MainForm.FormatIncome(colony.GetInfrastructureIncome(null)));
+                colony.GetUpgMins(out int PD, out int sold);
+                this.lblIncL.Text = "Infrastructure";
+                this.lblInc.Text = string.Format("{0}{1} {2} ({3})", colony.GetInfrastructureProd(false),
+                        (sold < PD ? "" : " / " + PD.ToString()),
+                        MainForm.FormatIncome(colony.GetInfrastructureIncome(null), false),
+                        sold);
 
                 //    double d1 = 0, production = 0, d2 = 0;
                 //    int i = 0;
