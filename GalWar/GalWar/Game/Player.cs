@@ -574,8 +574,6 @@ namespace GalWar
 
             //set a constant negativeGoldMult so income always matches what was displayed at turn end
             this.negativeGoldMult = GetNegativeGoldMult();
-            if (negativeGoldMult < 1)
-                ;
 
             //income happens at turn end so that it always matches what was expected
             this.IncomeTotal += GetTotalIncome();
@@ -599,8 +597,6 @@ namespace GalWar
                 mult = this.goldOffset;
                 if (mult > 0)
                     mult *= 1.69;
-                else
-                    ;
                 mult = -(2.1 * this.goldValue + mult + 13);
                 double incomeMult = Math.Sqrt(Consts.AverageQuality * Consts.Income / (this.GetTotalIncome() + 3.9));
                 if (mult > 0)

@@ -466,25 +466,29 @@ namespace GalWar
 
         internal void EndTurn(IEventHandler handler, ref int research)
         {
-            double pdChange = this.PDCostAvgResearch;
-
-            ResetMoved();
-
+            GetUpgMins(out int PD, out int soldier);
             TurnStuff(out double population, out int production, out double gold, ref research, out int infrastructure);
 
-            double income = GetTotalIncome();
-            this.ProdGuess += (income - Math.Pow(income * Consts.InfrastructureAvg, Consts.InfrastructurePow)) / 3.0;
-            this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
-
+            ResetMoved();
             ResetRounding();
 
-            //build planet defenses first so they can attack this turn
+            //add to guess before adding population, so income is accurate
+            double income = GetTotalIncome();
+            this.ProdGuess += (income - Math.Pow(income * Consts.InfrastructureAvg, Consts.InfrastructurePow)) / 3.0;
+
+            //add population before attacking, so soldierMult is updated
+            this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
+
+            //build non-ships before infrastructure, so infrastructure uses the production
             bool buildFirst = !(this.curBuild is BuildShip);
             List<Ship> builtShips = null;
             if (buildFirst)
                 builtShips = this.curBuild.Build(handler, production);
-            ApplyInfrastructure(infrastructure);
 
+            //build infrastructure before attacking, so built planet defenses can attack
+            ApplyInfrastructure(infrastructure, PD, soldier);
+
+            //attack
             if (!this.MinDefenses)
                 foreach (Tile tile in Game.Random.Iterate<Tile>(Tile.GetNeighbors(this.Tile)))
                 {
@@ -502,6 +506,7 @@ namespace GalWar
                 builtShips = this.curBuild.Build(handler, production);
             Player.AddGold(gold);
 
+            //additional bookkeeping at the end, so its based on actual results
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
             if (builtShips != null && builtShips.Any())
             {
@@ -528,8 +533,11 @@ namespace GalWar
 
             GetTurnValues(this.Population, out production, out gold, out research, out infrastructure);
         }
-
         private void GetTurnValues(int population, out int production, out double gold, out int research, out int infrastructure)
+        {
+            GetTurnValues(this.Population, out production, out gold, out research, out infrastructure, true);
+        }
+        private void GetTurnValues(int population, out int production, out double gold, out int research, out int infrastructure, bool checkNegGold)
         {
             double income = this.GetTotalIncome(population);
             infrastructure = MTRandom.Round(Math.Pow(income * this.Planet.infrastructureInc, Consts.InfrastructurePow), this.infrastructureRounding);
@@ -537,9 +545,9 @@ namespace GalWar
 
             if (income > 0)
             {
-                double researchPct = this.GetPct(this.Player.ResearchEmphasis);
-                double productionPct = this.GetPct(this.Player.ProductionEmphasis) * this.Planet.prodMult;
-                double totalPct = this.GetPct(this.Player.GoldEmphasis) + researchPct + productionPct;
+                double researchPct = this.GetPct(this.Player.ResearchEmphasis, checkNegGold);
+                double productionPct = this.GetPct(this.Player.ProductionEmphasis, checkNegGold) * this.Planet.prodMult;
+                double totalPct = this.GetPct(this.Player.GoldEmphasis, checkNegGold) + researchPct + productionPct;
                 researchPct /= totalPct;
                 productionPct /= totalPct;
 
@@ -551,15 +559,22 @@ namespace GalWar
                 research = production = 0;
             }
             gold = income - research - production;
+
+            if (checkNegGold && this.Player.NegativeGold())
+            {
+                GetTurnValues(population, out _, out double baseGold, out _, out _, false);
+                //the forced amount above the EmphasisValue pays a significantly reduced rate
+                gold = baseGold + .91 * (gold - baseGold) / Consts.GoldProductionForGold;
+            }
         }
 
-        private double GetPct(bool emphasis)
+        private double GetPct(bool emphasis, bool checkNegGold)
         {
             double retVal = 1;
             if (emphasis)
             {
                 retVal = Consts.EmphasisValue;
-                if (this.Player.NegativeGold())
+                if (checkNegGold && this.Player.NegativeGold())
                     retVal *= this.Player.negativeGoldMult;
             }
             return retVal;
@@ -1280,12 +1295,12 @@ namespace GalWar
                 hp -= this.HP;
             }
         }
-        private void ApplyInfrastructure(int infrastructure)
+        private void ApplyInfrastructure(int infrastructure, int PD, int soldier)
         {
-            GetInfrastructure(infrastructure, true, out _, out _, out _, out _, out _, out _);
+            GetInfrastructure(infrastructure, true, out _, out _, out _, out _, out _, out _, PD, soldier);
         }
         private void GetInfrastructure(int infrastructure, bool apply, out double repairCost, out double repairHP,
-             out double att, out double def, out double hp, out double soldiers)
+             out double att, out double def, out double hp, out double soldiers, int PD = -1, int soldier = -1)
         {
             repairCost = 0;
             repairHP = 0;
@@ -1329,10 +1344,11 @@ namespace GalWar
             }
             else
             {
-                GetUpgMins(out int PD, out int soldier);
-                if (prod >= PD)
+                if (PD == -1 || soldier == -1)
+                    GetUpgMins(out PD, out soldier);
+                if (prod * Consts.FLOAT_ERROR_ONE > PD)
                     BuildPlanetDefense(0, avg, apply, out att, out def, out hp);
-                else if (prod >= soldier)
+                else if (prod * Consts.FLOAT_ERROR_ONE > soldier)
                     BuildSoldiers(0, avg, apply, out soldiers);
             }
         }

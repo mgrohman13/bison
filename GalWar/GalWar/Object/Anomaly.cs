@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace GalWar
 {
@@ -674,7 +673,9 @@ namespace GalWar
                         type = AnomalyType.SoldiersAndDefenses;
                         if (AllowProd(single))
                         {
-                            type = handler.Explore(AnomalyType.AskProductionOrDefense, single, production) ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
+                            value *= 1.3;
+                            double showProd = single.CurBuild.GetAddProduction(production, false);
+                            type = handler.Explore(AnomalyType.AskProductionOrDefense, single, showProd, value) ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                             notify = false;
                         }
                         else
@@ -710,7 +711,8 @@ namespace GalWar
 
             if (single == null)
             {
-                handler.Explore(type);
+                if (notify)
+                    handler.Explore(type);
                 value /= total;
                 foreach (var pair in colonies)
                     PlanetDefenseRemoteSoldiersProduction(type, pair.Key, value * pair.Value);
@@ -718,7 +720,12 @@ namespace GalWar
             else
             {
                 if (notify)
-                    handler.Explore(type, single, value);
+                {
+                    double show = value;
+                    if (type == AnomalyType.Production)
+                        show = single.CurBuild.GetAddProduction(show, false);
+                    handler.Explore(type, single, show);
+                }
                 PlanetDefenseRemoteSoldiersProduction(type, single, value);
             }
 
@@ -968,6 +975,7 @@ namespace GalWar
 
             double designResearch = GetAvgDesignResearch(player, this.value);
             ShipDesign design = new ShipDesign(player, GetDesignResearch(designResearch), min, max);
+
             CompensateDesign(player, design, designResearch, 1);
             Ship newShip = player.NewShip(handler, this.Tile, design);
             player.GoldIncome(this.value - design.Cost);
@@ -1128,12 +1136,14 @@ namespace GalWar
         {
             double value = Player.RoundGold(this.value, true);
 
+            double div = 1.3;
             bool research, notify = true;
             switch (Game.Random.Next(13))
             {
                 case 1:
                 case 2:
                 case 3:
+                    div *= 1.69;
                     research = handler.Explore(AnomalyType.AskResearchOrGold, value);
                     notify = false;
                     break;
@@ -1150,7 +1160,7 @@ namespace GalWar
 
             if (research)
             {
-                value = this.value / 1.3;
+                value = this.value / div;
                 double designResearch = GetAvgDesignResearch(anomShip.Player, value);
                 ShipDesign design = anomShip.Player.FreeResearch(handler, Game.Random.Round(value), GetDesignResearch(designResearch));
                 CompensateDesign(anomShip.Player, design, designResearch, .65 + 1.3 * value / design.GetTotCost());

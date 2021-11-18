@@ -87,26 +87,15 @@ combat predict performance
 
 GAMEPLAY
 
-doublecheck total income
-anomaly production with storeprod working? - display value seems not to 
-double check upkeep values
-sell soldiers?
-	also on trans? only planet?
-test new planet infrstrctr over time
 ship type chances
 	increase old research penalty to weight
 revisit research chances
 	upgrade?
 	num designs more impactful
-AskProductionOrDefense show reduced StoreProd value (non-ask amt too?)
 anomaly prod add to non-active?
 salvage ship
 	prevent enemy attack?
 	prevent death star near planet?
-punish neg gold
-	interest?
-	take cut of income > emphasis pct?  GoldProductionForGold?
-enforce attacking with all avail pop
 bombard
 	free dmg use non-player-specific cost
 	free dmg/attack pct left takes into account att hp
@@ -128,38 +117,31 @@ rchance > 1 throws off max
 [NonSerialized] fields should deserialize to standard values (NaN vs 0)
 standardize mindefenses, hp, str, cost checks
 more likely multi-tile wormholes
-
-
-BETWEEN GAMES
-
-trans upk payoff problem
-	upkeep IS more severe, but cost ends up being reduced
-	reduce impact of speed in general, while at it?
-	att/def adjusts slightly?
-in progress
-	turn inc calc
-		mingold - remove?
-	buy/sell/obsolete during callback
-		allow sometimes
-		restrict at handler wrapper level
-are fine?
-	max design cost OE??
-	level up uses full research?
-		change to last?
-6 tiers saved? return length?
-graph dictionaries can be arrays
+buy/sell/obsolete during callback
+	allow sometimes
+	restrict at handler wrapper level
 standardize Tile.Game vs Player.Game calls
 remove static qualifiers to same class
 standardize dead checks
 clean up code
 	member order
-fix combatant/popcarrier/colony/pd hierarchy
+sell soldiers?
+	also on trans? only planet?
+turn start should reset ship moved, not end	
+	build with 0 move
+	turn end sets to 0 to give upkeep reduction
+
+
+BETWEEN GAMES
+
+negative gold??
 new game parameters
 	num anomalies (start/rate)
 	differentiate starting and planet rate
 	pop,prod,etc.
-map size
-negative gold?
+graph dictionaries can be arrays
+	test sizes...
+fix combatant/popcarrier/colony/pd hierarchy?
 
 
 FEATURES

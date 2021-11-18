@@ -259,6 +259,8 @@ namespace GalWar
                             case ModifyStat.HP:
                                 ++this._hp;
                                 break;
+                            case ModifyStat.None:
+                                break;
                             default:
                                 throw new Exception();
                         }
@@ -1050,7 +1052,7 @@ namespace GalWar
             if (faster && objectively && !similar)
                 ;
             if (!faster && objectively && !similar)
-                ; 
+                ;
 
             return (faster && (objectively || similar));
         }

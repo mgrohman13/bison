@@ -38,13 +38,15 @@ namespace GalWarWin
             //foreach (int avgR in rs)
             //{
             //    string resS = avgR + "\t";
-            //    for (double pct = 0; pct < .91; pct += .1)
+            //    for (double pct = .01; pct < .91; pct += .1)
             //    {
-            //        int res = MattUtil.TBSUtil.FindValue(delegate (int value)
+            //        double res = MattUtil.TBSUtil.FindValue(value =>
             //        {
-            //            return (Consts.GetResearchVictoryChance(100.0 / value, avgR) > pct);
-            //        }, 0, 100, false);
-            //        resS += res / 100.0 + "\t";
+            //            return (Consts.GetResearchVictoryChance(1 / value, avgR));
+            //        }, pct, 1, 0);
+            //        resS += res + "\t";
+            //        if (pct == .01)
+            //            pct = 0;
             //    }
             //    Console.WriteLine(resS);
             //}

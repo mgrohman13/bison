@@ -2847,7 +2847,7 @@ namespace GalWarWin
                 case Anomaly.AnomalyType.AskProductionOrDefense:
                     SelectTile(((Colony)info[0]).Tile);
                     RefreshAll();
-                    return ShowOption("Take +" + ((int)info[1]) + " Producton or build Defenses?");
+                    return ShowOption("Take +" + ((int)info[1]) + " Producton or build +" + FormatDouble((double)info[1]) + " Defenses?");
 
                 case Anomaly.AnomalyType.AskResearchOrGold:
                     return ShowOption("Take Research or +" + FormatDouble((double)info[0]) + " Gold?");
