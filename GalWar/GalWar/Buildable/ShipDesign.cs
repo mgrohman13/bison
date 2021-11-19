@@ -515,8 +515,9 @@ namespace GalWar
                     double totalCost = design.GetTotCost();
                     double speedMult = design.Speed / speedStr;
 
-                    double baseMult = design.Research + 260;
-                    baseMult = (baseMult + (Math.Pow(baseMult, .169) - 2.6) * 1300) / (double)research;
+                    double baseMult = Math.Pow(research, 0.26) * 52;
+                    baseMult = (design.Research + 2 * baseMult) / (research + baseMult);
+                    baseMult = Math.Pow(baseMult, baseMult < 1 ? 3.9 : 1.3);
                     baseMultTot += baseMult;
 
                     upkeep += design.Upkeep / (totalCost / design.GetUpkeepPayoff(game) * Consts.CostUpkeepPct) * baseMult;

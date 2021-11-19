@@ -459,7 +459,7 @@ namespace GalWar
                 int minResearch = Game.Random.Round(GetLastResearched());
                 if (doObsolete)
                     minResearch = this.ResearchFocusDesign.Research
-                            + Game.Random.GaussianCappedInt(Consts.UpgDesignResearch, Consts.UpgDesignRndm, Consts.UpgDesignMin);
+                            + Game.Random.GaussianCappedInt(Consts.GetUpgDesignResearch(GetLastResearched()), Consts.UpgDesignRndm, Consts.UpgDesignMin);
                 int designResearch = Game.Random.RangeInt(minResearch, this.Research);
                 if (doObsolete)
                 {
@@ -493,30 +493,6 @@ namespace GalWar
             if (doObsolete)
                 ResearchFocusDesign = newDesign;
             return newDesign;
-        }
-
-        private void ResetResearchChance(out double rChance, out double rDesignMult)
-        {
-            double storedResearch = this.Research - GetLastResearched();
-            double min = Math.Sqrt(this.Research) * Consts.MinStoredResearchFactor;
-            storedResearch = Consts.LimitMin(storedResearch, min);
-            rChance = ResetResearchChance(storedResearch, Math.Sqrt(GetLastResearched()) * Consts.NewDesignFactor);
-
-            rDesignMult = 1;
-            if (this.ResearchFocusDesign != null)
-            {
-                storedResearch = this.Research - this.ResearchFocusDesign.Research;
-                storedResearch = Consts.LimitMin(storedResearch, Consts.UpgDesignAbsMin);
-                rDesignMult = ResetResearchChance(storedResearch, Consts.UpgDesignResearch);
-                if (storedResearch < Consts.UpgDesignMin)
-                    rDesignMult *= ResetResearchChance(storedResearch, Consts.UpgDesignMin - storedResearch);
-            }
-        }
-        private static double ResetResearchChance(double storedResearch, double factor)
-        {
-            factor = storedResearch / (storedResearch + factor);
-            factor *= factor;
-            return factor;
         }
 
         private void RandResearchDisplay()
@@ -922,18 +898,36 @@ namespace GalWar
         {
             TurnException.CheckTurn(this);
 
-            double newResearchPct = Math.Pow(newResearch / (newResearch + Math.Sqrt(GetLastResearched()) / Consts.NewResearchMult), Consts.NewResearchPower);
+            double lastResearched = GetLastResearched();
+            double storedResearch = this.Research - lastResearched;
+            double min = Math.Sqrt(this.Research) * Consts.MinStoredResearchFactor;
+            storedResearch = Consts.LimitMin(storedResearch, min);
+            double rChance = GetResearchChance(storedResearch, Math.Sqrt(lastResearched) * Consts.NewDesignFactor);
+
+            double newResearchPct = Math.Pow(newResearch / (newResearch + Math.Sqrt(lastResearched) / Consts.NewResearchMult), Consts.NewResearchPower);
             double numDesignsPct = Math.Pow(Consts.NumDesignsFactor / (Consts.NumDesignsFactor + this.designs.Count), Consts.NumDesignsPower);
-
-            double rChance, rDesignMult;
-            ResetResearchChance(out rChance, out rDesignMult);
-
-            double chance = rChance * newResearchPct * numDesignsPct;
+            rChance *= newResearchPct * numDesignsPct;
 
             if (researchFocusDesign != null)
-                chance *= rDesignMult * Math.Sqrt(this.Research / (Consts.ResearchFactor + Consts.UpgDesignResearch + researchFocusDesign.Research));
+            {
+                storedResearch = this.Research - researchFocusDesign.Research;
+                storedResearch = Consts.LimitMin(storedResearch, Consts.UpgDesignAbsMin);
+                double upgDesignResearch = Consts.GetUpgDesignResearch(lastResearched);
+                double rDesignMult = GetResearchChance(storedResearch, upgDesignResearch);
+                if (storedResearch < Consts.UpgDesignMin)
+                    rDesignMult *= GetResearchChance(storedResearch, Consts.UpgDesignMin - storedResearch);
+                rDesignMult *= Math.Pow(this.Research / (Consts.ResearchFactor + upgDesignResearch + researchFocusDesign.Research), Consts.UpgDesignPower);
 
-            return Consts.LimitPct(chance);
+                rChance *= rDesignMult;
+            }
+
+            return Consts.LimitPct(rChance);
+        }
+        private static double GetResearchChance(double storedResearch, double factor)
+        {
+            factor = storedResearch / (storedResearch + factor);
+            factor *= factor;
+            return factor;
         }
 
         public void MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
@@ -998,7 +992,7 @@ namespace GalWar
                             ship.GoldRepair(handler, hp);
                     }
         }
-        public double GetAutoRepairCost()
+        private double GetAutoRepairCost()
         {
             double cost = 0;
             foreach (Ship ship in this.ships)
@@ -1011,6 +1005,12 @@ namespace GalWar
                     cost += gold;
                 }
             return cost;
+        }
+        public double AutoRepairIncome()
+        {
+            double gold = 0;
+            AutoRepairIncome(ref gold);
+            return gold;
         }
         private void AutoRepairIncome(ref double gold)
         {

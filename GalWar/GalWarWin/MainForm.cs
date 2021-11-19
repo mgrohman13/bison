@@ -65,10 +65,10 @@ namespace GalWarWin
         private MainForm(bool dialog)
         {
             InitializeComponent();
-            lblResearch.Parent = lblRsrchPct;
-            lblResearch.Location = new PointForm(56, 0);
-            lblRsrchTot.Parent = lblRsrchPct;
-            lblRsrchTot.Location = new PointForm(0, 0);
+            //lblResearch.Parent = lblRsrchPct;
+            //lblResearch.Location = new PointForm(56, 0);
+            //lblRsrchTot.Parent = lblRsrchPct;
+            //lblRsrchTot.Location = new PointForm(0, 0);
             MouseWheel += new MouseEventHandler(MainForm_MouseWheel);
             ResizeRedraw = true;
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
@@ -2080,10 +2080,15 @@ namespace GalWarWin
             upkeep = Player.RoundGold(upkeep);
             total = Player.RoundGold(total);
 
-            LabelsForm.ShowForm("Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(), "Ship Upk", ships.ToString(),
-                    "Repairs", FormatDouble(Game.CurrentPlayer.GetAutoRepairCost()), string.Empty, string.Empty,
-                    "Income", FormatIncome(income), "Upkeep", FormatIncome(-upkeep), //"Base", FormatIncome(basic),
-                    "Other", FormatIncome(total - income + upkeep), "Total", FormatIncome(total));
+            LabelsForm.ShowForm(
+                "Num Ships", Game.CurrentPlayer.GetShips().Count.ToString(),
+                "Ship Upk", ships.ToString(),
+                "Repairs", FormatDouble(Game.CurrentPlayer.AutoRepairIncome()),
+                string.Empty, string.Empty,
+                "Income", FormatIncome(income),
+                "Upkeep", FormatIncome(-upkeep), //"Base", FormatIncome(basic),
+                "Other", FormatIncome(total - income + upkeep),
+                "Total", FormatIncome(total));
         }
 
         private void lblResearch_Click(object sender, EventArgs e)
@@ -2313,8 +2318,8 @@ namespace GalWarWin
             FormatIncome(lblPopInc, population);
             FormatIncome(lblGoldInc, gold, true);
             FormatIncome(lblResearch, research);
-            lblRsrchTot.Text = Game.CurrentPlayer.GetCurrentResearch().ToString();
-            lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research)) + new string(' ', lblResearch.Text.Length + 6);
+            //lblRsrchTot.Text = Game.CurrentPlayer.GetCurrentResearch().ToString();
+            lblRsrchPct.Text = FormatPctWithCheck(Game.CurrentPlayer.GetResearchChance(research));// + new string(' ', lblResearch.Text.Length + 6);
             FormatIncome(lblProduction, production);
             lblProdTot.Text = Game.CurrentPlayer.GetColonies().Sum(colony => colony.TotalProd).ToString();
 

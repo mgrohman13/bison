@@ -388,7 +388,7 @@ namespace GalWar
 
                 //actually add in starting gold and production
                 CurrentPlayer.AddGold(addGold);
-                homeworld.AddProduction(addProduction);
+                homeworld.AddProduction(addProduction, true);
 
                 //calculate current income total
                 CurrentPlayer.IncomeTotal += CurrentPlayer.TotalGold + homeworld.totalProd;

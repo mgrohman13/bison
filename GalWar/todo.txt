@@ -1,12 +1,9 @@
 UI
 
-select different research upgrade no longer shows diff chance
 test GraphsForm lastAvgResearch
 
-neg gold - display issues?
 rethink prod text summary for infrastructure when not curBuild?
-gold income repair reduction account for low/neg gold
-reseach pct chance squeezed in - ugly - doesnt fit
+neg gold - display issues?
 rapid click to bombard
 pdform
 	show actual inc info if triggering
@@ -73,12 +70,6 @@ rotate
 
 GAMEPLAY
 
-ship type chances
-	increase old research penalty to weight
-revisit research chances
-	upgrade?
-	num designs more impactful
-anomaly prod add to non-active?
 salvage ship
 	prevent enemy attack?
 	prevent death star near planet?
@@ -99,10 +90,14 @@ anomaly gold balancing at full vs consolation value
 1:1 vs reduced payouts... analyze
 	e.g. soldiers "other" gives full gold?
 rand rounded gold balancing or not - why? rate?
-rchance > 1 throws off max
+more likely multi-tile wormholes
+turn start should reset ship moved, not end	
+	build with 0 move
+	turn end sets to 0 to give upkeep reduction
+sell soldiers?
+	also on trans? only planet?
 [NonSerialized] fields should deserialize to standard values (NaN vs 0)
 standardize mindefenses, hp, str, cost checks
-more likely multi-tile wormholes
 buy/sell/obsolete during callback
 	allow sometimes
 	restrict at handler wrapper level
@@ -111,11 +106,6 @@ remove static qualifiers to same class
 standardize dead checks
 clean up code
 	member order
-sell soldiers?
-	also on trans? only planet?
-turn start should reset ship moved, not end	
-	build with 0 move
-	turn end sets to 0 to give upkeep reduction
 
 
 BETWEEN GAMES

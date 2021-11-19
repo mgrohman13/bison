@@ -647,9 +647,8 @@ namespace GalWar
             double value = this.value;
             int production = Game.Random.Round(value / 1.3);
 
-            Func<Colony, bool> AllowProd = colony => (colony.CurBuild is BuildShip || colony.CurBuild is StoreProd);
-
-            bool notify = true;
+            bool notify = true, curOnly = Game.Random.Bool();
+            Func<Colony, bool> AllowProd = colony => (!curOnly || colony.CurBuild is BuildShip || colony.CurBuild is StoreProd);
             AnomalyType type;
             switch (Game.Random.Next(13))
             {
@@ -662,31 +661,33 @@ namespace GalWar
                     type = AnomalyType.PlanetDefenses;
                     break;
                 case 4:
+                case 5:
                     type = AnomalyType.Production;
                     break;
-                case 5:
                 case 6:
                 case 7:
                 case 8:
+                case 9:
                     if (single != null)
                     {
-                        type = AnomalyType.SoldiersAndDefenses;
+                        curOnly = true;
                         if (AllowProd(single))
                         {
                             value *= 1.3;
                             double showProd = single.CurBuild.GetAddProduction(production, false);
-                            type = handler.Explore(AnomalyType.AskProductionOrDefense, single, showProd, value) ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                             notify = false;
+                            type = handler.Explore(AnomalyType.AskProductionOrDefense, single, showProd, value) ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                         }
                         else
-                            ;
+                        {
+                            type = AnomalyType.SoldiersAndDefenses;
+                        }
                     }
                     else
                     {
                         type = Game.Random.Bool() ? AnomalyType.Production : AnomalyType.SoldiersAndDefenses;
                     }
                     break;
-                case 9:
                 case 10:
                 case 11:
                 case 12:
@@ -700,8 +701,10 @@ namespace GalWar
             {
                 if (single == null ? !colonies.Keys.Any(AllowProd) : !AllowProd(single))
                     type = AnomalyType.SoldiersAndDefenses;
-                else
+                else if (curOnly)
                     value = production;
+                else
+                    value *= 1.3;
             }
             if (type == AnomalyType.Soldiers || type == AnomalyType.SoldiersAndDefenses)
             {
@@ -715,24 +718,24 @@ namespace GalWar
                     handler.Explore(type);
                 value /= total;
                 foreach (var pair in colonies)
-                    PlanetDefenseRemoteSoldiersProduction(type, pair.Key, value * pair.Value);
+                    PlanetDefenseRemoteSoldiersProduction(type, pair.Key, value * pair.Value, curOnly);
             }
             else
             {
                 if (notify)
                 {
                     double show = value;
-                    if (type == AnomalyType.Production)
+                    if (curOnly && type == AnomalyType.Production)
                         show = single.CurBuild.GetAddProduction(show, false);
                     handler.Explore(type, single, show);
                 }
-                PlanetDefenseRemoteSoldiersProduction(type, single, value);
+                PlanetDefenseRemoteSoldiersProduction(type, single, value, curOnly);
             }
 
             return true;
         }
 
-        private static void PlanetDefenseRemoteSoldiersProduction(AnomalyType type, Colony colony, double value)
+        private static void PlanetDefenseRemoteSoldiersProduction(AnomalyType type, Colony colony, double value, bool curOnly)
         {
             switch (type)
             {
@@ -746,7 +749,7 @@ namespace GalWar
                     colony.BuildPlanetDefense(value);
                     break;
                 case AnomalyType.Production:
-                    colony.AddProduction(value);
+                    colony.AddProduction(value, curOnly);
                     break;
                 default:
                     throw new Exception();

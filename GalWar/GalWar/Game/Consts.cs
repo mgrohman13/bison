@@ -75,15 +75,16 @@ namespace GalWar
         public const double MinStoredResearchFactor = 5.2;
         //mult and power of turn research income
         public const double NewResearchMult = 1.3;
-        public const double NewResearchPower = .52;
+        public const double NewResearchPower = .78;
         //mult and power of number of existing designs
-        public const double NumDesignsFactor = 13;
+        public const double NumDesignsFactor = 7.8;
         public const double NumDesignsPower = .65;
         //research for upgrading a design
-        public const int UpgDesignResearch = 520;
+        public const double UpgDesignFactor = 3.9;
         public const double UpgDesignRndm = Math.PI / 13.0;
-        public const int UpgDesignMin = 260;
-        public const int UpgDesignAbsMin = 169;
+        public const int UpgDesignMin = 520;
+        public const int UpgDesignAbsMin = UpgDesignMin / 2;
+        public const double UpgDesignPower = .65;
         //research income and display randomness
         public const double ResearchRndm = .39;
         public const double ResearchDisplayRndm = .169;
@@ -178,6 +179,10 @@ namespace GalWar
         public static double GetResearchVictoryMult(double avgResearch)
         {
             return 1 + Math.Pow(3000 / avgResearch, 0.91);
+        }
+        public static double GetUpgDesignResearch(double lastResearched)
+        {
+            return Consts.UpgDesignMin + Math.Sqrt(lastResearched) * Consts.UpgDesignFactor;
         }
 
         internal static int NewPlanetQuality()

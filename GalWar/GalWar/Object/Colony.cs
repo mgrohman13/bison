@@ -760,18 +760,44 @@ namespace GalWar
 
             return GetAddProduction(production, false);
         }
-        internal void AddProduction(double production)
+        internal void AddProduction(double production, bool curOnly)
         {
-            double goldAdded;
-            int prodAdded;
-            AddProduction(production, false, true, 1, out goldAdded, out prodAdded);
+            if (curOnly)
+            {
+                AddProduction(production, false, true, 1, out _, out _);
+            }
+            else
+            {
+                int count = this.buildable.Count - 1, idx = 0;
+                double div = Game.Random.GaussianOE(Math.Pow(count, .91), .52, .13, 1);
+                foreach (Buildable build in Game.Random.Iterate(this.buildable))
+                    if (!(build is BuildGold))
+                    {
+                        double cur, p1 = production / div, p2 = .65, p3 = .21;
+                        if (build is StoreProd)
+                            cur = Game.Random.GaussianOE(p1, p2, p3);
+                        else
+                            cur = Game.Random.GaussianOEInt(p1, p2, p3);
+                        if (++idx == count || cur > production)
+                            cur = production;
+                        AddProduction(build, cur, false, true, 1, out _, out _);
+                        production -= cur;
+                        div = Math.Max(1, div - Game.Random.Gaussian(1, .39));
+                    }
+                if (production != 0)
+                    ;
+            }
         }
         internal void AddProduction(double production, bool floor, bool random, double rate, out double goldAdded, out int prodAdded)
         {
-            double add = this.curBuild.GetAddProduction(production, false);
+            AddProduction(this.curBuild, production, floor, random, rate, out goldAdded, out prodAdded);
+        }
+        private void AddProduction(Buildable build, double production, bool floor, bool random, double rate, out double goldAdded, out int prodAdded)
+        {
+            double add = build.GetAddProduction(production, false);
             goldAdded = (production - add) / Consts.ProductionForGold;
             prodAdded = RoundValue(add, floor, random, ref goldAdded, rate);
-            this.curBuild.AddProduction(prodAdded);
+            build.AddProduction(prodAdded);
             this.Player.AddGold(goldAdded);
         }
         internal void UndoAddProduction(Buildable buildable, int undo)
