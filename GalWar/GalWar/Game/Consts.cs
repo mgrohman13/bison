@@ -156,7 +156,7 @@ namespace GalWar
         //PlanetDefensesUpkeepMult will be multiplied by GetProductionUpkeepMult
         public const double PlanetDefensesUpkeepMult = .52;
         public const double PlanetDefensesAttackCostMult = 1.69;
-        public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 2.1;
+        public const double BombardFreeDmgMult = 1 / PopulationForGoldMid / 3.9;
 
         public const double FLOAT_ERROR_ZERO = 1.0 / (1 << (MTRandom.FLOAT_BITS - 2));
         public const double FLOAT_ERROR_ONE = 1.0 + FLOAT_ERROR_ZERO;

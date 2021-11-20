@@ -1227,7 +1227,7 @@ namespace GalWar
                     colony.AddExperience(rawExp, valueExp, colonyPop);
                     gold *= 2;
                 }
-                this.Player.GoldIncome(-gold / Consts.ExpForGold);
+                this.Player.GoldIncome(-gold);
             }
 
             LevelUp(handler);

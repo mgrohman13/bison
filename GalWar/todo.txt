@@ -70,30 +70,14 @@ rotate
 
 GAMEPLAY
 
-salvage ship
-	prevent enemy attack?
-	prevent death star near planet?
-bombard
-	free dmg use non-player-specific cost
-	free dmg/attack pct left takes into account att hp
-	bombard combat get exp out instead of automatic add
-	bombard friendly paying for value exp at full rate vs exp rate?
-	free dmg vs too good?  no risk for attacker?
 anomaly gold balancing at full vs consolation value
 	using generate value instead of this value for compensation?
 	other compensation/general balancing?
 	rebalance global event?
-	gold income for anomaly research randomness
 	anom design research randomness with higher values
 		any pct based / OE randomness?
-	anomaly add/lose pop redistribute to other colonies if over upper cap if possible?
 1:1 vs reduced payouts... analyze
-	e.g. soldiers "other" gives full gold?
 rand rounded gold balancing or not - why? rate?
-more likely multi-tile wormholes
-turn start should reset ship moved, not end	
-	build with 0 move
-	turn end sets to 0 to give upkeep reduction
 sell soldiers?
 	also on trans? only planet?
 [NonSerialized] fields should deserialize to standard values (NaN vs 0)

@@ -295,44 +295,48 @@ namespace GalWar
                     foreach (Ship attShip in attPlayer.GetShips())
                         if (!inv || attShip.MaxPop > 0 || attShip.DeathStar)
                         {
-                            List<Tile> path = Tile.PathFind(attShip.Tile, target, attShip.Player, false, attShip.CurSpeed + (inv ? 2 : 1));
-                            if (path != null)
-                            {
-                                int diff = attShip.CurSpeed - path.Count;
-                                bool canAttack = false;
-                                if (inv)
-                                {
-                                    if (diff > -3)
-                                        if (attShip.Population > 0 || attShip.DeathStar)
-                                        {
-                                            canAttack = true;
-                                        }
-                                        else if (attShip.MaxPop > 0)
-                                        {
-                                            //check if the ship could conceivably pick up some population
-                                            foreach (PopCarrier popCarrier in attShip.Player.GetShips().Cast<PopCarrier>().Concat(attShip.Player.GetColonies()))
-                                                if (popCarrier.AvailablePop > 0)
-                                                {
-                                                    int speed = attShip.CurSpeed;
-                                                    if (popCarrier is Ship)
-                                                        speed += ((Ship)popCarrier).CurSpeed;
-                                                    if (speed > Tile.GetDistance(attShip.Tile, popCarrier.Tile) - 2)
-                                                    {
-                                                        canAttack = true;
-                                                        break;
-                                                    }
-                                                }
-                                        }
-                                }
-                                else if (diff > -2)
-                                {
-                                    canAttack = true;
-                                }
-                                if (canAttack)
-                                    attackers.Add(attShip);
-                            }
+                            if (CanAttack(attShip.Player, attShip.Tile, target, attShip.CurSpeed, attShip.Population, attShip.MaxPop, attShip.DeathStar, inv))
+                                attackers.Add(attShip);
                         }
             return attackers;
+        }
+        private static bool CanAttack(Player attacker, Tile from, Tile target, int speed, int pop, int maxPop, bool DS, bool inv)
+        {
+            bool canAttack = false;
+            List<Tile> path = Tile.PathFind(from, target, attacker, false, speed + (inv ? 2 : 1));
+            if (path != null)
+            {
+                int diff = speed - path.Count;
+                if (inv)
+                {
+                    if (diff > -3)
+                        if (pop > 0 || DS)
+                        {
+                            canAttack = true;
+                        }
+                        else if (maxPop > 0)
+                        {
+                            //check if the ship could conceivably pick up some population
+                            foreach (PopCarrier popCarrier in attacker.GetShips().Cast<PopCarrier>().Concat(attacker.GetColonies()))
+                                if (popCarrier.AvailablePop > 0)
+                                {
+                                    int speedCheck = speed;
+                                    if (popCarrier is Ship)
+                                        speedCheck += ((Ship)popCarrier).CurSpeed;
+                                    if (speedCheck > Tile.GetDistance(from, popCarrier.Tile) - 2)
+                                    {
+                                        canAttack = true;
+                                        break;
+                                    }
+                                }
+                        }
+                }
+                else if (diff > -2)
+                {
+                    canAttack = true;
+                }
+            }
+            return canAttack;
         }
 
         public enum AnomalyType
@@ -563,7 +567,7 @@ namespace GalWar
         }
         private static int GetPopLoss(double diePct, PopCarrier popCarrier)
         {
-            return GetPopChange(popCarrier.Population * diePct, popCarrier.Population * .52);
+            return GetPopChange(popCarrier.Population * diePct, null);
         }
 
         private bool AddPop(IEventHandler handler, double addAmt, double forExplorer, Ship anomShip)
@@ -580,20 +584,32 @@ namespace GalWar
                 Dictionary<Colony, int> colonies = GetPlayerColonyWeights(player, out total);
                 amt /= total;
 
-                foreach (var pair in colonies)
-                    pair.Key.LosePopulation(-GetPopChange(amt * pair.Value, 1.04 * pair.Key.Population));
+                double offset = 0;
+                foreach (KeyValuePair<Colony, int> pair in Game.Random.Iterate(colonies))
+                {
+                    double add = amt * pair.Value + offset;
+                    offset = 0;
+                    double max = .91 + .91 * pair.Key.Population;
+                    if (add > max)
+                    {
+                        offset += add - max;
+                        add = max;
+                    }
+                    int value = GetPopChange(add, max);
+                    pair.Key.LosePopulation(-value);
+                }
+                if (offset != 0)
+                    Game.Random.SelectValue(colonies).LosePopulation(-Game.Random.Round(offset));
             }
 
             return true;
         }
 
-        private static int GetPopChange(double amt, double upperCap)
+        private static int GetPopChange(double amt, double? upperCap)
         {
-            int lowerCap = Game.Random.Round(2 * amt - upperCap);
-            while (amt < lowerCap)
-            {
-                lowerCap = Game.Random.RangeInt(0, lowerCap);
-            }
+            int lowerCap = upperCap.HasValue ? Game.Random.Round(2 * amt - upperCap.Value) : 0;
+            if (lowerCap > amt)
+                return Game.Random.Round(amt);
             if (lowerCap < 1)
                 lowerCap = ((amt > 1) ? 1 : 0);
             return Game.Random.GaussianCappedInt(amt, .039, lowerCap);
@@ -905,7 +921,12 @@ namespace GalWar
 
         private bool CreateWormhole(IEventHandler handler, Ship anomShip, int move)
         {
-            return Tile.Game.CreateWormhole(handler, this.Tile, GetRandomTile(anomShip, move), anomShip);
+            Tile connectTile;
+            if (Game.Random.Bool() && Game.Random.Bool() && Tile.Game.GetWormholes().Any())
+                connectTile = Game.Random.SelectValue(Tile.Game.GetWormholes().SelectMany(w => w.Tiles));
+            else
+                connectTile = GetRandomTile(anomShip, move);
+            return Tile.Game.CreateWormhole(handler, this.Tile, connectTile, anomShip);
         }
 
         internal static bool ValidateChange(Dictionary<SpaceObject, HashSet<SpaceObject>> beforeAttInv, Ship anomShip)
@@ -953,6 +974,9 @@ namespace GalWar
             }
             ship.AddAnomalyExperience(handler, this.value, funky, Game.Random.Bool());
 
+            if (Game.Random.Bool())
+                ship.LoseMove();
+
             return true;
         }
 
@@ -978,6 +1002,10 @@ namespace GalWar
 
             double designResearch = GetAvgDesignResearch(player, this.value);
             ShipDesign design = new ShipDesign(player, GetDesignResearch(designResearch), min, max);
+
+            foreach (SpaceObject obj in player.Game.GetSpaceObjects())
+                if (obj.Player != null && obj.Player != anomShip.Player && obj.Player != player && CanAttack(player, this.Tile, obj.Tile, design.Speed, 0, design.Trans, design.DeathStar, !(obj is Ship)))
+                    return false;
 
             CompensateDesign(player, design, designResearch, 1);
             Ship newShip = player.NewShip(handler, this.Tile, design);
@@ -1037,6 +1065,10 @@ namespace GalWar
             bool canHeal = (hp > 0 && ship.HP < ship.MaxHP && (ship.HP + hp <= ship.MaxHP || DoChance(hp, ship.MaxHP - ship.HP)));
             bool canSoldiers = (ship.Population > 0 && soldiers / (double)ship.Population > .01);
 
+            int move = 0;
+            if (Game.Random.Bool())
+                move = ship.LoseMove();
+
             if ((canPop || canSoldiers) && CanInvade(ship))
             {
                 if (canPop)
@@ -1054,15 +1086,9 @@ namespace GalWar
             {
                 if (canPop)
                     ;
-                else
-                    ;
                 if (canSoldiers)
                     ;
-                else
-                    ;
                 if (CanInvade(ship))
-                    ;
-                else
                     ;
             }
 
@@ -1100,7 +1126,6 @@ namespace GalWar
 
                 ship.AddPopulation(pop);
                 ship.Player.GoldIncome(this.value - pop / Consts.PopulationForGoldHigh);
-                ship.LoseMove();
                 return true;
             }
             if (canHeal)
@@ -1120,6 +1145,7 @@ namespace GalWar
                 return true;
             }
 
+            ship.UndoLoseMove(move);
             return false;
         }
 
