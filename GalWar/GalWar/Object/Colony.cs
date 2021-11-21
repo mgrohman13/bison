@@ -479,11 +479,8 @@ namespace GalWar
             //add population before attacking, so soldierMult is updated
             this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
 
-            //build non-ships before infrastructure, so infrastructure uses the production
-            bool buildFirst = !(this.curBuild is BuildShip);
-            List<Ship> builtShips = null;
-            if (buildFirst)
-                builtShips = this.curBuild.Build(handler, production);
+            //add prodcution to build before applying infrastructure 
+            this.curBuild.Build(production);
 
             //build infrastructure before attacking, so built planet defenses can attack
             ApplyInfrastructure(infrastructure, PD, soldier);
@@ -502,8 +499,9 @@ namespace GalWar
                 }
 
             //build ships after attacking so cleared tiles can be built on
-            if (!buildFirst)
-                builtShips = this.curBuild.Build(handler, production);
+            List<Ship> builtShips = new List<Ship>();
+            foreach (Buildable b in Game.Random.Iterate(this.buildable))
+                builtShips.AddRange(b.BuildShips(handler));
             Player.AddGold(gold);
 
             //additional bookkeeping at the end, so its based on actual results

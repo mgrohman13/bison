@@ -13,12 +13,11 @@ namespace GalWar
         {
         }
 
-        internal override List<Ship> Build(IEventHandler handler, double production)
+        public override double GetAddProduction(double production, bool floor)
         {
-            if (this.production != 0)
-                throw new Exception();
-            colony.Player.AddGold(production / Consts.GoldProductionForGold);
-            return null;
+            TurnException.CheckTurn(colony.Player);
+
+            return 0;
         }
         internal override void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
         {
@@ -26,9 +25,11 @@ namespace GalWar
             production = 0;
         }
 
-        public override double GetAddProduction(double production, bool floor)
+        internal override void Build(double production)
         {
-            return 0;
+            if (this.production != 0)
+                throw new Exception();
+            colony.Player.AddGold(production / Consts.GoldProductionForGold);
         }
 
         public override string ToString()

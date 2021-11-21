@@ -42,7 +42,7 @@ namespace GalWarAI
 
         #region IEventHandler Members
 
-        Tile IEventHandler.getBuildTile(Colony colony)
+        Tile IEventHandler.GetBuildTile(Colony colony, ShipDesign design)
         {
             //TODO: ?
             HashSet<Tile> options = Tile.GetNeighbors(colony.Tile);

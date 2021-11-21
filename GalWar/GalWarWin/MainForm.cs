@@ -1212,10 +1212,11 @@ namespace GalWarWin
         //    RefreshAll();
         //}
 
-        private void SelectTileDialog(Tile tile, bool build)
+        private void SelectTileDialog(Tile tile, ShipDesign design)
         {
+            bool build = design != null;
             if (build)
-                dialog.pnlBuild.SetColony(((Planet)tile.SpaceObject).Colony);
+                dialog.pnlBuild.SetShipDesign(design);
             dialog.pnlBuild.Visible = build;
             dialog.btnCancel.Visible = true;
 
@@ -2800,12 +2801,12 @@ namespace GalWarWin
 
         #region IEventHandler
 
-        Tile IEventHandler.getBuildTile(Colony colony)
+        Tile IEventHandler.GetBuildTile(Colony colony, ShipDesign design)
         {
             showMoves = false;
             InvalidateMap();
 
-            SelectTileDialog(colony.Tile, true);
+            SelectTileDialog(colony.Tile, design);
             return GetSelectedTile();
         }
 

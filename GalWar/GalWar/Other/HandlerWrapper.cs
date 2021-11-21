@@ -21,22 +21,22 @@ namespace GalWar
         internal HandlerWrapper(IEventHandler handler, Game game, bool clearStack, bool special)
         {
             AssertException.Assert(handler != null);
-            AssertException.Assert(!callback || ( HandlerWrapper.special && special ));
+            AssertException.Assert(!callback || (HandlerWrapper.special && special));
 
             this.handler = handler;
-            ( (IEventHandler)this ).Event();
+            ((IEventHandler)this).Event();
 
             if (clearStack)
                 game.ClearUndoStack();
         }
 
-        Tile IEventHandler.getBuildTile(Colony colony)
+        Tile IEventHandler.GetBuildTile(Colony colony, ShipDesign design)
         {
             callback = true;
 
             try
             {
-                return handler.getBuildTile(colony);
+                return handler.GetBuildTile(colony, design);
             }
             catch (Exception e)
             {

@@ -36,11 +36,10 @@ namespace GalWar
             }
         }
 
-        internal override List<Ship> Build(IEventHandler handler, double production)
+        internal override List<Ship> BuildShips(IEventHandler handler)
         {
             var retVal = new List<Ship>();
 
-            this.production += Game.Random.Round(production);
             while (this.production >= this.Cost.Value && !colony.PauseBuild)
             {
                 Tile tile = null;
@@ -48,7 +47,7 @@ namespace GalWar
                     if (neighbor.SpaceObject == null)
                     {
                         //only ask for a tile if there is one available
-                        tile = handler.getBuildTile(colony);
+                        tile = handler.GetBuildTile(colony, design);
                         break;
                     }
                 //null means to not actually produce the ship

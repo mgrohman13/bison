@@ -54,11 +54,12 @@ namespace GalWar
                 return null;
             }
         }
-
         public virtual double Upkeep
         {
             get
             {
+                TurnException.CheckTurn(colony.Player);
+
                 return production * Consts.GetProductionUpkeepMult(colony.Player.Game.MapSize);
             }
         }
@@ -69,24 +70,32 @@ namespace GalWar
 
             return (this.Cost.HasValue ? curProd + " / " + this.Cost.Value.ToString() : curProd);
         }
-
-        internal abstract List<Ship> Build(IEventHandler handler, double production);
-
-        internal virtual void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
-        {
-        }
         public virtual double GetAddProduction(double production, bool floor)
         {
+            TurnException.CheckTurn(colony.Player);
+
             if (floor)
                 return Math.Floor(production * Consts.FLOAT_ERROR_ONE);
             else
                 return production;
         }
+        internal virtual void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
+        {
+        }
+
         internal void AddProduction(int production)
         {
             AssertException.Assert(-production <= this.production);
 
             this.production += production;
+        }
+        internal virtual void Build(double production)
+        {
+            this.production += Game.Random.Round(production);
+        }
+        internal virtual List<Ship> BuildShips(IEventHandler handler)
+        {
+            return new List<Ship>();
         }
     }
 }

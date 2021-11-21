@@ -12,13 +12,6 @@ namespace GalWar
         {
         }
 
-        public override double Upkeep
-        {
-            get
-            {
-                return base.Upkeep * Math.Max(Consts.SoldierUpkeepMult, Consts.PlanetDefensesUpkeepMult);
-            }
-        }
         public override int? Cost
         {
             get
@@ -29,18 +22,23 @@ namespace GalWar
                 return Math.Min(pd, sold);
             }
         }
+        public override double Upkeep
+        {
+            get
+            {
+                TurnException.CheckTurn(colony.Player);
+
+                return base.Upkeep * Math.Max(Consts.SoldierUpkeepMult, Consts.PlanetDefensesUpkeepMult);
+            }
+        }
 
         internal override void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)
         {
-            AssertException.Assert(production == (int)production);
+            if (production != (int)production)
+                throw new Exception();
+
             infrastructure += (int)production;
             production = 0;
-        }
-
-        internal override List<Ship> Build(IEventHandler handler, double production)
-        {
-            this.production += Game.Random.Round(production);
-            return null;
         }
 
         public override string ToString()
