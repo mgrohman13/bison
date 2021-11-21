@@ -941,7 +941,7 @@ namespace GalWar
             //remove design
             this.designs.Remove(obsoleteDesign);
             //manualy marking a design as obsolete allows switching build at ManualObsoleteRatio
-            var colonies = new Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable, bool>>();
+            var colonies = new Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable>>();
             foreach (Colony colony in this.colonies)
                 colonies.Add(colony, colony.MarkObsolete(handler, obsoleteDesign));
 
@@ -950,11 +950,11 @@ namespace GalWar
             if (researchFocus)
                 this.ResearchFocusDesign = null;
 
-            Game.PushUndoCommand(new Game.UndoCommand<ShipDesign, Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable, bool>>, bool>(
-                     new Game.UndoMethod<ShipDesign, Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable, bool>>, bool>(UndoMarkObsolete),
+            Game.PushUndoCommand(new Game.UndoCommand<ShipDesign, Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable>>, bool>(
+                     new Game.UndoMethod<ShipDesign, Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable>>, bool>(UndoMarkObsolete),
                      obsoleteDesign, colonies, researchFocus));
         }
-        private Tile UndoMarkObsolete(ShipDesign obsoleteDesign, Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable, bool>> colonies, bool researchFocus)
+        private Tile UndoMarkObsolete(ShipDesign obsoleteDesign, Dictionary<Colony, Tuple<BuildShip, int, int, double, Buildable, Buildable>> colonies, bool researchFocus)
         {
             AssertException.Assert(!this.designs.Contains(obsoleteDesign));
             AssertException.Assert(obsoleteDesign != null);

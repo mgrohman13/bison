@@ -9,6 +9,7 @@ namespace GalWar
     public class BuildShip : Buildable
     {
         private ShipDesign design;
+        private bool _pause;
 
         internal BuildShip(Colony colony, ShipDesign design)
             : base(colony)
@@ -25,6 +26,22 @@ namespace GalWar
                 return design;
             }
         }
+        public bool Pause
+        {
+            get
+            {
+                TurnException.CheckTurn(colony.Player);
+
+                return this._pause;
+            }
+            set
+            {
+                TurnException.CheckTurn(colony.Player);
+
+                this._pause = value;
+            }
+        }
+
 
         public override int? Cost
         {
@@ -40,7 +57,7 @@ namespace GalWar
         {
             var retVal = new List<Ship>();
 
-            while (this.production >= this.Cost.Value && !colony.PauseBuild)
+            while (this.production >= this.Cost.Value && !this.Pause)
             {
                 Tile tile = null;
                 foreach (Tile neighbor in Tile.GetNeighbors(colony.Tile))

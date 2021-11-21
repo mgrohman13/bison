@@ -469,9 +469,15 @@ namespace GalWar
         }
         internal double GetCostAvgResearch()
         {
-            return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
+            return GetCostAvgResearch(false);
         }
-
+        internal double GetCostAvgResearch(bool subtractUpkeep)
+        {
+            double totCost = ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
+            if (subtractUpkeep)
+                totCost *= (1 - Consts.CostUpkeepPct);
+            return totCost;
+        }
         private double RepairCost
         {
             get
@@ -1646,7 +1652,7 @@ namespace GalWar
 
         private double GetGoldRepairTarget()
         {
-            return (this.GetCostAvgResearch() * (1 - Consts.CostUpkeepPct) / (double)this.MaxHP);
+            return (this.GetCostAvgResearch(true) / (double)this.MaxHP);
         }
 
         public int GetClassSort()

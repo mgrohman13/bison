@@ -50,16 +50,15 @@ namespace GalWar
             }
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, double production, bool floor, out bool pause)
+        Buildable IEventHandler.GetNewBuild(Colony colony, double production, bool floor)
         {
             callback = true;
             special = true;
 
             Buildable buildable = colony.CurBuild, newBuild = buildable;
-            pause = colony.PauseBuild;
             try
             {
-                newBuild = handler.getNewBuild(colony, production, floor, out pause);
+                newBuild = handler.GetNewBuild(colony, production, floor);
             }
             catch (Exception e)
             {

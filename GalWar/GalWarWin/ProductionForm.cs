@@ -154,7 +154,7 @@ namespace GalWarWin
             RefreshBuild();
         }
 
-        private void RefreshBuild(bool? setPause = true)
+        private void RefreshBuild()
         {
             Buildable newBuild = GetSelectedDesign();
 
@@ -167,22 +167,16 @@ namespace GalWarWin
                 this.lblProdLoss.Text = "+" + prod + " production";
             else
                 this.lblProdLoss.Text = string.Empty;
-            this.lblProd.Text = MainForm.GetProdIncText(colony, newBuild, newBuild.Production - prod, this.chkPause.Checked);
+            this.lblProd.Text = MainForm.GetProdIncText(colony, newBuild, newBuild.Production - prod);
 
             //this stops you from marking your last deisgn as obsolete
             this.chkObsolete.Enabled = (!this.callback && newBuild is BuildShip && colony.Player.GetShipDesigns().Count > 1);
 
-            if (setPause.HasValue)
-            {
-                bool canPause = (newBuild is BuildShip);
-                this.chkPause.Enabled = canPause;
-                if (canPause)
-                    if (setPause.Value)
-                        canPause = (colony.PauseBuild && colony.CurBuild == newBuild);
-                    else
-                        canPause = false;
-                this.chkPause.Checked = canPause;
-            }
+            bool canPause = (newBuild is BuildShip);
+            this.chkPause.Enabled = canPause;
+            if (canPause)
+                canPause = ((BuildShip)newBuild).Pause;
+            this.chkPause.Checked = canPause;
 
             this.lbxDesigns.Invalidate();
         }
@@ -213,7 +207,7 @@ namespace GalWarWin
             }
         }
 
-        public static Buildable ShowForm(Colony colony, bool callback, double production, bool floor, out bool pause, out ShipDesign obsolete)
+        public static Buildable ShowForm(Colony colony, bool callback, double production, bool floor, out ShipDesign obsolete)
         {
             MainForm.GameForm.SetLocation(form);
 
@@ -225,12 +219,10 @@ namespace GalWarWin
             if (result == DialogResult.OK)
             {
                 buildable = form.GetSelectedDesign();
-                pause = form.chkPause.Checked;
             }
             else
             {
                 buildable = colony.CurBuild;
-                pause = colony.PauseBuild;
                 if (!callback && result == DialogResult.Abort)
                     obsolete = ((BuildShip)form.GetSelectedDesign()).ShipDesign;
             }
@@ -247,6 +239,13 @@ namespace GalWarWin
         {
             if (!this.rbCustom.Checked)
                 this.RefreshDesigns();
+        }
+
+        private void chkPause_CheckedChanged(object sender, EventArgs e)
+        {
+            BuildShip ship = GetSelectedDesign() as BuildShip;
+            if (ship != null)
+                ship.Pause = this.chkPause.Checked;
         }
 
         private void rbCustom_Click(object sender, EventArgs e)

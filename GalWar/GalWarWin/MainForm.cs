@@ -1166,25 +1166,25 @@ namespace GalWarWin
             ChangeBuild(GetSelectedColony());
         }
 
-        private Buildable ChangeBuild(Colony colony, double production, bool floor, out bool pause)
+        private Buildable ChangeBuild(Colony colony, double production, bool floor)
         {
-            return ChangeBuild(colony, true, production, floor, out pause);
+            return ChangeBuild(colony, true, production, floor);
         }
         public void ChangeBuild(Colony colony)
         {
             bool pause;
-            ChangeBuild(colony, false, 0, false, out pause);
+            ChangeBuild(colony, false, 0, false);
         }
-        private Buildable ChangeBuild(Colony colony, bool callback, double production, bool floor, out bool pause)
+        private Buildable ChangeBuild(Colony colony, bool callback, double production, bool floor)
         {
             SelectTile(colony.Tile);
             RefreshAll();
 
             ShipDesign obsolete;
-            Buildable buildable = ProductionForm.ShowForm(colony, callback, production, floor, out pause, out obsolete);
+            Buildable buildable = ProductionForm.ShowForm(colony, callback, production, floor, out obsolete);
             if (!callback)
             {
-                colony.StartBuilding(this, buildable, pause);
+                colony.StartBuilding(this, buildable);
                 if (obsolete != null)
                     MainForm.Game.CurrentPlayer.MarkObsolete(MainForm.GameForm, obsolete);
             }
@@ -2681,14 +2681,14 @@ namespace GalWarWin
 
         internal static string GetProdIncText(Colony colony)
         {
-            return GetProdIncText(colony, colony.CurBuild, colony.CurBuild.Production, colony.PauseBuild);
+            return GetProdIncText(colony, colony.CurBuild, colony.CurBuild.Production);
         }
 
-        internal static string GetProdIncText(Colony colony, Buildable build, double production, bool paused)
+        internal static string GetProdIncText(Colony colony, Buildable build, double production)
         {
             string retVal = string.Empty;
             retVal = FormatUsuallyInt(production);
-            if (!paused)
+            if (!(build is BuildShip && ((BuildShip)build).Pause))
                 retVal = build.GetProdText(retVal);
 
             double prodInc = colony.GetProductionIncome();
@@ -2810,12 +2810,12 @@ namespace GalWarWin
             return GetSelectedTile();
         }
 
-        Buildable IEventHandler.getNewBuild(Colony colony, double production, bool floor, out bool pause)
+        Buildable IEventHandler.GetNewBuild(Colony colony, double production, bool floor)
         {
             showMoves = false;
             InvalidateMap();
 
-            return ChangeBuild(colony, production, floor, out pause);
+            return ChangeBuild(colony, production, floor);
         }
 
         int IEventHandler.MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost)
@@ -2863,7 +2863,7 @@ namespace GalWarWin
                 case Anomaly.AnomalyType.AskProductionOrDefense:
                     SelectTile(((Colony)info[0]).Tile);
                     RefreshAll();
-                    return ShowOption("Take +" + ((int)info[1]) + " Producton or build +" + FormatDouble((double)info[1]) + " Defenses?");
+                    return ShowOption("Take +" + FormatUsuallyInt((double)info[1]) + " Producton or build +" + FormatDouble((double)info[2]) + " Defenses?");
 
                 case Anomaly.AnomalyType.AskResearchOrGold:
                     return ShowOption("Take Research or +" + FormatDouble((double)info[0]) + " Gold?");

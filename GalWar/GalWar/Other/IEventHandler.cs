@@ -8,7 +8,7 @@ namespace GalWar
     {
         Tile GetBuildTile(Colony colony, ShipDesign design);
 
-        Buildable getNewBuild(Colony colony, double production, bool floor, out bool pause);
+        Buildable GetNewBuild(Colony colony, double production, bool floor);
 
         int MoveTroops(Colony fromColony, int max, int totalPop, double soldiers, bool extraCost);
 

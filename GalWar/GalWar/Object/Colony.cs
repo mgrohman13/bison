@@ -17,7 +17,7 @@ namespace GalWar
         private readonly HashSet<Buildable> buildable;
         private Buildable _curBuild;
 
-        private bool _built, _pauseBuild;
+        private bool _built;
         private sbyte _defenseAttChange, _defenseDefChange;
         private short _defenseHPChange;
         private float _defenseResearch, _soldierChange, _prodGuess, _infrastructureRounding, _researchRounding, _productionRounding, _upgPDTrgStr, _upgPD, _upgSoldiers;
@@ -42,7 +42,6 @@ namespace GalWar
                 this._curBuild = storeProd;
 
                 this._built = (handler == null);
-                this._pauseBuild = false;
 
                 this._defenseAttChange = 0;
                 this._defenseDefChange = 0;
@@ -113,22 +112,6 @@ namespace GalWar
                 TurnException.CheckTurn(this.Player);
 
                 return new HashSet<Buildable>(this.buildable);
-            }
-        }
-        public bool PauseBuild
-        {
-            get
-            {
-                TurnException.CheckTurn(this.Player);
-
-                return (this._pauseBuild && (this.curBuild is BuildShip));
-            }
-            private set
-            {
-                checked
-                {
-                    this._pauseBuild = value;
-                }
             }
         }
 
@@ -334,27 +317,22 @@ namespace GalWar
 
         private void ChangeBuild(IEventHandler handler, double production, bool floor, double rate, out double goldAdded, out int prodAdded)
         {
-            bool pause;
-            Buildable build = handler.getNewBuild(this, production, floor, out pause);
-            ChangeBuild(build, pause);
+            Buildable build = handler.GetNewBuild(this, production, floor);
+            ChangeBuild(build);
             AddProduction(production, floor, false, rate, out goldAdded, out prodAdded);
         }
         internal void ChangeBuild(IEventHandler handler)
         {
-            bool newPause;
-            Buildable newBuild = handler.getNewBuild(this, 0, false, out newPause);
-            ChangeBuild(newBuild, newPause);
+            Buildable newBuild = handler.GetNewBuild(this, 0, false);
+            ChangeBuild(newBuild);
         }
         private void ChangeBuild(Buildable newBuild)
         {
             if (this.curBuild != newBuild)
-                ChangeBuild(newBuild, false);
-        }
-        private void ChangeBuild(Buildable newBuild, bool pause)
-        {
-            AssertException.Assert(CanBuild(newBuild));
-            this.curBuild = newBuild;
-            this.PauseBuild = pause;
+            {
+                AssertException.Assert(CanBuild(newBuild));
+                this.curBuild = newBuild;
+            }
         }
 
         internal void NewShipDesign(ShipDesign newDesign, HashSet<ShipDesign> obsoleteDesigns)
@@ -373,14 +351,13 @@ namespace GalWar
             if (obsoleteBuilds.Contains(this.curBuild))
                 ChangeBuild(newBuild);
         }
-        internal Tuple<BuildShip, int, int, double, Buildable, Buildable, bool> MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
+        internal Tuple<BuildShip, int, int, double, Buildable, Buildable> MarkObsolete(IEventHandler handler, ShipDesign obsoleteDesign)
         {
             BuildShip obsoleteBuild = GetBuildShip(obsoleteDesign);
             this.buildable.Remove(obsoleteBuild);
 
             int oldProduction = obsoleteBuild.Production;
             Buildable oldBuild = this.curBuild;
-            bool oldPause = this.PauseBuild;
 
             int prodAdded;
             double goldAdded;
@@ -399,9 +376,9 @@ namespace GalWar
                 this.Player.AddGold(goldAdded);
             }
 
-            return new Tuple<BuildShip, int, int, double, Buildable, Buildable, bool>(obsoleteBuild, oldProduction, prodAdded, goldAdded, this.curBuild, oldBuild, oldPause);
+            return new Tuple<BuildShip, int, int, double, Buildable, Buildable>(obsoleteBuild, oldProduction, prodAdded, goldAdded, this.curBuild, oldBuild);
         }
-        internal void UndoMarkObsolete(Tuple<BuildShip, int, int, double, Buildable, Buildable, bool> undoArgs)
+        internal void UndoMarkObsolete(Tuple<BuildShip, int, int, double, Buildable, Buildable> undoArgs)
         {
             BuildShip obsoleteBuild = undoArgs.Item1;
             int oldProduction = undoArgs.Item2;
@@ -409,7 +386,6 @@ namespace GalWar
             double goldAdded = undoArgs.Item4;
             Buildable newBuild = undoArgs.Item5;
             Buildable oldBuild = undoArgs.Item6;
-            bool oldPause = undoArgs.Item7;
 
             AssertException.Assert(obsoleteBuild.Production == oldProduction);
 
@@ -417,7 +393,7 @@ namespace GalWar
             newBuild.AddProduction(-prodAdded);
             this.Player.AddGold(-goldAdded);
 
-            ChangeBuild(oldBuild, oldPause);
+            ChangeBuild(oldBuild);
         }
         private BuildShip GetBuildShip(ShipDesign shipDesign)
         {
@@ -474,7 +450,8 @@ namespace GalWar
 
             //add to guess before adding population, so income is accurate
             double income = GetTotalIncome();
-            this.ProdGuess += (income - Math.Pow(income * Consts.InfrastructureAvg, Consts.InfrastructurePow)) / 3.0;
+            double avgInfr = Math.Pow(income * Consts.InfrastructureAvg, Consts.InfrastructurePow);
+            this.ProdGuess += avgInfr + (income - avgInfr) / 3.0;
 
             //add population before attacking, so soldierMult is updated
             this.Population += RoundValue(population, false, true, ref gold, Consts.PopulationForGoldHigh);
@@ -507,10 +484,7 @@ namespace GalWar
             //additional bookkeeping at the end, so its based on actual results
             DoChange(this.SoldierChange, this.DefenseAttChange, this.DefenseDefChange, this.DefenseHPChange);
             if (builtShips != null && builtShips.Any())
-            {
-                double cost = builtShips.Average(ship => ship.GetCostAvgResearch());
-                ProdGuess -= cost * builtShips.Count;
-            }
+                ProdGuess -= builtShips.Sum(ship => ship.GetCostAvgResearch(true));
             if (ProdGuess < 0)
                 ProdGuess = 0;
         }
@@ -1046,13 +1020,13 @@ namespace GalWar
             return (buildable != null && this.buildable.Contains(buildable));
         }
 
-        public void StartBuilding(IEventHandler handler, Buildable newBuild, bool pause)
+        public void StartBuilding(IEventHandler handler, Buildable newBuild)
         {
             handler = new HandlerWrapper(handler, Player.Game, false);
             TurnException.CheckTurn(this.Player);
             AssertException.Assert(CanBuild(newBuild));
 
-            ChangeBuild(newBuild, pause);
+            ChangeBuild(newBuild);
         }
 
         public override string ToString()
@@ -1360,6 +1334,7 @@ namespace GalWar
                     if (apply)
                         useProd = Game.Random.GaussianCapped(useProd, Consts.PlanetDefenseRndm);
                     repairHP += ship.ProductionRepair(ref avg, useProd, apply);
+                    this.ProdGuess -= ship.GetCostAvgResearch(true) * Consts.RepairCostMult * repairHP / (double)ship.MaxHP;
                 }
                 prod += avg;
                 repairCost -= avg;

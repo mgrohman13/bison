@@ -119,9 +119,9 @@ namespace GalWarWin
             this.chkObsolete.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.chkObsolete.Checked = true;
             this.chkObsolete.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkObsolete.Location = new System.Drawing.Point(250, 48);
+            this.chkObsolete.Location = new System.Drawing.Point(219, 48);
             this.chkObsolete.Name = "chkObsolete";
-            this.chkObsolete.Size = new System.Drawing.Size(68, 17);
+            this.chkObsolete.Size = new System.Drawing.Size(99, 24);
             this.chkObsolete.TabIndex = 5;
             this.chkObsolete.Text = "Obsolete";
             this.chkObsolete.UseVisualStyleBackColor = true;
@@ -132,7 +132,7 @@ namespace GalWarWin
             this.rbStr.AutoSize = true;
             this.rbStr.Location = new System.Drawing.Point(61, 1);
             this.rbStr.Name = "rbStr";
-            this.rbStr.Size = new System.Drawing.Size(65, 17);
+            this.rbStr.Size = new System.Drawing.Size(96, 24);
             this.rbStr.TabIndex = 11;
             this.rbStr.TabStop = true;
             this.rbStr.Text = "Strength";
@@ -144,7 +144,7 @@ namespace GalWarWin
             this.rbValue.AutoSize = true;
             this.rbValue.Location = new System.Drawing.Point(3, 1);
             this.rbValue.Name = "rbValue";
-            this.rbValue.Size = new System.Drawing.Size(52, 17);
+            this.rbValue.Size = new System.Drawing.Size(75, 24);
             this.rbValue.TabIndex = 12;
             this.rbValue.TabStop = true;
             this.rbValue.Text = "Value";
@@ -156,7 +156,7 @@ namespace GalWarWin
             this.rbTrans.AutoSize = true;
             this.rbTrans.Location = new System.Drawing.Point(3, 20);
             this.rbTrans.Name = "rbTrans";
-            this.rbTrans.Size = new System.Drawing.Size(70, 17);
+            this.rbTrans.Size = new System.Drawing.Size(102, 24);
             this.rbTrans.TabIndex = 13;
             this.rbTrans.TabStop = true;
             this.rbTrans.Text = "Transport";
@@ -168,7 +168,7 @@ namespace GalWarWin
             this.rbCustom.AutoSize = true;
             this.rbCustom.Location = new System.Drawing.Point(75, 20);
             this.rbCustom.Name = "rbCustom";
-            this.rbCustom.Size = new System.Drawing.Size(51, 17);
+            this.rbCustom.Size = new System.Drawing.Size(74, 24);
             this.rbCustom.TabIndex = 14;
             this.rbCustom.TabStop = true;
             this.rbCustom.Text = "Other";
@@ -182,17 +182,19 @@ namespace GalWarWin
             this.chkPause.AutoSize = true;
             this.chkPause.Checked = true;
             this.chkPause.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkPause.Location = new System.Drawing.Point(136, 48);
+            this.chkPause.Location = new System.Drawing.Point(112, 48);
             this.chkPause.Name = "chkPause";
-            this.chkPause.Size = new System.Drawing.Size(56, 17);
+            this.chkPause.Size = new System.Drawing.Size(80, 24);
             this.chkPause.TabIndex = 15;
             this.chkPause.Text = "Pause";
             this.chkPause.UseVisualStyleBackColor = true;
+            this.chkPause.CheckedChanged += new System.EventHandler(this.chkPause_CheckedChanged);
             // 
             // sdForm
             // 
             this.sdForm.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.sdForm.Location = new System.Drawing.Point(130, 62);
+            this.sdForm.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.sdForm.Name = "sdForm";
             this.sdForm.Size = new System.Drawing.Size(200, 230);
             this.sdForm.TabIndex = 8;

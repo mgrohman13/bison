@@ -137,11 +137,12 @@ namespace GalWarWin
         private void Building(int x, int y, int i, Colony colony)
         {
             string buildText = MainForm.GetProdNameText(colony);
-            bool ship = (colony.CurBuild is BuildShip);
-            Label build = (Label)(controls[5, i] = NewLabel(x, y, buildText, big: true, click: ship, bold: ship && !colony.PauseBuild
+            BuildShip ship = (colony.CurBuild as BuildShip);
+            bool isShip = (ship != null);
+            Label build = (Label)(controls[5, i] = NewLabel(x, y, buildText, big: true, click: isShip, bold: isShip && !ship.Pause
                     && (colony.CurBuild.Production + colony.GetProductionIncome()) >= colony.CurBuild.Cost));
-            if (ship)
-                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(((BuildShip)colony.CurBuild).ShipDesign));
+            if (isShip)
+                build.Click += new EventHandler((sender, e) => CostCalculatorForm.ShowForm(ship.ShipDesign));
         }
 
         private void Production(int x, int y, int i, Colony colony)
