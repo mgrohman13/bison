@@ -34,6 +34,23 @@ namespace randTest
             rand.StartTick();
 
 
+            int max = 10;
+            int[] res = new int[max + 1];
+            double iter = 10000000, weight = .51, sum = 0;
+            for (int a = 0; a < iter; a++)
+            {
+                int v = rand.WeightedInt(max, weight);
+                res[v]++;
+                sum += v;
+            }
+            Console.WriteLine(sum / iter);
+            Console.WriteLine();
+            foreach (int v in res)
+                Console.WriteLine(v);
+            Console.ReadKey();
+            return;
+
+
             //rand.NextUInt();
             //rand.StartTick();
             //rand.NextUInt();
