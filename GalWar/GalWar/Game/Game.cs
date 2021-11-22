@@ -1086,7 +1086,7 @@ namespace GalWar
         private void AdjustAvgResearch()
         {
             double avgResearch = this.players.Average(player => (2 * player.ResearchDisplay + 6 * player.Research + 13 * player.GetLastResearched()) / 21.0);
-            //adjust AvgResearch by the average player income at maximum emphasis every full turn round
+            //adjust AvgResearch by the average player income at maximum emphasis every full turn round (divide again by player count because this happens every player turn)
             double add = players.Average(player => player.GetTotalIncome()) * Consts.EmphasisValue / (Consts.EmphasisValue + 2.0) / players.Count();
             //Console.WriteLine("this.AvgResearch " + this.AvgResearch.ToString(".000").PadLeft(10));
             //Console.WriteLine("avgResearch      " + avgResearch.ToString(".000").PadLeft(10));

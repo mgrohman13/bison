@@ -183,7 +183,7 @@ namespace GalWarWin
 
         private int GetAddProd(Buildable newBuild)
         {
-            double value = newBuild.GetAddProduction(this.addProd, floor);
+            double value = newBuild.GetProdAdded(this.addProd, floor);
             return (int)Math.Round(value * Consts.FLOAT_ERROR_ONE);
         }
 

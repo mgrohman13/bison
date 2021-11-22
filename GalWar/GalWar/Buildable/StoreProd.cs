@@ -23,10 +23,8 @@ namespace GalWar
 
         }
 
-        public override double GetAddProduction(double production, bool floor)
-        {
-            TurnException.CheckTurn(colony.Player);
-
+        internal override double GetAddProduction(double production, bool floor)
+        { 
             return base.GetAddProduction(production * Consts.StoreProdRatio, floor);
         }
         internal override void GetTurnIncome(ref double production, ref double gold, ref int infrastructure)

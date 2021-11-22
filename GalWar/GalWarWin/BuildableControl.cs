@@ -137,8 +137,8 @@ namespace GalWarWin
                         }
                         if (soldiers > Consts.FLOAT_ERROR_ZERO)
                         {
-                            this.label8.Show();
-                            this.lblInf8.Show();
+                            this.label5.Show();
+                            this.lblInf5.Show();
 
                             this.label5.Text = "Soldiers";
                             this.lblInf5.Text = MainForm.GetBuildingSoldiers(colony, soldiers);

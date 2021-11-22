@@ -95,11 +95,11 @@ namespace GalWar
             options.Add(LostColony, 2);//med
             options.Add(Death, 3);//always
             options.Add(Production, 6);//always
-            options.Add(SalvageShip, 13);//always
+            options.Add(SalvageShip, 13);//high
             options.Add(Pickup, 15);//low
             options.Add(Valuables, 16);//always
-            options.Add(Experience, 17);//always
-            options.Add(Wormhole, 21);//high
+            options.Add(Experience, 18);//always
+            options.Add(Wormhole, 26);//high
 
             while (true)
             {
@@ -491,8 +491,7 @@ namespace GalWar
                 {
                     gold *= before - Consts.GetColonizationCost(planet.PlanetValue, mult);
 
-                    double amt;
-                    addGold.TryGetValue(planet.Player, out amt);
+                    addGold.TryGetValue(planet.Player, out double amt);
                     addGold[planet.Player] = amt + gold;
                 }
             }
@@ -537,9 +536,15 @@ namespace GalWar
             {
                 retVal = null;
                 cost = double.NaN;
-                Dictionary<Planet, int> uncolonized = Tile.Game.GetPlanets().Where(planet => planet.Colony == null).ToDictionary(planet => planet,
-                        planet => Game.Random.Round(planet.PlanetValue * byte.MaxValue / (double)Tile.GetDistance(this.Tile, planet.Tile)));
-                if (uncolonized.Any())
+                Dictionary<Planet, int> uncolonized = Tile.Game.GetPlanets().Where(planet => planet.Colony == null).ToDictionary(planet => planet, planet =>
+                {
+                    double mult = Consts.PlanetConstValue + Math.Sqrt(planet.PlanetValue);
+                    double dist = Tile.GetDistance(this.Tile, planet.Tile);
+                    mult /= dist * dist;
+                    return Game.Random.Round(mult * ushort.MaxValue);
+                });
+
+                if (uncolonized.Values.Sum() > 0)
                     retVal = Game.Random.SelectValue(uncolonized);
             }
             else
@@ -1124,7 +1129,7 @@ namespace GalWar
 
                 handler.Explore(AnomalyType.PickupPopulation, pop);
 
-                ship.AddPopulation(pop);
+                ship.LosePopulation(-pop);
                 ship.Player.GoldIncome(this.value - pop / Consts.PopulationForGoldHigh);
                 return true;
             }

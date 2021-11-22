@@ -582,12 +582,6 @@ namespace GalWar
             this.Soldiers += soldiers;
         }
 
-        internal void AddPopulation(int pop)
-        {
-            this.Population += pop;
-            this.movedPop += pop;
-        }
-
         #endregion //internal
 
         #region public
@@ -642,12 +636,10 @@ namespace GalWar
         {
             if (this.Population > 0)
             {
-                int losePopulation;
+                int losePopulation = 0;
                 if (this.HP > damage)
                     //if hp is lost for any reason, some transported population is killed off
                     losePopulation = Game.Random.GaussianOEInt(Consts.GetTransLoss(this, damage), Consts.TransLossRndm, Consts.TransLossRndm);
-                else
-                    losePopulation = this.Population;
                 LosePopulation(losePopulation);
             }
         }

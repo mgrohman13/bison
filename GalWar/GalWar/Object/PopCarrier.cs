@@ -96,17 +96,23 @@ namespace GalWar
         {
             if (population > this.Population)
                 population = this.Population;
+            else if (-population > this.FreeSpace)
+                throw new Exception();
 
             double gold = 0;
 
             if (population > 0)
             {
                 double soldiers = GetSoldiers(population);
-                gold += ( soldiers / Consts.SoldiersForGold );
+                gold += (soldiers / Consts.SoldiersForGold);
                 this.Soldiers -= soldiers;
             }
+            else
+            {
+                this.movedPop -= population;
+            }
 
-            gold += ( population / Consts.PopulationForGoldLow );
+            gold += (population / Consts.PopulationForGoldLow);
             this.Population -= population;
 
             if (addGold)
@@ -197,8 +203,8 @@ namespace GalWar
                 if (population == movePop)
                     moveSoldiers = soldiers;
                 else
-                    for (int mov = 1 ; mov <= movePop ; ++mov)
-                        moveSoldiers += ( soldiers - moveSoldiers ) * Consts.MoveSoldiersMult / ( Consts.MoveSoldiersMult + population - mov );
+                    for (int mov = 1; mov <= movePop; ++mov)
+                        moveSoldiers += (soldiers - moveSoldiers) * Consts.MoveSoldiersMult / (Consts.MoveSoldiersMult + population - mov);
             return moveSoldiers;
         }
 
@@ -214,7 +220,7 @@ namespace GalWar
         public static double GetSoldiers(int population, double soldiers, int troops)
         {
             if (population > 0)
-                return ( ( soldiers * troops ) / (double)population );
+                return ((soldiers * troops) / (double)population);
             return soldiers;
         }
         public double GetSoldierPct()

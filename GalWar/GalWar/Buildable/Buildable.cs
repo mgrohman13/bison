@@ -70,10 +70,14 @@ namespace GalWar
 
             return (this.Cost.HasValue ? curProd + " / " + this.Cost.Value.ToString() : curProd);
         }
-        public virtual double GetAddProduction(double production, bool floor)
+        public virtual double GetProdAdded(double production, bool floor)
         {
             TurnException.CheckTurn(colony.Player);
 
+            return GetAddProduction(production, floor);
+        }
+        internal virtual double GetAddProduction(double production, bool floor)
+        {
             if (floor)
                 return Math.Floor(production * Consts.FLOAT_ERROR_ONE);
             else

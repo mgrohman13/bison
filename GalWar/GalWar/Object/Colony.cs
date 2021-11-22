@@ -1286,12 +1286,9 @@ namespace GalWar
 
             GetInfrastructure(GetInfrastructureProd(addProd), false, out repairCost, out repairHP,
                     out att, out def, out hp, out soldiers);
-            if (!this.MinDefenses)
-            {
-                att -= this.Att;
-                def -= this.Def;
-                hp -= this.HP;
-            }
+            att -= this.Att;
+            def -= this.Def;
+            hp -= this.HP;
         }
         private void ApplyInfrastructure(int infrastructure, int PD, int soldier)
         {
@@ -1334,7 +1331,8 @@ namespace GalWar
                     if (apply)
                         useProd = Game.Random.GaussianCapped(useProd, Consts.PlanetDefenseRndm);
                     repairHP += ship.ProductionRepair(ref avg, useProd, apply);
-                    this.ProdGuess -= ship.GetCostAvgResearch(true) * Consts.RepairCostMult * repairHP / (double)ship.MaxHP;
+                    if (apply)
+                        this.ProdGuess -= ship.GetCostAvgResearch(true) * Consts.RepairCostMult * repairHP / (double)ship.MaxHP;
                 }
                 prod += avg;
                 repairCost -= avg;
@@ -1376,7 +1374,7 @@ namespace GalWar
             if (this.Population > 0)
             {
                 if (apply)
-                    avg = Consts.GetExperience(avg);
+                    avg = Game.Random.GaussianCapped(avg, Consts.PlanetDefenseRndm);
                 soldiers = avg / Consts.ProductionForSoldiers;
                 if (apply)
                 {
