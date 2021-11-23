@@ -145,7 +145,7 @@ namespace GalWar
                 foreach (Ship ship in player.GetShips())
                 {
                     pop += ship.Population / 1.3;
-                    armada += ship.GetCostAvgResearch() + ship.Soldiers * soldierMult / 1.3;
+                    armada += ship.GetCostAvgResearch(false) + ship.Soldiers * soldierMult / 1.3;
                 }
                 armada += player.TotalGold / 2.1;
             }

@@ -2,6 +2,7 @@ UI
 
 test GraphsForm lastAvgResearch
 
+hp popup show more info when prod repair
 show friendly PD cost
 view individual ship prod repair values when multiple 
 rethink prod text summary for infrastructure when not curBuild?

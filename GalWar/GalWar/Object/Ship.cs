@@ -464,17 +464,17 @@ namespace GalWar
         {
             get
             {
-                return ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Research);
+                return GetTotalCost(this.Player.Research, false);
             }
         }
-        internal double GetCostAvgResearch()
+        internal double GetCostAvgResearch(bool subtractAvgUpkeep)
         {
-            return GetCostAvgResearch(false);
+            return GetTotalCost(this.Player.Game.AvgResearch, subtractAvgUpkeep);
         }
-        internal double GetCostAvgResearch(bool subtractUpkeep)
+        internal double GetTotalCost(double research, bool subtractAvgUpkeep)
         {
-            double totCost = ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, this.Player.Game.AvgResearch);
-            if (subtractUpkeep)
+            double totCost = ShipDesign.GetTotCost(this.Att, this.Def, this.MaxHP, this.MaxSpeed, this.MaxPop, this.Colony, this.BombardDamage, research);
+            if (subtractAvgUpkeep)
                 totCost *= (1 - Consts.CostUpkeepPct);
             return totCost;
         }
@@ -885,7 +885,7 @@ namespace GalWar
 
         internal double GetValueExpForRawExp(double rawExp)
         {
-            return rawExp * GetCostAvgResearch() / GetValue();
+            return rawExp * GetCostAvgResearch(false) / GetValue();
         }
 
         internal void StartTurn(IEventHandler handler)
@@ -1644,7 +1644,7 @@ namespace GalWar
 
         private double GetGoldRepairTarget()
         {
-            return (this.GetCostAvgResearch(true) / (double)this.MaxHP);
+            return (this.GetTotalCost(this.Player.Research, true) / (double)this.MaxHP);
         }
 
         public int GetClassSort()
