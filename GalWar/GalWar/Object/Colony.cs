@@ -499,6 +499,26 @@ namespace GalWar
             research += researchInc;
         }
 
+        public void GetIncomeAvgs(out double gold, out double research, out double production, out double infrastructure)
+        {
+            TurnException.CheckTurn(this.Player);
+
+            double income = this.GetTotalIncome();
+            infrastructure = GetInfrastructureIncome(income);
+            income -= infrastructure;
+
+            if (income > 0)
+            {
+                GetEmphasisPcts(false, out research, out production);
+                research *= income;
+                production *= income;
+            }
+            else
+            {
+                research = production = 0;
+            }
+            gold = income - research - production;
+        }
         public void GetTurnValues(out int production, out double gold, out int research, out int infrastructure)
         {
             TurnException.CheckTurn(this.Player);
@@ -507,22 +527,17 @@ namespace GalWar
         }
         private void GetTurnValues(int population, out int production, out double gold, out int research, out int infrastructure)
         {
-            GetTurnValues(this.Population, out production, out gold, out research, out infrastructure, true);
+            GetTurnValues(population, out production, out gold, out research, out infrastructure, true);
         }
         private void GetTurnValues(int population, out int production, out double gold, out int research, out int infrastructure, bool checkNegGold)
         {
             double income = this.GetTotalIncome(population);
-            infrastructure = MTRandom.Round(Math.Pow(income * this.Planet.infrastructureInc, Consts.InfrastructurePow), this.infrastructureRounding);
+            infrastructure = MTRandom.Round(GetInfrastructureIncome(income), this.infrastructureRounding);
             income -= infrastructure;
 
             if (income > 0)
             {
-                double researchPct = this.GetPct(this.Player.ResearchEmphasis, checkNegGold);
-                double productionPct = this.GetPct(this.Player.ProductionEmphasis, checkNegGold) * this.Planet.prodMult;
-                double totalPct = this.GetPct(this.Player.GoldEmphasis, checkNegGold) + researchPct + productionPct;
-                researchPct /= totalPct;
-                productionPct /= totalPct;
-
+                GetEmphasisPcts(checkNegGold, out double researchPct, out double productionPct);
                 research = MTRandom.Round(researchPct * income, this.researchRounding);
                 production = MTRandom.Round(productionPct * income, this.productionRounding);
             }
@@ -538,6 +553,18 @@ namespace GalWar
                 //the forced amount above the EmphasisValue pays a significantly reduced rate
                 gold = baseGold + .91 * (gold - baseGold) / Consts.GoldProductionForGold;
             }
+        }
+        private double GetInfrastructureIncome(double income)
+        {
+            return Math.Pow(income * this.Planet.infrastructureInc, Consts.InfrastructurePow);
+        }
+        private void GetEmphasisPcts(bool checkNegGold, out double researchPct, out double productionPct)
+        {
+            researchPct = this.GetPct(this.Player.ResearchEmphasis, checkNegGold);
+            productionPct = this.GetPct(this.Player.ProductionEmphasis, checkNegGold) * this.Planet.prodMult;
+            double totalPct = this.GetPct(this.Player.GoldEmphasis, checkNegGold) + researchPct + productionPct;
+            researchPct /= totalPct;
+            productionPct /= totalPct;
         }
 
         private double GetPct(bool emphasis, bool checkNegGold)
@@ -881,7 +908,7 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            GetTurnValues(Population, out _, out _, out _, out int infrastructure);
+            GetTurnValues(out _, out _, out _, out int infrastructure);
             if (addProd.HasValue ? addProd.Value : this.CurBuild is BuildInfrastructure)
                 infrastructure += GetProductionIncome();
             return infrastructure;

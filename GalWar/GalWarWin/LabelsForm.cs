@@ -116,35 +116,35 @@ namespace GalWarWin
 
         public static void ShowColonyIncome(Colony colony)
         {
-            double population = 0, production = 0, gold = 0, origGold;
-            int research = 0, origProd, infrastructure = 0;
+            double population = 0, production = 0, gold = 0;
+            int research = 0, infrastructure = 0;
             colony.GetTurnIncome(ref population, ref production, ref gold, ref research, ref infrastructure);
-            colony.GetTurnValues(out origProd, out origGold, out research, out infrastructure);
-            gold = Player.RoundGold(gold);
-            production = Player.RoundGold(production);
+            colony.GetIncomeAvgs(out double avgGold, out double avgResearch, out double avgProduction, out double avgInfrastructure);
             double actualInfr = Math.Pow(colony.GetTotalIncome() * colony.Planet.InfrastructureInc, Consts.InfrastructurePow) / colony.GetTotalIncome();
+            Func<double, string> FormatPctWithPlace = d => MainForm.FormatPct(d, true);
 
             ShowForm(
-                "Income", ShowOrig(colony.GetTotalIncome(), production + gold + research + infrastructure),
+                "Income", ShowOrig(colony.GetTotalIncome(), gold + research + production + infrastructure, MainForm.FormatDouble, MainForm.FormatDouble),
                 "Upkeep", MainForm.FormatDouble(-colony.Upkeep),
                 string.Empty, string.Empty,
-                "Gold", ShowOrig(origGold, gold),
-                "Research", MainForm.FormatDouble(research),
-                "Production", ShowOrig(origProd, production),
-                "Infrastructure", infrastructure.ToString(),
+                "Gold", ShowOrig(avgGold, gold, MainForm.FormatDouble, MainForm.FormatDouble),
+                "Research", ShowOrig(avgResearch, research),
+                "Production", ShowOrig(avgProduction, production),
+                "Infrastructure", ShowOrig(avgInfrastructure, infrastructure),
                 string.Empty, string.Empty,
-                "Prod Rate", MainForm.FormatPct(colony.Planet.ProdMult),
-                "Auto Infrst", ShowOrig(colony.Planet.InfrastructureInc * 10, actualInfr * 10, d => MainForm.FormatPct(d / 10), d => MainForm.FormatPctWithCheck(d / 10)));
+                "Prod Rate", FormatPctWithPlace(colony.Planet.ProdMult),
+                "Auto Infrst", ShowOrig(colony.Planet.InfrastructureInc, actualInfr, FormatPctWithPlace, FormatPctWithPlace));
         }
         private static string ShowOrig(double orig, double mod)
         {
-            return ShowOrig(orig, mod, MainForm.FormatUsuallyInt, MainForm.FormatDouble);
+            return ShowOrig(orig, mod, MainForm.FormatDouble, MainForm.FormatUsuallyInt);
         }
         private static string ShowOrig(double orig, double mod, Func<double, string> FormatOrig, Func<double, string> FormatMod)
         {
+            string s1 = FormatOrig(orig);
             string retVal = FormatMod(mod);
-            if (Player.RoundGold(orig) != Player.RoundGold(mod))
-                retVal = string.Format("({0}) {1}", FormatOrig(orig), retVal);
+            if (double.Parse(s1.TrimEnd('%')) != double.Parse(retVal.TrimEnd('%')))
+                retVal = string.Format("({0}) {1}", s1, retVal);
             return retVal;
         }
 
