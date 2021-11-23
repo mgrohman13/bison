@@ -2,6 +2,7 @@ UI
 
 test GraphsForm lastAvgResearch
 
+show friendly PD cost
 view individual ship prod repair values when multiple 
 rethink prod text summary for infrastructure when not curBuild?
 neg gold - display issues?
@@ -71,6 +72,7 @@ rotate
 
 GAMEPLAY
 
+neg gold should take from infra?
 anom exp DS check invade?
 anom free PD/sold resets maxes
 game starts with gold emphasis (prob caused by neg gold)

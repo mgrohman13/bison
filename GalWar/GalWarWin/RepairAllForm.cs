@@ -26,6 +26,7 @@ namespace GalWarWin
         {
             MainForm.FormatIncome(lblGold, MainForm.Game.CurrentPlayer.Gold, true);
             MainForm.Game.CurrentPlayer.GetTurnIncome(out _, out _, out _, out double gold, out _);
+            gold -= MainForm.Game.CurrentPlayer.AutoRepairIncome();
             MainForm.FormatIncome(this.lblIncome, gold, true);
 
             double avg = 0, tot = 0;

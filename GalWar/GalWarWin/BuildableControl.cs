@@ -75,10 +75,10 @@ namespace GalWarWin
             }
             else
             {
-                colony.GetInfrastructure(this.addProd, out double repairCost, out double repairHP,
+                colony.GetInfrastructure(this.addProd, out Dictionary<Ship, double> repairShips,
                         out double att, out double def, out double hp, out double soldiers);
                 bool pd = (att > Consts.FLOAT_ERROR_ZERO || def > Consts.FLOAT_ERROR_ZERO || hp > Consts.FLOAT_ERROR_ZERO);
-                bool any = (repairHP > Consts.FLOAT_ERROR_ZERO) || (pd) || (soldiers > Consts.FLOAT_ERROR_ZERO);
+                bool any = (repairShips.Any()) || (pd) || (soldiers > Consts.FLOAT_ERROR_ZERO);
                 if (any || buildable is BuildInfrastructure)
                 {
                     if (colony != null && colony.Player.IsTurn)
@@ -107,7 +107,7 @@ namespace GalWarWin
                         this.lblInf2.Text = MainForm.FormatUsuallyInt(PD);
                         this.lblInf3.Text = colony.Population > 0 ? MainForm.FormatUsuallyInt(soldier) : "-";
 
-                        if (repairHP > Consts.FLOAT_ERROR_ZERO)
+                        if (repairShips.Any())
                         {
                             this.label5.Show();
                             this.lblInf5.Show();
@@ -116,8 +116,8 @@ namespace GalWarWin
 
                             this.label5.Text = "Repair";
                             this.label6.Text = "Cost";
-                            this.lblInf5.Text = MainForm.FormatIncome(repairHP);
-                            this.lblInf6.Text = MainForm.FormatIncome(-repairCost);
+                            this.lblInf5.Text = MainForm.FormatIncome(repairShips.Values.Sum());
+                            this.lblInf6.Text = MainForm.FormatIncome(-repairShips.Sum(p => p.Key.GetProdForHP(p.Value)));
                         }
                         if (pd)
                         {

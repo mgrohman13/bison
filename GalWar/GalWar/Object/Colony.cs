@@ -1279,26 +1279,24 @@ namespace GalWar
             soldier = (int)Math.Ceiling(incomeMult / soldierMult * this.upgSoldiers + Consts.FLOAT_ERROR_ZERO);
         }
 
-        public void GetInfrastructure(bool? addProd, out double repairCost, out double repairHP,
+        public void GetInfrastructure(bool? addProd, out Dictionary<Ship, double> repairShips,
                 out double att, out double def, out double hp, out double soldiers)
         {
             TurnException.CheckTurn(this.Player);
 
-            GetInfrastructure(GetInfrastructureProd(addProd), false, out repairCost, out repairHP,
-                    out att, out def, out hp, out soldiers);
+            GetInfrastructure(GetInfrastructureProd(addProd), false, out repairShips, out att, out def, out hp, out soldiers);
             att -= this.Att;
             def -= this.Def;
             hp -= this.HP;
         }
         private void ApplyInfrastructure(int infrastructure, int PD, int soldier)
         {
-            GetInfrastructure(infrastructure, true, out _, out _, out _, out _, out _, out _, PD, soldier);
+            GetInfrastructure(infrastructure, true, out _, out _, out _, out _, out _, PD, soldier);
         }
-        private void GetInfrastructure(int infrastructure, bool apply, out double repairCost, out double repairHP,
+        private void GetInfrastructure(int infrastructure, bool apply, out Dictionary<Ship, double> repairShips,
              out double att, out double def, out double hp, out double soldiers, int PD = -1, int soldier = -1)
         {
-            repairCost = 0;
-            repairHP = 0;
+            repairShips = new Dictionary<Ship, double>();
             att = this.Att;
             def = this.Def;
             hp = this.HP;
@@ -1324,18 +1322,17 @@ namespace GalWar
             if (count > 0)
             {
                 prod -= avg;
-                repairCost = avg;
                 foreach (Ship ship in repair)
                 {
                     double useProd = avg / count--;
                     if (apply)
                         useProd = Game.Random.GaussianCapped(useProd, Consts.PlanetDefenseRndm);
-                    repairHP += ship.ProductionRepair(ref avg, useProd, apply);
+                    double repairHP = ship.ProductionRepair(ref avg, useProd, apply);
+                    repairShips.Add(ship, repairHP);
                     if (apply)
                         this.ProdGuess -= ship.GetCostAvgResearch(true) * Consts.RepairCostMult * repairHP / (double)ship.MaxHP;
                 }
                 prod += avg;
-                repairCost -= avg;
                 if (apply)
                     SetBuildProd(prod, false);
             }

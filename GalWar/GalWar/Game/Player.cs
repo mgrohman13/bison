@@ -728,7 +728,8 @@ namespace GalWar
         internal double GetLastResearched()
         {
             double lastResearched = LastResearched;
-            lastResearched = (2.0 * lastResearched + 1.0 * this.designs.Max(design => design.Research)) / 3.0;
+            double designResearch = this.designs.Max(design => design.Research);
+            lastResearched = (2.0 * lastResearched + 1.0 * designResearch) / 3.0;
             if (lastResearched > this.Research)
                 lastResearched = (1.0 * lastResearched + 2.0 * this.Research) / 3.0;
             return lastResearched;

@@ -2437,25 +2437,6 @@ namespace GalWarWin
 
         private Player ShipInfo(Ship ship)
         {
-            if (!isDialog && ship.Player.IsTurn)
-            {
-                btnGoldRepair.Visible = true;
-                btnDisband.Visible = true;
-
-                bool repair = (ship.HP < ship.MaxHP);
-                btnGoldRepair.Enabled = repair;
-
-                if (repair)
-                {
-                    btnGoldRepair.Text = (ship.HasRepaired ? "Auto Repair" : "Repair Ship");
-                    double autoRepair = ship.AutoRepair;
-                    if (autoRepair != 0)
-                        btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : autoRepair.ToString("0.00"));
-
-                    lbl3.BorderStyle = BorderStyle.FixedSingle;
-                }
-            }
-
             lblTop.Text = ship.ToString();
 
             lbl1.Text = "Attack";
@@ -2516,6 +2497,34 @@ namespace GalWarWin
             else if (ship.DeathStar)
             {
                 lblBottom.Text = "Death Star (" + FormatInt(ship.BombardDamage) + ")";
+            }
+
+            if (!isDialog && ship.Player.IsTurn)
+            {
+                btnGoldRepair.Visible = true;
+                btnDisband.Visible = true;
+
+                bool repair = (ship.HP < ship.MaxHP);
+                btnGoldRepair.Enabled = repair;
+
+                if (repair)
+                {
+                    btnGoldRepair.Text = (ship.HasRepaired ? "Auto Repair" : "Repair Ship");
+                    double autoRepair = ship.AutoRepair;
+                    if (autoRepair != 0)
+                        btnGoldRepair.Text += string.Format(" ({0})", double.IsNaN(autoRepair) ? "M" : autoRepair.ToString("0.00"));
+
+                    lbl3.BorderStyle = BorderStyle.FixedSingle;
+
+                    Colony colony = Tile.GetNeighbors(ship.Tile).Select(t => t.SpaceObject as Planet).Where(p => p != null).Select(p => p.Colony).Where(c => c.Player == ship.Player).FirstOrDefault();
+                    if (colony != null)
+                    {
+                        colony.GetInfrastructure(null, out Dictionary<Ship, double> repairShips, out _, out _, out _, out _);
+                        repairShips.TryGetValue(ship, out double reapirHp);
+                        if (reapirHp > 0)
+                            lbl3Inf.Text = string.Format("{0} / {1} ({2})", ship.HP.ToString(), ship.MaxHP.ToString(), FormatIncome(reapirHp));
+                    }
+                }
             }
 
             return ship.Player;
@@ -2647,13 +2656,13 @@ namespace GalWarWin
 
         internal static string GetProdNameText(Colony colony)
         {
-            colony.GetInfrastructure(null, out double repairCost, out double repairHP,
+            colony.GetInfrastructure(null, out Dictionary<Ship, double> repairShips,
                     out double att, out double def, out double hp, out double soldiers);
             string text;
             bool parens = false;
-            if (repairHP > Consts.FLOAT_ERROR_ZERO)
+            if (repairShips.Any())
             {
-                text = "Repair +" + FormatDouble(repairHP);
+                text = "Repair +" + FormatDouble(repairShips.Values.Sum());
                 parens = !(colony.CurBuild is BuildInfrastructure);
             }
             else if (att > Consts.FLOAT_ERROR_ZERO || def > Consts.FLOAT_ERROR_ZERO || hp > Consts.FLOAT_ERROR_ZERO)
