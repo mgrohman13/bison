@@ -33,42 +33,42 @@ namespace GalWarWin
             Ship ship = row.Class;
             switch (column)
             {
-            case "Location":
-                MainForm.GameForm.SelectTile(ship.Tile);
-                MainForm.GameForm.Center();
-                MainForm.GameForm.RefreshAll();
-                this.Close();
-                break;
-            case "Class":
-                string designName = ship.ToString();
-                ShipDesign shipDesign = ship.Player.GetShipDesigns().SingleOrDefault(design => designName == design.ToString());
-                if (shipDesign != null)
-                    CostCalculatorForm.ShowForm(shipDesign);
-                break;
-            case "HP":
-            case "Repair":
-                if (ship.HP < ship.MaxHP)
-                    if (!ship.HasRepaired && column != "Repair")
-                    {
-                        int HP = SliderForm.ShowForm(new GoldRepair(ship));
-                        if (HP > 0)
+                case "Location":
+                    MainForm.GameForm.SelectTile(ship.Tile);
+                    MainForm.GameForm.Center();
+                    MainForm.GameForm.RefreshAll();
+                    this.Close();
+                    break;
+                case "Class":
+                    string designName = ship.ToString();
+                    ShipDesign shipDesign = ship.Player.GetShipDesigns().SingleOrDefault(design => designName == design.ToString());
+                    if (shipDesign != null)
+                        CostCalculatorForm.ShowForm(shipDesign);
+                    break;
+                case "HP":
+                case "Repair":
+                    if (ship.HP < ship.MaxHP)
+                        if (!ship.HasRepaired && column != "Repair")
                         {
-                            ship.GoldRepair(MainForm.GameForm, HP);
+                            int HP = SliderForm.ShowForm(new GoldRepair(ship));
+                            if (HP > 0)
+                            {
+                                ship.GoldRepair(MainForm.GameForm, HP);
+                                RefreshData(row);
+                            }
+                        }
+                        else if (AutoRepairForm.ShowForm(ship))
+                        {
                             RefreshData(row);
                         }
-                    }
-                    else if (AutoRepairForm.ShowForm(ship))
-                    {
+                    break;
+                case "Disband":
+                    if (MainForm.GameForm.DisbandShip(ship))
                         RefreshData(row);
-                    }
-                break;
-            case "Disband":
-                if (MainForm.GameForm.DisbandShip(ship))
-                    RefreshData(row);
-                break;
-            default:
-                CostCalculatorForm.ShowForm(ship);
-                break;
+                    break;
+                default:
+                    CostCalculatorForm.ShowForm(ship);
+                    break;
             }
         }
         protected override ShipInfo CreateNewFrom(ShipInfo info)
@@ -213,9 +213,9 @@ namespace GalWarWin
                     {
                         Repair = sortRepair.ToString(Sliders.AutoRepairForm.GetFloatErrorPrecisionFormat());
                     }
-                Colony repairedFrom = ship.GetRepairedFrom();
-                if (repairedFrom != null)
-                    Repair = string.Format("(+{1}) {0}", Repair, MainForm.FormatDouble(ship.GetHPForProd(repairedFrom.GetProductionIncome())));
+                double repairHp = ship.GetProdRepair();
+                if (repairHp > 0)
+                    Repair = string.Format("({1}) {0}", Repair, MainForm.FormatIncome(repairHp));
             }
             public static IOrderedEnumerable<ShipInfo> SortRepair(IOrderedEnumerable<ShipInfo> items)
             {
@@ -275,7 +275,7 @@ namespace GalWarWin
             private void SetSpecial()
             {
                 bombardDamage = ship.BombardDamage;
-                sortSpecial = ( ship.Colony ? ship.ColonizationValue : bombardDamage * ship.MaxSpeed );
+                sortSpecial = (ship.Colony ? ship.ColonizationValue : bombardDamage * ship.MaxSpeed);
                 if (ship.Colony)
                     Special = "Colony Ship (" + MainForm.FormatDouble(sortSpecial) + ")";
                 else if (ship.DeathStar)

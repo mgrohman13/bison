@@ -1342,7 +1342,7 @@ namespace GalWar
 
             List<Ship> repair = Tile.GetNeighbors(this.Tile)
                     .Select(t => t.SpaceObject as Ship)
-                    .Where(s => s != null && s.Player == this.Player && s.ProdRepair && s.HP < s.MaxHP)
+                    .Where(s => s != null && s.Player.IsTurn && s.GetRepairedFrom() == this)
                     .OrderBy(s => s.GetProdForHP(s.MaxHP - s.HP))
                     .ToList();
             double count = repair.Count;

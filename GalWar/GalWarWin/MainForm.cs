@@ -2476,6 +2476,8 @@ namespace GalWarWin
                     lbl7Inf.Text += " (" + FormatPct(ship.GetSoldierPct()) + ")";
             }
 
+            double repairHp = ship.Player.IsTurn ? ship.GetProdRepair() : 0;
+
             if (ship.Colony)
             {
                 double colonizationValue;
@@ -2483,9 +2485,8 @@ namespace GalWarWin
                 if (ship.Player.IsTurn)
                 {
                     colonizationValue = ship.ColonizationValue;
-                    Colony repairedFrom = ship.GetRepairedFrom();
-                    if (repairedFrom != null)
-                        repair = " +" + FormatDouble(ship.GetColonizationValue(ship.GetHPForProd(repairedFrom.GetProductionIncome())) - colonizationValue);
+                    if (repairHp > 0)
+                        repair = " " + FormatIncome(repairHp);
                 }
                 else
                 {
@@ -2516,14 +2517,8 @@ namespace GalWarWin
 
                     lbl3.BorderStyle = BorderStyle.FixedSingle;
 
-                    Colony colony = Tile.GetNeighbors(ship.Tile).Select(t => t.SpaceObject as Planet).Where(p => p != null).Select(p => p.Colony).Where(c => c.Player == ship.Player).FirstOrDefault();
-                    if (colony != null)
-                    {
-                        colony.GetInfrastructure(null, out Dictionary<Ship, double> repairShips, out _, out _, out _, out _);
-                        repairShips.TryGetValue(ship, out double reapirHp);
-                        if (reapirHp > 0)
-                            lbl3Inf.Text = string.Format("{0} / {1} ({2})", ship.HP.ToString(), ship.MaxHP.ToString(), FormatIncome(reapirHp));
-                    }
+                    if (repairHp > 0)
+                        lbl3Inf.Text = string.Format("{0} / {1} ({2})", ship.HP.ToString(), ship.MaxHP.ToString(), FormatIncome(repairHp));
                 }
             }
 

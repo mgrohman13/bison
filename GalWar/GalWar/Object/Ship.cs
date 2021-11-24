@@ -1517,13 +1517,22 @@ namespace GalWar
         {
             TurnException.CheckTurn(this.Player);
 
-            foreach (Tile neighbor in Tile.GetNeighbors(this.Tile))
-            {
-                Planet planet = (neighbor.SpaceObject as Planet);
-                if (planet != null && planet.Player == this.Player && this.ProdRepair && this.HP < this.MaxHP)
-                    return planet.Colony;
-            }
+            if (this.ProdRepair && this.HP < this.MaxHP)
+                return Tile.GetNeighbors(this.Tile).Select(t => t.SpaceObject as Planet).Where(p => p != null && p.Player == this.Player).Select(p => p.Colony).FirstOrDefault();
             return null;
+        }
+        public double GetProdRepair()
+        {
+            TurnException.CheckTurn(this.Player);
+
+            Colony colony = GetRepairedFrom();
+            if (colony != null)
+            {
+                colony.GetInfrastructure(null, out Dictionary<Ship, double> repairShips, out _, out _, out _, out _);
+                repairShips.TryGetValue(this, out double hp);
+                return hp;
+            }
+            return 0;
         }
 
         public double GetGoldForHP(double hp)
