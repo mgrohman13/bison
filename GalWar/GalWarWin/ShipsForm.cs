@@ -350,8 +350,8 @@ namespace GalWarWin
             }
             private void SetProd()
             {
-                sortProd = ship.GetProdForHP(ship.MaxHP);
-                Prod = MainForm.FormatDouble(sortProd / Consts.RepairCostMult);
+                sortProd = ((IShipStats)ship).Cost;
+                Prod = MainForm.FormatDouble(sortProd);
             }
             public static IOrderedEnumerable<ShipInfo> SortProd(IOrderedEnumerable<ShipInfo> items)
             {

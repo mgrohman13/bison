@@ -1603,13 +1603,6 @@ namespace GalWar
 
             return hp * RepairCost;
         }
-
-        public double GetHPForProd(double production)
-        {
-            TurnException.CheckTurn(this.Player);
-
-            return GetHPForProd(production, true);
-        }
         internal double GetHPForProd(double production, bool checkAutoRepair)
         {
             double hp = production / RepairCost;
@@ -1685,7 +1678,8 @@ namespace GalWar
             get
             {
                 TurnException.CheckTurn(this.Player);
-                return GetProdForHP(MaxHP) / Consts.RepairCostMult;
+
+                return this.cost;
             }
         }
         int IShipStats.Upkeep

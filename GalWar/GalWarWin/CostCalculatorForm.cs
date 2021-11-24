@@ -85,7 +85,7 @@ namespace GalWarWin
 
                     if (ship.Player.IsTurn)
                     {
-                        double cost = ship.GetProdForHP(ship.MaxHP) / Consts.RepairCostMult;
+                        double cost = ((IShipStats)ship).Cost;
                         SetValue(this.nudProd, cost);
                         SetValue(this.nudUpk, ship.BaseUpkeep);
                         SetValue(this.nudResearch, CalcResearch(ship.Att, ship.Def, ship.MaxHP, ship.MaxSpeed, ship.MaxPop, ship.Colony, ship.BombardDamage, cost, ship.BaseUpkeep));
@@ -168,7 +168,7 @@ namespace GalWarWin
                 bool colony = (bool)this.cbCol.Checked;
                 double bombardDamage = (double)this.nudDS.Value;
 
-                this.cbDS.Checked = ( bombardDamage > GetBombardDamage() * Consts.FLOAT_ERROR_ONE );
+                this.cbDS.Checked = (bombardDamage > GetBombardDamage() * Consts.FLOAT_ERROR_ONE);
                 if (!cbDS.Checked)
                 {
                     bombardDamage = GetBombardDamage();
@@ -199,11 +199,11 @@ namespace GalWarWin
         {
             int research = TBSUtil.FindValue(delegate (int r)
             {
-                return ( GetProd(att, def, hp, speed, trans, colony, bombardDamage, r, upk) < prod );
+                return (GetProd(att, def, hp, speed, trans, colony, bombardDamage, r, upk) < prod);
             }, (int)this.nudResearch.Minimum, (int)this.nudResearch.Maximum, true);
 
-            if (( prod - GetProd(att, def, hp, speed, trans, colony, bombardDamage, research, upk) ) >
-                    ( GetProd(att, def, hp, speed, trans, colony, bombardDamage, research - 1, upk) - prod ))
+            if ((prod - GetProd(att, def, hp, speed, trans, colony, bombardDamage, research, upk)) >
+                    (GetProd(att, def, hp, speed, trans, colony, bombardDamage, research - 1, upk) - prod))
                 --research;
 
             return research;
@@ -216,7 +216,7 @@ namespace GalWarWin
         }
         private static double GetProd(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, int research, int upk, double totCost)
         {
-            return ( totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game) );
+            return (totCost - upk * GetUpkeepPayoff(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game));
         }
 
         private static double GetUpkeepPayoff(int att, int def, int hp, int speed, int trans, bool colony, double bombardDamage, Game game)
@@ -277,9 +277,9 @@ namespace GalWarWin
             int trans = (int)this.nudTrans.Value;
             double bombardDamage = (double)this.nudDS.Value;
 
-            this.txtColonyValue.Text = ( colony
+            this.txtColonyValue.Text = (colony
                     ? MainForm.FormatDouble(cost * Consts.GetNonColonyPct(att, def, hp, speed, trans, colony, bombardDamage, MainForm.Game, false))
-                    : string.Empty );
+                    : string.Empty);
         }
 
         private void SetValue(NumericUpDown nud, double value)
@@ -339,7 +339,7 @@ namespace GalWarWin
                 events = oldEvents;
             }
 
-            this.nudDS.DecimalPlaces = ( this.cbDS.Checked ? 0 : 1 );
+            this.nudDS.DecimalPlaces = (this.cbDS.Checked ? 0 : 1);
             if (events && this.cbDS.Checked)
                 SetValue(this.nudDS, Game.Random.Round(GetBombardDamage() * ShipDesign.DeathStarAvg));
             MaintainDS(this.cbDS.Checked);
