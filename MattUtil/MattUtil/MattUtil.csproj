@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="EnumFlags.cs" />
     <Compile Include="Hashing.cs" />
+    <Compile Include="Noise.cs" />
     <Compile Include="PointS.cs" />
     <Compile Include="PointD.cs" />
     <Compile Include="Point.cs" />
