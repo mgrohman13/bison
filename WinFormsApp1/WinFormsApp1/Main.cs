@@ -26,5 +26,14 @@ namespace WinFormsApp1
             Info.Refresh();
             base.Refresh();
         }
+
+        private void Main_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                Program.Game.Player.EndTurn();
+                Refresh();
+            }
+        }
     }
 }

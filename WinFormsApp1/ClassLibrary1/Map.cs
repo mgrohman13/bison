@@ -1,20 +1,23 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using MattUtil;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1
 {
     [Serializable]
     public class Map
     {
-        private readonly Dictionary<Point, IPiece> _pieces;
+        private readonly Dictionary<Point, Piece> _pieces;
 
         public readonly Game Game;
         public readonly int left, right, down, up;
 
-        private int[] _exploredLeft, _exploredRight, _exploredDown, _exploredUp;
+        private readonly int[] _exploredLeft, _exploredRight, _exploredDown, _exploredUp;
 
         public int Width => right - left + 1;
         public int Height => up - down + 1;
@@ -26,10 +29,10 @@ namespace ClassLibrary1
 
         internal Map(Game game)
         {
-            this._pieces = new Dictionary<Point, IPiece>();
+            this._pieces = new Dictionary<Point, Piece>();
             this.Game = game;
 
-            Func<int> GetCoord = () => Game.Rand.GaussianCappedInt(Consts.MapCoordSize, Consts.MapDeviation, Consts.MinMapSize);
+            static int GetCoord() => Game.Rand.GaussianCappedInt(Consts.MapCoordSize, Consts.MapDev, Consts.MinMapCoord);
             left = -GetCoord();
             right = GetCoord();
             down = -GetCoord();
@@ -53,7 +56,7 @@ namespace ClassLibrary1
 
         internal void OnDeserialization()
         {
-            foreach (KeyValuePair<Point, IPiece> pair in _pieces)
+            foreach (KeyValuePair<Point, Piece> pair in _pieces)
                 pair.Value.SetTile(NewTile(this, pair.Key.X, pair.Key.Y));
         }
 
@@ -61,12 +64,12 @@ namespace ClassLibrary1
         {
             if (!CheckX(x) && !CheckY(y))
                 return null;
-            IPiece piece = GetPiece(x, y);
+            Piece piece = GetPiece(x, y);
             return piece == null ? NewTile(this, x, y) : piece.Tile;
         }
-        private IPiece GetPiece(int x, int y)
+        private Piece GetPiece(int x, int y)
         {
-            _pieces.TryGetValue(new Point(x, y), out IPiece piece);
+            _pieces.TryGetValue(new Point(x, y), out Piece piece);
             return piece;
         }
 
@@ -115,27 +118,23 @@ namespace ClassLibrary1
             return !(y < down || y > up);
         }
 
-        internal void AddPiece(IPiece piece)
+        internal void AddPiece(Piece piece)
         {
             this._pieces.Add(new Point(piece.Tile.X, piece.Tile.Y), piece);
 
-            IPlayerPiece playerPiece = piece as IPlayerPiece;
-            if (playerPiece != null)
-            {
-                Game.Player.AddPiece(playerPiece);
+            if (piece is PlayerPiece playerPiece)
                 UpdateVision(playerPiece);
-            }
         }
         internal void RemovePiece(Piece piece)
         {
             this._pieces.Remove(new Point(piece.Tile.X, piece.Tile.Y));
         }
-        private void UpdateVision(IPlayerPiece piece)
+        private void UpdateVision(PlayerPiece piece)
         {
             UpdateVision(left, right, piece.Tile.X, piece.Tile.Y, _exploredDown, _exploredUp, piece.Vision);
             UpdateVision(down, up, piece.Tile.Y, piece.Tile.X, _exploredLeft, _exploredRight, piece.Vision);
         }
-        private void UpdateVision(int start, int end, int coord, int other, int[] expNeg, int[] expPos, double vision)
+        private static void UpdateVision(int start, int end, int coord, int other, int[] expNeg, int[] expPos, double vision)
         {
             vision *= vision;
             for (int a = start; a <= end; a++)
@@ -156,7 +155,7 @@ namespace ClassLibrary1
         {
             public readonly Map Map;
             public readonly int X, Y;
-            public IPiece Piece => Map.GetPiece(X, Y);
+            public Piece Piece => Map.GetPiece(X, Y);
             public bool Visible => Map.Visible(X, Y);
             static Tile()
             {
@@ -184,13 +183,32 @@ namespace ClassLibrary1
                 return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
             }
 
+            public IEnumerable<Tile> GetTilesInRange(double range)
+            {
+                int max = (int)range + 1;
+                for (int a = -max; a <= max; a++)
+                {
+                    int x = X + a;
+                    for (int b = -max; b <= max; b++)
+                    {
+                        int y = Y + b;
+                        if (GetDistance(x, y) <= range)
+                        {
+                            Tile tile = Map.GetTile(x, y);
+                            if (tile != null)
+                                yield return tile;
+                        }
+                    }
+                }
+            }
+
             public static bool operator !=(Tile a, Tile b)
             {
                 return !(a == b);
             }
             public static bool operator ==(Tile a, Tile b)
             {
-                return ((object)a == null ? (object)b == null : a.Equals(b));
+                return (a is null ? b is null : a.Equals(b));
             }
 
             public override bool Equals(object obj)

@@ -1,18 +1,23 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MattUtil;
+using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1.Pieces
 {
     [Serializable]
     public class Movable : IMovable
     {
-        private IPiece piece;
-        private double _moveCur, _moveInc, _moveMax, _moveLimit;
+        private readonly Piece piece;
+        private readonly double _moveInc, _moveMax, _moveLimit;
 
-        public Movable(IPiece piece, double moveInc, double moveMax, double moveLimit)
+        private double _moveCur;
+
+        public Movable(Piece piece, double moveInc, double moveMax, double moveLimit)
         {
             this.piece = piece;
             this._moveCur = 0;
@@ -48,19 +53,21 @@ namespace ClassLibrary1.Pieces
 
         private void AddMove(double inc)
         {
+            double max = Math.Max(this.MoveCur, MoveMax);
             this._moveCur += inc;
 
-            double extra = MoveCur - MoveMax;
+            double extra = MoveCur - max;
             if (extra > 0)
-            { 
-                extra /= MoveLimit - MoveMax;
-                if (extra > .5)
-                    extra /= (extra + .5);
-                extra *= MoveLimit - MoveMax;
-                extra += MoveMax;
+            {
+                double limit = MoveLimit - max;
+                double mult = limit / (limit + MoveMax);
+                extra *= Math.Pow(mult, Consts.MoveLimitPow);
+                extra += max;
 
                 this._moveCur = extra;
             }
+
+            Debug.WriteLine(MoveCur);
         }
     }
 }

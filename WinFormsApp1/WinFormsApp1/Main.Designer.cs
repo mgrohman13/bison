@@ -36,7 +36,7 @@ namespace WinFormsApp1
             // 
             // infoMain
             // 
-            this.infoMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.infoMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoMain.Location = new System.Drawing.Point(3112, 306);
             this.infoMain.Name = "infoMain";
@@ -45,8 +45,8 @@ namespace WinFormsApp1
             // 
             // mapMain
             // 
-            this.mapMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.mapMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.mapMain.Location = new System.Drawing.Point(0, 0);
             this.mapMain.Name = "mapMain";
@@ -72,6 +72,7 @@ namespace WinFormsApp1
             this.KeyPreview = true;
             this.Name = "Main";
             this.Text = "Form1";
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Main_KeyUp);
             this.ResumeLayout(false);
 
         }

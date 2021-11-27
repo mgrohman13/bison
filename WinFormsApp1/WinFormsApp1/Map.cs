@@ -18,7 +18,18 @@ namespace WinFormsApp1
         const float padding = 1;
         public Rectangle mapCoords;
 
-        private Tile selected;
+        private Tile _selected;
+        public Tile Selected
+        {
+            get { return _selected; }
+            set
+            {
+                _selected = value;
+                Program.Form.Info.SetSelected(Selected);
+                mapCoords = Program.Game.Map.GameRect();
+                Program.Form.Refresh();
+            }
+        }
 
         public Map()
         {
@@ -35,11 +46,11 @@ namespace WinFormsApp1
 
             if (Program.Game != null)
             {
-                Pen thick = new Pen(Color.Black, 3f);
+                Pen thick = new(Color.Black, 3f);
 
                 Scale(out float xScale, out float yScale);
 
-                List<RectangleF> grid = new List<RectangleF>();
+                List<RectangleF> grid = new();
                 for (int a = 0; a < mapCoords.Width; a++)
                 {
                     int x = mapCoords.X + a;
@@ -47,7 +58,7 @@ namespace WinFormsApp1
                     {
                         int y = mapCoords.Y + b;
                         Tile tile = Program.Game.Map.GetTile(x, y);
-                        RectangleF rectangleF = new RectangleF(a * xScale + padding, b * yScale + padding, xScale, yScale);
+                        RectangleF rectangleF = new(a * xScale + padding, b * yScale + padding, xScale, yScale);
                         if (Program.Game.Map.Visible(x, y))
                         {
                             RectangleF rect = rectangleF;
@@ -55,8 +66,18 @@ namespace WinFormsApp1
                                 e.Graphics.FillRectangle(Brushes.Blue, rect);
                             grid.Add(rect);
                         }
-                        if (selected != null && tile == selected)
-                            e.Graphics.DrawRectangles(thick, new RectangleF[] { rectangleF });
+                        if (Selected != null)
+                        {
+                            if (Selected.Piece is IMovable movable)
+                            {
+                                if (Selected.Piece.Tile.GetTilesInRange(movable.MoveCur).Contains(tile))
+                                    e.Graphics.DrawRectangles(thick, new RectangleF[] { rectangleF });
+                            }
+                            else if (tile == Selected)
+                            {
+                                e.Graphics.DrawRectangles(thick, new RectangleF[] { rectangleF });
+                            }
+                        }
                     }
                 }
 
@@ -98,18 +119,13 @@ namespace WinFormsApp1
 
             if (e.Button == MouseButtons.Left)
             {
-                selected = clicked;
-                Program.Form.Info.SetSelected(selected);
-                Program.Form.Refresh();
+                Selected = clicked;
             }
             else if (e.Button == MouseButtons.Right)
             {
-                if (selected != null && selected.Piece is IMovable)
-                    if (((IMovable)selected.Piece).Move(clicked))
-                    {
-                        mapCoords = Program.Game.Map.GameRect();
-                        Program.Form.Refresh();
-                    }
+                if (Selected != null && Selected.Piece is IMovable movable)
+                    if (movable.Move(clicked))
+                        Selected = clicked;
             }
         }
     }

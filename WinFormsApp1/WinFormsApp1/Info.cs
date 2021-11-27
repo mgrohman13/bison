@@ -22,7 +22,7 @@ namespace WinFormsApp1
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             Program.Game.Player.EndTurn();
             Program.Form.Refresh();
@@ -37,9 +37,7 @@ namespace WinFormsApp1
         {
             if (selected != null)
             {
-                IMovable movable = selected.Piece as IMovable;
-
-                if (movable != null)
+                if (selected.Piece is IMovable movable)
                 {
                     this.lbl1.Show();
                     this.lblInf1.Show();

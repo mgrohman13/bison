@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using MattUtil;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1
 {
@@ -26,6 +29,14 @@ namespace ClassLibrary1
             this.Enemy = new Enemy(this);
 
             Core.NewCore(Player);
+        }
+
+        internal void AddPiece(Piece piece)
+        {
+            Map.AddPiece(piece);
+
+            if (piece is PlayerPiece playerPiece)
+                Player.AddPiece(playerPiece);
         }
 
         public void SaveGame(string filePath)
