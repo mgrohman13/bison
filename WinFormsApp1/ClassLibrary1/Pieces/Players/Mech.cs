@@ -17,11 +17,13 @@ namespace ClassLibrary1.Pieces.Players
 
         public Piece Piece => this;
 
-        private Mech(Game game, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable) : base(game, tile, vision)
+        private Mech(Game game, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+            : base(game, tile, vision)
         {
             this.killable = new Killable(this, killable);
             this.attacker = new Attacker(this, attacks);
             this.movable = new Movable(this, movable);
+            SetBehavior(this.killable, this.attacker, this.movable);
         }
         internal static Mech NewMech(Game game, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
         {
@@ -30,13 +32,11 @@ namespace ClassLibrary1.Pieces.Players
             return obj;
         }
 
-        internal override void EndTurn()
+        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
-            base.EndTurn();
-            killable.EndTurn();
-            attacker.EndTurn();
-            movable.EndTurn();
-        }
+            base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk); 
+            energyUpk += Consts.BaseMechUpkeep;
+        } 
 
         public override string ToString()
         {
@@ -56,10 +56,6 @@ namespace ClassLibrary1.Pieces.Players
         {
             killable.Damage(ref damage, ref shieldDmg);
         }
-        void IKillable.EndTurn()
-        {
-            EndTurn();
-        }
 
         #endregion IKillable
 
@@ -73,10 +69,6 @@ namespace ClassLibrary1.Pieces.Players
         bool IAttacker.EnemyFire(IKillable killable)
         {
             return false;
-        }
-        void IAttacker.EndTurn()
-        {
-            throw new NotImplementedException();
         }
 
         #endregion IAttacker
@@ -95,11 +87,6 @@ namespace ClassLibrary1.Pieces.Players
         bool IMovable.EnemyMove(Map.Tile to)
         {
             return false;
-        }
-
-        void IMovable.EndTurn()
-        {
-            EndTurn();
         }
 
         #endregion IMovable

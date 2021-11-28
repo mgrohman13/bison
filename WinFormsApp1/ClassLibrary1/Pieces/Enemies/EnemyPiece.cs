@@ -8,12 +8,9 @@ namespace ClassLibrary1.Pieces.Enemies
 {
     public abstract class EnemyPiece : Piece
     {
-        internal EnemyPiece(Game game, Map.Tile tile) : base(game, game.Enemy, tile)
+        internal EnemyPiece(Game game, Map.Tile tile)
+            : base(game, game.Enemy, tile)
         {
-        }
-
-        internal override void EndTurn()
-        {
-        }
+        } 
     }
 }

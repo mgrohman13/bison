@@ -24,7 +24,8 @@ namespace ClassLibrary1
         #region ISide
 
         public Game Game => side.Game;
-        public ReadOnlyCollection<Piece> Pieces => side.Pieces;
+        ReadOnlyCollection<Piece> ISide.Pieces => side.Pieces;
+        internal ReadOnlyCollection<Piece> Pieces => side.Pieces;
 
         void ISide.AddPiece(Piece piece)
         {
@@ -72,7 +73,7 @@ namespace ClassLibrary1
                         }
                     }
             }
-            if (movable != null)
+            if (movable != null && moveTiles.Any())
                 movable.EnemyMove(Game.Rand.SelectValue(moveTiles, t =>
                 {
                     double dist = t.GetDistance(Game.Player.Core.Tile);

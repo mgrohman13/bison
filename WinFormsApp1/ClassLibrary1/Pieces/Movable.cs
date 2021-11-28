@@ -56,9 +56,17 @@ namespace ClassLibrary1.Pieces
             }
             return false;
         }
-        void IMovable.EndTurn()
+        double IBehavior.GetUpkeep()
         {
-            this._moveCur = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow);
+            return GetInc(false) * Consts.UpkeepPerMove;
+        }
+        void IBehavior.EndTurn()
+        {
+            this._moveCur = GetInc(true);
+        }
+        private double GetInc(bool rand)
+        {
+            return Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, rand);
         }
     }
 }

@@ -41,11 +41,12 @@ namespace ClassLibrary1
 
         void ISide.EndTurn()
         {
-            foreach (Piece piece in Pieces)
+            foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 piece.EndTurn();
         }
 
-        public ReadOnlyCollection<Piece> Pieces => _pieces.AsReadOnly();
+        ReadOnlyCollection<Piece> ISide.Pieces => Pieces;
+        internal ReadOnlyCollection<Piece> Pieces => _pieces.AsReadOnly();
 
         public Game Game => _game;
     }

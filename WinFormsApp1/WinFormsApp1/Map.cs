@@ -38,7 +38,7 @@ namespace WinFormsApp1
 
         public Map()
         {
-            InitializeComponent(); 
+            InitializeComponent();
             this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint, true);
             this.ResizeRedraw = true;
@@ -65,12 +65,11 @@ namespace WinFormsApp1
                     for (int b = 0; b < mapCoords.Height; b++)
                     {
                         int y = mapCoords.Y + b;
-                        Tile tile = Program.Game.Map.GetTile(x, y);
-                        RectangleF rectangleF = new(a * xScale + padding, b * yScale + padding, xScale, yScale);
-                        if (Program.Game.Map.Visible(x, y))
+                        Tile tile = Program.Game.Map.GetVisibleTile(x, y);
+                        if (tile != null)
                         {
                             Pen pen = pens[0];
-                            RectangleF rect = rectangleF;
+                            RectangleF rect = new(a * xScale + padding, b * yScale + padding, xScale, yScale);
                             if (tile.Piece is Core)
                                 e.Graphics.FillRectangle(Brushes.Blue, rect);
                             else if (tile.Piece is Mech)
@@ -138,7 +137,7 @@ namespace WinFormsApp1
             int x = (int)((e.X - 1) / xScale) + mapCoords.X;
             int y = (int)((e.Y - 1) / yScale) + mapCoords.Y;
 
-            Tile clicked = Program.Game.Map.GetTile(x, y);
+            Tile clicked = Program.Game.Map.GetVisibleTile(x, y);
             Tile orig = SelTile;
 
             if (e.Button == MouseButtons.Left)

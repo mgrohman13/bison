@@ -9,10 +9,9 @@ using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1.Pieces
 {
-    public interface IBuilding
+    public interface IBuilder : IBehavior
     {
         public Piece Piece { get; }
-        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable);
-        internal void EndTurn();
+        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable); 
     }
 }

@@ -9,7 +9,7 @@ using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1.Pieces
 {
-    public interface IMovable
+    public interface IMovable : IBehavior
     {
         public Piece Piece { get; }
         public double MoveCur { get; }
@@ -18,8 +18,7 @@ namespace ClassLibrary1.Pieces
         public double MoveLimit { get; }
 
         public bool Move(Map.Tile to);
-        internal bool EnemyMove(Map.Tile to);
-        public void EndTurn();
+        internal bool EnemyMove(Map.Tile to); 
 
         public class Values
         {

@@ -46,7 +46,12 @@ namespace ClassLibrary1.Pieces
                     retVal |= attack.Fire(target);
             return retVal;
         }
-        void IAttacker.EndTurn()
+
+        double IBehavior.GetUpkeep()
+        {
+            return Attacks.Count(a => !a.Attacked) * Consts.WeaponRechargeUpkeep;
+        }
+        void IBehavior.EndTurn()
         {
             foreach (Attack attack in Attacks)
                 attack.EndTurn();

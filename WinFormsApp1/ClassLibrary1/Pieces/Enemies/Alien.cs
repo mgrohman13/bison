@@ -16,25 +16,19 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public Piece Piece => this;
 
-        private Alien(Game game, Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable) : base(game, tile)
+        private Alien(Game game, Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+            : base(game, tile)
         {
             this.killable = new Killable(this, killable);
             this.attacker = new Attacker(this, attacks);
             this.movable = new Movable(this, movable);
+            SetBehavior(this.killable, this.attacker, this.movable);
         }
         internal static Alien NewAlien(Game game, Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
         {
             Alien obj = new(game, tile, killable, attacks, movable);
             game.AddPiece(obj);
             return obj;
-        }
-
-        internal override void EndTurn()
-        {
-            base.EndTurn();
-            killable.EndTurn();
-            attacker.EndTurn();
-            movable.EndTurn();
         }
 
         public override string ToString()
@@ -55,10 +49,6 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             killable.Damage(ref damage, ref shieldDmg);
         }
-        void IKillable.EndTurn()
-        {
-            EndTurn();
-        }
 
         #endregion IKillable
 
@@ -72,10 +62,6 @@ namespace ClassLibrary1.Pieces.Enemies
         bool IAttacker.EnemyFire(IKillable killable)
         {
             return attacker.EnemyFire(killable);
-        }
-        void IAttacker.EndTurn()
-        {
-            EndTurn();
         }
 
         #endregion IAttacker
@@ -94,10 +80,6 @@ namespace ClassLibrary1.Pieces.Enemies
         bool IMovable.EnemyMove(Map.Tile to)
         {
             return movable.EnemyMove(to);
-        }
-        void IMovable.EndTurn()
-        {
-            EndTurn();
         }
 
         #endregion IMovable

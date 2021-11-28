@@ -53,9 +53,17 @@ namespace ClassLibrary1.Pieces
                 Piece.Game.RemovePiece(Piece);
         }
 
-        public void EndTurn()
+        double IBehavior.GetUpkeep()
         {
-            this._shieldCur = Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.ShielDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow);
+            return GetInc(false) * Consts.UpkeepPerShield;
+        }
+        void IBehavior.EndTurn()
+        {
+            this._shieldCur = GetInc(true);
+        }
+        private double GetInc(bool rand)
+        {
+            return Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.ShielDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow, rand);
         }
     }
 }

@@ -9,7 +9,7 @@ using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1.Pieces
 {
-    public interface IKillable
+    public interface IKillable : IBehavior
     {
         public Piece Piece { get; }
         public double HitsCur { get; }
@@ -20,9 +20,7 @@ namespace ClassLibrary1.Pieces
         public double ShieldMax { get; }
         public double ShieldLimit { get; }
 
-        internal void Damage(ref double damage, ref double shieldDmg);
-
-        public void EndTurn();
+        internal void Damage(ref double damage, ref double shieldDmg); 
 
         public class Values
         {

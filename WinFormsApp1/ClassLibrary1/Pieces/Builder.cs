@@ -10,13 +10,13 @@ using ClassLibrary1.Pieces.Players;
 namespace ClassLibrary1.Pieces
 {
     [Serializable]
-    public class Building : IBuilding
+    public class Builder : IBuilder
     {
         private readonly Piece _piece;
 
         public Piece Piece => _piece;
 
-        public Building(Piece piece)
+        public Builder(Piece piece)
         {
             this._piece = piece;
         }
@@ -26,12 +26,12 @@ namespace ClassLibrary1.Pieces
             Mech.NewMech(side.Game, tile, vision, killable, attacks, movable);
         }
 
-        void IBuilding.EndTurn()
+        double IBehavior.GetUpkeep()
         {
-            EndTurn();
+            return 0;
         }
-        internal void EndTurn()
-        {
+        void IBehavior.EndTurn()
+        { 
         }
     }
 }

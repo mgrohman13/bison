@@ -13,13 +13,16 @@ namespace ClassLibrary1.Pieces.Players
         private readonly double _vision;
         public double Vision => _vision;
 
-        internal PlayerPiece(Game game, Map.Tile tile, double vision) : base(game, game.Player, tile)
+        internal PlayerPiece(Game game, Map.Tile tile, double vision)
+            : base(game, game.Player, tile)
         {
             this._vision = vision;
         }
 
-        internal override void EndTurn()
+        public virtual void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
+            if (this is IBehavior behavior)
+                energyUpk += behavior.GetUpkeep();
         }
     }
 }

@@ -30,6 +30,7 @@ namespace ClassLibrary1
 
         public Game Game => side.Game;
         public Core Core => _core;
+        ReadOnlyCollection<Piece> ISide.Pieces => Pieces;
         public ReadOnlyCollection<Piece> Pieces => side.Pieces;
 
         void ISide.AddPiece(Piece piece)

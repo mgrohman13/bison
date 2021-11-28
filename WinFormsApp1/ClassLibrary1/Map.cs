@@ -24,6 +24,7 @@ namespace ClassLibrary1
 
         static Map()
         {
+            //static init to set NewTile
             Tile.GetDistance(0, 0, 0, 0);
         }
 
@@ -60,7 +61,14 @@ namespace ClassLibrary1
                 pair.Value.SetTile(NewTile(this, pair.Key.X, pair.Key.Y));
         }
 
-        public Tile GetTile(int x, int y)
+        public Tile GetVisibleTile(int x, int y)
+        {
+            Tile tile = GetTile(x, y);
+            if (tile != null && tile.Visible)
+                return tile;
+            return null;
+        }
+        internal Tile GetTile(int x, int y)
         {
             if (!CheckX(x) && !CheckY(y))
                 return null;

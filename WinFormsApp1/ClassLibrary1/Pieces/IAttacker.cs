@@ -11,14 +11,13 @@ using Attack = ClassLibrary1.Pieces.Attacker.Attack;
 
 namespace ClassLibrary1.Pieces
 {
-    public interface IAttacker
+    public interface IAttacker : IBehavior
     {
         public Piece Piece { get; }
         public ReadOnlyCollection<Attack> Attacks { get; }
 
         public bool Fire(IKillable killable);
-        internal bool EnemyFire(IKillable killable);
-        internal void EndTurn();
+        internal bool EnemyFire(IKillable killable); 
 
         public class Values
         {
