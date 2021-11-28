@@ -20,7 +20,7 @@ namespace ClassLibrary1.Pieces
         public double ShieldMax { get; }
         public double ShieldLimit { get; }
 
-        internal void Damage(double damage, double shieldDmg);
+        internal void Damage(ref double damage, ref double shieldDmg);
 
         public void EndTurn();
 

@@ -37,6 +37,9 @@ namespace WinFormsApp1
             this.lblInf3 = new System.Windows.Forms.Label();
             this.lbl3 = new System.Windows.Forms.Label();
             this.dgvAttacks = new System.Windows.Forms.DataGridView();
+            this.lblInf4 = new System.Windows.Forms.Label();
+            this.lbl4 = new System.Windows.Forms.Label();
+            this.lblTurn = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
             this.SuspendLayout();
             // 
@@ -118,10 +121,40 @@ namespace WinFormsApp1
             this.dgvAttacks.Size = new System.Drawing.Size(300, 225);
             this.dgvAttacks.TabIndex = 9;
             // 
+            // lblInf4
+            // 
+            this.lblInf4.AutoSize = true;
+            this.lblInf4.Location = new System.Drawing.Point(72, 114);
+            this.lblInf4.Name = "lblInf4";
+            this.lblInf4.Size = new System.Drawing.Size(62, 25);
+            this.lblInf4.TabIndex = 11;
+            this.lblInf4.Text = "lblInf4";
+            // 
+            // lbl4
+            // 
+            this.lbl4.AutoSize = true;
+            this.lbl4.Location = new System.Drawing.Point(7, 114);
+            this.lbl4.Name = "lbl4";
+            this.lbl4.Size = new System.Drawing.Size(41, 25);
+            this.lbl4.TabIndex = 10;
+            this.lbl4.Text = "lbl4";
+            // 
+            // lblTurn
+            // 
+            this.lblTurn.Location = new System.Drawing.Point(118, 0);
+            this.lblTurn.Name = "lblTurn";
+            this.lblTurn.Size = new System.Drawing.Size(182, 34);
+            this.lblTurn.TabIndex = 12;
+            this.lblTurn.Text = "lblTurn";
+            this.lblTurn.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // Info
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.lblTurn);
+            this.Controls.Add(this.lblInf4);
+            this.Controls.Add(this.lbl4);
             this.Controls.Add(this.dgvAttacks);
             this.Controls.Add(this.lblInf3);
             this.Controls.Add(this.lbl3);
@@ -140,7 +173,6 @@ namespace WinFormsApp1
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label lbl1;
         private System.Windows.Forms.Label lblInf1;
         private System.Windows.Forms.Label lblInf2;
@@ -149,5 +181,8 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lbl3;
         private System.Windows.Forms.DataGridView dgvAttacks;
         private System.Windows.Forms.Button btnEndTurn;
+        private System.Windows.Forms.Label lblInf4;
+        private System.Windows.Forms.Label lbl4;
+        private System.Windows.Forms.Label lblTurn;
     }
 }

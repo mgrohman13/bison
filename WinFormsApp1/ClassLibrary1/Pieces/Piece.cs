@@ -22,6 +22,7 @@ namespace ClassLibrary1.Pieces
         public Map.Tile Tile => _tile;
 
         public bool IsPlayer => Side != null && Side == Game.Player;
+        public bool IsEnemy => Side != null && Side == Game.Enemy;
 
         internal Piece(Game game, ISide side, Map.Tile tile)
         {

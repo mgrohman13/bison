@@ -18,6 +18,7 @@ namespace ClassLibrary1.Pieces
         public double MoveLimit { get; }
 
         public bool Move(Map.Tile to);
+        internal bool EnemyMove(Map.Tile to);
         public void EndTurn();
 
         public class Values

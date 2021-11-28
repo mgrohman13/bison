@@ -38,6 +38,11 @@ namespace ClassLibrary1.Pieces.Players
             movable.EndTurn();
         }
 
+        public override string ToString()
+        {
+            return "Mech";
+        }
+
         #region IKillable
 
         public double HitsCur => killable.HitsCur;
@@ -47,9 +52,9 @@ namespace ClassLibrary1.Pieces.Players
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
-        void IKillable.Damage(double damage, double shieldDmg)
+        void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
-            killable.Damage(damage, shieldDmg);
+            killable.Damage(ref damage, ref shieldDmg);
         }
         void IKillable.EndTurn()
         {
@@ -64,6 +69,10 @@ namespace ClassLibrary1.Pieces.Players
         public bool Fire(IKillable killable)
         {
             return attacker.Fire(killable);
+        }
+        bool IAttacker.EnemyFire(IKillable killable)
+        {
+            return false;
         }
         void IAttacker.EndTurn()
         {
@@ -82,6 +91,10 @@ namespace ClassLibrary1.Pieces.Players
         public bool Move(Map.Tile to)
         {
             return movable.Move(to);
+        }
+        bool IMovable.EnemyMove(Map.Tile to)
+        {
+            return false;
         }
 
         void IMovable.EndTurn()

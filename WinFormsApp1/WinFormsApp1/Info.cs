@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ClassLibrary1;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -26,7 +28,6 @@ namespace WinFormsApp1
         private void Button1_Click(object sender, EventArgs e)
         {
             Program.EndTurn();
-            Program.Form.Refresh();
         }
 
         internal void SetSelected(Tile selected)
@@ -36,17 +37,20 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
+            ShowAll(false);
+            this.lblTurn.Text = Program.Game.Turn.ToString();
+
             if (selected != null)
             {
-                ShowAll(false);
 
                 if (selected.Piece is IKillable killable)
                 {
                     lbl1.Show();
                     lblInf1.Show();
                     lbl1.Text = "Hits";
-                    lblInf1.Text = string.Format("{0} / {1} ({2})",
-                        Format(killable.HitsCur), Format(killable.HitsMax), FormatPct(killable.Armor));
+                    lblInf1.Text = string.Format("{0} / {1}{2}",
+                        Format(killable.HitsCur), Format(killable.HitsMax),
+                        killable.Armor > 0 ? string.Format(" ({0})", FormatPct(killable.Armor)) : "");
 
                     if (killable.ShieldInc > 0)
                     {
@@ -65,8 +69,17 @@ namespace WinFormsApp1
                     lblInf3.Text = string.Format("{0} / {1} / {2} +{3}",
                             Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.MoveInc));
                 }
+                if (selected.Piece is PlayerPiece playerPiece)
+                {
+                    lbl4.Show();
+                    lblInf4.Show();
+                    lbl4.Text = "Vision";
+                    lblInf4.Text = string.Format("{0}", Format(playerPiece.Vision));
+                }
                 if (selected.Piece is IAttacker attacker)
                 {
+                    dgvAttacks.Show();
+
                     dgvAttacks.DataSource = attacker.Attacks;
                     dgvAttacks.Columns["Range"].DisplayIndex = 0;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
@@ -83,14 +96,13 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["Dev"].DisplayIndex = 4;
                     dgvAttacks.Columns["Dev"].HeaderText = "RNG";
                     dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P1";
+                    dgvAttacks.Columns["Attacked"].DisplayIndex = 5;
+                    dgvAttacks.Columns["Attacked"].HeaderText = "USED";
 
-                    dgvAttacks.MaximumSize = new Size(this.Width, this.Height - this.lbl3.Location.Y - this.lbl3.Height);
+                    int labelsY = this.Controls.OfType<Label>().Select(lbl => lbl.Visible).Max(lbl => this.lbl3.Location.Y + this.lbl3.Height);
+                    dgvAttacks.MaximumSize = new Size(this.Width, this.Height - labelsY);
                     dgvAttacks.Size = dgvAttacks.PreferredSize;
                     dgvAttacks.Location = new Point(0, this.Height - dgvAttacks.Height);
-
-                    //Debug.WriteLine(dgvAttacks.MaximumSize);
-                    //Debug.WriteLine(dgvAttacks.Location);
-                    //Debug.WriteLine(dgvAttacks.Height);
                 }
             }
 
@@ -108,11 +120,12 @@ namespace WinFormsApp1
 
         private void ShowAll(bool show)
         {
-            foreach (Label label in this.Controls.OfType<Label>())
+            foreach (Control label in this.Controls.OfType<Label>().OfType<Control>().Concat(new Control[] { dgvAttacks }))
                 if (show)
                     label.Show();
                 else
                     label.Hide();
+            this.lblTurn.Show();
         }
     }
 }

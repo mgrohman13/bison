@@ -37,6 +37,11 @@ namespace ClassLibrary1.Pieces.Enemies
             movable.EndTurn();
         }
 
+        public override string ToString()
+        {
+            return "Alien";
+        }
+
         #region IKillable
 
         public double HitsCur => killable.HitsCur;
@@ -46,9 +51,9 @@ namespace ClassLibrary1.Pieces.Enemies
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
-        void IKillable.Damage(double damage, double shieldDmg)
+        void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
-            killable.Damage(damage, shieldDmg);
+            killable.Damage(ref damage, ref shieldDmg);
         }
         void IKillable.EndTurn()
         {
@@ -64,9 +69,13 @@ namespace ClassLibrary1.Pieces.Enemies
         {
             return attacker.Fire(killable);
         }
+        bool IAttacker.EnemyFire(IKillable killable)
+        {
+            return attacker.EnemyFire(killable);
+        }
         void IAttacker.EndTurn()
         {
-            throw new NotImplementedException();
+            EndTurn();
         }
 
         #endregion IAttacker
@@ -81,6 +90,10 @@ namespace ClassLibrary1.Pieces.Enemies
         public bool Move(Map.Tile to)
         {
             return movable.Move(to);
+        }
+        bool IMovable.EnemyMove(Map.Tile to)
+        {
+            return movable.EnemyMove(to);
         }
         void IMovable.EndTurn()
         {

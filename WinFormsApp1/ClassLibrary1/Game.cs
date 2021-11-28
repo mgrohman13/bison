@@ -22,20 +22,26 @@ namespace ClassLibrary1
         public readonly Map Map;
         public readonly Player Player;
         public readonly Enemy Enemy;
+
+        private int _turn;
+        public int Turn => _turn;
+
         public Game()
         {
             this.Map = new Map(this);
             this.Player = new Player(this);
             this.Enemy = new Enemy(this);
 
-            Core.NewCore(this);
+            this._turn = 0;
+
+            Player.CreateCore();
         }
 
         public void EndTurn()
         {
             Player.EndTurn();
 
-            if (Game.Rand.Bool(.13))
+            while (Game.Rand.Bool(.13))
             {
                 Core core = Player.Pieces.OfType<Core>().First();
 
@@ -45,12 +51,15 @@ namespace ClassLibrary1
                     tile = Map.GetTile(core.Tile.X + Game.Rand.GaussianInt(3), core.Tile.Y + Game.Rand.GaussianInt(3));
                 } while (tile == null || tile.Piece != null);
 
-                core.Build(Player, tile, Game.Rand.GaussianOE(6.5, .13, .13, 1), GenKillablealues(), GenAttacks(), GenMovableValues());
+                core.Build(Player, tile, Game.Rand.GaussianOE(6.5, .13, .13, 1), GenKillable(), GenAttacker(), GenMovable());
             }
 
             Enemy.PlayTurn();
 
-            if (Game.Rand.Bool(.169))
+            double chance = (Turn + 13) / 39.0 - .21;
+            if (chance > .5)
+                chance /= (chance + .5);
+            while (Game.Rand.Bool(chance))
             {
                 Map.Tile tile;
                 do
@@ -58,14 +67,15 @@ namespace ClassLibrary1
                     tile = Map.GetTile(Game.Rand.GaussianInt(26), Game.Rand.GaussianInt(26));
                 } while (tile == null || tile.Piece != null);
 
-
-                Alien.NewAlien(this, tile, GenKillablealues(), GenAttacks(), GenMovableValues());
+                Alien.NewAlien(this, tile, GenKillable(), GenAttacker(), GenMovable());
             }
+
+            _turn++;
         }
 
-        private static IKillable.Values GenKillablealues()
+        private static IKillable.Values GenKillable()
         {
-            double hitsMax = Game.Rand.GaussianOE(13, .13, .13, 1);
+            double hitsMax = Game.Rand.GaussianOE(39, .13, .13, 1);
 
             double armor = 0;
 
@@ -78,29 +88,29 @@ namespace ClassLibrary1
 
             if (Game.Rand.Bool())
             {
-                shieldInc = Game.Rand.GaussianOE(2.1, .13, .13);
+                shieldInc = Game.Rand.GaussianOE(1.3, .13, .13);
                 shieldMax = Game.Rand.GaussianOE(shieldInc * 13, .13, .13, shieldInc);
                 shieldLimit = Game.Rand.GaussianOE(shieldInc * 13 + shieldMax, .13, .13, shieldMax);
             }
 
             return new(hitsMax, armor, shieldInc, shieldMax, shieldLimit);
         }
-        private static List<IAttacker.Values> GenAttacks()
+        private static List<IAttacker.Values> GenAttacker()
         {
             int num = Game.Rand.GaussianOEInt(1.69, .13, .13, 1);
             List<IAttacker.Values> attacks = new(num);
             for (int a = 0; a < num; a++)
             {
-                double damage = Game.Rand.GaussianOE(1.3, .13, .13);
+                double damage = Game.Rand.GaussianOE(3.9, .13, .13);
                 double armorPierce = Game.Rand.Weighted(.9, .13);
                 double shieldPierce = Game.Rand.Weighted(.9, .13);
                 double dev = Game.Rand.Weighted(.9, .13);
-                double range = Game.Rand.GaussianOE(2.6, .13, .13, 1);
+                double range = Game.Rand.GaussianOE(5.2, .13, .13, 1);
                 attacks.Add(new(damage, armorPierce, shieldPierce, dev, range));
             }
             return attacks;
         }
-        private static IMovable.Values GenMovableValues()
+        private static IMovable.Values GenMovable()
         {
             double move = Game.Rand.GaussianOE(2.6, .13, .13, 1);
             double max = Game.Rand.GaussianOE(move * 2, .13, .13, move);

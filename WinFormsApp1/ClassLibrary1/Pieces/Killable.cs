@@ -35,24 +35,22 @@ namespace ClassLibrary1.Pieces
         public double ShieldMax => values.ShieldMax;
         public double ShieldLimit => values.ShieldLimit;
 
-        void IKillable.Damage(double damage, double shieldDmg)
+        void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
-            Damage(damage, shieldDmg);
+            Damage(ref damage, ref shieldDmg);
         }
-        internal void Damage(double damage, double shieldDmg)
+        internal void Damage(ref double damage, ref double shieldDmg)
         {
             this._shieldCur -= shieldDmg;
             if (ShieldCur < 0)
             {
+                shieldDmg += ShieldCur;
                 damage -= ShieldCur;
                 this._shieldCur = 0;
             }
             this._hitsCur -= damage;
             if (HitsCur < 0)
                 Piece.Game.RemovePiece(Piece);
-
-            Debug.WriteLine("damage: " + damage);
-            Debug.WriteLine("shieldDmg: " + shieldDmg);
         }
 
         public void EndTurn()

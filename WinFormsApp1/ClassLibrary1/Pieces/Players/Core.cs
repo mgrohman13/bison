@@ -33,6 +33,11 @@ namespace ClassLibrary1.Pieces.Players
             building.EndTurn();
         }
 
+        public override string ToString()
+        {
+            return "Core";
+        }
+
         #region IKillable
 
         public double HitsCur => killable.HitsCur;
@@ -42,9 +47,9 @@ namespace ClassLibrary1.Pieces.Players
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
-        void IKillable.Damage(double damage, double shieldDmg)
+        void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
-            killable.Damage(damage, shieldDmg);
+            killable.Damage(ref damage, ref shieldDmg );
         }
         void IKillable.EndTurn()
         {

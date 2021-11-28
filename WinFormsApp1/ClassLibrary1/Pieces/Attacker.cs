@@ -28,10 +28,20 @@ namespace ClassLibrary1.Pieces
                 this._attacks.Add(new Attack(Piece, attacks[a]));
         }
 
-        public bool Fire(IKillable target)
+        bool IAttacker.Fire(IKillable target)
+        {
+            bool fire = (Piece.IsPlayer && target != null && target.Piece.IsEnemy && Piece.Game.Map.Visible(target.Piece.Tile));
+            return Fire(fire, target);
+        }
+        bool IAttacker.EnemyFire(IKillable target)
+        {
+            bool fire = (Piece.IsEnemy && target != null && target.Piece.IsPlayer);
+            return Fire(fire, target);
+        }
+        private bool Fire(bool fire, IKillable target)
         {
             bool retVal = false;
-            if (Piece.IsPlayer && target != null && Piece.Game.Map.Visible(target.Piece.Tile))
+            if (fire)
                 foreach (Attack attack in Game.Rand.Iterate(Attacks))
                     retVal |= attack.Fire(target);
             return retVal;
@@ -80,7 +90,10 @@ namespace ClassLibrary1.Pieces
                     damage = Rand(damage);
                     shieldDmg = Rand(shieldDmg);
 
-                    target.Damage(damage, shieldDmg);
+                    target.Damage(ref damage, ref shieldDmg);
+
+                    Debug.WriteLine("{0} -> {1} {2:0.0} -{3:0.0}{4}", this.Piece, target.Piece, target.HitsCur, damage,
+                        shieldDmg > 0 ? string.Format(" , {0:0.0} -{1:0.0}", target.ShieldCur, shieldDmg) : "");
 
                     this._attacked = true;
                     return true;

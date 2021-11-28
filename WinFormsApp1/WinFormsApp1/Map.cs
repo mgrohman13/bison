@@ -38,7 +38,9 @@ namespace WinFormsApp1
 
         public Map()
         {
-            InitializeComponent();
+            InitializeComponent(); 
+            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
+                ControlStyles.AllPaintingInWmPaint, true);
             this.ResizeRedraw = true;
 
             if (Program.Game != null)
@@ -79,7 +81,7 @@ namespace WinFormsApp1
                             if (SelTile != null)
                             {
                                 double moveRange = (SelTile.Piece is IMovable movable ? movable.MoveCur : 0);
-                                double attRange = (SelTile.Piece is IAttacker attacker ? attacker.Attacks.Max(a => a.Range) : 0);
+                                double attRange = (SelTile.Piece is IAttacker attacker ? attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range) : 0);
 
                                 if (tile == SelTile)
                                     pen = pens[4];
@@ -137,6 +139,7 @@ namespace WinFormsApp1
             int y = (int)((e.Y - 1) / yScale) + mapCoords.Y;
 
             Tile clicked = Program.Game.Map.GetTile(x, y);
+            Tile orig = SelTile;
 
             if (e.Button == MouseButtons.Left)
             {
@@ -154,6 +157,15 @@ namespace WinFormsApp1
                     if (attacker.Fire(killable))
                         SelTile = clicked;
                 }
+            }
+
+            if (SelTile == orig)
+            {
+                if (SelTile == clicked)
+                    Program.Moved.Add(SelTile.Piece);
+                var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).Where(p => SelTile != p.Tile);
+                if (moveLeft.Any())
+                    SelTile = moveLeft.First().Tile;
             }
         }
     }

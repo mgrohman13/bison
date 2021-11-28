@@ -15,6 +15,7 @@ namespace WinFormsApp1
         public Main()
         {
             InitializeComponent();
+            Refresh();
         }
 
         public Map MapMain => mapMain;
@@ -29,11 +30,8 @@ namespace WinFormsApp1
 
         private void Main_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
-            {
-                Program.EndTurn();
-                Refresh();
-            }
+            if (e.KeyCode == Keys.Enter) 
+                Program.EndTurn(); 
         }
     }
 }

@@ -17,6 +17,7 @@ namespace ClassLibrary1.Pieces
         public ReadOnlyCollection<Attack> Attacks { get; }
 
         public bool Fire(IKillable killable);
+        internal bool EnemyFire(IKillable killable);
         internal void EndTurn();
 
         public class Values

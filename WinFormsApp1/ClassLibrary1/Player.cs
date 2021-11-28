@@ -15,20 +15,28 @@ namespace ClassLibrary1
     {
         private readonly ISide side;
 
+        private Core _core;
+
         internal Player(Game game)
         {
             this.side = new Side(game);
+        }
+        internal void CreateCore()
+        {
+            this._core = Core.NewCore(Game);
         }
 
         #region ISide
 
         public Game Game => side.Game;
+        public Core Core => _core;
         public ReadOnlyCollection<Piece> Pieces => side.Pieces;
 
         void ISide.AddPiece(Piece piece)
         {
             AddPiece(piece);
         }
+
         internal void AddPiece(Piece piece)
         {
             side.AddPiece(piece);

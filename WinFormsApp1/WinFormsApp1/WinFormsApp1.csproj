@@ -10,4 +10,10 @@
     <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="MattUtil">
+      <HintPath>..\..\MattUtil\MattUtil\bin\Release\MattUtil.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

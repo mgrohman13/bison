@@ -32,9 +32,19 @@ namespace ClassLibrary1.Pieces
         public double MoveMax => values.MoveMax;
         public double MoveLimit => values.MoveLimit;
 
-        public bool Move(Map.Tile to)
+        bool IMovable.Move(Map.Tile to)
         {
-            if (Piece.IsPlayer && to != null && Piece.Game.Map.Visible(to) && to.Piece == null)
+            bool move = (Piece.IsPlayer && to != null && to.Piece == null && Piece.Game.Map.Visible(to));
+            return Move(move, to);
+        }
+        bool IMovable.EnemyMove(Map.Tile to)
+        {
+            bool move = (Piece.IsEnemy && to != null && to.Piece == null);
+            return Move(move, to);
+        }
+        private bool Move(bool Move, Map.Tile to)
+        {
+            if (Move && Piece.Tile != to)
             {
                 double dist = Piece.Tile.GetDistance(to);
                 if (dist <= MoveCur)
