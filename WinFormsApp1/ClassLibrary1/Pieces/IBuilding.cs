@@ -11,7 +11,8 @@ namespace ClassLibrary1.Pieces
 {
     public interface IBuilding
     {
-        public void Build(Player player, Map.Tile tile, double vision, double moveInc, double moveMax, double moveLimit);
+        public Piece Piece { get; }
+        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable);
         internal void EndTurn();
     }
 }

@@ -36,36 +36,38 @@ namespace WinFormsApp1
             // 
             // infoMain
             // 
-            this.infoMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.infoMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.infoMain.Location = new System.Drawing.Point(3112, 306);
+            this.infoMain.Location = new System.Drawing.Point(1398, 306);
             this.infoMain.Name = "infoMain";
-            this.infoMain.Size = new System.Drawing.Size(300, 1824);
+            this.infoMain.Size = new System.Drawing.Size(500, 718);
             this.infoMain.TabIndex = 1;
             // 
             // mapMain
             // 
-            this.mapMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.mapMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.mapMain.Location = new System.Drawing.Point(0, 0);
             this.mapMain.Name = "mapMain";
-            this.mapMain.Size = new System.Drawing.Size(3106, 2130);
+            this.mapMain.SelTile = null;
+            this.mapMain.Size = new System.Drawing.Size(1392, 1024);
             this.mapMain.TabIndex = 2;
             // 
             // mapMini
             // 
             this.mapMini.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mapMini.Location = new System.Drawing.Point(3112, 0);
+            this.mapMini.Location = new System.Drawing.Point(1398, 0);
             this.mapMini.Name = "mapMini";
-            this.mapMini.Size = new System.Drawing.Size(300, 300);
+            this.mapMini.SelTile = null;
+            this.mapMini.Size = new System.Drawing.Size(500, 300);
             this.mapMini.TabIndex = 3;
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(3412, 2130);
+            this.ClientSize = new System.Drawing.Size(1898, 1024);
             this.Controls.Add(this.mapMini);
             this.Controls.Add(this.mapMain);
             this.Controls.Add(this.infoMain);

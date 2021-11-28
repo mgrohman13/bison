@@ -16,7 +16,8 @@ namespace ClassLibrary1
         public ReadOnlyCollection<Piece> Pieces { get; }
 
         internal void AddPiece(Piece piece);
+        internal void RemovePiece(Piece piece); 
 
-        public void EndTurn();
+        internal void EndTurn();
     }
 }

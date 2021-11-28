@@ -14,14 +14,16 @@ namespace ClassLibrary1.Pieces
     {
         private readonly Piece _piece;
 
+        public Piece Piece => _piece;
+
         public Building(Piece piece)
         {
             this._piece = piece;
         }
 
-        public void Build(Player player, Map.Tile tile, double vision, double moveInc, double moveMax, double moveLimit)
+        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
         {
-            Mech.NewMech(player, tile, vision, moveInc, moveMax, moveLimit);
+            Mech.NewMech(side.Game, tile, vision, killable, attacks, movable);
         }
 
         void IBuilding.EndTurn()

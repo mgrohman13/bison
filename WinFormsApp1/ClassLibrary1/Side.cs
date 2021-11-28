@@ -11,7 +11,7 @@ using ClassLibrary1.Pieces.Players;
 namespace ClassLibrary1
 {
     [Serializable]
-    class Side : ISide
+    public class Side : ISide
     {
         private readonly Game _game;
         private readonly List<Piece> _pieces;
@@ -30,8 +30,16 @@ namespace ClassLibrary1
         {
             this._pieces.Add(piece);
         }
+        void ISide.RemovePiece(Piece piece)
+        {
+            RemovePiece(piece);
+        }
+        internal void RemovePiece(Piece piece)
+        {
+            this._pieces.Remove(piece);
+        }
 
-        public void EndTurn()
+        void ISide.EndTurn()
         {
             foreach (Piece piece in Pieces)
                 piece.EndTurn();

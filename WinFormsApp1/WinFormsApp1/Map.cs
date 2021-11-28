@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ClassLibrary1;
 using ClassLibrary1.Pieces;
+using ClassLibrary1.Pieces.Enemies;
+using ClassLibrary1.Pieces.Players;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -19,15 +21,18 @@ namespace WinFormsApp1
         public Rectangle mapCoords;
 
         private Tile _selected;
-        public Tile Selected
+        public Tile SelTile
         {
             get { return _selected; }
             set
             {
                 _selected = value;
-                Program.Form.Info.SetSelected(Selected);
-                mapCoords = Program.Game.Map.GameRect();
-                Program.Form.Refresh();
+                if (Program.Form != null)
+                {
+                    Program.Form.Info.SetSelected(SelTile);
+                    mapCoords = Program.Game.Map.GameRect();
+                    Program.Form.Refresh();
+                }
             }
         }
 
@@ -46,11 +51,12 @@ namespace WinFormsApp1
 
             if (Program.Game != null)
             {
-                Pen thick = new(Color.Black, 3f);
+                //Pen thick = new(Color.Black, 3f);
 
                 Scale(out float xScale, out float yScale);
 
-                List<RectangleF> grid = new();
+                Pen[] pens = new Pen[] { Pens.Black, new Pen(Color.Green, 3f), new Pen(Color.Red, 3f), new Pen(Color.Blue, 3f), new Pen(Color.Black, 3f) };
+                Dictionary<Pen, List<RectangleF>> grid = new();
                 for (int a = 0; a < mapCoords.Width; a++)
                 {
                     int x = mapCoords.X + a;
@@ -61,33 +67,48 @@ namespace WinFormsApp1
                         RectangleF rectangleF = new(a * xScale + padding, b * yScale + padding, xScale, yScale);
                         if (Program.Game.Map.Visible(x, y))
                         {
+                            Pen pen = pens[0];
                             RectangleF rect = rectangleF;
-                            if (tile.Piece != null)
+                            if (tile.Piece is Core)
                                 e.Graphics.FillRectangle(Brushes.Blue, rect);
-                            grid.Add(rect);
-                        }
-                        if (Selected != null)
-                        {
-                            if (Selected.Piece is IMovable movable)
+                            else if (tile.Piece is Mech)
+                                e.Graphics.FillRectangle(Brushes.Green, rect);
+                            else if (tile.Piece is Alien)
+                                e.Graphics.FillRectangle(Brushes.Red, rect);
+
+                            if (SelTile != null)
                             {
-                                if (Selected.Piece.Tile.GetTilesInRange(movable.MoveCur).Contains(tile))
-                                    e.Graphics.DrawRectangles(thick, new RectangleF[] { rectangleF });
+                                double moveRange = (SelTile.Piece is IMovable movable ? movable.MoveCur : 0);
+                                double attRange = (SelTile.Piece is IAttacker attacker ? attacker.Attacks.Max(a => a.Range) : 0);
+
+                                if (tile == SelTile)
+                                    pen = pens[4];
+                                else if (moveRange > 1 || attRange > 1)
+                                    if (SelTile.Piece.Tile.GetTilesInRange(Math.Min(moveRange, attRange)).Contains(tile))
+                                        pen = pens[3];
+                                    else if (SelTile.Piece.Tile.GetTilesInRange(Math.Max(moveRange, attRange)).Contains(tile))
+                                        if (moveRange > attRange)
+                                            pen = pen = pens[1];
+                                        else
+                                            pen = pen = pens[2];
                             }
-                            else if (tile == Selected)
-                            {
-                                e.Graphics.DrawRectangles(thick, new RectangleF[] { rectangleF });
-                            }
+
+                            if (!grid.TryGetValue(pen, out List<RectangleF> list))
+                                grid.Add(pen, list = new List<RectangleF>());
+                            list.Add(rect);
                         }
                     }
                 }
 
-                e.Graphics.DrawRectangles(Pens.Black, grid.ToArray());
+                foreach (var pair in grid)
+                    e.Graphics.DrawRectangles(pair.Key, pair.Value.ToArray());
 
                 float left = (Program.Game.Map.left - mapCoords.X) * xScale;
                 float right = (Program.Game.Map.right - mapCoords.X + 1) * xScale;
                 float up = (Program.Game.Map.up - mapCoords.Y + 1) * yScale;
                 float down = (Program.Game.Map.down - mapCoords.Y) * yScale;
 
+                Pen thick = new(Color.Black, 3f);
                 e.Graphics.DrawLine(thick, left, 0, left, down);
                 e.Graphics.DrawLine(thick, 0, down, left, down);
                 e.Graphics.DrawLine(thick, right, 0, right, down);
@@ -119,13 +140,20 @@ namespace WinFormsApp1
 
             if (e.Button == MouseButtons.Left)
             {
-                Selected = clicked;
+                SelTile = clicked;
             }
-            else if (e.Button == MouseButtons.Right)
+            else if (e.Button == MouseButtons.Right && SelTile != null && clicked != null)
             {
-                if (Selected != null && Selected.Piece is IMovable movable)
+                if (SelTile.Piece is IMovable movable)
+                {
                     if (movable.Move(clicked))
-                        Selected = clicked;
+                        SelTile = clicked;
+                }
+                if (SelTile.Piece is IAttacker attacker && clicked.Piece is IKillable killable)
+                {
+                    if (attacker.Fire(killable))
+                        SelTile = clicked;
+                }
             }
         }
     }

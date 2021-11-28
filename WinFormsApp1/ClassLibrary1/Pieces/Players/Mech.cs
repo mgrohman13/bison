@@ -1,36 +1,76 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using MattUtil;
-using ClassLibrary1.Pieces; 
+using ClassLibrary1.Pieces;
 
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Mech : PlayerPiece, IMovable
+    public class Mech : PlayerPiece, IKillable, IAttacker, IMovable
     {
+        private readonly IKillable killable;
+        private readonly IAttacker attacker;
         private readonly IMovable movable;
 
-        private Mech(Player player, Map.Tile tile, double vision, double moveInc, double moveMax, double moveLimit) : base(player.Game, tile, vision)
+        public Piece Piece => this;
+
+        private Mech(Game game, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable) : base(game, tile, vision)
         {
-            movable = new Movable(this, moveInc, moveMax, moveLimit);
+            this.killable = new Killable(this, killable);
+            this.attacker = new Attacker(this, attacks);
+            this.movable = new Movable(this, movable);
         }
-        internal static Mech NewMech(Player player, Map.Tile tile, double vision, double moveInc, double moveMax, double moveLimit)
+        internal static Mech NewMech(Game game, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
         {
-            Mech obj = new(player, tile, vision, moveInc, moveMax, moveLimit);
-            player.Game.AddPiece(obj);
+            Mech obj = new(game, tile, vision, killable, attacks, movable);
+            game.AddPiece(obj);
             return obj;
         }
-        void IMovable.EndTurn()
-        {
-            EndTurn();
-        }
+
         internal override void EndTurn()
         {
             base.EndTurn();
+            killable.EndTurn();
+            attacker.EndTurn();
             movable.EndTurn();
         }
+
+        #region IKillable
+
+        public double HitsCur => killable.HitsCur;
+        public double HitsMax => killable.HitsMax;
+        public double Armor => killable.Armor;
+        public double ShieldCur => killable.ShieldCur;
+        public double ShieldInc => killable.ShieldInc;
+        public double ShieldMax => killable.ShieldMax;
+        public double ShieldLimit => killable.ShieldLimit;
+        void IKillable.Damage(double damage, double shieldDmg)
+        {
+            killable.Damage(damage, shieldDmg);
+        }
+        void IKillable.EndTurn()
+        {
+            EndTurn();
+        }
+
+        #endregion IKillable
+
+        #region IAttacker
+
+        public ReadOnlyCollection<Attacker.Attack> Attacks => attacker.Attacks;
+        public bool Fire(IKillable killable)
+        {
+            return attacker.Fire(killable);
+        }
+        void IAttacker.EndTurn()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion IAttacker
 
         #region IMovable
 
@@ -42,6 +82,11 @@ namespace ClassLibrary1.Pieces.Players
         public bool Move(Map.Tile to)
         {
             return movable.Move(to);
+        }
+
+        void IMovable.EndTurn()
+        {
+            EndTurn();
         }
 
         #endregion IMovable

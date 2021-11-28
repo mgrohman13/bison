@@ -93,6 +93,10 @@ namespace ClassLibrary1
                 }
             return new System.Drawing.Rectangle(x - 13, y - 13, w - x + 27, h - y + 27);
         }
+        public bool Visible(Tile tile)
+        {
+            return Visible(tile.X, tile.Y);
+        }
         public bool Visible(int x, int y)
         {
             bool xIn = CheckX(x);

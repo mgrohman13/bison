@@ -33,8 +33,25 @@ namespace ClassLibrary1
         {
             side.AddPiece(piece);
         }
+        void ISide.RemovePiece(Piece piece)
+        {
+            RemovePiece(piece);
+        }
+        internal void RemovePiece(Piece piece)
+        {
+            side.RemovePiece(piece);
+        }
 
-        public void EndTurn()
+        internal void PlayTurn()
+        {
+            this.EndTurn();
+        }
+
+        void ISide.EndTurn()
+        {
+            EndTurn();
+        }
+        internal void EndTurn()
         {
             side.EndTurn();
         }

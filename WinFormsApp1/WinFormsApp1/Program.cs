@@ -25,5 +25,10 @@ namespace WinFormsApp1
 
             Application.Run(Form);
         }
+
+        internal static void EndTurn()
+        {
+            Game.EndTurn();
+        }
     }
 }

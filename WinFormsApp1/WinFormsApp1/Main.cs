@@ -31,7 +31,7 @@ namespace WinFormsApp1
         {
             if (e.KeyCode == Keys.Enter)
             {
-                Program.Game.Player.EndTurn();
+                Program.EndTurn();
                 Refresh();
             }
         }
