@@ -79,8 +79,8 @@ namespace ClassLibrary1
 
             Enemy.PlayTurn();
 
-            double difficulty = (Turn + 39) / 78;
-            double chance = difficulty / 1.69;
+            double difficulty = (Turn + 52.0) / 52.0;
+            double chance = difficulty / 2.1;
             if (chance < 1)
                 chance *= chance;
             if (chance > .5)

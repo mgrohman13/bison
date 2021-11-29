@@ -58,7 +58,7 @@ namespace ClassLibrary1.Pieces
         }
         double IBehavior.GetUpkeep()
         {
-            return GetInc(false) * Consts.UpkeepPerMove;
+            return (GetInc(false) - MoveCur) * Consts.UpkeepPerMove;
         }
         void IBehavior.EndTurn()
         {

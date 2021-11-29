@@ -62,7 +62,7 @@ namespace ClassLibrary1.Pieces.Players
             ap -= 1;
             sp -= 1;
 
-            double move = 26 * movable.MoveInc / 1 + 2 * movable.MoveMax / 2.1 + 1 * movable.MoveLimit / 3.9;
+            double move = 26 * movable.MoveInc / 1.0 + 2 * movable.MoveMax / 2.1 + 1 * movable.MoveLimit / 3.9;
             move /= 26 + 2 + 1;
 
             hp /= Math.Pow(researchMult, .9);

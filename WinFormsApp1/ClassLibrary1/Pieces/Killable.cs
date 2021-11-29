@@ -55,7 +55,7 @@ namespace ClassLibrary1.Pieces
 
         double IBehavior.GetUpkeep()
         {
-            return GetInc(false) * Consts.UpkeepPerShield;
+            return (GetInc(false) - ShieldCur) * Consts.UpkeepPerShield;
         }
         void IBehavior.EndTurn()
         {

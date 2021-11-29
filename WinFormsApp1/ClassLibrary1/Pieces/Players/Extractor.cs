@@ -53,6 +53,10 @@ namespace ClassLibrary1.Pieces.Players
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
             Resource.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
         }
+        internal override void EndTurn()
+        {
+            Resource.Extract();
+        }
 
         public override string ToString()
         {
