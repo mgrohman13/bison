@@ -1,0 +1,35 @@
+undo
+repair
+hp% reduce stats
+	resilience stat?
+number pieces
+game end on core kill
+stop attacks when dead
+hide edges until seen
+
+increase diffcty faster
+increase extractor costs
+	also based on value
+decrease core energy to 250
+
+clean up rsrch mult usage
+order ships by position for prev/next
+scrolling/panning
+	keys to jump to cardinal dir edges
+fix end turn panel
+shiow actual mov/shld inc values
+show enemy move + range
+min/max range
+mouse over attack to see specific range
+mouse over move spot to see range from there
+show move range that gets you under max?
+save game
+
+fog
+build factories/mobile factory
+defensive structures
+terrain
+	blockers
+	rubble/debris
+		harvest
+experience

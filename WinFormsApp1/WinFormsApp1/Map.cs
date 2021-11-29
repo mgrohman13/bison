@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -50,13 +51,26 @@ namespace WinFormsApp1
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            //int dim = Math.Min(this.Width, this.Height);
             e.Graphics.Clear(Color.White);
+            //e.Graphics.SetClip(new RectangleF(0, 0, dim, dim));
 
             if (Program.Game != null)
             {
-                //Pen thick = new(Color.Black, 3f);
-
                 Scale(out float xScale, out float yScale);
+
+                HashSet<Tile> minRange = new(), maxRange = new();
+                double moveRange = 0, attRange = 0;
+                if (SelTile != null)
+                {
+                    moveRange = (SelTile.Piece is IMovable movable ? movable.MoveCur : 0);
+                    attRange = (SelTile.Piece is IAttacker attacker ? attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range) : 0);
+                    if (moveRange > 1 || attRange > 1)
+                    {
+                        minRange = SelTile.Piece.Tile.GetTilesInRange(Math.Min(moveRange, attRange)).ToHashSet();
+                        maxRange = SelTile.Piece.Tile.GetTilesInRange(Math.Max(moveRange, attRange)).ToHashSet();
+                    }
+                }
 
                 Pen[] pens = new Pen[] { Pens.Black, new Pen(Color.Green, 3f), new Pen(Color.Red, 3f), new Pen(Color.Blue, 3f), new Pen(Color.Black, 3f) };
                 Dictionary<Pen, List<RectangleF>> grid = new();
@@ -73,7 +87,8 @@ namespace WinFormsApp1
                             RectangleF rect = new(a * xScale + padding, b * yScale + padding, xScale, yScale);
 
                             Resource resource = tile.Piece as Resource;
-                            if (resource == null && tile.Piece is Extractor extractor)
+                            Extractor extractor = tile.Piece as Extractor;
+                            if (resource == null && extractor != null)
                                 resource = extractor.Resource;
                             if (tile.Piece is Alien)
                                 e.Graphics.FillRectangle(Brushes.Red, rect);
@@ -84,29 +99,27 @@ namespace WinFormsApp1
                             else if (tile.Piece is Core)
                                 e.Graphics.FillRectangle(Brushes.Blue, rect);
                             else if (resource != null)
+                            {
                                 if (resource is Biomass)
-                                    e.Graphics.FillRectangle(Brushes.Yellow, rect);
+                                    e.Graphics.FillRectangle(Brushes.Orange, rect);
                                 else if (resource is Metal)
-                                    e.Graphics.FillRectangle(Brushes.Black, rect);
+                                    e.Graphics.FillRectangle(Brushes.Gray, rect);
                                 else if (resource is Artifact)
                                     e.Graphics.FillRectangle(Brushes.Magenta, rect);
-
-                            if (SelTile != null)
-                            {
-                                double moveRange = (SelTile.Piece is IMovable movable ? movable.MoveCur : 0);
-                                double attRange = (SelTile.Piece is IAttacker attacker ? attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range) : 0);
-
-                                if (tile == SelTile)
-                                    pen = pens[4];
-                                else if (moveRange > 1 || attRange > 1)
-                                    if (SelTile.Piece.Tile.GetTilesInRange(Math.Min(moveRange, attRange)).Contains(tile))
-                                        pen = pens[3];
-                                    else if (SelTile.Piece.Tile.GetTilesInRange(Math.Max(moveRange, attRange)).Contains(tile))
-                                        if (moveRange > attRange)
-                                            pen = pen = pens[1];
-                                        else
-                                            pen = pen = pens[2];
+                                if (extractor != null)
+                                    e.Graphics.FillEllipse(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
                             }
+
+                            if (tile == SelTile)
+                                pen = pens[4];
+                            else if (moveRange > 1 || attRange > 1)
+                                if (minRange.Contains(tile))
+                                    pen = pens[3];
+                                else if (maxRange.Contains(tile))
+                                    if (moveRange > attRange)
+                                        pen = pens[1];
+                                    else
+                                        pen = pens[2];
 
                             if (!grid.TryGetValue(pen, out List<RectangleF> list))
                                 grid.Add(pen, list = new List<RectangleF>());

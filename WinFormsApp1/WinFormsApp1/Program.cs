@@ -52,9 +52,12 @@ namespace WinFormsApp1
             if (moveLeft.Count > 0)
             {
                 int cur = Form.MapMain.SelTile == null ? -1 : moveLeft.IndexOf(Form.MapMain.SelTile.Piece);
-                if (dir && ++cur >= moveLeft.Count)
-                    cur = 0;
-                else if (--cur <= 0)
+                if (dir)
+                {
+                    if (++cur >= moveLeft.Count)
+                        cur = 0;
+                }
+                else if (--cur < 0)
                     cur = moveLeft.Count - 1;
                 Form.MapMain.SelTile = moveLeft[cur].Tile;
             }
@@ -70,6 +73,16 @@ namespace WinFormsApp1
                 return false;
 
             bool move = false;
+            if (!move && piece is IBuilder.IBuildMech)
+            {
+                Mech.Cost(out double e, out double m, Game.Blueprint1, Game.Player.GetResearchMult());
+                move = e < Game.Player.Energy && m < Game.Player.Mass;
+                if (!move)
+                {
+                    Mech.Cost(out e, out m, Game.Blueprint2, Game.Player.GetResearchMult());
+                    move = e < Game.Player.Energy && m < Game.Player.Mass;
+                }
+            }
             if (!move && piece is IMovable movable)
                 move |= movable.MoveCur + movable.MoveInc > movable.MoveMax;
             if (!move && piece is IAttacker attacker)

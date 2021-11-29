@@ -17,7 +17,7 @@ namespace ClassLibrary1.Pieces.Players
         public Piece Piece => this;
 
         private Core(Game game)
-            : base(game.Map.GetTile(0, 0), 2.5)
+            : base(game.Map.GetTile(0, 0), 4)
         {
             killable = new Killable(this, new(100, .25, 1, 100, 300));
             buildConstructor = new Builder.BuildConstructor(this);
@@ -34,9 +34,9 @@ namespace ClassLibrary1.Pieces.Players
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
-            energyInc += 1000;
+            energyInc += 500;
             massInc += 100;
-            researchInc += 50;
+            researchInc += 25;
         }
 
         public override string ToString()

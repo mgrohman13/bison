@@ -14,6 +14,7 @@ namespace ClassLibrary1
         public const double MapCoordSize = 16.9;
         public const double MapDev = .13;
         public const int MinMapCoord = 9;
+        public const double ResourceAvgDist = 26;
 
         public const double ResearchFactor = 6500;
 
@@ -36,10 +37,10 @@ namespace ClassLibrary1
         public const double BiomassSustain = .75;
         public const double BiomassResearchIncDiv = 50;
         public const double MetalMassInc = 50;
-        public const double MetalSustain = 1;
+        public const double MetalSustain = 1.25;
         public const double MetalEnergyUpkDiv = 10;
         public const double ArtifactResearchInc = 10;
-        public const double ArtifactSustain = 2;
+        public const double ArtifactSustain = 1.75;
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkDiv = 1;
 

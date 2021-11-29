@@ -53,9 +53,9 @@ namespace WinFormsApp1
             if (e.KeyCode == Keys.Escape)
                 Program.EndTurn();
             else if (e.KeyCode == Keys.Q)
-                Program.Next(true);
-            else if (e.KeyCode == Keys.E)
                 Program.Next(false);
+            else if (e.KeyCode == Keys.E)
+                Program.Next(true);
         }
     }
 }

@@ -41,7 +41,7 @@ namespace ClassLibrary1.Pieces.Players
 
             double hp = killable.HitsMax / (1 - Math.Pow(killable.Armor, 1.13));
             double shield = killable.ShieldInc * 13 + killable.ShieldMax * 1 + killable.ShieldLimit / 2.6;
-            shield /= 3;
+            shield *= 2 / 3.0;
 
             double dmg = 0, rng = 0, ap = 0, sp = 0, cnt = 0;
             foreach (IAttacker.Values attack in attacks)
@@ -62,23 +62,24 @@ namespace ClassLibrary1.Pieces.Players
             ap -= 1;
             sp -= 1;
 
+            double vision = (blueprint.Vision + 5.2) / 9.1;
             double move = 26 * movable.MoveInc / 1.0 + 2 * movable.MoveMax / 2.1 + 1 * movable.MoveLimit / 3.9;
             move /= 26 + 2 + 1;
 
             hp /= Math.Pow(researchMult, .9);
-            shield /= Math.Pow(researchMult, .9);
-            rng /= Math.Pow(researchMult, .5);
-            dmg /= Math.Pow(researchMult, .9);
-            move /= Math.Pow(researchMult, .5);
+            shield /= Math.Pow(researchMult, .7);
+            rng /= Math.Pow(researchMult, .6);
+            dmg /= Math.Pow(researchMult, .8);
+            vision /= Math.Pow(researchMult, .5);
+            move /= Math.Pow(researchMult, .4);
             move += 3.9;
-            double vision = (blueprint.Vision + 5.2) / 9.1;
-            double total = Math.Sqrt((hp + shield + (rng * 3.9)) * (dmg + vision) * move) * 26;
+            double total = Math.Sqrt((hp + shield + (rng * 3.9)) * (dmg + vision) * move) * 16.9;
 
-            shield = 1 + shield / (hp + shield);
+            shield = (1 + shield) / (hp + shield);
             ap = 1 + (1 + ap) / (1 + ap + sp);
             rng /= (13 + rng);
             move /= (39 + move);
-            double energyPct = Math.Pow(shield / 2.0 * ap / 2.0 * rng * move, 1 / 4.0);
+            double energyPct = Math.Pow(shield / 2.0 * ap / 2.0 * rng * move, 1 / 4.5);
 
             energy = total * energyPct;
             mass = (total - energy) / 1.69;
