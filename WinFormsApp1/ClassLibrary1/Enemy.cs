@@ -24,8 +24,8 @@ namespace ClassLibrary1
         #region ISide
 
         public Game Game => side.Game;
-        ReadOnlyCollection<Piece> ISide.Pieces => side.Pieces;
-        internal ReadOnlyCollection<Piece> Pieces => side.Pieces;
+        IReadOnlyCollection<Piece> ISide.Pieces => side.Pieces;
+        internal IReadOnlyCollection<Piece> Pieces => side.Pieces;
 
         void ISide.AddPiece(Piece piece)
         {

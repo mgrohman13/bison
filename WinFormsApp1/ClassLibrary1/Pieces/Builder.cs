@@ -6,6 +6,7 @@ using MattUtil;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 
 namespace ClassLibrary1.Pieces
 {
@@ -21,17 +22,75 @@ namespace ClassLibrary1.Pieces
             this._piece = piece;
         }
 
-        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
-        {
-            Mech.NewMech(side.Game, tile, vision, killable, attacks, movable);
-        }
-
         double IBehavior.GetUpkeep()
         {
             return 0;
         }
         void IBehavior.EndTurn()
-        { 
+        {
+        }
+
+        private bool Validate(Map.Tile tile)
+        {
+            return (tile != null && tile.Visible && tile.GetDistance(this.Piece.Tile) == 1);
+        }
+
+        public class BuildConstructor : Builder, IBuilder.IBuildConstructor
+        {
+            public BuildConstructor(Piece piece)
+                : base(piece)
+            {
+            }
+            public Constructor Build(Map.Tile tile)
+            {
+                if (Validate(tile))
+                {
+                    Constructor.Cost(out double energy, out double mass, Piece.Game.Player.GetResearchMult());
+                    if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        return Constructor.NewConstructor(tile, Piece.Game.Player.GetResearchMult());
+                    }
+                }
+                return null;
+            }
+        }
+        public class BuildExtractor : Builder, IBuilder.IBuildExtractor
+        {
+            public BuildExtractor(Piece piece)
+                : base(piece)
+            {
+            }
+            public Extractor Build(Resource resource)
+            {
+                if (resource != null && Validate(resource.Tile))
+                {
+                    Extractor.Cost(out double energy, out double mass, resource, Piece.Game.Player.GetResearchMult());
+                    if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        return Extractor.NewExtractor(resource, Piece.Game.Player.GetResearchMult());
+                    }
+                }
+                return null;
+            }
+        }
+        public class BuildMech : Builder, IBuilder.IBuildMech
+        {
+            public BuildMech(Piece piece)
+                : base(piece)
+            {
+            }
+            public Mech Build(Map.Tile tile, MechBlueprint blueprint)
+            {
+                if (Validate(tile))
+                {
+                    Mech.Cost(out double energy, out double mass, blueprint, Piece.Game.Player.GetResearchMult());
+                    if (Piece.Game.Player.Spend(energy, mass))
+                    {
+                        return Mech.NewMech(tile, blueprint);
+                    }
+                }
+                return null;
+            }
         }
     }
 }

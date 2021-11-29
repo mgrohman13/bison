@@ -6,32 +6,33 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
-    public class Metal : Resource
+    public class Artifact : Resource
     {
-        private Metal(Map.Tile tile)
-            : base(tile, Consts.MetalMassInc, Consts.MetalSustain)
+        private Artifact(Map.Tile tile)
+            : base(tile, Consts.ArtifactResearchInc, Consts.ArtifactSustain)
         {
         }
-        internal static Metal NewMetal(Map.Tile tile)
+        internal static Artifact NewArtifact(Map.Tile tile)
         {
-            Metal obj = new(tile);
-            tile.Map.Game.AddPiece(obj);
-            return obj;
+            Artifact artifact = new(tile);
+            tile.Map.Game.AddPiece(artifact);
+            return artifact;
         }
         public override void GetCost(out double energy, out double mass)
         {
-            energy = 500;
-            mass = 100;
+            energy = 1000;
+            mass = 750;
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
-            massInc += Value;
-            energyUpk += Value / Consts.MetalEnergyUpkDiv;
+            researchInc += Value;
+            massInc += Value / Consts.ArtifactMassIncDiv;
+            energyUpk += Value / Consts.ArtifactEnergyUpkDiv;
         }
         public override string GetResourceName()
         {
-            return "Mass";
+            return "Research";
         }
     }
 }

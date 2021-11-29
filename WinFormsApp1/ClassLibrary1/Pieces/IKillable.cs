@@ -11,7 +11,6 @@ namespace ClassLibrary1.Pieces
 {
     public interface IKillable : IBehavior
     {
-        public Piece Piece { get; }
         public double HitsCur { get; }
         public double HitsMax { get; }
         public double Armor { get; }
@@ -20,7 +19,7 @@ namespace ClassLibrary1.Pieces
         public double ShieldMax { get; }
         public double ShieldLimit { get; }
 
-        internal void Damage(ref double damage, ref double shieldDmg); 
+        internal void Damage(ref double damage, ref double shieldDmg);
 
         public class Values
         {
@@ -30,6 +29,8 @@ namespace ClassLibrary1.Pieces
             public Values(double hitsMax, double shieldInc, double shieldMax, double shieldLimit) : this(hitsMax, 0, shieldInc, shieldMax, shieldLimit) { }
             public Values(double hitsMax, double armor, double shieldInc, double shieldMax, double shieldLimit)
             {
+                if (shieldInc <= 0 || shieldMax <= 0 || shieldLimit <= 0)
+                    shieldInc = shieldMax = shieldLimit = 0;
                 this._hitsMax = hitsMax;
                 this._armor = armor;
                 this._shieldInc = shieldInc;

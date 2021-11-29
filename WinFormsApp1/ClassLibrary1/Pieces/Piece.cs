@@ -16,7 +16,8 @@ namespace ClassLibrary1.Pieces
         public readonly Game Game;
         public readonly ISide _side;
 
-        protected ReadOnlyCollection<IBehavior> behavior;
+        Piece IBehavior.Piece => this;
+        protected IReadOnlyCollection<IBehavior> behavior;
         protected void SetBehavior(params IBehavior[] behavior)
         {
             this.behavior = behavior.ToList().AsReadOnly();
@@ -31,11 +32,16 @@ namespace ClassLibrary1.Pieces
         public bool IsPlayer => Side != null && Side == Game.Player;
         public bool IsEnemy => Side != null && Side == Game.Enemy;
 
-        internal Piece(Game game, ISide side, Map.Tile tile)
+        internal Piece(ISide side, Map.Tile tile)
         {
-            this.Game = game;
+            this.Game = tile.Map.Game;
             this._side = side;
             this._tile = tile;
+        }
+
+        internal virtual void Die()
+        {
+            Game.RemovePiece(this);
         }
 
         internal void SetTile(Map.Tile tile)

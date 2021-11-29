@@ -15,6 +15,8 @@ namespace ClassLibrary1
         public const double MapDev = .13;
         public const int MinMapCoord = 9;
 
+        public const double ResearchFactor = 6500;
+
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
         public const double ShielDev = .065;
@@ -36,15 +38,23 @@ namespace ClassLibrary1
         public const double MetalMassInc = 50;
         public const double MetalSustain = 1;
         public const double MetalEnergyUpkDiv = 10;
-        public const double ArtifactsResearchInc = 10;
-        public const double ArtifactsSustain = 2;
-        public const double ArtifactsMassIncDiv = 3;
-        public const double ArtifactsEnergyUpkDiv = 5;
+        public const double ArtifactResearchInc = 10;
+        public const double ArtifactSustain = 2;
+        public const double ArtifactMassIncDiv = 3;
+        public const double ArtifactEnergyUpkDiv = 1;
+
+        public const double BiomassExtractorEnergyCost = 250;
+        public const double BiomassExtractorMassCost = 250;
+        public const double MetalExtractorEnergyCost = 500;
+        public const double MetalExtractorMassCost = 100;
+        public const double ArtifactExtractorEnergyCost = 1000;
+        public const double ArtifactExtractorMassCost = 750;
 
         public const double EnergyPerMass = 20;
         public const double MassPerEnergy = 3;
         public const double ResearchPerMass = 1;
 
+        public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;
         public const double WeaponRechargeUpkeep = 3;
         public const double UpkeepPerShield = 2;
@@ -54,11 +64,12 @@ namespace ClassLibrary1
         {
             if (inc > 0)
             {
+                double startMax = Math.Max(cur, max);
+
                 if (rand)
                     inc = Game.Rand.GaussianCapped(inc, dev, dev);
                 cur += inc;
 
-                double startMax = Math.Max(cur, max);
                 double extra = cur - startMax;
                 if (extra > 0)
                 {

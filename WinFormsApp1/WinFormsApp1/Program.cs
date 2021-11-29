@@ -15,6 +15,7 @@ namespace WinFormsApp1
         public static Game Game;
 
         public static Main Form;
+        public static DgvForm DgvForm;
 
         public static HashSet<Piece> Moved = new();
 
@@ -27,6 +28,7 @@ namespace WinFormsApp1
 
             Game = new Game();
             Form = new Main();
+            DgvForm = new DgvForm();
 
             Application.Run(Form);
         }
@@ -43,6 +45,25 @@ namespace WinFormsApp1
                 Form.Refresh();
             }
         }
+
+        internal static void Next(bool dir)
+        {
+            var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).ToList();
+            if (moveLeft.Count > 0)
+            {
+                int cur = Form.MapMain.SelTile == null ? -1 : moveLeft.IndexOf(Form.MapMain.SelTile.Piece);
+                if (dir && ++cur >= moveLeft.Count)
+                    cur = 0;
+                else if (--cur <= 0)
+                    cur = moveLeft.Count - 1;
+                Form.MapMain.SelTile = moveLeft[cur].Tile;
+            }
+            else
+            {
+                Form.MapMain.SelTile = null;
+            }
+        }
+
         public static bool MoveLeft(Piece piece)
         {
             if (Moved.Contains(piece))

@@ -50,7 +50,7 @@ namespace ClassLibrary1.Pieces
             }
             this._hitsCur -= damage;
             if (HitsCur < 0)
-                Piece.Game.RemovePiece(Piece);
+                Piece.Die();
         }
 
         double IBehavior.GetUpkeep()

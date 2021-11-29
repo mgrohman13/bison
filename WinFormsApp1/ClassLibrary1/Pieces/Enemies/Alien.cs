@@ -16,18 +16,18 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public Piece Piece => this;
 
-        private Alien(Game game, Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
-            : base(game, tile)
+        private Alien(Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+            : base(tile)
         {
             this.killable = new Killable(this, killable);
             this.attacker = new Attacker(this, attacks);
             this.movable = new Movable(this, movable);
             SetBehavior(this.killable, this.attacker, this.movable);
         }
-        internal static Alien NewAlien(Game game, Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+        internal static Alien NewAlien(Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
         {
-            Alien obj = new(game, tile, killable, attacks, movable);
-            game.AddPiece(obj);
+            Alien obj = new(tile, killable, attacks, movable);
+            tile.Map.Game.AddPiece(obj);
             return obj;
         }
 
@@ -54,7 +54,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         #region IAttacker
 
-        public ReadOnlyCollection<Attacker.Attack> Attacks => attacker.Attacks;
+        public IReadOnlyCollection<Attacker.Attack> Attacks => attacker.Attacks;
         public bool Fire(IKillable killable)
         {
             return attacker.Fire(killable);

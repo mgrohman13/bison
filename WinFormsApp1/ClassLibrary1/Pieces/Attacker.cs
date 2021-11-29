@@ -18,14 +18,12 @@ namespace ClassLibrary1.Pieces
         private readonly List<Attack> _attacks;
 
         public Piece Piece => _piece;
-        public ReadOnlyCollection<Attack> Attacks => _attacks.AsReadOnly();
+        public IReadOnlyCollection<Attack> Attacks => _attacks.AsReadOnly();
 
-        internal Attacker(Piece piece, List<Values> attacks)
+        internal Attacker(Piece piece, IEnumerable<Values> attacks)
         {
             this._piece = piece;
-            this._attacks = new List<Attack>(attacks.Count);
-            for (int a = 0; a < attacks.Count; a++)
-                this._attacks.Add(new Attack(Piece, attacks[a]));
+            this._attacks = attacks.Select(a => new Attack(Piece, a)).ToList();
         }
 
         bool IAttacker.Fire(IKillable target)
@@ -49,7 +47,9 @@ namespace ClassLibrary1.Pieces
 
         double IBehavior.GetUpkeep()
         {
-            return Attacks.Count(a => !a.Attacked) * Consts.WeaponRechargeUpkeep;
+            var used = Attacks.Where(a => a.Attacked);
+            //return (used.Sum(a => Math.Pow(a.Damage, Consts.WeaponDamageUpkeepPow)) + used.Count) * Consts.WeaponRechargeUpkeep;
+            return used.Count() * Consts.WeaponRechargeUpkeep;
         }
         void IBehavior.EndTurn()
         {

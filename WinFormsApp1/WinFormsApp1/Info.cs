@@ -12,6 +12,7 @@ using ClassLibrary1;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -38,10 +39,14 @@ namespace WinFormsApp1
         public override void Refresh()
         {
             ShowAll(false);
-            this.lblTurn.Text = Program.Game.Turn.ToString();
+            lblTurn.Text = Program.Game.Turn.ToString();
 
             if (selected != null)
             {
+                if (selected.Piece is IBuilder)
+                    btnBuild.Show();
+                else
+                    btnBuild.Hide();
 
                 if (selected.Piece is IKillable killable)
                 {
@@ -76,6 +81,47 @@ namespace WinFormsApp1
                     lbl4.Text = "Vision";
                     lblInf4.Text = string.Format("{0}", Format(playerPiece.Vision));
                 }
+
+                Resource resource = selected.Piece as Resource;
+                if (resource == null && selected.Piece is Extractor extractor)
+                    resource = extractor.Resource;
+                if (resource != null)
+                {
+                    double energyInc, energyUpk, massInc, massUpk, researchInc, researchUpk;
+                    energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
+                    resource.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                    energyInc -= energyUpk;
+                    massInc -= massUpk;
+                    researchInc -= researchUpk;
+
+                    if (energyInc != 0)
+                    {
+                        lbl5.Show();
+                        lblInf5.Show();
+                        lbl5.Text = "Energy";
+                        lblInf5.Text = string.Format("{1}{0}", Format(energyInc), energyInc > 0 ? "+" : "");
+                    }
+                    if (massInc != 0)
+                    {
+                        lbl6.Show();
+                        lblInf6.Show();
+                        lbl6.Text = "Mass";
+                        lblInf6.Text = string.Format("{1}{0}", Format(massInc), massInc > 0 ? "+" : "");
+                    }
+                    if (researchInc != 0)
+                    {
+                        lbl7.Show();
+                        lblInf7.Show();
+                        lbl7.Text = "Research";
+                        lblInf7.Text = string.Format("{1}{0}", Format(researchInc), researchInc > 0 ? "+" : "");
+                    }
+
+                    lbl8.Show();
+                    lblInf8.Show();
+                    lbl8.Text = "Sustainability";
+                    lblInf8.Text = string.Format("{0}", FormatPct(resource.Sustain));
+                }
+
                 if (selected.Piece is IAttacker attacker)
                 {
                     dgvAttacks.Show();
@@ -99,8 +145,8 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["Attacked"].DisplayIndex = 5;
                     dgvAttacks.Columns["Attacked"].HeaderText = "USED";
 
-                    int labelsY = this.Controls.OfType<Label>().Select(lbl => lbl.Visible).Max(lbl => this.lbl3.Location.Y + this.lbl3.Height);
-                    dgvAttacks.MaximumSize = new Size(this.Width, this.Height - labelsY);
+                    int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
+                    dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
                     dgvAttacks.Size = dgvAttacks.PreferredSize;
                     dgvAttacks.Location = new Point(0, this.Height - dgvAttacks.Height);
                 }
@@ -125,7 +171,17 @@ namespace WinFormsApp1
                     label.Show();
                 else
                     label.Hide();
-            this.lblTurn.Show();
+            lblTurn.Show();
+        }
+
+        private void BtnBuild_Click(object sender, EventArgs e)
+        {
+            if (selected != null && selected.Piece is IBuilder builder)
+            {
+                Piece result = Program.DgvForm.BuilderDialog(builder);
+                if (result != null)
+                    Program.Form.MapMain.SelTile = result.Tile;
+            }
         }
     }
 }

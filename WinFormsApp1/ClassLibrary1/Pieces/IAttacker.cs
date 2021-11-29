@@ -13,8 +13,7 @@ namespace ClassLibrary1.Pieces
 {
     public interface IAttacker : IBehavior
     {
-        public Piece Piece { get; }
-        public ReadOnlyCollection<Attack> Attacks { get; }
+        public IReadOnlyCollection<Attack> Attacks { get; }
 
         public bool Fire(IKillable killable);
         internal bool EnemyFire(IKillable killable); 

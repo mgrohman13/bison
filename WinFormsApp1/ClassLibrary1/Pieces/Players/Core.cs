@@ -8,19 +8,21 @@ using ClassLibrary1.Pieces;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Core : PlayerPiece, IKillable, IBuilder
+    public class Core : PlayerPiece, IKillable, IBuilder.IBuildConstructor, IBuilder.IBuildMech
     {
         private readonly IKillable killable;
-        private readonly IBuilder builder;
+        private readonly IBuilder.IBuildConstructor buildConstructor;
+        private readonly IBuilder.IBuildMech buildMech;
 
         public Piece Piece => this;
 
         private Core(Game game)
-            : base(game, game.Map.GetTile(0, 0), 2.5)
+            : base(game.Map.GetTile(0, 0), 2.5)
         {
             killable = new Killable(this, new(100, .25, 1, 100, 300));
-            builder = new Builder(this);
-            SetBehavior(this.killable, this.builder);
+            buildConstructor = new Builder.BuildConstructor(this);
+            buildMech = new Builder.BuildMech(this);
+            SetBehavior(this.killable, this.buildConstructor, this.buildMech);
         }
         internal static Core NewCore(Game game)
         {
@@ -54,16 +56,20 @@ namespace ClassLibrary1.Pieces.Players
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
             killable.Damage(ref damage, ref shieldDmg);
-        } 
+        }
 
         #endregion IKillable
 
-        #region IBuilding
+        #region IBuilding 
 
-        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+        public Constructor Build(Map.Tile tile)
         {
-            builder.Build(side, tile, vision, killable, attacks, movable);
-        } 
+            return buildConstructor.Build(tile);
+        }
+        public Mech Build(Map.Tile tile, MechBlueprint blueprint)
+        {
+            return buildMech.Build(tile, blueprint);
+        }
 
         #endregion IBuilding
     }

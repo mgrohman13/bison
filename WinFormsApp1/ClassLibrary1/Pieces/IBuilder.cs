@@ -6,12 +6,23 @@ using MattUtil;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 
 namespace ClassLibrary1.Pieces
 {
     public interface IBuilder : IBehavior
     {
-        public Piece Piece { get; }
-        public void Build(ISide side, Map.Tile tile, double vision, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable); 
+        public interface IBuildConstructor : IBuilder
+        {
+            public Constructor Build(Map.Tile tile);
+        }
+        public interface IBuildExtractor : IBuilder
+        {
+            public Extractor Build(Resource resource);
+        }
+        public interface IBuildMech : IBuilder
+        {
+            public Mech Build(Map.Tile tile, MechBlueprint blueprint);
+        }
     }
 }

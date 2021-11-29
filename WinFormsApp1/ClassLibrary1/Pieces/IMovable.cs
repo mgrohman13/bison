@@ -11,20 +11,21 @@ namespace ClassLibrary1.Pieces
 {
     public interface IMovable : IBehavior
     {
-        public Piece Piece { get; }
         public double MoveCur { get; }
         public double MoveInc { get; }
         public double MoveMax { get; }
         public double MoveLimit { get; }
 
         public bool Move(Map.Tile to);
-        internal bool EnemyMove(Map.Tile to); 
+        internal bool EnemyMove(Map.Tile to);
 
         public class Values
         {
             private readonly double _moveInc, _moveMax, _moveLimit;
             public Values(double moveInc, double moveMax, double moveLimit)
             {
+                if (moveInc <= 0 || moveMax <= 0 || moveLimit <= 0)
+                    moveInc = moveMax = moveLimit = 0;
                 this._moveInc = moveInc;
                 this._moveMax = moveMax;
                 this._moveLimit = moveLimit;

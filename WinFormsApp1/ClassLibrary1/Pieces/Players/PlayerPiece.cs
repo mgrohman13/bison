@@ -13,8 +13,8 @@ namespace ClassLibrary1.Pieces.Players
         private readonly double _vision;
         public double Vision => _vision;
 
-        internal PlayerPiece(Game game, Map.Tile tile, double vision)
-            : base(game, game.Player, tile)
+        internal PlayerPiece(Map.Tile tile, double vision)
+            : base(tile.Map.Game.Player, tile)
         {
             this._vision = vision;
         }

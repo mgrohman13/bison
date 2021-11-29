@@ -11,6 +11,7 @@ using ClassLibrary1;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -70,12 +71,25 @@ namespace WinFormsApp1
                         {
                             Pen pen = pens[0];
                             RectangleF rect = new(a * xScale + padding, b * yScale + padding, xScale, yScale);
-                            if (tile.Piece is Core)
-                                e.Graphics.FillRectangle(Brushes.Blue, rect);
+
+                            Resource resource = tile.Piece as Resource;
+                            if (resource == null && tile.Piece is Extractor extractor)
+                                resource = extractor.Resource;
+                            if (tile.Piece is Alien)
+                                e.Graphics.FillRectangle(Brushes.Red, rect);
                             else if (tile.Piece is Mech)
                                 e.Graphics.FillRectangle(Brushes.Green, rect);
-                            else if (tile.Piece is Alien)
-                                e.Graphics.FillRectangle(Brushes.Red, rect);
+                            else if (tile.Piece is Constructor)
+                                e.Graphics.FillRectangle(Brushes.LightGreen, rect);
+                            else if (tile.Piece is Core)
+                                e.Graphics.FillRectangle(Brushes.Blue, rect);
+                            else if (resource != null)
+                                if (resource is Biomass)
+                                    e.Graphics.FillRectangle(Brushes.Yellow, rect);
+                                else if (resource is Metal)
+                                    e.Graphics.FillRectangle(Brushes.Black, rect);
+                                else if (resource is Artifact)
+                                    e.Graphics.FillRectangle(Brushes.Magenta, rect);
 
                             if (SelTile != null)
                             {
@@ -160,11 +174,9 @@ namespace WinFormsApp1
 
             if (SelTile == orig)
             {
-                if (SelTile == clicked)
+                if (SelTile != null && SelTile == clicked)
                     Program.Moved.Add(SelTile.Piece);
-                var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).Where(p => SelTile != p.Tile);
-                if (moveLeft.Any())
-                    SelTile = moveLeft.First().Tile;
+                Program.Next(true);
             }
         }
     }

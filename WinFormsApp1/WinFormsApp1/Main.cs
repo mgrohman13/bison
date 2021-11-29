@@ -26,12 +26,36 @@ namespace WinFormsApp1
         {
             Info.Refresh();
             base.Refresh();
+
+            Program.Game.Player.GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc, out double researchUpk);
+            energyInc -= energyUpk;
+            massInc -= massUpk;
+            researchInc -= researchUpk;
+            this.lblEnergy.Text = Format(Program.Game.Player.Energy);
+            FormatInc(lblEnergyInc, energyInc);
+            this.lblMass.Text = Format(Program.Game.Player.Mass);
+            FormatInc(lblMassInc, massInc);
+            this.lblResearch.Text = Format(Program.Game.Player.Research);
+            FormatInc(lblResearchInc, researchInc);
+        }
+        private static void FormatInc(Label label, double inc)
+        {
+            label.ForeColor = inc >= 0 ? Color.Black : Color.Red;
+            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "-", Format(inc));
+        }
+        private static string Format(double value)
+        {
+            return value.ToString("0.0");
         }
 
         private void Main_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter) 
-                Program.EndTurn(); 
+            if (e.KeyCode == Keys.Escape)
+                Program.EndTurn();
+            else if (e.KeyCode == Keys.Q)
+                Program.Next(true);
+            else if (e.KeyCode == Keys.E)
+                Program.Next(false);
         }
     }
 }

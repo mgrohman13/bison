@@ -45,8 +45,8 @@ namespace ClassLibrary1
                 piece.EndTurn();
         }
 
-        ReadOnlyCollection<Piece> ISide.Pieces => Pieces;
-        internal ReadOnlyCollection<Piece> Pieces => _pieces.AsReadOnly();
+        IReadOnlyCollection<Piece> ISide.Pieces => Pieces;
+        internal IReadOnlyCollection<Piece> Pieces => _pieces.AsReadOnly();
 
         public Game Game => _game;
     }

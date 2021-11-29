@@ -12,17 +12,26 @@ namespace ClassLibrary1.Pieces.Terrain
             : base(tile, Consts.BiomassEnergyInc, Consts.BiomassSustain)
         {
         }
-        internal Biomass NewArtifacts(Map.Tile tile)
+        internal static Biomass NewBiomass(Map.Tile tile)
         {
             Biomass obj = new(tile);
-            Game.AddPiece(obj);
+            tile.Map.Game.AddPiece(obj);
             return obj;
+        }
+        public override void GetCost(out double energy, out double mass)
+        {
+            energy = 250;
+            mass = 250;
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
             energyInc += Value;
             researchInc += Value / Consts.BiomassResearchIncDiv;
+        }
+        public override string GetResourceName()
+        {
+            return "Energy";
         }
     }
 }
