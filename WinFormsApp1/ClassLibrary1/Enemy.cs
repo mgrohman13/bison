@@ -68,7 +68,7 @@ namespace ClassLibrary1
                         {
                             if (movable != null)
                                 movable.EnemyMove(tile);
-                            attacker.EnemyFire((IKillable)Game.Rand.Iterate(targets).First().Piece);
+                            attacker.EnemyFire((IKillable)Game.Rand.SelectValue(targets).Piece);
                             return;
                         }
                     }

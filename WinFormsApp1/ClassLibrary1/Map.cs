@@ -255,7 +255,6 @@ namespace ClassLibrary1
                 int[] exp;
                 bool dir, neg;
                 int sel = Game.Rand.Next(4);
-                Debug.WriteLine(sel);
                 switch (sel)
                 {
                     case 0:

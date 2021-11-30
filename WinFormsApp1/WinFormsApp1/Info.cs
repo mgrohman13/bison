@@ -87,7 +87,7 @@ namespace WinFormsApp1
 
                 Resource resource = selected.Piece as Resource;
                 Extractor extractor = selected.Piece as Extractor;
-                if (resource == null && resource != null)
+                if (resource == null && extractor != null)
                     resource = extractor.Resource;
                 if (resource != null)
                 {
@@ -139,7 +139,7 @@ namespace WinFormsApp1
                 {
                     dgvAttacks.Show();
 
-                    dgvAttacks.DataSource = attacker.Attacks.OrderBy(a => a.Range);
+                    dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).ToList();
                     dgvAttacks.Columns["Range"].DisplayIndex = 0;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";

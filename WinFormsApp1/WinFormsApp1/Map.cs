@@ -149,9 +149,10 @@ namespace WinFormsApp1
                     var ar = attacker.Attacks.Where(a => !a.Attacked).Select(a => a.Range);
                     if (SelTile.Piece.IsEnemy && movable != null)
                     {
-                        var moveEdge = movable.Piece.Tile.GetTilesInRange(movable.MoveCur).Where(t => t.GetDistance(SelTile) > movable.MoveCur - 1);
+                        var moveTiles = movable.Piece.Tile.GetTilesInRange(movable.MoveCur);
+                        var moveEdge = moveTiles.Where(t => t.GetDistance(SelTile) > movable.MoveCur - 1);
                         foreach (var a in ar)
-                            ranges[range].Add(GetPoints(moveEdge.SelectMany(t => t.GetTilesInRange(a))));
+                            ranges[range].Add(GetPoints(moveEdge.SelectMany(t => t.GetTilesInRange(a)).Union(moveTiles)));
                     }
                     else
                         foreach (var a in ar)

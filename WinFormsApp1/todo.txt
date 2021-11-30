@@ -4,6 +4,8 @@ hp% reduce stats
 	resilience stat?
 game end on core kill
 
+numIncs start at 0
+new enemies can appear in visible center when not technically explored from one direction 
 proper hiding of map borders until seen - currently relies on draw clip
 enemy move+range take into account unmovable tiles 
 order ships by position for prev/next
@@ -12,6 +14,12 @@ scrolling/panning
 mouse over attack to see specific range
 mouse over move spot to see range from there
 save game
+enemy behavior 
+	currently always guaranteed to attack with shortest range attack 
+		chance to skip it to hit different target with long range?
+	target priorities 
+use resources to manage enemy spawns 
+move left shouldnt see hidden enemies
 
 fog
 build factories/mobile factory
