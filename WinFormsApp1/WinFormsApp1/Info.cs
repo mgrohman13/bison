@@ -41,12 +41,15 @@ namespace WinFormsApp1
             ShowAll(false);
             lblTurn.Text = Program.Game.Turn.ToString();
 
-            if (selected != null)
+            if (selected != null && selected.Piece != null)
             {
                 if (selected.Piece is IBuilder)
                     btnBuild.Show();
                 else
                     btnBuild.Hide();
+
+                lblHeading.Show();
+                lblHeading.Text = selected.Piece.ToString();
 
                 if (selected.Piece is IKillable killable)
                 {
@@ -63,7 +66,7 @@ namespace WinFormsApp1
                         lblInf2.Show();
                         lbl2.Text = "Shield";
                         lblInf2.Text = string.Format("{0} / {1} / {2} +{3}",
-                            Format(killable.ShieldCur), Format(killable.ShieldMax), Format(killable.ShieldLimit), Format(killable.ShieldInc));
+                            Format(killable.ShieldCur), Format(killable.ShieldMax), Format(killable.ShieldLimit), Format(killable.GetInc()));
                     }
                 }
                 if (selected.Piece is IMovable movable)
@@ -72,7 +75,7 @@ namespace WinFormsApp1
                     lblInf3.Show();
                     lbl3.Text = "Move";
                     lblInf3.Text = string.Format("{0} / {1} / {2} +{3}",
-                            Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.MoveInc));
+                            Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()));
                 }
                 if (selected.Piece is PlayerPiece playerPiece)
                 {
@@ -83,10 +86,20 @@ namespace WinFormsApp1
                 }
 
                 Resource resource = selected.Piece as Resource;
-                if (resource == null && selected.Piece is Extractor extractor)
+                Extractor extractor = selected.Piece as Extractor;
+                if (resource == null && resource != null)
                     resource = extractor.Resource;
                 if (resource != null)
                 {
+                    if (extractor == null)
+                    {
+                        Extractor.Cost(out double energy, out double mass, resource);
+                        lbl2.Show();
+                        lblInf2.Show();
+                        lbl2.Text = "Build Cost";
+                        lblInf2.Text = string.Format("{0} : {1}", Format(energy), Format(mass));
+                    }
+
                     double energyInc, energyUpk, massInc, massUpk, researchInc, researchUpk;
                     energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
                     resource.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
@@ -126,7 +139,7 @@ namespace WinFormsApp1
                 {
                     dgvAttacks.Show();
 
-                    dgvAttacks.DataSource = attacker.Attacks;
+                    dgvAttacks.DataSource = attacker.Attacks.OrderBy(a => a.Range);
                     dgvAttacks.Columns["Range"].DisplayIndex = 0;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
@@ -148,7 +161,7 @@ namespace WinFormsApp1
                     int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
                     dgvAttacks.MaximumSize = new Size(this.Width, this.panel1.Location.Y - labelsY);
                     dgvAttacks.Size = dgvAttacks.PreferredSize;
-                    dgvAttacks.Location = new Point(0, this.Height - dgvAttacks.Height);
+                    dgvAttacks.Location = new Point(0, this.panel1.Location.Y - dgvAttacks.Height);
                 }
             }
 

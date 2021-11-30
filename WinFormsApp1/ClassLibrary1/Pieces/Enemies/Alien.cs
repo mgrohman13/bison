@@ -10,6 +10,9 @@ namespace ClassLibrary1.Pieces.Enemies
 {
     public class Alien : EnemyPiece, IKillable, IAttacker, IMovable
     {
+        private static int numInc = 0;
+        private readonly int num;
+
         private readonly IKillable killable;
         private readonly IAttacker attacker;
         private readonly IMovable movable;
@@ -19,6 +22,7 @@ namespace ClassLibrary1.Pieces.Enemies
         private Alien(Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
             : base(tile)
         {
+            this.num = numInc++;
             this.killable = new Killable(this, killable);
             this.attacker = new Attacker(this, attacks);
             this.movable = new Movable(this, movable);
@@ -33,7 +37,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public override string ToString()
         {
-            return "Alien";
+            return "Alien " + num;
         }
 
         #region IKillable
@@ -45,6 +49,13 @@ namespace ClassLibrary1.Pieces.Enemies
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
+        public bool Dead => killable.Dead;
+
+        double IKillable.GetInc()
+        {
+            return killable.GetInc();
+        }
+
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
             killable.Damage(ref damage, ref shieldDmg);
@@ -72,6 +83,11 @@ namespace ClassLibrary1.Pieces.Enemies
         public double MoveInc => movable.MoveInc;
         public double MoveMax => movable.MoveMax;
         public double MoveLimit => movable.MoveLimit;
+
+        double IMovable.GetInc()
+        {
+            return movable.GetInc();
+        }
 
         public bool Move(Map.Tile to)
         {

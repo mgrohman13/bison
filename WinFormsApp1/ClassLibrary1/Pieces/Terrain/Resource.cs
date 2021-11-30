@@ -39,6 +39,12 @@ namespace ClassLibrary1.Pieces.Terrain
         {
         }
 
+        protected double CostMult(double baseValue)
+        {
+            double min = Math.Sqrt(baseValue);
+            return Math.Pow((this.Value + min) / (baseValue + min), .91);
+        }
+
         public abstract void GetCost(out double energy, out double mass);
         public abstract string GetResourceName();
     }

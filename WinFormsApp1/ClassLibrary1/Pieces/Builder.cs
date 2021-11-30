@@ -45,10 +45,10 @@ namespace ClassLibrary1.Pieces
             {
                 if (Validate(tile))
                 {
-                    Constructor.Cost(out double energy, out double mass, Piece.Game.Player.GetResearchMult());
+                    Constructor.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
                     {
-                        return Constructor.NewConstructor(tile, Piece.Game.Player.GetResearchMult());
+                        return Constructor.NewConstructor(tile);
                     }
                 }
                 return null;
@@ -64,10 +64,10 @@ namespace ClassLibrary1.Pieces
             {
                 if (resource != null && Validate(resource.Tile))
                 {
-                    Extractor.Cost(out double energy, out double mass, resource, Piece.Game.Player.GetResearchMult());
+                    Extractor.Cost(out double energy, out double mass, resource);
                     if (Piece.Game.Player.Spend(energy, mass))
                     {
-                        return Extractor.NewExtractor(resource, Piece.Game.Player.GetResearchMult());
+                        return Extractor.NewExtractor(resource);
                     }
                 }
                 return null;
@@ -83,7 +83,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (Validate(tile))
                 {
-                    Mech.Cost(out double energy, out double mass, blueprint, Piece.Game.Player.GetResearchMult());
+                    Mech.Cost(Piece.Game, out double energy, out double mass, blueprint);
                     if (Piece.Game.Player.Spend(energy, mass))
                     {
                         return Mech.NewMech(tile, blueprint);

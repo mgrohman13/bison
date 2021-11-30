@@ -11,6 +11,9 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Mech : PlayerPiece, IKillable, IAttacker, IMovable
     {
+        private static int numInc = 0;
+        private readonly int num;
+
         private readonly IKillable killable;
         private readonly IAttacker attacker;
         private readonly IMovable movable;
@@ -20,6 +23,7 @@ namespace ClassLibrary1.Pieces.Players
         private Mech(Map.Tile tile, MechBlueprint blueprint)
             : base(tile, blueprint.Vision)
         {
+            this.num = numInc++;
             this.killable = new Killable(this, blueprint.Killable);
             this.attacker = new Attacker(this, blueprint.Attacks);
             this.movable = new Movable(this, blueprint.Movable);
@@ -33,7 +37,7 @@ namespace ClassLibrary1.Pieces.Players
             tile.Map.Game.GenBlueprints();
             return obj;
         }
-        public static void Cost(out double energy, out double mass, MechBlueprint blueprint, double researchMult)
+        public static void Cost(Game game, out double energy, out double mass, MechBlueprint blueprint)
         {
             var killable = blueprint.Killable;
             var attacks = blueprint.Attacks;
@@ -66,6 +70,7 @@ namespace ClassLibrary1.Pieces.Players
             double move = 26 * movable.MoveInc / 1.0 + 2 * movable.MoveMax / 2.1 + 1 * movable.MoveLimit / 3.9;
             move /= 26 + 2 + 1;
 
+            double researchMult = game.Player.GetResearchMult();
             hp /= Math.Pow(researchMult, .9);
             shield /= Math.Pow(researchMult, .7);
             rng /= Math.Pow(researchMult, .6);
@@ -93,7 +98,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public override string ToString()
         {
-            return "Mech";
+            return "Mech " + num;
         }
 
         #region IKillable
@@ -105,6 +110,13 @@ namespace ClassLibrary1.Pieces.Players
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
+        public bool Dead => killable.Dead;
+
+        double IKillable.GetInc()
+        {
+            return killable.GetInc();
+        }
+
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
             killable.Damage(ref damage, ref shieldDmg);
@@ -132,6 +144,11 @@ namespace ClassLibrary1.Pieces.Players
         public double MoveInc => movable.MoveInc;
         public double MoveMax => movable.MoveMax;
         public double MoveLimit => movable.MoveLimit;
+
+        double IMovable.GetInc()
+        {
+            return movable.GetInc();
+        }
 
         public bool Move(Map.Tile to)
         {

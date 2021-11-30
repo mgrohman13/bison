@@ -72,7 +72,7 @@ namespace ClassLibrary1
         IReadOnlyCollection<Piece> ISide.Pieces => Pieces;
         public IReadOnlyCollection<Piece> Pieces => side.Pieces;
 
-        public double GetResearchMult()
+        internal double GetResearchMult()
         {
             return (Research + Consts.ResearchFactor) / Consts.ResearchFactor;
         }

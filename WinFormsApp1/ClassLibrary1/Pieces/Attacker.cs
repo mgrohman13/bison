@@ -41,7 +41,11 @@ namespace ClassLibrary1.Pieces
             bool retVal = false;
             if (fire)
                 foreach (Attack attack in Game.Rand.Iterate(Attacks))
+                {
                     retVal |= attack.Fire(target);
+                    if (target.Dead)
+                        break;
+                }
             return retVal;
         }
 

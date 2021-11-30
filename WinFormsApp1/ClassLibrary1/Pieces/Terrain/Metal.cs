@@ -20,8 +20,9 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         public override void GetCost(out double energy, out double mass)
         {
-            energy = 500;
-            mass = 100;
+            double mult = CostMult(Consts.MetalMassInc);
+            energy = 1000 * mult;
+            mass = 250 * mult;
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)

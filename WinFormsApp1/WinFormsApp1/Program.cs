@@ -75,11 +75,11 @@ namespace WinFormsApp1
             bool move = false;
             if (!move && piece is IBuilder.IBuildMech)
             {
-                Mech.Cost(out double e, out double m, Game.Blueprint1, Game.Player.GetResearchMult());
+                Mech.Cost(Game, out double e, out double m, Game.Blueprint1);
                 move = e < Game.Player.Energy && m < Game.Player.Mass;
                 if (!move)
                 {
-                    Mech.Cost(out e, out m, Game.Blueprint2, Game.Player.GetResearchMult());
+                    Mech.Cost(Game, out e, out m, Game.Blueprint2);
                     move = e < Game.Player.Energy && m < Game.Player.Mass;
                 }
             }

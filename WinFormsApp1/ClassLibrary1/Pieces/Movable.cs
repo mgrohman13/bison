@@ -58,11 +58,15 @@ namespace ClassLibrary1.Pieces
         }
         double IBehavior.GetUpkeep()
         {
-            return (GetInc(false) - MoveCur) * Consts.UpkeepPerMove;
+            return GetInc(false) * Consts.UpkeepPerMove;
         }
         void IBehavior.EndTurn()
         {
-            this._moveCur = GetInc(true);
+            this._moveCur += GetInc(true);
+        }
+        public double GetInc()
+        {
+            return GetInc(false);
         }
         private double GetInc(bool rand)
         {

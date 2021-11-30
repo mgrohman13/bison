@@ -34,7 +34,7 @@ namespace ClassLibrary1.Pieces.Players
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
-            energyInc += 500;
+            energyInc += 250;
             massInc += 100;
             researchInc += 25;
         }
@@ -53,6 +53,13 @@ namespace ClassLibrary1.Pieces.Players
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
+        public bool Dead => killable.Dead;
+
+        double IKillable.GetInc()
+        {
+            return killable.GetInc();
+        }
+
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
             killable.Damage(ref damage, ref shieldDmg);

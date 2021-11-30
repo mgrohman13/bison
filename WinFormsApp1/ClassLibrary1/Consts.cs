@@ -63,6 +63,7 @@ namespace ClassLibrary1
 
         public static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
         {
+            double start = cur;
             if (inc > 0)
             {
                 double startMax = Math.Max(cur, max);
@@ -84,7 +85,7 @@ namespace ClassLibrary1
 
                 //Debug.WriteLine(cur);
             }
-            return cur;
+            return cur - start;
         }
     }
 }

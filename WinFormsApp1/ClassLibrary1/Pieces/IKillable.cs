@@ -18,6 +18,9 @@ namespace ClassLibrary1.Pieces
         public double ShieldInc { get; }
         public double ShieldMax { get; }
         public double ShieldLimit { get; }
+        public bool Dead { get; }
+
+        public double GetInc();
 
         internal void Damage(ref double damage, ref double shieldDmg);
 

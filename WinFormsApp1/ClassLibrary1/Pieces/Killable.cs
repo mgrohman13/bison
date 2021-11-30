@@ -34,6 +34,7 @@ namespace ClassLibrary1.Pieces
         public double ShieldInc => values.ShieldInc;
         public double ShieldMax => values.ShieldMax;
         public double ShieldLimit => values.ShieldLimit;
+        public bool Dead => HitsCur <= 0.05;
 
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
@@ -49,17 +50,21 @@ namespace ClassLibrary1.Pieces
                 this._shieldCur = 0;
             }
             this._hitsCur -= damage;
-            if (HitsCur < 0)
+            if (this.Dead)
                 Piece.Die();
         }
 
         double IBehavior.GetUpkeep()
         {
-            return (GetInc(false) - ShieldCur) * Consts.UpkeepPerShield;
+            return GetInc(false) * Consts.UpkeepPerShield;
         }
         void IBehavior.EndTurn()
         {
-            this._shieldCur = GetInc(true);
+            this._shieldCur += GetInc(true);
+        }
+        public double GetInc()
+        {
+            return GetInc(false);
         }
         private double GetInc(bool rand)
         {

@@ -51,14 +51,14 @@ namespace WinFormsApp1
 
             if (builder is IBuilder.IBuildConstructor buildConstructor)
             {
-                Constructor.Cost(out double energy, out double mass, Program.Game.Player.GetResearchMult());
+                Constructor.Cost(Program.Game, out double energy, out double mass);
                 rows.Add(new(buildConstructor, "Constructor", energy, mass));
             }
             if (builder is IBuilder.IBuildMech buildMech)
             {
                 foreach (MechBlueprint blueprint in new MechBlueprint[] { Program.Game.Blueprint1, Program.Game.Blueprint2 })
                 {
-                    Mech.Cost(out double energy, out double mass, blueprint, Program.Game.Player.GetResearchMult());
+                    Mech.Cost(Program.Game, out double energy, out double mass, blueprint);
                     BuildRow row = new(buildMech, "Mech", energy, mass);
                     row.Blueprint = blueprint;
                     rows.Add(row);
@@ -75,7 +75,7 @@ namespace WinFormsApp1
                     Tile target = Program.Game.Map.GetVisibleTile(point.X, point.Y);
                     if (target != null && target.Piece is Resource resource)
                     {
-                        Extractor.Cost(out double energy, out double mass, resource, Program.Game.Player.GetResearchMult());
+                        Extractor.Cost(out double energy, out double mass, resource);
                         BuildRow row = new(buildExtractor, "Extractor", energy, mass);
                         rows.Add(row);
                         switch (idx)
@@ -208,7 +208,7 @@ namespace WinFormsApp1
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             this.Close();
         }

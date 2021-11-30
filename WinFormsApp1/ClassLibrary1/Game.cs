@@ -51,7 +51,7 @@ namespace ClassLibrary1
                 new( 2, -1),
                 new( 2,  1),
             });
-            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), Player.GetResearchMult());
+            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y));
 
             for (int a = 0; a < 1; a++)
                 Biomass.NewBiomass(StartTile());
@@ -68,7 +68,7 @@ namespace ClassLibrary1
             Map.Tile tile;
             do
                 tile = Map.GetTile(Game.Rand.RangeInt(Map.left, Map.right), Game.Rand.RangeInt(Map.down, Map.up));
-            while (tile == null || tile.Piece != null || tile.Visible);
+            while (tile == null || tile.Piece != null || (tile.X > -7 && tile.X < 7 && tile.Y > -7 && tile.Y < 7));
             return tile;
         }
 
@@ -78,8 +78,9 @@ namespace ClassLibrary1
 
             Enemy.PlayTurn();
 
-            double difficulty = (Turn + 52.0) / 52.0;
-            double chance = (difficulty - .65) / 3.9;
+            double difficulty = (Turn + 39.0) / 39.0;
+            difficulty *= difficulty;
+            double chance = (difficulty - .39) / 5.2;
             if (chance < 1)
                 chance *= chance;
             if (chance > .5)
@@ -94,8 +95,8 @@ namespace ClassLibrary1
             this._blueprint1 = GenBlueprint();
             this._blueprint2 = GenBlueprint();
 
-            Mech.Cost(out double e1, out double m1, Blueprint1, Player.GetResearchMult());
-            Mech.Cost(out double e2, out double m2, Blueprint2, Player.GetResearchMult());
+            Mech.Cost(this, out double e1, out double m1, Blueprint1);
+            Mech.Cost(this, out double e2, out double m2, Blueprint2);
             if ((e1 > m1) == (e2 > m2))
                 GenBlueprints();
         }

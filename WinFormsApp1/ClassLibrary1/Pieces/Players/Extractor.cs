@@ -10,6 +10,9 @@ namespace ClassLibrary1.Pieces.Players
 {
     public class Extractor : PlayerPiece, IKillable
     {
+        private static int numInc = 0;
+        private readonly int num;
+
         private readonly IKillable killable;
 
         public readonly Resource Resource;
@@ -18,26 +21,27 @@ namespace ClassLibrary1.Pieces.Players
         private Extractor(Resource Resource, IKillable.Values killable)
             : base(Resource.Tile, 5)
         {
+            this.num = numInc++;
             this.killable = new Killable(this, killable);
             SetBehavior(this.killable);
 
             this.Resource = Resource;
         }
-        internal static Extractor NewExtractor(Resource resource, double researchMult)
+        internal static Extractor NewExtractor(Resource resource)
         {
             resource.Game.RemovePiece(resource);
 
-            researchMult = Math.Pow(researchMult, .6);
+            double researchMult = Math.Pow(resource.Game.Player.GetResearchMult(), .6);
             double hits = 50 * researchMult;
 
             Extractor obj = new(resource, new(hits));
             resource.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(out double energy, out double mass, Resource resource, double researchMult)
+        public static void Cost(out double energy, out double mass, Resource resource)
         {
             resource.GetCost(out energy, out mass);
-            researchMult = Math.Pow(researchMult, .5);
+            double researchMult = Math.Pow(resource.Game.Player.GetResearchMult(), .5);
             energy /= researchMult;
             mass /= researchMult;
         }
@@ -60,7 +64,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public override string ToString()
         {
-            return Resource.GetResourceName() + " Extractor";
+            return Resource.GetResourceName() + " Extractor " + num;
         }
 
         #region IKillable
@@ -72,6 +76,12 @@ namespace ClassLibrary1.Pieces.Players
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
+        public bool Dead => killable.Dead;
+
+        double IKillable.GetInc()
+        {
+            return killable.GetInc();
+        }
 
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {

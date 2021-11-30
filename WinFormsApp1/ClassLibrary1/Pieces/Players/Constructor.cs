@@ -9,6 +9,9 @@ namespace ClassLibrary1.Pieces.Players
 {
     public class Constructor : PlayerPiece, IKillable, IMovable, IBuilder.IBuildExtractor
     {
+        private static int numInc = 0;
+        private readonly int num;
+
         private readonly IKillable killable;
         private readonly IMovable movable;
         private readonly IBuilder.IBuildExtractor buildExtractor;
@@ -18,13 +21,16 @@ namespace ClassLibrary1.Pieces.Players
         private Constructor(Map.Tile tile, double vision, IKillable.Values killable, IMovable.Values movable)
             : base(tile, vision)
         {
+            this.num = numInc++;
             this.killable = new Killable(this, killable);
             this.movable = new Movable(this, movable);
             this.buildExtractor = new Builder.BuildExtractor(this);
             SetBehavior(this.killable, this.movable, this.buildExtractor);
         }
-        internal static Constructor NewConstructor(Map.Tile tile, double researchMult)
+        internal static Constructor NewConstructor(Map.Tile tile)
         {
+            double researchMult = tile.Map.Game.Player.GetResearchMult();
+
             double hits = 30;
             double moveInc = 3, moveMax = 7, moveLimit = 12;
             double armor = 0, shieldInc = 0, shieldMax = 0, shieldLimit = 0;
@@ -53,11 +59,11 @@ namespace ClassLibrary1.Pieces.Players
             tile.Map.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(out double energy, out double mass, double researchMult)
+        public static void Cost(Game game, out double energy, out double mass)
         {
-            researchMult = Math.Pow(researchMult, .4);
-            energy = 500 / researchMult;
-            mass = 500 / researchMult;
+            double researchMult = Math.Pow(game.Player.GetResearchMult(), .4);
+            energy = 750 / researchMult;
+            mass = 750 / researchMult;
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
@@ -68,7 +74,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public override string ToString()
         {
-            return "Constructor";
+            return "Constructor " + num;
         }
 
         #region IKillable
@@ -80,6 +86,13 @@ namespace ClassLibrary1.Pieces.Players
         public double ShieldInc => killable.ShieldInc;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
+        public bool Dead => killable.Dead;
+
+        double IKillable.GetInc()
+        {
+            return killable.GetInc();
+        }
+
         void IKillable.Damage(ref double damage, ref double shieldDmg)
         {
             killable.Damage(ref damage, ref shieldDmg);
@@ -93,6 +106,11 @@ namespace ClassLibrary1.Pieces.Players
         public double MoveInc => movable.MoveInc;
         public double MoveMax => movable.MoveMax;
         public double MoveLimit => movable.MoveLimit;
+
+        double IMovable.GetInc()
+        {
+            return movable.GetInc();
+        }
 
         public bool Move(Map.Tile to)
         {
