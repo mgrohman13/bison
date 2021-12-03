@@ -22,10 +22,13 @@ namespace WinFormsApp1
     public partial class Map : UserControl
     {
         private const float padding = 1;
-        private Rectangle mapCoords;
 
-        private float xScale, yScale;
+        private float xStart, yStart, scale;//, yScale;
         private Tile _selected;
+
+        private readonly Timer timer;
+        private bool scrollDown, scrollLeft, scrollUp, scrollRight;
+
         public Tile SelTile
         {
             get { return _selected; }
@@ -35,7 +38,6 @@ namespace WinFormsApp1
                 if (Program.Form != null)
                 {
                     Program.Form.Info.SetSelected(SelTile);
-                    mapCoords = Program.Game.Map.GameRect();
                     Program.Form.Refresh();
                 }
             }
@@ -44,21 +46,41 @@ namespace WinFormsApp1
         public Map()
         {
             InitializeComponent();
+
             this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint, true);
             this.ResizeRedraw = true;
 
-            if (Program.Game != null)
-                mapCoords = Program.Game.Map.GameRect();
+            this.MouseWheel += Map_MouseWheel;
+
+            timer = new();
+            timer.Interval = 13;
+            timer.Tick += Timer_Tick;
+        }
+
+        private void Map_Load(object sender, EventArgs e)
+        {
+            Rectangle gameRect = Program.Game.Map.GameRect();
+            scale = Math.Min((this.Width - 1 - padding * 2) / (float)gameRect.Width, (this.Height - 1 - padding * 2) / (float)gameRect.Height);
+            xStart = GetX(gameRect.X);
+            yStart = GetY(gameRect.Y);
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            //if (this == Program.Form.MapMain)
+            //{
+            //    Debug.WriteLine(xStart);
+            //    Debug.WriteLine(yStart);
+            //    Debug.WriteLine(xScale);
+            //    Debug.WriteLine(yScale);
+            //    Debug.WriteLine("");
+            //}
+
             e.Graphics.Clear(Color.White);
 
             if (Program.Game != null)
             {
-                Scale();
                 Tiles(e);
                 Ranges(e);
                 Border(e);
@@ -73,6 +95,7 @@ namespace WinFormsApp1
             Pen reg = Pens.Black, sel = new(Color.Black, 3f);
             Pen[] pens = new Pen[] { reg, sel };
 
+            Rectangle mapCoords = GetMapCoords();
             Dictionary<Pen, List<RectangleF>> grid = new();
             for (int a = 0; a < mapCoords.Width; a++)
             {
@@ -84,7 +107,7 @@ namespace WinFormsApp1
                     if (tile != null)
                     {
                         Pen pen = reg;
-                        RectangleF rect = new(GetX(x), GetY(y), xScale, yScale);
+                        RectangleF rect = new(GetX(x), GetY(y), scale, scale);
 
                         Resource resource = tile.Piece as Resource;
                         Extractor extractor = tile.Piece as Extractor;
@@ -126,6 +149,7 @@ namespace WinFormsApp1
                 if (grid.ContainsKey(pen))
                     e.Graphics.DrawRectangles(pen, grid[pen].ToArray());
         }
+
         private void Ranges(PaintEventArgs e)
         {
             if (SelTile != null)
@@ -251,12 +275,14 @@ namespace WinFormsApp1
             bool hasUp = (Program.Game.Map.Visible(Program.Game.Map.left - 1, Program.Game.Map.up))
                 || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.up));
 
+            Rectangle gameRect = Program.Game.Map.GameRect();
+
             float left = 0;
             if (hasLeft)
                 left = GetX(Program.Game.Map.left);
             else
             {
-                for (int x = mapCoords.Left; x <= mapCoords.Right; x++)
+                for (int x = gameRect.Left; x <= gameRect.Right; x++)
                     if (Program.Game.Map.Visible(x, Program.Game.Map.up + 1)
                         || Program.Game.Map.Visible(x, Program.Game.Map.down - 1))
                     {
@@ -269,7 +295,7 @@ namespace WinFormsApp1
                 right = GetX(Program.Game.Map.right + 1);
             else
             {
-                for (int x = mapCoords.Right; x >= mapCoords.Left; x--)
+                for (int x = gameRect.Right; x >= gameRect.Left; x--)
                     if (Program.Game.Map.Visible(x, Program.Game.Map.up + 1)
                         || Program.Game.Map.Visible(x, Program.Game.Map.down - 1))
                     {
@@ -282,7 +308,7 @@ namespace WinFormsApp1
                 down = GetY(Program.Game.Map.down);
             else
             {
-                for (int y = mapCoords.Top; y <= mapCoords.Bottom; y++)
+                for (int y = gameRect.Top; y <= gameRect.Bottom; y++)
                     if (Program.Game.Map.Visible(Program.Game.Map.right + 1, y)
                         || Program.Game.Map.Visible(Program.Game.Map.left - 1, y))
                     {
@@ -295,7 +321,7 @@ namespace WinFormsApp1
                 up = GetY(Program.Game.Map.up + 1);
             else
             {
-                for (int y = mapCoords.Bottom; y >= mapCoords.Top; y--)
+                for (int y = gameRect.Bottom; y >= gameRect.Top; y--)
                     if (Program.Game.Map.Visible(Program.Game.Map.right + 1, y)
                         || Program.Game.Map.Visible(Program.Game.Map.left - 1, y))
                     {
@@ -324,28 +350,122 @@ namespace WinFormsApp1
 
         private float GetX(int x)
         {
-            return GetCoord(x, mapCoords.X, xScale);
+            return GetCoord(x, xStart);
         }
         private float GetY(int y)
         {
-            return GetCoord(y, mapCoords.Y, yScale);
+            return GetCoord(y, yStart);
         }
-        private static float GetCoord(int val, int mapCoord, float scale)
+        private float GetCoord(int val, float start)
         {
-            return (val - mapCoord) * scale;
+            return val * scale - start + padding;
         }
 
-        private void Scale()
+        private int GetMapX(float x)
         {
-            xScale = (this.Width - 1 - padding * 2) / (float)mapCoords.Width;
-            yScale = (this.Height - 1 - padding * 2) / (float)mapCoords.Height;
-            xScale = yScale = Math.Min(xScale, yScale);
+            return GetMapCoord(x, xStart);
+        }
+        private int GetMapY(float y)
+        {
+            return GetMapCoord(y, yStart);
+        }
+        private int GetMapCoord(float val, float start)
+        {
+            return (int)Math.Floor((start + val - padding) / scale);
+        }
+
+        private Rectangle GetMapCoords()
+        {
+            int x = GetMapX(0), y = GetMapY(0), w = GetMapX(Width), h = GetMapY(Height);
+            return new Rectangle(x, y, w - x + 1, h - y + 1);
+        }
+
+        private void Map_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.W)
+                scrollDown = true;
+            else if (e.KeyCode == Keys.A)
+                scrollLeft = true;
+            else if (e.KeyCode == Keys.S)
+                scrollUp = true;
+            else if (e.KeyCode == Keys.D)
+                scrollRight = true;
+            if (scrollDown || scrollLeft || scrollUp || scrollRight)
+                timer.Start();
+        }
+        private void Map_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.W)
+                scrollDown = false;
+            else if (e.KeyCode == Keys.A)
+                scrollLeft = false;
+            else if (e.KeyCode == Keys.S)
+                scrollUp = false;
+            else if (e.KeyCode == Keys.D)
+                scrollRight = false;
+            if (!(scrollDown || scrollLeft || scrollUp || scrollRight))
+                timer.Stop();
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            float xs = xStart, ys = yStart;
+
+            const float scrollAmt = 16.9f;
+            if (scrollDown && !scrollUp)
+                this.yStart -= scrollAmt;
+            if (scrollUp && !scrollDown)
+                this.yStart += scrollAmt;
+            if (scrollLeft && !scrollRight)
+                this.xStart -= scrollAmt;
+            if (scrollRight && !scrollLeft)
+                this.xStart += scrollAmt;
+
+            CheckBounds(xs, ys);
+
+            Refresh();
+        }
+        private void Map_MouseWheel(object sender, MouseEventArgs e)
+        {
+            float mult = e.Delta / 91f;
+            if (mult < 0)
+                mult = -1 / mult;
+            this.scale *= mult;
+
+            if (scale < 3)
+                scale = 3;
+            else if (scale > 390)
+                scale = 390;
+
+            if (this.CheckBounds(xStart, yStart))
+                this.scale /= mult;
+            this.Refresh();
+        }
+        private bool CheckBounds(float xs, float ys)
+        {
+            bool retVal = false;
+            Rectangle mapCoords = GetMapCoords();
+            Rectangle gameRect = Program.Game.Map.GameRect();
+            if (mapCoords.Right - 1 <= gameRect.Left || mapCoords.Left >= gameRect.Right - 1)
+            {
+                retVal = true;
+                this.xStart = xs;
+            }
+            if (mapCoords.Bottom - 1 <= gameRect.Top || mapCoords.Top >= gameRect.Bottom - 1)
+            {
+                retVal = true;
+                this.yStart = ys;
+            }
+            return retVal;
         }
 
         private void Map_MouseClick(object sender, MouseEventArgs e)
         {
-            int x = (int)((e.X - padding) / xScale) + mapCoords.X;
-            int y = (int)((e.Y - padding) / yScale) + mapCoords.Y;
+            scrollDown = false;
+            scrollLeft = false;
+            scrollUp = false;
+            scrollRight = false;
+
+            int x = GetMapX(e.X), y = GetMapY(e.Y);
 
             Tile clicked = Program.Game.Map.GetVisibleTile(x, y);
             Tile orig = SelTile;

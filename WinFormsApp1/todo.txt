@@ -1,17 +1,18 @@
-scrolling/panning
-	keys to jump to cardinal dir edges
 build factories/mobile factory
 defensive structure
-serialize numIncs
 
+different enemy strength in different dirs
 better combat logging 
 	better formatting
 	break down why?  
 	also log to free space on panel 	
 build range
+	and fix hideous build form
+scrolling/panning limits can still only show non-visible corner and hence blank screen
 mouse over attack to see specific range
 mouse over move spot to see range from there
 hotkey to stay put for turn, mechanism to un-stay
+hotkeys to jump to cardinal dir edges
 proper hiding of map borders until seen 
 	enforce at project level
 	can be gleaned from vision mechanics before seeing line 

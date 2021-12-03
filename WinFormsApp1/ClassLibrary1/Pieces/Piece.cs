@@ -15,6 +15,7 @@ namespace ClassLibrary1.Pieces
     {
         public readonly Game Game;
         public readonly Side _side;
+        public readonly int PieceNum;
 
         Piece IBehavior.Piece => this;
         protected IReadOnlyCollection<IBehavior> behavior;
@@ -36,6 +37,7 @@ namespace ClassLibrary1.Pieces
             this.Game = tile.Map.Game;
             this._side = side;
             this._tile = tile;
+            this.PieceNum = Game.GetPieceNum(this.GetType());
         }
 
         internal virtual void Die()

@@ -10,9 +10,6 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable, IMovable, IRepair, IBuilder.IBuildExtractor
     {
-        private static int numInc = 1;
-        private readonly int num;
-
         private readonly IKillable killable;
         private readonly IMovable movable;
         private readonly IRepair repair;
@@ -23,7 +20,6 @@ namespace ClassLibrary1.Pieces.Players
         private Constructor(Map.Tile tile, double vision, IKillable.Values killable, IMovable.Values movable, IRepair.Values repair)
             : base(tile, vision)
         {
-            this.num = numInc++;
             this.killable = new Killable(this, killable);
             this.movable = new Movable(this, movable);
             this.repair = new Repair(this, repair);
@@ -90,7 +86,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public override string ToString()
         {
-            return "Constructor " + num;
+            return "Constructor " + PieceNum;
         }
 
         #region IKillable

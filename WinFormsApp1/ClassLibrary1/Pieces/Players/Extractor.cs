@@ -11,9 +11,6 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Extractor : PlayerPiece, IKillable
     {
-        private static int numInc = 1;
-        private readonly int num;
-
         private readonly IKillable killable;
 
         public readonly Resource Resource;
@@ -22,7 +19,6 @@ namespace ClassLibrary1.Pieces.Players
         private Extractor(Resource Resource, double vision, IKillable.Values killable)
             : base(Resource.Tile, vision)
         {
-            this.num = numInc++;
             this.killable = new Killable(this, killable);
             SetBehavior(this.killable);
 
@@ -75,7 +71,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public override string ToString()
         {
-            return Resource.GetResourceName() + " Extractor " + num;
+            return Resource.GetResourceName() + " Extractor " + PieceNum;
         }
 
         #region IKillable

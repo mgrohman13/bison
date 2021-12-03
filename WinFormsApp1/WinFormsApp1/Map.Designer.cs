@@ -36,6 +36,9 @@ namespace WinFormsApp1
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Name = "Map";
+            this.Load += new System.EventHandler(this.Map_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Map_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Map_KeyUp);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Map_MouseClick);
             this.ResumeLayout(false);
 

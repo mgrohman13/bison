@@ -11,9 +11,6 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Mech : PlayerPiece, IKillable, IAttacker, IMovable
     {
-        private static int numInc = 1;
-        private readonly int num;
-
         private readonly IKillable killable;
         private readonly IAttacker attacker;
         private readonly IMovable movable;
@@ -23,7 +20,6 @@ namespace ClassLibrary1.Pieces.Players
         private Mech(Map.Tile tile, MechBlueprint blueprint)
             : base(tile, blueprint.Vision)
         {
-            this.num = numInc++;
             this.killable = new Killable(this, blueprint.Killable);
             this.attacker = new Attacker(this, blueprint.Attacks);
             this.movable = new Movable(this, blueprint.Movable);
@@ -102,7 +98,7 @@ namespace ClassLibrary1.Pieces.Players
                 new(MoveInc, MoveMax, MoveLimit));
             Cost(out double energy, out double mass, blueprint, Game.Player.GetResearchMult());
             return Consts.GetRepairCost(energy, mass);
-        } 
+        }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
@@ -112,7 +108,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public override string ToString()
         {
-            return "Mech " + num;
+            return "Mech " + PieceNum;
         }
 
         #region IKillable

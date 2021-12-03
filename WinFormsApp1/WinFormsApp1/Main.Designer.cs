@@ -71,6 +71,7 @@ namespace WinFormsApp1
             this.mapMini.SelTile = null;
             this.mapMini.Size = new System.Drawing.Size(500, 300);
             this.mapMini.TabIndex = 3;
+            this.mapMini.Visible = false;
             // 
             // label1
             // 

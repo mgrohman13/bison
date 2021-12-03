@@ -30,6 +30,8 @@ namespace ClassLibrary1
         private bool _gameOver;
         public bool GameOver => _gameOver;
 
+        private readonly Dictionary<string, int> _pieceNums;
+
         //temp
         private MechBlueprint _blueprint1;
         private MechBlueprint _blueprint2;
@@ -45,6 +47,8 @@ namespace ClassLibrary1
             this._turn = 0;
             this._savePath = savePath;
             this._gameOver = false;
+
+            this._pieceNums = new Dictionary<string, int>();
 
             Player.CreateCore();
             Point constructor = Game.Rand.SelectValue(new Point[] {
@@ -68,6 +72,15 @@ namespace ClassLibrary1
 
             GenBlueprints();
         }
+
+        internal int GetPieceNum(Type type)
+        {
+            string key = type.FullName;
+            _pieceNums.TryGetValue(key, out int num);
+            _pieceNums[key] = ++num;
+            return num;
+        }
+
         internal void End()
         {
             _gameOver = true;

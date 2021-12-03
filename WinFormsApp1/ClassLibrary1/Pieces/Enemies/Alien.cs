@@ -11,9 +11,6 @@ namespace ClassLibrary1.Pieces.Enemies
     [Serializable]
     public class Alien : EnemyPiece, IKillable, IAttacker, IMovable
     {
-        private static int numInc = 1;
-        private readonly int num;
-
         private readonly IKillable killable;
         private readonly IAttacker attacker;
         private readonly IMovable movable;
@@ -23,7 +20,6 @@ namespace ClassLibrary1.Pieces.Enemies
         private Alien(Map.Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
             : base(tile)
         {
-            this.num = numInc++;
             this.killable = new Killable(this, killable);
             this.attacker = new Attacker(this, attacks);
             this.movable = new Movable(this, movable);
@@ -40,7 +36,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public override string ToString()
         {
-            return "Alien " + num;
+            return "Alien " + PieceNum;
         }
 
         #region IKillable
