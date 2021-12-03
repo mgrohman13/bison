@@ -14,14 +14,19 @@ namespace ClassLibrary1
         public const double MapCoordSize = 16.9;
         public const double MapDev = .13;
         public const int MinMapCoord = 9;
-        public const double ResourceAvgDist = 26;
+        public const double ResourceAvgDist = 21;
 
-        public const double ResearchFactor = 6500;
+        public const double ResearchFactor = 3900;
 
+        public const double DifficultyTurns = 52;
+        public const double DifficultyPow = 1.3;
+        public const double EnemyEnergy = 169;
+
+        public const double HitsIncDev = .065;
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
-        public const double ShielDev = .065;
         public const double ShieldLimitPow = 1.69;
+        public const double MechResilience = .52;
 
         public const double ResourceDistAdd = 26;
         public const double ResourceDistDiv = 78;
@@ -61,6 +66,19 @@ namespace ClassLibrary1
         public const double UpkeepPerShield = 2;
         public const double UpkeepPerMove = .5;
 
+        public static double GetDamagedValue(Piece piece, double value, int min)
+        {
+            if (piece is IKillable killable)
+                return min + (value - min) * Math.Pow(killable.HitsCur / killable.HitsMax, 1 - killable.Resilience);
+            return value;
+        }
+
+        public const double MechCostMult = 16.9;
+        public const double MechMassDiv = 1.69;
+
+        public const double RepairCost = .21;
+        public const double EnergyRepairDiv = 2.1;
+
         public static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
         {
             double start = cur;
@@ -69,7 +87,7 @@ namespace ClassLibrary1
                 double startMax = Math.Max(cur, max);
 
                 if (rand)
-                    inc = Game.Rand.GaussianCapped(inc, dev, dev);
+                    inc = Game.Rand.GaussianCapped(inc, dev);
                 cur += inc;
 
                 double extra = cur - startMax;
@@ -86,6 +104,11 @@ namespace ClassLibrary1
                 //Debug.WriteLine(cur);
             }
             return cur - start;
+        }
+
+        public static double GetRepairCost(double energy, double mass)
+        {
+            return (mass + energy / Consts.EnergyRepairDiv) * Consts.RepairCost;
         }
     }
 }

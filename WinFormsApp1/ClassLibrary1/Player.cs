@@ -11,27 +11,30 @@ using ClassLibrary1.Pieces.Players;
 namespace ClassLibrary1
 {
     [Serializable]
-    public class Player : ISide
+    public class Player : Side
     {
-        private readonly ISide side;
-
         private Core _core;
+        private double _research;
 
-        private double _energy, _mass, _research;
-        public double Energy => _energy;
-        public double Mass => _mass;
+        public IReadOnlyCollection<Piece> Pieces => _pieces;
+        public Core Core => _core;
+        new public double Energy => base.Energy;
+        new public double Mass => base.Mass;
         public double Research => _research;
 
         internal Player(Game game)
+            : base(game, 1000, 1000)
         {
-            this.side = new Side(game);
-            this._energy = 1000;
-            this._mass = 1000;
             this._research = 0;
         }
         internal void CreateCore()
         {
             this._core = Core.NewCore(Game);
+        }
+
+        internal double GetResearchMult()
+        {
+            return (Research + Consts.ResearchFactor) / Consts.ResearchFactor;
         }
 
         internal bool Spend(double energy, double mass)
@@ -55,52 +58,14 @@ namespace ClassLibrary1
             foreach (PlayerPiece piece in Pieces)
                 piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
         }
-        internal void EndTurn()
+        internal override void EndTurn()
         {
             GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc, out double researchUpk);
             this._energy += energyInc - energyUpk;
             this._mass += massInc - massUpk;
             this._research += researchInc - researchUpk;
 
-            side.EndTurn();
+            base.EndTurn();
         }
-
-        #region ISide
-
-        public Game Game => side.Game;
-        public Core Core => _core;
-        IReadOnlyCollection<Piece> ISide.Pieces => Pieces;
-        public IReadOnlyCollection<Piece> Pieces => side.Pieces;
-
-        internal double GetResearchMult()
-        {
-            return (Research + Consts.ResearchFactor) / Consts.ResearchFactor;
-        }
-
-        void ISide.AddPiece(Piece piece)
-        {
-            AddPiece(piece);
-        }
-
-        internal void AddPiece(Piece piece)
-        {
-            side.AddPiece(piece);
-        }
-
-        void ISide.RemovePiece(Piece piece)
-        {
-            RemovePiece(piece);
-        }
-        internal void RemovePiece(Piece piece)
-        {
-            side.RemovePiece(piece);
-        }
-
-        void ISide.EndTurn()
-        {
-            EndTurn();
-        }
-
-        #endregion ISide
     }
 }

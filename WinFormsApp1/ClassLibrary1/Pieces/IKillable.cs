@@ -11,8 +11,11 @@ namespace ClassLibrary1.Pieces
 {
     public interface IKillable : IBehavior
     {
+        internal double RepairCost { get; }
+
         public double HitsCur { get; }
         public double HitsMax { get; }
+        public double Resilience { get; }
         public double Armor { get; }
         public double ShieldCur { get; }
         public double ShieldInc { get; }
@@ -22,25 +25,29 @@ namespace ClassLibrary1.Pieces
 
         public double GetInc();
 
-        internal void Damage(ref double damage, ref double shieldDmg);
+        internal void Damage(double damage, double shieldDmg);
+        internal void Repair(double hits);
 
+        [Serializable]
         public class Values
         {
-            private readonly double _hitsMax, _armor, _shieldInc, _shieldMax, _shieldLimit;
-            public Values(double hitsMax) : this(hitsMax, 0) { }
-            public Values(double hitsMax, double armor) : this(hitsMax, armor, 0, 0, 0) { }
-            public Values(double hitsMax, double shieldInc, double shieldMax, double shieldLimit) : this(hitsMax, 0, shieldInc, shieldMax, shieldLimit) { }
-            public Values(double hitsMax, double armor, double shieldInc, double shieldMax, double shieldLimit)
+            private readonly double _hitsMax, _resilience, _armor, _shieldInc, _shieldMax, _shieldLimit;
+            public Values(double hitsMax, double resilience) : this(hitsMax, resilience, 0, 0, 0, 0) { }
+            //public Values(double hitsMax, double resilience, double armor) : this(hitsMax, resilience, armor, 0, 0, 0) { }
+            //public Values(double hitsMax, double resilience, double shieldInc, double shieldMax, double shieldLimit) : this(hitsMax, resilience, 0, shieldInc, shieldMax, shieldLimit) { }
+            public Values(double hitsMax, double resilience, double armor, double shieldInc, double shieldMax, double shieldLimit)
             {
                 if (shieldInc <= 0 || shieldMax <= 0 || shieldLimit <= 0)
                     shieldInc = shieldMax = shieldLimit = 0;
                 this._hitsMax = hitsMax;
+                this._resilience = Game.Rand.GaussianCapped(resilience, .078, Math.Max(0, 2 * resilience - 1));
                 this._armor = armor;
                 this._shieldInc = shieldInc;
                 this._shieldMax = shieldMax;
                 this._shieldLimit = shieldLimit;
             }
             public double HitsMax => _hitsMax;
+            public double Resilience => _resilience;
             public double Armor => _armor;
             public double ShieldInc => _shieldInc;
             public double ShieldMax => _shieldMax;

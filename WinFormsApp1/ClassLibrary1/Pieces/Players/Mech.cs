@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Mech : PlayerPiece, IKillable, IAttacker, IMovable
     {
-        private static int numInc = 0;
+        private static int numInc = 1;
         private readonly int num;
 
         private readonly IKillable killable;
@@ -39,13 +39,17 @@ namespace ClassLibrary1.Pieces.Players
         }
         public static void Cost(Game game, out double energy, out double mass, MechBlueprint blueprint)
         {
+            Cost(out energy, out mass, blueprint, game.Player.GetResearchMult());
+        }
+        internal static void Cost(out double energy, out double mass, MechBlueprint blueprint, double researchMult)
+        {
             var killable = blueprint.Killable;
             var attacks = blueprint.Attacks;
             var movable = blueprint.Movable;
 
             double hp = killable.HitsMax / (1 - Math.Pow(killable.Armor, 1.13));
             double shield = killable.ShieldInc * 13 + killable.ShieldMax * 1 + killable.ShieldLimit / 2.6;
-            shield *= 2 / 3.0;
+            shield /= 3.0;
 
             double dmg = 0, rng = 0, ap = 0, sp = 0, cnt = 0;
             foreach (IAttacker.Values attack in attacks)
@@ -70,7 +74,6 @@ namespace ClassLibrary1.Pieces.Players
             double move = 26 * movable.MoveInc / 1.0 + 2 * movable.MoveMax / 2.1 + 1 * movable.MoveLimit / 3.9;
             move /= 26 + 2 + 1;
 
-            double researchMult = game.Player.GetResearchMult();
             hp /= Math.Pow(researchMult, .9);
             shield /= Math.Pow(researchMult, .7);
             rng /= Math.Pow(researchMult, .6);
@@ -78,8 +81,9 @@ namespace ClassLibrary1.Pieces.Players
             vision /= Math.Pow(researchMult, .5);
             move /= Math.Pow(researchMult, .4);
             move += 3.9;
-            double total = Math.Sqrt((hp + shield + (rng * 3.9)) * (dmg + vision) * move) * 16.9;
+            double total = Math.Sqrt((hp + shield + (rng * 3.9)) * (dmg + vision) * move) * Consts.MechCostMult;
 
+            shield *= 2.6;
             shield = (1 + shield) / (hp + shield);
             ap = 1 + (1 + ap) / (1 + ap + sp);
             rng /= (13 + rng);
@@ -87,8 +91,18 @@ namespace ClassLibrary1.Pieces.Players
             double energyPct = Math.Pow(shield / 2.0 * ap / 2.0 * rng * move, 1 / 4.5);
 
             energy = total * energyPct;
-            mass = (total - energy) / 1.69;
+            mass = (total - energy) / Consts.MechMassDiv;
         }
+
+        double IKillable.RepairCost => GetRepairCost();
+        public double GetRepairCost()
+        {
+            MechBlueprint blueprint = new(Vision, new(HitsMax, Consts.MechResilience, Armor, ShieldInc, ShieldMax, ShieldLimit),
+                Attacks.Select(a => new IAttacker.Values(a.Damage, a.ArmorPierce, a.ShieldPierce, a.Dev, a.Range)).ToList(),
+                new(MoveInc, MoveMax, MoveLimit));
+            Cost(out double energy, out double mass, blueprint, Game.Player.GetResearchMult());
+            return Consts.GetRepairCost(energy, mass);
+        } 
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
@@ -105,6 +119,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public double HitsCur => killable.HitsCur;
         public double HitsMax => killable.HitsMax;
+        public double Resilience => killable.Resilience;
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
@@ -117,9 +132,13 @@ namespace ClassLibrary1.Pieces.Players
             return killable.GetInc();
         }
 
-        void IKillable.Damage(ref double damage, ref double shieldDmg)
+        void IKillable.Repair(double hits)
         {
-            killable.Damage(ref damage, ref shieldDmg);
+            killable.Repair(hits);
+        }
+        void IKillable.Damage(double damage, double shieldDmg)
+        {
+            killable.Damage(damage, shieldDmg);
         }
 
         #endregion IKillable

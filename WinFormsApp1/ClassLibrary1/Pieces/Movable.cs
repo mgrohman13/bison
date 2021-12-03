@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces
     public class Movable : IMovable
     {
         private readonly Piece _piece;
-        private readonly IMovable.Values values;
+        private readonly IMovable.Values _values;
 
         private double _moveCur;
 
@@ -22,19 +22,19 @@ namespace ClassLibrary1.Pieces
         public Movable(Piece piece, IMovable.Values values)
         {
             this._piece = piece;
-            this.values = values;
+            this._values = values;
 
             this._moveCur = 0;
         }
 
         public double MoveCur => _moveCur;
-        public double MoveInc => values.MoveInc;
-        public double MoveMax => values.MoveMax;
-        public double MoveLimit => values.MoveLimit;
+        public double MoveInc => _values.MoveInc;
+        public double MoveMax => _values.MoveMax;
+        public double MoveLimit => _values.MoveLimit;
 
         bool IMovable.Move(Map.Tile to)
         {
-            bool move = (Piece.IsPlayer && to != null && to.Piece == null && Piece.Game.Map.Visible(to));
+            bool move = (Piece.IsPlayer && to != null && to.Piece == null && to.Visible);
             return Move(move, to);
         }
         bool IMovable.EnemyMove(Map.Tile to)
@@ -56,9 +56,9 @@ namespace ClassLibrary1.Pieces
             }
             return false;
         }
-        double IBehavior.GetUpkeep()
+        void IBehavior.GetUpkeep(ref double energy, ref double mass)
         {
-            return GetInc(false) * Consts.UpkeepPerMove;
+            energy += GetInc(false) * Consts.UpkeepPerMove;
         }
         void IBehavior.EndTurn()
         {

@@ -22,9 +22,8 @@ namespace ClassLibrary1.Pieces
             this._piece = piece;
         }
 
-        double IBehavior.GetUpkeep()
-        {
-            return 0;
+        void IBehavior.GetUpkeep(ref double energy, ref double mass)
+        { 
         }
         void IBehavior.EndTurn()
         {
@@ -35,6 +34,7 @@ namespace ClassLibrary1.Pieces
             return (tile != null && tile.Visible && tile.GetDistance(this.Piece.Tile) == 1);
         }
 
+        [Serializable]
         public class BuildConstructor : Builder, IBuilder.IBuildConstructor
         {
             public BuildConstructor(Piece piece)
@@ -54,6 +54,7 @@ namespace ClassLibrary1.Pieces
                 return null;
             }
         }
+        [Serializable]
         public class BuildExtractor : Builder, IBuilder.IBuildExtractor
         {
             public BuildExtractor(Piece piece)
@@ -73,6 +74,7 @@ namespace ClassLibrary1.Pieces
                 return null;
             }
         }
+        [Serializable]
         public class BuildMech : Builder, IBuilder.IBuildMech
         {
             public BuildMech(Piece piece)

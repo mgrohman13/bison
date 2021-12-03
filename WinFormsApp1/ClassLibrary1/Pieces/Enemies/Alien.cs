@@ -8,9 +8,10 @@ using System.Collections.ObjectModel;
 
 namespace ClassLibrary1.Pieces.Enemies
 {
+    [Serializable]
     public class Alien : EnemyPiece, IKillable, IAttacker, IMovable
     {
-        private static int numInc = 0;
+        private static int numInc = 1;
         private readonly int num;
 
         private readonly IKillable killable;
@@ -19,7 +20,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public Piece Piece => this;
 
-        private Alien(Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+        private Alien(Map.Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
             : base(tile)
         {
             this.num = numInc++;
@@ -28,12 +29,14 @@ namespace ClassLibrary1.Pieces.Enemies
             this.movable = new Movable(this, movable);
             SetBehavior(this.killable, this.attacker, this.movable);
         }
-        internal static Alien NewAlien(Map.Tile tile, IKillable.Values killable, List<IAttacker.Values> attacks, IMovable.Values movable)
+        internal static Alien NewAlien(Map.Tile tile, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
             Alien obj = new(tile, killable, attacks, movable);
             tile.Map.Game.AddPiece(obj);
             return obj;
         }
+
+        double IKillable.RepairCost => throw new NotImplementedException();
 
         public override string ToString()
         {
@@ -44,6 +47,7 @@ namespace ClassLibrary1.Pieces.Enemies
 
         public double HitsCur => killable.HitsCur;
         public double HitsMax => killable.HitsMax;
+        public double Resilience => killable.Resilience;
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
@@ -56,9 +60,13 @@ namespace ClassLibrary1.Pieces.Enemies
             return killable.GetInc();
         }
 
-        void IKillable.Damage(ref double damage, ref double shieldDmg)
+        void IKillable.Repair(double hits)
         {
-            killable.Damage(ref damage, ref shieldDmg);
+            killable.Repair(hits);
+        }
+        void IKillable.Damage(double damage, double shieldDmg)
+        {
+            killable.Damage(damage, shieldDmg);
         }
 
         #endregion IKillable

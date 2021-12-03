@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
+    [Serializable]
     public class Artifact : Resource
     {
         private Artifact(Map.Tile tile)
@@ -21,19 +22,25 @@ namespace ClassLibrary1.Pieces.Terrain
         public override void GetCost(out double energy, out double mass)
         {
             double mult = CostMult(Consts.ArtifactResearchInc);
-            energy = 1500 * mult;
-            mass = 1000 * mult;
+            energy = 1000 * mult;
+            mass = 750 * mult;
         }
 
-        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        public override void GenerateResources(Piece piece, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
-            researchInc += Value;
-            massInc += Value / Consts.ArtifactMassIncDiv;
-            energyUpk += Value / Consts.ArtifactEnergyUpkDiv;
+            double value = Consts.GetDamagedValue(piece, Value, 0);
+            researchInc += value;
+            massInc += value / Consts.ArtifactMassIncDiv;
+            energyUpk += value / Consts.ArtifactEnergyUpkDiv;
         }
+
         public override string GetResourceName()
         {
             return "Research";
+        }
+        public override string ToString()
+        {
+            return "Artifact";
         }
     }
 }

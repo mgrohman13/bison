@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
+    [Serializable]
     public class Metal : Resource
     {
         private Metal(Map.Tile tile)
@@ -25,14 +26,19 @@ namespace ClassLibrary1.Pieces.Terrain
             mass = 250 * mult;
         }
 
-        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        public override void GenerateResources(Piece piece, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
-            massInc += Value;
-            energyUpk += Value / Consts.MetalEnergyUpkDiv;
+            double value = Consts.GetDamagedValue(piece, Value, 0);
+            massInc += value;
+            energyUpk += value / Consts.MetalEnergyUpkDiv;
         }
         public override string GetResourceName()
         {
             return "Mass";
+        }
+        public override string ToString()
+        {
+            return "Metal";
         }
     }
 }

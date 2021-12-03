@@ -12,44 +12,42 @@ using Tile = ClassLibrary1.Map.Tile;
 namespace ClassLibrary1
 {
     [Serializable]
-    public class Enemy : ISide
+    public class Enemy : Side
     {
-        private readonly ISide side;
+        internal IReadOnlyCollection<Piece> Pieces => _pieces;
 
         internal Enemy(Game game)
+            : base(game, 0, 0)
         {
-            this.side = new Side(game);
         }
 
-        #region ISide
-
-        public Game Game => side.Game;
-        IReadOnlyCollection<Piece> ISide.Pieces => side.Pieces;
-        internal IReadOnlyCollection<Piece> Pieces => side.Pieces;
-
-        void ISide.AddPiece(Piece piece)
-        {
-            AddPiece(piece);
-        }
-        internal void AddPiece(Piece piece)
-        {
-            side.AddPiece(piece);
-        }
-        void ISide.RemovePiece(Piece piece)
-        {
-            RemovePiece(piece);
-        }
-        internal void RemovePiece(Piece piece)
-        {
-            side.RemovePiece(piece);
-        }
-
-        internal void PlayTurn()
+        internal void PlayTurn(double difficulty, Func<MechBlueprint> Blueprint)
         {
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 PlayTurn(piece);
 
+            double e, m;
+            e = m = 0;
+            foreach (Piece piece in Game.Rand.Iterate(Pieces))
+                piece.GetUpkeep(ref e, ref m);
+            this._energy -= e + m;
+
             this.EndTurn();
+
+            this._energy += this.Mass + difficulty * Consts.EnemyEnergy;
+            this._mass = 0;
+            while (true)
+            {
+                MechBlueprint blueprint = Blueprint();
+                Mech.Cost(out double energy, out double mass, blueprint, difficulty);
+                energy += mass;
+                if (this.Energy > energy)
+                {
+                    this._energy -= energy;
+                    Alien.NewAlien(Game.Map.GetEnemyTile(), blueprint.Killable, blueprint.Attacks, blueprint.Movable);
+                }
+                else break;
+            }
         }
         private void PlayTurn(Piece piece)
         {
@@ -80,16 +78,5 @@ namespace ClassLibrary1
                     return Game.Rand.Round(ushort.MaxValue / dist / dist);
                 }));
         }
-
-        void ISide.EndTurn()
-        {
-            EndTurn();
-        }
-        internal void EndTurn()
-        {
-            side.EndTurn();
-        }
-
-        #endregion ISide
     }
 }

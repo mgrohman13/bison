@@ -7,30 +7,31 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Players
 {
-    public class Constructor : PlayerPiece, IKillable, IMovable, IBuilder.IBuildExtractor
+    [Serializable]
+    public class Constructor : PlayerPiece, IKillable, IMovable, IRepair, IBuilder.IBuildExtractor
     {
-        private static int numInc = 0;
+        private static int numInc = 1;
         private readonly int num;
 
         private readonly IKillable killable;
         private readonly IMovable movable;
+        private readonly IRepair repair;
         private readonly IBuilder.IBuildExtractor buildExtractor;
 
         public Piece Piece => this;
 
-        private Constructor(Map.Tile tile, double vision, IKillable.Values killable, IMovable.Values movable)
+        private Constructor(Map.Tile tile, double vision, IKillable.Values killable, IMovable.Values movable, IRepair.Values repair)
             : base(tile, vision)
         {
             this.num = numInc++;
             this.killable = new Killable(this, killable);
             this.movable = new Movable(this, movable);
+            this.repair = new Repair(this, repair);
             this.buildExtractor = new Builder.BuildExtractor(this);
-            SetBehavior(this.killable, this.movable, this.buildExtractor);
+            SetBehavior(this.killable, this.movable, this.repair, this.buildExtractor);
         }
         internal static Constructor NewConstructor(Map.Tile tile)
         {
-            double researchMult = tile.Map.Game.Player.GetResearchMult();
-
             double hits = 30;
             double moveInc = 3, moveMax = 7, moveLimit = 12;
             double armor = 0, shieldInc = 0, shieldMax = 0, shieldLimit = 0;
@@ -44,7 +45,12 @@ namespace ClassLibrary1.Pieces.Players
                 shieldLimit = 30;
             }
 
-            researchMult = Math.Pow(researchMult, .3);
+            double repairRange = Game.Rand.GaussianOE(Math.PI, .21, .26, 1);
+            double repairRate = .065 * Math.Pow(2.6 / repairRange, .78);
+
+            double vision = 4.5;
+
+            double researchMult = Math.Pow(tile.Map.Game.Player.GetResearchMult(), .4);
             hits *= researchMult;
             if (armor > 0)
                 armor = 1 - (1 - armor) / researchMult;
@@ -54,16 +60,26 @@ namespace ClassLibrary1.Pieces.Players
             moveInc *= researchMult;
             moveMax *= researchMult;
             moveLimit *= researchMult;
+            repairRange *= researchMult;
+            repairRate *= researchMult;
+            vision *= researchMult;
 
-            Constructor obj = new(tile, 4.5, new(hits, armor, shieldInc, shieldMax, shieldLimit), new(moveInc, moveMax, moveLimit));
+            Constructor obj = new(tile, vision, new(hits, .39, armor, shieldInc, shieldMax, shieldLimit), new(moveInc, moveMax, moveLimit), new(repairRange, repairRate));
             tile.Map.Game.AddPiece(obj);
             return obj;
         }
         public static void Cost(Game game, out double energy, out double mass)
         {
-            double researchMult = Math.Pow(game.Player.GetResearchMult(), .4);
+            double researchMult = Math.Pow(game.Player.GetResearchMult(), .3);
             energy = 750 / researchMult;
             mass = 750 / researchMult;
+        }
+
+        double IKillable.RepairCost => GetRepairCost();
+        public double GetRepairCost()
+        {
+            Cost(Game, out double energy, out double mass);
+            return Consts.GetRepairCost(energy, mass);
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
@@ -81,6 +97,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public double HitsCur => killable.HitsCur;
         public double HitsMax => killable.HitsMax;
+        public double Resilience => killable.Resilience;
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
@@ -93,9 +110,13 @@ namespace ClassLibrary1.Pieces.Players
             return killable.GetInc();
         }
 
-        void IKillable.Damage(ref double damage, ref double shieldDmg)
+        void IKillable.Repair(double hits)
         {
-            killable.Damage(ref damage, ref shieldDmg);
+            killable.Repair(hits);
+        }
+        void IKillable.Damage(double damage, double shieldDmg)
+        {
+            killable.Damage(damage, shieldDmg);
         }
 
         #endregion IKillable
@@ -122,6 +143,18 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         #endregion IMovable
+
+        #region IRepair 
+
+        public double Range => repair.Range;
+        public double Rate => repair.Rate;
+
+        double IRepair.GetRepairInc(IKillable killable)
+        {
+            return repair.GetRepairInc(killable);
+        }
+
+        #endregion IRepair 
 
         #region IBuilding 
 

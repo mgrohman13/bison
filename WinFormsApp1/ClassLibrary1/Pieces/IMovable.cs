@@ -21,6 +21,7 @@ namespace ClassLibrary1.Pieces
         public bool Move(Map.Tile to);
         internal bool EnemyMove(Map.Tile to);
 
+        [Serializable]
         public class Values
         {
             private readonly double _moveInc, _moveMax, _moveLimit;

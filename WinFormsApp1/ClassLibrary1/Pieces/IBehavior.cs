@@ -10,7 +10,7 @@ namespace ClassLibrary1.Pieces
     {
         public Piece Piece { get; }
 
-        internal double GetUpkeep();
+        internal void GetUpkeep(ref double energy, ref double mass);
         public void EndTurn();
     }
 }

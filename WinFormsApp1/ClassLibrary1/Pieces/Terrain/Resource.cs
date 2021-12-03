@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
+    [Serializable]
     public abstract class Resource : Piece
     {
         public readonly double Sustain;
@@ -26,7 +27,7 @@ namespace ClassLibrary1.Pieces.Terrain
             this.Sustain = sustain;
         }
 
-        public abstract void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk);
+        public abstract void GenerateResources(Piece piece, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk);
 
         internal void Extract()
         {

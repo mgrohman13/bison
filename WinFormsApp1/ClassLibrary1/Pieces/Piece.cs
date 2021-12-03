@@ -14,7 +14,7 @@ namespace ClassLibrary1.Pieces
     public abstract class Piece : IBehavior
     {
         public readonly Game Game;
-        public readonly ISide _side;
+        public readonly Side _side;
 
         Piece IBehavior.Piece => this;
         protected IReadOnlyCollection<IBehavior> behavior;
@@ -23,16 +23,15 @@ namespace ClassLibrary1.Pieces
             this.behavior = behavior.ToList().AsReadOnly();
         }
 
-        [NonSerialized]
         private Map.Tile _tile;
 
-        public ISide Side => _side;
+        public Side Side => _side;
         public Map.Tile Tile => _tile;
 
         public bool IsPlayer => Side != null && Side == Game.Player;
         public bool IsEnemy => Side != null && Side == Game.Enemy;
 
-        internal Piece(ISide side, Map.Tile tile)
+        internal Piece(Side side, Map.Tile tile)
         {
             this.Game = tile.Map.Game;
             this._side = side;
@@ -48,16 +47,18 @@ namespace ClassLibrary1.Pieces
         {
             Game.Map.RemovePiece(this);
             this._tile = tile;
-            Game.Map.AddPiece(this);
+            if (tile != null)
+                Game.Map.AddPiece(this);
         }
 
-        double IBehavior.GetUpkeep()
+        void IBehavior.GetUpkeep(ref double energy, ref double mass)
         {
-            return GetUpkeep();
+            GetUpkeep(ref energy, ref mass);
         }
-        public virtual double GetUpkeep()
+        internal virtual void GetUpkeep(ref double energy, ref double mass)
         {
-            return behavior.Sum(b => b.GetUpkeep());
+            foreach (IBehavior behavior in this.behavior)
+                behavior.GetUpkeep(ref energy, ref mass);
         }
         void IBehavior.EndTurn()
         {

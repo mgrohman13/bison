@@ -21,8 +21,17 @@ namespace ClassLibrary1.Pieces.Players
 
         public virtual void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
-            if (this is IBehavior behavior)
-                energyUpk += behavior.GetUpkeep();
+            GetUpkeep(ref energyUpk, ref massUpk);
+        }
+
+        public double GetRepairInc()
+        {
+            if (this is IKillable killable)
+            {
+                var repars = Game.Player.Pieces.OfType<IRepair>();
+                return repars.Sum(r => r.GetRepairInc(killable));
+            }
+            return 0;
         }
     }
 }

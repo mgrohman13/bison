@@ -11,43 +11,39 @@ using ClassLibrary1.Pieces.Players;
 namespace ClassLibrary1
 {
     [Serializable]
-    public class Side : ISide
+    public abstract class Side
     {
-        private readonly Game _game;
-        private readonly List<Piece> _pieces;
+        protected readonly Game _game;
+        protected readonly List<Piece> _pieces;
 
-        internal Side(Game game)
+        protected double _energy, _mass;
+
+        internal double Energy => _energy;
+        internal double Mass => _mass;
+
+        public Game Game => _game;
+
+        protected Side(Game game, double energy, double mass)
         {
-            this._pieces = new List<Piece>();
             this._game = game;
+            this._pieces = new List<Piece>();
+            this._energy = energy;
+            this._mass = mass;
         }
 
-        void ISide.AddPiece(Piece piece)
-        {
-            AddPiece(piece);
-        }
         internal void AddPiece(Piece piece)
         {
             this._pieces.Add(piece);
-        }
-        void ISide.RemovePiece(Piece piece)
-        {
-            RemovePiece(piece);
         }
         internal void RemovePiece(Piece piece)
         {
             this._pieces.Remove(piece);
         }
 
-        void ISide.EndTurn()
+        internal virtual void EndTurn()
         {
-            foreach (Piece piece in Game.Rand.Iterate(Pieces))
+            foreach (Piece piece in Game.Rand.Iterate(_pieces))
                 piece.EndTurn();
         }
-
-        IReadOnlyCollection<Piece> ISide.Pieces => Pieces;
-        internal IReadOnlyCollection<Piece> Pieces => _pieces.AsReadOnly();
-
-        public Game Game => _game;
     }
 }

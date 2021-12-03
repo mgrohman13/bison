@@ -56,16 +56,10 @@ namespace ClassLibrary1
                 _exploredUp[b] = -1;
             }
 
-            _resourceLeft = 1;
-            _resourceRight = 1;
-            _resourceDown = 1;
-            _resourceUp = 1;
-        }
-
-        internal void OnDeserialization()
-        {
-            foreach (KeyValuePair<Point, Piece> pair in _pieces)
-                pair.Value.SetTile(NewTile(this, pair.Key.X, pair.Key.Y));
+            _resourceLeft = 0;
+            _resourceRight = 0;
+            _resourceDown = 0;
+            _resourceUp = 0;
         }
 
         public Tile GetVisibleTile(int x, int y)
@@ -129,11 +123,12 @@ namespace ClassLibrary1
                 else
                     visible = (!yIn || expX) && (!xIn || expY);
 
-                if (!visible)
-                {
-                    Tile tile = GetTile(x, y);
-                    visible = (tile != null && tile.Piece is Resource);
-                }
+                //if (!visible)
+                //{
+                //    Tile tile = GetTile(x, y);
+                //    visible |= (tile != null && tile.Piece is Resource);
+                //    //visible |= (tile != null && tile.Piece is Alien);
+                //}
             }
 
             return visible;
@@ -163,7 +158,7 @@ namespace ClassLibrary1
         {
             UpdateVision(left, right, piece.Tile.X, piece.Tile.Y, _exploredDown, _exploredUp, piece.Vision);
             UpdateVision(down, up, piece.Tile.Y, piece.Tile.X, _exploredLeft, _exploredRight, piece.Vision);
-            GenResources();
+            GenResources(0);
         }
         private static void UpdateVision(int start, int end, int coord, int other, int[] expNeg, int[] expPos, double vision)
         {
@@ -181,70 +176,87 @@ namespace ClassLibrary1
             }
         }
 
-        private void GenResources()
+        private void GenResources(int count)
         {
+            bool generated = false;
             IEnumerable<Tile> resources = this._pieces.Values.Select(p => p is Extractor extractor ? extractor.Resource : p).OfType<Resource>().Select(r => r.Tile);
             if (resources.Any())
             {
-                int minLeft = resources.Min(t => t.X);
-                if (_exploredLeft.Min() < minLeft)
-                    GenResource(true, true, left, minLeft, ref _resourceLeft, Game.Rand.RangeInt(down, up));
-                int minRight = resources.Max(t => t.X);
-                if (_exploredRight.Max() > minRight)
-                    GenResource(true, false, right, minRight, ref _resourceRight, Game.Rand.RangeInt(down, up));
-                int minDown = resources.Min(t => t.Y);
-                if (_exploredDown.Min() < minDown)
-                    GenResource(false, true, down, minDown, ref _resourceDown, Game.Rand.RangeInt(left, right));
-                int minUp = resources.Max(t => t.Y);
-                if (_exploredUp.Max() > minUp)
-                    GenResource(false, false, up, minUp, ref _resourceUp, Game.Rand.RangeInt(left, right));
+                var funcs = new Func<bool>[] {
+                    () => GenResource(true, true, left, _exploredLeft.Min(), resources.Min(t => t.X), ref _resourceLeft, () => Game.Rand.RangeInt(down, up)),
+                    () => GenResource(true, false, right, _exploredRight.Max(), resources.Max(t => t.X), ref _resourceRight, () => Game.Rand.RangeInt(down, up)),
+                    () => GenResource(false, true, down, _exploredDown.Min(), resources.Min(t => t.Y), ref _resourceDown, () => Game.Rand.RangeInt(left, right)),
+                    () => GenResource(false, false, up, _exploredUp.Max(), resources.Max(t => t.Y), ref _resourceUp, () => Game.Rand.RangeInt(left, right)),
+                };
+                foreach (var Func in Game.Rand.Iterate(funcs))
+                {
+                    bool result = Func();
+                    generated |= result;
+                }
             }
+            if (generated)
+                GenResources(count++);
         }
-        private void GenResource(bool dir, bool neg, int start, int min, ref int resourceNum, int other)
+        private bool GenResource(bool dir, bool neg, int start, int explored, int min, ref int resourceNum, Func<int> Other)
         {
-            if (neg)
+            if (explored == min || (explored < min) == neg)
             {
-                start *= -1;
-                min *= -1;
-            }
+                if (neg)
+                {
+                    start *= -1;
+                    min *= -1;
+                }
 
-            double avg = start + resourceNum * Consts.ResourceAvgDist;
-            min++;
-            int x = avg > min ? Game.Rand.GaussianOEInt(avg, 1, 1 / Math.Sqrt(avg), min) : min;
-            x += Game.Rand.OEInt();
-            int y = other;
+                double avg = start + (resourceNum + .5) * Consts.ResourceAvgDist;
+                int x = avg > min ? Game.Rand.GaussianOEInt(avg, 1, 1 / Math.Sqrt(avg), min) : min;
+                x += Game.Rand.OEInt();
+                int y = Other();
 
-            if (neg)
-                x *= -1;
-            if (!dir)
-            {
-                int t = y;
-                y = x;
-                x = t;
-            }
+                if (neg)
+                {
+                    x *= -1;
+                    start *= -1;
+                    min *= -1;
+                }
+                if (!dir)
+                {
+                    int t = y;
+                    y = x;
+                    x = t;
+                }
 
-            Tile tile = GetTile(x, y);
-            switch (Game.Rand.Next(11))
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                    Biomass.NewBiomass(tile);
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                    Metal.NewMetal(tile);
-                    break;
-                case 9:
-                case 10:
-                    Artifact.NewArtifact(tile);
-                    break;
+                Tile tile = GetTile(x, y);
+                if (tile.Piece != null)
+                {
+                    return GenResource(dir, neg, start, explored, min, ref resourceNum, Other);
+                }
+                else
+                {
+                    switch (Game.Rand.Next(11))
+                    {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                            Biomass.NewBiomass(tile);
+                            break;
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                            Metal.NewMetal(tile);
+                            break;
+                        case 9:
+                        case 10:
+                            Artifact.NewArtifact(tile);
+                            break;
+                    }
+                    resourceNum++;
+                    return true;
+                }
             }
-            resourceNum++;
+            return false;
         }
 
         internal Tile GetEnemyTile()
@@ -253,27 +265,32 @@ namespace ClassLibrary1
             do
             {
                 int[] exp;
+                int min;
                 bool dir, neg;
                 int sel = Game.Rand.Next(4);
                 switch (sel)
                 {
                     case 0:
-                        exp = _exploredDown;
-                        dir = false;
+                        exp = _exploredLeft;
+                        min = left;
+                        dir = true;
                         neg = true;
                         break;
                     case 1:
-                        exp = _exploredLeft;
-                        dir = true;
-                        neg = true;
-                        break;
-                    case 2:
                         exp = _exploredRight;
+                        min = right;
                         dir = true;
                         neg = false;
                         break;
+                    case 2:
+                        exp = _exploredDown;
+                        min = down;
+                        dir = false;
+                        neg = true;
+                        break;
                     case 3:
                         exp = _exploredUp;
+                        min = up;
                         dir = false;
                         neg = false;
                         break;
@@ -282,8 +299,13 @@ namespace ClassLibrary1
 
                 int x = Game.Rand.Next(exp.Length);
                 int y = exp[x];
+                if (neg)
+                    y = Math.Min(y, min);
+                else
+                    y = Math.Max(y, min);
                 x += dir ? down : left;
                 int dist = Game.Rand.GaussianOEInt(Game.Rand.Range(1, 13), .39, .26, 1);
+                //int dist = 1;
                 if (neg)
                     dist = -dist;
                 y += dist;
@@ -301,6 +323,7 @@ namespace ClassLibrary1
         }
 
         private static Func<Map, int, int, Tile> NewTile;
+        [Serializable]
         public class Tile
         {
             public readonly Map Map;
@@ -333,7 +356,11 @@ namespace ClassLibrary1
                 return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
             }
 
-            public IEnumerable<Tile> GetTilesInRange(double range)
+            public IEnumerable<Tile> GetVisibleTilesInRange(double range)
+            {
+                return GetTilesInRange(range).Where(t => t.Visible);
+            }
+            internal IEnumerable<Tile> GetTilesInRange(double range)
             {
                 int max = (int)range + 1;
                 for (int a = -max; a <= max; a++)

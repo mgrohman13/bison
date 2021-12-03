@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Enemies
 {
+    [Serializable]
     public abstract class EnemyPiece : Piece
     {
         internal EnemyPiece(Map.Tile tile)

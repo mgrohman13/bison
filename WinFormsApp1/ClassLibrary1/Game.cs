@@ -26,19 +26,25 @@ namespace ClassLibrary1
         private int _turn;
         public int Turn => _turn;
 
+        private readonly string _savePath;
+        private bool _gameOver;
+        public bool GameOver => _gameOver;
+
         //temp
         private MechBlueprint _blueprint1;
         private MechBlueprint _blueprint2;
         public MechBlueprint Blueprint1 => _blueprint1;
         public MechBlueprint Blueprint2 => _blueprint2;
 
-        public Game()
+        public Game(string savePath)
         {
             this.Map = new Map(this);
             this.Player = new Player(this);
             this.Enemy = new Enemy(this);
 
             this._turn = 0;
+            this._savePath = savePath;
+            this._gameOver = false;
 
             Player.CreateCore();
             Point constructor = Game.Rand.SelectValue(new Point[] {
@@ -62,6 +68,11 @@ namespace ClassLibrary1
 
             GenBlueprints();
         }
+        internal void End()
+        {
+            _gameOver = true;
+            System.IO.File.Delete(_savePath);
+        }
 
         private Map.Tile StartTile()
         {
@@ -76,33 +87,25 @@ namespace ClassLibrary1
         {
             Player.EndTurn();
 
-            Enemy.PlayTurn();
-
-            double difficulty = (Turn + 39.0) / 39.0;
-            difficulty *= difficulty;
-            double chance = (difficulty - .39) / 5.2;
-            if (chance < 1)
-                chance *= chance;
-            if (chance > .5)
-                chance /= (chance + .5);
-            while (Game.Rand.Bool(chance))
-                Alien.NewAlien(Map.GetEnemyTile(), GenKillable(difficulty), GenAttacker(difficulty), GenMovable(difficulty));
+            double difficulty = (Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
+            difficulty = Math.Pow(difficulty, Consts.DifficultyPow);
+            Enemy.PlayTurn(difficulty, () => GenBlueprint(difficulty));
 
             _turn++;
         }
         internal void GenBlueprints()
         {
-            this._blueprint1 = GenBlueprint();
-            this._blueprint2 = GenBlueprint();
+            double difficulty = 1 + Player.GetResearchMult();
+            this._blueprint1 = GenBlueprint(difficulty);
+            this._blueprint2 = GenBlueprint(difficulty);
 
             Mech.Cost(this, out double e1, out double m1, Blueprint1);
             Mech.Cost(this, out double e2, out double m2, Blueprint2);
             if ((e1 > m1) == (e2 > m2))
                 GenBlueprints();
         }
-        private MechBlueprint GenBlueprint()
+        private static MechBlueprint GenBlueprint(double difficulty)
         {
-            double difficulty = 1 + Player.GetResearchMult();
             double vision = Game.Rand.GaussianOE(6.5, .39, .26, 1);
             vision *= Math.Pow(difficulty, .3);
             return new(vision, GenKillable(difficulty), GenAttacker(difficulty), GenMovable(difficulty));
@@ -135,7 +138,7 @@ namespace ClassLibrary1
             shieldMax *= difficulty;
             shieldLimit *= difficulty;
 
-            return new(hitsMax, armor, shieldInc, shieldMax, shieldLimit);
+            return new(hitsMax, Consts.MechResilience, armor, shieldInc, shieldMax, shieldLimit);
         }
         private static List<IAttacker.Values> GenAttacker(double difficulty)
         {
@@ -149,7 +152,7 @@ namespace ClassLibrary1
                 double dev = Game.Rand.Weighted(.9, .13);
                 double range = Game.Rand.GaussianOE(5.2, .39, .26, 1);
 
-                difficulty = Math.Pow(difficulty, .4);
+                difficulty = Math.Pow(difficulty, .5);
                 damage *= difficulty;
                 if (armorPierce > 0)
                     armorPierce = 1 - (1 - armorPierce) / difficulty;
@@ -167,7 +170,7 @@ namespace ClassLibrary1
             double max = Game.Rand.GaussianOE(move * 2, .39, .26, move);
             double limit = Game.Rand.GaussianOE(max + move, .39, .39, max);
 
-            difficulty = Math.Pow(difficulty, .5);
+            difficulty = Math.Pow(difficulty, .4);
             move *= difficulty;
             max *= difficulty;
             limit *= difficulty;
@@ -187,6 +190,7 @@ namespace ClassLibrary1
         internal void RemovePiece(Piece piece)
         {
             Map.RemovePiece(piece);
+            piece.SetTile(null);
 
             if (piece is PlayerPiece playerPiece)
                 Player.RemovePiece(playerPiece);
@@ -194,9 +198,9 @@ namespace ClassLibrary1
                 Enemy.RemovePiece(enemyPiece);
         }
 
-        public void SaveGame(string filePath)
+        public void SaveGame()
         {
-            TBSUtil.SaveGame(this, filePath);
+            TBSUtil.SaveGame(this, _savePath);
         }
         public static Game LoadGame(string filePath)
         {
@@ -206,7 +210,7 @@ namespace ClassLibrary1
         }
         private void OnDeserialization()
         {
-            Map.OnDeserialization();
+            this.ToString();
         }
     }
 }

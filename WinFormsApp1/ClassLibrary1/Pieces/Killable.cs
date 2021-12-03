@@ -9,10 +9,11 @@ using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1.Pieces
 {
+    [Serializable]
     public class Killable : IKillable
     {
         private readonly Piece _piece;
-        private readonly IKillable.Values values;
+        private readonly IKillable.Values _values;
 
         private double _hitsCur, _shieldCur;
 
@@ -21,42 +22,49 @@ namespace ClassLibrary1.Pieces
         public Killable(Piece piece, IKillable.Values values)
         {
             this._piece = piece;
-            this.values = values;
+            this._values = values;
 
             this._hitsCur = values.HitsMax;
             this._shieldCur = 0;
         }
 
+        double IKillable.RepairCost => throw new NotImplementedException();
+
         public double HitsCur => _hitsCur;
-        public double HitsMax => values.HitsMax;
-        public double Armor => values.Armor;
+        public double HitsMax => _values.HitsMax;
+        public double Resilience => _values.Resilience;
+        public double Armor => _values.Armor;
         public double ShieldCur => _shieldCur;
-        public double ShieldInc => values.ShieldInc;
-        public double ShieldMax => values.ShieldMax;
-        public double ShieldLimit => values.ShieldLimit;
+        public double ShieldInc => Consts.GetDamagedValue(Piece, _values.ShieldInc, 0);
+        public double ShieldMax => _values.ShieldMax;
+        public double ShieldLimit => _values.ShieldLimit;
         public bool Dead => HitsCur <= 0.05;
 
-        void IKillable.Damage(ref double damage, ref double shieldDmg)
+        void IKillable.Damage(double damage, double shieldDmg)
         {
-            Damage(ref damage, ref shieldDmg);
+            Damage(damage, shieldDmg);
         }
-        internal void Damage(ref double damage, ref double shieldDmg)
+        internal void Damage(double damage, double shieldDmg)
         {
-            this._shieldCur -= shieldDmg;
-            if (ShieldCur < 0)
-            {
-                shieldDmg += ShieldCur;
-                damage -= ShieldCur;
-                this._shieldCur = 0;
-            }
             this._hitsCur -= damage;
+            this._shieldCur -= shieldDmg;
             if (this.Dead)
                 Piece.Die();
         }
-
-        double IBehavior.GetUpkeep()
+        void IKillable.Repair(double hits)
         {
-            return GetInc(false) * Consts.UpkeepPerShield;
+            Repair(hits);
+        }
+        internal void Repair(double hits)
+        {
+            this._hitsCur += hits;
+            if (HitsCur > HitsMax)
+                this._hitsCur = HitsMax;
+        }
+
+        void IBehavior.GetUpkeep(ref double energy, ref double mass)
+        {
+            energy += GetInc(false) * Consts.UpkeepPerShield;
         }
         void IBehavior.EndTurn()
         {
@@ -68,7 +76,7 @@ namespace ClassLibrary1.Pieces
         }
         private double GetInc(bool rand)
         {
-            return Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.ShielDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow, rand);
+            return Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.HitsIncDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow, rand);
         }
     }
 }

@@ -16,8 +16,9 @@ namespace ClassLibrary1.Pieces
         public IReadOnlyCollection<Attack> Attacks { get; }
 
         public bool Fire(IKillable killable);
-        internal bool EnemyFire(IKillable killable); 
+        internal bool EnemyFire(IKillable killable);
 
+        [Serializable]
         public class Values
         {
             private readonly double _damage, _armorPierce, _shieldPierce, _dev, _range;

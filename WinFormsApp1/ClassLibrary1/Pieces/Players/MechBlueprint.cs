@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces.Players
 {
+    [Serializable]
     public class MechBlueprint
     {
         public readonly double Vision;

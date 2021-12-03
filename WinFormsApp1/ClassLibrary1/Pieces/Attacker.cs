@@ -12,6 +12,7 @@ using Values = ClassLibrary1.Pieces.IAttacker.Values;
 
 namespace ClassLibrary1.Pieces
 {
+    [Serializable]
     public class Attacker : IAttacker
     {
         private readonly Piece _piece;
@@ -28,7 +29,7 @@ namespace ClassLibrary1.Pieces
 
         bool IAttacker.Fire(IKillable target)
         {
-            bool fire = (Piece.IsPlayer && target != null && target.Piece.IsEnemy && Piece.Game.Map.Visible(target.Piece.Tile));
+            bool fire = (Piece.IsPlayer && target != null && target.Piece.IsEnemy && target.Piece.Tile.Visible);
             return Fire(fire, target);
         }
         bool IAttacker.EnemyFire(IKillable target)
@@ -49,11 +50,11 @@ namespace ClassLibrary1.Pieces
             return retVal;
         }
 
-        double IBehavior.GetUpkeep()
+        void IBehavior.GetUpkeep(ref double energy, ref double mass)
         {
             var used = Attacks.Where(a => a.Attacked);
             //return (used.Sum(a => Math.Pow(a.Damage, Consts.WeaponDamageUpkeepPow)) + used.Count) * Consts.WeaponRechargeUpkeep;
-            return used.Count() * Consts.WeaponRechargeUpkeep;
+            energy += used.Count() * Consts.WeaponRechargeUpkeep;
         }
         void IBehavior.EndTurn()
         {
@@ -61,6 +62,7 @@ namespace ClassLibrary1.Pieces
                 attack.EndTurn();
         }
 
+        [Serializable]
         public class Attack
         {
             public readonly Piece Piece;
@@ -68,11 +70,11 @@ namespace ClassLibrary1.Pieces
             private bool _attacked;
 
             public bool Attacked => _attacked;
-            public double Damage => _damage;
+            public double Damage => Consts.GetDamagedValue(Piece, _damage, 0);
             public double ArmorPierce => _armorPierce;
             public double ShieldPierce => _shieldPierce;
             public double Dev => _dev;
-            public double Range => _range;
+            public double Range => Consts.GetDamagedValue(Piece, _range, 1);
 
             internal Attack(Piece piece, Values values)
             {
@@ -91,15 +93,14 @@ namespace ClassLibrary1.Pieces
                 {
                     double shieldDmg = 0;
                     if (target.ShieldCur > 0)
-                        shieldDmg = Damage * (1 - ShieldPierce);
+                        shieldDmg = Math.Min(target.ShieldCur, Rand(Damage * (1 - ShieldPierce)));
+
                     double damage = Damage - shieldDmg;
                     if (target.Armor > 0)
                         damage *= 1 - target.Armor * (1 - ArmorPierce);
-
                     damage = Rand(damage);
-                    shieldDmg = Rand(shieldDmg);
 
-                    target.Damage(ref damage, ref shieldDmg);
+                    target.Damage(damage, shieldDmg);
 
                     Debug.WriteLine("{0} -> {1} {2:0.0} -{3:0.0}{4}", this.Piece, target.Piece, target.HitsCur, damage,
                         shieldDmg > 0 ? string.Format(" , {0:0.0} -{1:0.0}", target.ShieldCur, shieldDmg) : "");

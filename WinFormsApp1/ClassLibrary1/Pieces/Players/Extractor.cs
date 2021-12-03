@@ -8,9 +8,10 @@ using ClassLibrary1.Pieces.Terrain;
 
 namespace ClassLibrary1.Pieces.Players
 {
+    [Serializable]
     public class Extractor : PlayerPiece, IKillable
     {
-        private static int numInc = 0;
+        private static int numInc = 1;
         private readonly int num;
 
         private readonly IKillable killable;
@@ -18,8 +19,8 @@ namespace ClassLibrary1.Pieces.Players
         public readonly Resource Resource;
         public Piece Piece => this;
 
-        private Extractor(Resource Resource, IKillable.Values killable)
-            : base(Resource.Tile, 5)
+        private Extractor(Resource Resource, double vision, IKillable.Values killable)
+            : base(Resource.Tile, vision)
         {
             this.num = numInc++;
             this.killable = new Killable(this, killable);
@@ -32,9 +33,10 @@ namespace ClassLibrary1.Pieces.Players
             resource.Game.RemovePiece(resource);
 
             double researchMult = Math.Pow(resource.Game.Player.GetResearchMult(), .6);
-            double hits = 50 * researchMult;
+            double hits = 75 * researchMult;
+            double vision = 5 * researchMult;
 
-            Extractor obj = new(resource, new(hits));
+            Extractor obj = new(resource, vision, new(hits, .78));
             resource.Game.AddPiece(obj);
             return obj;
         }
@@ -46,20 +48,29 @@ namespace ClassLibrary1.Pieces.Players
             mass /= researchMult;
         }
 
+        double IKillable.RepairCost => GetRepairCost();
+        public double GetRepairCost()
+        {
+            Cost(out double energy, out double mass, Resource);
+            return Consts.GetRepairCost(energy, mass);
+        }
+
         internal override void Die()
         {
+            Map.Tile tile = this.Tile;
             base.Die();
-            Game.AddPiece(Resource);
+            Resource.SetTile(tile);
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
-            Resource.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+            Resource.GenerateResources(Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
         }
         internal override void EndTurn()
         {
             Resource.Extract();
+            base.EndTurn();
         }
 
         public override string ToString()
@@ -71,6 +82,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public double HitsCur => killable.HitsCur;
         public double HitsMax => killable.HitsMax;
+        public double Resilience => killable.Resilience;
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
@@ -83,9 +95,13 @@ namespace ClassLibrary1.Pieces.Players
             return killable.GetInc();
         }
 
-        void IKillable.Damage(ref double damage, ref double shieldDmg)
+        void IKillable.Repair(double hits)
         {
-            killable.Damage(ref damage, ref shieldDmg);
+            killable.Repair(hits);
+        }
+        void IKillable.Damage(double damage, double shieldDmg)
+        {
+            killable.Damage(damage, shieldDmg);
         }
 
         #endregion IKillable

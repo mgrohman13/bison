@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 using ClassLibrary1;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
@@ -19,18 +20,46 @@ namespace WinFormsApp1
 
         public static HashSet<Piece> Moved = new();
 
+        public static string savePath;
+
         [STAThread]
         static void Main()
         {
+            LoadGame();
+
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Game = new Game();
             Form = new Main();
             DgvForm = new DgvForm();
 
             Application.Run(Form);
+        }
+
+        public static void SaveGame()
+        {
+            Game.SaveGame();
+        }
+        public static void LoadGame()
+        {
+            if (File.Exists("savepath.txt"))
+            {
+                using (StreamReader reader = new("savepath.txt"))
+                    savePath = reader.ReadLine();
+                if (!Directory.Exists(savePath))
+                    savePath = null;
+            }
+            if (savePath == null)
+                savePath = ".";
+            if (!savePath.EndsWith("/") && !savePath.EndsWith("\\") && !savePath.EndsWith(Path.PathSeparator))
+                savePath += Path.DirectorySeparatorChar;
+            savePath += "game.sav";
+
+            if (File.Exists(savePath))
+                Game = Game.LoadGame(savePath);
+            else
+                Game = new Game(savePath);
         }
 
         internal static void EndTurn()
@@ -41,6 +70,15 @@ namespace WinFormsApp1
             if (end)
             {
                 Game.EndTurn();
+                if (Game.GameOver)
+                {
+                    MessageBox.Show("Game over!  " + Game.Turn + " turns.");
+                    //Game = new Game(savePath);
+                }
+                else
+                {
+                    SaveGame();
+                }
                 Moved.Clear();
                 Form.Refresh();
             }
@@ -84,11 +122,11 @@ namespace WinFormsApp1
                 }
             }
             if (!move && piece is IMovable movable)
-                move |= movable.MoveCur + movable.MoveInc > movable.MoveMax;
+                move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;
             if (!move && piece is IAttacker attacker)
             {
                 double range = attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range);
-                move |= range > 0 && piece.Tile.GetTilesInRange(range).Any(t => t.Piece is IKillable && t.Piece.IsEnemy);
+                move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece is IKillable && t.Piece.IsEnemy);
             }
             return move;
         }

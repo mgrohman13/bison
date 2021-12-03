@@ -51,14 +51,21 @@ namespace WinFormsApp1
                 lblHeading.Show();
                 lblHeading.Text = selected.Piece.ToString();
 
+                PlayerPiece playerPiece = selected.Piece as PlayerPiece;
+
                 if (selected.Piece is IKillable killable)
                 {
+                    double repairInc = 0;
+                    if (playerPiece != null)
+                        repairInc = playerPiece.GetRepairInc();
+
                     lbl1.Show();
                     lblInf1.Show();
                     lbl1.Text = "Hits";
-                    lblInf1.Text = string.Format("{0} / {1}{2}",
+                    lblInf1.Text = string.Format("{0} / {1}{2}{3}",
                         Format(killable.HitsCur), Format(killable.HitsMax),
-                        killable.Armor > 0 ? string.Format(" ({0})", FormatPct(killable.Armor)) : "");
+                        killable.Armor > 0 ? string.Format(" ({0})", FormatPct(killable.Armor)) : "",
+                        repairInc != 0 ? string.Format(" +{0}", Format(repairInc)) : "");
 
                     if (killable.ShieldInc > 0)
                     {
@@ -77,12 +84,47 @@ namespace WinFormsApp1
                     lblInf3.Text = string.Format("{0} / {1} / {2} +{3}",
                             Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()));
                 }
-                if (selected.Piece is PlayerPiece playerPiece)
+                if (playerPiece != null)
                 {
                     lbl4.Show();
                     lblInf4.Show();
                     lbl4.Text = "Vision";
                     lblInf4.Text = string.Format("{0}", Format(playerPiece.Vision));
+
+                    if (!(playerPiece is Extractor))
+                    {
+                        double a, energyUpk, b, massUpk, c, d;
+                        a = energyUpk = b = massUpk = c = d = 0;
+                        playerPiece.GenerateResources(ref a, ref energyUpk, ref b, ref massUpk, ref c, ref d);
+                        if (energyUpk != 0)
+                        {
+                            lbl5.Show();
+                            lblInf5.Show();
+                            lbl5.Text = "Energy";
+                            lblInf5.Text = string.Format("{1}{0}", Format(energyUpk), energyUpk < 0 ? "+" : "-");
+                        }
+                        if (massUpk != 0)
+                        {
+                            lbl6.Show();
+                            lblInf6.Show();
+                            lbl6.Text = "Mass";
+                            lblInf6.Text = string.Format("{1}{0}", Format(massUpk), massUpk < 0 ? "+" : "-");
+                        }
+                        //if (researchInc != 0)
+                        //{
+                        //    lbl7.Show();
+                        //    lblInf7.Show();
+                        //    lbl7.Text = "Research";
+                        //    lblInf7.Text = string.Format("{1}{0}", Format(researchInc), researchInc > 0 ? "+" : "");
+                        //}
+                    }
+                }
+                if (selected.Piece is IRepair repair)
+                {
+                    lbl7.Show();
+                    lblInf7.Show();
+                    lbl7.Text = "Repairs";
+                    lblInf7.Text = string.Format("{0}", FormatPct(repair.Rate));
                 }
 
                 Resource resource = selected.Piece as Resource;
@@ -102,7 +144,7 @@ namespace WinFormsApp1
 
                     double energyInc, energyUpk, massInc, massUpk, researchInc, researchUpk;
                     energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
-                    resource.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                    resource.GenerateResources(selected.Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
                     energyInc -= energyUpk;
                     massInc -= massUpk;
                     researchInc -= researchUpk;
