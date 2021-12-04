@@ -20,12 +20,16 @@ namespace ClassLibrary1.Pieces
         public Piece Piece => _piece;
 
         public Killable(Piece piece, IKillable.Values values)
+            : this(piece, values, 0)
+        {
+        }
+        public Killable(Piece piece, IKillable.Values values, double shieldCur)
         {
             this._piece = piece;
             this._values = values;
 
             this._hitsCur = values.HitsMax;
-            this._shieldCur = 0;
+            this._shieldCur = shieldCur;
         }
 
         double IKillable.RepairCost => throw new NotImplementedException();

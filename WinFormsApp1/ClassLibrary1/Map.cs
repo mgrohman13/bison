@@ -253,6 +253,16 @@ namespace ClassLibrary1
                             break;
                     }
                     resourceNum++;
+
+                    if (Game.Rand.Bool())
+                    {
+                        Tile t2;
+                        do
+                            t2 = GetTile(tile.X + Game.Rand.GaussianInt(6.5), tile.Y + Game.Rand.GaussianInt(6.5));
+                        while (t2 == null || t2.Visible || t2.Piece != null);
+                        Foundation.NewFoundation(t2);
+                    }
+
                     return true;
                 }
             }

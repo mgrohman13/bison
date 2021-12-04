@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Constructor : PlayerPiece, IKillable, IMovable, IRepair, IBuilder.IBuildExtractor
+    public class Constructor : PlayerPiece, IKillable, IMovable, IRepair, IBuilder.IBuildExtractor, IBuilder.IBuildFoundation
     {
         private readonly IKillable killable;
         private readonly IMovable movable;
         private readonly IRepair repair;
         private readonly IBuilder.IBuildExtractor buildExtractor;
+        private readonly IBuilder.IBuildFoundation BuildFoundation;
 
         public Piece Piece => this;
 
@@ -24,7 +25,8 @@ namespace ClassLibrary1.Pieces.Players
             this.movable = new Movable(this, movable);
             this.repair = new Repair(this, repair);
             this.buildExtractor = new Builder.BuildExtractor(this);
-            SetBehavior(this.killable, this.movable, this.repair, this.buildExtractor);
+            this.BuildFoundation = new Builder.BuildFoundation(this);
+            SetBehavior(this.killable, this.movable, this.repair, this.buildExtractor, this.BuildFoundation);
         }
         internal static Constructor NewConstructor(Map.Tile tile)
         {
@@ -157,6 +159,14 @@ namespace ClassLibrary1.Pieces.Players
         public Extractor Build(Resource resource)
         {
             return buildExtractor.Build(resource);
+        }
+        public Factory BuildFactory(Foundation foundation)
+        {
+            return BuildFoundation.BuildFactory(foundation);
+        }
+        public Turret BuildTurret(Foundation foundation)
+        {
+            return BuildFoundation.BuildTurret(foundation);
         }
 
         #endregion IBuilding

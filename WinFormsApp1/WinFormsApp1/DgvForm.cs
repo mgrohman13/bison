@@ -65,38 +65,66 @@ namespace WinFormsApp1
                 }
             }
 
-            if (builder is IBuilder.IBuildExtractor buildExtractor)
-            {
-                int x = builder.Piece.Tile.X;
-                int y = builder.Piece.Tile.Y;
-                int idx = 0;
-                foreach (Point point in new Point[] { new(x, y - 1), new(x, y + 1), new(x - 1, y), new(x + 1, y) })
+            IBuilder.IBuildExtractor buildExtractor = builder as IBuilder.IBuildExtractor;
+            IBuilder.IBuildFoundation buildFoundation = builder as IBuilder.IBuildFoundation;
+            bool flag = true;
+            if (buildExtractor != null || buildFoundation != null)
+                for (int a = 0; a < 3; a++)
                 {
-                    Tile target = Program.Game.Map.GetVisibleTile(point.X, point.Y);
-                    if (target != null && target.Piece is Resource resource)
+                    int x = builder.Piece.Tile.X;
+                    int y = builder.Piece.Tile.Y;
+                    int idx = 0;
+                    foreach (Point point in new Point[] { new(x, y - 1), new(x, y + 1), new(x - 1, y), new(x + 1, y) })
                     {
-                        Extractor.Cost(out double energy, out double mass, resource);
-                        BuildRow row = new(buildExtractor, "Extractor", energy, mass);
-                        rows.Add(row);
-                        switch (idx)
+                        Tile target = Program.Game.Map.GetVisibleTile(point.X, point.Y);
+                        Resource resource = target.Piece as Resource;
+                        Foundation foundation = target.Piece as Foundation;
+                        if ((a == 0 && resource != null) || (a > 0 && foundation != null))
                         {
-                            case 0:
-                                row.Up = true;
-                                break;
-                            case 1:
-                                row.Down = true;
-                                break;
-                            case 2:
-                                row.Left = true;
-                                break;
-                            case 3:
-                                row.Right = true;
-                                break;
+                            string name;
+                            double mass, energy;
+                            if (a == 0)
+                            {
+                                name = "Extractor";
+                                Extractor.Cost(out energy, out mass, resource);
+                            }
+                            else
+                            {
+                                if (flag)
+                                {
+                                    name = "Factory";
+                                    Factory.Cost(Program.Game, out energy, out mass);
+                                    flag = !flag;
+                                }
+                                else
+                                {
+                                    name = "Turret";
+                                    Turret.Cost(Program.Game, out energy, out mass);
+                                    flag = !flag;
+                                }
+                            }
+                            BuildRow row = new(builder, name, energy, mass);
+                            rows.Add(row);
+                            switch (idx)
+                            {
+                                case 0:
+                                    row.Up = true;
+                                    break;
+                                case 1:
+                                    row.Down = true;
+                                    break;
+                                case 2:
+                                    row.Left = true;
+                                    break;
+                                case 3:
+                                    row.Right = true;
+                                    break;
+                            }
                         }
+                        idx++;
                     }
-                    idx++;
+
                 }
-            }
 
             if (rows.Any())
             {
@@ -182,6 +210,12 @@ namespace WinFormsApp1
                         break;
                     case "Extractor":
                         this.result = ((IBuilder.IBuildExtractor)builder).Build(tile.Piece as Resource);
+                        break;
+                    case "Factory":
+                        this.result = ((IBuilder.IBuildFoundation)builder).BuildFactory(tile.Piece as Foundation);
+                        break;
+                    case "Turret":
+                        this.result = ((IBuilder.IBuildFoundation)builder).BuildTurret(tile.Piece as Foundation);
                         break;
                 }
                 this.Close();

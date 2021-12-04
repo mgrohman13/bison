@@ -23,7 +23,7 @@ namespace ClassLibrary1.Pieces
         }
 
         void IBehavior.GetUpkeep(ref double energy, ref double mass)
-        { 
+        {
         }
         void IBehavior.EndTurn()
         {
@@ -47,9 +47,7 @@ namespace ClassLibrary1.Pieces
                 {
                     Constructor.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
-                    {
                         return Constructor.NewConstructor(tile);
-                    }
                 }
                 return null;
             }
@@ -67,9 +65,7 @@ namespace ClassLibrary1.Pieces
                 {
                     Extractor.Cost(out double energy, out double mass, resource);
                     if (Piece.Game.Player.Spend(energy, mass))
-                    {
                         return Extractor.NewExtractor(resource);
-                    }
                 }
                 return null;
             }
@@ -87,9 +83,35 @@ namespace ClassLibrary1.Pieces
                 {
                     Mech.Cost(Piece.Game, out double energy, out double mass, blueprint);
                     if (Piece.Game.Player.Spend(energy, mass))
-                    {
                         return Mech.NewMech(tile, blueprint);
-                    }
+                }
+                return null;
+            }
+        }
+        [Serializable]
+        public class BuildFoundation : Builder, IBuilder.IBuildFoundation
+        {
+            public BuildFoundation(Piece piece)
+                : base(piece)
+            {
+            }
+            public Factory BuildFactory(Foundation foundation)
+            {
+                if (foundation != null && Validate(foundation.Tile))
+                {
+                    Factory.Cost(Piece.Game, out double energy, out double mass);
+                    if (Piece.Game.Player.Spend(energy, mass))
+                        return Factory.NewFactory(foundation);
+                }
+                return null;
+            }
+            public Turret BuildTurret(Foundation foundation)
+            {
+                if (foundation != null && Validate(foundation.Tile))
+                {
+                    Turret.Cost(Piece.Game, out double energy, out double mass);
+                    if (Piece.Game.Player.Spend(energy, mass))
+                        return Turret.NewTurret(foundation);
                 }
                 return null;
             }

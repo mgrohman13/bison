@@ -36,6 +36,7 @@ namespace ClassLibrary1
 
             this._energy += this.Mass + difficulty * Consts.EnemyEnergy;
             this._mass = 0;
+            bool flag = false;
             while (true)
             {
                 MechBlueprint blueprint = Blueprint();
@@ -43,6 +44,7 @@ namespace ClassLibrary1
                 energy += mass;
                 if (this.Energy > energy)
                 {
+                    flag = true;
                     this._energy -= energy;
                     Alien.NewAlien(Game.Map.GetEnemyTile(), blueprint.Killable, blueprint.Attacks, blueprint.Movable);
                 }

@@ -16,8 +16,8 @@ namespace ClassLibrary1.Pieces.Players
         public readonly Resource Resource;
         public Piece Piece => this;
 
-        private Extractor(Resource Resource, double vision, IKillable.Values killable)
-            : base(Resource.Tile, vision)
+        private Extractor(Map.Tile tile, Resource Resource, double vision, IKillable.Values killable)
+            : base(tile, vision)
         {
             this.killable = new Killable(this, killable);
             SetBehavior(this.killable);
@@ -26,13 +26,14 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal static Extractor NewExtractor(Resource resource)
         {
+            Map.Tile tile = resource.Tile;
             resource.Game.RemovePiece(resource);
 
             double researchMult = Math.Pow(resource.Game.Player.GetResearchMult(), .6);
             double hits = 75 * researchMult;
             double vision = 5 * researchMult;
 
-            Extractor obj = new(resource, vision, new(hits, .78));
+            Extractor obj = new(tile, resource, vision, new(hits, .78));
             resource.Game.AddPiece(obj);
             return obj;
         }

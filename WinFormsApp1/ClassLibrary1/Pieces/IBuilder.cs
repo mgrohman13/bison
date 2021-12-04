@@ -24,5 +24,10 @@ namespace ClassLibrary1.Pieces
         {
             public Mech Build(Map.Tile tile, MechBlueprint blueprint);
         }
+        public interface IBuildFoundation : IBuilder
+        {
+            public Factory BuildFactory(Foundation foundation);
+            public Turret BuildTurret(Foundation foundation);
+        }
     }
 }

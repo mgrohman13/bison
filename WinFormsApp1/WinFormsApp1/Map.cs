@@ -35,6 +35,7 @@ namespace WinFormsApp1
             set
             {
                 _selected = value;
+                Center();
                 if (Program.Form != null)
                 {
                     Program.Form.Info.SetSelected(SelTile);
@@ -64,6 +65,16 @@ namespace WinFormsApp1
             scale = Math.Min((this.Width - 1 - padding * 2) / (float)gameRect.Width, (this.Height - 1 - padding * 2) / (float)gameRect.Height);
             xStart = GetX(gameRect.X);
             yStart = GetY(gameRect.Y);
+        }
+
+        private void Center()
+        {
+            Rectangle mapCoords = GetMapCoords();
+            if (SelTile != null && !mapCoords.Contains(SelTile.X, SelTile.Y))
+            {
+                xStart += GetX(SelTile.X - mapCoords.Width / 2);
+                yStart += GetY(SelTile.Y - mapCoords.Height / 2);
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -123,6 +134,8 @@ namespace WinFormsApp1
                             e.Graphics.FillRectangle(Brushes.Blue, rect);
                         else if (tile.Piece is Foundation)
                             e.Graphics.FillRectangle(Brushes.Black, rect);
+                        else if (tile.Piece is Turret)
+                            e.Graphics.FillRectangle(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
                         else if (resource != null)
                         {
                             if (resource is Biomass)
