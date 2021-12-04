@@ -294,7 +294,7 @@ namespace ClassLibrary1
                 int[] exp = null;
                 int min = 0;
                 bool dir = false, neg = false;
-                int GetChance(double mult, double pow) => Game.Rand.Round(Math.Sqrt(13 + mult * mult * (13 + Math.Pow(Game.Turn, pow))));
+                int GetChance(double mult, double pow, int[] explored) => Game.Rand.Round(Math.Sqrt(13 + mult * mult * (13 + Math.Pow(Game.Turn, pow)) + (explored.Average() + explored.Max()) / 5.2));
                 Dictionary<Action, int> select = new()
                 {
                     {
@@ -305,7 +305,7 @@ namespace ClassLibrary1
                             dir = true;
                             neg = true;
                         },
-                        GetChance(_enemyLeft, _enemyLeftPow)
+                        GetChance(_enemyLeft, _enemyLeftPow, _exploredLeft)
                     },
                     {
                         () =>
@@ -315,7 +315,7 @@ namespace ClassLibrary1
                             dir = true;
                             neg = false;
                         },
-                        GetChance(_enemyRight, _enemyRightPow)
+                        GetChance(_enemyRight, _enemyRightPow, _exploredRight)
                     },
                     {
                         () =>
@@ -325,7 +325,7 @@ namespace ClassLibrary1
                             dir = false;
                             neg = true;
                         },
-                        GetChance(_enemyDown, _enemyDownPow)
+                        GetChance(_enemyDown, _enemyDownPow, _exploredDown)
                     },
                     {
                         () =>
@@ -335,7 +335,7 @@ namespace ClassLibrary1
                             dir = false;
                             neg = false;
                         },
-                        GetChance(_enemyUp, _enemyUpPow)
+                        GetChance(_enemyUp, _enemyUpPow, _exploredUp)
                     },
                 };
                 Game.Rand.SelectValue(select)();

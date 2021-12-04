@@ -213,6 +213,11 @@ namespace ClassLibrary1
 
         public void SaveGame()
         {
+            if (System.IO.File.Exists(_savePath))
+            {
+                string path = _savePath.Replace("\\", "/");
+                System.IO.File.Copy(path, path.Substring(0, path.LastIndexOf("/")) + "/" + "prev_" + Turn + ".sav");
+            }
             TBSUtil.SaveGame(this, _savePath);
         }
         public static Game LoadGame(string filePath)

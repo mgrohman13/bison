@@ -2,13 +2,8 @@ better combat logging
 	better formatting
 	break down why?  
 	also log to free space on panel 
-spawn dirs weighted towards ones explored farther out
 extractors auto repair
 show totals when things reduced (by hp% or by >max)
-enemy behavior 
-	currently always guaranteed to attack with shortest range attack 
-		chance to skip it to hit different target with long range?
-	target priorities 
 
 build range
 	and fix hideous build form
