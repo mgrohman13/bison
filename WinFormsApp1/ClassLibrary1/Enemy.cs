@@ -15,9 +15,10 @@ namespace ClassLibrary1
     public class Enemy : Side
     {
         internal IReadOnlyCollection<Piece> Pieces => _pieces;
+        public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         internal Enemy(Game game)
-            : base(game, 0, 0)
+            : base(game, -Consts.EnemyEnergy, 0)
         {
         }
 
@@ -44,6 +45,8 @@ namespace ClassLibrary1
                 energy += mass;
                 if (this.Energy > energy)
                 {
+                    if (flag)
+                    { }
                     flag = true;
                     this._energy -= energy;
                     Alien.NewAlien(Game.Map.GetEnemyTile(), blueprint.Killable, blueprint.Attacks, blueprint.Movable);

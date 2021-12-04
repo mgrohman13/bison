@@ -66,7 +66,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal override void EndTurn()
         {
-            Resource.Extract();
+            Resource.Extract(Piece);
             base.EndTurn();
         }
 

@@ -39,7 +39,7 @@ namespace ClassLibrary1.Pieces.Players
             double repairRate = 7.8 * researchMult;
             double vision = 6 * researchMult;
 
-            Factory obj = new(tile, vision, new(hits, .78), new(repairRange, repairRate));
+            Factory obj = new(tile, vision, new(hits, .65), new(repairRange, repairRate));
             foundation.Game.AddPiece(obj);
             return obj;
         }

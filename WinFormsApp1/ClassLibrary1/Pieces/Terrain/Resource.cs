@@ -29,10 +29,10 @@ namespace ClassLibrary1.Pieces.Terrain
 
         public abstract void GenerateResources(Piece piece, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk);
 
-        internal void Extract()
+        internal void Extract(Piece piece)
         {
             double power = Consts.ExtractPower / (Consts.ExtractPower + Math.Pow(Sustain, Consts.ExtractSustainPow));
-            double extract = Math.Pow(Value / Sustain / Consts.ExtractTurns + 1, power) - 1;
+            double extract = Math.Pow(Consts.GetDamagedValue(piece, Value, 0) / Sustain / Consts.ExtractTurns + 1, power) - 1;
             this._value -= extract;
         }
 

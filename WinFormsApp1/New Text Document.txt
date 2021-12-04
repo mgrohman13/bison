@@ -1,1 +1,0 @@
-spawn dirs weighted towards ones explored farther out

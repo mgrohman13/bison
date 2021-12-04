@@ -18,7 +18,7 @@ namespace WinFormsApp1
         public static Main Form;
         public static DgvForm DgvForm;
 
-        public static HashSet<Piece> Moved = new();
+        private readonly static HashSet<PlayerPiece> moved = new();
 
         public static string savePath;
 
@@ -62,7 +62,7 @@ namespace WinFormsApp1
                 Game = new Game(savePath);
         }
 
-        internal static void EndTurn()
+        public static void EndTurn()
         {
             bool end = true;
             if (Game.Player.Pieces.Any(MoveLeft))
@@ -79,12 +79,22 @@ namespace WinFormsApp1
                 {
                     SaveGame();
                 }
-                Moved.Clear();
+                moved.Clear();
                 Form.Refresh();
             }
         }
 
-        internal static void Next(bool dir)
+        public static void Hold()
+        {
+            if (Form.MapMain.SelTile != null && Form.MapMain.SelTile.Piece is PlayerPiece playerPiece)
+            {
+                if (moved.Contains(playerPiece))
+                    moved.Remove(playerPiece);
+                else
+                    moved.Add(playerPiece);
+            }
+        }
+        public static void Next(bool dir)
         {
             var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).ToList();
             if (moveLeft.Count > 0)
@@ -104,10 +114,9 @@ namespace WinFormsApp1
                 Form.MapMain.SelTile = null;
             }
         }
-
         public static bool MoveLeft(Piece piece)
         {
-            if (Moved.Contains(piece))
+            if (moved.Contains(piece))
                 return false;
 
             bool move = false;

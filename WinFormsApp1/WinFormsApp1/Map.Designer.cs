@@ -40,6 +40,7 @@ namespace WinFormsApp1
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Map_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Map_KeyUp);
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Map_MouseClick);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Map_MouseMove);
             this.ResumeLayout(false);
 
         }

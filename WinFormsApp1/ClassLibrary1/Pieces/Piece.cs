@@ -47,7 +47,8 @@ namespace ClassLibrary1.Pieces
 
         internal void SetTile(Map.Tile tile)
         {
-            Game.Map.RemovePiece(this);
+            if (this.Tile != null)
+                Game.Map.RemovePiece(this);
             this._tile = tile;
             if (tile != null)
                 Game.Map.AddPiece(this);

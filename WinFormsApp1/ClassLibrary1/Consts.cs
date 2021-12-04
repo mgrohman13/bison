@@ -49,16 +49,16 @@ namespace ClassLibrary1
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkDiv = 1;
 
-        public const double BiomassExtractorEnergyCost = 250;
-        public const double BiomassExtractorMassCost = 250;
-        public const double MetalExtractorEnergyCost = 500;
-        public const double MetalExtractorMassCost = 100;
-        public const double ArtifactExtractorEnergyCost = 1000;
-        public const double ArtifactExtractorMassCost = 750;
+        public const double BiomassExtractorEnergyCost = 600;
+        public const double BiomassExtractorMassCost = 600;
+        public const double MetalExtractorEnergyCost = 1200;
+        public const double MetalExtractorMassCost = 300;
+        public const double ArtifactExtractorEnergyCost = 1800;
+        public const double ArtifactExtractorMassCost = 150;
 
-        public const double EnergyPerMass = 20;
-        public const double MassPerEnergy = 3;
-        public const double ResearchPerMass = 1;
+        //public const double EnergyPerMass = 20;
+        //public const double MassPerEnergy = 3;
+        //public const double ResearchPerMass = 1;
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;

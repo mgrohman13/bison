@@ -15,6 +15,8 @@ namespace WinFormsApp1
         public Main()
         {
             InitializeComponent();
+            this.MouseWheel += Main_MouseWheel;
+
             Refresh();
         }
 
@@ -48,14 +50,32 @@ namespace WinFormsApp1
             return value.ToString("0.0");
         }
 
-        private void Main_KeyUp(object sender, KeyEventArgs e)
+        private void Main_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
                 Program.EndTurn();
+            else if (e.KeyCode == Keys.Space)
+                Program.Hold();
             else if (e.KeyCode == Keys.Q)
                 Program.Next(false);
             else if (e.KeyCode == Keys.E)
                 Program.Next(true);
+            else if (e.KeyCode == Keys.B)
+                Info.BtnBuild_Click(sender, e);
+            else if (e.KeyCode == Keys.T)
+                Info.BtnViewAtt_Click(sender, e);
+
+            mapMain.Map_KeyDown(sender, e);
+        }
+
+        private void Main_KeyUp(object sender, KeyEventArgs e)
+        {
+            mapMain.Map_KeyUp(sender, e);
+        }
+
+        private void Main_MouseWheel(object sender, MouseEventArgs e)
+        {
+            mapMain.Map_MouseWheel(sender, e);
         }
     }
 }

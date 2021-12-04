@@ -2,28 +2,32 @@ better combat logging
 	better formatting
 	break down why?  
 	also log to free space on panel 
-different enemy strength in different dirs
+spawn dirs weighted towards ones explored farther out
+extractors auto repair
+show totals when things reduced (by hp% or by >max)
+enemy behavior 
+	currently always guaranteed to attack with shortest range attack 
+		chance to skip it to hit different target with long range?
+	target priorities 
 
 build range
 	and fix hideous build form
 scrolling/panning limits can still only show non-visible corner and hence blank screen
 mouse over attack to see specific range
-mouse over move spot to see range from there
-hotkey to stay put for turn, mechanism to un-stay
 hotkeys to jump to cardinal dir edges
 proper hiding of map borders until seen 
 	enforce at project level
 	can be gleaned from vision mechanics before seeing line 
-show totals when things reduced (by hp% or by >max)
-see agregates of multiple enemy attacks
 order ships by position for prev/next
-enemy behavior 
-	currently always guaranteed to attack with shortest range attack 
-		chance to skip it to hit different target with long range?
-	target priorities 
 integrate resilience stat into blueprints
 enemy move+range take into account unmovable tiles 
+not super happy with repairing
+	repairing during combat too good? enemies target repairers preferably?
+	repairing extrators too slow
 
+upgrade things with latest research
+	turrets
+	constructor, factory for better repair?
 radar
 	for resources
 	also enemies?

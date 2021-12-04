@@ -31,7 +31,7 @@ namespace WinFormsApp1
             Program.EndTurn();
         }
 
-        internal void SetSelected(Tile selected)
+        public void SetSelected(Tile selected)
         {
             this.selected = selected;
         }
@@ -229,7 +229,7 @@ namespace WinFormsApp1
             lblTurn.Show();
         }
 
-        private void BtnBuild_Click(object sender, EventArgs e)
+        public void BtnBuild_Click(object sender, EventArgs e)
         {
             if (selected != null && selected.Piece is IBuilder builder)
             {
@@ -237,6 +237,16 @@ namespace WinFormsApp1
                 if (result != null)
                     Program.Form.MapMain.SelTile = result.Tile;
             }
+        }
+
+        public void BtnViewAtt_Click(object sender, EventArgs e)
+        {
+            Program.Form.MapMain.ViewAttacks = !Program.Form.MapMain.ViewAttacks;
+        }
+
+        private void BtnSave_Click(object sender, EventArgs e)
+        {
+            Program.Game.SaveGame();
         }
     }
 }

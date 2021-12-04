@@ -49,8 +49,11 @@ namespace WinFormsApp1
             this.lblInf8 = new System.Windows.Forms.Label();
             this.lbl8 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnViewAtt = new System.Windows.Forms.Button();
             this.btnBuild = new System.Windows.Forms.Button();
             this.lblHeading = new System.Windows.Forms.Label();
+            this.txtLog = new System.Windows.Forms.TextBox();
+            this.btnSave = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -240,6 +243,8 @@ namespace WinFormsApp1
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnSave);
+            this.panel1.Controls.Add(this.btnViewAtt);
             this.panel1.Controls.Add(this.btnBuild);
             this.panel1.Controls.Add(this.btnEndTurn);
             this.panel1.Controls.Add(this.lblTurn);
@@ -248,6 +253,17 @@ namespace WinFormsApp1
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(300, 80);
             this.panel1.TabIndex = 21;
+            // 
+            // btnViewAtt
+            // 
+            this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnViewAtt.Location = new System.Drawing.Point(188, 6);
+            this.btnViewAtt.Name = "btnViewAtt";
+            this.btnViewAtt.Size = new System.Drawing.Size(112, 34);
+            this.btnViewAtt.TabIndex = 14;
+            this.btnViewAtt.Text = "Attacks";
+            this.btnViewAtt.UseVisualStyleBackColor = true;
+            this.btnViewAtt.Click += new System.EventHandler(this.BtnViewAtt_Click);
             // 
             // btnBuild
             // 
@@ -269,10 +285,34 @@ namespace WinFormsApp1
             this.lblHeading.Text = "lblHeading";
             this.lblHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // txtLog
+            // 
+            this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtLog.Location = new System.Drawing.Point(0, 228);
+            this.txtLog.Multiline = true;
+            this.txtLog.Name = "txtLog";
+            this.txtLog.ReadOnly = true;
+            this.txtLog.Size = new System.Drawing.Size(300, 46);
+            this.txtLog.TabIndex = 23;
+            this.txtLog.Visible = false;
+            // 
+            // btnSave
+            // 
+            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSave.Location = new System.Drawing.Point(188, 46);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(112, 34);
+            this.btnSave.TabIndex = 15;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
+            // 
             // Info
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.txtLog);
             this.Controls.Add(this.lblHeading);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.lblInf8);
@@ -325,5 +365,8 @@ namespace WinFormsApp1
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnBuild;
         private System.Windows.Forms.Label lblHeading;
+        private System.Windows.Forms.TextBox txtLog;
+        private System.Windows.Forms.Button btnViewAtt;
+        private System.Windows.Forms.Button btnSave;
     }
 }

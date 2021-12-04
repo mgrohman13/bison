@@ -24,7 +24,8 @@ namespace WinFormsApp1
         private const float padding = 1;
 
         private float xStart, yStart, scale;//, yScale;
-        private Tile _selected;
+        private Tile _selected, _moused;
+        private bool viewAttacks;
 
         private readonly Timer timer;
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
@@ -34,12 +35,40 @@ namespace WinFormsApp1
             get { return _selected; }
             set
             {
-                _selected = value;
-                Center();
-                if (Program.Form != null)
+                if (_selected != value)
                 {
-                    Program.Form.Info.SetSelected(SelTile);
-                    Program.Form.Refresh();
+                    _selected = value;
+                    Center();
+                    this.Invalidate();
+                    if (Program.Form != null)
+                    {
+                        Program.Form.Info.SetSelected(SelTile);
+                        Program.Form.Refresh();
+                    }
+                }
+            }
+        }
+        public Tile MouseTile
+        {
+            get { return _moused; }
+            set
+            {
+                if (_moused != value)
+                {
+                    _moused = value;
+                    this.Invalidate();
+                }
+            }
+        }
+        public bool ViewAttacks
+        {
+            get { return viewAttacks; }
+            set
+            {
+                if (viewAttacks != value)
+                {
+                    viewAttacks = value;
+                    this.Invalidate();
                 }
             }
         }
@@ -103,7 +132,8 @@ namespace WinFormsApp1
         {
             //e.Graphics.SetClip(new RectangleF(0, 0, xScale * mapCoords.Width + 2, yScale * mapCoords.Height + 2));
 
-            Pen reg = Pens.Black, sel = new(Color.Black, 3f);
+            Pen reg = Pens.Black;
+            using Pen sel = new(Color.Black, 3f);
             Pen[] pens = new Pen[] { reg, sel };
 
             Rectangle mapCoords = GetMapCoords();
@@ -135,7 +165,7 @@ namespace WinFormsApp1
                         else if (tile.Piece is Foundation)
                             e.Graphics.FillRectangle(Brushes.Black, rect);
                         else if (tile.Piece is Turret)
-                            e.Graphics.FillRectangle(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
+                            e.Graphics.FillEllipse(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
                         else if (resource != null)
                         {
                             if (resource is Biomass)
@@ -167,39 +197,82 @@ namespace WinFormsApp1
         {
             if (SelTile != null)
             {
-                Pen range = new(Color.Red, 3f), move = new(Color.Green, 3f), repair = new(Color.Blue, 3f);
+                using Pen range = new(Color.Red, 3f), move = new(Color.Green, 3f), repair = new(Color.Blue, 3f);
                 Pen[] pens = new Pen[] { repair, range, move };
                 Dictionary<Pen, List<HashSet<Point>>> ranges = new() { { range, new() }, { move, new() }, { repair, new() } };
-                HashSet<Point> GetRangePoints(double v) => GetPoints(SelTile.GetVisibleTilesInRange(v));//.Where(t => t.Piece == null)                    
+                //HashSet<Point> GetRangePoints(double v) => GetPoints(SelTile.GetVisibleTilesInRange(v));//.Where(t => t.Piece == null)                    
                 HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts
                    .Select(t => new Point(t.X, t.Y)).ToHashSet();
 
-                IMovable movable = SelTile.Piece as IMovable;
-                if (movable != null && movable.MoveCur >= 1)
+                IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
+                if (SelTile.Piece is IMovable movable && movable.MoveCur >= 1)
                 {
-                    var moveTiles = SelTile.GetVisibleTilesInRange(movable.MoveCur);
+                    moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur);
                     ranges[move].Add(GetPoints(moveTiles));
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
                         ranges[move].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
                 }
 
-                if (SelTile.Piece is IAttacker attacker)
+                Dictionary<Tile, double> attStr = new();
+                void AddAttStr(IEnumerable<Tile> range, double damage)
                 {
-                    var ar = attacker.Attacks.Where(a => !a.Attacked).Select(a => a.Range);
-                    if (SelTile.Piece.IsEnemy && movable != null)
+                    if (viewAttacks)
+                        foreach (Tile t in range)
+                        {
+                            attStr.TryGetValue(t, out double total);
+                            attStr[t] = total + damage;
+                        }
+                }
+                IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles)
+                {
+                    List<HashSet<Point>> retVal = new();
+                    var ar = attacker.Attacks.Where(a => !a.Attacked);
+                    if (attacker.Piece.IsEnemy && moveTiles.Any())
                     {
-                        var moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur);
-                        var moveEdge = moveTiles.Where(t => t.GetDistance(SelTile) > movable.MoveCur - 1);
+                        var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > ((IMovable)attacker).MoveCur - 1);
                         foreach (var a in ar)
-                            ranges[range].Add(GetPoints(moveEdge.SelectMany(t => t.GetVisibleTilesInRange(a)).Union(moveTiles)));
+                        {
+                            IEnumerable<Tile> e = moveEdge.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);
+                            AddAttStr(e, a.Damage);
+                            retVal.Add(GetPoints(e));
+                        }
                     }
                     else
                         foreach (var a in ar)
-                            ranges[range].Add(GetRangePoints(a));
+                            if (moveTiles.Contains(MouseTile))
+                                retVal.Add(GetPoints(MouseTile.GetVisibleTilesInRange(a.Range)));
+                            else
+                            {
+                                IEnumerable<Tile> e = SelTile.GetVisibleTilesInRange(a.Range);
+                                AddAttStr(e, a.Damage);
+                                retVal.Add(GetPoints(e));
+                            }
+                    return retVal;
                 }
+                if (viewAttacks)
+                {
+                    IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
+                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.OfType<IAttacker>())
+                    {
+                        IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
+                        if (enemy is IMovable enemyMovable)
+                            attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
+                        allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles).SelectMany(hs => hs));
+                    }
+                    ranges[range].Add(allAttacks.ToHashSet());
+
+                    using Font f = new(FontFamily.GenericMonospace, scale / 6.5f);
+                    foreach (var p in attStr)
+                        e.Graphics.DrawString(p.Value.ToString("0.0"), f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
+                }
+                if (SelTile.Piece is IAttacker attacker)
+                    ranges[range].AddRange(AddAttacks(attacker, moveTiles));
 
                 if (SelTile.Piece is IRepair r)
-                    ranges[repair].Add(GetRangePoints(r.Range));
+                    if (moveTiles.Contains(MouseTile))
+                        ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(r.Range)));
+                    else
+                        ranges[repair].Add(GetPoints(SelTile.GetVisibleTilesInRange(r.Range)));
 
                 Dictionary<LineSegment, Pen> lines = new();
                 foreach (Pen pen in pens)
@@ -277,7 +350,7 @@ namespace WinFormsApp1
         }
         private void Border(PaintEventArgs e)
         {
-            Pen thick = new(Color.Black, 3f);
+            using Pen thick = new(Color.Black, 3f);
 
             bool hasLeft = (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.down - 1))
                 || (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.up + 1));
@@ -393,7 +466,12 @@ namespace WinFormsApp1
             return new Rectangle(x, y, w - x + 1, h - y + 1);
         }
 
-        private void Map_KeyDown(object sender, KeyEventArgs e)
+        private void Map_MouseMove(object sender, MouseEventArgs e)
+        {
+            this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
+        }
+
+        public void Map_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.W)
                 scrollDown = true;
@@ -406,7 +484,8 @@ namespace WinFormsApp1
             if (scrollDown || scrollLeft || scrollUp || scrollRight)
                 timer.Start();
         }
-        private void Map_KeyUp(object sender, KeyEventArgs e)
+
+        public void Map_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.W)
                 scrollDown = false;
@@ -435,9 +514,9 @@ namespace WinFormsApp1
 
             CheckBounds(xs, ys);
 
-            Refresh();
+            Invalidate();
         }
-        private void Map_MouseWheel(object sender, MouseEventArgs e)
+        public void Map_MouseWheel(object sender, MouseEventArgs e)
         {
             float mult = e.Delta / 91f;
             if (mult < 0)
@@ -451,7 +530,7 @@ namespace WinFormsApp1
 
             if (this.CheckBounds(xStart, yStart))
                 this.scale /= mult;
-            this.Refresh();
+            this.Invalidate();
         }
         private bool CheckBounds(float xs, float ys)
         {
@@ -504,7 +583,7 @@ namespace WinFormsApp1
             if (SelTile == orig)
             {
                 if (SelTile != null && SelTile == clicked)
-                    Program.Moved.Add(SelTile.Piece);
+                    Program.Hold();
                 Program.Next(true);
             }
         }

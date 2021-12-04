@@ -93,12 +93,19 @@ namespace ClassLibrary1.Pieces
                 {
                     double shieldDmg = 0;
                     if (target.ShieldCur > 0)
-                        shieldDmg = Math.Min(target.ShieldCur, Rand(Damage * (1 - ShieldPierce)));
-
+                        shieldDmg = Damage * (1 - ShieldPierce);
                     double damage = Damage - shieldDmg;
+
+                    damage = Rand(damage);
+                    shieldDmg = Rand(shieldDmg);
+
+                    if (shieldDmg > target.ShieldCur)
+                    {
+                        damage += shieldDmg - target.ShieldCur;
+                        shieldDmg = target.ShieldCur;
+                    }
                     if (target.Armor > 0)
                         damage *= 1 - target.Armor * (1 - ArmorPierce);
-                    damage = Rand(damage);
 
                     target.Damage(damage, shieldDmg);
 

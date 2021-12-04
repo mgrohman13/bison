@@ -20,6 +20,7 @@ namespace ClassLibrary1
 
         private readonly int[] _exploredLeft, _exploredRight, _exploredDown, _exploredUp;
         private int _resourceLeft, _resourceRight, _resourceDown, _resourceUp;
+        private readonly double _enemyLeft, _enemyRight, _enemyDown, _enemyUp, _enemyLeftPow, _enemyRightPow, _enemyDownPow, _enemyUpPow;
 
         public int Width => right - left + 1;
         public int Height => up - down + 1;
@@ -60,6 +61,22 @@ namespace ClassLibrary1
             _resourceRight = 0;
             _resourceDown = 0;
             _resourceUp = 0;
+
+            //eventually, the dir with constant weight will have the enemy core
+            Tuple<double, double>[] enemyDirs = Game.Rand.Iterate(new Tuple<double, double>[] {
+                new(1, 1),
+                new(Game.Rand.GaussianCapped(1.69, .13,     1   ), Game.Rand.GaussianCapped( .65, .13 ,  .52)),
+                new(Game.Rand.GaussianCapped(1.13, .13,      .52), Game.Rand.GaussianCapped(1.69, .13 , 1.3 )),
+                new(Game.Rand.GaussianOE    (1   , .21, .26, .13), Game.Rand.GaussianCapped(1   , .169,  .65)),
+            }).ToArray();
+            _enemyLeft = enemyDirs[0].Item1;
+            _enemyLeftPow = Math.Sqrt(enemyDirs[0].Item2);
+            _enemyRight = enemyDirs[1].Item1;
+            _enemyRightPow = Math.Sqrt(enemyDirs[1].Item2);
+            _enemyDown = enemyDirs[2].Item1;
+            _enemyDownPow = Math.Sqrt(enemyDirs[2].Item2);
+            _enemyUp = enemyDirs[3].Item1;
+            _enemyUpPow = Math.Sqrt(enemyDirs[3].Item2);
         }
 
         public Tile GetVisibleTile(int x, int y)
@@ -179,7 +196,7 @@ namespace ClassLibrary1
         private void GenResources(int count)
         {
             bool generated = false;
-            IEnumerable<Tile> resources = this._pieces.Values.Select(p => p is Extractor extractor ? extractor.Resource : p).OfType<Resource>().Select(r => r.Tile);
+            IEnumerable<Tile> resources = this._pieces.Values.Where(p => p is Extractor || p is Resource).Select(r => r.Tile);
             if (resources.Any())
             {
                 var funcs = new Func<bool>[] {
@@ -274,38 +291,54 @@ namespace ClassLibrary1
             Map.Tile tile;
             do
             {
-                int[] exp;
-                int min;
-                bool dir, neg;
-                int sel = Game.Rand.Next(4);
-                switch (sel)
+                int[] exp = null;
+                int min = 0;
+                bool dir = false, neg = false;
+                int GetChance(double mult, double pow) => Game.Rand.Round(Math.Sqrt(13 + mult * mult * (13 + Math.Pow(Game.Turn, pow))));
+                Dictionary<Action, int> select = new()
                 {
-                    case 0:
-                        exp = _exploredLeft;
-                        min = left;
-                        dir = true;
-                        neg = true;
-                        break;
-                    case 1:
-                        exp = _exploredRight;
-                        min = right;
-                        dir = true;
-                        neg = false;
-                        break;
-                    case 2:
-                        exp = _exploredDown;
-                        min = down;
-                        dir = false;
-                        neg = true;
-                        break;
-                    case 3:
-                        exp = _exploredUp;
-                        min = up;
-                        dir = false;
-                        neg = false;
-                        break;
-                    default: throw new Exception();
-                }
+                    {
+                        () =>
+                        {
+                            exp = _exploredLeft;
+                            min = left;
+                            dir = true;
+                            neg = true;
+                        },
+                        GetChance(_enemyLeft, _enemyLeftPow)
+                    },
+                    {
+                        () =>
+                        {
+                            exp = _exploredRight;
+                            min = right;
+                            dir = true;
+                            neg = false;
+                        },
+                        GetChance(_enemyRight, _enemyRightPow)
+                    },
+                    {
+                        () =>
+                        {
+                            exp = _exploredDown;
+                            min = down;
+                            dir = false;
+                            neg = true;
+                        },
+                        GetChance(_enemyDown, _enemyDownPow)
+                    },
+                    {
+                        () =>
+                        {
+                            exp = _exploredUp;
+                            min = up;
+                            dir = false;
+                            neg = false;
+                        },
+                        GetChance(_enemyUp, _enemyUpPow)
+                    },
+                };
+                Game.Rand.SelectValue(select)();
 
                 int x = Game.Rand.Next(exp.Length);
                 int y = exp[x];

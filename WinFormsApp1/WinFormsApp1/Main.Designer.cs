@@ -58,6 +58,7 @@ namespace WinFormsApp1
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.mapMain.Location = new System.Drawing.Point(0, 37);
+            this.mapMain.MouseTile = null;
             this.mapMain.Name = "mapMain";
             this.mapMain.SelTile = null;
             this.mapMain.Size = new System.Drawing.Size(1392, 987);
@@ -67,6 +68,7 @@ namespace WinFormsApp1
             // 
             this.mapMini.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.mapMini.Location = new System.Drawing.Point(1398, 0);
+            this.mapMini.MouseTile = null;
             this.mapMini.Name = "mapMini";
             this.mapMini.SelTile = null;
             this.mapMini.Size = new System.Drawing.Size(500, 300);
@@ -183,7 +185,8 @@ namespace WinFormsApp1
             this.KeyPreview = true;
             this.Name = "Main";
             this.Text = "Form1";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Main_KeyUp);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Main_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Main_KeyUp);
             this.ResumeLayout(false);
             this.PerformLayout();
 
