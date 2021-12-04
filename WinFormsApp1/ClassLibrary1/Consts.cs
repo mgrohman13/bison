@@ -66,18 +66,20 @@ namespace ClassLibrary1
         public const double UpkeepPerShield = 2;
         public const double UpkeepPerMove = .5;
 
+        public const double MechCostMult = 16.9;
+        public const double MechMassDiv = 1.69;
+
+        public const double RepairCost = .21;
+        public const double EnergyRepairDiv = 2.1;
+        public const double ExtractorAutoRepair = .5;
+        public const double ExtractorAutoRepairPct = .0075;
+
         public static double GetDamagedValue(Piece piece, double value, int min)
         {
             if (piece is IKillable killable)
                 return min + (value - min) * Math.Pow(killable.HitsCur / killable.HitsMax, 1 - killable.Resilience);
             return value;
         }
-
-        public const double MechCostMult = 16.9;
-        public const double MechMassDiv = 1.69;
-
-        public const double RepairCost = .21;
-        public const double EnergyRepairDiv = 2.1;
 
         public static double IncValueWithMaxLimit(double cur, double inc, double dev, double max, double limit, double pow, bool rand)
         {

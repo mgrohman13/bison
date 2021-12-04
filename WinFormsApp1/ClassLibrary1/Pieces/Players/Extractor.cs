@@ -63,12 +63,33 @@ namespace ClassLibrary1.Pieces.Players
         {
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
             Resource.GenerateResources(Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+            massUpk += AutoRepairMass();
         }
         internal override void EndTurn()
         {
             Resource.Extract(Piece);
             base.EndTurn();
+            ((IKillable)this).Repair(AutoRepairAmt());
         }
+        public override double GetRepairInc()
+        {
+            double repair = base.GetRepairInc() + AutoRepairAmt();
+            if (repair > HitsMax - HitsCur)
+                repair = HitsMax - HitsCur;
+            return repair;
+        }
+        private double AutoRepairMass()
+        {
+            return Repair.GetRepairCost(this, AutoRepairAmt());
+        }
+        private double AutoRepairAmt()
+        {
+            double repair = HitsMax * Consts.ExtractorAutoRepairPct + Consts.ExtractorAutoRepair;
+            if (repair > HitsMax - HitsCur)
+                repair = HitsMax - HitsCur;
+            return repair;
+        }
+
 
         public override string ToString()
         {
@@ -83,6 +104,7 @@ namespace ClassLibrary1.Pieces.Players
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
+        public double ShieldIncBase => killable.ShieldIncBase;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
         public bool Dead => killable.Dead;

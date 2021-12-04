@@ -2,8 +2,6 @@ better combat logging
 	better formatting
 	break down why?  
 	also log to free space on panel 
-extractors auto repair
-show totals when things reduced (by hp% or by >max)
 
 build range
 	and fix hideous build form

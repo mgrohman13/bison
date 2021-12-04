@@ -71,10 +71,12 @@ namespace ClassLibrary1.Pieces
 
             public bool Attacked => _attacked;
             public double Damage => Consts.GetDamagedValue(Piece, _damage, 0);
+            public double DamageBase => _damage;
             public double ArmorPierce => _armorPierce;
             public double ShieldPierce => _shieldPierce;
             public double Dev => _dev;
             public double Range => Consts.GetDamagedValue(Piece, _range, 1);
+            public double RangeBase => _range;
 
             internal Attack(Piece piece, Values values)
             {

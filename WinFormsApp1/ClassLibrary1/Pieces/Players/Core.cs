@@ -65,6 +65,7 @@ namespace ClassLibrary1.Pieces.Players
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
+        public double ShieldIncBase => killable.ShieldIncBase;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
         public bool Dead => killable.Dead;
@@ -88,7 +89,9 @@ namespace ClassLibrary1.Pieces.Players
         #region IRepair 
 
         public double Range => repair.Range;
+        public double RangeBase => repair.RangeBase;
         public double Rate => repair.Rate;
+        public double RateBase => repair.RateBase;
 
         double IRepair.GetRepairInc(IKillable killable)
         {

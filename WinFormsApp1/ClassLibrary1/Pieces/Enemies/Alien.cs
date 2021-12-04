@@ -47,6 +47,7 @@ namespace ClassLibrary1.Pieces.Enemies
         public double Armor => killable.Armor;
         public double ShieldCur => killable.ShieldCur;
         public double ShieldInc => killable.ShieldInc;
+        public double ShieldIncBase => killable.ShieldIncBase;
         public double ShieldMax => killable.ShieldMax;
         public double ShieldLimit => killable.ShieldLimit;
         public bool Dead => killable.Dead;

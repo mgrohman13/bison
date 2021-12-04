@@ -117,7 +117,7 @@ namespace ClassLibrary1
             if (attacker != null)
                 Attack(attacker, targets, avgHp, avgWeight);
         }
-        private Dictionary<Attacker.Attack, IEnumerable<IKillable>> GetTargets(IAttacker attacker, Tile from, IEnumerable<IKillable> allTargets)
+        private static Dictionary<Attacker.Attack, IEnumerable<IKillable>> GetTargets(IAttacker attacker, Tile from, IEnumerable<IKillable> allTargets)
         {
             return attacker.Attacks.Where(a => !a.Attacked)
                 .Select(a => new Tuple<Attacker.Attack, IEnumerable<IKillable>>(a,
@@ -125,7 +125,7 @@ namespace ClassLibrary1
                 .Where(t => t.Item2.Any())
                 .ToDictionary(t => t.Item1, t => t.Item2);
         }
-        private void Attack(IAttacker attacker, Dictionary<Attacker.Attack, IEnumerable<IKillable>> targets, double avgHp, double avgWeight)
+        private static void Attack(IAttacker attacker, Dictionary<Attacker.Attack, IEnumerable<IKillable>> targets, double avgHp, double avgWeight)
         {
             Dictionary<IKillable, int> targWeights = targets.Values.SelectMany(v => v).Distinct().ToDictionary(k => k, k => Game.Rand.Round(1 + 13 * GetKillWeight(k, avgHp) / avgWeight));
             while (attacker.Attacks.Any(a => !a.Attacked && targets.ContainsKey(a)) && targWeights.Any())
@@ -136,7 +136,7 @@ namespace ClassLibrary1
                 { }
             }
         }
-        private double GetKillWeight(IKillable killable, double avgHp)
+        private static double GetKillWeight(IKillable killable, double avgHp)
         {
             double attacks = 0;
             if (killable.Piece is IAttacker attacker)

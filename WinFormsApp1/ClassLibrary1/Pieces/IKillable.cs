@@ -18,7 +18,8 @@ namespace ClassLibrary1.Pieces
         public double Resilience { get; }
         public double Armor { get; }
         public double ShieldCur { get; }
-        public double ShieldInc { get; }
+        public double ShieldInc { get; }  
+        public double ShieldIncBase { get; }        
         public double ShieldMax { get; }
         public double ShieldLimit { get; }
         public bool Dead { get; }

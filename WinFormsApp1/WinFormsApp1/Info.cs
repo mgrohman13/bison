@@ -72,8 +72,9 @@ namespace WinFormsApp1
                         lbl2.Show();
                         lblInf2.Show();
                         lbl2.Text = "Shield";
-                        lblInf2.Text = string.Format("{0} / {1} / {2} +{3}",
-                            Format(killable.ShieldCur), Format(killable.ShieldMax), Format(killable.ShieldLimit), Format(killable.GetInc()));
+                        lblInf2.Text = string.Format("{0} / {1} / {2} +{3}{4}",
+                            Format(killable.ShieldCur), Format(killable.ShieldMax), Format(killable.ShieldLimit), Format(killable.GetInc()),
+                            CheckBase(killable.ShieldIncBase, killable.GetInc()));
                     }
                 }
                 if (selected.Piece is IMovable movable)
@@ -81,8 +82,9 @@ namespace WinFormsApp1
                     lbl3.Show();
                     lblInf3.Show();
                     lbl3.Text = "Move";
-                    lblInf3.Text = string.Format("{0} / {1} / {2} +{3}",
-                            Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()));
+                    lblInf3.Text = string.Format("{0} / {1} / {2} +{3}{4}",
+                            Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()),
+                            CheckBase(movable.MoveInc, movable.GetInc()));
                 }
                 if (playerPiece != null)
                 {
@@ -123,8 +125,12 @@ namespace WinFormsApp1
                 {
                     lbl7.Show();
                     lblInf7.Show();
-                    lbl7.Text = "Repairs";
-                    lblInf7.Text = string.Format("{0}", FormatPct(repair.Rate));
+                    lbl7.Text = "Repair";
+                    lblInf7.Text = string.Format("{0}{1}", FormatPct(repair.Rate), CheckBase(repair.RateBase, repair.Rate, FormatPct));
+                    lbl8.Show();
+                    lblInf8.Show();
+                    lbl8.Text = "Range";
+                    lblInf8.Text = string.Format("{0}{1}", FormatPct(repair.Range), CheckBase(repair.RangeBase, repair.Range, FormatPct));
                 }
 
                 Resource resource = selected.Piece as Resource;
@@ -154,21 +160,21 @@ namespace WinFormsApp1
                         lbl5.Show();
                         lblInf5.Show();
                         lbl5.Text = "Energy";
-                        lblInf5.Text = string.Format("{1}{0}", Format(energyInc), energyInc > 0 ? "+" : "");
+                        lblInf5.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(extractor.Resource as Biomass, energyInc));
                     }
                     if (massInc != 0)
                     {
                         lbl6.Show();
                         lblInf6.Show();
                         lbl6.Text = "Mass";
-                        lblInf6.Text = string.Format("{1}{0}", Format(massInc), massInc > 0 ? "+" : "");
+                        lblInf6.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(extractor.Resource as Metal, massInc));
                     }
                     if (researchInc != 0)
                     {
                         lbl7.Show();
                         lblInf7.Show();
                         lbl7.Text = "Research";
-                        lblInf7.Text = string.Format("{1}{0}", Format(researchInc), researchInc > 0 ? "+" : "");
+                        lblInf7.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(extractor.Resource as Artifact, researchInc));
                     }
 
                     lbl8.Show();
@@ -182,22 +188,38 @@ namespace WinFormsApp1
                     dgvAttacks.Show();
 
                     dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).ToList();
-                    dgvAttacks.Columns["Range"].DisplayIndex = 0;
+                    dgvAttacks.Columns["Range"].DisplayIndex = 10;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
-                    dgvAttacks.Columns["Damage"].DisplayIndex = 1;
+                    if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
+                    {
+                        dgvAttacks.Columns["RangeBase"].DisplayIndex = 15;
+                        dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
+                        dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
+                    }
+                    else
+                        dgvAttacks.Columns["RangeBase"].Visible = false;
+                    dgvAttacks.Columns["Damage"].DisplayIndex = 20;
                     dgvAttacks.Columns["Damage"].HeaderText = "DMG";
                     dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = "0.0";
-                    dgvAttacks.Columns["ArmorPierce"].DisplayIndex = 2;
+                    if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
+                    {
+                        dgvAttacks.Columns["DamageBase"].DisplayIndex = 25;
+                        dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
+                        dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
+                    }
+                    else
+                        dgvAttacks.Columns["DamageBase"].Visible = false;
+                    dgvAttacks.Columns["ArmorPierce"].DisplayIndex = 30;
                     dgvAttacks.Columns["ArmorPierce"].HeaderText = "AP";
                     dgvAttacks.Columns["ArmorPierce"].DefaultCellStyle.Format = "P1";
-                    dgvAttacks.Columns["ShieldPierce"].DisplayIndex = 3;
+                    dgvAttacks.Columns["ShieldPierce"].DisplayIndex = 40;
                     dgvAttacks.Columns["ShieldPierce"].HeaderText = "SP";
                     dgvAttacks.Columns["ShieldPierce"].DefaultCellStyle.Format = "P1";
-                    dgvAttacks.Columns["Dev"].DisplayIndex = 4;
+                    dgvAttacks.Columns["Dev"].DisplayIndex = 50;
                     dgvAttacks.Columns["Dev"].HeaderText = "RNG";
                     dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P1";
-                    dgvAttacks.Columns["Attacked"].DisplayIndex = 5;
+                    dgvAttacks.Columns["Attacked"].DisplayIndex = 60;
                     dgvAttacks.Columns["Attacked"].HeaderText = "USED";
 
                     int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
@@ -208,6 +230,19 @@ namespace WinFormsApp1
             }
 
             base.Refresh();
+        }
+        private static string CheckBase(double orig, double actual)
+        {
+            return CheckBase(orig, actual, Format);
+        }
+        private static string CheckBase(double orig, double actual, Func<double, string> Formatter)
+        {
+            string origDisp = Format(orig);
+            return (origDisp != Format(actual)) ? " (" + origDisp + ")" : "";
+        }
+        private static string CheckBase(Resource resource, double energyInc)
+        {
+            return resource == null ? "" : CheckBase(resource.Value, energyInc);
         }
 
         private static string Format(double value)

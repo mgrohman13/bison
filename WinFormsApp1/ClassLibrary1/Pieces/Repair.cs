@@ -15,7 +15,9 @@ namespace ClassLibrary1.Pieces
         public Piece Piece => _piece;
 
         public double Range => Consts.GetDamagedValue(Piece, _values.Range, 1);
+        public double RangeBase => _values.Range;
         public double Rate => Consts.GetDamagedValue(Piece, _values.Rate, 0);
+        public double RateBase => _values.Rate;
 
         public Repair(Piece piece, IRepair.Values values)
         {
@@ -30,7 +32,7 @@ namespace ClassLibrary1.Pieces
         void IBehavior.EndTurn()
         {
             foreach (var p in GetRepairs())
-                p.Key.Repair(Game.Rand.GaussianCapped(p.Value, Consts.HitsIncDev));
+                p.Key.Repair(p.Value);
         }
 
         double IRepair.GetRepairInc(IKillable killable)

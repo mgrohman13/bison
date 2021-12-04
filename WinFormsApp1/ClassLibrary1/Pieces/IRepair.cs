@@ -9,7 +9,9 @@ namespace ClassLibrary1.Pieces
     public interface IRepair : IBehavior
     {
         public double Range { get; }
+        public double RangeBase { get; }
         public double Rate { get; }
+        public double RateBase { get; }
 
         internal double GetRepairInc(IKillable killable);
 

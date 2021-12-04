@@ -40,6 +40,7 @@ namespace ClassLibrary1.Pieces
         public double Armor => _values.Armor;
         public double ShieldCur => _shieldCur;
         public double ShieldInc => Consts.GetDamagedValue(Piece, _values.ShieldInc, 0);
+        public double ShieldIncBase => _values.ShieldInc;
         public double ShieldMax => _values.ShieldMax;
         public double ShieldLimit => _values.ShieldLimit;
         public bool Dead => HitsCur <= 0.05;
@@ -61,7 +62,7 @@ namespace ClassLibrary1.Pieces
         }
         internal void Repair(double hits)
         {
-            this._hitsCur += hits;
+            this._hitsCur += Game.Rand.GaussianCapped(hits, Consts.HitsIncDev);
             if (HitsCur > HitsMax)
                 this._hitsCur = HitsMax;
         }

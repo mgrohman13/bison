@@ -24,7 +24,7 @@ namespace ClassLibrary1.Pieces.Players
             GetUpkeep(ref energyUpk, ref massUpk);
         }
 
-        public double GetRepairInc()
+        public virtual double GetRepairInc()
         {
             if (this is IKillable killable)
             {
