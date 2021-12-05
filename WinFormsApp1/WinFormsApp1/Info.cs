@@ -187,39 +187,40 @@ namespace WinFormsApp1
                 {
                     dgvAttacks.Show();
 
+                    int idx = 0;
                     dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).ToList();
-                    dgvAttacks.Columns["Range"].DisplayIndex = 10;
+                    dgvAttacks.Columns["Range"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
                     if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
                     {
-                        dgvAttacks.Columns["RangeBase"].DisplayIndex = 15;
+                        dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
                         dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
                         dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
                     }
                     else
                         dgvAttacks.Columns["RangeBase"].Visible = false;
-                    dgvAttacks.Columns["Damage"].DisplayIndex = 20;
+                    dgvAttacks.Columns["Damage"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Damage"].HeaderText = "DMG";
                     dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = "0.0";
                     if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
                     {
-                        dgvAttacks.Columns["DamageBase"].DisplayIndex = 25;
+                        dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
                         dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
                         dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
                     }
                     else
                         dgvAttacks.Columns["DamageBase"].Visible = false;
-                    dgvAttacks.Columns["ArmorPierce"].DisplayIndex = 30;
+                    dgvAttacks.Columns["ArmorPierce"].DisplayIndex = idx++;
                     dgvAttacks.Columns["ArmorPierce"].HeaderText = "AP";
                     dgvAttacks.Columns["ArmorPierce"].DefaultCellStyle.Format = "P1";
-                    dgvAttacks.Columns["ShieldPierce"].DisplayIndex = 40;
+                    dgvAttacks.Columns["ShieldPierce"].DisplayIndex = idx++;
                     dgvAttacks.Columns["ShieldPierce"].HeaderText = "SP";
                     dgvAttacks.Columns["ShieldPierce"].DefaultCellStyle.Format = "P1";
-                    dgvAttacks.Columns["Dev"].DisplayIndex = 50;
+                    dgvAttacks.Columns["Dev"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Dev"].HeaderText = "RNG";
                     dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P1";
-                    dgvAttacks.Columns["Attacked"].DisplayIndex = 60;
+                    dgvAttacks.Columns["Attacked"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Attacked"].HeaderText = "USED";
 
                     int labelsY = this.Controls.OfType<Label>().Where(lbl => lbl.Visible && lbl.Parent != this.panel1).Max(lbl => lbl.Location.Y + lbl.Height);
@@ -229,6 +230,10 @@ namespace WinFormsApp1
                 }
             }
 
+            txtLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - txtLog.Location.Y;
+            txtLog.Text = Program.Game.Log.Data(selected?.Piece);
+            txtLog.Select(0, 0);
+
             base.Refresh();
         }
         private static string CheckBase(double orig, double actual)
@@ -237,8 +242,8 @@ namespace WinFormsApp1
         }
         private static string CheckBase(double orig, double actual, Func<double, string> Formatter)
         {
-            string origDisp = Format(orig);
-            return (origDisp != Format(actual)) ? " (" + origDisp + ")" : "";
+            string origDisp = Formatter(orig);
+            return (origDisp != Formatter(actual)) ? " (" + origDisp + ")" : "";
         }
         private static string CheckBase(Resource resource, double energyInc)
         {

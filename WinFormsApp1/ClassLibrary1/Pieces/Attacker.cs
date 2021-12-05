@@ -100,6 +100,8 @@ namespace ClassLibrary1.Pieces
 
                     damage = Rand(damage);
                     shieldDmg = Rand(shieldDmg);
+                    double randDmg = damage;
+                    double randShieldDmg = shieldDmg;
 
                     if (shieldDmg > target.ShieldCur)
                     {
@@ -111,8 +113,7 @@ namespace ClassLibrary1.Pieces
 
                     target.Damage(damage, shieldDmg);
 
-                    Debug.WriteLine("{0} -> {1} {2:0.0} -{3:0.0}{4}", this.Piece, target.Piece, target.HitsCur, damage,
-                        shieldDmg > 0 ? string.Format(" , {0:0.0} -{1:0.0}", target.ShieldCur, shieldDmg) : "");
+                    Piece.Game.Log.LogAttack(Piece as IAttacker, target.Piece as IKillable, Damage, randDmg, randShieldDmg, damage, shieldDmg);
 
                     this._attacked = true;
                     return true;

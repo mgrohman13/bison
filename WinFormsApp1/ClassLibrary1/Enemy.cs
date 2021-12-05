@@ -72,39 +72,38 @@ namespace ClassLibrary1
             if (piece is IMovable movable && movable.MoveCur >= 1)
             {
                 double d = piece.Tile.GetDistance(Game.Player.Core.Tile);
-                double minDist = d - movable.MoveCur;
+                double minDist = Math.Max(0, d - movable.MoveCur);
                 double maxDist = d + movable.MoveCur;
                 Dictionary<Tile, int> moveTiles = piece.Tile.GetTilesInRange(movable.MoveCur).Where(t => t.Piece == null || t.Piece == piece).ToDictionary(t => t, t =>
                 {
-                    double result = 1 + 1.69 * (t.GetDistance(Game.Player.Core.Tile) - minDist) / (maxDist - minDist);
-                    result *= result;
+                    double result = 1.69 * (1 - (t.GetDistance(Game.Player.Core.Tile) - minDist) / (maxDist - minDist));
+                    result = 1 + result * result;
                     if (attacker != null)
                     {
+                        double attackWeight = 1;
                         foreach (var attack in attacker.Attacks.Where(a => !a.Attacked))
                         {
                             var weights = allTargets.Where(k => t.GetDistance(k.Piece.Tile) <= attack.Range).Select(k => GetKillWeight(k, avgHp));
                             if (weights.Any())
                             {
                                 double weight = weights.Max();
-                                weight = attack.Damage * (13 + Math.Pow(weight * weight * weights.Average(), 1 / 3.0) / avgWeight);
-                                result *= weight;
+                                attackWeight += 130 * attack.Damage * (.13 + Math.Pow(weight * weight * weights.Average(), 1 / 3.0) / avgWeight);
                             }
+                            else
+                            { }
                         }
+                        result *= attackWeight;
                     }
-                    return Game.Rand.Round(Math.Sqrt(1 + 13 * result));
+                    return Game.Rand.Round(Math.Pow(1 + 13 * result, .91));
                 });
 
                 Tile moveTo = Game.Rand.SelectValue(moveTiles);
-                bool attackFirst = attacker != null && Game.Rand.Bool();
-                Dictionary<Attacker.Attack, IEnumerable<IKillable>> newTargets = targets;
+                bool attackFirst = attacker != null && Game.Rand.Bool(.013);
+                Dictionary<Attacker.Attack, IEnumerable<IKillable>> newTargets = GetTargets(attacker, moveTo, allTargets);
                 if (!attackFirst && attacker != null)
-                {
-                    newTargets = GetTargets(attacker, moveTo, allTargets);
                     attackFirst = targets.Keys.Any(a => !newTargets.ContainsKey(a));
-                }
                 if (attackFirst)
                     Attack(attacker, targets, avgHp, avgWeight);
-
 
                 if (movable.EnemyMove(moveTo))
                     targets = newTargets;
@@ -143,11 +142,13 @@ namespace ClassLibrary1
                 attacks = attacker.Attacks.Sum(a => a.Damage * (a.Range + 7.8));
             double repair = 0;
             if (killable.Piece is IRepair repairs)
-                repair = avgHp * repairs.Rate * (repairs.Range + 3.9);
-            double gc = (1 + attacks + 26 * repair) / (killable.HitsCur / (1 - killable.Armor) + killable.ShieldCur);
+                repair = 13 + avgHp * repairs.Rate * (repairs.Range + 3.9);
+            double gc = (1 + attacks + 21 * repair) / (killable.HitsCur / (1 - killable.Armor) + killable.ShieldCur);
             double damagePct = 2 - killable.HitsCur / killable.HitsMax;
             double shieldFactor = 3 + 13 * killable.ShieldInc / (killable.HitsMax / 6.5 + killable.ShieldCur);
-            double final = Math.Sqrt(gc * gc * damagePct * shieldFactor);
+            double final = gc * gc * damagePct * shieldFactor;
+            if (!(final > 0))
+            { }
             return final;
         }
     }

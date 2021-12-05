@@ -1,8 +1,3 @@
-better combat logging 
-	better formatting
-	break down why?  
-	also log to free space on panel 
-
 build range
 	and fix hideous build form
 scrolling/panning limits can still only show non-visible corner and hence blank screen

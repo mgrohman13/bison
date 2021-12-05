@@ -22,6 +22,7 @@ namespace ClassLibrary1
         public readonly Map Map;
         public readonly Player Player;
         public readonly Enemy Enemy;
+        public readonly Log Log;
 
         private int _turn;
         public int Turn => _turn;
@@ -40,9 +41,10 @@ namespace ClassLibrary1
 
         public Game(string savePath)
         {
-            this.Map = new Map(this);
-            this.Player = new Player(this);
-            this.Enemy = new Enemy(this);
+            this.Map = new(this);
+            this.Player = new(this);
+            this.Enemy = new(this);
+            this.Log = new(this);
 
             this._turn = 0;
             this._savePath = savePath;
@@ -216,7 +218,10 @@ namespace ClassLibrary1
             if (System.IO.File.Exists(_savePath))
             {
                 string path = _savePath.Replace("\\", "/");
-                System.IO.File.Copy(path, path.Substring(0, path.LastIndexOf("/")) + "/" + "prev_" + Turn + ".sav");
+                path = path.Substring(0, path.LastIndexOf("/")) + "/" + "prev_" + Turn + ".sav";
+                if (System.IO.File.Exists(path))
+                    System.IO.File.Delete(path);
+                System.IO.File.Copy(_savePath, path);
             }
             TBSUtil.SaveGame(this, _savePath);
         }
