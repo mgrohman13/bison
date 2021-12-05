@@ -130,7 +130,7 @@ namespace WinFormsApp1
                     lbl8.Show();
                     lblInf8.Show();
                     lbl8.Text = "Range";
-                    lblInf8.Text = string.Format("{0}{1}", FormatPct(repair.Range), CheckBase(repair.RangeBase, repair.Range, FormatPct));
+                    lblInf8.Text = string.Format("{0}{1}", Format(repair.Range), CheckBase(repair.RangeBase, repair.Range));
                 }
 
                 Resource resource = selected.Piece as Resource;
@@ -160,21 +160,21 @@ namespace WinFormsApp1
                         lbl5.Show();
                         lblInf5.Show();
                         lbl5.Text = "Energy";
-                        lblInf5.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(extractor.Resource as Biomass, energyInc));
+                        lblInf5.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Biomass, energyInc));
                     }
                     if (massInc != 0)
                     {
                         lbl6.Show();
                         lblInf6.Show();
                         lbl6.Text = "Mass";
-                        lblInf6.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(extractor.Resource as Metal, massInc));
+                        lblInf6.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Metal, massInc));
                     }
                     if (researchInc != 0)
                     {
                         lbl7.Show();
                         lblInf7.Show();
                         lbl7.Text = "Research";
-                        lblInf7.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(extractor.Resource as Artifact, researchInc));
+                        lblInf7.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Artifact, researchInc));
                     }
 
                     lbl8.Show();
@@ -194,6 +194,7 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
                     if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
                     {
+                        dgvAttacks.Columns["RangeBase"].Visible = true;
                         dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
                         dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
                         dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
@@ -205,6 +206,7 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = "0.0";
                     if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
                     {
+                        dgvAttacks.Columns["DamageBase"].Visible = true;
                         dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
                         dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
                         dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
@@ -218,7 +220,7 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["ShieldPierce"].HeaderText = "SP";
                     dgvAttacks.Columns["ShieldPierce"].DefaultCellStyle.Format = "P1";
                     dgvAttacks.Columns["Dev"].DisplayIndex = idx++;
-                    dgvAttacks.Columns["Dev"].HeaderText = "RNG";
+                    dgvAttacks.Columns["Dev"].HeaderText = "RNDM";
                     dgvAttacks.Columns["Dev"].DefaultCellStyle.Format = "P1";
                     dgvAttacks.Columns["Attacked"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Attacked"].HeaderText = "USED";

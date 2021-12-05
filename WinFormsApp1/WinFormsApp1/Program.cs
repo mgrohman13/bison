@@ -91,12 +91,47 @@ namespace WinFormsApp1
                 if (moved.Contains(playerPiece))
                     moved.Remove(playerPiece);
                 else
+                {
                     moved.Add(playerPiece);
+                    Next(true);
+                }
             }
         }
         public static void Next(bool dir)
         {
-            var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).ToList();
+            System.Drawing.Rectangle gameRect = Game.Map.GameRect();
+            var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).OrderBy(p =>
+            {
+                int main, secondary;
+                if (p.Tile.Y < Game.Map.down)
+                {
+                    main = 1;
+                    secondary = p.Tile.Y * gameRect.Width + p.Tile.X;
+                }
+                else if (p.Tile.X < Game.Map.left)
+                {
+                    main = 2;
+                    secondary = p.Tile.X * gameRect.Height + p.Tile.Y;
+                }
+                else if (p.Tile.X > Game.Map.right)
+                {
+                    main = 4;
+                    secondary = -p.Tile.X * gameRect.Height + p.Tile.Y;
+                }
+                else if (p.Tile.Y > Game.Map.up)
+                {
+                    main = 5;
+                    secondary = -p.Tile.Y * gameRect.Width + p.Tile.X;
+                }
+                else
+                {
+                    main = 3;
+                    secondary = p.Tile.Y * gameRect.Width + p.Tile.X;
+                }
+                main *= 2 * gameRect.Width * gameRect.Height;
+                return main + secondary;
+            }).ToList();
+
             if (moveLeft.Count > 0)
             {
                 int cur = Form.MapMain.SelTile == null ? -1 : moveLeft.IndexOf(Form.MapMain.SelTile.Piece);

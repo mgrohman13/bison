@@ -36,7 +36,7 @@ namespace ClassLibrary1.Pieces.Players
             double researchMult = Math.Pow(foundation.Game.Player.GetResearchMult(), .6);
             double hits = 25 * researchMult;
             double repairRange = 6.5 * researchMult;
-            double repairRate = 7.8 * researchMult;
+            double repairRate = .078 * researchMult;
             double vision = 6 * researchMult;
 
             Factory obj = new(tile, vision, new(hits, .65), new(repairRange, repairRate));
