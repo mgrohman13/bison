@@ -36,102 +36,102 @@ namespace randTest
             rand.StartTick();
 
 
-            while (true)
-            {
-                int style = rand.Next(6);
+            //while (true)
+            //{
+            //    int style = rand.Next(6);
 
-                int width = 4096 / 2;
-                int height = 2160 / 2;
+            //    int width = 4096 / 2;
+            //    int height = 2160 / 2;
 
-                int channels = style > 2 ? 3 : 1;
-                Noise[] ns = new Noise[channels];
-                double[] thresholds = new double[channels];
-                bool[] flags = new bool[channels];
-                for (int c = 0; c < channels; c++)
-                {
-                    double max = rand.GaussianOE(width, .13, .13, height);
+            //    int channels = style > 2 ? 3 : 1;
+            //    Noise[] ns = new Noise[channels];
+            //    double[] thresholds = new double[channels];
+            //    bool[] flags = new bool[channels];
+            //    for (int c = 0; c < channels; c++)
+            //    {
+            //        double max = rand.GaussianOE(width, .13, .13, height);
 
-                    double min = rand.GaussianCapped(26, .039, 13);
-                    int steps = rand.GaussianOEInt(13, .13, .13, 8);
-                    double weightScale = rand.Weighted(.91);
-                    double weightPower = rand.GaussianOE(6.5, .13, .13, 3.9);
-                    ns[c] = new Noise(rand, min, max, steps, .052, weightScale, weightPower);
-                    thresholds[c] = rand.GaussianCapped(.5, .091);
-                    flags[c] = rand.Bool();
-                }
-                if (channels == 3 && (rand.Bool() || rand.Bool()))
-                {
-                    if (rand.Bool()) flags[2] = false;
-                    flags[0] = flags[1] = flags[2];
-                }
+            //        double min = rand.GaussianCapped(26, .039, 13);
+            //        int steps = rand.GaussianOEInt(13, .13, .13, 8);
+            //        double weightScale = rand.Weighted(.91);
+            //        double weightPower = rand.GaussianOE(6.5, .13, .13, 3.9);
+            //        ns[c] = new Noise(rand, min, max, steps, .052, weightScale, weightPower);
+            //        thresholds[c] = rand.GaussianCapped(.5, .091);
+            //        flags[c] = rand.Bool();
+            //    }
+            //    if (channels == 3 && (rand.Bool() || rand.Bool()))
+            //    {
+            //        if (rand.Bool()) flags[2] = false;
+            //        flags[0] = flags[1] = flags[2];
+            //    }
 
-                void eval(int idx, int y, int x, ref int r)
-                {
-                    double e = ns[idx].Evaluate(x, y);
-                    double t = thresholds[idx];
-                    if (style == 0 || style == 3)
-                    {
-                        r = e > t ? 255 : 0;
-                    }
-                    else
-                    {
-                        if (style == 1 || style == 4)
-                            e = e > t ? (e - t) / (1 - t) : 0;
-                        r = (int)(e * 256);
-                    }
-                    if (flags[idx]) r = 255 - r;
-                }
+            //    void eval(int idx, int y, int x, ref int r)
+            //    {
+            //        double e = ns[idx].Evaluate(x, y);
+            //        double t = thresholds[idx];
+            //        if (style == 0 || style == 3)
+            //        {
+            //            r = e > t ? 255 : 0;
+            //        }
+            //        else
+            //        {
+            //            if (style == 1 || style == 4)
+            //                e = e > t ? (e - t) / (1 - t) : 0;
+            //            r = (int)(e * 256);
+            //        }
+            //        if (flags[idx]) r = 255 - r;
+            //    }
 
-                Bitmap image = new Bitmap(width, height);
-                for (int y = 0; y < height; y++)
-                    for (int x = 0; x < width; x++)
-                    {
-                        int r = -1, g = -1, b = -1;
-                        eval(0, y, x, ref r);
-                        if (channels == 3)
-                        {
-                            eval(1, y, x, ref g);
-                            eval(2, y, x, ref b);
-                        }
-                        if (channels == 3)
-                            image.SetPixel(x, y, Color.FromArgb(r, g, b));
-                        else
-                            image.SetPixel(x, y, Color.FromArgb(r, r, r));
-                    }
-                string filename = rand.NextUInt().ToString() + ".bmp";
-                image.Save(filename);
-                Console.WriteLine(filename);
-                //Console.ReadKey(true);
+            //    Bitmap image = new Bitmap(width, height);
+            //    for (int y = 0; y < height; y++)
+            //        for (int x = 0; x < width; x++)
+            //        {
+            //            int r = -1, g = -1, b = -1;
+            //            eval(0, y, x, ref r);
+            //            if (channels == 3)
+            //            {
+            //                eval(1, y, x, ref g);
+            //                eval(2, y, x, ref b);
+            //            }
+            //            if (channels == 3)
+            //                image.SetPixel(x, y, Color.FromArgb(r, g, b));
+            //            else
+            //                image.SetPixel(x, y, Color.FromArgb(r, r, r));
+            //        }
+            //    string filename = rand.NextUInt().ToString() + ".bmp";
+            //    image.Save(filename);
+            //    Console.WriteLine(filename);
+            //Console.ReadKey(true);
 
-                ////if (channels == 1)
-                ////{
-                //string path = "2273235993.txt";
-                ////TBSUtil.SaveGame(ns[0], ".", path);
-                //ns[0] = TBSUtil.LoadGame<Noise>(path);
+            ////if (channels == 1)
+            ////{
+            //string path = "2273235993.txt";
+            ////TBSUtil.SaveGame(ns[0], ".", path);
+            //ns[0] = TBSUtil.LoadGame<Noise>(path);
 
-                //Bitmap image = new Bitmap(width, height);
-                //for (int y = 0; y < height; y++)
-                //    for (int x = 0; x < width; x++)
-                //    {
-                //        int r = -1, g = -1, b = -1;
-                //        eval(0, y, x, ref r);
-                //        if (channels == 3)
-                //        {
-                //            eval(1, y, x, ref g);
-                //            eval(2, y, x, ref b);
-                //        }
-                //        if (channels == 3)
-                //            image.SetPixel(x, y, Color.FromArgb(r, g, b));
-                //        else
-                //            image.SetPixel(x, y, Color.FromArgb(r, r, r));
-                //    }
-                //string filename = rand.NextUInt().ToString() + ".bmp";
-                //image.Save(filename);
-                //Console.WriteLine(filename);
-                ////}
+            //Bitmap image = new Bitmap(width, height);
+            //for (int y = 0; y < height; y++)
+            //    for (int x = 0; x < width; x++)
+            //    {
+            //        int r = -1, g = -1, b = -1;
+            //        eval(0, y, x, ref r);
+            //        if (channels == 3)
+            //        {
+            //            eval(1, y, x, ref g);
+            //            eval(2, y, x, ref b);
+            //        }
+            //        if (channels == 3)
+            //            image.SetPixel(x, y, Color.FromArgb(r, g, b));
+            //        else
+            //            image.SetPixel(x, y, Color.FromArgb(r, r, r));
+            //    }
+            //string filename = rand.NextUInt().ToString() + ".bmp";
+            //image.Save(filename);
+            //Console.WriteLine(filename);
+            ////}
 
-            }
-            return;
+            //}
+            //return;
 
 
             //Console.ReadKey(true);
@@ -489,8 +489,16 @@ namespace randTest
             //    Console.ReadKey(true);
             //}
 
-
-            //NormSDist();
+            //for (int a = 1; a < 9; a++)
+            //{
+            //    //Console.WriteLine(a);
+            //    //Console.WriteLine(NormSDist(a));
+            //    Console.WriteLine(1 - (1 - NormSDist(a)) * 2);
+            //    //Console.WriteLine();
+            //}
+            //Console.WriteLine(NormSDist(3));
+            //Console.ReadKey(true);
+            NormSDist();
 
             //NCWDist();
 
@@ -510,8 +518,8 @@ namespace randTest
 
             //CWMapGen();
 
-            GenerateTerrain();
-            Console.ReadKey(true);
+            //GenerateTerrain();
+            //Console.ReadKey(true);
 
             //rand = null;
             //while (true)
@@ -522,11 +530,11 @@ namespace randTest
             //for (int a = 0 ; a < 13 ; ++a)
             //    new MTRandom().StartTick(0);
 
-            do
-            {
-                Console.WriteLine();
-                FactRand(new float[] { 1 / 3f, 3f, 1f }, 3f / 12f, 4f / 12f);
-            } while (Console.ReadKey(true).KeyChar != 'q');
+            //do
+            //{
+            //    Console.WriteLine();
+            //    FactRand(new float[] { 1 / 3f, 3f, 1f }, 3f / 12f, 4f / 12f);
+            //} while (Console.ReadKey(true).KeyChar != 'q');
 
             rand.StopTick();
         }
@@ -746,6 +754,8 @@ namespace randTest
 
                 Thread.Sleep(rand.OEInt(3900));
             }
+
+            Console.ReadKey(true);
         }
 
         //static double ContinuedFraction(double z)
