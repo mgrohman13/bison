@@ -23,7 +23,7 @@ namespace ClassLibrary1
         public double Research => _research;
 
         internal Player(Game game)
-            : base(game, 1000, 1000)
+            : base(game, 0, 1750)
         {
             this._research = 0;
         }

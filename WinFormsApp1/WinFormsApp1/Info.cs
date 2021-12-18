@@ -150,7 +150,10 @@ namespace WinFormsApp1
 
                     double energyInc, energyUpk, massInc, massUpk, researchInc, researchUpk;
                     energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
-                    resource.GenerateResources(selected.Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                    if (extractor == null)
+                        resource.GenerateResources(selected.Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                    else
+                        extractor.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
                     energyInc -= energyUpk;
                     massInc -= massUpk;
                     researchInc -= researchUpk;

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Linq;
-using MattUtil;
-using ClassLibrary1.Pieces;
-using ClassLibrary1.Pieces.Enemies;
+﻿using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using MattUtil;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ClassLibrary1
 {
@@ -24,6 +22,11 @@ namespace ClassLibrary1
 
         public int Width => right - left + 1;
         public int Height => up - down + 1;
+
+        public IEnumerable<int> ExploredLeft => _exploredLeft.Select(a => a);
+        public IEnumerable<int> ExploredRight => _exploredRight.Select(a => a);
+        public IEnumerable<int> ExploredDown => _exploredDown.Select(a => a);
+        public IEnumerable<int> ExploredUp => _exploredUp.Select(a => a);
 
         static Map()
         {
@@ -275,7 +278,7 @@ namespace ClassLibrary1
                     {
                         Tile t2;
                         do
-                            t2 = GetTile(tile.X + Game.Rand.GaussianInt(6.5), tile.Y + Game.Rand.GaussianInt(6.5));
+                            t2 = GetTile(tile.X + Game.Rand.GaussianInt(Consts.ResourceAvgDist), tile.Y + Game.Rand.GaussianInt(Consts.ResourceAvgDist));
                         while (t2 == null || t2.Visible || t2.Piece != null);
                         Foundation.NewFoundation(t2);
                     }
@@ -294,7 +297,12 @@ namespace ClassLibrary1
                 int[] exp = null;
                 int min = 0;
                 bool dir = false, neg = false;
-                int GetChance(double mult, double pow, int[] explored) => Game.Rand.Round(Math.Sqrt(13 + mult * mult * (13 + Math.Pow(Game.Turn, pow)) + (explored.Average() + explored.Max()) / 5.2));
+                int GetChance(double mult, double pow, int[] explored)
+                {
+                    double main = mult * mult * (13 + Math.Pow(Game.Turn / 2.1, pow));
+                    double exp = (13 + explored.Select(Math.Abs).Average() + explored.Select(Math.Abs).Max()) / Math.PI;
+                    return Game.Rand.Round(Math.Sqrt(13 + main + exp));
+                };
                 Dictionary<Action, int> select = new()
                 {
                     {
@@ -347,7 +355,7 @@ namespace ClassLibrary1
                 else
                     y = Math.Max(y, min);
                 x += dir ? down : left;
-                int dist = Game.Rand.GaussianOEInt(Game.Rand.Range(1, 13), .39, .26, 1);
+                int dist = Game.Rand.GaussianOEInt(Game.Rand.Range(2.1, 16.9), .39, .26, 1);
                 //int dist = 1;
                 if (neg)
                     dist = -dist;

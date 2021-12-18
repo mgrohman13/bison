@@ -336,7 +336,7 @@ namespace WinFormsApp1
             public override int GetHashCode()
             {
                 int result = 0;
-                int mult = 1 << 7;
+                int mult = 1 << 8;
                 result = mult * result + x1;
                 result = mult * result + x2;
                 result = mult * result + y1;
@@ -353,13 +353,17 @@ namespace WinFormsApp1
             using Pen thick = new(Color.Black, 3f);
 
             bool hasLeft = (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.down - 1))
-                || (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.up + 1));
+                || (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.up + 1))
+                || Program.Game.Map.ExploredLeft.Min() < Program.Game.Map.left;
             bool hasRight = (Program.Game.Map.Visible(Program.Game.Map.right, Program.Game.Map.down - 1))
-                || (Program.Game.Map.Visible(Program.Game.Map.right, Program.Game.Map.up + 1));
+                || (Program.Game.Map.Visible(Program.Game.Map.right, Program.Game.Map.up + 1))
+                || Program.Game.Map.ExploredRight.Max() > Program.Game.Map.right;
             bool hasDown = (Program.Game.Map.Visible(Program.Game.Map.left - 1, Program.Game.Map.down))
-                || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.down));
+                || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.down))
+                || Program.Game.Map.ExploredDown.Min() < Program.Game.Map.down;
             bool hasUp = (Program.Game.Map.Visible(Program.Game.Map.left - 1, Program.Game.Map.up))
-                || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.up));
+                || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.up))
+                || Program.Game.Map.ExploredUp.Max() > Program.Game.Map.up;
 
             Rectangle gameRect = Program.Game.Map.GameRect();
 
@@ -584,7 +588,8 @@ namespace WinFormsApp1
             {
                 if (SelTile != null && SelTile == clicked)
                     Program.Hold();
-                Program.Next(true);
+                else
+                    Program.Next(true);
             }
         }
     }

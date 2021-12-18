@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces
                 {
                     Constructor.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
-                        return Constructor.NewConstructor(tile);
+                        return Constructor.NewConstructor(tile, null);
                 }
                 return null;
             }

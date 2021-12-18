@@ -28,8 +28,10 @@ namespace ClassLibrary1.Pieces.Players
         {
             if (this is IKillable killable)
             {
-                var repars = Game.Player.Pieces.OfType<IRepair>();
-                return repars.Sum(r => r.GetRepairInc(killable));
+                double repair = Game.Player.Pieces.OfType<IRepair>().Sum(r => r.GetRepairInc(killable));
+                if (repair > killable.HitsMax - killable.HitsCur)
+                    repair = killable.HitsMax - killable.HitsCur;
+                return repair;
             }
             return 0;
         }

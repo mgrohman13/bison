@@ -18,7 +18,7 @@ namespace ClassLibrary1
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         internal Enemy(Game game)
-            : base(game, -Consts.EnemyEnergy, 0)
+            : base(game, Consts.EnemyEnergy * -2.6, 0)
         {
         }
 
@@ -35,9 +35,8 @@ namespace ClassLibrary1
 
             this.EndTurn();
 
-            this._energy += this.Mass + difficulty * Consts.EnemyEnergy;
+            this._energy += this.Mass + Game.Rand.OE(difficulty * Consts.EnemyEnergy);
             this._mass = 0;
-            bool flag = false;
             while (true)
             {
                 MechBlueprint blueprint = Blueprint();
@@ -45,9 +44,6 @@ namespace ClassLibrary1
                 energy += mass;
                 if (this.Energy > energy)
                 {
-                    if (flag)
-                    { }
-                    flag = true;
                     this._energy -= energy;
                     Alien.NewAlien(Game.Map.GetEnemyTile(), blueprint.Killable, blueprint.Attacks, blueprint.Movable);
                 }

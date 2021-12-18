@@ -37,8 +37,16 @@ namespace WinFormsApp1
             Application.Run(Form);
         }
 
-        public static void SaveGame()
+        public static void AutoSave()
         {
+            if (File.Exists(Game.SavePath))
+            {
+                string path = Game.SavePath.Replace("\\", "/");
+                path = path.Substring(0, path.LastIndexOf("/")) + "/" + "prev_" + Game.Turn + ".sav";
+                if (File.Exists(path))
+                    File.Delete(path);
+                File.Copy(Game.SavePath, path);
+            }
             Game.SaveGame();
         }
         public static void LoadGame()
@@ -77,7 +85,7 @@ namespace WinFormsApp1
                 }
                 else
                 {
-                    SaveGame();
+                    AutoSave();
                 }
                 moved.Clear();
                 Form.Refresh();
@@ -87,15 +95,13 @@ namespace WinFormsApp1
         public static void Hold()
         {
             if (Form.MapMain.SelTile != null && Form.MapMain.SelTile.Piece is PlayerPiece playerPiece)
-            {
                 if (moved.Contains(playerPiece))
                     moved.Remove(playerPiece);
                 else
                 {
-                    moved.Add(playerPiece);
                     Next(true);
+                    moved.Add(playerPiece);
                 }
-            }
         }
         public static void Next(bool dir)
         {

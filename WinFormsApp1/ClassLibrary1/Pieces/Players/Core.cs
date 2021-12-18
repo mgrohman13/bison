@@ -28,7 +28,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         internal static Core NewCore(Game game)
         {
-            Core obj = new(game, new(100, .91, .25, 1, 100, 300), new(Consts.MinMapCoord - 1.5, .1));
+            Core obj = new(game, new(100, .91, .25, 1, 50, 200), new(Consts.MinMapCoord - 1.5, .1));
             game.AddPiece(obj);
             return obj;
         }
@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces.Players
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
-            energyInc += 300;
+            energyInc += 350;
             massInc += 100;
             researchInc += 15;
         }

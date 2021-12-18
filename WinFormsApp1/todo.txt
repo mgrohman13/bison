@@ -1,6 +1,25 @@
+enemy hive
+	protected by turrets
+	constant spawn pct in dir
+repair decrease with pow?
+
+info for core show genresources
+repair randomness leaves some left 50% of the time
+reapri doesnt stack? diminishing returns?
+all buildings except core self repair?
+
+mulitple repairers can spend too much mass when target goes to full
+hard to see red on red one-hex range overlap
+swap q and e?
+minimap
+negative mass/energy shuts things off
+select next/prev starts at selected tile even if no piece
+optimize drawing 
+	stuff not on screen
+	cache range calc results
+has move left when can build anything, not just mech
 show non-selected repair ranges
 zooming based on center is awkward, usually opposite what you want
-increase energyPct
 show move cost on mouse over
 use tooltip for base value in attacks grid?
 highlight attacks from hidden enemies
@@ -18,6 +37,13 @@ enemy move+range take into account unmovable tiles
 not super happy with repairing
 	repairing during combat too good? enemies target repairers preferably?
 	repairing extrators too slow
+
+calc with lines
+	line of sight for vision while moving 
+	stop when see new enemy?
+	auto move to target
+		tries to find squares closest to line 
+		favors moving just past min range
 
 upgrade things with latest research
 	turrets

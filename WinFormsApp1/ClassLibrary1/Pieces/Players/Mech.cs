@@ -76,15 +76,16 @@ namespace ClassLibrary1.Pieces.Players
             dmg /= Math.Pow(researchMult, .8);
             vision /= Math.Pow(researchMult, .5);
             move /= Math.Pow(researchMult, .4);
+            rng *= 3.9;
             move += 3.9;
-            double total = Math.Sqrt((hp + shield + (rng * 3.9)) * (dmg + vision) * move) * Consts.MechCostMult;
+            double total = Math.Sqrt((hp + shield + rng) * (dmg + vision) * move) * Consts.MechCostMult;
 
-            shield *= 2.6;
-            shield = (1 + shield) / (hp + shield);
-            ap = 1 + (1 + ap) / (1 + ap + sp);
-            rng /= (13 + rng);
-            move /= (39 + move);
-            double energyPct = Math.Pow(shield / 2.0 * ap / 2.0 * rng * move, 1 / 4.5);
+            shield *= 3.9;
+            shield = (1 + shield) / (1 + hp + shield);
+            ap = (((1 + ap) / (2 + 1.5 * ap + sp) - 1 / 3.0) * 21 / 5.0 + .052) / 1.052;
+            rng /= (39 + rng);
+            move /= (13 + move);
+            double energyPct = Math.Pow(shield * ap * rng * move, 1 / 4.5);
 
             energy = total * energyPct;
             mass = (total - energy) / Consts.MechMassDiv;

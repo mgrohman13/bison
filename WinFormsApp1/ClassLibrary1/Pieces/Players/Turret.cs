@@ -34,7 +34,7 @@ namespace ClassLibrary1.Pieces.Players
             double hits = Game.Rand.GaussianCapped(avgHits, .169, 10);
             double shieldMult = researchMult * avgHits / hits;
             hits *= researchMult;
-            double armor = 1 - .5 / researchMult;
+            double armor = 1 - Math.Pow(.6, researchMult);
             double vision = 7 * researchMult;
             double shieldInc = 2.6 * shieldMult;
             double shieldMax = 26 * shieldMult;
@@ -43,19 +43,19 @@ namespace ClassLibrary1.Pieces.Players
             List<IAttacker.Values> attacks = new(2);
             for (int a = 0; a < 2; a++)
             {
-                double avgDmg = a == 0 ? 1.69 : 3.9;
+                double avgDmg = a == 0 ? Math.PI : 5.2;
                 double damage = Game.Rand.GaussianOE(avgDmg, .26, .26);
-                double armorPierce = a == 0 ? .01 : 0;
-                double shieldPierce = a == 0 ? 0 : .01;
-                double dev = Game.Rand.Weighted(.9, .13);
-                double range = a == 0 ? 21 : 10;
+                double armorPierce = a == 0 ? .2 : 0;
+                double shieldPierce = a == 0 ? 0 : .2;
+                double dev = Game.Rand.Weighted(.13);
+                double range = a == 0 ? 21 : 9.1;
                 range *= avgDmg / damage;
 
                 damage *= researchMult;
                 if (armorPierce > 0)
-                    armorPierce = 1 - (1 - armorPierce) / researchMult;
+                    armorPierce = 1 - Math.Pow(1 - armorPierce, researchMult);
                 if (shieldPierce > 0)
-                    shieldPierce = 1 - (1 - shieldPierce) / researchMult;
+                    shieldPierce = 1 - Math.Pow(1 - shieldPierce, researchMult);
                 range *= researchMult;
 
                 attacks.Add(new(damage, armorPierce, shieldPierce, dev, range));

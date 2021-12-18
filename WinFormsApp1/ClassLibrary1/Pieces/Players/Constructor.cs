@@ -28,19 +28,20 @@ namespace ClassLibrary1.Pieces.Players
             this.BuildFoundation = new Builder.BuildFoundation(this);
             SetBehavior(this.killable, this.movable, this.repair, this.buildExtractor, this.BuildFoundation);
         }
-        internal static Constructor NewConstructor(Map.Tile tile)
+        internal static Constructor NewConstructor(Map.Tile tile, bool? defType)
         {
-            double hits = 30;
+            double hits = 50;
             double moveInc = 3, moveMax = 7, moveLimit = 12;
             double armor = 0, shieldInc = 0, shieldMax = 0, shieldLimit = 0;
-            bool defType = Game.Rand.Bool();
-            if (defType)
-                armor = .35;
+            if (!defType.HasValue)
+                defType = Game.Rand.Bool();
+            if (defType.Value)
+                armor = .3;
             else
             {
-                shieldInc = .5;
-                shieldMax = 15;
-                shieldLimit = 30;
+                shieldInc = 1;
+                shieldMax = 25;
+                shieldLimit = 50;
             }
 
             double repairRange = Game.Rand.GaussianOE(Math.PI, .21, .26, 1);
@@ -51,7 +52,7 @@ namespace ClassLibrary1.Pieces.Players
             double researchMult = Math.Pow(tile.Map.Game.Player.GetResearchMult(), .4);
             hits *= researchMult;
             if (armor > 0)
-                armor = 1 - (1 - armor) / researchMult;
+                armor = 1 - Math.Pow(1 - armor, researchMult);
             shieldInc *= researchMult;
             shieldMax *= researchMult;
             shieldLimit *= researchMult;

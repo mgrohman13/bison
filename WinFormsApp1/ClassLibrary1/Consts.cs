@@ -18,8 +18,8 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 3900;
 
-        public const double DifficultyTurns = 52;
-        public const double DifficultyPow = 1.3;
+        public const double DifficultyTurns = 65;
+        public const double DifficultyPow = 1.69;
         public const double EnemyEnergy = 169;
 
         public const double HitsIncDev = .065;
@@ -32,9 +32,9 @@ namespace ClassLibrary1
         public const double ResourceDistDiv = 78;
         public const double ResourceDistPow = .39;
         public const double ResourceSustainValuePow = .169;
-        public const double ExtractTurns = 65;
+        public const double ExtractTurns = 39;
         public const double ExtractPower = .65 / (1 - .65); // x/(1-x) where x is desired power when sustain=1
-        public const double ExtractSustainPow = .13;
+        public const double ExtractSustainPow = .26;
         public const double ResourceDev = .21;
         public const double ResourceOE = .26;
 
@@ -66,13 +66,13 @@ namespace ClassLibrary1
         public const double UpkeepPerShield = 2;
         public const double UpkeepPerMove = .5;
 
-        public const double MechCostMult = 16.9;
+        public const double MechCostMult = 13;
         public const double MechMassDiv = 1.69;
 
         public const double RepairCost = .21;
         public const double EnergyRepairDiv = 2.1;
-        public const double ExtractorAutoRepair = .5;
-        public const double ExtractorAutoRepairPct = .0075;
+        public const double ExtractorAutoRepair = .39;
+        public const double ExtractorAutoRepairPct = .0078;
 
         public static double GetDamagedValue(Piece piece, double value, int min)
         {

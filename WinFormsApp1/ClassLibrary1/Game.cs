@@ -27,7 +27,7 @@ namespace ClassLibrary1
         private int _turn;
         public int Turn => _turn;
 
-        private readonly string _savePath;
+        public readonly string SavePath;
         private bool _gameOver;
         public bool GameOver => _gameOver;
 
@@ -47,7 +47,7 @@ namespace ClassLibrary1
             this.Log = new(this);
 
             this._turn = 0;
-            this._savePath = savePath;
+            this.SavePath = savePath;
             this._gameOver = false;
 
             this._pieceNums = new Dictionary<string, int>();
@@ -63,7 +63,7 @@ namespace ClassLibrary1
                 new( 2, -1),
                 new( 2,  1),
             });
-            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y));
+            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), false);
 
             for (int a = 0; a < 1; a++)
                 Biomass.NewBiomass(StartTile());
@@ -86,7 +86,7 @@ namespace ClassLibrary1
         internal void End()
         {
             _gameOver = true;
-            System.IO.File.Delete(_savePath);
+            System.IO.File.Delete(SavePath);
         }
 
         private Map.Tile StartTile()
@@ -94,7 +94,7 @@ namespace ClassLibrary1
             Map.Tile tile;
             do
                 tile = Map.GetTile(Game.Rand.RangeInt(Map.left, Map.right), Game.Rand.RangeInt(Map.down, Map.up));
-            while (tile == null || tile.Piece != null || (tile.X > -7 && tile.X < 7 && tile.Y > -7 && tile.Y < 7));
+            while (tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.Range);
             return tile;
         }
 
@@ -136,9 +136,6 @@ namespace ClassLibrary1
             double shieldLimit = 0;
 
             if (Game.Rand.Bool())
-                armor = Game.Rand.Weighted(.9, .13);
-
-            if (Game.Rand.Bool())
             {
                 shieldInc = Game.Rand.GaussianOE(1.3, .26, .26);
                 shieldMax = Game.Rand.GaussianOE(shieldInc * 13, .39, .26, shieldInc);
@@ -147,8 +144,8 @@ namespace ClassLibrary1
 
             difficulty = Math.Pow(difficulty, .6);
             hitsMax *= difficulty;
-            if (armor > 0)
-                armor = 1 - (1 - armor) / difficulty;
+            if (Game.Rand.Bool())
+                armor = Game.Rand.Weighted(.95, 1 - Math.Pow(.78, difficulty));
             shieldInc *= difficulty;
             shieldMax *= difficulty;
             shieldLimit *= difficulty;
@@ -161,18 +158,18 @@ namespace ClassLibrary1
             List<IAttacker.Values> attacks = new(num);
             for (int a = 0; a < num; a++)
             {
-                double damage = Game.Rand.GaussianOE(3.9, .26, .26);
-                double armorPierce = Game.Rand.Bool() ? Game.Rand.Weighted(.9, .13) : 0;
-                double shieldPierce = Game.Rand.Bool() ? Game.Rand.Weighted(.9, .13) : 0;
-                double dev = Game.Rand.Weighted(.9, .13);
+                double damage = Game.Rand.GaussianOE(6.5, .26, .26);
+                double armorPierce = 0;
+                double shieldPierce = 0;
+                double dev = Game.Rand.Weighted(.13);
                 double range = Game.Rand.GaussianOE(5.2, .39, .26, 1);
 
                 difficulty = Math.Pow(difficulty, .5);
                 damage *= difficulty;
-                if (armorPierce > 0)
-                    armorPierce = 1 - (1 - armorPierce) / difficulty;
-                if (shieldPierce > 0)
-                    shieldPierce = 1 - (1 - shieldPierce) / difficulty;
+                if (Game.Rand.Bool())
+                    armorPierce = Game.Rand.Weighted(.95, 1 - Math.Pow(.65, difficulty));
+                if (Game.Rand.Bool())
+                    shieldPierce = Game.Rand.Weighted(.95, 1 - Math.Pow(.65, difficulty));
                 range *= difficulty;
 
                 attacks.Add(new(damage, armorPierce, shieldPierce, dev, range));
@@ -215,15 +212,7 @@ namespace ClassLibrary1
 
         public void SaveGame()
         {
-            if (System.IO.File.Exists(_savePath))
-            {
-                string path = _savePath.Replace("\\", "/");
-                path = path.Substring(0, path.LastIndexOf("/")) + "/" + "prev_" + Turn + ".sav";
-                if (System.IO.File.Exists(path))
-                    System.IO.File.Delete(path);
-                System.IO.File.Copy(_savePath, path);
-            }
-            TBSUtil.SaveGame(this, _savePath);
+            TBSUtil.SaveGame(this, SavePath);
         }
         public static Game LoadGame(string filePath)
         {
