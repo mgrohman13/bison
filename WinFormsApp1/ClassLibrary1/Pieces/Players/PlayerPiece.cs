@@ -35,5 +35,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             return 0;
         }
+
+        internal abstract void OnResearch(Research.Type type, double researchMult);
     }
 }

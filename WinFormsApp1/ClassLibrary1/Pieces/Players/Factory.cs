@@ -12,42 +12,49 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Factory : PlayerPiece, IKillable.IRepairable
     {
-        private readonly IKillable killable;
-        private readonly IRepair repair;
-        private readonly IBuilder.IBuildConstructor buildConstructor;
-        private readonly IBuilder.IBuildMech buildMech;
-
         public Piece Piece => this;
 
-        private Factory(Map.Tile tile, double vision, IKillable.Values killable, IRepair.Values repair)
+        private Factory(Map.Tile tile, double vision)
             : base(tile, vision)
         {
-            this.killable = new Killable(this, killable);
-            this.repair = new Repair(this, repair);
-            this.buildConstructor = new Builder.BuildConstructor(this);
-            this.buildMech = new Builder.BuildMech(this);
-            SetBehavior(this.killable, this.repair, this.buildConstructor, this.buildMech);
+            SetBehavior(new Killable(this, GetValues(tile.Map.Game).killable));
+            Unlock(tile.Map.Game.Player.Research);
         }
+
         internal static Factory NewFactory(Foundation foundation)
         {
             Map.Tile tile = foundation.Tile;
             foundation.Game.RemovePiece(foundation);
 
-            double researchMult = Math.Pow(foundation.Game.Player.GetResearchMult(), .6);
-            double hits = 25 * researchMult;
-            double repairRange = 6.5 * researchMult;
-            double repairRate = .078 * researchMult;
-            double vision = 6 * researchMult;
-
-            Factory obj = new(tile, vision, new(hits, .65), new(repairRange, repairRate));
+            Factory obj = new(tile, GetValues(tile.Map.Game).vision);
             foundation.Game.AddPiece(obj);
             return obj;
         }
         public static void Cost(Game game, out double energy, out double mass)
         {
-            double researchMult = Math.Pow(game.Player.GetResearchMult(), .2);
-            energy = 150 / researchMult;
-            mass = 150 / researchMult;
+            FactoryValues values = GetValues(game);
+            energy = values.energy;
+            mass = values.mass;
+        }
+
+        internal override void OnResearch(Research.Type type, double researchMult)
+        {
+            GetValues(Game).Upgrade(type, researchMult);
+            Unlock(Game.Player.Research);
+        }
+        private void Unlock(Research research)
+        {
+            if (!HasBehavior<IRepair>() && research.HasType(Research.Type.FactoryRepair))
+                SetBehavior(new Repair(this, GetValues(Game).repair));
+            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
+                SetBehavior(new Builder.BuildConstructor(this));
+            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
+                SetBehavior(new Builder.BuildMech(this));
+        }
+
+        private static FactoryValues GetValues(Game game)
+        {
+            return game.Player.GetUpgradeValues<FactoryValues>(() => new());
         }
 
         internal override void Die()
@@ -67,6 +74,50 @@ namespace ClassLibrary1.Pieces.Players
         public override string ToString()
         {
             return "Factory " + PieceNum;
+        }
+
+        private class FactoryValues : IUpgradeValues
+        {
+            public double energy, mass, vision;
+            public IKillable.Values killable;
+            public IRepair.Values repair;
+            public FactoryValues()
+            {
+                UpgradeFactoryCost(1);
+                UpgradeBuildingHits(1);
+            }
+
+            internal void Upgrade(Research.Type type, double researchMult)
+            {
+                if (type == Research.Type.FactoryCost)
+                    researchMult = UpgradeFactoryCost(researchMult);
+                else if (type == Research.Type.FactoryRepair)
+                    researchMult = UpgradeFactoryRepair(researchMult);
+                else if (type == Research.Type.BuildingHits)
+                    researchMult = UpgradeBuildingHits(researchMult);
+            }
+            private double UpgradeFactoryCost(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .2);
+                this.energy = this.mass = 300 / researchMult;
+                return researchMult;
+            }
+            private double UpgradeFactoryRepair(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .6);
+                double repairRange = 6.5 * researchMult;
+                double repairRate = .078 * researchMult;
+                this.repair = new(repairRange, repairRate);
+                return researchMult;
+            }
+            private double UpgradeBuildingHits(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .6);
+                this.vision = 6 * researchMult;
+                double hits = 25 * researchMult;
+                this.killable = new(hits, .65);
+                return researchMult;
+            }
         }
     }
 }

@@ -18,11 +18,7 @@ namespace ClassLibrary1.Pieces
         public readonly int PieceNum;
 
         Piece IBehavior.Piece => this;
-        protected IReadOnlyCollection<IBehavior> behavior;
-        protected void SetBehavior(params IBehavior[] behavior)
-        {
-            this.behavior = behavior.ToList().AsReadOnly();
-        }
+        protected IReadOnlyCollection<IBehavior> behavior = Array.Empty<IBehavior>();
 
         private Map.Tile _tile;
 
@@ -50,6 +46,12 @@ namespace ClassLibrary1.Pieces
         public bool HasBehavior<T>() where T : class, IBehavior
         {
             return behavior.OfType<T>().Any();
+        }
+        protected void SetBehavior(params IBehavior[] behavior)
+        {
+            if (this.behavior.Any(b => behavior.Any(b2 => b.GetType() == b2.GetType())))
+                throw new Exception();
+            this.behavior = this.behavior.Concat(behavior).ToList().AsReadOnly();
         }
 
         internal virtual void Die()

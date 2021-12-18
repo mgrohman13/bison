@@ -14,27 +14,41 @@ namespace ClassLibrary1
     public class Player : Side
     {
         private Core _core;
-        private double _research;
+        public readonly Research Research;
+        private readonly List<IUpgradeValues> upgradeValues;
 
         public IReadOnlyCollection<Piece> Pieces => _pieces;
         public Core Core => _core;
         new public double Energy => base.Energy;
         new public double Mass => base.Mass;
-        public double Research => _research;
 
         internal Player(Game game)
             : base(game, 0, 1750)
         {
-            this._research = 0;
+            this.Research = new(game);
+            this.upgradeValues = new List<IUpgradeValues>();
         }
         internal void CreateCore()
         {
             this._core = Core.NewCore(Game);
         }
 
-        internal double GetResearchMult()
+        internal T GetUpgradeValues<T>(Func<T> Create) where T : IUpgradeValues
         {
-            return (Research + Consts.ResearchFactor) / Consts.ResearchFactor;
+            T values = upgradeValues.OfType<T>().SingleOrDefault();
+            if (values == null)
+                SetUpgradeValues(values = Create());
+            return values;
+        }
+        internal void SetUpgradeValues(IUpgradeValues value)
+        {
+            upgradeValues.RemoveAll(v => v.GetType() == value.GetType());
+            upgradeValues.Add(value);
+        }
+        internal void OnResearch(Research.Type type, double researchMult)
+        {
+            foreach (PlayerPiece piece in Pieces.OfType<PlayerPiece>())
+                piece.OnResearch(type, researchMult);
         }
 
         internal bool Spend(double energy, double mass)
@@ -63,7 +77,7 @@ namespace ClassLibrary1
             GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc, out double researchUpk);
             this._energy += energyInc - energyUpk;
             this._mass += massInc - massUpk;
-            this._research += researchInc - researchUpk;
+            this.Research.AddResearch(researchInc - researchUpk);
 
             base.EndTurn();
         }
