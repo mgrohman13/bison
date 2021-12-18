@@ -39,6 +39,18 @@ namespace ClassLibrary1.Pieces
             this._tile = tile;
             this.PieceNum = Game.GetPieceNum(this.GetType());
         }
+        public T GetBehavior<T>() where T : class, IBehavior
+        {
+            return behavior.OfType<T>().SingleOrDefault();
+        }
+        public bool HasBehavior<T>(out T behavior) where T : class, IBehavior
+        {
+            return (behavior = GetBehavior<T>()) != null;
+        }
+        public bool HasBehavior<T>() where T : class, IBehavior
+        {
+            return behavior.OfType<T>().Any();
+        }
 
         internal virtual void Die()
         {

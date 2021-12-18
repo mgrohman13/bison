@@ -205,7 +205,7 @@ namespace WinFormsApp1
                    .Select(t => new Point(t.X, t.Y)).ToHashSet();
 
                 IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
-                if (SelTile.Piece is IMovable movable && movable.MoveCur >= 1)
+                if (SelTile.Piece.HasBehavior<IMovable>(out IMovable movable) && movable.MoveCur >= 1)
                 {
                     moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur);
                     ranges[move].Add(GetPoints(moveTiles));
@@ -255,7 +255,7 @@ namespace WinFormsApp1
                     foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.OfType<IAttacker>())
                     {
                         IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
-                        if (enemy is IMovable enemyMovable)
+                        if (enemy.HasBehavior<IMovable>(out IMovable enemyMovable))
                             attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
                         allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles).SelectMany(hs => hs));
                     }
@@ -265,10 +265,10 @@ namespace WinFormsApp1
                     foreach (var p in attStr)
                         e.Graphics.DrawString(p.Value.ToString("0.0"), f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
                 }
-                if (SelTile.Piece is IAttacker attacker)
+                if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
                     ranges[range].AddRange(AddAttacks(attacker, moveTiles));
 
-                if (SelTile.Piece is IRepair r)
+                if (SelTile.Piece.HasBehavior<IRepair>(out IRepair r))
                     if (moveTiles.Contains(MouseTile))
                         ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(r.Range)));
                     else
@@ -572,12 +572,12 @@ namespace WinFormsApp1
             }
             else if (e.Button == MouseButtons.Right && SelTile != null && clicked != null)
             {
-                if (SelTile.Piece is IMovable movable)
+                if (SelTile.Piece.HasBehavior<IMovable>(out IMovable movable))
                 {
                     if (movable.Move(clicked))
                         SelTile = clicked;
                 }
-                if (SelTile.Piece is IAttacker attacker && clicked.Piece is IKillable killable)
+                if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker) && clicked.Piece.HasBehavior<IKillable>(out IKillable killable))
                 {
                     if (attacker.Fire(killable))
                         SelTile = clicked;

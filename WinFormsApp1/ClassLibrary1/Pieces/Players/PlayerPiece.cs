@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces.Players
 
         public virtual double GetRepairInc()
         {
-            if (this is IKillable killable)
+            if (this.HasBehavior<IKillable>(out IKillable killable))
             {
                 double repair = Game.Player.Pieces.OfType<IRepair>().Sum(r => r.GetRepairInc(killable));
                 if (repair > killable.HitsMax - killable.HitsCur)

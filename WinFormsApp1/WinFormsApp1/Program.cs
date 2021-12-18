@@ -161,7 +161,7 @@ namespace WinFormsApp1
                 return false;
 
             bool move = false;
-            if (!move && piece is IBuilder.IBuildMech)
+            if (!move && piece.HasBehavior<IBuilder.IBuildMech>(out _))
             {
                 Mech.Cost(Game, out double e, out double m, Game.Blueprint1);
                 move = e < Game.Player.Energy && m < Game.Player.Mass;
@@ -171,12 +171,12 @@ namespace WinFormsApp1
                     move = e < Game.Player.Energy && m < Game.Player.Mass;
                 }
             }
-            if (!move && piece is IMovable movable)
+            if (!move && piece.HasBehavior<IMovable>(out IMovable movable))
                 move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;
-            if (!move && piece is IAttacker attacker)
+            if (!move && piece.HasBehavior<IAttacker>(out IAttacker attacker))
             {
                 double range = attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range);
-                move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece is IKillable && t.Piece.IsEnemy);
+                move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece.HasBehavior<IKillable>(out _) && t.Piece.IsEnemy);
             }
             return move;
         }

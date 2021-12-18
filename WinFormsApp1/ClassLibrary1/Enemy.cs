@@ -52,7 +52,7 @@ namespace ClassLibrary1
         }
         private void PlayTurn(Piece piece)
         {
-            IAttacker attacker = piece as IAttacker;
+            IAttacker attacker = piece.GetBehavior<IAttacker>();
 
             IEnumerable<IKillable> allTargets = Enumerable.Empty<IKillable>();
             Dictionary<Attacker.Attack, IEnumerable<IKillable>> targets = new();
@@ -65,7 +65,7 @@ namespace ClassLibrary1
                 targets = GetTargets(attacker, piece.Tile, allTargets);
             }
 
-            if (piece is IMovable movable && movable.MoveCur >= 1)
+            if (piece.HasBehavior<IMovable>(out IMovable movable) && movable.MoveCur >= 1)
             {
                 double d = piece.Tile.GetDistance(Game.Player.Core.Tile);
                 double minDist = Math.Max(0, d - movable.MoveCur);
@@ -134,10 +134,10 @@ namespace ClassLibrary1
         private static double GetKillWeight(IKillable killable, double avgHp)
         {
             double attacks = 0;
-            if (killable.Piece is IAttacker attacker)
+            if (killable.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
                 attacks = attacker.Attacks.Sum(a => a.Damage * (a.Range + 7.8));
             double repair = 0;
-            if (killable.Piece is IRepair repairs)
+            if (killable.Piece.HasBehavior<IRepair>(out IRepair repairs))
                 repair = 13 + avgHp * repairs.Rate * (repairs.Range + 3.9);
             double gc = (1 + attacks + 21 * repair) / (killable.HitsCur / (1 - killable.Armor) + killable.ShieldCur);
             double damagePct = 2 - killable.HitsCur / killable.HitsMax;

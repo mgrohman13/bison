@@ -34,7 +34,7 @@ namespace WinFormsApp1
             dataGridView1.CellClick += DataGridView1_CellClick;
         }
 
-        public Piece BuilderDialog(IBuilder builder)
+        public Piece BuilderDialog(Piece builder)
         {
             dataGridView1.Hide();
             ////Show();
@@ -49,12 +49,12 @@ namespace WinFormsApp1
             rows = new List<BuildRow>();
             result = null;
 
-            if (builder is IBuilder.IBuildConstructor buildConstructor)
+            if (builder.HasBehavior<IBuilder.IBuildConstructor>(out IBuilder.IBuildConstructor buildConstructor))
             {
                 Constructor.Cost(Program.Game, out double energy, out double mass);
                 rows.Add(new(buildConstructor, "Constructor", energy, mass));
             }
-            if (builder is IBuilder.IBuildMech buildMech)
+            if (builder.HasBehavior<IBuilder.IBuildMech>(out IBuilder.IBuildMech buildMech))
             {
                 foreach (MechBlueprint blueprint in new MechBlueprint[] { Program.Game.Blueprint1, Program.Game.Blueprint2 })
                 {
@@ -65,14 +65,14 @@ namespace WinFormsApp1
                 }
             }
 
-            IBuilder.IBuildExtractor buildExtractor = builder as IBuilder.IBuildExtractor;
-            IBuilder.IBuildFoundation buildFoundation = builder as IBuilder.IBuildFoundation;
+            IBuilder.IBuildExtractor buildExtractor = builder.GetBehavior<IBuilder.IBuildExtractor>();
+            IBuilder.IBuildFoundation buildFoundation = builder.GetBehavior<IBuilder.IBuildFoundation>();
             bool flag = true;
             if (buildExtractor != null || buildFoundation != null)
                 for (int a = 0; a < 3; a++)
                 {
-                    int x = builder.Piece.Tile.X;
-                    int y = builder.Piece.Tile.Y;
+                    int x = builder.Tile.X;
+                    int y = builder.Tile.Y;
                     int idx = 0;
                     foreach (Point point in new Point[] { new(x, y - 1), new(x, y + 1), new(x - 1, y), new(x + 1, y) })
                     {
@@ -81,15 +81,18 @@ namespace WinFormsApp1
                         Foundation foundation = target.Piece as Foundation;
                         if ((a == 0 && resource != null) || (a > 0 && foundation != null))
                         {
+                            IBuilder actual;
                             string name;
                             double mass, energy;
                             if (a == 0)
                             {
+                                actual = buildExtractor;
                                 name = "Extractor";
                                 Extractor.Cost(out energy, out mass, resource);
                             }
                             else
                             {
+                                actual = buildFoundation;
                                 if (flag)
                                 {
                                     name = "Factory";
@@ -103,7 +106,7 @@ namespace WinFormsApp1
                                     flag = !flag;
                                 }
                             }
-                            BuildRow row = new(builder, name, energy, mass);
+                            BuildRow row = new(actual, name, energy, mass);
                             rows.Add(row);
                             switch (idx)
                             {

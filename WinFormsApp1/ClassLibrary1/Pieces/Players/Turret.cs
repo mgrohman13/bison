@@ -10,7 +10,7 @@ using ClassLibrary1.Pieces.Terrain;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Turret : PlayerPiece, IKillable, IAttacker
+    public class Turret : PlayerPiece, IKillable.IRepairable
     {
         private readonly IKillable killable;
         private readonly IAttacker attacker;
@@ -79,7 +79,7 @@ namespace ClassLibrary1.Pieces.Players
             Foundation.NewFoundation(tile);
         }
 
-        double IKillable.RepairCost => GetRepairCost();
+        double IKillable.IRepairable.RepairCost => GetRepairCost();
         public double GetRepairCost()
         {
             Cost(Game, out double energy, out double mass);
@@ -90,49 +90,5 @@ namespace ClassLibrary1.Pieces.Players
         {
             return "Turret " + PieceNum;
         }
-
-        #region IKillable
-
-        public double HitsCur => killable.HitsCur;
-        public double HitsMax => killable.HitsMax;
-        public double Resilience => killable.Resilience;
-        public double Armor => killable.Armor;
-        public double ShieldCur => killable.ShieldCur;
-        public double ShieldInc => killable.ShieldInc;
-        public double ShieldIncBase => killable.ShieldIncBase;
-        public double ShieldMax => killable.ShieldMax;
-        public double ShieldLimit => killable.ShieldLimit;
-        public bool Dead => killable.Dead;
-
-        double IKillable.GetInc()
-        {
-            return killable.GetInc();
-        }
-
-        void IKillable.Repair(double hits)
-        {
-            killable.Repair(hits);
-        }
-        void IKillable.Damage(double damage, double shieldDmg)
-        {
-            killable.Damage(damage, shieldDmg);
-        }
-
-        #endregion IKillable
-
-        #region IAttacker
-
-        public IReadOnlyCollection<Attacker.Attack> Attacks => attacker.Attacks;
-        public bool Fire(IKillable killable)
-        {
-            return attacker.Fire(killable);
-        }
-        bool IAttacker.EnemyFire(IKillable killable)
-        {
-            return false;
-        }
-
-        #endregion IAttacker
-
     }
 }

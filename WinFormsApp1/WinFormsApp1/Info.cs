@@ -43,7 +43,7 @@ namespace WinFormsApp1
 
             if (selected != null && selected.Piece != null)
             {
-                if (selected.Piece is IBuilder)
+                if (selected.Piece.HasBehavior<IBuilder>())
                     btnBuild.Show();
                 else
                     btnBuild.Hide();
@@ -53,7 +53,7 @@ namespace WinFormsApp1
 
                 PlayerPiece playerPiece = selected.Piece as PlayerPiece;
 
-                if (selected.Piece is IKillable killable)
+                if (selected.Piece.HasBehavior<IKillable>(out IKillable killable))
                 {
                     double repairInc = 0;
                     if (playerPiece != null)
@@ -77,7 +77,7 @@ namespace WinFormsApp1
                             CheckBase(killable.ShieldIncBase, killable.GetInc()));
                     }
                 }
-                if (selected.Piece is IMovable movable)
+                if (selected.Piece.HasBehavior<IMovable>(out IMovable movable))
                 {
                     lbl3.Show();
                     lblInf3.Show();
@@ -121,7 +121,7 @@ namespace WinFormsApp1
                         //}
                     }
                 }
-                if (selected.Piece is IRepair repair)
+                if (selected.Piece.HasBehavior<IRepair>(out IRepair repair))
                 {
                     lbl7.Show();
                     lblInf7.Show();
@@ -186,7 +186,7 @@ namespace WinFormsApp1
                     lblInf8.Text = string.Format("{0}", FormatPct(resource.Sustain));
                 }
 
-                if (selected.Piece is IAttacker attacker)
+                if (selected.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
                 {
                     dgvAttacks.Show();
 
@@ -276,9 +276,9 @@ namespace WinFormsApp1
 
         public void BtnBuild_Click(object sender, EventArgs e)
         {
-            if (selected != null && selected.Piece is IBuilder builder)
+            if (selected != null && selected.Piece.HasBehavior<IBuilder>())
             {
-                Piece result = Program.DgvForm.BuilderDialog(builder);
+                Piece result = Program.DgvForm.BuilderDialog(selected.Piece);
                 if (result != null)
                     Program.Form.MapMain.SelTile = result.Tile;
             }

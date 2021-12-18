@@ -9,7 +9,7 @@ using ClassLibrary1.Pieces.Terrain;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Extractor : PlayerPiece, IKillable
+    public class Extractor : PlayerPiece, IKillable.IRepairable
     {
         private readonly IKillable killable;
 
@@ -45,7 +45,7 @@ namespace ClassLibrary1.Pieces.Players
             mass /= researchMult;
         }
 
-        double IKillable.RepairCost => GetRepairCost();
+        double IKillable.IRepairable.RepairCost => GetRepairCost();
         public double GetRepairCost()
         {
             Cost(out double energy, out double mass, Resource);
@@ -73,20 +73,22 @@ namespace ClassLibrary1.Pieces.Players
         }
         public override double GetRepairInc()
         {
+            IKillable killable = GetBehavior<IKillable>();
             double repair = base.GetRepairInc() + AutoRepairAmt();
-            if (repair > HitsMax - HitsCur)
-                repair = HitsMax - HitsCur;
+            if (repair > killable.HitsMax - killable.HitsCur)
+                repair = killable.HitsMax - killable.HitsCur;
             return repair;
         }
         private double AutoRepairMass()
         {
-            return Repair.GetRepairCost(this, AutoRepairAmt());
+            return Repair.GetRepairCost(GetBehavior<IKillable>(), AutoRepairAmt());
         }
         private double AutoRepairAmt()
         {
-            double repair = HitsMax * Consts.ExtractorAutoRepairPct + Consts.ExtractorAutoRepair;
-            if (repair > HitsMax - HitsCur)
-                repair = HitsMax - HitsCur;
+            IKillable killable = GetBehavior<IKillable>();
+            double repair = killable.HitsMax * Consts.ExtractorAutoRepairPct + Consts.ExtractorAutoRepair;
+            if (repair > killable.HitsMax - killable.HitsCur)
+                repair = killable.HitsMax - killable.HitsCur;
             return repair;
         }
 
@@ -95,34 +97,5 @@ namespace ClassLibrary1.Pieces.Players
         {
             return Resource.GetResourceName() + " Extractor " + PieceNum;
         }
-
-        #region IKillable
-
-        public double HitsCur => killable.HitsCur;
-        public double HitsMax => killable.HitsMax;
-        public double Resilience => killable.Resilience;
-        public double Armor => killable.Armor;
-        public double ShieldCur => killable.ShieldCur;
-        public double ShieldInc => killable.ShieldInc;
-        public double ShieldIncBase => killable.ShieldIncBase;
-        public double ShieldMax => killable.ShieldMax;
-        public double ShieldLimit => killable.ShieldLimit;
-        public bool Dead => killable.Dead;
-
-        double IKillable.GetInc()
-        {
-            return killable.GetInc();
-        }
-
-        void IKillable.Repair(double hits)
-        {
-            killable.Repair(hits);
-        }
-        void IKillable.Damage(double damage, double shieldDmg)
-        {
-            killable.Damage(damage, shieldDmg);
-        }
-
-        #endregion IKillable
     }
 }

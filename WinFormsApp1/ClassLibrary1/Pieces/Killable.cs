@@ -31,8 +31,12 @@ namespace ClassLibrary1.Pieces
             this._hitsCur = values.HitsMax;
             this._shieldCur = shieldCur;
         }
+        public T GetBehavior<T>() where T : class, IBehavior
+        {
+            return this as T;
+        }
 
-        double IKillable.RepairCost => throw new NotImplementedException();
+        double IKillable.RepairCost => ((IKillable.IRepairable)Piece).RepairCost;
 
         public double HitsCur => _hitsCur;
         public double HitsMax => _values.HitsMax;

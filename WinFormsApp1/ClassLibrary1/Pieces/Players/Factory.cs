@@ -10,7 +10,7 @@ using ClassLibrary1.Pieces.Terrain;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Factory : PlayerPiece, IKillable, IRepair, IBuilder.IBuildConstructor, IBuilder.IBuildMech
+    public class Factory : PlayerPiece, IKillable.IRepairable
     {
         private readonly IKillable killable;
         private readonly IRepair repair;
@@ -57,7 +57,7 @@ namespace ClassLibrary1.Pieces.Players
             Foundation.NewFoundation(tile);
         }
 
-        double IKillable.RepairCost => GetRepairCost();
+        double IKillable.IRepairable.RepairCost => GetRepairCost();
         public double GetRepairCost()
         {
             Cost(Game, out double energy, out double mass);
@@ -68,62 +68,5 @@ namespace ClassLibrary1.Pieces.Players
         {
             return "Factory " + PieceNum;
         }
-
-        #region IKillable
-
-        public double HitsCur => killable.HitsCur;
-        public double HitsMax => killable.HitsMax;
-        public double Resilience => killable.Resilience;
-        public double Armor => killable.Armor;
-        public double ShieldCur => killable.ShieldCur;
-        public double ShieldInc => killable.ShieldInc;
-        public double ShieldIncBase => killable.ShieldIncBase;
-        public double ShieldMax => killable.ShieldMax;
-        public double ShieldLimit => killable.ShieldLimit;
-        public bool Dead => killable.Dead;
-
-        double IKillable.GetInc()
-        {
-            return killable.GetInc();
-        }
-
-        void IKillable.Repair(double hits)
-        {
-            killable.Repair(hits);
-        }
-        void IKillable.Damage(double damage, double shieldDmg)
-        {
-            killable.Damage(damage, shieldDmg);
-        }
-
-        #endregion IKillable
-
-        #region IRepair 
-
-        public double Range => repair.Range;
-        public double RangeBase => repair.RangeBase;
-        public double Rate => repair.Rate;
-        public double RateBase => repair.RateBase;
-
-        double IRepair.GetRepairInc(IKillable killable)
-        {
-            return repair.GetRepairInc(killable);
-        }
-
-        #endregion IRepair 
-
-        #region IBuilding 
-
-        public Constructor Build(Map.Tile tile)
-        {
-            return buildConstructor.Build(tile);
-        }
-        public Mech Build(Map.Tile tile, MechBlueprint blueprint)
-        {
-            return buildMech.Build(tile, blueprint);
-        }
-
-        #endregion IBuilding
-
     }
 }

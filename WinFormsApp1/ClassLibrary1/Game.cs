@@ -94,7 +94,7 @@ namespace ClassLibrary1
             Map.Tile tile;
             do
                 tile = Map.GetTile(Game.Rand.RangeInt(Map.left, Map.right), Game.Rand.RangeInt(Map.down, Map.up));
-            while (tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.Range);
+            while (tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
             return tile;
         }
 

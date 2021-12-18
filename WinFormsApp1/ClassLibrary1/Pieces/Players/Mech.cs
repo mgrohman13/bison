@@ -9,7 +9,7 @@ using ClassLibrary1.Pieces;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Mech : PlayerPiece, IKillable, IAttacker, IMovable
+    public class Mech : PlayerPiece, IKillable.IRepairable
     {
         private readonly IKillable killable;
         private readonly IAttacker attacker;
@@ -91,12 +91,15 @@ namespace ClassLibrary1.Pieces.Players
             mass = (total - energy) / Consts.MechMassDiv;
         }
 
-        double IKillable.RepairCost => GetRepairCost();
+        double IKillable.IRepairable.RepairCost => GetRepairCost();
         public double GetRepairCost()
         {
-            MechBlueprint blueprint = new(Vision, new(HitsMax, Consts.MechResilience, Armor, ShieldInc, ShieldMax, ShieldLimit),
-                Attacks.Select(a => new IAttacker.Values(a.Damage, a.ArmorPierce, a.ShieldPierce, a.Dev, a.Range)).ToList(),
-                new(MoveInc, MoveMax, MoveLimit));
+            IKillable killable = GetBehavior<IKillable>();
+            IAttacker attacker = GetBehavior<IAttacker>();
+            IMovable movable = GetBehavior<IMovable>();
+            MechBlueprint blueprint = new(Vision, new(killable.HitsMax, Consts.MechResilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit),
+                attacker.Attacks.Select(a => new IAttacker.Values(a.Damage, a.ArmorPierce, a.ShieldPierce, a.Dev, a.Range)).ToList(),
+                new(movable.MoveInc, movable.MoveMax, movable.MoveLimit));
             Cost(out double energy, out double mass, blueprint, Game.Player.GetResearchMult());
             return Consts.GetRepairCost(energy, mass);
         }
@@ -111,71 +114,5 @@ namespace ClassLibrary1.Pieces.Players
         {
             return "Mech " + PieceNum;
         }
-
-        #region IKillable
-
-        public double HitsCur => killable.HitsCur;
-        public double HitsMax => killable.HitsMax;
-        public double Resilience => killable.Resilience;
-        public double Armor => killable.Armor;
-        public double ShieldCur => killable.ShieldCur;
-        public double ShieldInc => killable.ShieldInc;
-        public double ShieldIncBase => killable.ShieldIncBase;
-        public double ShieldMax => killable.ShieldMax;
-        public double ShieldLimit => killable.ShieldLimit;
-        public bool Dead => killable.Dead;
-
-        double IKillable.GetInc()
-        {
-            return killable.GetInc();
-        }
-
-        void IKillable.Repair(double hits)
-        {
-            killable.Repair(hits);
-        }
-        void IKillable.Damage(double damage, double shieldDmg)
-        {
-            killable.Damage(damage, shieldDmg);
-        }
-
-        #endregion IKillable
-
-        #region IAttacker
-
-        public IReadOnlyCollection<Attacker.Attack> Attacks => attacker.Attacks;
-        public bool Fire(IKillable killable)
-        {
-            return attacker.Fire(killable);
-        }
-        bool IAttacker.EnemyFire(IKillable killable)
-        {
-            return false;
-        }
-
-        #endregion IAttacker
-
-        #region IMovable
-
-        public double MoveCur => movable.MoveCur;
-        public double MoveInc => movable.MoveInc;
-        public double MoveMax => movable.MoveMax;
-        public double MoveLimit => movable.MoveLimit;
-
-        double IMovable.GetInc()
-        {
-            return movable.GetInc();
-        }
-
-        public bool Move(Map.Tile to)
-        {
-            return movable.Move(to);
-        }
-        bool IMovable.EnemyMove(Map.Tile to)
-        {
-            return false;
-        }
-
-        #endregion IMovable
     }
 }

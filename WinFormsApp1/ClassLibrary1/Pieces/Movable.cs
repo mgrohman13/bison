@@ -26,6 +26,10 @@ namespace ClassLibrary1.Pieces
 
             this._moveCur = 0;
         }
+        public T GetBehavior<T>() where T : class, IBehavior
+        {
+            return this as T;
+        }
 
         public double MoveCur => _moveCur;
         public double MoveInc => _values.MoveInc;

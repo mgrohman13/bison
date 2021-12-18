@@ -54,5 +54,10 @@ namespace ClassLibrary1.Pieces
             public double ShieldMax => _shieldMax;
             public double ShieldLimit => _shieldLimit;
         }
+
+        public interface IRepairable
+        {
+            internal double RepairCost { get; }
+        }
     }
 }

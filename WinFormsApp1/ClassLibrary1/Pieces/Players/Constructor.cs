@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Constructor : PlayerPiece, IKillable, IMovable, IRepair, IBuilder.IBuildExtractor, IBuilder.IBuildFoundation
+    public class Constructor : PlayerPiece, IKillable.IRepairable
     {
         private readonly IKillable killable;
         private readonly IMovable movable;
@@ -74,7 +74,7 @@ namespace ClassLibrary1.Pieces.Players
             mass = 750 / researchMult;
         }
 
-        double IKillable.RepairCost => GetRepairCost();
+        double IKillable.IRepairable.RepairCost => GetRepairCost();
         public double GetRepairCost()
         {
             Cost(Game, out double energy, out double mass);
@@ -91,89 +91,5 @@ namespace ClassLibrary1.Pieces.Players
         {
             return "Constructor " + PieceNum;
         }
-
-        #region IKillable
-
-        public double HitsCur => killable.HitsCur;
-        public double HitsMax => killable.HitsMax;
-        public double Resilience => killable.Resilience;
-        public double Armor => killable.Armor;
-        public double ShieldCur => killable.ShieldCur;
-        public double ShieldInc => killable.ShieldInc;
-        public double ShieldIncBase => killable.ShieldIncBase;
-        public double ShieldMax => killable.ShieldMax;
-        public double ShieldLimit => killable.ShieldLimit;
-        public bool Dead => killable.Dead;
-
-        double IKillable.GetInc()
-        {
-            return killable.GetInc();
-        }
-
-        void IKillable.Repair(double hits)
-        {
-            killable.Repair(hits);
-        }
-        void IKillable.Damage(double damage, double shieldDmg)
-        {
-            killable.Damage(damage, shieldDmg);
-        }
-
-        #endregion IKillable
-
-        #region IMovable
-
-        public double MoveCur => movable.MoveCur;
-        public double MoveInc => movable.MoveInc;
-        public double MoveMax => movable.MoveMax;
-        public double MoveLimit => movable.MoveLimit;
-
-        double IMovable.GetInc()
-        {
-            return movable.GetInc();
-        }
-
-        public bool Move(Map.Tile to)
-        {
-            return movable.Move(to);
-        }
-        bool IMovable.EnemyMove(Map.Tile to)
-        {
-            return movable.EnemyMove(to);
-        }
-
-        #endregion IMovable
-
-        #region IRepair 
-
-        public double Range => repair.Range;
-        public double RangeBase => repair.RangeBase;
-        public double Rate => repair.Rate;
-        public double RateBase => repair.RateBase;
-
-        double IRepair.GetRepairInc(IKillable killable)
-        {
-            return repair.GetRepairInc(killable);
-        }
-
-        #endregion IRepair 
-
-        #region IBuilding 
-
-        public Extractor Build(Resource resource)
-        {
-            return buildExtractor.Build(resource);
-        }
-        public Factory BuildFactory(Foundation foundation)
-        {
-            return BuildFoundation.BuildFactory(foundation);
-        }
-        public Turret BuildTurret(Foundation foundation)
-        {
-            return BuildFoundation.BuildTurret(foundation);
-        }
-
-        #endregion IBuilding
-
     }
 }

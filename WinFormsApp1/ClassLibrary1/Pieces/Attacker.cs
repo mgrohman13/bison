@@ -26,6 +26,10 @@ namespace ClassLibrary1.Pieces
             this._piece = piece;
             this._attacks = attacks.Select(a => new Attack(Piece, a)).ToList();
         }
+        public T GetBehavior<T>() where T : class, IBehavior
+        {
+            return this as T;
+        }
 
         bool IAttacker.Fire(IKillable target)
         {
@@ -113,7 +117,7 @@ namespace ClassLibrary1.Pieces
 
                     target.Damage(damage, shieldDmg);
 
-                    Piece.Game.Log.LogAttack(Piece as IAttacker, target.Piece as IKillable, Damage, randDmg, randShieldDmg, damage, shieldDmg);
+                    Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, Damage, randDmg, randShieldDmg, damage, shieldDmg);
 
                     this._attacked = true;
                     return true;
