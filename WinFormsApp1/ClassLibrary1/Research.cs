@@ -15,17 +15,17 @@ namespace ClassLibrary1
         public readonly Game Game;
 
         private Type _researching;
-        private Dictionary<Type, double> _research;
+        private readonly Dictionary<Type, double> _research;
         private double _researchCur;
-        private double _researchLast;
+        //private double _researchLast;
         private double _researchNext;
         private double _nextAvg;
 
-        private HashSet<Type> _hasTypes;
+        private readonly HashSet<Type> _hasTypes;
 
         public IReadOnlyCollection<Type> Available => _research.Keys;
         public double ResearchCur => _researchCur;
-        public double ResearchLast => _researchLast;
+        //public double ResearchLast => _researchLast;
         public double ResearchNext => _researchNext;
 
         public Research(Game Game)
@@ -35,7 +35,7 @@ namespace ClassLibrary1
             this._researching = Type.Mech;
             this._research = new() { { _researching, 0 } };
             this._researchCur = 0;
-            this._researchLast = 0;
+            //this._researchLast = 0;
             this._researchNext = 25;
             this._nextAvg = 26;
 
@@ -103,7 +103,7 @@ namespace ClassLibrary1
             return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
         }
 
-        private static readonly Type[] BaseTypes = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.FactoryConstructor };
+        private static readonly Type[] BaseTypes = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.FactoryConstructor, Type.ExtractorAutoRepair, Type.FactoryAutoRepair, Type.TurretAutoRepair };
         private static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
             { Type.Mech, Array.Empty<Type>() },
@@ -123,28 +123,23 @@ namespace ClassLibrary1
             { Type.MechAP, new Type[] { Type.MechRange } },
             { Type.MechSP, new Type[] { Type.MechRange } },
 
-            { Type.ConstructorMove, new Type[] { Type.Constructor, Type.MechMove } },
-            { Type.ConstructorShields, new Type[] { Type.Constructor, Type.MechShields } },
-            { Type.ConstructorArmor, new Type[] { Type.Constructor, Type.MechArmor } },
-
-            { Type.TurretShields, new Type[] { Type.Turret, Type.MechShields } },
-            { Type.TurretArmor, new Type[] { Type.Turret, Type.MechArmor } },
-            { Type.TurretDamage, new Type[] { Type.Turret, Type.MechDamage } },
+            { Type.TurretDefense, new Type[] { Type.Turret, Type.MechShields, Type.MechArmor } },
+            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechAP, Type.MechSP } },
             { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange } },
-            { Type.TurretPierce, new Type[] { Type.Turret, Type.MechAP, Type.MechSP } },
 
-            { Type.ConstructorRepair, new Type[] { Type.ConstructorShields, Type.Factory } },
-            { Type.FactoryRepair, new Type[] { Type.FactoryCost, Type.ConstructorRepair, Type.Turret } },
-            { Type.FactoryConstructor, new Type[] { Type.FactoryRepair, Type.ConstructorMove } },
+            { Type.ConstructorMove, new Type[] { Type.Constructor, Type.MechMove } },
+            { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechShields, Type.MechArmor } },
+            { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorDefense, Type.Factory } },
+            { Type.FactoryRepair, new Type[] { Type.Factory, Type.ConstructorRepair } },
+            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryRepair, Type.ConstructorMove } },
 
-            { Type.ExtractorCost, new Type[] { Type.CoreShields } },
-            { Type.TurretCost, new Type[] { Type.Turret, Type.ExtractorCost } },
-            { Type.FactoryCost, new Type[] { Type.Factory, Type.TurretCost } },
-            { Type.ConstructorCost, new Type[] { Type.Constructor, Type.FactoryCost } },
-
-            { Type.BuildingHits, new Type[] { Type.ConstructorCost, Type.MechHits } },
-            { Type.ExtractorSustain, new Type[] { Type.BuildingHits } },
-            { Type.ExtractorResilience, new Type[] { Type.ExtractorSustain, Type.MechResilience } },
+            { Type.BuildingCost, new Type[] { Type.CoreShields } },
+            { Type.ExtractorAutoRepair, new Type[] { Type.BuildingCost } },
+            { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.ExtractorAutoRepair } },
+            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.FactoryAutoRepair, Type.TurretDefense } },
+            { Type.ConstructorCost, new Type[] { Type.Constructor, Type.BuildingCost } },
+            { Type.BuildingHits, new Type[] { Type.ConstructorCost, Type.Turret, Type.MechVision, Type.MechHits } },
+            { Type.ExtractorValue, new Type[] { Type.BuildingHits, Type.MechResilience } },
         };
 
         public enum Type
@@ -166,27 +161,24 @@ namespace ClassLibrary1
             Constructor,
             ConstructorCost,
             ConstructorMove,
-            ConstructorArmor,
-            ConstructorShields,
+            ConstructorDefense,
             ConstructorRepair,
 
             Turret,
-            TurretCost,
-            TurretArmor,
-            TurretShields,
-            TurretDamage,
-            TurretPierce,
+            TurretAutoRepair,
+            TurretDefense,
+            TurretAttack,
             TurretRange,
 
             Factory,
-            FactoryCost,
+            FactoryAutoRepair,
             FactoryRepair,
             FactoryConstructor,
 
-            ExtractorCost,
-            ExtractorResilience,
-            ExtractorSustain,
+            ExtractorAutoRepair,
+            ExtractorValue,
 
+            BuildingCost,
             BuildingHits,
         }
     }

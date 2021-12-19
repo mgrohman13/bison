@@ -39,13 +39,13 @@ namespace ClassLibrary1
         public const double ResourceOE = .26;
 
         public const double BiomassEnergyInc = 100;
-        public const double BiomassSustain = .75;
+        public const double BiomassSustain = .7;
         public const double BiomassResearchIncDiv = 50;
         public const double MetalMassInc = 50;
-        public const double MetalSustain = 1.25;
+        public const double MetalSustain = 1.1;
         public const double MetalEnergyUpkDiv = 10;
         public const double ArtifactResearchInc = 10;
-        public const double ArtifactSustain = 1.75;
+        public const double ArtifactSustain = 1.6;
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkDiv = 1;
 
@@ -71,8 +71,8 @@ namespace ClassLibrary1
 
         public const double RepairCost = .21;
         public const double EnergyRepairDiv = 2.1;
-        public const double ExtractorAutoRepair = .39;
-        public const double ExtractorAutoRepairPct = .0078;
+        public const double AutoRepair = .65;
+        public const double AutoRepairPct = .0169;
 
         public static double GetDamagedValue(Piece piece, double value, int min)
         {

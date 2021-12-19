@@ -22,7 +22,7 @@ namespace ClassLibrary1.Pieces
         internal bool EnemyMove(Map.Tile to);
 
         [Serializable]
-        public class Values
+        public struct Values
         {
             private readonly double _moveInc, _moveMax, _moveLimit;
             public Values(double moveInc, double moveMax, double moveLimit)

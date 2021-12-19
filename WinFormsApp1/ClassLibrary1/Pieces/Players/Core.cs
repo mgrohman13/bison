@@ -10,27 +10,38 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Core : PlayerPiece, IKillable.IRepairable
     {
-        private readonly IKillable killable;
-        private readonly IRepair repair;
-        private readonly IBuilder.IBuildConstructor buildConstructor;
-        private readonly IBuilder.IBuildMech buildMech;
-
         public Piece Piece => this;
 
-        private Core(Game game, IKillable.Values killable, IRepair.Values repair)
-            : base(game.Map.GetTile(0, 0), 4)
+        private Core(Game game, Values values)
+            : base(game.Map.GetTile(0, 0), values.Vision)
         {
-            this.killable = new Killable(this, killable);
-            this.repair = new Repair(this, repair);
-            buildConstructor = new Builder.BuildConstructor(this);
-            buildMech = new Builder.BuildMech(this);
-            SetBehavior(this.killable, this.repair, this.buildConstructor, this.buildMech);
+            SetBehavior(new Killable(this, values.Killable), new Repair(this, values.Repair));
+            Unlock(game.Player.Research);
         }
         internal static Core NewCore(Game game)
         {
-            Core obj = new(game, new(100, .91, .25, 1, 50, 200), new(Consts.MinMapCoord - 1.5, .1));
+            Core obj = new(game, GetValues(game));
             game.AddPiece(obj);
             return obj;
+        }
+
+        internal override void OnResearch(Research.Type type)
+        {
+            Unlock(Game.Player.Research);
+            Values values = GetValues(Game);
+            GetBehavior<IKillable>().Upgrade(values.Killable);
+            GetBehavior<IRepair>().Upgrade(values.Repair);
+        }
+        private void Unlock(Research research)
+        {
+            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
+                SetBehavior(new Builder.BuildConstructor(this));
+            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
+                SetBehavior(new Builder.BuildMech(this));
+        }
+        private static Values GetValues(Game game)
+        {
+            return game.Player.GetUpgradeValues<Values>();
         }
 
         internal override void Die()
@@ -39,9 +50,9 @@ namespace ClassLibrary1.Pieces.Players
         }
 
         double IKillable.IRepairable.RepairCost => GetRepairCost();
-        public static double GetRepairCost()
+        public double GetRepairCost()
         {
-            return Consts.GetRepairCost(0, 5000);
+            return Consts.GetRepairCost(GetValues(Game).Energy, GetValues(Game).Mass);
         }
 
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
@@ -55,6 +66,55 @@ namespace ClassLibrary1.Pieces.Players
         public override string ToString()
         {
             return "Core";
+        }
+        private class Values : IUpgradeValues
+        {
+            private const double resilience = .91, armor = .25;
+            private readonly double energy, mass;
+            private readonly IRepair.Values repair;
+
+            private double vision;
+            private IKillable.Values killable;
+
+            public Values()
+            {
+                this.energy = 0;
+                this.mass = 5000;
+                this.repair = new(Consts.MinMapCoord - 1.5, .1);
+
+                this.killable = new(-1, -1);
+                UpgradeBuildingHits(1);
+                UpgradeCoreShields(1);
+            }
+
+            public double Energy => energy;
+            public double Mass => mass;
+            public double Vision => vision;
+            public IKillable.Values Killable => killable;
+            public IRepair.Values Repair => repair;
+
+            public void Upgrade(Research.Type type, double researchMult)
+            {
+                if (type == Research.Type.BuildingHits)
+                    UpgradeBuildingHits(researchMult);
+                else if (type == Research.Type.CoreShields)
+                    UpgradeCoreShields(researchMult);
+            }
+            private void UpgradeBuildingHits(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .4);
+                double hits = 100 * researchMult;
+                this.vision = (Consts.MinMapCoord - 1.5) * researchMult;
+                this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.HitsMax, killable.ShieldLimit);
+            }
+            private void UpgradeCoreShields(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .8);
+                double shieldInc = 2.1 * researchMult;
+                double shieldMax = 65 * researchMult;
+                double shieldLimit = 91 * researchMult;
+                this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
+            }
         }
     }
 }

@@ -11,16 +11,15 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Extractor : PlayerPiece, IKillable.IRepairable
     {
-        private readonly IKillable killable;
-
         public readonly Resource Resource;
         public Piece Piece => this;
 
-        private Extractor(Map.Tile tile, Resource Resource, double vision, IKillable.Values killable)
-            : base(tile, vision)
+        public double Sustain => Resource.Sustain * GetValues(Game).SustainMult;
+
+        private Extractor(Map.Tile tile, Resource Resource, Values values)
+            : base(tile, values.Vision)
         {
-            this.killable = new Killable(this, killable);
-            SetBehavior(this.killable);
+            SetBehavior(new Killable(this, values.Killable));
 
             this.Resource = Resource;
         }
@@ -29,20 +28,26 @@ namespace ClassLibrary1.Pieces.Players
             Map.Tile tile = resource.Tile;
             resource.Game.RemovePiece(resource);
 
-            double researchMult = Math.Pow(resource.Game.Player.GetResearchMult(), .6);
-            double hits = 75 * researchMult;
-            double vision = 5 * researchMult;
-
-            Extractor obj = new(tile, resource, vision, new(hits, .78));
+            Extractor obj = new(tile, resource, GetValues(resource.Game));
             resource.Game.AddPiece(obj);
             return obj;
         }
         public static void Cost(out double energy, out double mass, Resource resource)
         {
             resource.GetCost(out energy, out mass);
-            double researchMult = Math.Pow(resource.Game.Player.GetResearchMult(), .5);
-            energy /= researchMult;
-            mass /= researchMult;
+            double costMult = GetValues(resource.Game).CostMult;
+            energy *= costMult;
+            mass *= costMult;
+        }
+
+        internal override void OnResearch(Research.Type type)
+        {
+            Values values = GetValues(Game);
+            GetBehavior<IKillable>().Upgrade(values.Killable);
+        }
+        private static Values GetValues(Game game)
+        {
+            return game.Player.GetUpgradeValues<Values>();
         }
 
         double IKillable.IRepairable.RepairCost => GetRepairCost();
@@ -62,12 +67,12 @@ namespace ClassLibrary1.Pieces.Players
         public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
             base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
-            Resource.GenerateResources(Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+            Resource.GenerateResources(Piece, GetValues(Game).ValueMult, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
             massUpk += AutoRepairMass();
         }
         internal override void EndTurn()
         {
-            Resource.Extract(Piece);
+            Resource.Extract(Piece, GetValues(Game).SustainMult);
             base.EndTurn();
             ((IKillable)this).Repair(AutoRepairAmt());
         }
@@ -85,17 +90,78 @@ namespace ClassLibrary1.Pieces.Players
         }
         private double AutoRepairAmt()
         {
-            IKillable killable = GetBehavior<IKillable>();
-            double repair = killable.HitsMax * Consts.ExtractorAutoRepairPct + Consts.ExtractorAutoRepair;
-            if (repair > killable.HitsMax - killable.HitsCur)
-                repair = killable.HitsMax - killable.HitsCur;
+            double repair = 0;
+            if (Game.Player.Research.HasType(Research.Type.FactoryRepair))
+            {
+                IKillable killable = GetBehavior<IKillable>();
+                repair = GetValues(Game).Repair;
+                if (repair > killable.HitsMax - killable.HitsCur)
+                    repair = killable.HitsMax - killable.HitsCur;
+            }
             return repair;
         }
-
 
         public override string ToString()
         {
             return Resource.GetResourceName() + " Extractor " + PieceNum;
+        }
+
+        private class Values : IUpgradeValues
+        {
+            private double costMult, vision, repair, valueMult, sustainMult;
+            private IKillable.Values killable;
+            public Values()
+            {
+                this.killable = new(-1, -1);
+                UpgradeBuildingCost(1);
+                UpgradeBuildingHits(1);
+                UpgradeExtractorRepair(1);
+                UpgradeExtractorValue(1);
+            }
+
+            public double CostMult => costMult;
+            public double Vision => vision;
+            public double Repair => repair;
+            public double ValueMult => valueMult;
+            public double SustainMult => sustainMult;
+            public IKillable.Values Killable => killable;
+
+            public void Upgrade(Research.Type type, double researchMult)
+            {
+                if (type == Research.Type.BuildingCost)
+                    UpgradeBuildingCost(researchMult);
+                else if (type == Research.Type.BuildingHits)
+                    UpgradeBuildingHits(researchMult);
+                else if (type == Research.Type.ExtractorRepair)
+                    UpgradeExtractorRepair(researchMult);
+                else if (type == Research.Type.ExtractorValue)
+                    UpgradeExtractorValue(researchMult);
+            }
+            private void UpgradeBuildingCost(double researchMult)
+            {
+                this.costMult = 1 / Math.Pow(researchMult, .6);
+            }
+            private void UpgradeBuildingHits(double researchMult)
+            {
+                double hits = GetHits(researchMult);
+                this.vision = 5 * Math.Pow(researchMult, .5);
+                this.killable = new(hits, killable.Resilience);
+            }
+            private void UpgradeExtractorRepair(double researchMult)
+            {
+                double resilience = 1 - Math.Pow(.65, Math.Pow(researchMult, .4));
+                this.repair = (GetHits(researchMult) * .0078 + .39) * Math.Pow(researchMult, .8);
+                this.killable = new(killable.HitsMax, resilience);
+            }
+            private static double GetHits(double researchMult)
+            {
+                return 75 * Math.Pow(researchMult, .5);
+            }
+            private void UpgradeExtractorValue(double researchMult)
+            {
+                this.valueMult = Math.Pow(researchMult, .5);
+                this.sustainMult = Math.Pow(researchMult, .4);
+            }
         }
     }
 }

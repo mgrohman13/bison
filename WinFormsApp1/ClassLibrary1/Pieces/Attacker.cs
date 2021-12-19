@@ -31,6 +31,14 @@ namespace ClassLibrary1.Pieces
             return this as T;
         }
 
+        void IAttacker.Upgrade(Values[] attacks)
+        {
+            if (_attacks.Count != attacks.Length)
+                throw new Exception();
+            for (int a = 0; a < attacks.Length; a++)
+                _attacks[a].Upgrade(attacks[a]);
+        }
+
         bool IAttacker.Fire(IKillable target)
         {
             bool fire = (Piece.IsPlayer && target != null && target.Piece.IsEnemy && target.Piece.Tile.Visible);
@@ -70,27 +78,29 @@ namespace ClassLibrary1.Pieces
         public class Attack
         {
             public readonly Piece Piece;
-            private readonly double _damage, _armorPierce, _shieldPierce, _dev, _range;
+            private Values _values;
+
             private bool _attacked;
 
             public bool Attacked => _attacked;
-            public double Damage => Consts.GetDamagedValue(Piece, _damage, 0);
-            public double DamageBase => _damage;
-            public double ArmorPierce => _armorPierce;
-            public double ShieldPierce => _shieldPierce;
-            public double Dev => _dev;
-            public double Range => Consts.GetDamagedValue(Piece, _range, 1);
-            public double RangeBase => _range;
+            public double Damage => Consts.GetDamagedValue(Piece, DamageBase, 0);
+            public double DamageBase => _values.Damage;
+            public double ArmorPierce => _values.ArmorPierce;
+            public double ShieldPierce => _values.ShieldPierce;
+            public double Dev => _values.Dev;
+            public double Range => Consts.GetDamagedValue(Piece, RangeBase, 1);
+            public double RangeBase => _values.Range;
 
             internal Attack(Piece piece, Values values)
             {
                 this.Piece = piece;
-                this._damage = values.Damage;
-                this._armorPierce = values.ArmorPierce;
-                this._shieldPierce = values.ShieldPierce;
-                this._dev = values.Dev;
-                this._range = values.Range;
+                this._values = values;
                 this._attacked = true;
+            }
+
+            internal void Upgrade(Values values)
+            {
+                this._values = values;
             }
 
             internal bool Fire(IKillable target)

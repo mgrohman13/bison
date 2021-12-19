@@ -18,8 +18,10 @@ namespace ClassLibrary1.Pieces
         public bool Fire(IKillable killable);
         internal bool EnemyFire(IKillable killable);
 
+        void Upgrade(Values[] values);
+
         [Serializable]
-        public class Values
+        public struct Values
         {
             private readonly double _damage, _armorPierce, _shieldPierce, _dev, _range;
             public Values(double _damage, double _armorPierce, double _shieldPierce, double _dev, double _range)

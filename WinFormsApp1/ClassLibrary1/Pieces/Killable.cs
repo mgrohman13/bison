@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces
     public class Killable : IKillable
     {
         private readonly Piece _piece;
-        private readonly IKillable.Values _values;
+        private IKillable.Values _values;
 
         private double _hitsCur, _shieldCur;
 
@@ -34,6 +34,15 @@ namespace ClassLibrary1.Pieces
         public T GetBehavior<T>() where T : class, IBehavior
         {
             return this as T;
+        }
+
+        void IKillable.Upgrade(IKillable.Values killable)
+        {
+            double hitsPct = HitsCur / HitsMax;
+            double shieldPct = ShieldCur / ShieldMax;
+            this._values = killable;
+            _hitsCur = HitsMax * hitsPct;
+            _shieldCur = ShieldMax % shieldPct;
         }
 
         double IKillable.RepairCost => ((IKillable.IRepairable)Piece).RepairCost;

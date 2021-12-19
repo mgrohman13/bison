@@ -27,12 +27,13 @@ namespace ClassLibrary1.Pieces.Terrain
             this.Sustain = sustain;
         }
 
-        public abstract void GenerateResources(Piece piece, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk);
+        public abstract void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk);
 
-        internal void Extract(Piece piece)
+        internal void Extract(Piece piece, double sustainMult)
         {
-            double power = Consts.ExtractPower / (Consts.ExtractPower + Math.Pow(Sustain, Consts.ExtractSustainPow));
-            double extract = Math.Pow(Consts.GetDamagedValue(piece, Value, 0) / Sustain / Consts.ExtractTurns + 1, power) - 1;
+            sustainMult *= Sustain;
+            double power = Consts.ExtractPower / (Consts.ExtractPower + Math.Pow(sustainMult, Consts.ExtractSustainPow));
+            double extract = Math.Pow(Consts.GetDamagedValue(piece, Value, 0) / sustainMult / Consts.ExtractTurns + 1, power) - 1;
             this._value -= extract;
         }
 

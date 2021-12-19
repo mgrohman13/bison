@@ -8,5 +8,6 @@ namespace ClassLibrary1.Pieces.Players
 {
     public interface IUpgradeValues
     {
+        public void Upgrade(Research.Type type, double researchMult);
     }
 }

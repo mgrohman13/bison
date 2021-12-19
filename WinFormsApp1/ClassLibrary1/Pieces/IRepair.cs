@@ -15,8 +15,10 @@ namespace ClassLibrary1.Pieces
 
         internal double GetRepairInc(IKillable killable);
 
+        internal void Upgrade(Values repair);
+
         [Serializable]
-        public class Values
+        public struct Values
         {
             private readonly double _range, _rate;
             public Values(double range, double rate)

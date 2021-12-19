@@ -15,7 +15,7 @@ namespace ClassLibrary1
     {
         private Core _core;
         public readonly Research Research;
-        private readonly List<IUpgradeValues> upgradeValues;
+        private readonly IEnumerable<IUpgradeValues> upgradeValues;
 
         public IReadOnlyCollection<Piece> Pieces => _pieces;
         public Core Core => _core;
@@ -26,29 +26,27 @@ namespace ClassLibrary1
             : base(game, 0, 1750)
         {
             this.Research = new(game);
-            this.upgradeValues = new List<IUpgradeValues>();
+            this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .Where(t => typeof(IUpgradeValues).IsAssignableFrom(t))
+                .Select(Activator.CreateInstance)
+                .OfType<IUpgradeValues>();
         }
         internal void CreateCore()
         {
             this._core = Core.NewCore(Game);
         }
 
-        internal T GetUpgradeValues<T>(Func<T> Create) where T : IUpgradeValues
+        internal T GetUpgradeValues<T>() where T : IUpgradeValues
         {
-            T values = upgradeValues.OfType<T>().SingleOrDefault();
-            if (values == null)
-                SetUpgradeValues(values = Create());
-            return values;
-        }
-        internal void SetUpgradeValues(IUpgradeValues value)
-        {
-            upgradeValues.RemoveAll(v => v.GetType() == value.GetType());
-            upgradeValues.Add(value);
+            return upgradeValues.OfType<T>().Single();
         }
         internal void OnResearch(Research.Type type, double researchMult)
         {
-            foreach (PlayerPiece piece in Pieces.OfType<PlayerPiece>())
-                piece.OnResearch(type, researchMult);
+            foreach (IUpgradeValues values in Game.Rand.Iterate(upgradeValues))
+                values.Upgrade(type, researchMult);
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.OfType<PlayerPiece>()))
+                piece.OnResearch(type);
         }
 
         internal bool Spend(double energy, double mass)

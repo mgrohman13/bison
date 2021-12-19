@@ -10,7 +10,7 @@ namespace ClassLibrary1.Pieces
     public class Repair : IRepair
     {
         private readonly Piece _piece;
-        private readonly IRepair.Values _values;
+        private IRepair.Values _values;
 
         public Piece Piece => _piece;
 
@@ -27,6 +27,11 @@ namespace ClassLibrary1.Pieces
         public T GetBehavior<T>() where T : class, IBehavior
         {
             return this as T;
+        }
+
+        void IRepair.Upgrade(IRepair.Values repair)
+        {
+            this._values = repair;
         }
 
         void IBehavior.GetUpkeep(ref double energy, ref double mass)

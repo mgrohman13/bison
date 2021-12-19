@@ -151,7 +151,7 @@ namespace WinFormsApp1
                     double energyInc, energyUpk, massInc, massUpk, researchInc, researchUpk;
                     energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
                     if (extractor == null)
-                        resource.GenerateResources(selected.Piece, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                        resource.GenerateResources(selected.Piece, 1, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
                     else
                         extractor.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
                     energyInc -= energyUpk;
@@ -183,7 +183,7 @@ namespace WinFormsApp1
                     lbl8.Show();
                     lblInf8.Show();
                     lbl8.Text = "Sustainability";
-                    lblInf8.Text = string.Format("{0}", FormatPct(resource.Sustain));
+                    lblInf8.Text = string.Format("{0}", FormatPct(extractor == null ? resource.Sustain : extractor.Sustain));
                 }
 
                 if (selected.Piece.HasBehavior<IAttacker>(out IAttacker attacker))

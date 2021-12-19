@@ -26,9 +26,9 @@ namespace ClassLibrary1.Pieces.Terrain
             mass = Consts.ArtifactExtractorMassCost * mult;
         }
 
-        public override void GenerateResources(Piece piece, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
         {
-            double value = Consts.GetDamagedValue(piece, Value, 0);
+            double value = Consts.GetDamagedValue(piece, Value * valueMult, 0);
             researchInc += value;
             massInc += value / Consts.ArtifactMassIncDiv;
             energyUpk += value / Consts.ArtifactEnergyUpkDiv;

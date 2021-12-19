@@ -12,64 +12,46 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Turret : PlayerPiece, IKillable.IRepairable
     {
-        private readonly IKillable killable;
-        private readonly IAttacker attacker;
+        private readonly double _hitsMult;
+        private readonly double[] _rangeMult;
 
         public Piece Piece => this;
 
-        private Turret(Map.Tile tile, double vision, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks)
-            : base(tile, vision)
+        private Turret(Map.Tile tile, Values values)
+            : base(tile, values.Vision)
         {
-            this.killable = new Killable(this, killable, killable.ShieldMax / 2.1);
-            this.attacker = new Attacker(this, attacks);
-            SetBehavior(this.killable, this.attacker);
+            _hitsMult = Game.Rand.GaussianCapped(1, .169, .39);
+            for (int a = 0; a < 2; a++)
+                _rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1);
+
+            IKillable.Values killable = values.GetKillable(_hitsMult);
+            SetBehavior(new Killable(this, killable, killable.ShieldMax / 2.1), new Attacker(this, values.GetAttacks(_rangeMult)));
         }
         internal static Turret NewTurret(Foundation foundation)
         {
             Map.Tile tile = foundation.Tile;
             foundation.Game.RemovePiece(foundation);
 
-            double researchMult = Math.Pow(foundation.Game.Player.GetResearchMult(), .9);
-            double avgHits = 26;
-            double hits = Game.Rand.GaussianCapped(avgHits, .169, 10);
-            double shieldMult = researchMult * avgHits / hits;
-            hits *= researchMult;
-            double armor = 1 - Math.Pow(.6, researchMult);
-            double vision = 7 * researchMult;
-            double shieldInc = 2.6 * shieldMult;
-            double shieldMax = 26 * shieldMult;
-            double shieldLimit = 260 * shieldMult;
-
-            List<IAttacker.Values> attacks = new(2);
-            for (int a = 0; a < 2; a++)
-            {
-                double avgDmg = a == 0 ? Math.PI : 5.2;
-                double damage = Game.Rand.GaussianOE(avgDmg, .26, .26);
-                double armorPierce = a == 0 ? .2 : 0;
-                double shieldPierce = a == 0 ? 0 : .2;
-                double dev = Game.Rand.Weighted(.13);
-                double range = a == 0 ? 21 : 9.1;
-                range *= avgDmg / damage;
-
-                damage *= researchMult;
-                if (armorPierce > 0)
-                    armorPierce = 1 - Math.Pow(1 - armorPierce, researchMult);
-                if (shieldPierce > 0)
-                    shieldPierce = 1 - Math.Pow(1 - shieldPierce, researchMult);
-                range *= researchMult;
-
-                attacks.Add(new(damage, armorPierce, shieldPierce, dev, range));
-            }
-
-            Turret obj = new(tile, vision, new(hits, Consts.MechResilience, armor, shieldInc, shieldMax, shieldLimit), attacks);
+            Turret obj = new(tile, GetValues(foundation.Game));
             foundation.Game.AddPiece(obj);
             return obj;
         }
         public static void Cost(Game game, out double energy, out double mass)
         {
-            double researchMult = Math.Pow(game.Player.GetResearchMult(), .2);
-            energy = 250 / researchMult;
-            mass = 250 / researchMult;
+            Values values = GetValues(game);
+            energy = values.Energy;
+            mass = values.Mass;
+        }
+
+        internal override void OnResearch(Research.Type type)
+        {
+            Values values = GetValues(Game);
+            GetBehavior<IKillable>().Upgrade(values.GetKillable(_hitsMult));
+            GetBehavior<IAttacker>().Upgrade(values.GetAttacks(_rangeMult));
+        }
+        private static Values GetValues(Game game)
+        {
+            return game.Player.GetUpgradeValues<Values>();
         }
 
         internal override void Die()
@@ -89,6 +71,116 @@ namespace ClassLibrary1.Pieces.Players
         public override string ToString()
         {
             return "Turret " + PieceNum;
+        }
+
+        private class Values : IUpgradeValues
+        {
+            private const double resilience = .65;
+
+            private double energy, mass, vision;
+            private IKillable.Values killable;
+            private readonly IAttacker.Values[] attacks;
+            public Values()
+            {
+                this.killable = new(-1, -1);
+                this.attacks = new IAttacker.Values[] { new(-1, -1, -1, -1, -1), new(-1, -1, -1, -1, -1) };
+                UpgradeBuildingCost(1);
+                UpgradeBuildingHits(1);
+                UpgradeTurretDefense(1);
+                UpgradeTurretAttack(1);
+                UpgradeTurretRange(1);
+            }
+
+            public double Energy => energy;
+            public double Mass => mass;
+            public double Vision => vision;
+            public double[] AttackRange => attacks.Select(v => v.Range).ToArray();
+            public IKillable.Values GetKillable(double hitsMult)
+            {
+                double hits = killable.HitsMax * hitsMult;
+                double shieldMult = Math.Pow(hitsMult, .78);
+                double shieldInc = killable.ShieldInc / shieldMult;
+                double shieldMax = killable.ShieldMax / shieldMult;
+                double shieldLimit = killable.ShieldLimit / shieldMult;
+                return new(hits, killable.Resilience, killable.Armor, shieldInc, shieldMax, shieldLimit);
+            }
+            public IAttacker.Values[] GetAttacks(double[] rangeMult)
+            {
+                IAttacker.Values[] result = new IAttacker.Values[2];
+                for (int a = 0; a < 2; a++)
+                {
+                    IAttacker.Values attack = attacks[a];
+                    double damage = attack.Damage / rangeMult[a];
+                    double dev = Game.Rand.Weighted(.13);
+                    double range = attack.Range * rangeMult[a];
+                    result[a] = new(damage, attack.ArmorPierce, attack.ShieldPierce, dev, range);
+                }
+                return result;
+            }
+
+            public void Upgrade(Research.Type type, double researchMult)
+            {
+                if (type == Research.Type.BuildingCost)
+                    UpgradeBuildingCost(researchMult);
+                else if (type == Research.Type.BuildingHits)
+                    UpgradeBuildingHits(researchMult);
+                else if (type == Research.Type.TurretDefense)
+                    UpgradeTurretDefense(researchMult);
+                else if (type == Research.Type.TurretAttack)
+                    UpgradeTurretAttack(researchMult);
+                else if (type == Research.Type.TurretRange)
+                    UpgradeTurretRange(researchMult);
+            }
+            private void UpgradeBuildingCost(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .4);
+                this.energy = 400 / researchMult;
+                this.mass = 800 / researchMult;
+            }
+            private void UpgradeBuildingHits(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .6);
+                double hits = 80 * researchMult;
+                this.vision = 7 * researchMult;
+                this.killable = new(hits, resilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+            }
+            private void UpgradeTurretDefense(double researchMult)
+            {
+                double armor = 1 - Math.Pow(.78, Math.Pow(researchMult, .5));
+                double shieldInc = Math.PI * Math.Pow(researchMult, .9);
+                double shieldMax = 39 * Math.Pow(researchMult, .7);
+                double shieldLimit = 85 * Math.Pow(researchMult, .8);
+                this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
+            }
+            private void UpgradeTurretAttack(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .9);
+                for (int a = 0; a < 2; a++)
+                {
+                    double damage = a == 0 ? 3.5 : 6;
+                    double armorPierce = a == 0 ? .1 : 0;
+                    double shieldPierce = a == 0 ? 0 : .1;
+
+                    damage *= researchMult;
+                    if (armorPierce > 0)
+                        armorPierce = 1 - Math.Pow(1 - armorPierce, researchMult);
+                    if (shieldPierce > 0)
+                        shieldPierce = 1 - Math.Pow(1 - shieldPierce, researchMult);
+
+                    attacks[a] = new(damage, armorPierce, shieldPierce, -1, attacks[a].Range);
+                }
+            }
+            private void UpgradeTurretRange(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .8);
+                for (int a = 0; a < 2; a++)
+                {
+                    double range = a == 0 ? 20 : 8.5;
+                    range *= researchMult;
+                    IAttacker.Values attack = attacks[a];
+                    attacks[a] = new(attack.Damage, attack.ArmorPierce, attack.ShieldPierce, -1, range);
+                }
+            }
         }
     }
 }

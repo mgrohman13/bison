@@ -18,8 +18,8 @@ namespace ClassLibrary1.Pieces
         public double Resilience { get; }
         public double Armor { get; }
         public double ShieldCur { get; }
-        public double ShieldInc { get; }  
-        public double ShieldIncBase { get; }        
+        public double ShieldInc { get; }
+        public double ShieldIncBase { get; }
         public double ShieldMax { get; }
         public double ShieldLimit { get; }
         public bool Dead { get; }
@@ -29,8 +29,10 @@ namespace ClassLibrary1.Pieces
         internal void Damage(double damage, double shieldDmg);
         internal void Repair(double hits);
 
+        internal void Upgrade(Values killable);
+
         [Serializable]
-        public class Values
+        public struct Values
         {
             private readonly double _hitsMax, _resilience, _armor, _shieldInc, _shieldMax, _shieldLimit;
             public Values(double hitsMax, double resilience) : this(hitsMax, resilience, 0, 0, 0, 0) { }
