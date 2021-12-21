@@ -99,7 +99,7 @@ namespace ClassLibrary1
         }
         internal bool InvalidStartTile(Map.Tile tile)
         {
-            return (tile == null | tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
+            return (tile == null || tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
         }
 
         public void EndTurn()
