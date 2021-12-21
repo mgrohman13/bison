@@ -63,7 +63,7 @@ namespace ClassLibrary1
                 new( 2, -1),
                 new( 2,  1),
             });
-            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), false);
+            Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), true);
 
             for (int a = 0; a < 1; a++)
                 Biomass.NewBiomass(StartTile());
@@ -94,8 +94,12 @@ namespace ClassLibrary1
             Map.Tile tile;
             do
                 tile = Map.GetTile(Game.Rand.RangeInt(Map.left, Map.right), Game.Rand.RangeInt(Map.down, Map.up));
-            while (tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
+            while (InvalidStartTile(tile));
             return tile;
+        }
+        internal bool InvalidStartTile(Map.Tile tile)
+        {
+            return (tile == null | tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
         }
 
         public void EndTurn()
@@ -110,7 +114,7 @@ namespace ClassLibrary1
         }
         internal void GenBlueprints()
         {
-            double difficulty = 1 + Player.GetResearchMult();
+            double difficulty = 1 + ((Player.Research.ResearchCur + Consts.ResearchFactor) / Consts.ResearchFactor);
             this._blueprint1 = GenBlueprint(difficulty);
             this._blueprint2 = GenBlueprint(difficulty);
 

@@ -34,31 +34,11 @@ namespace ClassLibrary1.Pieces
             this._values = repair;
         }
 
-        void IBehavior.GetUpkeep(ref double energy, ref double mass)
+        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            mass += GetRepairs().Sum(p => GetRepairCost(p.Key, p.Value));
         }
-        void IBehavior.EndTurn()
+        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            foreach (var p in GetRepairs())
-                p.Key.Repair(p.Value);
-        }
-
-        double IRepair.GetRepairInc(IKillable killable)
-        {
-            GetRepairs().TryGetValue(killable, out double repair);
-            return repair;
-        }
-
-        internal Dictionary<IKillable, double> GetRepairs()
-        {
-            return Piece.Tile.GetTilesInRange(Range).Select(t => t.Piece).OfType<IKillable>()
-                .Where(k => k.Piece != this.Piece && k.Piece.Side == this.Piece.Side && k.HitsCur < k.HitsMax)
-                .ToDictionary(k => k, k => Math.Min(k.HitsMax - k.HitsCur, k.HitsMax * this.Rate));
-        }
-        public static double GetRepairCost(IKillable killable, double amt)
-        {
-            return killable.RepairCost * amt / killable.HitsMax;
         }
     }
 }

@@ -26,10 +26,10 @@ namespace ClassLibrary1.Pieces
             return this as T;
         }
 
-        void IBehavior.GetUpkeep(ref double energy, ref double mass)
+        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
         }
-        void IBehavior.EndTurn()
+        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
         }
 
@@ -51,7 +51,7 @@ namespace ClassLibrary1.Pieces
                 {
                     Constructor.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
-                        return Constructor.NewConstructor(tile, null);
+                        return Constructor.NewConstructor(tile, false);
                 }
                 return null;
             }
@@ -93,13 +93,13 @@ namespace ClassLibrary1.Pieces
             }
         }
         [Serializable]
-        public class BuildFoundation : Builder, IBuilder.IBuildFoundation
+        public class BuildFactory : Builder, IBuilder.IBuildFactory
         {
-            public BuildFoundation(Piece piece)
+            public BuildFactory(Piece piece)
                 : base(piece)
             {
             }
-            public Factory BuildFactory(Foundation foundation)
+            public Factory Build(Foundation foundation)
             {
                 if (foundation != null && Validate(foundation.Tile))
                 {
@@ -109,7 +109,15 @@ namespace ClassLibrary1.Pieces
                 }
                 return null;
             }
-            public Turret BuildTurret(Foundation foundation)
+        }
+        [Serializable]
+        public class BuildTurret : Builder, IBuilder.IBuildTurret
+        {
+            public BuildTurret(Piece piece)
+               : base(piece)
+            {
+            }
+            public Turret Build(Foundation foundation)
             {
                 if (foundation != null && Validate(foundation.Tile))
                 {

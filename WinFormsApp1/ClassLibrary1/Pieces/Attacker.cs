@@ -62,14 +62,15 @@ namespace ClassLibrary1.Pieces
             return retVal;
         }
 
-        void IBehavior.GetUpkeep(ref double energy, ref double mass)
+        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             var used = Attacks.Where(a => a.Attacked);
             //return (used.Sum(a => Math.Pow(a.Damage, Consts.WeaponDamageUpkeepPow)) + used.Count) * Consts.WeaponRechargeUpkeep;
-            energy += used.Count() * Consts.WeaponRechargeUpkeep;
+            energyUpk += used.Count() * Consts.WeaponRechargeUpkeep;
         }
-        void IBehavior.EndTurn()
+        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
+            ((IBehavior)this).GetUpkeep(ref energyUpk, ref massUpk);
             foreach (Attack attack in Attacks)
                 attack.EndTurn();
         }

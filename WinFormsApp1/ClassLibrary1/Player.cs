@@ -17,7 +17,11 @@ namespace ClassLibrary1
         public readonly Research Research;
         private readonly IEnumerable<IUpgradeValues> upgradeValues;
 
-        public IReadOnlyCollection<Piece> Pieces => _pieces;
+        new public IReadOnlyCollection<Piece> Pieces => base.Pieces;
+        new public IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
+        {
+            return base.PiecesOfType<T>();
+        }
         public Core Core => _core;
         new public double Energy => base.Energy;
         new public double Mass => base.Mass;
@@ -28,9 +32,10 @@ namespace ClassLibrary1
             this.Research = new(game);
             this.upgradeValues = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a => a.GetTypes())
-                .Where(t => typeof(IUpgradeValues).IsAssignableFrom(t))
+                .Where(t => t.IsClass && typeof(IUpgradeValues).IsAssignableFrom(t))
                 .Select(Activator.CreateInstance)
-                .OfType<IUpgradeValues>();
+                .OfType<IUpgradeValues>()
+                .ToArray();
         }
         internal void CreateCore()
         {
@@ -45,7 +50,7 @@ namespace ClassLibrary1
         {
             foreach (IUpgradeValues values in Game.Rand.Iterate(upgradeValues))
                 values.Upgrade(type, researchMult);
-            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces.OfType<PlayerPiece>()))
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
                 piece.OnResearch(type);
         }
 
@@ -64,20 +69,21 @@ namespace ClassLibrary1
             return (Energy >= energy && Mass >= mass);
         }
 
-        public void GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc, out double researchUpk)
+        public void GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc)
         {
-            energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
-            foreach (PlayerPiece piece in Pieces)
-                piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+            energyInc = energyUpk = massInc = massUpk = researchInc = 0;
+            foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
+                piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
         }
         internal override void EndTurn()
         {
-            GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc, out double researchUpk);
-            this._energy += energyInc - energyUpk;
-            this._mass += massInc - massUpk;
-            this.Research.AddResearch(researchInc - researchUpk);
+            GetIncome(out double energyInc, out double _, out double massInc, out double _, out double researchInc);
+            this._energy += energyInc;
+            this._mass += massInc;
 
             base.EndTurn();
+
+            this.Research.AddResearch(researchInc);
         }
     }
 }

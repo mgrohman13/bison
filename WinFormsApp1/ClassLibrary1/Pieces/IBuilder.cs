@@ -24,10 +24,13 @@ namespace ClassLibrary1.Pieces
         {
             public Mech Build(Map.Tile tile, MechBlueprint blueprint);
         }
-        public interface IBuildFoundation : IBuilder
+        public interface IBuildFactory : IBuilder
         {
-            public Factory BuildFactory(Foundation foundation);
-            public Turret BuildTurret(Foundation foundation);
+            public Factory Build(Foundation foundation);
+        }
+        public interface IBuildTurret : IBuilder
+        {
+            public Turret Build(Foundation foundation);
         }
     }
 }

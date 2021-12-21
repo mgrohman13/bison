@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces.Terrain
             mass = Consts.BiomassExtractorMassCost * mult;
         }
 
-        public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
         {
             double value = Consts.GetDamagedValue(piece, Value * valueMult, 0);
             energyInc += value;

@@ -42,7 +42,7 @@ namespace WinFormsApp1
             if (File.Exists(Game.SavePath))
             {
                 string path = Game.SavePath.Replace("\\", "/");
-                path = path.Substring(0, path.LastIndexOf("/")) + "/" + "prev_" + Game.Turn + ".sav";
+                path = path.Substring(0, path.LastIndexOf("/")) + "/" + "auto_" + (Game.Turn - 1) + ".sav";
                 if (File.Exists(path))
                     File.Delete(path);
                 File.Copy(Game.SavePath, path);
@@ -176,7 +176,7 @@ namespace WinFormsApp1
             if (!move && piece.HasBehavior<IAttacker>(out IAttacker attacker))
             {
                 double range = attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range);
-                move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece.HasBehavior<IKillable>(out _) && t.Piece.IsEnemy);
+                move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>(out _) && t.Piece.IsEnemy);
             }
             return move;
         }

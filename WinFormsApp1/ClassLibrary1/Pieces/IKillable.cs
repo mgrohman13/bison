@@ -11,8 +11,6 @@ namespace ClassLibrary1.Pieces
 {
     public interface IKillable : IBehavior
     {
-        internal double RepairCost { get; }
-
         public double HitsCur { get; }
         public double HitsMax { get; }
         public double Resilience { get; }
@@ -24,12 +22,10 @@ namespace ClassLibrary1.Pieces
         public double ShieldLimit { get; }
         public bool Dead { get; }
 
-        public double GetInc();
-
-        internal void Damage(double damage, double shieldDmg);
-        internal void Repair(double hits);
-
         internal void Upgrade(Values killable);
+        internal void Damage(double damage, double shieldDmg);
+        internal void Repair(bool doRepair, out double hitsInc, out double massCost);
+        public double GetInc();
 
         [Serializable]
         public struct Values
@@ -43,7 +39,7 @@ namespace ClassLibrary1.Pieces
                 if (shieldInc <= 0 || shieldMax <= 0 || shieldLimit <= 0)
                     shieldInc = shieldMax = shieldLimit = 0;
                 this._hitsMax = hitsMax;
-                this._resilience = Game.Rand.GaussianCapped(resilience, .078, Math.Max(0, 2 * resilience - 1));
+                this._resilience = resilience;
                 this._armor = armor;
                 this._shieldInc = shieldInc;
                 this._shieldMax = shieldMax;
@@ -60,6 +56,7 @@ namespace ClassLibrary1.Pieces
         public interface IRepairable
         {
             internal double RepairCost { get; }
+            internal bool AutoRepair { get; }
         }
     }
 }

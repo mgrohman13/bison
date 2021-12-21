@@ -14,7 +14,6 @@ namespace ClassLibrary1
     [Serializable]
     public class Enemy : Side
     {
-        internal IReadOnlyCollection<Piece> Pieces => _pieces;
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         internal Enemy(Game game)
@@ -27,13 +26,7 @@ namespace ClassLibrary1
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 PlayTurn(piece);
 
-            double e, m;
-            e = m = 0;
-            foreach (Piece piece in Game.Rand.Iterate(Pieces))
-                piece.GetUpkeep(ref e, ref m);
-            this._energy -= e + m;
-
-            this.EndTurn();
+            base.EndTurn();
 
             this._energy += this.Mass + Game.Rand.OE(difficulty * Consts.EnemyEnergy);
             this._mass = 0;
@@ -59,9 +52,12 @@ namespace ClassLibrary1
             double avgHp = 1, avgWeight = 1;
             if (attacker != null)
             {
-                allTargets = Game.Player.Pieces.OfType<IKillable>();
-                avgHp = allTargets.Average(k => k.HitsMax);
-                avgWeight = (allTargets.Average(k => GetKillWeight(k, avgHp)));
+                allTargets = Game.Player.PiecesOfType<IKillable>();
+                if (allTargets.Any())
+                {
+                    avgHp = allTargets.Average(k => k.HitsMax);
+                    avgWeight = (allTargets.Average(k => GetKillWeight(k, avgHp)));
+                }
                 targets = GetTargets(attacker, piece.Tile, allTargets);
             }
 
@@ -103,10 +99,8 @@ namespace ClassLibrary1
 
                 if (movable.EnemyMove(moveTo))
                     targets = newTargets;
-                else if (piece.Tile == moveTo)
-                { }
-                else
-                { }
+                else if (piece.Tile != moveTo)
+                { } 
             }
 
             if (attacker != null)

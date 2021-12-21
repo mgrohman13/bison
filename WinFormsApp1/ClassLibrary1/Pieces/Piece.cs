@@ -68,23 +68,23 @@ namespace ClassLibrary1.Pieces
                 Game.Map.AddPiece(this);
         }
 
-        void IBehavior.GetUpkeep(ref double energy, ref double mass)
+        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            GetUpkeep(ref energy, ref mass);
+            GetUpkeep(ref energyUpk, ref massUpk);
         }
-        internal virtual void GetUpkeep(ref double energy, ref double mass)
+        internal virtual void GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             foreach (IBehavior behavior in this.behavior)
-                behavior.GetUpkeep(ref energy, ref mass);
+                behavior.GetUpkeep(ref energyUpk, ref massUpk);
         }
-        void IBehavior.EndTurn()
+        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
-            EndTurn();
+            EndTurn(ref energyUpk, ref massUpk);
         }
-        internal virtual void EndTurn()
+        internal virtual void EndTurn(ref double energyUpk, ref double massUpk)
         {
             foreach (IBehavior behavior in behavior)
-                behavior.EndTurn();
+                behavior.EndTurn(ref energyUpk, ref massUpk);
         }
     }
 }

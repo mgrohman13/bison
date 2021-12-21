@@ -34,10 +34,10 @@ namespace ClassLibrary1.Pieces.Players
         }
         private void Unlock(Research research)
         {
-            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
-                SetBehavior(new Builder.BuildConstructor(this));
             if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
                 SetBehavior(new Builder.BuildMech(this));
+            if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
+                SetBehavior(new Builder.BuildConstructor(this));
         }
         private static Values GetValues(Game game)
         {
@@ -49,15 +49,18 @@ namespace ClassLibrary1.Pieces.Players
             Game.End();
         }
 
-        double IKillable.IRepairable.RepairCost => GetRepairCost();
-        public double GetRepairCost()
+        double IKillable.IRepairable.RepairCost
         {
-            return Consts.GetRepairCost(GetValues(Game).Energy, GetValues(Game).Mass);
+            get
+            {
+                return Consts.GetRepairCost(GetValues(Game).Energy, GetValues(Game).Mass);
+            }
         }
+        bool IKillable.IRepairable.AutoRepair => false;
 
-        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
         {
-            base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+            base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
             energyInc += 350;
             massInc += 100;
             researchInc += 15;
@@ -67,9 +70,12 @@ namespace ClassLibrary1.Pieces.Players
         {
             return "Core";
         }
+
+
+        [Serializable]
         private class Values : IUpgradeValues
         {
-            private const double resilience = .91, armor = .25;
+            private const double resilience = .7, armor = .25;
             private readonly double energy, mass;
             private readonly IRepair.Values repair;
 
@@ -84,7 +90,6 @@ namespace ClassLibrary1.Pieces.Players
 
                 this.killable = new(-1, -1);
                 UpgradeBuildingHits(1);
-                UpgradeCoreShields(1);
             }
 
             public double Energy => energy;
@@ -104,7 +109,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .4);
                 double hits = 100 * researchMult;
-                this.vision = (Consts.MinMapCoord - 1.5) * researchMult;
+                this.vision = 4 * researchMult;
                 this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.HitsMax, killable.ShieldLimit);
             }
             private void UpgradeCoreShields(double researchMult)

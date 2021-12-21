@@ -13,7 +13,7 @@ namespace ClassLibrary1.Pieces
     public class Movable : IMovable
     {
         private readonly Piece _piece;
-        private readonly IMovable.Values _values;
+        private IMovable.Values _values;
 
         private double _moveCur;
 
@@ -35,6 +35,11 @@ namespace ClassLibrary1.Pieces
         public double MoveInc => _values.MoveInc;
         public double MoveMax => _values.MoveMax;
         public double MoveLimit => _values.MoveLimit;
+
+        void IMovable.Upgrade(IMovable.Values movable)
+        {
+            this._values = movable;
+        }
 
         bool IMovable.Move(Map.Tile to)
         {
@@ -60,21 +65,29 @@ namespace ClassLibrary1.Pieces
             }
             return false;
         }
-        void IBehavior.GetUpkeep(ref double energy, ref double mass)
-        {
-            energy += GetInc(false) * Consts.UpkeepPerMove;
-        }
-        void IBehavior.EndTurn()
-        {
-            this._moveCur += GetInc(true);
-        }
+
         public double GetInc()
         {
-            return GetInc(false);
+            return IncMove(false);
         }
-        private double GetInc(bool rand)
+        private double IncMove(bool doInc)
         {
-            return Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, rand);
+            double moveInc = Consts.IncValueWithMaxLimit(MoveCur, MoveInc, Consts.MoveDev, MoveMax, MoveLimit, Consts.MoveLimitPow, doInc);
+            if (doInc)
+                this._moveCur += moveInc;
+            return moveInc;
+        }
+        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
+        {
+            EndTurn(false, ref energyUpk);
+        }
+        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
+        {
+            EndTurn(true, ref energyUpk);
+        }
+        private void EndTurn(bool doEndTurn, ref double energyUpk)
+        {
+            energyUpk += IncMove(doEndTurn) * Consts.UpkeepPerMove;
         }
     }
 }

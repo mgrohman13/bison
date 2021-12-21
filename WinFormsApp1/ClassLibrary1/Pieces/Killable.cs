@@ -36,17 +36,6 @@ namespace ClassLibrary1.Pieces
             return this as T;
         }
 
-        void IKillable.Upgrade(IKillable.Values killable)
-        {
-            double hitsPct = HitsCur / HitsMax;
-            double shieldPct = ShieldCur / ShieldMax;
-            this._values = killable;
-            _hitsCur = HitsMax * hitsPct;
-            _shieldCur = ShieldMax % shieldPct;
-        }
-
-        double IKillable.RepairCost => ((IKillable.IRepairable)Piece).RepairCost;
-
         public double HitsCur => _hitsCur;
         public double HitsMax => _values.HitsMax;
         public double Resilience => _values.Resilience;
@@ -57,6 +46,15 @@ namespace ClassLibrary1.Pieces
         public double ShieldMax => _values.ShieldMax;
         public double ShieldLimit => _values.ShieldLimit;
         public bool Dead => HitsCur <= 0.05;
+
+        void IKillable.Upgrade(IKillable.Values killable)
+        {
+            double hitsPct = HitsCur / HitsMax;
+            double shieldPct = ShieldMax > 0 ? ShieldCur / ShieldMax : 0;
+            this._values = killable;
+            _hitsCur = HitsMax * hitsPct;
+            _shieldCur = ShieldMax * shieldPct;
+        }
 
         void IKillable.Damage(double damage, double shieldDmg)
         {
@@ -69,32 +67,67 @@ namespace ClassLibrary1.Pieces
             if (this.Dead)
                 Piece.Die();
         }
-        void IKillable.Repair(double hits)
+
+        void IKillable.Repair(bool doRepair, out double hitsInc, out double massCost)
         {
-            Repair(hits);
+            Repair(doRepair, out hitsInc, out massCost);
         }
-        internal void Repair(double hits)
+        internal void Repair(bool doRepair, out double hitsInc, out double massCost)
         {
-            this._hitsCur += Game.Rand.GaussianCapped(hits, Consts.HitsIncDev);
-            if (HitsCur > HitsMax)
-                this._hitsCur = HitsMax;
+            if (Piece is IKillable.IRepairable repairable && HitsCur < HitsMax)
+            {
+                double[] repairs = Piece.Side.PiecesOfType<IRepair>()
+                  .Where(r => Piece != r.Piece && Piece.Side == r.Piece.Side && Piece.Tile.GetDistance(r.Piece.Tile) <= r.Range)
+                  .Select(r => this.HitsMax * r.Rate)
+                  .Concat(repairable.AutoRepair ? new double[] { HitsMax * Consts.AutoRepairPct + Consts.AutoRepair } : Array.Empty<double>())
+                  .OrderByDescending(v => v)
+                  .ToArray();
+
+                hitsInc = 0;
+                for (int a = 0; a < repairs.Length; a++)
+                    hitsInc += repairs[a] / (a + 1.0);
+
+                if (doRepair)
+                    hitsInc = Game.Rand.GaussianCapped(hitsInc, Consts.HitsIncDev);
+
+                hitsInc = Math.Min(hitsInc, HitsMax - HitsCur);
+                massCost = repairable.RepairCost * hitsInc / HitsMax;
+
+                if (doRepair)
+                    _hitsCur += hitsInc;
+            }
+            else
+            {
+                hitsInc = 0;
+                massCost = 0;
+            }
         }
 
-        void IBehavior.GetUpkeep(ref double energy, ref double mass)
-        {
-            energy += GetInc(false) * Consts.UpkeepPerShield;
-        }
-        void IBehavior.EndTurn()
-        {
-            this._shieldCur += GetInc(true);
-        }
         public double GetInc()
         {
-            return GetInc(false);
+            return IncShield(false);
         }
-        private double GetInc(bool rand)
+        private double IncShield(bool doInc)
         {
-            return Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.HitsIncDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow, rand);
+            double shieldInc = Consts.IncValueWithMaxLimit(ShieldCur, ShieldInc, Consts.HitsIncDev, ShieldMax, ShieldLimit, Consts.ShieldLimitPow, doInc);
+            if (doInc)
+                this._shieldCur += shieldInc;
+            return shieldInc;
+        }
+        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
+        {
+            EndTurn(false, ref energyUpk, ref massUpk);
+        }
+        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
+        {
+            EndTurn(true, ref energyUpk, ref massUpk);
+        }
+        private void EndTurn(bool doEndTurn, ref double energyUpk, ref double massUpk)
+        {
+            energyUpk += IncShield(doEndTurn) * Consts.UpkeepPerShield;
+
+            Repair(doEndTurn, out _, out double massCost);
+            massUpk += massCost;
         }
     }
 }

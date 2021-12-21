@@ -95,30 +95,32 @@ namespace WinFormsApp1
 
                     if (!(playerPiece is Extractor))
                     {
-                        double a, energyUpk, b, massUpk, c, d;
-                        a = energyUpk = b = massUpk = c = d = 0;
-                        playerPiece.GenerateResources(ref a, ref energyUpk, ref b, ref massUpk, ref c, ref d);
-                        if (energyUpk != 0)
+                        double energyInc, energyUpk, massInc, massUpk, researchInc;
+                        energyInc = energyUpk = massInc = massUpk = researchInc = 0;
+                        playerPiece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+                        energyInc -= energyUpk;
+                        massInc -= massUpk;
+                        if (energyInc != 0)
                         {
                             lbl5.Show();
                             lblInf5.Show();
                             lbl5.Text = "Energy";
-                            lblInf5.Text = string.Format("{1}{0}", Format(energyUpk), energyUpk < 0 ? "+" : "-");
+                            lblInf5.Text = string.Format("{1}{0}", Format(energyInc), energyInc < 0 ? "-" : "+");
                         }
-                        if (massUpk != 0)
+                        if (massInc != 0)
                         {
                             lbl6.Show();
                             lblInf6.Show();
                             lbl6.Text = "Mass";
-                            lblInf6.Text = string.Format("{1}{0}", Format(massUpk), massUpk < 0 ? "+" : "-");
+                            lblInf6.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "-" : "+");
                         }
-                        //if (researchInc != 0)
-                        //{
-                        //    lbl7.Show();
-                        //    lblInf7.Show();
-                        //    lbl7.Text = "Research";
-                        //    lblInf7.Text = string.Format("{1}{0}", Format(researchInc), researchInc > 0 ? "+" : "");
-                        //}
+                        if (researchInc != 0)
+                        {
+                            lbl7.Show();
+                            lblInf7.Show();
+                            lbl7.Text = "Research";
+                            lblInf7.Text = string.Format("{1}{0}", Format(researchInc), researchInc < 0 ? "-" : "+");
+                        }
                     }
                 }
                 if (selected.Piece.HasBehavior<IRepair>(out IRepair repair))
@@ -148,15 +150,14 @@ namespace WinFormsApp1
                         lblInf2.Text = string.Format("{0} : {1}", Format(energy), Format(mass));
                     }
 
-                    double energyInc, energyUpk, massInc, massUpk, researchInc, researchUpk;
-                    energyInc = energyUpk = massInc = massUpk = researchInc = researchUpk = 0;
+                    double energyInc, energyUpk, massInc, massUpk, researchInc;
+                    energyInc = energyUpk = massInc = massUpk = researchInc = 0;
                     if (extractor == null)
-                        resource.GenerateResources(selected.Piece, 1, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                        resource.GenerateResources(selected.Piece, 1, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
                     else
-                        extractor.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+                        extractor.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
                     energyInc -= energyUpk;
                     massInc -= massUpk;
-                    researchInc -= researchUpk;
 
                     if (energyInc != 0)
                     {

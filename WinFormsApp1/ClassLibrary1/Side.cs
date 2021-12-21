@@ -22,6 +22,11 @@ namespace ClassLibrary1
         internal double Mass => _mass;
 
         public Game Game => _game;
+        internal IReadOnlyCollection<Piece> Pieces => _pieces;
+        internal IEnumerable<T> PiecesOfType<T>() where T : class, IBehavior
+        {
+            return Pieces.Select(p => p.GetBehavior<T>()).Where(b => b != null);
+        }
 
         protected Side(Game game, double energy, double mass)
         {
@@ -42,8 +47,11 @@ namespace ClassLibrary1
 
         internal virtual void EndTurn()
         {
+            double energyUpk = 0, massUpk = 0;
             foreach (Piece piece in Game.Rand.Iterate(_pieces))
-                piece.EndTurn();
+                piece.EndTurn(ref energyUpk, ref massUpk);
+            this._energy -= energyUpk;
+            this._mass -= massUpk;
         }
     }
 }

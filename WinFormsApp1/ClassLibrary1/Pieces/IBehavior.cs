@@ -17,6 +17,6 @@ namespace ClassLibrary1.Pieces
         }
 
         internal void GetUpkeep(ref double energy, ref double mass);
-        public void EndTurn();
+        public void EndTurn(ref double energyUpk, ref double massUpk);
     }
 }

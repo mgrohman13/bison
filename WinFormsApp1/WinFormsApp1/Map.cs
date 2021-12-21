@@ -205,7 +205,7 @@ namespace WinFormsApp1
                    .Select(t => new Point(t.X, t.Y)).ToHashSet();
 
                 IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
-                if (SelTile.Piece.HasBehavior<IMovable>(out IMovable movable) && movable.MoveCur >= 1)
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IMovable>(out IMovable movable) && movable.MoveCur >= 1)
                 {
                     moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur);
                     ranges[move].Add(GetPoints(moveTiles));
@@ -252,7 +252,7 @@ namespace WinFormsApp1
                 if (viewAttacks)
                 {
                     IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
-                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.OfType<IAttacker>())
+                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Where(e => e.HasBehavior<IAttacker>()))
                     {
                         IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
                         if (enemy.HasBehavior<IMovable>(out IMovable enemyMovable))
@@ -265,10 +265,10 @@ namespace WinFormsApp1
                     foreach (var p in attStr)
                         e.Graphics.DrawString(p.Value.ToString("0.0"), f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
                 }
-                if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
                     ranges[range].AddRange(AddAttacks(attacker, moveTiles));
 
-                if (SelTile.Piece.HasBehavior<IRepair>(out IRepair r))
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IRepair>(out IRepair r))
                     if (moveTiles.Contains(MouseTile))
                         ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(r.Range)));
                     else
@@ -570,7 +570,7 @@ namespace WinFormsApp1
             {
                 SelTile = clicked;
             }
-            else if (e.Button == MouseButtons.Right && SelTile != null && clicked != null)
+            else if (e.Button == MouseButtons.Right && SelTile != null && SelTile.Piece != null && clicked != null)
             {
                 if (SelTile.Piece.HasBehavior<IMovable>(out IMovable movable))
                 {

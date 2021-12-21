@@ -10,6 +10,7 @@ using ClassLibrary1.Pieces.Players;
 
 namespace ClassLibrary1
 {
+    [Serializable]
     public class Research
     {
         public readonly Game Game;
@@ -92,15 +93,14 @@ namespace ClassLibrary1
 
             return result;
         }
+        private static double GetResearchMult(double research)
+        {
+            return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
+        }
 
         internal bool HasType(Type research)
         {
             return _hasTypes.Contains(research);
-        }
-
-        private static double GetResearchMult(double research)
-        {
-            return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
         }
 
         private static readonly Type[] BaseTypes = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.FactoryConstructor, Type.ExtractorAutoRepair, Type.FactoryAutoRepair, Type.TurretAutoRepair };
@@ -123,12 +123,12 @@ namespace ClassLibrary1
             { Type.MechAP, new Type[] { Type.MechRange } },
             { Type.MechSP, new Type[] { Type.MechRange } },
 
-            { Type.TurretDefense, new Type[] { Type.Turret, Type.MechShields, Type.MechArmor } },
+            { Type.TurretDefense, new Type[] { Type.Turret, Type.MechHits } },
             { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechAP, Type.MechSP } },
             { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange } },
 
             { Type.ConstructorMove, new Type[] { Type.Constructor, Type.MechMove } },
-            { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechShields, Type.MechArmor } },
+            { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechArmor } },
             { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorDefense, Type.Factory } },
             { Type.FactoryRepair, new Type[] { Type.Factory, Type.ConstructorRepair } },
             { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryRepair, Type.ConstructorMove } },
@@ -138,7 +138,7 @@ namespace ClassLibrary1
             { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.ExtractorAutoRepair } },
             { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.FactoryAutoRepair, Type.TurretDefense } },
             { Type.ConstructorCost, new Type[] { Type.Constructor, Type.BuildingCost } },
-            { Type.BuildingHits, new Type[] { Type.ConstructorCost, Type.Turret, Type.MechVision, Type.MechHits } },
+            { Type.BuildingHits, new Type[] { Type.ConstructorCost, Type.Turret, Type.MechVision } },
             { Type.ExtractorValue, new Type[] { Type.BuildingHits, Type.MechResilience } },
         };
 

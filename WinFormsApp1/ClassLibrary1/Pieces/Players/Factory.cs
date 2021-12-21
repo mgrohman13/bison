@@ -50,12 +50,12 @@ namespace ClassLibrary1.Pieces.Players
         }
         private void Unlock(Research research)
         {
+            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
+                SetBehavior(new Builder.BuildMech(this));
             if (!HasBehavior<IRepair>() && research.HasType(Research.Type.FactoryRepair))
                 SetBehavior(new Repair(this, GetValues(Game).GetRepair(_rangeMult)));
             if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
                 SetBehavior(new Builder.BuildConstructor(this));
-            if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
-                SetBehavior(new Builder.BuildMech(this));
         }
         private static Values GetValues(Game game)
         {
@@ -69,18 +69,22 @@ namespace ClassLibrary1.Pieces.Players
             Foundation.NewFoundation(tile);
         }
 
-        double IKillable.IRepairable.RepairCost => GetRepairCost();
-        public double GetRepairCost()
+        double IKillable.IRepairable.RepairCost
         {
-            Cost(Game, out double energy, out double mass);
-            return Consts.GetRepairCost(energy, mass);
+            get
+            {
+                Cost(Game, out double energy, out double mass);
+                return Consts.GetRepairCost(energy, mass);
+            }
         }
+        bool IKillable.IRepairable.AutoRepair => Game.Player.Research.HasType(Research.Type.FactoryAutoRepair);
 
         public override string ToString()
         {
             return "Factory " + PieceNum;
         }
 
+        [Serializable]
         private class Values : IUpgradeValues
         {
             private double energy, mass, vision;
@@ -126,7 +130,7 @@ namespace ClassLibrary1.Pieces.Players
                 researchMult = Math.Pow(researchMult, .5);
                 double hits = 50 * researchMult;
                 this.vision = 6 * researchMult;
-                this.killable = new(hits, .52);
+                this.killable = new(hits, .5);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {

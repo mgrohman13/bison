@@ -11,7 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     public abstract class PlayerPiece : Piece
     {
         private readonly double _vision;
-        public double Vision => _vision;
+        public double Vision => Consts.GetDamagedValue(this, _vision, 0);
 
         internal PlayerPiece(Map.Tile tile, double vision)
             : base(tile.Map.Game.Player, tile)
@@ -19,21 +19,17 @@ namespace ClassLibrary1.Pieces.Players
             this._vision = vision;
         }
 
-        public virtual void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        public virtual void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)
         {
             GetUpkeep(ref energyUpk, ref massUpk);
         }
 
-        public virtual double GetRepairInc()
+        public double GetRepairInc()
         {
+            double result = 0;
             if (this.HasBehavior<IKillable>(out IKillable killable))
-            {
-                double repair = Game.Player.Pieces.OfType<IRepair>().Sum(r => r.GetRepairInc(killable));
-                if (repair > killable.HitsMax - killable.HitsCur)
-                    repair = killable.HitsMax - killable.HitsCur;
-                return repair;
-            }
-            return 0;
+                killable.Repair(false, out result, out _);
+            return result;
         }
 
         internal abstract void OnResearch(Research.Type type);

@@ -66,9 +66,10 @@ namespace WinFormsApp1
             }
 
             IBuilder.IBuildExtractor buildExtractor = builder.GetBehavior<IBuilder.IBuildExtractor>();
-            IBuilder.IBuildFoundation buildFoundation = builder.GetBehavior<IBuilder.IBuildFoundation>();
+            IBuilder.IBuildFactory buildFactory = builder.GetBehavior<IBuilder.IBuildFactory>();
+            IBuilder.IBuildTurret buildTurret = builder.GetBehavior<IBuilder.IBuildTurret>();
             bool flag = true;
-            if (buildExtractor != null || buildFoundation != null)
+            if (buildExtractor != null || buildFactory != null || buildTurret != null)
                 for (int a = 0; a < 3; a++)
                 {
                     int x = builder.Tile.X;
@@ -92,15 +93,16 @@ namespace WinFormsApp1
                             }
                             else
                             {
-                                actual = buildFoundation;
                                 if (flag)
                                 {
+                                    actual = buildFactory;
                                     name = "Factory";
                                     Factory.Cost(Program.Game, out energy, out mass);
                                     flag = !flag;
                                 }
                                 else
                                 {
+                                    actual = buildTurret;
                                     name = "Turret";
                                     Turret.Cost(Program.Game, out energy, out mass);
                                     flag = !flag;
@@ -215,10 +217,10 @@ namespace WinFormsApp1
                         this.result = ((IBuilder.IBuildExtractor)builder).Build(tile.Piece as Resource);
                         break;
                     case "Factory":
-                        this.result = ((IBuilder.IBuildFoundation)builder).BuildFactory(tile.Piece as Foundation);
+                        this.result = ((IBuilder.IBuildFactory)builder).Build(tile.Piece as Foundation);
                         break;
                     case "Turret":
-                        this.result = ((IBuilder.IBuildFoundation)builder).BuildTurret(tile.Piece as Foundation);
+                        this.result = ((IBuilder.IBuildTurret)builder).Build(tile.Piece as Foundation);
                         break;
                 }
                 this.Close();

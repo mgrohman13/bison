@@ -13,8 +13,6 @@ namespace ClassLibrary1.Pieces
         public double Rate { get; }
         public double RateBase { get; }
 
-        internal double GetRepairInc(IKillable killable);
-
         internal void Upgrade(Values repair);
 
         [Serializable]

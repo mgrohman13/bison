@@ -35,7 +35,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         public static void Cost(Game game, out double energy, out double mass, MechBlueprint blueprint)
         {
-            Cost(out energy, out mass, blueprint, game.Player.GetResearchMult());
+            Cost(out energy, out mass, blueprint, 1);
         }
         internal static void Cost(out double energy, out double mass, MechBlueprint blueprint, double researchMult)
         {
@@ -91,22 +91,35 @@ namespace ClassLibrary1.Pieces.Players
             mass = (total - energy) / Consts.MechMassDiv;
         }
 
-        double IKillable.IRepairable.RepairCost => GetRepairCost();
-        public double GetRepairCost()
+        internal override void OnResearch(Research.Type type)
         {
-            IKillable killable = GetBehavior<IKillable>();
-            IAttacker attacker = GetBehavior<IAttacker>();
-            IMovable movable = GetBehavior<IMovable>();
-            MechBlueprint blueprint = new(Vision, new(killable.HitsMax, Consts.MechResilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit),
-                attacker.Attacks.Select(a => new IAttacker.Values(a.Damage, a.ArmorPierce, a.ShieldPierce, a.Dev, a.Range)).ToList(),
-                new(movable.MoveInc, movable.MoveMax, movable.MoveLimit));
-            Cost(out double energy, out double mass, blueprint, Game.Player.GetResearchMult());
-            return Consts.GetRepairCost(energy, mass);
+            //throw new NotImplementedException();
         }
 
-        public override void GenerateResources(ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc, ref double researchUpk)
+        double IKillable.IRepairable.RepairCost
         {
-            base.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc, ref researchUpk);
+            get
+            {
+                IKillable killable = GetBehavior<IKillable>();
+                IAttacker attacker = GetBehavior<IAttacker>();
+                IMovable movable = GetBehavior<IMovable>();
+                MechBlueprint blueprint = new(Vision, new(killable.HitsMax, Consts.MechResilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit),
+                    attacker.Attacks.Select(a => new IAttacker.Values(a.Damage, a.ArmorPierce, a.ShieldPierce, a.Dev, a.Range)).ToList(),
+                    new(movable.MoveInc, movable.MoveMax, movable.MoveLimit));
+                Cost(out double energy, out double mass, blueprint, 1);
+                return Consts.GetRepairCost(energy, mass);
+            }
+        }
+        bool IKillable.IRepairable.AutoRepair => false;
+
+        internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
+        {
+            base.GetUpkeep(ref energyUpk, ref massUpk);
+            energyUpk += Consts.BaseConstructorUpkeep;
+        }
+        internal override void EndTurn(ref double energyUpk, ref double massUpk)
+        {
+            base.EndTurn(ref energyUpk, ref massUpk);
             energyUpk += Consts.BaseMechUpkeep;
         }
 

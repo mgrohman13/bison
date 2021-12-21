@@ -29,15 +29,14 @@ namespace WinFormsApp1
             Info.Refresh();
             base.Refresh();
 
-            Program.Game.Player.GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc, out double researchUpk);
+            Program.Game.Player.GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc);
             energyInc -= energyUpk;
             massInc -= massUpk;
-            researchInc -= researchUpk;
             this.lblEnergy.Text = Format(Program.Game.Player.Energy);
             FormatInc(lblEnergyInc, energyInc);
             this.lblMass.Text = Format(Program.Game.Player.Mass);
             FormatInc(lblMassInc, massInc);
-            this.lblResearch.Text = Format(Program.Game.Player.Research);
+            this.lblResearch.Text = Format(Program.Game.Player.Research.ResearchCur);
             FormatInc(lblResearchInc, researchInc);
         }
         private static void FormatInc(Label label, double inc)

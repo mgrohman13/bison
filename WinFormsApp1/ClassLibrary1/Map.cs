@@ -279,7 +279,7 @@ namespace ClassLibrary1
                         Tile t2;
                         do
                             t2 = GetTile(tile.X + Game.Rand.GaussianInt(Consts.ResourceAvgDist), tile.Y + Game.Rand.GaussianInt(Consts.ResourceAvgDist));
-                        while (t2 == null || t2.Visible || t2.Piece != null);
+                        while (Game.InvalidStartTile(t2));
                         Foundation.NewFoundation(t2);
                     }
 
@@ -381,6 +381,15 @@ namespace ClassLibrary1
             public readonly int X, Y;
             public Piece Piece => Map.GetPiece(X, Y);
             public bool Visible => Map.Visible(X, Y);
+
+            internal bool InCenter
+            {
+                get
+                {
+                    return Map.CheckX(X) && Map.CheckY(Y);
+                }
+            }
+
             static Tile()
             {
                 NewTile = (map, x, y) => new Tile(map, x, y);
