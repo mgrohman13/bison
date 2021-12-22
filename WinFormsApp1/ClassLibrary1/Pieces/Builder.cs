@@ -23,7 +23,7 @@ namespace ClassLibrary1.Pieces
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
-            return this as T;
+            return _piece.GetBehavior<T>();
         }
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)

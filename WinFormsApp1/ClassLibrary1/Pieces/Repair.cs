@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
-            return this as T;
+            return _piece.GetBehavior<T>();
         }
 
         void IRepair.Upgrade(IRepair.Values repair)

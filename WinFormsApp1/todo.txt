@@ -8,6 +8,8 @@ repair randomness leaves some left 50% of the time
 reapri doesnt stack? diminishing returns?
 all buildings except core self repair?
 
+constructor shouldnt auto upg?
+
 mulitple repairers can spend too much mass when target goes to full
 hard to see red on red one-hex range overlap
 swap q and e?

@@ -229,7 +229,7 @@ namespace WinFormsApp1
                     var ar = attacker.Attacks.Where(a => !a.Attacked);
                     if (attacker.Piece.IsEnemy && moveTiles.Any())
                     {
-                        var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > ((IMovable)attacker).MoveCur - 1);
+                        var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > attacker.Piece.GetBehavior<IMovable>().MoveCur - 1);
                         foreach (var a in ar)
                         {
                             IEnumerable<Tile> e = moveEdge.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);

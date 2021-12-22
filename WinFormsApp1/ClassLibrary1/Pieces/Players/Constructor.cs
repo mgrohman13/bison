@@ -17,16 +17,10 @@ namespace ClassLibrary1.Pieces.Players
         private Constructor(Map.Tile tile, Values values, bool starter)
             : base(tile, values.Vision)
         {
-            if (starter)
-            {
-                this._defenseType = true;
-                this._rangeMult = 1;
-            }
-            else
-            {
-                this._defenseType = !Game.Player.Research.HasType(Research.Type.MechArmor) || Game.Rand.Bool();
+            this._defenseType = Game.Rand.Bool();
+            this._rangeMult = 1;
+            if (!starter)
                 this._rangeMult = Game.Rand.GaussianOE(values.RepairRange, .21, .26, 1) / values.RepairRange;
-            }
 
             SetBehavior(
                 new Killable(this, values.GetKillable(Game.Player.Research, _defenseType)),
@@ -116,8 +110,8 @@ namespace ClassLibrary1.Pieces.Players
             public double RepairRange => repair.Range;
             public IKillable.Values GetKillable(Research research, bool defenseType)
             {
-                double armor = research.HasType(Research.Type.MechArmor) && !defenseType ? killable.Armor : 0;
-                bool shields = research.HasType(Research.Type.MechShields) && defenseType;
+                double armor = research.HasType(Research.Type.ConstructorDefense) && !defenseType ? killable.Armor : 0;
+                bool shields = research.HasType(Research.Type.ConstructorDefense) && defenseType;
                 double shieldInc = shields ? killable.ShieldInc : 0;
                 double shieldMax = shields ? killable.ShieldMax : 0;
                 double shieldLimit = shields ? killable.ShieldLimit : 0;
@@ -147,15 +141,15 @@ namespace ClassLibrary1.Pieces.Players
                 researchMult = Math.Pow(researchMult, .5);
                 this.energy = 750 / researchMult;
                 this.mass = 750 / researchMult;
-                this.vision = 4.5 * researchMult;
             }
             private void UpgradeConstructorDefense(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .8);
                 double armor = 1 - Math.Pow(.65, researchMult);
-                double shieldInc = 1.5 * researchMult;
-                double shieldMax = 25 * researchMult;
-                double shieldLimit = 50 * researchMult;
+                double shieldInc = 1.69 * researchMult;
+                double shieldMax = 26 * researchMult;
+                double shieldLimit = 52 * researchMult;
+                this.vision = 4.5 * researchMult;
                 this.killable = new(50, .35, armor, shieldInc, shieldMax, shieldLimit);
             }
             private void UpgradeConstructorMove(double researchMult)

@@ -119,8 +119,8 @@ namespace ClassLibrary1.Pieces.Players
                     double damage = attack.Damage / rangeMult[a];
                     double dev = Game.Rand.Weighted(.13);
                     double range = attack.Range * rangeMult[a];
-                    double ap = research.HasType(Research.Type.MechAP) ? attack.ArmorPierce : 0;
-                    double sp = research.HasType(Research.Type.MechSP) ? attack.ShieldPierce : 0;
+                    double ap = research.HasType(Research.Type.TurretAttack) ? attack.ArmorPierce : 0;
+                    double sp = research.HasType(Research.Type.TurretAttack) ? attack.ShieldPierce : 0;
                     result[a] = new(damage, ap, sp, dev, range);
                 }
                 return result;
@@ -166,8 +166,8 @@ namespace ClassLibrary1.Pieces.Players
                 for (int a = 0; a < 2; a++)
                 {
                     double damage = a == 0 ? 3.9 : 6.5;
-                    double armorPierce = a == 0 ? .1 : 0;
-                    double shieldPierce = a == 0 ? 0 : .1;
+                    double armorPierce = a == 0 ? .13 : 0;
+                    double shieldPierce = a == 0 ? 0 : .13;
 
                     damage *= researchMult;
                     if (armorPierce > 0)

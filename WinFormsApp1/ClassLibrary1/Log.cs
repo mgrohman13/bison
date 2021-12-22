@@ -39,7 +39,7 @@ namespace ClassLibrary1
 
         internal void LogAttack(IAttacker attacker, IKillable defender, double baseDamage, double randDmg, double randShieldDmg, double damage, double shieldDmg)
         {
-            string statement = string.Format("{0}. {1} -> {2} ({3:0.0})" + Environment.NewLine + "      {4}{5}", Game.Turn, attacker.ToString(), defender.ToString(), baseDamage,
+            string statement = string.Format("{0}. {1} -> {2} ({3:0.0})" + Environment.NewLine + "      {4}{5}", Game.Turn, attacker.Piece.ToString(), defender.Piece.ToString(), baseDamage,
                 damage > 0 ? string.Format("{0:0.0} - {1:0.0} = {2:0.0} ({3:0.0})", defender.HitsCur + damage, damage, defender.HitsCur, randDmg) : defender.HitsCur.ToString("0.0"),
                 shieldDmg > 0 ? string.Format(" ; {0:0.0} - {1:0.0} = {2:0.0} ({3:0.0})", defender.ShieldCur + shieldDmg, shieldDmg, defender.ShieldCur, randShieldDmg) : "");
             Debug.WriteLine(statement);

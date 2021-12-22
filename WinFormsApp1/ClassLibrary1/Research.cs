@@ -105,6 +105,8 @@ namespace ClassLibrary1
                     continue;
                 if (Dependencies[available].All(d => _researchedTypes.ContainsKey(d)))
                 {
+                    if (_progress.ContainsKey(available) && this._progress[available] > 0)
+                        ;
                     this._progress.TryAdd(available, 0);
                     this._options.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin));
                     if (_options.Count == choices)
@@ -180,12 +182,12 @@ namespace ClassLibrary1
             { Type.MechRange, new Type[] { Type.MechSP } },
             { Type.MechAP, new Type[] { Type.MechRange } },
 
-            { Type.TurretDefense, new Type[] { Type.Turret, Type.MechHits } },
-            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechAP, Type.MechSP } },
+            { Type.TurretDefense, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor } },
+            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechSP, Type.MechAP } },
             { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange } },
 
             { Type.ConstructorMove, new Type[] { Type.Constructor, Type.MechMove } },
-            { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechArmor } },
+            { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechShields, Type.MechVision, Type.MechArmor } },
             { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorDefense, Type.Factory } },
             { Type.FactoryRepair, new Type[] { Type.Factory, Type.ConstructorRepair } },
             { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryRepair, Type.ConstructorMove } },
@@ -195,7 +197,7 @@ namespace ClassLibrary1
             { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.ExtractorAutoRepair } },
             { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.FactoryAutoRepair, Type.TurretDefense } },
             { Type.ConstructorCost, new Type[] { Type.Constructor, Type.BuildingCost } },
-            { Type.BuildingHits, new Type[] { Type.ConstructorCost, Type.Turret, Type.MechVision } },
+            { Type.BuildingHits, new Type[] { Type.ConstructorCost, Type.Turret, Type.MechVision, Type.MechHits } },
             { Type.ExtractorValue, new Type[] { Type.BuildingHits, Type.MechResilience } },
         };
 
@@ -203,42 +205,42 @@ namespace ClassLibrary1
         // int value is used as relative cost
         public enum Type
         {
-            CoreShields = 50,
+            CoreShields = 100,
 
-            Mech = 104,
-            MechVision = 61,
-            MechMove = 76,
-            MechHits = 64,
-            MechArmor = 74,
-            MechResilience = 81,
-            MechShields = 51,
-            MechDamage = 66,
-            MechAP = 91,
-            MechSP = 71,
-            MechRange = 86,
+            Mech = 169,
+            MechVision = 106,
+            MechMove = 127,
+            MechHits = 113,
+            MechArmor = 124,
+            MechResilience = 131,
+            MechShields = 102,
+            MechDamage = 115,
+            MechAP = 138,
+            MechSP = 120,
+            MechRange = 139,
 
-            Constructor = 150,
-            ConstructorCost = 90,
-            ConstructorMove = 160,
-            ConstructorDefense = 140,
-            ConstructorRepair = 170,
+            Constructor = 250,
+            ConstructorCost = 190,
+            ConstructorMove = 240,
+            ConstructorDefense = 230,
+            ConstructorRepair = 270,
 
-            Turret = 130,
-            TurretAutoRepair = 165,
-            TurretDefense = 60,
-            TurretAttack = 70,
-            TurretRange = 80,
+            Turret = 200,
+            TurretAutoRepair = 285,
+            TurretDefense = 110,
+            TurretAttack = 130,
+            TurretRange = 140,
 
-            Factory = 175,
-            FactoryAutoRepair = 105,
-            FactoryRepair = 120,
-            FactoryConstructor = 200,
+            Factory = 300,
+            FactoryAutoRepair = 205,
+            FactoryRepair = 165,
+            FactoryConstructor = 350,
 
-            ExtractorAutoRepair = 135,
-            ExtractorValue = 190,
+            ExtractorAutoRepair = 245,
+            ExtractorValue = 335,
 
-            BuildingCost = 95,
-            BuildingHits = 75,
+            BuildingCost = 135,
+            BuildingHits = 125,
         }
     }
 }

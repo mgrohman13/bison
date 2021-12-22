@@ -33,7 +33,7 @@ namespace ClassLibrary1.Pieces
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
-            return this as T;
+            return _piece.GetBehavior<T>();
         }
 
         public double HitsCur => _hitsCur;
@@ -50,10 +50,8 @@ namespace ClassLibrary1.Pieces
         void IKillable.Upgrade(IKillable.Values killable)
         {
             double hitsPct = HitsCur / HitsMax;
-            double shieldPct = ShieldMax > 0 ? ShieldCur / ShieldMax : 0;
             this._values = killable;
             _hitsCur = HitsMax * hitsPct;
-            _shieldCur = ShieldMax * shieldPct;
         }
 
         void IKillable.Damage(double damage, double shieldDmg)
