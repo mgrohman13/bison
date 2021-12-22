@@ -84,14 +84,14 @@ namespace WinFormsApp1
                     lbl3.Text = "Move";
                     lblInf3.Text = string.Format("{0} / {1} / {2} +{3}{4}",
                             Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()),
-                            CheckBase(movable.MoveInc, movable.GetInc()));
+                            CheckBase(movable.MoveIncBase, movable.GetInc()));
                 }
                 if (playerPiece != null)
                 {
                     lbl4.Show();
                     lblInf4.Show();
                     lbl4.Text = "Vision";
-                    lblInf4.Text = string.Format("{0}", Format(playerPiece.Vision));
+                    lblInf4.Text = string.Format("{0}{1}", Format(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision));
 
                     if (!(playerPiece is Extractor))
                     {

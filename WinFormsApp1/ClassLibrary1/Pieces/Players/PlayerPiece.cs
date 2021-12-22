@@ -11,7 +11,8 @@ namespace ClassLibrary1.Pieces.Players
     public abstract class PlayerPiece : Piece
     {
         private readonly double _vision;
-        public double Vision => Consts.GetDamagedValue(this, _vision, 0);
+        public double Vision => Consts.GetDamagedValue(this, VisionBase, 0);
+        public double VisionBase => _vision;
 
         internal PlayerPiece(Map.Tile tile, double vision)
             : base(tile.Map.Game.Player, tile)

@@ -41,7 +41,7 @@ namespace ClassLibrary1.Pieces
         public double Resilience => _values.Resilience;
         public double Armor => _values.Armor;
         public double ShieldCur => _shieldCur;
-        public double ShieldInc => Consts.GetDamagedValue(Piece, _values.ShieldInc, 0);
+        public double ShieldInc => Consts.GetDamagedValue(Piece, ShieldIncBase, 0);
         public double ShieldIncBase => _values.ShieldInc;
         public double ShieldMax => _values.ShieldMax;
         public double ShieldLimit => _values.ShieldLimit;

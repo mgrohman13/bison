@@ -13,6 +13,7 @@ namespace ClassLibrary1.Pieces
     {
         public double MoveCur { get; }
         public double MoveInc { get; }
+        public double MoveIncBase { get; }
         public double MoveMax { get; }
         public double MoveLimit { get; }
 

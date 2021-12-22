@@ -76,8 +76,17 @@ namespace ClassLibrary1
 
         public static double GetDamagedValue(Piece piece, double value, double min)
         {
+            return GetDamagedValue(piece, value, min, false);
+        }
+        public static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
+        {
             if (piece.HasBehavior<IKillable>(out IKillable killable))
-                return min + (value - min) * Math.Pow(killable.HitsCur / killable.HitsMax, 1 - killable.Resilience);
+            {
+                double resilience = killable.Resilience;
+                if (sqrt)
+                    resilience = Math.Sqrt(resilience);
+                return min + (value - min) * Math.Pow(killable.HitsCur / killable.HitsMax, 1 - resilience);
+            }
             return value;
         }
 
