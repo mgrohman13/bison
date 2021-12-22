@@ -20,10 +20,10 @@ namespace ClassLibrary1.Pieces.Terrain
             return obj;
         }
         public override void GetCost(out double energy, out double mass)
-        {
-            double mult = CostMult(Consts.BiomassEnergyInc);
-            energy = Consts.BiomassExtractorEnergyCost * mult;
-            mass = Consts.BiomassExtractorMassCost * mult;
+        { 
+            energy = Consts.BiomassExtractorEnergyCost;
+            mass = Consts.BiomassExtractorMassCost;
+            GetCost(Consts.BiomassEnergyInc, ref energy, ref mass);
         }
 
         public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)

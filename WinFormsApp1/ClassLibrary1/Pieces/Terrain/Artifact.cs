@@ -21,9 +21,9 @@ namespace ClassLibrary1.Pieces.Terrain
         }
         public override void GetCost(out double energy, out double mass)
         {
-            double mult = CostMult(Consts.ArtifactResearchInc);
-            energy = Consts.ArtifactExtractorEnergyCost * mult;
-            mass = Consts.ArtifactExtractorMassCost * mult;
+            energy = Consts.ArtifactExtractorEnergyCost;
+            mass = Consts.ArtifactExtractorMassCost;
+            GetCost(Consts.ArtifactResearchInc, ref energy, ref mass);
         }
 
         public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)

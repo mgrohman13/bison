@@ -11,6 +11,8 @@ namespace ClassLibrary1.Pieces.Terrain
     {
         public readonly double Sustain;
 
+        private readonly double _energyMult, _massMult;
+
         private double _value;
         public double Value => _value;
 
@@ -23,6 +25,8 @@ namespace ClassLibrary1.Pieces.Terrain
             double distance = Math.Pow((tile.GetDistance(0, 0) + Consts.ResourceDistAdd) / Consts.ResourceDistDiv, Consts.ResourceDistPow);
             value *= distance;
 
+            this._energyMult = Game.Rand.GaussianOE(1, .065, .021);
+            this._massMult = Game.Rand.GaussianOE(1, .039, .013);
             this._value = value;
             this.Sustain = sustain;
         }
@@ -37,10 +41,13 @@ namespace ClassLibrary1.Pieces.Terrain
             this._value -= extract;
         }
 
-        protected double CostMult(double baseValue)
+        protected virtual void GetCost(double baseValue, ref double energy, ref double mass)
         {
-            double min = Math.Sqrt(baseValue);
-            return Math.Pow((this.Value + min) / (baseValue + min), .91);
+            double mult = Math.Sqrt(baseValue);
+            mult = Math.Pow((this.Value + mult) / (baseValue + mult), .91);
+            mult *= Math.Pow(Sustain, .26);
+            energy *= mult * _energyMult;
+            mass *= mult * _massMult;
         }
 
         public abstract void GetCost(out double energy, out double mass);
