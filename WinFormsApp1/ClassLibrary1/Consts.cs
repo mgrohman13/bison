@@ -16,10 +16,10 @@ namespace ClassLibrary1
         public const int MinMapCoord = 9;
         public const double ResourceAvgDist = 21;
 
-        public const double ResearchFactor = 3900;
+        public const double ResearchFactor = 2600;
 
         public const double DifficultyTurns = 65;
-        public const double DifficultyPow = 1.69;
+        public const double DifficultyPow = 2.1;
         public const double EnemyEnergy = 169;
 
         public const double HitsIncDev = .065;
@@ -28,8 +28,8 @@ namespace ClassLibrary1
         public const double ShieldLimitPow = 1.69;
         public const double MechResilience = .52;
 
-        public const double ResourceDistAdd = 26;
-        public const double ResourceDistDiv = 78;
+        public const double ResourceDistAdd = 21;
+        public const double ResourceDistDiv = 52;
         public const double ResourceDistPow = .39;
         public const double ResourceSustainValuePow = .169;
         public const double ExtractTurns = 39;
@@ -38,23 +38,23 @@ namespace ClassLibrary1
         public const double ResourceDev = .21;
         public const double ResourceOE = .26;
 
-        public const double BiomassEnergyInc = 100;
-        public const double BiomassSustain = .7;
+        public const double BiomassEnergyInc = 104;
+        public const double BiomassSustain = .78;
         public const double BiomassResearchIncDiv = 50;
-        public const double MetalMassInc = 50;
-        public const double MetalSustain = 1.1;
+        public const double MetalMassInc = 52;
+        public const double MetalSustain = 1.17;
         public const double MetalEnergyUpkDiv = 10;
-        public const double ArtifactResearchInc = 10;
-        public const double ArtifactSustain = 1.6;
+        public const double ArtifactResearchInc = 9.1;
+        public const double ArtifactSustain = 1.69;
         public const double ArtifactMassIncDiv = 3;
         public const double ArtifactEnergyUpkDiv = 1;
 
-        public const double BiomassExtractorEnergyCost = 600;
-        public const double BiomassExtractorMassCost = 600;
-        public const double MetalExtractorEnergyCost = 1200;
-        public const double MetalExtractorMassCost = 300;
-        public const double ArtifactExtractorEnergyCost = 1800;
-        public const double ArtifactExtractorMassCost = 150;
+        public const double BiomassExtractorEnergyCost = 780;
+        public const double BiomassExtractorMassCost = 650;
+        public const double MetalExtractorEnergyCost = 1300;
+        public const double MetalExtractorMassCost = 390;
+        public const double ArtifactExtractorEnergyCost = 2100;
+        public const double ArtifactExtractorMassCost = 169;
 
         //public const double EnergyPerMass = 20;
         //public const double MassPerEnergy = 3;

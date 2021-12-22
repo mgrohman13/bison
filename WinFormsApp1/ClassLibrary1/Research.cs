@@ -16,91 +16,148 @@ namespace ClassLibrary1
         public readonly Game Game;
 
         private Type _researching;
-        private readonly Dictionary<Type, double> _research;
+        private readonly Dictionary<Type, double> _researchedTypes;
+        private readonly Dictionary<Type, double> _progress;
+        private readonly Dictionary<Type, double> _options;
         private double _researchCur;
-        //private double _researchLast;
-        private double _researchNext;
+
+        private double _researchLast;
         private double _nextAvg;
 
-        private readonly HashSet<Type> _hasTypes;
-
-        public IReadOnlyCollection<Type> Available => _research.Keys;
+        public Type Researching
+        {
+            get { return _researching; }
+            set
+            {
+                if (!Available.Contains(value))
+                    throw new Exception();
+                _researching = value;
+            }
+        }
+        public IReadOnlyCollection<Type> Available => _options.Keys;
         public double ResearchCur => _researchCur;
-        //public double ResearchLast => _researchLast;
-        public double ResearchNext => _researchNext;
+        public double GetLast(Type type)
+        {
+            _researchedTypes.TryGetValue(type, out double result);
+            return result;
+        }
+        public double GetProgress(Type type)
+        {
+            _progress.TryGetValue(type, out double result);
+            return result;
+        }
+        public double GetCost(Type type)
+        {
+            if (_options.TryGetValue(type, out double result))
+                return result;
+            throw new Exception();
+        }
 
         public Research(Game Game)
         {
             this.Game = Game;
 
             this._researching = Type.Mech;
-            this._research = new() { { _researching, 0 } };
+            this._progress = new() { { _researching, 0 } };
+            this._options = new() { { _researching, 25 } };
             this._researchCur = 0;
-            //this._researchLast = 0;
-            this._researchNext = 25;
+            this._researchLast = 0;
             this._nextAvg = 26;
 
-            this._hasTypes = new();
+            this._researchedTypes = new();
         }
 
         internal Type? AddResearch(double research)
         {
-            Type? result = null;
-
-            const int choices = 3;
-
             this._researchCur += research;
-            this._research[_researching] += research;
+            this._progress[_researching] += research;
 
-            if (this._research[_researching] >= ResearchNext)
+            Type? result = null;
+            if (_progress[_researching] >= _options[_researching])
             {
-                _hasTypes.Add(_researching);
-                Game.Player.OnResearch(_researching, GetResearchMult(ResearchNext));
-
-                result = _researching;
-                _research.Clear();
-                foreach (Type available in Game.Rand.Iterate(Enum.GetValues<Type>()))
-                {
-                    if (_hasTypes.Contains(available) && BaseTypes.Contains(available))
-                        continue;
-                    static bool IsMech(Type type) => type.ToString().StartsWith("Mech");
-                    if (_research.Count == choices - 1 && (IsMech(available) ? _research.Keys.All(IsMech) : !_research.Keys.Any(IsMech)))
-                        continue;
-                    if (Dependencies[available].All(d => _hasTypes.Contains(d)))
-                    {
-                        _research.Add(available, ResearchCur);
-                        if (_research.Count == 1)
-                            _researching = available;
-                        else if (_research.Count == choices)
-                            break;
-                    }
-                }
-
-                static double GetNext(double v) => Math.Pow(v * 2.6 + 130 - v, .65);
-                double avg = GetNext(_nextAvg);
-                this._nextAvg += avg;
-
-                avg = (avg + GetNext(ResearchNext)) / 2.0;
-                double min = ResearchCur - ResearchNext + Game.Rand.GaussianOE(30, .13, .13, 1);
-                if (avg > min)
-                {
-                    double devDiv = Math.Pow(ResearchNext + avg, .21);
-                    avg = Game.Rand.GaussianOE(avg, 1.3 / devDiv, 2.1 / devDiv / devDiv, min);
-                    avg = (ResearchNext + avg + _nextAvg) / 2.0 - ResearchNext;
-                }
-                this._researchNext += Math.Max(avg, min);
+                result = OnResearch(out double excess);
+                GetNextChoices(excess);
             }
-
             return result;
         }
-        private static double GetResearchMult(double research)
+        private Type OnResearch(out double excess)
         {
-            return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
+            this._researchLast += _options[_researching];
+            this._researchedTypes.Add(_researching, _researchLast);
+            excess = _progress[_researching] - _options[_researching];
+            this._progress.Remove(_researching);
+            Game.Player.OnResearch(_researching, (_researchLast + Consts.ResearchFactor) / Consts.ResearchFactor);
+            return _researching;
         }
+        private void GetNextChoices(double excess)
+        {
+            const int choices = 3;
+
+            GetCostParams(excess, out double nextAvg, out double nextDev, out double nextOE, out double nextMin);
+
+            this._options.Clear();
+            foreach (Type available in Game.Rand.Iterate(Enum.GetValues<Type>()))
+            {
+                if (_researchedTypes.ContainsKey(available) && BaseTypes.Contains(available))
+                    continue;
+                static bool IsMech(Type type) => type.ToString().StartsWith("Mech");
+                if (_options.Count == choices - 1 && (IsMech(available) ? _options.Keys.All(IsMech) : !_options.Keys.Any(IsMech)))
+                    continue;
+                if (Dependencies[available].All(d => _researchedTypes.ContainsKey(d)))
+                {
+                    this._progress.TryAdd(available, 0);
+                    this._options.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin));
+                    if (_options.Count == choices)
+                        break;
+                    if (_options.Count == 1)
+                    {
+                        if (this._progress[available] > 0 && excess > 0)
+                            ;
+                        this._progress[available] += excess;
+                        this._researching = available;
+                    }
+                }
+            }
+        }
+        private void GetCostParams(double excess, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
+        {
+            nextAvg = GetNext(_nextAvg);
+            this._nextAvg += nextAvg;
+
+            double devDiv = Math.Pow(_researchCur + nextAvg, .21);
+            nextDev = 1.04 / devDiv;
+            nextOE = 1.69 / devDiv / devDiv;
+
+            nextMin = 1 + Math.Max(excess, 0);
+            nextMin = Game.Rand.GaussianOE(nextMin * 1.3 + 26, .13, .13, nextMin);
+
+            nextAvg = (GetNext(_researchCur) + nextAvg) / 2.0;
+            nextAvg = Game.Rand.GaussianOE(nextAvg, nextDev * 2.1, nextOE * 1.3, nextAvg > nextMin ? nextMin : 0);
+            nextAvg = (_researchLast + nextAvg + _nextAvg) / 2.0 - _researchLast;
+        }
+        private double CalcCost(Type type, double nextAvg, double nextDev, double nextOE, double nextMin)
+        {
+            _researchedTypes.TryGetValue(type, out double last);
+            double mult = (last + GetNext(last)) / (_researchLast + nextAvg);
+            mult = 1 + mult * mult;
+            mult *= (double)type / _avgTypeCost;
+            double add = Game.Rand.OE(13 * mult);
+
+            nextAvg = nextAvg * mult + add;
+            double progress = _progress[type];
+            nextMin += progress;
+            if (nextAvg > nextMin)
+                nextAvg = Game.Rand.GaussianOE(nextAvg, nextDev, nextOE, nextMin);
+            else
+                nextAvg = nextMin + add;
+
+            return nextAvg;
+        }
+        private static double GetNext(double v) => Math.Pow(v * 1.69 + 130, .65);
 
         internal bool HasType(Type research)
         {
-            return _hasTypes.Contains(research);
+            return _researchedTypes.ContainsKey(research);
         }
 
         private static readonly Type[] BaseTypes = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.FactoryConstructor, Type.ExtractorAutoRepair, Type.FactoryAutoRepair, Type.TurretAutoRepair };
@@ -119,9 +176,9 @@ namespace ClassLibrary1
             { Type.MechArmor, new Type[] { Type.MechHits } },
             { Type.MechResilience, new Type[] { Type.MechArmor } },
             { Type.MechDamage, new Type[] { Type.MechShields } },
-            { Type.MechRange, new Type[] { Type.MechDamage } },
+            { Type.MechSP, new Type[] { Type.MechDamage } },
+            { Type.MechRange, new Type[] { Type.MechSP } },
             { Type.MechAP, new Type[] { Type.MechRange } },
-            { Type.MechSP, new Type[] { Type.MechRange } },
 
             { Type.TurretDefense, new Type[] { Type.Turret, Type.MechHits } },
             { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechAP, Type.MechSP } },
@@ -142,44 +199,46 @@ namespace ClassLibrary1
             { Type.ExtractorValue, new Type[] { Type.BuildingHits, Type.MechResilience } },
         };
 
+        private const double _avgTypeCost = (double)Type.Mech;
+        // int value is used as relative cost
         public enum Type
         {
-            CoreShields,
+            CoreShields = 50,
 
-            Mech,
-            MechVision,
-            MechMove,
-            MechHits,
-            MechArmor,
-            MechResilience,
-            MechShields,
-            MechDamage,
-            MechAP,
-            MechSP,
-            MechRange,
+            Mech = 104,
+            MechVision = 61,
+            MechMove = 76,
+            MechHits = 64,
+            MechArmor = 74,
+            MechResilience = 81,
+            MechShields = 51,
+            MechDamage = 66,
+            MechAP = 91,
+            MechSP = 71,
+            MechRange = 86,
 
-            Constructor,
-            ConstructorCost,
-            ConstructorMove,
-            ConstructorDefense,
-            ConstructorRepair,
+            Constructor = 150,
+            ConstructorCost = 90,
+            ConstructorMove = 160,
+            ConstructorDefense = 140,
+            ConstructorRepair = 170,
 
-            Turret,
-            TurretAutoRepair,
-            TurretDefense,
-            TurretAttack,
-            TurretRange,
+            Turret = 130,
+            TurretAutoRepair = 165,
+            TurretDefense = 60,
+            TurretAttack = 70,
+            TurretRange = 80,
 
-            Factory,
-            FactoryAutoRepair,
-            FactoryRepair,
-            FactoryConstructor,
+            Factory = 175,
+            FactoryAutoRepair = 105,
+            FactoryRepair = 120,
+            FactoryConstructor = 200,
 
-            ExtractorAutoRepair,
-            ExtractorValue,
+            ExtractorAutoRepair = 135,
+            ExtractorValue = 190,
 
-            BuildingCost,
-            BuildingHits,
+            BuildingCost = 95,
+            BuildingHits = 75,
         }
     }
 }

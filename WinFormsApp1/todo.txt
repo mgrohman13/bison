@@ -45,6 +45,8 @@ calc with lines
 		tries to find squares closest to line 
 		favors moving just past min range
 
+int stuff
+
 upgrade things with latest research
 	turrets
 	constructor, factory for better repair?
