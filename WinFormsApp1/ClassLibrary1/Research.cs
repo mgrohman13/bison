@@ -37,6 +37,7 @@ namespace ClassLibrary1
             }
         }
         public IReadOnlyCollection<Type> Available => _options.Keys;
+        public IReadOnlyCollection<Type> Done => _researchedTypes.Keys;
         public double ResearchCur => _researchCur;
         public double GetLast(Type type)
         {

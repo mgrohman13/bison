@@ -56,6 +56,7 @@ namespace WinFormsApp1
             this.txtLog = new System.Windows.Forms.TextBox();
             this.lblInf9 = new System.Windows.Forms.Label();
             this.lbl9 = new System.Windows.Forms.Label();
+            this.btnResearch = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -63,7 +64,7 @@ namespace WinFormsApp1
             // btnEndTurn
             // 
             this.btnEndTurn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnEndTurn.Location = new System.Drawing.Point(0, 46);
+            this.btnEndTurn.Location = new System.Drawing.Point(0, 81);
             this.btnEndTurn.Name = "btnEndTurn";
             this.btnEndTurn.Size = new System.Drawing.Size(112, 34);
             this.btnEndTurn.TabIndex = 0;
@@ -164,7 +165,7 @@ namespace WinFormsApp1
             // 
             this.lblTurn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTurn.Location = new System.Drawing.Point(118, 46);
+            this.lblTurn.Location = new System.Drawing.Point(118, 81);
             this.lblTurn.Name = "lblTurn";
             this.lblTurn.Size = new System.Drawing.Size(182, 34);
             this.lblTurn.TabIndex = 12;
@@ -245,21 +246,22 @@ namespace WinFormsApp1
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnResearch);
             this.panel1.Controls.Add(this.btnSave);
             this.panel1.Controls.Add(this.btnViewAtt);
             this.panel1.Controls.Add(this.btnBuild);
             this.panel1.Controls.Add(this.btnEndTurn);
             this.panel1.Controls.Add(this.lblTurn);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 520);
+            this.panel1.Location = new System.Drawing.Point(0, 485);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(300, 80);
+            this.panel1.Size = new System.Drawing.Size(300, 115);
             this.panel1.TabIndex = 21;
             // 
             // btnSave
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSave.Location = new System.Drawing.Point(188, 46);
+            this.btnSave.Location = new System.Drawing.Point(188, 81);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(112, 34);
             this.btnSave.TabIndex = 15;
@@ -270,7 +272,7 @@ namespace WinFormsApp1
             // btnViewAtt
             // 
             this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnViewAtt.Location = new System.Drawing.Point(188, 6);
+            this.btnViewAtt.Location = new System.Drawing.Point(0, 1);
             this.btnViewAtt.Name = "btnViewAtt";
             this.btnViewAtt.Size = new System.Drawing.Size(112, 34);
             this.btnViewAtt.TabIndex = 14;
@@ -281,7 +283,7 @@ namespace WinFormsApp1
             // btnBuild
             // 
             this.btnBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnBuild.Location = new System.Drawing.Point(0, 6);
+            this.btnBuild.Location = new System.Drawing.Point(0, 41);
             this.btnBuild.Name = "btnBuild";
             this.btnBuild.Size = new System.Drawing.Size(112, 34);
             this.btnBuild.TabIndex = 13;
@@ -328,6 +330,17 @@ namespace WinFormsApp1
             this.lbl9.Size = new System.Drawing.Size(41, 25);
             this.lbl9.TabIndex = 24;
             this.lbl9.Text = "lbl9";
+            // 
+            // btnResearch
+            // 
+            this.btnResearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResearch.Location = new System.Drawing.Point(188, 1);
+            this.btnResearch.Name = "btnResearch";
+            this.btnResearch.Size = new System.Drawing.Size(112, 34);
+            this.btnResearch.TabIndex = 16;
+            this.btnResearch.Text = "Research";
+            this.btnResearch.UseVisualStyleBackColor = true;
+            this.btnResearch.Click += new System.EventHandler(this.btnResearch_Click);
             // 
             // Info
             // 
@@ -393,5 +406,6 @@ namespace WinFormsApp1
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Label lblInf9;
         private System.Windows.Forms.Label lbl9;
+        private System.Windows.Forms.Button btnResearch;
     }
 }

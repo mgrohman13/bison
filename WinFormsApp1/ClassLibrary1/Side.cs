@@ -45,13 +45,14 @@ namespace ClassLibrary1
             this._pieces.Remove(piece);
         }
 
-        internal virtual void EndTurn()
+        internal virtual Research.Type? EndTurn()
         {
             double energyUpk = 0, massUpk = 0;
             foreach (Piece piece in Game.Rand.Iterate(_pieces))
                 piece.EndTurn(ref energyUpk, ref massUpk);
             this._energy -= energyUpk;
             this._mass -= massUpk;
+            return null;
         }
     }
 }

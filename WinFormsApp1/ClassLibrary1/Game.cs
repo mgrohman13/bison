@@ -94,15 +94,17 @@ namespace ClassLibrary1
             return (tile == null || tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
         }
 
-        public void EndTurn()
+        public Research.Type? EndTurn()
         {
-            Player.EndTurn();
+            Research.Type? researched = Player.EndTurn();
 
             double difficulty = (Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
             difficulty = Math.Pow(difficulty, Consts.DifficultyPow);
             Enemy.PlayTurn(difficulty);
 
             _turn++;
+
+            return researched;
         }
 
 

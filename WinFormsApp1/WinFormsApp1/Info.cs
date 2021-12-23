@@ -301,5 +301,10 @@ namespace WinFormsApp1
         {
             Program.Game.SaveGame();
         }
+
+        private void btnResearch_Click(object sender, EventArgs e)
+        {
+            Research.ShowForm(null);
+        }
     }
 }

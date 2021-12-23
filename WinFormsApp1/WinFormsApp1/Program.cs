@@ -78,7 +78,7 @@ namespace WinFormsApp1
                 end = MessageBox.Show("Move remaining.  End Turn?", string.Empty, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK;
             if (end)
             {
-                Game.EndTurn();
+                ClassLibrary1.Research.Type? researched = Game.EndTurn();
                 if (Game.GameOver)
                 {
                     MessageBox.Show("Game over!  " + Game.Turn + " turns.");
@@ -90,6 +90,9 @@ namespace WinFormsApp1
                 }
                 moved.Clear();
                 Form.Refresh();
+
+                if (researched.HasValue)
+                    Research.ShowForm(researched);
             }
         }
 

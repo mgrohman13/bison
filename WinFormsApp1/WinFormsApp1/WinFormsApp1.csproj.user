@@ -13,5 +13,8 @@
     <Compile Update="Map.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Research.cs">
+      <SubType>Form</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

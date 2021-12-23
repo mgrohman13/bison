@@ -75,7 +75,7 @@ namespace ClassLibrary1
             foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
                 piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
         }
-        internal override void EndTurn()
+        internal override Research.Type? EndTurn()
         {
             GetIncome(out double energyInc, out double _, out double massInc, out double _, out double researchInc);
             this._energy += energyInc;
@@ -83,7 +83,7 @@ namespace ClassLibrary1
 
             base.EndTurn();
 
-            this.Research.AddResearch(researchInc);
+            return this.Research.AddResearch(researchInc);
         }
     }
 }
