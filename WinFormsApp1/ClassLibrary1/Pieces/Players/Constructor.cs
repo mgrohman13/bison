@@ -121,7 +121,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 IRepair.Values repair = this.repair;
                 double range = repair.Range * rangeMult;
-                double rate = repair.Rate / Math.Pow(rangeMult, .65);
+                double rate = Consts.GetPct(repair.Rate, 1 / Math.Pow(rangeMult, .65));
                 return new(range, rate);
             }
 
@@ -145,7 +145,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeConstructorDefense(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .8);
-                double armor = 1 - Math.Pow(.65, researchMult);
+                double armor = Consts.GetPct(1 / 3.0, researchMult);
                 double shieldInc = 1.69 * researchMult;
                 double shieldMax = 26 * researchMult;
                 double shieldLimit = 52 * researchMult;
@@ -164,7 +164,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .5);
                 double repairRange = 3.5 * researchMult;
-                double repairRate = .05 * researchMult;
+                double repairRate = Consts.GetPct(.05, researchMult);
                 this.repair = new(repairRange, repairRate);
             }
         }

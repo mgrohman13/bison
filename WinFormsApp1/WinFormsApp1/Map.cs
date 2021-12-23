@@ -252,7 +252,7 @@ namespace WinFormsApp1
                 if (viewAttacks)
                 {
                     IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
-                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Where(e => e.HasBehavior<IAttacker>()))
+                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
                     {
                         IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
                         if (enemy.HasBehavior<IMovable>(out IMovable enemyMovable))

@@ -126,7 +126,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeExtractorValue(double researchMult)
             {
-                double resilience = 1 - Math.Pow(.7, Math.Pow(researchMult, .4));
+                double resilience = Consts.GetPct(.3, Math.Pow(researchMult, .4));
                 this.valueMult = Math.Pow(researchMult, .5);
                 this.sustainMult = Math.Pow(researchMult, .3);
                 this.killable = new(killable.HitsMax, resilience);

@@ -8,6 +8,7 @@ using ClassLibrary1;
 using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
+using ClassLibrary1.Pieces.Terrain;
 
 namespace WinFormsApp1
 {
@@ -162,15 +163,36 @@ namespace WinFormsApp1
 
             bool move = false;
             if (!move && piece.HasBehavior<IBuilder.IBuildMech>(out _))
-            {
-                Mech.Cost(Game, out double e, out double m, Game.Blueprint1);
-                move = e < Game.Player.Energy && m < Game.Player.Mass;
-                if (!move)
+                move = Game.Player.Research.Blueprints.Any(b =>
                 {
-                    Mech.Cost(Game, out e, out m, Game.Blueprint2);
-                    move = e < Game.Player.Energy && m < Game.Player.Mass;
-                }
+                    b.Cost(out double e, out double m);
+                    return e < Game.Player.Energy && m < Game.Player.Mass;
+                });
+            if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>(out _))
+            {
+                Constructor.Cost(Game, out double e, out double m);
+                move = e < Game.Player.Energy && m < Game.Player.Mass;
             }
+            if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>(out _))
+                move = piece.Tile.GetVisibleTilesInRange(1).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
+                {
+                    Extractor.Cost(out double e, out double m, r);
+                    return e < Game.Player.Energy && m < Game.Player.Mass;
+                });
+            if (!move)
+                if (piece.Tile.GetVisibleTilesInRange(1).Select(t => t.Piece as Foundation).Any(f => f != null))
+                {
+                    if (piece.HasBehavior<IBuilder.IBuildFactory>(out _))
+                    {
+                        Factory.Cost(Game, out double e, out double m);
+                        move = e < Game.Player.Energy && m < Game.Player.Mass;
+                    }
+                    if (!move && piece.HasBehavior<IBuilder.IBuildTurret>(out _))
+                    {
+                        Turret.Cost(Game, out double e, out double m);
+                        move = e < Game.Player.Energy && m < Game.Player.Mass;
+                    }
+                }
             if (!move && piece.HasBehavior<IMovable>(out IMovable movable))
                 move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;
             if (!move && piece.HasBehavior<IAttacker>(out IAttacker attacker))

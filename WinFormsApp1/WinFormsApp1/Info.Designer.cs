@@ -54,6 +54,8 @@ namespace WinFormsApp1
             this.btnBuild = new System.Windows.Forms.Button();
             this.lblHeading = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
+            this.lblInf9 = new System.Windows.Forms.Label();
+            this.lbl9 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -309,10 +311,30 @@ namespace WinFormsApp1
             this.txtLog.Size = new System.Drawing.Size(300, 46);
             this.txtLog.TabIndex = 23;
             // 
+            // lblInf9
+            // 
+            this.lblInf9.AutoSize = true;
+            this.lblInf9.Location = new System.Drawing.Point(111, 225);
+            this.lblInf9.Name = "lblInf9";
+            this.lblInf9.Size = new System.Drawing.Size(62, 25);
+            this.lblInf9.TabIndex = 25;
+            this.lblInf9.Text = "lblInf9";
+            // 
+            // lbl9
+            // 
+            this.lbl9.AutoSize = true;
+            this.lbl9.Location = new System.Drawing.Point(0, 225);
+            this.lbl9.Name = "lbl9";
+            this.lbl9.Size = new System.Drawing.Size(41, 25);
+            this.lbl9.TabIndex = 24;
+            this.lbl9.Text = "lbl9";
+            // 
             // Info
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.lblInf9);
+            this.Controls.Add(this.lbl9);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.lblHeading);
             this.Controls.Add(this.panel1);
@@ -369,5 +391,7 @@ namespace WinFormsApp1
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Button btnViewAtt;
         private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.Label lblInf9;
+        private System.Windows.Forms.Label lbl9;
     }
 }

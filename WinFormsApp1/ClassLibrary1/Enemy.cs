@@ -21,7 +21,7 @@ namespace ClassLibrary1
         {
         }
 
-        internal void PlayTurn(double difficulty, Func<MechBlueprint> Blueprint)
+        internal void PlayTurn(double difficulty)
         {
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 PlayTurn(piece);
@@ -32,8 +32,8 @@ namespace ClassLibrary1
             this._mass = 0;
             while (true)
             {
-                MechBlueprint blueprint = Blueprint();
-                Mech.Cost(out double energy, out double mass, blueprint, difficulty);
+                MechBlueprint blueprint = MechBlueprint.Alien(difficulty);
+                blueprint.Cost(out double energy, out double mass);
                 energy += mass;
                 if (this.Energy > energy)
                 {
@@ -100,7 +100,7 @@ namespace ClassLibrary1
                 if (movable.EnemyMove(moveTo))
                     targets = newTargets;
                 else if (piece.Tile != moveTo)
-                { } 
+                { }
             }
 
             if (attacker != null)

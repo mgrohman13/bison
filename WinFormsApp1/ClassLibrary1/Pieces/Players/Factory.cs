@@ -106,7 +106,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 IRepair.Values repair = this.repair;
                 double range = repair.Range * rangeMult;
-                double rate = repair.Rate / Math.Pow(rangeMult, .78);
+                double rate = Consts.GetPct(repair.Rate, 1 / Math.Pow(rangeMult, .78));
                 return new(range, rate);
             }
 
@@ -136,7 +136,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .7);
                 double repairRange = 6.5 * researchMult;
-                double repairRate = .078 * researchMult;
+                double repairRate = Consts.GetPct(.078, researchMult);
                 this.repair = new(repairRange, repairRate);
             }
         }

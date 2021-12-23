@@ -56,9 +56,9 @@ namespace WinFormsApp1
             }
             if (builder.HasBehavior<IBuilder.IBuildMech>(out IBuilder.IBuildMech buildMech))
             {
-                foreach (MechBlueprint blueprint in new MechBlueprint[] { Program.Game.Blueprint1, Program.Game.Blueprint2 })
+                foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
                 {
-                    Mech.Cost(Program.Game, out double energy, out double mass, blueprint);
+                    blueprint.Cost(out double energy, out double mass);
                     BuildRow row = new(buildMech, "Mech", energy, mass);
                     row.Blueprint = blueprint;
                     rows.Add(row);

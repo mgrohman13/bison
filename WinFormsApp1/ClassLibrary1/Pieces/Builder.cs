@@ -33,9 +33,9 @@ namespace ClassLibrary1.Pieces
         {
         }
 
-        private bool Validate(Map.Tile tile)
+        private bool Validate(Map.Tile tile, bool empty)
         {
-            return (tile != null && tile.Visible && tile.GetDistance(this.Piece.Tile) == 1);
+            return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) == 1);
         }
 
         [Serializable]
@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces
             }
             public Constructor Build(Map.Tile tile)
             {
-                if (Validate(tile))
+                if (Validate(tile, true))
                 {
                     Constructor.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
@@ -65,7 +65,7 @@ namespace ClassLibrary1.Pieces
             }
             public Extractor Build(Resource resource)
             {
-                if (resource != null && Validate(resource.Tile))
+                if (resource != null && Validate(resource.Tile, false))
                 {
                     Extractor.Cost(out double energy, out double mass, resource);
                     if (Piece.Game.Player.Spend(energy, mass))
@@ -83,9 +83,9 @@ namespace ClassLibrary1.Pieces
             }
             public Mech Build(Map.Tile tile, MechBlueprint blueprint)
             {
-                if (Validate(tile))
+                if (Validate(tile, true))
                 {
-                    Mech.Cost(Piece.Game, out double energy, out double mass, blueprint);
+                    blueprint.Cost(out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
                         return Mech.NewMech(tile, blueprint);
                 }
@@ -101,7 +101,7 @@ namespace ClassLibrary1.Pieces
             }
             public Factory Build(Foundation foundation)
             {
-                if (foundation != null && Validate(foundation.Tile))
+                if (foundation != null && Validate(foundation.Tile, false))
                 {
                     Factory.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))
@@ -119,7 +119,7 @@ namespace ClassLibrary1.Pieces
             }
             public Turret Build(Foundation foundation)
             {
-                if (foundation != null && Validate(foundation.Tile))
+                if (foundation != null && Validate(foundation.Tile, false))
                 {
                     Turret.Cost(Piece.Game, out double energy, out double mass);
                     if (Piece.Game.Player.Spend(energy, mass))

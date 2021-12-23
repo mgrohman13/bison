@@ -154,7 +154,7 @@ namespace ClassLibrary1.Pieces.Players
             }
             private void UpgradeTurretDefense(double researchMult)
             {
-                double armor = 1 - Math.Pow(.8, Math.Pow(researchMult, .5));
+                double armor = Consts.GetPct(.2, Math.Pow(researchMult, .5));
                 double shieldInc = Math.PI * Math.Pow(researchMult, .9);
                 double shieldMax = 39 * Math.Pow(researchMult, .7);
                 double shieldLimit = 85 * Math.Pow(researchMult, .8);
@@ -171,9 +171,9 @@ namespace ClassLibrary1.Pieces.Players
 
                     damage *= researchMult;
                     if (armorPierce > 0)
-                        armorPierce = 1 - Math.Pow(1 - armorPierce, researchMult);
+                        armorPierce = Consts.GetPct(armorPierce, researchMult);
                     if (shieldPierce > 0)
-                        shieldPierce = 1 - Math.Pow(1 - shieldPierce, researchMult);
+                        shieldPierce = Consts.GetPct(shieldPierce, researchMult);
 
                     attacks[a] = new(damage, armorPierce, shieldPierce, -1, attacks[a].Range);
                 }

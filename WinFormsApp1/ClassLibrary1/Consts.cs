@@ -19,14 +19,13 @@ namespace ClassLibrary1
         public const double ResearchFactor = 2600;
 
         public const double DifficultyTurns = 65;
-        public const double DifficultyPow = 2.1;
+        public const double DifficultyPow = 1.69;
         public const double EnemyEnergy = 169;
 
         public const double HitsIncDev = .065;
         public const double MoveDev = .013;
         public const double MoveLimitPow = 1.3;
         public const double ShieldLimitPow = 1.69;
-        public const double MechResilience = .52;
 
         public const double ResourceDistAdd = 21;
         public const double ResourceDistDiv = 52;
@@ -73,6 +72,11 @@ namespace ClassLibrary1
         public const double EnergyRepairDiv = 2.1;
         public const double AutoRepair = .65;
         public const double AutoRepairPct = .0169;
+
+        internal static double GetPct(double pct, double mult)
+        {
+            return 1 - Math.Pow(1 - pct, mult);
+        }
 
         public static double GetDamagedValue(Piece piece, double value, double min)
         {

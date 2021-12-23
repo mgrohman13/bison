@@ -82,6 +82,7 @@ namespace ClassLibrary1.Pieces
                   .ToArray();
 
                 hitsInc = 0;
+                //each additional repairer contributes a reduced amount 
                 for (int a = 0; a < repairs.Length; a++)
                     hitsInc += repairs[a] / (a + 1.0);
 

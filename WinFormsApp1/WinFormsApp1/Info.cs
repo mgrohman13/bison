@@ -76,22 +76,29 @@ namespace WinFormsApp1
                             Format(killable.ShieldCur), Format(killable.ShieldMax), Format(killable.ShieldLimit), Format(killable.GetInc()),
                             CheckBase(killable.ShieldIncBase, killable.GetInc()));
                     }
+
+                    lbl3.Show();
+                    lblInf3.Show();
+                    lbl3.Text = killable.HitsCur < killable.HitsMax ? "Efficiency" : "Resilience";
+                    lblInf3.Text = string.Format("{0}{1}",
+                        FormatPct(killable.HitsCur < killable.HitsMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
+                        killable.HitsCur < killable.HitsMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                 }
                 if (selected.Piece.HasBehavior<IMovable>(out IMovable movable))
                 {
-                    lbl3.Show();
-                    lblInf3.Show();
-                    lbl3.Text = "Move";
-                    lblInf3.Text = string.Format("{0} / {1} / {2} +{3}{4}",
+                    lbl4.Show();
+                    lblInf4.Show();
+                    lbl4.Text = "Move";
+                    lblInf4.Text = string.Format("{0} / {1} / {2} +{3}{4}",
                             Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()),
                             CheckBase(movable.MoveIncBase, movable.GetInc()));
                 }
                 if (playerPiece != null)
                 {
-                    lbl4.Show();
-                    lblInf4.Show();
-                    lbl4.Text = "Vision";
-                    lblInf4.Text = string.Format("{0}{1}", Format(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision));
+                    lbl5.Show();
+                    lblInf5.Show();
+                    lbl5.Text = "Vision";
+                    lblInf5.Text = string.Format("{0}{1}", Format(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision));
 
                     if (!(playerPiece is Extractor))
                     {
@@ -102,37 +109,37 @@ namespace WinFormsApp1
                         massInc -= massUpk;
                         if (energyInc != 0)
                         {
-                            lbl5.Show();
-                            lblInf5.Show();
-                            lbl5.Text = "Energy";
-                            lblInf5.Text = string.Format("{1}{0}", Format(energyInc), energyInc < 0 ? "" : "+");
+                            lbl6.Show();
+                            lblInf6.Show();
+                            lbl6.Text = "Energy";
+                            lblInf6.Text = string.Format("{1}{0}", Format(energyInc), energyInc < 0 ? "" : "+");
                         }
                         if (massInc != 0)
                         {
-                            lbl6.Show();
-                            lblInf6.Show();
-                            lbl6.Text = "Mass";
-                            lblInf6.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "" : "+");
+                            lbl7.Show();
+                            lblInf7.Show();
+                            lbl7.Text = "Mass";
+                            lblInf7.Text = string.Format("{1}{0}", Format(massInc), massInc < 0 ? "" : "+");
                         }
                         if (researchInc != 0)
                         {
-                            lbl7.Show();
-                            lblInf7.Show();
-                            lbl7.Text = "Research";
-                            lblInf7.Text = string.Format("{1}{0}", Format(researchInc), researchInc < 0 ? "" : "+");
+                            lbl8.Show();
+                            lblInf8.Show();
+                            lbl8.Text = "Research";
+                            lblInf8.Text = string.Format("{1}{0}", Format(researchInc), researchInc < 0 ? "" : "+");
                         }
                     }
                 }
                 if (selected.Piece.HasBehavior<IRepair>(out IRepair repair))
                 {
-                    lbl7.Show();
-                    lblInf7.Show();
-                    lbl7.Text = "Repair";
-                    lblInf7.Text = string.Format("{0}{1}", FormatPct(repair.Rate), CheckBase(repair.RateBase, repair.Rate, FormatPct));
                     lbl8.Show();
                     lblInf8.Show();
-                    lbl8.Text = "Range";
-                    lblInf8.Text = string.Format("{0}{1}", Format(repair.Range), CheckBase(repair.RangeBase, repair.Range));
+                    lbl8.Text = "Repair";
+                    lblInf8.Text = string.Format("{0}{1}", FormatPct(repair.Rate), CheckBase(repair.RateBase, repair.Rate, FormatPct));
+                    lbl9.Show();
+                    lblInf9.Show();
+                    lbl9.Text = "Range";
+                    lblInf9.Text = string.Format("{0}{1}", Format(repair.Range), CheckBase(repair.RangeBase, repair.Range));
                 }
 
                 Resource resource = selected.Piece as Resource;
@@ -161,30 +168,30 @@ namespace WinFormsApp1
 
                     if (energyInc != 0)
                     {
-                        lbl5.Show();
-                        lblInf5.Show();
-                        lbl5.Text = "Energy";
-                        lblInf5.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Biomass, energyInc));
+                        lbl6.Show();
+                        lblInf6.Show();
+                        lbl6.Text = "Energy";
+                        lblInf6.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Biomass, energyInc));
                     }
                     if (massInc != 0)
                     {
-                        lbl6.Show();
-                        lblInf6.Show();
-                        lbl6.Text = "Mass";
-                        lblInf6.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Metal, massInc));
+                        lbl7.Show();
+                        lblInf7.Show();
+                        lbl7.Text = "Mass";
+                        lblInf7.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Metal, massInc));
                     }
                     if (researchInc != 0)
                     {
-                        lbl7.Show();
-                        lblInf7.Show();
-                        lbl7.Text = "Research";
-                        lblInf7.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Artifact, researchInc));
+                        lbl8.Show();
+                        lblInf8.Show();
+                        lbl8.Text = "Research";
+                        lblInf8.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Artifact, researchInc));
                     }
 
-                    lbl8.Show();
-                    lblInf8.Show();
-                    lbl8.Text = "Sustainability";
-                    lblInf8.Text = string.Format("{0}", FormatPct(extractor == null ? resource.Sustain : extractor.Sustain));
+                    lbl9.Show();
+                    lblInf9.Show();
+                    lbl9.Text = "Sustainability";
+                    lblInf9.Text = string.Format("{0}", FormatPct(extractor == null ? resource.Sustain : extractor.Sustain));
                 }
 
                 if (selected.Piece.HasBehavior<IAttacker>(out IAttacker attacker))

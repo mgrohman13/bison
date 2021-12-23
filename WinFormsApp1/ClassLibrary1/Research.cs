@@ -19,10 +19,12 @@ namespace ClassLibrary1
         private readonly Dictionary<Type, double> _researchedTypes;
         private readonly Dictionary<Type, double> _progress;
         private readonly Dictionary<Type, double> _options;
-        private double _researchCur;
 
+        private double _researchCur;
         private double _researchLast;
         private double _nextAvg;
+
+        private readonly SortedSet<MechBlueprint> _blueprints;
 
         public Type Researching
         {
@@ -52,19 +54,22 @@ namespace ClassLibrary1
                 return result;
             throw new Exception();
         }
+        public IReadOnlyCollection<MechBlueprint> Blueprints => _blueprints.ToList().AsReadOnly();
 
         public Research(Game Game)
         {
             this.Game = Game;
 
             this._researching = Type.Mech;
+            this._researchedTypes = new();
             this._progress = new() { { _researching, 0 } };
             this._options = new() { { _researching, 25 } };
+
             this._researchCur = 0;
             this._researchLast = 0;
             this._nextAvg = 26;
 
-            this._researchedTypes = new();
+            this._blueprints = new();
         }
 
         internal Type? AddResearch(double research)
@@ -86,9 +91,16 @@ namespace ClassLibrary1
             this._researchedTypes.Add(_researching, _researchLast);
             excess = _progress[_researching] - _options[_researching];
             this._progress.Remove(_researching);
-            Game.Player.OnResearch(_researching, (_researchLast + Consts.ResearchFactor) / Consts.ResearchFactor);
+            Game.Player.OnResearch(_researching, GetResearchMult(_researchLast));
+            if (IsMech(_researching))
+                MechBlueprint.OnResearch(_blueprints, _researching, _researchLast);
             return _researching;
         }
+        public static double GetResearchMult(double research)
+        {
+            return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
+        }
+
         private void GetNextChoices(double excess)
         {
             const int choices = 3;
@@ -100,7 +112,6 @@ namespace ClassLibrary1
             {
                 if (_researchedTypes.ContainsKey(available) && BaseTypes.Contains(available))
                     continue;
-                static bool IsMech(Type type) => type.ToString().StartsWith("Mech");
                 if (_options.Count == choices - 1 && (IsMech(available) ? _options.Keys.All(IsMech) : !_options.Keys.Any(IsMech)))
                     continue;
                 if (Dependencies[available].All(d => _researchedTypes.ContainsKey(d)))
@@ -109,8 +120,6 @@ namespace ClassLibrary1
                         ;
                     this._progress.TryAdd(available, 0);
                     this._options.Add(available, CalcCost(available, nextAvg, nextDev, nextOE, nextMin));
-                    if (_options.Count == choices)
-                        break;
                     if (_options.Count == 1)
                     {
                         if (this._progress[available] > 0 && excess > 0)
@@ -118,6 +127,8 @@ namespace ClassLibrary1
                         this._progress[available] += excess;
                         this._researching = available;
                     }
+                    if (_options.Count == choices)
+                        break;
                 }
             }
         }
@@ -201,6 +212,7 @@ namespace ClassLibrary1
             { Type.ExtractorValue, new Type[] { Type.BuildingHits, Type.MechResilience } },
         };
 
+        private static bool IsMech(Type type) => type.ToString().StartsWith("Mech");
         private const double _avgTypeCost = (double)Type.Mech;
         // int value is used as relative cost
         public enum Type
