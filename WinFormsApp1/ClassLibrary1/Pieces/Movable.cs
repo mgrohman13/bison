@@ -37,9 +37,9 @@ namespace ClassLibrary1.Pieces
         public double MoveMax => _values.MoveMax;
         public double MoveLimit => _values.MoveLimit;
 
-        void IMovable.Upgrade(IMovable.Values movable)
+        void IMovable.Upgrade(IMovable.Values values)
         {
-            this._values = movable;
+            this._values = values;
         }
 
         bool IMovable.Move(Map.Tile to)

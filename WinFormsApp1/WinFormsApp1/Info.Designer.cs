@@ -340,7 +340,7 @@ namespace WinFormsApp1
             this.btnResearch.TabIndex = 16;
             this.btnResearch.Text = "Research";
             this.btnResearch.UseVisualStyleBackColor = true;
-            this.btnResearch.Click += new System.EventHandler(this.btnResearch_Click);
+            this.btnResearch.Click += new System.EventHandler(this.BtnResearch_Click);
             // 
             // Info
             // 

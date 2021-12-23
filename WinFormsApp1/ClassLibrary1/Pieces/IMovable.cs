@@ -17,7 +17,7 @@ namespace ClassLibrary1.Pieces
         public double MoveMax { get; }
         public double MoveLimit { get; }
 
-        void Upgrade(Values movable);
+        void Upgrade(Values values);
         public bool Move(Map.Tile to);
         internal bool EnemyMove(Map.Tile to);
         public double GetInc();

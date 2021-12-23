@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces.Players
                 new Killable(this, values.GetKillable(Game.Player.Research, _defenseType)),
                 new Movable(this, values.Movable),
                 new Repair(this, values.GetRepair(_rangeMult)),
-                new Builder.BuildExtractor(this));
+                new Builder.BuildExtractor(this, values.GetRepair(_rangeMult).Builder));
             Unlock(Game.Player.Research);
         }
         internal static Constructor NewConstructor(Map.Tile tile, bool starter)
@@ -52,10 +52,11 @@ namespace ClassLibrary1.Pieces.Players
         }
         private void Unlock(Research research)
         {
+            Values values = GetValues(Game);
             if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
-                SetBehavior(new Builder.BuildTurret(this));
+                SetBehavior(new Builder.BuildTurret(this, values.GetRepair(_rangeMult).Builder));
             if (!HasBehavior<IBuilder.IBuildExtractor>() && research.HasType(Research.Type.Factory))
-                SetBehavior(new Builder.BuildFactory(this));
+                SetBehavior(new Builder.BuildFactory(this, values.GetRepair(_rangeMult).Builder));
         }
         private static Values GetValues(Game game)
         {
@@ -107,7 +108,7 @@ namespace ClassLibrary1.Pieces.Players
             public double Mass => mass;
             public double Vision => vision;
             public IMovable.Values Movable => movable;
-            public double RepairRange => repair.Range;
+            public double RepairRange => repair.Builder.Range;
             public IKillable.Values GetKillable(Research research, bool defenseType)
             {
                 double armor = research.HasType(Research.Type.ConstructorDefense) && !defenseType ? killable.Armor : 0;
@@ -120,9 +121,9 @@ namespace ClassLibrary1.Pieces.Players
             public IRepair.Values GetRepair(double rangeMult)
             {
                 IRepair.Values repair = this.repair;
-                double range = repair.Range * rangeMult;
+                double range = repair.Builder.Range * rangeMult;
                 double rate = Consts.GetPct(repair.Rate, 1 / Math.Pow(rangeMult, .65));
-                return new(range, rate);
+                return new(new(range), rate);
             }
 
             public void Upgrade(Research.Type type, double researchMult)
@@ -165,7 +166,7 @@ namespace ClassLibrary1.Pieces.Players
                 researchMult = Math.Pow(researchMult, .5);
                 double repairRange = 3.5 * researchMult;
                 double repairRate = Consts.GetPct(.05, researchMult);
-                this.repair = new(repairRange, repairRate);
+                this.repair = new(new(repairRange), repairRate);
             }
         }
     }

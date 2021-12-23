@@ -34,10 +34,11 @@ namespace ClassLibrary1.Pieces.Players
         }
         private void Unlock(Research research)
         {
+            Values values = GetValues(Game);
             if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
-                SetBehavior(new Builder.BuildMech(this));
+                SetBehavior(new Builder.BuildMech(this, values.Repair.Builder));
             if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.Constructor))
-                SetBehavior(new Builder.BuildConstructor(this));
+                SetBehavior(new Builder.BuildConstructor(this, values.Repair.Builder));
         }
         private static Values GetValues(Game game)
         {
@@ -86,7 +87,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.energy = 0;
                 this.mass = 5000;
-                this.repair = new(Consts.MinMapCoord - 1.5, .1);
+                this.repair = new(new(Consts.MinMapCoord - 1.5), .1);
 
                 this.killable = new(-1, -1);
                 UpgradeBuildingHits(1);

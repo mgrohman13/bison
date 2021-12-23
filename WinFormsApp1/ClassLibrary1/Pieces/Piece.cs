@@ -37,7 +37,10 @@ namespace ClassLibrary1.Pieces
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
-            return behavior.OfType<T>().SingleOrDefault();
+            IEnumerable<T> all = behavior.OfType<T>();
+            if (all.All(b => b.AllowMultiple))
+                return all.FirstOrDefault();
+            return all.SingleOrDefault();
         }
         public bool HasBehavior<T>(out T behavior) where T : class, IBehavior
         {

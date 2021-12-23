@@ -7,38 +7,23 @@ using System.Threading.Tasks;
 namespace ClassLibrary1.Pieces
 {
     [Serializable]
-    public class Repair : IRepair
+    public class Repair : Builder, IRepair
     {
-        private readonly Piece _piece;
         private IRepair.Values _values;
 
-        public Piece Piece => _piece;
-
-        public double Range => Consts.GetDamagedValue(Piece, RangeBase, 1);
-        public double RangeBase => _values.Range;
         public double Rate => Consts.GetDamagedValue(Piece, RateBase, 0);
         public double RateBase => _values.Rate;
 
-        public Repair(Piece piece, IRepair.Values values)
-        {
-            this._piece = piece;
-            this._values = values;
-        }
-        public T GetBehavior<T>() where T : class, IBehavior
-        {
-            return _piece.GetBehavior<T>();
-        }
-
-        void IRepair.Upgrade(IRepair.Values repair)
+        public Repair(Piece piece, IRepair.Values repair)
+            : base(piece, repair.Builder)
         {
             this._values = repair;
         }
 
-        void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
+        void IRepair.Upgrade(IRepair.Values repair)
         {
-        }
-        void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
-        {
-        }
+            ((IBuilder)this).Upgrade(repair.Builder);
+            this._values = repair;
+        } 
     }
 }

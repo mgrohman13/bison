@@ -18,7 +18,7 @@ namespace ClassLibrary1.Pieces.Players
         private Factory(Map.Tile tile, Values values)
             : base(tile, values.Vision)
         {
-            this._rangeMult = Game.Rand.GaussianOE(values.RepairRange, .169, .13, 1) / values.RepairRange;
+            this._rangeMult = Game.Rand.GaussianOE(values.BuilderRange, .169, .13, 1) / values.BuilderRange;
 
             SetBehavior(new Killable(this, values.Killable));
             Unlock(tile.Map.Game.Player.Research);
@@ -50,12 +50,13 @@ namespace ClassLibrary1.Pieces.Players
         }
         private void Unlock(Research research)
         {
+            Values values = GetValues(Game);
             if (!HasBehavior<IBuilder.IBuildMech>() && research.HasType(Research.Type.Mech))
-                SetBehavior(new Builder.BuildMech(this));
+                SetBehavior(new Builder.BuildMech(this, values.GetRepair(_rangeMult).Builder));
             if (!HasBehavior<IRepair>() && research.HasType(Research.Type.FactoryRepair))
-                SetBehavior(new Repair(this, GetValues(Game).GetRepair(_rangeMult)));
+                SetBehavior(new Repair(this, values.GetRepair(_rangeMult)));
             if (!HasBehavior<IBuilder.IBuildConstructor>() && research.HasType(Research.Type.FactoryConstructor))
-                SetBehavior(new Builder.BuildConstructor(this));
+                SetBehavior(new Builder.BuildConstructor(this, values.GetRepair(_rangeMult).Builder));
         }
         private static Values GetValues(Game game)
         {
@@ -101,13 +102,13 @@ namespace ClassLibrary1.Pieces.Players
             public double Mass => mass;
             public double Vision => vision;
             public IKillable.Values Killable => killable;
-            public double RepairRange => repair.Range;
+            public double BuilderRange => repair.Builder.Range;
             public IRepair.Values GetRepair(double rangeMult)
             {
                 IRepair.Values repair = this.repair;
-                double range = repair.Range * rangeMult;
+                double range = repair.Builder.Range * rangeMult;
                 double rate = Consts.GetPct(repair.Rate, 1 / Math.Pow(rangeMult, .78));
-                return new(range, rate);
+                return new(new(range), rate);
             }
 
             public void Upgrade(Research.Type type, double researchMult)
@@ -137,7 +138,7 @@ namespace ClassLibrary1.Pieces.Players
                 researchMult = Math.Pow(researchMult, .7);
                 double repairRange = 6.5 * researchMult;
                 double repairRate = Consts.GetPct(.078, researchMult);
-                this.repair = new(repairRange, repairRate);
+                this.repair = new(new(repairRange), repairRate);
             }
         }
     }

@@ -19,7 +19,6 @@ namespace WinFormsApp1
 {
     public partial class Info : UserControl
     {
-        private Tile selected;
 
         public Info()
         {
@@ -31,29 +30,26 @@ namespace WinFormsApp1
             Program.EndTurn();
         }
 
-        public void SetSelected(Tile selected)
-        {
-            this.selected = selected;
-        }
+        public Tile Selected { get; set; }
 
         public override void Refresh()
         {
             ShowAll(false);
             lblTurn.Text = Program.Game.Turn.ToString();
 
-            if (selected != null && selected.Piece != null)
+            if (DgvForm.CanBuild(Selected))
+                btnBuild.Show();
+            else
+                btnBuild.Hide();
+
+            if (Selected != null && Selected.Piece != null)
             {
-                if (selected.Piece.HasBehavior<IBuilder>())
-                    btnBuild.Show();
-                else
-                    btnBuild.Hide();
-
                 lblHeading.Show();
-                lblHeading.Text = selected.Piece.ToString();
+                lblHeading.Text = Selected.Piece.ToString();
 
-                PlayerPiece playerPiece = selected.Piece as PlayerPiece;
+                PlayerPiece playerPiece = Selected.Piece as PlayerPiece;
 
-                if (selected.Piece.HasBehavior<IKillable>(out IKillable killable))
+                if (Selected.Piece.HasBehavior<IKillable>(out IKillable killable))
                 {
                     double repairInc = 0;
                     if (playerPiece != null)
@@ -84,7 +80,7 @@ namespace WinFormsApp1
                         FormatPct(killable.HitsCur < killable.HitsMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
                         killable.HitsCur < killable.HitsMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                 }
-                if (selected.Piece.HasBehavior<IMovable>(out IMovable movable))
+                if (Selected.Piece.HasBehavior<IMovable>(out IMovable movable))
                 {
                     lbl4.Show();
                     lblInf4.Show();
@@ -130,7 +126,7 @@ namespace WinFormsApp1
                         }
                     }
                 }
-                if (selected.Piece.HasBehavior<IRepair>(out IRepair repair))
+                if (Selected.Piece.HasBehavior<IRepair>(out IRepair repair))
                 {
                     lbl8.Show();
                     lblInf8.Show();
@@ -142,8 +138,8 @@ namespace WinFormsApp1
                     lblInf9.Text = string.Format("{0}{1}", Format(repair.Range), CheckBase(repair.RangeBase, repair.Range));
                 }
 
-                Resource resource = selected.Piece as Resource;
-                Extractor extractor = selected.Piece as Extractor;
+                Resource resource = Selected.Piece as Resource;
+                Extractor extractor = Selected.Piece as Extractor;
                 if (resource == null && extractor != null)
                     resource = extractor.Resource;
                 if (resource != null)
@@ -160,7 +156,7 @@ namespace WinFormsApp1
                     double energyInc, energyUpk, massInc, massUpk, researchInc;
                     energyInc = energyUpk = massInc = massUpk = researchInc = 0;
                     if (extractor == null)
-                        resource.GenerateResources(selected.Piece, 1, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
+                        resource.GenerateResources(Selected.Piece, 1, ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
                     else
                         extractor.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
                     energyInc -= energyUpk;
@@ -194,7 +190,7 @@ namespace WinFormsApp1
                     lblInf9.Text = string.Format("{0}", FormatPct(extractor == null ? resource.Sustain : extractor.Sustain));
                 }
 
-                if (selected.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
+                if (Selected.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
                 {
                     dgvAttacks.Show();
 
@@ -203,27 +199,31 @@ namespace WinFormsApp1
                     dgvAttacks.Columns["Range"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
-                    if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
-                    {
-                        dgvAttacks.Columns["RangeBase"].Visible = true;
-                        dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
-                        dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
-                        dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
-                    }
-                    else
-                        dgvAttacks.Columns["RangeBase"].Visible = false;
+
+                    //if (attacker.Attacks.Any(a => Format(a.Range) != Format(a.RangeBase)))
+                    //{
+                    //    dgvAttacks.Columns["RangeBase"].Visible = true;
+                    //    dgvAttacks.Columns["RangeBase"].DisplayIndex = idx++;
+                    //    dgvAttacks.Columns["RangeBase"].HeaderText = "(base)";
+                    //    dgvAttacks.Columns["RangeBase"].DefaultCellStyle.Format = "0.0";
+                    //}
+                    //else
+                    dgvAttacks.Columns["RangeBase"].Visible = false;
+
                     dgvAttacks.Columns["Damage"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Damage"].HeaderText = "DMG";
                     dgvAttacks.Columns["Damage"].DefaultCellStyle.Format = "0.0";
-                    if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
-                    {
-                        dgvAttacks.Columns["DamageBase"].Visible = true;
-                        dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
-                        dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
-                        dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
-                    }
-                    else
-                        dgvAttacks.Columns["DamageBase"].Visible = false;
+
+                    //if (attacker.Attacks.Any(a => Format(a.Damage) != Format(a.DamageBase)))
+                    //{
+                    //    dgvAttacks.Columns["DamageBase"].Visible = true;
+                    //    dgvAttacks.Columns["DamageBase"].DisplayIndex = idx++;
+                    //    dgvAttacks.Columns["DamageBase"].HeaderText = "(base)";
+                    //    dgvAttacks.Columns["DamageBase"].DefaultCellStyle.Format = "0.0";
+                    //}
+                    //else
+                    dgvAttacks.Columns["DamageBase"].Visible = false;
+
                     dgvAttacks.Columns["ArmorPierce"].DisplayIndex = idx++;
                     dgvAttacks.Columns["ArmorPierce"].HeaderText = "AP";
                     dgvAttacks.Columns["ArmorPierce"].DefaultCellStyle.Format = "P1";
@@ -244,7 +244,7 @@ namespace WinFormsApp1
             }
 
             txtLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - txtLog.Location.Y;
-            txtLog.Text = Program.Game.Log.Data(selected?.Piece);
+            txtLog.Text = Program.Game.Log.Data(Selected?.Piece);
             txtLog.Select(0, 0);
 
             base.Refresh();
@@ -284,11 +284,11 @@ namespace WinFormsApp1
 
         public void BtnBuild_Click(object sender, EventArgs e)
         {
-            if (selected != null && selected.Piece.HasBehavior<IBuilder>())
+            if (DgvForm.CanBuild(Selected))
             {
-                Piece result = Program.DgvForm.BuilderDialog(selected.Piece);
+                Piece result = Program.DgvForm.BuilderDialog(Selected);
                 if (result != null)
-                    Program.Form.MapMain.SelTile = result.Tile;
+                    Program.RefreshChanged();
             }
         }
 
@@ -302,7 +302,7 @@ namespace WinFormsApp1
             Program.Game.SaveGame();
         }
 
-        private void btnResearch_Click(object sender, EventArgs e)
+        private void BtnResearch_Click(object sender, EventArgs e)
         {
             Research.ShowForm(null);
         }

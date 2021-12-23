@@ -8,6 +8,8 @@ namespace ClassLibrary1.Pieces
 {
     public interface IBehavior
     {
+        public virtual bool AllowMultiple => false;
+
         public Piece Piece { get; }
 
         public T GetBehavior<T>() where T : class, IBehavior;

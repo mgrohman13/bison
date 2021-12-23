@@ -47,10 +47,10 @@ namespace ClassLibrary1.Pieces
         public double ShieldLimit => _values.ShieldLimit;
         public bool Dead => HitsCur <= 0.05;
 
-        void IKillable.Upgrade(IKillable.Values killable)
+        void IKillable.Upgrade(IKillable.Values values)
         {
             double hitsPct = HitsCur / HitsMax;
-            this._values = killable;
+            this._values = values;
             _hitsCur = HitsMax * hitsPct;
         }
 

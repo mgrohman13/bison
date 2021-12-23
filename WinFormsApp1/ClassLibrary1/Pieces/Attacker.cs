@@ -31,12 +31,12 @@ namespace ClassLibrary1.Pieces
             return _piece.GetBehavior<T>();
         }
 
-        void IAttacker.Upgrade(Values[] attacks)
+        void IAttacker.Upgrade(Values[] values)
         {
-            if (_attacks.Count != attacks.Length)
+            if (_attacks.Count != values.Length)
                 throw new Exception();
-            for (int a = 0; a < attacks.Length; a++)
-                _attacks[a].Upgrade(attacks[a]);
+            for (int a = 0; a < values.Length; a++)
+                _attacks[a].Upgrade(values[a]);
         }
 
         bool IAttacker.Fire(IKillable target)

@@ -15,9 +15,7 @@ namespace WinFormsApp1
         public Main()
         {
             InitializeComponent();
-            this.MouseWheel += Main_MouseWheel;
-
-            Refresh();
+            this.MouseWheel += Main_MouseWheel; 
         }
 
         public Map MapMain => mapMain;
@@ -26,9 +24,6 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
-            Info.Refresh();
-            base.Refresh();
-
             Program.Game.Player.GetIncome(out double energyInc, out double energyUpk, out double massInc, out double massUpk, out double researchInc);
             energyInc -= energyUpk;
             massInc -= massUpk;
@@ -38,6 +33,8 @@ namespace WinFormsApp1
             FormatInc(lblMassInc, massInc);
             this.lblResearch.Text = Format(Program.Game.Player.Research.ResearchCur);
             FormatInc(lblResearchInc, researchInc);
+
+            base.Refresh();
         }
         private static void FormatInc(Label label, double inc)
         {

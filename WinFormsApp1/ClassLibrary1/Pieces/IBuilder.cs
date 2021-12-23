@@ -12,6 +12,11 @@ namespace ClassLibrary1.Pieces
 {
     public interface IBuilder : IBehavior
     {
+        public double Range { get; }
+        public double RangeBase { get; }
+
+        internal void Upgrade(Values values);
+
         public interface IBuildConstructor : IBuilder
         {
             public Constructor Build(Map.Tile tile);
@@ -31,6 +36,17 @@ namespace ClassLibrary1.Pieces
         public interface IBuildTurret : IBuilder
         {
             public Turret Build(Foundation foundation);
+        }
+
+        [Serializable]
+        public struct Values
+        {
+            private readonly double _range;
+            public Values(double range)
+            {
+                this._range = range;
+            }
+            public double Range => _range;
         }
     }
 }

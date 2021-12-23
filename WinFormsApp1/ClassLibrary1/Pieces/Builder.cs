@@ -13,17 +13,29 @@ namespace ClassLibrary1.Pieces
     [Serializable]
     public class Builder : IBuilder
     {
-        private readonly Piece _piece;
+        bool IBehavior.AllowMultiple => true;
 
+        private readonly Piece _piece;
         public Piece Piece => _piece;
 
-        public Builder(Piece piece)
+        private IBuilder.Values _values;
+
+        public double Range => Consts.GetDamagedValue(Piece, RangeBase, 1);
+        public double RangeBase => _values.Range;
+
+        public Builder(Piece piece, IBuilder.Values values)
         {
             this._piece = piece;
+            this._values = values;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
             return _piece.GetBehavior<T>();
+        }
+
+        void IBuilder.Upgrade(IBuilder.Values values)
+        {
+            this._values = values;
         }
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
@@ -35,14 +47,14 @@ namespace ClassLibrary1.Pieces
 
         private bool Validate(Map.Tile tile, bool empty)
         {
-            return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) == 1);
+            return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range);
         }
 
         [Serializable]
         public class BuildConstructor : Builder, IBuilder.IBuildConstructor
         {
-            public BuildConstructor(Piece piece)
-                : base(piece)
+            public BuildConstructor(Piece piece, IBuilder.Values values)
+                : base(piece, values)
             {
             }
             public Constructor Build(Map.Tile tile)
@@ -59,8 +71,8 @@ namespace ClassLibrary1.Pieces
         [Serializable]
         public class BuildExtractor : Builder, IBuilder.IBuildExtractor
         {
-            public BuildExtractor(Piece piece)
-                : base(piece)
+            public BuildExtractor(Piece piece, IBuilder.Values values)
+                : base(piece, values)
             {
             }
             public Extractor Build(Resource resource)
@@ -77,8 +89,8 @@ namespace ClassLibrary1.Pieces
         [Serializable]
         public class BuildMech : Builder, IBuilder.IBuildMech
         {
-            public BuildMech(Piece piece)
-                : base(piece)
+            public BuildMech(Piece piece, IBuilder.Values values)
+                : base(piece, values)
             {
             }
             public Mech Build(Map.Tile tile, MechBlueprint blueprint)
@@ -95,8 +107,8 @@ namespace ClassLibrary1.Pieces
         [Serializable]
         public class BuildFactory : Builder, IBuilder.IBuildFactory
         {
-            public BuildFactory(Piece piece)
-                : base(piece)
+            public BuildFactory(Piece piece, IBuilder.Values values)
+                : base(piece, values)
             {
             }
             public Factory Build(Foundation foundation)
@@ -113,8 +125,8 @@ namespace ClassLibrary1.Pieces
         [Serializable]
         public class BuildTurret : Builder, IBuilder.IBuildTurret
         {
-            public BuildTurret(Piece piece)
-               : base(piece)
+            public BuildTurret(Piece piece, IBuilder.Values values)
+               : base(piece, values)
             {
             }
             public Turret Build(Foundation foundation)

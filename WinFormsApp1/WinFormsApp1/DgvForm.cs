@@ -22,39 +22,58 @@ namespace WinFormsApp1
     public partial class DgvForm : Form
     {
         private List<BuildRow> rows;
-        //BindingSource binding = new BindingSource();
+        private Tile selected;
         private Piece result;
 
         public DgvForm()
         {
             InitializeComponent();
-            //dataGridView1.DataSource = null;
-            //dataGridView1.DataSource = rows;
-            //dataGridView1.DataSource = binding;
             dataGridView1.CellClick += DataGridView1_CellClick;
         }
 
-        public Piece BuilderDialog(Piece builder)
+        public static bool CanBuild(Tile selected)
         {
+            if (selected != null)
+            {
+                IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
+                IBuilder.IBuildMech buildMech = GetBuilder<IBuilder.IBuildMech>(selected);
+                IBuilder.IBuildExtractor buildExtractor = GetBuilder<IBuilder.IBuildExtractor>(selected);
+                IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
+                IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
+                if (buildConstructor != null && selected.Piece == null)
+                    return true;
+                if (buildMech != null && selected.Piece == null)
+                    return true;
+                if (buildExtractor != null && selected.Piece is Resource)
+                    return true;
+                if (buildFactory != null && selected.Piece is Foundation)
+                    return true;
+                if (buildTurret != null && selected.Piece is Foundation)
+                    return true;
+            }
+            return false;
+        }
+        public Piece BuilderDialog(Tile selected)
+        {
+            this.selected = selected;
             dataGridView1.Hide();
-            ////Show();
-            //try
-            //{
-            //    ((CurrencyManager)dataGridView1.BindingContext[dataGridView1.DataSource]).Refresh();
-            //}
-            //catch (InvalidOperationException e)
-            //{
-            //}
 
             rows = new List<BuildRow>();
             result = null;
 
-            if (builder.HasBehavior<IBuilder.IBuildConstructor>(out IBuilder.IBuildConstructor buildConstructor))
+
+            IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
+            IBuilder.IBuildMech buildMech = GetBuilder<IBuilder.IBuildMech>(selected);
+            IBuilder.IBuildExtractor buildExtractor = GetBuilder<IBuilder.IBuildExtractor>(selected);
+            IBuilder.IBuildFactory buildFactory = GetBuilder<IBuilder.IBuildFactory>(selected);
+            IBuilder.IBuildTurret buildTurret = GetBuilder<IBuilder.IBuildTurret>(selected);
+
+            if (buildConstructor != null)
             {
                 Constructor.Cost(Program.Game, out double energy, out double mass);
                 rows.Add(new(buildConstructor, "Constructor", energy, mass));
             }
-            if (builder.HasBehavior<IBuilder.IBuildMech>(out IBuilder.IBuildMech buildMech))
+            if (buildMech != null)
             {
                 foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
                 {
@@ -65,93 +84,30 @@ namespace WinFormsApp1
                 }
             }
 
-            IBuilder.IBuildExtractor buildExtractor = builder.GetBehavior<IBuilder.IBuildExtractor>();
-            IBuilder.IBuildFactory buildFactory = builder.GetBehavior<IBuilder.IBuildFactory>();
-            IBuilder.IBuildTurret buildTurret = builder.GetBehavior<IBuilder.IBuildTurret>();
-            bool flag = true;
-            if (buildExtractor != null || buildFactory != null || buildTurret != null)
-                for (int a = 0; a < 3; a++)
-                {
-                    int x = builder.Tile.X;
-                    int y = builder.Tile.Y;
-                    int idx = 0;
-                    foreach (Point point in new Point[] { new(x, y - 1), new(x, y + 1), new(x - 1, y), new(x + 1, y) })
-                    {
-                        Tile target = Program.Game.Map.GetVisibleTile(point.X, point.Y);
-                        Resource resource = target.Piece as Resource;
-                        Foundation foundation = target.Piece as Foundation;
-                        if ((a == 0 && resource != null) || (a > 0 && foundation != null))
-                        {
-                            IBuilder actual;
-                            string name;
-                            double mass, energy;
-                            if (a == 0)
-                            {
-                                actual = buildExtractor;
-                                name = "Extractor";
-                                Extractor.Cost(out energy, out mass, resource);
-                            }
-                            else
-                            {
-                                if (flag)
-                                {
-                                    actual = buildFactory;
-                                    name = "Factory";
-                                    Factory.Cost(Program.Game, out energy, out mass);
-                                    flag = !flag;
-                                }
-                                else
-                                {
-                                    actual = buildTurret;
-                                    name = "Turret";
-                                    Turret.Cost(Program.Game, out energy, out mass);
-                                    flag = !flag;
-                                }
-                            }
-                            if (actual != null)
-                            {
-                                BuildRow row = new(actual, name, energy, mass);
-                                rows.Add(row);
-                                switch (idx)
-                                {
-                                    case 0:
-                                        row.Up = true;
-                                        break;
-                                    case 1:
-                                        row.Down = true;
-                                        break;
-                                    case 2:
-                                        row.Left = true;
-                                        break;
-                                    case 3:
-                                        row.Right = true;
-                                        break;
-                                }
-                            }
-                        }
-                        idx++;
-                    }
+            Resource resource = selected.Piece as Resource;
+            Foundation foundation = selected.Piece as Foundation;
 
-                }
+            if (buildExtractor != null && resource != null)
+            {
+                Extractor.Cost(out double energy, out double mass, resource);
+                BuildRow row = new(buildExtractor, "Extractor", energy, mass);
+                rows.Add(row);
+            }
+            if (buildFactory != null && foundation != null)
+            {
+                Factory.Cost(Program.Game, out double energy, out double mass);
+                BuildRow row = new(buildFactory, "Factory", energy, mass);
+                rows.Add(row);
+            }
+            if (buildTurret != null && foundation != null)
+            {
+                Turret.Cost(Program.Game, out double energy, out double mass);
+                BuildRow row = new(buildTurret, "Turret", energy, mass);
+                rows.Add(row);
+            }
 
             if (rows.Any())
             {
-                //CurrencyManager cm = (CurrencyManager)this.dataGridView1.BindingContext[binding];
-                //if (cm != null)
-                //{
-                //    cm.Refresh();
-                //}
-
-                //try
-                //{
-                //    ((CurrencyManager)dataGridView1.BindingContext[dataGridView1.DataSource]).Refresh();
-                //}
-                //catch (Exception e)
-                //{
-                //}
-                //dataGridView1.DataSource = null;
-                //dataGridView1.DataSource = rows;
-
                 dataGridView1.DataSource = rows;
 
                 dataGridView1.Columns["Blueprint"].Visible = false;
@@ -165,69 +121,31 @@ namespace WinFormsApp1
                 dataGridView1.Size = dataGridView1.PreferredSize;
                 this.ClientSize = dataGridView1.PreferredSize;
 
-                //Hide();
-
-                //try
-                //{
                 dataGridView1.Show();
                 ShowDialog();
-                //}
-                //catch (Exception e)
-                //{
-                //    Debug.WriteLine(e.StackTrace);
-                //    ((CurrencyManager)dataGridView1.BindingContext[dataGridView1.DataSource]).Refresh();
-                //    ShowDialog();
-                //}
             }
 
             return result;
+        }
+        private static T GetBuilder<T>(Tile selected) where T : class, IBuilder
+        {
+            return Program.Game.Player.PiecesOfType<T>().FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
         }
         private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             BuildRow row = rows[e.RowIndex];
             IBuilder builder = row.Builder;
-            int x = builder.Piece.Tile.X;
-            int y = builder.Piece.Tile.Y;
-            Tile tile = null;
-            string result = dataGridView1.Columns[e.ColumnIndex].Name;
-            switch (result)
-            {
-                case "Up":
-                    tile = Program.Game.Map.GetVisibleTile(x, y - 1);
-                    break;
-                case "Down":
-                    tile = Program.Game.Map.GetVisibleTile(x, y + 1);
-                    break;
-                case "Left":
-                    tile = Program.Game.Map.GetVisibleTile(x - 1, y);
-                    break;
-                case "Right":
-                    tile = Program.Game.Map.GetVisibleTile(x + 1, y);
-                    break;
-            }
-            if (tile != null)
-            {
-                result = row.Name;
-                switch (result)
-                {
-                    case "Constructor":
-                        this.result = ((IBuilder.IBuildConstructor)builder).Build(tile);
-                        break;
-                    case "Mech":
-                        this.result = ((IBuilder.IBuildMech)builder).Build(tile, row.Blueprint);
-                        break;
-                    case "Extractor":
-                        this.result = ((IBuilder.IBuildExtractor)builder).Build(tile.Piece as Resource);
-                        break;
-                    case "Factory":
-                        this.result = ((IBuilder.IBuildFactory)builder).Build(tile.Piece as Foundation);
-                        break;
-                    case "Turret":
-                        this.result = ((IBuilder.IBuildTurret)builder).Build(tile.Piece as Foundation);
-                        break;
-                }
-                this.Close();
-            }
+            if (builder is IBuilder.IBuildConstructor buildConstructor)
+                this.result = buildConstructor.Build(selected);
+            if (builder is IBuilder.IBuildMech buildMech)
+                this.result = buildMech.Build(selected, row.Blueprint);
+            if (builder is IBuilder.IBuildExtractor buildExtractor)
+                this.result = buildExtractor.Build(selected.Piece as Resource);
+            if (builder is IBuilder.IBuildFactory buildFactory)
+                this.result = buildFactory.Build(selected.Piece as Foundation);
+            if (builder is IBuilder.IBuildTurret buildTurret)
+                this.result = buildTurret.Build(selected.Piece as Foundation);
+            this.Close();
         }
 
         public class BuildRow
@@ -237,10 +155,6 @@ namespace WinFormsApp1
             public string Name { get; set; }
             public double Energy { get; set; }
             public double Mass { get; set; }
-            public bool Up { get; set; }
-            public bool Down { get; set; }
-            public bool Left { get; set; }
-            public bool Right { get; set; }
             public BuildRow(IBuilder builder, string name, double energy, double mass)
             {
                 this.Builder = builder;

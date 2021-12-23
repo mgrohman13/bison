@@ -23,7 +23,7 @@ namespace WinFormsApp1
     {
         private const float padding = 1;
 
-        private float xStart, yStart, scale;//, yScale;
+        private float xStart, yStart, scale;
         private Tile _selected, _moused;
         private bool viewAttacks;
 
@@ -42,8 +42,8 @@ namespace WinFormsApp1
                     this.Invalidate();
                     if (Program.Form != null)
                     {
-                        Program.Form.Info.SetSelected(SelTile);
-                        Program.Form.Refresh();
+                        Program.Form.Info.Selected = SelTile;
+                        Program.RefreshSelected();
                     }
                 }
             }
@@ -68,7 +68,7 @@ namespace WinFormsApp1
                 if (viewAttacks != value)
                 {
                     viewAttacks = value;
-                    this.Invalidate();
+                    RefreshRanges();
                 }
             }
         }
@@ -94,6 +94,8 @@ namespace WinFormsApp1
             scale = Math.Min((this.Width - 1 - padding * 2) / (float)gameRect.Width, (this.Height - 1 - padding * 2) / (float)gameRect.Height);
             xStart = GetX(gameRect.X);
             yStart = GetY(gameRect.Y);
+
+            RefreshRanges();
         }
 
         private void Center()
@@ -108,15 +110,6 @@ namespace WinFormsApp1
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            //if (this == Program.Form.MapMain)
-            //{
-            //    Debug.WriteLine(xStart);
-            //    Debug.WriteLine(yStart);
-            //    Debug.WriteLine(xScale);
-            //    Debug.WriteLine(yScale);
-            //    Debug.WriteLine("");
-            //}
-
             e.Graphics.Clear(Color.White);
 
             if (Program.Game != null)
@@ -130,8 +123,6 @@ namespace WinFormsApp1
         }
         private void Tiles(PaintEventArgs e)
         {
-            //e.Graphics.SetClip(new RectangleF(0, 0, xScale * mapCoords.Width + 2, yScale * mapCoords.Height + 2));
-
             Pen reg = Pens.Black;
             using Pen sel = new(Color.Black, 3f);
             Pen[] pens = new Pen[] { reg, sel };
@@ -193,16 +184,53 @@ namespace WinFormsApp1
                     e.Graphics.DrawRectangles(pen, grid[pen].ToArray());
         }
 
+        private readonly static Pen range = new(Color.Red, 3f), move = new(Color.Green, 3f), repair = new(Color.Blue, 3f);
+        private readonly static Pen[] pens = new Pen[] { repair, range, move };
+        private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = pens.ToDictionary(p => p, p => new List<HashSet<Point>>());
+        private readonly Dictionary<Point, string> attacks = new();
+        public void RefreshRanges()
+        {
+            foreach (var pair in ranges)
+                pair.Value.Clear();
+
+            foreach (IBuilder b in Program.Game.Player.PiecesOfType<IBuilder>())
+                ranges[repair].Add(GetPoints(b.Piece.Tile.GetVisibleTilesInRange(b.Range)));
+
+            if (viewAttacks)
+            {
+                Dictionary<Tile, double> attStr = new();
+                void AddAttStr(IEnumerable<Tile> range, double damage)
+                {
+                    foreach (Tile t in range)
+                    {
+                        attStr.TryGetValue(t, out double total);
+                        attStr[t] = total + damage;
+                    }
+                }
+
+                IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
+                foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
+                {
+                    IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
+                    if (enemy.HasBehavior<IMovable>(out IMovable enemyMovable))
+                        attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
+                    allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles, AddAttStr).SelectMany(hs => hs));
+                }
+                ranges[range].Add(allAttacks.ToHashSet());
+
+                attacks.Clear();
+                foreach (var p in attStr)
+                    attacks.Add(new Point(p.Key.X, p.Key.Y), p.Value.ToString("0.0"));
+            }
+            this.Invalidate();
+        }
         private void Ranges(PaintEventArgs e)
         {
+            Dictionary<Pen, List<HashSet<Point>>> ranges = this.ranges;
             if (SelTile != null)
             {
-                using Pen range = new(Color.Red, 3f), move = new(Color.Green, 3f), repair = new(Color.Blue, 3f);
-                Pen[] pens = new Pen[] { repair, range, move };
-                Dictionary<Pen, List<HashSet<Point>>> ranges = new() { { range, new() }, { move, new() }, { repair, new() } };
-                //HashSet<Point> GetRangePoints(double v) => GetPoints(SelTile.GetVisibleTilesInRange(v));//.Where(t => t.Piece == null)                    
-                HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts
-                   .Select(t => new Point(t.X, t.Y)).ToHashSet();
+                //clone
+                ranges = ranges.ToDictionary(p => p.Key, p => p.Value.ToList());
 
                 IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IMovable>(out IMovable movable) && movable.MoveCur >= 1)
@@ -213,101 +241,78 @@ namespace WinFormsApp1
                         ranges[move].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
                 }
 
-                Dictionary<Tile, double> attStr = new();
-                void AddAttStr(IEnumerable<Tile> range, double damage)
-                {
-                    if (viewAttacks)
-                        foreach (Tile t in range)
-                        {
-                            attStr.TryGetValue(t, out double total);
-                            attStr[t] = total + damage;
-                        }
-                }
-                IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles)
-                {
-                    List<HashSet<Point>> retVal = new();
-                    var ar = attacker.Attacks.Where(a => !a.Attacked);
-                    if (attacker.Piece.IsEnemy && moveTiles.Any())
-                    {
-                        var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > attacker.Piece.GetBehavior<IMovable>().MoveCur - 1);
-                        foreach (var a in ar)
-                        {
-                            IEnumerable<Tile> e = moveEdge.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);
-                            AddAttStr(e, a.Damage);
-                            retVal.Add(GetPoints(e));
-                        }
-                    }
-                    else
-                        foreach (var a in ar)
-                            if (moveTiles.Contains(MouseTile))
-                                retVal.Add(GetPoints(MouseTile.GetVisibleTilesInRange(a.Range)));
-                            else
-                            {
-                                IEnumerable<Tile> e = SelTile.GetVisibleTilesInRange(a.Range);
-                                AddAttStr(e, a.Damage);
-                                retVal.Add(GetPoints(e));
-                            }
-                    return retVal;
-                }
-                if (viewAttacks)
-                {
-                    IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
-                    foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
-                    {
-                        IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
-                        if (enemy.HasBehavior<IMovable>(out IMovable enemyMovable))
-                            attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
-                        allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles).SelectMany(hs => hs));
-                    }
-                    ranges[range].Add(allAttacks.ToHashSet());
-
-                    using Font f = new(FontFamily.GenericMonospace, scale / 6.5f);
-                    foreach (var p in attStr)
-                        e.Graphics.DrawString(p.Value.ToString("0.0"), f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
-                }
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
-                    ranges[range].AddRange(AddAttacks(attacker, moveTiles));
+                    ranges[range].AddRange(AddAttacks(attacker, moveTiles, null));
 
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IRepair>(out IRepair r))
-                    if (moveTiles.Contains(MouseTile))
-                        ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(r.Range)));
-                    else
-                        ranges[repair].Add(GetPoints(SelTile.GetVisibleTilesInRange(r.Range)));
-
-                Dictionary<LineSegment, Pen> lines = new();
-                foreach (Pen pen in pens)
-                {
-                    if (ranges.ContainsKey(pen))
-                        foreach (var tiles in ranges[pen])
-                            foreach (Point t in tiles)
-                            //if (Program.Game.Map.Visible(t.X, t.Y))
-                            {
-                                bool Show(Point p) => !tiles.Contains(p);
-                                void AddLine(int x1, int y1, int x2, int y2)
-                                {
-                                    LineSegment l = new(x1, y1, x2, y2);
-                                    if (lines.TryGetValue(l, out Pen oth))
-                                    {
-                                        if (pen != oth)
-                                            lines[l] = Combine(pen, oth);
-                                    }
-                                    else
-                                        lines.Add(l, pen);
-                                };
-                                if (Show(new(t.X - 1, t.Y)))
-                                    AddLine(t.X, t.Y, t.X, t.Y + 1);
-                                if (Show(new(t.X + 1, t.Y)))
-                                    AddLine(t.X + 1, t.Y, t.X + 1, t.Y + 1);
-                                if (Show(new(t.X, t.Y - 1)))
-                                    AddLine(t.X, t.Y, t.X + 1, t.Y);
-                                if (Show(new(t.X, t.Y + 1)))
-                                    AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
-                            }
-                }
-                foreach (var t in lines)
-                    e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IBuilder>(out IBuilder b) && moveTiles.Contains(MouseTile))
+                    ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
             }
+
+            Dictionary<LineSegment, Pen> lines = new();
+            foreach (Pen pen in pens)
+            {
+                if (ranges.ContainsKey(pen))
+                    foreach (var tiles in ranges[pen])
+                        foreach (Point t in tiles)
+                        {
+                            bool Show(Point p) => !tiles.Contains(p);
+                            void AddLine(int x1, int y1, int x2, int y2)
+                            {
+                                LineSegment l = new(x1, y1, x2, y2);
+                                if (lines.TryGetValue(l, out Pen oth))
+                                {
+                                    if (pen != oth)
+                                        lines[l] = Combine(pen, oth);
+                                }
+                                else
+                                    lines.Add(l, pen);
+                            };
+                            if (Show(new(t.X - 1, t.Y)))
+                                AddLine(t.X, t.Y, t.X, t.Y + 1);
+                            if (Show(new(t.X + 1, t.Y)))
+                                AddLine(t.X + 1, t.Y, t.X + 1, t.Y + 1);
+                            if (Show(new(t.X, t.Y - 1)))
+                                AddLine(t.X, t.Y, t.X + 1, t.Y);
+                            if (Show(new(t.X, t.Y + 1)))
+                                AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
+                        }
+            }
+
+            foreach (var t in lines)
+                e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
+
+            using Font f = new(FontFamily.GenericMonospace, scale / 6.5f);
+            foreach (var p in this.attacks)
+                e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
         }
+        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles, Action<IEnumerable<Tile>, double> AddAttStr)
+        {
+            List<HashSet<Point>> retVal = new();
+            var ar = attacker.Attacks.Where(a => !a.Attacked);
+            if (attacker.Piece.IsEnemy && moveTiles.Any())
+            {
+                var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > attacker.Piece.GetBehavior<IMovable>().MoveCur - 1);
+                foreach (var a in ar)
+                {
+                    IEnumerable<Tile> e = moveEdge.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);
+                    AddAttStr?.Invoke(e, a.Damage);
+                    retVal.Add(GetPoints(e));
+                }
+            }
+            else
+            {
+                foreach (var a in ar)
+                    if (moveTiles.Contains(MouseTile))
+                        retVal.Add(GetPoints(MouseTile.GetVisibleTilesInRange(a.Range)));
+                    else
+                    {
+                        IEnumerable<Tile> e = SelTile.GetVisibleTilesInRange(a.Range);
+                        retVal.Add(GetPoints(e));
+                    }
+            }
+            return retVal;
+        }
+        private static HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts.Select(t => new Point(t.X, t.Y)).ToHashSet();
         private static Pen Combine(Pen pen, Pen oth)
         {
             const int factor = 3;
@@ -348,6 +353,7 @@ namespace WinFormsApp1
                 return obj is LineSegment o && x1 == o.x1 && x2 == o.x2 && y1 == o.y1 && y2 == o.y2;
             }
         }
+
         private void Border(PaintEventArgs e)
         {
             using Pen thick = new(Color.Black, 3f);
@@ -575,12 +581,18 @@ namespace WinFormsApp1
                 if (SelTile.Piece.HasBehavior<IMovable>(out IMovable movable))
                 {
                     if (movable.Move(clicked))
+                    {
                         SelTile = clicked;
+                        Program.RefreshChanged();
+                    }
                 }
                 if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior<IKillable>(out IKillable killable))
                 {
                     if (attacker.Fire(killable))
+                    {
                         SelTile = clicked;
+                        Program.RefreshChanged();
+                    }
                 }
             }
 

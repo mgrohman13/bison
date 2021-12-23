@@ -38,6 +38,18 @@ namespace WinFormsApp1
             Application.Run(Form);
         }
 
+        public static void RefreshSelected()
+        {
+            Form.MapMain.Invalidate();
+            Form.Info.Refresh();
+            Form.Refresh();
+        }
+        public static void RefreshChanged()
+        {
+            Form.MapMain.RefreshRanges();
+            RefreshSelected();
+        }
+
         public static void AutoSave()
         {
             if (File.Exists(Game.SavePath))
@@ -89,7 +101,7 @@ namespace WinFormsApp1
                     AutoSave();
                 }
                 moved.Clear();
-                Form.Refresh();
+                Program.RefreshChanged();
 
                 if (researched.HasValue)
                     Research.ShowForm(researched);

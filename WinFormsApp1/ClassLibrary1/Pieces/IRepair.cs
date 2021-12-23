@@ -6,25 +6,24 @@ using System.Threading.Tasks;
 
 namespace ClassLibrary1.Pieces
 {
-    public interface IRepair : IBehavior
+    public interface IRepair : IBuilder
     {
-        public double Range { get; }
-        public double RangeBase { get; }
         public double Rate { get; }
         public double RateBase { get; }
 
-        internal void Upgrade(Values repair);
+        internal void Upgrade(IRepair.Values values);
 
         [Serializable]
-        public struct Values
+        new public struct Values
         {
-            private readonly double _range, _rate;
-            public Values(double range, double rate)
+            public readonly IBuilder.Values Builder;
+
+            private readonly double _rate;
+            public Values(IBuilder.Values builder, double rate)
             {
-                this._range = range;
+                this.Builder = builder;
                 this._rate = rate;
             }
-            public double Range => _range;
             public double Rate => _rate;
         }
     }
