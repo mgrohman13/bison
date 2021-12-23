@@ -88,7 +88,7 @@ namespace ClassLibrary1
         private Type OnResearch(out double excess)
         {
             this._researchLast += _options[_researching];
-            this._researchedTypes.Add(_researching, _researchLast);
+            this._researchedTypes[_researching] = _researchLast;
             excess = _progress[_researching] - _options[_researching];
             this._progress.Remove(_researching);
             Game.Player.OnResearch(_researching, GetResearchMult(_researchLast));

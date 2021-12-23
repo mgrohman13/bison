@@ -108,22 +108,25 @@ namespace WinFormsApp1
                                     flag = !flag;
                                 }
                             }
-                            BuildRow row = new(actual, name, energy, mass);
-                            rows.Add(row);
-                            switch (idx)
+                            if (actual != null)
                             {
-                                case 0:
-                                    row.Up = true;
-                                    break;
-                                case 1:
-                                    row.Down = true;
-                                    break;
-                                case 2:
-                                    row.Left = true;
-                                    break;
-                                case 3:
-                                    row.Right = true;
-                                    break;
+                                BuildRow row = new(actual, name, energy, mass);
+                                rows.Add(row);
+                                switch (idx)
+                                {
+                                    case 0:
+                                        row.Up = true;
+                                        break;
+                                    case 1:
+                                        row.Down = true;
+                                        break;
+                                    case 2:
+                                        row.Left = true;
+                                        break;
+                                    case 3:
+                                        row.Right = true;
+                                        break;
+                                }
                             }
                         }
                         idx++;

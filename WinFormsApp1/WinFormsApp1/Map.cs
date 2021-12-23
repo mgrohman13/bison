@@ -577,7 +577,7 @@ namespace WinFormsApp1
                     if (movable.Move(clicked))
                         SelTile = clicked;
                 }
-                if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker) && clicked.Piece.HasBehavior<IKillable>(out IKillable killable))
+                if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior<IKillable>(out IKillable killable))
                 {
                     if (attacker.Fire(killable))
                         SelTile = clicked;

@@ -18,9 +18,9 @@ namespace ClassLibrary1
 
         public const double ResearchFactor = 2600;
 
-        public const double DifficultyTurns = 65;
+        public const double DifficultyTurns = 78;
         public const double DifficultyPow = 1.69;
-        public const double EnemyEnergy = 169;
+        public const double EnemyEnergy = 130;
 
         public const double HitsIncDev = .065;
         public const double MoveDev = .013;
@@ -31,7 +31,7 @@ namespace ClassLibrary1
         public const double ResourceDistDiv = 52;
         public const double ResourceDistPow = .39;
         public const double ResourceSustainValuePow = .169;
-        public const double ExtractTurns = 39;
+        public const double ExtractTurns = 52;
         public const double ExtractPower = .65 / (1 - .65); // x/(1-x) where x is desired power when sustain=1
         public const double ExtractSustainPow = .26;
         public const double ResourceDev = .21;
