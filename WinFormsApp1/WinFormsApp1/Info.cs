@@ -38,9 +38,19 @@ namespace WinFormsApp1
             lblTurn.Text = Program.Game.Turn.ToString();
 
             if (DgvForm.CanBuild(Selected))
+            {
+                btnBuild.Text = "Build";
                 btnBuild.Show();
+            }
+            else if (HasUpgrade())
+            {
+                btnBuild.Text = "Upgrade";
+                btnBuild.Show();
+            }
             else
+            {
                 btnBuild.Hide();
+            }
 
             if (Selected != null && Selected.Piece != null)
             {
@@ -67,7 +77,7 @@ namespace WinFormsApp1
                     {
                         lbl2.Show();
                         lblInf2.Show();
-                        lbl2.Text = "Shield";
+                        lbl2.Text = "Shields";
                         lblInf2.Text = string.Format("{0} / {1} / {2} +{3}{4}",
                             Format(killable.ShieldCur), Format(killable.ShieldMax), Format(killable.ShieldLimit), Format(killable.GetInc()),
                             CheckBase(killable.ShieldIncBase, killable.GetInc()));
@@ -84,7 +94,7 @@ namespace WinFormsApp1
                 {
                     lbl4.Show();
                     lblInf4.Show();
-                    lbl4.Text = "Move";
+                    lbl4.Text = "Movement";
                     lblInf4.Text = string.Format("{0} / {1} / {2} +{3}{4}",
                             Format(movable.MoveCur), Format(movable.MoveMax), Format(movable.MoveLimit), Format(movable.GetInc()),
                             CheckBase(movable.MoveIncBase, movable.GetInc()));
@@ -290,6 +300,40 @@ namespace WinFormsApp1
                 if (result != null)
                     Program.RefreshChanged();
             }
+            else if (HasUpgrade(out MechBlueprint blueprint, out double energy, out double mass))
+            {
+                bool canUpgrade = CanUpgrade();
+                if (MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
+                    blueprint, (energy < 0 ? "+" : "") + (-energy).ToString("0.0"), (mass < 0 ? "+" : "") + (-mass).ToString("0.0"),
+                    canUpgrade ? "U" : "Can u", canUpgrade ? "?" : " ."),
+                    "Upgrade", canUpgrade ? MessageBoxButtons.YesNo : MessageBoxButtons.OK)
+                    == DialogResult.Yes)
+                {
+                    ((Mech)Selected.Piece).Upgrade();
+                    Program.RefreshChanged();
+                }
+            }
+        }
+        private bool HasUpgrade()
+        {
+            return HasUpgrade(out _, out _, out _);
+        }
+        private bool HasUpgrade(out MechBlueprint blueprint, out double energy, out double mass)
+        {
+            if (Selected != null && Selected.Piece is Mech mech)
+            {
+                mech.CanUpgrade(out blueprint, out energy, out mass);
+                return blueprint != null;
+            }
+            blueprint = null;
+            energy = mass = double.NaN;
+            return false;
+        }
+        private bool CanUpgrade()
+        {
+            if (Selected != null && Selected.Piece is Mech mech)
+                return mech.CanUpgrade(out _, out _, out _);
+            return false;
         }
 
         public void BtnViewAtt_Click(object sender, EventArgs e)

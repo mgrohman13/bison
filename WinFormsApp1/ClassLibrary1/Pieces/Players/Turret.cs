@@ -22,11 +22,11 @@ namespace ClassLibrary1.Pieces.Players
         {
             _hitsMult = Game.Rand.GaussianCapped(1, .169, .39);
             for (int a = 0; a < 2; a++)
-                _rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1);
+                _rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1) / values.AttackRange[a];
 
             IKillable.Values killable = values.GetKillable(_hitsMult);
             SetBehavior(
-                new Killable(this, killable, killable.ShieldMax / 2.1),
+                new Killable(this, killable, killable.HitsMax, killable.ShieldMax / 2.1),
                 new Attacker(this, values.GetAttacks(Game.Player.Research, _rangeMult)));
         }
         internal static Turret NewTurret(Foundation foundation)
@@ -48,6 +48,8 @@ namespace ClassLibrary1.Pieces.Players
         internal override void OnResearch(Research.Type type)
         {
             Values values = GetValues(Game);
+
+            this._vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.GetKillable(_hitsMult));
             GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _rangeMult));
         }
@@ -165,7 +167,7 @@ namespace ClassLibrary1.Pieces.Players
                 researchMult = Math.Pow(researchMult, .9);
                 for (int a = 0; a < 2; a++)
                 {
-                    double damage = a == 0 ? 3.9 : 6.5;
+                    double damage = a == 0 ? 7.8 : 13;
                     double armorPierce = a == 0 ? .13 : 0;
                     double shieldPierce = a == 0 ? 0 : .13;
 

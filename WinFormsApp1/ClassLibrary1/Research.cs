@@ -11,9 +11,10 @@ using ClassLibrary1.Pieces.Players;
 namespace ClassLibrary1
 {
     [Serializable]
-    public class Research
+    public class Research : IResearch
     {
         public readonly Game Game;
+        Game IResearch.Game => Game;
 
         private Type _researching;
         private readonly Dictionary<Type, double> _researchedTypes;
@@ -94,7 +95,7 @@ namespace ClassLibrary1
             this._progress.Remove(_researching);
             Game.Player.OnResearch(_researching, GetResearchMult(_researchLast));
             if (IsMech(_researching))
-                MechBlueprint.OnResearch(_blueprints, _researching, _researchLast);
+                MechBlueprint.OnResearch(this, _blueprints);
             return _researching;
         }
         public static double GetResearchMult(double research)
@@ -172,6 +173,46 @@ namespace ClassLibrary1
         internal bool HasType(Type research)
         {
             return _researchedTypes.ContainsKey(research);
+        }
+
+        public double GetLevel()
+        {
+            return _researchLast;
+        }
+        Type IResearch.GetType()
+        {
+            return _researching;
+        }
+        public double GetMinCost()
+        {
+            return Math.Pow(GetLevel() + .78 * Consts.ResearchFactor, .78);
+        }
+        public double GetMaxCost()
+        {
+            return Math.Pow(GetLevel() + .39 * Consts.ResearchFactor, 1);
+        }
+        public bool MakeType(Type type)
+        {
+            double chance = .5;
+            switch (type)
+            {
+                case Type.MechShields:
+                    chance *= 1;
+                    break;
+                case Type.MechSP:
+                case Type.MechAP:
+                    chance *= Math.Pow(GetLevel() / (GetLevel() + Consts.ResearchFactor), 1.69);
+                    goto case Type.MechArmor;
+                case Type.MechArmor:
+                    chance *= Math.Pow(GetLast(type) / GetLevel(), .65);
+                    break;
+                default: throw new Exception();
+            }
+            return HasType(type) && Game.Rand.Bool(chance);
+        }
+        public double GetMult(Type type, double pow)
+        {
+            return Math.Pow(GetResearchMult(GetLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
         }
 
         private static readonly Type[] BaseTypes = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory, Type.FactoryConstructor, Type.ExtractorAutoRepair, Type.FactoryAutoRepair, Type.TurretAutoRepair };

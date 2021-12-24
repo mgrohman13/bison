@@ -281,9 +281,12 @@ namespace WinFormsApp1
             foreach (var t in lines)
                 e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
 
-            using Font f = new(FontFamily.GenericMonospace, scale / 6.5f);
-            foreach (var p in this.attacks)
-                e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
+            if (viewAttacks)
+            {
+                using Font f = new(FontFamily.GenericMonospace, scale / 6.5f);
+                foreach (var p in this.attacks)
+                    e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
+            }
         }
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles, Action<IEnumerable<Tile>, double> AddAttStr)
         {

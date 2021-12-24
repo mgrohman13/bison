@@ -20,15 +20,15 @@ namespace ClassLibrary1.Pieces
         public Piece Piece => _piece;
 
         public Killable(Piece piece, IKillable.Values values)
-            : this(piece, values, 0)
+            : this(piece, values, values.HitsMax, 0)
         {
         }
-        public Killable(Piece piece, IKillable.Values values, double shieldCur)
+        public Killable(Piece piece, IKillable.Values values, double hitsCur, double shieldCur)
         {
             this._piece = piece;
             this._values = values;
 
-            this._hitsCur = values.HitsMax;
+            this._hitsCur = hitsCur;
             this._shieldCur = shieldCur;
         }
         public T GetBehavior<T>() where T : class, IBehavior
@@ -50,8 +50,13 @@ namespace ClassLibrary1.Pieces
         void IKillable.Upgrade(IKillable.Values values)
         {
             double hitsPct = HitsCur / HitsMax;
+            double oldShield = ShieldLimit;
+
             this._values = values;
             _hitsCur = HitsMax * hitsPct;
+
+            if (ShieldLimit < oldShield)
+                _shieldCur = _shieldCur * ShieldLimit / oldShield;
         }
 
         void IKillable.Damage(double damage, double shieldDmg)

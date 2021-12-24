@@ -78,7 +78,7 @@ namespace WinFormsApp1
         }
         public void RefreshLB()
         {
-            Type[] available = Program.Game.Player.Research.Available.OrderBy(Program.Game.Player.Research.GetCost).ToArray();
+            Type[] available = Program.Game.Player.Research.Available.OrderBy(t => Program.Game.Player.Research.GetCost(t) - Program.Game.Player.Research.GetProgress(t)).ToArray();
             this.lbAvailable.DataSource = available;
             this.lbDone.DataSource = Program.Game.Player.Research.Done.OrderByDescending(Program.Game.Player.Research.GetLast).ToArray();
 

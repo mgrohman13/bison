@@ -15,7 +15,12 @@ namespace WinFormsApp1
         public Main()
         {
             InitializeComponent();
-            this.MouseWheel += Main_MouseWheel; 
+            this.MouseWheel += Main_MouseWheel;
+        }
+
+        private void Main_Shown(object sender, EventArgs e)
+        {
+            Program.RefreshChanged();
         }
 
         public Map MapMain => mapMain;

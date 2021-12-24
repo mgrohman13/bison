@@ -20,11 +20,15 @@ namespace ClassLibrary1.Pieces
         public Piece Piece => _piece;
 
         public Movable(Piece piece, IMovable.Values values)
+            : this(piece, values, 0)
+        {
+        }
+        public Movable(Piece piece, IMovable.Values values, double moveCur)
         {
             this._piece = piece;
             this._values = values;
 
-            this._moveCur = 0;
+            this._moveCur = moveCur;
         }
         public T GetBehavior<T>() where T : class, IBehavior
         {
@@ -39,7 +43,12 @@ namespace ClassLibrary1.Pieces
 
         void IMovable.Upgrade(IMovable.Values values)
         {
+            double oldMove = MoveLimit;
+
             this._values = values;
+
+            if (MoveLimit < oldMove)
+                _moveCur = _moveCur * MoveLimit / oldMove;
         }
 
         bool IMovable.Move(Map.Tile to)

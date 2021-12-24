@@ -49,6 +49,7 @@ namespace WinFormsApp1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoMain.Location = new System.Drawing.Point(1398, 306);
             this.infoMain.Name = "infoMain";
+            this.infoMain.Selected = null;
             this.infoMain.Size = new System.Drawing.Size(500, 718);
             this.infoMain.TabIndex = 1;
             // 
@@ -63,6 +64,7 @@ namespace WinFormsApp1
             this.mapMain.SelTile = null;
             this.mapMain.Size = new System.Drawing.Size(1392, 987);
             this.mapMain.TabIndex = 2;
+            this.mapMain.ViewAttacks = false;
             // 
             // mapMini
             // 
@@ -73,6 +75,7 @@ namespace WinFormsApp1
             this.mapMini.SelTile = null;
             this.mapMini.Size = new System.Drawing.Size(500, 300);
             this.mapMini.TabIndex = 3;
+            this.mapMini.ViewAttacks = false;
             this.mapMini.Visible = false;
             // 
             // label1
@@ -185,6 +188,7 @@ namespace WinFormsApp1
             this.KeyPreview = true;
             this.Name = "Main";
             this.Text = "Form1";
+            this.Shown += new System.EventHandler(this.Main_Shown);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Main_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Main_KeyUp);
             this.ResumeLayout(false);

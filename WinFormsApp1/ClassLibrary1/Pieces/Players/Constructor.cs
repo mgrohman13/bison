@@ -46,6 +46,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             Unlock(Game.Player.Research);
             Values values = GetValues(Game);
+
+            this._vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _defenseType));
             GetBehavior<IMovable>().Upgrade(values.Movable);
             GetBehavior<IRepair>().Upgrade(values.GetRepair(_rangeMult));

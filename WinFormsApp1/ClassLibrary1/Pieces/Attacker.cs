@@ -31,12 +31,13 @@ namespace ClassLibrary1.Pieces
             return _piece.GetBehavior<T>();
         }
 
-        void IAttacker.Upgrade(Values[] values)
+        void IAttacker.Upgrade(IEnumerable<Values> values)
         {
-            if (_attacks.Count != values.Length)
+            Values[] attacks = values.ToArray();
+            if (_attacks.Count != attacks.Length)
                 throw new Exception();
-            for (int a = 0; a < values.Length; a++)
-                _attacks[a].Upgrade(values[a]);
+            for (int a = 0; a < attacks.Length; a++)
+                _attacks[a].Upgrade(attacks[a]);
         }
 
         bool IAttacker.Fire(IKillable target)
@@ -102,6 +103,7 @@ namespace ClassLibrary1.Pieces
             internal void Upgrade(Values values)
             {
                 this._values = values;
+                this._attacked = true;
             }
 
             internal bool Fire(IKillable target)

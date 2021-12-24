@@ -49,6 +49,7 @@ namespace WinFormsApp1
             this.lblInf8 = new System.Windows.Forms.Label();
             this.lbl8 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnResearch = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnViewAtt = new System.Windows.Forms.Button();
             this.btnBuild = new System.Windows.Forms.Button();
@@ -56,7 +57,6 @@ namespace WinFormsApp1
             this.txtLog = new System.Windows.Forms.TextBox();
             this.lblInf9 = new System.Windows.Forms.Label();
             this.lbl9 = new System.Windows.Forms.Label();
-            this.btnResearch = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -258,6 +258,17 @@ namespace WinFormsApp1
             this.panel1.Size = new System.Drawing.Size(300, 115);
             this.panel1.TabIndex = 21;
             // 
+            // btnResearch
+            // 
+            this.btnResearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnResearch.Location = new System.Drawing.Point(188, 1);
+            this.btnResearch.Name = "btnResearch";
+            this.btnResearch.Size = new System.Drawing.Size(112, 34);
+            this.btnResearch.TabIndex = 16;
+            this.btnResearch.Text = "Research";
+            this.btnResearch.UseVisualStyleBackColor = true;
+            this.btnResearch.Click += new System.EventHandler(this.BtnResearch_Click);
+            // 
             // btnSave
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -271,7 +282,7 @@ namespace WinFormsApp1
             // 
             // btnViewAtt
             // 
-            this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnViewAtt.Location = new System.Drawing.Point(0, 1);
             this.btnViewAtt.Name = "btnViewAtt";
             this.btnViewAtt.Size = new System.Drawing.Size(112, 34);
@@ -330,17 +341,6 @@ namespace WinFormsApp1
             this.lbl9.Size = new System.Drawing.Size(41, 25);
             this.lbl9.TabIndex = 24;
             this.lbl9.Text = "lbl9";
-            // 
-            // btnResearch
-            // 
-            this.btnResearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnResearch.Location = new System.Drawing.Point(188, 1);
-            this.btnResearch.Name = "btnResearch";
-            this.btnResearch.Size = new System.Drawing.Size(112, 34);
-            this.btnResearch.TabIndex = 16;
-            this.btnResearch.Text = "Research";
-            this.btnResearch.UseVisualStyleBackColor = true;
-            this.btnResearch.Click += new System.EventHandler(this.BtnResearch_Click);
             // 
             // Info
             // 

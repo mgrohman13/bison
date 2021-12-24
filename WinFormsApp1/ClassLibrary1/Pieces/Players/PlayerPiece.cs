@@ -10,7 +10,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public abstract class PlayerPiece : Piece
     {
-        private readonly double _vision;
+        protected double _vision;
         public double Vision => Consts.GetDamagedValue(this, VisionBase, 0);
         public double VisionBase => _vision;
 

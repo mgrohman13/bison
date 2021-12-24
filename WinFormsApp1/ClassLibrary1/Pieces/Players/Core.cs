@@ -29,6 +29,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             Unlock(Game.Player.Research);
             Values values = GetValues(Game);
+
+            this._vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.Killable);
             GetBehavior<IRepair>().Upgrade(values.Repair);
         }

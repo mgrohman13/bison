@@ -43,6 +43,8 @@ namespace ClassLibrary1.Pieces.Players
         internal override void OnResearch(Research.Type type)
         {
             Values values = GetValues(Game);
+
+            this._vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.Killable);
         }
         private static Values GetValues(Game game)

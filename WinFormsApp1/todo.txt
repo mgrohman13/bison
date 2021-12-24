@@ -1,3 +1,12 @@
+selected piece shows double build range on mouse around
+show research progress/cost on main form
+better can build indicator - disable for certain blueprints 
+HP bars (shield bars?)
+blueprint type num bug
+lock mech stuff until research type
+show research unlocks
+turret far too weak
+
 enemy hive
 	protected by turrets
 	constant spawn pct in dir

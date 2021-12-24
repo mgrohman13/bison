@@ -21,7 +21,7 @@ namespace WinFormsApp1
 {
     public partial class DgvForm : Form
     {
-        private List<BuildRow> rows;
+        private List<object> rows;
         private Tile selected;
         private Piece result;
 
@@ -58,7 +58,7 @@ namespace WinFormsApp1
             this.selected = selected;
             dataGridView1.Hide();
 
-            rows = new List<BuildRow>();
+            rows = new List<object>();
             result = null;
 
 
@@ -71,28 +71,25 @@ namespace WinFormsApp1
             if (buildConstructor != null)
             {
                 Constructor.Cost(Program.Game, out double energy, out double mass);
-                rows.Add(new(buildConstructor, "Constructor", energy, mass));
+                BuildRow row = new(buildConstructor, "Constructor", energy, mass);
+                rows.Add(row);
             }
             if (buildMech != null)
             {
                 foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
                 {
                     blueprint.Cost(out double energy, out double mass);
-                    BuildRow row = new(buildMech, "Mech", energy, mass);
-                    row.Blueprint = blueprint;
+                    BuildRow row = new(buildMech, "Mech", energy, mass, blueprint);
                     rows.Add(row);
                 }
             }
-
-            Resource resource = selected.Piece as Resource;
-            Foundation foundation = selected.Piece as Foundation;
-
-            if (buildExtractor != null && resource != null)
+            if (buildExtractor != null && selected.Piece is Resource resource)
             {
                 Extractor.Cost(out double energy, out double mass, resource);
                 BuildRow row = new(buildExtractor, "Extractor", energy, mass);
                 rows.Add(row);
             }
+            Foundation foundation = selected.Piece as Foundation;
             if (buildFactory != null && foundation != null)
             {
                 Factory.Cost(Program.Game, out double energy, out double mass);
@@ -110,12 +107,17 @@ namespace WinFormsApp1
             {
                 dataGridView1.DataSource = rows;
 
-                dataGridView1.Columns["Blueprint"].Visible = false;
+                //dataGridView1.Columns["Blueprint"].Visible = false;
                 dataGridView1.Columns["Builder"].Visible = false;
 
                 dataGridView1.Columns["Energy"].DefaultCellStyle.Format = "0.0";
                 dataGridView1.Columns["Mass"].DefaultCellStyle.Format = "0.0";
 
+                dataGridView1.Columns["Research"].DefaultCellStyle.Format = "0.0";
+                dataGridView1.Columns["Vision"].DefaultCellStyle.Format = "0.0";
+                dataGridView1.Columns["Hits"].DefaultCellStyle.Format = "0.0";
+                dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P1";
+                dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P1";
 
                 dataGridView1.Location = new System.Drawing.Point(0, 0);
                 dataGridView1.Size = dataGridView1.PreferredSize;
@@ -133,7 +135,7 @@ namespace WinFormsApp1
         }
         private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            BuildRow row = rows[e.RowIndex];
+            BuildRow row = (BuildRow)rows[e.RowIndex];
             IBuilder builder = row.Builder;
             if (builder is IBuilder.IBuildConstructor buildConstructor)
                 this.result = buildConstructor.Build(selected);
@@ -150,11 +152,37 @@ namespace WinFormsApp1
 
         public class BuildRow
         {
-            public MechBlueprint Blueprint { get; set; }
-            public IBuilder Builder { get; set; }
-            public string Name { get; set; }
-            public double Energy { get; set; }
-            public double Mass { get; set; }
+            public IBuilder Builder { get; }
+            public string Name { get; }
+            public double Energy { get; }
+            public double Mass { get; }
+
+            public MechBlueprint Blueprint { get; }
+
+            public MechBlueprint Upgraded => Blueprint?.UpgradeFrom;
+            public double? Research => Blueprint?.ResearchLevel;
+
+            public string Movement => Blueprint == null ? null : string.Format("{1:0.0} / {2:0.0} +{0:0.0}", Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
+            public double? Vision => Blueprint?.Vision;
+
+            public double? Hits => Blueprint?.Killable.HitsMax;
+            public double? Resilience => Blueprint?.Killable.Resilience;
+            public double? Armor => Blueprint?.Killable.Armor;
+            public string Shields => Blueprint == null ? null : Blueprint.Killable.ShieldInc <= 0 ? "" :
+                string.Format("{1:0.0} / {2:0.0} +{0:0.0}", Blueprint.Killable.ShieldInc, Blueprint.Killable.ShieldMax, Blueprint.Killable.ShieldLimit);
+
+            public int? Attacks => Blueprint?.Attacks.Count;
+            public string Range => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Range.ToString("0.0")));
+            public string Damage => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Damage.ToString("0.0")));
+            public string ArmorPierce => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.ArmorPierce.ToString("P1")));
+            public string ShieldPierce => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.ShieldPierce.ToString("P1")));
+            public string Dev => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Dev.ToString("P1")));
+
+            public BuildRow(IBuilder builder, string name, double energy, double mass, MechBlueprint blueprint)
+                : this(builder, name, energy, mass)
+            {
+                this.Blueprint = blueprint;
+            }
             public BuildRow(IBuilder builder, string name, double energy, double mass)
             {
                 this.Builder = builder;

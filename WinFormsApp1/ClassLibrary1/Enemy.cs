@@ -14,11 +14,14 @@ namespace ClassLibrary1
     [Serializable]
     public class Enemy : Side
     {
+        private readonly EnemyResearch _research;
+
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         internal Enemy(Game game)
             : base(game, Consts.EnemyEnergy * -2.6, 0)
         {
+            _research = new EnemyResearch(game);
         }
 
         internal void PlayTurn(double difficulty)
@@ -32,7 +35,7 @@ namespace ClassLibrary1
             this._mass = 0;
             while (true)
             {
-                MechBlueprint blueprint = MechBlueprint.Alien(difficulty);
+                MechBlueprint blueprint = MechBlueprint.Alien(_research);
                 blueprint.Cost(out double energy, out double mass);
                 energy += mass;
                 if (this.Energy > energy)
@@ -42,6 +45,8 @@ namespace ClassLibrary1
                 }
                 else break;
             }
+
+            _research.EndTurn(difficulty);
         }
         private void PlayTurn(Piece piece)
         {

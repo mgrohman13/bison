@@ -15,7 +15,7 @@ namespace ClassLibrary1.Pieces
     {
         public IReadOnlyCollection<Attack> Attacks { get; }
 
-        void Upgrade(Values[] values);
+        void Upgrade(IEnumerable<Values> values);
         public bool Fire(IKillable killable);
         internal bool EnemyFire(IKillable killable);
 
