@@ -24,15 +24,18 @@ namespace ClassLibrary1
             _research = new EnemyResearch(game);
         }
 
-        internal void PlayTurn(double difficulty)
+        internal void PlayTurn()
         {
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 PlayTurn(piece);
 
             base.EndTurn();
 
-            this._energy += this.Mass + Game.Rand.OE(difficulty * Consts.EnemyEnergy);
+            double difficulty = (Game.Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
+
+            this._energy += this.Mass + Game.Rand.OE(Math.Pow(difficulty, Consts.DifficultyEnergyPow) * Consts.EnemyEnergy);
             this._mass = 0;
+
             while (true)
             {
                 MechBlueprint blueprint = MechBlueprint.Alien(_research);
@@ -46,7 +49,7 @@ namespace ClassLibrary1
                 else break;
             }
 
-            _research.EndTurn(difficulty);
+            _research.EndTurn(Math.Pow(difficulty, Consts.DifficultyResearchPow));
         }
         private void PlayTurn(Piece piece)
         {

@@ -57,7 +57,7 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
             if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
                 SetBehavior(new Builder.BuildTurret(this, values.GetRepair(_rangeMult).Builder));
-            if (!HasBehavior<IBuilder.IBuildExtractor>() && research.HasType(Research.Type.Factory))
+            if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))
                 SetBehavior(new Builder.BuildFactory(this, values.GetRepair(_rangeMult).Builder));
         }
         private static Values GetValues(Game game)

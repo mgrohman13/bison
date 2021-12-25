@@ -19,8 +19,9 @@ namespace ClassLibrary1
         public const double ResearchFactor = 2600;
 
         public const double DifficultyTurns = 78;
-        public const double DifficultyPow = 1.69;
-        public const double EnemyEnergy = 130;
+        public const double DifficultyEnergyPow = 1.69;
+        public const double DifficultyResearchPow = 1.3;
+        public const double EnemyEnergy = 169;
 
         public const double HitsIncDev = .065;
         public const double MoveDev = .013;
@@ -65,7 +66,7 @@ namespace ClassLibrary1
         public const double UpkeepPerShield = 2;
         public const double UpkeepPerMove = .5;
 
-        public const double MechCostMult = 13;
+        public const double MechCostMult = 16.9;
         public const double MechMassDiv = 1.69;
 
         public const double RepairCost = .21;

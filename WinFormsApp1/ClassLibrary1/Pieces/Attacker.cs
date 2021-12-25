@@ -103,7 +103,7 @@ namespace ClassLibrary1.Pieces
             internal void Upgrade(Values values)
             {
                 this._values = values;
-                this._attacked = true;
+                //this._attacked = true;
             }
 
             internal bool Fire(IKillable target)

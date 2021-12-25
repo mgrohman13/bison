@@ -97,13 +97,8 @@ namespace ClassLibrary1
         public Research.Type? EndTurn()
         {
             Research.Type? researched = Player.EndTurn();
-
-            double difficulty = (Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
-            difficulty = Math.Pow(difficulty, Consts.DifficultyPow);
-            Enemy.PlayTurn(difficulty);
-
+            Enemy.PlayTurn();
             _turn++;
-
             return researched;
         }
 

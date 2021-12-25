@@ -1,3 +1,25 @@
+double click to select resarch
+draw selec on top of other ranges
+prevent shield dropping for shield mech. move mech? hits mech?
+optimize circles to single draw call
+optimize drawrects to lines?
+avoid cost balancing causing extremem move situations?
+last space deselcts
+space should not trigger buttons
+convert turret/factory
+	reduced cost, requires constructor
+reserach chances also based on current blueprints?
+truncate instead of round move, range disp values?
+	or instead, int stuff
+optimize offscreen drawing
+adjust scroll speed based on draw time
+use type research levels in cost?
+some move values too extreme
+upgrade infinite loop
+	allow randomly other values with low chance?
+min/max cost should just full regen?
+	maybe only X chance each loop?
+
 selected piece shows double build range on mouse around
 show research progress/cost on main form
 better can build indicator - disable for certain blueprints 

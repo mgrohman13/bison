@@ -82,16 +82,19 @@ namespace ClassLibrary1
             Type? result = null;
             if (_progress[_researching] >= _options[_researching])
             {
-                result = OnResearch(out double excess);
-                GetNextChoices(excess);
+                // excess research will be applied to a random available next choice
+                double excess = _progress[_researching] - _options[_researching];
+                // upgrading researches you have done previously will cause less of an overall research cost increase
+                this._researchedTypes.TryGetValue(_researching, out double previous);
+                result = OnResearch();
+                GetNextChoices(excess, previous);
             }
             return result;
         }
-        private Type OnResearch(out double excess)
+        private Type OnResearch()
         {
             this._researchLast += _options[_researching];
             this._researchedTypes[_researching] = _researchLast;
-            excess = _progress[_researching] - _options[_researching];
             this._progress.Remove(_researching);
             Game.Player.OnResearch(_researching, GetResearchMult(_researchLast));
             if (IsMech(_researching))
@@ -103,17 +106,18 @@ namespace ClassLibrary1
             return (research + Consts.ResearchFactor) / Consts.ResearchFactor;
         }
 
-        private void GetNextChoices(double excess)
+        private void GetNextChoices(double excess, double previous)
         {
             const int choices = 3;
 
-            GetCostParams(excess, out double nextAvg, out double nextDev, out double nextOE, out double nextMin);
+            GetCostParams(excess, previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin);
 
             this._options.Clear();
             foreach (Type available in Game.Rand.Iterate(Enum.GetValues<Type>()))
             {
                 if (_researchedTypes.ContainsKey(available) && BaseTypes.Contains(available))
                     continue;
+                // ensure always at least one mech and one non-mech option
                 if (_options.Count == choices - 1 && (IsMech(available) ? _options.Keys.All(IsMech) : !_options.Keys.Any(IsMech)))
                     continue;
                 if (Dependencies[available].All(d => _researchedTypes.ContainsKey(d)))
@@ -134,9 +138,9 @@ namespace ClassLibrary1
                 }
             }
         }
-        private void GetCostParams(double excess, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
+        private void GetCostParams(double excess, double previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
         {
-            nextAvg = GetNext(_nextAvg);
+            nextAvg = GetNext(_nextAvg) * (1 - Math.Pow(previous / _researchLast, _researchLast / Consts.ResearchFactor));
             this._nextAvg += nextAvg;
 
             double devDiv = Math.Pow(_researchCur + nextAvg, .21);
@@ -185,11 +189,11 @@ namespace ClassLibrary1
         }
         public double GetMinCost()
         {
-            return Math.Pow(GetLevel() + .78 * Consts.ResearchFactor, .78);
+            return Math.Pow(GetLevel() + 1.04 * Consts.ResearchFactor, .78);
         }
         public double GetMaxCost()
         {
-            return Math.Pow(GetLevel() + .39 * Consts.ResearchFactor, 1);
+            return Math.Pow(GetLevel() + 1.04 * Consts.ResearchFactor, .91);
         }
         public bool MakeType(Type type)
         {
@@ -231,9 +235,9 @@ namespace ClassLibrary1
             { Type.MechArmor, new Type[] { Type.MechHits } },
             { Type.MechResilience, new Type[] { Type.MechArmor } },
             { Type.MechDamage, new Type[] { Type.MechShields } },
-            { Type.MechSP, new Type[] { Type.MechDamage } },
+            { Type.MechSP, new Type[] { Type.MechDamage, Type.MechShields } },
             { Type.MechRange, new Type[] { Type.MechSP } },
-            { Type.MechAP, new Type[] { Type.MechRange } },
+            { Type.MechAP, new Type[] { Type.MechRange, Type.MechArmor } },
 
             { Type.TurretDefense, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor } },
             { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechSP, Type.MechAP } },

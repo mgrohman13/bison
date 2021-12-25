@@ -88,7 +88,7 @@ namespace ClassLibrary1.Pieces.Players
             public Values()
             {
                 this.energy = 0;
-                this.mass = 5000;
+                this.mass = 3900;
                 this.repair = new(new(Consts.MinMapCoord - 1.5), .1);
 
                 this.killable = new(-1, -1);

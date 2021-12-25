@@ -131,7 +131,7 @@ namespace ClassLibrary1.Pieces.Players
                 blueprint = NewBlueprint(research, blueprintNum);
             else do
                     blueprint = UpgradeBlueprint(upgrade, research, blueprintNum);
-                while (blueprint.TotalCost() < upgrade.TotalCost() + Game.Rand.GaussianOE(210, .39, .26, -upgrade.TotalCost()));
+                while (blueprint.TotalCost() + Game.Rand.GaussianOE(169, .39, .26) < upgrade.TotalCost() + Game.Rand.GaussianOE(390, .39, .26));
             return CheckCost(blueprint, research, blueprintNum);
         }
         private static MechBlueprint NewBlueprint(IResearch research, int blueprintNum)
@@ -345,11 +345,11 @@ namespace ClassLibrary1.Pieces.Players
             if (researching == Type.Mech)
             {
                 minEnergy = 130;
-                maxEnergy = 260;
-                minMass = 260;
-                maxMass = 520;
-                minTotal = 390;
-                maxTotal = 780;
+                maxEnergy = 390;
+                minMass = 390;
+                maxMass = 910;
+                minTotal = 520;
+                maxTotal = 1300;
             }
             else
             {

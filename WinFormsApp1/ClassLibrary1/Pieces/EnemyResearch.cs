@@ -12,39 +12,45 @@ namespace ClassLibrary1.Pieces
     {
         public Game Game { get; private set; }
 
-        private Type type;
+        private Type _type;
         private double _research;
         private double _difficulty;
-        private readonly HashSet<Type> available;
+
+        private readonly HashSet<Type> _available;
+
         private static readonly Type[] Unlocks = new Type[] { Type.MechShields, Type.MechSP, Type.MechAP, Type.MechArmor };
 
         public EnemyResearch(Game game)
         {
             this.Game = game;
+            this._type = Type.BuildingCost;
             this._research = 0;
-            this.available = new HashSet<Type>();
+            this._difficulty = 1;
+            this._available = new HashSet<Type>();
         }
 
         public void EndTurn(double difficulty)
         {
-            this.type = Game.Rand.SelectValue(Enum.GetValues<Type>().Where(t => t != Type.Mech && t.ToString().StartsWith("Mech") && (available.Contains(t) || !Unlocks.Contains(t))));
+            if (Game.Rand.Bool())
+                this._type = Game.Rand.Bool() ? Type.BuildingCost : Game.Rand.SelectValue(Enum.GetValues<Type>()
+                    .Where(t => t != Type.Mech && t.ToString().StartsWith("Mech") && (_available.Contains(t) || !Unlocks.Contains(t))));
             this._research += Game.Rand.OE(difficulty);
             this._difficulty = difficulty;
 
-            if (available.Count < Unlocks.Length)
+            if (_available.Count < Unlocks.Length)
             {
-                double cost = Math.Pow(1.3, available.Count) * Math.Pow(available.Count + 1, 1.3) * 1.69;
+                double cost = Math.Pow(1.3, _available.Count) * Math.Pow(_available.Count + 1, 1.3) * 1.69;
                 if (_research > cost * Game.Rand.Gaussian(2.1, .13))
                 {
                     _research -= cost;
-                    while (!available.Add(Game.Rand.SelectValue(Unlocks))) ;
+                    while (!_available.Add(Game.Rand.SelectValue(Unlocks))) ;
                 }
             }
         }
 
         public double GetLevel()
         {
-            return Consts.ResearchFactor * (_difficulty - 1);
+            return Consts.ResearchFactor * (_difficulty - 1) + _research;
         }
 
         public double GetMinCost()
@@ -53,7 +59,7 @@ namespace ClassLibrary1.Pieces
         }
         public double GetMaxCost()
         {
-            return Math.Pow(GetLevel() + .078 * Consts.ResearchFactor, 1.3);
+            return Math.Pow(GetLevel() + .104 * Consts.ResearchFactor, 1.3);
         }
 
         public double GetMult(Research.Type type, double pow)
@@ -92,6 +98,7 @@ namespace ClassLibrary1.Pieces
                     break;
                 case Type.MechVision:
                     mult = 0;
+                    add = -1;
                     break;
                 default: throw new Exception();
             }
@@ -117,12 +124,12 @@ namespace ClassLibrary1.Pieces
                 default: throw new Exception();
             }
             double difficulty = add + mult * (_difficulty - 1);
-            return (available.Contains(type) || !Unlocks.Contains(type)) && Game.Rand.Bool((1.3 + difficulty) / (5.2 + difficulty));
+            return (_available.Contains(type) || !Unlocks.Contains(type)) && Game.Rand.Bool((1.3 + difficulty) / (5.2 + difficulty));
         }
 
         Research.Type IResearch.GetType()
         {
-            return type;
+            return _type;
         }
     }
 }
