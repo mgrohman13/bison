@@ -51,10 +51,12 @@ namespace WinFormsApp1
             this.lbAvailable.Items.AddRange(new object[] {
             "1",
             "2",
-            "3"});
+            "3",
+            "4",
+            "5"});
             this.lbAvailable.Location = new System.Drawing.Point(0, 37);
             this.lbAvailable.Name = "lbAvailable";
-            this.lbAvailable.Size = new System.Drawing.Size(180, 79);
+            this.lbAvailable.Size = new System.Drawing.Size(180, 129);
             this.lbAvailable.TabIndex = 0;
             this.lbAvailable.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
             // 
@@ -64,9 +66,9 @@ namespace WinFormsApp1
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbDone.FormattingEnabled = true;
             this.lbDone.ItemHeight = 25;
-            this.lbDone.Location = new System.Drawing.Point(0, 147);
+            this.lbDone.Location = new System.Drawing.Point(0, 197);
             this.lbDone.Name = "lbDone";
-            this.lbDone.Size = new System.Drawing.Size(180, 279);
+            this.lbDone.Size = new System.Drawing.Size(180, 229);
             this.lbDone.TabIndex = 1;
             this.lbDone.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
             // 
@@ -82,7 +84,7 @@ namespace WinFormsApp1
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 119);
+            this.label2.Location = new System.Drawing.Point(12, 169);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(105, 25);
             this.label2.TabIndex = 3;
@@ -94,7 +96,7 @@ namespace WinFormsApp1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblName.Location = new System.Drawing.Point(186, 9);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(280, 50);
+            this.lblName.Size = new System.Drawing.Size(268, 50);
             this.lblName.TabIndex = 4;
             this.lblName.Text = "lblName";
             this.lblName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -129,7 +131,7 @@ namespace WinFormsApp1
             // lblLast
             // 
             this.lblLast.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblLast.Location = new System.Drawing.Point(366, 60);
+            this.lblLast.Location = new System.Drawing.Point(360, 60);
             this.lblLast.Name = "lblLast";
             this.lblLast.Size = new System.Drawing.Size(100, 25);
             this.lblLast.TabIndex = 8;
@@ -139,7 +141,7 @@ namespace WinFormsApp1
             // lblProgress
             // 
             this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblProgress.Location = new System.Drawing.Point(366, 110);
+            this.lblProgress.Location = new System.Drawing.Point(360, 110);
             this.lblProgress.Name = "lblProgress";
             this.lblProgress.Size = new System.Drawing.Size(100, 25);
             this.lblProgress.TabIndex = 9;
@@ -149,7 +151,7 @@ namespace WinFormsApp1
             // lblCost
             // 
             this.lblCost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCost.Location = new System.Drawing.Point(366, 160);
+            this.lblCost.Location = new System.Drawing.Point(360, 160);
             this.lblCost.Name = "lblCost";
             this.lblCost.Size = new System.Drawing.Size(100, 25);
             this.lblCost.TabIndex = 10;
@@ -160,7 +162,7 @@ namespace WinFormsApp1
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(236, 398);
+            this.btnOK.Location = new System.Drawing.Point(230, 392);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(112, 34);
             this.btnOK.TabIndex = 11;
@@ -171,7 +173,7 @@ namespace WinFormsApp1
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(354, 398);
+            this.btnCancel.Location = new System.Drawing.Point(348, 392);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(112, 34);
             this.btnCancel.TabIndex = 12;
@@ -184,7 +186,7 @@ namespace WinFormsApp1
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(478, 444);
+            this.ClientSize = new System.Drawing.Size(472, 438);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.lblCost);
@@ -199,7 +201,7 @@ namespace WinFormsApp1
             this.Controls.Add(this.lbDone);
             this.Controls.Add(this.lbAvailable);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MinimumSize = new System.Drawing.Size(450, 350);
+            this.MinimumSize = new System.Drawing.Size(494, 494);
             this.Name = "Research";
             this.ShowIcon = false;
             this.Text = "Research";

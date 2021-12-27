@@ -33,7 +33,7 @@ namespace ClassLibrary1.Pieces
         {
             if (Game.Rand.Bool())
                 this._type = Game.Rand.Bool() ? Type.BuildingCost : Game.Rand.SelectValue(Enum.GetValues<Type>()
-                    .Where(t => t != Type.Mech && Research.IsMech(t) && (_available.Contains(t) || !Unlocks.Contains(t))));
+                    .Where(t => Research.IsMech(t) && (_available.Contains(t) || !Unlocks.Contains(t))));
             this._research += Game.Rand.OE(difficulty);
             this._difficulty = difficulty;
 
