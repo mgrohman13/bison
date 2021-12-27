@@ -140,7 +140,7 @@ namespace ClassLibrary1.Pieces.Players
                 blueprint = NewBlueprint(research, blueprintNum);
             else do
                     blueprint = UpgradeBlueprint(upgrade, research, blueprintNum);
-                while (blueprint.TotalCost() + Game.Rand.GaussianOE(169, .39, .26) < upgrade.TotalCost() + Game.Rand.GaussianOE(390, .39, .26));
+                while (blueprint.TotalCost() + Game.Rand.GaussianOEInt(169, .39, .26) < upgrade.TotalCost() + Game.Rand.GaussianOEInt(390, .39, .26));
             return CheckCost(blueprint, upgrade, research, blueprintNum);
         }
         private static MechBlueprint NewBlueprint(IResearch research, int blueprintNum)
@@ -157,118 +157,128 @@ namespace ClassLibrary1.Pieces.Players
             IKillable.Values killable = upgrade.Killable;
             IEnumerable<IAttacker.Values> attacker = upgrade.Attacks;
             IMovable.Values movable = upgrade.Movable;
+
             IKillable.Values newKillable;
             IAttacker.Values newAttacker;
             IMovable.Values newMovable;
             int hits, max, limit, damage;
             double armor, inc, range, dev;
+
             Type researching = research.GetType();
-            switch (researching)
+            int times = 1 + Game.Rand.OEInt(.39);
+            for (int a = 0; a < times; a++)
             {
-                case Type.MechDamage:
-                    attacker = attacker.Select(a =>
-                    {
-                        newAttacker = GenAttacker(research).First();
-                        range = a.Range;
-                        if (newAttacker.Damage > a.Damage && Game.Rand.Bool())
-                            range = newAttacker.Range;
-                        dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                        return new IAttacker.Values(newAttacker.Damage, a.ArmorPierce, a.ShieldPierce, dev, range);
-                    });
-                    break;
-                case Type.MechRange:
-                    attacker = attacker.Select(a =>
-                    {
-                        newAttacker = GenAttacker(research).First();
-                        damage = a.Damage;
-                        if (newAttacker.Range > a.Range && Game.Rand.Bool())
-                            damage = newAttacker.Damage;
-                        dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                        return new IAttacker.Values(damage, a.ArmorPierce, a.ShieldPierce, dev, newAttacker.Range);
-                    });
-                    break;
-                case Type.MechAP:
-                    attacker = attacker.Select(a =>
-                    {
-                        newAttacker = GenAttacker(research).First();
-                        damage = a.Damage;
-                        if (newAttacker.ArmorPierce > a.ArmorPierce && Game.Rand.Bool())
-                            damage = newAttacker.Damage;
-                        dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
-                        return new IAttacker.Values(damage, newAttacker.ArmorPierce, a.ShieldPierce, dev, a.Range);
-                    });
-                    break;
-                case Type.MechSP:
-                    attacker = attacker.Select(a =>
-                    {
-                        newAttacker = GenAttacker(research).First();
-                        damage = a.Damage;
-                        if (newAttacker.ShieldPierce > a.ShieldPierce && Game.Rand.Bool())
-                            damage = newAttacker.Damage;
-                        return new IAttacker.Values(damage, a.ArmorPierce, newAttacker.ShieldPierce, a.Dev, a.Range);
-                    });
-                    break;
-                case Type.MechArmor:
-                    newKillable = GenKillable(research);
-                    hits = killable.HitsMax;
-                    if (newKillable.Armor > killable.Armor && Game.Rand.Bool())
-                        hits = newKillable.HitsMax;
-                    killable = new IKillable.Values(hits, killable.Resilience, newKillable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
-                    break;
-                case Type.MechResilience:
-                    newKillable = GenKillable(research);
-                    hits = killable.HitsMax;
-                    if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
-                        hits = newKillable.HitsMax;
-                    armor = killable.HitsMax;
-                    if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
-                        armor = newKillable.Armor;
-                    killable = new IKillable.Values(hits, newKillable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
-                    break;
-                case Type.MechHits:
-                    newKillable = GenKillable(research);
-                    armor = killable.HitsMax;
-                    if (newKillable.HitsMax > killable.HitsMax && Game.Rand.Bool())
-                        armor = newKillable.Armor;
-                    killable = new IKillable.Values(newKillable.HitsMax, killable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
-                    break;
-                case Type.MechShields:
-                    newKillable = GenKillable(research);
-                    inc = killable.ShieldInc;
-                    if (newKillable.ShieldInc > inc || Game.Rand.Bool())
-                        inc = newKillable.ShieldInc;
-                    max = killable.ShieldMax;
-                    if (newKillable.ShieldMax > max || Game.Rand.Bool())
-                        max = newKillable.ShieldMax;
-                    limit = killable.ShieldLimit;
-                    if (newKillable.ShieldLimit > limit || Game.Rand.Bool())
-                        limit = newKillable.ShieldLimit;
-                    killable = new IKillable.Values(killable.HitsMax, killable.Resilience, killable.Armor, inc, max, limit);
-                    break;
-                case Type.MechMove:
-                    newMovable = GenMovable(research);
-                    inc = movable.MoveInc;
-                    if (newMovable.MoveInc > inc || Game.Rand.Bool())
-                        inc = newMovable.MoveInc;
-                    max = movable.MoveMax;
-                    if (newMovable.MoveMax > max || Game.Rand.Bool())
-                        max = newMovable.MoveMax;
-                    limit = movable.MoveLimit;
-                    if (newMovable.MoveLimit > limit || Game.Rand.Bool())
-                        limit = newMovable.MoveLimit;
-                    movable = new IMovable.Values(inc, max, limit);
-                    break;
-                case Type.MechVision:
-                    vision = GenVision(research);
-                    if (vision > upgrade.Vision && Game.Rand.Bool())
-                    {
+
+                switch (researching)
+                {
+                    case Type.MechDamage:
+                        attacker = attacker.Select(a =>
+                        {
+                            newAttacker = GenAttacker(research).First();
+                            range = a.Range;
+                            if (newAttacker.Damage > a.Damage && Game.Rand.Bool())
+                                range = newAttacker.Range;
+                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            return new IAttacker.Values(newAttacker.Damage, a.ArmorPierce, a.ShieldPierce, dev, range);
+                        });
+                        break;
+                    case Type.MechRange:
+                        attacker = attacker.Select(a =>
+                        {
+                            newAttacker = GenAttacker(research).First();
+                            damage = a.Damage;
+                            if (newAttacker.Range > a.Range && Game.Rand.Bool())
+                                damage = newAttacker.Damage;
+                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            return new IAttacker.Values(damage, a.ArmorPierce, a.ShieldPierce, dev, newAttacker.Range);
+                        });
+                        break;
+                    case Type.MechAP:
+                        attacker = attacker.Select(a =>
+                        {
+                            newAttacker = GenAttacker(research).First();
+                            damage = a.Damage;
+                            if (newAttacker.ArmorPierce > a.ArmorPierce && Game.Rand.Bool())
+                                damage = newAttacker.Damage;
+                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            return new IAttacker.Values(damage, newAttacker.ArmorPierce, a.ShieldPierce, dev, a.Range);
+                        });
+                        break;
+                    case Type.MechSP:
+                        attacker = attacker.Select(a =>
+                        {
+                            newAttacker = GenAttacker(research).First();
+                            damage = a.Damage;
+                            if (newAttacker.ShieldPierce > a.ShieldPierce && Game.Rand.Bool())
+                                damage = newAttacker.Damage;
+                            return new IAttacker.Values(damage, a.ArmorPierce, newAttacker.ShieldPierce, a.Dev, a.Range);
+                        });
+                        break;
+                    case Type.MechArmor:
+                        newKillable = GenKillable(research);
+                        hits = killable.HitsMax;
+                        if (newKillable.Armor > killable.Armor && Game.Rand.Bool())
+                            hits = newKillable.HitsMax;
+                        killable = new IKillable.Values(hits, killable.Resilience, newKillable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                        break;
+                    case Type.MechResilience:
+                        newKillable = GenKillable(research);
+                        hits = killable.HitsMax;
+                        if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
+                            hits = newKillable.HitsMax;
+                        armor = killable.HitsMax;
+                        if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
+                            armor = newKillable.Armor;
+                        killable = new IKillable.Values(hits, newKillable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                        break;
+                    case Type.MechHits:
+                        newKillable = GenKillable(research);
+                        armor = killable.HitsMax;
+                        if (newKillable.HitsMax > killable.HitsMax && Game.Rand.Bool())
+                            armor = newKillable.Armor;
+                        killable = new IKillable.Values(newKillable.HitsMax, killable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
+                        break;
+                    case Type.MechShields:
+                        newKillable = GenKillable(research);
+                        inc = killable.ShieldInc;
+                        if (newKillable.ShieldInc > inc || Game.Rand.Bool())
+                            inc = newKillable.ShieldInc;
+                        max = killable.ShieldMax;
+                        if (newKillable.ShieldMax > max || Game.Rand.Bool())
+                            max = newKillable.ShieldMax;
+                        limit = killable.ShieldLimit;
+                        if (newKillable.ShieldLimit > limit || Game.Rand.Bool())
+                            limit = newKillable.ShieldLimit;
+                        killable = new IKillable.Values(killable.HitsMax, killable.Resilience, killable.Armor, inc, max, limit);
+                        break;
+                    case Type.MechMove:
                         newMovable = GenMovable(research);
-                        movable = new IMovable.Values(newMovable.MoveInc, newMovable.MoveMax, newMovable.MoveLimit);
-                    }
-                    break;
-                default:
-                    throw new Exception();
+                        inc = movable.MoveInc;
+                        if (newMovable.MoveInc > inc || Game.Rand.Bool())
+                            inc = newMovable.MoveInc;
+                        max = movable.MoveMax;
+                        if (newMovable.MoveMax > max || Game.Rand.Bool())
+                            max = newMovable.MoveMax;
+                        limit = movable.MoveLimit;
+                        if (newMovable.MoveLimit > limit || Game.Rand.Bool())
+                            limit = newMovable.MoveLimit;
+                        movable = new IMovable.Values(inc, max, limit);
+                        break;
+                    case Type.MechVision:
+                        vision = GenVision(research);
+                        if (vision > upgrade.Vision && Game.Rand.Bool())
+                        {
+                            newMovable = GenMovable(research);
+                            movable = new IMovable.Values(newMovable.MoveInc, newMovable.MoveMax, newMovable.MoveLimit);
+                        }
+                        break;
+                    default:
+                        throw new Exception();
+                }
+
+                researching = Game.Rand.SelectValue(Enum.GetValues<Research.Type>().Where(Research.IsMech).Where(t => t != researching));
             }
+
             return new(blueprintNum, upgrade, research.GetLevel(), vision, killable, attacker, movable);
         }
         private static MechBlueprint CheckCost(MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum)

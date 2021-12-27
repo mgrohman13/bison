@@ -1,5 +1,4 @@
 IMPORTANT
-	blueprint upgrade randomly upgrade unrelated values with low chance
 	lower ResearchForMass
 	show upgrade values
 	log
