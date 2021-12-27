@@ -217,7 +217,7 @@ namespace WinFormsApp1
                 foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
                 {
                     IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
-                    if (enemy.HasBehavior<IMovable>(out IMovable enemyMovable))
+                    if (enemy.HasBehavior(out IMovable enemyMovable))
                         attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
                     allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles, AddAttStr).SelectMany(hs => hs));
                 }
@@ -238,7 +238,7 @@ namespace WinFormsApp1
                 ranges = ranges.ToDictionary(p => p.Key, p => p.Value.ToList());
 
                 IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IMovable>(out IMovable movable) && movable.MoveCur >= 1)
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
                 {
                     moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur);
                     ranges[move].Add(GetPoints(moveTiles));
@@ -246,10 +246,10 @@ namespace WinFormsApp1
                         ranges[move].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
                 }
 
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IAttacker attacker))
                     ranges[range].AddRange(AddAttacks(attacker, moveTiles, null));
 
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior<IBuilder>(out IBuilder b) && moveTiles.Contains(MouseTile))
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && moveTiles.Contains(MouseTile))
                     ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
             }
 
@@ -579,7 +579,7 @@ namespace WinFormsApp1
             }
             else if (e.Button == MouseButtons.Right && SelTile != null && SelTile.Piece != null && clicked != null)
             {
-                if (SelTile.Piece.HasBehavior<IMovable>(out IMovable movable))
+                if (SelTile.Piece.HasBehavior(out IMovable movable))
                 {
                     if (movable.Move(clicked))
                     {
@@ -587,7 +587,7 @@ namespace WinFormsApp1
                         Program.RefreshChanged();
                     }
                 }
-                if (SelTile.Piece.HasBehavior<IAttacker>(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior<IKillable>(out IKillable killable))
+                if (SelTile.Piece.HasBehavior(out IAttacker attacker) && clicked.Piece != null && clicked.Piece.HasBehavior(out IKillable killable))
                 {
                     if (attacker.Fire(killable))
                     {

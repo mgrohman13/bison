@@ -10,7 +10,7 @@ using ClassLibrary1.Pieces.Terrain;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Turret : PlayerPiece, IKillable.IRepairable
+    public class Turret : FoundationPiece, IKillable.IRepairable
     {
         private readonly double _hitsMult, _rounding;
         private readonly double[] _rangeMult = new double[2], _dev = new double[2];
@@ -61,12 +61,9 @@ namespace ClassLibrary1.Pieces.Players
         {
             return game.Player.GetUpgradeValues<Values>();
         }
-
-        internal override void Die()
+        internal static double GetRounding(Game game)
         {
-            Map.Tile tile = this.Tile;
-            base.Die();
-            Foundation.NewFoundation(tile);
+            return GetValues(game).Rounding;
         }
 
         double IKillable.IRepairable.RepairCost
@@ -90,7 +87,7 @@ namespace ClassLibrary1.Pieces.Players
             private const double resilience = .65;
 
             private int energy, mass;
-            private double vision;
+            private double vision, rounding;
             private IKillable.Values killable;
             private readonly IAttacker.Values[] attacks;
             public Values()
@@ -108,6 +105,7 @@ namespace ClassLibrary1.Pieces.Players
             public int Mass => mass;
             public double Vision => vision;
             public double[] AttackRange => attacks.Select(v => v.Range).ToArray();
+            public double Rounding => rounding;
             public IKillable.Values GetKillable(double hitsMult, double rounding)
             {
                 int hits = MTRandom.Round(killable.HitsMax * hitsMult, rounding);
@@ -158,8 +156,9 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingCost(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .4);
-                this.energy = Game.Rand.Round(400 / researchMult);
-                this.mass = Game.Rand.Round(800 / researchMult);
+                rounding = Game.Rand.NextDouble();
+                this.energy = MTRandom.Round(400 / researchMult, rounding);
+                this.mass = MTRandom.Round(800 / researchMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {

@@ -205,9 +205,9 @@ namespace WinFormsApp1
                         move = Game.Player.Has(e, m);
                     }
                 }
-            if (!move && piece.HasBehavior<IMovable>(out IMovable movable))
+            if (!move && piece.HasBehavior(out IMovable movable))
                 move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;
-            if (!move && piece.HasBehavior<IAttacker>(out IAttacker attacker))
+            if (!move && piece.HasBehavior(out IAttacker attacker))
             {
                 double range = attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range);
                 move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>(out _) && t.Piece.IsEnemy);

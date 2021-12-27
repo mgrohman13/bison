@@ -17,6 +17,8 @@ namespace ClassLibrary1.Pieces.Terrain
         private double _value;
         public double Value => _value;
 
+        internal double Rounding => _rounding;
+
         internal Resource(Map.Tile tile, double baseValue, double sustainMult)
             : base(null, tile)
         {

@@ -1,7 +1,4 @@
 IMPORTANT
-	convert turret/factory
-		reduced cost, requires constructor
-		ability to "re-build" same type as well (for instant heal, expensive)
 	blueprint upgrade randomly upgrade unrelated values with low chance
 	constructor shouldnt auto upg
 	lower ResearchForMass

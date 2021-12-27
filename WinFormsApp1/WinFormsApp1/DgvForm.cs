@@ -133,7 +133,7 @@ namespace WinFormsApp1
 
             return result;
         }
-        private static T GetBuilder<T>(Tile selected) where T : class, IBuilder
+        public static T GetBuilder<T>(Tile selected) where T : class, IBuilder
         {
             return Program.Game.Player.PiecesOfType<T>().FirstOrDefault(b => selected.GetDistance(b.Piece.Tile) <= b.Range);
         }

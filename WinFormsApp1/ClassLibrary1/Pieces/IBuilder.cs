@@ -24,6 +24,7 @@ namespace ClassLibrary1.Pieces
         public interface IBuildExtractor : IBuilder
         {
             public Extractor Build(Resource resource);
+            public bool Replace(bool doReplace, Extractor extractor, out int energy, out int mass);
         }
         public interface IBuildMech : IBuilder
         {
@@ -32,10 +33,12 @@ namespace ClassLibrary1.Pieces
         public interface IBuildFactory : IBuilder
         {
             public Factory Build(Foundation foundation);
+            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
         }
         public interface IBuildTurret : IBuilder
         {
             public Turret Build(Foundation foundation);
+            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass);
         }
 
         [Serializable]

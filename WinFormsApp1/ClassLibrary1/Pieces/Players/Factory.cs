@@ -10,7 +10,7 @@ using ClassLibrary1.Pieces.Terrain;
 namespace ClassLibrary1.Pieces.Players
 {
     [Serializable]
-    public class Factory : PlayerPiece, IKillable.IRepairable
+    public class Factory : FoundationPiece, IKillable.IRepairable
     {
         private readonly double _rangeMult;
         public Piece Piece => this;
@@ -47,7 +47,7 @@ namespace ClassLibrary1.Pieces.Players
 
             this._vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.Killable);
-            if (HasBehavior<IRepair>(out IRepair repair))
+            if (HasBehavior(out IRepair repair))
                 repair.Upgrade(values.GetRepair(_rangeMult));
             Builder.UpgradeAll(this, values.GetRepair(_rangeMult).Builder);
         }
@@ -65,12 +65,9 @@ namespace ClassLibrary1.Pieces.Players
         {
             return game.Player.GetUpgradeValues<Values>();
         }
-
-        internal override void Die()
+        internal static double GetRounding(Game game)
         {
-            Map.Tile tile = this.Tile;
-            base.Die();
-            Foundation.NewFoundation(tile);
+            return GetValues(game).Rounding;
         }
 
         double IKillable.IRepairable.RepairCost
@@ -92,7 +89,7 @@ namespace ClassLibrary1.Pieces.Players
         private class Values : IUpgradeValues
         {
             private int energy, mass;
-            private double vision;
+            private double vision, rounding;
             private IKillable.Values killable;
             private IRepair.Values repair;
             public Values()
@@ -107,6 +104,7 @@ namespace ClassLibrary1.Pieces.Players
             public double Vision => vision;
             public IKillable.Values Killable => killable;
             public double BuilderRange => repair.Builder.Range;
+            public double Rounding => rounding;
             public IRepair.Values GetRepair(double rangeMult)
             {
                 IRepair.Values repair = this.repair;
@@ -127,8 +125,9 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingCost(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .3);
-                this.energy = Game.Rand.Round(650 / researchMult);
-                this.mass = Game.Rand.Round(250 / researchMult);
+                rounding = Game.Rand.NextDouble();
+                this.energy = MTRandom.Round(650 / researchMult, rounding);
+                this.mass = MTRandom.Round(250 / researchMult, rounding);
             }
             private void UpgradeBuildingHits(double researchMult)
             {

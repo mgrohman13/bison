@@ -47,6 +47,11 @@ namespace WinFormsApp1
                 btnBuild.Text = "Upgrade";
                 btnBuild.Show();
             }
+            else if (CanReplace(out _))
+            {
+                btnBuild.Text = "Replace";
+                btnBuild.Show();
+            }
             else
             {
                 btnBuild.Hide();
@@ -61,7 +66,7 @@ namespace WinFormsApp1
 
                 PlayerPiece playerPiece = Selected.Piece as PlayerPiece;
 
-                if (Selected.Piece.HasBehavior<IKillable>(out IKillable killable))
+                if (Selected.Piece.HasBehavior(out IKillable killable))
                 {
                     double repairInc = 0;
                     if (playerPiece != null)
@@ -92,7 +97,7 @@ namespace WinFormsApp1
                         FormatPct(killable.HitsCur < killable.HitsMax ? Consts.GetDamagedValue(killable.Piece, 1, 0) : killable.Resilience),
                         killable.HitsCur < killable.HitsMax ? string.Format(" ({0})", FormatPct(killable.Resilience)) : "");
                 }
-                if (Selected.Piece.HasBehavior<IMovable>(out IMovable movable))
+                if (Selected.Piece.HasBehavior(out IMovable movable))
                 {
                     lbl4.Show();
                     lblInf4.Show();
@@ -138,14 +143,14 @@ namespace WinFormsApp1
                         }
                     }
                 }
-                if (Selected.Piece.HasBehavior<IRepair>(out IRepair repair))
+                if (Selected.Piece.HasBehavior(out IRepair repair))
                 {
                     lbl8.Show();
                     lblInf8.Show();
                     lbl8.Text = "Repair";
                     lblInf8.Text = string.Format("{0}{1}", FormatPct(repair.Rate, true), CheckBase(repair.RateBase, repair.Rate, v => FormatPct(v, true)));
                 }
-                if (Selected.Piece.HasBehavior<IBuilder>(out IBuilder builder))
+                if (Selected.Piece.HasBehavior(out IBuilder builder))
                 {
                     lbl9.Show();
                     lblInf9.Show();
@@ -205,7 +210,7 @@ namespace WinFormsApp1
                     lblInf9.Text = string.Format("{0}", FormatPct(extractor == null ? resource.Sustain : extractor.Sustain));
                 }
 
-                if (Selected.Piece.HasBehavior<IAttacker>(out IAttacker attacker))
+                if (Selected.Piece.HasBehavior(out IAttacker attacker))
                 {
                     dgvAttacks.Show();
 
@@ -306,6 +311,7 @@ namespace WinFormsApp1
 
         public void BtnBuild_Click(object sender, EventArgs e)
         {
+            static string DispCost(int c) => (c < 0 ? "+" : "") + -c;
             if (DgvForm.CanBuild(Selected))
             {
                 Piece result = Program.DgvForm.BuilderDialog(Selected);
@@ -316,7 +322,7 @@ namespace WinFormsApp1
             {
                 bool canUpgrade = CanUpgrade();
                 if (MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
-                        blueprint, (energy < 0 ? "+" : "") + -energy, (mass < 0 ? "+" : "") + -mass,
+                        blueprint, DispCost(energy), DispCost(mass),
                         canUpgrade ? "U" : "Can u", canUpgrade ? "?" : " ."),
                         "Upgrade", canUpgrade ? MessageBoxButtons.YesNo : MessageBoxButtons.OK)
                     == DialogResult.Yes)
@@ -325,7 +331,46 @@ namespace WinFormsApp1
                     Program.RefreshChanged();
                 }
             }
+            else if (CanReplace(out Piece builder))
+            {
+                static bool Replace(string type, ReplaceFunc ReplaceFunc)
+                {
+                    if (ReplaceFunc(false, out int energy, out int mass)
+                        && MessageBox.Show(string.Format("Replace with {0} for {1} energy {2} mass?",
+                                DispCost(energy), DispCost(mass), type), "Replace", MessageBoxButtons.YesNo)
+                            == DialogResult.Yes)
+                    {
+                        if (ReplaceFunc(true, out _, out _))
+                        {
+                            Program.RefreshChanged();
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                if (builder.HasBehavior(out IBuilder.IBuildExtractor buildExtractor) && Selected.Piece is Extractor extractor)
+                {
+                    Replace("Extractor", (bool doReplace, out int energy, out int mass) =>
+                        buildExtractor.Replace(doReplace, extractor, out energy, out mass));
+                }
+                else if (Selected.Piece is FoundationPiece foundationPiece)
+                {
+                    IBuilder.IBuildFactory buildFactory = builder.GetBehavior<IBuilder.IBuildFactory>();
+                    IBuilder.IBuildTurret buildTurret = builder.GetBehavior<IBuilder.IBuildTurret>();
+                    bool done = false;
+                    for (int a = 0; a < 2 && !done; a++)
+                    {
+                        if ((a == 0) == (Selected.Piece is Turret))
+                            done = buildFactory != null && Replace("Factory", (bool doReplace, out int energy, out int mass) =>
+                                buildFactory.Replace(doReplace, foundationPiece, out energy, out mass));
+                        else
+                            done = buildTurret != null && Replace("Turret", (bool doReplace, out int energy, out int mass) =>
+                                buildTurret.Replace(doReplace, foundationPiece, out energy, out mass));
+                    }
+                }
+            }
         }
+        private delegate bool ReplaceFunc(bool doReplace, out int energy, out int mass);
         private bool HasUpgrade()
         {
             return HasUpgrade(out _, out _, out _);
@@ -346,6 +391,26 @@ namespace WinFormsApp1
             if (Selected != null && Selected.Piece is Mech mech)
                 return mech.CanUpgrade(out _, out _, out _);
             return false;
+        }
+        private bool CanReplace(out Piece piece)
+        {
+            IBuilder builder = null;
+            if (Selected != null)
+            {
+                if (Selected.Piece is Extractor)
+                {
+                    IBuilder.IBuildExtractor buildExtractor = DgvForm.GetBuilder<IBuilder.IBuildExtractor>(Selected);
+                    builder = buildExtractor;
+                }
+                if (Selected.Piece is FoundationPiece)
+                {
+                    IBuilder.IBuildFactory buildFactory = DgvForm.GetBuilder<IBuilder.IBuildFactory>(Selected);
+                    IBuilder.IBuildTurret buildTurret = DgvForm.GetBuilder<IBuilder.IBuildTurret>(Selected);
+                    builder = (IBuilder)buildFactory ?? buildTurret;
+                }
+            }
+            piece = builder.Piece;
+            return builder != null;
         }
 
         public void BtnViewAtt_Click(object sender, EventArgs e)

@@ -73,6 +73,7 @@ namespace ClassLibrary1
         public const double EnergyRepairDiv = 2.1;
         public const double AutoRepair = .65;
         public const double AutoRepairPct = .0169;
+        public const double ReplaceRefundPct = .8;
 
         internal static int Income(double income)
         {
@@ -95,7 +96,7 @@ namespace ClassLibrary1
         }
         public static double GetDamagedValue(Piece piece, double value, double min, bool sqrt)
         {
-            if (piece.HasBehavior<IKillable>(out IKillable killable))
+            if (piece.HasBehavior(out IKillable killable))
             {
                 double resilience = killable.Resilience;
                 if (sqrt)

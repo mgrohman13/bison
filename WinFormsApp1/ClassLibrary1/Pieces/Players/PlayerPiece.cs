@@ -28,7 +28,7 @@ namespace ClassLibrary1.Pieces.Players
         public double GetRepairInc()
         {
             double result = 0;
-            if (this.HasBehavior<IKillable>(out IKillable killable))
+            if (this.HasBehavior(out IKillable killable))
                 killable.Repair(false, out result, out _);
             return result;
         }

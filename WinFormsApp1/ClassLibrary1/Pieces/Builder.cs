@@ -54,6 +54,41 @@ namespace ClassLibrary1.Pieces
         {
             return (tile != null && (!empty || tile.Piece == null) && tile.Visible && tile.GetDistance(this.Piece.Tile) <= Range);
         }
+        private bool Replace(bool doReplace, PlayerPiece piece, CostFunc GetNewCost, Func<double> GetRounding, Action NewPiece, bool validateHits, out int energy, out int mass)
+        {
+            if (piece != null && Validate(piece.Tile, false) && piece.HasBehavior(out IKillable killable) && (!validateHits || killable.HitsCur < killable.HitsMax))
+            {
+                GetNewCost(out int newEnergy, out int newMass);
+                if (piece is Extractor)
+                {
+                    energy = newEnergy;
+                    mass = newMass;
+                }
+                else if (piece is Factory)
+                    Factory.Cost(piece.Game, out energy, out mass);
+                else if (piece is Turret)
+                    Turret.Cost(piece.Game, out energy, out mass);
+                else throw new Exception();
+
+                double mult = killable.HitsCur / (double)killable.HitsMax * Consts.ReplaceRefundPct;
+                double rounding = GetRounding();
+                energy = MTRandom.Round(newEnergy - energy * mult, rounding);
+                mass = MTRandom.Round(newMass - mass * mult, rounding);
+
+                if (Piece.Game.Player.Has(energy, mass))
+                {
+                    if (doReplace && Piece.Game.Player.Spend(energy, mass))
+                    {
+                        Piece.Game.RemovePiece(piece);
+                        NewPiece();
+                    }
+                    return true;
+                }
+            }
+            energy = mass = 0;
+            return false;
+        }
+        private delegate void CostFunc(out int energy, out int mass);
 
         [Serializable]
         public class BuildConstructor : Builder, IBuilder.IBuildConstructor
@@ -90,6 +125,14 @@ namespace ClassLibrary1.Pieces
                 }
                 return null;
             }
+            public bool Replace(bool doReplace, Extractor extractor, out int energy, out int mass)
+            {
+                return Replace(doReplace, extractor,
+                    (out int e, out int m) => Extractor.Cost(out e, out m, extractor.Resource),
+                    () => extractor.Resource.Rounding,
+                    () => Extractor.NewExtractor(extractor.Resource),
+                    true, out energy, out mass);
+            }
         }
         [Serializable]
         public class BuildMech : Builder, IBuilder.IBuildMech
@@ -125,6 +168,16 @@ namespace ClassLibrary1.Pieces
                 }
                 return null;
             }
+            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass)
+            {
+                Map.Tile tile = foundationPiece?.Tile;
+                return Replace(doReplace, foundationPiece,
+                    (out int e, out int m) => Factory.Cost(Piece.Game, out e, out m),
+                    () => Factory.GetRounding(Piece.Game),
+                    () => Factory.NewFactory((Foundation)tile.Piece),
+                    foundationPiece is Factory,
+                    out energy, out mass);
+            }
         }
         [Serializable]
         public class BuildTurret : Builder, IBuilder.IBuildTurret
@@ -142,6 +195,16 @@ namespace ClassLibrary1.Pieces
                         return Turret.NewTurret(foundation);
                 }
                 return null;
+            }
+            public bool Replace(bool doReplace, FoundationPiece foundationPiece, out int energy, out int mass)
+            {
+                Map.Tile tile = foundationPiece?.Tile;
+                return Replace(doReplace, foundationPiece,
+                    (out int e, out int m) => Turret.Cost(Piece.Game, out e, out m),
+                    () => Turret.GetRounding(Piece.Game),
+                    () => Turret.NewTurret((Foundation)tile.Piece),
+                    foundationPiece is Turret,
+                    out energy, out mass);
             }
         }
     }
