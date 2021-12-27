@@ -60,16 +60,20 @@ namespace ClassLibrary1.Pieces
                 _shieldCur = _shieldCur * ShieldLimit / oldShield;
         }
 
-        void IKillable.Damage(int damage, double shieldDmg)
+        double IKillable.Damage(int damage, double shieldDmg)
         {
-            Damage(damage, shieldDmg);
+            return Damage(damage, shieldDmg);
         }
-        internal void Damage(int damage, double shieldDmg)
+        internal double Damage(int damage, double shieldDmg)
         {
+            double pct = 1;
+            if (HitsCur < damage)
+                pct = HitsCur / damage;
             this._hitsCur -= damage;
             this._shieldCur -= shieldDmg;
             if (this.Dead)
                 Piece.Die();
+            return pct;
         }
 
         void IKillable.Repair(bool doRepair, out double hitsInc, out double massCost)

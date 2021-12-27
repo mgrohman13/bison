@@ -1,5 +1,4 @@
 IMPORTANT
-	lower ResearchForMass
 	show upgrade values
 	log
 		color code
@@ -36,6 +35,7 @@ UI
 		stuff not on screen 
 		optimize circles to single draw call
 		optimize drawrects to lines?
+	show effects of research
 	show base values
 		use tooltip for base value in attacks grid?
 	highlight attacks from hidden enemies
@@ -45,15 +45,14 @@ UI
 	minimap
 	
 GAMEPLAY
+	unused upkeep on death?
 	research/blueprint chances also based on current blueprints?
 	use type research levels in blueprint cost?
 	armor reduce with dmg?
 	upkeep doesnt scale
-	reduce upkeep for overkill
 	repair decrease with pow?
 	negative mass/energy shuts things off
 	enforce information hiding at project level
-	show effects of research
 
 FEATURES
 	current armor implementation = meh

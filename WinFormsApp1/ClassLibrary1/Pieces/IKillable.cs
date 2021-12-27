@@ -23,7 +23,7 @@ namespace ClassLibrary1.Pieces
         public bool Dead { get; }
 
         internal void Upgrade(Values values);
-        internal void Damage(int damage, double shieldDmg);
+        internal double Damage(int damage, double shieldDmg);
         internal void Repair(bool doRepair, out double hitsInc, out double massCost);
         public double GetInc();
 

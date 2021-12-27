@@ -65,9 +65,9 @@ namespace ClassLibrary1.Pieces
 
         void IBehavior.GetUpkeep(ref double energyUpk, ref double massUpk)
         {
-            var used = Attacks.Where(a => a.Attacked);
+            //var used = Attacks.Where(a => a.Attacked);
             //return (used.Sum(a => Math.Pow(a.Damage, Consts.WeaponDamageUpkeepPow)) + used.Count) * Consts.WeaponRechargeUpkeep;
-            energyUpk += used.Count() * Consts.WeaponRechargeUpkeep;
+            energyUpk += Attacks.Sum(a => a.Upkeep);
         }
         void IBehavior.EndTurn(ref double energyUpk, ref double massUpk)
         {
@@ -82,9 +82,10 @@ namespace ClassLibrary1.Pieces
             public readonly Piece Piece;
             private Values _values;
 
-            private bool _attacked;
+            private double _attacked;
 
-            public bool Attacked => _attacked;
+            public bool Attacked => _attacked > 0;
+            public double Upkeep => _attacked * Consts.WeaponRechargeUpkeep;
             public double Damage => Consts.GetDamagedValue(Piece, DamageBase, 0);
             public int DamageBase => _values.Damage;
             public double ArmorPierce => _values.ArmorPierce;
@@ -97,7 +98,7 @@ namespace ClassLibrary1.Pieces
             {
                 this.Piece = piece;
                 this._values = values;
-                this._attacked = true;
+                this._attacked = 0;
             }
 
             internal void Upgrade(Values values)
@@ -108,7 +109,7 @@ namespace ClassLibrary1.Pieces
 
             internal bool Fire(IKillable target)
             {
-                if (!_attacked && Piece.Side != target.Piece.Side && Piece.Tile.GetDistance(target.Piece.Tile) <= Range)
+                if (!Attacked && Piece.Side != target.Piece.Side && Piece.Tile.GetDistance(target.Piece.Tile) <= Range)
                 {
                     // randomize damage first as an integer, though shields and armor may convert it back to a double
                     int randDmg = Game.Rand.GaussianOEInt(Damage, Dev, Dev);
@@ -121,11 +122,10 @@ namespace ClassLibrary1.Pieces
 
                     // round again since shields and armor may convert it back to a double
                     int hitsDmg = Game.Rand.Round(damage);
-                    target.Damage(hitsDmg, shieldDmg);
+                    this._attacked = target.Damage(hitsDmg, shieldDmg);
 
                     Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, Damage, randDmg, hitsDmg, shieldDmg);
 
-                    this._attacked = true;
                     return true;
                 }
                 return false;
@@ -133,7 +133,7 @@ namespace ClassLibrary1.Pieces
 
             internal void EndTurn()
             {
-                this._attacked = false;
+                this._attacked = 0;
             }
         }
     }
