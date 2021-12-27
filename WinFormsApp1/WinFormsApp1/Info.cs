@@ -57,7 +57,7 @@ namespace WinFormsApp1
                 btnBuild.Hide();
             }
 
-            this.btnTrade.Visible = Program.Game.Player.CanBurnEnergy() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
+            this.btnTrade.Visible = Program.Game.Player.CanBurnMass() || Program.Game.Player.CanFabricateMass() || Program.Game.Player.CanScrapResearch();
 
             if (Selected != null && Selected.Piece != null)
             {

@@ -54,7 +54,7 @@ namespace ClassLibrary1
                 piece.OnResearch(type);
         }
 
-        public bool CanBurnEnergy()
+        public bool CanBurnMass()
         {
             return Research.HasType(Research.Type.BurnMass);
         }
@@ -66,20 +66,20 @@ namespace ClassLibrary1
         {
             return Research.HasType(Research.Type.ScrapResearch);
         }
-        public void Trade(int burnEnergy, int fabricateMass, int scrapResearch)
+        public void Trade(int burnMass, int fabricateMass, int scrapResearch)
         {
-            if (burnEnergy <= 0 || !CanBurnEnergy())
-                burnEnergy = 0;
+            if (burnMass <= 0 || !CanBurnMass())
+                burnMass = 0;
             if (fabricateMass <= 0 || !CanFabricateMass())
                 fabricateMass = 0;
             if (scrapResearch <= 0 || !CanScrapResearch())
                 scrapResearch = 0;
 
-            if (Research.HasScrap(scrapResearch * Consts.ResearchForMass) && Spend(fabricateMass * Consts.EnergyForMass, burnEnergy * Consts.MassForEnergy))
+            if (Research.HasScrap(scrapResearch) && Spend(fabricateMass * Consts.EnergyForFabricateMass, burnMass * Consts.BurnMassForEnergy))
             {
-                Research.Scrap(scrapResearch * Consts.ResearchForMass);
-                this._energy += burnEnergy;
-                this._mass += fabricateMass + scrapResearch;
+                Research.Scrap(scrapResearch);
+                this._energy += burnMass;
+                this._mass += fabricateMass + scrapResearch * Consts.MassForScrapResearch;
             }
         }
 

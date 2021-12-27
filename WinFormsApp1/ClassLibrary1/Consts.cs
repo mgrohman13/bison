@@ -56,9 +56,9 @@ namespace ClassLibrary1
         public const double ArtifactExtractorEnergyCost = 2100;
         public const double ArtifactExtractorMassCost = 169;
 
-        public const int EnergyForMass = 10;
-        public const int MassForEnergy = 2;
-        public const int ResearchForMass = 1;
+        public const int EnergyForFabricateMass = 10;
+        public const int BurnMassForEnergy = 2;
+        public const int MassForScrapResearch = 3; // inverted value from the other two
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;

@@ -92,7 +92,7 @@ namespace WinFormsApp1
             this.pnlBurn.Controls.Add(this.label7);
             this.pnlBurn.Controls.Add(this.label6);
             this.pnlBurn.Controls.Add(this.nudBurn);
-            this.pnlBurn.Location = new System.Drawing.Point(12, 86);
+            this.pnlBurn.Location = new System.Drawing.Point(12, 12);
             this.pnlBurn.Name = "pnlBurn";
             this.pnlBurn.Size = new System.Drawing.Size(505, 31);
             this.pnlBurn.TabIndex = 15;
@@ -182,7 +182,7 @@ namespace WinFormsApp1
             this.pnlFabricate.Controls.Add(this.label5);
             this.pnlFabricate.Controls.Add(this.label8);
             this.pnlFabricate.Controls.Add(this.nudFabricate);
-            this.pnlFabricate.Location = new System.Drawing.Point(12, 49);
+            this.pnlFabricate.Location = new System.Drawing.Point(12, 86);
             this.pnlFabricate.Name = "pnlFabricate";
             this.pnlFabricate.Size = new System.Drawing.Size(505, 31);
             this.pnlFabricate.TabIndex = 16;
@@ -246,7 +246,7 @@ namespace WinFormsApp1
             this.pnlScrap.Controls.Add(this.label13);
             this.pnlScrap.Controls.Add(this.label14);
             this.pnlScrap.Controls.Add(this.nudScrap);
-            this.pnlScrap.Location = new System.Drawing.Point(12, 12);
+            this.pnlScrap.Location = new System.Drawing.Point(12, 49);
             this.pnlScrap.Name = "pnlScrap";
             this.pnlScrap.Size = new System.Drawing.Size(505, 31);
             this.pnlScrap.TabIndex = 17;
