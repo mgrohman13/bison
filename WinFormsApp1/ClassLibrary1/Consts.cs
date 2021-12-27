@@ -56,9 +56,9 @@ namespace ClassLibrary1
         public const double ArtifactExtractorEnergyCost = 2100;
         public const double ArtifactExtractorMassCost = 169;
 
-        //public const double EnergyPerMass = 20;
-        //public const double MassPerEnergy = 3;
-        //public const double ResearchPerMass = 1;
+        public const int EnergyForMass = 10;
+        public const int MassForEnergy = 2;
+        public const int ResearchForMass = 1;
 
         public const double BaseConstructorUpkeep = 5;
         public const double BaseMechUpkeep = 1;
@@ -74,9 +74,19 @@ namespace ClassLibrary1
         public const double AutoRepair = .65;
         public const double AutoRepairPct = .0169;
 
+        internal static int Income(double income)
+        {
+            return Game.Rand.Round(income + Game.Rand.Gaussian(.65 + Math.Abs(income) / 130.0));
+        }
+
         internal static double GetPct(double pct, double mult)
         {
             return 1 - Math.Pow(1 - pct, mult);
+        }
+
+        public static double GetRepairCost(double energy, double mass)
+        {
+            return (mass + energy / Consts.EnergyRepairDiv) * Consts.RepairCost;
         }
 
         public static double GetDamagedValue(Piece piece, double value, double min)
@@ -90,7 +100,7 @@ namespace ClassLibrary1
                 double resilience = killable.Resilience;
                 if (sqrt)
                     resilience = Math.Sqrt(resilience);
-                return min + (value - min) * Math.Pow(killable.HitsCur / killable.HitsMax, 1 - resilience);
+                return min + (value - min) * Math.Pow(killable.HitsCur / (double)killable.HitsMax, 1 - resilience);
             }
             return value;
         }
@@ -120,11 +130,6 @@ namespace ClassLibrary1
                 //Debug.WriteLine(cur);
             }
             return cur - start;
-        }
-
-        public static double GetRepairCost(double energy, double mass)
-        {
-            return (mass + energy / Consts.EnergyRepairDiv) * Consts.RepairCost;
         }
     }
 }

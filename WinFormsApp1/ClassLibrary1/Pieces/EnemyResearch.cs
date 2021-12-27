@@ -33,7 +33,7 @@ namespace ClassLibrary1.Pieces
         {
             if (Game.Rand.Bool())
                 this._type = Game.Rand.Bool() ? Type.BuildingCost : Game.Rand.SelectValue(Enum.GetValues<Type>()
-                    .Where(t => t != Type.Mech && t.ToString().StartsWith("Mech") && (_available.Contains(t) || !Unlocks.Contains(t))));
+                    .Where(t => t != Type.Mech && Research.IsMech(t) && (_available.Contains(t) || !Unlocks.Contains(t))));
             this._research += Game.Rand.OE(difficulty);
             this._difficulty = difficulty;
 
@@ -48,18 +48,18 @@ namespace ClassLibrary1.Pieces
             }
         }
 
-        public double GetLevel()
+        public int GetLevel()
         {
-            return Consts.ResearchFactor * (_difficulty - 1) + _research;
+            return Game.Rand.Round(Consts.ResearchFactor * (_difficulty - 1) + _research);
         }
 
-        public double GetMinCost()
+        public int GetMinCost()
         {
-            return Math.Pow(GetLevel() + 6.5 * Consts.ResearchFactor, .65);
+            return Game.Rand.Round(Math.Pow(GetLevel() + 6.5 * Consts.ResearchFactor, 0.65));
         }
-        public double GetMaxCost()
+        public int GetMaxCost()
         {
-            return Math.Pow(GetLevel() + .104 * Consts.ResearchFactor, 1.3);
+            return Game.Rand.Round(Math.Pow(GetLevel() + 0.39 * Consts.ResearchFactor, 1.04));
         }
 
         public double GetMult(Research.Type type, double pow)

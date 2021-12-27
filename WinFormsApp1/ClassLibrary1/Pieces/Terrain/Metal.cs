@@ -19,11 +19,9 @@ namespace ClassLibrary1.Pieces.Terrain
             tile.Map.Game.AddPiece(obj);
             return obj;
         }
-        public override void GetCost(out double energy, out double mass)
+        internal override void GetCost(double costMult, out int energy, out int mass)
         {
-            energy = Consts.MetalExtractorEnergyCost;
-            mass = Consts.MetalExtractorMassCost;
-            GetCost(Consts.MetalMassInc, ref energy, ref mass);
+            GetCost(costMult, Consts.MetalMassInc, Consts.MetalExtractorEnergyCost, Consts.MetalExtractorMassCost, out energy, out mass); 
         }
 
         public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)

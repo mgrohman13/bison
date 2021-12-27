@@ -12,27 +12,37 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class MechBlueprint : IComparable<MechBlueprint>
     {
-        private MechBlueprint _upgradeTo;
         public readonly MechBlueprint UpgradeFrom;
-        public MechBlueprint UpgradeTo => _upgradeTo;
-        public readonly int BlueprintNum;
-        public readonly double ResearchLevel;
+        public MechBlueprint UpgradeTo { get; private set; }
+        public readonly string BlueprintNum;
+        public readonly int Energy;
+        public readonly int Mass;
+        public readonly int ResearchLevel;
         public readonly double Vision;
         public readonly IKillable.Values Killable;
         public readonly IReadOnlyCollection<IAttacker.Values> Attacks;
         public readonly IMovable.Values Movable;
-        private MechBlueprint(int blueprintNum, MechBlueprint upgrade, double research, double vision, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
+        private MechBlueprint(int blueprintNum, MechBlueprint upgrade, int research, double vision, IKillable.Values killable, IEnumerable<IAttacker.Values> attacks, IMovable.Values movable)
         {
-            this.BlueprintNum = blueprintNum;
+            this.BlueprintNum = "";
+            while (blueprintNum > 0)
+            {
+                BlueprintNum = (char)(blueprintNum % 26 + 64) + BlueprintNum;
+                blueprintNum /= 26;
+            }
+
             this.UpgradeFrom = upgrade;
             this.ResearchLevel = research;
             this.Vision = vision;
             this.Killable = killable;
             this.Attacks = attacks.ToList().AsReadOnly();
             this.Movable = movable;
-        }
 
-        public void Cost(out double energy, out double mass)
+            CalcCost(out double energy, out double mass);
+            this.Energy = Game.Rand.Round(energy);
+            this.Mass = Game.Rand.Round(mass);
+        }
+        private void CalcCost(out double energy, out double mass)
         {
             double researchMult = Research.GetResearchMult(ResearchLevel);
 
@@ -71,24 +81,23 @@ namespace ClassLibrary1.Pieces.Players
             dmg /= Math.Pow(researchMult, .8);
             vision /= Math.Pow(researchMult, .5);
             move /= Math.Pow(researchMult, .4);
-            rng *= 3.9;
-            move += 3.9;
+            rng *= 9.1;
+            move += 2.6;
             double total = Math.Sqrt((hp + shield + rng) * (dmg + vision) * move) * Consts.MechCostMult;
 
             shield *= 3.9;
-            shield = (1 + shield) / (1 + hp + shield);
+            shield = (1 + shield) / (1.0 + hp + shield);
             ap = (((1 + ap) / (2 + 1.5 * ap + sp) - 1 / 3.0) * 21 / 5.0 + .052) / 1.052;
-            rng /= (39 + rng);
-            move /= (13 + move);
+            rng /= (78 + rng);
+            move /= (9.1 + move);
             double energyPct = Math.Pow(shield * ap * rng * move, 1 / 4.5);
 
             energy = total * energyPct;
             mass = (total - energy) / Consts.MechMassDiv;
         }
-        private double TotalCost()
+        private int TotalCost()
         {
-            Cost(out double energy, out double mass);
-            return energy + mass;
+            return Energy + Mass;
         }
 
         internal static MechBlueprint Alien(IResearch research)
@@ -119,7 +128,7 @@ namespace ClassLibrary1.Pieces.Players
             blueprints.Add(newBlueprint);
             if (upgrade != null)
             {
-                upgrade._upgradeTo = newBlueprint;
+                upgrade.UpgradeTo = newBlueprint;
                 blueprints.Remove(upgrade);
             }
             return newBlueprint;
@@ -132,7 +141,7 @@ namespace ClassLibrary1.Pieces.Players
             else do
                     blueprint = UpgradeBlueprint(upgrade, research, blueprintNum);
                 while (blueprint.TotalCost() + Game.Rand.GaussianOE(169, .39, .26) < upgrade.TotalCost() + Game.Rand.GaussianOE(390, .39, .26));
-            return CheckCost(blueprint, research, blueprintNum);
+            return CheckCost(blueprint, upgrade, research, blueprintNum);
         }
         private static MechBlueprint NewBlueprint(IResearch research, int blueprintNum)
         {
@@ -151,7 +160,8 @@ namespace ClassLibrary1.Pieces.Players
             IKillable.Values newKillable;
             IAttacker.Values newAttacker;
             IMovable.Values newMovable;
-            double hits, armor, inc, max, limit, damage, range, dev;
+            int hits, max, limit, damage;
+            double armor, inc, range, dev;
             Type researching = research.GetType();
             switch (researching)
             {
@@ -261,17 +271,16 @@ namespace ClassLibrary1.Pieces.Players
             }
             return new(blueprintNum, upgrade, research.GetLevel(), vision, killable, attacker, movable);
         }
-        private static MechBlueprint CheckCost(MechBlueprint blueprint, IResearch research, int blueprintNum)
+        private static MechBlueprint CheckCost(MechBlueprint blueprint, MechBlueprint upgrade, IResearch research, int blueprintNum)
         {
-            blueprint.Cost(out double energy, out double mass);
             IKillable.Values killable = blueprint.Killable;
             IMovable.Values movable = blueprint.Movable;
-            void Rebuild() => (blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Attacks, movable)).Cost(out energy, out mass);
+            void Rebuild() => blueprint = new(blueprintNum, blueprint.UpgradeFrom, blueprint.ResearchLevel, blueprint.Vision, killable, blueprint.Attacks, movable);
 
             static double ModVal(bool increase, double amt) => (increase ? 1 : -1) * Game.Rand.DoubleFull(amt);
             bool ModMass(bool increase)
             {
-                double hits = killable.HitsMax + ModVal(increase, 1);
+                int hits = killable.HitsMax + (increase ? 1 : -1);
                 if (hits < 1)
                     return false;
                 killable = new IKillable.Values(hits, killable.Resilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
@@ -280,9 +289,10 @@ namespace ClassLibrary1.Pieces.Players
             };
             bool ModEnergy(bool increase)
             {
-                bool ModVals(bool increase, ref double inc, ref double max, ref double limit)
+                bool ModVals(bool increase, ref double inc, ref int max, ref int limit)
                 {
-                    double i = inc, m = max, l = limit;
+                    double i = inc;
+                    int m = max, l = limit;
                     void ModInc()
                     {
                         i += ModVal(increase, 1 / 13.0);
@@ -291,7 +301,7 @@ namespace ClassLibrary1.Pieces.Players
                     }
                     void ModMax()
                     {
-                        m += ModVal(increase, 1);
+                        m += (increase ? 1 : -1);
                         while (!increase && i >= m)
                             ModInc();
                         while (increase && m >= l)
@@ -299,7 +309,7 @@ namespace ClassLibrary1.Pieces.Players
                     };
                     void ModLimit()
                     {
-                        l += ModVal(increase, 2);
+                        l += (increase ? 1 : -1);
                         while (!increase && m >= l)
                             ModMax();
                     }
@@ -316,73 +326,102 @@ namespace ClassLibrary1.Pieces.Players
                             break;
                     }
                     inc = i; max = m; limit = l;
-                    return i >= 1 && m >= 1 && l >= 1;
+                    return i >= .39 && m >= 1 && l >= 1;
                 };
                 if (killable.ShieldInc > 0)
                 {
                     double shieldInc = killable.ShieldInc;
-                    double shieldMax = killable.ShieldMax;
-                    double shieldLimit = killable.ShieldLimit;
+                    int shieldMax = killable.ShieldMax;
+                    int shieldLimit = killable.ShieldLimit;
                     if (!ModVals(increase, ref shieldInc, ref shieldMax, ref shieldLimit))
-                        shieldInc = shieldMax = shieldLimit = 0;
+                        return false;
                     killable = new IKillable.Values(killable.HitsMax, killable.Resilience, killable.Armor, shieldInc, shieldMax, shieldLimit);
                 }
                 else
                 {
-                    double moveInc = movable.MoveInc;
-                    double moveMax = movable.MoveMax;
-                    double moveLimit = movable.MoveLimit;
-                    if (!ModVals(increase, ref moveInc, ref moveMax, ref moveLimit))
-                        return false;
-                    movable = new IMovable.Values(moveInc, moveMax, moveLimit);
+                    throw new Exception();
+                    //return false;
                 }
+                //else
+                //{
+                //    double moveInc = movable.MoveInc;
+                //    double moveMax = movable.MoveMax;
+                //    double moveLimit = movable.MoveLimit;
+                //    if (!ModVals(increase, ref moveInc, ref moveMax, ref moveLimit))
+                //        return false;
+                //    movable = new IMovable.Values(moveInc, moveMax, moveLimit);
+                //}
                 Rebuild();
                 return true;
             };
+            bool Mod(bool increase)
+            {
+                bool mass;
+                if (!increase && (research.GetType() == Type.MechHits || research.GetType() == Type.Mech))
+                    if (killable.ShieldInc > 0)
+                        mass = false;
+                    else
+                        return false;
+                else if (!increase && research.GetType() == Type.MechShields)
+                    mass = true;
+                else if (killable.ShieldInc > 0)
+                    mass = Game.Rand.Bool();
+                else
+                    mass = true;
+                return mass ? ModMass(increase) : ModEnergy(increase);
+            };
 
             Type researching = research.GetType();
-            double minEnergy, maxEnergy, minMass, maxMass, minTotal, maxTotal;
-            if (researching == Type.Mech)
-            {
-                minEnergy = 130;
-                maxEnergy = 390;
-                minMass = 390;
-                maxMass = 910;
-                minTotal = 520;
-                maxTotal = 1300;
-            }
-            else
+            //double minEnergy, maxEnergy, minMass, maxMass,
+            int minTotal, maxTotal;
+            //if (researching == Type.Mech)
+            //{
+            //    //minEnergy = 130;
+            //    //maxEnergy = 390;
+            //    //minMass = 390;
+            //    //maxMass = 910;
+            //    minTotal = 520;
+            //    maxTotal = 1300;
+            //}
+            //else
             {
                 minTotal = research.GetMinCost();
                 maxTotal = research.GetMaxCost();
-                minEnergy = minMass = minTotal / 2.0;
-                maxEnergy = maxMass = maxTotal - minTotal;
-                if (researching == Type.MechShields || researching == Type.MechAP || researching == Type.MechRange || researching == Type.MechMove)
+                //minEnergy = minMass = minTotal / 2.0;
+                //maxEnergy = maxMass = maxTotal - minTotal;
+                //if (researching == Type.MechShields || researching == Type.MechAP || researching == Type.MechRange || researching == Type.MechMove)
+                //{
+                //    minEnergy = minTotal;
+                //    maxEnergy = 2 * maxTotal;
+                //}
+                //else
+                //{
+                //    minMass = minTotal;
+                //    maxMass = 2 * maxTotal;
+                //}
+                if (researching != Type.Mech)
                 {
-                    minEnergy = minTotal;
-                    maxEnergy = 2 * maxTotal;
+                    const double minDev = .13;
+                    //minEnergy = Game.Rand.GaussianCapped(minEnergy, minDev);
+                    //minMass = Game.Rand.GaussianCapped(minMass, minDev);
+                    minTotal = Game.Rand.GaussianCappedInt(minTotal, minDev);
+                    const double maxDev = .21, maxOE = .169;
+                    //maxEnergy = Game.Rand.GaussianOE(maxEnergy, maxDev, maxOE, minEnergy);
+                    //maxMass = Game.Rand.GaussianOE(maxMass, maxDev, maxOE, minMass);
+                    maxTotal = Game.Rand.GaussianOEInt(maxTotal, maxDev, maxOE, minTotal);
                 }
-                else
-                {
-                    minMass = minTotal;
-                    maxMass = 2 * maxTotal;
-                }
-                const double minDev = .13;
-                minEnergy = Game.Rand.GaussianCapped(minEnergy, minDev);
-                minMass = Game.Rand.GaussianCapped(minMass, minDev);
-                minTotal = Game.Rand.GaussianCapped(minTotal, minDev);
-                const double maxDev = .21, maxOE = .169;
-                maxEnergy = Game.Rand.GaussianOE(maxEnergy, maxDev, maxOE, minEnergy);
-                maxMass = Game.Rand.GaussianOE(maxMass, maxDev, maxOE, minMass);
-                maxTotal = Game.Rand.GaussianOE(maxTotal, maxDev, maxOE, minTotal);
             }
 
-            while (energy < minEnergy && ModEnergy(true)) ;
-            while (mass < minMass && ModMass(true)) ;
-            while (energy > maxEnergy && ModEnergy(false)) ;
-            while (mass > maxMass && ModMass(false)) ;
-            while (mass + energy < minTotal && (Game.Rand.Bool() ? ModEnergy(true) : ModMass(true))) ;
-            while (mass + energy > maxTotal && (Game.Rand.Bool() ? ModEnergy(false) : ModMass(false))) ;
+            //while (energy < minEnergy && ModEnergy(true)) ;
+            //while (mass < minMass && ModMass(true)) ;
+            //while (energy > maxEnergy && ModEnergy(false)) ;
+            //while (mass > maxMass && ModMass(false)) ;
+            bool canKeep = true;
+            while (blueprint.TotalCost() < minTotal && (canKeep &= Mod(true))) ;
+            while (blueprint.TotalCost() > maxTotal && (canKeep &= Mod(false))) ;
+
+            if ((!canKeep || research.GetType() == Type.Mech || Game.Rand.Bool()) && (blueprint.TotalCost() < minTotal || blueprint.TotalCost() > maxTotal))
+                blueprint = GenBlueprint(upgrade, research, blueprintNum);
 
             return blueprint;
         }
@@ -398,7 +437,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             double avg = 26, dev = .26, oe = .078;
             ModValues(research.GetType() == Type.MechHits, 1.69, ref avg, ref dev, ref oe);
-            double hitsMax = Game.Rand.GaussianOE(avg, dev, oe, 1);
+            int hitsMax = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechHits, .9), dev, oe, 1);
 
             bool isResilience = research.GetType() == Type.MechResilience;
             double resilience = Consts.GetPct(Game.Rand.GaussianCapped(.39, .091, .169),
@@ -407,8 +446,8 @@ namespace ClassLibrary1.Pieces.Players
             double armor = 0;
 
             double shieldInc = 0;
-            double shieldMax = 0;
-            double shieldLimit = 0;
+            int shieldMax = 0;
+            int shieldLimit = 0;
 
             bool isShields = research.GetType() == Type.MechShields;
             if (isShields || research.MakeType(Type.MechShields))
@@ -417,19 +456,14 @@ namespace ClassLibrary1.Pieces.Players
                 dev = .26;
                 oe = .21;
                 ModValues(isShields, 1.3, ref avg, ref dev, ref oe);
-                shieldInc = Game.Rand.GaussianOE(avg, dev, oe);
-                shieldMax = Game.Rand.GaussianOE(shieldInc * 13, dev * 1.3, oe, shieldInc);
-                shieldLimit = Game.Rand.GaussianOE(shieldInc * 13 + shieldMax, dev * 1.3, oe * 1.3, shieldMax);
+                shieldInc = Game.Rand.GaussianOE(avg * research.GetMult(Type.MechShields, .9), dev, oe, .39);
+                shieldMax = Game.Rand.GaussianOEInt(shieldInc * 13 + 1, dev * 1.3, oe, (int)shieldInc + 1);
+                shieldLimit = Game.Rand.GaussianOEInt(shieldInc * 13 + shieldMax + 1, dev * 1.3, oe * 1.3, shieldMax + 1);
             }
 
-            hitsMax *= research.GetMult(Type.MechHits, .9);
             bool isArmor = research.GetType() == Type.MechArmor;
             if (isArmor || research.MakeType(Type.MechArmor))
                 armor = Game.Rand.Weighted(isArmor ? .95 : .75, 1 - Math.Pow(isArmor ? .52 : .65, research.GetMult(Type.MechArmor, .9)));
-            double researchMult = research.GetMult(Type.MechShields, .9);
-            shieldInc *= researchMult;
-            shieldMax *= researchMult;
-            shieldLimit *= researchMult;
 
             return new(hitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
         }
@@ -441,7 +475,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double avg = 5.2, dev = .26, oe = .169;
                 ModValues(research.GetType() == Type.MechDamage, 2.1, ref avg, ref dev, ref oe);
-                double damage = Game.Rand.GaussianOE(avg, dev, oe);
+                int damage = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechDamage, 1), dev, oe, 1);
                 double armorPierce = 0;
                 double shieldPierce = 0;
                 double randomness = Game.Rand.Weighted(.13);
@@ -450,8 +484,6 @@ namespace ClassLibrary1.Pieces.Players
                 oe = .104;
                 ModValues(research.GetType() == Type.MechRange, 2.1, ref avg, ref dev, ref oe);
                 double range = Game.Rand.GaussianOE(avg, dev, oe, 1);
-
-                damage *= research.GetMult(Type.MechDamage, 1);
 
                 bool isAP = research.GetType() == Type.MechAP;
                 if (isAP || research.MakeType(Type.MechAP))
@@ -469,14 +501,9 @@ namespace ClassLibrary1.Pieces.Players
         {
             double avg = 2.6, dev = .13, oe = .21;
             ModValues(research.GetType() == Type.MechMove, 1.69, ref avg, ref dev, ref oe);
-            double move = Game.Rand.GaussianOE(avg, dev, oe, 1);
-            double max = Game.Rand.GaussianOE(move * 2, dev * 2.6, oe * 1.3, move);
-            double limit = Game.Rand.GaussianOE(max + move, dev * 2.6, oe * 2.6, max);
-
-            double researchMult = research.GetMult(Type.MechMove, .4);
-            move *= researchMult;
-            max *= researchMult;
-            limit *= researchMult;
+            double move = Game.Rand.GaussianOE(avg * research.GetMult(Type.MechMove, .4), dev, oe, 1);
+            int max = Game.Rand.GaussianOEInt(move * 2, dev * 2.6, oe * 1.3, (int)move + 1);
+            int limit = Game.Rand.GaussianOEInt(move + max, dev * 2.6, oe * 2.6, max + 1);
 
             return new(move, max, limit);
         }

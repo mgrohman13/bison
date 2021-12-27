@@ -19,11 +19,9 @@ namespace ClassLibrary1.Pieces.Terrain
             tile.Map.Game.AddPiece(artifact);
             return artifact;
         }
-        public override void GetCost(out double energy, out double mass)
+        internal override void GetCost(double costMult, out int energy, out int mass)
         {
-            energy = Consts.ArtifactExtractorEnergyCost;
-            mass = Consts.ArtifactExtractorMassCost;
-            GetCost(Consts.ArtifactResearchInc, ref energy, ref mass);
+            GetCost(costMult, Consts.ArtifactResearchInc, Consts.ArtifactExtractorEnergyCost, Consts.ArtifactExtractorMassCost, out energy, out mass);
         }
 
         public override void GenerateResources(Piece piece, double valueMult, ref double energyInc, ref double energyUpk, ref double massInc, ref double massUpk, ref double researchInc)

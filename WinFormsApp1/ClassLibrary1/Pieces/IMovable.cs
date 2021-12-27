@@ -14,8 +14,8 @@ namespace ClassLibrary1.Pieces
         public double MoveCur { get; }
         public double MoveInc { get; }
         public double MoveIncBase { get; }
-        public double MoveMax { get; }
-        public double MoveLimit { get; }
+        public int MoveMax { get; }
+        public int MoveLimit { get; }
 
         void Upgrade(Values values);
         public bool Move(Map.Tile to);
@@ -25,8 +25,9 @@ namespace ClassLibrary1.Pieces
         [Serializable]
         public struct Values
         {
-            private readonly double _moveInc, _moveMax, _moveLimit;
-            public Values(double moveInc, double moveMax, double moveLimit)
+            private readonly int _moveMax, _moveLimit;
+            private readonly double _moveInc;
+            public Values(double moveInc, int moveMax, int moveLimit)
             {
                 if (moveInc <= 0 || moveMax <= 0 || moveLimit <= 0)
                     moveInc = moveMax = moveLimit = 0;
@@ -35,8 +36,8 @@ namespace ClassLibrary1.Pieces
                 this._moveLimit = moveLimit;
             }
             public double MoveInc => _moveInc;
-            public double MoveMax => _moveMax;
-            public double MoveLimit => _moveLimit;
+            public int MoveMax => _moveMax;
+            public int MoveLimit => _moveLimit;
         }
     }
 }

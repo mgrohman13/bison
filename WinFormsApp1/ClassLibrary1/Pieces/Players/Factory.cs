@@ -33,7 +33,7 @@ namespace ClassLibrary1.Pieces.Players
             foundation.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(Game game, out double energy, out double mass)
+        public static void Cost(Game game, out int energy, out int mass)
         {
             Values values = GetValues(game);
             energy = values.Energy;
@@ -49,6 +49,7 @@ namespace ClassLibrary1.Pieces.Players
             GetBehavior<IKillable>().Upgrade(values.Killable);
             if (HasBehavior<IRepair>(out IRepair repair))
                 repair.Upgrade(values.GetRepair(_rangeMult));
+            Builder.UpgradeAll(this, values.GetRepair(_rangeMult).Builder);
         }
         private void Unlock(Research research)
         {
@@ -76,7 +77,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(Game, out double energy, out double mass);
+                Cost(Game, out int energy, out int mass);
                 return Consts.GetRepairCost(energy, mass);
             }
         }
@@ -90,7 +91,8 @@ namespace ClassLibrary1.Pieces.Players
         [Serializable]
         private class Values : IUpgradeValues
         {
-            private double energy, mass, vision;
+            private int energy, mass;
+            private double vision;
             private IKillable.Values killable;
             private IRepair.Values repair;
             public Values()
@@ -100,8 +102,8 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeFactoryRepair(1);
             }
 
-            public double Energy => energy;
-            public double Mass => mass;
+            public int Energy => energy;
+            public int Mass => mass;
             public double Vision => vision;
             public IKillable.Values Killable => killable;
             public double BuilderRange => repair.Builder.Range;
@@ -109,7 +111,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 IRepair.Values repair = this.repair;
                 double range = repair.Builder.Range * rangeMult;
-                double rate = Consts.GetPct(repair.Rate, 1 / Math.Pow(rangeMult, .78));
+                double rate = Consts.GetPct(repair.Rate, 1 / Math.Pow(rangeMult, 1.17));
                 return new(new(range), rate);
             }
 
@@ -125,21 +127,21 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingCost(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .3);
-                this.energy = 650 / researchMult;
-                this.mass = 250 / researchMult;
+                this.energy = Game.Rand.Round(650 / researchMult);
+                this.mass = Game.Rand.Round(250 / researchMult);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .5);
-                double hits = 50 * researchMult;
+                int hits = Game.Rand.Round(50 * researchMult);
                 this.vision = 6 * researchMult;
                 this.killable = new(hits, .5);
             }
             private void UpgradeFactoryRepair(double researchMult)
             {
-                researchMult = Math.Pow(researchMult, .7);
+                researchMult = Math.Pow(researchMult, .6);
                 double repairRange = 6.5 * researchMult;
-                double repairRate = Consts.GetPct(.078, researchMult);
+                double repairRate = Consts.GetPct(.065, researchMult);
                 this.repair = new(new(repairRange), repairRate);
             }
         }

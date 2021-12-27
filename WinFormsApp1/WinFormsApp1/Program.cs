@@ -104,7 +104,7 @@ namespace WinFormsApp1
                 Program.RefreshChanged();
 
                 if (researched.HasValue)
-                    Research.ShowForm(researched);
+                    Research.ShowForm();
             }
         }
 
@@ -177,35 +177,32 @@ namespace WinFormsApp1
                 return false;
 
             bool move = false;
+            IBuilder builder = piece.GetBehavior<IBuilder>();
             if (!move && piece.HasBehavior<IBuilder.IBuildMech>(out _))
-                move = Game.Player.Research.Blueprints.Any(b =>
-                {
-                    b.Cost(out double e, out double m);
-                    return e < Game.Player.Energy && m < Game.Player.Mass;
-                });
+                move = Game.Player.Research.Blueprints.Any(b => Game.Player.Has(b.Energy, b.Mass));
             if (!move && piece.HasBehavior<IBuilder.IBuildConstructor>(out _))
             {
-                Constructor.Cost(Game, out double e, out double m);
-                move = e < Game.Player.Energy && m < Game.Player.Mass;
+                Constructor.Cost(Game, out int e, out int m);
+                move = Game.Player.Has(e, m);
             }
             if (!move && piece.HasBehavior<IBuilder.IBuildExtractor>(out _))
-                move = piece.Tile.GetVisibleTilesInRange(1).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
+                move = piece.Tile.GetVisibleTilesInRange(builder.Range).Select(t => t.Piece as Resource).Where(r => r != null).Any(r =>
                 {
-                    Extractor.Cost(out double e, out double m, r);
-                    return e < Game.Player.Energy && m < Game.Player.Mass;
+                    Extractor.Cost(out int e, out int m, r);
+                    return Game.Player.Has(e, m);
                 });
             if (!move)
-                if (piece.Tile.GetVisibleTilesInRange(1).Select(t => t.Piece as Foundation).Any(f => f != null))
+                if (piece.Tile.GetVisibleTilesInRange(builder != null ? builder.Range : 0).Select(t => t.Piece as Foundation).Any(f => f != null))
                 {
                     if (piece.HasBehavior<IBuilder.IBuildFactory>(out _))
                     {
-                        Factory.Cost(Game, out double e, out double m);
-                        move = e < Game.Player.Energy && m < Game.Player.Mass;
+                        Factory.Cost(Game, out int e, out int m);
+                        move = Game.Player.Has(e, m);
                     }
                     if (!move && piece.HasBehavior<IBuilder.IBuildTurret>(out _))
                     {
-                        Turret.Cost(Game, out double e, out double m);
-                        move = e < Game.Player.Energy && m < Game.Player.Mass;
+                        Turret.Cost(Game, out int e, out int m);
+                        move = Game.Player.Has(e, m);
                     }
                 }
             if (!move && piece.HasBehavior<IMovable>(out IMovable movable))

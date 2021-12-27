@@ -15,13 +15,15 @@ namespace ClassLibrary1
     public class Enemy : Side
     {
         private readonly EnemyResearch _research;
+        private MechBlueprint _nextAlien;
 
         public IEnumerable<Piece> VisiblePieces => _pieces.Where(p => p.Tile.Visible);
 
         internal Enemy(Game game)
-            : base(game, Consts.EnemyEnergy * -2.6, 0)
+            : base(game, Game.Rand.Round(Consts.EnemyEnergy * -2.6), 0)
         {
-            _research = new EnemyResearch(game);
+            this._research = new EnemyResearch(game);
+            this._nextAlien = MechBlueprint.Alien(_research);
         }
 
         internal void PlayTurn()
@@ -29,22 +31,21 @@ namespace ClassLibrary1
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
                 PlayTurn(piece);
 
-            base.EndTurn();
+            base.EndTurn(out double energyUpk, out double massUpk);
 
             double difficulty = (Game.Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
 
-            this._energy += this.Mass + Game.Rand.OE(Math.Pow(difficulty, Consts.DifficultyEnergyPow) * Consts.EnemyEnergy);
+            this._energy += Game.Rand.OEInt(Math.Pow(difficulty, Consts.DifficultyEnergyPow) * Consts.EnemyEnergy) + this.Mass - Game.Rand.Round(energyUpk + massUpk);
             this._mass = 0;
 
             while (true)
             {
-                MechBlueprint blueprint = MechBlueprint.Alien(_research);
-                blueprint.Cost(out double energy, out double mass);
-                energy += mass;
-                if (this.Energy > energy)
+                int cost = _nextAlien.Energy + _nextAlien.Mass;
+                if (this.Energy > cost)
                 {
-                    this._energy -= energy;
-                    Alien.NewAlien(Game.Map.GetEnemyTile(), blueprint.Killable, blueprint.Attacks, blueprint.Movable);
+                    this._energy -= cost;
+                    Alien.NewAlien(Game.Map.GetEnemyTile(), _nextAlien.Killable, _nextAlien.Attacks, _nextAlien.Movable);
+                    _nextAlien = MechBlueprint.Alien(_research);
                 }
                 else break;
             }
@@ -142,7 +143,7 @@ namespace ClassLibrary1
             if (killable.Piece.HasBehavior<IRepair>(out IRepair repairs))
                 repair = 13 + avgHp * repairs.Rate * (repairs.Range + 3.9);
             double gc = (1 + attacks + 21 * repair) / (killable.HitsCur / (1 - killable.Armor) + killable.ShieldCur);
-            double damagePct = 2 - killable.HitsCur / killable.HitsMax;
+            double damagePct = 2 - killable.HitsCur / (double)killable.HitsMax;
             double shieldFactor = 3 + 13 * killable.ShieldInc / (killable.HitsMax / 6.5 + killable.ShieldCur);
             double final = gc * gc * damagePct * shieldFactor;
             if (!(final > 0))

@@ -1,98 +1,89 @@
-double click to select resarch
-draw selec on top of other ranges
-prevent shield dropping for shield mech. move mech? hits mech?
-optimize circles to single draw call
-optimize drawrects to lines?
-avoid cost balancing causing extremem move situations?
-last space deselcts
-space should not trigger buttons
-convert turret/factory
-	reduced cost, requires constructor
-reserach chances also based on current blueprints?
-truncate instead of round move, range disp values?
-	or instead, int stuff
-optimize offscreen drawing
-adjust scroll speed based on draw time
-use type research levels in cost?
-some move values too extreme
-upgrade infinite loop
-	allow randomly other values with low chance?
-min/max cost should just full regen?
-	maybe only X chance each loop?
+IMPORTANT
+	convert turret/factory
+		reduced cost, requires constructor
+		ability to "re-build" same type as well (for instant heal, expensive)
+	blueprint upgrade randomly upgrade unrelated values with low chance
+	constructor shouldnt auto upg
+	lower ResearchForMass
+	show upgrade values
+	log
+		color code
+		click to jump to unit (way to cycle without filter though?)
+		hr lines for turns
+		addtl logs? (repair? upgrade? build? research?)
+	show move cost on mouse over
+	select next/prev starts at selected tile even if no piece
+	zooming based on center is awkward, usually opposite what you want
+	double click to select research
+	show mech upgrade comparison
+	show building costs somehwere
+	show research unlocks
+	last space should deselect
+	space should not trigger buttons
+	show research progress/cost on main form
+	better emphasis when upgradeable
+	truncate range disp values
+		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
+		
+UI			
+	selected piece shows double build range on mouse around
+	better range drawing (no digit?  lines for cutoffs?  gradient?)?
+	more move-left triggers (under attack, can attack if move)
+		ability disable for certain blueprints 	
+	hard to see red on red one-hex range overlap
+		also one-move min hard to see
+	draw select on top of other ranges
+		not done because need to see one-move minimum
+	HP bars (shield bars?)
+	adjust scroll speed based on draw time
+	optimize drawing 
+		stuff not on screen 
+		optimize circles to single draw call
+		optimize drawrects to lines?
+	show base values
+		use tooltip for base value in attacks grid?
+	highlight attacks from hidden enemies
+		may be solved well enough by log improvements (click ability)
+	hotkeys to jump to cardinal dir edges
+	enemy move+range take into account unmovable tiles 
+	minimap
+	
+GAMEPLAY
+	research/blueprint chances also based on current blueprints?
+	use type research levels in blueprint cost?
+	armor reduce with dmg?
+	upkeep doesnt scale
+	reduce upkeep for overkill
+	repair decrease with pow?
+	negative mass/energy shuts things off
+	enforce information hiding at project level
+	show effects of research
 
-selected piece shows double build range on mouse around
-show research progress/cost on main form
-better can build indicator - disable for certain blueprints 
-HP bars (shield bars?)
-blueprint type num bug
-lock mech stuff until research type
-show research unlocks
-turret far too weak
-
-enemy hive
-	protected by turrets
-	constant spawn pct in dir
-repair decrease with pow?
-
-info for core show genresources
-repair randomness leaves some left 50% of the time
-reapri doesnt stack? diminishing returns?
-all buildings except core self repair?
-
-constructor shouldnt auto upg?
-
-mulitple repairers can spend too much mass when target goes to full
-hard to see red on red one-hex range overlap
-swap q and e?
-minimap
-negative mass/energy shuts things off
-select next/prev starts at selected tile even if no piece
-optimize drawing 
-	stuff not on screen
-	cache range calc results
-has move left when can build anything, not just mech
-show non-selected repair ranges
-zooming based on center is awkward, usually opposite what you want
-show move cost on mouse over
-use tooltip for base value in attacks grid?
-highlight attacks from hidden enemies
-health bars
-build range
-	and fix hideous build form
-scrolling/panning limits can still only show non-visible corner and hence blank screen
-mouse over attack to see specific range
-hotkeys to jump to cardinal dir edges
-proper hiding of map borders until seen 
-	enforce at project level
-	can be gleaned from vision mechanics before seeing line 
-integrate resilience stat into blueprints
-enemy move+range take into account unmovable tiles 
-not super happy with repairing
-	repairing during combat too good? enemies target repairers preferably?
-	repairing extrators too slow
-
-calc with lines
-	line of sight for vision while moving 
-	stop when see new enemy?
-	auto move to target
-		tries to find squares closest to line 
-		favors moving just past min range
-
-int stuff
-
-upgrade things with latest research
-	turrets
-	constructor, factory for better repair?
-radar
-	for resources
-	also enemies?
-minimap
-undo
-fog
-defensive structures
-mobile factory?
-terrain
-	blockers
-	rubble/debris
-		harvest
-experience
+FEATURES
+	current armor implementation = meh
+	enemy hive
+		protected by turrets
+		constant spawn pct in dir
+	calc with lines
+		line of sight for vision while moving 
+		stop when see new enemy?
+		auto move to target
+			tries to find squares closest to line 
+			favors moving just past min range
+		block attacks
+	radar
+		for resources
+		also enemies?
+	undo
+	fog
+	more units 
+		enemy defensive structures
+		mobile factory?
+		teleporter?
+		more interesting attacks (some not blocked by calc with lines)
+	more abilities
+	terrain
+		blockers
+		rubble/debris
+			harvest
+	experience

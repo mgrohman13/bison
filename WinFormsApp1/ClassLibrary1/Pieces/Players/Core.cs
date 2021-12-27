@@ -33,6 +33,7 @@ namespace ClassLibrary1.Pieces.Players
             this._vision = values.Vision;
             GetBehavior<IKillable>().Upgrade(values.Killable);
             GetBehavior<IRepair>().Upgrade(values.Repair);
+            Builder.UpgradeAll(this, values.Repair.Builder);
         }
         private void Unlock(Research research)
         {
@@ -111,16 +112,16 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingHits(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .4);
-                double hits = 100 * researchMult;
+                int hits = Game.Rand.Round(100 * researchMult);
                 this.vision = 4 * researchMult;
-                this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.HitsMax, killable.ShieldLimit);
+                this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
             }
             private void UpgradeCoreShields(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .8);
                 double shieldInc = 2.1 * researchMult;
-                double shieldMax = 65 * researchMult;
-                double shieldLimit = 91 * researchMult;
+                int shieldMax = Game.Rand.Round(65 * researchMult);
+                int shieldLimit = Game.Rand.Round(91 * researchMult);
                 this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
             }
         }

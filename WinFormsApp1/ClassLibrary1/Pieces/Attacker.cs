@@ -86,7 +86,7 @@ namespace ClassLibrary1.Pieces
 
             public bool Attacked => _attacked;
             public double Damage => Consts.GetDamagedValue(Piece, DamageBase, 0);
-            public double DamageBase => _values.Damage;
+            public int DamageBase => _values.Damage;
             public double ArmorPierce => _values.ArmorPierce;
             public double ShieldPierce => _values.ShieldPierce;
             public double Dev => _values.Dev;
@@ -110,38 +110,25 @@ namespace ClassLibrary1.Pieces
             {
                 if (!_attacked && Piece.Side != target.Piece.Side && Piece.Tile.GetDistance(target.Piece.Tile) <= Range)
                 {
-                    double shieldDmg = 0;
-                    if (target.ShieldCur > 0)
-                        shieldDmg = Damage * (1 - ShieldPierce);
-                    double damage = Damage - shieldDmg;
+                    // randomize damage first as an integer, though shields and armor may convert it back to a double
+                    int randDmg = Game.Rand.GaussianOEInt(Damage, Dev, Dev);
+                    double damage = randDmg;
 
-                    damage = Rand(damage);
-                    shieldDmg = Rand(shieldDmg);
-                    double randDmg = damage;
-                    double randShieldDmg = shieldDmg;
+                    double shieldDmg = Math.Min(damage * (1 - ShieldPierce), target.ShieldCur);
+                    damage -= shieldDmg;
 
-                    if (shieldDmg > target.ShieldCur)
-                    {
-                        damage += shieldDmg - target.ShieldCur;
-                        shieldDmg = target.ShieldCur;
-                    }
-                    if (target.Armor > 0)
-                        damage *= 1 - target.Armor * (1 - ArmorPierce);
+                    damage *= 1 - target.Armor * (1 - ArmorPierce);
 
-                    target.Damage(damage, shieldDmg);
+                    // round again since shields and armor may convert it back to a double
+                    int hitsDmg = Game.Rand.Round(damage);
+                    target.Damage(hitsDmg, shieldDmg);
 
-                    Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, Damage, randDmg, randShieldDmg, damage, shieldDmg);
+                    Piece.Game.Log.LogAttack(Piece.GetBehavior<IAttacker>(), target, Damage, randDmg, hitsDmg, shieldDmg);
 
                     this._attacked = true;
                     return true;
                 }
                 return false;
-            }
-            private double Rand(double v)
-            {
-                if (v > 0)
-                    return Game.Rand.GaussianOE(v, Dev, Dev);
-                return 0;
             }
 
             internal void EndTurn()

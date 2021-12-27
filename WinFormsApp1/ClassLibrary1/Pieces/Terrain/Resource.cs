@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MattUtil;
 
 namespace ClassLibrary1.Pieces.Terrain
 {
@@ -11,7 +12,7 @@ namespace ClassLibrary1.Pieces.Terrain
     {
         public readonly double Sustain;
 
-        private readonly double _energyMult, _massMult;
+        private readonly double _energyMult, _massMult, _rounding;
 
         private double _value;
         public double Value => _value;
@@ -27,6 +28,7 @@ namespace ClassLibrary1.Pieces.Terrain
 
             this._energyMult = Game.Rand.GaussianOE(1, .065, .021);
             this._massMult = Game.Rand.GaussianOE(1, .039, .013);
+            this._rounding = Game.Rand.NextDouble();
             this._value = value;
             this.Sustain = sustain;
         }
@@ -41,16 +43,17 @@ namespace ClassLibrary1.Pieces.Terrain
             this._value -= extract;
         }
 
-        protected virtual void GetCost(double baseValue, ref double energy, ref double mass)
+        protected void GetCost(double costMult, double inc, double baseEnergy, double baseMass, out int energy, out int mass)
         {
-            double mult = Math.Sqrt(baseValue);
-            mult = Math.Pow((this.Value + mult) / (baseValue + mult), .91);
+            double mult = Math.Sqrt(inc);
+            mult = Math.Pow((this.Value + mult) / (inc + mult), .91);
             mult *= Math.Pow(Sustain, .26);
-            energy *= mult * _energyMult;
-            mass *= mult * _massMult;
+            mult *= costMult;
+            energy = MTRandom.Round(baseEnergy * _energyMult * mult, _rounding);
+            mass = MTRandom.Round(baseMass * _massMult * mult, _rounding);
         }
 
-        public abstract void GetCost(out double energy, out double mass);
+        internal abstract void GetCost(double costMult, out int energy, out int mass);
         public abstract string GetResourceName();
     }
 }

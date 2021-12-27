@@ -35,9 +35,16 @@ namespace ClassLibrary1.Pieces
             this._tile = tile;
             this.PieceNum = Game.GetPieceNum(this.GetType());
         }
-        public T GetBehavior<T>() where T : class, IBehavior
+        public IEnumerable<T> GetBehaviors<T>() where T : class, IBehavior
         {
             IEnumerable<T> all = behavior.OfType<T>();
+            if (!all.All(b => b.AllowMultiple))
+                throw new Exception();
+            return all;
+        }
+        public T GetBehavior<T>() where T : class, IBehavior
+        {
+            IEnumerable<T> all = GetBehaviors<T>();
             if (all.All(b => b.AllowMultiple))
                 return all.FirstOrDefault();
             return all.SingleOrDefault();
@@ -48,7 +55,7 @@ namespace ClassLibrary1.Pieces
         }
         public bool HasBehavior<T>() where T : class, IBehavior
         {
-            return behavior.OfType<T>().Any();
+            return GetBehaviors<T>().Any();
         }
         protected void SetBehavior(params IBehavior[] behavior)
         {

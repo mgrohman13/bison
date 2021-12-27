@@ -16,10 +16,10 @@ namespace ClassLibrary1
         protected readonly Game _game;
         protected readonly List<Piece> _pieces;
 
-        protected double _energy, _mass;
+        protected int _energy, _mass;
 
-        internal double Energy => _energy;
-        internal double Mass => _mass;
+        internal int Energy => _energy;
+        internal int Mass => _mass;
 
         public Game Game => _game;
         internal IReadOnlyCollection<Piece> Pieces => _pieces;
@@ -28,7 +28,7 @@ namespace ClassLibrary1
             return Pieces.Select(p => p.GetBehavior<T>()).Where(b => b != null);
         }
 
-        protected Side(Game game, double energy, double mass)
+        protected Side(Game game, int energy, int mass)
         {
             this._game = game;
             this._pieces = new List<Piece>();
@@ -45,14 +45,11 @@ namespace ClassLibrary1
             this._pieces.Remove(piece);
         }
 
-        internal virtual Research.Type? EndTurn()
+        protected void EndTurn(out double energyUpk, out double massUpk)
         {
-            double energyUpk = 0, massUpk = 0;
+            energyUpk = massUpk = 0;
             foreach (Piece piece in Game.Rand.Iterate(_pieces))
                 piece.EndTurn(ref energyUpk, ref massUpk);
-            this._energy -= energyUpk;
-            this._mass -= massUpk;
-            return null;
         }
     }
 }

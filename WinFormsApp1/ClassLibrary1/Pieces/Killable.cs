@@ -15,7 +15,8 @@ namespace ClassLibrary1.Pieces
         private readonly Piece _piece;
         private IKillable.Values _values;
 
-        private double _hitsCur, _shieldCur;
+        private int _hitsCur;
+        private double _shieldCur;
 
         public Piece Piece => _piece;
 
@@ -23,7 +24,7 @@ namespace ClassLibrary1.Pieces
             : this(piece, values, values.HitsMax, 0)
         {
         }
-        public Killable(Piece piece, IKillable.Values values, double hitsCur, double shieldCur)
+        public Killable(Piece piece, IKillable.Values values, int hitsCur, double shieldCur)
         {
             this._piece = piece;
             this._values = values;
@@ -36,34 +37,34 @@ namespace ClassLibrary1.Pieces
             return _piece.GetBehavior<T>();
         }
 
-        public double HitsCur => _hitsCur;
-        public double HitsMax => _values.HitsMax;
+        public int HitsCur => _hitsCur;
+        public int HitsMax => _values.HitsMax;
         public double Resilience => _values.Resilience;
         public double Armor => _values.Armor;
         public double ShieldCur => _shieldCur;
         public double ShieldInc => Consts.GetDamagedValue(Piece, ShieldIncBase, 0);
         public double ShieldIncBase => _values.ShieldInc;
-        public double ShieldMax => _values.ShieldMax;
-        public double ShieldLimit => _values.ShieldLimit;
+        public int ShieldMax => _values.ShieldMax;
+        public int ShieldLimit => _values.ShieldLimit;
         public bool Dead => HitsCur <= 0.05;
 
         void IKillable.Upgrade(IKillable.Values values)
         {
-            double hitsPct = HitsCur / HitsMax;
+            double hitsPct = HitsCur / (double)HitsMax;
             double oldShield = ShieldLimit;
 
             this._values = values;
-            _hitsCur = HitsMax * hitsPct;
+            _hitsCur = Game.Rand.Round(HitsMax * hitsPct);
 
             if (ShieldLimit < oldShield)
                 _shieldCur = _shieldCur * ShieldLimit / oldShield;
         }
 
-        void IKillable.Damage(double damage, double shieldDmg)
+        void IKillable.Damage(int damage, double shieldDmg)
         {
             Damage(damage, shieldDmg);
         }
-        internal void Damage(double damage, double shieldDmg)
+        internal void Damage(int damage, double shieldDmg)
         {
             this._hitsCur -= damage;
             this._shieldCur -= shieldDmg;
@@ -92,13 +93,17 @@ namespace ClassLibrary1.Pieces
                     hitsInc += repairs[a] / (a + 1.0);
 
                 if (doRepair)
-                    hitsInc = Game.Rand.GaussianCapped(hitsInc, Consts.HitsIncDev);
+                    hitsInc = Game.Rand.GaussianCappedInt(hitsInc, Consts.HitsIncDev);
 
                 hitsInc = Math.Min(hitsInc, HitsMax - HitsCur);
-                massCost = repairable.RepairCost * hitsInc / HitsMax;
+                massCost = repairable.RepairCost * hitsInc / (double)HitsMax;
 
                 if (doRepair)
-                    _hitsCur += hitsInc;
+                {
+                    _hitsCur += (int)hitsInc;
+                    if ((int)hitsInc != hitsInc || _hitsCur > HitsMax)
+                        throw new Exception();
+                }
             }
             else
             {

@@ -49,6 +49,7 @@ namespace WinFormsApp1
             this.lblInf8 = new System.Windows.Forms.Label();
             this.lbl8 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnTrade = new System.Windows.Forms.Button();
             this.btnResearch = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnViewAtt = new System.Windows.Forms.Button();
@@ -133,14 +134,14 @@ namespace WinFormsApp1
             this.dgvAttacks.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvAttacks.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dgvAttacks.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvAttacks.Location = new System.Drawing.Point(0, 314);
+            this.dgvAttacks.Location = new System.Drawing.Point(0, 253);
             this.dgvAttacks.MultiSelect = false;
             this.dgvAttacks.Name = "dgvAttacks";
             this.dgvAttacks.ReadOnly = true;
             this.dgvAttacks.RowHeadersVisible = false;
             this.dgvAttacks.RowHeadersWidth = 62;
             this.dgvAttacks.RowTemplate.Height = 33;
-            this.dgvAttacks.Size = new System.Drawing.Size(300, 200);
+            this.dgvAttacks.Size = new System.Drawing.Size(500, 200);
             this.dgvAttacks.TabIndex = 9;
             // 
             // lblInf4
@@ -167,7 +168,7 @@ namespace WinFormsApp1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblTurn.Location = new System.Drawing.Point(118, 81);
             this.lblTurn.Name = "lblTurn";
-            this.lblTurn.Size = new System.Drawing.Size(182, 34);
+            this.lblTurn.Size = new System.Drawing.Size(382, 34);
             this.lblTurn.TabIndex = 12;
             this.lblTurn.Text = "lblTurn";
             this.lblTurn.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -246,6 +247,7 @@ namespace WinFormsApp1
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnTrade);
             this.panel1.Controls.Add(this.btnResearch);
             this.panel1.Controls.Add(this.btnSave);
             this.panel1.Controls.Add(this.btnViewAtt);
@@ -255,13 +257,24 @@ namespace WinFormsApp1
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 485);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(300, 115);
+            this.panel1.Size = new System.Drawing.Size(500, 115);
             this.panel1.TabIndex = 21;
+            // 
+            // btnTrade
+            // 
+            this.btnTrade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTrade.Location = new System.Drawing.Point(270, 1);
+            this.btnTrade.Name = "btnTrade";
+            this.btnTrade.Size = new System.Drawing.Size(112, 34);
+            this.btnTrade.TabIndex = 17;
+            this.btnTrade.Text = "Trade";
+            this.btnTrade.UseVisualStyleBackColor = true;
+            this.btnTrade.Click += new System.EventHandler(this.BtnTrade_Click);
             // 
             // btnResearch
             // 
             this.btnResearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnResearch.Location = new System.Drawing.Point(188, 1);
+            this.btnResearch.Location = new System.Drawing.Point(388, 1);
             this.btnResearch.Name = "btnResearch";
             this.btnResearch.Size = new System.Drawing.Size(112, 34);
             this.btnResearch.TabIndex = 16;
@@ -272,7 +285,7 @@ namespace WinFormsApp1
             // btnSave
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSave.Location = new System.Drawing.Point(188, 81);
+            this.btnSave.Location = new System.Drawing.Point(388, 81);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(112, 34);
             this.btnSave.TabIndex = 15;
@@ -282,8 +295,8 @@ namespace WinFormsApp1
             // 
             // btnViewAtt
             // 
-            this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnViewAtt.Location = new System.Drawing.Point(0, 1);
+            this.btnViewAtt.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnViewAtt.Location = new System.Drawing.Point(270, 81);
             this.btnViewAtt.Name = "btnViewAtt";
             this.btnViewAtt.Size = new System.Drawing.Size(112, 34);
             this.btnViewAtt.TabIndex = 14;
@@ -321,7 +334,7 @@ namespace WinFormsApp1
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtLog.Size = new System.Drawing.Size(300, 46);
+            this.txtLog.Size = new System.Drawing.Size(500, 46);
             this.txtLog.TabIndex = 23;
             // 
             // lblInf9
@@ -369,7 +382,7 @@ namespace WinFormsApp1
             this.Controls.Add(this.lblInf1);
             this.Controls.Add(this.lbl1);
             this.Name = "Info";
-            this.Size = new System.Drawing.Size(300, 600);
+            this.Size = new System.Drawing.Size(500, 600);
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).EndInit();
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -407,5 +420,6 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblInf9;
         private System.Windows.Forms.Label lbl9;
         private System.Windows.Forms.Button btnResearch;
+        private System.Windows.Forms.Button btnTrade;
     }
 }

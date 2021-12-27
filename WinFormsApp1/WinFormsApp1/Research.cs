@@ -20,18 +20,17 @@ namespace WinFormsApp1
             InitializeComponent();
         }
 
-        public static void ShowForm(ClassLibrary1.Research.Type? researched)
+        public static void ShowForm()
         {
             if (ResearchForm == null)
                 ResearchForm = new Research();
 
-            if (ResearchForm.ShowDialog() == DialogResult.OK)
-                if (ResearchForm.GetSelected().HasValue)
-                {
-                    Type selected = ResearchForm.GetSelected().Value;
-                    if (Program.Game.Player.Research.Available.Contains(selected))
-                        Program.Game.Player.Research.Researching = selected;
-                }
+            if (ResearchForm.ShowDialog() == DialogResult.OK && ResearchForm.GetSelected().HasValue)
+            {
+                Type selected = ResearchForm.GetSelected().Value;
+                if (Program.Game.Player.Research.Available.Contains(selected))
+                    Program.Game.Player.Research.Researching = selected;
+            }
         }
 
         public override void Refresh()
@@ -42,12 +41,12 @@ namespace WinFormsApp1
                 Type selected = s.Value;
 
                 this.lblName.Text = selected.ToString();
-                this.lblLast.Text = Program.Game.Player.Research.GetLast(selected).ToString("0.0");
-                this.lblProgress.Text = Program.Game.Player.Research.GetProgress(selected).ToString("0.0");
+                this.lblLast.Text = Program.Game.Player.Research.GetLast(selected).ToString();
+                this.lblProgress.Text = Program.Game.Player.Research.GetProgress(selected).ToString();
 
                 if (Program.Game.Player.Research.Available.Contains(selected))
                 {
-                    this.lblCost.Text = Program.Game.Player.Research.GetCost(selected).ToString("0.0");
+                    this.lblCost.Text = Program.Game.Player.Research.GetCost(selected).ToString();
                     this.lblCost.Show();
                     this.label6.Show();
                 }

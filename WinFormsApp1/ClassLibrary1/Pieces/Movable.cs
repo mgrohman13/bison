@@ -38,8 +38,8 @@ namespace ClassLibrary1.Pieces
         public double MoveCur => _moveCur;
         public double MoveInc => Consts.GetDamagedValue(Piece, MoveIncBase, 1, true);
         public double MoveIncBase => _values.MoveInc;
-        public double MoveMax => _values.MoveMax;
-        public double MoveLimit => _values.MoveLimit;
+        public int MoveMax => _values.MoveMax;
+        public int MoveLimit => _values.MoveLimit;
 
         void IMovable.Upgrade(IMovable.Values values)
         {

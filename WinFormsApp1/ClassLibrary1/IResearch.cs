@@ -9,10 +9,10 @@ namespace ClassLibrary1
     interface IResearch
     {
         Game Game { get; }
-        double GetLevel();
+        int GetLevel();
         Research.Type GetType();
-        double GetMinCost();
-        double GetMaxCost();
+        int GetMinCost();
+        int GetMaxCost();
         bool MakeType(Research.Type type);
         double GetMult(Research.Type type, double pow);
     }

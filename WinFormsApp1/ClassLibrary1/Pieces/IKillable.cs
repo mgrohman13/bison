@@ -11,30 +11,31 @@ namespace ClassLibrary1.Pieces
 {
     public interface IKillable : IBehavior
     {
-        public double HitsCur { get; }
-        public double HitsMax { get; }
+        public int HitsCur { get; }
+        public int HitsMax { get; }
         public double Resilience { get; }
         public double Armor { get; }
         public double ShieldCur { get; }
         public double ShieldInc { get; }
         public double ShieldIncBase { get; }
-        public double ShieldMax { get; }
-        public double ShieldLimit { get; }
+        public int ShieldMax { get; }
+        public int ShieldLimit { get; }
         public bool Dead { get; }
 
         internal void Upgrade(Values values);
-        internal void Damage(double damage, double shieldDmg);
+        internal void Damage(int damage, double shieldDmg);
         internal void Repair(bool doRepair, out double hitsInc, out double massCost);
         public double GetInc();
 
         [Serializable]
         public struct Values
         {
-            private readonly double _hitsMax, _resilience, _armor, _shieldInc, _shieldMax, _shieldLimit;
-            public Values(double hitsMax, double resilience) : this(hitsMax, resilience, 0, 0, 0, 0) { }
+            private readonly int _hitsMax, _shieldMax, _shieldLimit;
+            private readonly double _resilience, _armor, _shieldInc;
+            public Values(int hitsMax, double resilience) : this(hitsMax, resilience, 0, 0, 0, 0) { }
             //public Values(double hitsMax, double resilience, double armor) : this(hitsMax, resilience, armor, 0, 0, 0) { }
             //public Values(double hitsMax, double resilience, double shieldInc, double shieldMax, double shieldLimit) : this(hitsMax, resilience, 0, shieldInc, shieldMax, shieldLimit) { }
-            public Values(double hitsMax, double resilience, double armor, double shieldInc, double shieldMax, double shieldLimit)
+            public Values(int hitsMax, double resilience, double armor, double shieldInc, int shieldMax, int shieldLimit)
             {
                 if (shieldInc <= 0 || shieldMax <= 0 || shieldLimit <= 0)
                     shieldInc = shieldMax = shieldLimit = 0;
@@ -45,12 +46,12 @@ namespace ClassLibrary1.Pieces
                 this._shieldMax = shieldMax;
                 this._shieldLimit = shieldLimit;
             }
-            public double HitsMax => _hitsMax;
+            public int HitsMax => _hitsMax;
             public double Resilience => _resilience;
             public double Armor => _armor;
             public double ShieldInc => _shieldInc;
-            public double ShieldMax => _shieldMax;
-            public double ShieldLimit => _shieldLimit;
+            public int ShieldMax => _shieldMax;
+            public int ShieldLimit => _shieldLimit;
         }
 
         public interface IRepairable

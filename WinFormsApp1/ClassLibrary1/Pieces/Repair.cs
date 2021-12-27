@@ -22,8 +22,8 @@ namespace ClassLibrary1.Pieces
 
         void IRepair.Upgrade(IRepair.Values repair)
         {
-            ((IBuilder)this).Upgrade(repair.Builder);
+            Builder.UpgradeAll(Piece, repair.Builder);
             this._values = repair;
-        } 
+        }
     }
 }

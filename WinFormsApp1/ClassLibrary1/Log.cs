@@ -37,13 +37,20 @@ namespace ClassLibrary1
             return entries == null ? "" : String.Join(Environment.NewLine, entries.Select(e => e.Entry));
         }
 
-        internal void LogAttack(IAttacker attacker, IKillable defender, double baseDamage, double randDmg, double randShieldDmg, double damage, double shieldDmg)
+        internal void LogAttack(IAttacker attacker, IKillable defender, double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
         {
-            string statement = string.Format("{0}. {1} -> {2} ({3:0.0})" + Environment.NewLine + "      {4}{5}", Game.Turn, attacker.Piece.ToString(), defender.Piece.ToString(), baseDamage,
-                damage > 0 ? string.Format("{0:0.0} - {1:0.0} = {2:0.0} ({3:0.0})", defender.HitsCur + damage, damage, defender.HitsCur, randDmg) : defender.HitsCur.ToString("0.0"),
-                shieldDmg > 0 ? string.Format(" ; {0:0.0} - {1:0.0} = {2:0.0} ({3:0.0})", defender.ShieldCur + shieldDmg, shieldDmg, defender.ShieldCur, randShieldDmg) : "");
+            string statement = string.Format("{0}. {1} -> {2} ({3})" + Environment.NewLine + "      {4}{5} ({6})", Game.Turn, attacker.Piece, defender.Piece, Format(baseDamage),
+                hitsDmg > 0 ? string.Format("{0} - {1} = {2}", defender.HitsCur + hitsDmg, hitsDmg, defender.HitsCur) : defender.HitsCur,
+                shieldDmg > 0 ? string.Format(" ; {0:0.0} - {1:0.0} = {2:0.0}", defender.ShieldCur + shieldDmg, shieldDmg, defender.ShieldCur) : "", randDmg);
             Debug.WriteLine(statement);
             AddLog(statement, attacker.Piece, defender.Piece);
+        }
+        private static string Format(double v)
+        {
+            string result = v.ToString("0.0");
+            if (result.EndsWith(".0"))
+                result = v.ToString("0");
+            return result;
         }
 
         private void AddLog(string statement, params Piece[] pieces)

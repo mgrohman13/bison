@@ -23,8 +23,8 @@ namespace ClassLibrary1
             return base.PiecesOfType<T>();
         }
         public Core Core => _core;
-        new public double Energy => base.Energy;
-        new public double Mass => base.Mass;
+        new public int Energy => base.Energy;
+        new public int Mass => base.Mass;
 
         internal Player(Game game)
             : base(game, 0, 1750)
@@ -54,7 +54,36 @@ namespace ClassLibrary1
                 piece.OnResearch(type);
         }
 
-        internal bool Spend(double energy, double mass)
+        public bool CanBurnEnergy()
+        {
+            return Research.HasType(Research.Type.BurnMass);
+        }
+        public bool CanFabricateMass()
+        {
+            return Research.HasType(Research.Type.FabricateMass);
+        }
+        public bool CanScrapResearch()
+        {
+            return Research.HasType(Research.Type.ScrapResearch);
+        }
+        public void Trade(int burnEnergy, int fabricateMass, int scrapResearch)
+        {
+            if (burnEnergy <= 0 || !CanBurnEnergy())
+                burnEnergy = 0;
+            if (fabricateMass <= 0 || !CanFabricateMass())
+                fabricateMass = 0;
+            if (scrapResearch <= 0 || !CanScrapResearch())
+                scrapResearch = 0;
+
+            if (Research.HasScrap(scrapResearch * Consts.ResearchForMass) && Spend(fabricateMass * Consts.EnergyForMass, burnEnergy * Consts.MassForEnergy))
+            {
+                Research.Scrap(scrapResearch * Consts.ResearchForMass);
+                this._energy += burnEnergy;
+                this._mass += fabricateMass + scrapResearch;
+            }
+        }
+
+        internal bool Spend(int energy, int mass)
         {
             bool has = Has(energy, mass);
             if (has)
@@ -75,13 +104,14 @@ namespace ClassLibrary1
             foreach (PlayerPiece piece in Game.Rand.Iterate(Pieces))
                 piece.GenerateResources(ref energyInc, ref energyUpk, ref massInc, ref massUpk, ref researchInc);
         }
-        internal override Research.Type? EndTurn()
+        internal Research.Type? EndTurn()
         {
             GetIncome(out double energyInc, out double _, out double massInc, out double _, out double researchInc);
-            this._energy += energyInc;
-            this._mass += massInc;
 
-            base.EndTurn();
+            base.EndTurn(out double energyUpk, out double massUpk);
+
+            this._energy += Consts.Income(energyInc - energyUpk);
+            this._mass += Consts.Income(massInc - massUpk);
 
             return this.Research.AddResearch(researchInc);
         }

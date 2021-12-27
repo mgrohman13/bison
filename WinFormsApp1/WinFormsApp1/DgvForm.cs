@@ -21,7 +21,7 @@ namespace WinFormsApp1
 {
     public partial class DgvForm : Form
     {
-        private List<object> rows;
+        private List<BuildRow> rows;
         private Tile selected;
         private Piece result;
 
@@ -58,9 +58,8 @@ namespace WinFormsApp1
             this.selected = selected;
             dataGridView1.Hide();
 
-            rows = new List<object>();
+            rows = new List<BuildRow>();
             result = null;
-
 
             IBuilder.IBuildConstructor buildConstructor = GetBuilder<IBuilder.IBuildConstructor>(selected);
             IBuilder.IBuildMech buildMech = GetBuilder<IBuilder.IBuildMech>(selected);
@@ -70,7 +69,7 @@ namespace WinFormsApp1
 
             if (buildConstructor != null)
             {
-                Constructor.Cost(Program.Game, out double energy, out double mass);
+                Constructor.Cost(Program.Game, out int energy, out int mass);
                 BuildRow row = new(buildConstructor, "Constructor", energy, mass);
                 rows.Add(row);
             }
@@ -78,27 +77,26 @@ namespace WinFormsApp1
             {
                 foreach (MechBlueprint blueprint in Program.Game.Player.Research.Blueprints)
                 {
-                    blueprint.Cost(out double energy, out double mass);
-                    BuildRow row = new(buildMech, "Mech", energy, mass, blueprint);
+                    BuildRow row = new(buildMech, "Mech", blueprint.Energy, blueprint.Mass, blueprint);
                     rows.Add(row);
                 }
             }
             if (buildExtractor != null && selected.Piece is Resource resource)
             {
-                Extractor.Cost(out double energy, out double mass, resource);
+                Extractor.Cost(out int energy, out int mass, resource);
                 BuildRow row = new(buildExtractor, "Extractor", energy, mass);
                 rows.Add(row);
             }
             Foundation foundation = selected.Piece as Foundation;
             if (buildFactory != null && foundation != null)
             {
-                Factory.Cost(Program.Game, out double energy, out double mass);
+                Factory.Cost(Program.Game, out int energy, out int mass);
                 BuildRow row = new(buildFactory, "Factory", energy, mass);
                 rows.Add(row);
             }
             if (buildTurret != null && foundation != null)
             {
-                Turret.Cost(Program.Game, out double energy, out double mass);
+                Turret.Cost(Program.Game, out int energy, out int mass);
                 BuildRow row = new(buildTurret, "Turret", energy, mass);
                 rows.Add(row);
             }
@@ -110,14 +108,20 @@ namespace WinFormsApp1
                 //dataGridView1.Columns["Blueprint"].Visible = false;
                 dataGridView1.Columns["Builder"].Visible = false;
 
-                dataGridView1.Columns["Energy"].DefaultCellStyle.Format = "0.0";
-                dataGridView1.Columns["Mass"].DefaultCellStyle.Format = "0.0";
+                //dataGridView1.Columns["Energy"].DefaultCellStyle.Format = "0.0";
+                //dataGridView1.Columns["Mass"].DefaultCellStyle.Format = "0.0";
 
-                dataGridView1.Columns["Research"].DefaultCellStyle.Format = "0.0";
+                //dataGridView1.Columns["Research"].DefaultCellStyle.Format = "0.0";
                 dataGridView1.Columns["Vision"].DefaultCellStyle.Format = "0.0";
-                dataGridView1.Columns["Hits"].DefaultCellStyle.Format = "0.0";
-                dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P1";
-                dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P1";
+                //dataGridView1.Columns["Hits"].DefaultCellStyle.Format = "0.0";
+                dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P0";
+                dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P0";
+
+                dataGridView1.Columns["Upgraded"].Visible = rows.Any(r => r.Upgraded != null);
+                dataGridView1.Columns["Armor"].Visible = rows.Any(r => r.Armor > 0);
+                dataGridView1.Columns["Shields"].Visible = rows.Any(r => r.Blueprint?.Killable.ShieldInc > 0);
+                dataGridView1.Columns["ArmorPierce"].Visible = rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ArmorPierce > 0);
+                dataGridView1.Columns["ShieldPierce"].Visible = rows.SelectMany(r => r.Blueprint?.Attacks ?? Array.Empty<IAttacker.Values>()).Any(a => a.ShieldPierce > 0);
 
                 dataGridView1.Location = new System.Drawing.Point(0, 0);
                 dataGridView1.Size = dataGridView1.PreferredSize;
@@ -135,19 +139,22 @@ namespace WinFormsApp1
         }
         private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            BuildRow row = (BuildRow)rows[e.RowIndex];
-            IBuilder builder = row.Builder;
-            if (builder is IBuilder.IBuildConstructor buildConstructor)
-                this.result = buildConstructor.Build(selected);
-            if (builder is IBuilder.IBuildMech buildMech)
-                this.result = buildMech.Build(selected, row.Blueprint);
-            if (builder is IBuilder.IBuildExtractor buildExtractor)
-                this.result = buildExtractor.Build(selected.Piece as Resource);
-            if (builder is IBuilder.IBuildFactory buildFactory)
-                this.result = buildFactory.Build(selected.Piece as Foundation);
-            if (builder is IBuilder.IBuildTurret buildTurret)
-                this.result = buildTurret.Build(selected.Piece as Foundation);
-            this.Close();
+            if (e.RowIndex >= 0 && e.RowIndex < rows.Count)
+            {
+                BuildRow row = (BuildRow)rows[e.RowIndex];
+                IBuilder builder = row.Builder;
+                if (builder is IBuilder.IBuildConstructor buildConstructor)
+                    this.result = buildConstructor.Build(selected);
+                if (builder is IBuilder.IBuildMech buildMech)
+                    this.result = buildMech.Build(selected, row.Blueprint);
+                if (builder is IBuilder.IBuildExtractor buildExtractor)
+                    this.result = buildExtractor.Build(selected.Piece as Resource);
+                if (builder is IBuilder.IBuildFactory buildFactory)
+                    this.result = buildFactory.Build(selected.Piece as Foundation);
+                if (builder is IBuilder.IBuildTurret buildTurret)
+                    this.result = buildTurret.Build(selected.Piece as Foundation);
+                this.Close();
+            }
         }
 
         public class BuildRow
@@ -162,21 +169,21 @@ namespace WinFormsApp1
             public MechBlueprint Upgraded => Blueprint?.UpgradeFrom;
             public double? Research => Blueprint?.ResearchLevel;
 
-            public string Movement => Blueprint == null ? null : string.Format("{1:0.0} / {2:0.0} +{0:0.0}", Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
+            public string Movement => Blueprint == null ? null : string.Format("{1} / {2} +{0:0.0}", Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
             public double? Vision => Blueprint?.Vision;
 
             public double? Hits => Blueprint?.Killable.HitsMax;
             public double? Resilience => Blueprint?.Killable.Resilience;
             public double? Armor => Blueprint?.Killable.Armor;
             public string Shields => Blueprint == null ? null : Blueprint.Killable.ShieldInc <= 0 ? "" :
-                string.Format("{1:0.0} / {2:0.0} +{0:0.0}", Blueprint.Killable.ShieldInc, Blueprint.Killable.ShieldMax, Blueprint.Killable.ShieldLimit);
+                string.Format("{1} / {2} +{0:0.0}", Blueprint.Killable.ShieldInc, Blueprint.Killable.ShieldMax, Blueprint.Killable.ShieldLimit);
 
             public int? Attacks => Blueprint?.Attacks.Count;
             public string Range => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Range.ToString("0.0")));
-            public string Damage => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Damage.ToString("0.0")));
-            public string ArmorPierce => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.ArmorPierce.ToString("P1")));
-            public string ShieldPierce => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.ShieldPierce.ToString("P1")));
-            public string Dev => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Dev.ToString("P1")));
+            public string Damage => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Damage.ToString("0")));
+            public string ArmorPierce => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.ArmorPierce.ToString("P0")));
+            public string ShieldPierce => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.ShieldPierce.ToString("P0")));
+            public string Randomness => Blueprint == null ? null : string.Join(" , ", Blueprint.Attacks.Select(a => a.Dev.ToString("P0")));
 
             public BuildRow(IBuilder builder, string name, double energy, double mass, MechBlueprint blueprint)
                 : this(builder, name, energy, mass)

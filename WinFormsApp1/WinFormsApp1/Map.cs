@@ -129,6 +129,7 @@ namespace WinFormsApp1
 
             Rectangle mapCoords = GetMapCoords();
             Dictionary<Pen, List<RectangleF>> grid = new();
+            using Font f = new(FontFamily.GenericMonospace, scale / 5.6f);
             for (int a = 0; a < mapCoords.Width; a++)
             {
                 int x = mapCoords.X + a;
@@ -168,6 +169,10 @@ namespace WinFormsApp1
                             if (extractor != null)
                                 e.Graphics.FillEllipse(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
                         }
+
+                        if (viewAttacks && scale > 21 && this.attacks.TryGetValue(new Point(x, y), out string attack))
+                            e.Graphics.DrawString(attack, f, Brushes.Red, new PointF(
+                                GetX(x) + scale - e.Graphics.MeasureString(attack, f).Width, GetY(y) + scale - f.Size * 2 - 2));
 
                         if (tile == SelTile)
                             pen = sel;
@@ -220,7 +225,7 @@ namespace WinFormsApp1
 
                 attacks.Clear();
                 foreach (var p in attStr)
-                    attacks.Add(new Point(p.Key.X, p.Key.Y), p.Value.ToString("0.0"));
+                    attacks.Add(new Point(p.Key.X, p.Key.Y), p.Value.ToString("0"));
             }
             this.Invalidate();
         }
@@ -280,13 +285,6 @@ namespace WinFormsApp1
 
             foreach (var t in lines)
                 e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
-
-            if (viewAttacks)
-            {
-                using Font f = new(FontFamily.GenericMonospace, scale / 6.5f);
-                foreach (var p in this.attacks)
-                    e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X), GetY(p.Key.Y) + scale - f.Size * 2 - 2));
-            }
         }
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles, Action<IEnumerable<Tile>, double> AddAttStr)
         {

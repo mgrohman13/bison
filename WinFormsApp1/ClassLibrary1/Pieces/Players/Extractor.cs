@@ -32,12 +32,9 @@ namespace ClassLibrary1.Pieces.Players
             resource.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(out double energy, out double mass, Resource resource)
+        public static void Cost(out int energy, out int mass, Resource resource)
         {
-            resource.GetCost(out energy, out mass);
-            double costMult = GetValues(resource.Game).CostMult;
-            energy *= costMult;
-            mass *= costMult;
+            resource.GetCost(GetValues(resource.Game).CostMult, out energy, out mass);
         }
 
         internal override void OnResearch(Research.Type type)
@@ -56,7 +53,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(out double energy, out double mass, Resource);
+                Cost(out int energy, out int mass, Resource);
                 return Consts.GetRepairCost(energy, mass);
             }
         }
@@ -122,7 +119,7 @@ namespace ClassLibrary1.Pieces.Players
             private void UpgradeBuildingHits(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .5);
-                double hits = 75 * researchMult;
+                int hits = Game.Rand.Round(75 * researchMult);
                 this.vision = 5 * researchMult;
                 this.killable = new(hits, killable.Resilience);
             }

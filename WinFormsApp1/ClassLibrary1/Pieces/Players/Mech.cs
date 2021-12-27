@@ -27,19 +27,17 @@ namespace ClassLibrary1.Pieces.Players
             return obj;
         }
 
-        public bool CanUpgrade(out MechBlueprint upgradeTo, out double energy, out double mass)
+        public bool CanUpgrade(out MechBlueprint upgradeTo, out int energy, out int mass)
         {
             upgradeTo = Blueprint.UpgradeTo;
-            energy = mass = double.NaN;
+            energy = mass = 0;
             if (upgradeTo != null)
             {
                 while (upgradeTo.UpgradeTo != null)
                     upgradeTo = upgradeTo.UpgradeTo;
 
-                upgradeTo.Cost(out energy, out mass);
-                Blueprint.Cost(out double curEnergy, out double curMass);
-                energy -= curEnergy;
-                mass -= curMass;
+                energy = upgradeTo.Energy - Blueprint.Energy;
+                mass = upgradeTo.Mass - Blueprint.Mass;
 
                 return Game.Player.Has(energy, mass) && Side.PiecesOfType<IBuilder.IBuildMech>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range);
             }
@@ -47,7 +45,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         public bool Upgrade()
         {
-            if (CanUpgrade(out MechBlueprint upgradeTo, out double energy, out double mass) && Game.Player.Spend(energy, mass))
+            if (CanUpgrade(out MechBlueprint upgradeTo, out int energy, out int mass) && Game.Player.Spend(energy, mass))
             {
                 this._vision = upgradeTo.Vision;
                 GetBehavior<IKillable>().Upgrade(upgradeTo.Killable);
@@ -67,8 +65,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Blueprint.Cost(out double energy, out double mass);
-                return Consts.GetRepairCost(energy, mass);
+                return Consts.GetRepairCost(Blueprint.Energy, Blueprint.Mass);
             }
         }
         bool IKillable.IRepairable.AutoRepair => false;
@@ -76,7 +73,7 @@ namespace ClassLibrary1.Pieces.Players
         internal override void GetUpkeep(ref double energyUpk, ref double massUpk)
         {
             base.GetUpkeep(ref energyUpk, ref massUpk);
-            energyUpk += Consts.BaseConstructorUpkeep;
+            energyUpk += Consts.BaseMechUpkeep;
         }
         internal override void EndTurn(ref double energyUpk, ref double massUpk)
         {

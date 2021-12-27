@@ -33,6 +33,11 @@ namespace ClassLibrary1.Pieces
             return _piece.GetBehavior<T>();
         }
 
+        internal static void UpgradeAll(Piece piece, IBuilder.Values values)
+        {
+            foreach (IBuilder builder in piece.GetBehaviors<IBuilder>())
+                builder.Upgrade(values);
+        }
         void IBuilder.Upgrade(IBuilder.Values values)
         {
             this._values = values;
@@ -61,7 +66,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (Validate(tile, true))
                 {
-                    Constructor.Cost(Piece.Game, out double energy, out double mass);
+                    Constructor.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
                         return Constructor.NewConstructor(tile, false);
                 }
@@ -79,7 +84,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (resource != null && Validate(resource.Tile, false))
                 {
-                    Extractor.Cost(out double energy, out double mass, resource);
+                    Extractor.Cost(out int energy, out int mass, resource);
                     if (Piece.Game.Player.Spend(energy, mass))
                         return Extractor.NewExtractor(resource);
                 }
@@ -97,8 +102,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (Validate(tile, true))
                 {
-                    blueprint.Cost(out double energy, out double mass);
-                    if (Piece.Game.Player.Spend(energy, mass))
+                    if (Piece.Game.Player.Spend(blueprint.Energy, blueprint.Mass))
                         return Mech.NewMech(tile, blueprint);
                 }
                 return null;
@@ -115,7 +119,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (foundation != null && Validate(foundation.Tile, false))
                 {
-                    Factory.Cost(Piece.Game, out double energy, out double mass);
+                    Factory.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
                         return Factory.NewFactory(foundation);
                 }
@@ -133,7 +137,7 @@ namespace ClassLibrary1.Pieces
             {
                 if (foundation != null && Validate(foundation.Tile, false))
                 {
-                    Turret.Cost(Piece.Game, out double energy, out double mass);
+                    Turret.Cost(Piece.Game, out int energy, out int mass);
                     if (Piece.Game.Player.Spend(energy, mass))
                         return Turret.NewTurret(foundation);
                 }

@@ -12,22 +12,26 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Turret : PlayerPiece, IKillable.IRepairable
     {
-        private readonly double _hitsMult;
-        private readonly double[] _rangeMult = new double[2];
+        private readonly double _hitsMult, _rounding;
+        private readonly double[] _rangeMult = new double[2], _dev = new double[2];
 
         public Piece Piece => this;
 
         private Turret(Map.Tile tile, Values values)
             : base(tile, values.Vision)
         {
-            _hitsMult = Game.Rand.GaussianCapped(1, .169, .39);
+            this._hitsMult = Game.Rand.GaussianCapped(1, .169, .39);
+            this._rounding = Game.Rand.NextDouble();
             for (int a = 0; a < 2; a++)
-                _rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1) / values.AttackRange[a];
+            {
+                this._rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1) / values.AttackRange[a];
+                this._dev[a] = Game.Rand.Weighted(.13);
+            }
 
-            IKillable.Values killable = values.GetKillable(_hitsMult);
+            IKillable.Values killable = values.GetKillable(_hitsMult, _rounding);
             SetBehavior(
                 new Killable(this, killable, killable.HitsMax, killable.ShieldMax / 2.1),
-                new Attacker(this, values.GetAttacks(Game.Player.Research, _rangeMult)));
+                new Attacker(this, values.GetAttacks(Game.Player.Research, _rangeMult, _rounding, _dev)));
         }
         internal static Turret NewTurret(Foundation foundation)
         {
@@ -38,7 +42,7 @@ namespace ClassLibrary1.Pieces.Players
             foundation.Game.AddPiece(obj);
             return obj;
         }
-        public static void Cost(Game game, out double energy, out double mass)
+        public static void Cost(Game game, out int energy, out int mass)
         {
             Values values = GetValues(game);
             energy = values.Energy;
@@ -50,8 +54,8 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this._vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(values.GetKillable(_hitsMult));
-            GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _rangeMult));
+            GetBehavior<IKillable>().Upgrade(values.GetKillable(_hitsMult, _rounding));
+            GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _rangeMult, _rounding, _dev));
         }
         private static Values GetValues(Game game)
         {
@@ -69,7 +73,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             get
             {
-                Cost(Game, out double energy, out double mass);
+                Cost(Game, out int energy, out int mass);
                 return Consts.GetRepairCost(energy, mass);
             }
         }
@@ -85,7 +89,8 @@ namespace ClassLibrary1.Pieces.Players
         {
             private const double resilience = .65;
 
-            private double energy, mass, vision;
+            private int energy, mass;
+            private double vision;
             private IKillable.Values killable;
             private readonly IAttacker.Values[] attacks;
             public Values()
@@ -99,31 +104,40 @@ namespace ClassLibrary1.Pieces.Players
                 UpgradeTurretRange(1);
             }
 
-            public double Energy => energy;
-            public double Mass => mass;
+            public int Energy => energy;
+            public int Mass => mass;
             public double Vision => vision;
             public double[] AttackRange => attacks.Select(v => v.Range).ToArray();
-            public IKillable.Values GetKillable(double hitsMult)
+            public IKillable.Values GetKillable(double hitsMult, double rounding)
             {
-                double hits = killable.HitsMax * hitsMult;
-                double shieldMult = Math.Pow(hitsMult, .78);
-                double shieldInc = killable.ShieldInc / shieldMult;
-                double shieldMax = killable.ShieldMax / shieldMult;
-                double shieldLimit = killable.ShieldLimit / shieldMult;
+                int hits = MTRandom.Round(killable.HitsMax * hitsMult, rounding);
+                double shieldMult = Math.Pow(killable.HitsMax / (double)hits, 1.04);
+                double shieldInc = killable.ShieldInc * shieldMult;
+                int shieldMax = 1 + MTRandom.Round((killable.ShieldMax - 1) * shieldMult, rounding);
+                int shieldLimit = 1 + MTRandom.Round((killable.ShieldLimit - 1) * shieldMult, rounding);
                 return new(hits, killable.Resilience, killable.Armor, shieldInc, shieldMax, shieldLimit);
             }
-            public IAttacker.Values[] GetAttacks(Research research, double[] rangeMult)
+            public IAttacker.Values[] GetAttacks(Research research, double[] rangeMult, double rounding, double[] dev)
             {
                 IAttacker.Values[] result = new IAttacker.Values[2];
                 for (int a = 0; a < 2; a++)
                 {
                     IAttacker.Values attack = attacks[a];
-                    double damage = attack.Damage / rangeMult[a];
-                    double dev = Game.Rand.Weighted(.13);
-                    double range = attack.Range * rangeMult[a];
+                    int damage = MTRandom.Round(attack.Damage / rangeMult[a], rounding);
+                    if (damage < 1)
+                        damage = 1;
+                    double range = int.MaxValue;
+                    do
+                    {
+                        if (range < 1 && damage > 1)
+                            --damage;
+                        range = attack.Range * Math.Pow(attack.Damage / (double)damage, .78);
+                    } while (range < 1 && damage > 1);
+                    if (range < 1)
+                        range = 1;
                     double ap = research.HasType(Research.Type.TurretAttack) ? attack.ArmorPierce : 0;
                     double sp = research.HasType(Research.Type.TurretAttack) ? attack.ShieldPierce : 0;
-                    result[a] = new(damage, ap, sp, dev, range);
+                    result[a] = new(damage, ap, sp, dev[a], range);
                 }
                 return result;
             }
@@ -136,21 +150,21 @@ namespace ClassLibrary1.Pieces.Players
                     UpgradeBuildingHits(researchMult);
                 else if (type == Research.Type.TurretDefense)
                     UpgradeTurretDefense(researchMult);
-                else if (type == Research.Type.TurretAttack)
-                    UpgradeTurretAttack(researchMult);
                 else if (type == Research.Type.TurretRange)
                     UpgradeTurretRange(researchMult);
+                else if (type == Research.Type.TurretAttack)
+                    UpgradeTurretAttack(researchMult);
             }
             private void UpgradeBuildingCost(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .4);
-                this.energy = 400 / researchMult;
-                this.mass = 800 / researchMult;
+                this.energy = Game.Rand.Round(400 / researchMult);
+                this.mass = Game.Rand.Round(800 / researchMult);
             }
             private void UpgradeBuildingHits(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .6);
-                double hits = 78 * researchMult;
+                int hits = Game.Rand.Round(78 * researchMult);
                 this.vision = 7 * researchMult;
                 this.killable = new(hits, resilience, killable.Armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
             }
@@ -158,9 +172,20 @@ namespace ClassLibrary1.Pieces.Players
             {
                 double armor = Consts.GetPct(.2, Math.Pow(researchMult, .5));
                 double shieldInc = Math.PI * Math.Pow(researchMult, .9);
-                double shieldMax = 39 * Math.Pow(researchMult, .7);
-                double shieldLimit = 85 * Math.Pow(researchMult, .8);
+                int shieldMax = Game.Rand.Round(39 * Math.Pow(researchMult, .7));
+                int shieldLimit = Game.Rand.Round(85 * Math.Pow(researchMult, .8));
                 this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
+            }
+            private void UpgradeTurretRange(double researchMult)
+            {
+                researchMult = Math.Pow(researchMult, .8);
+                for (int a = 0; a < 2; a++)
+                {
+                    double range = a == 0 ? 21 : 9.1;
+                    range *= researchMult;
+                    IAttacker.Values attack = attacks[a];
+                    attacks[a] = new(attack.Damage, attack.ArmorPierce, attack.ShieldPierce, -1, range);
+                }
             }
             private void UpgradeTurretAttack(double researchMult)
             {
@@ -177,18 +202,7 @@ namespace ClassLibrary1.Pieces.Players
                     if (shieldPierce > 0)
                         shieldPierce = Consts.GetPct(shieldPierce, researchMult);
 
-                    attacks[a] = new(damage, armorPierce, shieldPierce, -1, attacks[a].Range);
-                }
-            }
-            private void UpgradeTurretRange(double researchMult)
-            {
-                researchMult = Math.Pow(researchMult, .8);
-                for (int a = 0; a < 2; a++)
-                {
-                    double range = a == 0 ? 21 : 9.1;
-                    range *= researchMult;
-                    IAttacker.Values attack = attacks[a];
-                    attacks[a] = new(attack.Damage, attack.ArmorPierce, attack.ShieldPierce, -1, range);
+                    attacks[a] = new(Game.Rand.Round(damage), armorPierce, shieldPierce, -1, attacks[a].Range);
                 }
             }
         }

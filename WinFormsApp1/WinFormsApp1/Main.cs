@@ -44,11 +44,11 @@ namespace WinFormsApp1
         private static void FormatInc(Label label, double inc)
         {
             label.ForeColor = inc >= 0 ? Color.Black : Color.Red;
-            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "-", Format(inc));
+            label.Text = string.Format("{0}{1}", inc >= 0 ? "+" : "-", inc.ToString("0.0"));
         }
-        private static string Format(double value)
+        private static string Format(int value)
         {
-            return value.ToString("0.0");
+            return value.ToString();
         }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)
