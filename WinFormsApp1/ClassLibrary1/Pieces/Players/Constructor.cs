@@ -11,6 +11,7 @@ namespace ClassLibrary1.Pieces.Players
     [Serializable]
     public class Constructor : PlayerPiece, IKillable.IRepairable
     {
+        private bool _canUpgrade;
         private readonly bool _defenseType;
         private readonly double _rangeMult, _rounding;
         public Piece Piece => this;
@@ -18,6 +19,8 @@ namespace ClassLibrary1.Pieces.Players
         private Constructor(Map.Tile tile, Values values, bool starter)
             : base(tile, values.Vision)
         {
+            this._canUpgrade = false;
+
             this._defenseType = Game.Rand.Bool();
             this._rangeMult = 1;
             this._rounding = Game.Rand.NextDouble();
@@ -43,17 +46,37 @@ namespace ClassLibrary1.Pieces.Players
             mass = values.Mass;
         }
 
+        public bool CanUpgrade => _canUpgrade;
         internal override void OnResearch(Research.Type type)
         {
-            Unlock(Game.Player.Research);
-            Values values = GetValues(Game);
+            switch (type)
+            {
+                case Research.Type.ConstructorDefense:
+                case Research.Type.ConstructorMove:
+                case Research.Type.ConstructorRepair:
+                    _canUpgrade = true;
+                    Upgrade();
+                    break;
+            }
+        }
+        private bool Upgrade()
+        {
+            if (CanUpgrade && Side.PiecesOfType<IBuilder.IBuildConstructor>().Any(b => Tile.GetDistance(b.Piece.Tile) <= b.Range))
+            {
+                Unlock(Game.Player.Research);
+                Values values = GetValues(Game);
 
-            this._vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _defenseType));
-            GetBehavior<IMovable>().Upgrade(values.GetMovable(_rangeMult, _rounding));
-            if (HasBehavior<IRepair>())
-                GetBehavior<IRepair>().Upgrade(values.GetRepair(_rangeMult));
-            Builder.UpgradeAll(this, values.GetRepair(_rangeMult).Builder);
+                this._vision = values.Vision;
+                GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _defenseType));
+                GetBehavior<IMovable>().Upgrade(values.GetMovable(_rangeMult, _rounding));
+                if (HasBehavior<IRepair>())
+                    GetBehavior<IRepair>().Upgrade(values.GetRepair(_rangeMult));
+                Builder.UpgradeAll(this, values.GetRepair(_rangeMult).Builder);
+
+                _canUpgrade = false;
+                return true;
+            }
+            return false;
         }
         private void Unlock(Research research)
         {
@@ -89,6 +112,7 @@ namespace ClassLibrary1.Pieces.Players
         {
             base.EndTurn(ref energyUpk, ref massUpk);
             energyUpk += Consts.BaseConstructorUpkeep;
+            Upgrade();
         }
 
         public override string ToString()

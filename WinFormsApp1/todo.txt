@@ -1,6 +1,5 @@
 IMPORTANT
 	blueprint upgrade randomly upgrade unrelated values with low chance
-	constructor shouldnt auto upg
 	lower ResearchForMass
 	show upgrade values
 	log
@@ -19,6 +18,7 @@ IMPORTANT
 	space should not trigger buttons
 	show research progress/cost on main form
 	better emphasis when upgradeable
+		show constructor upgradeable
 	truncate range disp values
 		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
 		
