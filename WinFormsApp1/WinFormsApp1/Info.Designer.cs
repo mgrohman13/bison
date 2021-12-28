@@ -49,6 +49,7 @@ namespace WinFormsApp1
             this.lblInf8 = new System.Windows.Forms.Label();
             this.lbl8 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnInfo = new System.Windows.Forms.Button();
             this.btnTrade = new System.Windows.Forms.Button();
             this.btnResearch = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
@@ -247,6 +248,7 @@ namespace WinFormsApp1
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnInfo);
             this.panel1.Controls.Add(this.btnTrade);
             this.panel1.Controls.Add(this.btnResearch);
             this.panel1.Controls.Add(this.btnSave);
@@ -259,6 +261,17 @@ namespace WinFormsApp1
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(500, 115);
             this.panel1.TabIndex = 21;
+            // 
+            // btnInfo
+            // 
+            this.btnInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnInfo.Location = new System.Drawing.Point(388, 41);
+            this.btnInfo.Name = "btnInfo";
+            this.btnInfo.Size = new System.Drawing.Size(112, 34);
+            this.btnInfo.TabIndex = 18;
+            this.btnInfo.Text = "Info";
+            this.btnInfo.UseVisualStyleBackColor = true;
+            this.btnInfo.Click += new System.EventHandler(this.BtnInfo_Click);
             // 
             // btnTrade
             // 
@@ -423,5 +436,6 @@ namespace WinFormsApp1
         private System.Windows.Forms.Button btnResearch;
         private System.Windows.Forms.Button btnTrade;
         private System.Windows.Forms.RichTextBox rtbLog;
+        private System.Windows.Forms.Button btnInfo;
     }
 }

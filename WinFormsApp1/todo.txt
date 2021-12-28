@@ -1,8 +1,5 @@
 IMPORTANT
-	double click to select research
-	show research unlocks
-	show mech upgrade comparison
-	show building costs somehwere
+	-
 		
 UI			
 	selected piece shows double build range on mouse around
@@ -34,6 +31,7 @@ UI
 		include move cost indicator
 	
 GAMEPLAY
+	attacker upgrades keep some old attacks/values
 	unused upkeep on death?
 	research/blueprint chances also based on current blueprints?
 	use type research levels in blueprint cost?

@@ -18,6 +18,7 @@ namespace WinFormsApp1
         public Research()
         {
             InitializeComponent();
+            this.Height = 600;
         }
 
         public static void ShowForm()
@@ -56,6 +57,20 @@ namespace WinFormsApp1
                 {
                     this.lblCost.Hide();
                     this.label6.Hide();
+                }
+
+                IEnumerable<Type> unlocks = Enum.GetValues<Type>().Where(t => ClassLibrary1.Research.Dependencies[t].Contains(selected));
+                if (unlocks.Any())
+                {
+                    this.label3.Text = Program.Game.Player.Research.Done.Contains(selected) ? "Unlocked" : "Unlocks";
+                    this.lbxUnlocks.DataSource = unlocks.ToArray();
+                    this.label3.Show();
+                    this.lbxUnlocks.Show();
+                }
+                else
+                {
+                    this.lbxUnlocks.Hide();
+                    this.label3.Hide();
                 }
 
                 this.lblName.Show();
@@ -110,6 +125,33 @@ namespace WinFormsApp1
         private static Type? GetSelected(ListBox box)
         {
             return box.SelectedValue == null ? null : (Type)box.SelectedValue;
+        }
+
+        private void LbAvailable_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void LbxUnlocks_SelectedValueChanged(object sender, EventArgs e)
+        {
+            Type? main = GetSelected() ?? GetSelected(lbDone);
+            Type? selected = GetSelected(lbxUnlocks);
+
+            this.lbxAlso.Hide();
+            this.label8.Hide();
+            if (selected.HasValue)
+            {
+                Type[] types = ClassLibrary1.Research.Dependencies[selected.Value];
+                if (main.HasValue)
+                    types = types.Where(t => t != main.Value).ToArray();
+                if (types.Any())
+                {
+                    this.lbxAlso.DataSource = types;
+                    this.lbxAlso.Show();
+                    this.label8.Show();
+                }
+            }
         }
     }
 }

@@ -283,11 +283,11 @@ namespace ClassLibrary1
             return Math.Pow(GetResearchMult(GetLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
         }
 
-        private static readonly Type[] NoUpgrades = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory,  Type.FactoryConstructor,
+        public static readonly Type[] NoUpgrades = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory,  Type.FactoryConstructor,
             Type.TurretAutoRepair, Type.FactoryAutoRepair, Type.ExtractorAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, };
-        private static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove, Type.TurretRange, Type.TurretDefense,
+        public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove, Type.TurretRange, Type.TurretDefense,
             Type.BuildingCost, Type.BuildingHits, Type.ExtractorValue, Type.ResearchChoices, };
-        private static readonly Dictionary<Type, Type[]> Dependencies = new()
+        public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
             { Type.Mech, Array.Empty<Type>() },
             { Type.CoreShields, new Type[] { Type.Mech, } },

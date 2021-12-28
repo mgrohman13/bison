@@ -27,7 +27,7 @@ namespace WinFormsApp1
             InitializeComponent();
 
             animateTimer = new();
-            animateTimer.Interval = 39;
+            animateTimer.Interval = 52;
             bool dir = true;
             animateTimer.Tick += (sender, args) =>
             {
@@ -40,7 +40,7 @@ namespace WinFormsApp1
                     static int Step(int c, int t)
                     {
                         int sign = Math.Sign(t - c);
-                        c += Game.Rand.GaussianInt(sign * step, .169);
+                        c += Game.Rand.GaussianInt(sign * step, .13);
                         if (sign != Math.Sign(t - c))
                             c = t;
                         return Math.Max(Math.Min(c, 255), 0);
@@ -470,8 +470,9 @@ namespace WinFormsApp1
             }
             else if (HasUpgrade(out MechBlueprint blueprint, out int energy, out int mass))
             {
+                Program.DgvForm.UpgradeInfo(((Mech)Selected.Piece).Blueprint);
                 bool canUpgrade = CanUpgrade();
-                if (MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
+                if (canUpgrade && MessageBox.Show(string.Format("{3}pgrade to {0} for {1} energy {2} mass{4}",
                         blueprint, DispCost(energy), DispCost(mass),
                         canUpgrade ? "U" : "Can u", canUpgrade ? "?" : " ."),
                         "Upgrade", canUpgrade ? MessageBoxButtons.YesNo : MessageBoxButtons.OK)
@@ -586,6 +587,11 @@ namespace WinFormsApp1
         {
             if (Trade.ShowTrade())
                 Program.RefreshChanged();
+        }
+
+        private void BtnInfo_Click(object sender, EventArgs e)
+        {
+            Details.ShowForm();
         }
     }
 }

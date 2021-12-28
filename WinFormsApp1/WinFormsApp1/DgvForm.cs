@@ -101,6 +101,30 @@ namespace WinFormsApp1
                 rows.Add(row);
             }
 
+            Display();
+            ShowDialog();
+            return result;
+        }
+        internal bool UpgradeInfo(MechBlueprint blueprint)
+        {
+            this.selected = null;
+            dataGridView1.Hide();
+
+            rows = new List<BuildRow>();
+            result = null;
+
+            rows.Add(new(null, null, blueprint.Energy, blueprint.Mass, blueprint));
+            rows.Add(new(null, null, blueprint.UpgradeTo.Energy, blueprint.UpgradeTo.Mass, blueprint.UpgradeTo));
+
+            Display();
+            dataGridView1.Columns["Name"].Visible = false;
+            dataGridView1.Columns["Upgraded"].Visible = false;
+            ShowDialog();
+
+            return false;
+        }
+        private void Display()
+        {
             if (rows.Any())
             {
                 dataGridView1.DataSource = rows;
@@ -128,10 +152,7 @@ namespace WinFormsApp1
                 this.ClientSize = dataGridView1.PreferredSize;
 
                 dataGridView1.Show();
-                ShowDialog();
             }
-
-            return result;
         }
         public static T GetBuilder<T>(Tile selected) where T : class, IBuilder
         {
@@ -141,18 +162,21 @@ namespace WinFormsApp1
         {
             if (e.RowIndex >= 0 && e.RowIndex < rows.Count)
             {
-                BuildRow row = (BuildRow)rows[e.RowIndex];
-                IBuilder builder = row.Builder;
-                if (builder is IBuilder.IBuildConstructor buildConstructor)
-                    this.result = buildConstructor.Build(selected);
-                if (builder is IBuilder.IBuildMech buildMech)
-                    this.result = buildMech.Build(selected, row.Blueprint);
-                if (builder is IBuilder.IBuildExtractor buildExtractor)
-                    this.result = buildExtractor.Build(selected.Piece as Resource);
-                if (builder is IBuilder.IBuildFactory buildFactory)
-                    this.result = buildFactory.Build(selected.Piece as Foundation);
-                if (builder is IBuilder.IBuildTurret buildTurret)
-                    this.result = buildTurret.Build(selected.Piece as Foundation);
+                if (selected != null)
+                {
+                    BuildRow row = (BuildRow)rows[e.RowIndex];
+                    IBuilder builder = row.Builder;
+                    if (builder is IBuilder.IBuildConstructor buildConstructor)
+                        this.result = buildConstructor.Build(selected);
+                    if (builder is IBuilder.IBuildMech buildMech)
+                        this.result = buildMech.Build(selected, row.Blueprint);
+                    if (builder is IBuilder.IBuildExtractor buildExtractor)
+                        this.result = buildExtractor.Build(selected.Piece as Resource);
+                    if (builder is IBuilder.IBuildFactory buildFactory)
+                        this.result = buildFactory.Build(selected.Piece as Foundation);
+                    if (builder is IBuilder.IBuildTurret buildTurret)
+                        this.result = buildTurret.Build(selected.Piece as Foundation);
+                }
                 this.Close();
             }
         }
