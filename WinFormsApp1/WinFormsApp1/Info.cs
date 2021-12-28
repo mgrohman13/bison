@@ -389,7 +389,7 @@ namespace WinFormsApp1
                 int b = rtbLog.Text.IndexOf("\n", rtbLog.SelectionStart);
                 if (a > 0 && a < rtbLog.Text.Length && b > 0 && b < rtbLog.Text.Length)
                 {
-                    string line = rtbLog.Text.Substring(a, b - a);
+                    string line = rtbLog.Text[a..b];
                     int c = line.IndexOf("~");
                     if (c > 0 && c < line.Length)
                     {

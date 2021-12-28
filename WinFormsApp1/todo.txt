@@ -1,6 +1,4 @@
 IMPORTANT
-	show upgrade values
-	show move cost on mouse over
 	select next/prev starts at selected tile even if no piece
 	zooming based on center is awkward, usually opposite what you want
 	double click to select research
@@ -14,6 +12,7 @@ IMPORTANT
 		show constructor upgradeable
 	truncate range disp values
 		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
+		include move cost indicator
 		
 UI			
 	selected piece shows double build range on mouse around

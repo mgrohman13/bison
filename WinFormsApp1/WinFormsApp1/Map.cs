@@ -56,6 +56,7 @@ namespace WinFormsApp1
                 if (_moused != value)
                 {
                     _moused = value;
+                    ShowMouseInfo();
                     this.Invalidate();
                 }
             }
@@ -76,6 +77,7 @@ namespace WinFormsApp1
         public Map()
         {
             InitializeComponent();
+            lblMouse.Text = "";
 
             this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint, true);
@@ -86,6 +88,21 @@ namespace WinFormsApp1
             timer = new();
             timer.Interval = 13;
             timer.Tick += Timer_Tick;
+        }
+
+        private void ShowMouseInfo()
+        {
+            this.lblMouse.Text = "";
+            if (MouseTile != null)
+            {
+                this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X, MouseTile.Y);
+                if (SelTile != null && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
+                {
+                    double distance = MouseTile.GetDistance(movable.Piece.Tile);
+                    if (distance <= movable.MoveCur)
+                        this.lblMouse.Text = distance.ToString("0.0");
+                }
+            }
         }
 
         private void Map_Load(object sender, EventArgs e)
