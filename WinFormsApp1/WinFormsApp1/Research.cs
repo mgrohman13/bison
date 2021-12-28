@@ -35,6 +35,8 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
+            this.lblTotal.Text = Program.Game.Player.Research.ResearchCur.ToString();
+
             Type? s = GetSelected() ?? GetSelected(lbDone);
             if (s.HasValue)
             {

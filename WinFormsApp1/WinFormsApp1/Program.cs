@@ -115,40 +115,43 @@ namespace WinFormsApp1
                     moved.Remove(playerPiece);
                 else
                 {
-                    Next(true);
                     moved.Add(playerPiece);
+                    Next(true);
                 }
         }
         public static void Next(bool dir)
         {
             System.Drawing.Rectangle gameRect = Game.Map.GameRect();
-            var moveLeft = Program.Game.Player.Pieces.Where(Program.MoveLeft).OrderBy(p =>
+            var tiles = Program.Game.Player.Pieces.Where(Program.MoveLeft).Select(p => p.Tile);
+            if (tiles.Any() && Form.MapMain.SelTile != null)
+                tiles = tiles.Concat(new ClassLibrary1.Map.Tile[] { Form.MapMain.SelTile });
+            var moveLeft = tiles.Distinct().OrderBy(t =>
             {
                 int main, secondary;
-                if (p.Tile.Y < Game.Map.down)
+                if (t.Y < Game.Map.down)
                 {
                     main = 1;
-                    secondary = p.Tile.Y * gameRect.Width + p.Tile.X;
+                    secondary = t.Y * gameRect.Width + t.X;
                 }
-                else if (p.Tile.X < Game.Map.left)
+                else if (t.X < Game.Map.left)
                 {
                     main = 2;
-                    secondary = p.Tile.X * gameRect.Height + p.Tile.Y;
+                    secondary = t.X * gameRect.Height + t.Y;
                 }
-                else if (p.Tile.X > Game.Map.right)
+                else if (t.X > Game.Map.right)
                 {
                     main = 4;
-                    secondary = -p.Tile.X * gameRect.Height + p.Tile.Y;
+                    secondary = -t.X * gameRect.Height + t.Y;
                 }
-                else if (p.Tile.Y > Game.Map.up)
+                else if (t.Y > Game.Map.up)
                 {
                     main = 5;
-                    secondary = -p.Tile.Y * gameRect.Width + p.Tile.X;
+                    secondary = -t.Y * gameRect.Width + t.X;
                 }
                 else
                 {
                     main = 3;
-                    secondary = p.Tile.Y * gameRect.Width + p.Tile.X;
+                    secondary = t.Y * gameRect.Width + t.X;
                 }
                 main *= 2 * gameRect.Width * gameRect.Height;
                 return main + secondary;
@@ -156,7 +159,7 @@ namespace WinFormsApp1
 
             if (moveLeft.Count > 0)
             {
-                int cur = Form.MapMain.SelTile == null ? -1 : moveLeft.IndexOf(Form.MapMain.SelTile.Piece);
+                int cur = Form.MapMain.SelTile == null ? -1 : moveLeft.IndexOf(Form.MapMain.SelTile);
                 if (dir)
                 {
                     if (++cur >= moveLeft.Count)
@@ -164,7 +167,7 @@ namespace WinFormsApp1
                 }
                 else if (--cur < 0)
                     cur = moveLeft.Count - 1;
-                Form.MapMain.SelTile = moveLeft[cur].Tile;
+                Form.MapMain.SelTile = moveLeft[cur];
             }
             else
             {

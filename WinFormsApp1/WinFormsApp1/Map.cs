@@ -121,11 +121,11 @@ namespace WinFormsApp1
         }
         public bool Center(Tile tile)
         {
-            Rectangle mapCoords = GetMapCoords();
+            Rectangle mapCoords = Rectangle.Inflate(GetMapCoords(), -1, -1);
             if (tile != null && !mapCoords.Contains(tile.X, tile.Y))
             {
-                xStart += GetX(tile.X - mapCoords.Width / 2);
-                yStart += GetY(tile.Y - mapCoords.Height / 2);
+                xStart += GetX(tile.X - mapCoords.Width / 2 - 1) + scale / 2;
+                yStart += GetY(tile.Y - mapCoords.Height / 2 - 1) + scale / 2;
                 this.Invalidate();
                 return true;
             }
@@ -537,7 +537,7 @@ namespace WinFormsApp1
         {
             float xs = xStart, ys = yStart;
 
-            const float scrollAmt = 16.9f;
+            float scrollAmt = Game.Rand.Gaussian(16.9f, .013f);
             if (scrollDown && !scrollUp)
                 this.yStart -= scrollAmt;
             if (scrollUp && !scrollDown)
@@ -553,18 +553,29 @@ namespace WinFormsApp1
         }
         public void Map_MouseWheel(object sender, MouseEventArgs e)
         {
-            float mult = e.Delta / 91f;
+            float mult = e.Delta / Game.Rand.GaussianCapped(91f, .026f, 1);
             if (mult < 0)
                 mult = -1 / mult;
-            this.scale *= mult;
 
+            Point anchor;
+            if (SelTile != null && GetMapCoords().Contains(SelTile.X, SelTile.Y))
+                anchor = new Point(SelTile.X, SelTile.Y);
+            else
+                anchor = new Point(GetMapX(Width / 2f), GetMapY(Height / 2f));
+            float selX = GetX(anchor.X) + scale / 2f;
+            float selY = GetY(anchor.Y) + scale / 2f;
+
+            this.scale *= mult;
             if (scale < 3)
                 scale = 3;
-            else if (scale > 390)
-                scale = 390;
-
+            else if (scale > 169)
+                scale = 169;
             if (this.CheckBounds(xStart, yStart))
                 this.scale /= mult;
+
+            xStart += GetX(anchor.X) + scale / 2f - selX;
+            yStart += GetY(anchor.Y) + scale / 2f - selY;
+
             this.Invalidate();
         }
         private bool CheckBounds(float xs, float ys)

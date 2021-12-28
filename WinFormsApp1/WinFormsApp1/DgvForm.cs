@@ -112,7 +112,7 @@ namespace WinFormsApp1
                 //dataGridView1.Columns["Mass"].DefaultCellStyle.Format = "0.0";
 
                 //dataGridView1.Columns["Research"].DefaultCellStyle.Format = "0.0";
-                dataGridView1.Columns["Vision"].DefaultCellStyle.Format = "0.0";
+                //dataGridView1.Columns["Vision"].DefaultCellStyle.Format = "0.0";
                 //dataGridView1.Columns["Hits"].DefaultCellStyle.Format = "0.0";
                 dataGridView1.Columns["Resilience"].DefaultCellStyle.Format = "P0";
                 dataGridView1.Columns["Armor"].DefaultCellStyle.Format = "P0";
@@ -170,7 +170,7 @@ namespace WinFormsApp1
             public double? Research => Blueprint?.ResearchLevel;
 
             public string Movement => Blueprint == null ? null : string.Format("{1} / {2} +{0:0.0}", Blueprint.Movable.MoveInc, Blueprint.Movable.MoveMax, Blueprint.Movable.MoveLimit);
-            public double? Vision => Blueprint?.Vision;
+            public string Vision => Info.FormatDown(Blueprint?.Vision);
 
             public double? Hits => Blueprint?.Killable.HitsMax;
             public double? Resilience => Blueprint?.Killable.Resilience;

@@ -19,10 +19,42 @@ namespace WinFormsApp1
 {
     public partial class Info : UserControl
     {
+        private readonly Timer animateTimer;
+        public Tile Selected { get; set; }
 
         public Info()
         {
             InitializeComponent();
+
+            animateTimer = new();
+            animateTimer.Interval = 39;
+            bool dir = true;
+            animateTimer.Tick += (sender, args) =>
+            {
+                lock (animateTimer)
+                {
+                    const double step = 16.9;
+                    Color target = dir ? SystemColors.ControlDarkDark : SystemColors.ControlLightLight;
+                    int r = btnBuild.BackColor.R, g = btnBuild.BackColor.G, b = btnBuild.BackColor.B;
+                    int rt = target.R, gt = target.G, bt = target.B;
+                    static int Step(int c, int t)
+                    {
+                        int sign = Math.Sign(t - c);
+                        c += Game.Rand.GaussianInt(sign * step, .169);
+                        if (sign != Math.Sign(t - c))
+                            c = t;
+                        return Math.Max(Math.Min(c, 255), 0);
+                    }
+                    r = Step(r, rt);
+                    g = Step(g, gt);
+                    b = Step(b, bt);
+                    target = Color.FromArgb(r, g, b);
+                    if (btnBuild.BackColor == target)
+                        dir = !dir;
+                    else
+                        btnBuild.BackColor = target;
+                }
+            };
         }
 
         private void Button1_Click(object sender, EventArgs e)
@@ -30,22 +62,26 @@ namespace WinFormsApp1
             Program.EndTurn();
         }
 
-        public Tile Selected { get; set; }
-
         public override void Refresh()
         {
             ShowAll(false);
             lblTurn.Text = Program.Game.Turn.ToString();
 
+            lock (animateTimer)
+            {
+                animateTimer.Stop();
+                btnBuild.BackColor = Color.Transparent;
+            }
             if (DgvForm.CanBuild(Selected))
             {
                 btnBuild.Text = "Build";
                 btnBuild.Show();
             }
-            else if (HasUpgrade())
+            else if (HasUpgrade() || HasConstructorUpgrade())
             {
                 btnBuild.Text = "Upgrade";
                 btnBuild.Show();
+                animateTimer.Start();
             }
             else if (CanReplace(out _))
             {
@@ -111,7 +147,7 @@ namespace WinFormsApp1
                     lbl5.Show();
                     lblInf5.Show();
                     lbl5.Text = "Vision";
-                    lblInf5.Text = string.Format("{0}{1}", Format(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision));
+                    lblInf5.Text = string.Format("{0}{1}", FormatDown(playerPiece.Vision), CheckBase(playerPiece.VisionBase, playerPiece.Vision, FormatDown));
 
                     if (!(playerPiece is Extractor))
                     {
@@ -277,7 +313,7 @@ namespace WinFormsApp1
         {
             return CheckBase(orig, actual, Format);
         }
-        private static string CheckBase(double orig, double actual, Func<double, string> Formatter)
+        private static string CheckBase(double orig, double actual, Func<double?, string> Formatter)
         {
             string origDisp = Formatter(orig);
             return (origDisp != Formatter(actual)) ? " (" + origDisp + ")" : "";
@@ -287,17 +323,27 @@ namespace WinFormsApp1
             return resource == null ? "" : CheckBase(resource.Value, energyInc);
         }
 
-        private static string Format(double value)
+        public static string Format(double? value)
         {
-            return value.ToString("0.0");
+            if (value.HasValue)
+                return value.Value.ToString("0.0");
+            return "";
         }
-        private static string FormatPct(double value)
+        public static string FormatPct(double? value)
         {
             return FormatPct(value, false);
         }
-        private static string FormatPct(double value, bool digit)
+        public static string FormatPct(double? value, bool digit)
         {
-            return value.ToString(digit ? "P1" : "P0");
+            if (value.HasValue)
+                return value.Value.ToString(digit ? "P1" : "P0");
+            return "";
+        }
+        public static string FormatDown(double? value)
+        {
+            if (value.HasValue)
+                return Format(Math.Floor(value.Value * 10) / 10.0);
+            return "";
         }
 
         private void ShowAll(bool show)
@@ -418,6 +464,10 @@ namespace WinFormsApp1
                 if (result != null)
                     Program.RefreshChanged();
             }
+            else if (HasConstructorUpgrade())
+            {
+                MessageBox.Show("Constructor can be upgraded.", "Upgrade", MessageBoxButtons.OK);
+            }
             else if (HasUpgrade(out MechBlueprint blueprint, out int energy, out int mass))
             {
                 bool canUpgrade = CanUpgrade();
@@ -471,6 +521,10 @@ namespace WinFormsApp1
             }
         }
         private delegate bool ReplaceFunc(bool doReplace, out int energy, out int mass);
+        private bool HasConstructorUpgrade()
+        {
+            return Selected != null && Selected.Piece is Constructor constructor && constructor.CanUpgrade;
+        }
         private bool HasUpgrade()
         {
             return HasUpgrade(out _, out _, out _);

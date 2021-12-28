@@ -1,18 +1,8 @@
 IMPORTANT
-	select next/prev starts at selected tile even if no piece
-	zooming based on center is awkward, usually opposite what you want
 	double click to select research
+	show research unlocks
 	show mech upgrade comparison
 	show building costs somehwere
-	show research unlocks
-	last space should deselect
-	space should not trigger buttons
-	show research progress/cost on main form
-	better emphasis when upgradeable
-		show constructor upgradeable
-	truncate range disp values
-		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
-		include move cost indicator
 		
 UI			
 	selected piece shows double build range on mouse around
@@ -30,6 +20,7 @@ UI
 		optimize circles to single draw call
 		optimize drawrects to lines?
 	show effects of research
+	show constructor upgrade values
 	show base values
 		use tooltip for base value in attacks grid?
 	highlight attacks from hidden enemies
@@ -38,6 +29,9 @@ UI
 	enemy move+range take into account unmovable tiles 
 	minimap
 	addtl logs? (repair? upgrade? build? research?)
+	truncate range disp values
+		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
+		include move cost indicator
 	
 GAMEPLAY
 	unused upkeep on death?

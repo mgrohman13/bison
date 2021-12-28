@@ -36,7 +36,8 @@ namespace WinFormsApp1
             FormatInc(lblEnergyInc, energyInc);
             this.lblMass.Text = Format(Program.Game.Player.Mass);
             FormatInc(lblMassInc, massInc);
-            this.lblResearch.Text = Format(Program.Game.Player.Research.ResearchCur);
+            this.lblResearch.Text = string.Format("{0} / {1}", Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching),
+                Program.Game.Player.Research.GetCost(Program.Game.Player.Research.Researching));
             FormatInc(lblResearchInc, researchInc);
 
             base.Refresh();
@@ -56,7 +57,10 @@ namespace WinFormsApp1
             if (e.KeyCode == Keys.Escape)
                 Program.EndTurn();
             else if (e.KeyCode == Keys.Space)
+            {
+                e.SuppressKeyPress = true;
                 Program.Hold();
+            }
             else if (e.KeyCode == Keys.Q)
                 Program.Next(false);
             else if (e.KeyCode == Keys.E)
@@ -67,6 +71,12 @@ namespace WinFormsApp1
                 Info.BtnViewAtt_Click(sender, e);
 
             mapMain.Map_KeyDown(sender, e);
+        }
+        private void Main_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            //if (e.KeyChar == ' ')
+            //    e.su
+            //    e.Handled = true;
         }
 
         private void Main_KeyUp(object sender, KeyEventArgs e)
