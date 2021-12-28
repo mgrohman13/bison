@@ -266,9 +266,10 @@ namespace WinFormsApp1
                 }
             }
 
-            txtLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - txtLog.Location.Y;
-            txtLog.Text = Program.Game.Log.Data(Selected?.Piece);
-            txtLog.Select(0, 0);
+            rtbLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - rtbLog.Location.Y;
+            rtbLog.ResetText();
+            Log();
+            rtbLog.Select(0, 0);
 
             base.Refresh();
         }
@@ -307,6 +308,105 @@ namespace WinFormsApp1
                 else
                     label.Hide();
             lblTurn.Show();
+        }
+
+        private void Log()
+        {
+            Log.LogEntry lastEntry = null;
+            foreach (var entry in Program.Game.Log.Data(Selected?.Piece))
+            {
+                if (entry.Turn != lastEntry?.Turn && entry.Turn != Program.Game.Turn)
+                {
+                    void Line()
+                    {
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Strikeout);
+                        rtbLog.AppendText("".PadLeft(26, ' '));
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        rtbLog.AppendText(" ");
+                    };
+                    rtbLog.AppendText(Environment.NewLine);
+                    Line();
+                    rtbLog.AppendText(entry.Turn + " ");
+                    Line();
+                    rtbLog.AppendText(Environment.NewLine + Environment.NewLine);
+                }
+
+                LogPiece(entry.AttackerSide, entry.AttackerName, entry.AttackerType);
+                rtbLog.AppendText(" -> ");
+                LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
+                rtbLog.AppendText(" ~ " + FormatInt(entry.BaseDamage));
+                rtbLog.AppendText(Environment.NewLine);
+
+                if (entry.HitsDmg > 0)
+                    rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
+                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                rtbLog.AppendText(entry.HitsCur.ToString());
+                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                if (entry.ShieldDmg > 0)
+                {
+                    rtbLog.SelectionColor = Color.Blue;
+                    rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
+                    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                    rtbLog.AppendText(FormatInt(entry.ShieldCur));
+                    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                    rtbLog.SelectionColor = Color.Black;
+                }
+                rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
+                rtbLog.AppendText(Environment.NewLine);
+
+                lastEntry = entry;
+            }
+        }
+        private void LogPiece(Side side, string name, string type)
+        {
+            if (name != null)
+            {
+                rtbLog.SelectionColor = side == null ? Color.Black : side == side.Game.Player ? Color.Green : Color.Red;
+                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                rtbLog.AppendText(name);
+                rtbLog.SelectionColor = Color.Black;
+                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                rtbLog.AppendText(type);
+            }
+        }
+        private static string FormatInt(double v)
+        {
+            string result = v.ToString("0.0");
+            if (result.EndsWith(".0"))
+                result = v.ToString("0");
+            return result;
+        }
+        private void RTBLog_MouseClick(object sender, MouseEventArgs e)
+        {
+            SelectLog(rtbLog.SelectionStart);
+        }
+        private void SelectLog(int position)
+        {
+            if (position > 0 && position < rtbLog.Text.Length)
+            {
+                //cant use Environment.NewLine here
+                int a = rtbLog.Text.LastIndexOf("\n", position);
+                int b = rtbLog.Text.IndexOf("\n", rtbLog.SelectionStart);
+                if (a > 0 && a < rtbLog.Text.Length && b > 0 && b < rtbLog.Text.Length)
+                {
+                    string line = rtbLog.Text.Substring(a, b - a);
+                    int c = line.IndexOf("~");
+                    if (c > 0 && c < line.Length)
+                    {
+                        if (line.Contains("->"))
+                        {
+                            line = line.Substring(0, c).Trim();
+                            Piece select = Program.Game.Player.Pieces.SingleOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));
+                            if (select != null && !Program.Form.MapMain.Center(select.Tile))
+                                Program.Form.MapMain.SelTile = select.Tile;
+                        }
+                        else
+                        {
+                            SelectLog(a - 1);
+                        }
+                    }
+                }
+            }
         }
 
         public void BtnBuild_Click(object sender, EventArgs e)
@@ -409,7 +509,7 @@ namespace WinFormsApp1
                     builder = (IBuilder)buildFactory ?? buildTurret;
                 }
             }
-            piece = builder.Piece;
+            piece = builder?.Piece;
             return builder != null;
         }
 

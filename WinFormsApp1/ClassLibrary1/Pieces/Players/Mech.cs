@@ -81,9 +81,17 @@ namespace ClassLibrary1.Pieces.Players
             energyUpk += Consts.BaseMechUpkeep;
         }
 
+        public string GetName()
+        {
+            return string.Format("Mech {0}", PieceNum);
+        }
+        public string GetBlueprintName()
+        {
+            return string.Format(" ({0})", Blueprint);
+        }
         public override string ToString()
         {
-            return string.Format("Mech {0} ({1})", PieceNum, Blueprint);
+            return GetName() + GetBlueprintName();
         }
     }
 }

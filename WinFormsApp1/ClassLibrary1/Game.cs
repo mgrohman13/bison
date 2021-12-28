@@ -97,8 +97,8 @@ namespace ClassLibrary1
         public Research.Type? EndTurn()
         {
             Research.Type? researched = Player.EndTurn();
-            Enemy.PlayTurn();
             _turn++;
+            Enemy.PlayTurn();
             return researched;
         }
 

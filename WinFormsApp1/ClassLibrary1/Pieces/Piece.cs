@@ -38,7 +38,7 @@ namespace ClassLibrary1.Pieces
         public IEnumerable<T> GetBehaviors<T>() where T : class, IBehavior
         {
             IEnumerable<T> all = behavior.OfType<T>();
-            if (!all.All(b => b.AllowMultiple))
+            if (all.Count() > 1 && !all.All(b => b.AllowMultiple))
                 throw new Exception();
             return all;
         }

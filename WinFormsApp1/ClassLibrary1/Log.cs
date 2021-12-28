@@ -27,35 +27,25 @@ namespace ClassLibrary1
             this._logNumInc = 0;
         }
 
-        public string Data(Piece piece)
+        public SortedSet<LogEntry> Data(Piece piece)
         {
             SortedSet<LogEntry> entries;
             if (piece == null)
-                entries = new SortedSet<LogEntry>(_log.SelectMany(e => e.Value));
+                entries = new(_log.SelectMany(e => e.Value));
             else
                 _log.TryGetValue(piece, out entries);
-            return entries == null ? "" : String.Join(Environment.NewLine, entries.Select(e => e.Entry));
+            return entries ?? new();
         }
 
         internal void LogAttack(IAttacker attacker, IKillable defender, double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
         {
-            string statement = string.Format("{0}. {1} -> {2} ({3})" + Environment.NewLine + "      {4}{5} ({6})", Game.Turn, attacker.Piece, defender.Piece, Format(baseDamage),
-                hitsDmg > 0 ? string.Format("{0} - {1} = {2}", defender.HitsCur + hitsDmg, hitsDmg, defender.HitsCur) : defender.HitsCur,
-                shieldDmg > 0 ? string.Format(" ; {0:0.0} - {1:0.0} = {2:0.0}", defender.ShieldCur + shieldDmg, shieldDmg, defender.ShieldCur) : "", randDmg);
-            Debug.WriteLine(statement);
-            AddLog(statement, attacker.Piece, defender.Piece);
-        }
-        private static string Format(double v)
-        {
-            string result = v.ToString("0.0");
-            if (result.EndsWith(".0"))
-                result = v.ToString("0");
-            return result;
+            LogEntry entry = new(_logNumInc++, Game.Turn, attacker, defender, baseDamage, randDmg, hitsDmg, shieldDmg);
+            //Debug.WriteLine(statement);
+            AddLog(entry, attacker.Piece, defender.Piece);
         }
 
-        private void AddLog(string statement, params Piece[] pieces)
+        private void AddLog(LogEntry entry, params Piece[] pieces)
         {
-            LogEntry entry = new(_logNumInc++, statement);
             if (pieces.Length == 0)
                 pieces = new Piece[] { null };
             foreach (Piece piece in pieces)
@@ -67,15 +57,44 @@ namespace ClassLibrary1
         }
 
         [Serializable]
-        private class LogEntry : IComparable
+        public class LogEntry : IComparable
         {
             public readonly int LogNum;
-            public readonly string Entry;
-            public LogEntry(int logNum, string entry)
+            public readonly int Turn;
+
+            public Side AttackerSide;
+            public string AttackerName;
+            public string AttackerType;
+            public Side DefenderSide;
+            public string DefenderName;
+            public string DefenderType;
+            public readonly double BaseDamage;
+            public readonly int RandDmg;
+            public readonly int HitsDmg;
+            public readonly double ShieldDmg;
+            public readonly int HitsCur;
+            public readonly double ShieldCur;
+
+            public LogEntry(int logNum, int turn, IAttacker attacker, IKillable defender, double baseDamage, int randDmg, int hitsDmg, double shieldDmg)
             {
+                static string GetName(IBehavior b) => b.Piece is Mech mech ? mech.GetName() : b.Piece.ToString();
+                static string GetBlueprint(IBehavior b) => b.Piece is Mech mech ? mech.GetBlueprintName() : "";
                 this.LogNum = logNum;
-                this.Entry = entry;
+                this.Turn = turn;
+                this.AttackerSide = attacker.Piece.Side;
+                this.AttackerName = GetName(attacker);
+                this.AttackerType = GetBlueprint(attacker);
+                this.DefenderSide = defender.Piece.Side;
+                this.DefenderName = GetName(defender);
+                this.DefenderType = GetBlueprint(defender);
+                this.BaseDamage = baseDamage;
+                this.RandDmg = randDmg;
+                this.HitsDmg = hitsDmg;
+                this.ShieldDmg = shieldDmg;
+                this.HitsCur = defender.HitsCur;
+                this.ShieldCur = defender.ShieldCur;
             }
+
             public int CompareTo(object obj)
             {
                 return ((LogEntry)obj).LogNum - LogNum;

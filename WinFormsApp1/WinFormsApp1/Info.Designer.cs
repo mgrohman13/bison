@@ -55,9 +55,9 @@ namespace WinFormsApp1
             this.btnViewAtt = new System.Windows.Forms.Button();
             this.btnBuild = new System.Windows.Forms.Button();
             this.lblHeading = new System.Windows.Forms.Label();
-            this.txtLog = new System.Windows.Forms.TextBox();
             this.lblInf9 = new System.Windows.Forms.Label();
             this.lbl9 = new System.Windows.Forms.Label();
+            this.rtbLog = new System.Windows.Forms.RichTextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -324,19 +324,6 @@ namespace WinFormsApp1
             this.lblHeading.Text = "lblHeading";
             this.lblHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // txtLog
-            // 
-            this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtLog.Location = new System.Drawing.Point(0, 253);
-            this.txtLog.Multiline = true;
-            this.txtLog.Name = "txtLog";
-            this.txtLog.ReadOnly = true;
-            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtLog.Size = new System.Drawing.Size(500, 46);
-            this.txtLog.TabIndex = 23;
-            // 
             // lblInf9
             // 
             this.lblInf9.AutoSize = true;
@@ -355,13 +342,28 @@ namespace WinFormsApp1
             this.lbl9.TabIndex = 24;
             this.lbl9.Text = "lbl9";
             // 
+            // rtbLog
+            // 
+            this.rtbLog.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.rtbLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.rtbLog.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.rtbLog.Location = new System.Drawing.Point(0, 253);
+            this.rtbLog.Name = "rtbLog";
+            this.rtbLog.ReadOnly = true;
+            this.rtbLog.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.rtbLog.Size = new System.Drawing.Size(500, 46);
+            this.rtbLog.TabIndex = 26;
+            this.rtbLog.Text = "";
+            this.rtbLog.MouseClick += new System.Windows.Forms.MouseEventHandler(this.RTBLog_MouseClick);
+            // 
             // Info
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.rtbLog);
             this.Controls.Add(this.lblInf9);
             this.Controls.Add(this.lbl9);
-            this.Controls.Add(this.txtLog);
             this.Controls.Add(this.lblHeading);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.lblInf8);
@@ -414,12 +416,12 @@ namespace WinFormsApp1
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnBuild;
         private System.Windows.Forms.Label lblHeading;
-        private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Button btnViewAtt;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Label lblInf9;
         private System.Windows.Forms.Label lbl9;
         private System.Windows.Forms.Button btnResearch;
         private System.Windows.Forms.Button btnTrade;
+        private System.Windows.Forms.RichTextBox rtbLog;
     }
 }

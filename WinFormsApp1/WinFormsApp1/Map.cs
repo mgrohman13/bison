@@ -98,14 +98,21 @@ namespace WinFormsApp1
             RefreshRanges();
         }
 
-        private void Center()
+        public bool Center()
+        {
+            return Center(SelTile);
+        }
+        public bool Center(Tile tile)
         {
             Rectangle mapCoords = GetMapCoords();
-            if (SelTile != null && !mapCoords.Contains(SelTile.X, SelTile.Y))
+            if (tile != null && !mapCoords.Contains(tile.X, tile.Y))
             {
-                xStart += GetX(SelTile.X - mapCoords.Width / 2);
-                yStart += GetY(SelTile.Y - mapCoords.Height / 2);
+                xStart += GetX(tile.X - mapCoords.Width / 2);
+                yStart += GetY(tile.Y - mapCoords.Height / 2);
+                this.Invalidate();
+                return true;
             }
+            return false;
         }
 
         protected override void OnPaint(PaintEventArgs e)

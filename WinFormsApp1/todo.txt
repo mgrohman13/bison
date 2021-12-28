@@ -1,10 +1,5 @@
 IMPORTANT
 	show upgrade values
-	log
-		color code
-		click to jump to unit (way to cycle without filter though?)
-		hr lines for turns
-		addtl logs? (repair? upgrade? build? research?)
 	show move cost on mouse over
 	select next/prev starts at selected tile even if no piece
 	zooming based on center is awkward, usually opposite what you want
@@ -43,6 +38,7 @@ UI
 	hotkeys to jump to cardinal dir edges
 	enemy move+range take into account unmovable tiles 
 	minimap
+	addtl logs? (repair? upgrade? build? research?)
 	
 GAMEPLAY
 	unused upkeep on death?
