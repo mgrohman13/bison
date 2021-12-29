@@ -26,7 +26,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Extractor NewExtractor(Resource resource)
         {
             Map.Tile tile = resource.Tile;
-            resource.Game.RemovePiece(resource);
+            resource.Die();
 
             Extractor obj = new(tile, resource, GetValues(resource.Game));
             resource.Game.AddPiece(obj);

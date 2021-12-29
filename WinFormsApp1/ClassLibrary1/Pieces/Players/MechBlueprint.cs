@@ -211,7 +211,8 @@ namespace ClassLibrary1.Pieces.Players
                             damage = a.Damage;
                             if (newAttacker.ShieldPierce > a.ShieldPierce && Game.Rand.Bool())
                                 damage = newAttacker.Damage;
-                            return new IAttacker.Values(damage, a.ArmorPierce, newAttacker.ShieldPierce, a.Dev, a.Range);
+                            dev = Game.Rand.Bool() ? a.Dev : newAttacker.Dev;
+                            return new IAttacker.Values(damage, a.ArmorPierce, newAttacker.ShieldPierce, dev, a.Range);
                         });
                         break;
                     case Type.MechArmor:
@@ -488,7 +489,7 @@ namespace ClassLibrary1.Pieces.Players
                 int damage = Game.Rand.GaussianOEInt(avg * research.GetMult(Type.MechDamage, 1), dev, oe, 1);
                 double armorPierce = 0;
                 double shieldPierce = 0;
-                double randomness = Game.Rand.Weighted(.13);
+                double randomness = Game.Rand.Weighted(.169);
                 avg = 3.9;
                 dev = .39;
                 oe = .104;

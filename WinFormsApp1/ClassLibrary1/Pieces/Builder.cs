@@ -79,7 +79,7 @@ namespace ClassLibrary1.Pieces
                 {
                     if (doReplace && Piece.Game.Player.Spend(energy, mass))
                     {
-                        Piece.Game.RemovePiece(piece);
+                        piece.Die();
                         NewPiece();
                     }
                     return true;
@@ -175,8 +175,7 @@ namespace ClassLibrary1.Pieces
                     (out int e, out int m) => Factory.Cost(Piece.Game, out e, out m),
                     () => Factory.GetRounding(Piece.Game),
                     () => Factory.NewFactory((Foundation)tile.Piece),
-                    foundationPiece is Factory,
-                    out energy, out mass);
+                    false, out energy, out mass);
             }
         }
         [Serializable]
@@ -203,8 +202,7 @@ namespace ClassLibrary1.Pieces
                     (out int e, out int m) => Turret.Cost(Piece.Game, out e, out m),
                     () => Turret.GetRounding(Piece.Game),
                     () => Turret.NewTurret((Foundation)tile.Piece),
-                    foundationPiece is Turret,
-                    out energy, out mass);
+                    false, out energy, out mass);
             }
         }
     }

@@ -27,7 +27,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Factory NewFactory(Foundation foundation)
         {
             Map.Tile tile = foundation.Tile;
-            foundation.Game.RemovePiece(foundation);
+            foundation.Die();
 
             Factory obj = new(tile, GetValues(tile.Map.Game));
             foundation.Game.AddPiece(obj);

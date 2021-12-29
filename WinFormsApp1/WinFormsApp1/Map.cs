@@ -96,11 +96,11 @@ namespace WinFormsApp1
             if (MouseTile != null)
             {
                 this.lblMouse.Text = string.Format("({0}, {1})", MouseTile.X, MouseTile.Y);
-                if (SelTile != null && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
+                if (SelTile != null)// && SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable))// && movable.MoveCur >= 1)
                 {
-                    double distance = MouseTile.GetDistance(movable.Piece.Tile);
-                    if (distance <= movable.MoveCur)
-                        this.lblMouse.Text = distance.ToString("0.0");
+                    double distance = MouseTile.GetDistance(SelTile);
+                    //if (distance <= movable.MoveCur)
+                    this.lblMouse.Text = distance.ToString("0.0");
                 }
             }
         }
@@ -219,6 +219,8 @@ namespace WinFormsApp1
         private readonly Dictionary<Point, string> attacks = new();
         public void RefreshRanges()
         {
+            ShowMouseInfo();
+
             foreach (var pair in ranges)
                 pair.Value.Clear();
 

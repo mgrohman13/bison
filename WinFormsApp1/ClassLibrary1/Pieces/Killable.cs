@@ -68,7 +68,7 @@ namespace ClassLibrary1.Pieces
         {
             double pct = 1;
             if (HitsCur < damage)
-                pct = HitsCur / damage;
+                pct = HitsCur / (double)damage;
             this._hitsCur -= damage;
             this._shieldCur -= shieldDmg;
             if (this.Dead)

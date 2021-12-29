@@ -182,11 +182,10 @@ namespace ClassLibrary1
                 int last = GetLast(type);
                 mult *= (_researchLast + Consts.ResearchFactor) / (last + Consts.ResearchFactor);
 
-                if (IsUpgradeOnly(last))
+                if (IsUpgradeOnly(type, last) && (last > 0 || GetAllUnlocks(type).All(t => IsUpgradeOnly(t, GetLast(t)))))
                 {
                     double upgMult = (_researchLast - last) / Consts.ResearchFactor;
-                    if (upgMult > 1)
-                        upgMult = Math.Sqrt(upgMult);
+                    upgMult = Math.Pow(upgMult, upgMult > 1 ? .39 : .78);
                     mult *= upgMult;
                 }
 
@@ -200,7 +199,7 @@ namespace ClassLibrary1
         private void GetCostParams(int excess, int previous, out double nextAvg, out double nextDev, out double nextOE, out double nextMin)
         {
             double mult = (1 - Math.Pow(previous / (double)_researchLast, _researchLast / Consts.ResearchFactor));
-            if (IsUpgradeOnly(previous))
+            if (IsUpgradeOnly(_researching, previous))
                 mult *= .65;
             nextAvg = GetNext(_nextAvg) * mult;
             this._nextAvg += nextAvg;
@@ -213,12 +212,14 @@ namespace ClassLibrary1
             nextMin = Game.Rand.GaussianOE(nextMin * 1.3 + 26, .13, .13, nextMin);
 
             nextAvg = (GetNext(_researchLast) + nextAvg) / 2.0;
-            nextAvg = Game.Rand.GaussianOE(nextAvg, nextDev * 2.1, nextOE * 1.3, nextAvg > nextMin ? nextMin : 0);
+            nextAvg = Game.Rand.GaussianOE(nextAvg, nextDev * 2.1, nextOE * 1.3, nextAvg > nextMin ? nextMin : 1);
             nextAvg = (_researchLast + nextAvg + _nextAvg) / 2.0 - _researchLast;
+            if (nextAvg < 1)
+                nextAvg = 1;
         }
-        private bool IsUpgradeOnly(int previous)
+        private static bool IsUpgradeOnly(Type type, int previous)
         {
-            return (previous > 0 && !IsMech(_researching)) || UpgradeOnly.Contains(_researching);
+            return (previous > 0 && !IsMech(type)) || UpgradeOnly.Contains(type);
         }
         private int CalcCost(Type type, double nextAvg, double nextDev, double nextOE, double nextMin)
         {
@@ -281,6 +282,33 @@ namespace ClassLibrary1
         public double GetMult(Type type, double pow)
         {
             return Math.Pow(GetResearchMult(GetLevel()) * GetResearchMult(GetLast(type)), pow / 2.0);
+        }
+
+        public static IEnumerable<Type> GetUnlocks(Type selected)
+        {
+            return GetUnlocks(selected, GetDependencies);
+        }
+        public static IEnumerable<Type> GetAllUnlocks(Type selected)
+        {
+            return GetUnlocks(selected, GetAllDependencies);
+        }
+        private static IEnumerable<Type> GetUnlocks(Type selected, Func<Type, HashSet<Type>> GetDependencies)
+        {
+            return Enum.GetValues<Type>().Where(t => GetDependencies(t).Contains(selected));
+        }
+        public static HashSet<Type> GetDependencies(Type type)
+        {
+            HashSet<Type> allDependencies = GetAllDependencies(type);
+            allDependencies.RemoveWhere(a => allDependencies.Any(b => GetAllDependencies(b).Contains(a)));
+            return allDependencies;
+        }
+        public static HashSet<Type> GetAllDependencies(Type type)
+        {
+            HashSet<Type> allDependencies = new(ClassLibrary1.Research.Dependencies[type]);
+            foreach (Type a in allDependencies.ToArray())
+                foreach (Type b in GetAllDependencies(a))
+                    allDependencies.Add(b);
+            return allDependencies;
         }
 
         public static readonly Type[] NoUpgrades = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory,  Type.FactoryConstructor,

@@ -330,6 +330,7 @@ namespace WinFormsApp1
             // 
             // lblHeading
             // 
+            this.lblHeading.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lblHeading.Location = new System.Drawing.Point(0, 0);
             this.lblHeading.Name = "lblHeading";
             this.lblHeading.Size = new System.Drawing.Size(173, 25);
@@ -368,6 +369,7 @@ namespace WinFormsApp1
             this.rtbLog.Size = new System.Drawing.Size(500, 46);
             this.rtbLog.TabIndex = 26;
             this.rtbLog.Text = "";
+            this.rtbLog.VScroll += new System.EventHandler(this.RtbLog_VScroll);
             this.rtbLog.MouseClick += new System.Windows.Forms.MouseEventHandler(this.RTBLog_MouseClick);
             // 
             // Info
@@ -398,6 +400,7 @@ namespace WinFormsApp1
             this.Controls.Add(this.lbl1);
             this.Name = "Info";
             this.Size = new System.Drawing.Size(500, 600);
+            this.SizeChanged += new System.EventHandler(this.Info_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.dgvAttacks)).EndInit();
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);

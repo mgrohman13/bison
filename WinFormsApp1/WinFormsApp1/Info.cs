@@ -13,6 +13,8 @@ using ClassLibrary1.Pieces;
 using ClassLibrary1.Pieces.Enemies;
 using ClassLibrary1.Pieces.Players;
 using ClassLibrary1.Pieces.Terrain;
+using System.Threading;
+using Timer = System.Windows.Forms.Timer;
 using Tile = ClassLibrary1.Map.Tile;
 
 namespace WinFormsApp1
@@ -25,6 +27,7 @@ namespace WinFormsApp1
         public Info()
         {
             InitializeComponent();
+            rtbLog.GotFocus += RtbLog_GotFocus;
 
             animateTimer = new();
             animateTimer.Interval = 52;
@@ -64,6 +67,9 @@ namespace WinFormsApp1
 
         public override void Refresh()
         {
+            logPreventScroll = true;
+            UnFocusLog();
+
             ShowAll(false);
             lblTurn.Text = Program.Game.Turn.ToString();
 
@@ -223,27 +229,28 @@ namespace WinFormsApp1
                         lbl6.Show();
                         lblInf6.Show();
                         lbl6.Text = "Energy";
-                        lblInf6.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Biomass, energyInc));
+                        lblInf6.Text = string.Format("{1}{0}{2}", Format(energyInc), energyInc > 0 ? "+" : "", CheckBase(resource as Biomass, energyInc));
                     }
                     if (massInc != 0)
                     {
                         lbl7.Show();
                         lblInf7.Show();
                         lbl7.Text = "Mass";
-                        lblInf7.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Metal, massInc));
+                        lblInf7.Text = string.Format("{1}{0}{2}", Format(massInc), massInc > 0 ? "+" : "", CheckBase(resource as Metal, massInc));
                     }
                     if (researchInc != 0)
                     {
                         lbl8.Show();
                         lblInf8.Show();
                         lbl8.Text = "Research";
-                        lblInf8.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(extractor?.Resource as Artifact, researchInc));
+                        lblInf8.Text = string.Format("{1}{0}{2}", Format(researchInc), researchInc > 0 ? "+" : "", CheckBase(resource as Artifact, researchInc));
                     }
 
+                    double sustain = extractor?.Sustain ?? resource.Sustain;
                     lbl9.Show();
                     lblInf9.Show();
                     lbl9.Text = "Sustainability";
-                    lblInf9.Text = string.Format("{0}", FormatPct(extractor == null ? resource.Sustain : extractor.Sustain));
+                    lblInf9.Text = string.Format("{0}{1}", FormatPct(sustain), CheckBase(resource.Sustain, sustain, FormatPct));
                 }
 
                 if (Selected.Piece.HasBehavior(out IAttacker attacker))
@@ -252,6 +259,9 @@ namespace WinFormsApp1
 
                     int idx = 0;
                     dgvAttacks.DataSource = attacker.Attacks.OrderByDescending(a => a.Range).ToList();
+
+                    dgvAttacks.Columns["Upkeep"].Visible = false;
+
                     dgvAttacks.Columns["Range"].DisplayIndex = idx++;
                     dgvAttacks.Columns["Range"].HeaderText = "RANGE";
                     dgvAttacks.Columns["Range"].DefaultCellStyle.Format = "0.0";
@@ -302,12 +312,11 @@ namespace WinFormsApp1
                 }
             }
 
-            rtbLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - rtbLog.Location.Y;
-            rtbLog.ResetText();
-            Log();
-            rtbLog.Select(0, 0);
+            RefreshLog();
 
             base.Refresh();
+
+            EnableLogScroll();
         }
         private static string CheckBase(double orig, double actual)
         {
@@ -356,104 +365,215 @@ namespace WinFormsApp1
             lblTurn.Show();
         }
 
-        private void Log()
+        #region Log
+        // current log state to support lazy loading on scroll - necessary because the log gets long and RTF text printing is slow
+        private bool logPreventScroll, logEnd;
+        private int logPage;
+        private Log.LogEntry logPrevious;
+
+        private void Info_SizeChanged(object sender, EventArgs e)
         {
-            Log.LogEntry lastEntry = null;
-            foreach (var entry in Program.Game.Log.Data(Selected?.Piece))
-            {
-                if (entry.Turn != lastEntry?.Turn && entry.Turn != Program.Game.Turn)
-                {
-                    void Line()
+            RefreshLog();
+        }
+        private void RtbLog_VScroll(object sender, EventArgs e)
+        {
+            // all locking, focusing, and the logPreventScroll flag are to prevent log state from getting mixed up and showing inaccurate info
+            UnFocusLog();
+            if (!logPreventScroll)
+                lock (rtbLog)
+                    if (!logPreventScroll)
                     {
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Strikeout);
-                        rtbLog.AppendText("".PadLeft(26, ' '));
-                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                        rtbLog.AppendText(" ");
-                    };
-                    rtbLog.AppendText(Environment.NewLine);
-                    Line();
-                    rtbLog.AppendText(entry.Turn + " ");
-                    Line();
-                    rtbLog.AppendText(Environment.NewLine + Environment.NewLine);
-                }
-
-                LogPiece(entry.AttackerSide, entry.AttackerName, entry.AttackerType);
-                rtbLog.AppendText(" -> ");
-                LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
-                rtbLog.AppendText(" ~ " + FormatInt(entry.BaseDamage));
-                rtbLog.AppendText(Environment.NewLine);
-
-                if (entry.HitsDmg > 0)
-                    rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
-                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                rtbLog.AppendText(entry.HitsCur.ToString());
-                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                if (entry.ShieldDmg > 0)
-                {
-                    rtbLog.SelectionColor = Color.Blue;
-                    rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
-                    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                    rtbLog.AppendText(FormatInt(entry.ShieldCur));
-                    rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                    rtbLog.SelectionColor = Color.Black;
-                }
-                rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
-                rtbLog.AppendText(Environment.NewLine);
-
-                lastEntry = entry;
-            }
+                        // append the next page to the current log
+                        logPage++;
+                        Log();
+                    }
         }
-        private void LogPiece(Side side, string name, string type)
+
+        private void RtbLog_GotFocus(object sender, EventArgs e)
         {
-            if (name != null)
-            {
-                rtbLog.SelectionColor = side == null ? Color.Black : side == side.Game.Player ? Color.Green : Color.Red;
-                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
-                rtbLog.AppendText(name);
-                rtbLog.SelectionColor = Color.Black;
-                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
-                rtbLog.AppendText(type);
-            }
-        }
-        private static string FormatInt(double v)
-        {
-            string result = v.ToString("0.0");
-            if (result.EndsWith(".0"))
-                result = v.ToString("0");
-            return result;
+            logPreventScroll = true;
+            UnFocusLog();
+            EnableLogScroll();
         }
         private void RTBLog_MouseClick(object sender, MouseEventArgs e)
         {
             SelectLog(rtbLog.SelectionStart);
         }
+
+        private void RefreshLog()
+        {
+            Debug.WriteLine("RefreshLog");
+            logPreventScroll = true;
+            UnFocusLog();
+            lock (rtbLog)
+            {
+                rtbLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - rtbLog.Location.Y;
+
+                logEnd = false;
+                logPage = 0;
+                logPrevious = null;
+
+                rtbLog.ResetText();
+                Log();
+
+                rtbLog.Select(0, 0);
+            }
+            EnableLogScroll();
+        }
+        private void Log()
+        {
+            logPreventScroll = true;
+            UnFocusLog();
+            lock (rtbLog)
+                if (!logEnd)
+                {
+                    if (logPage > 0)
+                    {
+                        // fix a weird RichTextBox bug where the color won't show up correctly on the first statement of the next line
+                        rtbLog.SelectionColor = Color.White;
+                        rtbLog.AppendText(" ");
+                        rtbLog.SelectionColor = Color.Black;
+                    }
+
+                    logEnd = true;
+                    int count = 0;
+                    int limit = rtbLog.Height / 50 + 1;
+                    int skip = limit * logPage;
+                    limit += skip;
+                    foreach (var entry in Program.Game.Log.Data(Selected?.Piece))
+                    {
+                        count++;
+                        if (count <= skip)
+                            continue;
+                        if (count > limit)
+                            break;
+                        logEnd = false;
+
+                        if (count > 1)
+                            rtbLog.AppendText(Environment.NewLine);
+
+                        // turn banner
+                        if (entry.Turn != logPrevious?.Turn && entry.Turn != Program.Game.Turn)
+                        {
+                            void HalfLine()
+                            {
+                                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Strikeout);
+                                rtbLog.AppendText("".PadLeft(26, ' '));
+                                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                                rtbLog.AppendText(" ");
+                            };
+                            rtbLog.AppendText(Environment.NewLine);
+                            HalfLine();
+                            rtbLog.AppendText(entry.Turn + " ");
+                            HalfLine();
+                            rtbLog.AppendText(Environment.NewLine + Environment.NewLine);
+                        }
+
+                        // pieces involved
+                        void LogPiece(Side side, string name, string type)
+                        {
+                            if (name != null)
+                            {
+                                rtbLog.SelectionColor = side == null ? Color.Black : side == side.Game.Player ? Color.Green : Color.Red;
+                                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                                rtbLog.AppendText(name);
+                                rtbLog.SelectionColor = Color.Black;
+                                rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                                rtbLog.AppendText(type);
+                            }
+                        }
+                        LogPiece(entry.AttackerSide, entry.AttackerName, entry.AttackerType);
+                        rtbLog.AppendText(" -> ");
+                        LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
+                        rtbLog.AppendText(" ~ " + FormatInt(entry.BaseDamage));
+                        // always leaving a trailing space fixes another weird RichTextBox bug
+                        rtbLog.AppendText(Environment.NewLine + "  ");
+
+                        // damage breakdown
+                        if (entry.HitsDmg > 0)
+                            rtbLog.AppendText(string.Format("{0} -{1} = ", entry.HitsCur + entry.HitsDmg, entry.HitsDmg));
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                        rtbLog.AppendText(entry.HitsCur.ToString());
+                        rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        if (entry.ShieldDmg > 0)
+                        {
+                            rtbLog.SelectionColor = Color.Blue;
+                            rtbLog.AppendText(string.Format(" ; {0:0.0} -{1:0.0} = ", FormatInt(entry.ShieldCur + entry.ShieldDmg), FormatInt(entry.ShieldDmg)));
+                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                            rtbLog.AppendText(FormatInt(entry.ShieldCur));
+                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                            rtbLog.SelectionColor = Color.Black;
+                        }
+                        rtbLog.AppendText(" ~ " + FormatInt(entry.RandDmg));
+
+                        logPrevious = entry;
+                    }
+                }
+            EnableLogScroll();
+        }
+        private static string FormatInt(double v)
+        {
+            //since damage values are frequently integers, only show extra digit when necessary
+            string result = v.ToString("0.0");
+            if (result.EndsWith(".0"))
+                result = v.ToString("0");
+            return result;
+        }
+
         private void SelectLog(int position)
         {
-            if (position > 0 && position < rtbLog.Text.Length)
-            {
-                //cant use Environment.NewLine here
-                int a = rtbLog.Text.LastIndexOf("\n", position);
-                int b = rtbLog.Text.IndexOf("\n", rtbLog.SelectionStart);
-                if (a > 0 && a < rtbLog.Text.Length && b > 0 && b < rtbLog.Text.Length)
+            logPreventScroll = true;
+            UnFocusLog();
+            lock (rtbLog)
+                if (position > 0 && position < rtbLog.Text.Length)
                 {
-                    string line = rtbLog.Text[a..b];
-                    int c = line.IndexOf("~");
-                    if (c > 0 && c < line.Length)
+                    // find the line that contains piece names for this entry
+                    int a = Math.Max(rtbLog.Text.LastIndexOf("\n", position), 0);
+                    int b = rtbLog.Text.IndexOf("\n", rtbLog.SelectionStart);
+                    if (a >= 0 && a < rtbLog.Text.Length && b >= 0 && b < rtbLog.Text.Length)
                     {
-                        if (line.Contains("->"))
+                        string line = rtbLog.Text[a..b];
+                        int c = line.IndexOf("~");
+                        if (c >= 0 && c < line.Length)
                         {
-                            line = line.Substring(0, c).Trim();
-                            Piece select = Program.Game.Player.Pieces.SingleOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));
-                            if (select != null && !Program.Form.MapMain.Center(select.Tile))
-                                Program.Form.MapMain.SelTile = select.Tile;
-                        }
-                        else
-                        {
-                            SelectLog(a - 1);
+                            if (line.Contains("->"))
+                            {
+                                line = line.Substring(0, c).Trim();
+                                // pick the friendly piece if it is still alive, else the enemy
+                                Piece select = Program.Game.Player.Pieces.Concat(Program.Game.Enemy.VisiblePieces)
+                                    .FirstOrDefault(p => line.StartsWith(p.ToString()) || line.EndsWith(p.ToString()));
+                                // select the piece if it is already on screen, otherwise just center it
+                                if (select != null && !Program.Form.MapMain.Center(select.Tile))
+                                    Program.Form.MapMain.SelTile = select.Tile;
+                            }
+                            else
+                            {
+                                SelectLog(a - 1);
+                            }
                         }
                     }
                 }
-            }
+            EnableLogScroll();
         }
+
+        private void UnFocusLog()
+        {
+            // we never want the log to get focus (or it can automatically scroll while being written to)
+            //   so focus something else that is always present and doesn't do anything when focused
+            this.lblTurn.Focus();
+        }
+        private void EnableLogScroll()
+        {
+            // prevent scrolling until form event queue empties
+            new Thread(() =>
+            {
+                Thread.Sleep(169);
+                lock (rtbLog)
+                    logPreventScroll = false;
+            }).Start();
+        }
+
+        #endregion Log
 
         public void BtnBuild_Click(object sender, EventArgs e)
         {
@@ -488,7 +608,7 @@ namespace WinFormsApp1
                 {
                     if (ReplaceFunc(false, out int energy, out int mass)
                         && MessageBox.Show(string.Format("Replace with {0} for {1} energy {2} mass?",
-                                DispCost(energy), DispCost(mass), type), "Replace", MessageBoxButtons.YesNo)
+                                type, DispCost(energy), DispCost(mass)), "Replace", MessageBoxButtons.YesNo)
                             == DialogResult.Yes)
                     {
                         if (ReplaceFunc(true, out _, out _))

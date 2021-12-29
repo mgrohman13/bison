@@ -59,10 +59,12 @@ namespace WinFormsApp1
                     this.label6.Hide();
                 }
 
-                IEnumerable<Type> unlocks = Enum.GetValues<Type>().Where(t => ClassLibrary1.Research.Dependencies[t].Contains(selected));
+                IEnumerable<Type> unlocks = ClassLibrary1.Research.GetUnlocks(selected);
                 if (unlocks.Any())
                 {
-                    this.label3.Text = Program.Game.Player.Research.Done.Contains(selected) ? "Unlocked" : "Unlocks";
+                    bool done = Program.Game.Player.Research.Done.Contains(selected);
+                    this.label3.Text = done ? "Unlocked" : "Unlocks";
+                    this.label3.Font = new Font(this.label3.Font, done ? FontStyle.Italic : FontStyle.Regular);
                     this.lbxUnlocks.DataSource = unlocks.ToArray();
                     this.label3.Show();
                     this.lbxUnlocks.Show();
@@ -71,6 +73,8 @@ namespace WinFormsApp1
                 {
                     this.lbxUnlocks.Hide();
                     this.label3.Hide();
+                    this.lbxAlso.Hide();
+                    this.label8.Hide();
                 }
 
                 this.lblName.Show();
@@ -92,6 +96,7 @@ namespace WinFormsApp1
 
             base.Refresh();
         }
+
         public void RefreshLB()
         {
             Type[] available = Program.Game.Player.Research.Available.OrderBy(t => Program.Game.Player.Research.GetCost(t) - Program.Game.Player.Research.GetProgress(t)).ToArray();
@@ -142,7 +147,7 @@ namespace WinFormsApp1
             this.label8.Hide();
             if (selected.HasValue)
             {
-                Type[] types = ClassLibrary1.Research.Dependencies[selected.Value];
+                IEnumerable<Type> types = ClassLibrary1.Research.GetDependencies(selected.Value);
                 if (main.HasValue)
                     types = types.Where(t => t != main.Value).ToArray();
                 if (types.Any())

@@ -57,6 +57,10 @@ namespace ClassLibrary1.Pieces.Players
                     _canUpgrade = true;
                     Upgrade();
                     break;
+                case Research.Type.Turret:
+                case Research.Type.Factory:
+                    UnlockBuilds(Game.Player.Research, GetValues(Game));
+                    break;
             }
         }
         private bool Upgrade()
@@ -81,8 +85,12 @@ namespace ClassLibrary1.Pieces.Players
         private void Unlock(Research research)
         {
             Values values = GetValues(Game);
+            UnlockBuilds(research, values);
             if (!HasBehavior<IRepair>() && research.HasType(Research.Type.ConstructorRepair))
                 SetBehavior(new Repair(this, values.GetRepair(_rangeMult)));
+        }
+        private void UnlockBuilds(Research research, Values values)
+        {
             if (!HasBehavior<IBuilder.IBuildTurret>() && research.HasType(Research.Type.Turret))
                 SetBehavior(new Builder.BuildTurret(this, values.GetRepair(_rangeMult).Builder));
             if (!HasBehavior<IBuilder.IBuildFactory>() && research.HasType(Research.Type.Factory))

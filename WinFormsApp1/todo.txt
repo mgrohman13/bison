@@ -1,21 +1,36 @@
+NEW
+	suppress all handled keys
+	log killed
+		if click dead, go to attacked spot
+	off map edge logic not working well
+	upgradable indicator on map
+	show 'also needs' difference between have/not
+	reduce core shield inc, increase power
+	build form gorws too big
+	log performance
+
 IMPORTANT
-	-
-		
-UI			
-	selected piece shows double build range on mouse around
-	better range drawing (no digit?  lines for cutoffs?  gradient?)?
 	more move-left triggers (under attack, can attack if move)
 		ability disable for certain blueprints 	
+	HP bars (shield bars?)
+	cirlces shrink on zoom out
+		
+UI
+	for Log display, if selected piece didnt change dont refresh log
+	research option to show all dependencies, unlocks
+	selected piece shows double build range on mouse around
+	better range drawing (no digit?  lines for cutoffs?  gradient?)?
 	hard to see red on red one-hex range overlap
 		also one-move min hard to see
 	draw select on top of other ranges
 		not done because need to see one-move minimum
-	HP bars (shield bars?)
 	adjust scroll speed based on draw time
 	optimize drawing 
 		stuff not on screen 
 		optimize circles to single draw call
 		optimize drawrects to lines?
+	toggle friendly range display
+		filter by type, show total repair pct like enemy dmg
 	show effects of research
 	show constructor upgrade values
 	show base values
@@ -69,3 +84,5 @@ FEATURES
 		rubble/debris
 			harvest
 	experience
+	power grid
+	

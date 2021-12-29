@@ -114,7 +114,12 @@ namespace WinFormsApp1
             result = null;
 
             rows.Add(new(null, null, blueprint.Energy, blueprint.Mass, blueprint));
-            rows.Add(new(null, null, blueprint.UpgradeTo.Energy, blueprint.UpgradeTo.Mass, blueprint.UpgradeTo));
+            MechBlueprint upgrade = blueprint.UpgradeTo;
+            while (upgrade != null)
+            {
+                rows.Add(new(null, null, upgrade.Energy, upgrade.Mass, upgrade));
+                upgrade = upgrade.UpgradeTo;
+            }
 
             Display();
             dataGridView1.Columns["Name"].Visible = false;
@@ -128,6 +133,9 @@ namespace WinFormsApp1
             if (rows.Any())
             {
                 dataGridView1.DataSource = rows;
+
+                dataGridView1.Columns["Name"].Visible = true;
+                dataGridView1.Columns["Upgraded"].Visible = true;
 
                 //dataGridView1.Columns["Blueprint"].Visible = false;
                 dataGridView1.Columns["Builder"].Visible = false;

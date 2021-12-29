@@ -31,6 +31,8 @@ namespace ClassLibrary1.Pieces
                 this._shieldPierce = _shieldPierce;
                 this._dev = _dev;
                 this._range = _range;
+                if (Dev < .0052)
+                    this._dev = 0;
             }
             public double Range => _range;
             public int Damage => _damage;

@@ -9,6 +9,7 @@ using ClassLibrary1.Pieces.Terrain;
 
 namespace ClassLibrary1.Pieces.Players
 {
+    [Serializable]
     public abstract class FoundationPiece : PlayerPiece
     {
         internal FoundationPiece(Map.Tile tile, double vision)

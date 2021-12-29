@@ -98,7 +98,7 @@ namespace ClassLibrary1.Pieces
             {
                 this.Piece = piece;
                 this._values = values;
-                this._attacked = 0;
+                this._attacked = 1;
             }
 
             internal void Upgrade(Values values)

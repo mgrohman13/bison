@@ -25,7 +25,7 @@ namespace ClassLibrary1.Pieces.Players
             for (int a = 0; a < 2; a++)
             {
                 this._rangeMult[a] = Game.Rand.GaussianOE(values.AttackRange[a], .26, .26, 1) / values.AttackRange[a];
-                this._dev[a] = Game.Rand.Weighted(.13);
+                this._dev[a] = Game.Rand.Weighted(.21);
             }
 
             IKillable.Values killable = values.GetKillable(_hitsMult, _rounding);
@@ -36,7 +36,7 @@ namespace ClassLibrary1.Pieces.Players
         internal static Turret NewTurret(Foundation foundation)
         {
             Map.Tile tile = foundation.Tile;
-            foundation.Game.RemovePiece(foundation);
+            foundation.Die();
 
             Turret obj = new(tile, GetValues(foundation.Game));
             foundation.Game.AddPiece(obj);

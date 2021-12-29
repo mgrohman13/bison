@@ -81,89 +81,90 @@ namespace WinFormsApp1
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(0, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(87, 25);
+            this.label1.Size = new System.Drawing.Size(180, 25);
             this.label1.TabIndex = 2;
             this.label1.Text = "Available:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 169);
+            this.label2.Location = new System.Drawing.Point(0, 169);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(105, 25);
+            this.label2.Size = new System.Drawing.Size(180, 25);
             this.label2.TabIndex = 3;
             this.label2.Text = "Researched:";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblName
             // 
             this.lblName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblName.Location = new System.Drawing.Point(186, 34);
+            this.lblName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblName.Location = new System.Drawing.Point(186, 37);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(388, 50);
+            this.lblName.Size = new System.Drawing.Size(394, 50);
             this.lblName.TabIndex = 4;
             this.lblName.Text = "lblName";
             this.lblName.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(186, 84);
+            this.label4.Location = new System.Drawing.Point(186, 87);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(137, 50);
+            this.label4.Size = new System.Drawing.Size(125, 25);
             this.label4.TabIndex = 5;
             this.label4.Text = "Last Researched";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(186, 134);
+            this.label5.Location = new System.Drawing.Point(186, 112);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(137, 50);
+            this.label5.Size = new System.Drawing.Size(125, 29);
             this.label5.TabIndex = 6;
             this.label5.Text = "Progress";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(186, 184);
+            this.label6.Location = new System.Drawing.Point(186, 141);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(137, 50);
+            this.label6.Size = new System.Drawing.Size(125, 25);
             this.label6.TabIndex = 7;
             this.label6.Text = "Cost";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblLast
             // 
             this.lblLast.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblLast.Location = new System.Drawing.Point(480, 108);
+            this.lblLast.Location = new System.Drawing.Point(455, 87);
             this.lblLast.Name = "lblLast";
-            this.lblLast.Size = new System.Drawing.Size(100, 25);
+            this.lblLast.Size = new System.Drawing.Size(125, 25);
             this.lblLast.TabIndex = 8;
             this.lblLast.Text = "lblLast";
-            this.lblLast.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.lblLast.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblProgress
             // 
             this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblProgress.Location = new System.Drawing.Point(480, 158);
+            this.lblProgress.Location = new System.Drawing.Point(455, 112);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(100, 25);
+            this.lblProgress.Size = new System.Drawing.Size(125, 29);
             this.lblProgress.TabIndex = 9;
             this.lblProgress.Text = "lblProgress";
-            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblCost
             // 
             this.lblCost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCost.Location = new System.Drawing.Point(480, 208);
+            this.lblCost.Location = new System.Drawing.Point(455, 141);
             this.lblCost.Name = "lblCost";
-            this.lblCost.Size = new System.Drawing.Size(100, 25);
+            this.lblCost.Size = new System.Drawing.Size(125, 25);
             this.lblCost.TabIndex = 10;
             this.lblCost.Text = "lblCost";
-            this.lblCost.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.lblCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // btnOK
             // 
@@ -190,30 +191,30 @@ namespace WinFormsApp1
             // lblTotal
             // 
             this.lblTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTotal.Location = new System.Drawing.Point(480, 9);
+            this.lblTotal.Location = new System.Drawing.Point(455, 9);
             this.lblTotal.Name = "lblTotal";
-            this.lblTotal.Size = new System.Drawing.Size(100, 25);
+            this.lblTotal.Size = new System.Drawing.Size(125, 25);
             this.lblTotal.TabIndex = 14;
             this.lblTotal.Text = "lblTotal";
-            this.lblTotal.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label7
             // 
             this.label7.Location = new System.Drawing.Point(186, 9);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(137, 25);
+            this.label7.Size = new System.Drawing.Size(125, 25);
             this.label7.TabIndex = 13;
             this.label7.Text = "Total Research";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(186, 234);
+            this.label3.Location = new System.Drawing.Point(186, 197);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(180, 50);
+            this.label3.Size = new System.Drawing.Size(180, 25);
             this.label3.TabIndex = 15;
-            this.label3.Text = "Unlocks";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label3.Text = "Unlocks:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lbxUnlocks
             // 
@@ -223,9 +224,9 @@ namespace WinFormsApp1
             this.lbxUnlocks.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.lbxUnlocks.FormattingEnabled = true;
             this.lbxUnlocks.ItemHeight = 25;
-            this.lbxUnlocks.Location = new System.Drawing.Point(186, 287);
+            this.lbxUnlocks.Location = new System.Drawing.Point(186, 225);
             this.lbxUnlocks.Name = "lbxUnlocks";
-            this.lbxUnlocks.Size = new System.Drawing.Size(180, 100);
+            this.lbxUnlocks.Size = new System.Drawing.Size(180, 150);
             this.lbxUnlocks.TabIndex = 3;
             this.lbxUnlocks.SelectedValueChanged += new System.EventHandler(this.LbxUnlocks_SelectedValueChanged);
             // 
@@ -237,20 +238,20 @@ namespace WinFormsApp1
             this.lbxAlso.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.lbxAlso.FormattingEnabled = true;
             this.lbxAlso.ItemHeight = 25;
-            this.lbxAlso.Location = new System.Drawing.Point(372, 287);
+            this.lbxAlso.Location = new System.Drawing.Point(372, 225);
             this.lbxAlso.Name = "lbxAlso";
             this.lbxAlso.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.lbxAlso.Size = new System.Drawing.Size(180, 100);
+            this.lbxAlso.Size = new System.Drawing.Size(180, 150);
             this.lbxAlso.TabIndex = 17;
             // 
             // label8
             // 
-            this.label8.Location = new System.Drawing.Point(372, 234);
+            this.label8.Location = new System.Drawing.Point(372, 197);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(180, 50);
+            this.label8.Size = new System.Drawing.Size(180, 25);
             this.label8.TabIndex = 18;
-            this.label8.Text = "Also Needs";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label8.Text = "Also Needs:";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // Research
             // 
@@ -285,7 +286,6 @@ namespace WinFormsApp1
             this.Text = "Research";
             this.Shown += new System.EventHandler(this.Research_Shown);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
