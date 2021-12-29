@@ -237,7 +237,7 @@ namespace ClassLibrary1
             else
                 return min + Add();
         }
-        private static double GetNext(double v) => Math.Pow(v * 5.2 + 520, .52);
+        private static double GetNext(double v) => Math.Pow(v * 7.8 + 780, .52);
 
         internal bool HasType(Type research)
         {
@@ -313,7 +313,7 @@ namespace ClassLibrary1
 
         public static readonly Type[] NoUpgrades = new Type[] { Type.Mech, Type.Constructor, Type.Turret, Type.Factory,  Type.FactoryConstructor,
             Type.TurretAutoRepair, Type.FactoryAutoRepair, Type.ExtractorAutoRepair, Type.BurnMass, Type.ScrapResearch, Type.FabricateMass, };
-        public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove, Type.TurretRange, Type.TurretDefense,
+        public static readonly Type[] UpgradeOnly = new Type[] { Type.ConstructorCost, Type.ConstructorMove, Type.TurretRange,
             Type.BuildingCost, Type.BuildingHits, Type.ExtractorValue, Type.ResearchChoices, };
         public static readonly Dictionary<Type, Type[]> Dependencies = new()
         {
@@ -336,17 +336,17 @@ namespace ClassLibrary1
 
             { Type.ConstructorCost, new Type[] { Type.Constructor, } }, // early
             { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechShields, Type.MechArmor, } }, // early
-            { Type.ConstructorMove, new Type[] { Type.Constructor, Type.ConstructorCost, Type.ConstructorDefense, Type.Factory, Type.MechVision, Type.MechMove, } },
-            { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorMove, Type.FactoryAutoRepair, } }, // end
+            { Type.ConstructorMove, new Type[] { Type.Constructor, Type.ConstructorCost, Type.Factory, Type.MechVision, Type.MechMove, } },
+            { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorCost, Type.ConstructorDefense, Type.ConstructorMove, Type.FactoryAutoRepair, Type.FabricateMass, } }, // end
 
             { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange, } },
             { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechSP, Type.MechAP, } },
             { Type.TurretDefense, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor, } },
-            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.TurretDefense, Type.BuildingHits, } },
+            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.TurretDefense, Type.ExtractorAutoRepair, Type.BuildingHits, } },
 
             { Type.FactoryRepair, new Type[] { Type.Factory, Type.BuildingCost, } }, // early
             { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.FactoryRepair, Type.BuildingHits, } },
-            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryAutoRepair, Type.ConstructorCost, Type.ConstructorDefense, } }, // end
+            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryAutoRepair, Type.ConstructorDefense, } }, // end
 
             { Type.BuildingCost, new Type[] { Type.CoreShields, } },
             { Type.ExtractorAutoRepair, new Type[] { Type.BuildingCost, } }, // early

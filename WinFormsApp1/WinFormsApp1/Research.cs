@@ -38,7 +38,7 @@ namespace WinFormsApp1
         {
             this.lblTotal.Text = Program.Game.Player.Research.ResearchCur.ToString();
 
-            Type? s = GetSelected() ?? GetSelected(lbDone);
+            Type? s = GetSelected() ?? GetSelected(lbxDone);
             if (s.HasValue)
             {
                 Type selected = s.Value;
@@ -73,7 +73,7 @@ namespace WinFormsApp1
                 {
                     this.lbxUnlocks.Hide();
                     this.label3.Hide();
-                    this.lbxAlso.Hide();
+                    this.lvwAlso.Hide();
                     this.label8.Hide();
                 }
 
@@ -100,10 +100,10 @@ namespace WinFormsApp1
         public void RefreshLB()
         {
             Type[] available = Program.Game.Player.Research.Available.OrderBy(t => Program.Game.Player.Research.GetCost(t) - Program.Game.Player.Research.GetProgress(t)).ToArray();
-            this.lbAvailable.DataSource = available;
-            this.lbDone.DataSource = Program.Game.Player.Research.Done.OrderByDescending(Program.Game.Player.Research.GetLast).ToArray();
+            this.lbxAvailable.DataSource = available;
+            this.lbxDone.DataSource = Program.Game.Player.Research.Done.OrderByDescending(Program.Game.Player.Research.GetLast).ToArray();
 
-            this.lbAvailable.SetSelected(Array.IndexOf(available, Program.Game.Player.Research.Researching), true);
+            this.lbxAvailable.SetSelected(Array.IndexOf(available, Program.Game.Player.Research.Researching), true);
 
             this.Refresh();
         }
@@ -115,17 +115,17 @@ namespace WinFormsApp1
         private void LB_SelectedValueChanged(object sender, EventArgs e)
         {
             if (((ListBox)sender).SelectedValue != null)
-                if (sender == lbAvailable)
-                    this.lbDone.ClearSelected();
+                if (sender == lbxAvailable)
+                    this.lbxDone.ClearSelected();
                 else
-                    this.lbAvailable.ClearSelected();
+                    this.lbxAvailable.ClearSelected();
 
             this.Refresh();
         }
 
         private Type? GetSelected()
         {
-            return GetSelected(lbAvailable);
+            return GetSelected(lbxAvailable);
         }
         private static Type? GetSelected(ListBox box)
         {
@@ -140,10 +140,10 @@ namespace WinFormsApp1
 
         private void LbxUnlocks_SelectedValueChanged(object sender, EventArgs e)
         {
-            Type? main = GetSelected() ?? GetSelected(lbDone);
+            Type? main = GetSelected() ?? GetSelected(lbxDone);
             Type? selected = GetSelected(lbxUnlocks);
 
-            this.lbxAlso.Hide();
+            this.lvwAlso.Hide();
             this.label8.Hide();
             if (selected.HasValue)
             {
@@ -152,8 +152,16 @@ namespace WinFormsApp1
                     types = types.Where(t => t != main.Value).ToArray();
                 if (types.Any())
                 {
-                    this.lbxAlso.DataSource = types;
-                    this.lbxAlso.Show();
+                    this.lvwAlso.Clear();
+                    int idx = 0;
+                    foreach (Type type in types)
+                    {
+                        this.lvwAlso.Items.Add(type.ToString());
+                        if (Program.Game.Player.Research.Done.Contains(type))
+                            this.lvwAlso.Items[idx].Font = new Font(lvwAlso.Font, FontStyle.Italic);
+                        idx++;
+                    }
+                    this.lvwAlso.Show();
                     this.label8.Show();
                 }
             }

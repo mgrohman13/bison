@@ -134,7 +134,7 @@ namespace WinFormsApp1
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.Clear(Color.White);
+            //e.Graphics.Clear(Color.White);
 
             if (Program.Game != null)
             {
@@ -147,13 +147,21 @@ namespace WinFormsApp1
         }
         private void Tiles(PaintEventArgs e)
         {
-            Pen reg = Pens.Black;
-            using Pen sel = new(Color.Black, 3f);
-            Pen[] pens = new Pen[] { reg, sel };
+            List<RectangleF> rectangles = new();
+            List<RectangleF> ellipses = new();
+            List<PointF[]> polygons = new();
+            List<Tuple<PointF, PointF>> lines = new();
+            Dictionary<int, Brush> hitsBrushes = new();
+            Dictionary<Brush, List<RectangleF>> fill = new();
+            void AddFill(Brush b, RectangleF r)
+            {
+                if (!fill.TryGetValue(b, out List<RectangleF> l))
+                    fill.Add(b, l = new());
+                l.Add(r);
+            }
+            void AddFillRect(Brush b, float x, float y, float w, float h) => AddFill(b, new(x, y, w, h));
 
             Rectangle mapCoords = GetMapCoords();
-            Dictionary<Pen, List<RectangleF>> grid = new();
-            using Font f = new(FontFamily.GenericMonospace, scale / 5.6f);
             for (int a = 0; a < mapCoords.Width; a++)
             {
                 int x = mapCoords.X + a;
@@ -163,54 +171,99 @@ namespace WinFormsApp1
                     Tile tile = Program.Game.Map.GetVisibleTile(x, y);
                     if (tile != null)
                     {
-                        Pen pen = reg;
                         RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+                        rectangles.Add(rect);
+
+                        const float ellipseInflate = -.13f;
+                        RectangleF ellipse = RectangleF.Inflate(rect, rect.Width * ellipseInflate, rect.Height * ellipseInflate);
 
                         Resource resource = tile.Piece as Resource;
                         Extractor extractor = tile.Piece as Extractor;
                         if (resource == null && extractor != null)
                             resource = extractor.Resource;
                         if (tile.Piece is Alien)
-                            e.Graphics.FillRectangle(Brushes.Red, rect);
+                            AddFill(Brushes.Red, rect);
                         else if (tile.Piece is Mech)
-                            e.Graphics.FillRectangle(Brushes.Green, rect);
+                            AddFill(Brushes.Green, rect);
                         else if (tile.Piece is Constructor)
-                            e.Graphics.FillRectangle(Brushes.LightGreen, rect);
+                            AddFill(Brushes.LightGreen, rect);
                         else if (tile.Piece is Core || tile.Piece is Factory)
-                            e.Graphics.FillRectangle(Brushes.Blue, rect);
+                            AddFill(Brushes.Blue, rect);
                         else if (tile.Piece is Foundation)
-                            e.Graphics.FillRectangle(Brushes.Black, rect);
+                            AddFill(Brushes.Black, rect);
                         else if (tile.Piece is Turret)
-                            e.Graphics.FillEllipse(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
+                            ellipses.Add(ellipse);
                         else if (resource != null)
                         {
                             if (resource is Biomass)
-                                e.Graphics.FillRectangle(Brushes.Orange, rect);
+                                AddFill(Brushes.Orange, rect);
                             else if (resource is Metal)
-                                e.Graphics.FillRectangle(Brushes.Gray, rect);
+                                AddFill(Brushes.Gray, rect);
                             else if (resource is Artifact)
-                                e.Graphics.FillRectangle(Brushes.Magenta, rect);
+                                AddFill(Brushes.Magenta, rect);
                             if (extractor != null)
-                                e.Graphics.FillEllipse(Brushes.Blue, RectangleF.Inflate(rect, -2.5f, -2.5f));
+                                ellipses.Add(ellipse);
                         }
 
-                        if (viewAttacks && scale > 21 && this.attacks.TryGetValue(new Point(x, y), out string attack))
-                            e.Graphics.DrawString(attack, f, Brushes.Red, new PointF(
-                                GetX(x) + scale - e.Graphics.MeasureString(attack, f).Width, GetY(y) + scale - f.Size * 2 - 2));
+                        if (Info.HasAnyUpgrade(tile))
+                            polygons.Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
 
-                        if (tile == SelTile)
-                            pen = sel;
+                        if (tile.Piece != null && tile.Piece.HasBehavior(out IKillable killable))
+                        {
+                            float barSize = .169f * rect.Height;
+                            RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, rect.Width, barSize);
+                            rectangles.Add(hitsBar);
 
-                        if (!grid.TryGetValue(pen, out List<RectangleF> list))
-                            grid.Add(pen, list = new List<RectangleF>());
-                        list.Add(rect);
+                            float hitsPct = killable.HitsCur / (float)killable.HitsMax;
+                            int color = Game.Rand.Round(255 * .65f * killable.Armor);
+                            if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
+                                hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
+                            AddFillRect(hitsBrush, hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
+                            AddFillRect(Brushes.White, hitsBar.X + hitsBar.Width * hitsPct, hitsBar.Y, hitsBar.Width * (1 - hitsPct), hitsBar.Height);
+
+                            if (killable.ShieldInc > 0)
+                            {
+                                RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
+                                rectangles.Add(shieldBar);
+
+                                float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
+                                AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
+                                AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
+                                float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
+                                lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
+                            }
+                        }
                     }
                 }
             }
 
-            foreach (Pen pen in pens)
-                if (grid.ContainsKey(pen))
-                    e.Graphics.DrawRectangles(pen, grid[pen].ToArray());
+            HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.White).Append(Brushes.Purple).ToHashSet();
+            foreach (var p in fill.OrderBy(p => afterBrushes.Contains(p.Key)))
+                e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
+            foreach (var ellipse in ellipses)
+                e.Graphics.FillEllipse(Brushes.Blue, ellipse);
+            foreach (var p in polygons)
+                e.Graphics.FillPolygon(Brushes.Black, p);
+
+            e.Graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
+            foreach (var t in lines)
+                e.Graphics.DrawLine(Pens.Black, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
+            if (SelTile != null)
+            {
+                using Pen sel = new(Color.Black, 3f);
+                e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), scale, scale);
+            }
+
+            if (viewAttacks && scale > 21)
+            {
+                using Font f = new(FontFamily.GenericMonospace, scale / 5.6f);
+                foreach (var p in attacks)
+                    if (mapCoords.Contains(p.Key.X, p.Key.Y))
+                        e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - e.Graphics.MeasureString(p.Value, f).Width, GetY(p.Key.Y) + scale - f.Size * 2 - 2));
+            }
+
+            foreach (IDisposable d in hitsBrushes.Values)
+                d.Dispose();
         }
 
         private readonly static Pen range = new(Color.Red, 3f), move = new(Color.Green, 3f), repair = new(Color.Blue, 3f);

@@ -54,13 +54,11 @@ namespace WinFormsApp1
 
         private void Main_KeyDown(object sender, KeyEventArgs e)
         {
+            e.SuppressKeyPress = true;
             if (e.KeyCode == Keys.Escape)
                 Program.EndTurn();
             else if (e.KeyCode == Keys.Space)
-            {
-                e.SuppressKeyPress = true;
                 Program.Hold();
-            }
             else if (e.KeyCode == Keys.Q)
                 Program.Next(false);
             else if (e.KeyCode == Keys.E)
@@ -69,6 +67,8 @@ namespace WinFormsApp1
                 Info.BtnBuild_Click(sender, e);
             else if (e.KeyCode == Keys.T)
                 Info.BtnViewAtt_Click(sender, e);
+            else
+                e.SuppressKeyPress = false;
 
             mapMain.Map_KeyDown(sender, e);
         }

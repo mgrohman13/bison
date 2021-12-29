@@ -29,8 +29,8 @@ namespace WinFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
-            this.lbAvailable = new System.Windows.Forms.ListBox();
-            this.lbDone = new System.Windows.Forms.ListBox();
+            this.lbxAvailable = new System.Windows.Forms.ListBox();
+            this.lbxDone = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.lblName = new System.Windows.Forms.Label();
@@ -46,38 +46,38 @@ namespace WinFormsApp1
             this.label7 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.lbxUnlocks = new System.Windows.Forms.ListBox();
-            this.lbxAlso = new System.Windows.Forms.ListBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.lvwAlso = new System.Windows.Forms.ListView();
             this.SuspendLayout();
             // 
-            // lbAvailable
+            // lbxAvailable
             // 
-            this.lbAvailable.FormattingEnabled = true;
-            this.lbAvailable.ItemHeight = 25;
-            this.lbAvailable.Items.AddRange(new object[] {
+            this.lbxAvailable.FormattingEnabled = true;
+            this.lbxAvailable.ItemHeight = 25;
+            this.lbxAvailable.Items.AddRange(new object[] {
             "1",
             "2",
             "3",
             "4",
             "5"});
-            this.lbAvailable.Location = new System.Drawing.Point(0, 37);
-            this.lbAvailable.Name = "lbAvailable";
-            this.lbAvailable.Size = new System.Drawing.Size(180, 129);
-            this.lbAvailable.TabIndex = 1;
-            this.lbAvailable.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
-            this.lbAvailable.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LbAvailable_MouseDoubleClick);
+            this.lbxAvailable.Location = new System.Drawing.Point(0, 37);
+            this.lbxAvailable.Name = "lbxAvailable";
+            this.lbxAvailable.Size = new System.Drawing.Size(180, 129);
+            this.lbxAvailable.TabIndex = 1;
+            this.lbxAvailable.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
+            this.lbxAvailable.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.LbAvailable_MouseDoubleClick);
             // 
-            // lbDone
+            // lbxDone
             // 
-            this.lbDone.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.lbxDone.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.lbDone.FormattingEnabled = true;
-            this.lbDone.ItemHeight = 25;
-            this.lbDone.Location = new System.Drawing.Point(0, 197);
-            this.lbDone.Name = "lbDone";
-            this.lbDone.Size = new System.Drawing.Size(180, 229);
-            this.lbDone.TabIndex = 2;
-            this.lbDone.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
+            this.lbxDone.FormattingEnabled = true;
+            this.lbxDone.ItemHeight = 25;
+            this.lbxDone.Location = new System.Drawing.Point(0, 197);
+            this.lbxDone.Name = "lbxDone";
+            this.lbxDone.Size = new System.Drawing.Size(180, 229);
+            this.lbxDone.TabIndex = 2;
+            this.lbxDone.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
             // 
             // label1
             // 
@@ -230,20 +230,6 @@ namespace WinFormsApp1
             this.lbxUnlocks.TabIndex = 3;
             this.lbxUnlocks.SelectedValueChanged += new System.EventHandler(this.LbxUnlocks_SelectedValueChanged);
             // 
-            // lbxAlso
-            // 
-            this.lbxAlso.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.lbxAlso.BackColor = System.Drawing.SystemColors.Control;
-            this.lbxAlso.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.lbxAlso.FormattingEnabled = true;
-            this.lbxAlso.ItemHeight = 25;
-            this.lbxAlso.Location = new System.Drawing.Point(372, 225);
-            this.lbxAlso.Name = "lbxAlso";
-            this.lbxAlso.SelectionMode = System.Windows.Forms.SelectionMode.None;
-            this.lbxAlso.Size = new System.Drawing.Size(180, 150);
-            this.lbxAlso.TabIndex = 17;
-            // 
             // label8
             // 
             this.label8.Location = new System.Drawing.Point(372, 197);
@@ -253,6 +239,19 @@ namespace WinFormsApp1
             this.label8.Text = "Also Needs:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // lvwAlso
+            // 
+            this.lvwAlso.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.lvwAlso.Enabled = false;
+            this.lvwAlso.HideSelection = false;
+            this.lvwAlso.Location = new System.Drawing.Point(372, 225);
+            this.lvwAlso.Name = "lvwAlso";
+            this.lvwAlso.Size = new System.Drawing.Size(180, 150);
+            this.lvwAlso.TabIndex = 19;
+            this.lvwAlso.UseCompatibleStateImageBehavior = false;
+            this.lvwAlso.View = System.Windows.Forms.View.List;
+            // 
             // Research
             // 
             this.AcceptButton = this.btnOK;
@@ -260,8 +259,8 @@ namespace WinFormsApp1
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(592, 438);
+            this.Controls.Add(this.lvwAlso);
             this.Controls.Add(this.label8);
-            this.Controls.Add(this.lbxAlso);
             this.Controls.Add(this.lbxUnlocks);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.lblTotal);
@@ -277,8 +276,8 @@ namespace WinFormsApp1
             this.Controls.Add(this.lblName);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.lbDone);
-            this.Controls.Add(this.lbAvailable);
+            this.Controls.Add(this.lbxDone);
+            this.Controls.Add(this.lbxAvailable);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.MinimumSize = new System.Drawing.Size(494, 494);
             this.Name = "Research";
@@ -291,8 +290,8 @@ namespace WinFormsApp1
 
         #endregion
 
-        private System.Windows.Forms.ListBox lbAvailable;
-        private System.Windows.Forms.ListBox lbDone;
+        private System.Windows.Forms.ListBox lbxAvailable;
+        private System.Windows.Forms.ListBox lbxDone;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblName;
@@ -308,7 +307,7 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ListBox lbxUnlocks;
-        private System.Windows.Forms.ListBox lbxAlso;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ListView lvwAlso;
     }
 }

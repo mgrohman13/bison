@@ -21,7 +21,7 @@ namespace WinFormsApp1
 {
     public partial class Info : UserControl
     {
-        private readonly Timer animateTimer;
+        //private readonly Timer animateTimer;
         public Tile Selected { get; set; }
 
         public Info()
@@ -29,35 +29,35 @@ namespace WinFormsApp1
             InitializeComponent();
             rtbLog.GotFocus += RtbLog_GotFocus;
 
-            animateTimer = new();
-            animateTimer.Interval = 52;
-            bool dir = true;
-            animateTimer.Tick += (sender, args) =>
-            {
-                lock (animateTimer)
-                {
-                    const double step = 16.9;
-                    Color target = dir ? SystemColors.ControlDarkDark : SystemColors.ControlLightLight;
-                    int r = btnBuild.BackColor.R, g = btnBuild.BackColor.G, b = btnBuild.BackColor.B;
-                    int rt = target.R, gt = target.G, bt = target.B;
-                    static int Step(int c, int t)
-                    {
-                        int sign = Math.Sign(t - c);
-                        c += Game.Rand.GaussianInt(sign * step, .13);
-                        if (sign != Math.Sign(t - c))
-                            c = t;
-                        return Math.Max(Math.Min(c, 255), 0);
-                    }
-                    r = Step(r, rt);
-                    g = Step(g, gt);
-                    b = Step(b, bt);
-                    target = Color.FromArgb(r, g, b);
-                    if (btnBuild.BackColor == target)
-                        dir = !dir;
-                    else
-                        btnBuild.BackColor = target;
-                }
-            };
+            //animateTimer = new();
+            //animateTimer.Interval = 52;
+            //bool dir = true;
+            //animateTimer.Tick += (sender, args) =>
+            //{
+            //    lock (animateTimer)
+            //    {
+            //        const double step = 16.9;
+            //        Color target = dir ? SystemColors.ControlDarkDark : SystemColors.ControlLightLight;
+            //        int r = btnBuild.BackColor.R, g = btnBuild.BackColor.G, b = btnBuild.BackColor.B;
+            //        int rt = target.R, gt = target.G, bt = target.B;
+            //        static int Step(int c, int t)
+            //        {
+            //            int sign = Math.Sign(t - c);
+            //            c += Game.Rand.GaussianInt(sign * step, .13);
+            //            if (sign != Math.Sign(t - c))
+            //                c = t;
+            //            return Math.Max(Math.Min(c, 255), 0);
+            //        }
+            //        r = Step(r, rt);
+            //        g = Step(g, gt);
+            //        b = Step(b, bt);
+            //        target = Color.FromArgb(r, g, b);
+            //        if (btnBuild.BackColor == target)
+            //            dir = !dir;
+            //        else
+            //            btnBuild.BackColor = target;
+            //    }
+            //};
         }
 
         private void Button1_Click(object sender, EventArgs e)
@@ -73,11 +73,11 @@ namespace WinFormsApp1
             ShowAll(false);
             lblTurn.Text = Program.Game.Turn.ToString();
 
-            lock (animateTimer)
-            {
-                animateTimer.Stop();
-                btnBuild.BackColor = Color.Transparent;
-            }
+            //lock (animateTimer)
+            //{
+            //    animateTimer.Stop();
+            //    btnBuild.BackColor = Color.Transparent;
+            //}
             if (DgvForm.CanBuild(Selected))
             {
                 btnBuild.Text = "Build";
@@ -87,7 +87,7 @@ namespace WinFormsApp1
             {
                 btnBuild.Text = "Upgrade";
                 btnBuild.Show();
-                animateTimer.Start();
+                //animateTimer.Start();
             }
             else if (CanReplace(out _))
             {
@@ -458,7 +458,7 @@ namespace WinFormsApp1
                             void HalfLine()
                             {
                                 rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Strikeout);
-                                rtbLog.AppendText("".PadLeft(26, ' '));
+                                rtbLog.AppendText("".PadLeft(39, ' '));
                                 rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
                                 rtbLog.AppendText(" ");
                             };
@@ -486,6 +486,12 @@ namespace WinFormsApp1
                         rtbLog.AppendText(" -> ");
                         LogPiece(entry.DefenderSide, entry.DefenderName, entry.DefenderType);
                         rtbLog.AppendText(" ~ " + FormatInt(entry.BaseDamage));
+                        if (entry.HitsCur <= 0)
+                        {
+                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Bold);
+                            rtbLog.AppendText("  Killed!");
+                            rtbLog.SelectionFont = new Font(rtbLog.Font, FontStyle.Regular);
+                        }
                         // always leaving a trailing space fixes another weird RichTextBox bug
                         rtbLog.AppendText(Environment.NewLine + "  ");
 
@@ -588,7 +594,7 @@ namespace WinFormsApp1
             {
                 MessageBox.Show("Constructor can be upgraded.", "Upgrade", MessageBoxButtons.OK);
             }
-            else if (HasUpgrade(out MechBlueprint blueprint, out int energy, out int mass))
+            else if (HasUpgrade(Selected, out MechBlueprint blueprint, out int energy, out int mass))
             {
                 Program.DgvForm.UpgradeInfo(((Mech)Selected.Piece).Blueprint);
                 bool canUpgrade = CanUpgrade();
@@ -642,17 +648,25 @@ namespace WinFormsApp1
             }
         }
         private delegate bool ReplaceFunc(bool doReplace, out int energy, out int mass);
-        private bool HasConstructorUpgrade()
+        public static bool HasAnyUpgrade(Tile tile)
         {
-            return Selected != null && Selected.Piece is Constructor constructor && constructor.CanUpgrade;
+            return HasUpgrade(tile, out _, out _, out _) || HasConstructorUpgrade(tile);
         }
-        private bool HasUpgrade()
+        public bool HasConstructorUpgrade()
         {
-            return HasUpgrade(out _, out _, out _);
+            return HasConstructorUpgrade(Selected);
         }
-        private bool HasUpgrade(out MechBlueprint blueprint, out int energy, out int mass)
+        public static bool HasConstructorUpgrade(Tile tile)
         {
-            if (Selected != null && Selected.Piece is Mech mech)
+            return tile != null && tile.Piece is Constructor constructor && constructor.CanUpgrade;
+        }
+        public bool HasUpgrade()
+        {
+            return HasUpgrade(Selected, out _, out _, out _);
+        }
+        private static bool HasUpgrade(Tile tile, out MechBlueprint blueprint, out int energy, out int mass)
+        {
+            if (tile != null && tile.Piece is Mech mech)
             {
                 mech.CanUpgrade(out blueprint, out energy, out mass);
                 return blueprint != null;

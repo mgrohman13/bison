@@ -28,7 +28,7 @@ namespace ClassLibrary1.Pieces.Players
                 this._dev[a] = Game.Rand.Weighted(.21);
             }
 
-            IKillable.Values killable = values.GetKillable(_hitsMult, _rounding);
+            IKillable.Values killable = values.GetKillable(Game.Player.Research, _hitsMult, _rounding);
             SetBehavior(
                 new Killable(this, killable, killable.HitsMax, killable.ShieldMax / 2.1),
                 new Attacker(this, values.GetAttacks(Game.Player.Research, _rangeMult, _rounding, _dev)));
@@ -54,7 +54,7 @@ namespace ClassLibrary1.Pieces.Players
             Values values = GetValues(Game);
 
             this._vision = values.Vision;
-            GetBehavior<IKillable>().Upgrade(values.GetKillable(_hitsMult, _rounding));
+            GetBehavior<IKillable>().Upgrade(values.GetKillable(Game.Player.Research, _hitsMult, _rounding));
             GetBehavior<IAttacker>().Upgrade(values.GetAttacks(Game.Player.Research, _rangeMult, _rounding, _dev));
         }
         private static Values GetValues(Game game)
@@ -96,7 +96,7 @@ namespace ClassLibrary1.Pieces.Players
                 this.attacks = new IAttacker.Values[] { new(-1, -1, -1, -1, -1), new(-1, -1, -1, -1, -1) };
                 UpgradeBuildingCost(1);
                 UpgradeBuildingHits(1);
-                UpgradeTurretDefense(1);
+                //UpgradeTurretDefense(1);
                 UpgradeTurretAttack(1);
                 UpgradeTurretRange(1);
             }
@@ -106,14 +106,21 @@ namespace ClassLibrary1.Pieces.Players
             public double Vision => vision;
             public double[] AttackRange => attacks.Select(v => v.Range).ToArray();
             public double Rounding => rounding;
-            public IKillable.Values GetKillable(double hitsMult, double rounding)
+            public IKillable.Values GetKillable(Research research, double hitsMult, double rounding)
             {
                 int hits = MTRandom.Round(killable.HitsMax * hitsMult, rounding);
-                double shieldMult = Math.Pow(killable.HitsMax / (double)hits, 1.04);
-                double shieldInc = killable.ShieldInc * shieldMult;
-                int shieldMax = 1 + MTRandom.Round((killable.ShieldMax - 1) * shieldMult, rounding);
-                int shieldLimit = 1 + MTRandom.Round((killable.ShieldLimit - 1) * shieldMult, rounding);
-                return new(hits, killable.Resilience, killable.Armor, shieldInc, shieldMax, shieldLimit);
+                double armor, shieldInc;
+                int shieldMax, shieldLimit;
+                armor = shieldInc = shieldMax = shieldLimit = 0;
+                if (research.HasType(Research.Type.TurretDefense))
+                {
+                    armor = killable.Armor;
+                    double shieldMult = Math.Pow(killable.HitsMax / (double)hits, 1.04);
+                    shieldInc = killable.ShieldInc * shieldMult;
+                    shieldMax = 1 + MTRandom.Round((killable.ShieldMax - 1) * shieldMult, rounding);
+                    shieldLimit = 1 + MTRandom.Round((killable.ShieldLimit - 1) * shieldMult, rounding);
+                }
+                return new(hits, killable.Resilience, armor, shieldInc, shieldMax, shieldLimit);
             }
             public IAttacker.Values[] GetAttacks(Research research, double[] rangeMult, double rounding, double[] dev)
             {
