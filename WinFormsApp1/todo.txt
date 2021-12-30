@@ -4,7 +4,7 @@ NEW
 IMPORTANT
 	more move-left triggers (under attack, can attack if move)
 		ability disable for certain blueprints 	
-	research option to show all dependencies, unlocks
+	show cur re3search on main form
 
 UI
 	if clicked log has no alive/visible pieces, go to attacked tile (store loc on log)
@@ -18,7 +18,9 @@ UI
 		not done because need to see one-move minimum
 	adjust scroll speed based on draw time
 	off map edge logic not working well
-	optimize drawrects to lines
+	optimize drawrects to lines?
+		might not even be optimization?
+	optimize range drawing to single call
 	toggle friendly range display
 		filter by type, show total repair pct like enemy dmg
 	show effects of research
@@ -34,7 +36,7 @@ UI
 	truncate range disp values
 		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
 		include move cost indicator
-	
+
 GAMEPLAY
 	attacker upgrades keep some old attacks/values
 	unused upkeep on death?

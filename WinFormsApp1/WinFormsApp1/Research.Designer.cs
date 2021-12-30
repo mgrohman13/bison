@@ -48,6 +48,8 @@ namespace WinFormsApp1
             this.lbxUnlocks = new System.Windows.Forms.ListBox();
             this.label8 = new System.Windows.Forms.Label();
             this.lvwAlso = new System.Windows.Forms.ListView();
+            this.cbxAll = new System.Windows.Forms.CheckBox();
+            this.cbxFilter = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // lbxAvailable
@@ -60,7 +62,7 @@ namespace WinFormsApp1
             "3",
             "4",
             "5"});
-            this.lbxAvailable.Location = new System.Drawing.Point(0, 37);
+            this.lbxAvailable.Location = new System.Drawing.Point(0, 28);
             this.lbxAvailable.Name = "lbxAvailable";
             this.lbxAvailable.Size = new System.Drawing.Size(180, 129);
             this.lbxAvailable.TabIndex = 1;
@@ -73,15 +75,15 @@ namespace WinFormsApp1
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbxDone.FormattingEnabled = true;
             this.lbxDone.ItemHeight = 25;
-            this.lbxDone.Location = new System.Drawing.Point(0, 197);
+            this.lbxDone.Location = new System.Drawing.Point(0, 188);
             this.lbxDone.Name = "lbxDone";
-            this.lbxDone.Size = new System.Drawing.Size(180, 229);
+            this.lbxDone.Size = new System.Drawing.Size(180, 354);
             this.lbxDone.TabIndex = 2;
             this.lbxDone.SelectedValueChanged += new System.EventHandler(this.LB_SelectedValueChanged);
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(0, 9);
+            this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(180, 25);
             this.label1.TabIndex = 2;
@@ -90,7 +92,7 @@ namespace WinFormsApp1
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(0, 169);
+            this.label2.Location = new System.Drawing.Point(0, 160);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(180, 25);
             this.label2.TabIndex = 3;
@@ -99,19 +101,17 @@ namespace WinFormsApp1
             // 
             // lblName
             // 
-            this.lblName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblName.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.lblName.Location = new System.Drawing.Point(186, 37);
+            this.lblName.Location = new System.Drawing.Point(186, 28);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(394, 50);
+            this.lblName.Size = new System.Drawing.Size(311, 50);
             this.lblName.TabIndex = 4;
             this.lblName.Text = "lblName";
             this.lblName.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(186, 87);
+            this.label4.Location = new System.Drawing.Point(186, 78);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(125, 25);
             this.label4.TabIndex = 5;
@@ -120,7 +120,7 @@ namespace WinFormsApp1
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(186, 112);
+            this.label5.Location = new System.Drawing.Point(186, 103);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(125, 29);
             this.label5.TabIndex = 6;
@@ -129,7 +129,7 @@ namespace WinFormsApp1
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(186, 141);
+            this.label6.Location = new System.Drawing.Point(186, 132);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(125, 25);
             this.label6.TabIndex = 7;
@@ -138,8 +138,7 @@ namespace WinFormsApp1
             // 
             // lblLast
             // 
-            this.lblLast.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblLast.Location = new System.Drawing.Point(455, 87);
+            this.lblLast.Location = new System.Drawing.Point(372, 78);
             this.lblLast.Name = "lblLast";
             this.lblLast.Size = new System.Drawing.Size(125, 25);
             this.lblLast.TabIndex = 8;
@@ -148,8 +147,7 @@ namespace WinFormsApp1
             // 
             // lblProgress
             // 
-            this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblProgress.Location = new System.Drawing.Point(455, 112);
+            this.lblProgress.Location = new System.Drawing.Point(372, 103);
             this.lblProgress.Name = "lblProgress";
             this.lblProgress.Size = new System.Drawing.Size(125, 29);
             this.lblProgress.TabIndex = 9;
@@ -158,8 +156,7 @@ namespace WinFormsApp1
             // 
             // lblCost
             // 
-            this.lblCost.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCost.Location = new System.Drawing.Point(455, 141);
+            this.lblCost.Location = new System.Drawing.Point(372, 132);
             this.lblCost.Name = "lblCost";
             this.lblCost.Size = new System.Drawing.Size(125, 25);
             this.lblCost.TabIndex = 10;
@@ -170,7 +167,7 @@ namespace WinFormsApp1
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(350, 392);
+            this.btnOK.Location = new System.Drawing.Point(336, 498);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(112, 34);
             this.btnOK.TabIndex = 11;
@@ -181,7 +178,7 @@ namespace WinFormsApp1
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(468, 392);
+            this.btnCancel.Location = new System.Drawing.Point(454, 498);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(112, 34);
             this.btnCancel.TabIndex = 12;
@@ -190,8 +187,7 @@ namespace WinFormsApp1
             // 
             // lblTotal
             // 
-            this.lblTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTotal.Location = new System.Drawing.Point(455, 9);
+            this.lblTotal.Location = new System.Drawing.Point(372, 0);
             this.lblTotal.Name = "lblTotal";
             this.lblTotal.Size = new System.Drawing.Size(125, 25);
             this.lblTotal.TabIndex = 14;
@@ -200,7 +196,7 @@ namespace WinFormsApp1
             // 
             // label7
             // 
-            this.label7.Location = new System.Drawing.Point(186, 9);
+            this.label7.Location = new System.Drawing.Point(186, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(125, 25);
             this.label7.TabIndex = 13;
@@ -209,7 +205,7 @@ namespace WinFormsApp1
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(186, 197);
+            this.label3.Location = new System.Drawing.Point(186, 188);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(180, 25);
             this.label3.TabIndex = 15;
@@ -224,15 +220,15 @@ namespace WinFormsApp1
             this.lbxUnlocks.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.lbxUnlocks.FormattingEnabled = true;
             this.lbxUnlocks.ItemHeight = 25;
-            this.lbxUnlocks.Location = new System.Drawing.Point(186, 225);
+            this.lbxUnlocks.Location = new System.Drawing.Point(186, 216);
             this.lbxUnlocks.Name = "lbxUnlocks";
-            this.lbxUnlocks.Size = new System.Drawing.Size(180, 150);
+            this.lbxUnlocks.Size = new System.Drawing.Size(180, 250);
             this.lbxUnlocks.TabIndex = 3;
             this.lbxUnlocks.SelectedValueChanged += new System.EventHandler(this.LbxUnlocks_SelectedValueChanged);
             // 
             // label8
             // 
-            this.label8.Location = new System.Drawing.Point(372, 197);
+            this.label8.Location = new System.Drawing.Point(372, 188);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(180, 25);
             this.label8.TabIndex = 18;
@@ -241,16 +237,41 @@ namespace WinFormsApp1
             // 
             // lvwAlso
             // 
-            this.lvwAlso.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.lvwAlso.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lvwAlso.Enabled = false;
             this.lvwAlso.HideSelection = false;
-            this.lvwAlso.Location = new System.Drawing.Point(372, 225);
+            this.lvwAlso.Location = new System.Drawing.Point(372, 216);
             this.lvwAlso.Name = "lvwAlso";
-            this.lvwAlso.Size = new System.Drawing.Size(180, 150);
+            this.lvwAlso.Size = new System.Drawing.Size(194, 241);
             this.lvwAlso.TabIndex = 19;
             this.lvwAlso.UseCompatibleStateImageBehavior = false;
             this.lvwAlso.View = System.Windows.Forms.View.List;
+            // 
+            // cbxAll
+            // 
+            this.cbxAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cbxAll.AutoSize = true;
+            this.cbxAll.Location = new System.Drawing.Point(186, 463);
+            this.cbxAll.Name = "cbxAll";
+            this.cbxAll.Size = new System.Drawing.Size(101, 29);
+            this.cbxAll.TabIndex = 20;
+            this.cbxAll.Text = "Full Tree";
+            this.cbxAll.UseVisualStyleBackColor = true;
+            this.cbxAll.CheckedChanged += new System.EventHandler(this.CBX_CheckedChanged);
+            // 
+            // cbxFilter
+            // 
+            this.cbxFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cbxFilter.AutoSize = true;
+            this.cbxFilter.Location = new System.Drawing.Point(293, 463);
+            this.cbxFilter.Name = "cbxFilter";
+            this.cbxFilter.Size = new System.Drawing.Size(169, 29);
+            this.cbxFilter.TabIndex = 21;
+            this.cbxFilter.Text = "Hide Researched";
+            this.cbxFilter.UseVisualStyleBackColor = true;
+            this.cbxFilter.CheckedChanged += new System.EventHandler(this.CBX_CheckedChanged);
             // 
             // Research
             // 
@@ -258,7 +279,9 @@ namespace WinFormsApp1
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(592, 438);
+            this.ClientSize = new System.Drawing.Size(578, 544);
+            this.Controls.Add(this.cbxFilter);
+            this.Controls.Add(this.cbxAll);
             this.Controls.Add(this.lvwAlso);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.lbxUnlocks);
@@ -279,12 +302,13 @@ namespace WinFormsApp1
             this.Controls.Add(this.lbxDone);
             this.Controls.Add(this.lbxAvailable);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MinimumSize = new System.Drawing.Size(494, 494);
+            this.MinimumSize = new System.Drawing.Size(600, 600);
             this.Name = "Research";
             this.ShowIcon = false;
             this.Text = "Research";
             this.Shown += new System.EventHandler(this.Research_Shown);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -309,5 +333,7 @@ namespace WinFormsApp1
         private System.Windows.Forms.ListBox lbxUnlocks;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ListView lvwAlso;
+        private System.Windows.Forms.CheckBox cbxAll;
+        private System.Windows.Forms.CheckBox cbxFilter;
     }
 }

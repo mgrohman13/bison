@@ -18,7 +18,16 @@ namespace WinFormsApp1
         public Research()
         {
             InitializeComponent();
-            this.Height = 600;
+
+            ColumnHeader header = new();
+            header.Text = "col1";
+            header.Name = "col1";
+            lvwAlso.HeaderStyle = ColumnHeaderStyle.None;
+            lvwAlso.Scrollable = true;
+            lvwAlso.View = View.Details;
+            lvwAlso.Columns.Add(header);
+            lvwAlso.Enabled = true;
+            lvwAlso.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
         public static void ShowForm()
@@ -59,7 +68,9 @@ namespace WinFormsApp1
                     this.label6.Hide();
                 }
 
-                IEnumerable<Type> unlocks = ClassLibrary1.Research.GetUnlocks(selected);
+                IEnumerable<Type> unlocks = cbxAll.Checked ? ClassLibrary1.Research.GetAllUnlocks(selected) : ClassLibrary1.Research.GetUnlocks(selected);
+                if (cbxFilter.Checked)
+                    unlocks = FilterDone(unlocks);
                 if (unlocks.Any())
                 {
                     bool done = Program.Game.Player.Research.Done.Contains(selected);
@@ -68,6 +79,8 @@ namespace WinFormsApp1
                     this.lbxUnlocks.DataSource = unlocks.ToArray();
                     this.label3.Show();
                     this.lbxUnlocks.Show();
+                    this.cbxAll.Show();
+                    this.cbxFilter.Show();
                 }
                 else
                 {
@@ -75,6 +88,8 @@ namespace WinFormsApp1
                     this.label3.Hide();
                     this.lvwAlso.Hide();
                     this.label8.Hide();
+                    this.cbxAll.Hide();
+                    this.cbxFilter.Hide();
                 }
 
                 this.lblName.Show();
@@ -147,12 +162,14 @@ namespace WinFormsApp1
             this.label8.Hide();
             if (selected.HasValue)
             {
-                IEnumerable<Type> types = ClassLibrary1.Research.GetDependencies(selected.Value);
+                IEnumerable<Type> types = cbxAll.Checked ? ClassLibrary1.Research.GetAllDependencies(selected.Value) : ClassLibrary1.Research.GetDependencies(selected.Value);
+                if (cbxFilter.Checked)
+                    types = FilterDone(types);
                 if (main.HasValue)
                     types = types.Where(t => t != main.Value).ToArray();
                 if (types.Any())
                 {
-                    this.lvwAlso.Clear();
+                    this.lvwAlso.Items.Clear();
                     int idx = 0;
                     foreach (Type type in types)
                     {
@@ -163,8 +180,19 @@ namespace WinFormsApp1
                     }
                     this.lvwAlso.Show();
                     this.label8.Show();
+                    //if (this.Width < 610)
+                    //    this.Width = 610;
                 }
             }
+        }
+        private static IEnumerable<Type> FilterDone(IEnumerable<Type> types)
+        {
+            return types.Where(t => !Program.Game.Player.Research.Done.Contains(t));
+        }
+
+        private void CBX_CheckedChanged(object sender, EventArgs e)
+        {
+            this.Refresh();
         }
     }
 }
