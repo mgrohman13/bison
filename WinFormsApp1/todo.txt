@@ -4,7 +4,9 @@ NEW
 IMPORTANT
 	more move-left triggers (under attack, can attack if move)
 		ability disable for certain blueprints 	
-	show cur re3search on main form
+	show cur research on main form
+	refresh on close research form
+	swap factoryconstructor and autorepair?
 
 UI
 	if clicked log has no alive/visible pieces, go to attacked tile (store loc on log)

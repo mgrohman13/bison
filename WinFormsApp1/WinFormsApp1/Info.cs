@@ -402,7 +402,7 @@ namespace WinFormsApp1
 
         private void RefreshLog()
         {
-            Debug.WriteLine("RefreshLog");
+            //Debug.WriteLine("RefreshLog");
             logPreventScroll = true;
             UnFocusLog();
             lock (rtbLog)
@@ -568,15 +568,35 @@ namespace WinFormsApp1
             //   so focus something else that is always present and doesn't do anything when focused
             this.lblTurn.Focus();
         }
+        private bool waiting, triggered;
         private void EnableLogScroll()
         {
-            // prevent scrolling until form event queue empties
-            new Thread(() =>
+            bool DoEnable()
             {
-                Thread.Sleep(169);
-                lock (rtbLog)
-                    logPreventScroll = false;
-            }).Start();
+                if (!waiting && triggered && logPreventScroll)
+                    lock (rtbLog)
+                        if (!waiting && triggered && logPreventScroll)
+                            return true;
+                return false;
+            }
+            triggered = true;
+            if (DoEnable())
+                new Thread(() =>
+                {
+                    if (DoEnable())
+                    {
+                        do
+                        {
+                            waiting = true;
+                            triggered = false;
+                            // prevent scrolling until form event queue empties
+                            Thread.Sleep(169);
+                        } while (DoEnable());
+                        logPreventScroll = false;
+                        waiting = false;
+                        //Debug.WriteLine("EnableLogScroll");
+                    }
+                }).Start();
         }
 
         #endregion Log

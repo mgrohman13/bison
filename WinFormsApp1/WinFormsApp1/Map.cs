@@ -21,13 +21,14 @@ namespace WinFormsApp1
 {
     public partial class Map : UserControl
     {
-        private const float padding = 1;
+        private const float padding = 1f, scrollTime = 26f, scrollSpeed = 52f;
 
         private float xStart, yStart, scale;
         private Tile _selected, _moused;
         private bool viewAttacks;
 
         private readonly Timer timer;
+        private readonly Stopwatch watch;
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
 
         public Tile SelTile
@@ -86,8 +87,9 @@ namespace WinFormsApp1
             this.MouseWheel += Map_MouseWheel;
 
             timer = new();
-            timer.Interval = 13;
+            timer.Interval = Game.Rand.Round(scrollTime);
             timer.Tick += Timer_Tick;
+            watch = new();
         }
 
         private void ShowMouseInfo()
@@ -132,8 +134,12 @@ namespace WinFormsApp1
             return false;
         }
 
+        float count = 0f, total = 0f;
         protected override void OnPaint(PaintEventArgs e)
         {
+            watch.Reset();
+            watch.Start();
+
             //e.Graphics.Clear(Color.White);
 
             if (Program.Game != null)
@@ -144,6 +150,13 @@ namespace WinFormsApp1
             }
 
             base.OnPaint(e);
+
+            watch.Stop();
+            float time = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
+            count++;
+            total += time;
+            Debug.WriteLine(time.ToString("0.0"));
+            Debug.WriteLine(total / count);
         }
         private void Tiles(PaintEventArgs e)
         {
@@ -362,8 +375,28 @@ namespace WinFormsApp1
                         }
             }
 
+            Dictionary<Pen, Range> edges = new();
             foreach (var t in lines)
-                e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
+            {
+                if (!edges.TryGetValue(t.Value, out Range r))
+                    edges.Add(t.Value, r = new());
+                r.AddSegment(t.Key);
+            }
+
+            //int calls = 0;
+            Rectangle mapCoords = GetMapCoords();
+            PointF[] points;
+            foreach (var p in edges)
+                do
+                {
+                    points = p.Value.GetNext(mapCoords, GetX, GetY);
+                    if (points.Length > 0)
+                    {
+                        //calls++;
+                        e.Graphics.DrawLines(p.Key, points);
+                    }
+                } while (points.Length > 0);
+            //Debug.WriteLine("draws: " + calls);
         }
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles, Action<IEnumerable<Tile>, double> AddAttStr)
         {
@@ -397,6 +430,79 @@ namespace WinFormsApp1
         {
             const int factor = 3;
             return new Pen(Color.FromArgb((pen.Color.R + oth.Color.R) / factor, (pen.Color.G + oth.Color.G) / factor, (pen.Color.B + oth.Color.B) / factor), (pen.Width + oth.Width) / 2f);
+        }
+        private class Range
+        {
+            private int count = 1;
+            private Dictionary<Point, List<Point>> range = new();
+            public void AddSegment(LineSegment key)
+            {
+                count++;
+                Point p1 = new(key.x1, key.y1);
+                Point p2 = new(key.x2, key.y2);
+                for (int a = 0; a < 2; a++)
+                {
+                    if (a == 1)
+                    {
+                        Point temp = p1;
+                        p1 = p2;
+                        p2 = temp;
+                    }
+                    if (!range.TryGetValue(p1, out List<Point> list))
+                        range.Add(p1, list = new(4));
+                    list.Add(p2);
+                }
+            }
+            public PointF[] GetNext(Rectangle mapCoords, Func<int, float> GetX, Func<int, float> GetY)
+            {
+                List<PointF> all = new(count);
+                Point start = range.Keys.FirstOrDefault(p => OnMap(mapCoords, p));
+                //Debug.WriteLine(start);
+                Point cur = start;
+                while (range.TryGetValue(cur, out List<Point> list))
+                {
+                    Point next = list[0];
+
+                    list.Remove(next);
+                    if (list.Count == 0)
+                        range.Remove(cur);
+
+                    List<Point> other = range[next];
+                    other.Remove(cur);
+                    if (other.Count == 0)
+                        range.Remove(next);
+
+                    if (OnMap(mapCoords, cur) || OnMap(mapCoords, next))
+                    {
+                        all.Add(GetPoint(GetX, GetY, cur));
+                        cur = next;
+                        //all.Add(GetPoint(GetX, GetY, next));
+                    }
+                }
+                if (all.Count > 0)
+                    all.Add(GetPoint(GetX, GetY, cur));
+                //if (all.Count > 0 && (cur == start || Math.Abs(start.X - cur.X) + Math.Abs(start.Y - cur.Y) == 1))
+                //    all.Add(GetPoint(GetX, GetY, start));
+                //Debug.WriteLine("count: " + all.Count);
+                //Debug.WriteLine("");
+                //Debug.WriteLine(count);
+                //Debug.WriteLine(all.Capacity);
+                //Debug.WriteLine(all.Count);
+                if (all.Count > count || all.Capacity > count)
+                    ;
+                //else if (all.Count == count)
+                //    Debug.WriteLine("Capacity");
+                return all.ToArray();
+            }
+            private PointF GetPoint(Func<int, float> GetX, Func<int, float> GetY, Point p)
+            {
+                return new(GetX(p.X), GetY(p.Y));
+            }
+            private bool OnMap(Rectangle mapCoords, Point p)
+            {
+                //return true;
+                return mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
+            }
         }
         private class LineSegment
         {
@@ -592,7 +698,7 @@ namespace WinFormsApp1
         {
             float xs = xStart, ys = yStart;
 
-            float scrollAmt = Game.Rand.Gaussian(16.9f, .013f);
+            float scrollAmt = Game.Rand.Gaussian(scrollSpeed, .013f);
             if (scrollDown && !scrollUp)
                 this.yStart -= scrollAmt;
             if (scrollUp && !scrollDown)
@@ -603,7 +709,6 @@ namespace WinFormsApp1
                 this.xStart += scrollAmt;
 
             CheckBounds(xs, ys);
-
             Invalidate();
         }
         public void Map_MouseWheel(object sender, MouseEventArgs e)
