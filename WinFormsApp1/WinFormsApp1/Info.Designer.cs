@@ -86,7 +86,7 @@ namespace WinFormsApp1
             // lblInf1
             // 
             this.lblInf1.AutoSize = true;
-            this.lblInf1.Location = new System.Drawing.Point(111, 25);
+            this.lblInf1.Location = new System.Drawing.Point(188, 25);
             this.lblInf1.Name = "lblInf1";
             this.lblInf1.Size = new System.Drawing.Size(62, 25);
             this.lblInf1.TabIndex = 2;
@@ -95,7 +95,7 @@ namespace WinFormsApp1
             // lblInf2
             // 
             this.lblInf2.AutoSize = true;
-            this.lblInf2.Location = new System.Drawing.Point(111, 50);
+            this.lblInf2.Location = new System.Drawing.Point(188, 50);
             this.lblInf2.Name = "lblInf2";
             this.lblInf2.Size = new System.Drawing.Size(62, 25);
             this.lblInf2.TabIndex = 4;
@@ -113,7 +113,7 @@ namespace WinFormsApp1
             // lblInf3
             // 
             this.lblInf3.AutoSize = true;
-            this.lblInf3.Location = new System.Drawing.Point(111, 75);
+            this.lblInf3.Location = new System.Drawing.Point(188, 75);
             this.lblInf3.Name = "lblInf3";
             this.lblInf3.Size = new System.Drawing.Size(62, 25);
             this.lblInf3.TabIndex = 6;
@@ -148,7 +148,7 @@ namespace WinFormsApp1
             // lblInf4
             // 
             this.lblInf4.AutoSize = true;
-            this.lblInf4.Location = new System.Drawing.Point(111, 100);
+            this.lblInf4.Location = new System.Drawing.Point(188, 100);
             this.lblInf4.Name = "lblInf4";
             this.lblInf4.Size = new System.Drawing.Size(62, 25);
             this.lblInf4.TabIndex = 11;
@@ -177,7 +177,7 @@ namespace WinFormsApp1
             // lblInf5
             // 
             this.lblInf5.AutoSize = true;
-            this.lblInf5.Location = new System.Drawing.Point(111, 125);
+            this.lblInf5.Location = new System.Drawing.Point(188, 125);
             this.lblInf5.Name = "lblInf5";
             this.lblInf5.Size = new System.Drawing.Size(62, 25);
             this.lblInf5.TabIndex = 14;
@@ -195,7 +195,7 @@ namespace WinFormsApp1
             // lblInf6
             // 
             this.lblInf6.AutoSize = true;
-            this.lblInf6.Location = new System.Drawing.Point(111, 150);
+            this.lblInf6.Location = new System.Drawing.Point(188, 150);
             this.lblInf6.Name = "lblInf6";
             this.lblInf6.Size = new System.Drawing.Size(62, 25);
             this.lblInf6.TabIndex = 16;
@@ -213,7 +213,7 @@ namespace WinFormsApp1
             // lblInf7
             // 
             this.lblInf7.AutoSize = true;
-            this.lblInf7.Location = new System.Drawing.Point(111, 175);
+            this.lblInf7.Location = new System.Drawing.Point(188, 175);
             this.lblInf7.Name = "lblInf7";
             this.lblInf7.Size = new System.Drawing.Size(62, 25);
             this.lblInf7.TabIndex = 18;
@@ -231,7 +231,7 @@ namespace WinFormsApp1
             // lblInf8
             // 
             this.lblInf8.AutoSize = true;
-            this.lblInf8.Location = new System.Drawing.Point(111, 200);
+            this.lblInf8.Location = new System.Drawing.Point(188, 200);
             this.lblInf8.Name = "lblInf8";
             this.lblInf8.Size = new System.Drawing.Size(62, 25);
             this.lblInf8.TabIndex = 20;
@@ -333,7 +333,7 @@ namespace WinFormsApp1
             this.lblHeading.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lblHeading.Location = new System.Drawing.Point(0, 0);
             this.lblHeading.Name = "lblHeading";
-            this.lblHeading.Size = new System.Drawing.Size(173, 25);
+            this.lblHeading.Size = new System.Drawing.Size(250, 25);
             this.lblHeading.TabIndex = 22;
             this.lblHeading.Text = "lblHeading";
             this.lblHeading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -341,7 +341,7 @@ namespace WinFormsApp1
             // lblInf9
             // 
             this.lblInf9.AutoSize = true;
-            this.lblInf9.Location = new System.Drawing.Point(111, 225);
+            this.lblInf9.Location = new System.Drawing.Point(188, 225);
             this.lblInf9.Name = "lblInf9";
             this.lblInf9.Size = new System.Drawing.Size(62, 25);
             this.lblInf9.TabIndex = 25;

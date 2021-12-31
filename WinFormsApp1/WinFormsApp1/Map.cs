@@ -28,7 +28,7 @@ namespace WinFormsApp1
         private bool viewAttacks;
 
         private readonly Timer timer;
-        private readonly Stopwatch watch;
+        //private readonly Stopwatch watch;
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
 
         public Tile SelTile
@@ -89,7 +89,7 @@ namespace WinFormsApp1
             timer = new();
             timer.Interval = Game.Rand.Round(scrollTime);
             timer.Tick += Timer_Tick;
-            watch = new();
+            //watch = new();
         }
 
         private void ShowMouseInfo()
@@ -134,11 +134,11 @@ namespace WinFormsApp1
             return false;
         }
 
-        float count = 0f, total = 0f;
+        //private readonly float count = 0f, total = 0f;
         protected override void OnPaint(PaintEventArgs e)
         {
-            watch.Reset();
-            watch.Start();
+            //watch.Reset();
+            //watch.Start();
 
             //e.Graphics.Clear(Color.White);
 
@@ -151,12 +151,12 @@ namespace WinFormsApp1
 
             base.OnPaint(e);
 
-            watch.Stop();
-            float time = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
-            count++;
-            total += time;
-            Debug.WriteLine(time.ToString("0.0"));
-            Debug.WriteLine(total / count);
+            //watch.Stop();
+            //float time = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
+            //count++;
+            //total += time;
+            //Debug.WriteLine(time.ToString("0.0"));
+            //Debug.WriteLine(total / count);
         }
         private void Tiles(PaintEventArgs e)
         {
@@ -258,7 +258,8 @@ namespace WinFormsApp1
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
-            e.Graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
+            if (rectangles.Count > 0)
+                e.Graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
             foreach (var t in lines)
                 e.Graphics.DrawLine(Pens.Black, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
             if (SelTile != null)
@@ -345,6 +346,7 @@ namespace WinFormsApp1
                     ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
             }
 
+            List<Pen> dipose = new();
             Dictionary<LineSegment, Pen> lines = new();
             foreach (Pen pen in pens)
             {
@@ -359,7 +361,10 @@ namespace WinFormsApp1
                                 if (lines.TryGetValue(l, out Pen oth))
                                 {
                                     if (pen != oth)
+                                    {
                                         lines[l] = Combine(pen, oth);
+                                        dipose.Add(lines[l]);
+                                    }
                                 }
                                 else
                                     lines.Add(l, pen);
@@ -374,6 +379,9 @@ namespace WinFormsApp1
                                 AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
                         }
             }
+
+            //foreach (var t in lines)
+            //    e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
 
             Dictionary<Pen, Range> edges = new();
             foreach (var t in lines)
@@ -397,6 +405,9 @@ namespace WinFormsApp1
                     }
                 } while (points.Length > 0);
             //Debug.WriteLine("draws: " + calls);
+
+            foreach (var d in dipose)
+                d.Dispose();
         }
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles, Action<IEnumerable<Tile>, double> AddAttStr)
         {
@@ -428,13 +439,13 @@ namespace WinFormsApp1
         private static HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts.Select(t => new Point(t.X, t.Y)).ToHashSet();
         private static Pen Combine(Pen pen, Pen oth)
         {
-            const int factor = 3;
+            const int factor = 2;
             return new Pen(Color.FromArgb((pen.Color.R + oth.Color.R) / factor, (pen.Color.G + oth.Color.G) / factor, (pen.Color.B + oth.Color.B) / factor), (pen.Width + oth.Width) / 2f);
         }
         private class Range
         {
             private int count = 1;
-            private Dictionary<Point, List<Point>> range = new();
+            private readonly Dictionary<Point, List<Point>> range = new();
             public void AddSegment(LineSegment key)
             {
                 count++;
@@ -494,11 +505,11 @@ namespace WinFormsApp1
                 //    Debug.WriteLine("Capacity");
                 return all.ToArray();
             }
-            private PointF GetPoint(Func<int, float> GetX, Func<int, float> GetY, Point p)
+            private static PointF GetPoint(Func<int, float> GetX, Func<int, float> GetY, Point p)
             {
                 return new(GetX(p.X), GetY(p.Y));
             }
-            private bool OnMap(Rectangle mapCoords, Point p)
+            private static bool OnMap(Rectangle mapCoords, Point p)
             {
                 //return true;
                 return mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
@@ -717,9 +728,10 @@ namespace WinFormsApp1
             if (mult < 0)
                 mult = -1 / mult;
 
+            Tile sel = MouseTile ?? SelTile;
             Point anchor;
-            if (SelTile != null && GetMapCoords().Contains(SelTile.X, SelTile.Y))
-                anchor = new Point(SelTile.X, SelTile.Y);
+            if (sel != null && GetMapCoords().Contains(sel.X, sel.Y))
+                anchor = new Point(sel.X, sel.Y);
             else
                 anchor = new Point(GetMapX(Width / 2f), GetMapY(Height / 2f));
             float selX = GetX(anchor.X) + scale / 2f;

@@ -227,14 +227,14 @@ namespace ClassLibrary1.Pieces.Players
                         hits = killable.HitsMax;
                         if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
                             hits = newKillable.HitsMax;
-                        armor = killable.HitsMax;
+                        armor = killable.Armor;
                         if (newKillable.Resilience > killable.Resilience && Game.Rand.Bool())
                             armor = newKillable.Armor;
                         killable = new IKillable.Values(hits, newKillable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
                         break;
                     case Type.MechHits:
                         newKillable = GenKillable(research);
-                        armor = killable.HitsMax;
+                        armor = killable.Armor;
                         if (newKillable.HitsMax > killable.HitsMax && Game.Rand.Bool())
                             armor = newKillable.Armor;
                         killable = new IKillable.Values(newKillable.HitsMax, killable.Resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);

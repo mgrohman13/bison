@@ -55,13 +55,10 @@ namespace ClassLibrary1.Pieces.Players
                 case Research.Type.ConstructorMove:
                 case Research.Type.ConstructorRepair:
                     _canUpgrade = true;
-                    Upgrade();
-                    break;
-                case Research.Type.Turret:
-                case Research.Type.Factory:
-                    UnlockBuilds(Game.Player.Research, GetValues(Game));
                     break;
             }
+            Upgrade();
+            UnlockBuilds(Game.Player.Research, GetValues(Game));
         }
         private bool Upgrade()
         {

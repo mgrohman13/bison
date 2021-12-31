@@ -39,6 +39,8 @@ namespace ClassLibrary1.Pieces
             {
                 if (shieldInc <= 0 || shieldMax <= 0 || shieldLimit <= 0)
                     shieldInc = shieldMax = shieldLimit = 0;
+                if (armor >= 1 || armor < 0)
+                    throw new Exception();
                 this._hitsMax = hitsMax;
                 this._resilience = resilience;
                 this._armor = armor;
