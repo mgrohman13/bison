@@ -60,11 +60,11 @@ namespace ClassLibrary1
             Constructor.NewConstructor(Map.GetTile(constructor.X, constructor.Y), true);
 
             for (int a = 0; a < 1; a++)
-                Biomass.NewBiomass(StartTile());
+                Biomass.NewBiomass(Map.StartTile());
             for (int b = 0; b < 2; b++)
-                Artifact.NewArtifact(StartTile());
+                Artifact.NewArtifact(Map.StartTile());
             for (int c = 0; c < 3; c++)
-                Metal.NewMetal(StartTile());
+                Metal.NewMetal(Map.StartTile());
         }
 
         internal int GetPieceNum(Type type)
@@ -79,19 +79,6 @@ namespace ClassLibrary1
         {
             _gameOver = true;
             System.IO.File.Delete(SavePath);
-        }
-
-        private Map.Tile StartTile()
-        {
-            Map.Tile tile;
-            do
-                tile = Map.GetTile(Game.Rand.RangeInt(Map.left, Map.right), Game.Rand.RangeInt(Map.down, Map.up));
-            while (InvalidStartTile(tile));
-            return tile;
-        }
-        internal bool InvalidStartTile(Map.Tile tile)
-        {
-            return (tile == null || tile.Piece != null || tile.Visible || tile.GetDistance(Player.Core.Tile) <= Player.Core.GetBehavior<IRepair>().Range);
         }
 
         public Research.Type? EndTurn()

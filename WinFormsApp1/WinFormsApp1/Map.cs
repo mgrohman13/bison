@@ -146,7 +146,6 @@ namespace WinFormsApp1
             {
                 Tiles(e);
                 Ranges(e);
-                Border(e);
             }
 
             base.OnPaint(e);
@@ -175,78 +174,83 @@ namespace WinFormsApp1
             void AddFillRect(Brush b, float x, float y, float w, float h) => AddFill(b, new(x, y, w, h));
 
             Rectangle mapCoords = GetMapCoords();
+            mapCoords = Rectangle.Intersect(mapCoords, Program.Game.Map.GameRect());
+
+            foreach (Piece piece in Program.Game.Map.GetVisiblePieces())
+                if (mapCoords.Contains(piece.Tile.X, piece.Tile.Y))
+                {
+                    int x = piece.Tile.X, y = piece.Tile.Y;
+                    RectangleF rect = new(GetX(x), GetY(y), scale, scale);
+
+                    const float ellipseInflate = -.13f;
+                    RectangleF ellipse = RectangleF.Inflate(rect, rect.Width * ellipseInflate, rect.Height * ellipseInflate);
+
+                    Resource resource = piece as Resource;
+                    Extractor extractor = piece as Extractor;
+                    if (resource == null && extractor != null)
+                        resource = extractor.Resource;
+                    if (piece is Alien)
+                        AddFill(Brushes.Red, rect);
+                    else if (piece is Mech)
+                        AddFill(Brushes.Green, rect);
+                    else if (piece is Constructor)
+                        AddFill(Brushes.LightGreen, rect);
+                    else if (piece is Core || piece is Factory)
+                        AddFill(Brushes.Blue, rect);
+                    else if (piece is Foundation)
+                        AddFill(Brushes.Black, rect);
+                    else if (piece is Turret)
+                        ellipses.Add(ellipse);
+                    else if (resource != null)
+                    {
+                        if (resource is Biomass)
+                            AddFill(Brushes.Orange, rect);
+                        else if (resource is Metal)
+                            AddFill(Brushes.Gray, rect);
+                        else if (resource is Artifact)
+                            AddFill(Brushes.Magenta, rect);
+                        if (extractor != null)
+                            ellipses.Add(ellipse);
+                    }
+
+                    if (Info.HasAnyUpgrade(piece.Tile))
+                        polygons.Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
+
+                    if (piece != null && piece.HasBehavior(out IKillable killable))
+                    {
+                        float barSize = .169f * rect.Height;
+                        RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, rect.Width, barSize);
+                        rectangles.Add(hitsBar);
+
+                        float hitsPct = killable.HitsCur / (float)killable.HitsMax;
+                        int color = Game.Rand.Round(255 * .65f * killable.Armor);
+                        if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
+                            hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
+                        AddFillRect(hitsBrush, hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
+                        AddFillRect(Brushes.White, hitsBar.X + hitsBar.Width * hitsPct, hitsBar.Y, hitsBar.Width * (1 - hitsPct), hitsBar.Height);
+
+                        if (killable.ShieldInc > 0)
+                        {
+                            RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
+                            rectangles.Add(shieldBar);
+
+                            float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
+                            AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
+                            AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
+                            float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
+                            lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
+                        }
+                    }
+                }
+
             for (int a = 0; a < mapCoords.Width; a++)
             {
                 int x = mapCoords.X + a;
                 for (int b = 0; b < mapCoords.Height; b++)
                 {
                     int y = mapCoords.Y + b;
-                    Tile tile = Program.Game.Map.GetVisibleTile(x, y);
-                    if (tile != null)
-                    {
-                        RectangleF rect = new(GetX(x), GetY(y), scale, scale);
-                        rectangles.Add(rect);
-
-                        const float ellipseInflate = -.13f;
-                        RectangleF ellipse = RectangleF.Inflate(rect, rect.Width * ellipseInflate, rect.Height * ellipseInflate);
-
-                        Resource resource = tile.Piece as Resource;
-                        Extractor extractor = tile.Piece as Extractor;
-                        if (resource == null && extractor != null)
-                            resource = extractor.Resource;
-                        if (tile.Piece is Alien)
-                            AddFill(Brushes.Red, rect);
-                        else if (tile.Piece is Mech)
-                            AddFill(Brushes.Green, rect);
-                        else if (tile.Piece is Constructor)
-                            AddFill(Brushes.LightGreen, rect);
-                        else if (tile.Piece is Core || tile.Piece is Factory)
-                            AddFill(Brushes.Blue, rect);
-                        else if (tile.Piece is Foundation)
-                            AddFill(Brushes.Black, rect);
-                        else if (tile.Piece is Turret)
-                            ellipses.Add(ellipse);
-                        else if (resource != null)
-                        {
-                            if (resource is Biomass)
-                                AddFill(Brushes.Orange, rect);
-                            else if (resource is Metal)
-                                AddFill(Brushes.Gray, rect);
-                            else if (resource is Artifact)
-                                AddFill(Brushes.Magenta, rect);
-                            if (extractor != null)
-                                ellipses.Add(ellipse);
-                        }
-
-                        if (Info.HasAnyUpgrade(tile))
-                            polygons.Add(new PointF[] { new(rect.X + rect.Width / 2f, rect.Y), new(rect.Right, rect.Y), new(rect.Right, rect.Y + rect.Height / 2f) });
-
-                        if (tile.Piece != null && tile.Piece.HasBehavior(out IKillable killable))
-                        {
-                            float barSize = .169f * rect.Height;
-                            RectangleF hitsBar = new(rect.X, rect.Bottom - barSize, rect.Width, barSize);
-                            rectangles.Add(hitsBar);
-
-                            float hitsPct = killable.HitsCur / (float)killable.HitsMax;
-                            int color = Game.Rand.Round(255 * .65f * killable.Armor);
-                            if (!hitsBrushes.TryGetValue(color, out Brush hitsBrush))
-                                hitsBrushes.Add(color, hitsBrush = new SolidBrush(Color.FromArgb(color, color, color)));
-                            AddFillRect(hitsBrush, hitsBar.X, hitsBar.Y, hitsBar.Width * hitsPct, hitsBar.Height);
-                            AddFillRect(Brushes.White, hitsBar.X + hitsBar.Width * hitsPct, hitsBar.Y, hitsBar.Width * (1 - hitsPct), hitsBar.Height);
-
-                            if (killable.ShieldInc > 0)
-                            {
-                                RectangleF shieldBar = new(hitsBar.X, hitsBar.Y - barSize, hitsBar.Width, barSize);
-                                rectangles.Add(shieldBar);
-
-                                float shieldPct = (float)(killable.ShieldCur / killable.ShieldLimit);
-                                AddFillRect(Brushes.Purple, shieldBar.X, shieldBar.Y, shieldBar.Width * shieldPct, shieldBar.Height);
-                                AddFillRect(Brushes.White, shieldBar.X + shieldBar.Width * shieldPct, shieldBar.Y, shieldBar.Width * (1 - shieldPct), shieldBar.Height);
-                                float max = (float)(shieldBar.X + shieldBar.Width * killable.ShieldMax / killable.ShieldLimit);
-                                lines.Add(new(new(max, shieldBar.Y), new(max, shieldBar.Bottom)));
-                            }
-                        }
-                    }
+                    if (Program.Game.Map.GetVisibleTile(x, y) != null)
+                        rectangles.Add(new(GetX(x), GetY(y), scale, scale));
                 }
             }
 
@@ -264,7 +268,7 @@ namespace WinFormsApp1
                 e.Graphics.DrawLine(Pens.Black, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
             if (SelTile != null)
             {
-                using Pen sel = new(Color.Black, 3f);
+                using Pen sel = new(Color.Black, 5f);
                 e.Graphics.DrawRectangle(sel, GetX(SelTile.X), GetY(SelTile.Y), scale, scale);
             }
 
@@ -280,19 +284,32 @@ namespace WinFormsApp1
                 d.Dispose();
         }
 
-        private readonly static Pen range = new(Color.Red, 3f), move = new(Color.Green, 3f), repair = new(Color.Blue, 3f);
-        private readonly static Pen[] pens = new Pen[] { repair, range, move };
-        private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = pens.ToDictionary(p => p, p => new List<HashSet<Point>>());
+        private readonly static Pen Red = new(Color.Red, 3f), Green = new(Color.Green, 3f), Blue = new(Color.Blue, 3f), Black = new(Color.Black, 3f);
+        private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = new Pen[] { Blue, Red, Green, Black }.ToDictionary(p => p, p => new List<HashSet<Point>>());
         private readonly Dictionary<Point, string> attacks = new();
         public void RefreshRanges()
         {
-            ShowMouseInfo();
-
             foreach (var pair in ranges)
                 pair.Value.Clear();
 
+            ShowMouseInfo();
+
+            HashSet<Point> edges = new();
+            ranges[Black].Add(edges);
+            Rectangle rect = Program.Game.Map.GameRect();
+            for (int a = 0; a < rect.Width; a++)
+            {
+                int x = rect.X + a;
+                for (int b = 0; b < rect.Height; b++)
+                {
+                    int y = rect.Y + b;
+                    if (Program.Game.Map.Visible(x, y) && Program.Game.Map.GetVisibleTile(x, y) == null)
+                        edges.Add(new(x, y));
+                }
+            }
+
             foreach (IBuilder b in Program.Game.Player.PiecesOfType<IBuilder>())
-                ranges[repair].Add(GetPoints(b.Piece.Tile.GetVisibleTilesInRange(b.Range)));
+                ranges[Blue].Add(GetPoints(b.Piece.Tile.GetVisibleTilesInRange(b.Range)));
 
             if (viewAttacks)
             {
@@ -300,10 +317,11 @@ namespace WinFormsApp1
                 void AddAttStr(IEnumerable<Tile> range, double damage)
                 {
                     foreach (Tile t in range)
-                    {
-                        attStr.TryGetValue(t, out double total);
-                        attStr[t] = total + damage;
-                    }
+                        if (t.Piece == null || !t.Piece.IsEnemy)
+                        {
+                            attStr.TryGetValue(t, out double total);
+                            attStr[t] = total + damage;
+                        }
                 }
 
                 IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
@@ -314,7 +332,7 @@ namespace WinFormsApp1
                         attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
                     allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles, AddAttStr).SelectMany(hs => hs));
                 }
-                ranges[range].Add(allAttacks.ToHashSet());
+                ranges[Red].Add(allAttacks.ToHashSet());
 
                 attacks.Clear();
                 foreach (var p in attStr)
@@ -333,52 +351,50 @@ namespace WinFormsApp1
                 IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
                 {
-                    moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur);
-                    ranges[move].Add(GetPoints(moveTiles));
+                    moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur)
+                        .Where(t => t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()));
+                    ranges[Green].Add(GetPoints(moveTiles));
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
-                        ranges[move].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
+                        ranges[Green].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
                 }
 
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IAttacker attacker))
-                    ranges[range].AddRange(AddAttacks(attacker, moveTiles, null));
+                    ranges[Red].AddRange(AddAttacks(attacker, moveTiles, null));
 
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && moveTiles.Contains(MouseTile))
-                    ranges[repair].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
+                    ranges[Blue].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
             }
 
             List<Pen> dipose = new();
             Dictionary<LineSegment, Pen> lines = new();
-            foreach (Pen pen in pens)
-            {
-                if (ranges.ContainsKey(pen))
-                    foreach (var tiles in ranges[pen])
-                        foreach (Point t in tiles)
+            foreach (var pair in ranges)
+                foreach (var tiles in pair.Value)
+                    foreach (Point t in tiles)
+                    {
+                        bool Show(Point p) => !tiles.Contains(p);
+                        void AddLine(int x1, int y1, int x2, int y2)
                         {
-                            bool Show(Point p) => !tiles.Contains(p);
-                            void AddLine(int x1, int y1, int x2, int y2)
+                            LineSegment l = new(x1, y1, x2, y2);
+                            if (lines.TryGetValue(l, out Pen oth))
                             {
-                                LineSegment l = new(x1, y1, x2, y2);
-                                if (lines.TryGetValue(l, out Pen oth))
+                                if (pair.Key != oth)
                                 {
-                                    if (pen != oth)
-                                    {
-                                        lines[l] = Combine(pen, oth);
-                                        dipose.Add(lines[l]);
-                                    }
+                                    lines[l] = Combine(pair.Key, oth);
+                                    dipose.Add(lines[l]);
                                 }
-                                else
-                                    lines.Add(l, pen);
-                            };
-                            if (Show(new(t.X - 1, t.Y)))
-                                AddLine(t.X, t.Y, t.X, t.Y + 1);
-                            if (Show(new(t.X + 1, t.Y)))
-                                AddLine(t.X + 1, t.Y, t.X + 1, t.Y + 1);
-                            if (Show(new(t.X, t.Y - 1)))
-                                AddLine(t.X, t.Y, t.X + 1, t.Y);
-                            if (Show(new(t.X, t.Y + 1)))
-                                AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
-                        }
-            }
+                            }
+                            else
+                                lines.Add(l, pair.Key);
+                        };
+                        if (Show(new(t.X - 1, t.Y)))
+                            AddLine(t.X, t.Y, t.X, t.Y + 1);
+                        if (Show(new(t.X + 1, t.Y)))
+                            AddLine(t.X + 1, t.Y, t.X + 1, t.Y + 1);
+                        if (Show(new(t.X, t.Y - 1)))
+                            AddLine(t.X, t.Y, t.X + 1, t.Y);
+                        if (Show(new(t.X, t.Y + 1)))
+                            AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
+                    }
 
             //foreach (var t in lines)
             //    e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
@@ -415,10 +431,10 @@ namespace WinFormsApp1
             var ar = attacker.Attacks.Where(a => !a.Attacked);
             if (attacker.Piece.IsEnemy && moveTiles.Any())
             {
-                var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > attacker.Piece.GetBehavior<IMovable>().MoveCur - 1);
+                //var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > attacker.Piece.GetBehavior<IMovable>().MoveCur - 1);
                 foreach (var a in ar)
                 {
-                    IEnumerable<Tile> e = moveEdge.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);
+                    IEnumerable<Tile> e = moveTiles.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);
                     AddAttStr?.Invoke(e, a.Damage);
                     retVal.Add(GetPoints(e));
                 }
@@ -549,96 +565,6 @@ namespace WinFormsApp1
             {
                 return obj is LineSegment o && x1 == o.x1 && x2 == o.x2 && y1 == o.y1 && y2 == o.y2;
             }
-        }
-
-        private void Border(PaintEventArgs e)
-        {
-            using Pen thick = new(Color.Black, 3f);
-
-            bool hasLeft = (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.down - 1))
-                || (Program.Game.Map.Visible(Program.Game.Map.left, Program.Game.Map.up + 1))
-                || Program.Game.Map.ExploredLeft.Min() < Program.Game.Map.left;
-            bool hasRight = (Program.Game.Map.Visible(Program.Game.Map.right, Program.Game.Map.down - 1))
-                || (Program.Game.Map.Visible(Program.Game.Map.right, Program.Game.Map.up + 1))
-                || Program.Game.Map.ExploredRight.Max() > Program.Game.Map.right;
-            bool hasDown = (Program.Game.Map.Visible(Program.Game.Map.left - 1, Program.Game.Map.down))
-                || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.down))
-                || Program.Game.Map.ExploredDown.Min() < Program.Game.Map.down;
-            bool hasUp = (Program.Game.Map.Visible(Program.Game.Map.left - 1, Program.Game.Map.up))
-                || (Program.Game.Map.Visible(Program.Game.Map.right + 1, Program.Game.Map.up))
-                || Program.Game.Map.ExploredUp.Max() > Program.Game.Map.up;
-
-            Rectangle gameRect = Program.Game.Map.GameRect();
-
-            float left = 0;
-            if (hasLeft)
-                left = GetX(Program.Game.Map.left);
-            else
-            {
-                for (int x = gameRect.Left; x <= gameRect.Right; x++)
-                    if (Program.Game.Map.Visible(x, Program.Game.Map.up + 1)
-                        || Program.Game.Map.Visible(x, Program.Game.Map.down - 1))
-                    {
-                        left = GetX(x);
-                        break;
-                    }
-            }
-            float right = 0;
-            if (hasRight)
-                right = GetX(Program.Game.Map.right + 1);
-            else
-            {
-                for (int x = gameRect.Right; x >= gameRect.Left; x--)
-                    if (Program.Game.Map.Visible(x, Program.Game.Map.up + 1)
-                        || Program.Game.Map.Visible(x, Program.Game.Map.down - 1))
-                    {
-                        right = GetX(x + 1);
-                        break;
-                    }
-            }
-            float down = 0;
-            if (hasDown)
-                down = GetY(Program.Game.Map.down);
-            else
-            {
-                for (int y = gameRect.Top; y <= gameRect.Bottom; y++)
-                    if (Program.Game.Map.Visible(Program.Game.Map.right + 1, y)
-                        || Program.Game.Map.Visible(Program.Game.Map.left - 1, y))
-                    {
-                        down = GetY(y);
-                        break;
-                    }
-            }
-            float up = 0;
-            if (hasUp)
-                up = GetY(Program.Game.Map.up + 1);
-            else
-            {
-                for (int y = gameRect.Bottom; y >= gameRect.Top; y--)
-                    if (Program.Game.Map.Visible(Program.Game.Map.right + 1, y)
-                        || Program.Game.Map.Visible(Program.Game.Map.left - 1, y))
-                    {
-                        up = GetY(y + 1);
-                        break;
-                    }
-            }
-
-            if (hasLeft)
-                e.Graphics.DrawLine(thick, left, 0, left, down);
-            if (hasLeft)
-                e.Graphics.DrawLine(thick, left, Height, left, up);
-            if (hasRight)
-                e.Graphics.DrawLine(thick, right, 0, right, down);
-            if (hasRight)
-                e.Graphics.DrawLine(thick, right, Height, right, up);
-            if (hasDown)
-                e.Graphics.DrawLine(thick, 0, down, left, down);
-            if (hasDown)
-                e.Graphics.DrawLine(thick, Width, down, right, down);
-            if (hasUp)
-                e.Graphics.DrawLine(thick, 0, up, left, up);
-            if (hasUp)
-                e.Graphics.DrawLine(thick, Width, up, right, up);
         }
 
         private float GetX(int x)

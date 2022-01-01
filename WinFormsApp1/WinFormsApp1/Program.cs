@@ -128,22 +128,22 @@ namespace WinFormsApp1
             var moveLeft = tiles.Distinct().OrderBy(t =>
             {
                 int main, secondary;
-                if (t.Y < Game.Map.down)
+                if (t.X > t.Y && t.X < -t.Y)
                 {
                     main = 1;
                     secondary = t.Y * gameRect.Width + t.X;
                 }
-                else if (t.X < Game.Map.left)
+                else if (t.X < t.Y && t.X < -t.Y)
                 {
                     main = 2;
                     secondary = t.X * gameRect.Height + t.Y;
                 }
-                else if (t.X > Game.Map.right)
+                else if (t.X > t.Y && t.X > -t.Y)
                 {
                     main = 4;
                     secondary = -t.X * gameRect.Height + t.Y;
                 }
-                else if (t.Y > Game.Map.up)
+                else if (t.X < t.Y && t.X > -t.Y)
                 {
                     main = 5;
                     secondary = -t.Y * gameRect.Width + t.X;
