@@ -1,19 +1,15 @@
 NEW
-	-
+	
 
 IMPORTANT
 	more move-left triggers (under attack, can attack if move, got attacked by unseen)
 		ability disable for certain blueprints 	
-	show cur research on main form
-	refresh on close research form
-	swap factoryconstructor and autorepair?
-	dont show attack number text on non-movable tiles (resources, enemy units, etc.?)
-	more upgrade round balancing (e.g. constructor move)
 	hide zeros in blueprint cell unless any >0
-	turret sp/ap randomness
-	mouse ove rlog entries to highlight
 
 UI
+	show sight range?
+		fog will take care of?
+	mouse over log entries to highlight
 	if clicked log has no alive/visible pieces, go to attacked tile (store loc on log)
 	for Log display, if selected piece didnt change dont refresh log
 	selected piece shows double build range on mouse around
@@ -43,6 +39,7 @@ UI
 	truncate range disp values
 		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
 		include move cost indicator
+		include cur move
 
 GAMEPLAY
 	attacker upgrades keep some old attacks/values

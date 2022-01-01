@@ -438,7 +438,7 @@ namespace ClassLibrary1.Pieces.Players
         }
         private static double GenVision(IResearch research)
         {
-            double avg = 3.9, dev = .39, oe = .091;
+            double avg = 7.8, dev = .39, oe = .091;
             ModValues(research.GetType() == Type.MechVision, 2.6, ref avg, ref dev, ref oe);
             double vision = Game.Rand.GaussianOE(avg, dev, oe, 1);
             vision *= research.GetMult(Type.MechVision, .3);

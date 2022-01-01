@@ -13,15 +13,17 @@ namespace ClassLibrary1
     {
         public const double MapCoordSize = 16.9;
         public const double MapDev = .13;
-        public const int MinMapCoord = 9;
+        public const double MinMapCoord = 9.1;
         public const double ResourceAvgDist = 21;
 
         public const double ResearchFactor = 2600;
 
-        public const double DifficultyTurns = 78;
+        public const double DifficultyTurns = 65;
         public const double DifficultyEnergyPow = 1.69;
         public const double DifficultyResearchPow = 1.3;
-        public const double EnemyEnergy = 169;
+        public const double DifficultyMoveDirPow = .65;
+        public const double DistanceMoveDirPow = .39;
+        public const double EnemyEnergy = 130;
 
         public const double HitsIncDev = .065;
         public const double MoveDev = .013;

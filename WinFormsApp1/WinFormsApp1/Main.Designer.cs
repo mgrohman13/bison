@@ -41,6 +41,7 @@ namespace WinFormsApp1
             this.lblEnergyInc = new System.Windows.Forms.Label();
             this.lblMassInc = new System.Windows.Forms.Label();
             this.lblResearchInc = new System.Windows.Forms.Label();
+            this.lblResearching = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // infoMain
@@ -168,11 +169,22 @@ namespace WinFormsApp1
             this.lblResearchInc.Text = "+99999.9";
             this.lblResearchInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // lblResearching
+            // 
+            this.lblResearching.AutoSize = true;
+            this.lblResearching.Location = new System.Drawing.Point(824, 9);
+            this.lblResearching.Name = "lblResearching";
+            this.lblResearching.Size = new System.Drawing.Size(125, 25);
+            this.lblResearching.TabIndex = 13;
+            this.lblResearching.Text = "lblResearching";
+            this.lblResearching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1898, 1024);
+            this.Controls.Add(this.lblResearching);
             this.Controls.Add(this.lblResearchInc);
             this.Controls.Add(this.lblMassInc);
             this.Controls.Add(this.lblEnergyInc);
@@ -211,6 +223,7 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblEnergyInc;
         private System.Windows.Forms.Label lblMassInc;
         private System.Windows.Forms.Label lblResearchInc;
+        private System.Windows.Forms.Label lblResearching;
     }
 }
 

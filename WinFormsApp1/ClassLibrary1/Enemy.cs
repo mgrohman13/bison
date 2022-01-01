@@ -28,12 +28,12 @@ namespace ClassLibrary1
 
         internal void PlayTurn()
         {
+            double difficulty = (Game.Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
+
             foreach (Piece piece in Game.Rand.Iterate(Pieces))
-                PlayTurn(piece);
+                PlayTurn(piece, Math.Pow(difficulty, Consts.DifficultyMoveDirPow));
 
             base.EndTurn(out double energyUpk, out double massUpk);
-
-            double difficulty = (Game.Turn + Consts.DifficultyTurns) / Consts.DifficultyTurns;
 
             this._energy += Game.Rand.OEInt(Math.Pow(difficulty, Consts.DifficultyEnergyPow) * Consts.EnemyEnergy) + this.Mass - Game.Rand.Round(energyUpk + massUpk);
             this._mass = 0;
@@ -52,7 +52,7 @@ namespace ClassLibrary1
 
             _research.EndTurn(Math.Pow(difficulty, Consts.DifficultyResearchPow));
         }
-        private void PlayTurn(Piece piece)
+        private void PlayTurn(Piece piece, double difficulty)
         {
             IAttacker attacker = piece.GetBehavior<IAttacker>();
 
@@ -73,11 +73,13 @@ namespace ClassLibrary1
             if (piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
             {
                 double d = piece.Tile.GetDistance(Game.Player.Core.Tile);
+                double distMult = 1.3 * difficulty * Math.Pow((d + 52) / 52, Consts.DistanceMoveDirPow);
+
                 double minDist = Math.Max(0, d - movable.MoveCur);
                 double maxDist = d + movable.MoveCur;
                 Dictionary<Tile, int> moveTiles = piece.Tile.GetTilesInRange(movable.MoveCur).Where(t => t.Piece == null || t.Piece == piece).ToDictionary(t => t, t =>
                 {
-                    double result = 1.69 * (1 - (t.GetDistance(Game.Player.Core.Tile) - minDist) / (maxDist - minDist));
+                    double result = distMult * (1 - (t.GetDistance(Game.Player.Core.Tile) - minDist) / (maxDist - minDist));
                     result = 1 + result * result;
                     if (attacker != null)
                     {

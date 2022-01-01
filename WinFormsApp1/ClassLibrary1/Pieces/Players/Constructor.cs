@@ -190,18 +190,24 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .8);
                 double armor = Consts.GetPct(1 / 3.0, researchMult);
-                double shieldInc = 1.69 * researchMult;
-                int shieldMax = Game.Rand.Round(26 * researchMult);
-                int shieldLimit = Game.Rand.Round(52 * researchMult);
+                double max = 26 * researchMult;
+                double limit = 52 * researchMult;
+                int shieldMax = Game.Rand.Round(max);
+                int shieldLimit = Game.Rand.Round(limit);
+                double mult = (max * 2 + limit) / (shieldMax * 2 + shieldLimit) / 13.0;
+                double shieldInc = 1.69 * mult * researchMult;
                 this.killable = new(50, .35, armor, shieldInc, shieldMax, shieldLimit);
             }
             private void UpgradeConstructorMove(double researchMult)
             {
                 researchMult = Math.Pow(researchMult, .4);
-                double moveInc = 3 * researchMult;
-                int moveMax = Game.Rand.Round(7 * researchMult);
-                int moveLimit = Game.Rand.Round(12 * researchMult);
-                this.vision = 4.5 * researchMult;
+                double max = 7 * researchMult;
+                double limit = 12 * researchMult;
+                int moveMax = Game.Rand.Round(max);
+                int moveLimit = Game.Rand.Round(limit);
+                double mult = (max * 2 + limit) / (moveMax * 2 + moveLimit) / 6.5;
+                double moveInc = 3 * mult * researchMult;
+                this.vision = 6.5 * researchMult;
                 this.movable = new(moveInc, moveMax, moveLimit);
             }
             private void UpgradeConstructorRepair(double researchMult)

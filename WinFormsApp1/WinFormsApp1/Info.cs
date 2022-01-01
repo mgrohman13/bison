@@ -734,7 +734,8 @@ namespace WinFormsApp1
 
         private void BtnResearch_Click(object sender, EventArgs e)
         {
-            Research.ShowForm();
+            if (Research.ShowForm())
+                Program.RefreshChanged();
         }
 
         private void BtnTrade_Click(object sender, EventArgs e)

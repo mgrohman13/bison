@@ -39,7 +39,7 @@ namespace WinFormsApp1
             this.lblResearch.Text = string.Format("{0} / {1}", Program.Game.Player.Research.GetProgress(Program.Game.Player.Research.Researching),
                 Program.Game.Player.Research.GetCost(Program.Game.Player.Research.Researching));
             FormatInc(lblResearchInc, researchInc);
-
+            this.lblResearching.Text = Program.Game.Player.Research.Researching.ToString();
             base.Refresh();
         }
         private static void FormatInc(Label label, double inc)

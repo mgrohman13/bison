@@ -90,7 +90,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 this.energy = 2100;
                 this.mass = 2100;
-                this.repair = new(new(Consts.MinMapCoord - 1.5), .1);
+                this.repair = new(new(7.5), .1);
 
                 this.killable = new(-1, -1);
                 UpgradeBuildingHits(1);
@@ -113,14 +113,17 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .4);
                 int hits = Game.Rand.Round(100 * researchMult);
-                this.vision = 4 * researchMult;
+                this.vision = 3 * researchMult;
                 this.killable = new(hits, resilience, armor, killable.ShieldInc, killable.ShieldMax, killable.ShieldLimit);
             }
             private void UpgradeCoreShields(double researchMult)
             {
-                double shieldInc = 1.3 * Math.Pow(researchMult, .9);
-                int shieldMax = Game.Rand.Round(78 * Math.Pow(researchMult, .7));
-                int shieldLimit = Game.Rand.Round(91 * Math.Pow(researchMult, .8));
+                double max = 78 * Math.Pow(researchMult, .7);
+                double limit = 91 * Math.Pow(researchMult, .8);
+                int shieldMax = Game.Rand.Round(max);
+                int shieldLimit = Game.Rand.Round(limit);
+                double mult = (max * 2 + limit) / (shieldMax * 2 + shieldLimit) / 13.0;
+                double shieldInc = 1.3 * mult * Math.Pow(researchMult, .9);
                 this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
             }
         }

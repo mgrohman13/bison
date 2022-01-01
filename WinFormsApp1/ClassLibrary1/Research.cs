@@ -334,19 +334,19 @@ namespace ClassLibrary1
             { Type.MechAP, new Type[] { Type.Mech, Type.MechDamage, Type.MechArmor, } },
             { Type.MechResilience, new Type[] { Type.Mech, Type.MechMove, Type.MechRange, Type.MechSP, Type.MechAP, } },
 
-            { Type.ConstructorCost, new Type[] { Type.Constructor, } }, // early
             { Type.ConstructorDefense, new Type[] { Type.Constructor, Type.MechShields, Type.MechArmor, } }, // early
-            { Type.ConstructorMove, new Type[] { Type.Constructor, Type.ConstructorCost, Type.Factory, Type.MechVision, Type.MechMove, } },
-            { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorCost, Type.ConstructorDefense, Type.ConstructorMove, Type.FactoryAutoRepair, Type.FabricateMass, } }, // end
+            { Type.ConstructorCost, new Type[] { Type.Constructor, Type.Factory, } },
+            { Type.ConstructorMove, new Type[] { Type.Constructor, Type.ConstructorCost, Type.MechVision, Type.MechMove, } },
+            { Type.ConstructorRepair, new Type[] { Type.Constructor, Type.ConstructorMove, Type.ConstructorDefense, Type.FactoryConstructor, Type.FabricateMass, } }, // end
 
-            { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange, } },
-            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechSP, Type.MechAP, } },
-            { Type.TurretDefense, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor, } },
-            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.TurretDefense, Type.ExtractorAutoRepair, Type.BuildingHits, } },
+            { Type.TurretRange, new Type[] { Type.Turret, Type.MechRange, } }, // end
+            { Type.TurretAttack, new Type[] { Type.Turret, Type.MechDamage, Type.MechSP, Type.MechAP, } }, // end
+            { Type.TurretDefense, new Type[] { Type.Turret, Type.CoreShields, Type.MechArmor, Type.BuildingHits, } },
+            { Type.TurretAutoRepair, new Type[] { Type.Turret, Type.TurretDefense, Type.FactoryAutoRepair, } }, // end
 
             { Type.FactoryRepair, new Type[] { Type.Factory, Type.BuildingCost, } }, // early
-            { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.FactoryRepair, Type.BuildingHits, } },
-            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryAutoRepair, Type.ConstructorDefense, } }, // end
+            { Type.FactoryConstructor, new Type[] { Type.Factory, Type.FactoryRepair, Type.BuildingHits, Type.ConstructorDefense, } },
+            { Type.FactoryAutoRepair, new Type[] { Type.Factory, Type.FactoryRepair, Type.ExtractorAutoRepair, } },
 
             { Type.BuildingCost, new Type[] { Type.CoreShields, } },
             { Type.ExtractorAutoRepair, new Type[] { Type.BuildingCost, } }, // early
@@ -355,7 +355,7 @@ namespace ClassLibrary1
             { Type.BurnMass, new Type[] { Type.ResearchChoices, } },
             { Type.ScrapResearch, new Type[] { Type.ResearchChoices, } },
             { Type.FabricateMass, new Type[] { Type.BurnMass, Type.ScrapResearch, } },
-            { Type.ExtractorValue, new Type[] { Type.FabricateMass, Type.MechResilience, } }, // end
+            { Type.ExtractorValue, new Type[] { Type.FabricateMass, Type.ExtractorAutoRepair, Type.MechResilience, } }, // end
         };
 
         public static bool IsMech(Type type) => type != Type.Mech && type.ToString().StartsWith("Mech");
@@ -381,18 +381,18 @@ namespace ClassLibrary1
             MechResilience = 141,
 
             ConstructorDefense = 190, // early
-            ConstructorCost = 210, // early 
+            ConstructorCost = 240,
             ConstructorMove = 290,
-            ConstructorRepair = 340, // end
+            ConstructorRepair = 330, // end
 
             TurretDefense = 120,
-            TurretAttack = 140,
-            TurretRange = 150,
-            TurretAutoRepair = 205,
+            TurretAttack = 140, // end
+            TurretRange = 150, // end
+            TurretAutoRepair = 205, // end
 
-            FactoryRepair = 170, // early
+            FactoryRepair = 180, // early
             FactoryAutoRepair = 285,
-            FactoryConstructor = 330, // end
+            FactoryConstructor = 340,
 
             BuildingHits = 115,
             FabricateMass = 125,

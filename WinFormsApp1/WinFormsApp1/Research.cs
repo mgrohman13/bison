@@ -30,7 +30,7 @@ namespace WinFormsApp1
             lvwAlso.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        public static void ShowForm()
+        public static bool ShowForm()
         {
             if (ResearchForm == null)
                 ResearchForm = new Research();
@@ -40,7 +40,9 @@ namespace WinFormsApp1
                 Type selected = ResearchForm.GetSelected().Value;
                 if (Program.Game.Player.Research.Available.Contains(selected))
                     Program.Game.Player.Research.Researching = selected;
+                return true;
             }
+            return false;
         }
 
         public override void Refresh()

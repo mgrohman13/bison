@@ -133,7 +133,7 @@ namespace ClassLibrary1.Pieces.Players
             {
                 researchMult = Math.Pow(researchMult, .5);
                 int hits = Game.Rand.Round(50 * researchMult);
-                this.vision = 6 * researchMult;
+                this.vision = 4 * researchMult;
                 this.killable = new(hits, .5);
             }
             private void UpgradeFactoryRepair(double researchMult)
