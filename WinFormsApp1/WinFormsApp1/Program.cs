@@ -36,6 +36,8 @@ namespace WinFormsApp1
             DgvForm = new DgvForm();
 
             Application.Run(Form);
+
+            Game.SaveGame();
         }
 
         public static void RefreshSelected()
@@ -208,6 +210,7 @@ namespace WinFormsApp1
                         move = Game.Player.Has(e, m);
                     }
                 }
+
             if (!move && piece.HasBehavior(out IMovable movable))
                 move |= movable.MoveCur > 1 && movable.MoveCur + movable.MoveInc > movable.MoveMax;
             if (!move && piece.HasBehavior(out IAttacker attacker))
@@ -215,6 +218,7 @@ namespace WinFormsApp1
                 double range = attacker.Attacks.Max(a => a.Attacked ? 0 : a.Range);
                 move |= range > 0 && piece.Tile.GetVisibleTilesInRange(range).Any(t => t.Piece != null && t.Piece.HasBehavior<IKillable>(out _) && t.Piece.IsEnemy);
             }
+
             return move;
         }
     }
