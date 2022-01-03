@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,8 @@ namespace WinFormsApp1
         private void Main_Shown(object sender, EventArgs e)
         {
             Program.RefreshChanged();
+
+            //Debug.WriteLine(ClientSize);
         }
 
         public Map MapMain => mapMain;

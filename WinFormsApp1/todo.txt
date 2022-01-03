@@ -4,7 +4,7 @@ NEW
 IMPORTANT
 	more move-left triggers (under attack, can attack if move, got attacked by unseen)
 		ability disable for certain blueprints 	
-	hide zeros in blueprint cell unless any >0
+	can upgrade to just interim step 
 
 UI
 	show sight range?

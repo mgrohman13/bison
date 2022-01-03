@@ -29,7 +29,6 @@ namespace WinFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
-            this.infoMain = new WinFormsApp1.Info();
             this.mapMain = new WinFormsApp1.Map();
             this.mapMini = new WinFormsApp1.Map();
             this.label1 = new System.Windows.Forms.Label();
@@ -42,39 +41,32 @@ namespace WinFormsApp1
             this.lblMassInc = new System.Windows.Forms.Label();
             this.lblResearchInc = new System.Windows.Forms.Label();
             this.lblResearching = new System.Windows.Forms.Label();
+            this.infoMain = new WinFormsApp1.Info();
             this.SuspendLayout();
-            // 
-            // infoMain
-            // 
-            this.infoMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.infoMain.Location = new System.Drawing.Point(1398, 306);
-            this.infoMain.Name = "infoMain";
-            this.infoMain.Selected = null;
-            this.infoMain.Size = new System.Drawing.Size(500, 718);
-            this.infoMain.TabIndex = 1;
             // 
             // mapMain
             // 
             this.mapMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.mapMain.Location = new System.Drawing.Point(0, 37);
+            this.mapMain.Location = new System.Drawing.Point(0, 22);
+            this.mapMain.Margin = new System.Windows.Forms.Padding(1);
             this.mapMain.MouseTile = null;
             this.mapMain.Name = "mapMain";
             this.mapMain.SelTile = null;
-            this.mapMain.Size = new System.Drawing.Size(1392, 987);
+            this.mapMain.Size = new System.Drawing.Size(420, 541);
             this.mapMain.TabIndex = 2;
             this.mapMain.ViewAttacks = false;
             // 
             // mapMini
             // 
             this.mapMini.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mapMini.Location = new System.Drawing.Point(1398, 0);
+            this.mapMini.Location = new System.Drawing.Point(574, 10);
+            this.mapMini.Margin = new System.Windows.Forms.Padding(1);
             this.mapMini.MouseTile = null;
             this.mapMini.Name = "mapMini";
             this.mapMini.SelTile = null;
-            this.mapMini.Size = new System.Drawing.Size(500, 300);
+            this.mapMini.Size = new System.Drawing.Size(200, 200);
             this.mapMini.TabIndex = 3;
             this.mapMini.ViewAttacks = false;
             this.mapMini.Visible = false;
@@ -82,9 +74,10 @@ namespace WinFormsApp1
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(8, 5);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(66, 25);
+            this.label1.Size = new System.Drawing.Size(43, 15);
             this.label1.TabIndex = 4;
             this.label1.Text = "Energy";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -92,9 +85,10 @@ namespace WinFormsApp1
             // lblEnergy
             // 
             this.lblEnergy.AutoSize = true;
-            this.lblEnergy.Location = new System.Drawing.Point(84, 9);
+            this.lblEnergy.Location = new System.Drawing.Point(59, 5);
+            this.lblEnergy.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblEnergy.Name = "lblEnergy";
-            this.lblEnergy.Size = new System.Drawing.Size(96, 25);
+            this.lblEnergy.Size = new System.Drawing.Size(58, 15);
             this.lblEnergy.TabIndex = 5;
             this.lblEnergy.Text = "9999999.9";
             this.lblEnergy.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -102,9 +96,10 @@ namespace WinFormsApp1
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(293, 9);
+            this.label2.Location = new System.Drawing.Point(205, 5);
+            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(53, 25);
+            this.label2.Size = new System.Drawing.Size(34, 15);
             this.label2.TabIndex = 6;
             this.label2.Text = "Mass";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -112,9 +107,10 @@ namespace WinFormsApp1
             // lblMass
             // 
             this.lblMass.AutoSize = true;
-            this.lblMass.Location = new System.Drawing.Point(352, 9);
+            this.lblMass.Location = new System.Drawing.Point(246, 5);
+            this.lblMass.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMass.Name = "lblMass";
-            this.lblMass.Size = new System.Drawing.Size(86, 25);
+            this.lblMass.Size = new System.Drawing.Size(52, 15);
             this.lblMass.TabIndex = 7;
             this.lblMass.Text = "999999.9";
             this.lblMass.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -122,9 +118,10 @@ namespace WinFormsApp1
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(551, 9);
+            this.label3.Location = new System.Drawing.Point(386, 5);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(81, 25);
+            this.label3.Size = new System.Drawing.Size(54, 15);
             this.label3.TabIndex = 8;
             this.label3.Text = "Research";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -132,9 +129,10 @@ namespace WinFormsApp1
             // lblResearch
             // 
             this.lblResearch.AutoSize = true;
-            this.lblResearch.Location = new System.Drawing.Point(638, 9);
+            this.lblResearch.Location = new System.Drawing.Point(447, 5);
+            this.lblResearch.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblResearch.Name = "lblResearch";
-            this.lblResearch.Size = new System.Drawing.Size(86, 25);
+            this.lblResearch.Size = new System.Drawing.Size(52, 15);
             this.lblResearch.TabIndex = 9;
             this.lblResearch.Text = "999999.9";
             this.lblResearch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -142,9 +140,10 @@ namespace WinFormsApp1
             // lblEnergyInc
             // 
             this.lblEnergyInc.AutoSize = true;
-            this.lblEnergyInc.Location = new System.Drawing.Point(186, 9);
+            this.lblEnergyInc.Location = new System.Drawing.Point(130, 5);
+            this.lblEnergyInc.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblEnergyInc.Name = "lblEnergyInc";
-            this.lblEnergyInc.Size = new System.Drawing.Size(88, 25);
+            this.lblEnergyInc.Size = new System.Drawing.Size(54, 15);
             this.lblEnergyInc.TabIndex = 10;
             this.lblEnergyInc.Text = "+99999.9";
             this.lblEnergyInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -152,9 +151,10 @@ namespace WinFormsApp1
             // lblMassInc
             // 
             this.lblMassInc.AutoSize = true;
-            this.lblMassInc.Location = new System.Drawing.Point(444, 9);
+            this.lblMassInc.Location = new System.Drawing.Point(311, 5);
+            this.lblMassInc.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMassInc.Name = "lblMassInc";
-            this.lblMassInc.Size = new System.Drawing.Size(88, 25);
+            this.lblMassInc.Size = new System.Drawing.Size(54, 15);
             this.lblMassInc.TabIndex = 11;
             this.lblMassInc.Text = "+99999.9";
             this.lblMassInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -162,9 +162,10 @@ namespace WinFormsApp1
             // lblResearchInc
             // 
             this.lblResearchInc.AutoSize = true;
-            this.lblResearchInc.Location = new System.Drawing.Point(730, 9);
+            this.lblResearchInc.Location = new System.Drawing.Point(511, 5);
+            this.lblResearchInc.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblResearchInc.Name = "lblResearchInc";
-            this.lblResearchInc.Size = new System.Drawing.Size(88, 25);
+            this.lblResearchInc.Size = new System.Drawing.Size(54, 15);
             this.lblResearchInc.TabIndex = 12;
             this.lblResearchInc.Text = "+99999.9";
             this.lblResearchInc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -172,18 +173,31 @@ namespace WinFormsApp1
             // lblResearching
             // 
             this.lblResearching.AutoSize = true;
-            this.lblResearching.Location = new System.Drawing.Point(824, 9);
+            this.lblResearching.Location = new System.Drawing.Point(577, 5);
+            this.lblResearching.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblResearching.Name = "lblResearching";
-            this.lblResearching.Size = new System.Drawing.Size(125, 25);
+            this.lblResearching.Size = new System.Drawing.Size(84, 15);
             this.lblResearching.TabIndex = 13;
             this.lblResearching.Text = "lblResearching";
             this.lblResearching.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // infoMain
+            // 
+            this.infoMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.infoMain.Location = new System.Drawing.Point(423, 30);
+            this.infoMain.Margin = new System.Windows.Forms.Padding(2);
+            this.infoMain.Name = "infoMain";
+            this.infoMain.Selected = null;
+            this.infoMain.Size = new System.Drawing.Size(350, 520);
+            this.infoMain.TabIndex = 14;
+            // 
             // Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1898, 1024);
+            this.ClientSize = new System.Drawing.Size(784, 561);
+            this.Controls.Add(this.infoMain);
             this.Controls.Add(this.lblResearching);
             this.Controls.Add(this.lblResearchInc);
             this.Controls.Add(this.lblMassInc);
@@ -196,8 +210,8 @@ namespace WinFormsApp1
             this.Controls.Add(this.label1);
             this.Controls.Add(this.mapMini);
             this.Controls.Add(this.mapMain);
-            this.Controls.Add(this.infoMain);
             this.KeyPreview = true;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Main";
             this.Text = "Form1";
             this.Shown += new System.EventHandler(this.Main_Shown);
@@ -224,6 +238,7 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblMassInc;
         private System.Windows.Forms.Label lblResearchInc;
         private System.Windows.Forms.Label lblResearching;
+        private Info info1;
     }
 }
 
