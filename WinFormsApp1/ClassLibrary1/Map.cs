@@ -60,6 +60,10 @@ namespace ClassLibrary1
             return noise.Evaluate(x, y) * mult;
         }
 
+        public Tile GetVisibleTile(Point p)
+        {
+            return GetVisibleTile(p.X, p.Y);
+        }
         public Tile GetVisibleTile(int x, int y)
         {
             return Visible(x, y) ? GetTile(x, y) : null;
@@ -69,6 +73,10 @@ namespace ClassLibrary1
             return _pieces.Values.Where(p => p.Tile.Visible);
         }
 
+        internal Tile GetTile(Point p)
+        {
+            return GetTile(p.X, p.Y);
+        }
         internal Tile GetTile(int x, int y)
         {
             if (Evaluate(x, y) < .5)
@@ -91,7 +99,7 @@ namespace ClassLibrary1
             return new System.Drawing.Rectangle(x, y, w - x + 1, h - y + 1);
         }
 
-        public bool Visible(Tile tile)
+        public bool Visible(Point tile)
         {
             return Visible(tile.X, tile.Y);
         }
@@ -296,6 +304,10 @@ namespace ClassLibrary1
                 this.Y = y;
             }
 
+            public double GetDistance(Point other)
+            {
+                return GetDistance(other.X, other.Y);
+            }
             public double GetDistance(Tile other)
             {
                 return GetDistance(other.X, other.Y);
@@ -313,13 +325,13 @@ namespace ClassLibrary1
 
             public IEnumerable<Tile> GetVisibleTilesInRange(double range)
             {
-                return GetTilesInRange(range).Where(t => t.Visible);
+                return GetPointsInRange(range).Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
             }
             internal IEnumerable<Tile> GetTilesInRange(double range)
             {
-                return GetPointsInRange(range).Select(p => Map.GetTile(p.X, p.Y)).Where(t => t != null);
+                return GetPointsInRange(range).Select(Map.GetTile).Where(t => t != null);
             }
-            internal IEnumerable<Point> GetPointsInRange(double range)
+            public IEnumerable<Point> GetPointsInRange(double range)
             {
                 int max = (int)range + 1;
                 for (int a = -max; a <= max; a++)

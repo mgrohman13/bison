@@ -28,7 +28,7 @@ namespace WinFormsApp1
         private bool viewAttacks;
 
         private readonly Timer timer;
-        //private readonly Stopwatch watch;
+        private readonly Stopwatch watch = new();
         private bool scrollDown, scrollLeft, scrollUp, scrollRight;
 
         public Tile SelTile
@@ -140,7 +140,7 @@ namespace WinFormsApp1
             //watch.Reset();
             //watch.Start();
 
-            //e.Graphics.Clear(Color.White);
+            e.Graphics.Clear(Color.Black);
 
             if (Program.Game != null)
             {
@@ -198,7 +198,7 @@ namespace WinFormsApp1
                     else if (piece is Core || piece is Factory)
                         AddFill(Brushes.Blue, rect);
                     else if (piece is Foundation)
-                        AddFill(Brushes.Black, rect);
+                        AddFill(Brushes.Aqua, rect);
                     else if (piece is Turret)
                         ellipses.Add(ellipse);
                     else if (resource != null)
@@ -254,6 +254,10 @@ namespace WinFormsApp1
                 }
             }
 
+            RectangleF[] rects = rectangles.ToArray();
+            if (rects.Length > 0)
+                e.Graphics.FillRectangles(Brushes.White, rects);
+
             HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.White).Append(Brushes.Purple).ToHashSet();
             foreach (var p in fill.OrderBy(p => afterBrushes.Contains(p.Key)))
                 e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
@@ -262,8 +266,8 @@ namespace WinFormsApp1
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
-            if (rectangles.Count > 0)
-                e.Graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
+            if (rects.Length > 0)
+                e.Graphics.DrawRectangles(Pens.Black, rects);
             foreach (var t in lines)
                 e.Graphics.DrawLine(Pens.Black, t.Item1.X, t.Item1.Y, t.Item2.X, t.Item2.Y);
             if (SelTile != null)
@@ -284,18 +288,23 @@ namespace WinFormsApp1
                 d.Dispose();
         }
 
-        private readonly static Pen Red = new(Color.Red, 3f), Green = new(Color.Green, 3f), Blue = new(Color.Blue, 3f), Black = new(Color.Black, 3f);
-        private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = new Pen[] { Blue, Red, Green, Black }.ToDictionary(p => p, p => new List<HashSet<Point>>());
+        private readonly static Pen Red = new(Color.Red, 3f), Green = new(Color.Green, 3f), Blue = new(Color.Blue, 3f), White = new(Color.White, 3f);
+        private readonly Dictionary<Pen, List<HashSet<Point>>> ranges = new Pen[] { Blue, Red, Green, White }.ToDictionary(p => p, p => new List<HashSet<Point>>());
         private readonly Dictionary<Point, string> attacks = new();
         public void RefreshRanges()
         {
+            watch.Reset();
+            watch.Start();
+
             foreach (var pair in ranges)
                 pair.Value.Clear();
 
             ShowMouseInfo();
 
+            Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
             HashSet<Point> edges = new();
-            ranges[Black].Add(edges);
+            ranges[White].Add(edges);
             Rectangle rect = Program.Game.Map.GameRect();
             for (int a = 0; a < rect.Width; a++)
             {
@@ -308,15 +317,19 @@ namespace WinFormsApp1
                 }
             }
 
+            Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
             foreach (IBuilder b in Program.Game.Player.PiecesOfType<IBuilder>())
                 ranges[Blue].Add(GetPoints(b.Piece.Tile.GetVisibleTilesInRange(b.Range)));
+
+            Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             if (viewAttacks)
             {
                 Dictionary<Tile, double> attStr = new();
-                void AddAttStr(IEnumerable<Tile> range, double damage)
+                void AddAttStr(IEnumerable<Point> range, double damage)
                 {
-                    foreach (Tile t in range)
+                    foreach (Tile t in range.Select(Program.Game.Map.GetVisibleTile).Where(t => t != null))
                         if (t.Piece == null || !t.Piece.IsEnemy)
                         {
                             attStr.TryGetValue(t, out double total);
@@ -326,75 +339,105 @@ namespace WinFormsApp1
 
                 IEnumerable<Point> allAttacks = Enumerable.Empty<Point>();
                 foreach (IAttacker enemy in Program.Game.Enemy.VisiblePieces.Select(e => e.GetBehavior<IAttacker>()).Where(b => b != null))
-                {
-                    IEnumerable<Tile> attackerTiles = new Tile[] { enemy.Piece.Tile };
-                    if (enemy.HasBehavior(out IMovable enemyMovable))
-                        attackerTiles = enemyMovable.Piece.Tile.GetVisibleTilesInRange(enemyMovable.MoveCur);
-                    allAttacks = allAttacks.Union(AddAttacks(enemy, attackerTiles, AddAttStr).SelectMany(hs => hs));
-                }
+                    allAttacks = allAttacks.Union(AddAttacks(enemy, AddAttStr).SelectMany(hs => hs));
                 ranges[Red].Add(allAttacks.ToHashSet());
 
                 attacks.Clear();
                 foreach (var p in attStr)
                     attacks.Add(new Point(p.Key.X, p.Key.Y), p.Value.ToString("0"));
             }
+
+            Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
             this.Invalidate();
+
+            Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
+            watch.Stop();
         }
         private void Ranges(PaintEventArgs e)
         {
+            watch.Reset();
+            watch.Start();
+
             Dictionary<Pen, List<HashSet<Point>>> ranges = this.ranges;
             if (SelTile != null)
             {
                 //clone
                 ranges = ranges.ToDictionary(p => p.Key, p => p.Value.ToList());
 
+                Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
                 IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IMovable movable) && movable.MoveCur >= 1)
+                IMovable movable = SelTile.Piece?.GetBehavior<IMovable>();
+                if (SelTile.Piece != null && movable != null && movable.MoveCur >= 1)
                 {
+
+                    Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
                     moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur)
                         .Where(t => t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()));
                     ranges[Green].Add(GetPoints(moveTiles));
+
+                    Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
                         ranges[Green].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
                 }
 
+                Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IAttacker attacker))
-                    ranges[Red].AddRange(AddAttacks(attacker, moveTiles, null));
+                    ranges[Red].AddRange(AddAttacks(attacker, null));
+
+
+                Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && moveTiles.Contains(MouseTile))
                     ranges[Blue].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
             }
 
+            Rectangle mapCoords = GetMapCoords();
+
+            Debug.WriteLine("6 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
             List<Pen> dipose = new();
-            Dictionary<LineSegment, Pen> lines = new();
+            Dictionary<LineSegment, Tuple<Pen, int>> lines = new();
             foreach (var pair in ranges)
                 foreach (var tiles in pair.Value)
                     foreach (Point t in tiles)
-                    {
-                        bool Show(Point p) => !tiles.Contains(p);
-                        void AddLine(int x1, int y1, int x2, int y2)
+                        if (mapCoords.Contains(new System.Drawing.Point(t.X, t.Y)))
                         {
-                            LineSegment l = new(x1, y1, x2, y2);
-                            if (lines.TryGetValue(l, out Pen oth))
+                            bool Show(Point p) => !tiles.Contains(p) && mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
+                            void AddLine(int x1, int y1, int x2, int y2)
                             {
-                                if (pair.Key != oth)
+                                LineSegment l = new(x1, y1, x2, y2);
+                                if (lines.TryGetValue(l, out Tuple<Pen, int> oth))
                                 {
-                                    lines[l] = Combine(pair.Key, oth);
-                                    dipose.Add(lines[l]);
+                                    Pen combined;
+                                    if (pair.Key != oth.Item1)
+                                    {
+                                        combined = Combine(pair.Key, oth);
+                                        dipose.Add(combined);
+                                    }
+                                    else
+                                        combined = pair.Key;
+                                    lines[l] = new(combined, oth.Item2 + 1);
                                 }
-                            }
-                            else
-                                lines.Add(l, pair.Key);
-                        };
-                        if (Show(new(t.X - 1, t.Y)))
-                            AddLine(t.X, t.Y, t.X, t.Y + 1);
-                        if (Show(new(t.X + 1, t.Y)))
-                            AddLine(t.X + 1, t.Y, t.X + 1, t.Y + 1);
-                        if (Show(new(t.X, t.Y - 1)))
-                            AddLine(t.X, t.Y, t.X + 1, t.Y);
-                        if (Show(new(t.X, t.Y + 1)))
-                            AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
-                    }
+                                else
+                                    lines.Add(l, new(pair.Key, 1));
+                            };
+                            if (Show(new(t.X - 1, t.Y)))
+                                AddLine(t.X, t.Y, t.X, t.Y + 1);
+                            if (Show(new(t.X + 1, t.Y)))
+                                AddLine(t.X + 1, t.Y, t.X + 1, t.Y + 1);
+                            if (Show(new(t.X, t.Y - 1)))
+                                AddLine(t.X, t.Y, t.X + 1, t.Y);
+                            if (Show(new(t.X, t.Y + 1)))
+                                AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
+                        }
+
+            Debug.WriteLine("7 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             //foreach (var t in lines)
             //    e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
@@ -402,13 +445,14 @@ namespace WinFormsApp1
             Dictionary<Pen, Range> edges = new();
             foreach (var t in lines)
             {
-                if (!edges.TryGetValue(t.Value, out Range r))
-                    edges.Add(t.Value, r = new());
+                if (!edges.TryGetValue(t.Value.Item1, out Range r))
+                    edges.Add(t.Value.Item1, r = new());
                 r.AddSegment(t.Key);
             }
 
+            Debug.WriteLine("8 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
             //int calls = 0;
-            Rectangle mapCoords = GetMapCoords();
             PointF[] points;
             foreach (var p in edges)
                 do
@@ -422,41 +466,85 @@ namespace WinFormsApp1
                 } while (points.Length > 0);
             //Debug.WriteLine("draws: " + calls);
 
+            Debug.WriteLine("9 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
             foreach (var d in dipose)
                 d.Dispose();
+
+            Debug.WriteLine("10 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+
+            watch.Stop();
         }
-        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, IEnumerable<Tile> moveTiles, Action<IEnumerable<Tile>, double> AddAttStr)
+        private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, double> AddAttStr)
         {
+            HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable) ? movable.Piece.Tile.GetPointsInRange(movable.MoveCur) : new Point[] { new(attacker.Piece.Tile.X, attacker.Piece.Tile.Y) }).ToHashSet();
+
             List<HashSet<Point>> retVal = new();
             var ar = attacker.Attacks.Where(a => !a.Attacked);
-            if (attacker.Piece.IsEnemy && moveTiles.Any())
+            if (attacker.Piece.IsEnemy)
             {
-                //var moveEdge = moveTiles.Where(t => t.GetDistance(attacker.Piece.Tile) > attacker.Piece.GetBehavior<IMovable>().MoveCur - 1);
+                HashSet<Point> moveEdge;
+                if (movable != null)
+                {
+                    moveEdge = new HashSet<Point>(moveTiles.Count);
+                    foreach (Point edge in moveTiles.Where(t => attacker.Piece.Tile.GetDistance(t) > movable.MoveCur - 1))
+                        CheckMovable(edge);
+                    void CheckMovable(Point edge)
+                    {
+                        Tile edgeTile;
+                        if (moveTiles.Contains(edge) && !moveEdge.Contains(edge))
+                            if (Program.Game.Map.Visible(edge) && ((edgeTile = Program.Game.Map.GetVisibleTile(edge)) == null || (edgeTile.Piece != null && (!edgeTile.Piece.IsEnemy || !edgeTile.Piece.HasBehavior<IMovable>()))))
+                            {
+                                CheckMovable(new Point(edge.X - 1, edge.Y));
+                                CheckMovable(new Point(edge.X + 1, edge.Y));
+                                CheckMovable(new Point(edge.X, edge.Y - 1));
+                                CheckMovable(new Point(edge.X, edge.Y + 1));
+                            }
+                            else
+                            {
+                                moveEdge.Add(edge);
+                            }
+                        else
+                            ;
+                    }
+                }
+                else
+                {
+                    moveEdge = moveTiles;
+                }
+
+                var points = attacker.Piece.Tile.GetPointsInRange(attacker.Piece.GetBehavior<IMovable>().MoveCur + ar.Max(a => a.Range)).ToArray();
                 foreach (var a in ar)
                 {
-                    IEnumerable<Tile> e = moveTiles.SelectMany(t => t.GetVisibleTilesInRange(a.Range)).Union(moveTiles);
-                    AddAttStr?.Invoke(e, a.Damage);
-                    retVal.Add(GetPoints(e));
+                    List<Point> attPts = new List<Point>(points.Length);
+                    foreach (var point in points)
+                        if (moveEdge.Any(mt => ClassLibrary1.Map.Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
+                            attPts.Add(point);
+                    HashSet<Point> result = attPts.Union(moveTiles.Select(t => new Point(t.X, t.Y))).ToHashSet();
+                    AddAttStr?.Invoke(result, a.Damage);
+                    retVal.Add(result);
                 }
+
             }
             else
             {
                 foreach (var a in ar)
-                    if (moveTiles.Contains(MouseTile))
+                    if (MouseTile != null && moveTiles.Contains(new Point(MouseTile.X, MouseTile.Y)))
                         retVal.Add(GetPoints(MouseTile.GetVisibleTilesInRange(a.Range)));
                     else
-                    {
-                        IEnumerable<Tile> e = SelTile.GetVisibleTilesInRange(a.Range);
-                        retVal.Add(GetPoints(e));
-                    }
+                        retVal.Add(GetPoints(SelTile.GetVisibleTilesInRange(a.Range)));
             }
             return retVal;
         }
         private static HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts.Select(t => new Point(t.X, t.Y)).ToHashSet();
-        private static Pen Combine(Pen pen, Pen oth)
+        private static Pen Combine(Pen pen, Tuple<Pen, int> tuple)
         {
-            const int factor = 2;
-            return new Pen(Color.FromArgb((pen.Color.R + oth.Color.R) / factor, (pen.Color.G + oth.Color.G) / factor, (pen.Color.B + oth.Color.B) / factor), (pen.Width + oth.Width) / 2f);
+            Pen oth = tuple.Item1;
+            float factor = tuple.Item2 + 1;
+            return new Pen(Color.FromArgb(Game.Rand.Round((pen.Color.R + tuple.Item2 * oth.Color.R) / factor),
+                Game.Rand.Round((pen.Color.G + tuple.Item2 * oth.Color.G) / factor),
+                Game.Rand.Round((pen.Color.B + tuple.Item2 * oth.Color.B) / factor)),
+                (pen.Width + tuple.Item2 * oth.Width) / factor);
         }
         private class Range
         {
@@ -483,8 +571,8 @@ namespace WinFormsApp1
             public PointF[] GetNext(Rectangle mapCoords, Func<int, float> GetX, Func<int, float> GetY)
             {
                 List<PointF> all = new(count);
-                Point start = range.Keys.FirstOrDefault(p => OnMap(mapCoords, p));
-                //Debug.WriteLine(start);
+                Point start = range.Keys.FirstOrDefault();// p => OnMap(mapCoords, p));
+                                                          //Debug.WriteLine(start);
                 Point cur = start;
                 while (range.TryGetValue(cur, out List<Point> list))
                 {
@@ -499,12 +587,12 @@ namespace WinFormsApp1
                     if (other.Count == 0)
                         range.Remove(next);
 
-                    if (OnMap(mapCoords, cur) || OnMap(mapCoords, next))
-                    {
-                        all.Add(GetPoint(GetX, GetY, cur));
-                        cur = next;
-                        //all.Add(GetPoint(GetX, GetY, next));
-                    }
+                    //if (OnMap(mapCoords, cur) || OnMap(mapCoords, next))
+                    //{
+                    all.Add(GetPoint(GetX, GetY, cur));
+                    cur = next;
+                    //all.Add(GetPoint(GetX, GetY, next));
+                    //}
                 }
                 if (all.Count > 0)
                     all.Add(GetPoint(GetX, GetY, cur));
@@ -525,11 +613,11 @@ namespace WinFormsApp1
             {
                 return new(GetX(p.X), GetY(p.Y));
             }
-            private static bool OnMap(Rectangle mapCoords, Point p)
-            {
-                //return true;
-                return mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
-            }
+            //private static bool OnMap(Rectangle mapCoords, Point p)
+            //{
+            //    //return true;
+            //    return mapCoords.Contains(new System.Drawing.Point(p.X, p.Y));
+            //}
         }
         private class LineSegment
         {

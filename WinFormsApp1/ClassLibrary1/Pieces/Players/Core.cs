@@ -122,7 +122,7 @@ namespace ClassLibrary1.Pieces.Players
                 double limit = 91 * Math.Pow(researchMult, .8);
                 int shieldMax = Game.Rand.Round(max);
                 int shieldLimit = Game.Rand.Round(limit);
-                double mult = (max * 2 + limit) / (shieldMax * 2 + shieldLimit) / 13.0;
+                double mult = Math.Pow((max * 2 + limit) / (shieldMax * 2 + shieldLimit), 1 / 6.5);
                 double shieldInc = 1.3 * mult * Math.Pow(researchMult, .9);
                 this.killable = new(killable.HitsMax, resilience, armor, shieldInc, shieldMax, shieldLimit);
             }
