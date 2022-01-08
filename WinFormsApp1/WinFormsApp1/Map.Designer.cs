@@ -34,14 +34,14 @@ namespace WinFormsApp1
             // 
             // lblMouse
             // 
-            this.lblMouse.BackColor = System.Drawing.Color.Transparent;
-            this.lblMouse.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.lblMouse.Location = new System.Drawing.Point(0, 75);
+            this.lblMouse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblMouse.BackColor = System.Drawing.Color.White;
+            this.lblMouse.Location = new System.Drawing.Point(355, 526);
             this.lblMouse.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblMouse.Name = "lblMouse";
-            this.lblMouse.Size = new System.Drawing.Size(105, 15);
+            this.lblMouse.Size = new System.Drawing.Size(65, 15);
             this.lblMouse.TabIndex = 0;
-            this.lblMouse.Text = "lblMouse";
+            this.lblMouse.Text = "(-222,-222)";
             this.lblMouse.TextAlign = System.Drawing.ContentAlignment.BottomRight;
             // 
             // Map
@@ -51,7 +51,7 @@ namespace WinFormsApp1
             this.Controls.Add(this.lblMouse);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Map";
-            this.Size = new System.Drawing.Size(105, 90);
+            this.Size = new System.Drawing.Size(420, 541);
             this.Load += new System.EventHandler(this.Map_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Map_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Map_KeyUp);

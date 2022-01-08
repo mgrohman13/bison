@@ -79,6 +79,8 @@ namespace WinFormsApp1
         {
             InitializeComponent();
             lblMouse.Text = "";
+            //lblMouse.AutoSize\
+            //lblMouse.
 
             this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.UserPaint |
                 ControlStyles.AllPaintingInWmPaint, true);
@@ -115,6 +117,8 @@ namespace WinFormsApp1
             yStart = GetY(gameRect.Y);
 
             RefreshRanges();
+
+            lblMouse.Location = new DPoint(this.ClientSize.Width - lblMouse.Width, this.ClientSize.Height - lblMouse.Height);
         }
 
         public bool Center()
@@ -137,25 +141,28 @@ namespace WinFormsApp1
         //private readonly float count = 0f, total = 0f;
         protected override void OnPaint(PaintEventArgs e)
         {
-            //watch.Reset();
-            //watch.Start();
-
-            e.Graphics.Clear(Color.Black);
-
-            if (Program.Game != null)
+            try
             {
-                Tiles(e);
-                Ranges(e);
+                watch.Reset();
+                watch.Start();
+
+                e.Graphics.Clear(Color.Black);
+
+                if (Program.Game != null)
+                {
+                    Tiles(e);
+                    Ranges(e);
+                }
+
+                base.OnPaint(e);
+
+                Debug.WriteLine("OnPaint: " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                watch.Stop();
             }
-
-            base.OnPaint(e);
-
-            //watch.Stop();
-            //float time = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
-            //count++;
-            //total += time;
-            //Debug.WriteLine(time.ToString("0.0"));
-            //Debug.WriteLine(total / count);
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception.ToString());
+            }
         }
         private void Tiles(PaintEventArgs e)
         {
@@ -165,6 +172,7 @@ namespace WinFormsApp1
             List<Tuple<PointF, PointF>> lines = new();
             Dictionary<int, Brush> hitsBrushes = new();
             Dictionary<Brush, List<RectangleF>> fill = new();
+            Dictionary<RectangleF, string> letters = new();
             void AddFill(Brush b, RectangleF r)
             {
                 if (!fill.TryGetValue(b, out List<RectangleF> l))
@@ -191,8 +199,11 @@ namespace WinFormsApp1
                         resource = extractor.Resource;
                     if (piece is Alien)
                         AddFill(Brushes.Red, rect);
-                    else if (piece is Mech)
+                    else if (piece is Mech mech)
+                    {
                         AddFill(Brushes.Green, rect);
+                        letters.Add(rect, mech.Blueprint.BlueprintNum);
+                    }
                     else if (piece is Constructor)
                         AddFill(Brushes.LightGreen, rect);
                     else if (piece is Core || piece is Factory)
@@ -259,10 +270,14 @@ namespace WinFormsApp1
                 e.Graphics.FillRectangles(Brushes.White, rects);
 
             HashSet<Brush> afterBrushes = hitsBrushes.Values.Append(Brushes.White).Append(Brushes.Purple).ToHashSet();
-            foreach (var p in fill.OrderBy(p => afterBrushes.Contains(p.Key)))
-                e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
+            foreach (var p in fill)
+                if (!afterBrushes.Contains(p.Key))
+                    e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var ellipse in ellipses)
                 e.Graphics.FillEllipse(Brushes.Blue, ellipse);
+            foreach (var p in fill)
+                if (afterBrushes.Contains(p.Key))
+                    e.Graphics.FillRectangles(p.Key, p.Value.ToArray());
             foreach (var p in polygons)
                 e.Graphics.FillPolygon(Brushes.Black, p);
 
@@ -283,6 +298,11 @@ namespace WinFormsApp1
                     if (mapCoords.Contains(p.Key.X, p.Key.Y))
                         e.Graphics.DrawString(p.Value, f, Brushes.Red, new PointF(GetX(p.Key.X) + scale - e.Graphics.MeasureString(p.Value, f).Width, GetY(p.Key.Y) + scale - f.Size * 2 - 2));
             }
+            foreach (var p in letters)
+            {
+                using Font f = new(FontFamily.GenericMonospace, (float)(scale / Math.PI));
+                e.Graphics.DrawString(p.Value, f, Brushes.Black, p.Key.X + (scale - e.Graphics.MeasureString(p.Value, f).Width) / 2f, p.Key.Y);
+            }
 
             foreach (IDisposable d in hitsBrushes.Values)
                 d.Dispose();
@@ -301,7 +321,7 @@ namespace WinFormsApp1
 
             ShowMouseInfo();
 
-            Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             HashSet<Point> edges = new();
             ranges[White].Add(edges);
@@ -317,12 +337,12 @@ namespace WinFormsApp1
                 }
             }
 
-            Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             foreach (IBuilder b in Program.Game.Player.PiecesOfType<IBuilder>())
-                ranges[Blue].Add(GetPoints(b.Piece.Tile.GetVisibleTilesInRange(b.Range)));
+                ranges[Blue].Add(b.Piece.Tile.GetPointsInRange(b.Range).ToHashSet());
 
-            Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             if (viewAttacks)
             {
@@ -347,18 +367,17 @@ namespace WinFormsApp1
                     attacks.Add(new Point(p.Key.X, p.Key.Y), p.Value.ToString("0"));
             }
 
-            Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             this.Invalidate();
 
-            Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
-
+            Debug.WriteLine("RefreshRanges: " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
             watch.Stop();
         }
         private void Ranges(PaintEventArgs e)
         {
-            watch.Reset();
-            watch.Start();
+            //watch.Reset();
+            //watch.Start();
 
             Dictionary<Pen, List<HashSet<Point>>> ranges = this.ranges;
             if (SelTile != null)
@@ -366,40 +385,43 @@ namespace WinFormsApp1
                 //clone
                 ranges = ranges.ToDictionary(p => p.Key, p => p.Value.ToList());
 
-                Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                //Debug.WriteLine("1 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
-                IEnumerable<Tile> moveTiles = Enumerable.Empty<Tile>();
+                HashSet<Point> moveTiles = new();
                 IMovable movable = SelTile.Piece?.GetBehavior<IMovable>();
                 if (SelTile.Piece != null && movable != null && movable.MoveCur >= 1)
                 {
 
-                    Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                    //Debug.WriteLine("2 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
-                    moveTiles = movable.Piece.Tile.GetVisibleTilesInRange(movable.MoveCur)
-                        .Where(t => t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()));
-                    ranges[Green].Add(GetPoints(moveTiles));
+                    //if ( SelTile.Piece.IsEnemy)
+                    Tile t;
+                    moveTiles = movable.Piece.Tile.GetPointsInRange(movable.MoveCur)
+                        .Where(p => !Program.Game.Map.Visible(p) ? !movable.Piece.IsPlayer : ((t = Program.Game.Map.GetVisibleTile(p)) != null && (t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()))))
+                        .ToHashSet();
+                    ranges[Green].Add(moveTiles);
 
-                    Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                    //Debug.WriteLine("3 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                     if (SelTile.Piece.IsPlayer && movable.MoveCur + movable.MoveInc > movable.MoveMax)
-                        ranges[Green].Add(GetPoints(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > t.GetDistance(SelTile))));
+                        ranges[Green].Add(moveTiles.Where(t => Math.Min(movable.MoveCur - 1, movable.MoveCur + movable.MoveInc - movable.MoveMax) > SelTile.GetDistance(t)).ToHashSet());
                 }
 
-                Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                //Debug.WriteLine("4 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
                 if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IAttacker attacker))
                     ranges[Red].AddRange(AddAttacks(attacker, null));
 
 
-                Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                //Debug.WriteLine("5 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
-                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && moveTiles.Contains(MouseTile))
-                    ranges[Blue].Add(GetPoints(MouseTile.GetVisibleTilesInRange(b.Range)));
+                if (SelTile.Piece != null && SelTile.Piece.HasBehavior(out IBuilder b) && MouseTile != null && moveTiles.Contains(new(MouseTile.X, MouseTile.Y)))
+                    ranges[Blue].Add(MouseTile.GetPointsInRange(b.Range).ToHashSet());
             }
 
             Rectangle mapCoords = GetMapCoords();
 
-            Debug.WriteLine("6 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("6 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             List<Pen> dipose = new();
             Dictionary<LineSegment, Tuple<Pen, int>> lines = new();
@@ -437,7 +459,7 @@ namespace WinFormsApp1
                                 AddLine(t.X, t.Y + 1, t.X + 1, t.Y + 1);
                         }
 
-            Debug.WriteLine("7 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("7 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             //foreach (var t in lines)
             //    e.Graphics.DrawLine(t.Value, GetX(t.Key.x1), GetY(t.Key.y1), GetX(t.Key.x2), GetY(t.Key.y2));
@@ -450,14 +472,14 @@ namespace WinFormsApp1
                 r.AddSegment(t.Key);
             }
 
-            Debug.WriteLine("8 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("8 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             //int calls = 0;
             PointF[] points;
             foreach (var p in edges)
                 do
                 {
-                    points = p.Value.GetNext(mapCoords, GetX, GetY);
+                    points = p.Value.GetNext(GetX, GetY);
                     if (points.Length > 0)
                     {
                         //calls++;
@@ -466,14 +488,14 @@ namespace WinFormsApp1
                 } while (points.Length > 0);
             //Debug.WriteLine("draws: " + calls);
 
-            Debug.WriteLine("9 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("9 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
             foreach (var d in dipose)
                 d.Dispose();
 
-            Debug.WriteLine("10 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+            //Debug.WriteLine("10 " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
 
-            watch.Stop();
+            //watch.Stop();
         }
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, double> AddAttStr)
         {
@@ -487,7 +509,7 @@ namespace WinFormsApp1
                 if (movable != null)
                 {
                     moveEdge = new HashSet<Point>(moveTiles.Count);
-                    foreach (Point edge in moveTiles.Where(t => attacker.Piece.Tile.GetDistance(t) > movable.MoveCur - 1))
+                    foreach (Point edge in GetEdge(attacker, moveTiles, movable))
                         CheckMovable(edge);
                     void CheckMovable(Point edge)
                     {
@@ -495,6 +517,7 @@ namespace WinFormsApp1
                         if (moveTiles.Contains(edge) && !moveEdge.Contains(edge))
                             if (Program.Game.Map.Visible(edge) && ((edgeTile = Program.Game.Map.GetVisibleTile(edge)) == null || (edgeTile.Piece != null && (!edgeTile.Piece.IsEnemy || !edgeTile.Piece.HasBehavior<IMovable>()))))
                             {
+                                moveTiles.Remove(edge);
                                 CheckMovable(new Point(edge.X - 1, edge.Y));
                                 CheckMovable(new Point(edge.X + 1, edge.Y));
                                 CheckMovable(new Point(edge.X, edge.Y - 1));
@@ -504,8 +527,6 @@ namespace WinFormsApp1
                             {
                                 moveEdge.Add(edge);
                             }
-                        else
-                            ;
                     }
                 }
                 else
@@ -516,7 +537,7 @@ namespace WinFormsApp1
                 var points = attacker.Piece.Tile.GetPointsInRange(attacker.Piece.GetBehavior<IMovable>().MoveCur + ar.Max(a => a.Range)).ToArray();
                 foreach (var a in ar)
                 {
-                    List<Point> attPts = new List<Point>(points.Length);
+                    List<Point> attPts = new(points.Length);
                     foreach (var point in points)
                         if (moveEdge.Any(mt => ClassLibrary1.Map.Tile.GetDistance(mt.X, mt.Y, point.X, point.Y) <= a.Range))
                             attPts.Add(point);
@@ -530,13 +551,23 @@ namespace WinFormsApp1
             {
                 foreach (var a in ar)
                     if (MouseTile != null && moveTiles.Contains(new Point(MouseTile.X, MouseTile.Y)))
-                        retVal.Add(GetPoints(MouseTile.GetVisibleTilesInRange(a.Range)));
+                        retVal.Add(MouseTile.GetPointsInRange(a.Range).ToHashSet());
                     else
-                        retVal.Add(GetPoints(SelTile.GetVisibleTilesInRange(a.Range)));
+                        retVal.Add(SelTile.GetPointsInRange(a.Range).ToHashSet());
             }
+
+            foreach (var result in retVal)
+                result.RemoveWhere(p => Program.Game.Map.Visible(p) && Program.Game.Map.GetVisibleTile(p) == null);
+
             return retVal;
         }
-        private static HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts.Select(t => new Point(t.X, t.Y)).ToHashSet();
+
+        private static IEnumerable<Point> GetEdge(IAttacker attacker, HashSet<Point> moveTiles, IMovable movable)
+        {
+            return moveTiles.Where(t => attacker.Piece.Tile.GetDistance(t) > movable.MoveCur - 1);
+        }
+
+        //private static HashSet<Point> GetPoints(IEnumerable<Tile> ts) => ts.Select(t => new Point(t.X, t.Y)).ToHashSet();
         private static Pen Combine(Pen pen, Tuple<Pen, int> tuple)
         {
             Pen oth = tuple.Item1;
@@ -568,7 +599,7 @@ namespace WinFormsApp1
                     list.Add(p2);
                 }
             }
-            public PointF[] GetNext(Rectangle mapCoords, Func<int, float> GetX, Func<int, float> GetY)
+            public PointF[] GetNext(Func<int, float> GetX, Func<int, float> GetY)
             {
                 List<PointF> all = new(count);
                 Point start = range.Keys.FirstOrDefault();// p => OnMap(mapCoords, p));

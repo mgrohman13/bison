@@ -408,6 +408,7 @@ namespace WinFormsApp1
             lock (rtbLog)
             {
                 rtbLog.Height = (dgvAttacks.Visible ? dgvAttacks.Location.Y : panel1.Location.Y) - rtbLog.Location.Y;
+                rtbLog.Width = this.ClientSize.Width;
 
                 logEnd = false;
                 logPage = 0;
@@ -422,6 +423,9 @@ namespace WinFormsApp1
         }
         private void Log()
         {
+            if (Program.Game == null)
+                return;
+
             logPreventScroll = true;
             UnFocusLog();
             lock (rtbLog)
@@ -437,7 +441,7 @@ namespace WinFormsApp1
 
                     logEnd = true;
                     int count = 0;
-                    int limit = rtbLog.Height / 50 + 1;
+                    int limit = rtbLog.Height / 30 + 1;
                     int skip = limit * logPage;
                     limit += skip;
                     foreach (var entry in Program.Game.Log.Data(Selected?.Piece))

@@ -1,11 +1,22 @@
 NEW
-	
+	can upgrade to just interim step 
+	cycle through move first, then build	
+	build form show distinction for can afford
+	consolidate explored points around 0 into range tuple
+	hide unused columns for build extractor/turret/etc only
+	enemies go after long range attackers (esp turrets)
+	enemies target with preference using AP/SP
+	enemies dodge attacks
+	income breakdown
+	turrent chance to swap which attack does ap/sp?
+	lower avg randomness?
+	turret UpgradeBuildingCost sets rounding - affects shields
 
 IMPORTANT
 	more move-left triggers (under attack, can attack if move, got attacked by unseen)
 		ability disable for certain blueprints 	
-	can upgrade to just interim step 
-
+	build turret starts with shields but upgrade doesnt
+	
 UI
 	show sight range?
 		fog will take care of?
@@ -40,7 +51,7 @@ UI
 		since e.g. 2.0 may actually be 1.96 and not include 2 spaces away, so always show 1.9 if < 2
 		include move cost indicator
 		include cur move
-
+	
 GAMEPLAY
 	attacker upgrades keep some old attacks/values
 	unused upkeep on death?
