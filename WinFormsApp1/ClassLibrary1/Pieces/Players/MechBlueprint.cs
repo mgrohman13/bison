@@ -27,7 +27,7 @@ namespace ClassLibrary1.Pieces.Players
             this.BlueprintNum = "";
             while (blueprintNum > 0)
             {
-                BlueprintNum = (char)(blueprintNum % 26 + 64) + BlueprintNum;
+                BlueprintNum += (char)(--blueprintNum % 26 + 65);
                 blueprintNum /= 26;
             }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +27,20 @@ namespace WinFormsApp1
         [STAThread]
         static void Main()
         {
+            //void bp(int blueprintNum)
+            //{
+            //    Debug.Write(blueprintNum + "\t");
+            //    string BlueprintNum = "";
+            //    while (blueprintNum > 0)
+            //    {
+            //        blueprintNum--;
+            //        BlueprintNum += (char)(blueprintNum % 26 + 65);
+            //        blueprintNum /= 26;
+            //    }
+            //    Debug.WriteLine(BlueprintNum);
+            //};
+            //for (int a = 1; a < 780; a++)
+            //    bp(a);
             LoadGame();
 
             Application.SetHighDpiMode(HighDpiMode.SystemAware);

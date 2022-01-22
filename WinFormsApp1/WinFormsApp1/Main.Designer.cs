@@ -238,7 +238,6 @@ namespace WinFormsApp1
         private System.Windows.Forms.Label lblMassInc;
         private System.Windows.Forms.Label lblResearchInc;
         private System.Windows.Forms.Label lblResearching;
-        private Info info1;
     }
 }
 

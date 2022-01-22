@@ -294,8 +294,8 @@ namespace CityWarWinApp
 
         private void RefreshZoom()
         {
-            //the ratio of a hexagon's side length to its cross length, divided by four
-            const float mult = 0.288675f;
+            //the ratio of a hexagon's side length to its cross length, divided by four - sqrt(1/12)
+            const float mult = 0.288675f; 
 
             //change the scroll speed based on the zoom
             scrollSpeed = (float)(Math.Sqrt(Zoom * startZoom) / 2.6f);

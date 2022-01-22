@@ -11,7 +11,16 @@ NEW
 	turrent chance to swap which attack does ap/sp?
 	lower avg randomness?
 	turret UpgradeBuildingCost sets rounding - affects shields
-
+	reduce enemy ap/sp late
+	increase avg shields
+	decrease HP when shields,armor?
+	armor + shields less likely
+	ap + sp less likely
+	ap/sp consistency in single unit?
+		make multpl attacks more interesintg
+	mouse move stops scroll
+	show avg damage
+	
 IMPORTANT
 	more move-left triggers (under attack, can attack if move, got attacked by unseen)
 		ability disable for certain blueprints 	

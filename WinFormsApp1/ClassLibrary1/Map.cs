@@ -320,6 +320,9 @@ namespace ClassLibrary1
             {
                 double xDiff = x1 - x2;
                 double yDiff = y1 - y2;
+                //if (1 == y1 - y2 % 2)
+                //    xDiff = (xDiff) + .5;
+                //yDiff *= Math.Sqrt(3) / 2.0;
                 return Math.Sqrt(xDiff * xDiff + yDiff * yDiff);
             }
 

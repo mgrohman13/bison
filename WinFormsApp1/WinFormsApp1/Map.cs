@@ -21,7 +21,7 @@ namespace WinFormsApp1
 {
     public partial class Map : UserControl
     {
-        private const float padding = 1f, scrollTime = 26f, scrollSpeed = 52f;
+        private const float padding = 1f, scrollTime = 39f, scrollSpeed = 13f;
 
         private float xStart, yStart, scale;
         private Tile _selected, _moused;
@@ -54,11 +54,25 @@ namespace WinFormsApp1
             get { return _moused; }
             set
             {
+                double range = -1;
+                bool HasSel() => !scrollDown && !scrollLeft && !scrollUp && !scrollRight && (SelTile?.Piece?.IsPlayer).GetValueOrDefault();
+                bool InRange() => HasSel() && _moused != null && _moused.GetDistance(SelTile) <= range;
+                if (HasSel())
+                {
+                    if (SelTile.Piece.HasBehavior(out IBuilder b))
+                        range = Math.Max(range, b.Range);
+                    if (SelTile.Piece.HasBehavior(out IMovable m))
+                        range = Math.Max(range, m.MoveCur);
+                }
+
                 if (_moused != value)
                 {
+                    bool invalidate = InRange();
                     _moused = value;
+
                     ShowMouseInfo();
-                    this.Invalidate();
+                    if (invalidate || InRange())
+                        this.Invalidate();
                 }
             }
         }
@@ -105,6 +119,7 @@ namespace WinFormsApp1
                     double distance = MouseTile.GetDistance(SelTile);
                     //if (distance <= movable.MoveCur)
                     this.lblMouse.Text = distance.ToString("0.0");
+                    this.lblMouse.Refresh();
                 }
             }
         }
@@ -139,6 +154,7 @@ namespace WinFormsApp1
         }
 
         //private readonly float count = 0f, total = 0f;
+        private float paintTime;
         protected override void OnPaint(PaintEventArgs e)
         {
             try
@@ -156,7 +172,8 @@ namespace WinFormsApp1
 
                 base.OnPaint(e);
 
-                Debug.WriteLine("OnPaint: " + watch.ElapsedTicks * 1000f / Stopwatch.Frequency);
+                paintTime = watch.ElapsedTicks * 1000f / Stopwatch.Frequency;
+                Debug.WriteLine("OnPaint: " + paintTime);
                 watch.Stop();
             }
             catch (Exception exception)
@@ -503,7 +520,7 @@ namespace WinFormsApp1
 
             List<HashSet<Point>> retVal = new();
             var ar = attacker.Attacks.Where(a => !a.Attacked);
-            if (attacker.Piece.IsEnemy)
+            if (attacker.Piece.IsEnemy && ar.Any())
             {
                 HashSet<Point> moveEdge;
                 if (movable != null)
@@ -686,6 +703,14 @@ namespace WinFormsApp1
             }
         }
 
+        //private PointF GetXY(float x, int y)
+        //{
+        //    if (1 == y1 - y2 % 2)
+        //        x += .5f;
+        //    float pX = GetCoord(x, xStart);
+        //    float pY = GetCoord((float)(y * Math.Sqrt(3) / 2.0), yStart);
+        //    return new PointF(pX, pY);
+        //}
         private float GetX(int x)
         {
             return GetCoord(x, xStart);
@@ -694,7 +719,7 @@ namespace WinFormsApp1
         {
             return GetCoord(y, yStart);
         }
-        private float GetCoord(int val, float start)
+        private float GetCoord(float val, float start)
         {
             return val * scale - start + padding;
         }
@@ -718,9 +743,15 @@ namespace WinFormsApp1
             return new Rectangle(x, y, w - x + 1, h - y + 1);
         }
 
+        private MouseEventArgs lastMouse;
         private void Map_MouseMove(object sender, MouseEventArgs e)
         {
-            this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
+            if (e == null)
+                e = lastMouse;
+            else
+                lastMouse = e;
+            if (e != null)
+                this.MouseTile = Program.Game.Map.GetVisibleTile(GetMapX(e.X), GetMapY(e.Y));
         }
 
         public void Map_KeyDown(object sender, KeyEventArgs e)
@@ -754,7 +785,10 @@ namespace WinFormsApp1
         {
             float xs = xStart, ys = yStart;
 
-            float scrollAmt = Game.Rand.Gaussian(scrollSpeed, .013f);
+            float scrollAmt = scrollSpeed * (float)Math.Sqrt(scale);
+            scrollAmt *= (scrollTime + paintTime) / scrollTime;
+            scrollAmt = Game.Rand.Gaussian(scrollAmt, .013f);
+
             if (scrollDown && !scrollUp)
                 this.yStart -= scrollAmt;
             if (scrollUp && !scrollDown)
@@ -766,6 +800,9 @@ namespace WinFormsApp1
 
             CheckBounds(xs, ys);
             Invalidate();
+            Map_MouseMove(sender, null);
+
+            //timer.Interval = Math.Max(1, Game.Rand.Round(scrollTime - paintTime));
         }
         public void Map_MouseWheel(object sender, MouseEventArgs e)
         {
