@@ -16,10 +16,10 @@ namespace MattUtil.RealTimeGame
 
         private double gameTick;
 
-        private Game game;
-        private Timer timer;
+        private readonly Game game;
+        private readonly Timer timer;
 
-        private EventDelegate Refresh;
+        private readonly EventDelegate Refresh;
 
         private bool paused, started, running;
 
@@ -90,11 +90,11 @@ namespace MattUtil.RealTimeGame
 
         public void Start()
         {
-            Thread refresh = new Thread(RefreshGame);
-            refresh.IsBackground = true;
-            refresh.Start();
+            //Thread refresh = new Thread(RefreshGame);
+            //refresh.IsBackground = true;
+            //refresh.Start();
 
-            Thread tick = new Thread(RunGame);
+            Thread tick = new(RunGame);
             tick.IsBackground = true;
             tick.Start();
         }
@@ -102,63 +102,67 @@ namespace MattUtil.RealTimeGame
         //Stopwatch stopwatch = new Stopwatch();
         private void RunGame()
         {
-            try
+            //try
+            //{
+            Stopwatch stopwatch = new();
+            long ticks = 0;
+            double offset = 0;
+
+            //lock (this)
+            stopwatch.Start();
+
+            while (Running)
             {
-                Stopwatch stopwatch = new Stopwatch();
-                long ticks = 0;
-                double offset = 0;
-
-                lock (this)
-                    stopwatch.Start();
-
-                while (Running)
+                //lock (this)
+                //{
+                bool gameOver = game.GameOver();
+                if ((!paused || gameOver) && started)
                 {
-                    lock (this)
+                    //WriteLine("   step " + stopwatch.ElapsedMilliseconds);
+                    if (gameOver)
+                        End();
+                    else
+                        game.Step();
+                    //WriteLine("endstep " + stopwatch.ElapsedMilliseconds);
+
+                    if (Running)
                     {
-                        bool gameOver = game.GameOver();
-                        if (( !paused || gameOver ) && started)
-                        {
-                            //WriteLine("   step " + stopwatch.ElapsedMilliseconds);
-                            if (gameOver)
-                                End();
-                            else
-                                game.Step();
-                            //WriteLine("endstep " + stopwatch.ElapsedMilliseconds);
+                        long elapsedTicks = stopwatch.ElapsedTicks;
+                        long timeDiff = elapsedTicks - ticks;
+                        ticks = elapsedTicks;
 
-                            if (Running)
-                            {
-                                long elapsedTicks = stopwatch.ElapsedTicks;
-                                long timeDiff = elapsedTicks - ticks;
-                                ticks = elapsedTicks;
-
-                                offset += gameTick - timeDiff / TicksPerMilisecond;
-                            }
-                        }
-                        else
-                        {
-                            ticks = 0;
-                            offset = gameTick;
-
-                            stopwatch.Restart();
-                        }
+                        offset += gameTick - timeDiff / TicksPerMilisecond;
                     }
+                }
+                else
+                {
+                    ticks = 0;
+                    offset = gameTick;
 
-                    lock (timer)
-                        Monitor.Pulse(timer);
-
-                    int sleep = Game.Random.Round(Math.Max(0.0, ( offset + gameTick ) / 2.0));
-                    //WriteLine("sleep:" + sleep);
-                    Thread.Sleep(sleep);
+                    stopwatch.Restart();
                 }
 
-                lock (this)
-                    stopwatch.Stop();
+                Refresh();
+
+                //}
+
+                //lock (timer)
+                //Monitor.Pulse(timer);
+
+                int sleep = Game.Random.Round(Math.Max(0.0, (offset + gameTick) / 2.0));
+                //WriteLine("sleep:" + sleep);
+                if (sleep > 0)
+                    Thread.Sleep(sleep);
             }
-            finally
-            {
-                lock (timer)
-                    Monitor.Pulse(timer);
-            }
+
+            //lock (this)
+            stopwatch.Stop();
+            //}
+            //finally
+            //{
+            //    //lock (timer)
+            //    //Monitor.Pulse(timer);
+            //}
         }
 
         public void End()
@@ -174,40 +178,40 @@ namespace MattUtil.RealTimeGame
                 decimal newScore = game.Score;
 
                 //release the lock so that the form can draw everything on the refresh
-                Monitor.Exit(this);
-                try
-                {
-                    Refresh();
-
-                    Thread.Sleep(Game.Random.Round(gameTick));
-
-                    //we don't need to be locked for this
-                    if (saveScore)
-                        HighScores.SaveScore(game, true, newScore);
-
-                    Thread.Sleep(Game.Random.Round(gameTick));
-                }
-                finally
-                {
-                    //reaquire the lock since we're inside a lock block
-                    Monitor.Enter(this);
-                }
-            }
-        }
-
-        private void RefreshGame()
-        {
-            while (Running)
-            {
-                //WriteLine("   wait " + stopwatch.ElapsedMilliseconds);
-                lock (timer)
-                    Monitor.Wait(timer);
-                //WriteLine("endwait " + stopwatch.ElapsedMilliseconds);
-
+                //Monitor.Exit(this);
+                //try
+                //{
                 Refresh();
-                GC.Collect();
+
+                Thread.Sleep(Game.Random.Round(gameTick));
+
+                //we don't need to be locked for this
+                if (saveScore)
+                    HighScores.SaveScore(game, true, newScore);
+
+                Thread.Sleep(Game.Random.Round(gameTick));
+                //}
+                //finally
+                //{
+                //    //reaquire the lock since we're inside a lock block
+                //    //Monitor.Enter(this);
+                //}
             }
         }
+
+        //private void RefreshGame()
+        //{
+        //    while (Running)
+        //    {
+        //        //WriteLine("   wait " + stopwatch.ElapsedMilliseconds);
+        //        lock (timer)
+        //            Monitor.Wait(timer);
+        //        //WriteLine("endwait " + stopwatch.ElapsedMilliseconds);
+
+        //        Refresh();
+        //        GC.Collect();
+        //    }
+        //}
 
         //private int index = -1;
         //private string[] output = new string[10000];
