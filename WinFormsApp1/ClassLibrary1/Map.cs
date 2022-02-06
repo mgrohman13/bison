@@ -51,13 +51,22 @@ namespace ClassLibrary1
             this._explored = new();
         }
 
+        [NonSerialized]
+        private Dictionary<Point, double> evaluateCache;
         private double Evaluate(int x, int y)
         {
+            Point p = new Point(x, y);
+            if (evaluateCache == null)
+                evaluateCache = new Dictionary<Point, double>();
+            if (evaluateCache.TryGetValue(p, out double v))
+                return v;
             static double Gradient(double coord, double center) => 2 / (1 + Math.Pow(Math.E, -.052 * (center - coord)));
             double xMult = Math.Min(Gradient(x, _right.Boundary), Gradient(-x, -_left.Boundary));
             double yMult = Math.Min(Gradient(y, _down.Boundary), Gradient(-y, -_up.Boundary));
             double mult = xMult * xMult + yMult * yMult;
-            return noise.Evaluate(x, y) * mult;
+            double value = noise.Evaluate(x, y) * mult;
+            evaluateCache.Add(p, value);
+            return value;
         }
 
         public Tile GetVisibleTile(Point p)
@@ -328,14 +337,41 @@ namespace ClassLibrary1
 
             public IEnumerable<Tile> GetVisibleTilesInRange(double range)
             {
-                return GetPointsInRange(range).Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
+                return GetVisibleTilesInRange(range, false, null);
             }
             internal IEnumerable<Tile> GetTilesInRange(double range)
             {
-                return GetPointsInRange(range).Select(Map.GetTile).Where(t => t != null);
+                return GetTilesInRange(range, false, null);
             }
             public IEnumerable<Point> GetPointsInRange(double range)
             {
+                return GetPointsInRange(range, false, null);
+            }
+            public IEnumerable<Point> GetPointsInRange(IMovable movable)
+            {
+                return GetPointsInRange(movable.MoveCur, true, movable.Piece);
+            }
+
+            public IEnumerable<Tile> GetVisibleTilesInRange(double range, bool blockMap, Piece blockFor)
+            {
+                return GetPointsInRange(range, blockMap, blockFor).Where(Map.Visible).Select(Map.GetTile).Where(t => t != null);
+            }
+            internal IEnumerable<Tile> GetTilesInRange(double range, bool blockMap, Piece blockFor)
+            {
+                return GetPointsInRange(range, blockMap, blockFor).Select(Map.GetTile).Where(t => t != null);
+            }
+            public IEnumerable<Point> GetPointsInRange(double range, bool blockMap, Piece blockFor)
+            {
+                //double blockDist = Math.Sqrt(2) / 2;
+
+                //IEnumerable<Point> block = Array.Empty<Point>();
+                //if (blockMap)
+                //    block = block.Concat(GetPointsInRange(range, false, null)).Where(p => Map.GetTile(p) == null);
+                //if (blockFor != null)
+                //    block = block.Concat(Map._pieces.Where(p => p.Value != blockFor &&
+                //       (p.Value.Side != blockFor.Side || !p.Value.HasBehavior<IMovable>())).Select(p => p.Key))
+                //        .Where(p => GetDistance(p) <= range);
+
                 int max = (int)range + 1;
                 for (int a = -max; a <= max; a++)
                 {
@@ -344,10 +380,22 @@ namespace ClassLibrary1
                     {
                         int y = Y + b;
                         if (GetDistance(x, y) <= range)
+                        {
+                            //if (!block.Any(p => (p.X != x || p.Y != y) && PointLineDist(this, x, y, p) <= blockDist))
                             yield return new(x, y);
+                        }
                     }
                 }
             }
+            //private double PointLineDist(Tile tile, int x, int y, Point p)
+            //{
+            //    if (tile.X == x)
+            //        return Math.Abs(p.Y - y);
+            //    double a = (tile.Y - y) / (tile.X - x);
+            //    double b = -1;
+            //    double c = y - a * x;
+            //    return Math.Abs(a * p.X + b * p.Y + c) / Math.Sqrt(a * a + b * b);
+            //}
 
             public static bool operator !=(Tile a, Tile b)
             {

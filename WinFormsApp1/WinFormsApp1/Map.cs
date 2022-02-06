@@ -413,7 +413,7 @@ namespace WinFormsApp1
 
                     //if ( SelTile.Piece.IsEnemy)
                     Tile t;
-                    moveTiles = movable.Piece.Tile.GetPointsInRange(movable.MoveCur)
+                    moveTiles = movable.Piece.Tile.GetPointsInRange(movable)
                         .Where(p => !Program.Game.Map.Visible(p) ? !movable.Piece.IsPlayer : ((t = Program.Game.Map.GetVisibleTile(p)) != null && (t.Piece == null || (t.Piece.Side == movable.Piece.Side && t.Piece.HasBehavior<IMovable>()))))
                         .ToHashSet();
                     ranges[Green].Add(moveTiles);
@@ -516,7 +516,7 @@ namespace WinFormsApp1
         }
         private IEnumerable<HashSet<Point>> AddAttacks(IAttacker attacker, Action<IEnumerable<Point>, double> AddAttStr)
         {
-            HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable) ? movable.Piece.Tile.GetPointsInRange(movable.MoveCur) : new Point[] { new(attacker.Piece.Tile.X, attacker.Piece.Tile.Y) }).ToHashSet();
+            HashSet<Point> moveTiles = (attacker.HasBehavior(out IMovable movable) ? movable.Piece.Tile.GetPointsInRange(movable) : new Point[] { new(attacker.Piece.Tile.X, attacker.Piece.Tile.Y) }).ToHashSet();
 
             List<HashSet<Point>> retVal = new();
             var ar = attacker.Attacks.Where(a => !a.Attacked);
