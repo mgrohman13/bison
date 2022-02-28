@@ -498,7 +498,7 @@ namespace randTest
             //}
             //Console.WriteLine(NormSDist(3));
             //Console.ReadKey(true);
-            NormSDist();
+            //NormSDist();
 
             //NCWDist();
 
@@ -536,7 +536,116 @@ namespace randTest
             //    FactRand(new float[] { 1 / 3f, 3f, 1f }, 3f / 12f, 4f / 12f);
             //} while (Console.ReadKey(true).KeyChar != 'q');
 
+
+            lotr();
+
+
+            Console.ReadKey(true);
             rand.StopTick();
+        }
+
+        private static void lotr()
+        {
+            double r = 0, c = 1000000;
+            Dictionary<int, int> res = new Dictionary<int, int>();
+            Dictionary<int, int> r2 = new Dictionary<int, int>();
+            for (int a = 0; a < c; a++)
+            {
+                Dictionary<int, int> v;
+                int e = lotr(1, 0, 0);
+                int o = lotr(3, 1, 4);
+                int remain, max = 6;
+                if (e > o)
+                {
+                    v = res;
+                    r2.TryGetValue(-1, out int d);
+                    r2[-1] = d + 1;
+                    if (o < 0)
+                    {
+                        int chance = lotr(1, 0, 0);
+                        o = (chance > -o + 1) ? 1 : 0;
+                    }
+                    remain = e - o;
+                }
+                else if (o > e)
+                {
+                    max = 18;
+                    v = r2;
+                    res.TryGetValue(-1, out int d);
+                    res[-1] = d + 1;
+                    if (e < 0)
+                    {
+                        int chance = lotr(1, 0, 0);
+                        e = (chance > -e + 1) ? 1 : 0;
+                    }
+                    remain = o - e;
+                }
+                else
+                {
+                    res.TryGetValue(-1, out int d);
+                    res[-1] = d + 1;
+                    r2.TryGetValue(-1, out int f);
+                    r2[-1] = f + 1;
+                    continue;
+                }
+                if (remain > max)
+                    remain = max;
+                double r3 = max - remain;
+                int r4 = rand.Round(r3 / 3);
+                v.TryGetValue(r4, out int b);
+                v[r4] = b + 1;
+
+                //int e = lotr(1, 1, 0);
+                //int o = lotr(1, 0, -2);
+                //r += v;
+                //res.TryGetValue(v, out int b);
+                //res[v] = b + 1;
+            }
+            //Console.WriteLine(r / c);
+            //Console.WriteLine();
+            for (int d = res.Keys.Min(); d <= res.Keys.Max(); d++)
+            {
+                res.TryGetValue(d, out int e);
+                Console.WriteLine(d + "\t" + e / c);
+            }
+            Console.WriteLine();
+            for (int d = r2.Keys.Min(); d <= r2.Keys.Max(); d++)
+            {
+                r2.TryGetValue(d, out int e);
+                //if (d < 0) d--;
+                //d++;
+                Console.WriteLine((d < 0 ? d : d + 1) + "\t" + e / c);
+            }
+        }
+        private static int lotr(int dice, int bonus, int offset)
+        {
+            int count = 0, value = 0, ones = 0, sixes = 0;
+            while (dice > 0)
+            {
+                for (int a = 0; a < dice; a++)
+                {
+                    int res = rand.Next(6) + 1;
+                    if (res == 6)
+                        sixes++;
+                    else if (res == 1)
+                        ones++;
+                    else
+                    {
+                        count++;
+                        value += res;
+                    }
+                }
+                dice = (sixes - ones) * 2;
+                int pairs = Math.Min(ones, sixes);
+                count += pairs * 2;
+                value += pairs * 7;
+                ones = sixes = 0;
+            }
+            if (count < 1)
+                count = 1;
+            else if (count != 1 && count != 3)
+                ;
+            return value + count * bonus + offset;
         }
 
         #region FactRand
