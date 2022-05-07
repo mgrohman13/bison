@@ -546,76 +546,81 @@ namespace randTest
 
         private static void lotr()
         {
-            double r = 0, c = 1000000;
-            Dictionary<int, int> res = new Dictionary<int, int>();
-            Dictionary<int, int> r2 = new Dictionary<int, int>();
-            for (int a = 0; a < c; a++)
-            {
-                Dictionary<int, int> v;
-                int e = lotr(1, 0, 0);
-                int o = lotr(3, 1, 4);
-                int remain, max = 6;
-                if (e > o)
-                {
-                    v = res;
-                    r2.TryGetValue(-1, out int d);
-                    r2[-1] = d + 1;
-                    if (o < 0)
-                    {
-                        int chance = lotr(1, 0, 0);
-                        o = (chance > -o + 1) ? 1 : 0;
-                    }
-                    remain = e - o;
-                }
-                else if (o > e)
-                {
-                    max = 18;
-                    v = r2;
-                    res.TryGetValue(-1, out int d);
-                    res[-1] = d + 1;
-                    if (e < 0)
-                    {
-                        int chance = lotr(1, 0, 0);
-                        e = (chance > -e + 1) ? 1 : 0;
-                    }
-                    remain = o - e;
-                }
-                else
-                {
-                    res.TryGetValue(-1, out int d);
-                    res[-1] = d + 1;
-                    r2.TryGetValue(-1, out int f);
-                    r2[-1] = f + 1;
-                    continue;
-                }
-                if (remain > max)
-                    remain = max;
-                double r3 = max - remain;
-                int r4 = rand.Round(r3 / 3);
-                v.TryGetValue(r4, out int b);
-                v[r4] = b + 1;
+            //double r = 0, c = 1000000;
+            //Dictionary<int, int> res = new Dictionary<int, int>();
+            //Dictionary<int, int> r2 = new Dictionary<int, int>();
+            //for (int a = 0; a < c; a++)
+            //{
+            //    Dictionary<int, int> v;
+            //    int e = lotr(1, 0, 0);
+            //    int o1 = lotr(1, 0, -1);
+            //    int o2 = lotr(1, 0, -2);
+            //    int remain, max = 6;
+            //    if (e > o)
+            //    {
+            //        v = res;
+            //        r2.TryGetValue(-1, out int d);
+            //        r2[-1] = d + 1;
+            //        if (o < 0)
+            //        {
+            //            int chance = lotr(1, 0, 0);
+            //            o = (chance > -o + 1) ? 1 : 0;
+            //        }
+            //        remain = e - o;
+            //    }
+            //    else if (o > e)
+            //    {
+            //        max = 18;
+            //        v = r2;
+            //        res.TryGetValue(-1, out int d);
+            //        res[-1] = d + 1;
+            //        if (e < 0)
+            //        {
+            //            int chance = lotr(1, 0, 0);
+            //            e = (chance > -e + 1) ? 1 : 0;
+            //        }
+            //        remain = o - e;
+            //    }
+            //    else
+            //    {
+            //        res.TryGetValue(-1, out int d);
+            //        res[-1] = d + 1;
+            //        r2.TryGetValue(-1, out int f);
+            //        r2[-1] = f + 1;
+            //        continue;
+            //    }
+            //    if (remain > max)
+            //        remain = max;
+            //    double r3 = max - remain;
+            //    int r4 = rand.Round(r3 / 3);
+            //    v.TryGetValue(r4, out int b);
+            //    v[r4] = b + 1;
 
-                //int e = lotr(1, 1, 0);
-                //int o = lotr(1, 0, -2);
-                //r += v;
-                //res.TryGetValue(v, out int b);
-                //res[v] = b + 1;
-            }
-            //Console.WriteLine(r / c);
+            //    //int e = lotr(1, 1, 0);
+            //    //int o = lotr(1, 0, -2);
+            //    //r += v;
+            //    //res.TryGetValue(v, out int b);
+            //    //res[v] = b + 1;
+            //}
+            ////Console.WriteLine(r / c);
+            ////Console.WriteLine();
+            //for (int d = res.Keys.Min(); d <= res.Keys.Max(); d++)
+            //{
+            //    res.TryGetValue(d, out int e);
+            //    Console.WriteLine(d + "\t" + e / c);
+            //}
             //Console.WriteLine();
-            for (int d = res.Keys.Min(); d <= res.Keys.Max(); d++)
-            {
-                res.TryGetValue(d, out int e);
-                Console.WriteLine(d + "\t" + e / c);
-            }
-            Console.WriteLine();
-            for (int d = r2.Keys.Min(); d <= r2.Keys.Max(); d++)
-            {
-                r2.TryGetValue(d, out int e);
-                //if (d < 0) d--;
-                //d++;
-                Console.WriteLine((d < 0 ? d : d + 1) + "\t" + e / c);
-            }
+            //for (int d = r2.Keys.Min(); d <= r2.Keys.Max(); d++)
+            //{
+            //    r2.TryGetValue(d, out int e);
+            //    //if (d < 0) d--;
+            //    //d++;
+            //    Console.WriteLine((d < 0 ? d : d + 1) + "\t" + e / c);
+            //}
+        }
+        private static void lotr(IEnumerable<LotrPiece> s1, IEnumerable<LotrPiece> s2)
+        {
+
         }
         private static int lotr(int dice, int bonus, int offset)
         {
@@ -646,6 +651,17 @@ namespace randTest
             else if (count != 1 && count != 3)
                 ;
             return value + count * bonus + offset;
+        }
+        private class LotrPiece
+        {
+            public int dice, bonus, offset, damage;
+            public bool alive;
+            public LotrPiece(int dice, int bonus, int offset)
+            {
+                this.dice = dice;
+                this.bonus = bonus;
+                this.offset = offset;
+            }
         }
 
         #region FactRand
