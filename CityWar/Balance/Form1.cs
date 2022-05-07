@@ -31,7 +31,7 @@ namespace UnitBalance
         string a1Name, a2Name, a3Name;
         double gc = -1;
 
-        Units units = new Units();
+        Units units = new();
 
         private void btnCalculate_Click(object sender, EventArgs e)
         {

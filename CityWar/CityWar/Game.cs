@@ -61,7 +61,7 @@ namespace CityWar
 
         public Game(Player[] newPlayers, int radius)
         {
-            this.UnitTypes = new UnitTypes();
+            this.UnitTypes = new();
             this.Diameter = radius * 2 - 1;
 
             this.map = new Tile[Diameter, Diameter];

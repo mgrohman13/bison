@@ -16,7 +16,7 @@ namespace NCWMap
         public static void getOutput(string input)
         {
             Bal.units = new List<Unit>();
-            Bal.calculator = new Bal.Calculator();
+            Bal.calculator = new();
             Bal.parseInput(input);
             string o = Bal.run();
             System.IO.File.WriteAllText("out.txt", o);
@@ -469,12 +469,12 @@ namespace NCWMap
                 if (cantAttack(other))
                 {
                     retVal[0] = onlyO;
-                    retVal[1] = Math.Max(value, onlyO); 
+                    retVal[1] = Math.Max(value, onlyO);
                 }
                 else if (other.cantAttack(this))
                 {
-                    retVal[0] = onlyT; 
-                    retVal[1] = Math.Min(value, onlyT); 
+                    retVal[0] = onlyT;
+                    retVal[1] = Math.Min(value, onlyT);
                 }
                 else
                 {

@@ -86,7 +86,7 @@ namespace GalWar
             {
                 int numPlayers = players.Length;
 
-                this._center = new PointS(0, 0);
+                this._center = new(0, 0);
                 this._mapDeviation = (float)mapSize;
 
                 AssertException.Assert(players != null);
@@ -96,7 +96,7 @@ namespace GalWar
                 AssertException.Assert(planetPct > .13);
                 AssertException.Assert(planetPct < .65);
 
-                this.ShipNames = new ShipNames(numPlayers);
+                this.ShipNames = new(numPlayers);
 
                 this._spaceObjects = new Dictionary<PointS, SpaceObject>();
                 this.players = new List<Player>(numPlayers);
@@ -121,7 +121,7 @@ namespace GalWar
 
                 AdjustCenter(13);
 
-                this._graphs = new Graphs(this);
+                this._graphs = new(this);
             }
         }
 

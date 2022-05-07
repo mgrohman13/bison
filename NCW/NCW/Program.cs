@@ -468,10 +468,22 @@ namespace NCWMap
             while (tile.Inf != null && !int.TryParse(tile.Inf[1], out type));
 
             bool isNew = (tile.Inf == null);
+            Tile neighbor = null;
             if (isNew)
-                type = Random.RangeInt(1, 3);
+            {
+                List<Tile> neighbors = tile.GetNeighbors().ToList();
+                int n = Random.Next(6);
+                neighbor = n < neighbors.Count ? neighbors[n] : null;
+                if (neighbor == null || neighbor.Inf == null || !int.TryParse(neighbor.Inf[1], out type))
+                {
+                    neighbor = null;
+                    type = Random.RangeInt(1, 3);
+                }
+            }
             else
+            {
                 amt = int.Parse(tile.Inf[2]) * 6 + int.Parse(tile.Inf[3]);
+            }
 
             if (!isNew)
                 Log("CreateResource add: " + amt + " (" + tile.X + "," + tile.Y + ")");
@@ -482,6 +494,9 @@ namespace NCWMap
 
             if (!isNew)
                 Log("CreateResource final: " + tile.Inf[2] + "." + tile.Inf[3]);
+
+            if (neighbor != null)
+                Log("CreateResource neighbor: " + tile.Inf[0] + tile.Inf[1] + " (" + tile.X + "," + tile.Y + ")");
         }
         private static int GetResourceAmt()
         {
