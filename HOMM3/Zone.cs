@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HOMM3
 {
@@ -23,7 +21,7 @@ namespace HOMM3
         public readonly Monsters monsters;
         public readonly Treasure treasure;
         public readonly Options options;
-        public Zone(Type.T t, Monsters.Str str, int value)
+        public Zone(Type.T t, Monsters.Str str, double disposition, double joinPct, bool moneyOnly, int value)
         {
             Id = ++counter;
             type = new(t);
@@ -36,7 +34,7 @@ namespace HOMM3
             terrain = new(town);
             monsters = new(str, town);
             treasure = new(value);
-            options = new();
+            options = new(player, town, disposition, joinPct, moneyOnly);
 
             //if (player)
             //{
@@ -52,8 +50,9 @@ namespace HOMM3
 
             double value = wo * 1500 + mscg * 3500 + g * 7000;
 
-            if (value > 3333)
-                monsters.SetMin(value / 7000);
+            if (value > 3250)
+                monsters.SetMin(value / 5200.0);
+            options.IncValue(value / 3900.0);
 
             treasure.IncValue(value);
         }
@@ -127,10 +126,15 @@ namespace HOMM3
         }
         public class Restrictions
         {
-            public readonly string Minimum_human_positions;
-            public readonly string Maximum_human_positions;
-            public readonly string Minimum_total_positions;
-            public readonly string Maximum_total_positions;
+            public readonly int Minimum_human_positions = -1;
+            public readonly int Maximum_human_positions = -1;
+            public readonly int Minimum_total_positions = -1;
+            public readonly int Maximum_total_positions = -1;
+
+            public Restrictions()
+            {
+                Minimum_human_positions = Maximum_human_positions = Minimum_total_positions = Maximum_total_positions = Program.players;
+            }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
             {
@@ -220,8 +224,10 @@ namespace HOMM3
             public Neutral_towns(bool player, double size)
             {
                 if (!player)
-                    Minimum_towns = Program.rand.GaussianOEInt(Math.Pow(size / Program.zoneSize, .78) * .65, .26, .13);
-                int max = size > Program.zoneSize ? 2 : 1;
+                    Minimum_towns = Program.rand.GaussianOEInt(Math.Pow(size * size / Program.zoneSize / 1300, .65) * .65, .26, .13);
+                int max = size > Program.rand.Gaussian(1300, .13) ? 2 : 1;
+                if (size < 390)
+                    max = 0;
                 if (Minimum_towns > max)
                     Minimum_towns = max;
                 if (Program.rand.Bool(same))
@@ -296,6 +302,8 @@ namespace HOMM3
         }
         public class Minimum_mines
         {
+            private static readonly List<int> choices = new();
+
             public readonly int Wood = -1;
             public readonly int Mercury = -1;
             public readonly int Ore = -1;
@@ -319,7 +327,14 @@ namespace HOMM3
                     else
                         Ore++;
                 for (int b = 0; b < mscg; b++)
-                    switch (Program.rand.Next(4))
+                {
+                    if (!choices.Any())
+                        do
+                            choices.AddRange(Enumerable.Range(0, 4));
+                        while (Program.rand.Bool());
+                    int choice = Program.rand.SelectValue(choices);
+                    choices.Remove(choice);
+                    switch (choice)
                     {
                         case 0:
                             Mercury++;
@@ -334,6 +349,7 @@ namespace HOMM3
                             Gems++;
                             break;
                     }
+                }
                 Gold = g;
             }
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
@@ -465,7 +481,7 @@ namespace HOMM3
             {
                 match = Program.rand.GaussianOE(.169, .39, .13);
                 allOne = Program.rand.GaussianOE(.065, .39, .13);
-                static double p() => Program.rand.GaussianOE(.104, .39, .13, .026);
+                static double p() => Program.rand.GaussianOE(.13, .39, .13, .026);
                 neutral = p();
                 prob = p();
                 const double cap = .91;
@@ -515,7 +531,7 @@ namespace HOMM3
             }
             private void Switch(int a)
             {
-                switch (Program.rand.Next(10))
+                switch (a)
                 {
                     case 0:
                         Castle = "x";
@@ -552,18 +568,21 @@ namespace HOMM3
 
             internal void SetMin(double high)
             {
-                if (Strength != Str.strong.ToString() && Program.rand.Gaussian(high, .26) > 1)
+                high = Program.rand.Gaussian(high, .26);
+                if (high > 2)
                     Strength = Str.strong.ToString();
-                else if (Strength == Str.none.ToString())
+                else if (high > 1 && Strength != Str.strong.ToString())
+                    Strength = Str.avg.ToString();
+                if (Strength == Str.none.ToString())
                     Strength = Str.weak.ToString();
             }
 
             public enum Str
             {
-                strong,
                 none,
                 weak,
                 avg,
+                strong,
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
@@ -669,7 +688,7 @@ namespace HOMM3
                     int sel = Program.rand.Next(3);
                     GetVals(sel, out int low, out int high, out int density);
                     value += (low + high) / 2.0 * density;
-                    low = Program.rand.GaussianCappedInt(1500, .13);
+                    low = Program.rand.GaussianCappedInt(1500, .13, 1);
                     high = Program.rand.GaussianCappedInt(Math.Max(7000, low), .13, low);
                     density = Program.rand.GaussianCappedInt(2.0 * value / (low + high), .052);
                     SetVals(sel, low, high, density);
@@ -749,6 +768,23 @@ namespace HOMM3
         }
         public class Options
         {
+            private static double neutral;
+            private static double road;
+            private static double roadTown;
+            static Options()
+            {
+                Init();
+            }
+            private static void Init()
+            {
+                neutral = Program.rand.GaussianOE(.39, .26, .13);
+                road = Program.rand.GaussianOE(.21, .39, .26);
+                roadTown = Program.rand.Range(0, 1);
+                const double cap = .91;
+                if (neutral > cap || road > cap)
+                    Init();
+            }
+
             public readonly string Placement;
             public readonly string Objects;
             public readonly string Minimum_objects;
@@ -759,11 +795,99 @@ namespace HOMM3
             public readonly string Zone_repulsion;
             public readonly string Town_Hint;
             //  Monsters disposition(standard)
-            public readonly string Monsters_disposition_standard;
+            private int Monsters_disposition_standard = -1;
             //  Monsters disposition(custom)
-            public readonly string Monsters_disposition_custom;
-            public readonly string Monsters_joining_percentage;
+            private int Monsters_disposition_custom = -1;
+            public readonly int Monsters_joining_percentage = -1;
             public readonly string Monsters_join_only_for_money;
+
+            private double disposition;
+
+            public Options(bool player, bool town, double disposition, double joinPct, bool moneyOnly)
+            {
+                if (!player && Program.rand.Bool(neutral * (town ? .21 : 1)))
+                    Force_neutral_creatures = "x";
+                if (Program.rand.Bool(road * (town ? roadTown : 1)))
+                    Allow_non_coherent_road = "x";
+
+                SetDisposition(disposition);
+                Monsters_joining_percentage = Program.rand.Round(joinPct);
+                if (moneyOnly)
+                    Monsters_join_only_for_money = "x";
+            }
+            internal void IncValue(double value)
+            {
+                if (value != 0)
+                    SetDisposition(disposition + value);
+            }
+            private void SetDisposition(double disposition)
+            {
+                //1: 1-7  (4)
+                //2: 1-10 (5.5)
+                //3: 4-10 (7)
+                //0: 0 (always)
+                //5: custom 1-9
+                //4: 10 (never)
+
+                this.disposition = disposition;
+
+                int min = Math.Min((int)disposition, 3);
+                min = Program.rand.RangeInt(disposition > 1 ? 1 : 0, min);
+                int max = Math.Max(Math.Min((int)disposition + 1, 10), 8);
+                max = Program.rand.RangeInt(max, disposition < 9 ? 9 : 10);
+                double[] ranges = new double[] { min, 4, 5.5, 7, max };
+
+                double result = double.NaN;
+                if (disposition > min && disposition < max && Program.rand.Bool(.78))
+                {
+                    for (int a = 1; a < ranges.Length ? true : throw new Exception(); a++)
+                        if (disposition < ranges[a])
+                        {
+                            double range = ranges[a] - ranges[a - 1];
+                            double chance = disposition - ranges[a - 1];
+                            if (Program.rand.Bool(chance / range))
+                                result = ranges[a];
+                            else
+                                result = ranges[a - 1];
+                            break;
+                        }
+                }
+                else
+                {
+                    result = Math.Min(Program.rand.GaussianCappedInt(disposition, .078), 10);
+                }
+
+                if (result == 0)
+                {
+                    Monsters_disposition_standard = 0;
+                    Monsters_disposition_custom = -1;
+                }
+                else if (result == 4)
+                {
+                    Monsters_disposition_standard = 1;
+                    Monsters_disposition_custom = -1;
+                }
+                else if (result == 5.5)
+                {
+                    Monsters_disposition_standard = 2;
+                    Monsters_disposition_custom = -1;
+                }
+                else if (result == 7)
+                {
+                    Monsters_disposition_standard = 3;
+                    Monsters_disposition_custom = -1;
+                }
+                else if (result == 10)
+                {
+                    Monsters_disposition_standard = 4;
+                    Monsters_disposition_custom = -1;
+                }
+                else
+                {
+                    Monsters_disposition_standard = 5;
+                    Monsters_disposition_custom = Program.rand.Round(result);
+                }
+            }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
             {

@@ -50,37 +50,53 @@ namespace HOMM3
 
             int value = rand.GaussianOEInt(104000, .26, .13, 39000);
 
-            Dictionary<int, int> edgeRef;
             Dictionary<int, int> playerZones = new();
-            Stack<int> prev = new Stack<int>();
+            Stack<int> prev = new();
             Dictionary<int, List<int>> playerArea = new();
+            double disposition = rand.GaussianCapped(5.2, .169, .91);
+            double joinPct = rand.GaussianCapped(1.5, .21);
+            bool moneyOnly = rand.Bool(.21);
             foreach (int a in rand.Iterate(numZones).Take(players).ToList())
             {
                 prev.Push(a);
-                zones[a] = new Zone(Zone.Type.T.Human, Zone.Monsters.Str.avg, value);
+                zones[a] = new Zone(Zone.Type.T.Human, Zone.Monsters.Str.avg, disposition, joinPct, moneyOnly, value);
                 freeZones.Remove(a);
                 int pid = zones[a].player_Towns.Ownership;
-                playerArea[pid] = new List<int>();
+                playerArea[pid] = new();
                 playerArea[pid].Add(a);
                 playerZones.Add(a, pid);
             }
 
             static double strong() => rand.GaussianOE(21000, .13, .13);
 
-            double str;
-            List<Connections> edges = new List<Connections>();
+            double wideWeight = rand.GaussianCapped((.65 + players) / (1.69 + (double)numZones), .13);
+            List<Connections> edges = new();
             while (freeZones.Any())
             {
+                bool ground = rand.Bool(.91);
+                double wide = rand.Weighted(wideWeight);
                 double v = 91000;
-                str = rand.GaussianOE(6500, .39, .13);
+                double str = rand.GaussianOE(9100 * (1 - wide), .39, .13);
                 Zone.Monsters.Str monsters = (Zone.Monsters.Str)rand.Next(4);
+                disposition = .91 + rand.Weighted(7.8, .65);
+                joinPct = rand.GaussianCapped(1.5, .26);
+                moneyOnly = rand.Bool(.26);
                 if (freeZones.Count < playerZones.Count)
+                {
+                    ground &= rand.Bool(.78);
+                    wide = 0;
                     monsters = Zone.Monsters.Str.strong;
+                    disposition = 7.8;
+                    moneyOnly |= rand.Bool(.52);
+                    joinPct = moneyOnly ? joinPct : 0;
+                    str *= rand.Range(1.3, 1.69);
+                }
                 else if (monsters == Zone.Monsters.Str.none)
                     if (rand.Bool(.91))
                         monsters = Zone.Monsters.Str.avg;
                     else
                         v /= 2.1;
+
                 value = rand.GaussianOEInt(v, .39, .13, 13000);
                 foreach (int b in rand.Iterate(playerZones.Keys))
                 {
@@ -92,12 +108,12 @@ namespace HOMM3
                         c = prev.Pop();
                     if (zones[c] == null)
                     {
-                        zones[c] = new Zone(Zone.Type.T.Treasure, monsters, value);
+                        zones[c] = new Zone(Zone.Type.T.Treasure, monsters, disposition, joinPct, moneyOnly, value);
                         playerArea[playerZones[b]].Add(c);
                     }
                     if (b != c)
                     {
-                        edges.Add(new Connections(zones[b].Id, zones[c].Id, str, !flag));
+                        edges.Add(new Connections(zones[b].Id, zones[c].Id, ground, false, wide, null, str, !flag));
                         playerZones[c] = playerZones[b];
                         playerZones.Remove(b);
                         if (flag)
@@ -111,9 +127,9 @@ namespace HOMM3
             }
             while (playerZones.Any())
             {
-                str = strong();
+                double str = strong();
                 foreach (int d in rand.Iterate(playerZones.Keys))
-                    if (playerZones.Any())
+                    if (playerZones.Any() && rand.Bool())
                     {
                         int e;
                         if (playerZones.Count == 1 && prev.Any())
@@ -122,7 +138,7 @@ namespace HOMM3
                             e = rand.SelectValue(playerZones.Keys);
                         if (d != e)
                         {
-                            edges.Add(new Connections(zones[d].Id, zones[e].Id, str, true));
+                            edges.Add(new Connections(zones[d].Id, zones[e].Id, rand.Bool(), false, 0, null, str, true));
                             playerZones.Remove(rand.Bool() ? d : e);
                             playerZones.Remove(rand.Bool() ? d : e);
                         }
@@ -137,9 +153,9 @@ namespace HOMM3
 
             double mines = 2.1 + .52 * Math.Sqrt(avgPlZon);
             int wo = rand.GaussianOEInt(mines / 7.8, .39, .13);
-            int mscg = rand.GaussianOEInt(mines, .13, .13);
+            int mscg = rand.GaussianOEInt(mines, .13, .13, 1);
             int g = rand.GaussianOEInt(.52 + mines / 5.2, .26, .13);
-            foreach (var pair in playerArea)
+            foreach (var pair in rand.Iterate(playerArea))
             {
                 Zone home = zones[pair.Value.Where(z => zones[z].player_Towns.Ownership > 0).Single()];
                 IEnumerable<Zone> other = rand.Iterate(pair.Value.Where(z => zones[z].player_Towns.Ownership <= 0)).Select(z => zones[z]);
@@ -153,20 +169,21 @@ namespace HOMM3
                             do
                                 z2 = rand.SelectValue(pair.Value);
                             while (z1 == z2);
-                            edges.Add(new Connections(zones[z1].Id, zones[z2].Id, intStr, false));
+                            edges.Add(new Connections(zones[z1].Id, zones[z2].Id, false, rand.Bool(.13), 0, null, intStr, false));
                         }
                 for (int k = 0; k < extEdges; k++)
-                {
-                    Zone z1 = home;
-                    if (other.Any() && rand.Bool(.91))
-                        z1 = other.First();
-                    int z2;
-                    do
+                    if (rand.Bool(1 / Math.Sqrt(players)))
                     {
-                        z2 = rand.Next(numZones);
-                    } while (pair.Value.Contains(z2));
-                    edges.Add(new Connections(z1.Id, zones[z2].Id, extStr, true));
-                }
+                        Zone z1 = home;
+                        if (other.Any() && rand.Bool(.91))
+                            z1 = other.First();
+                        int z2;
+                        do
+                        {
+                            z2 = rand.Next(numZones);
+                        } while (pair.Value.Contains(z2));
+                        edges.Add(new Connections(z1.Id, zones[z2].Id, false, true, 0, rand.Bool(.169), extStr, true));
+                    }
 
                 int a = wo, b = mscg, c = g;
                 double div = Math.Sqrt(pair.Value.Count - .39);

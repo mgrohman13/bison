@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace HOMM3
 {
-    class Connections
+    public class Connections
     {
-        Zones zones;
-        Options options;
-        Restrictions restrictions;
-        public Connections(int id1, int id2, double value, bool strong)
+        public readonly Zones zones;
+        public readonly Options options;
+        public readonly Restrictions restrictions;
+        public Connections(int id1, int id2, bool ground, bool canBG, double wide, bool? road, double value, bool strong)
         {
             zones = new(id1, id2);
-            options = new(value, strong);
+            options = new(ground, canBG, wide, road, value, strong);
             restrictions = new();
         }
-        class Zones
+        public class Zones
         {
             public readonly int Zone_1 = -1;
             public readonly int Zone_2 = -1;
@@ -40,18 +40,43 @@ namespace HOMM3
                 }
             }
         }
-        class Options
+        public class Options
         {
+            private static readonly double bg;
+            static Options()
+            {
+                bg = Program.rand.GaussianCapped(.26, .26);
+            }
+
             public readonly int Value = -1;
-            string Wide;
-            string Border_Guard;
-            string Road;
-            string Type;
-            string Fictive;
-            string Portal_repulsion;
-            public Options(double value, bool strong)
+            public readonly string Wide;
+            //ignores value
+            public readonly string Border_Guard;
+            public readonly string Road;
+            //(default)
+            //ground
+            //underground
+            //teleport
+            //random
+            public readonly string Type;
+            public readonly string Fictive;
+            public readonly string Portal_repulsion;
+            public Options(bool ground, bool canBG, double wide, bool? road, double value, bool strong)
             {
                 Value = Program.rand.GaussianOEInt(value, strong ? .065 : .13, .078);
+                if (Program.rand.Bool(.78))
+                    Portal_repulsion = "x";
+                if (Program.rand.Bool(wide))
+                    Wide = "x";
+                if (road.HasValue)
+                    if (road.Value)
+                        Road = "+";
+                    else
+                        Road = "-";
+                if (ground)
+                    Type = "ground";
+                if (canBG && Program.rand.Bool(bg))
+                    Border_Guard = "x";
             }
             public static void Output(List<List<string>> output, ref int x, ref int y, Connections[] connections)
             {
@@ -77,12 +102,17 @@ namespace HOMM3
                 }
             }
         }
-        class Restrictions
+        public class Restrictions
         {
-            string Minimum_human_positions;
-            string Maximum_human_positions;
-            string Minimum_total_positions;
-            string Maximum_total_positions;
+            public readonly int Minimum_human_positions = -1;
+            public readonly int Maximum_human_positions = -1;
+            public readonly int Minimum_total_positions = -1;
+            public readonly int Maximum_total_positions = -1;
+
+            public Restrictions()
+            {
+                Minimum_human_positions = Maximum_human_positions = Minimum_total_positions = Maximum_total_positions = Program.players;
+            }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Connections[] connections)
             {
