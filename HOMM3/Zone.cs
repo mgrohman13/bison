@@ -8,6 +8,9 @@ namespace HOMM3
     {
         private static int counter;
         private readonly bool player;
+        private int woM;
+        private int mscgM;
+        private int gM;
 
         public readonly int Id = -1;
         public readonly Type type;
@@ -21,12 +24,13 @@ namespace HOMM3
         public readonly Monsters monsters;
         public readonly Treasure treasure;
         public readonly Options options;
-        public Zone(Type.T t, Monsters.Str str, double disposition, double joinPct, bool moneyOnly, int value)
+        public Zone(Type.T t, int wo, Monsters.Str str, double disposition, double joinPct, bool moneyOnly, int value)
         {
             Id = ++counter;
             type = new(t);
             restrictions = new();
-            player = t == Type.T.Human || t == Type.T.Computer;
+            this.player = t == Type.T.Human || t == Type.T.Computer;
+            this.woM = wo;
             player_Towns = new(player);
             neutral_towns = new(player, type.size);
             bool town = player_Towns.Minimum_castles > 0 || player_Towns.Minimum_towns > 0 || neutral_towns.Minimum_castles > 0 || neutral_towns.Minimum_towns > 0;
@@ -43,18 +47,27 @@ namespace HOMM3
             //}
         }
 
-        public void SetMines(int wo, int mscg, int g)
+        public void AddMines(int wo, int mscg, int g, bool place)
         {
-            minimum_mines = new(player, wo, mscg, g);
-            mine_Density = new(player, wo, mscg, g);
+            this.woM += wo;
+            this.mscgM += mscg;
+            this.gM += g;
+            if (place)
+                PlaceMines();
+        }
+        public void PlaceMines()
+        {
+            minimum_mines = new(woM, mscgM, gM);
+            mine_Density = new(woM, mscgM, gM);
 
-            double value = wo * 1500 + mscg * 3500 + g * 7000;
+            double value = woM * 1500 + mscgM * 3500 + gM * 7000;
 
             if (value > 3250)
                 monsters.SetMin(value / 5200.0);
             options.IncValue(value / 3900.0);
 
             treasure.IncValue(value);
+
         }
         public class Type
         {
@@ -302,7 +315,13 @@ namespace HOMM3
         }
         public class Minimum_mines
         {
-            private static readonly List<int> choices = new();
+            private static readonly List<int> choices;
+            private static bool woodOre;
+            static Minimum_mines()
+            {
+                choices = new();
+                woodOre = Program.rand.Bool();
+            }
 
             public readonly int Wood = -1;
             public readonly int Mercury = -1;
@@ -311,21 +330,17 @@ namespace HOMM3
             public readonly int Crystal = -1;
             public readonly int Gems = -1;
             public readonly int Gold = -1;
-            public Minimum_mines(bool player)
-            {
-                if (player)
-                    Wood = Ore = 1;
-            }
-            public Minimum_mines(bool player, int wo, int mscg, int g)
+            public Minimum_mines(int wo, int mscg, int g)
             {
                 Wood = Mercury = Ore = Sulfur = Crystal = Gems = Gold = 0;
-                if (player)
-                    Wood = Ore = 1;
                 for (int a = 0; a < wo; a++)
-                    if (Program.rand.Bool())
+                {
+                    if (woodOre)
                         Wood++;
                     else
                         Ore++;
+                    woodOre = !woodOre;
+                }
                 for (int b = 0; b < mscg; b++)
                 {
                     if (!choices.Any())
@@ -385,13 +400,9 @@ namespace HOMM3
             public readonly int Crystal = -1;
             public readonly int Gems = -1;
             public readonly int Gold = -1;
-            public Mine_Density(bool player)
+            public Mine_Density(int wo, int mscg, int g)
             {
             }
-            public Mine_Density(bool player, int wo, int mscg, int g)
-            {
-            }
-
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
             {
                 int sx = x;
