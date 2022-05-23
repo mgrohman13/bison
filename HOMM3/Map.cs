@@ -21,10 +21,10 @@ namespace HOMM3
         private readonly string Special_weeks_disabled;
         private readonly string Spell_Research;
         private readonly string Anarchy;
-        public Map()
+        public Map(int sizeInt)
         {
-            Name = Program.name;
-            Minimum_Size = Maximum_Size = Program.sizeI;
+            Name = Program.Name;
+            Minimum_Size = Maximum_Size = sizeInt;
             switch (Program.rand.Next(4))
             {
                 case 0:

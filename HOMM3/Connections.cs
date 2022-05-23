@@ -8,24 +8,291 @@ namespace HOMM3
 {
     public class Connections
     {
-        public readonly Zones zones;
-        public readonly Options options;
-        public readonly Restrictions restrictions;
-        public Connections(int id1, int id2, bool ground, bool canBG, double wide, bool? road, double value, bool strong)
+        private static readonly double borderGuardChance;
+        static Connections()
         {
-            zones = new(id1, id2);
-            options = new(ground, canBG, wide, road, value, strong);
+            borderGuardChance = Program.rand.GaussianCapped(.26, .26);
+        }
+
+        public readonly Zone zone1;
+        public readonly Zone zone2;
+
+        private bool ground;
+        private readonly bool wide;
+        private readonly bool borderGuard;
+        private readonly bool? road;
+        private readonly int strength;
+
+        //output
+        private readonly Zones zones;
+        private readonly Options options;
+        private readonly Restrictions restrictions;
+
+        public Connections(Zone zone1, Zone zone2, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
+        {
+            this.zone1 = zone1;
+            this.zone2 = zone2;
+            this.ground = ground;
+            this.wide = Program.rand.Bool(wide);
+            this.borderGuard = canBorderGuard && Program.rand.Bool(borderGuardChance);
+            this.road = road;
+            this.strength = Program.rand.GaussianOEInt(strength, deviation, .013);
+
+            zones = new();
+            options = new();
             restrictions = new();
         }
+
+        public static List<Connections> InitConnections(Player[] players, double size, int numZones, bool pairPlayers)
+        {
+            List<Connections> connections = new();
+
+            double[] strengths = new double[] {
+                Program.rand.GaussianOE( 9100, .26, .13),
+                Program.rand.GaussianOE(16900, .21, .13),
+                Program.rand.GaussianOE(Program.rand.Range(16900, 21000), .169, .13),
+                Program.rand.GaussianOE(Program.rand.Range(16900, 26000), .13, .13),
+            };
+            Array.Sort(strengths);
+            double baseInternalStr = strengths[0];
+            double baseExternalStr = strengths[1];
+            double otherInternalStr = strengths[2];
+            double otherExternalStr = strengths[3];
+            double extraStr = Program.rand.Range(baseInternalStr, baseExternalStr * .78);
+
+            double wideWeight = (.65 + players.Length) / (1.69 + (double)numZones);
+            wideWeight = Program.rand.GaussianCapped(wideWeight, .169, Math.Max(0, 2 * wideWeight - 1));
+
+            //primary internal connections
+            int count = players.Min(p => p.Zones.Count) + 1;
+            for (int a = 1; a < count; a++)
+            {
+                bool ground = Program.rand.Bool(.91);
+                double wide = Program.rand.Weighted(wideWeight);
+                bool canBorderGuard = false;
+                bool? road = null;
+                double deviation = .13;
+                double strength;
+                do
+                    strength = Program.rand.GaussianOE(baseInternalStr * (1 - wide), .39, .052);
+                while (strength > baseExternalStr);
+
+                if (a == count - 1)
+                {
+                    //extra zones 
+                    ground &= Program.rand.Bool(.78);
+                    wide = 0;
+                    strength = Program.rand.GaussianOE(extraStr, .13, .039);
+                }
+
+                foreach (Player player in Program.rand.Iterate(players))
+                    if (a < player.Zones.Count)
+                    {
+                        Zone z1 = player.Zones[a - 1], z2 = player.Zones[a];
+                        AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                    }
+            }
+
+            //extra internal connections 
+            double zonesPerPlayer = numZones / (double)players.Length;
+            int internalConnections = zonesPerPlayer > 2 ? Program.rand.GaussianCappedInt(Math.Sqrt(zonesPerPlayer - 1.69), .26) : 0;
+            foreach (Player player in Program.rand.Iterate(players))
+            {
+                int addConnections = internalConnections + Program.rand.Next(2);
+                if (player.Zones.Count > 1)
+                    for (int b = 0; b < addConnections; b++)
+                        if (Program.rand.Bool())
+                        {
+                            bool ground = false;
+                            double wide = 0;
+                            bool canBorderGuard = Program.rand.Bool(.39);
+                            bool? road = null;
+                            double deviation = 0;
+                            double strength = Program.rand.GaussianOE(otherInternalStr, .26, .091);
+
+                            var zones = Program.rand.Iterate(player.Zones).Take(2).ToList();
+                            Zone z1 = zones[0];
+                            Zone z2 = zones[1];
+                            AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                        }
+            }
+
+            HashSet<Player> tempPlayers = players.ToHashSet();
+            while (tempPlayers.Any())
+                foreach (Player player in Program.rand.Iterate(players))
+                    if (Program.rand.Bool())
+                    {
+                        bool ground = Program.rand.Bool();
+                        double wide = 0;
+                        bool canBorderGuard = false;
+                        bool? road = null;
+                        double deviation = 0;
+                        double strength;
+                        do
+                            strength = Program.rand.GaussianOE(baseExternalStr, .078, .065);
+                        while (strength > otherExternalStr);
+
+                        bool removed = tempPlayers.Remove(player);
+                        if (!tempPlayers.Any())
+                        {
+                            tempPlayers.Add(player);
+                            continue;
+                        }
+                        Player p2 = Program.rand.SelectValue(tempPlayers);
+                        tempPlayers.Remove(p2);
+                        if (removed)
+                            tempPlayers.Add(player);
+
+                        Zone z1 = player.Zones[^1];
+                        Zone z2 = p2.Zones[^1];
+                        AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+
+                        if (players.Length == 2 || !tempPlayers.Any())
+                        {
+                            tempPlayers.Clear();
+                            break;
+                        }
+                    }
+
+            //extra external connections
+            int externalConnections = Program.rand.GaussianOEInt(Math.Sqrt(numZones - 1.69) / 2.6, .39, .065);
+            if (pairPlayers)
+                --externalConnections;
+            HashSet<Zone> tempZones = players.SelectMany(p => p.Zones).ToHashSet();
+            for (int k = 0; k < externalConnections; k++)
+            {
+                bool ground = false;
+                double wide = 0;
+                bool canBorderGuard = true;
+                bool? road = Program.rand.Bool(.169);
+                double deviation = .065;
+                double strength = Program.rand.GaussianOE(otherExternalStr, .078, .078);
+
+                foreach (Player player in Program.rand.Iterate(players))
+                    if (tempZones.Any() && Program.rand.Bool(1 / Math.Sqrt(players.Length)))
+                    {
+                        Zone z1 = player.Home;
+                        if (player.Zones.Count > 1 && Program.rand.Bool(.91))
+                            z1 = Program.rand.SelectValue(player.Zones.Except(Enumerable.Repeat(z1, 1)));
+                        Zone z2;
+                        do
+                        {
+                            z2 = Program.rand.SelectValue(tempZones);
+                        } while (player.Zones.Contains(z2));
+                        tempZones.Remove(z2);
+                        AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                    }
+            }
+
+            //pair up players for early combat 
+            if (pairPlayers)
+            {
+                bool ground = Program.rand.Bool(.65);
+                double wide = 0;
+                bool canBorderGuard = false;
+                bool? road = null;
+                double deviation = .091;
+                double strength;
+                do
+                    strength = Program.rand.GaussianOE(baseInternalStr, .169, .026);
+                while (strength > baseExternalStr);
+
+                tempPlayers = players.ToHashSet();
+                while (tempPlayers.Count > 1)
+                {
+                    Player p1 = Program.rand.SelectValue(tempPlayers);
+                    tempPlayers.Remove(p1);
+                    Player p2 = Program.rand.SelectValue(tempPlayers);
+                    tempPlayers.Remove(p2);
+                    Zone z1 = Program.rand.SelectValue(p1.Zones);
+                    Zone z2 = Program.rand.SelectValue(p2.Zones);
+                    AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                }
+            }
+
+            return connections;
+        }
+        private static void AddConnection(List<Connections> connections, Zone z1, Zone z2, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
+        {
+            if (z1 == z2)
+                throw new Exception();
+            Connections connection = new(z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+            Zone.AddConnection(z1, z2, connection);
+            connections.Add(connection);
+        }
+
+        internal static void Generate(List<Connections> allConnections, List<Connections> connections, int numPlayers)
+        {
+            if (connections.Count > 1)
+                TrimConnections(allConnections, connections);
+            foreach (Connections connection in Program.rand.Iterate(connections))
+                connection.Generate(numPlayers);
+        }
+        private static void TrimConnections(List<Connections> allConnections, List<Connections> connections)
+        {
+            if (connections.Count > 1)
+            {
+                //only one wide connection makes sense
+                var wide = connections.Where(c => c.wide);
+                if (wide.Any())
+                {
+                    //if any wide, keep only one of the others
+                    var others = connections.Where(c => !c.wide);
+                    Connections keep = others.Any() ? Program.rand.SelectValue(others) : null;
+                    KeepOne(allConnections, connections, wide, c => c.wide || c != keep);
+                }
+                else
+                {
+                    //only one border guard makes sense
+                    var borderGuard = connections.Where(c => c.borderGuard);
+                    if (borderGuard.Any())
+                        KeepOne(allConnections, connections, borderGuard, c => c.borderGuard);
+
+                    //keep the minimum and maximum strength connections, and a small chance to keep each additional one
+                    var others = connections.Where(c => !c.borderGuard);
+                    var allMin = others.Where(c => c.strength == others.Min(c => c.strength));
+                    var allMax = others.Where(c => c.strength == others.Max(c => c.strength));
+                    List<Connections> keep = new();
+                    keep.Add(Program.rand.SelectValue(allMin));
+                    keep.Add(Program.rand.SelectValue(allMax));
+                    double chance = (connections.Count) / (connections.Count + 2.6);
+                    foreach (Connections connection in others.ToList())
+                        if (!keep.Contains(connection) && Program.rand.Bool(chance))
+                        {
+                            allConnections.Remove(connection);
+                            connections.Remove(connection);
+                        }
+                }
+
+                //if any are ground, set all to ground
+                bool ground = connections.Any(c => c.ground);
+                connections.ForEach(c => c.ground = ground);
+            }
+        }
+        private static void KeepOne(List<Connections> allConnections, List<Connections> connections, IEnumerable<Connections> values, Predicate<Connections> predicate)
+        {
+            Connections keep = Program.rand.SelectValue(values);
+            allConnections.RemoveAll(c => predicate(c) && c != keep);
+            connections.RemoveAll(c => predicate(c) && c != keep);
+        }
+        private void Generate(int numPlayers)
+        {
+            zones.Generate(zone1.Id, zone2.Id);
+            options.Generate(ground, borderGuard, wide, road, strength);
+            restrictions.Generate(numPlayers);
+        }
+
         public class Zones
         {
-            public readonly int Zone_1 = -1;
-            public readonly int Zone_2 = -1;
-            public Zones(int id1, int id2)
+            private int Zone_1 = -1;
+            private int Zone_2 = -1;
+
+            public void Generate(int id1, int id2)
             {
                 Zone_1 = id1;
                 Zone_2 = id2;
             }
+
             public static void Output(List<List<string>> output, ref int x, ref int y, Connections[] connections)
             {
                 int sx = x;
@@ -42,31 +309,26 @@ namespace HOMM3
         }
         public class Options
         {
-            private static readonly double bg;
-            static Options()
-            {
-                bg = Program.rand.GaussianCapped(.26, .26);
-            }
-
-            public readonly int Value = -1;
-            public readonly string Wide;
+            private int Value = -1;
+            private string Wide;
             //ignores value
-            public readonly string Border_Guard;
-            public readonly string Road;
+            private string Border_Guard;
+            private string Road;
             //(default)
             //ground
             //underground
             //teleport
             //random
-            public readonly string Type;
-            public readonly string Fictive;
-            public readonly string Portal_repulsion;
-            public Options(bool ground, bool canBG, double wide, bool? road, double value, bool strong)
+            private string Type;
+            private string Fictive;
+            private string Portal_repulsion;
+
+            public void Generate(bool ground, bool borderGuard, bool wide, bool? road, int strength)
             {
-                Value = Program.rand.GaussianOEInt(value, strong ? .065 : .13, .078);
+                Value = strength;
                 if (Program.rand.Bool(.78))
                     Portal_repulsion = "x";
-                if (Program.rand.Bool(wide))
+                if (wide)
                     Wide = "x";
                 if (road.HasValue)
                     if (road.Value)
@@ -75,9 +337,10 @@ namespace HOMM3
                         Road = "-";
                 if (ground)
                     Type = "ground";
-                if (canBG && Program.rand.Bool(bg))
+                if (borderGuard)
                     Border_Guard = "x";
             }
+
             public static void Output(List<List<string>> output, ref int x, ref int y, Connections[] connections)
             {
                 int sx = x;
@@ -102,16 +365,17 @@ namespace HOMM3
                 }
             }
         }
+
         public class Restrictions
         {
-            public readonly int Minimum_human_positions = -1;
-            public readonly int Maximum_human_positions = -1;
-            public readonly int Minimum_total_positions = -1;
-            public readonly int Maximum_total_positions = -1;
+            private int Minimum_human_positions = -1;
+            private int Maximum_human_positions = -1;
+            private int Minimum_total_positions = -1;
+            private int Maximum_total_positions = -1;
 
-            public Restrictions()
+            public void Generate(int numPlayers)
             {
-                Minimum_human_positions = Maximum_human_positions = Minimum_total_positions = Maximum_total_positions = Program.players;
+                Minimum_human_positions = Maximum_human_positions = Minimum_total_positions = Maximum_total_positions = numPlayers;
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Connections[] connections)
