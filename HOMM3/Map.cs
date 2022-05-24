@@ -35,12 +35,12 @@ namespace HOMM3
                     break;
             }
             Zone_sparseness = Program.rand.Bool() ? -1 : Custom();
-            Spell_Research = Program.rand.Bool(.65) ? "x" : null;
+            Spell_Research = Program.rand.Bool() ? "x" : null;
             Anarchy = Program.rand.Bool(.26) ? "x" : null;
         }
         private static double Custom()
         {
-            return (Program.rand.GaussianOEInt(10, .13, .13) / 10.0);
+            return (Program.rand.GaussianOEInt(10.4, .26, .13) / 10.0);
         }
 
         public void Output(List<List<string>> output, ref int x, ref int y)

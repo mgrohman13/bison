@@ -17,21 +17,23 @@ namespace HOMM3
         public readonly Zone zone1;
         public readonly Zone zone2;
 
+        private readonly bool primary;
         private bool ground;
         private readonly bool wide;
         private readonly bool borderGuard;
         private readonly bool? road;
-        private readonly int strength;
+        private int strength;
 
         //output
         private readonly Zones zones;
         private readonly Options options;
         private readonly Restrictions restrictions;
 
-        public Connections(Zone zone1, Zone zone2, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
+        public Connections(Zone zone1, Zone zone2, bool primary, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
         {
             this.zone1 = zone1;
             this.zone2 = zone2;
+            this.primary = primary;
             this.ground = ground;
             this.wide = Program.rand.Bool(wide);
             this.borderGuard = canBorderGuard && Program.rand.Bool(borderGuardChance);
@@ -43,20 +45,25 @@ namespace HOMM3
             restrictions = new();
         }
 
+        private static double GenerateStrongest()
+        {
+            return Program.rand.GaussianOE(Program.rand.Range(16900, 26000), .13, .13);
+        }
         public static List<Connections> InitConnections(Player[] players, double size, int numZones, bool pairPlayers)
         {
             List<Connections> connections = new();
 
             double[] strengths = new double[] {
-                Program.rand.GaussianOE( 9100, .26, .13),
+                Program.rand.GaussianOE( 7800, .26, .13),
                 Program.rand.GaussianOE(16900, .21, .13),
-                Program.rand.GaussianOE(Program.rand.Range(16900, 21000), .169, .13),
-                Program.rand.GaussianOE(Program.rand.Range(16900, 26000), .13, .13),
+                Program.rand.GaussianOE(Program.rand.Range(13000, 21000), .169, .13),
+                GenerateStrongest(),
             };
             Array.Sort(strengths);
             double baseInternalStr = strengths[0];
-            double baseExternalStr = strengths[1];
-            double otherInternalStr = strengths[2];
+            bool select = strengths[1] > strengths[0] * Program.rand.Range(1.69, 2.1);
+            double baseExternalStr = strengths[select ? 1 : 2];
+            double otherInternalStr = strengths[select ? 2 : 1];
             double otherExternalStr = strengths[3];
             double extraStr = Program.rand.Range(baseInternalStr, baseExternalStr * .78);
 
@@ -67,6 +74,7 @@ namespace HOMM3
             int count = players.Min(p => p.Zones.Count) + 1;
             for (int a = 1; a < count; a++)
             {
+                bool primary = true;
                 bool ground = Program.rand.Bool(.91);
                 double wide = Program.rand.Weighted(wideWeight);
                 bool canBorderGuard = false;
@@ -89,7 +97,7 @@ namespace HOMM3
                     if (a < player.Zones.Count)
                     {
                         Zone z1 = player.Zones[a - 1], z2 = player.Zones[a];
-                        AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                        AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                     }
             }
 
@@ -103,6 +111,7 @@ namespace HOMM3
                     for (int b = 0; b < addConnections; b++)
                         if (Program.rand.Bool())
                         {
+                            bool primary = false;
                             bool ground = false;
                             double wide = 0;
                             bool canBorderGuard = Program.rand.Bool(.39);
@@ -113,15 +122,17 @@ namespace HOMM3
                             var zones = Program.rand.Iterate(player.Zones).Take(2).ToList();
                             Zone z1 = zones[0];
                             Zone z2 = zones[1];
-                            AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                            AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                         }
             }
 
+            //primary external connections
             HashSet<Player> tempPlayers = players.ToHashSet();
             while (tempPlayers.Any())
                 foreach (Player player in Program.rand.Iterate(players))
                     if (Program.rand.Bool())
                     {
+                        bool primary = true;
                         bool ground = Program.rand.Bool();
                         double wide = 0;
                         bool canBorderGuard = false;
@@ -133,20 +144,26 @@ namespace HOMM3
                         while (strength > otherExternalStr);
 
                         bool removed = tempPlayers.Remove(player);
-                        if (!tempPlayers.Any())
+                        if (tempPlayers.Any())
                         {
-                            tempPlayers.Add(player);
-                            continue;
+                            Player p2 = Program.rand.SelectValue(tempPlayers);
+                            tempPlayers.Remove(p2);
+
+                            static Zone SelZone(Player p)
+                            {
+                                Zone zone = p.Zones[^1];
+                                if (zone.extra && Program.rand.Bool())
+                                    zone = p.Zones[^2];
+                                return zone;
+                            }
+                            Zone z1 = SelZone(player);
+                            Zone z2 = SelZone(p2);
+
+                            AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                         }
-                        Player p2 = Program.rand.SelectValue(tempPlayers);
-                        tempPlayers.Remove(p2);
+
                         if (removed)
                             tempPlayers.Add(player);
-
-                        Zone z1 = player.Zones[^1];
-                        Zone z2 = p2.Zones[^1];
-                        AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
-
                         if (players.Length == 2 || !tempPlayers.Any())
                         {
                             tempPlayers.Clear();
@@ -161,6 +178,7 @@ namespace HOMM3
             HashSet<Zone> tempZones = players.SelectMany(p => p.Zones).ToHashSet();
             for (int k = 0; k < externalConnections; k++)
             {
+                bool primary = false;
                 bool ground = false;
                 double wide = 0;
                 bool canBorderGuard = true;
@@ -180,13 +198,14 @@ namespace HOMM3
                             z2 = Program.rand.SelectValue(tempZones);
                         } while (player.Zones.Contains(z2));
                         tempZones.Remove(z2);
-                        AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                        AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                     }
             }
 
             //pair up players for early combat 
             if (pairPlayers)
             {
+                bool primary = true;
                 bool ground = Program.rand.Bool(.65);
                 double wide = 0;
                 bool canBorderGuard = false;
@@ -204,21 +223,27 @@ namespace HOMM3
                     tempPlayers.Remove(p1);
                     Player p2 = Program.rand.SelectValue(tempPlayers);
                     tempPlayers.Remove(p2);
+                    Player.SetPair(p1, p2);
                     Zone z1 = Program.rand.SelectValue(p1.Zones);
                     Zone z2 = Program.rand.SelectValue(p2.Zones);
-                    AddConnection(connections, z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+                    AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                 }
             }
 
             return connections;
         }
-        private static void AddConnection(List<Connections> connections, Zone z1, Zone z2, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
+        private static void AddConnection(List<Connections> connections, Zone z1, Zone z2, bool primary, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
         {
             if (z1 == z2)
                 throw new Exception();
-            Connections connection = new(z1, z2, ground, wide, canBorderGuard, road, deviation, strength);
+            Connections connection = new(z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
             Zone.AddConnection(z1, z2, connection);
             connections.Add(connection);
+        }
+        private void IncreaseStrength()
+        {
+            strength = Program.rand.GaussianOEInt(strength * 1.3, .13, .13);
+            strength = Math.Max(strength, Program.rand.Round(GenerateStrongest()));
         }
 
         internal static void Generate(List<Connections> allConnections, List<Connections> connections, int numPlayers)
@@ -230,51 +255,60 @@ namespace HOMM3
         }
         private static void TrimConnections(List<Connections> allConnections, List<Connections> connections)
         {
-            if (connections.Count > 1)
+            HashSet<Connections> keep = new();
+
+            var wide = connections.Where(c => c.wide);
+            if (wide.Any())
             {
                 //only one wide connection makes sense
-                var wide = connections.Where(c => c.wide);
-                if (wide.Any())
-                {
-                    //if any wide, keep only one of the others
-                    var others = connections.Where(c => !c.wide);
-                    Connections keep = others.Any() ? Program.rand.SelectValue(others) : null;
-                    KeepOne(allConnections, connections, wide, c => c.wide || c != keep);
-                }
-                else
-                {
-                    //only one border guard makes sense
-                    var borderGuard = connections.Where(c => c.borderGuard);
-                    if (borderGuard.Any())
-                        KeepOne(allConnections, connections, borderGuard, c => c.borderGuard);
-
-                    //keep the minimum and maximum strength connections, and a small chance to keep each additional one
-                    var others = connections.Where(c => !c.borderGuard);
-                    var allMin = others.Where(c => c.strength == others.Min(c => c.strength));
-                    var allMax = others.Where(c => c.strength == others.Max(c => c.strength));
-                    List<Connections> keep = new();
-                    keep.Add(Program.rand.SelectValue(allMin));
-                    keep.Add(Program.rand.SelectValue(allMax));
-                    double chance = (connections.Count) / (connections.Count + 2.6);
-                    foreach (Connections connection in others.ToList())
-                        if (!keep.Contains(connection) && Program.rand.Bool(chance))
-                        {
-                            allConnections.Remove(connection);
-                            connections.Remove(connection);
-                        }
-                }
-
-                //if any are ground, set all to ground
-                bool ground = connections.Any(c => c.ground);
-                connections.ForEach(c => c.ground = ground);
+                keep.Add(Program.rand.SelectValue(wide));
+                //if any wide, keep only one of the others 
+                var others = connections.Where(c => !c.wide);
+                if (others.Any())
+                    keep.Add(Program.rand.SelectValue(others));
             }
+            else
+            {
+                bool primary = connections.Any(c => c.primary);
+
+                var borderGuards = connections.Where(c => c.borderGuard);
+                //if this is a primary connection, dont keep any border guards
+                bool borderGuard = !primary && borderGuards.Any();
+                //only one border guard makes sense
+                if (borderGuard)
+                    keep.Add(Program.rand.SelectValue(borderGuards));
+
+                var others = connections.Where(c => !c.borderGuard);
+                var max = others.Where(c => c.strength == others.Max(c => c.strength));
+                //if a border guard, only keep the strongest other connection and ensure it is sufficiently high as to have a purpose
+                Connections strongest = Program.rand.SelectValue(max);
+                if (borderGuard)
+                    strongest.IncreaseStrength();
+                keep.Add(strongest);
+
+                if (!borderGuard)
+                {
+                    //keep the minimum and maximum strength connections, and a small chance to keep each additional one
+                    var min = others.Where(c => c.strength == others.Min(c => c.strength));
+                    keep.Add(Program.rand.SelectValue(min));
+                    if (connections.Count > 2)
+                    {
+                        double chance = 1 / (connections.Count - 1.3);
+                        foreach (Connections connection in others)
+                            if (Program.rand.Bool(chance))
+                                keep.Add(connection);
+                    }
+                }
+            }
+
+            allConnections.RemoveAll(c => connections.Contains(c) && !keep.Contains(c));
+            connections.RemoveAll(c => !keep.Contains(c));
+
+            //if any are ground, set all to ground
+            bool ground = connections.Any(c => c.ground);
+            connections.ForEach(c => c.ground = ground);
         }
-        private static void KeepOne(List<Connections> allConnections, List<Connections> connections, IEnumerable<Connections> values, Predicate<Connections> predicate)
-        {
-            Connections keep = Program.rand.SelectValue(values);
-            allConnections.RemoveAll(c => predicate(c) && c != keep);
-            connections.RemoveAll(c => predicate(c) && c != keep);
-        }
+
         private void Generate(int numPlayers)
         {
             zones.Generate(zone1.Id, zone2.Id);

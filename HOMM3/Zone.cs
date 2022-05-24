@@ -87,7 +87,7 @@ namespace HOMM3
             int count = players.Min(p => p.Zones.Count) + 1;
             for (int a = 0; a < count; a++)
             {
-                int value = Program.rand.GaussianOEInt(104000, .26, .13, 13000);
+                int value;//= Program.rand.GaussianOEInt(91000, .39, .13);
                 Zone.Monsters.Str monsters;
                 double disposition;
                 bool moneyOnly;
@@ -96,7 +96,7 @@ namespace HOMM3
                 if (a == 0)
                 {
                     //home zones
-                    value = Program.rand.Round(value * 1.3);
+                    value = Program.rand.GaussianOEInt(78000, .169, .065, 26000);
                     monsters = Program.rand.Bool(.26) ? Zone.Monsters.Str.weak : Zone.Monsters.Str.avg;
                     disposition = Program.rand.GaussianCapped(5.2, .169, .91);
                     moneyOnly = Program.rand.Bool(.21);
@@ -105,7 +105,7 @@ namespace HOMM3
                 else if (a == count - 1)
                 {
                     //extra zones
-                    value = Program.rand.Round(value * .78);
+                    value = Program.rand.GaussianOEInt(65000, .21, .078, 26000);
                     monsters = Zone.Monsters.Str.strong;
                     disposition = 7.8;
                     moneyOnly = Program.rand.Bool();
@@ -114,6 +114,7 @@ namespace HOMM3
                 else
                 {
                     //standard zone
+                    value = Program.rand.GaussianOEInt(91000, .26, .091, 26000);
                     monsters = (Zone.Monsters.Str)Program.rand.Next(4);
                     disposition = .91 + Program.rand.Weighted(7.8, .65);
                     moneyOnly = Program.rand.Bool(.26);
@@ -144,6 +145,8 @@ namespace HOMM3
         }
         public void AddMines(int woodOre, int resource, int gold)
         {
+            if (woodOre < 0 || resource < 0 || gold < 0)
+                throw new Exception();
             this.woodOre += woodOre;
             this.resource += resource;
             this.gold += gold;
@@ -165,11 +168,14 @@ namespace HOMM3
             mine_Density.Generate(woodOre, resource, gold);
             terrain.Generate(town);
             monsters.Generate(monsterStr, town, monsterMineFlag, monsterMineValue);
-            treasure.Generate(value, mineValue);
-            options.Generate(start, town, disposition, joinPct, moneyOnly, mineValue);
+            bool neutralDwellings = options.Generate(start, town, disposition, joinPct, moneyOnly, mineValue);
+            treasure.Generate(value, mineValue, neutralDwellings);
 
             foreach (var pair in Program.rand.Iterate(connections))
+            {
                 Connections.Generate(allConnections, pair.Value, numPlayers);
+                pair.Key.connections.Remove(this);
+            }
         }
 
         public class Type
@@ -764,55 +770,42 @@ namespace HOMM3
             //Density
             private int Density_3 = -1;
 
-            internal void Generate(double value, double mineValue)
+            internal void Generate(double value, double mineValue, bool neutralDwellings)
             {
                 // 55 — poor zone, white. Content types:      (  500– 3000, 9), ( 3000– 6000, 6), (10000–15000, 1).
                 //133 — rich zone, silver. Content types:     ( 3000– 6000, 9), (10000–15000, 6), (15000–20000, 1).
                 //242 — vastly rich zone, gold.Content types: (10000–15000, 9), (15000–20000, 6), (20000–30000, 1).
 
+                double min = Program.rand.Range(100, 520);
+                double[,,] ranges = new double[4, 3, 2] {
+                    { {   min,  6500 }, {  6500,  9100 }, {  9100, 14300 } },
+                    { {  2600, 10400 }, { 10400, 15600 }, { 15600, 21000 } },
+                    { {  7800, 16900 }, { 16900, 21000 }, { 21000, 30000 } },
+                    //if neutral dwellings, use an alternate 3rd tier that allows for the neutral dragon dwellings
+                    { { 10000, 40000 }, { 40000, 80000 }, { 80000, 99999 } },
+                };
+
                 value += mineValue;
-                int mineTier = -1;
-                if (mineValue > 0)
-                    mineTier = Program.rand.Next(3);
 
                 double count = 3;
                 for (int a = 2; a >= 0; a--)
                 {
-                    double pct, l, h;
-                    switch (a)
-                    {
-                        case 0:
-                            pct = 351.1655590906;
-                            l = 4500;
-                            h = 8000;
-                            break;
-                        case 1:
-                            pct = 495.1957493211;
-                            l = 9333.3333333333;
-                            h = 13666.6666666667;
-                            break;
-                        case 2:
-                            pct = 153.6386915883;
-                            l = 15000;
-                            h = 21666.6666666667;
-                            break;
-                        default: throw new Exception();
-                    }
-                    if (a == mineTier)
-                    {
-                        l = 1500;
-                        h = 7000;
-                    }
-                    int low = Program.rand.GaussianCappedInt(l, .13, 1);
-                    int high = Program.rand.GaussianCappedInt(Math.Max(h, low), .13, low);
-                    double v = value * pct / 1000.0 * 3 / count;
-                    v = 2 * v / (double)(low + high);
-                    int density = Program.rand.GaussianCappedInt(v, .091);
+                    bool flag = a == 2 && neutralDwellings && Program.rand.Bool();
+                    double l, h;
+                    int b = flag ? 3 : a;
+                    int c = Program.rand.Next(3);
+                    l = ranges[b, c, 0];
+                    h = ranges[b, c, 1];
+                    //hack....
+                    if (flag)
+                        value += (l + h) / 2.0;// - 25000;
+                    int low = Program.rand.GaussianCappedInt(l, .21, 100);
+                    int high = Program.rand.GaussianCappedInt(Math.Max(h, low), .104, low);
+                    double v = value / count--;
+                    v *= 2 / (double)(low + high);
+                    int density = Program.rand.GaussianCappedInt(Math.Max(v, 1), .091, 1);
                     value -= (low + high) / 2.0 * density;
-                    count--;
                     SetVals(a, low, high, density);
-                    if (value <= 0)
-                        break;
                 }
             }
             private void SetVals(int a, int low, int high, int density)
@@ -900,7 +893,7 @@ namespace HOMM3
             private int Monsters_joining_percentage = -1;
             private string Monsters_join_only_for_money;
 
-            public void Generate(bool start, bool town, double disposition, double joinPct, bool moneyOnly, double mineValue)
+            public bool Generate(bool start, bool town, double disposition, double joinPct, bool moneyOnly, double mineValue)
             {
                 disposition = Math.Min(disposition + mineValue, 10 - (10 - disposition) * (10 - mineValue) / 10.0);
 
@@ -913,6 +906,8 @@ namespace HOMM3
                 Monsters_joining_percentage = Program.rand.Round(joinPct);
                 if (moneyOnly)
                     Monsters_join_only_for_money = "x";
+
+                return Force_neutral_creatures != null;
             }
             private void SetDisposition(double disposition)
             {
