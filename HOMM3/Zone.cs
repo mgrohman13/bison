@@ -96,8 +96,8 @@ namespace HOMM3
                 if (a == 0)
                 {
                     //home zones
-                    value = Program.rand.GaussianOEInt(78000, .169, .065, 26000);
-                    monsters = Program.rand.Bool(.26) ? Zone.Monsters.Str.weak : Zone.Monsters.Str.avg;
+                    value = Program.rand.GaussianOEInt(91000, .169, .065, 39000);
+                    monsters = Program.rand.Bool(.65) ? Zone.Monsters.Str.avg : Zone.Monsters.Str.weak;
                     disposition = Program.rand.GaussianCapped(5.2, .169, .91);
                     moneyOnly = Program.rand.Bool(.21);
                     joinPct = Program.rand.GaussianCapped(joinPct, .21);
@@ -105,8 +105,8 @@ namespace HOMM3
                 else if (a == count - 1)
                 {
                     //extra zones
-                    value = Program.rand.GaussianOEInt(65000, .21, .078, 26000);
-                    monsters = Zone.Monsters.Str.strong;
+                    value = Program.rand.GaussianOEInt(78000, .21, .078, 39000);
+                    monsters = Program.rand.Bool(.39) ? Zone.Monsters.Str.avg : Monsters.Str.strong;
                     disposition = 7.8;
                     moneyOnly = Program.rand.Bool();
                     joinPct = moneyOnly ? Program.rand.GaussianCapped(joinPct, .39) : 0;
@@ -114,7 +114,7 @@ namespace HOMM3
                 else
                 {
                     //standard zone
-                    value = Program.rand.GaussianOEInt(91000, .26, .091, 26000);
+                    value = Program.rand.GaussianOEInt(104000, .26, .091, 39000);
                     monsters = (Zone.Monsters.Str)Program.rand.Next(4);
                     disposition = .91 + Program.rand.Weighted(7.8, .65);
                     moneyOnly = Program.rand.Bool(.26);
@@ -155,9 +155,6 @@ namespace HOMM3
         internal void Generate(List<Connections> allConnections, int numPlayers, double avgSize)
         {
             double mineValue = woodOre * 1500 + resource * 3500 + gold * 7000;
-            bool monsterMineFlag = mineValue > 3250;
-            double monsterMineValue = mineValue / 5200.0;
-            mineValue /= 3900.0;
 
             double size = type.Generate(start ? Type.T.Human : Type.T.Treasure, avgSize);
             restrictions.Generate(numPlayers);
@@ -167,7 +164,7 @@ namespace HOMM3
             minimum_mines.Generate(woodOre, resource, gold);
             mine_Density.Generate(woodOre, resource, gold);
             terrain.Generate(town);
-            monsters.Generate(monsterStr, town, monsterMineFlag, monsterMineValue);
+            monsters.Generate(monsterStr, town, mineValue, resource > 0, gold > 0);
             bool neutralDwellings = options.Generate(start, town, disposition, joinPct, moneyOnly, mineValue);
             treasure.Generate(value, mineValue, neutralDwellings);
 
@@ -633,34 +630,60 @@ namespace HOMM3
             private string Conflux;
             private string Cove;
 
-            public void Generate(Monsters.Str str, bool town, bool monsterMineFlag, double monsterMineValue)
+            public void Generate(Monsters.Str str, bool town, double mineValue, bool hasResource, bool hasGold)
             {
-                if (monsterMineFlag)
+                if (mineValue > 0)
                 {
-                    double high = Program.rand.Gaussian(monsterMineValue, .26);
-                    if (high > 2)
-                        str = Str.strong;
-                    else if (high > 1 && str != Str.strong)
+                    //chance to increase strength based on number/value of mines
+                    int newStr = (int)str + Program.rand.GaussianCappedInt(mineValue / 7800.0, .26);
+                    if (newStr > (int)Monsters.Str.strong)
+                        newStr = (int)Monsters.Str.strong;
+                    str = (Monsters.Str)newStr;
+                }
+
+                bool canMatchTown = true;
+                bool any = false;
+                if (hasResource)
+                {
+                    // if there is a resource mine, strength must be at least avg or mine is ungarded
+                    if (str <= Str.avg)
+                    {
                         str = Str.avg;
-                    if (str == Str.none)
+
+                        // Neutral, Castle, and Rampart level 1 creatures are too strong to be generated to guard resource mines with avg strength, so force some other type
+                        canMatchTown = false;
+                        any = true;
+                        // force a working type
+                        Switch(Program.rand.RangeInt(2, 9));
+                        // chance to add another type to keep balanced
+                        if (Program.rand.Next(4) == 0)
+                            Switch(Program.rand.RangeInt(0, 1));
+                    }
+                }
+                else if (hasGold)
+                {
+                    // if there is a gold mine, force at least weak monsters
+                    if (str < Str.weak)
                         str = Str.weak;
                 }
 
                 Strength = str.ToString();
 
                 bool n = Program.rand.Bool(neutral);
-                if (town && Program.rand.Bool(match))
+                if (town && canMatchTown && Program.rand.Bool(match))
+                {
                     Match_to_town = "x";
+                }
                 else if (Program.rand.Bool(allOne))
                 {
-                    if (n)
-                        Neutral = "x";
-                    else
-                        Switch(Program.rand.Next(10));
+                    if (!any)
+                        if (n)
+                            Neutral = "x";
+                        else
+                            Switch(Program.rand.Next(10));
                 }
                 else
                 {
-                    bool any = false;
                     for (int a = 0; a < 10; a++)
                         if (Program.rand.Bool(prob))
                         {
@@ -710,10 +733,10 @@ namespace HOMM3
 
             public enum Str
             {
-                none,
-                weak,
-                avg,
-                strong,
+                none = 0,
+                weak = 1,
+                avg = 2,
+                strong = 3,
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
@@ -772,20 +795,22 @@ namespace HOMM3
 
             internal void Generate(double value, double mineValue, bool neutralDwellings)
             {
-                // 55 — poor zone, white. Content types:      (  500– 3000, 9), ( 3000– 6000, 6), (10000–15000, 1).
-                //133 — rich zone, silver. Content types:     ( 3000– 6000, 9), (10000–15000, 6), (15000–20000, 1).
-                //242 — vastly rich zone, gold.Content types: (10000–15000, 9), (15000–20000, 6), (20000–30000, 1).
+                // 55 — poor zone, white.       Content types: (  500– 3000, 9), ( 3000– 6000, 6), (10000–15000, 1).
+                //133 — rich zone, silver.      Content types: ( 3000– 6000, 9), (10000–15000, 6), (15000–20000, 1).
+                //242 — vastly rich zone, gold. Content types: (10000–15000, 9), (15000–20000, 6), (20000–30000, 1).
 
-                double min = Program.rand.Range(100, 520);
+                double min = Program.rand.Range(101, 520);
+                double nMin = Program.rand.Range(Program.rand.Bool() ? min : (Program.rand.Bool() ? 30001 : 39338), Program.rand.Range(43905, 49795));
                 double[,,] ranges = new double[4, 3, 2] {
-                    { {   min,  6500 }, {  6500,  9100 }, {  9100, 14300 } },
-                    { {  2600, 10400 }, { 10400, 15600 }, { 15600, 21000 } },
-                    { {  7800, 16900 }, { 16900, 21000 }, { 21000, 30000 } },
-                    //if neutral dwellings, use an alternate 3rd tier that allows for the neutral dragon dwellings
-                    { { 10000, 40000 }, { 40000, 80000 }, { 80000, 99999 } },
+                    { {  min,   6500 }, {  2600,  9100 }, {  7800, 14300 } },
+                    { { 6500,  10400 }, {  9100, 15600 }, { 14300, 21000 } },
+                    { { 10400, 16900 }, { 15600, 21000 }, { 21000, 30001 } }, 
+                    //if forcing neutral dwellings, chance to use an alternate 3rd tier that allows for the neutral dragon dwellings
+                    // 1-sigma confidence level based on: Crystal Cavern = 39338, Frozen Cliffs = 78845
+                    { { nMin, 49795 }, { 43905, 99804 }, { 87997, 99804 } },
                 };
 
-                value += mineValue;
+                value -= mineValue;
 
                 double count = 3;
                 for (int a = 2; a >= 0; a--)
@@ -799,8 +824,8 @@ namespace HOMM3
                     //hack....
                     if (flag)
                         value += (l + h) / 2.0;// - 25000;
-                    int low = Program.rand.GaussianCappedInt(l, .21, 100);
-                    int high = Program.rand.GaussianCappedInt(Math.Max(h, low), .104, low);
+                    int low = Program.rand.GaussianCappedInt(l, .104, 101);
+                    int high = Program.rand.GaussianCappedInt(Math.Max(h, low), .21, low);
                     double v = value / count--;
                     v *= 2 / (double)(low + high);
                     int density = Program.rand.GaussianCappedInt(Math.Max(v, 1), .091, 1);
@@ -895,6 +920,7 @@ namespace HOMM3
 
             public bool Generate(bool start, bool town, double disposition, double joinPct, bool moneyOnly, double mineValue)
             {
+                mineValue /= 2600.0;
                 disposition = Math.Min(disposition + mineValue, 10 - (10 - disposition) * (10 - mineValue) / 10.0);
 
                 if (!start && Program.rand.Bool(neutral * (town ? .21 : 1)))

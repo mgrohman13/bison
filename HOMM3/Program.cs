@@ -31,7 +31,7 @@ namespace HOMM3
             bool pairPlayers = rand.Bool(Math.Pow((players.Length - 1.69) / 7.8, .65));
             List<Zone> zones = Zone.InitZones(players, size);
             List<Connections> connections = Connections.InitConnections(players, size, zones.Count, pairPlayers);
-            Player.InitMines(players, pairPlayers);
+            Player.InitMines(players, pairPlayers, size);
 
             double zoneSize = 1296 * size / (double)zones.Count;
             Player.Generate(players, connections, zoneSize);

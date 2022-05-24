@@ -21,7 +21,7 @@ namespace HOMM3
         private bool ground;
         private readonly bool wide;
         private readonly bool borderGuard;
-        private readonly bool? road;
+        private bool? road;
         private int strength;
 
         //output
@@ -128,9 +128,10 @@ namespace HOMM3
 
             //primary external connections
             HashSet<Player> tempPlayers = players.ToHashSet();
+            tempPlayers.Remove(Program.rand.SelectValue(tempPlayers));
             while (tempPlayers.Any())
                 foreach (Player player in Program.rand.Iterate(players))
-                    if (Program.rand.Bool())
+                    if (tempPlayers.Any() && !tempPlayers.Contains(player))
                     {
                         bool primary = true;
                         bool ground = Program.rand.Bool();
@@ -143,32 +144,20 @@ namespace HOMM3
                             strength = Program.rand.GaussianOE(baseExternalStr, .078, .065);
                         while (strength > otherExternalStr);
 
-                        bool removed = tempPlayers.Remove(player);
-                        if (tempPlayers.Any())
+                        Player p2 = Program.rand.SelectValue(tempPlayers);
+                        tempPlayers.Remove(p2);
+
+                        static Zone SelZone(Player p)
                         {
-                            Player p2 = Program.rand.SelectValue(tempPlayers);
-                            tempPlayers.Remove(p2);
-
-                            static Zone SelZone(Player p)
-                            {
-                                Zone zone = p.Zones[^1];
-                                if (zone.extra && Program.rand.Bool())
-                                    zone = p.Zones[^2];
-                                return zone;
-                            }
-                            Zone z1 = SelZone(player);
-                            Zone z2 = SelZone(p2);
-
-                            AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
+                            Zone zone = p.Zones[^1];
+                            if (zone.extra && Program.rand.Bool())
+                                zone = p.Zones[^2];
+                            return zone;
                         }
+                        Zone z1 = SelZone(player);
+                        Zone z2 = SelZone(p2);
 
-                        if (removed)
-                            tempPlayers.Add(player);
-                        if (players.Length == 2 || !tempPlayers.Any())
-                        {
-                            tempPlayers.Clear();
-                            break;
-                        }
+                        AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                     }
 
             //extra external connections
@@ -265,7 +254,11 @@ namespace HOMM3
                 //if any wide, keep only one of the others 
                 var others = connections.Where(c => !c.wide);
                 if (others.Any())
-                    keep.Add(Program.rand.SelectValue(others));
+                {
+                    Connections connection = Program.rand.SelectValue(others);
+                    connection.road = Program.rand.Bool(.78);
+                    keep.Add(connection);
+                }
             }
             else
             {
