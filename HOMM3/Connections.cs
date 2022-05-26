@@ -252,7 +252,7 @@ namespace HOMM3
                 //only one wide connection makes sense
                 keep.Add(Program.rand.SelectValue(wide));
                 //if any wide, keep only one of the others 
-                var others = connections.Where(c => !c.wide);
+                var others = connections.Where(c => !c.wide && !c.borderGuard);
                 if (others.Any())
                 {
                     Connections connection = Program.rand.SelectValue(others);

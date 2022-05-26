@@ -36,6 +36,7 @@ namespace HOMM3
             double zoneSize = 1296 * size / (double)zones.Count;
             Player.Generate(players, connections, zoneSize);
 
+            map.Generate(size, zones.Count);
             Output(pack, map, zones.ToArray(), connections.ToArray());
         }
 
