@@ -1,0 +1,23 @@
+creature banks?
+object per zone settings
+correlate hut/eye of magi
+decorrelate warlock/trading
+
+towns balancing
+zone types
+town/castle
+chance to not match town/ terrain types
+creeps match terrrain?
+correlate zone value and size
+
+overall player balancing
+redundant connections	
+	border guard
+comp only starts?
+underground
+water
+town/mine density....
+restrictions?
+better mine distrbtn?
+zone repulsion/placement/fictive connections
+monolith connections?
