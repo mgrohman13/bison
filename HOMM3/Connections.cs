@@ -61,7 +61,7 @@ namespace HOMM3
             };
             Array.Sort(strengths);
             double baseInternalStr = strengths[0];
-            bool select = strengths[1] > strengths[0] * Program.rand.Range(1.69, 2.1);
+            bool select = strengths[1] > strengths[2] || strengths[1] > strengths[0] * Program.rand.Range(1.69, 2.1);
             double baseExternalStr = strengths[select ? 1 : 2];
             double otherInternalStr = strengths[select ? 2 : 1];
             double otherExternalStr = strengths[3];

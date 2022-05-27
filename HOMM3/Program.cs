@@ -62,7 +62,7 @@ namespace HOMM3
             int[] allSizes = new int[] { 1, 2, 4, 8, 9, 16, 18, 25, 32, 36, 49, 50, 72, 98 };
             int[] surfaceSizes = new int[] { 1, 4, 9, 16, 25, 36, 49 };
 
-            bool all = false;//todo: underground
+            bool all = rand.Bool();//todo: underground
 
             int[] sizes = all ? allSizes : surfaceSizes;
             int min = sizes[0], max = sizes[^1];

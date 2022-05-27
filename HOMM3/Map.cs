@@ -68,36 +68,46 @@ namespace HOMM3
                 this.frequency = frequency;
                 this.maxOnMap = maxOnMap;
                 this.maxPerZone = maxPerZone;
+
+                Verify(this.value, 100);
+                Verify(this.frequency);
+                Verify(this.maxOnMap);
+                Verify(this.maxPerZone);
+            }
+            private void Verify(int? test, int min = 1)
+            {
+                if (test.HasValue && test.Value < min)
+                    throw new Exception();
             }
 
             public static string Generate(double size, int numZones)
             {
                 List<ObjectSetting> settings = new();
 
-                static int Range(int a, int b) => Program.rand.RangeInt(a, b);
+                static int Range(int a, double b) => Program.rand.RangeInt(a, Program.rand.Round(b));
                 static int Weighted(int a, int b) => a + Program.rand.WeightedInt(b - a, Program.rand.DoubleHalf());
-                int max = 1 + Program.rand.Round(Math.Sqrt(size / 3.9));
-                int mult = Range(10, 20);
+                int Max() => 1 + Program.rand.GaussianCappedInt(Math.Sqrt(size) / 1.69, .13);
 
                 //neutral dragon dwellings
                 //Frozen Peaks                  +17 62 d 40  
-                settings.Add(new ObjectSetting("+17 62", frequency: 480, maxPerZone: 2));
+                settings.Add(new ObjectSetting("+17 62", frequency: 480, maxPerZone: 2, maxOnMap: 4));
                 //Crystal Cave                  +17 63 d 40 
-                settings.Add(new ObjectSetting("+17 63", frequency: 80));
+                settings.Add(new ObjectSetting("+17 63", frequency: 80, maxPerZone: Range(1, 2), maxOnMap: Range(2, 1 + Max())));
                 //Magic Forest                  +17 64 d 40  
-                settings.Add(new ObjectSetting("+17 64", frequency: 80));
+                settings.Add(new ObjectSetting("+17 64", frequency: 80, maxPerZone: Range(1, 2), maxOnMap: Range(2, 1 + Max())));
                 //Sulfurous Lair                +17 65 d 40  
-                settings.Add(new ObjectSetting("+17 65", frequency: 80));
+                settings.Add(new ObjectSetting("+17 65", frequency: 80, maxPerZone: Range(1, 2), maxOnMap: Range(2, 1 + Max())));
 
                 //balance tweaks
                 //Cover of Darkness             +15 0 500 25 
-                settings.Add(new ObjectSetting("+15 0", value: Weighted(500, 5000), frequency: Range(0, 5), maxPerZone: 1));
+                settings.Add(new ObjectSetting("+15 0", value: Weighted(500, 5000), frequency: Range(1, 4), maxPerZone: 1));
                 //Dragon Utopia                 +25 0 10000 100 
-                settings.Add(new ObjectSetting("+25 0", maxOnMap: max, maxPerZone: 1));
+                settings.Add(new ObjectSetting("+25 0", maxOnMap: Max(), maxPerZone: 1));
+                int mult = Range(10, 20);
                 //Magic Spring                  +48 0 500 50  
                 settings.Add(new ObjectSetting("+48 0", value: Weighted(500, 500 * mult)));
                 //Magic Well                    +49 0 250 100  
-                settings.Add(new ObjectSetting("+49 0", value: Weighted(250, 250 * mult)));
+                settings.Add(new ObjectSetting("+49 0", value: Weighted(250, 250 * mult), frequency: Range(100, 200)));
                 //Stables                       +94 0 200 40
                 settings.Add(new ObjectSetting("+94 0", value: Weighted(200, 4000), maxPerZone: 1));
                 //Trailblazer                   +144 11 200 40
@@ -105,24 +115,30 @@ namespace HOMM3
                 //Trading Post                  +99 0 3000 100 d d 
                 settings.Add(new ObjectSetting("+99 0", value: 6000, frequency: 50, maxOnMap: Range(1, 2), maxPerZone: 1));
                 //Warlock's Lab                 +144 9 10000 100 
-                settings.Add(new ObjectSetting("+144 9", value: 20000, frequency: 25, maxOnMap: 1));
+                settings.Add(new ObjectSetting("+144 9", value: 20000, frequency: 10, maxOnMap: 1));
 
                 //enable objects
                 //Keymaster's Tent              +10 n 5000 10 
                 //Keymaster's Tent              +10 n 20000 10 
-                settings.Add(new ObjectSetting("+10 n", value: Range(5000, 20000)));
+                while (Program.rand.Bool(.65))
+                    settings.Add(new ObjectSetting("+10 n", value: Range(100, 20000), frequency: Range(1, 39)));
                 //Cartographer Sea              +13 0 5000 20 
                 settings.Add(new ObjectSetting("+13 0", value: 10000, frequency: 10, maxOnMap: 1));
                 //Cartographer Ground           +13 1 10000 20 
                 settings.Add(new ObjectSetting("+13 1", value: 20000, frequency: 10, maxOnMap: 1));
                 //Cartographer Underground      +13 2 7500 20 
                 settings.Add(new ObjectSetting("+13 2", value: 15000, frequency: 10, maxOnMap: 1));
-                //Hut of the Magi               +37 0 100 25 
-                settings.Add(new ObjectSetting("+37 0", value: Range(5000, 10000), maxOnMap: Range(1, max), maxPerZone: 1));
-                //Eye of the Magi               +27 0 100 50 
-                settings.Add(new ObjectSetting("+27 0", value: 2000, maxPerZone: 2));
+                int eyes = Range(1, Program.rand.GaussianCappedInt(13 / numZones, .13));
+                if (eyes > 0)
+                {
+                    int hut = Range(4000, 4000 + 2000 * eyes * Math.Sqrt(numZones));
+                    //Hut of the Magi               +37 0 100 25 
+                    settings.Add(new ObjectSetting("+37 0", value: hut, maxOnMap: Range(1, Max()), maxPerZone: 1));
+                    //Eye of the Magi               +27 0 100 50 
+                    settings.Add(new ObjectSetting("+27 0", value: 1750, frequency: 100, maxPerZone: eyes));
+                }
                 //Sanctuary                     +80 0 100 50 
-                settings.Add(new ObjectSetting("+80 0", value: Weighted(100, 4000), frequency: 25, maxOnMap: Range(1, max), maxPerZone: 1));
+                settings.Add(new ObjectSetting("+80 0", value: Weighted(100, 4000), frequency: 25, maxOnMap: Range(1, Max()), maxPerZone: 1));
                 //Ancient Lamp                  +145 0 5000 200 
                 settings.Add(new ObjectSetting("+145 0"));
                 //Hill Fort (traditional)       +35 0 7000 20 

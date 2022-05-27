@@ -125,7 +125,7 @@ namespace HOMM3
 
                 if (monsters == Zone.Monsters.Str.none)
                     if (Program.rand.Bool(.91))
-                        monsters = Zone.Monsters.Str.avg;
+                        monsters = Program.rand.Bool() ? Zone.Monsters.Str.weak : Zone.Monsters.Str.avg;
                     else
                         value = Program.rand.Round(value / 2.1);
 
@@ -168,7 +168,7 @@ namespace HOMM3
             terrain.Generate(town);
             monsters.Generate(monsterStr, town, mineValue, resource > 0, gold > 0);
             bool neutralDwellings = options.Generate(start, town, disposition, joinPct, moneyOnly, mineValue);
-            treasure.Generate(value, mineValue, neutralDwellings);
+            treasure.Generate(start, value, mineValue, monsterStr, neutralDwellings);
 
             foreach (var pair in Program.rand.Iterate(connections))
             {
@@ -212,6 +212,7 @@ namespace HOMM3
                     case T.Junction:
                         Junction = "x";
                         break;
+                    default: throw new Exception();
                 }
                 return Base_Size * avgSize / 100.0;
             }
@@ -482,6 +483,7 @@ namespace HOMM3
                         case 3:
                             Gems++;
                             break;
+                        default: throw new Exception();
                     }
                 }
                 Gold = gold;
@@ -613,9 +615,9 @@ namespace HOMM3
             }
             private static void Init()
             {
-                match = Program.rand.GaussianOE(.169, .39, .13);
+                match = Program.rand.GaussianOE(.078, .39, .13);
                 allOne = Program.rand.GaussianOE(.065, .39, .13);
-                static double p() => Program.rand.GaussianOE(.13, .39, .13, .026);
+                static double p() => Program.rand.GaussianOE(.169, .39, .13, .052);
                 neutral = p();
                 prob = p();
                 const double cap = .91;
@@ -735,6 +737,7 @@ namespace HOMM3
                     case 9:
                         Cove = "x";
                         break;
+                    default: throw new Exception();
                 }
             }
 
@@ -800,7 +803,7 @@ namespace HOMM3
             //Density
             private int Density_3 = -1;
 
-            internal void Generate(double value, double mineValue, bool neutralDwellings)
+            internal void Generate(bool start, double value, double mineValue, Monsters.Str monsterStr, bool neutralDwellings)
             {
                 value -= mineValue;
 
@@ -811,33 +814,46 @@ namespace HOMM3
                 double min1 = Program.rand.Range(101, 520);
                 double min2 = Program.rand.Range(390, 3900);
                 double nMin = Program.rand.Range(Program.rand.Bool() ? min1 : (Program.rand.Bool() ? 30001 : 39338), Program.rand.Range(43905, 49795));
-                double[,,] ranges = new double[4, 3, 2] {
+                double[,,] ranges = new double[5, 3, 2] {
+                    //for starting areas, guarantee unguarded resources (items ranging 750-2000)
+                    { {  min1,  3900 }, {  2001,  2999 }, {   101,  6500 } },
+                    //main tiers
                     { {  min1,  6500 }, {  min2,  9100 }, {  5200, 13000 } },
                     { { 6500,  10400 }, {  9100, 14300 }, { 13000, 16900 } },
                     { { 10400, 15600 }, { 14300, 21000 }, { 16900, 30001 } }, 
                     //if forcing neutral dwellings, there is a chance to use an alternate 3rd tier that allows for the neutral dragon dwellings
                     // these values are 1-sigma confidence level based on: Crystal Cavern = 39338, Frozen Cliffs = 78845
-                    { { nMin, 49795 }, { 43905, 99804 }, { 87997, 99804 } },
+                    { {  nMin, 49795 }, { 43905, 99804 }, { 87997, 99804 } },
                 };
 
-                for (int tier = 2; tier >= 0; tier--)
-                {
-                    bool neutralDragons = tier == 2 && neutralDwellings && Program.rand.Bool();
+                bool neutralDragons = !start && neutralDwellings && monsterStr != Monsters.Str.none && Program.rand.Bool();
+                int[] order;
+                if (neutralDragons)
+                    order = new int[3] { 4, 2, 1 };
+                else if (start)
+                    //this makes impossible difficulty possible
+                    order = new int[3] { 0, 3, 2 };
+                else
+                    order = new int[3] { 3, 2, 1 }; ;
 
-                    double GetDensity(double l, double h) => value / (1.0 + tier) * 2 / (l + h);
+                int div = 3;
+                foreach (int tier in order)
+                {
+                    double GetDensity(double l, double h) => value / (double)div * 2 / (l + h);
+
+                    int selection = Program.rand.Next(3);
                     double lowAvg, highAvg;
-                    int a = neutralDragons ? 3 : tier;
-                    int b = Program.rand.Next(3);
                     do
                     {
-                        lowAvg = ranges[a, b, 0];
-                        highAvg = ranges[a, b, 1];
-                        b--;
+                        lowAvg = ranges[tier, selection, 0];
+                        highAvg = ranges[tier, selection, 1];
+                        selection--;
                     }
-                    while (!neutralDragons && b >= 0 && GetDensity(lowAvg, highAvg) < 1);
+                    while (!neutralDragons && selection >= 0 && GetDensity(lowAvg, highAvg) < 1);
 
                     int low = Program.rand.GaussianCappedInt(lowAvg, .104, 101);
                     int high = Program.rand.GaussianCappedInt(Math.Max(highAvg, low), .21, low);
+
                     int density;
                     if (neutralDragons)
                     {
@@ -852,27 +868,33 @@ namespace HOMM3
                     }
 
                     SetVals(tier, low, high, density);
+
+                    div--;
+                    neutralDragons = false;
                 }
             }
             private void SetVals(int a, int low, int high, int density)
             {
                 switch (a)
                 {
-                    case 0:
+                    case 2:
                         Low = low;
                         High = high;
                         Density = density;
                         break;
+                    case 0:
                     case 1:
                         Low_2 = low;
                         High_2 = high;
                         Density_2 = density;
                         break;
-                    case 2:
+                    case 3:
+                    case 4:
                         Low_3 = low;
                         High_3 = high;
                         Density_3 = density;
                         break;
+                    default: throw new Exception();
                 }
             }
 
@@ -949,14 +971,15 @@ namespace HOMM3
                 if (Program.rand.Bool(road * (town ? roadTown : 1)))
                     Allow_non_coherent_road = "x";
 
-                SetDisposition(disposition);
+                if (SetDisposition(disposition) == 0)
+                    moneyOnly = true;
                 Monsters_joining_percentage = Program.rand.Round(joinPct);
                 if (moneyOnly)
                     Monsters_join_only_for_money = "x";
 
                 return Force_neutral_creatures != null;
             }
-            private void SetDisposition(double disposition)
+            private double SetDisposition(double disposition)
             {
                 //1: 1-7  (4)
                 //2: 1-10 (5.5)
@@ -991,12 +1014,13 @@ namespace HOMM3
                     result = Math.Min(Program.rand.GaussianCappedInt(disposition, .078), 10);
                 }
 
+                bool useRange = Program.rand.Bool(.91);
                 if (result == 0)
                 {
                     Monsters_disposition_standard = 0;
                     Monsters_disposition_custom = -1;
                 }
-                else if (result == 4)
+                else if (useRange && result == 4)
                 {
                     Monsters_disposition_standard = 1;
                     Monsters_disposition_custom = -1;
@@ -1006,7 +1030,7 @@ namespace HOMM3
                     Monsters_disposition_standard = 2;
                     Monsters_disposition_custom = -1;
                 }
-                else if (result == 7)
+                else if (useRange && result == 7)
                 {
                     Monsters_disposition_standard = 3;
                     Monsters_disposition_custom = -1;
@@ -1018,11 +1042,13 @@ namespace HOMM3
                 }
                 else
                 {
-                    if (result > 10)
+                    if (result > 10 || (result != (int)result && result != 5.5))
                         throw new Exception();
                     Monsters_disposition_standard = 5;
                     Monsters_disposition_custom = Program.rand.Round(result);
                 }
+
+                return result;
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)

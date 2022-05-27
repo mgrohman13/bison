@@ -14,6 +14,7 @@ overall player balancing
 redundant connections	
 	border guard
 comp only starts?
+	inc difficulty
 underground
 water
 town/mine density....
