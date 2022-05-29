@@ -14,7 +14,9 @@ namespace HOMM3
         private static string name;
         public static string Name => name;
         private static double size;
-        public static string Size => name;
+        //public static double Size => size;
+        //private static string humanColor;
+        //public static string HumanColor => humanColor;
 
         static void Main()
         {
@@ -46,8 +48,36 @@ namespace HOMM3
             do
                 numPlayers = rand.GaussianOEInt(3.9, .169, .13, 2);
             while (numPlayers > 8);
-            return Enumerable.Range(0, numPlayers).Select(_ => new Player()).ToArray();
+            int human = rand.Next(numPlayers);
+            string humanColor = GetColor(human);
+            name += string.Format(" ({0})", humanColor);
+            Console.WriteLine("human = {0} ({1})", human + 1, humanColor);
+            return Enumerable.Range(0, numPlayers).Select(num => new Player(human != num)).ToArray();
         }
+        private static string GetColor(int human)
+        {
+            switch (human)
+            {
+                case 0:
+                    return "Red";
+                case 1:
+                    return "Blue";
+                case 2:
+                    return "Tan";
+                case 3:
+                    return "Green";
+                case 4:
+                    return "Orange";
+                case 5:
+                    return "Purple";
+                case 6:
+                    return "Teal";
+                case 7:
+                    return "Pink";
+                default: throw new Exception();
+            }
+        }
+
         private static int InitSize(int numPlayers)
         {
             int sizeInt = SelectSize(numPlayers);
@@ -110,7 +140,7 @@ namespace HOMM3
             Connections.Output(output, ref x, ref y, connections);
 
             string o = output.Select(c => c.Aggregate((a, b) => a + "\t" + b)).Aggregate((a, b) => a + "\r\n" + b);
-            File.WriteAllText("C:/files/MMH3/HotA_RMGTemplates/matt/" + name + ".txt", o);
+            File.WriteAllText(string.Format("C:/files/MMH3/HotA_RMGTemplates/matt/{0}.txt", name), o);
         }
         public static void Output(List<List<string>> output, int x, int y, object value)
         {

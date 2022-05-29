@@ -109,7 +109,7 @@ namespace HOMM3
                     //extra zones
                     value = Program.rand.GaussianOEInt(78000, .21, .078, minValue);
                     monsters = Program.rand.Bool(.39) ? Zone.Monsters.Str.avg : Monsters.Str.strong;
-                    disposition = 7.8;
+                    disposition = Program.rand.Range(6.5, 7.8);
                     moneyOnly = Program.rand.Bool();
                     joinPct = moneyOnly ? Program.rand.GaussianCapped(joinPct, .39) : 0;
                 }
@@ -118,7 +118,7 @@ namespace HOMM3
                     //standard zone
                     value = Program.rand.GaussianOEInt(104000, .26, .091, minValue);
                     monsters = (Zone.Monsters.Str)Program.rand.Next(4);
-                    disposition = .91 + Program.rand.Weighted(7.8, .65);
+                    disposition = .91 + Program.rand.Weighted(6.5, .78);
                     moneyOnly = Program.rand.Bool(.26);
                     joinPct = Program.rand.GaussianCapped(joinPct, .26);
                 }
@@ -158,7 +158,7 @@ namespace HOMM3
         {
             double mineValue = woodOre * 1500 + resource * 3500 + gold * 7000;
 
-            double size = type.Generate(start ? Type.T.Human : Type.T.Treasure, avgSize);
+            double size = type.Generate(start ? (player.AI ? Type.T.Computer : Type.T.Human) : Type.T.Treasure, avgSize);
             restrictions.Generate(numPlayers);
             bool town = player_Towns.Generate(start);
             town |= neutral_towns.Generate(start, size, avgSize);
@@ -204,7 +204,9 @@ namespace HOMM3
                         human_start = "x";
                         break;
                     case T.Computer:
-                        computer_start = "x";
+                        human_start = "x";
+                        // this doesn't work, the game always places the human as red and reorders the positions...
+                        //computer_start = "x";
                         break;
                     case T.Treasure:
                         Treasure = "x";
@@ -255,7 +257,8 @@ namespace HOMM3
 
             public void Generate(int numPlayers)
             {
-                Minimum_human_positions = Maximum_human_positions = Minimum_total_positions = Maximum_total_positions = numPlayers;
+                Minimum_human_positions = Maximum_human_positions = numPlayers; // 1
+                Minimum_total_positions = Maximum_total_positions = numPlayers;
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
@@ -641,10 +644,10 @@ namespace HOMM3
 
             public void Generate(Monsters.Str str, bool town, double mineValue, bool hasResource, bool hasGold)
             {
-                if (mineValue > 0)
+                if (mineValue > 3000)
                 {
                     //chance to increase strength based on number/value of mines
-                    int newStr = (int)str + Program.rand.GaussianCappedInt(mineValue / 7800.0, .26);
+                    int newStr = (int)str + Program.rand.GaussianCappedInt((mineValue - 2500) / 6500.0, .26);
                     if (newStr > (int)Monsters.Str.strong)
                         newStr = (int)Monsters.Str.strong;
                     str = (Monsters.Str)newStr;
@@ -963,7 +966,7 @@ namespace HOMM3
 
             public bool Generate(bool start, bool town, double disposition, double joinPct, bool moneyOnly, double mineValue)
             {
-                mineValue /= 2600.0;
+                mineValue /= 3900.0;
                 disposition = Math.Min(disposition + mineValue, 10 - (10 - disposition) * (10 - mineValue) / 10.0);
 
                 if (!start && Program.rand.Bool(neutral * (town ? .21 : 1)))
@@ -995,7 +998,7 @@ namespace HOMM3
                 double[] ranges = new double[] { min, 4, 5.5, 7, max };
 
                 double result = double.NaN;
-                if (disposition > min && disposition < max && Program.rand.Bool(.78))
+                if (disposition > min && disposition < max && Program.rand.Bool(.91))
                 {
                     for (int a = 1; a < ranges.Length ? true : throw new Exception(); a++)
                         if (disposition < ranges[a])

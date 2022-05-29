@@ -14,9 +14,11 @@ namespace HOMM3
         private readonly List<Zone> zones;
         public ReadOnlyCollection<Zone> Zones => zones.AsReadOnly();
         private Player paired;
-        public Player()
+        public readonly bool AI;
+        public Player(bool AI)
         {
             zones = new();
+            this.AI = AI;
         }
 
         public void AddZone(Zone zone)
@@ -34,8 +36,8 @@ namespace HOMM3
         public static void InitMines(Player[] players, bool pairPlayers, double size)
         {
             double zonesPerPlayer = players.Average(p => p.zones.Count);
-            double sizeMult = Math.Pow(size / 9.1, .39);
-            double avgMines = 2.1 + .52 * Math.Sqrt(zonesPerPlayer) * sizeMult;
+            double sizeMult = Math.Pow(size / 13, .39);
+            double avgMines = (2.1 + .13 * Math.Sqrt(zonesPerPlayer)) * sizeMult;
             int homeWoodOre = 1 + Program.rand.Round((pairPlayers ? .39 : .65) * Math.Sqrt(sizeMult));
             int woodOre = Program.rand.GaussianOEInt(avgMines / 7.8, .39, .13);
             if (homeWoodOre == 1 && woodOre == 0)

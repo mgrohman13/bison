@@ -90,13 +90,13 @@ namespace HOMM3
 
                 //neutral dragon dwellings
                 //Frozen Peaks                  +17 62 d 40  
-                settings.Add(new ObjectSetting("+17 62", frequency: 480, maxPerZone: 2, maxOnMap: 4));
+                settings.Add(new ObjectSetting("+17 62", frequency: 480, maxOnMap: 4, maxPerZone: 2));
                 //Crystal Cave                  +17 63 d 40 
-                settings.Add(new ObjectSetting("+17 63", frequency: 80, maxPerZone: Range(1, 2), maxOnMap: Range(2, 1 + Max())));
+                settings.Add(new ObjectSetting("+17 63", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
                 //Magic Forest                  +17 64 d 40  
-                settings.Add(new ObjectSetting("+17 64", frequency: 80, maxPerZone: Range(1, 2), maxOnMap: Range(2, 1 + Max())));
+                settings.Add(new ObjectSetting("+17 64", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
                 //Sulfurous Lair                +17 65 d 40  
-                settings.Add(new ObjectSetting("+17 65", frequency: 80, maxPerZone: Range(1, 2), maxOnMap: Range(2, 1 + Max())));
+                settings.Add(new ObjectSetting("+17 65", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
 
                 //balance tweaks
                 //Cover of Darkness             +15 0 500 25 
@@ -113,7 +113,7 @@ namespace HOMM3
                 //Trailblazer                   +144 11 200 40
                 settings.Add(new ObjectSetting("+144 11", value: Weighted(200, 4000), maxPerZone: 1));
                 //Trading Post                  +99 0 3000 100 d d 
-                settings.Add(new ObjectSetting("+99 0", value: 6000, frequency: 50, maxOnMap: Range(1, 2), maxPerZone: 1));
+                settings.Add(new ObjectSetting("+99 0", value: 12000, frequency: 25, maxOnMap: Range(1, 2), maxPerZone: 1));
                 //Warlock's Lab                 +144 9 10000 100 
                 settings.Add(new ObjectSetting("+144 9", value: 20000, frequency: 10, maxOnMap: 1));
 
@@ -123,11 +123,11 @@ namespace HOMM3
                 while (Program.rand.Bool(.65))
                     settings.Add(new ObjectSetting("+10 n", value: Range(100, 20000), frequency: Range(1, 39)));
                 //Cartographer Sea              +13 0 5000 20 
-                settings.Add(new ObjectSetting("+13 0", value: 10000, frequency: 10, maxOnMap: 1));
+                settings.Add(new ObjectSetting("+13 0", value: Range(10000, 15000), frequency: 10, maxOnMap: 1));
                 //Cartographer Ground           +13 1 10000 20 
-                settings.Add(new ObjectSetting("+13 1", value: 20000, frequency: 10, maxOnMap: 1));
+                settings.Add(new ObjectSetting("+13 1", value: Range(20000, 30000), frequency: 10, maxOnMap: 1));
                 //Cartographer Underground      +13 2 7500 20 
-                settings.Add(new ObjectSetting("+13 2", value: 15000, frequency: 10, maxOnMap: 1));
+                settings.Add(new ObjectSetting("+13 2", value: Range(15000, 22500), frequency: 10, maxOnMap: 1));
                 int eyes = Range(1, Program.rand.GaussianCappedInt(13 / numZones, .13));
                 if (eyes > 0)
                 {

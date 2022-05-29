@@ -47,16 +47,17 @@ namespace HOMM3
 
         private static double GenerateStrongest()
         {
-            return Program.rand.GaussianOE(Program.rand.Range(16900, 26000), .13, .13);
+            return Program.rand.GaussianOE(Program.rand.Range(16900, 26000), .104, .104);
         }
         public static List<Connections> InitConnections(Player[] players, double size, int numZones, bool pairPlayers)
         {
             List<Connections> connections = new();
 
+            double range = Program.rand.Range(13000, 21000);
             double[] strengths = new double[] {
-                Program.rand.GaussianOE( 7800, .26, .13),
-                Program.rand.GaussianOE(16900, .21, .13),
-                Program.rand.GaussianOE(Program.rand.Range(13000, 21000), .169, .13),
+                Program.rand.GaussianOE( 7800, .21,  .104),
+                Program.rand.GaussianOE(16900, .169, .104),
+                Program.rand.GaussianOE(range, .13,  .104),
                 GenerateStrongest(),
             };
             Array.Sort(strengths);
@@ -205,10 +206,13 @@ namespace HOMM3
                     strength = Program.rand.GaussianOE(baseInternalStr, .169, .026);
                 while (strength > baseExternalStr);
 
+                bool human = true;
                 tempPlayers = players.ToHashSet();
                 while (tempPlayers.Count > 1)
                 {
+                    //Player p1 = human ? tempPlayers.Where(p => !p.AI).Single() : Program.rand.SelectValue(tempPlayers);
                     Player p1 = Program.rand.SelectValue(tempPlayers);
+                    human = false;
                     tempPlayers.Remove(p1);
                     Player p2 = Program.rand.SelectValue(tempPlayers);
                     tempPlayers.Remove(p2);
@@ -219,6 +223,7 @@ namespace HOMM3
                 }
             }
 
+            //don't randomize connection order so primary connections are always first
             return connections;
         }
         private static void AddConnection(List<Connections> connections, Zone z1, Zone z2, bool primary, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
@@ -402,7 +407,8 @@ namespace HOMM3
 
             public void Generate(int numPlayers)
             {
-                Minimum_human_positions = Maximum_human_positions = Minimum_total_positions = Maximum_total_positions = numPlayers;
+                Minimum_human_positions = Maximum_human_positions = numPlayers; //1
+                Minimum_total_positions = Maximum_total_positions = numPlayers;
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Connections[] connections)
