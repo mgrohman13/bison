@@ -50,11 +50,11 @@ namespace HOMM3
 
         private class ObjectSetting
         {
-            private string id;
-            private int? value;
-            private int? frequency;
-            private int? maxOnMap;
-            private int? maxPerZone;
+            private readonly string id;
+            private readonly int? value;
+            private readonly int? frequency;
+            private readonly int? maxOnMap;
+            private readonly int? maxPerZone;
 
             public ObjectSetting(string id, int? value = null, int? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
             {
@@ -74,7 +74,7 @@ namespace HOMM3
                 Verify(this.maxOnMap);
                 Verify(this.maxPerZone);
             }
-            private void Verify(int? test, int min = 1)
+            private static void Verify(int? test, int min = 1)
             {
                 if (test.HasValue && test.Value < min)
                     throw new Exception();
