@@ -882,7 +882,7 @@ namespace HOMM3
                 if (neutralDragons)
                     order = new int[3] { 4, 2, 1 };
                 else if (start && player.AIprimary)
-                    // give the AI primary starting location unguarded resources
+                    // give unguarded resources
                     order = new int[3] { 0, 3, 2 };
                 else
                     order = new int[3] { 3, 2, 1 }; ;

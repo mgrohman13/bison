@@ -36,7 +36,7 @@ namespace HOMM3
             }
             Zone_sparseness = Program.rand.Bool() ? -1 : Custom();
             Spell_Research = Program.rand.Bool() ? "x" : null;
-            Anarchy = Program.rand.Bool(.26) ? "x" : null;
+            Anarchy = Program.rand.Bool(.13) ? "x" : null;
 
         }
         public void Generate(double size, int numZones)
@@ -143,10 +143,8 @@ namespace HOMM3
                 settings.Add(new ObjectSetting("+145 0"));
                 //Hill Fort (traditional)       +35 0 7000 20 
                 settings.Add(new ObjectSetting("+35 0", value: Range(14000, 28000), frequency: 10, maxOnMap: 1));
-
-                //for reference:
-                //Hill Fort (nerfed)            +35 1 7000 20 
-                //settings.Add(new ObjectSetting("+35 1", 7000, 20, null, null));
+                //Hill Fort(nerfed)            +35 1 7000 20
+                settings.Add(new ObjectSetting("+35 1", value: 3500));
 
                 return Program.rand.Iterate(settings).Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
             }
