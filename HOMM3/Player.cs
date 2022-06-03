@@ -57,7 +57,7 @@ namespace HOMM3
             p2.paired = p1;
         }
 
-        public static void InitMines(Player[] players, List<Zone> zones, bool pairPlayers, double size)
+        public static void InitMines(Player[] players, List<Zone> zones, double size)
         {
             double numZones = zones.Count;
             double zonesPerPlayer = numZones / (double)Program.NumPlayers;
@@ -66,15 +66,15 @@ namespace HOMM3
             double minesAvg = (.26 + .52 * Math.Sqrt(zonesPerPlayer)) * sizeMult;
 
             //player mines
-            int playerWoodOre = Program.rand.GaussianOEInt(1 + (pairPlayers ? .13 : .52), .13, .013);
-            int pairedWoodOre = pairPlayers ? Program.rand.GaussianOEInt(playerWoodOre == 0 ? .52 : .91, .13, .013) : 0;
+            int playerWoodOre = Program.rand.GaussianOEInt(1 + (Program.PairPlayer ? .13 : .52), .13, .013);
+            int pairedWoodOre = Program.PairPlayer ? Program.rand.GaussianOEInt(playerWoodOre == 0 ? .52 : .91, .13, .013) : 0;
             int pWoodOre = Math.Max(0, 2 - (playerWoodOre + pairedWoodOre) + Program.rand.OEInt(minesAvg / 9.1));
             int pResource = Program.rand.GaussianOEInt(minesAvg, .13, .065, 1);
             int pGold = Program.rand.GaussianOEInt(.52 + minesAvg / 3.9, .26, .065);
             int pairedResource = 0, pairedGold = 0;
 
             //paired balancing
-            if (pairPlayers && playerWoodOre > pairedWoodOre)
+            if (Program.PairPlayer && playerWoodOre > pairedWoodOre)
                 if (pGold > 0 && Program.rand.Bool(.91))
                 {
                     pGold--;
@@ -88,7 +88,7 @@ namespace HOMM3
                 }
 
             //ai wood/ore
-            double numAIs = Program.NumPlayers - (pairPlayers ? 2 : 1);
+            double numAIs = Program.NumPlayers - (Program.PairPlayer ? 2 : 1);
             var AIs = players.Where(p => !p.Human && (p.paired == null || !p.paired.Human));
             Dictionary<Player, int> aiHomeWoodOre = Program.rand.Iterate(AIs).ToDictionary(p => p, p => Program.rand.GaussianOEInt(p.AIstrong ? 1 : 2, .13, .013));
             int aiHomeWoodOreCount = aiHomeWoodOre.Values.Sum();
@@ -115,8 +115,8 @@ namespace HOMM3
             aiGoldAvg += (pairedResource / 1.3 + pResource - aiResource / numAIs) / 1.69;
             //player gold mine balancing
             aiGoldAvg += pGold + pairedGold / 1.3;
-            double mult = Math.Sqrt(numAIs);
-            aiGoldAvg *= mult;
+
+            //balancing
             if (aiGoldAvg < 0)
             {
                 int xferGold = (int)Math.Ceiling(-aiGoldAvg);
@@ -127,6 +127,8 @@ namespace HOMM3
                 pGold += xferGold;
                 pResource += xferResource;
             }
+            double mult = Math.Sqrt(numAIs);
+            aiGoldAvg *= mult;
 
             //ai gold mines
             int aiGold = aiGoldAvg > 1 ? Program.rand.Round(aiGoldAvg - 1) : 0;
@@ -142,9 +144,9 @@ namespace HOMM3
             //place home mines
             Player human = players.Single(p => p.Human);
             human.home.AddMines(playerWoodOre, 0, 0);
-            if (pairPlayers)
+            if (Program.PairPlayer)
                 human.paired.home.AddMines(pairedWoodOre, pairedResource, pairedGold);
-            foreach (var pair in aiHomeWoodOre)
+            foreach (var pair in Program.rand.Iterate(aiHomeWoodOre))
                 pair.Key.home.AddMines(pair.Value, 0, 0);
 
             //place all mines
@@ -213,15 +215,82 @@ namespace HOMM3
             if (aiWoodOre != 0 || aiResource != 0 || aiGold != 0 || Math.Abs(numAIs) > .0000001)
                 throw new Exception();
 
-            //remove any excess mines in every zone
-            int CanRemove(Func<Zone, int> GetCount) => Math.Max(0, Math.Min(zones.Min(GetCount), Program.rand.Round(zones.Average(GetCount)) - 1));
+            bool any;
+            do
+            {
+                int CountMines(Zone zone) => zone.WoodOreMines + zone.ResourceMines + zone.GoldMines;
+                int CanRemove(Func<Zone, int> GetCount) => Program.rand.Bool(.91) ? Math.Max(0, Math.Min(zones.Min(GetCount), Program.rand.Round(zones.Average(GetCount)) - 1)) : 0;
+                void ModRandomMine(Zone zone, Action<Zone> WoodOre, Action<Zone> Resource, Action<Zone> Gold)
+                {
+                    switch (Program.rand.SelectValue(new Dictionary<string, int>()
+                        { { "wo", zone.WoodOreMines }, { "r", zone.ResourceMines }, { "g", zone.GoldMines }, }))
+                    {
+                        case "wo":
+                            WoodOre(zone);
+                            break;
+                        case "r":
+                            Resource(zone);
+                            break;
+                        case "g":
+                            Gold(zone);
+                            break;
+                        default: throw new Exception();
+                    }
+                }
 
-            int removeWoodOre = CanRemove(z => z.WoodOreMines);
-            int removeResource = CanRemove(z => z.ResourceMines);
-            int removeGold = CanRemove(z => z.GoldMines);
-            if (removeWoodOre > 0 || removeResource > 0 || removeGold > 0)
-                foreach (Zone zone in zones)
-                    zone.RemoveMines(removeWoodOre, removeResource, removeGold);
+                //remove any excess mines in every zone 
+                int removeWoodOre = CanRemove(z => z.WoodOreMines);
+                int removeResource = CanRemove(z => z.ResourceMines);
+                int removeGold = CanRemove(z => z.GoldMines);
+                any = removeWoodOre > 0 || removeResource > 0 || removeGold > 0;
+                if (any)
+                    foreach (Zone zone in Program.rand.Iterate(zones))
+                        zone.RemoveMines(removeWoodOre, removeResource, removeGold);
+                while (CanRemove(CountMines) > 0)
+                {
+                    any = true;
+                    foreach (Zone zone in Program.rand.Iterate(zones))
+                        ModRandomMine(zone, wo =>
+                        {
+                            zone.RemoveMines(1, 0, 0);
+                        }, r =>
+                        {
+                            zone.RemoveMines(0, 1, 0);
+                            zone.AddMines(1, 0, 0);
+                        }, g =>
+                        {
+                            zone.RemoveMines(0, 0, 1);
+                            zone.AddMines(0, 1, 0);
+                        });
+                }
+
+                //move mines from zones with a large number of them to a neighbor
+                double minesPerZone = 2.6 * zones.Average(CountMines);
+                foreach (Zone zone1 in Program.rand.Iterate(zones))
+                    if (Program.rand.GaussianOE(CountMines(zone1), .26, .065) > minesPerZone)
+                    {
+                        any = true;
+                        Zone zone2 = Program.rand.SelectValue(zone1.Connections.Keys, z =>
+                        {
+                            double str = 3900 + zone1.Connections[z].Min(c => c.Strength);
+                            double mines = .52 + CountMines(z);
+                            return Program.rand.Round(int.MaxValue / str / mines / mines);
+                        });
+                        ModRandomMine(zone1, wo =>
+                        {
+                            zone1.RemoveMines(1, 0, 0);
+                            zone2.AddMines(1, 0, 0);
+                        }, r =>
+                        {
+                            zone1.RemoveMines(0, 1, 0);
+                            zone2.AddMines(0, 1, 0);
+                        }, g =>
+                        {
+                            zone1.RemoveMines(0, 0, 1);
+                            zone2.AddMines(0, 0, 1);
+                        });
+                    }
+            } while (any);
         }
 
         public static void Generate(Player[] players, List<Connections> connections)

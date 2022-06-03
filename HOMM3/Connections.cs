@@ -25,6 +25,7 @@ namespace HOMM3
         private int strength;
 
         public bool Ground => ground;
+        public int Strength => strength;
 
         //output
         private readonly Zones zones;
@@ -49,23 +50,23 @@ namespace HOMM3
 
         private static double GenerateStrongest()
         {
-            return Program.rand.GaussianOE(Program.rand.Range(16900, 26000), .104, .104);
+            return Program.rand.GaussianOE(Program.rand.Range(21000, 39000), .104, .104);
         }
-        public static List<Connections> InitConnections(Player[] players, double size, double numZones, bool pairPlayers)
+        public static List<Connections> InitConnections(Player[] players, double size, double numZones)
         {
             double playerCount = players.Length;
             List<Connections> connections = new();
 
-            double range = Program.rand.Range(13000, 21000);
+            double range = Program.rand.Range(16900, 26000);
             double[] strengths = new double[] {
                 Program.rand.GaussianOE( 7800, .21,  .104),
-                Program.rand.GaussianOE(16900, .169, .104),
+                Program.rand.GaussianOE(21000, .169, .104),
                 Program.rand.GaussianOE(range, .13,  .104),
                 GenerateStrongest(),
             };
             Array.Sort(strengths);
             double baseInternalStr = strengths[0];
-            bool select = strengths[1] > strengths[2] || strengths[1] > strengths[0] * Program.rand.Range(1.69, 2.1);
+            bool select = strengths[1] > strengths[2] || strengths[1] > strengths[0] * Program.rand.Range(2.1, 2.6);
             double baseExternalStr = strengths[select ? 1 : 2];
             double otherInternalStr = strengths[select ? 2 : 1];
             double otherExternalStr = strengths[3];
@@ -167,7 +168,7 @@ namespace HOMM3
 
             //extra external connections
             int externalConnections = Program.rand.GaussianOEInt(Math.Sqrt(numZones - 1.69) / 2.6, .39, .065);
-            if (pairPlayers)
+            if (Program.PairPlayer)
                 --externalConnections;
             HashSet<Zone> tempZones = players.SelectMany(p => p.Zones).ToHashSet();
             for (int c = 0; c < externalConnections; c++)
@@ -197,6 +198,9 @@ namespace HOMM3
             }
 
             //paired connections
+            double avgPairConnections = Math.Sqrt(zonesPerPlayer);
+            int pairConnections = Program.rand.GaussianOEInt(avgPairConnections, .26, .13, 1);
+            for (int d = 0; d < pairConnections; d++)
             {
                 bool primary = true;
                 double ground = .65;
@@ -204,12 +208,8 @@ namespace HOMM3
                 bool canBorderGuard = false;
                 bool? road = null;
                 double deviation = .091;
-                double strength;
-                do
-                    strength = Program.rand.GaussianOE(baseInternalStr, .169, .026);
-                while (strength > baseExternalStr);
+                double strength = Program.rand.Range(baseInternalStr, baseExternalStr);
 
-                double avgPairConnections = Math.Sqrt(zonesPerPlayer);
                 tempPlayers = players.Where(p => p.Paired != null).ToHashSet();
                 while (tempPlayers.Any())
                 {
@@ -218,13 +218,9 @@ namespace HOMM3
                     Player p2 = p1.Paired;
                     tempPlayers.Remove(p2);
 
-                    int pairConnections = Program.rand.GaussianOEInt(avgPairConnections, .26, .13, 1);
-                    for (int d = 0; d < pairConnections; d++)
-                    {
-                        Zone z1 = Program.rand.SelectValue(p1.Zones);
-                        Zone z2 = Program.rand.SelectValue(p2.Zones);
-                        AddConnection(connections, z1, z2, primary, Program.rand.Bool(ground), wide, canBorderGuard, road, deviation, strength);
-                    }
+                    Zone z1 = Program.rand.SelectValue(p1.Zones);
+                    Zone z2 = Program.rand.SelectValue(p2.Zones);
+                    AddConnection(connections, z1, z2, primary, Program.rand.Bool(ground), wide, canBorderGuard, road, deviation, strength);
                 }
             }
 
@@ -245,7 +241,7 @@ namespace HOMM3
             strength = Math.Max(strength, Program.rand.Round(GenerateStrongest()));
         }
 
-        internal static void Generate(List<Connections> allConnections, List<Connections> connections)
+        public static void Generate(List<Connections> allConnections, List<Connections> connections)
         {
             if (connections.Count > 1)
                 TrimConnections(allConnections, connections);
@@ -412,7 +408,7 @@ namespace HOMM3
 
             public void Generate()
             {
-                Minimum_human_positions = Maximum_human_positions = 1;
+                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers; // 1;
                 Minimum_total_positions = Maximum_total_positions = Program.NumPlayers;
             }
 

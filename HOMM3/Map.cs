@@ -63,7 +63,7 @@ namespace HOMM3
                 if (frequency.HasValue)
                     frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, 1);
 
-                this.id = id;
+                this.id = "+" + id;
                 this.value = value;
                 this.frequency = frequency;
                 this.maxOnMap = maxOnMap;
@@ -84,69 +84,152 @@ namespace HOMM3
             {
                 List<ObjectSetting> settings = new();
 
-                static int Range(int a, double b) => Program.rand.RangeInt(a, Program.rand.Round(b));
-                static int Weighted(int a, int b) => a + Program.rand.WeightedInt(b - a, Program.rand.DoubleHalf());
+                //uniform distribution
+                static int Range(int min, double max) => Program.rand.RangeInt(min, Program.rand.Round(max));
+                //this generates a distribution skewed away from the center (average) and towards the extremes (min/max)
+                static int Weighted(int start, int mult) => start + Program.rand.WeightedInt(start * (mult - 1), Program.rand.DoubleHalf());
                 int Max() => 1 + Program.rand.GaussianCappedInt(Math.Sqrt(size) / 1.69, .13);
 
-                //neutral dragon dwellings
+                // neutral dragon dwellings
+
                 //Frozen Peaks                  +17 62 d 40  
-                settings.Add(new ObjectSetting("+17 62", frequency: 480, maxOnMap: 4, maxPerZone: 2));
+                // since we go out of our way to generate treasure chunks big enough for these, make it very likely to appear when at all possible, but cap the number
+                settings.Add(new("17 62", frequency: 480, maxOnMap: 4, maxPerZone: 2));
+                //make the rest of the neutral dragon dwellings a little more frequent, and cap them so we don't spam them out
                 //Crystal Cave                  +17 63 d 40 
-                settings.Add(new ObjectSetting("+17 63", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
+                settings.Add(new("17 63", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
                 //Magic Forest                  +17 64 d 40  
-                settings.Add(new ObjectSetting("+17 64", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
+                settings.Add(new("17 64", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
                 //Sulfurous Lair                +17 65 d 40  
-                settings.Add(new ObjectSetting("+17 65", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
+                settings.Add(new("17 65", frequency: 80, maxOnMap: Range(2, 1 + Max()), maxPerZone: Range(1, 2)));
 
-                //balance tweaks
-                //Cover of Darkness             +15 0 500 25 
-                settings.Add(new ObjectSetting("+15 0", value: Weighted(500, 5000), frequency: Range(1, 4), maxPerZone: 1));
-                //Dragon Utopia                 +25 0 10000 100 
-                settings.Add(new ObjectSetting("+25 0", maxOnMap: Max(), maxPerZone: 1));
+                // balance tweaks
+
+                //Hill Fort(new)                +35 1 7000 20
+                // over-nerfed, reduce value to reflect 
+                settings.Add(new("35 1", value: 3500));
                 int mult = Range(10, 20);
-                //Magic Spring                  +48 0 500 50  
-                settings.Add(new ObjectSetting("+48 0", value: Weighted(500, 500 * mult)));
+                ////Magic Spring                +48 0 500 50       (Note: This object cannot be guarded nor be part of a guarded group of objects)
+                //// would modify this similar to magic well, but since it can't be guarded there's no real point
+                //settings.Add(new("48 0", value: Weighted(500, 500 * mult)));
                 //Magic Well                    +49 0 250 100  
-                settings.Add(new ObjectSetting("+49 0", value: Weighted(250, 250 * mult), frequency: Range(100, 200)));
+                // more likely to appear, but chance they are guarded on some maps
+                settings.Add(new("49 0", value: Weighted(250, mult), frequency: Range(100, 200)));
                 //Stables                       +94 0 200 40
-                settings.Add(new ObjectSetting("+94 0", value: Weighted(200, 4000), maxPerZone: 1));
+                // undervalued, chance to increase and be guarded on some maps
+                mult = Range(20, 40);
+                settings.Add(new("94 0", value: Weighted(200, mult), maxPerZone: 1));
                 //Trailblazer                   +144 11 200 40
-                settings.Add(new ObjectSetting("+144 11", value: Weighted(200, 4000), maxPerZone: 1));
+                // undervalued, chance to increase and be guarded on some maps
+                settings.Add(new("144 11", value: Weighted(200, mult), maxPerZone: 1));
                 //Trading Post                  +99 0 3000 100 d d 
-                settings.Add(new ObjectSetting("+99 0", value: 12000, frequency: 25, maxOnMap: Range(1, 2), maxPerZone: 1));
+                // very valuable, especially early on, increase value to reflect
+                settings.Add(new("99 0", value: Range(6000, 12000), frequency: Range(25, 50), maxOnMap: Range(1, 2), maxPerZone: 1));
                 //Warlock's Lab                 +144 9 10000 100 
-                settings.Add(new ObjectSetting("+144 9", value: 20000, frequency: 10, maxOnMap: 1));
+                // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
+                settings.Add(new("144 9", value: 20000, frequency: 10, maxOnMap: 1));
 
-                //enable objects
+                // enable objects
+
+                //potentially enable keymaster's tents at different random values
                 //Keymaster's Tent              +10 n 5000 10 
                 //Keymaster's Tent              +10 n 20000 10 
                 while (Program.rand.Bool(.65))
-                    settings.Add(new ObjectSetting("+10 n", value: Range(100, 20000), frequency: Range(1, 39)));
+                    settings.Add(new("10 n", value: Range(100, 20000), frequency: Range(1, 39)));
+                //cartographers were thankfully nerfed to cost 10k gold, but still incredibly good, increase value and decrease frequency
                 //Cartographer Sea              +13 0 5000 20 
-                settings.Add(new ObjectSetting("+13 0", value: Range(10000, 15000), frequency: 10, maxOnMap: 1));
+                settings.Add(new("13 0", value: Range(10000, 15000), frequency: 10, maxOnMap: 1));
                 //Cartographer Ground           +13 1 10000 20 
-                settings.Add(new ObjectSetting("+13 1", value: Range(20000, 30000), frequency: 10, maxOnMap: 1));
+                // if the upper end of the range is chosen will be very unlikely to generate outside of zones with neutral dragon dwellings, that's fine
+                settings.Add(new("13 1", value: Range(20000, 30000), frequency: 10, maxOnMap: 1));
                 //Cartographer Underground      +13 2 7500 20 
-                settings.Add(new ObjectSetting("+13 2", value: Range(15000, 22500), frequency: 10, maxOnMap: 1));
+                settings.Add(new("13 2", value: Range(15000, 22500), frequency: 10, maxOnMap: 1));
+                //Cover of Darkness             +15 0 500 25 
+                // include in the interest of enabling everything, however it is kind of annoying to play against and also really messes with the AI
+                // very rare and chance to be guarded
+                settings.Add(new("15 0", value: Weighted(500, Range(10, 40)), frequency: Range(1, 4), maxPerZone: 1));
                 int eyes = Range(1, Program.rand.GaussianCappedInt(13 / numZones, .13));
                 if (eyes > 0)
                 {
-                    int hut = Range(4000, 4000 + 2000 * eyes * Math.Sqrt(numZones));
-                    //Hut of the Magi               +37 0 100 25 
-                    settings.Add(new ObjectSetting("+37 0", value: hut, maxOnMap: Range(1, Max()), maxPerZone: 1));
-                    //Eye of the Magi               +27 0 100 50 
-                    settings.Add(new ObjectSetting("+27 0", value: 1750, frequency: 100, maxPerZone: eyes));
+                    //Eye of the Magi           +27 0 100 50 
+                    // high enough value to appear outside of only zones with tiny treasure ranges, but not high enough to be guarded if by itself
+                    settings.Add(new("27 0", value: 1750, frequency: 100, maxPerZone: eyes));
+                    //Hut of the Magi           +37 0 100 25 
+                    // higher potential hut value when more eyes
+                    int hut = Range(4000, 4000 + 2000 * Math.Sqrt(eyes * numZones));
+                    settings.Add(new("37 0", value: hut, maxOnMap: Range(1, Max()), maxPerZone: 1));
                 }
-                //Sanctuary                     +80 0 100 50 
-                settings.Add(new ObjectSetting("+80 0", value: Weighted(100, 4000), frequency: 25, maxOnMap: Range(1, Max()), maxPerZone: 1));
-                //Ancient Lamp                  +145 0 5000 200 
-                settings.Add(new ObjectSetting("+145 0"));
                 //Hill Fort (traditional)       +35 0 7000 20 
-                settings.Add(new ObjectSetting("+35 0", value: Range(14000, 28000), frequency: 10, maxOnMap: 1));
-                //Hill Fort(nerfed)            +35 1 7000 20
-                settings.Add(new ObjectSetting("+35 1", value: 3500));
+                // extremely powerful, very high value to reflect
+                settings.Add(new("35 0", value: Range(14000, 28000), frequency: 10, maxOnMap: 1));
+                //Sanctuary                     +80 0 100 50 
+                // better than advertised and can be irritating, chance to be guarded and limit maximum
+                settings.Add(new("80 0", value: Weighted(100, Range(20, 80)), frequency: 25, maxOnMap: Range(1, Max()), maxPerZone: 1));
+                //Ancient Lamp                  +145 0 5000 200 
+                // default values, just enable
+                settings.Add(new("145 0"));
 
-                return Program.rand.Iterate(settings).Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
+                // creature banks - the RMG loves to spam these out, make all a little less frequent
+                //  the ones that give creature rewards make either more or less frequent
+
+                //Cyclops Stockpile             +16 0 3000 100 
+                settings.Add(new("16 0", frequency: Range(50, 100)));
+                //Dwarven Treasury              +16 1 2000 100 
+                settings.Add(new("16 1", frequency: Range(50, 100)));
+                //Griffin Conservatory          +16 2 2000 100 
+                // creature rewards
+                settings.Add(new("16 2", frequency: Weighted(50, 4)));
+                //Imp Cache                     +16 3 5000 100 
+                settings.Add(new("16 3", frequency: Range(50, 100)));
+                //Medusa Stores                 +16 4 1500 100 
+                settings.Add(new("16 4", frequency: Range(50, 100)));
+                //Naga Bank                     +16 5 3000 100 
+                settings.Add(new("16 5", frequency: Range(50, 100)));
+                //Dragon Fly Hive               +16 6 9000 100 
+                // creature rewards
+                settings.Add(new("16 6", frequency: Weighted(50, 4)));
+                //Beholder's Sanctuary          +16 21 2500 100 
+                settings.Add(new("16 21", frequency: Range(50, 100)));
+                //Temple of the Sea             +16 22 10000 100 
+                settings.Add(new("16 22", frequency: Range(50, 100)));
+                //Pirate Cavern                 +16 23 3500 100 
+                // enable, creature rewards
+                settings.Add(new("16 23", frequency: Weighted(50, 4)));
+                //Mansion                       +16 24 5000 50 
+                settings.Add(new("16 24", frequency: Range(25, 50)));
+                //Spit                          +16 25 1500 100 
+                // enable
+                settings.Add(new("16 25", frequency: Range(50, 100)));
+                //Red Tower                     +16 26 4000 20 
+                // creature rewards
+                settings.Add(new("16 26", frequency: Weighted(10, 4)));
+                //Black Tower                   +16 27 1500 100 
+                settings.Add(new("16 27", frequency: Range(50, 100)));
+                //Ivory Tower                   +16 28 7000 100 
+                // enable, creature rewards
+                settings.Add(new("16 28", frequency: Weighted(50, 4)));
+                //Churchyard                    +16 29 1500 100 
+                settings.Add(new("16 29", frequency: Range(50, 100)));
+                //Experimental Shop             +16 30 3500 80 
+                // creature rewards
+                settings.Add(new("16 30", frequency: Weighted(40, 4)));
+                //Wolf Raider Picket            +16 31 9500 70 
+                // creature rewards
+                settings.Add(new("16 31", frequency: Weighted(35, 4)));
+                //Ruins                         +16 32 1000 100 
+                settings.Add(new("16 32", frequency: Range(50, 100)));
+                //Derelict Ship                 +24 0 4000 20 
+                settings.Add(new("24 0", frequency: Range(10, 20)));
+                //Dragon Utopia                 +25 0 10000 100 
+                // looks silly when you have many of these close together, so cap them 
+                settings.Add(new("25 0", frequency: Range(75, 100), maxOnMap: Max(), maxPerZone: 1));
+                //Crypt                         +84 0 1000 100 
+                settings.Add(new("84 0", frequency: Range(50, 100)));
+                //Shipwreck                     +85 0 2000 100 
+                settings.Add(new("85 0", frequency: Range(50, 100)));
+
+                settings = Program.rand.Iterate(settings).ToList();
+                return settings.Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
             }
 
             //may look into in future:
