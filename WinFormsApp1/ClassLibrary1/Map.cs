@@ -31,7 +31,7 @@ namespace ClassLibrary1
 
             double max = Game.Rand.GaussianOE(130, .13, .13, 91);
             double min = Game.Rand.GaussianCapped(5.2, .039, 3.9);
-            int steps = Game.Rand.GaussianOEInt(13, .13, .13, 8);
+            int steps = Game.Rand.GaussianOEInt(6.5, .13, .13, 4);
             double weightScale = Game.Rand.Weighted(.91);
             double weightPower = Game.Rand.GaussianOE(6.5, .13, .13, 3.9);
             this.noise = new Noise(Game.Rand, min, max, steps, .052, weightScale, weightPower);
@@ -60,7 +60,7 @@ namespace ClassLibrary1
                 evaluateCache = new Dictionary<Point, double>();
             if (evaluateCache.TryGetValue(p, out double v))
                 return v;
-            static double Gradient(double coord, double center) => 2 / (1 + Math.Pow(Math.E, -.052 * (center - coord)));
+            static double Gradient(double coord, double center) => 2 / (1 + Math.Pow(Math.E, -.065 * (center - coord)));
             double xMult = Math.Min(Gradient(x, _right.Boundary), Gradient(-x, -_left.Boundary));
             double yMult = Math.Min(Gradient(y, _down.Boundary), Gradient(-y, -_up.Boundary));
             double mult = xMult * xMult + yMult * yMult;
