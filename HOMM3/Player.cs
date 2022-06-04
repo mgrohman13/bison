@@ -265,7 +265,7 @@ namespace HOMM3
                 }
 
                 //move mines from zones with a large number of them to a neighbor
-                double minesPerZone = 2.6 * zones.Average(CountMines);
+                double minesPerZone = Math.PI * Math.Sqrt(zones.Average(CountMines));
                 foreach (Zone zone1 in Program.rand.Iterate(zones))
                     if (Program.rand.GaussianOE(CountMines(zone1), .26, .065) > minesPerZone)
                     {
@@ -274,7 +274,7 @@ namespace HOMM3
                         {
                             double str = 3900 + zone1.Connections[z].Min(c => c.Strength);
                             double mines = .52 + CountMines(z);
-                            return Program.rand.Round(int.MaxValue / str / mines / mines);
+                            return Program.rand.Round(int.MaxValue / str / str / mines);
                         });
                         ModRandomMine(zone1, wo =>
                         {

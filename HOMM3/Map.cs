@@ -124,7 +124,7 @@ namespace HOMM3
                 settings.Add(new("144 11", value: Weighted(200, mult), maxPerZone: 1));
                 //Trading Post                  +99 0 3000 100 d d 
                 // very valuable, especially early on, increase value to reflect
-                settings.Add(new("99 0", value: Range(6000, 12000), frequency: Range(25, 50), maxOnMap: Range(1, 2), maxPerZone: 1));
+                settings.Add(new("99 0", value: Range(6000, 15000), frequency: Range(25, 50), maxOnMap: Range(1, 2), maxPerZone: 1));
                 //Warlock's Lab                 +144 9 10000 100 
                 // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
                 settings.Add(new("144 9", value: 20000, frequency: 10, maxOnMap: 1));

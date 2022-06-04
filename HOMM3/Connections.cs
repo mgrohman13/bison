@@ -96,7 +96,7 @@ namespace HOMM3
                     //extra zones 
                     ground &= Program.rand.Bool(.78);
                     wide = 0;
-                    strength = Program.rand.GaussianOE(extraStr, .13, .039);
+                    strength = extraStr;
                 }
 
                 foreach (Player player in Program.rand.Iterate(players))
@@ -208,7 +208,7 @@ namespace HOMM3
                 bool canBorderGuard = false;
                 bool? road = null;
                 double deviation = .091;
-                double strength = Program.rand.Range(baseInternalStr, baseExternalStr);
+                double strength = extraStr;
 
                 tempPlayers = players.Where(p => p.Paired != null).ToHashSet();
                 while (tempPlayers.Any())
