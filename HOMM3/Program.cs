@@ -50,14 +50,16 @@ namespace HOMM3
 
             Console.WriteLine("players = {0}", numPlayers);
 
-            ////this blows, but human has to be red or things get fucky
-            //int human = 0;
-            //name += string.Format(" ({0})", numPlayers);            
-
-            int human = rand.Next(numPlayers);
-            string humanColor = GetColor(human);
+            //This is extremely annoying, but the human has to be red or the game places the player in the red's spot anyways.
+            //It can be avoided by generating the map in the map editor first, but that is silly.
+            //However, by making this template generator assume red, you can actually pick a random color when you start the game, and be placed in the correct spot.
+            //The only downside is it makes it more confusing when reconciling the generated template with the map you played on.
+            //Therefore we make the human always player 0, but display a different player as the one you should select.
+            int human = 0;
+            int manualSelect = rand.Next(numPlayers);
+            string humanColor = GetColor(manualSelect);
             name += string.Format(" ({0}, {1})", numPlayers, humanColor);
-            Console.WriteLine("human = {0} ({1})", human + 1, humanColor);
+            Console.WriteLine("human = {0} ({1})", manualSelect + 1, humanColor);
 
             int strongCount = rand.RangeInt(1, numPlayers - (pairPlayer ? 3 : 2));
             if (strongCount < 1)

@@ -918,19 +918,23 @@ namespace HOMM3
                     if (tier == -1)
                     {
                         //we need to give wood and ore to the player so they can build a fort
+                        // do this by hijaking the 100-400 object range and trying our best to guarantee wood/ore pile generation
 
                         const int woValue = 150, gValue = 250;
+                        //since we are dropping the value of these piles, use a corresponding multiplier when calculating density/value
                         const double mult = (2 * (1400.0 / woValue) + 1 * (750.0 / gValue)) / 3.0;
                         int count = (woodMine ? 0 : 1) + (oreMine ? 0 : 1);
                         size /= 910;
-                        //size = .5;
 
                         low = 301;
                         high = 395;
+                        //cap it at the typical tier value
                         int max = Program.rand.Round(GetDensity(low * mult, high * mult));
+                        // the smaller the zone, the higher denstiy is needed to make sure the piles generate
                         density = Program.rand.Round(count / size);
                         density = Math.Min(Math.Max(1, density), max);
 
+                        //randomize amounts of each within a reasonable range 
                         int n1 = Program.rand.RangeInt(3, 6);
                         int n2 = Program.rand.RangeInt(4, 9 - n1);
                         if (Program.rand.Bool())
@@ -939,16 +943,17 @@ namespace HOMM3
                             n1 = n2;
                             n2 = temp;
                         }
-
                         if (!woodMine)
                             settings.Add(new("79 0", value: woValue, frequency: 10000, maxPerZone: n1));
                         if (!oreMine)
                             settings.Add(new("79 2", value: woValue, frequency: 10000, maxPerZone: n2));
-                        //fall back to gold when we hit the limits
+
+                        //fall back to mostly generating gold when we hit the target amounts
                         settings.Add(new("79 6", value: gValue, frequency: 1000 * count));
-                        //add the removed wood/ore/gold frequency into random resource
+                        //add the wood/ore/gold frequency that was removed from their typical value range back into random resource
                         settings.Add(new("76 0", frequency: 2300 + 300 * count));
 
+                        //value the generated piles accordingly
                         ReduceValue(mult);
                     }
                     else
