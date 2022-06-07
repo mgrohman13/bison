@@ -7,7 +7,7 @@ using System.IO;
 
 namespace HOMM3
 {
-    class Program
+    public class Program
     {
         public static MattUtil.MTRandom rand;
 

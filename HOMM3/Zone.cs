@@ -8,6 +8,7 @@ namespace HOMM3
     public class Zone
     {
         private static int counter;
+        private static double ZoneAvgSize = double.NaN;
 
         public readonly Player player;
         public readonly bool start, extra;
@@ -38,7 +39,7 @@ namespace HOMM3
         private readonly Treasure treasure;
         private readonly Options options;
 
-        public Zone(Player player, bool start, bool extra, double avgSize)
+        public Zone(Player player, bool start, bool extra)
         {
             this.player = player;
             this.start = start;
@@ -49,7 +50,7 @@ namespace HOMM3
 
             //place towns initially so we can get an accurate number for mine generation
             type = new(start, player);
-            neutral_towns = new(start, type.Size(avgSize), avgSize);
+            neutral_towns = new(start, type.Size());
 
             restrictions = new();
             player_Towns = new();
@@ -81,14 +82,14 @@ namespace HOMM3
             int playerCount = players.Length;
             double avgNumZones = size / (.39 * Math.Pow(size + 6.5, .39));
             int numZones = Program.rand.GaussianOEInt(avgNumZones + playerCount, .21, .13, playerCount);
-            double avgSize = 1296 * size / (double)numZones;
+            ZoneAvgSize = 1296 * size / (double)numZones;
             while (numZones > 0)
             {
                 bool extra = numZones < playerCount;
                 foreach (int p in Program.rand.Iterate(playerCount))
                     if (!extra || !players[p].AIstrong || Program.rand.Bool(.13))
                     {
-                        Zone zone = new(players[p], !players[p].Zones.Any(), extra, avgSize);
+                        Zone zone = new(players[p], !players[p].Zones.Any(), extra);
                         zones.Add(zone);
                         players[p].AddZone(zone);
                         if (--numZones == 0)
@@ -186,12 +187,13 @@ namespace HOMM3
             town |= neutral_towns.Generate();
 
             type.Generate(start, town, mineValue);
-            minimum_mines.Generate(woodOre, resource, gold);
+            minimum_mines.Generate(woodOre, resource, gold, out bool woodMine, out bool oreMine);
             mine_Density.Generate();
             terrain.Generate(town);
             monsters.Generate(monsterStr, town, mineValue, resource > 0, gold > 0);
             bool neutralDwellings = options.Generate(start, player, town, disposition, joinPct, moneyOnly, mineValue);
-            treasure.Generate(start, player, value, mineValue, monsterStr, neutralDwellings);
+            var settings = treasure.Generate(type.Size(), start, player, value, mineValue, woodMine, oreMine, monsterStr, neutralDwellings);
+            options.GenerateSettings(settings);
 
             restrictions.Generate();
             town_Types.Generate();
@@ -238,11 +240,11 @@ namespace HOMM3
                     //    computer_start = "x";
                 }
             }
-            public double Size(double avgSize)
+            public double Size()
             {
-                double size = Base_Size * avgSize / 100.0;
-                //if (Junction == "x")
-                //    size /= 2.1;
+                double size = Base_Size * ZoneAvgSize / 100.0;
+                if (Junction == "x")
+                    size /= 2.1;
                 return size;
             }
             public void Generate(bool start, bool town, double mineValue)
@@ -390,10 +392,10 @@ namespace HOMM3
             private readonly int Town_Density = -1;
             private readonly int Castle_Density = -1;
             private string Towns_are_of_same_type;
-            public Neutral_towns(bool start, double size, double avgSize)
+            public Neutral_towns(bool start, double size)
             {
                 if (!start)
-                    Minimum_towns = Program.rand.GaussianOEInt(Math.Pow(size * size / avgSize / 1300, .65) * .65, .26, .13);
+                    Minimum_towns = Program.rand.GaussianOEInt(Math.Pow(size * size / ZoneAvgSize / 1300, .65) * .65, .26, .13);
                 int max = size > Program.rand.Gaussian(1300, .13) ? 2 : 1;
                 if (size < 390)
                     max = 0;
@@ -500,7 +502,7 @@ namespace HOMM3
             private int Crystal = -1;
             private int Gems = -1;
             private int Gold = -1;
-            public void Generate(int woodOre, int resource, int gold)
+            public void Generate(int woodOre, int resource, int gold, out bool woodMine, out bool oreMine)
             {
                 Wood = Mercury = Ore = Sulfur = Crystal = Gems = Gold = 0;
                 for (int a = 0; a < woodOre; a++)
@@ -542,6 +544,9 @@ namespace HOMM3
                     }
                 }
                 Gold = gold;
+
+                woodMine = Wood > 0;
+                oreMine = Ore > 0;
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
@@ -858,8 +863,9 @@ namespace HOMM3
             //Density
             private int Density_3 = -1;
 
-            public void Generate(bool start, Player player, double value, double mineValue, Monsters.Str monsterStr, bool neutralDwellings)
+            public IEnumerable<Map.ObjectSetting> Generate(double size, bool start, Player player, double value, double mineValue, bool woodMine, bool oreMine, Monsters.Str monsterStr, bool neutralDwellings)
             {
+                List<Map.ObjectSetting> settings = new();
                 value -= mineValue;
 
                 // 55 — poor zone, white.       Content types: (  500– 3000, 9), ( 3000– 6000, 6), (10000–15000, 1).
@@ -868,24 +874,28 @@ namespace HOMM3
 
                 double min1 = Program.rand.Range(101, 520);
                 double min2 = Program.rand.Range(390, 3900);
+                double min3 = Program.rand.Range(101, 2100);
                 double nMin = Program.rand.Range(Program.rand.Bool() ? min1 : (Program.rand.Bool() ? 30001 : 39338), Program.rand.Range(43905, 49795));
                 double[,,] ranges = new double[6, 3, 2] {
                     //guarantee unguarded resources (items ranging 750-2000)
-                    { {  min1,  3900 }, {  2001,  2999 }, {   101,  6500 } }, // 0
+                    { {  min1,  3900 }, {  2001,  2995 }, {   101,  6500 } }, // 0
                     //unguarded resources possible but unlikely 
-                    { {  2600,  9100 }, {  2600,  9100 }, {  2600,  9100 } }, // 1
+                    { {  2600,  7800 }, {  2100, 10400 }, {  min3, 13000 } }, // 1
                     //main tiers
                     { {  min1,  6500 }, {  min2,  9100 }, {  5200, 13000 } }, // 2
-                    { { 6500,  10400 }, {  9100, 14300 }, { 13000, 16900 } }, // 3
-                    { { 10400, 15600 }, { 14300, 21000 }, { 16900, 30001 } }, // 4
+                    { {  6500, 10400 }, {  9100, 14300 }, { 13000, 16900 } }, // 3
+                    { { 10400, 15600 }, { 14300, 21000 }, { 16900, 29995 } }, // 4
                     //if forcing neutral dwellings, there is a chance to use an alternate 3rd tier that allows for the neutral dragon dwellings
                     // these values are 1-sigma confidence level based on: Crystal Cavern = 39338, Frozen Cliffs = 78845
                     { {  nMin, 49795 }, { 43905, 99804 }, { 87997, 99804 } }, // 5
                 };
 
+                bool playerWoodOre = start && player.Human && (!woodMine || !oreMine);
                 bool neutralDragons = !start && neutralDwellings && monsterStr != Monsters.Str.none && Program.rand.Bool();
                 int[] order;
-                if (start)
+                if (playerWoodOre)
+                    order = new int[3] { -1, 4, 3 };
+                else if (start)
                 {
                     if (Program.PairPlayer ? player.AIprimary : !player.Human)
                         // give unguarded resources
@@ -901,32 +911,73 @@ namespace HOMM3
                 int div = 3;
                 foreach (int tier in order)
                 {
+                    int low, high, density;
                     double GetDensity(double l, double h) => value / (double)div * 2 / (l + h);
+                    double ReduceValue(double mult) => value -= mult * (low + high) / 2.0 * density;
 
-                    double lowAvg, highAvg;
-                    int selection = Program.rand.Next(3);
-                    do
+                    if (tier == -1)
                     {
-                        lowAvg = ranges[tier, selection, 0];
-                        highAvg = ranges[tier, selection, 1];
-                        selection--;
-                    }
-                    while (!neutralDragons && selection >= 0 && GetDensity(lowAvg, highAvg) < 1);
+                        //we need to give wood and ore to the player so they can build a fort
 
-                    int low = Program.rand.GaussianCappedInt(lowAvg, .104, 101);
-                    int high = Program.rand.GaussianCappedInt(Math.Max(highAvg, low), .21, low);
+                        const int woValue = 150, gValue = 250;
+                        const double mult = (2 * (1400.0 / woValue) + 1 * (750.0 / gValue)) / 3.0;
+                        int count = (woodMine ? 0 : 1) + (oreMine ? 0 : 1);
+                        size /= 910;
+                        //size = .5;
 
-                    int density;
-                    if (neutralDragons)
-                    {
-                        value *= 2 / 3.0;
-                        density = 1;// + Program.rand.Round(value / (double)(low + high));
+                        low = 301;
+                        high = 395;
+                        int max = Program.rand.Round(GetDensity(low * mult, high * mult));
+                        density = Program.rand.Round(count / size);
+                        density = Math.Min(Math.Max(1, density), max);
+
+                        int n1 = Program.rand.RangeInt(3, 6);
+                        int n2 = Program.rand.RangeInt(4, 9 - n1);
+                        if (Program.rand.Bool())
+                        {
+                            int temp = n1;
+                            n1 = n2;
+                            n2 = temp;
+                        }
+
+                        if (!woodMine)
+                            settings.Add(new("79 0", value: woValue, frequency: 10000, maxPerZone: n1));
+                        if (!oreMine)
+                            settings.Add(new("79 2", value: woValue, frequency: 10000, maxPerZone: n2));
+                        //fall back to gold when we hit the limits
+                        settings.Add(new("79 6", value: gValue, frequency: 1000 * count));
+                        //add the removed wood/ore/gold frequency into random resource
+                        settings.Add(new("76 0", frequency: 2300 + 300 * count));
+
+                        ReduceValue(mult);
                     }
                     else
                     {
-                        double densityAvg = GetDensity(low, high);
-                        density = Program.rand.GaussianCappedInt(Math.Max(densityAvg, 1), .091, 1);
-                        value -= (low + high) / 2.0 * density;
+                        double lowAvg, highAvg;
+                        int selection = Program.rand.Next(3);
+                        do
+                        {
+                            lowAvg = ranges[tier, selection, 0];
+                            highAvg = ranges[tier, selection, 1];
+                            selection--;
+                        }
+                        while (!neutralDragons && selection >= 0 && GetDensity(lowAvg, highAvg) < 1);
+
+                        // if these standard deviation percentages are changed, so should the values for neutral dragon dwellings
+                        low = Program.rand.GaussianCappedInt(lowAvg, .104, 101);
+                        high = Program.rand.GaussianCappedInt(Math.Max(highAvg, low), .21, low);
+
+                        if (neutralDragons)
+                        {
+                            value *= 2 / 3.0;
+                            density = 1;// + Program.rand.Round(value / (double)(low + high));
+                        }
+                        else
+                        {
+                            double densityAvg = GetDensity(low, high);
+                            density = Program.rand.GaussianCappedInt(Math.Max(densityAvg, 1), .091, 1);
+                            ReduceValue(1);
+                        }
                     }
 
                     SetVals(tier, low, high, density);
@@ -934,6 +985,8 @@ namespace HOMM3
                     div--;
                     neutralDragons = false;
                 }
+
+                return settings;
             }
             private void SetVals(int a, int low, int high, int density)
             {
@@ -944,6 +997,7 @@ namespace HOMM3
                         High = high;
                         Density = density;
                         break;
+                    case -1:
                     case 0:
                     case 1:
                     case 2:
@@ -1009,7 +1063,7 @@ namespace HOMM3
             }
 
             private readonly string Placement;
-            private readonly string Objects;
+            private string Objects;
             private readonly string Minimum_objects;
             private readonly string Image_settings;
             private string Force_neutral_creatures;
@@ -1115,6 +1169,11 @@ namespace HOMM3
                 }
 
                 return result;
+            }
+
+            internal void GenerateSettings(IEnumerable<Map.ObjectSetting> settings)
+            {
+                Objects = Map.ObjectSetting.Output(settings);
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)

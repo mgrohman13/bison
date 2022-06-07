@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HOMM3
 {
-    class Pack
+    public class Pack
     {
         private readonly FieldCount Field_count;
         private readonly Options options;

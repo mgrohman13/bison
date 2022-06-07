@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HOMM3
 {
-    class Map
+    public class Map
     {
         private readonly string Name;
         private readonly int Minimum_Size = -1;
@@ -48,7 +48,7 @@ namespace HOMM3
             return (Program.rand.GaussianOEInt(10.4, .26, .13) / 10.0);
         }
 
-        private class ObjectSetting
+        public class ObjectSetting
         {
             private readonly string id;
             private readonly int? value;
@@ -61,7 +61,7 @@ namespace HOMM3
                 if (value.HasValue)
                     value = Program.rand.GaussianCappedInt(value.Value, .13, 100);
                 if (frequency.HasValue)
-                    frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, 1);
+                    frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, Math.Max(1, 2 * frequency.Value - 10000));
 
                 this.id = "+" + id;
                 this.value = value;
@@ -228,8 +228,7 @@ namespace HOMM3
                 //Shipwreck                     +85 0 2000 100 
                 settings.Add(new("85 0", frequency: Range(50, 100)));
 
-                settings = Program.rand.Iterate(settings).ToList();
-                return settings.Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
+                return Output(settings);
             }
 
             //may look into in future:
@@ -249,6 +248,13 @@ namespace HOMM3
             //Quest Gold 15000          +83 n 2 15000 8666 10 d d 
             //Quest Gold 20000          +83 n 2 20000 12000 10 d d 
 
+            public static string Output(IEnumerable<ObjectSetting> settings)
+            {
+                if (!settings.Any())
+                    return null;
+                settings = Program.rand.Iterate(settings).ToList();
+                return settings.Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
+            }
             private string Output()
             {
                 static string Map(int? v) => v.HasValue ? v.ToString() : "d";

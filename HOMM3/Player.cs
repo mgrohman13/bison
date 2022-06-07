@@ -273,8 +273,9 @@ namespace HOMM3
                         Zone zone2 = Program.rand.SelectValue(zone1.Connections.Keys, z =>
                         {
                             double str = 3900 + zone1.Connections[z].Min(c => c.Strength);
+                            str /= 3900;
                             double mines = .52 + CountMines(z);
-                            return Program.rand.Round(int.MaxValue / str / str / mines);
+                            return Program.rand.Round(ushort.MaxValue / str / str / mines);
                         });
                         ModRandomMine(zone1, wo =>
                         {
