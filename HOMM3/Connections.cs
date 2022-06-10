@@ -278,26 +278,31 @@ namespace HOMM3
                     keep.Add(Program.rand.SelectValue(borderGuards));
 
                 var others = connections.Where(c => !c.borderGuard);
-                var max = others.Where(c => c.strength == others.Max(c => c.strength));
-                //if a border guard, only keep the strongest other connection and ensure it is sufficiently high as to have a purpose
-                Connections strongest = Program.rand.SelectValue(max);
-                if (borderGuard)
-                    strongest.IncreaseStrength();
-                keep.Add(strongest);
-
-                if (!borderGuard)
+                if (others.Any())
                 {
-                    //keep the minimum and maximum strength connections, and a small chance to keep each additional one
-                    var min = others.Where(c => c.strength == others.Min(c => c.strength));
-                    keep.Add(Program.rand.SelectValue(min));
-                    if (connections.Count > 2)
+                    var max = others.Where(c => c.strength == others.Max(c => c.strength));
+                    //if a border guard, only keep the strongest other connection and ensure it is sufficiently high as to have a purpose
+                    Connections strongest = Program.rand.SelectValue(max);
+                    if (borderGuard)
+                        strongest.IncreaseStrength();
+                    keep.Add(strongest);
+
+                    if (!borderGuard)
                     {
-                        double chance = 1 / (connections.Count - 1.3);
-                        foreach (Connections connection in others)
-                            if (Program.rand.Bool(chance))
-                                keep.Add(connection);
+                        //keep the minimum and maximum strength connections, and a small chance to keep each additional one
+                        var min = others.Where(c => c.strength == others.Min(c => c.strength));
+                        keep.Add(Program.rand.SelectValue(min));
+                        if (connections.Count > 2)
+                        {
+                            double chance = 1 / (connections.Count - 1.3);
+                            foreach (Connections connection in others)
+                                if (Program.rand.Bool(chance))
+                                    keep.Add(connection);
+                        }
                     }
                 }
+                else
+                    ;
             }
 
             allConnections.RemoveAll(c => connections.Contains(c) && !keep.Contains(c));

@@ -71,7 +71,7 @@ namespace HOMM3
             int pWoodOre = Math.Max(0, 2 - (playerWoodOre + pairedWoodOre) + Program.rand.OEInt(minesAvg / 9.1));
             int pResource = Program.rand.GaussianOEInt(minesAvg, .13, .065, 1);
             int pGold = Program.rand.GaussianOEInt(.52 + minesAvg / 3.9, .26, .065);
-            int pairedResource = 0, pairedGold = 0;
+            int pairedResource = Program.rand.GaussianOEInt(.26, .13, .065), pairedGold = Program.rand.GaussianOEInt(.13, .26, .065);
 
             //paired balancing
             if (Program.PairPlayer && playerWoodOre > pairedWoodOre)

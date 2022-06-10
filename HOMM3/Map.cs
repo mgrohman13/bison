@@ -50,13 +50,15 @@ namespace HOMM3
 
         public class ObjectSetting
         {
-            private readonly string id;
-            private readonly int? value;
-            private readonly int? frequency;
-            private readonly int? maxOnMap;
-            private readonly int? maxPerZone;
+            public readonly string id;
+            public readonly int? value;
+            public readonly int? frequency;
+            public readonly int? maxOnMap;
+            public readonly int? maxPerZone;
 
-            public ObjectSetting(string id, int? value = null, int? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
+            public ObjectSetting(string id, int? value, int? frequency, int? maxPerZone)
+                : this(id, value, frequency, null, maxPerZone) { }
+            private ObjectSetting(string id, int? value = null, int? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
             {
                 if (value.HasValue)
                     value = Program.rand.GaussianCappedInt(value.Value, .13, 100);

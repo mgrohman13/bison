@@ -9,7 +9,7 @@ namespace HOMM3
 {
     public class Program
     {
-        public static MattUtil.MTRandom rand;
+        public static readonly MattUtil.MTRandom rand = new();
 
         private static string name;
         public static string Name => name;
@@ -21,7 +21,6 @@ namespace HOMM3
 
         static void Main()
         {
-            rand = new();
             rand.StartTick();
 
             name = "Matt " + Program.rand.RangeInt(1000, 9999);

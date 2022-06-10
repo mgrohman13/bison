@@ -49,7 +49,7 @@ namespace HOMM3
             Id = ++counter;
 
             //place towns initially so we can get an accurate number for mine generation
-            type = new(start, player);
+            type = new(start);
             neutral_towns = new(start, type.Size());
 
             restrictions = new();
@@ -224,7 +224,7 @@ namespace HOMM3
             private string Junction;
             private readonly int Base_Size = -1;
 
-            public Type(bool start, Player player)
+            public Type(bool start)
             {
                 Base_Size = Program.rand.GaussianCappedInt(100, sizeDev, 1);
 
@@ -584,6 +584,7 @@ namespace HOMM3
             private readonly int Gold = -1;
             public void Generate()
             {
+                this.ToString();
             }
 
             public static void Output(List<List<string>> output, ref int x, ref int y, Zone[] zones)
@@ -873,17 +874,17 @@ namespace HOMM3
                 //242 — vastly rich zone, gold. Content types: (10000–15000, 9), (15000–20000, 6), (20000–30000, 1).
 
                 double min1 = Program.rand.Range(101, 520);
-                double min2 = Program.rand.Range(390, 3900);
-                double min3 = Program.rand.Range(101, 2100);
+                double min2 = Program.rand.Range(101, 3900);
+                double min3 = Program.rand.Range(390, 2600);
                 double nMin = Program.rand.Range(Program.rand.Bool() ? min1 : (Program.rand.Bool() ? 30001 : 39338), Program.rand.Range(43905, 49795));
                 double[,,] ranges = new double[6, 3, 2] {
                     //guarantee unguarded resources (items ranging 750-2000)
-                    { {  min1,  3900 }, {  2001,  2995 }, {   101,  6500 } }, // 0
+                    { {  min1,  3900 }, {  2001,  2995 }, {   130,  6500 } }, // 0
                     //unguarded resources possible but unlikely 
-                    { {  2600,  7800 }, {  2100, 10400 }, {  min3, 13000 } }, // 1
+                    { {  2600,  7800 }, {  2100, 10400 }, {  min2, 13000 } }, // 1
                     //main tiers
-                    { {  min1,  6500 }, {  min2,  9100 }, {  5200, 13000 } }, // 2
-                    { {  6500, 10400 }, {  9100, 14300 }, { 13000, 16900 } }, // 3
+                    { {  min1,  6500 }, {  min3,  9100 }, {  5200, 13000 } }, // 2
+                    { {  min2, 10400 }, {  9100, 14300 }, { 13000, 16900 } }, // 3
                     { { 10400, 15600 }, { 14300, 21000 }, { 16900, 29995 } }, // 4
                     //if forcing neutral dwellings, there is a chance to use an alternate 3rd tier that allows for the neutral dragon dwellings
                     // these values are 1-sigma confidence level based on: Crystal Cavern = 39338, Frozen Cliffs = 78845
@@ -894,18 +895,22 @@ namespace HOMM3
                 bool neutralDragons = !start && neutralDwellings && monsterStr != Monsters.Str.none && Program.rand.Bool();
                 int[] order;
                 if (playerWoodOre)
+                    //give wood and ore piles
                     order = new int[3] { -1, 4, 3 };
                 else if (start)
                 {
                     if (Program.PairPlayer ? player.AIprimary : !player.Human)
-                        // give unguarded resources
+                        //give unguarded random resources
                         order = new int[3] { 0, 4, 3 };
                     else
+                        //unguarded resources unlikely 
                         order = new int[3] { 1, 4, 3 };
                 }
                 else if (neutralDragons)
+                    //potential extremely high values
                     order = new int[3] { 5, 3, 2 };
                 else
+                    //standard ranges
                     order = new int[3] { 4, 3, 2 }; ;
 
                 int div = 3;
@@ -914,44 +919,82 @@ namespace HOMM3
                     int low, high, density;
                     double GetDensity(double l, double h) => value / (double)div * 2 / (l + h);
                     double ReduceValue(double mult) => value -= mult * (low + high) / 2.0 * density;
+                    void SetLowHigh(double lowAvg, double highAvg, int min = 0, int highMin = 0, int max = int.MaxValue)
+                    {
+                        if (min > highMin || highMin > max)
+                            throw new Exception();
+                        int SetMinMax(int m1, int m2, ref double avg)
+                        {
+                            double fudgeFactor = 1.69;
+                            int m = Math.Max(m1, m2);
+                            if (max - m < 2 * fudgeFactor)
+                                fudgeFactor = (max - m) / 2.0;
+                            avg = Math.Max(avg, m + fudgeFactor);
+                            avg = Math.Min(avg, max - fudgeFactor);
+                            m = Math.Max(m, (int)Math.Ceiling(2 * avg - max));
+                            return m;
+                        }
+
+                        // if these standard deviation percentages are changed, so should the values for neutral dragon dwellings
+                        int m = SetMinMax(min, 101, ref lowAvg);
+                        low = Program.rand.GaussianCappedInt(lowAvg, .104, m);
+                        m = SetMinMax(highMin, low, ref highAvg);
+                        high = Program.rand.GaussianCappedInt(highAvg, .21, m);
+
+                        if (low > high || low < min || high < highMin || high > max)
+                            throw new Exception();
+                    }
 
                     if (tier == -1)
                     {
                         //we need to give wood and ore to the player so they can build a fort
-                        // do this by hijaking the 100-400 object range and trying our best to guarantee wood/ore pile generation
+                        // do this by hijaking the 100-500 object range and trying our best to guarantee wood/ore pile generation
 
-                        const int woValue = 150, gValue = 250;
-                        //since we are dropping the value of these piles, use a corresponding multiplier when calculating density/value
-                        const double mult = (2 * (1400.0 / woValue) + 1 * (750.0 / gValue)) / 3.0;
-                        int count = (woodMine ? 0 : 1) + (oreMine ? 0 : 1);
-                        size /= 910;
-
-                        low = 301;
-                        high = 395;
-                        //cap it at the typical tier value
-                        int max = Program.rand.Round(GetDensity(low * mult, high * mult));
-                        // the smaller the zone, the higher denstiy is needed to make sure the piles generate
-                        density = Program.rand.Round(count / size);
-                        density = Math.Min(Math.Max(1, density), max);
+                        int woValueAvg = Program.rand.RangeInt(100, 260), gValueAvg = Program.rand.Round(woValueAvg * 2.1);
+                        double lowAvg = woValueAvg * 1.69, highAvg = gValueAvg * 1.3;
 
                         //randomize amounts of each within a reasonable range 
-                        int n1 = Program.rand.RangeInt(3, 6);
-                        int n2 = Program.rand.RangeInt(4, 9 - n1);
-                        if (Program.rand.Bool())
-                        {
-                            int temp = n1;
-                            n1 = n2;
-                            n2 = temp;
-                        }
-                        if (!woodMine)
-                            settings.Add(new("79 0", value: woValue, frequency: 10000, maxPerZone: n1));
-                        if (!oreMine)
-                            settings.Add(new("79 2", value: woValue, frequency: 10000, maxPerZone: n2));
+                        int[] amounts = new int[2];
+                        amounts[0] = Program.rand.RangeInt(3, 6);
+                        amounts[1] = Program.rand.RangeInt(4, 9 - amounts[0]);
 
-                        //fall back to mostly generating gold when we hit the target amounts
-                        settings.Add(new("79 6", value: gValue, frequency: 1000 * count));
+                        //set wood/ore piles to a low value and high frequency, but with a max of the amount we actually want
+                        int count = 0, woMin = int.MaxValue, woMax = 0;
+                        bool flag = Program.rand.Bool();
+                        for (int a = 0; a < 2; a++)
+                        {
+                            bool isWood = (a == (flag ? 0 : 1));
+                            if (!(isWood ? woodMine : oreMine))
+                            {
+                                Map.ObjectSetting setting = new(isWood ? "79 0" : "79 2", woValueAvg, 9100, amounts[a]);
+                                settings.Add(setting);
+                                count++;
+                                woMin = Math.Min(woMin, setting.value.Value);
+                                woMax = Math.Max(woMax, setting.value.Value);
+                            }
+                        }
+                        int woValue = Program.rand.Round((woMin + woMax) / 2.0);
+
+                        //fall back to generating mostly gold when we hit the target amounts 
+                        Map.ObjectSetting gold = new("79 6", gValueAvg, 1170 * count, null);
+                        settings.Add(gold);
+                        int gValue = gold.value.Value;
                         //add the wood/ore/gold frequency that was removed from their typical value range back into random resource
-                        settings.Add(new("76 0", frequency: 2300 + 300 * count));
+                        settings.Add(new("76 0", null, 2300 + 300 * count, null));
+
+                        //since we are dropping the value of these piles, use a corresponding multiplier when calculating density/value
+                        double mult = (1 * (750.0 / gValue) + count * (1400.0 / woValue)) / (1.0 + count);
+
+                        if (gValue > gValueAvg)
+                            highAvg *= gValue / (double)gValueAvg;
+                        SetLowHigh(lowAvg, highAvg, woMax + 1, gValue + 1, woMin * 4 - 5);
+                        //cap it at the typical tier value
+                        int densityMax = Program.rand.Round(GetDensity(low * mult, high * mult));
+                        //the constant multiplier was decided upon by emperically testing a bunch of random maps
+                        // the smaller the zone, the higher denstiy is needed to make sure the piles generate
+                        // also inclue a multiplier for the actual cost of piles as compared to the value range
+                        density = Program.rand.Round(3900 * count / size * woValue / (double)(low + high));
+                        density = Math.Min(Math.Max(1, density), densityMax);
 
                         //value the generated piles accordingly
                         ReduceValue(mult);
@@ -968,9 +1011,7 @@ namespace HOMM3
                         }
                         while (!neutralDragons && selection >= 0 && GetDensity(lowAvg, highAvg) < 1);
 
-                        // if these standard deviation percentages are changed, so should the values for neutral dragon dwellings
-                        low = Program.rand.GaussianCappedInt(lowAvg, .104, 101);
-                        high = Program.rand.GaussianCappedInt(Math.Max(highAvg, low), .21, low);
+                        SetLowHigh(lowAvg, highAvg);
 
                         if (neutralDragons)
                         {
@@ -1119,7 +1160,11 @@ namespace HOMM3
                 max = Program.rand.RangeInt(max, disposition < 9 ? 9 : 10);
                 double[] ranges = new double[] { min, 4, 5.5, 7, max };
 
-                double result = double.NaN;
+                double result;
+
+                //we have confused the compiler such that these statements are necessary to remove compiler messages
+                result = double.NaN; result.ToString();
+
                 if (disposition > min && disposition < max && Program.rand.Bool(.91))
                 {
                     for (int a = 1; a < ranges.Length ? true : throw new Exception(); a++)
