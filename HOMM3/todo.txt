@@ -1,24 +1,12 @@
-creature banks?
-object per zone settings
-correlate hut/eye of magi
+do-while for max construct should switch to standard gaussian with max when avg > max / 2
+pandoras boxes
+seer huts
 decorrelate warlock/trading
-
-towns balancing
-zone types
-town/castle
-chance to not match town/ terrain types
-creeps match terrrain?
+revisit roads
+object per zone settings
+chance to not match town/terrain types
+creeps match terrain?
 correlate zone value and size
-
-overall player balancing
-redundant connections	
-	border guard
-comp only starts?
-	inc difficulty
-underground
-water
-town/mine density....
-restrictions?
-better mine distrbtn?
+water  
 zone repulsion/placement/fictive connections
-monolith connections?
+weak-str monster str, allow rand?

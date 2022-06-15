@@ -105,7 +105,7 @@ namespace HOMM3
             int[] sizes = all ? allSizes : surfaceSizes;
             int min = sizes[0], max = sizes[^1];
 
-            double avg = 6.5 * Math.Sqrt((numPlayers - (pairPlayer ? .5 : 0)) / 2.6);
+            double avg = 5.2 * Math.Pow((numPlayers - (pairPlayer ? .5 : 0)) / 1.69, .65);
             int size;
             do
                 size = rand.GaussianOEInt(avg, .26, .13, min);

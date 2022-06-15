@@ -88,7 +88,7 @@ namespace HOMM3
                 double deviation = .13;
                 double strength;
                 do
-                    strength = Program.rand.GaussianOE(baseInternalStr * (1 - wide), .39, .052);
+                    strength = Program.rand.GaussianOE(baseInternalStr * (1 - wide), .39, .039);
                 while (strength > baseExternalStr);
 
                 if (a >= min)
@@ -96,7 +96,9 @@ namespace HOMM3
                     //extra zones 
                     ground &= Program.rand.Bool(.78);
                     wide = 0;
-                    strength = extraStr;
+                    do
+                        strength = Program.rand.GaussianOE(extraStr, .13, .052);
+                    while (strength > baseExternalStr);
                 }
 
                 foreach (Player player in Program.rand.Iterate(players))
@@ -123,7 +125,7 @@ namespace HOMM3
                             bool canBorderGuard = Program.rand.Bool(.39);
                             bool? road = null;
                             double deviation = 0;
-                            double strength = Program.rand.GaussianOE(otherInternalStr, .26, .091);
+                            double strength = Program.rand.GaussianOE(Program.rand.Range(baseInternalStr, otherInternalStr), .26, .104);
 
                             var zones = Program.rand.Iterate(player.Zones).Take(2).ToList();
                             Zone z1 = zones[0];
@@ -179,10 +181,10 @@ namespace HOMM3
                 bool canBorderGuard = true;
                 bool? road = Program.rand.Bool(.169);
                 double deviation = .065;
-                double strength = Program.rand.GaussianOE(otherExternalStr, .078, .078);
+                double strength = Program.rand.GaussianOE(otherExternalStr, .078, .091);
 
                 foreach (Player player in Program.rand.Iterate(players))
-                    if (tempZones.Any() && Program.rand.Bool(1 / Math.Sqrt(playerCount)))
+                    if (tempZones.Any(z => z.player != player) && Program.rand.Bool(1 / Math.Sqrt(playerCount)))
                     {
                         Zone z1 = player.Home;
                         if (player.Zones.Count > 1 && Program.rand.Bool(.91))
@@ -208,7 +210,10 @@ namespace HOMM3
                 bool canBorderGuard = false;
                 bool? road = null;
                 double deviation = .091;
-                double strength = extraStr;
+                double strength;
+                do
+                    strength = Program.rand.GaussianOE(extraStr, .078, .078);
+                while (strength > baseExternalStr);
 
                 tempPlayers = players.Where(p => p.Paired != null).ToHashSet();
                 while (tempPlayers.Any())

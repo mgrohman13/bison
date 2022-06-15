@@ -380,11 +380,11 @@ namespace HOMM3
             }
             private static void Init()
             {
-                static double p() => Program.rand.GaussianOE(1.04, .39, .13, .026);
+                static double p() => Program.rand.GaussianCapped(.5, .26, .091);
                 same = p();
-                const double cap = .91;
-                if (same > cap)
-                    Init();
+                //const double cap = .91;
+                //if (same > cap)
+                //    Init();
             }
 
             private readonly int Minimum_towns = 0;
@@ -1092,6 +1092,7 @@ namespace HOMM3
         public class Options
         {
             private static double neutral;
+            private static double neutralTown;
             private static double road;
             private static double roadTown;
             static Options()
@@ -1101,8 +1102,9 @@ namespace HOMM3
             private static void Init()
             {
                 neutral = Program.rand.GaussianOE(.39, .26, .13);
-                road = Program.rand.GaussianOE(.21, .39, .26);
-                roadTown = Program.rand.Range(0, 1);
+                neutralTown = Program.rand.GaussianOE(.104, .39, .21);
+                road = Program.rand.GaussianOE(.39, .39, .26);
+                roadTown = road * Program.rand.Weighted(.65);
                 const double cap = .91;
                 if (neutral > cap || road > cap)
                     Init();
@@ -1129,9 +1131,9 @@ namespace HOMM3
                 mineValue /= 3900.0;
                 disposition = Math.Min(disposition + mineValue, 10 - (10 - disposition) * (10 - mineValue) / 10.0);
 
-                if (!start && Program.rand.Bool(neutral * (town ? .21 : 1)))
+                if (!start && Program.rand.Bool(town ? neutralTown : neutral))
                     Force_neutral_creatures = "x";
-                if (Program.rand.Bool(road * (town ? roadTown : 1)))
+                if (Program.rand.Bool((town ? roadTown : road)))
                     Allow_non_coherent_road = "x";
 
                 if (SetDisposition(disposition) == 0)

@@ -57,15 +57,15 @@ namespace HOMM3
             public readonly int? maxPerZone;
 
             public ObjectSetting(string id, int? value, int? frequency, int? maxPerZone)
-                : this(id, value, frequency, null, maxPerZone) { }
-            private ObjectSetting(string id, int? value = null, int? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
+                : this(id, false, value, frequency, null, maxPerZone) { }
+            private ObjectSetting(string id, bool disable = false, int? value = null, int? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
             {
                 if (value.HasValue)
                     value = Program.rand.GaussianCappedInt(value.Value, .13, 100);
                 if (frequency.HasValue)
                     frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, Math.Max(1, 2 * frequency.Value - 10000));
 
-                this.id = "+" + id;
+                this.id = (disable ? "-" : "+") + id;
                 this.value = value;
                 this.frequency = frequency;
                 this.maxOnMap = maxOnMap;
@@ -88,7 +88,7 @@ namespace HOMM3
 
                 //uniform distribution
                 static int Range(int min, double max) => Program.rand.RangeInt(min, Program.rand.Round(max));
-                //this generates a distribution skewed away from the center (average) and towards the extremes (min/max)
+                //this generates a distribution skewed away from the center and towards the extremes
                 static int Weighted(int start, int mult) => start + Program.rand.WeightedInt(start * (mult - 1), Program.rand.DoubleHalf());
                 int Max() => 1 + Program.rand.GaussianCappedInt(Math.Sqrt(size) / 1.69, .13);
 
@@ -131,6 +131,26 @@ namespace HOMM3
                 // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
                 settings.Add(new("144 9", value: 20000, frequency: 10, maxOnMap: 1));
 
+                // randomize prison experience
+
+                //exp   =    0, 5000, 15000, 90000, 500000
+                //value = 2500, 5000, 10000, 20000,  30000
+                //Prison                        +62 0 0 2500 30 
+                //Prison                        +62 0 500000 30000 30
+                int prisons = Program.rand.GaussianOEInt(1.3 * Math.Sqrt(size), .39, .39);
+                int prisonFreq = Program.rand.Round(390.0 / prisons);
+                HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
+                for (int a = 0; a < prisons; a++)
+                {
+                    int exp = Program.rand.GaussianOEInt(9100, 1, .5);
+                    int value = Program.rand.Round(7.8 * Math.Pow(2100 + exp, .78));
+                    settings.Add(new("62 0 " + exp, value: value, frequency: prisonFreq, maxOnMap: 1));
+                    if (prisonDefaults.Contains(exp))
+                        prisonDefaults.Remove(exp);
+                }
+                foreach (int v in prisonDefaults)
+                    settings.Add(new("62 0 " + v, true));
+
                 // enable objects
 
                 //potentially enable keymaster's tents at different random values
@@ -155,10 +175,13 @@ namespace HOMM3
                 {
                     //Eye of the Magi           +27 0 100 50 
                     // high enough value to appear outside of only zones with tiny treasure ranges, but not high enough to be guarded if by itself
-                    settings.Add(new("27 0", value: 1750, frequency: 100, maxPerZone: eyes));
+                    int eyeFreq = 100;
+                    ObjectSetting eye = new("27 0", value: 1750, frequency: eyeFreq, maxPerZone: eyes);
+                    settings.Add(eye);
                     //Hut of the Magi           +37 0 100 25 
                     // higher potential hut value when more eyes
-                    int hut = Range(4000, 4000 + 2000 * Math.Sqrt(eyes * numZones));
+                    double eyeMult = eye.frequency.Value / (double)eyeFreq;
+                    int hut = Program.rand.Round(eyeMult * 3900) + Range(0, eyeMult * 2100 * Math.Sqrt(eyes * numZones));
                     settings.Add(new("37 0", value: hut, maxOnMap: Range(1, Max()), maxPerZone: 1));
                 }
                 //Hill Fort (traditional)       +35 0 7000 20 
@@ -171,64 +194,63 @@ namespace HOMM3
                 // default values, just enable
                 settings.Add(new("145 0"));
 
-                // creature banks - the RMG loves to spam these out, make all a little less frequent
-                //  the ones that give creature rewards make either more or less frequent
+                // creature banks - the RMG loves to spam these out, make a little less frequent  
 
+                int CreatureBank(int initial) => Range(1, Math.Sqrt(100 * initial) * Program.rand.Range(1, 1.69));
                 //Cyclops Stockpile             +16 0 3000 100 
-                settings.Add(new("16 0", frequency: Range(50, 100)));
+                settings.Add(new("16 0", frequency: CreatureBank(100)));
                 //Dwarven Treasury              +16 1 2000 100 
-                settings.Add(new("16 1", frequency: Range(50, 100)));
-                //Griffin Conservatory          +16 2 2000 100 
-                // creature rewards
-                settings.Add(new("16 2", frequency: Weighted(50, 4)));
+                settings.Add(new("16 1", frequency: CreatureBank(100)));
                 //Imp Cache                     +16 3 5000 100 
-                settings.Add(new("16 3", frequency: Range(50, 100)));
+                settings.Add(new("16 3", frequency: CreatureBank(100)));
                 //Medusa Stores                 +16 4 1500 100 
-                settings.Add(new("16 4", frequency: Range(50, 100)));
+                settings.Add(new("16 4", frequency: CreatureBank(100)));
                 //Naga Bank                     +16 5 3000 100 
-                settings.Add(new("16 5", frequency: Range(50, 100)));
-                //Dragon Fly Hive               +16 6 9000 100 
-                // creature rewards
-                settings.Add(new("16 6", frequency: Weighted(50, 4)));
+                settings.Add(new("16 5", frequency: CreatureBank(100)));
                 //Beholder's Sanctuary          +16 21 2500 100 
-                settings.Add(new("16 21", frequency: Range(50, 100)));
+                settings.Add(new("16 21", frequency: CreatureBank(100)));
                 //Temple of the Sea             +16 22 10000 100 
-                settings.Add(new("16 22", frequency: Range(50, 100)));
-                //Pirate Cavern                 +16 23 3500 100 
-                // enable, creature rewards
-                settings.Add(new("16 23", frequency: Weighted(50, 4)));
+                settings.Add(new("16 22", frequency: CreatureBank(100)));
                 //Mansion                       +16 24 5000 50 
-                settings.Add(new("16 24", frequency: Range(25, 50)));
+                settings.Add(new("16 24", frequency: CreatureBank(50)));
                 //Spit                          +16 25 1500 100 
                 // enable
-                settings.Add(new("16 25", frequency: Range(50, 100)));
-                //Red Tower                     +16 26 4000 20 
-                // creature rewards
-                settings.Add(new("16 26", frequency: Weighted(10, 4)));
+                settings.Add(new("16 25", frequency: CreatureBank(90)));
                 //Black Tower                   +16 27 1500 100 
-                settings.Add(new("16 27", frequency: Range(50, 100)));
-                //Ivory Tower                   +16 28 7000 100 
-                // enable, creature rewards
-                settings.Add(new("16 28", frequency: Weighted(50, 4)));
+                settings.Add(new("16 27", frequency: CreatureBank(100)));
                 //Churchyard                    +16 29 1500 100 
-                settings.Add(new("16 29", frequency: Range(50, 100)));
-                //Experimental Shop             +16 30 3500 80 
-                // creature rewards
-                settings.Add(new("16 30", frequency: Weighted(40, 4)));
-                //Wolf Raider Picket            +16 31 9500 70 
-                // creature rewards
-                settings.Add(new("16 31", frequency: Weighted(35, 4)));
+                settings.Add(new("16 29", frequency: CreatureBank(100)));
                 //Ruins                         +16 32 1000 100 
-                settings.Add(new("16 32", frequency: Range(50, 100)));
+                settings.Add(new("16 32", frequency: CreatureBank(100)));
                 //Derelict Ship                 +24 0 4000 20 
-                settings.Add(new("24 0", frequency: Range(10, 20)));
+                settings.Add(new("24 0", frequency: CreatureBank(20)));
                 //Dragon Utopia                 +25 0 10000 100 
                 // looks silly when you have many of these close together, so cap them 
-                settings.Add(new("25 0", frequency: Range(75, 100), maxOnMap: Max(), maxPerZone: 1));
+                settings.Add(new("25 0", frequency: CreatureBank(110), maxOnMap: Max(), maxPerZone: 1));
                 //Crypt                         +84 0 1000 100 
-                settings.Add(new("84 0", frequency: Range(50, 100)));
+                settings.Add(new("84 0", frequency: CreatureBank(100)));
                 //Shipwreck                     +85 0 2000 100 
-                settings.Add(new("85 0", frequency: Range(50, 100)));
+                settings.Add(new("85 0", frequency: CreatureBank(100)));
+
+                // creature banks that give creature rewards - make either more or less frequent 
+
+                int CreatureBankCreature(int initial) => Weighted(1, Program.rand.Round(Math.Sqrt(100 * initial) * 2.1));
+                //Griffin Conservatory          +16 2 2000 100 
+                settings.Add(new("16 2", frequency: CreatureBankCreature(100)));
+                //Dragon Fly Hive               +16 6 9000 100 
+                settings.Add(new("16 6", frequency: CreatureBankCreature(100)));
+                //Pirate Cavern                 +16 23 3500 100 
+                // enable 
+                settings.Add(new("16 23", frequency: CreatureBankCreature(90)));
+                //Red Tower                     +16 26 4000 20 
+                settings.Add(new("16 26", frequency: CreatureBankCreature(20)));
+                //Ivory Tower                   +16 28 7000 100 
+                // enable 
+                settings.Add(new("16 28", frequency: CreatureBankCreature(90)));
+                //Experimental Shop             +16 30 3500 80 
+                settings.Add(new("16 30", frequency: CreatureBankCreature(80)));
+                //Wolf Raider Picket            +16 31 9500 70 
+                settings.Add(new("16 31", frequency: CreatureBankCreature(70)));
 
                 return Output(settings);
             }
@@ -254,11 +276,13 @@ namespace HOMM3
             {
                 if (!settings.Any())
                     return null;
-                settings = Program.rand.Iterate(settings).ToList();
+                //settings = Program.rand.Iterate(settings).ToList();
                 return settings.Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
             }
             private string Output()
             {
+                if (id.StartsWith("-"))
+                    return id;
                 static string Map(int? v) => v.HasValue ? v.ToString() : "d";
                 return string.Format("{0} {1} {2} {3} {4}", id, Map(value), Map(frequency), Map(maxOnMap), Map(maxPerZone));
             }
