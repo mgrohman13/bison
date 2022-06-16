@@ -958,7 +958,7 @@ namespace HOMM3
                                 woMax = Math.Max(woMax, setting.value.Value);
                             }
                         }
-                        int woValue = Program.rand.Round((woMin + woMax) / 2.0);
+                        double woValue = (woMin + woMax) / 2.0;
 
                         //fall back to generating mostly gold when we hit the target amounts 
                         Map.ObjectSetting gold = new("79 6", gValueAvg, 1170 * count, null);

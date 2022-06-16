@@ -7,3 +7,8 @@ correlate zone value and size
 water  
 zone repulsion/placement/fictive connections
 weak-str monster str, allow rand?
+
+balance
+	pair on small map - hard
+
+	

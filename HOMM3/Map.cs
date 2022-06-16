@@ -48,8 +48,9 @@ namespace HOMM3
             return (Program.rand.GaussianOEInt(10.4, .26, .13) / 10.0);
         }
 
-        public class ObjectSetting
+        public class ObjectSetting : IComparable<ObjectSetting>
         {
+            public readonly bool disable;
             public readonly string id;
             public readonly int? value;
             public readonly int? frequency;
@@ -65,7 +66,8 @@ namespace HOMM3
                 if (frequency.HasValue)
                     frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, Math.Max(1, 2 * frequency.Value - 10000));
 
-                this.id = (disable ? "-" : "+") + id;
+                this.disable = disable;
+                this.id = id;
                 this.value = value;
                 this.frequency = frequency;
                 this.maxOnMap = maxOnMap;
@@ -176,6 +178,7 @@ namespace HOMM3
 
                 // randomize otherwise fixed reward values
 
+                HashSet<int> duplicates = new();
                 //Prison                        +62 0 0 2500 30 
                 //Prison                        +62 0 500000 30000 30
                 //exp   =    0, 5000, 15000, 90000, 500000
@@ -186,6 +189,12 @@ namespace HOMM3
                 for (int a = 0; a < prisons; a++)
                 {
                     int exp = Program.rand.GaussianOEInt(9100, 1, .5);
+                    if (duplicates.Contains(exp))
+                    {
+                        a--;
+                        continue;
+                    }
+                    duplicates.Add(exp);
                     int value = Program.rand.Round(7.8 * Math.Pow(2100 + exp, .78));
                     settings.Add(new("62 0 " + exp, value: value, frequency: prisonFreq, maxOnMap: 1));
                     if (prisonDefaults.Contains(exp))
@@ -193,6 +202,7 @@ namespace HOMM3
                 }
                 foreach (int v in prisonDefaults)
                     settings.Add(new("62 0 " + v, true));
+                duplicates.Clear();
                 //Pandora's Box (experience)    +6 0 1 5000 6000 20 
                 //Pandora's Box (experience)    +6 0 1 20000 24000 20 
                 //exp   = 5000, 10000, 15000, 20000
@@ -209,6 +219,12 @@ namespace HOMM3
                 {
                     bool gold = Program.rand.Next(5) == 0;
                     int amount = Program.rand.GaussianOEInt(gold ? 10400 : 7800, 1, .5);
+                    if (duplicates.Contains(amount * (gold ? -1 : 1)))
+                    {
+                        a--;
+                        continue;
+                    }
+                    duplicates.Add(amount * (gold ? -1 : 1));
                     int value = Program.rand.Round(amount * (gold ? 1 : 1.3));
                     settings.Add(new(string.Format("6 0 {0} {1}", gold ? "2" : "1", amount), value: value, frequency: Program.rand.Round(pandoraFreq)));
                     if (gold && pandoraGolds.Contains(amount))
@@ -220,6 +236,7 @@ namespace HOMM3
                     settings.Add(new("6 0 1 " + v, true));
                 foreach (int v in pandoraGolds)
                     settings.Add(new("6 0 2 " + v, true));
+                duplicates.Clear();
                 //Seer's Hut (experience)       +83 n 1 5000 2000 10 
                 //Seer's Hut (experience)       +83 n 1 20000 12000 10 
                 //exp   = 5000, 10000, 15000, 20000
@@ -236,6 +253,12 @@ namespace HOMM3
                 {
                     bool gold = Program.rand.Bool();
                     int amount = Program.rand.GaussianOEInt(gold ? 11700 : 10400, 1, .5, 3900);
+                    if (duplicates.Contains(amount * (gold ? -1 : 1)))
+                    {
+                        a--;
+                        continue;
+                    }
+                    duplicates.Add(amount * (gold ? -1 : 1));
                     int value = Program.rand.Round((amount - 2100) * .65 * (gold ? 1 : 1.3));
                     settings.Add(new(string.Format("83 n {0} {1}", gold ? "2" : "1", amount), value: value, frequency: Program.rand.Round(seerFreq)));
                     if (gold && seerGolds.Contains(amount))
@@ -247,6 +270,7 @@ namespace HOMM3
                     settings.Add(new("83 n 1 " + v, true));
                 foreach (int v in seerGolds)
                     settings.Add(new("83 n 2 " + v, true));
+                duplicates.Clear();
 
                 // creature banks - the RMG loves to spam these out, make a little less frequent  
 
@@ -330,15 +354,34 @@ namespace HOMM3
             {
                 if (!settings.Any())
                     return null;
-                settings = Program.rand.Iterate(settings).ToList();
-                return settings.Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
+                return settings.OrderBy(x => x).Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
             }
             private string Output()
             {
-                if (id.StartsWith("-"))
-                    return id;
+                if (disable)
+                    return "-" + id;
                 static string Map(int? v) => v.HasValue ? v.ToString() : "d";
-                return string.Format("{0} {1} {2} {3} {4}", id, Map(value), Map(frequency), Map(maxOnMap), Map(maxPerZone));
+                return string.Format("+{0} {1} {2} {3} {4}", id, Map(value), Map(frequency), Map(maxOnMap), Map(maxPerZone));
+            }
+
+            public int CompareTo(ObjectSetting other)
+            {
+                string[] a = id.Split(' ');
+                string[] b = other.id.Split(' ');
+                for (int c = 0; c < a.Length && c < b.Length; c++)
+                {
+                    string str1 = a[c];
+                    string str2 = b[c];
+                    bool parse1 = int.TryParse(str1, out int int1);
+                    bool parse2 = int.TryParse(str2, out int int2);
+                    int retVal = int1.CompareTo(int2);
+                    if (parse1 && parse2 && retVal != 0)
+                        return retVal;
+                    retVal = str1.CompareTo(str2);
+                    if (retVal != 0)
+                        return retVal;
+                }
+                return value.Value.CompareTo(other.value.Value);
             }
         }
 
