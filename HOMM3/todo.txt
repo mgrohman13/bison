@@ -1,6 +1,3 @@
-do-while for max construct should switch to standard gaussian with max when avg > max / 2
-pandoras boxes
-seer huts
 decorrelate warlock/trading
 revisit roads
 object per zone settings

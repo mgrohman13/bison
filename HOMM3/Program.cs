@@ -23,7 +23,7 @@ namespace HOMM3
         {
             rand.StartTick();
 
-            name = "Matt " + Program.rand.RangeInt(1000, 9999);
+            name = "Matt " + rand.RangeInt(1000, 9999);
             pairPlayer = rand.Bool();// rand.Bool(Math.Pow((Program.NumPlayers - 1.69) / 7.8, .65));
             Player[] players = InitPlayers();
             int sizeInt = InitSize();
@@ -41,11 +41,39 @@ namespace HOMM3
             Output(pack, map, zones.ToArray(), connections.ToArray());
         }
 
+        public static int GaussianOEIntWithMax(double avg, double deviation, double oe, int max, int min = 0)
+        {
+            double result = GaussianOEWithMax(true, avg, deviation, oe, max, min);
+            if (result != (int)result)
+                throw new Exception();
+            return (int)result;
+        }
+        public static double GaussianOEWithMax(double avg, double deviation, double oe, double max, double min = 0)
+        {
+            return GaussianOEWithMax(false, avg, deviation, oe, max, min);
+        }
+        private static double GaussianOEWithMax(bool isInt, double avg, double deviation, double oe, double max, double min1)
+        {
+            int min2 = (int)min1;
+            if (isInt && min2 != min1)
+                throw new Exception();
+            double result;
+            double min3 = 2 * avg - max;
+            int min4 = (int)Math.Ceiling(min3);
+            if (isInt && min4 > avg)
+                return rand.Round(avg);
+            if ((isInt ? min4 : min3) >= min1)
+                result = isInt ? rand.GaussianCappedInt(avg, deviation, min4) : rand.GaussianCapped(avg, deviation, min3);
+            else // this logic will result in an actual lower average value than the parameter
+                do
+                    result = isInt ? rand.GaussianOEInt(avg, deviation, oe, min2) : rand.GaussianOE(avg, deviation, oe, min1);
+                while (result > max);
+            return result;
+        }
+
         private static Player[] InitPlayers()
         {
-            do
-                numPlayers = rand.GaussianOEInt(pairPlayer ? 4.5 : 3.75, .13, .091, pairPlayer ? 3 : 2);
-            while (numPlayers > 8);
+            numPlayers = GaussianOEIntWithMax(pairPlayer ? 4.5 : 3.75, .13, .091, 8, pairPlayer ? 3 : 2);
 
             Console.WriteLine("players = {0}", numPlayers);
 
@@ -106,10 +134,7 @@ namespace HOMM3
             int min = sizes[0], max = sizes[^1];
 
             double avg = 5.2 * Math.Pow((numPlayers - (pairPlayer ? .5 : 0)) / 1.69, .65);
-            int size;
-            do
-                size = rand.GaussianOEInt(avg, .26, .13, min);
-            while (size > max);
+            int size = GaussianOEIntWithMax(avg, .26, .13, max, min);
 
             int prev = -1;
             foreach (int val in sizes)

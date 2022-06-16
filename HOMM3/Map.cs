@@ -131,26 +131,6 @@ namespace HOMM3
                 // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
                 settings.Add(new("144 9", value: 20000, frequency: 10, maxOnMap: 1));
 
-                // randomize prison experience
-
-                //exp   =    0, 5000, 15000, 90000, 500000
-                //value = 2500, 5000, 10000, 20000,  30000
-                //Prison                        +62 0 0 2500 30 
-                //Prison                        +62 0 500000 30000 30
-                int prisons = Program.rand.GaussianOEInt(1.3 * Math.Sqrt(size), .39, .39);
-                int prisonFreq = Program.rand.Round(390.0 / prisons);
-                HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
-                for (int a = 0; a < prisons; a++)
-                {
-                    int exp = Program.rand.GaussianOEInt(9100, 1, .5);
-                    int value = Program.rand.Round(7.8 * Math.Pow(2100 + exp, .78));
-                    settings.Add(new("62 0 " + exp, value: value, frequency: prisonFreq, maxOnMap: 1));
-                    if (prisonDefaults.Contains(exp))
-                        prisonDefaults.Remove(exp);
-                }
-                foreach (int v in prisonDefaults)
-                    settings.Add(new("62 0 " + v, true));
-
                 // enable objects
 
                 //potentially enable keymaster's tents at different random values
@@ -194,9 +174,83 @@ namespace HOMM3
                 // default values, just enable
                 settings.Add(new("145 0"));
 
+                // randomize otherwise fixed reward values
+
+                //Prison                        +62 0 0 2500 30 
+                //Prison                        +62 0 500000 30000 30
+                //exp   =    0, 5000, 15000, 90000, 500000
+                //value = 2500, 5000, 10000, 20000,  30000
+                int prisons = Program.rand.GaussianOEInt(1.3 * Math.Sqrt(size), .39, .39);
+                int prisonFreq = Program.rand.Round(390.0 / prisons);
+                HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
+                for (int a = 0; a < prisons; a++)
+                {
+                    int exp = Program.rand.GaussianOEInt(9100, 1, .5);
+                    int value = Program.rand.Round(7.8 * Math.Pow(2100 + exp, .78));
+                    settings.Add(new("62 0 " + exp, value: value, frequency: prisonFreq, maxOnMap: 1));
+                    if (prisonDefaults.Contains(exp))
+                        prisonDefaults.Remove(exp);
+                }
+                foreach (int v in prisonDefaults)
+                    settings.Add(new("62 0 " + v, true));
+                //Pandora's Box (experience)    +6 0 1 5000 6000 20 
+                //Pandora's Box (experience)    +6 0 1 20000 24000 20 
+                //exp   = 5000, 10000, 15000, 20000
+                //value = 6000, 12000, 18000, 24000 
+                //Pandora's Box (gold)          +6 0 2 5000 6000 5 
+                //Pandora's Box (gold)          +6 0 2 20000 24000 5 
+                //gold  = 5000, 10000, 15000, 20000
+                //value = 5000, 10000, 15000, 20000 
+                int pandorasBoxes = Program.GaussianOEIntWithMax(39, .26, .13, 91, 6);
+                double pandoraFreq = (20 * 4 + 5 * 4) / (double)pandorasBoxes;
+                HashSet<int> pandoraExps = new() { 5000, 10000, 15000, 20000 };
+                HashSet<int> pandoraGolds = new() { 5000, 10000, 15000, 20000 };
+                for (int a = 0; a < pandorasBoxes; a++)
+                {
+                    bool gold = Program.rand.Next(5) == 0;
+                    int amount = Program.rand.GaussianOEInt(gold ? 10400 : 7800, 1, .5);
+                    int value = Program.rand.Round(amount * (gold ? 1 : 1.3));
+                    settings.Add(new(string.Format("6 0 {0} {1}", gold ? "2" : "1", amount), value: value, frequency: Program.rand.Round(pandoraFreq)));
+                    if (gold && pandoraGolds.Contains(amount))
+                        pandoraGolds.Remove(amount);
+                    else if (!gold && pandoraExps.Contains(amount))
+                        pandoraExps.Remove(amount);
+                }
+                foreach (int v in pandoraExps)
+                    settings.Add(new("6 0 1 " + v, true));
+                foreach (int v in pandoraGolds)
+                    settings.Add(new("6 0 2 " + v, true));
+                //Seer's Hut (experience)       +83 n 1 5000 2000 10 
+                //Seer's Hut (experience)       +83 n 1 20000 12000 10 
+                //exp   = 5000, 10000, 15000, 20000
+                //value = 2000,  5333,  8666, 12000 
+                //Seer's Hut (gold)             +83 n 2 5000 2000 10 
+                //Seer's Hut (gold)             +83 n 2 20000 12000 10 
+                //gold  = 5000, 10000, 15000, 20000
+                //value = 2000,  5333,  8666, 12000 
+                int seersHuts = Program.GaussianOEIntWithMax(26, .26, .13, 65, 6);
+                double seerFreq = (10 * 4 + 10 * 4) / (double)seersHuts;
+                HashSet<int> seerExps = new() { 5000, 10000, 15000, 20000 };
+                HashSet<int> seerGolds = new() { 5000, 10000, 15000, 20000 };
+                for (int a = 0; a < seersHuts; a++)
+                {
+                    bool gold = Program.rand.Bool();
+                    int amount = Program.rand.GaussianOEInt(gold ? 11700 : 10400, 1, .5, 3900);
+                    int value = Program.rand.Round((amount - 2100) * .65 * (gold ? 1 : 1.3));
+                    settings.Add(new(string.Format("83 n {0} {1}", gold ? "2" : "1", amount), value: value, frequency: Program.rand.Round(seerFreq)));
+                    if (gold && seerGolds.Contains(amount))
+                        seerGolds.Remove(amount);
+                    else if (!gold && seerExps.Contains(amount))
+                        seerExps.Remove(amount);
+                }
+                foreach (int v in seerExps)
+                    settings.Add(new("83 n 1 " + v, true));
+                foreach (int v in seerGolds)
+                    settings.Add(new("83 n 2 " + v, true));
+
                 // creature banks - the RMG loves to spam these out, make a little less frequent  
 
-                int CreatureBank(int initial) => Range(1, Math.Sqrt(100 * initial) * Program.rand.Range(1, 1.69));
+                int CreatureBank(int initial) => Range(Range(1, initial * .26), Math.Sqrt(100 * initial) * Program.rand.Range(1, 1.69));
                 //Cyclops Stockpile             +16 0 3000 100 
                 settings.Add(new("16 0", frequency: CreatureBank(100)));
                 //Dwarven Treasury              +16 1 2000 100 
@@ -276,7 +330,7 @@ namespace HOMM3
             {
                 if (!settings.Any())
                     return null;
-                //settings = Program.rand.Iterate(settings).ToList();
+                settings = Program.rand.Iterate(settings).ToList();
                 return settings.Select(s => s.Output()).Aggregate((a, b) => a + " " + b);
             }
             private string Output()

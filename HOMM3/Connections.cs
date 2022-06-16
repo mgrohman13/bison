@@ -86,19 +86,14 @@ namespace HOMM3
                 bool canBorderGuard = false;
                 bool? road = null;
                 double deviation = .13;
-                double strength;
-                do
-                    strength = Program.rand.GaussianOE(baseInternalStr * (1 - wide), .39, .039);
-                while (strength > baseExternalStr);
+                double strength = Program.GaussianOEWithMax(baseInternalStr * (1 - wide), .39, .039, baseExternalStr);
 
                 if (a >= min)
                 {
                     //extra zones 
                     ground &= Program.rand.Bool(.78);
                     wide = 0;
-                    do
-                        strength = Program.rand.GaussianOE(extraStr, .13, .052);
-                    while (strength > baseExternalStr);
+                    strength = Program.GaussianOEWithMax(extraStr, .13, .052, baseExternalStr);
                 }
 
                 foreach (Player player in Program.rand.Iterate(players))
@@ -147,10 +142,7 @@ namespace HOMM3
                         bool canBorderGuard = false;
                         bool? road = null;
                         double deviation = 0;
-                        double strength;
-                        do
-                            strength = Program.rand.GaussianOE(baseExternalStr, .078, .065);
-                        while (strength > otherExternalStr);
+                        double strength = Program.GaussianOEWithMax(baseExternalStr, .078, .065, otherExternalStr);
 
                         Player p2 = Program.rand.SelectValue(tempPlayers);
                         tempPlayers.Remove(p2);
@@ -210,10 +202,7 @@ namespace HOMM3
                 bool canBorderGuard = false;
                 bool? road = null;
                 double deviation = .091;
-                double strength;
-                do
-                    strength = Program.rand.GaussianOE(extraStr, .078, .078);
-                while (strength > baseExternalStr);
+                double strength = Program.GaussianOEWithMax(extraStr, .078, .078, baseExternalStr);
 
                 tempPlayers = players.Where(p => p.Paired != null).ToHashSet();
                 while (tempPlayers.Any())

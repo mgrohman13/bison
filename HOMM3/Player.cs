@@ -187,10 +187,7 @@ namespace HOMM3
                 foreach (Zone z in Program.rand.Iterate(placeZones))
                 {
                     int woodOre = Program.rand.Round(totalWoodOre / div);
-                    int resource;
-                    do
-                        resource = Program.rand.GaussianOEInt(totalResource / div, .13, .13);
-                    while (resource > totalResource);
+                    int resource = Program.GaussianOEIntWithMax(totalResource / div, .13, .13, totalResource);
                     int gold = Program.rand.Round(totalGold / div);
                     z.AddMines(woodOre, resource, gold);
                     totalWoodOre -= woodOre;

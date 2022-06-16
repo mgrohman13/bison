@@ -376,15 +376,7 @@ namespace HOMM3
             private static double same;
             static Neutral_towns()
             {
-                Init();
-            }
-            private static void Init()
-            {
-                static double p() => Program.rand.GaussianCapped(.5, .26, .091);
-                same = p();
-                //const double cap = .91;
-                //if (same > cap)
-                //    Init();
+                same = Program.rand.GaussianCapped(.5, .26, .091);
             }
 
             private readonly int Minimum_towns = 0;
@@ -672,18 +664,11 @@ namespace HOMM3
             private static double prob;
             static Monsters()
             {
-                Init();
-            }
-            private static void Init()
-            {
-                match = Program.rand.GaussianOE(.078, .39, .13);
-                allOne = Program.rand.GaussianOE(.065, .39, .13);
-                static double p() => Program.rand.GaussianOE(.169, .39, .13, .052);
+                match = Program.GaussianOEWithMax(.078, .39, .13, .91);
+                allOne = Program.GaussianOEWithMax(.065, .39, .13, .91);
+                static double p() => Program.GaussianOEWithMax(.169, .39, .13, .91, .052);
                 neutral = p();
                 prob = p();
-                const double cap = .91;
-                if (allOne > cap || neutral > cap || prob > cap)
-                    Init();
             }
 
             private string Strength;
@@ -911,7 +896,7 @@ namespace HOMM3
                     order = new int[3] { 5, 3, 2 };
                 else
                     //standard ranges
-                    order = new int[3] { 4, 3, 2 }; ;
+                    order = new int[3] { 4, 3, 2 };
 
                 int div = 3;
                 foreach (int tier in order)
@@ -1097,17 +1082,10 @@ namespace HOMM3
             private static double roadTown;
             static Options()
             {
-                Init();
-            }
-            private static void Init()
-            {
-                neutral = Program.rand.GaussianOE(.39, .26, .13);
-                neutralTown = Program.rand.GaussianOE(.104, .39, .21);
-                road = Program.rand.GaussianOE(.39, .39, .26);
+                neutral = Program.GaussianOEWithMax(.39, .26, .13, .91);
+                neutralTown = Program.GaussianOEWithMax(.104, .39, .21, .91);
+                road = Program.GaussianOEWithMax(.39, .39, .26, .91);
                 roadTown = road * Program.rand.Weighted(.65);
-                const double cap = .91;
-                if (neutral > cap || road > cap)
-                    Init();
             }
 
             private readonly string Placement;
