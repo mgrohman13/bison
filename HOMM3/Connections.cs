@@ -265,7 +265,8 @@ namespace HOMM3
                 if (others.Any())
                 {
                     Connections connection = Program.rand.SelectValue(others);
-                    connection.road = Program.rand.Bool(.78);
+                    if (connection.road.HasValue ? !connection.road.Value : Program.rand.Bool())
+                        connection.road = Program.rand.Bool(.78);
                     keep.Add(connection);
                 }
             }
