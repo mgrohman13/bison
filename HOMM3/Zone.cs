@@ -935,13 +935,13 @@ namespace HOMM3
                         //we need to give wood and ore to the player so they can build a fort
                         // do this by hijaking the 100-500 object range and trying our best to guarantee wood/ore pile generation
 
-                        int woValueAvg = Program.rand.RangeInt(100, 260), gValueAvg = Program.rand.Round(woValueAvg * 2.1);
-                        double lowAvg = woValueAvg * 1.69, highAvg = gValueAvg * 1.3;
+                        double woValueAvg = Program.rand.Range(100, 260 + Program.rand.Gaussian()), gValueAvg = woValueAvg * 2.1 + Program.rand.Gaussian();
+                        double lowAvg = woValueAvg * 1.69 + Program.rand.Gaussian(), highAvg = gValueAvg * 1.3 + Program.rand.Gaussian();
 
                         //randomize amounts of each within a reasonable range 
                         int[] amounts = new int[2];
                         amounts[0] = Program.rand.RangeInt(3, 6);
-                        amounts[1] = Program.rand.RangeInt(4, 9 - amounts[0]);
+                        amounts[1] = Program.rand.RangeInt(5, 9 - amounts[0]);
 
                         //set wood/ore piles to a low value and high frequency, but with a max of the amount we actually want
                         int count = 0, woMin = int.MaxValue, woMax = 0;

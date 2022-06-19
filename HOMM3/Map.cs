@@ -45,7 +45,7 @@ namespace HOMM3
         }
         private static double Custom()
         {
-            return (Program.rand.GaussianOEInt(10.4, .26, .13) / 10.0);
+            return (Program.rand.GaussianOEInt(10, .3, .2) / 10.0);
         }
 
         public class ObjectSetting : IComparable<ObjectSetting>
@@ -57,7 +57,7 @@ namespace HOMM3
             public readonly int? maxOnMap;
             public readonly int? maxPerZone;
 
-            public ObjectSetting(string id, int? value, int? frequency, int? maxPerZone)
+            public ObjectSetting(string id, double? value, double? frequency, int? maxPerZone)
                 : this(id, false, value, frequency, null, maxPerZone) { }
             private ObjectSetting(string id, bool disable = false, double? value = null, double? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
             {
@@ -89,7 +89,7 @@ namespace HOMM3
                 //uniform distribution
                 static int Range(double min, double max) => Program.rand.RangeInt(Program.rand.Round(min), Program.rand.Round(max));
                 //this generates a distribution skewed away from the center and towards the extremes
-                static double Weighted(int start, double mult) => start + Program.rand.WeightedInt(Program.rand.Round(start * (mult - 1)), Program.rand.DoubleHalf());
+                static double Weighted(double start, double mult) => start + Program.rand.Weighted(start * (mult - 1), Program.rand.DoubleHalf());
                 int Max() => 1 + Program.rand.GaussianCappedInt(Math.Sqrt(size) / 1.69, .13);
 
                 // neutral dragon dwellings
@@ -187,8 +187,8 @@ namespace HOMM3
                 //Prison                        +62 0 500000 30000 30
                 //exp   =    0, 5000, 15000, 90000, 500000
                 //value = 2500, 5000, 10000, 20000,  30000
-                int prisons = Program.rand.GaussianOEInt(1.3 * Math.Sqrt(size), .39, .39);
-                double prisonFreq = 390.0 / prisons;
+                int prisons = Program.rand.GaussianOEInt(1.69 * Math.Sqrt(size), .52, .39);
+                double prisonFreq = Program.rand.GaussianOE(169.0 / prisons, .39, .21, 1);
                 HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
                 for (int a = 0; a < prisons; a++)
                 {
@@ -215,7 +215,7 @@ namespace HOMM3
                 //Pandora's Box (gold)          +6 0 2 20000 24000 5 
                 //gold  = 5000, 10000, 15000, 20000
                 //value = 5000, 10000, 15000, 20000 
-                int pandorasBoxes = Program.GaussianOEIntWithMax(39, .26, .13, 91, 6);
+                int pandorasBoxes = Program.GaussianOEIntWithMax(39, .21, .169, 91, 6);
                 double pandoraFreq = (20 * 4 + 5 * 4) / (double)pandorasBoxes;
                 HashSet<int> pandoraExps = new() { 5000, 10000, 15000, 20000 };
                 HashSet<int> pandoraGolds = new() { 5000, 10000, 15000, 20000 };
