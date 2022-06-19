@@ -59,17 +59,15 @@ namespace HOMM3
 
             public ObjectSetting(string id, int? value, int? frequency, int? maxPerZone)
                 : this(id, false, value, frequency, null, maxPerZone) { }
-            private ObjectSetting(string id, bool disable = false, int? value = null, int? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
+            private ObjectSetting(string id, bool disable = false, double? value = null, double? frequency = null, int? maxOnMap = null, int? maxPerZone = null)
             {
                 if (value.HasValue)
-                    value = Program.rand.GaussianCappedInt(value.Value, .13, 100);
+                    this.value = Program.rand.GaussianCappedInt(value.Value, .13, 100);
                 if (frequency.HasValue)
-                    frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, Math.Max(1, 2 * frequency.Value - 10000));
+                    this.frequency = Program.rand.GaussianCappedInt(frequency.Value, .13, Math.Max(1, (int)Math.Ceiling(2 * frequency.Value - 10000)));
 
                 this.disable = disable;
                 this.id = id;
-                this.value = value;
-                this.frequency = frequency;
                 this.maxOnMap = maxOnMap;
                 this.maxPerZone = maxPerZone;
 
@@ -89,9 +87,9 @@ namespace HOMM3
                 List<ObjectSetting> settings = new();
 
                 //uniform distribution
-                static int Range(int min, double max) => Program.rand.RangeInt(min, Program.rand.Round(max));
+                static int Range(double min, double max) => Program.rand.RangeInt(Program.rand.Round(min), Program.rand.Round(max));
                 //this generates a distribution skewed away from the center and towards the extremes
-                static int Weighted(int start, int mult) => start + Program.rand.WeightedInt(start * (mult - 1), Program.rand.DoubleHalf());
+                static double Weighted(int start, double mult) => start + Program.rand.WeightedInt(Program.rand.Round(start * (mult - 1)), Program.rand.DoubleHalf());
                 int Max() => 1 + Program.rand.GaussianCappedInt(Math.Sqrt(size) / 1.69, .13);
 
                 // neutral dragon dwellings
@@ -127,11 +125,13 @@ namespace HOMM3
                 // undervalued, chance to increase and be guarded on some maps
                 settings.Add(new("144 11", value: Weighted(200, mult), maxPerZone: 1));
                 //Trading Post                  +99 0 3000 100 d d 
-                // very valuable, especially early on, increase value to reflect
-                settings.Add(new("99 0", value: Range(6000, 15000), frequency: Range(25, 50), maxOnMap: Range(1, 2), maxPerZone: 1));
+                // very valuable early on, increase value to reflect
+                int warlock = Range(5, 15);
+                double trading = 25 * 10 / (double)warlock;
+                settings.Add(new("99 0", value: Range(6000, 15000), frequency: Range(trading, 2 * trading), maxOnMap: Range(1, 2), maxPerZone: 1));
                 //Warlock's Lab                 +144 9 10000 100 
                 // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
-                settings.Add(new("144 9", value: 20000, frequency: 10, maxOnMap: 1));
+                settings.Add(new("144 9", value: 20000, frequency: warlock, maxOnMap: 1));
                 //Obelisk                       +57 0 350 200
                 // the grail can potentially make a game way too easy (or occasionally too difficult), disable it sometimes
                 if (Program.rand.Bool())
@@ -167,7 +167,7 @@ namespace HOMM3
                     //Hut of the Magi           +37 0 100 25 
                     // higher potential hut value when more eyes
                     double eyeMult = eye.frequency.Value / (double)eyeFreq;
-                    int hut = Program.rand.Round(eyeMult * 3900) + Range(0, eyeMult * 2100 * Math.Sqrt(eyes * numZones));
+                    double hut = eyeMult * 3900 + Range(0, eyeMult * 2100 * Math.Sqrt(eyes * numZones));
                     settings.Add(new("37 0", value: hut, maxOnMap: Range(1, Max()), maxPerZone: 1));
                 }
                 //Hill Fort (traditional)       +35 0 7000 20 
@@ -188,7 +188,7 @@ namespace HOMM3
                 //exp   =    0, 5000, 15000, 90000, 500000
                 //value = 2500, 5000, 10000, 20000,  30000
                 int prisons = Program.rand.GaussianOEInt(1.3 * Math.Sqrt(size), .39, .39);
-                int prisonFreq = Program.rand.Round(390.0 / prisons);
+                double prisonFreq = 390.0 / prisons;
                 HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
                 for (int a = 0; a < prisons; a++)
                 {
@@ -199,7 +199,7 @@ namespace HOMM3
                         continue;
                     }
                     duplicates.Add(exp);
-                    int value = Program.rand.Round(7.8 * Math.Pow(2100 + exp, .78));
+                    double value = 7.8 * Math.Pow(2100 + exp, .78);
                     settings.Add(new("62 0 " + exp, value: value, frequency: prisonFreq, maxOnMap: 1));
                     if (prisonDefaults.Contains(exp))
                         prisonDefaults.Remove(exp);
@@ -229,8 +229,8 @@ namespace HOMM3
                         continue;
                     }
                     duplicates.Add(amount * (gold ? -1 : 1));
-                    int value = Program.rand.Round(amount * (gold ? 1 : 1.3));
-                    settings.Add(new(string.Format("6 0 {0} {1}", gold ? "2" : "1", amount), value: value, frequency: Program.rand.Round(pandoraFreq)));
+                    double value = amount * (gold ? 1 : 1.3);
+                    settings.Add(new(string.Format("6 0 {0} {1}", gold ? "2" : "1", amount), value: value, frequency: pandoraFreq));
                     if (gold && pandoraGolds.Contains(amount))
                         pandoraGolds.Remove(amount);
                     else if (!gold && pandoraExps.Contains(amount))
@@ -263,8 +263,8 @@ namespace HOMM3
                         continue;
                     }
                     duplicates.Add(amount * (gold ? -1 : 1));
-                    int value = Program.rand.Round((amount - 2100) * .65 * (gold ? 1 : 1.3));
-                    settings.Add(new(string.Format("83 n {0} {1}", gold ? "2" : "1", amount), value: value, frequency: Program.rand.Round(seerFreq)));
+                    double value = (amount - 2100) * .65 * (gold ? 1 : 1.3);
+                    settings.Add(new(string.Format("83 n {0} {1}", gold ? "2" : "1", amount), value: value, frequency: seerFreq));
                     if (gold && seerGolds.Contains(amount))
                         seerGolds.Remove(amount);
                     else if (!gold && seerExps.Contains(amount))
@@ -316,7 +316,7 @@ namespace HOMM3
 
                 // creature banks that give creature rewards - make either more or less frequent 
 
-                int CreatureBankCreature(int initial) => Weighted(1, Program.rand.Round(Math.Sqrt(100 * initial) * 2.1));
+                double CreatureBankCreature(int initial) => Weighted(1, Math.Sqrt(100 * initial) * 2.1);
                 //Griffin Conservatory          +16 2 2000 100 
                 settings.Add(new("16 2", frequency: CreatureBankCreature(100)));
                 //Dragon Fly Hive               +16 6 9000 100 
@@ -374,7 +374,7 @@ namespace HOMM3
                 {
                     const char split = ' ';
                     string output = setting.Output();
-                    output = output.Substring(1) + split + output[0].ToString();
+                    output = output[1..] + split + output[0].ToString();
                     return output.Split(split);
                 }
                 string[] a = Split(this);

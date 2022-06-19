@@ -1,14 +1,10 @@
-decorrelate warlock/trading
-revisit roads
 object per zone settings
-chance to not match town/terrain types
+chance to not match town/terrain types?
 creeps match terrain?
 correlate zone value and size
-water  
 zone repulsion/placement/fictive connections
+water  
 weak-str monster str, allow rand?
 
 balance
 	pair on small map - hard
-
-	

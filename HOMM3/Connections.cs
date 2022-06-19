@@ -75,6 +75,9 @@ namespace HOMM3
             double wideWeight = (.65 + Program.NumPlayers) / (1.69 + numZones);
             wideWeight = Program.rand.GaussianCapped(wideWeight, .169, Math.Max(0, 2 * wideWeight - 1));
 
+            static bool? Road(double chanceDefault, double roadChance) =>
+                Program.rand.Bool(chanceDefault) ? null : Program.rand.Bool(roadChance);
+
             //primary internal connections
             int min = players.Min(p => p.Zones.Count);
             int max = players.Max(p => p.Zones.Count);
@@ -84,7 +87,7 @@ namespace HOMM3
                 bool ground = Program.rand.Bool(.91);
                 double wide = Program.rand.Weighted(wideWeight);
                 bool canBorderGuard = false;
-                bool? road = null;
+                bool? road = Road(.78, .78);
                 double deviation = .13;
                 double strength = Program.GaussianOEWithMax(baseInternalStr * (1 - wide), .39, .039, baseExternalStr);
 
@@ -123,7 +126,7 @@ namespace HOMM3
                             bool ground = false;
                             double wide = wides[c];
                             bool canBorderGuard = Program.rand.Bool(.39);
-                            bool? road = null;
+                            bool? road = Road(.39, .65);
                             double deviation = 0;
                             double strength = Program.rand.GaussianOE(Program.rand.Range(baseInternalStr * (1 - wide), otherInternalStr * 1.3), .26, .104);
 
@@ -146,7 +149,7 @@ namespace HOMM3
                         bool ground = Program.rand.Bool();
                         double wide = 0;
                         bool canBorderGuard = false;
-                        bool? road = null;
+                        bool? road = Road(.65, .52);
                         double deviation = 0;
                         double strength = Program.GaussianOEWithMax(baseExternalStr, .078, .065, otherExternalStr);
 
@@ -177,7 +180,7 @@ namespace HOMM3
                 bool ground = false;
                 double wide = 0;
                 bool canBorderGuard = true;
-                bool? road = Program.rand.Bool(.169);
+                bool? road = Road(.26, .26);
                 double deviation = .065;
                 double strength = Program.rand.GaussianOE(otherExternalStr, .078, .091);
 
@@ -206,7 +209,7 @@ namespace HOMM3
                 double ground = .65;
                 double wide = 0;
                 bool canBorderGuard = false;
-                bool? road = null;
+                bool? road = Road(.52, .39);
                 double deviation = .091;
                 double strength = Program.GaussianOEWithMax(extraStr, .078, .078, baseExternalStr);
 
