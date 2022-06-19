@@ -107,26 +107,32 @@ namespace HOMM3
             //extra internal connections 
             double zonesPerPlayer = numZones / playerCount;
             int internalConnections = zonesPerPlayer > 2 ? Program.rand.GaussianCappedInt(Math.Sqrt(zonesPerPlayer - 1.69), .26) : 0;
+            double[] wides = new double[internalConnections + 1];
+            for (int b = 0; b < internalConnections + 1; b++)
+                wides[b] = Program.rand.Weighted(.39, .21);
             foreach (Player player in Program.rand.Iterate(players))
             {
                 int addConnections = internalConnections + Program.rand.Next(2);
                 if (player.Zones.Count > 1)
-                    for (int b = 0; b < addConnections; b++)
+                {
+                    wides = Program.rand.Iterate(wides).ToArray();
+                    for (int c = 0; c < addConnections; c++)
                         if (Program.rand.Bool())
                         {
                             bool primary = false;
                             bool ground = false;
-                            double wide = 0;
+                            double wide = wides[c];
                             bool canBorderGuard = Program.rand.Bool(.39);
                             bool? road = null;
                             double deviation = 0;
-                            double strength = Program.rand.GaussianOE(Program.rand.Range(baseInternalStr, otherInternalStr), .26, .104);
+                            double strength = Program.rand.GaussianOE(Program.rand.Range(baseInternalStr * (1 - wide), otherInternalStr * 1.3), .26, .104);
 
                             var zones = Program.rand.Iterate(player.Zones).Take(2).ToList();
                             Zone z1 = zones[0];
                             Zone z2 = zones[1];
                             AddConnection(connections, z1, z2, primary, ground, wide, canBorderGuard, road, deviation, strength);
                         }
+                }
             }
 
             //primary external connections

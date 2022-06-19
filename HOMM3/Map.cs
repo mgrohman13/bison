@@ -132,6 +132,10 @@ namespace HOMM3
                 //Warlock's Lab                 +144 9 10000 100 
                 // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
                 settings.Add(new("144 9", value: 20000, frequency: 10, maxOnMap: 1));
+                //Obelisk                       +57 0 350 200
+                // the grail can potentially make a game way too easy (or occasionally too difficult), disable it sometimes
+                if (Program.rand.Bool())
+                    settings.Add(new("57 0", true));
 
                 // enable objects
 
@@ -366,8 +370,15 @@ namespace HOMM3
 
             public int CompareTo(ObjectSetting other)
             {
-                string[] a = id.Split(' ');
-                string[] b = other.id.Split(' ');
+                static string[] Split(ObjectSetting setting)
+                {
+                    const char split = ' ';
+                    string output = setting.Output();
+                    output = output.Substring(1) + split + output[0].ToString();
+                    return output.Split(split);
+                }
+                string[] a = Split(this);
+                string[] b = Split(other);
                 for (int c = 0; c < a.Length && c < b.Length; c++)
                 {
                     string str1 = a[c];
@@ -381,7 +392,7 @@ namespace HOMM3
                     if (retVal != 0)
                         return retVal;
                 }
-                return value.Value.CompareTo(other.value.Value);
+                return 0;
             }
         }
 
