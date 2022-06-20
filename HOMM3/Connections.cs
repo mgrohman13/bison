@@ -50,23 +50,26 @@ namespace HOMM3
 
         private static double GenerateStrongest()
         {
-            return Program.rand.GaussianOE(Program.rand.Range(21000, 39000), .104, .104);
+            return Program.rand.GaussianOE(Program.rand.Range(26000, 52000), .091, .169);
         }
         public static List<Connections> InitConnections(Player[] players, double size, double numZones)
         {
             double playerCount = players.Length;
             List<Connections> connections = new();
 
-            double range = Program.rand.Range(16900, 26000);
+            double range = Program.rand.Range(16900, 39000);
             double[] strengths = new double[] {
-                Program.rand.GaussianOE( 7800, .21,  .104),
-                Program.rand.GaussianOE(21000, .169, .104),
-                Program.rand.GaussianOE(range, .13,  .104),
+                Program.rand.GaussianOE( 9100, .26 , .078),
+                Program.rand.GaussianOE(26000, .13 , .13 ),
+                Program.rand.GaussianOE(range, .169, .091),
                 GenerateStrongest(),
             };
+            var temp = strengths.ToArray();
             Array.Sort(strengths);
+            if (!temp.SequenceEqual(strengths))
+                ;
             double baseInternalStr = strengths[0];
-            bool select = strengths[1] > strengths[2] || strengths[1] > strengths[0] * Program.rand.Range(2.1, 2.6);
+            bool select = strengths[1] > strengths[0] * Program.rand.Range(2.1, 2.6);
             double baseExternalStr = strengths[select ? 1 : 2];
             double otherInternalStr = strengths[select ? 2 : 1];
             double otherExternalStr = strengths[3];
@@ -240,7 +243,7 @@ namespace HOMM3
         }
         private void IncreaseStrength()
         {
-            strength = Program.rand.GaussianOEInt(strength * 1.3, .13, .13);
+            strength = Math.Max(strength, Program.rand.GaussianOEInt(strength * 1.3, .13, .13));
             strength = Math.Max(strength, Program.rand.Round(GenerateStrongest()));
         }
 
@@ -276,10 +279,15 @@ namespace HOMM3
 
                 var borderGuards = connections.Where(c => c.borderGuard);
                 //if this is a primary connection, dont keep any border guards
-                bool borderGuard = !primary && borderGuards.Any();
+                bool borderGuard = borderGuards.Any();
+                borderGuard &= !primary;
                 //only one border guard makes sense
                 if (borderGuard)
+                {
+                    if (borderGuards.Count() > 1)
+                        ;
                     keep.Add(Program.rand.SelectValue(borderGuards));
+                }
 
                 var others = connections.Where(c => !c.borderGuard);
                 if (others.Any())
