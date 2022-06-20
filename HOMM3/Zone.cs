@@ -373,7 +373,7 @@ namespace HOMM3
         }
         public class Neutral_towns
         {
-            private static double same;
+            private static readonly double same;
             static Neutral_towns()
             {
                 same = Program.rand.GaussianCapped(.5, .26, .091);
@@ -658,10 +658,10 @@ namespace HOMM3
         }
         public class Monsters
         {
-            private static double match;
-            private static double allOne;
-            private static double neutral;
-            private static double prob;
+            private static readonly double match;
+            private static readonly double allOne;
+            private static readonly double neutral;
+            private static readonly double prob;
             static Monsters()
             {
                 match = Program.GaussianOEWithMax(.078, .39, .13, .91);
@@ -1076,10 +1076,10 @@ namespace HOMM3
         }
         public class Options
         {
-            private static double neutral;
-            private static double neutralTown;
-            private static double road;
-            private static double roadTown;
+            private static readonly double neutral;
+            private static readonly double neutralTown;
+            private static readonly double road;
+            private static readonly double roadTown;
             static Options()
             {
                 neutral = Program.GaussianOEWithMax(.39, .26, .13, .91);
