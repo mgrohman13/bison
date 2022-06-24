@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HOMM3
 {
@@ -292,6 +290,26 @@ namespace HOMM3
                             zone.AddMines(0, 1, 0);
                             Log.Out("downgrade ({0}): g -> r", zone.Id);
                         });
+                }
+
+                foreach (Zone zone in Program.rand.Iterate(zones))
+                {
+                    int convert = Program.rand.WeightedInt(Program.rand.Round((zone.WoodOreMines - 3) / 2.0), .78);
+                    if (convert > 0)
+                    {
+                        any = true;
+                        Log.Out("convert ({0}): {1}/{2} w/o -> r", zone.Id, 2 * convert, zone.WoodOreMines);
+                        zone.RemoveMines(2 * convert, 0, 0);
+                        zone.AddMines(0, convert, 0);
+                    }
+                    convert = Program.rand.WeightedInt(Program.rand.Round((zone.ResourceMines - Program.rand.Range(2.6, 3.9)) / 2.0), .65);
+                    if (convert > 0)
+                    {
+                        any = true;
+                        Log.Out("convert ({0}): {1}/{2} r -> g", zone.Id, 2 * convert, zone.ResourceMines);
+                        zone.RemoveMines(0, 2 * convert, 0);
+                        zone.AddMines(0, 0, convert);
+                    }
                 }
 
                 //move mines from zones with a large number of them to a neighbor

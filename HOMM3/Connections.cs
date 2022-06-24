@@ -70,7 +70,7 @@ namespace HOMM3
             if (!temp.SequenceEqual(strengths))
                 Log.Out(0, "strengths: {0}", strengths.ToList());
             double baseInternalStr = strengths[0];
-            bool select = strengths[1] > strengths[0] * Program.rand.Range(2.1, 2.6);
+            bool select = strengths[1] > strengths[0] * Program.rand.Range(2.1, Math.E);
             Log.Out("select: {0}", select);
             double baseExternalStr = strengths[select ? 1 : 2];
             double otherInternalStr = strengths[select ? 2 : 1];
@@ -459,7 +459,7 @@ namespace HOMM3
 
             public void Generate()
             {
-                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers; 
+                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers;
                 Minimum_total_positions = Maximum_total_positions = Program.NumPlayers;
             }
 
