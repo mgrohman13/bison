@@ -25,6 +25,7 @@ namespace HOMM3
 
             name = "Matt " + rand.RangeInt(1000, 9999);
             pairPlayer = rand.Bool();// rand.Bool(Math.Pow((Program.NumPlayers - 1.69) / 7.8, .65));
+            Log.Out("pairPlayer: {0}", pairPlayer);
             Player[] players = InitPlayers();
             int sizeInt = InitSize();
 
@@ -32,6 +33,7 @@ namespace HOMM3
             Map map = new(sizeInt);
 
             List<Zone> zones = Zone.InitZones(players, size);
+            Log.Out("numZones: {0}", zones.Count);
             List<Connections> connections = Connections.InitConnections(players, size, zones.Count);
             Player.InitMines(players, zones, size);
 
@@ -39,6 +41,8 @@ namespace HOMM3
 
             map.Generate(size, zones.Count);
             Output(pack, map, zones.ToArray(), connections.ToArray());
+
+            Log.Write(string.Format("{0}.log", name));
         }
 
         public static int GaussianOEIntWithMax(double avg, double deviation, double oe, int max, int min = 0)
@@ -75,7 +79,7 @@ namespace HOMM3
         {
             numPlayers = GaussianOEIntWithMax(pairPlayer ? 4.5 : 3.75, .13, .091, 8, pairPlayer ? 3 : 2);
 
-            Console.WriteLine("players = {0}", numPlayers);
+            Log.Out("numPlayers: {0}", numPlayers);
 
             //This is extremely annoying, but the human has to be red or the game places the player in the red's spot anyways.
             //It can be avoided by generating the map in the map editor first, but that is silly.
@@ -86,19 +90,27 @@ namespace HOMM3
             int manualSelect = rand.Next(numPlayers);
             string humanColor = GetColor(manualSelect);
             name += string.Format(" ({0}, {1})", numPlayers, humanColor);
-            Console.WriteLine("human = {0} ({1})", manualSelect + 1, humanColor);
+            Log.Out("human (template, game): {0}, {1}", GetColor(human), humanColor);
 
             int strongCount = rand.RangeInt(1, numPlayers - (pairPlayer ? 3 : 2));
             if (strongCount < 1)
                 strongCount = 1;
             HashSet<int> strongAIs = rand.Iterate(Enumerable.Range(0, numPlayers).Where(id => id != human)).Take(strongCount).ToHashSet();
 
+            int ShiftAI(int ai) => ai <= manualSelect ? ai - 1 : ai;
+            List<string> AIOut(Func<int, int> F) => strongAIs.OrderBy(x => x).Select(F).Select(GetColor).ToList();
+            Log.Out("strong: {0}, {1}", AIOut(x => x), AIOut(ShiftAI));
+
             var players = Enumerable.Range(0, numPlayers).Select(id => new Player(human == id, strongAIs.Contains(id))).ToArray();
             if (pairPlayer)
-                Player.SetPair(players[human], rand.SelectValue(players.Where(p => !p.Human && !p.AIstrong)));
+            {
+                Player paired = rand.SelectValue(players.Where(p => !p.Human && !p.AIstrong));
+                Player.SetPair(players[human], paired);
+                Log.Out("paired: {0}, {1}", GetColor(paired.ID), GetColor(ShiftAI(paired.ID)));
+            }
             return rand.Iterate(players.Concat(strongAIs.Select(id => new Player(players[id])))).ToArray();
         }
-        private static string GetColor(int human)
+        public static string GetColor(int human)
         {
             return human switch
             {
@@ -117,6 +129,7 @@ namespace HOMM3
         private static int InitSize()
         {
             int sizeInt = SelectSize();
+            Log.Out("picked: {0}", sizeInt);
             size = sizeInt;
             //idk why, but the largest map size is off by 1
             if (sizeInt == 98)
@@ -129,12 +142,15 @@ namespace HOMM3
             int[] surfaceSizes = new int[] { 1, 4, 9, 16, 25, 36, 49 };
 
             bool all = rand.Bool(.78);//todo: underground
+            Log.Out("all sizes: {0}", all);
 
             int[] sizes = all ? allSizes : surfaceSizes;
             int min = sizes[0], max = sizes[^1];
 
             double avg = 5.2 * Math.Pow((numPlayers - (pairPlayer ? .5 : 0)) / 1.69, .65);
+            Log.Out("avg: {0}", avg);
             int size = GaussianOEIntWithMax(avg, .26, .13, max, min);
+            Log.Out("value: {0}", size);
 
             int prev = -1;
             foreach (int val in sizes)

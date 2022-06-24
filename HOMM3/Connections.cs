@@ -39,7 +39,7 @@ namespace HOMM3
             this.primary = primary;
             this.ground = ground;
             this.wide = Program.rand.Bool(wide);
-            this.borderGuard = canBorderGuard && Program.rand.Bool(borderGuardChance);
+            this.borderGuard = !this.wide && canBorderGuard && Program.rand.Bool(borderGuardChance);
             this.road = road;
             this.strength = Program.rand.GaussianOEInt(strength, deviation, .013);
 
@@ -64,19 +64,25 @@ namespace HOMM3
                 Program.rand.GaussianOE(range, .169, .091),
                 GenerateStrongest(),
             };
+            Log.Out(0, "Connections strengths: {0}", strengths.ToList());
             var temp = strengths.ToArray();
             Array.Sort(strengths);
             if (!temp.SequenceEqual(strengths))
-                ;
+                Log.Out(0, "strengths: {0}", strengths.ToList());
             double baseInternalStr = strengths[0];
             bool select = strengths[1] > strengths[0] * Program.rand.Range(2.1, 2.6);
+            Log.Out("select: {0}", select);
             double baseExternalStr = strengths[select ? 1 : 2];
             double otherInternalStr = strengths[select ? 2 : 1];
             double otherExternalStr = strengths[3];
             double extraStr = Program.rand.Range(baseInternalStr, baseExternalStr * .78);
+            Log.Out(0, "baseInternalStr, baseExternalStr, otherInternalStr, otherExternalStr, extraStr: {0}, {1}, {2}, {3}, {4}",
+                baseInternalStr, baseExternalStr, otherInternalStr, otherExternalStr, extraStr);
 
             double wideWeight = (.65 + Program.NumPlayers) / (1.69 + numZones);
+            Log.Out("wideWeight: {0}", wideWeight);
             wideWeight = Program.rand.GaussianCapped(wideWeight, .169, Math.Max(0, 2 * wideWeight - 1));
+            Log.Out("wideWeight: {0}", wideWeight);
 
             static bool? Road(double chanceDefault, double roadChance) =>
                 Program.rand.Bool(chanceDefault) ? null : Program.rand.Bool(roadChance);
@@ -112,10 +118,14 @@ namespace HOMM3
 
             //extra internal connections 
             double zonesPerPlayer = numZones / playerCount;
-            int internalConnections = zonesPerPlayer > 2 ? Program.rand.GaussianCappedInt(Math.Sqrt(zonesPerPlayer - 1.69), .26) : 0;
+            double avgInternalConnections = Math.Sqrt(zonesPerPlayer - 1.69);
+            Log.Out("avg internalConnections: {0}", avgInternalConnections);
+            int internalConnections = zonesPerPlayer > 2 ? Program.rand.GaussianCappedInt(avgInternalConnections, .26) : 0;
+            Log.Out("internalConnections: {0}", internalConnections);
             double[] wides = new double[internalConnections + 1];
             for (int b = 0; b < internalConnections + 1; b++)
                 wides[b] = Program.rand.Weighted(.39, .21);
+            Log.Out("wides: {0}", wides.ToList());
             foreach (Player player in Program.rand.Iterate(players))
             {
                 int addConnections = internalConnections + Program.rand.Next(2);
@@ -173,9 +183,15 @@ namespace HOMM3
                     }
 
             //extra external connections
-            int externalConnections = Program.rand.GaussianOEInt(Math.Sqrt(numZones - 1.69) / 2.6, .39, .065);
+            double avgExternalConnections = Math.Sqrt(numZones - 1.69) / 2.6;
+            Log.Out("avg externalConnections: {0}", avgExternalConnections);
+            int externalConnections = Program.rand.GaussianOEInt(avgExternalConnections, .39, .065);
+            Log.Out("externalConnections: {0}", externalConnections);
             if (Program.PairPlayer)
-                --externalConnections;
+            {
+                externalConnections -= Program.rand.RangeInt(0, 2);
+                Log.Out("externalConnections: {0}", externalConnections);
+            }
             HashSet<Zone> tempZones = players.SelectMany(p => p.Zones).ToHashSet();
             for (int c = 0; c < externalConnections; c++)
             {
@@ -205,7 +221,9 @@ namespace HOMM3
 
             //paired connections
             double avgPairConnections = Math.Sqrt(zonesPerPlayer);
+            Log.Out("avg pairConnections: {0}", avgPairConnections);
             int pairConnections = Program.rand.GaussianOEInt(avgPairConnections, .26, .13, 1);
+            Log.Out("pairConnections: {0}", pairConnections);
             for (int d = 0; d < pairConnections; d++)
             {
                 bool primary = true;
@@ -243,8 +261,11 @@ namespace HOMM3
         }
         private void IncreaseStrength()
         {
+            Log.Out("IncreaseStrength ({0})-({1}): {2}", zone1.Id, zone2.Id, strength);
             strength = Math.Max(strength, Program.rand.GaussianOEInt(strength * 1.3, .13, .13));
+            Log.Out("IncreaseStrength: {0}", strength);
             strength = Math.Max(strength, Program.rand.Round(GenerateStrongest()));
+            Log.Out("IncreaseStrength: {0}", strength);
         }
 
         public static void Generate(List<Connections> allConnections, List<Connections> connections)
@@ -261,15 +282,20 @@ namespace HOMM3
             var wide = connections.Where(c => c.wide);
             if (wide.Any())
             {
+                Log.Out("wide ({0})-({1}): {2}", connections.First().zone1.Id, connections.First().zone2.Id, connections.Count);
                 //only one wide connection makes sense
                 keep.Add(Program.rand.SelectValue(wide));
                 //if any wide, keep only one of the others 
                 var others = connections.Where(c => !c.wide && !c.borderGuard);
                 if (others.Any())
                 {
+                    Log.Out("wide: additional");
                     Connections connection = Program.rand.SelectValue(others);
                     if (connection.road.HasValue ? !connection.road.Value : Program.rand.Bool())
+                    {
                         connection.road = Program.rand.Bool(.78);
+                        Log.Out("wide: road {0}", connection.road);
+                    }
                     keep.Add(connection);
                 }
             }
@@ -280,7 +306,11 @@ namespace HOMM3
                 var borderGuards = connections.Where(c => c.borderGuard);
                 //if this is a primary connection, dont keep any border guards
                 bool borderGuard = borderGuards.Any();
+                if (borderGuard)
+                    Log.Out("borderGuards ({0})-({1}): {2}", connections.First().zone1.Id, connections.First().zone2.Id, borderGuards.Count());
                 borderGuard &= !primary;
+                if (borderGuards.Any())
+                    Log.Out("borderGuard: {0}", borderGuard);
                 //only one border guard makes sense
                 if (borderGuard)
                 {
@@ -292,6 +322,8 @@ namespace HOMM3
                 var others = connections.Where(c => !c.borderGuard);
                 if (others.Any())
                 {
+                    Log.Out("({0})-({1}): maximum", connections.First().zone1.Id, connections.First().zone2.Id);
+
                     var max = others.Where(c => c.strength == others.Max(c => c.strength));
                     //if a border guard, only keep the strongest other connection and ensure it is sufficiently high as to have a purpose
                     Connections strongest = Program.rand.SelectValue(max);
@@ -301,12 +333,14 @@ namespace HOMM3
 
                     if (!borderGuard)
                     {
+                        Log.Out("minimum");
                         //keep the minimum and maximum strength connections, and a small chance to keep each additional one
                         var min = others.Where(c => c.strength == others.Min(c => c.strength));
                         keep.Add(Program.rand.SelectValue(min));
                         if (connections.Count > 2)
                         {
                             double chance = 1 / (connections.Count - 1.3);
+                            Log.Out("chance: {0}", chance);
                             foreach (Connections connection in others)
                                 if (Program.rand.Bool(chance))
                                     keep.Add(connection);
@@ -425,7 +459,7 @@ namespace HOMM3
 
             public void Generate()
             {
-                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers; // 1;
+                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers; 
                 Minimum_total_positions = Maximum_total_positions = Program.NumPlayers;
             }
 

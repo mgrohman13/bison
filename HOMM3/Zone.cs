@@ -80,9 +80,13 @@ namespace HOMM3
             List<Zone> zones = new();
             // include count of doubled-up AIs
             int playerCount = players.Length;
+            Log.Out("playerCount: {0}", playerCount);
             double avgNumZones = size / (.39 * Math.Pow(size + 6.5, .39));
+            Log.Out("avgNumZones: {0}", avgNumZones);
             int numZones = Program.rand.GaussianOEInt(avgNumZones + playerCount, .21, .13, playerCount);
+            Log.Out("numZones: {0}", numZones);
             ZoneAvgSize = 1296 * size / (double)numZones;
+            Log.Out("ZoneAvgSize: {0}", ZoneAvgSize);
             while (numZones > 0)
             {
                 bool extra = numZones < playerCount;
@@ -92,6 +96,7 @@ namespace HOMM3
                         Zone zone = new(players[p], !players[p].Zones.Any(), extra);
                         zones.Add(zone);
                         players[p].AddZone(zone);
+                        Log.Out("AddZone: {0} {1}", Program.GetColor(players[p].ID), zone.Id);
                         if (--numZones == 0)
                             break;
                     }
@@ -181,6 +186,8 @@ namespace HOMM3
 
         public void Generate(List<Connections> allConnections)
         {
+            Log.Out("Generate zone {0}", Id);
+
             double mineValue = woodOre * 1500 + resource * 3500 + gold * 7000;
 
             bool town = player_Towns.Generate(start, player);
@@ -216,6 +223,8 @@ namespace HOMM3
                 sizeDev = Program.rand.GaussianCapped(.26, .21);
                 //junction zones are a little wack, so make them fairly unlikely 
                 junction = Program.rand.Weighted(.39, .104);
+                Log.Out("Type sizeDev: {0}", sizeDev);
+                Log.Out("junction: {0}", junction);
             }
 
             private readonly string human_start;
@@ -251,8 +260,12 @@ namespace HOMM3
             {
                 if (!start)
                 {
-                    if (Program.rand.Bool(junction * (town ? .52 : 1) / (1 + mineValue / 7800.0)))
+                    double chance = junction * (town ? .52 : 1) / (1 + mineValue / 7800.0);
+                    if (Program.rand.Bool(chance))
+                    {
                         Junction = "x";
+                        Log.Out("junction chance: {0}", chance);
+                    }
                     else
                         Treasure = "x";
                 }
@@ -297,7 +310,7 @@ namespace HOMM3
 
             public void Generate()
             {
-                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers; // 1;
+                Minimum_human_positions = Maximum_human_positions = Program.NumPlayers;
                 Minimum_total_positions = Maximum_total_positions = Program.NumPlayers;
             }
 
@@ -338,7 +351,7 @@ namespace HOMM3
             {
                 if (start)
                 {
-                    Ownership = player.ID;
+                    Ownership = player.ID + 1;
                     if (Program.PairPlayer ?
                             (player.AIstrong && player.AIprimary) || (player.Paired != null && player.Paired.Human)
                             : !player.Human && (player.AIstrong || Program.rand.Bool()))
@@ -377,6 +390,7 @@ namespace HOMM3
             static Neutral_towns()
             {
                 same = Program.rand.GaussianCapped(.5, .26, .091);
+                Log.Out("Neutral_towns same: {0}", same);
             }
 
             private readonly int Minimum_towns = 0;
@@ -386,18 +400,25 @@ namespace HOMM3
             private string Towns_are_of_same_type;
             public Neutral_towns(bool start, double size)
             {
+                double avg = Math.Pow(size * size / ZoneAvgSize / 1300, .65) * .65;
                 if (!start)
-                    Minimum_towns = Program.rand.GaussianOEInt(Math.Pow(size * size / ZoneAvgSize / 1300, .65) * .65, .26, .13);
+                    Minimum_towns = Program.rand.GaussianOEInt(avg, .26, .13);
                 int max = size > Program.rand.Gaussian(1300, .13) ? 2 : 1;
                 if (size < 390)
                     max = 0;
                 if (Minimum_towns > max)
+                {
+                    Log.Out("Minimum_towns: {0}/{1} ({2},{3})", Minimum_towns, max, size, avg);
                     Minimum_towns = max;
+                }
                 if (Minimum_towns > 0 && Program.rand.Bool(.104))
                 {
                     Minimum_towns--;
                     Minimum_castles = 1;
+                    Log.Out("Minimum_castle");
                 }
+                if (Minimum_towns > 1)
+                    Log.Out("Minimum_towns: {0}/{1} ({2},{3})", Minimum_towns, max, size, avg);
             }
             public double NumTowns()
             {
@@ -509,9 +530,12 @@ namespace HOMM3
                 for (int b = 0; b < resource; b++)
                 {
                     if (!choices.Any())
+                    {
                         do
                             choices.AddRange(Enumerable.Range(0, 4));
                         while (Program.rand.Bool());
+                        Log.Out("Minimum_mines choices: {0}", choices.Count);
+                    }
                     int choice;
                     do
                         choice = Program.rand.SelectValue(choices);
@@ -664,36 +688,42 @@ namespace HOMM3
             private static readonly double prob;
             static Monsters()
             {
-                match = Program.GaussianOEWithMax(.078, .39, .13, .91);
-                allOne = Program.GaussianOEWithMax(.065, .39, .13, .91);
-                static double p() => Program.GaussianOEWithMax(.169, .39, .13, .91, .052);
+                match = Program.GaussianOEWithMax(.091, .39, .13, .91);
+                Log.Out("Monsters match: {0}", match);
+                allOne = Program.GaussianOEWithMax(.078, .39, .13, .91);
+                Log.Out("allOne: {0}", allOne);
+                static double p() => Program.GaussianOEWithMax(.21, .39, .13, .91, .052);
                 neutral = p();
+                Log.Out("neutral: {0}", neutral);
                 prob = p();
+                Log.Out("prob: {0}", prob);
             }
 
             private string Strength;
             private string Match_to_town;
-            private string Neutral;
-            private string Castle;
-            private string Rampart;
-            private string Tower;
-            private string Inferno;
-            private string Necropolis;
-            private string Dungeon;
-            private string Stronghold;
-            private string Fortress;
-            private string Conflux;
-            private string Cove;
+            private string Neutral = "";
+            private string Castle = "";
+            private string Rampart = "";
+            private string Tower = "";
+            private string Inferno = "";
+            private string Necropolis = "";
+            private string Dungeon = "";
+            private string Stronghold = "";
+            private string Fortress = "";
+            private string Conflux = "";
+            private string Cove = "";
 
             public void Generate(Monsters.Str str, bool town, double mineValue, bool hasResource, bool hasGold)
             {
                 if (mineValue > 3000)
                 {
+                    Log.Out("Monsters mineValue: {0} ({1})", mineValue, str);
                     //chance to increase strength based on number/value of mines
                     int newStr = (int)str + Program.rand.GaussianCappedInt((mineValue - 2500) / 6500.0, .26);
                     if (newStr > (int)Monsters.Str.strong)
                         newStr = (int)Monsters.Str.strong;
                     str = (Monsters.Str)newStr;
+                    Log.Out("str: {0}", str);
                 }
 
                 bool canMatchTown = true;
@@ -703,6 +733,9 @@ namespace HOMM3
                     // if there is a resource mine, strength must be at least avg or mine is ungarded
                     if (str <= Str.avg)
                     {
+                        Log.Out("Monsters hasResource ({0})", str);
+                        //Log.Out("Neutral,Castle,Rampart,Tower,Inferno,Necropolis,Dungeon,Stronghold,Fortress,Conflux,Cove: {0}",
+                        //    new List<string>() { Neutral, Castle, Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux, Cove });
                         str = Str.avg;
 
                         // Neutral, Castle, and Rampart level 1 creatures are too strong to be generated to guard resource mines with avg strength, so force some other type
@@ -713,13 +746,18 @@ namespace HOMM3
                         // chance to add another type to keep balanced
                         if (Program.rand.Next(4) == 0)
                             Switch(Program.rand.RangeInt(0, 1));
+                        Log.Out("Neutral,Castle,Rampart,Tower,Inferno,Necropolis,Dungeon,Stronghold,Fortress,Conflux,Cove: {0}",
+                            new List<string>() { Neutral, Castle, Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux, Cove });
                     }
                 }
                 else if (hasGold)
                 {
                     // if there is a gold mine, force at least weak monsters
                     if (str < Str.weak)
+                    {
+                        Log.Out("Monsters hasGold: {0}", str);
                         str = Str.weak;
+                    }
                 }
 
                 Strength = str.ToString();
@@ -732,10 +770,13 @@ namespace HOMM3
                 else if (Program.rand.Bool(allOne))
                 {
                     if (!any)
+                    {
                         if (n)
                             Neutral = "x";
                         else
                             Switch(Program.rand.Next(10));
+                        Log.Out("Monsters allOne: {0}", n);
+                    }
                 }
                 else
                 {
@@ -746,7 +787,11 @@ namespace HOMM3
                             Switch(a);
                         }
                     if (n || !any)
+                    {
                         Neutral = "x";
+                        if (!n && !any)
+                            Log.Out("Monsters Neutral");
+                    }
                 }
             }
             private void Switch(int a)
@@ -938,10 +983,15 @@ namespace HOMM3
                         double woValueAvg = Program.rand.Range(100, 260 + Program.rand.Gaussian()), gValueAvg = woValueAvg * 2.1 + Program.rand.Gaussian();
                         double lowAvg = woValueAvg * 1.69 + Program.rand.Gaussian(), highAvg = gValueAvg * 1.3 + Program.rand.Gaussian();
 
+                        Log.Out("Treasure woodMine,oreMine: {0},{1}", woodMine, oreMine);
+                        Log.Out("woValueAvg,gValueAvg,lowAvg,highAvg: {0},{1},{2},{3}", woValueAvg, gValueAvg, lowAvg, highAvg);
+
                         //randomize amounts of each within a reasonable range 
                         int[] amounts = new int[2];
                         amounts[0] = Program.rand.RangeInt(3, 6);
                         amounts[1] = Program.rand.RangeInt(5, 9 - amounts[0]);
+
+                        Log.Out("amounts: {0}", amounts.ToList());
 
                         //set wood/ore piles to a low value and high frequency, but with a max of the amount we actually want
                         int count = 0, woMin = int.MaxValue, woMax = 0;
@@ -972,13 +1022,16 @@ namespace HOMM3
 
                         if (gValue > gValueAvg)
                             highAvg *= gValue / (double)gValueAvg;
+                        Log.Out("SetLowHigh lowAvg,highAvg,min,highMin,max: {0},{1},{2},{3},{4}", lowAvg, highAvg, woMax + 1, gValue + 1, woMin * 4 - 5);
                         SetLowHigh(lowAvg, highAvg, woMax + 1, gValue + 1, woMin * 4 - 5);
                         //cap it at the typical tier value
                         int densityMax = Program.rand.Round(GetDensity(low * mult, high * mult));
                         //the constant multiplier was decided upon by emperically testing a bunch of random maps
                         // the smaller the zone, the higher denstiy is needed to make sure the piles generate
                         // also inclue a multiplier for the actual cost of piles as compared to the value range
-                        density = Program.rand.Round(3900 * count / size * woValue / (double)(low + high));
+                        double densityAvg = 3900 * count / size * woValue / (double)(low + high);
+                        density = Program.rand.Round(densityAvg);
+                        Log.Out("density,densityAvg,count,size: {0},{1},{2},{3}", density, densityAvg, count, size);
                         density = Math.Min(Math.Max(1, density), densityMax);
 
                         //value the generated piles accordingly
@@ -988,20 +1041,25 @@ namespace HOMM3
                     {
                         double lowAvg, highAvg;
                         int selection = Program.rand.Next(3);
+                        bool loop;
                         do
                         {
                             lowAvg = ranges[tier, selection, 0];
                             highAvg = ranges[tier, selection, 1];
                             selection--;
+                            loop = !neutralDragons && selection >= 0 && GetDensity(lowAvg, highAvg) < 1;
+                            if (loop)
+                                Log.Out("reduce selection: {0}", selection);
                         }
-                        while (!neutralDragons && selection >= 0 && GetDensity(lowAvg, highAvg) < 1);
+                        while (loop);
 
                         SetLowHigh(lowAvg, highAvg);
 
                         if (neutralDragons)
                         {
+                            Log.Out("neutralDragons");
                             value *= 2 / 3.0;
-                            density = 1;// + Program.rand.Round(value / (double)(low + high));
+                            density = 1;
                         }
                         else
                         {
@@ -1083,9 +1141,13 @@ namespace HOMM3
             static Options()
             {
                 neutral = Program.GaussianOEWithMax(.39, .26, .13, .91);
+                Log.Out("Options neutral: {0}", neutral);
                 neutralTown = Program.GaussianOEWithMax(.104, .39, .21, .91);
+                Log.Out("neutralTown: {0}", neutralTown);
                 road = Program.GaussianOEWithMax(.39, .39, .26, .91);
+                Log.Out("road: {0}", road);
                 roadTown = road * Program.rand.Weighted(.65);
+                Log.Out("roadTown: {0}", roadTown);
             }
 
             private readonly string Placement;
@@ -1106,8 +1168,14 @@ namespace HOMM3
 
             public bool Generate(bool start, Player player, bool town, double disposition, double joinPct, bool moneyOnly, double mineValue)
             {
+                if (mineValue > 0)
+                    Log.Out("Options mineValue: {0}", disposition);
+
                 mineValue /= 3900.0;
                 disposition = Math.Min(disposition + mineValue, 10 - (10 - disposition) * (10 - mineValue) / 10.0);
+
+                if (mineValue > 0)
+                    Log.Out("Options mineValue ({1}): {0}", disposition, mineValue);
 
                 if (!start && Program.rand.Bool(town ? neutralTown : neutral))
                     Force_neutral_creatures = "x";
@@ -1115,7 +1183,10 @@ namespace HOMM3
                     Allow_non_coherent_road = "x";
 
                 if (SetDisposition(disposition) == 0)
+                {
+                    Log.Out("Options disposition 0");
                     moneyOnly = true;
+                }
                 Monsters_joining_percentage = Program.rand.Round(joinPct);
                 if (moneyOnly)
                     Monsters_join_only_for_money = "x";
@@ -1139,6 +1210,7 @@ namespace HOMM3
                 int max = Math.Max(Math.Min((int)disposition + 1, 10), 8);
                 max = Program.rand.RangeInt(max, disposition < 9 ? 9 : 10);
                 double[] ranges = new double[] { min, 4, 5.5, 7, max };
+                Log.Out("Options ranges ({1}): {0}", ranges.ToList(), disposition);
 
                 double result;
 
@@ -1158,10 +1230,12 @@ namespace HOMM3
                                 result = ranges[a - 1];
                             break;
                         }
+                    Log.Out("pick: {0}", result);
                 }
                 else
                 {
-                    result = Math.Min(Program.rand.GaussianCappedInt(disposition, .078), 10);
+                    result = Program.rand.GaussianCappedInt(disposition, .078, Math.Max(0, (int)Math.Ceiling(2 * disposition - 10)));
+                    Log.Out("custom: {0}", result);
                 }
 
                 bool useRange = Program.rand.Bool(.91);
@@ -1196,12 +1270,14 @@ namespace HOMM3
                         throw new Exception();
                     Monsters_disposition_standard = 5;
                     Monsters_disposition_custom = Program.rand.Round(result);
+                    if (!useRange)
+                        Log.Out("useRange ({1}): {0}", useRange, Monsters_disposition_custom);
                 }
 
                 return result;
             }
 
-            internal void GenerateSettings(IEnumerable<Map.ObjectSetting> settings)
+            public void GenerateSettings(IEnumerable<Map.ObjectSetting> settings)
             {
                 Objects = Map.ObjectSetting.Output(settings);
             }

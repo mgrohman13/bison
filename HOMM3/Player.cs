@@ -9,7 +9,7 @@ namespace HOMM3
 {
     public class Player
     {
-        private static int counter = 1;
+        private static int counter = 0;
 
         public readonly int ID;
         public readonly bool Human, AIstrong, AIprimary;
@@ -61,9 +61,11 @@ namespace HOMM3
         {
             double numZones = zones.Count;
             double zonesPerPlayer = numZones / (double)Program.NumPlayers;
+            Log.Out("Mines zonesPerPlayer: {0}", zonesPerPlayer);
             //s=1.368 m=1.631 l=1.866 xl=2.084  (1-level)
             double sizeMult = 1 + Math.Pow(size / 13, .39);
             double minesAvg = (.26 + .52 * Math.Sqrt(zonesPerPlayer)) * sizeMult;
+            Log.Out("sizeMult, minesAvg: {0}, {1}", sizeMult, minesAvg);
 
             //player mines
             int playerWoodOre = Program.rand.GaussianOEInt(1 + (Program.PairPlayer ? .13 : .52), .13, .013);
@@ -77,26 +79,36 @@ namespace HOMM3
             if (Program.PairPlayer && playerWoodOre > pairedWoodOre)
                 if (pGold > 0 && Program.rand.Bool(.91))
                 {
+                    Log.Out("move gold to pair");
                     pGold--;
                     pairedGold++;
                 }
                 else
                 {
                     int xfer = Program.rand.RangeInt(1, Program.rand.Round(Math.Pow(pResource, .65)));
+                    Log.Out("move {0} resource to pair", xfer);
                     pResource -= xfer;
                     pairedResource += xfer;
                 }
+            if (!Program.PairPlayer)
+                pairedGold = pairedResource = pairedWoodOre = 0;
+
+            Log.Out("playerWoodOre, pairedWoodOre, pWoodOre, pResource, pGold, pairedResource: {0}, {1}, {2}, {3}, {4}, {5}",
+                playerWoodOre, pairedWoodOre, pWoodOre, pResource, pGold, pairedResource);
 
             //ai wood/ore
             double numAIs = Program.NumPlayers - (Program.PairPlayer ? 2 : 1);
+            Log.Out("numAIs: {0}", numAIs);
             var AIs = players.Where(p => !p.Human && (p.paired == null || !p.paired.Human));
             Dictionary<Player, int> aiHomeWoodOre = Program.rand.Iterate(AIs).ToDictionary(p => p, p => Program.rand.GaussianOEInt(p.AIstrong ? 1 : 2, .13, .013));
             int aiHomeWoodOreCount = aiHomeWoodOre.Values.Sum();
             int aiWoodOre = Math.Max(0, 1 + 2 * (int)numAIs - aiHomeWoodOreCount + Program.rand.OEInt(numAIs * minesAvg / 9.1));
+            Log.Out("aiHomeWoodOreCount, aiWoodOre: {0}, {1}", aiHomeWoodOreCount, aiWoodOre);
 
             //ai resource mines
             double aiResourceAvg = Math.Max(1 + Program.NumPlayers * minesAvg - pResource - pairedResource, Program.NumPlayers);
             int aiResource = Program.rand.GaussianOEInt(aiResourceAvg, .13, .091, Program.NumPlayers);
+            Log.Out("aiResourceAvg, aiResource: {0}, {1}", aiResourceAvg, aiResource);
 
             //balancing
             var playerZones = players.Where(p => p.Human || (p.paired != null && p.paired.Human)).SelectMany(p => p.zones);
@@ -108,6 +120,7 @@ namespace HOMM3
             //towns balancing
             double playerTowns = playerZones.Sum(z => z.NumTowns);
             double aiTowns = aiZones.Sum(z => z.NumTowns) / numAIs;
+            Log.Out("playerTowns, aiTowns: {0}, {1}", playerTowns, aiTowns);
             aiGoldAvg += (playerTowns - aiTowns) * 2.1;
             //wood/ore balancing 
             aiGoldAvg += (playerWoodOre * 1.3 + pairedWoodOre / 1.3 + pWoodOre - (aiHomeWoodOreCount + aiWoodOre) / numAIs) / 2.1;
@@ -115,6 +128,8 @@ namespace HOMM3
             aiGoldAvg += (pairedResource / 1.3 + pResource - aiResource / numAIs) / 1.69;
             //player gold mine balancing
             aiGoldAvg += pGold + pairedGold / 1.3;
+
+            Log.Out("aiGoldAvg: {0}", aiGoldAvg);
 
             //balancing
             if (aiGoldAvg < 0)
@@ -126,17 +141,23 @@ namespace HOMM3
                 xferResource *= 2;
                 pGold += xferGold;
                 pResource += xferResource;
+                Log.Out("xferGold, xferResource: {0}, {1}", xferGold, xferResource);
+                Log.Out("aiGoldAvg: {0}", aiGoldAvg);
             }
             double mult = Math.Sqrt(numAIs);
             aiGoldAvg *= mult;
+            Log.Out("aiGoldAvg: {0}", aiGoldAvg);
 
             //ai gold mines
             int aiGold = aiGoldAvg > 1 ? Program.rand.Round(aiGoldAvg - 1) : 0;
+            Log.Out("aiGold: {0}", aiGold);
             aiGoldAvg -= aiGold;
             aiGoldAvg *= 2;
             aiResource += Program.rand.Round(aiGoldAvg);
+            Log.Out("aiResource: {0}", aiResource);
             if (aiGold == 0 && Program.rand.Bool())
             {
+                Log.Out("add extra gold");
                 aiGold = Program.rand.Round(mult);
                 pGold++;
             }
@@ -147,7 +168,10 @@ namespace HOMM3
             if (Program.PairPlayer)
                 human.paired.home.AddMines(pairedWoodOre, pairedResource, pairedGold);
             foreach (var pair in Program.rand.Iterate(aiHomeWoodOre))
+            {
                 pair.Key.home.AddMines(pair.Value, 0, 0);
+                Log.Out("aiHomeWoodOre ({0}): {1}", Program.GetColor(pair.Key.ID), pair.Value);
+            }
 
             //place all mines
             HashSet<Player> place = players.ToHashSet();
@@ -190,6 +214,7 @@ namespace HOMM3
                     int resource = Program.GaussianOEIntWithMax(totalResource / div, .13, .13, totalResource);
                     int gold = Program.rand.Round(totalGold / div);
                     z.AddMines(woodOre, resource, gold);
+                    Log.Out("AddMines ({0}) w/o,r,g: {1}, {2}, {3}", z.Id, woodOre, resource, gold);
                     totalWoodOre -= woodOre;
                     totalResource -= resource;
                     totalGold -= gold;
@@ -202,11 +227,13 @@ namespace HOMM3
                     int resource = Program.rand.Round(totalResource / 2.0);
                     int gold = Program.rand.Round(totalGold / 2.0);
                     p2.home.AddMines(woodOre, resource, gold);
+                    Log.Out("AddMines ({0}) w/o,r,g: {1}, {2}, {3}", p2.home.Id, woodOre, resource, gold);
                     totalWoodOre -= woodOre;
                     totalResource -= resource;
                     totalGold -= gold;
                 }
                 p1.home.AddMines(totalWoodOre, totalResource, totalGold);
+                Log.Out("AddMines ({0}): {1}, {2}, {3}", p1.home.Id, totalWoodOre, totalResource, totalGold);
             }
 
             if (aiWoodOre != 0 || aiResource != 0 || aiGold != 0 || Math.Abs(numAIs) > .0000001)
@@ -241,8 +268,11 @@ namespace HOMM3
                 int removeGold = CanRemove(z => z.GoldMines);
                 any = removeWoodOre > 0 || removeResource > 0 || removeGold > 0;
                 if (any)
+                {
                     foreach (Zone zone in Program.rand.Iterate(zones))
                         zone.RemoveMines(removeWoodOre, removeResource, removeGold);
+                    Log.Out("RemoveMines (all): {0}, {1}, {2}", removeWoodOre, removeResource, removeGold);
+                }
                 while (CanRemove(CountMines) > 0)
                 {
                     any = true;
@@ -250,19 +280,23 @@ namespace HOMM3
                         ModRandomMine(zone, wo =>
                         {
                             zone.RemoveMines(1, 0, 0);
+                            Log.Out("RemoveMines ({0}): 1 wo", zone.Id);
                         }, r =>
                         {
                             zone.RemoveMines(0, 1, 0);
                             zone.AddMines(1, 0, 0);
+                            Log.Out("downgrade ({0}): r -> wo", zone.Id);
                         }, g =>
                         {
                             zone.RemoveMines(0, 0, 1);
                             zone.AddMines(0, 1, 0);
+                            Log.Out("downgrade ({0}): g -> r", zone.Id);
                         });
                 }
 
                 //move mines from zones with a large number of them to a neighbor
                 double minesPerZone = Math.PI * Math.Sqrt(zones.Average(CountMines));
+                Log.Out("minesPerZone: {0}", minesPerZone);
                 foreach (Zone zone1 in Program.rand.Iterate(zones))
                     if (Program.rand.GaussianOE(CountMines(zone1), .26, .065) > minesPerZone)
                     {
@@ -278,16 +312,22 @@ namespace HOMM3
                         {
                             zone1.RemoveMines(1, 0, 0);
                             zone2.AddMines(1, 0, 0);
+                            Log.Out("move: {0} -> {1} wo", zone1.Id, zone2.Id);
                         }, r =>
                         {
                             zone1.RemoveMines(0, 1, 0);
                             zone2.AddMines(0, 1, 0);
+                            Log.Out("move: {0} -> {1} r", zone1.Id, zone2.Id);
                         }, g =>
                         {
                             zone1.RemoveMines(0, 0, 1);
                             zone2.AddMines(0, 0, 1);
+                            Log.Out("move: {0} -> {1} g", zone1.Id, zone2.Id);
                         });
                     }
+
+                if (any)
+                    Log.Out("mine iter");
             } while (any);
         }
 

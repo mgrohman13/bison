@@ -90,7 +90,9 @@ namespace HOMM3
                 static int Range(double min, double max) => Program.rand.RangeInt(Program.rand.Round(min), Program.rand.Round(max));
                 //this generates a distribution skewed away from the center and towards the extremes
                 static double Weighted(double start, double mult) => start + Program.rand.Weighted(start * (mult - 1), Program.rand.DoubleHalf());
-                int Max() => 1 + Program.rand.GaussianCappedInt(Math.Sqrt(size) / 1.69, .13);
+                double avg = Math.Sqrt(size) / 1.69;
+                Log.Out("Obj avg max: {0}", avg + 1);
+                int Max() => 1 + Program.rand.GaussianCappedInt(avg, .13);
 
                 // neutral dragon dwellings
 
@@ -111,6 +113,7 @@ namespace HOMM3
                 // over-nerfed, reduce value to reflect 
                 settings.Add(new("35 1", value: 3500));
                 int mult = Range(10, 20);
+                //Log.Out("mult: {0}", mult);
                 ////Magic Spring                +48 0 500 50       (Note: This object cannot be guarded nor be part of a guarded group of objects)
                 //// would modify this similar to magic well, but since it can't be guarded there's no real point
                 //settings.Add(new("48 0", value: Weighted(500, 500 * mult)));
@@ -120,6 +123,7 @@ namespace HOMM3
                 //Stables                       +94 0 200 40
                 // undervalued, chance to increase and be guarded on some maps
                 mult = Range(20, 40);
+                Log.Out("mult: {0}", mult);
                 settings.Add(new("94 0", value: Weighted(200, mult), maxPerZone: 1));
                 //Trailblazer                   +144 11 200 40
                 // undervalued, chance to increase and be guarded on some maps
@@ -128,6 +132,7 @@ namespace HOMM3
                 // very valuable early on, increase value to reflect
                 int warlock = Range(5, 15);
                 double trading = 25 * 10 / (double)warlock;
+                Log.Out("warlock, trading: {0}, {1}", warlock, trading);
                 settings.Add(new("99 0", value: Range(6000, 15000), frequency: Range(trading, 2 * trading), maxOnMap: Range(1, 2), maxPerZone: 1));
                 //Warlock's Lab                 +144 9 10000 100 
                 // ends up functionally removing any distinction between the different resources, so make more valuable and much less frequent 
@@ -167,7 +172,10 @@ namespace HOMM3
                     //Hut of the Magi           +37 0 100 25 
                     // higher potential hut value when more eyes
                     double eyeMult = eye.frequency.Value / (double)eyeFreq;
-                    double hut = eyeMult * 3900 + Range(0, eyeMult * 2100 * Math.Sqrt(eyes * numZones));
+                    double hutBase = eyeMult * 3900;
+                    double hutRange = eyeMult * 2600 * Math.Sqrt(eyes * numZones);
+                    Log.Out("hutRange: {0} - {1}", hutBase, hutBase + hutRange);
+                    double hut = hutBase + Range(0, hutRange);
                     settings.Add(new("37 0", value: hut, maxOnMap: Range(1, Max()), maxPerZone: 1));
                 }
                 //Hill Fort (traditional)       +35 0 7000 20 

@@ -58,7 +58,7 @@ namespace HOMM3
             public Options()
             {
                 Name = Program.Name;
-                Max_Battle_Rounds = Program.rand.GaussianCappedInt(100, .13, 52);
+                Max_Battle_Rounds = Program.rand.GaussianCappedInt(91, .13, 52);
             }
 
             public void Output(List<List<string>> output, ref int x, ref int y)
