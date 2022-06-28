@@ -1029,7 +1029,7 @@ namespace HOMM3
                         //the constant multiplier was decided upon by emperically testing a bunch of random maps
                         // the smaller the zone, the higher denstiy is needed to make sure the piles generate
                         // also inclue a multiplier for the actual cost of piles as compared to the value range
-                        double densityAvg = 3900 * count / size * woValue / (double)(low + high);
+                        double densityAvg = 5200 * count / size * woValue / (double)(low + high);
                         density = Program.rand.Round(densityAvg);
                         Log.Out("density,densityAvg,count,size: {0},{1},{2},{3}", density, densityAvg, count, size);
                         density = Math.Min(Math.Max(1, density), densityMax);
@@ -1182,11 +1182,35 @@ namespace HOMM3
                 if (Program.rand.Bool((town ? roadTown : road)))
                     Allow_non_coherent_road = "x";
 
-                if (SetDisposition(disposition) == 0)
+                disposition = SetDisposition(disposition);
+
+                const double triggerDispositionLow = 4;
+                double dispositionLow = Math.Max(0, triggerDispositionLow - disposition);
+                if (!moneyOnly && Program.rand.Bool(dispositionLow / triggerDispositionLow))
                 {
-                    Log.Out("Options disposition 0");
                     moneyOnly = true;
+                    Log.Out("Options dispositionLow moneyOnly: {0}", dispositionLow);
                 }
+                if (!moneyOnly && dispositionLow > 0)
+                {
+                    Log.Out("Options dispositionLow ({1}) joinPct: {0}", joinPct, dispositionLow);
+                    joinPct /= 1 + dispositionLow * .52;
+                    Log.Out("joinPct: {0}", joinPct);
+                }
+                void IncJoinPct() => joinPct = 3 - (3 - joinPct) / 1.3;
+                if (moneyOnly)
+                {
+                    Log.Out("Options moneyOnly joinPct: {0}", joinPct);
+                    IncJoinPct();
+                    Log.Out("joinPct: {0}", joinPct);
+                }
+                if (disposition > 5.75)
+                {
+                    Log.Out("Options disposition joinPct: {0}", joinPct);
+                    IncJoinPct();
+                    Log.Out("joinPct: {0}", joinPct);
+                }
+
                 Monsters_joining_percentage = Program.rand.Round(joinPct);
                 if (moneyOnly)
                     Monsters_join_only_for_money = "x";
@@ -1198,12 +1222,12 @@ namespace HOMM3
             }
             private double SetDisposition(double disposition)
             {
+                //0: 0 (always)
                 //1: 1-7  (4)
                 //2: 1-10 (5.5)
                 //3: 4-10 (7)
-                //0: 0 (always)
-                //5: custom 1-9
                 //4: 10 (never) 
+                //5: custom 1-9
 
                 int min = Math.Min((int)disposition, 3);
                 min = Program.rand.RangeInt(disposition > 1 ? 1 : 0, min);
@@ -1240,33 +1264,18 @@ namespace HOMM3
 
                 bool useRange = Program.rand.Bool(.91);
                 if (result == 0)
-                {
                     Monsters_disposition_standard = 0;
-                    Monsters_disposition_custom = -1;
-                }
                 else if (useRange && result == 4)
-                {
                     Monsters_disposition_standard = 1;
-                    Monsters_disposition_custom = -1;
-                }
                 else if (result == 5.5)
-                {
                     Monsters_disposition_standard = 2;
-                    Monsters_disposition_custom = -1;
-                }
                 else if (useRange && result == 7)
-                {
                     Monsters_disposition_standard = 3;
-                    Monsters_disposition_custom = -1;
-                }
                 else if (result == 10)
-                {
                     Monsters_disposition_standard = 4;
-                    Monsters_disposition_custom = -1;
-                }
                 else
                 {
-                    if (result > 10 || (result != (int)result && result != 5.5))
+                    if (result < 0 || result > 10 || (result != (int)result && result != 5.5))
                         throw new Exception();
                     Monsters_disposition_standard = 5;
                     Monsters_disposition_custom = Program.rand.Round(result);
