@@ -200,7 +200,7 @@ namespace HOMM3
                 HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
                 for (int a = 0; a < prisons; a++)
                 {
-                    int exp = Program.rand.GaussianOEInt(9100, 1, .5);
+                    int exp = Program.rand.GaussianOEInt(9100, 1, .5, 650);
                     if (duplicates.Contains(exp))
                     {
                         a--;
@@ -230,7 +230,7 @@ namespace HOMM3
                 for (int a = 0; a < pandorasBoxes; a++)
                 {
                     bool gold = Program.rand.Next(5) == 0;
-                    int amount = Program.rand.GaussianOEInt(gold ? 10400 : 7800, 1, .5);
+                    int amount = Program.rand.GaussianOEInt(gold ? 10400 : 7800, 1, .5, 650);
                     if (duplicates.Contains(amount * (gold ? -1 : 1)))
                     {
                         a--;

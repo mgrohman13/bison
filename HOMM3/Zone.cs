@@ -391,7 +391,7 @@ namespace HOMM3
             {
                 castle = Program.rand.GaussianCapped(.104, .169, .013);
                 same = Program.rand.GaussianCapped(.5, .26, .091);
-                Log.Out("Neutral_towns same: {0}", same);
+                Log.Out("Neutral_towns castle,same: {0},{1}", castle, same);
             }
 
             private readonly int Minimum_towns = 0;
@@ -407,7 +407,16 @@ namespace HOMM3
                     double avg = Math.Pow(mapSize * size / ZoneAvgSize * size / 1300, .65) * .65;
                     int max = size > Program.rand.Gaussian(1300, .13) ? 2 : 1;
                     if (size < Program.rand.Gaussian(390, .065))
-                        max = 0;
+                        avg = 0;
+
+                    const double limit = .65;
+                    if (avg / max > limit)
+                    {
+                        double newAvg = (avg / max) - limit;
+                        newAvg = limit + (1 - limit) * newAvg / (newAvg + 1 - limit);
+                        Log.Out("Neutral_towns avg limit: {0}/{1}, {2}", avg, max, newAvg);
+                        avg = max * newAvg;
+                    }
 
                     Minimum_towns = Program.rand.WeightedInt(max, avg / max);
                     if (Minimum_towns > 0)
@@ -1174,7 +1183,13 @@ namespace HOMM3
                 if (mineValue > 0)
                     Log.Out("Options mineValue: {0}", disposition);
 
-                mineValue /= 3900.0;
+                mineValue = Math.Pow(mineValue / 5200.0, 1.3);
+                if (mineValue > 5)
+                {
+                    Log.Out("Options mineValue limit: {0}", mineValue);
+                    mineValue = 10 * mineValue / (mineValue + 5);
+                    Log.Out("mineValue: {0}", mineValue);
+                }
                 disposition = Math.Min(disposition + mineValue, 10 - (10 - disposition) * (10 - mineValue) / 10.0);
 
                 if (mineValue > 0)

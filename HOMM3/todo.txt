@@ -1,3 +1,4 @@
+organize logging to group/show logging class better 
 object per zone settings
 correlate zone value and size
 chance to not match town/terrain types?
@@ -5,6 +6,3 @@ creeps match terrain?
 zone repulsion/placement/fictive connections
 water  
 weak-str monster str, allow rand?
-
-balance
-	pair on small map - hard
