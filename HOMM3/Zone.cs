@@ -130,7 +130,7 @@ namespace HOMM3
                     monsters = Program.rand.Bool(.39) ? Zone.Monsters.Str.avg : Monsters.Str.strong;
                     disposition = Program.rand.Range(6.5, 7.8);
                     moneyOnly = Program.rand.Bool();
-                    joinPct = moneyOnly ? Program.rand.GaussianCapped(joinPct, .39) : 0;
+                    joinPct = moneyOnly ? Program.rand.GaussianCapped(joinPct, .39) : Program.rand.WeightedInt(3, .169);
                 }
                 else
                 {
@@ -139,14 +139,11 @@ namespace HOMM3
                     monsters = (Zone.Monsters.Str)Program.rand.Next(4);
                     disposition = .91 + Program.rand.Weighted(6.5, .78);
                     moneyOnly = Program.rand.Bool(.26);
-                    joinPct = Program.rand.GaussianCapped(joinPct, .26);
+                    joinPct = Program.rand.GaussianCapped(joinPct, 1);
                 }
 
-                if (monsters == Zone.Monsters.Str.none)
-                    if (Program.rand.Bool(.91))
-                        monsters = Program.rand.Bool() ? Zone.Monsters.Str.weak : Zone.Monsters.Str.avg;
-                    else
-                        value = Program.rand.Round(value / 2.1);
+                if (monsters == Zone.Monsters.Str.none && Program.rand.Bool(.78))
+                    monsters = Program.rand.Bool() ? Zone.Monsters.Str.weak : Zone.Monsters.Str.avg;
 
                 foreach (Player player in Program.rand.Iterate(players))
                     if (a < player.Zones.Count)
@@ -197,8 +194,10 @@ namespace HOMM3
             minimum_mines.Generate(woodOre, resource, gold, out bool woodMine, out bool oreMine);
             mine_Density.Generate();
             terrain.Generate(town);
-            monsters.Generate(monsterStr, town, mineValue, resource > 0, gold > 0);
+            monsterStr = monsters.Generate(monsterStr, town, mineValue, resource > 0, gold > 0);
             bool neutralDwellings = options.Generate(start, player, town, disposition, joinPct, moneyOnly, mineValue);
+            if (monsterStr == Monsters.Str.none)
+                value = Program.rand.Round(value / 2.1);
             var settings = treasure.Generate(type.Size(), start, player, value, mineValue, woodMine, oreMine, monsterStr, neutralDwellings);
             options.GenerateSettings(settings);
 
@@ -386,9 +385,11 @@ namespace HOMM3
         }
         public class Neutral_towns
         {
+            private static readonly double castle;
             private static readonly double same;
             static Neutral_towns()
             {
+                castle = Program.rand.GaussianCapped(.104, .169, .013);
                 same = Program.rand.GaussianCapped(.5, .26, .091);
                 Log.Out("Neutral_towns same: {0}", same);
             }
@@ -400,25 +401,25 @@ namespace HOMM3
             private string Towns_are_of_same_type;
             public Neutral_towns(bool start, double size)
             {
-                double avg = Math.Pow(size * size / ZoneAvgSize / 1300, .65) * .65;
                 if (!start)
-                    Minimum_towns = Program.rand.GaussianOEInt(avg, .26, .13);
-                int max = size > Program.rand.Gaussian(1300, .13) ? 2 : 1;
-                if (size < 390)
-                    max = 0;
-                if (Minimum_towns > max)
                 {
-                    Log.Out("Minimum_towns: {0}/{1} ({2},{3})", Minimum_towns, max, size, avg);
-                    Minimum_towns = max;
+                    double mapSize = Math.Sqrt(7.8 / Program.Size);
+                    double avg = Math.Pow(mapSize * size / ZoneAvgSize * size / 1300, .65) * .65;
+                    int max = size > Program.rand.Gaussian(1300, .13) ? 2 : 1;
+                    if (size < Program.rand.Gaussian(390, .065))
+                        max = 0;
+
+                    Minimum_towns = Program.rand.WeightedInt(max, avg / max);
+                    if (Minimum_towns > 0)
+                        Log.Out("Minimum_towns: {0}/{1} ({2},{3},{4})", Minimum_towns, max, avg, size, mapSize);
+
+                    while (Minimum_towns > 0 && Program.rand.Bool(castle))
+                    {
+                        Minimum_towns--;
+                        Minimum_castles++;
+                        Log.Out("Minimum_castle");
+                    }
                 }
-                if (Minimum_towns > 0 && Program.rand.Bool(.104))
-                {
-                    Minimum_towns--;
-                    Minimum_castles = 1;
-                    Log.Out("Minimum_castle");
-                }
-                if (Minimum_towns > 1)
-                    Log.Out("Minimum_towns: {0}/{1} ({2},{3})", Minimum_towns, max, size, avg);
             }
             public double NumTowns()
             {
@@ -713,12 +714,12 @@ namespace HOMM3
             private string Conflux = "";
             private string Cove = "";
 
-            public void Generate(Monsters.Str str, bool town, double mineValue, bool hasResource, bool hasGold)
+            public Monsters.Str Generate(Monsters.Str str, bool town, double mineValue, bool hasResource, bool hasGold)
             {
                 if (mineValue > 3000)
                 {
                     Log.Out("Monsters mineValue: {0} ({1})", mineValue, str);
-                    //chance to increase strength based on number/value of mines
+                    //chance to increase strength based on number/value of mines 
                     int newStr = (int)str + Program.rand.GaussianCappedInt((mineValue - 2500) / 6500.0, .26);
                     if (newStr > (int)Monsters.Str.strong)
                         newStr = (int)Monsters.Str.strong;
@@ -746,8 +747,8 @@ namespace HOMM3
                         // chance to add another type to keep balanced
                         if (Program.rand.Next(4) == 0)
                             Switch(Program.rand.RangeInt(0, 1));
-                        Log.Out("Neutral,Castle,Rampart,Tower,Inferno,Necropolis,Dungeon,Stronghold,Fortress,Conflux,Cove: {0}",
-                            new List<string>() { Neutral, Castle, Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux, Cove });
+                        Log.Out("Castle,Rampart,Tower,Inferno,Necropolis,Dungeon,Stronghold,Fortress,Conflux,Cove: {0}",
+                            new List<string>() { Castle, Rampart, Tower, Inferno, Necropolis, Dungeon, Stronghold, Fortress, Conflux, Cove });
                     }
                 }
                 else if (hasGold)
@@ -793,6 +794,8 @@ namespace HOMM3
                             Log.Out("Monsters Neutral");
                     }
                 }
+
+                return str;
             }
             private void Switch(int a)
             {

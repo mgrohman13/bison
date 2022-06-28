@@ -16,6 +16,7 @@ namespace HOMM3
         private static int numPlayers;
         public static int NumPlayers => numPlayers;
         private static double size;
+        public static double Size => size;
         private static bool pairPlayer;
         public static bool PairPlayer => pairPlayer;
 
@@ -141,7 +142,7 @@ namespace HOMM3
             int[] allSizes = new int[] { 1, 2, 4, 8, 9, 16, 18, 25, 32, 36, 49, 50, 72, 98 };
             int[] surfaceSizes = new int[] { 1, 4, 9, 16, 25, 36, 49 };
 
-            bool all = rand.Bool(.78);//todo: underground
+            bool all = rand.Bool();//todo: underground
             Log.Out("all sizes: {0}", all);
 
             int[] sizes = all ? allSizes : surfaceSizes;

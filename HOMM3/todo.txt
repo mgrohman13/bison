@@ -1,8 +1,7 @@
-less towns on larger maps
 object per zone settings
+correlate zone value and size
 chance to not match town/terrain types?
 creeps match terrain?
-correlate zone value and size
 zone repulsion/placement/fictive connections
 water  
 weak-str monster str, allow rand?
