@@ -18,7 +18,7 @@ namespace HOMM3
         private string Objects;
         private readonly string Rock_blocks;
         private readonly double Zone_sparseness = -1;
-        private readonly string Special_weeks_disabled;
+        private readonly string Special_weeks_disabled = null;
         private readonly string Spell_Research;
         private readonly string Anarchy;
         public Map(int sizeInt)
@@ -196,7 +196,7 @@ namespace HOMM3
                 //exp   =    0, 5000, 15000, 90000, 500000
                 //value = 2500, 5000, 10000, 20000,  30000
                 int prisons = Program.rand.GaussianOEInt(1.69 * Math.Sqrt(size), .52, .39);
-                double prisonFreq = Program.rand.GaussianOE(169.0 / prisons, .39, .21, 1);
+                double prisonFreq = Program.rand.GaussianOE(1 + 520.0 / prisons / prisons, .39, .21, 1);
                 HashSet<int> prisonDefaults = new() { 0, 5000, 15000, 90000, 500000 };
                 for (int a = 0; a < prisons; a++)
                 {
@@ -259,6 +259,7 @@ namespace HOMM3
                 //value = 2000,  5333,  8666, 12000 
                 int seersHuts = Program.GaussianOEIntWithMax(26, .26, .13, 65, 6);
                 double seerFreq = (10 * 4 + 10 * 4) / (double)seersHuts;
+                seerFreq /= 1.3;
                 HashSet<int> seerExps = new() { 5000, 10000, 15000, 20000 };
                 HashSet<int> seerGolds = new() { 5000, 10000, 15000, 20000 };
                 for (int a = 0; a < seersHuts; a++)

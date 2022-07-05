@@ -71,7 +71,8 @@ namespace HOMM3
             int pWoodOre = Math.Max(0, 2 - (playerWoodOre + pairedWoodOre) + Program.rand.OEInt(minesAvg / 9.1));
             int pResource = Program.rand.GaussianOEInt(minesAvg, .13, .065, 1);
             int pGold = Program.rand.GaussianOEInt(.52 + minesAvg / 3.9, .26, .065);
-            int pairedResource = Program.rand.GaussianOEInt(.26, .13, .065), pairedGold = Program.rand.GaussianOEInt(.13, .26, .065);
+            int pairedResource = Program.rand.GaussianOEInt(.26, .13, .065);
+            int pairedGold = Program.rand.GaussianOEInt(.13, .26, .065);
 
             //paired balancing
             if (Program.PairPlayer && playerWoodOre > pairedWoodOre)
@@ -91,8 +92,8 @@ namespace HOMM3
             if (!Program.PairPlayer)
                 pairedGold = pairedResource = pairedWoodOre = 0;
 
-            Log.Out("playerWoodOre, pairedWoodOre, pWoodOre, pResource, pGold, pairedResource: {0}, {1}, {2}, {3}, {4}, {5}",
-                playerWoodOre, pairedWoodOre, pWoodOre, pResource, pGold, pairedResource);
+            Log.Out("playerWoodOre, pWoodOre, pResource, pGold, pairedWoodOre, pairedResource, pairedGold: {0}, {1}, {2}, {3}, {4}, {5}, {6}",
+                     playerWoodOre, pWoodOre, pResource, pGold, pairedWoodOre, pairedResource, pairedGold);
 
             //ai wood/ore
             double numAIs = Program.NumPlayers - (Program.PairPlayer ? 2 : 1);

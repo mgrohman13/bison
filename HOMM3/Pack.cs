@@ -50,7 +50,7 @@ namespace HOMM3
         {
             private readonly string Name;
             private readonly string Description;
-            private readonly string Town_selection;
+            private readonly string Town_selection = null;
             private readonly string Heroes;
             private readonly string Mirror;
             private readonly string Tags;

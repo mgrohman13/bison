@@ -12,6 +12,7 @@ namespace HOMM3
         static Connections()
         {
             borderGuardChance = Program.rand.GaussianCapped(.26, .26);
+            Log.Out("borderGuardChance: {0}", borderGuardChance);
         }
 
         public readonly Zone zone1;
@@ -248,8 +249,9 @@ namespace HOMM3
                 }
             }
 
-            //don't randomize connection order so primary connections are always first
-            return connections;
+            //sometimes the RMG drops connections randomly, I think its more likely to happen to connections farther down the list
+            // so order the connections such that the weakest ones are the ones more likely to be generated
+            return Program.rand.Iterate(connections).OrderBy(c => c.strength).ToList();
         }
         private static void AddConnection(List<Connections> connections, Zone z1, Zone z2, bool primary, bool ground, double wide, bool canBorderGuard, bool? road, double deviation, double strength)
         {
@@ -307,7 +309,7 @@ namespace HOMM3
                 //if this is a primary connection, dont keep any border guards
                 bool borderGuard = borderGuards.Any();
                 if (borderGuard)
-                    Log.Out("borderGuards ({0})-({1}): {2}", connections.First().zone1.Id, connections.First().zone2.Id, borderGuards.Count());
+                    Log.Out("borderGuard ({0})-({1}): {2}", connections.First().zone1.Id, connections.First().zone2.Id, borderGuards.Count());
                 borderGuard &= !primary;
                 if (borderGuards.Any())
                     Log.Out("borderGuard: {0}", borderGuard);
@@ -315,7 +317,7 @@ namespace HOMM3
                 if (borderGuard)
                 {
                     if (borderGuards.Count() > 1)
-                        ;
+                        Log.Out("borderGuard count: {0}", borderGuards.Count());
                     keep.Add(Program.rand.SelectValue(borderGuards));
                 }
 
@@ -348,7 +350,9 @@ namespace HOMM3
                     }
                 }
                 else
-                    ;
+                {
+                    Log.Out("borderGuard others: {0}", others.Count());
+                }
             }
 
             allConnections.RemoveAll(c => connections.Contains(c) && !keep.Contains(c));

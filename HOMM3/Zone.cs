@@ -130,7 +130,7 @@ namespace HOMM3
                     monsters = Program.rand.Bool(.39) ? Zone.Monsters.Str.avg : Monsters.Str.strong;
                     disposition = Program.rand.Range(6.5, 7.8);
                     moneyOnly = Program.rand.Bool();
-                    joinPct = moneyOnly ? Program.rand.GaussianCapped(joinPct, .39) : Program.rand.WeightedInt(3, .169);
+                    joinPct = moneyOnly ? Program.rand.GaussianCapped(joinPct, .39) : Program.rand.Weighted(3, .169);
                 }
                 else
                 {
@@ -227,7 +227,7 @@ namespace HOMM3
             }
 
             private readonly string human_start;
-            private readonly string computer_start;
+            private readonly string computer_start = null;
             private string Treasure;
             private string Junction;
             private readonly int Base_Size = -1;
@@ -918,7 +918,7 @@ namespace HOMM3
                 double min1 = Program.rand.Range(101, 520);
                 double min2 = Program.rand.Range(101, 3900);
                 double min3 = Program.rand.Range(390, 2600);
-                double nMin = Program.rand.Range(Program.rand.Bool() ? min1 : (Program.rand.Bool() ? 30001 : 39338), Program.rand.Range(43905, 49795));
+                double nMin = Program.rand.Range(Program.rand.Bool() ? 101 : Program.rand.Range(30001, 39338), Program.rand.Range(43905, 49795));
                 double[,,] ranges = new double[6, 3, 2] {
                     //guarantee unguarded resources (items ranging 750-2000)
                     { {  min1,  3900 }, {  2001,  2995 }, {   130,  6500 } }, // 0
@@ -996,7 +996,7 @@ namespace HOMM3
                         double lowAvg = woValueAvg * 1.69 + Program.rand.Gaussian(), highAvg = gValueAvg * 1.3 + Program.rand.Gaussian();
 
                         Log.Out("Treasure woodMine,oreMine: {0},{1}", woodMine, oreMine);
-                        Log.Out("woValueAvg,gValueAvg,lowAvg,highAvg: {0},{1},{2},{3}", woValueAvg, gValueAvg, lowAvg, highAvg);
+                        Log.Out(1, "woValueAvg,gValueAvg,lowAvg,highAvg: {0},{1},{2},{3}", woValueAvg, gValueAvg, lowAvg, highAvg);
 
                         //randomize amounts of each within a reasonable range 
                         int[] amounts = new int[2];
@@ -1034,7 +1034,7 @@ namespace HOMM3
 
                         if (gValue > gValueAvg)
                             highAvg *= gValue / (double)gValueAvg;
-                        Log.Out("SetLowHigh lowAvg,highAvg,min,highMin,max: {0},{1},{2},{3},{4}", lowAvg, highAvg, woMax + 1, gValue + 1, woMin * 4 - 5);
+                        Log.Out(1, "SetLowHigh lowAvg,highAvg,min,highMin,max: {0},{1},{2},{3},{4}", lowAvg, highAvg, woMax + 1, gValue + 1, woMin * 4 - 5);
                         SetLowHigh(lowAvg, highAvg, woMax + 1, gValue + 1, woMin * 4 - 5);
                         //cap it at the typical tier value
                         int densityMax = Program.rand.Round(GetDensity(low * mult, high * mult));
@@ -1045,6 +1045,7 @@ namespace HOMM3
                         density = Program.rand.Round(densityAvg);
                         Log.Out("density,densityAvg,count,size: {0},{1},{2},{3}", density, densityAvg, count, size);
                         density = Math.Min(Math.Max(1, density), densityMax);
+                        Log.Out("density: {0}", density);
 
                         //value the generated piles accordingly
                         ReduceValue(mult);
@@ -1149,23 +1150,20 @@ namespace HOMM3
             private static readonly double neutral;
             private static readonly double neutralTown;
             private static readonly double road;
-            private static readonly double roadTown;
             static Options()
             {
                 neutral = Program.GaussianOEWithMax(.39, .26, .13, .91);
                 Log.Out("Options neutral: {0}", neutral);
                 neutralTown = Program.GaussianOEWithMax(.104, .39, .21, .91);
                 Log.Out("neutralTown: {0}", neutralTown);
-                road = Program.GaussianOEWithMax(.39, .39, .26, .91);
+                road = Program.rand.GaussianCapped(.5, .26);
                 Log.Out("road: {0}", road);
-                roadTown = road * Program.rand.Weighted(.65);
-                Log.Out("roadTown: {0}", roadTown);
             }
 
             private readonly string Placement;
             private string Objects;
             private readonly string Minimum_objects;
-            private readonly string Image_settings;
+            private readonly string Image_settings = null;
             private string Force_neutral_creatures;
             // Allow non-coherent road
             private string Allow_non_coherent_road;
@@ -1197,7 +1195,7 @@ namespace HOMM3
 
                 if (!start && Program.rand.Bool(town ? neutralTown : neutral))
                     Force_neutral_creatures = "x";
-                if (Program.rand.Bool((town ? roadTown : road)))
+                if (Program.rand.Bool(road))
                     Allow_non_coherent_road = "x";
 
                 disposition = SetDisposition(disposition);
