@@ -37,10 +37,10 @@ namespace CityWar
         private int turn, currentPlayer;
 
         private delegate Piece UndoDelegate(object[] args);
-        private Stack<UndoDelegate> UndoCommands = new Stack<UndoDelegate>();
-        private Stack<object[]> UndoArgs = new Stack<object[]>();
-        private readonly Dictionary<Unit, List<Tile>> UnitTiles = new Dictionary<Unit, List<Tile>>();
-        private readonly Dictionary<Tile, List<Unit>> TileUnits = new Dictionary<Tile, List<Unit>>();
+        private Stack<UndoDelegate> UndoCommands = new();
+        private Stack<object[]> UndoArgs = new();
+        private readonly Dictionary<Unit, List<Tile>> UnitTiles = new();
+        private readonly Dictionary<Tile, List<Unit>> TileUnits = new();
 
         #endregion //fields
 
@@ -87,7 +87,7 @@ namespace CityWar
 
             CreateMap(radius);
 
-            List<string> races = new List<string>();
+            List<string> races = new();
             //pick 3 random starting units
             Dictionary<string, string>[] startUnits = new Dictionary<string, string>[3];
             for (int a = 0; a < 3; ++a)
@@ -159,7 +159,7 @@ namespace CityWar
             //initialize units
             UnitSchema us = UnitTypes.GetSchema();
             int numUnits = us.Unit.Rows.Count;
-            Dictionary<string, List<string>> tempRaces = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> tempRaces = new();
             var unitsHave = new Dictionary<string, int>(numUnits);
             for (int a = -1; ++a < numUnits;)
             {
@@ -256,7 +256,7 @@ namespace CityWar
                 {
                     AddUnitTile(attack.Owner, attack.Owner.Tile);
 
-                    List<Piece> removePieces = new List<Piece>();
+                    List<Piece> removePieces = new();
                     removePieces.Add(attack.Owner);
                     foreach (Piece p in attack.Owner.Tile.GetAllPieces())
                         if (p is Wizard)
@@ -270,10 +270,9 @@ namespace CityWar
 
         public Battle StartBattle(Tile target, IEnumerable<Unit> selected)
         {
-            Player enemy;
-            if (target.OccupiedByUnit(out enemy) && enemy != CurrentPlayer)
+            if (target.OccupiedByUnit(out Player enemy) && enemy != CurrentPlayer)
             {
-                HashSet<Unit> defenders = new HashSet<Unit>();
+                HashSet<Unit> defenders = new();
 
                 //'Immobile' units defend first, by themselves
                 defenders.UnionWith(target.FindAllUnits(defender => defender.Type == UnitType.Immobile));
@@ -286,7 +285,7 @@ namespace CityWar
                 else if (selected == null)
                 {
                     //collect all battle units recursively, starting with attackers that can target any units in the target tile
-                    Dictionary<Unit, int> attackers = new Dictionary<Unit, int>();
+                    Dictionary<Unit, int> attackers = new();
                     foreach (Unit defender in target.GetAllUnits())
                         AddAttackers(defenders, enemy, defender, attackers);
                     selected = attackers.Keys;
@@ -303,9 +302,9 @@ namespace CityWar
                     foreach (Unit attacker in selected)
                     {
                         //find the minimum length attack the attacker might use
-                        int length = int.MaxValue, minLength;
+                        int length = int.MaxValue;
                         foreach (Unit defender in defenders)
-                            if (CanTarget(attacker, defender, out minLength))
+                            if (CanTarget(attacker, defender, out int minLength))
                                 length = Math.Min(length, minLength);
                         //add defenders that can retalliate at that length
                         if (length != int.MaxValue)
@@ -325,11 +324,10 @@ namespace CityWar
         }
         private void AddAttackers(HashSet<Unit> defenders, Player enemy, Unit defender, Dictionary<Unit, int> attackers)
         {
-            int minLength, hasLength;
             //find all adjacent attackers that might be able to participate
             foreach (Unit attacker in GetAttackers(defender.Tile))
                 //check if the potential attacker can target the defender and is not already in the battle with an equal or shorter length weapon
-                if (CanTarget(attacker, defender, out minLength) && !(attackers.TryGetValue(attacker, out hasLength) && hasLength <= minLength))
+                if (CanTarget(attacker, defender, out int minLength) && !(attackers.TryGetValue(attacker, out int hasLength) && hasLength <= minLength))
                 {
                     //add the found attacker to the battle with the minimum length weapon it might use
                     attackers[attacker] = minLength;
@@ -365,8 +363,7 @@ namespace CityWar
         }
         private static bool CanTarget(Unit unit, Unit target, int length = int.MinValue)
         {
-            int minLength;
-            return CanTarget(unit, target, out minLength, length);
+            return CanTarget(unit, target, out _, length);
         }
         private static bool CanTarget(Unit unit, Unit target, out int minLength, int length = int.MinValue)
         {
@@ -441,8 +438,7 @@ namespace CityWar
             if (capt.Owner != players[currentPlayer])
                 return;
 
-            bool canUndo;
-            Piece piece = capt.BuildPiece(pieceName, out canUndo);
+            Piece piece = capt.BuildPiece(pieceName, out bool canUndo);
             if (piece != null)
                 if (canUndo)
                 {
@@ -470,8 +466,7 @@ namespace CityWar
 
         public bool MovePieces(Tile from, int x, int y, bool group, bool gamble)
         {
-            Player player;
-            from.Occupied(out player);
+            from.Occupied(out Player player);
             if (player != players[currentPlayer])
                 return false;
 
@@ -496,14 +491,13 @@ namespace CityWar
         }
         private bool MovePiecesHelper(Tile from, int x, int y, Piece singlePiece, bool gamble)
         {
-            Player player;
-            from.Occupied(out player);
+            from.Occupied(out Player player);
             if (player != players[currentPlayer])
                 return false;
 
             Tile to = map[x, y];
 
-            Dictionary<Piece, int> oldMoves = new Dictionary<Piece, int>();
+            Dictionary<Piece, int> oldMoves = new();
             foreach (Piece p in from.GetSelectedPieces())
                 oldMoves.Add(p, p.Movement);
             Dictionary<Piece, bool> undoPieces;
@@ -517,8 +511,7 @@ namespace CityWar
             {
                 foreach (Piece p in undoPieces.Keys)
                 {
-                    Unit u = p as Unit;
-                    if (u != null && u.Type != UnitType.Air)
+                    if (p is Unit u && u.Type != UnitType.Air)
                         AddUnitTile(u, to);
                     if (from != p.Tile)
                         any = true;
@@ -534,8 +527,7 @@ namespace CityWar
                     {
                         if (from != p.Tile)
                         {
-                            Unit u = p as Unit;
-                            if (u != null)
+                            if (p is Unit u)
                                 AddTileUnit(u.Tile, u);
 
                             UndoCommands.Push(UndoMovePieces);
@@ -597,7 +589,7 @@ namespace CityWar
                     return;
 
             bool any = false;
-            Dictionary<Piece, double> undoInfo = new Dictionary<Piece, double>();
+            Dictionary<Piece, double> undoInfo = new();
             for (int i = 0; i < length; ++i)
             {
                 Piece curPiece = selPieces[i];
@@ -622,15 +614,14 @@ namespace CityWar
             Dictionary<Piece, double> undoInfo = (Dictionary<Piece, double>)args[0];
 
             bool wizCheck = false;
-            List<Piece> dead = new List<Piece>();
+            List<Piece> dead = new();
 
             Piece piece = null;
             foreach (Piece p in undoInfo.Keys)
             {
                 p.UndoHeal(undoInfo[p]);
 
-                Unit u;
-                if ((u = p as Unit) != null && u.Dead)
+                if (p is Unit u && u.Dead)
                 {
                     dead.Add(p);
                 }
@@ -653,24 +644,14 @@ namespace CityWar
             {
                 if (wizCheck)
                 {
-                    int element;
-                    switch (piece.Tile.Terrain)
+                    var element = piece.Tile.Terrain switch
                     {
-                        case Terrain.Forest:
-                            element = piece.Owner.Nature;
-                            break;
-                        case Terrain.Mountain:
-                            element = piece.Owner.Earth;
-                            break;
-                        case Terrain.Plains:
-                            element = piece.Owner.Air;
-                            break;
-                        case Terrain.Water:
-                            element = piece.Owner.Water;
-                            break;
-                        default:
-                            throw new Exception();
-                    }
+                        Terrain.Forest => piece.Owner.Nature,
+                        Terrain.Mountain => piece.Owner.Earth,
+                        Terrain.Plains => piece.Owner.Air,
+                        Terrain.Water => piece.Owner.Water,
+                        _ => throw new Exception(),
+                    };
                     wizCheck = (element < 0);
                 }
 
@@ -721,7 +702,7 @@ namespace CityWar
                 if (unit.Owner != players[currentPlayer])
                     return;
 
-            Dictionary<Unit, Stack<double>> undoInfo = new Dictionary<Unit, Stack<double>>();
+            Dictionary<Unit, Stack<double>> undoInfo = new();
             foreach (Unit unit in units)
                 undoInfo.Add(unit, unit.Disband());
 
@@ -769,13 +750,12 @@ namespace CityWar
         }
         private void RemoveUndosForTile(Tile tile)
         {
-            List<Unit> units;
-            if (TileUnits.TryGetValue(tile, out units))
+            if (TileUnits.TryGetValue(tile, out List<Unit> units))
                 RemoveUndosForPieces(units);
         }
         private void RemoveUndos(int stack)
         {
-            List<object> args = new List<object>();
+            List<object> args = new();
             while (UndoCommands.Count > stack)
             {
                 UndoCommands.Pop();
@@ -802,11 +782,11 @@ namespace CityWar
         }
         private void RemoveUndosForPiecesInArgs(IEnumerable<object> pieces)
         {
-            List<object> removeArgs = new List<object>();
+            List<object> removeArgs = new();
 
             //cant undo any previous commands involving this unit
-            List<UndoDelegate> newCommands = new List<UndoDelegate>();
-            List<object[]> newArgs = new List<object[]>();
+            List<UndoDelegate> newCommands = new();
+            List<object[]> newArgs = new();
             while (UndoArgs.Count > 0)
             {
                 UndoDelegate undo = UndoCommands.Pop();
@@ -825,8 +805,8 @@ namespace CityWar
                 }
             }
 
-            Stack<UndoDelegate> newCommandStack = new Stack<UndoDelegate>();
-            Stack<object[]> newArgStack = new Stack<object[]>();
+            Stack<UndoDelegate> newCommandStack = new();
+            Stack<object[]> newArgStack = new();
             for (int i = newCommands.Count; --i > -1;)
             {
                 newCommandStack.Push(newCommands[i]);
@@ -862,21 +842,18 @@ namespace CityWar
         }
         private static IEnumerable<Piece> FindAllPieces(object arg)
         {
-            Piece p;
-            System.Collections.IDictionary dictionary;
-            System.Collections.IEnumerable enumberable;
-            if ((p = arg as Piece) != null)
+            if (arg is Piece p)
             {
                 yield return p;
             }
-            else if ((dictionary = arg as System.Collections.IDictionary) != null)
+            else if (arg is System.Collections.IDictionary dictionary)
             {
                 foreach (Piece piece in FindAllPieces(dictionary.Keys))
                     yield return piece;
                 foreach (Piece piece in FindAllPieces(dictionary.Values))
                     yield return piece;
             }
-            else if ((enumberable = arg as System.Collections.IEnumerable) != null)
+            else if (arg is System.Collections.IEnumerable enumberable)
             {
                 foreach (object obj in enumberable)
                     foreach (Piece piece in FindAllPieces(obj))
@@ -911,7 +888,7 @@ namespace CityWar
         }
         private static SortedList<int, Player> GetSortedList(Dictionary<int, Player> dictionary)
         {
-            SortedList<int, Player> retVal = new SortedList<int, Player>();
+            SortedList<int, Player> retVal = new();
             foreach (var pair in dictionary)
                 retVal.Add(pair.Key, pair.Value);
             return retVal;
@@ -1027,8 +1004,7 @@ namespace CityWar
         }
         private static void AddPlayer(Dictionary<int, Player> dict, int turn, Player p, bool lower)
         {
-            Player low;
-            if (dict.TryGetValue(turn, out low))
+            if (dict.TryGetValue(turn, out Player low))
             {
                 if (lower)
                 {
@@ -1122,8 +1098,7 @@ namespace CityWar
 
             foreach (Player player in this.players)
             {
-                int wizards, portals, cities, relics;
-                player.GetCounts(out wizards, out portals, out cities, out relics, out _);
+                player.GetCounts(out int wizards, out int portals, out int cities, out int relics, out _);
 
                 counts[typeof(Relic)].Add(player, relics);
                 counts[typeof(City)].Add(player, cities);
@@ -1159,7 +1134,7 @@ namespace CityWar
 
         private void FreeUnit(bool removed)
         {
-            Dictionary<string, string> units = new Dictionary<string, string>();
+            Dictionary<string, string> units = new();
             foreach (string race in Races.Keys)
             {
                 int baseCost;
@@ -1335,27 +1310,14 @@ namespace CityWar
                 if (amt > 0)
                 {
                     Tile tile = RandomTile();
-
-                    Terrain terrain;
-                    switch (Random.Next(6))
+                    var terrain = Random.Next(6) switch
                     {
-                        case 0:
-                            terrain = Terrain.Forest;
-                            break;
-                        case 1:
-                            terrain = Terrain.Mountain;
-                            break;
-                        case 2:
-                            terrain = Terrain.Plains;
-                            break;
-                        case 3:
-                            terrain = Terrain.Water;
-                            break;
-                        default:
-                            terrain = tile.Terrain;
-                            break;
-                    }
-
+                        0 => Terrain.Forest,
+                        1 => Terrain.Mountain,
+                        2 => Terrain.Plains,
+                        3 => Terrain.Water,
+                        _ => tile.Terrain,
+                    };
                     for (int a = 0; a < amt; ++a)
                     {
                         tile.Terrain = terrain;
