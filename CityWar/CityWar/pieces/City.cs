@@ -158,7 +158,7 @@ namespace CityWar
                 return false;
 
             bool prod = true, death = true;
-            UnitSchema us = owner.Game.UnitTypes.GetSchema();
+            UnitSchema us = Game.UnitTypes.GetSchema();
             foreach (UnitSchema.UnitRow r in us.Unit.Rows)
                 if (CapableBuild(r.Name, true))
                 {

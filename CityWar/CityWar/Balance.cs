@@ -66,15 +66,13 @@ namespace CityWar
         public static double ModRegen(EnumFlags<Ability> abilities, double move, double regen)
         {
             if (move > 0)
-                regen *= move;
+                regen *= move + (abilities.Contains(Ability.Regen) ? 1.3 : 0);
             else
                 // 3 =div for immobile regen since it costs resources
                 regen /= 3;
             if (abilities.Contains(Ability.Aircraft))
                 // aircraft can only heal at a carrier
                 regen /= 1.69;
-            if (abilities.Contains(Ability.Regen))
-                regen *= 1 + 1.3;
             return regen;
         }
 
@@ -204,11 +202,8 @@ namespace CityWar
             result *= costMult;
 
             if (!immobile)
-            {
-                double mult = abilities.Contains(Ability.Regen) ? 2 : 1;
                 // 7.8 =turns for a unit's regen to pay for itself
-                result += 7.8 * baseRegen * maxMove * mult / Player.WorkMult;
-            }
+                result += 7.8 * baseRegen * (maxMove + (abilities.Contains(Ability.Regen) ? 1 : 0)) / Player.WorkMult;
 
             return result;
         }

@@ -44,7 +44,7 @@ namespace CityWarWinApp
             bool enabled = true;
             int y = 60 - 29;
 
-            UnitSchema us = game.UnitTypes.GetSchema();
+            UnitSchema us = Game.UnitTypes.GetSchema();
 
             List<double> costs = new List<double>(us.Unit.Count);
             Dictionary<double, UnitSchema.UnitRow> costRef = new Dictionary<double, UnitSchema.UnitRow>(costs.Count);

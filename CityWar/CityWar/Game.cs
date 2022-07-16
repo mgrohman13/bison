@@ -26,7 +26,7 @@ namespace CityWar
         public static string AutoSavePath = "..\\..\\..\\";
         public static Dictionary<string, string[]> Races;
 
-        public readonly UnitTypes UnitTypes;
+        public static readonly UnitTypes UnitTypes = new();
         public readonly int Diameter;
 
         private readonly Tile[,] map;
@@ -61,7 +61,7 @@ namespace CityWar
 
         public Game(Player[] newPlayers, int radius)
         {
-            this.UnitTypes = new();
+            //this.UnitTypes = new();
             this.Diameter = radius * 2 - 1;
 
             this.map = new Tile[Diameter, Diameter];

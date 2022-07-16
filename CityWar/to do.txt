@@ -15,6 +15,7 @@ gameplay
 	exp?
 
 balance
+	now that we have fuel mechanic and dont need to balance around bombers/fighters, can drop the lengths of some len 3 attacks
 	hummer->humvee
 	elemental cost similiarities
 	human costs
@@ -57,6 +58,7 @@ balance
 		really will use? (carrier defend air??)
 
 interface
+	fuel check triggers when cannot save aircraft
 	log shield, relic
 	aircraft "range" calc, 2-way and 1-way
 	show turn order, wiz/cty start, and race on end game

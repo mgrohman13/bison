@@ -15,6 +15,8 @@ namespace CityWar
         //power to which regeneration percent is raised every turn that it recovers
         public const double RegenRecoverPower = .39;
 
+        private const double FuelWorkCost = .39;
+
         //only used during a battle
         [NonSerialized]
         private int length;
@@ -290,7 +292,7 @@ namespace CityWar
             owner.AddDeath(InverseCost / Attack.DeathDivide);
             owner.AddWork(WorkRegen * movement);
             if (IsAir())
-                owner.AddWork(Fuel * .39);
+                owner.AddWork(Fuel * FuelWorkCost);
             Tile.Remove(this);
             Owner.Remove(this, false);
         }
@@ -380,7 +382,7 @@ namespace CityWar
                 {
                     if (tile.HasCarrier())
                     {
-                        double upkeep = (maxFuel - Fuel) / Player.WorkMult * Player.UpkeepMult * .39;
+                        double upkeep = (maxFuel - Fuel) * FuelWorkCost * Player.UpkeepMult / Player.WorkMult;
                         owner.AddUpkeep(upkeep, .169);
                         Fuel = maxFuel;
                     }
@@ -544,7 +546,7 @@ namespace CityWar
                     attacks = this.attacks;
                 }
 
-                return Balance.GetCost(owner.Game.UnitTypes, Race, Type, IsThree, Abilities, shield, maxFuel,
+                return Balance.GetCost(Game.UnitTypes, Race, Type, IsThree, Abilities, shield, maxFuel,
                         MaxHits, BaseArmor, MaxRegen, MaxMove, attacks, out _) / (double)(BaseTotalCost);
             }
         }
@@ -593,7 +595,7 @@ namespace CityWar
         }
         private UnitSchema.AttackRow GetAttackRow()
         {
-            UnitSchema unitSchema = owner.Game.UnitTypes.GetSchema();
+            UnitSchema unitSchema = Game.UnitTypes.GetSchema();
             UnitSchema.UnitRow unitRow = unitSchema.Unit.FindByName(Name);
             return unitRow.GetAttackRows()[0];
         }
@@ -612,7 +614,7 @@ namespace CityWar
         }
         private static Unit NewUnit(Game game, string name, Tile tile, Player owner, bool add)
         {
-            UnitSchema schema = game.UnitTypes.GetSchema();
+            UnitSchema schema = Game.UnitTypes.GetSchema();
             UnitSchema.UnitRow unitRow = schema.Unit.FindByName(name);
 
             CostType costType;
