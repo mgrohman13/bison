@@ -5,7 +5,6 @@ using MattUtil;
 
 namespace CityWar
 {
-    [Serializable]
     public class UnitTypes
     {
         private UnitSchema schema;
