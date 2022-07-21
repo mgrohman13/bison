@@ -302,25 +302,21 @@ namespace CityWar
             if (movement > 0)
             {
                 --movement;
-
-                int regen = Regen;
-                owner.AddWork((MaxRegen - regen) * .5);
-
-                double pctWork = 1;
-                if (IsAir() && !tile.HasCarrier())
-                    owner.AddWork(regen);
-                else
-                    Heal(regen, out pctWork);
-
-                return pctWork;
+                return HealOne();
             }
             return -1;
         }
-
-        private void Heal(int regen)
+        private double HealOne()
         {
-            owner.AddWork((MaxRegen - regen) * .5 * this.MaxMove);
-            Heal(regen * this.MaxMove, out _);
+            int regen = Regen;
+            owner.AddWork((MaxRegen - regen) * .5);
+
+            double pctWork = 1;
+            if (IsAir() && !tile.HasCarrier())
+                owner.AddWork(regen);
+            else
+                Heal(regen, out pctWork);
+            return pctWork;
         }
         private void Heal(int regen, out double pctWork)
         {
@@ -413,7 +409,7 @@ namespace CityWar
                     while (movement > 0)
                         Heal();
                     if (IsAbility(Ability.Regen))
-                        Heal(this.Regen);
+                        HealOne();
 
                     if (this.recoverRegen)
                     {

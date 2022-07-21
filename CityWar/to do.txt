@@ -2,10 +2,12 @@ in between games
 	"security" of public fields
 
 gameplay
+	other non-wiz collectable treasure?
 	victory points? (relic)
 	better startUnit overall cost balance across each race
 	give free units to nocapt players?
 	winning player leave behind anything else?
+		wiz pts now that amount can vary
 	portal income rounding comes out of inc
 		requires new variable in case of magic ratio change?
 	allow gamble move to use in between 1-full move
@@ -15,6 +17,8 @@ gameplay
 	exp?
 
 balance
+	no 8 pop percent
+	rename wind sprite?
 	now that we have fuel mechanic and dont need to balance around bombers/fighters, can drop the lengths of some len 3 attacks
 	hummer->humvee
 	elemental cost similiarities
@@ -57,7 +61,11 @@ balance
 	separate out no attacks, no move, and 'all' to be used individualy
 		really will use? (carrier defend air??)
 
-interface
+interface	
+	update resources during battle
+	when attacking, can hide attacks you dont want to use
+	show last turn enemy got relic (plus visible avg since then??)
+	add shield to calculator
 	fuel check triggers when cannot save aircraft
 	log shield, relic
 	aircraft "range" calc, 2-way and 1-way
