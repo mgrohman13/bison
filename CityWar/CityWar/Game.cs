@@ -1071,7 +1071,7 @@ namespace CityWar
             //these must happen in this order
             if (win == null)
                 removed = RemoveUnits(dead, counts);
-            FreeUnit(removed);
+            FreeUnit();
             if (win == null && !removed)
                 RemoveCapturables(dead, capts, counts);
             KillPlayers(dead);
@@ -1132,7 +1132,7 @@ namespace CityWar
             return removed;
         }
 
-        private void FreeUnit(bool removed)
+        private void FreeUnit()
         {
             Dictionary<string, string> units = new();
             foreach (string race in Races.Keys)
@@ -1147,7 +1147,7 @@ namespace CityWar
                     units.Add(race, addUnit);
             }
             //dont place free units when someone has no capturables
-            if (!removed && units.Count > 0)
+            if (units.Count > 0 && players.All(p => p.GetPieces().OfType<Capturable>().Any()))
             {
                 if (units.Count < Races.Count)
                 {
