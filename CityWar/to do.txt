@@ -2,10 +2,13 @@ in between games
 	"security" of public fields
 
 gameplay
-	other non-wiz collectable treasure?
 	victory points? (relic)
-	better startUnit overall cost balance across each race
-	give free units to nocapt players?
+	
+	other non-wiz collectable treasure?
+		magic/relic?
+		prod?
+		units?
+		collected by...?
 	winning player leave behind anything else?
 		wiz pts now that amount can vary
 	portal income rounding comes out of inc
@@ -15,8 +18,6 @@ gameplay
 	teleporters
 		come up with way to be different from galwar wormholes
 	exp?
-	when no capts, only lose magic/relic when completely out of other resources?
-		even lose all but 1 unit first?
 
 balance
 	no 8 pop percent

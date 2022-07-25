@@ -207,7 +207,7 @@ namespace CityWarWinApp
                 int airInc = 0, deathInc = 0, earthInc = 0, natureInc = 0, prodInc = 0, waterInc = 0, magicInc = 0, popInc = 0;
                 p.GenerateIncome(ref airInc, ref deathInc, ref earthInc, ref natureInc, ref prodInc, ref waterInc, ref magicInc, ref popInc);
                 int sum = airInc + deathInc + earthInc + natureInc + prodInc + waterInc + popInc;
-                this.lbxResources.Items.Add(p.GetTotalResources().ToString("0") + " +" + sum);
+                this.lbxResources.Items.Add(p.CountTradeableResources().ToString("0") + " +" + sum);
                 this.lbxMagic.Items.Add(p.Magic + " +" + magicInc);
             }
         }

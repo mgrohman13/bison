@@ -22,8 +22,7 @@ namespace CityWar
         private static float zoom = -1;
 
         [NonSerialized]
-        private Dictionary<string, Bitmap> pics = new Dictionary<string, Bitmap>(),
-                picsConst = new Dictionary<string, Bitmap>();
+        private Dictionary<string, Bitmap> pics = new(), picsConst = new();
 
         public readonly string Name;
         public readonly Color Color;
@@ -86,9 +85,9 @@ namespace CityWar
             }
             else
             {
-                int maxRelic = Math.Min(Game.Random.Round(RelicCost * .78), RelicCost + relicOffset - relic - 1);
+                int maxRelic = Math.Min(260, RelicCost + relicOffset - relic - 1);
                 int numTypes = Game.Random.GaussianCappedInt(3.5, .21, 2);
-                int[] elementals = AddStartResources(390, ref _relic, RelicCost - maxRelic, maxRelic, numTypes);
+                int[] elementals = AddStartResources(390, ref _relic, Game.Random.RangeInt(78, 130), maxRelic, numTypes);
 
                 Action<int>[] typeFuncs = new Action<int>[] {
                     amt => this.air += amt,
@@ -331,47 +330,47 @@ namespace CityWar
 
         public int GetResource(string resource)
         {
-            switch (resource)
+            return resource switch
             {
-                case "Air":
-                    return air;
-                case "Death":
-                    return death;
-                case "Earth":
-                    return earth;
-                case "Nature":
-                    return nature;
-                case "Production":
-                    return production;
-                case "Water":
-                    return water;
-                default:
-                    throw new Exception();
-            }
+                "Air" => air,
+                "Death" => death,
+                "Earth" => earth,
+                "Nature" => nature,
+                "Production" => production,
+                "Water" => water,
+                _ => throw new Exception(),
+            };
         }
 
-        public double GetTotalResources()
+        public double CountTradeableResources()
         {
-            return GetTotalResources(true);
+            return CountResources(true, false, false);
         }
-        private double GetTotalResources(bool all)
+        internal double CountTotalResources()
+        {
+            return CountResources(true, true, true);
+        }
+        private double CountResources(bool workUpk, bool inclWiz, bool inclRel)
         {
             double result = 0;
 
-            result += air;
             result += death;
+            result += air;
             result += earth;
             result += nature;
-            result += production;
             result += water;
-            result += magic;
-            result += relic;
+            result += production;
             result += population;
-            if (all)
+
+            if (workUpk)
             {
                 result += work / WorkMult;
                 result -= upkeep / UpkeepMult;
             }
+            if (inclWiz)
+                result += magic;
+            if (inclRel)
+                result += relic;
 
             return result;
         }
@@ -380,8 +379,7 @@ namespace CityWar
             double retVal = 0;
             foreach (Piece p in pieces)
             {
-                Unit u = p as Unit;
-                if (u != null)
+                if (p is Unit u)
                     retVal += u.RandedCost * u.GetHealthPct();
             }
             return retVal;
@@ -429,9 +427,8 @@ namespace CityWar
 
         internal void LostCapt(Capturable c, Player p)
         {
-            //the capturing player gets stuck with some of the other players upkeep
-            int wizards, portals, cities, relics;
-            this.GetCounts(out wizards, out portals, out cities, out relics, out _);
+            //the capturing player gets stuck with some of the other players upkeep 
+            this.GetCounts(out int wizards, out int portals, out int cities, out int relics, out _);
             double transferAmt = this.upkeep / (wizards + portals + cities + relics) / 2.1;
             this.AddUpkeep(-transferAmt);
             p.AddUpkeep(transferAmt);
@@ -551,24 +548,14 @@ namespace CityWar
                     { water, 26 },
                 };
                 const int mod = 4;
-                Action<int> terrainFunc;
-                switch (terrain.Value)
+                Action<int> terrainFunc = terrain.Value switch
                 {
-                    case Terrain.Forest:
-                        terrainFunc = nature;
-                        break;
-                    case Terrain.Mountain:
-                        terrainFunc = earth;
-                        break;
-                    case Terrain.Plains:
-                        terrainFunc = air;
-                        break;
-                    case Terrain.Water:
-                        terrainFunc = water;
-                        break;
-                    default:
-                        throw new Exception();
-                }
+                    Terrain.Forest => nature,
+                    Terrain.Mountain => earth,
+                    Terrain.Plains => air,
+                    Terrain.Water => water,
+                    _ => throw new Exception(),
+                };
                 typeFuncs[terrainFunc] += mod * 4;
                 typeFuncs[air] -= mod;
                 typeFuncs[earth] -= mod;
@@ -639,7 +626,7 @@ namespace CityWar
         }
         public static Dictionary<CostType, int[]> SplitPortalCost(Game game, string race)
         {
-            Dictionary<CostType, int[]> portalCosts = new Dictionary<CostType, int[]>();
+            Dictionary<CostType, int[]> portalCosts = new();
 
             double[] elmDbl = new double[5];
             int[] elmInt = new int[5];
@@ -649,7 +636,7 @@ namespace CityWar
             foreach (string name in Game.Races[race])
             {
                 Unit unit = Unit.CreateTempUnit(game, name);
-                int idx = getCTIdx(unit.CostType);
+                int idx = GetCTIdx(unit.CostType);
                 if (idx > -1)
                 {
                     elmDbl[idx] += unit.BaseTotalCost + unit.BaseOtherCost / 2.1;
@@ -681,7 +668,7 @@ namespace CityWar
                 int totalCost = elmInt[idx];
                 int element = GetPortalElementCost(other[idx] / (other[idx] + ppl[idx]), totalCost);
                 int magic = totalCost - element;
-                portalCosts.Add(getIdxCT(idx), new int[] { magic, element });
+                portalCosts.Add(GetIdxCT(idx), new int[] { magic, element });
             }
 
             return portalCosts;
@@ -703,41 +690,29 @@ namespace CityWar
             //elemPct = (0.65 * (elemPct - 0.26));
             //return (int)Math.Ceiling(elemPct * totalCost);
         }
-        private static int getCTIdx(CostType costType)
+        private static int GetCTIdx(CostType costType)
         {
-            switch (costType)
+            return costType switch
             {
-                case CostType.Air:
-                    return 0;
-                case CostType.Earth:
-                    return 1;
-                case CostType.Nature:
-                    return 2;
-                case CostType.Water:
-                    return 3;
-                case CostType.Death:
-                    return 4;
-                default:
-                    return -1;
-            }
+                CostType.Air => 0,
+                CostType.Earth => 1,
+                CostType.Nature => 2,
+                CostType.Water => 3,
+                CostType.Death => 4,
+                _ => -1,
+            };
         }
-        private static CostType getIdxCT(int idx)
+        private static CostType GetIdxCT(int idx)
         {
-            switch (idx)
+            return idx switch
             {
-                case 0:
-                    return CostType.Air;
-                case 1:
-                    return CostType.Earth;
-                case 2:
-                    return CostType.Nature;
-                case 3:
-                    return CostType.Water;
-                case 4:
-                    return CostType.Death;
-                default:
-                    throw new Exception();
-            }
+                0 => CostType.Air,
+                1 => CostType.Earth,
+                2 => CostType.Nature,
+                3 => CostType.Water,
+                4 => CostType.Death,
+                _ => throw new Exception(),
+            };
         }
 
         #endregion //portal cost
@@ -867,16 +842,16 @@ namespace CityWar
             basePic.MakeTransparent(Color.FromArgb(255, 255, 255));
 
             //change the gray to the player color and the red to the poral color
-            ImageAttributes colorRemapping = new ImageAttributes();
-            ColorMap playerMap = new ColorMap();
+            ImageAttributes colorRemapping = new();
+            ColorMap playerMap = new();
             playerMap.OldColor = Color.FromArgb(100, 100, 100);
             playerMap.NewColor = Color;
-            ColorMap portalMap = new ColorMap();
+            ColorMap portalMap = new();
             portalMap.OldColor = Color.FromArgb(200, 0, 0);
             portalMap.NewColor = portalColor;
             colorRemapping.SetRemapTable(new ColorMap[] { playerMap, portalMap });
 
-            Bitmap pic = new Bitmap(100, 100);
+            Bitmap pic = new(100, 100);
             Graphics g = Graphics.FromImage(pic);
             //draw it to a new image to remap the colors
             g.DrawImage(basePic, new Rectangle(0, 0, 100, 100), 0, 0, 100, 100, GraphicsUnit.Pixel, colorRemapping);
@@ -890,7 +865,7 @@ namespace CityWar
         }
         private Bitmap ResizePic(Bitmap pic, bool dispose)
         {
-            Bitmap newPic = new Bitmap(pic, Game.Random.Round(zoom * 5f / 6f), Game.Random.Round(zoom * 5f / 6f));
+            Bitmap newPic = new(pic, Game.Random.Round(zoom * 5f / 6f), Game.Random.Round(zoom * 5f / 6f));
             if (dispose)
                 pic.Dispose();
             return newPic;
@@ -1091,7 +1066,7 @@ namespace CityWar
         private void CheckNegativeWork()
         {
             //when your work is negative, you will lose some actual resources
-            while (Game.Random.Round(work / 10.0) < 0 && GetTotalResources(false) > 0)
+            while (Game.Random.Round(work / 10.0) < 0 && CountResources(false, true, true) > 0)
             {
                 int amt;
                 switch (Game.Random.Next(16))
@@ -1162,7 +1137,6 @@ namespace CityWar
                     }
                     else
                     {
-                        amt = 0;
                         break;
                     }
             }
@@ -1237,7 +1211,6 @@ namespace CityWar
                 {
                     int elemental = 0;
 
-                    Portal portal;
                     if (capturable is Wizard)
                     {
                         //cost 1300
@@ -1266,7 +1239,7 @@ namespace CityWar
                         pop += 2;
                         //+13
                     }
-                    else if ((portal = capturable as Portal) != null)
+                    else if (capturable is Portal portal)
                     {
                         //avg cost 1000 
                         //avg roi 17.5
@@ -1354,8 +1327,7 @@ namespace CityWar
             {
                 //if its a portal, receive or lose some compensation for the cost difference
                 Portal portal = (Portal)remove;
-                int m, e;
-                Player.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out m, out e);
+                Player.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out int m, out int e);
                 double magicPct = m / (double)(m + e), elementPct = e / (double)(m + e);
                 double diff = portal.GetPortalValue() - portalAvg;
                 const double mult = 1;
@@ -1393,75 +1365,99 @@ namespace CityWar
         }
         private int RemoveResources()
         {
-            int loseUnits = 0;
-            const double LoseWork = noCapLoseAmt * WorkMult;
-            while (work < LoseWork)
+            if (CountTradeableResources() > noCapLoseAmt)
             {
-                double totalResources = GetTotalResources();
-                //check if you could get enough by trading; every loop in case of unlucky rounding
-                if (totalResources < noCapLoseAmt)
-                {
-                    loseUnits = Game.Random.Round(1 - totalResources / noCapLoseAmt);
-                    if (loseUnits == 0)
-                    {
-                        TradeAll(ref air);
-                        TradeAll(ref earth);
-                        TradeAll(ref nature);
-                        TradeAll(ref water);
-                        TradeAll(ref death);
-                        TradeAll(ref production);
-                        TradeAll(ref population);
-                        TradeAll(ref magic);
-                        TradeAll(ref _relic);
-                        //TradePct(ref upkeep, -1 / UpkeepMult, 1, 0);
-                    }
-                    break;
-                }
-                else
-                {
-                    //trade a percentage of what you have of each resource
-                    TradePct(ref air);
-                    TradePct(ref earth);
-                    TradePct(ref nature);
-                    TradePct(ref water);
-                    TradePct(ref death);
-                    TradePct(ref production);
-                    TradePct(ref population);
-                    TradePct(ref magic, 1, .013, 1.3);
-                    TradePct(ref _relic, 1, .013, 1.3);
-                    ////pass a negative rate so it decreases work
-                    //TradePct(ref upkeep, -1 / UpkeepMult, .078, 0);
-                }
+                //if you can afford to lose only tradeable resources, always do that first
+                RemoveResources(false, false);
+                return 0;
             }
-            if (loseUnits == 0)
-                AddWork(-LoseWork);
-            return loseUnits;
+
+            //the lower your army strength, the more likely you will lose wizard/relic resources
+            double str = GetArmyStrength();
+            const double strFactor = 3900;
+            double c2 = strFactor / (str + strFactor);
+            c2 *= c2;
+            //the farther away you are from getting a wizard or relic, the more likely you will lose those resources
+            bool include(int amt, int cost)
+            {
+                //if on your last piece, must lose resources (no other options)
+                if (pieces.Count <= 1 || amt <= 0)
+                    return true;
+                //if can immediately get one, never lose it if you dont have to
+                if (amt >= cost)
+                    return false;
+                double c1 = (cost - amt) / (double)cost;
+                //since the metrics are multiplied together, you have to be both far away from getting one and have low army strength to have a high chance of losing the resource
+                return Game.Random.Bool(c1 * c1 * c2);
+            };
+            bool inclWiz = include(magic, WizardCost);
+            // use public 0-600 Relic value (indicates how close you really are to a relic)
+            bool inclRel = include(Relic, 2 * RelicCost);
+
+            if (inclWiz || inclRel)
+            {
+                //potentially lose units if not enough resources even including the wizard/relic resources
+                double resources = CountResources(true, inclWiz, inclRel);
+                int loseUnits = GetLoseUnits(resources);
+                if (loseUnits > 0)
+                    return loseUnits;
+
+                if (resources > noCapLoseAmt || (inclWiz && inclRel))
+                {
+                    //if not losing units, lose resources
+                    RemoveResources(inclWiz, inclRel);
+                    return 0;
+                }
+
+                //if not losing either one of the two and not enough resources, always lose a unit (otherwise upkeep could force trade it)
+                return 1;
+            }
+
+            //if not losing wizard/relic resources and not enough tradeable, always lose units
+            return Math.Max(1, GetLoseUnits(CountTradeableResources()));
         }
-        private void TradeAll(ref int amt)
+        private static int GetLoseUnits(double resources)
         {
-            TradePct(ref amt, 1, 1, 0);
+            //if upkeep is high enough for resources to be negative, can lose multiple units 
+            return Game.Random.Round(1 - resources / noCapLoseAmt);
         }
-        private void TradePct(ref int amt)
+        private void RemoveResources(bool inclWiz, bool inclRel)
         {
-            TradePct(ref amt, 1);
+            double pct = noCapLoseAmt / CountResources(true, inclWiz, inclRel);
+
+            TradePct(ref air, pct);
+            TradePct(ref earth, pct);
+            TradePct(ref nature, pct);
+            TradePct(ref water, pct);
+            TradePct(ref death, pct);
+            TradePct(ref production, pct);
+            TradePct(ref population, pct);
+            if (inclWiz)
+                TradePct(ref magic, pct);
+            if (inclRel)
+                TradePct(ref _relic, pct);
+
+            const double loseWork = noCapLoseAmt * WorkMult;
+            if (loseWork > work)
+            {
+                upkeep += Game.Random.Round((loseWork - work) / WorkMult * UpkeepMult);
+                work = 0;
+            }
+            else
+            {
+                work -= Game.Random.Round(loseWork);
+            }
         }
-        private void TradePct(ref int amt, double rate)
-        {
-            TradePct(ref amt, rate, .169, 13);
-        }
-        private void TradePct(ref int amt, double rate, double pct, double add)
+        private void TradePct(ref int amt, double pct)
         {
             if (amt > 0)
             {
-                int tradeAmt = amt;
-                if (pct < 1)
-                {
-                    //add a small constant amount so itll trade away the dregs
-                    tradeAmt = Game.Random.GaussianOEInt(pct * amt + add, .52, .13);
-                    if (tradeAmt > amt)
-                        tradeAmt = amt;
-                }
-                AddWork(tradeAmt * WorkMult * rate);
+                //add a small constant amount so itll trade away the dregs
+                int tradeAmt = Game.Random.GaussianCappedInt(pct * amt + 13, .39);
+                if (tradeAmt > amt)
+                    tradeAmt = amt;
+
+                work += Game.Random.Round(tradeAmt * WorkMult);
                 amt -= tradeAmt;
             }
         }

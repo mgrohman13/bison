@@ -1256,7 +1256,7 @@ namespace CityWar
                 double min = double.MaxValue;
                 foreach (Player player in Random.Iterate(dead))
                 {
-                    double value = player.GetTotalResources();
+                    double value = player.CountTotalResources();
                     if (value < min)
                     {
                         loser = player;
