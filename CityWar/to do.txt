@@ -1,7 +1,9 @@
 in between games
 	"security" of public fields
 
+
 gameplay
+
 	victory points? (relic)
 	
 	other non-wiz collectable treasure?
@@ -11,15 +13,18 @@ gameplay
 		collected by...?
 	winning player leave behind anything else?
 		wiz pts now that amount can vary
-	portal income rounding comes out of inc
-		requires new variable in case of magic ratio change?
+		
 	allow gamble move to use in between 1-full move
 	group move from different hexes
+	
 	teleporters
 		come up with way to be different from galwar wormholes
 	exp?
 
+
 balance
+	re-address unit comparison algorithms
+		left in strange half-aggregate state?
 	no 8 pop percent
 	rename wind sprite?
 	now that we have fuel mechanic and dont need to balance around bombers/fighters, can drop the lengths of some len 3 attacks

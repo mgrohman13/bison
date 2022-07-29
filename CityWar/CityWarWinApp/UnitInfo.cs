@@ -61,15 +61,15 @@ namespace CityWarWinApp
                     this.txtMove.Text = "0";
                     if (portal != null)
                     {
-                        this.txtCost.Text = portal.TotalCost.ToString();
+                        this.txtCost.Text = portal.Cost.ToString();
 
-                        this.lblHits.Text = "Pts / Turn";
-                        this.txtHits.Text = portal.GetTurnInc().ToString("0.0");
+                        this.lblHits.Text = "Unit / Turn";
+                        this.txtHits.Text = portal.UnitInc.ToString();
 
                         this.lblRegen.Text = "Income";
                         this.txtRegen.Text = portal.Income.ToString();
 
-                        this.lblAttacks.Text = "Summons";
+                        this.lblAttacks.Text = "Progress";
                         this.lbAttacks.Items.AddRange(portal.GetUnitValues().OrderBy(
                                 pair => Unit.CreateTempUnit(Map.Game, pair.Key).BaseTotalCost).Select(
                                 pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, Unit.CreateTempUnit(Map.Game, pair.Key).BaseTotalCost, pair.Key)).ToArray());

@@ -16,7 +16,7 @@ namespace CityWar
         public const double IncomeDiv = 65;
 
         public readonly CostType Type;
-        public readonly int Cost, Income;
+        public readonly int Cost, Income, UnitInc;
 
         private Dictionary<string, int> units;
 
@@ -28,17 +28,18 @@ namespace CityWar
 
             this.Type = type;
 
-            int mag, elm;
-            Player.SplitPortalCost(Owner.Game, owner.Race, type, out mag, out elm);
+            Player.SplitPortalCost(Owner.Game, owner.Race, type, out int mag, out int elm);
             this.Cost = mag + elm;
 
             double income = mag / IncomeDiv;
-            this.Income = Game.Random.Round(income);
+            this.Income = Game.Random.GaussianCappedInt(income, .039, 1);
+            double unitInc = GetUnitInc() + (income - this.Income) / ValuePct;
+            this.UnitInc = Game.Random.GaussianCappedInt(Math.Max(unitInc, 1), .065, 1);
 
             this.units = GetStartValues();
 
-            //pay for starting amount and income rounding
-            PayUpkeep(GetResourceValue() + (this.Income - income) * 21);
+            //pay for starting unit amounts and income randomness
+            PayUpkeep(GetResourceValue() + (this.UnitInc - unitInc) * 21 * ValuePct);
         }
 
         #endregion //fields and constructors
@@ -48,8 +49,7 @@ namespace CityWar
         internal override void Capture(Player newOwner)
         {
             //reimburse the old owner for partially finished units
-            int m, e;
-            Player.SplitPortalCost(owner.Game, owner.Race, Type, out m, out e);
+            Player.SplitPortalCost(owner.Game, owner.Race, Type, out int m, out int e);
             double resourceValue = GetResourceValue();
             int magic = Game.Random.Round(resourceValue * m / (double)(m + e));
             int element = Game.Random.Round(resourceValue * e / (double)(m + e));
@@ -69,10 +69,9 @@ namespace CityWar
 
         private Dictionary<string, int> GetStartValues()
         {
-            double inc = this.GetTurnInc();
             return Game.Races[this.owner.Race].Select(unitName => Unit.CreateTempUnit(owner.Game, unitName))
                     .Where(unit => unit.CostType == this.Type).ToDictionary(unit => unit.Name,
-                    unit => Game.Random.Round(Game.Random.Weighted(unit.BaseTotalCost - inc, StartAmt) + inc * StartAmt));
+                    unit => Game.Random.WeightedInt(unit.BaseTotalCost - UnitInc, StartAmt) + Game.Random.Round(UnitInc * StartAmt));
         }
 
         public override bool CapableBuild(string name)
@@ -100,11 +99,10 @@ namespace CityWar
         {
             string unit = Game.Random.SelectValue(units.Keys);
 
-            double inc = GetTurnInc();
             int needed = owner.Game.GetUnitNeeds(unit);
 
-            if (!EarnedIncome) 
-                units[unit] += Game.Random.GaussianOEInt(inc, .26 / (1.3 + units.Count), .091 * (needed - units[unit]) / (needed + inc)); 
+            if (!EarnedIncome)
+                units[unit] += Game.Random.GaussianOEInt(UnitInc, .26 / (1.3 + units.Count), .091 * (needed - units[unit]) / (double)(needed + UnitInc));
 
             while (units[unit] >= needed)
             {
@@ -134,15 +132,7 @@ namespace CityWar
 
         #region public methods and properties
 
-        public int TotalCost
-        {
-            get
-            {
-                return Cost;
-            }
-        }
-
-        public double GetTurnInc()
+        private double GetUnitInc()
         {
             const double Power = 1.3, Divisor = 16.9;
             return Math.Pow(Cost, Power) / Divisor / Math.Pow(AvgPortalCost, Power - 1);
