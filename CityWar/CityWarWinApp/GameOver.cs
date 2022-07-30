@@ -40,7 +40,9 @@ namespace CityWarWinApp
             int min = points.Values.Min();
             this.textBox1.Clear();
             foreach (var pair in Game.Random.Iterate(points).OrderByDescending(pair => pair.Value))
-                this.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.Name, pair.Value - min);
+                this.textBox1.Text += string.Format("{0} ({2}, {4} {3}) - {1}\r\n",
+                    pair.Key.Name, pair.Value - min,
+                    pair.Key.StartOrder + 1, pair.Key.StartCity ? "City" : "Wizard", pair.Key.Race);
         }
 
         private void Setup(Dictionary<Player, double> values, IDictionary<Player, int> turns, bool win)

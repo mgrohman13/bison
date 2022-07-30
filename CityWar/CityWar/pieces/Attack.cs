@@ -183,8 +183,9 @@ namespace CityWar
 
         #region internal methods
 
-        internal int AttackUnit(Unit unit)
+        internal int AttackUnit(Unit unit, out double relicValue)
         {
+            relicValue = 0;
             if (!CanAttack(unit))
                 return -1;
 
@@ -216,7 +217,7 @@ namespace CityWar
                 owner.Owner.AddUpkeep(upkeep, .21);
             }
 
-            double relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, unit.Shield, hits) - damage) / RelicDivide / unit.MaxHits;
+            relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, unit.Shield, hits) - damage) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;
@@ -224,8 +225,8 @@ namespace CityWar
             }
             else
             {
-                relicValue *= -unit.InverseCost;
-                unit.Owner.AddRelic(relicValue);
+                relicValue *= unit.InverseCost;
+                unit.Owner.AddRelic(-relicValue);
             }
 
             unit.Wound(damage);

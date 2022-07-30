@@ -31,7 +31,7 @@ namespace CityWarWinApp
         {
             int playersHeight = 4 + this.lbxOrder.ItemHeight * Map.Game.GetPlayers().Length;
             AdjustPlayerLbx(this.lbxOrder, this.label10, playersHeight);
-            AdjustPlayerLbx(this.lbxScore, this.label4, playersHeight);
+            AdjustPlayerLbx(this.lbxScore, this.label12, playersHeight);
             AdjustPlayerLbx(this.lbxUnits, this.label4, playersHeight);
             AdjustPlayerLbx(this.lbxRelics, this.label9, playersHeight);
             AdjustPlayerLbx(this.lbxCities, this.label7, playersHeight);

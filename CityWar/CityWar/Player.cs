@@ -28,6 +28,9 @@ namespace CityWar
         public readonly Color Color;
         public readonly string Race;
 
+        public int StartOrder { get; private set; }
+        public bool StartCity { get; private set; }
+
         private Game game;
         private List<Piece> pieces;
         private List<string> trades;
@@ -47,6 +50,8 @@ namespace CityWar
         //real player for in-game use
         internal void NewPlayer(Game game, bool city, string[] startUnits, double totalStartCost)
         {
+            StartCity = city;
+
             this.game = game;
             this.pieces = new List<Piece>();
             this.trades = new List<string>();
@@ -136,6 +141,10 @@ namespace CityWar
         private Tile RandomStartTile(bool canEdge)
         {
             return game.RandomTile(neighbor => (canEdge || neighbor != null) && (neighbor == null || !neighbor.Occupied()));
+        }
+        internal void SetStartOrder(int currentPlayer)
+        {
+            StartOrder = currentPlayer;
         }
 
         #endregion //fields and constructors

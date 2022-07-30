@@ -500,11 +500,18 @@ namespace CityWar
 
         internal void MakeWizPts()
         {
-            //the amount is one less than the distance to the nearest wizard or wizardpoints
-            this.wizardPoints = FindDistance(tile => tile.HasWizard() || tile.wizardPoints > 0) - 1;
+            TryMakeWizPts();
             //should not have tried to place too close to existing wizard points
             if (this.wizardPoints < 1)
                 throw new Exception();
+        }
+        internal void TryMakeWizPts()
+        {
+            //the amount is one less than the distance to the nearest wizard or wizardpoints
+            this.wizardPoints = FindDistance(tile => tile.HasWizard() || tile.wizardPoints > 0) - 1;
+            //if adjacent, cannot place
+            if (this.wizardPoints < 1)
+                this.wizardPoints = -1;
         }
 
         internal void MakeCitySpot(int time)

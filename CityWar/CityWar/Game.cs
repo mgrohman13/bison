@@ -110,9 +110,8 @@ namespace CityWar
 
             //initialize the players, half with cities and half with wizards
             bool city = Random.Bool();
-            IEnumerable<Player> randOrder = Random.Iterate<Player>(newPlayers);
             int addWork = 0;
-            foreach (Player current in randOrder)
+            foreach (Player current in Random.Iterate(newPlayers))
             {
                 string[] raceUnits = new string[3];
                 for (int a = 0; a < 3; ++a)
@@ -122,9 +121,10 @@ namespace CityWar
             }
 
             //randomize the turn order          
-            foreach (Player current in randOrder)
+            foreach (Player current in Random.Iterate(newPlayers))
             {
                 players[++currentPlayer] = current;
+                current.SetStartOrder(currentPlayer);
                 //players moving later in the turn order receive compensation
                 AddMoveOrderDiff(current, currentPlayer);
                 current.AddWork(addWork);
@@ -244,9 +244,9 @@ namespace CityWar
             }
         }
 
-        public int AttackUnit(Battle b, Attack attack, Unit target)
+        public int AttackUnit(Battle b, Attack attack, Unit target, out double relic)
         {
-            int retVal = attack.AttackUnit(target);
+            int retVal = attack.AttackUnit(target, out relic);
 
             if (retVal > -1)
             {
@@ -275,15 +275,16 @@ namespace CityWar
             {
                 HashSet<Unit> defenders = new();
 
-                //'Immobile' units defend first, by themselves
-                defenders.UnionWith(target.FindAllUnits(defender => defender.Type == UnitType.Immobile));
-                if (defenders.Count > 0)
-                {
-                    //attack with either just the selected units, or all within range, but do not add any additional defenders
-                    if (selected == null)
-                        selected = GetAttackers(target);
-                }
-                else if (selected == null)
+                ////'Immobile' units defend first, by themselves
+                //defenders.UnionWith(target.FindAllUnits(defender => defender.Type == UnitType.Immobile));
+                //if (defenders.Count > 0)
+                //{
+                //    //attack with either just the selected units, or all within range, but do not add any additional defenders
+                //    if (selected == null)
+                //        selected = GetAttackers(target);
+                //}
+                //else
+                if (selected == null)
                 {
                     //collect all battle units recursively, starting with attackers that can target any units in the target tile
                     Dictionary<Unit, int> attackers = new();
@@ -368,6 +369,13 @@ namespace CityWar
         }
         private static bool CanTarget(Unit unit, Unit target, out int minLength, int length = int.MinValue)
         {
+            if (target.Type == UnitType.Immobile)
+            {
+                //immobile units can always be targeted but dont reduce the attacker's length 
+                minLength = int.MaxValue;
+                return true;
+            }
+
             minLength = unit.Attacks.Where(attack => attack.Length >= length && attack.CanTarget(target))
                     .Select(attack => attack.Length).DefaultIfEmpty(int.MaxValue).Min();
             return (minLength != int.MaxValue);
@@ -986,7 +994,9 @@ namespace CityWar
 
         internal void DefeatPlayer(Player player)
         {
-            AddPlayer(defeatedPlayers, player);
+            //when the last piece of a winning player is removed we will end up here
+            if (!winningPlayers.ContainsKey(player))
+                AddPlayer(defeatedPlayers, player);
         }
 
         private void AddPlayer(Dictionary<Player, int> dict, Player player)
@@ -1218,12 +1228,14 @@ namespace CityWar
                     players[0].KillPlayer();
                 else if (players.Length > 1)
                     //otherwise, remove all winning pieces from the game
-                    foreach (Piece piece in win.GetPieces().ToList())
+                    foreach (Piece piece in Random.Iterate(win.GetPieces()))
                     {
                         piece.Tile.Remove(piece);
                         win.Remove(piece);
                         if (piece is City && Game.Random.Bool())
                             MakeCitySpot(piece.Tile);
+                        if (piece is Wizard && Game.Random.Bool())
+                            piece.Tile.TryMakeWizPts();
                     }
             }
         }
@@ -1262,6 +1274,7 @@ namespace CityWar
 
         private void CreateCitySpot()
         {
+            //cities cannot be on the edge, so subtract 2 from diameter, and scale only with sqrt
             int amt = Random.OEInt(Math.Sqrt(GetMapSize(Diameter - 2) / 910.0));
             for (int a = 0; a < amt; ++a)
             {

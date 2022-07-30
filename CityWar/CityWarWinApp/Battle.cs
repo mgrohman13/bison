@@ -11,6 +11,7 @@ namespace CityWarWinApp
 {
     partial class Battle : Form, IComparer<Attack>
     {
+        private Map main;
         private UnitInfo unitInfo = null;
 
         private CityWar.Battle battle;
@@ -60,8 +61,9 @@ namespace CityWarWinApp
             panelDefenders.Invalidate();
         }
 
-        public Battle(CityWar.Battle battle)
+        public Battle(Map main, CityWar.Battle battle)
         {
+            this.main = main;
             this.battle = battle;
 
             InitializeComponent();
@@ -225,9 +227,9 @@ namespace CityWarWinApp
                 if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1, 1))
                 {
                     int oldHits = clicked.Hits;
-                    int damage = Map.Game.AttackUnit(battle, attack, clicked);
+                    int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic);
                     if (damage > -1)
-                        Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits);
+                        Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits, relic);
 
                     if (clicked.Dead)
                         validAttacks = null;
@@ -239,6 +241,7 @@ namespace CityWarWinApp
                     RefreshSelected();
                     panelAttackers.Invalidate();
                     panelDefenders.Invalidate();
+                    main.RefreshResources();
                 }
             }
             else if (e.Button == MouseButtons.Right && unitInfo != null)

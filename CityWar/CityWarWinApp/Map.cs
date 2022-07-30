@@ -216,7 +216,7 @@ namespace CityWarWinApp
             this.lblPlayer.ForeColor = currentPlayer.InverseColor;
         }
 
-        private void RefreshResources()
+        internal void RefreshResources()
         {
             Player currentPlayer = Game.CurrentPlayer;
             this.lblAir.Text = currentPlayer.Air.ToString();
@@ -295,7 +295,7 @@ namespace CityWarWinApp
         private void RefreshZoom()
         {
             //the ratio of a hexagon's side length to its cross length, divided by four - sqrt(1/12)
-            const float mult = 0.288675f; 
+            const float mult = 0.288675f;
 
             //change the scroll speed based on the zoom
             scrollSpeed = (float)(Math.Sqrt(Zoom * startZoom) / 2.6f);
@@ -560,67 +560,68 @@ namespace CityWarWinApp
                     maxY = Game.Diameter;
 
                 //draw the hexes
-                for (int X = minX; ++X < maxX;)
-                    for (int Y = minY; ++Y < maxY;)
+                foreach (var p in Game.Random.Iterate(minX + 1, maxX - 1, minY + 1, maxY - 1))
+                {
+                    int X = p.X;
+                    int Y = p.Y;
+                    //get the current tile being drawn
+                    Tile thisTile = Game.GetTile(X, Y);
+                    if (thisTile != null)
                     {
-                        //get the current tile being drawn
-                        Tile thisTile = Game.GetTile(X, Y);
-                        if (thisTile != null)
+                        //get the proper color
+                        Brush theBrush;
+                        switch (thisTile.Terrain)
                         {
-                            //get the proper color
-                            Brush theBrush;
-                            switch (thisTile.Terrain)
-                            {
-                                case Terrain.Forest:
-                                    theBrush = Brushes.Green;
-                                    break;
-                                case Terrain.Mountain:
-                                    theBrush = Brushes.Gold;
-                                    break;
-                                case Terrain.Plains:
-                                    theBrush = Brushes.Gray;
-                                    break;
-                                case Terrain.Water:
-                                    theBrush = Brushes.Blue;
-                                    break;
-                                default:
-                                    throw new Exception();
-                            }
+                            case Terrain.Forest:
+                                theBrush = Brushes.Green;
+                                break;
+                            case Terrain.Mountain:
+                                theBrush = Brushes.Gold;
+                                break;
+                            case Terrain.Plains:
+                                theBrush = Brushes.Gray;
+                                break;
+                            case Terrain.Water:
+                                theBrush = Brushes.Blue;
+                                break;
+                            default:
+                                throw new Exception();
+                        }
 
-                            //caulculate the upper left hand corner of the hex
-                            float xVal = (float)X * mid4 - OffX + (Y % 2 == 0 ? mid2 : 0f);
-                            float yVal = (float)Y * side3 - OffY;
+                        //caulculate the upper left hand corner of the hex
+                        float xVal = (float)X * mid4 - OffX + (Y % 2 == 0 ? mid2 : 0f);
+                        float yVal = (float)Y * side3 - OffY;
 
-                            //draw the terrain hexegon
-                            PointF[] points = new PointF[6];
-                            points[0] = new PointF(xVal, yVal);
-                            points[1] = new PointF(xVal + mid2, yVal - side);
-                            points[2] = new PointF(xVal + mid4, yVal);
-                            points[3] = new PointF(xVal + mid4, yVal + side2);
-                            points[4] = new PointF(xVal + mid2, yVal + side3);
-                            points[5] = new PointF(xVal, yVal + side2);
-                            e.Graphics.FillPolygon(theBrush, points);
-                            e.Graphics.DrawPolygon(Pens.White, points);
+                        //draw the terrain hexegon
+                        PointF[] points = new PointF[6];
+                        points[0] = new PointF(xVal, yVal);
+                        points[1] = new PointF(xVal + mid2, yVal - side);
+                        points[2] = new PointF(xVal + mid4, yVal);
+                        points[3] = new PointF(xVal + mid4, yVal + side2);
+                        points[4] = new PointF(xVal + mid2, yVal + side3);
+                        points[5] = new PointF(xVal, yVal + side2);
+                        e.Graphics.FillPolygon(theBrush, points);
+                        e.Graphics.DrawPolygon(Pens.White, points);
 
-                            //draw tile information
-                            int wp = thisTile.WizardPoints;
-                            if (wp > 0)
-                            {
-                                e.Graphics.FillEllipse(Brushes.DeepPink, xVal + zoom_9mid_2,
-                                        yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
-                                e.Graphics.DrawString(wp.ToString(), tileInfoFont, Brushes.Black,
-                                        xVal + zoom_4_5mid_2, yVal + _zoom_9side2_3);
-                            }
-                            int cp = thisTile.CityTime;
-                            if (cp > -1)
-                            {
-                                e.Graphics.FillEllipse(Brushes.DarkRed, xVal + zoom_9mid_2zoom_3,
-                                        yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
-                                e.Graphics.DrawString(cp.ToString(), tileInfoFont, Brushes.Black,
-                                        xVal + zoom_4_5mid_2zoom_3, yVal + _zoom_9side2_3);
-                            }
+                        //draw tile information
+                        int wp = thisTile.WizardPoints;
+                        if (wp > -1)
+                        {
+                            e.Graphics.FillEllipse(Brushes.DeepPink, xVal + zoom_9mid_2,
+                                    yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
+                            e.Graphics.DrawString(wp.ToString(), tileInfoFont, Brushes.Black,
+                                    xVal + zoom_4_5mid_2, yVal + _zoom_9side2_3);
+                        }
+                        int cp = thisTile.CityTime;
+                        if (cp > -1)
+                        {
+                            e.Graphics.FillEllipse(Brushes.DarkRed, xVal + zoom_9mid_2zoom_3,
+                                    yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
+                            e.Graphics.DrawString(cp.ToString(), tileInfoFont, Brushes.Black,
+                                    xVal + zoom_4_5mid_2zoom_3, yVal + _zoom_9side2_3);
                         }
                     }
+                }
 
                 using (Pen pen3 = new Pen(Color.Black, 3f))
                 {
@@ -797,7 +798,7 @@ namespace CityWarWinApp
                                 }
                                 CityWar.Battle b = Game.StartBattle(clicked, selectedUnits);
                                 if (b != null)
-                                    new Battle(b).ShowDialog();
+                                    new Battle(this, b).ShowDialog();
                                 else
                                     return;
                             }
