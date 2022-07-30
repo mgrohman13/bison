@@ -97,7 +97,9 @@ namespace CityWarWinApp
                     {
                         case Ability.Aircraft:
                             int range = (int)(Math.Ceiling(unit.MaxFuel * unit.MaxMove / (1.0 + unit.MaxMove) + 1.0) / 2.0);
-                            this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1} ({2})", unit.Fuel, unit.MaxFuel, range);
+                            //TODO: ?
+                            int range1 = (int)(Math.Ceiling(unit.MaxFuel * unit.MaxMove / (1.0 + unit.MaxMove) + 1.0));
+                            this.txtSpecial.Text += string.Format("Aircraft - Fuel {0} / {1} ({2})", unit.Fuel, unit.MaxFuel, range, range1);
                             break;
                         case Ability.AircraftCarrier:
                             this.txtSpecial.Text += "Aircraft Carrier";
