@@ -17,62 +17,50 @@ namespace CityWarWinApp
             InitializeComponent();
         }
 
-        private void gameOver_Load(object sender, EventArgs e)
+        private void GameOver_Load(object sender, EventArgs e)
         {
-            IDictionary<Player, double> lost = Cleanup(Map.Game.GetLost());
-            IDictionary<Player, double> won = Cleanup(Map.Game.GetWon());
-
-            //losing players always get points directly proportional to their score when they lost
-            //for winning players:
-            //  invert the stored value so lower is actually better
-            //  the best winning player (lowest value) always gets 3.9 * the average of all losers on top of the highest loser's points
-            //  all other winning players get a fraction of that bonus, still on top of the highest loser's points
-            double winAdd = lost.Values.Max();
-            double winMult = 3.9 * lost.Values.Average() * won.Values.Min();
-            foreach (Player p in Game.Random.Iterate(won.Keys))
-                won[p] = winAdd + winMult / won[p];
-
-            Dictionary<Player, int> points = new Dictionary<Player, int>();
-            double mult = 39 * (lost.Values.Sum() + won.Values.Sum());
+            Dictionary<Player, int> points = new();
+            Dictionary<Player, double> values = new();
             double rounding = Game.Random.NextDouble();
-            SplitPoints(points, lost, mult, rounding);
-            SplitPoints(points, won, mult, rounding);
 
-            //int cur = 0, add = -1, min = int.MaxValue;
-            //foreach (var pair in lost)
-            //{
-            //    int val = Game.Random.Round(-26.0 / pair.Key) + ( cur += ( ++add ) );
-            //    points.Add(pair.Value, val);
-            //    min = Math.Min(min, val);
-            //}
-            //for (int idx = won.Count - 1 ; idx >= 0 ; --idx)
-            //    points.Add(won.Values[idx], Game.Random.Round(780.0 / won.Keys[idx]) + ( cur += ( ++add ) ));
+            Setup(values, Map.Game.GetLost(), false);
+            Setup(values, Map.Game.GetWon(), true);
 
+            //give out 21 points based on relative final scoring values
+            double mult = 21 / values.Values.Sum();
+            foreach (var pair in Game.Random.Iterate(values))
+                points.Add(pair.Key, MattUtil.MTRandom.Round(pair.Value * mult, rounding));
+
+            //add in base (x^2-x)/2 points based on rankings 
+            int cur = 0, add = -1;
+            foreach (Player player in Game.Random.Iterate(values).OrderBy(p => p.Value).Select(p => p.Key))
+                points[player] += (cur += (++add));
+
+            //subtract min and display
             int min = points.Values.Min();
             this.textBox1.Clear();
             foreach (var pair in Game.Random.Iterate(points).OrderByDescending(pair => pair.Value))
                 this.textBox1.Text += string.Format("{0} - {1}\r\n", pair.Key.Name, pair.Value - min);
         }
 
-        private IDictionary<Player, double> Cleanup(IDictionary<Player, double> dict)
+        private void Setup(Dictionary<Player, double> values, IDictionary<Player, int> turns, bool win)
         {
-            return new Dictionary<Player, double>(dict);
-
-            //dict = new Dictionary<Player, double>(dict);
-            //foreach (Player p in Game.Random.Iterate(dict.Keys))
-            //    while (dict.Values.Count(v => dict[p] == v) > 1)
-            //        dict[p] += Game.Random.Gaussian();
-            //double min = dict.Values.Min();
-            //if (min < 1)
-            //    foreach (Player p in Game.Random.Iterate(dict.Keys))
-            //        dict[p] -= min - 1;
-            //return dict;
-        }
-
-        private void SplitPoints(IDictionary<Player, int> points, IDictionary<Player, double> dict, double mult, double rounding)
-        {
-            foreach (Player p in Game.Random.Iterate(dict.Keys))
-                points.Add(p, MattUtil.MTRandom.Round(dict[p] * mult, rounding));
+            foreach (var pair in Game.Random.Iterate(turns))
+            {
+                //small score padding for both winners and losers
+                double score = win ? 390 : 169;
+                //sqrt the score so that sqrt(score)/turn only decreases with time (incentive to win ASAP not run up score)
+                score = Math.Sqrt(score + pair.Key.Score);
+                double turn = pair.Value;
+                //losing players have the turn they lost inverted (lasting longer is better) 
+                // and ensure there is always a gap between the final 2 players winning and losing on the same turn
+                if (!win)
+                    turn = 13 + Map.Game.Turn * 1.69 - .39 * turn;
+                //divide by turns
+                score /= (13 + turn);
+                //square final result so it's roughly score/(turn^2)
+                values.Add(pair.Key, score * score);
+            }
         }
     }
 }

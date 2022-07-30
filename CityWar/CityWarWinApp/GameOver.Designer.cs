@@ -71,7 +71,7 @@ namespace CityWarWinApp
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Name = "GameOver";
-            this.Load += new System.EventHandler(this.gameOver_Load);
+            this.Load += new System.EventHandler(this.GameOver_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

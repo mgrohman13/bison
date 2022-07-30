@@ -4,8 +4,6 @@ in between games
 
 gameplay
 
-	victory points? (relic)
-	
 	other non-wiz collectable treasure?
 		magic/relic?
 		prod?

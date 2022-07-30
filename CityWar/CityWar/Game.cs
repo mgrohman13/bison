@@ -31,7 +31,7 @@ namespace CityWar
         public readonly int Diameter;
 
         private readonly Tile[,] map;
-        private readonly Dictionary<Player, double> winningPlayers, defeatedPlayers;
+        private readonly Dictionary<Player, int> winningPlayers, defeatedPlayers;
         private readonly Dictionary<string, int> freeUnits;
 
         private Player[] players;
@@ -879,20 +879,13 @@ namespace CityWar
             Player.ResetPics(this.players, zoom);
         }
 
-        public ReadOnlyDictionary<Player, double> GetWon()
+        public ReadOnlyDictionary<Player, int> GetWon()
         {
             return new(winningPlayers);
         }
-        public ReadOnlyDictionary<Player, double> GetLost()
+        public ReadOnlyDictionary<Player, int> GetLost()
         {
             return new(defeatedPlayers);
-        }
-        private static SortedList<int, Player> GetSortedList(Dictionary<int, Player> dictionary)
-        {
-            SortedList<int, Player> retVal = new();
-            foreach (var pair in dictionary)
-                retVal.Add(pair.Key, pair.Value);
-            return retVal;
         }
 
         public int GetUnitHas(string name)
@@ -993,25 +986,13 @@ namespace CityWar
 
         internal void DefeatPlayer(Player player)
         {
-            AddPlayer(defeatedPlayers, player, false);
+            AddPlayer(defeatedPlayers, player);
         }
 
-        private void AddPlayer(Dictionary<Player, double> dict, Player player, bool win)
+        private void AddPlayer(Dictionary<Player, int> dict, Player player)
         {
             RemovePlayer(player);
-
-            double score = player.Score;
-            if (win)
-            {
-                var otherPlayers = winningPlayers.Keys.Concat(defeatedPlayers.Keys).Concat(players);
-                //future winning players will use this player's score, so make sure it is higher than any one active player's score included in this player's value
-                //this player's score does matter, but gets divided by more than the total number of other players it could affect so there is no incentive to run up the score
-                player.Score = players.Max(p => p.Score) + player.Score / otherPlayers.Count();
-                //for winning players, store the cumulative score of all players but the player themself (lower values will be considered better)
-                score = otherPlayers.Sum(p => p.Score);
-            }
-
-            dict.Add(player, score + 1);
+            dict.Add(player, turn);
         }
 
         private void RemovePlayer(Player player)
@@ -1230,7 +1211,7 @@ namespace CityWar
 
             if (win != null)
             {
-                AddPlayer(winningPlayers, win, true);
+                AddPlayer(winningPlayers, win);
 
                 if (players.Length == 1)
                     //if a single player is left, they lose
