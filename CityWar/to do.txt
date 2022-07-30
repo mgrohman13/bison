@@ -71,11 +71,11 @@ balance
 
 interface	
 	main map
-		*highlight appeared wizard points, cities, changed map
-		*highlight earned relic (show visible score gain avg since gained relic on info?)
 		better treasure (wiz/city spots) graphics 
 		show more map info - e.g. unit value?  capts?
 		graphic artifacts?	
+	info
+		show visible score gain avg since last gained relic  
 	damage calculator
 		multiple attacks
 	battles

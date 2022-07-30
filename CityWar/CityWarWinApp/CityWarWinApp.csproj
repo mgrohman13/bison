@@ -73,6 +73,7 @@
     <Compile Include="Calculator.Designer.cs">
       <DependentUpon>Calculator.cs</DependentUpon>
     </Compile>
+    <Compile Include="ChangeTracker.cs" />
     <Compile Include="Log.cs">
       <SubType>Form</SubType>
     </Compile>

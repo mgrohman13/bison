@@ -610,7 +610,7 @@ namespace CityWar
             //wizard first
             Piece city = null, relic = null;
             bool hasPortal = false;
-            foreach (Piece p in pieces)
+            foreach (Piece p in Game.Random.Iterate(pieces))
                 if (p is Wizard)
                     return p;
                 else if (p is City)
@@ -625,7 +625,7 @@ namespace CityWar
             if (hasPortal)
             {
                 Portal highest = null;
-                foreach (Piece p in pieces)
+                foreach (Piece p in Game.Random.Iterate(pieces))
                 {
                     Portal portal;
                     if ((portal = p as Portal) != null)
@@ -651,7 +651,7 @@ namespace CityWar
             bool all = false;
             cost = -1;
             Unit highestUnit = null;
-            foreach (Piece p in pieces)
+            foreach (Piece p in Game.Random.Iterate(pieces))
             {
                 Unit unit;
                 if ((unit = p as Unit) != null)

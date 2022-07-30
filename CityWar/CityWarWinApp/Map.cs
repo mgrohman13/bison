@@ -73,6 +73,8 @@ namespace CityWarWinApp
         float _zoom = 106;
         float topX, topY, side, middle;
         Font tileInfoFont;
+
+        ChangeTracker changeTracker = new();
         public float Zoom
         {
             get
@@ -519,6 +521,16 @@ namespace CityWarWinApp
 
         //double total = 0, amt = 0;
 
+        private HashSet<Tile> changedTiles = new();
+        internal void ClearChanges()
+        {
+            changedTiles = new();
+        }
+        private void ShowChanges(IEnumerable<Tile> tiles)
+        {
+            changedTiles = tiles.ToHashSet();
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             try
@@ -674,6 +686,26 @@ namespace CityWarWinApp
                     }
                 }
 
+                using (Pen pen4 = new Pen(Color.Black, 2f))
+                {
+                    foreach (Tile t in changedTiles)
+                    {
+                        if (t.X > minX && t.X < maxX && t.Y > minY && t.Y < maxY)
+                        {
+                            float XVal = (float)t.X * mid4 - OffX + (t.Y % 2 == 0 ? mid2 : 0f);
+                            float YVal = (float)t.Y * side3 - OffY;
+                            PointF[] points = new PointF[6];
+                            points[0] = new PointF(XVal, YVal);
+                            points[1] = new PointF(XVal + mid2, YVal - side);
+                            points[2] = new PointF(XVal + mid4, YVal);
+                            points[3] = new PointF(XVal + mid4, YVal + side2);
+                            points[4] = new PointF(XVal + mid2, YVal + side3);
+                            points[5] = new PointF(XVal, YVal + side2);
+                            e.Graphics.DrawPolygon(pen4, points);
+                        }
+                    }
+                }
+
                 //clip it
                 e.Graphics.FillRectangle(Brushes.Black, new Rectangle(this.ClientSize.Width - panelWidth, 0, panelWidth, this.ClientSize.Height));
 
@@ -784,6 +816,8 @@ namespace CityWarWinApp
                         Tile clicked = Game.GetTile(x, y);
                         if (clicked != null)
                         {
+                            ClearChanges();
+
                             //if there is an enemy at the destination, fight it
                             Player occ, cur;
                             if (clicked.OccupiedByUnit(out occ) && occ != Game.CurrentPlayer)
@@ -798,7 +832,11 @@ namespace CityWarWinApp
                                 }
                                 CityWar.Battle b = Game.StartBattle(clicked, selectedUnits);
                                 if (b != null)
+                                {
+                                    changeTracker.StartBattle();
                                     new Battle(this, b).ShowDialog();
+                                    ShowChanges(changeTracker.EndBattle());
+                                }
                                 else
                                     return;
                             }
@@ -824,6 +862,7 @@ namespace CityWarWinApp
                                             {
                                                 saved = false;
 
+                                                changeTracker.StartMove();
                                                 //try to move the units
                                                 if (Game.MovePieces(selectedTile, x, y, this.chbGroup.Checked, !this.chbGamble.Checked))
                                                 {
@@ -831,6 +870,7 @@ namespace CityWarWinApp
                                                     selected = new Point(x, y);
                                                     selectedTile = Game.GetTile(selected.X, selected.Y);
                                                 }
+                                                changeTracker.EndMove();
 
                                                 //check if any selected units have move remaining
                                                 bool nomves = true;
@@ -881,6 +921,7 @@ namespace CityWarWinApp
                 }
             }
         }
+
         private void CheckPath()
         {
             this.Invalidate();
@@ -1292,7 +1333,8 @@ namespace CityWarWinApp
 
             saved = false;
 
-            //end the tuen
+            changeTracker.StartNextTurn();
+            //end the turn
             Game.EndTurn();
 
             //check if the game is over
@@ -1312,8 +1354,12 @@ namespace CityWarWinApp
             //clear OKed aircraft
             okToMove.Clear();
 
-            //center on the next player's center
-            CenterOn(Game.CurrentPlayer.GetCenter());
+            //center on something that changed if anything, otherwise the next player's center
+            ShowChanges(changeTracker.EndNextTurn());
+            if (changedTiles.Any())
+                CenterOn(Game.Random.SelectValue(changedTiles));
+            else
+                CenterOn(Game.CurrentPlayer.GetCenter());
         }
 
         private void btnInfo_Click(object sender, EventArgs e)
