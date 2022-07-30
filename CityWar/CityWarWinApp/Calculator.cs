@@ -44,22 +44,7 @@ namespace CityWarWinApp
             this.RefreshAll();
         }
 
-        private void txtDamage_TextChanged(object sender, EventArgs e)
-        {
-            RefreshResult();
-        }
-
-        private void txtPierce_TextChanged(object sender, EventArgs e)
-        {
-            RefreshResult();
-        }
-
-        private void txtHits_TextChanged(object sender, EventArgs e)
-        {
-            RefreshResult();
-        }
-
-        private void txtArmor_TextChanged(object sender, EventArgs e)
+        private void TextBoxChanged(object sender, EventArgs e)
         {
             RefreshResult();
         }
@@ -84,8 +69,9 @@ namespace CityWarWinApp
                 int ap = int.Parse(this.txtPierce.Text);
                 int hits = int.Parse(this.txtHits.Text);
                 int arm = int.Parse(this.txtArmor.Text);
+                int.TryParse(this.txtShield.Text, out int shld);
                 double kill;
-                double avg = CityWar.Attack.GetAverageDamage(dmg, ap, arm, 0, hits, out kill);
+                double avg = CityWar.Attack.GetAverageDamage(dmg, ap, arm, shld, hits, out kill);
                 kill *= 100;
                 this.txtAverage.Text = string.Format("{0}({1})", avg.ToString("0.00"), CityWar.Attack.GetMinDamage(dmg, ap, arm, 0));
                 this.txtKill.Text = kill.ToString("0") + "%";
@@ -161,6 +147,7 @@ namespace CityWarWinApp
             {
                 this.txtHits.Text = defender.hits.ToString();
                 this.txtArmor.Text = defender.armor.ToString();
+                //this.txtShield.Text = defender.shield.ToString();
             }
 
             events = true;

@@ -70,9 +70,6 @@ balance
 		really will use? (carrier defend air??)
 
 interface	
-	units
-		*giant thumb
-		*troll leg 		
 	main map
 		*highlight appeared wizard points, cities, changed map
 		*highlight earned relic (show visible score gain avg since gained relic on info?)
@@ -80,7 +77,6 @@ interface
 		show more map info - e.g. unit value?  capts?
 		graphic artifacts?	
 	damage calculator
-		*add shield to calculator
 		multiple attacks
 	battles
 		*show GC (maybe relative to selected/avail attacks)
