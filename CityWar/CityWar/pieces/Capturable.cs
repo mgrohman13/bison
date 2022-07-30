@@ -109,12 +109,12 @@ namespace CityWar
             {
                 Unit unit = ((Unit)piece);
                 owner.Spend(-unit.BaseOtherCost, unit.CostType, -unit.BasePplCost);
-                owner.Remove(unit, false);
+                owner.Remove(unit);
                 tile.Remove(unit);
             }
 
             piece.Tile.Remove(piece);
-            piece.Owner.Remove(piece, false);
+            piece.Owner.Remove(piece);
         }
 
         internal override void ResetMove()

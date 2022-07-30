@@ -294,7 +294,7 @@ namespace CityWar
             if (IsAir())
                 owner.AddWork(Fuel * FuelWorkCost);
             Tile.Remove(this);
-            Owner.Remove(this, false);
+            Owner.Remove(this);
         }
 
         internal override double Heal()
@@ -443,7 +443,7 @@ namespace CityWar
             owner.AddDeath(GetDisbandAmount());
 
             tile.Remove(this);
-            owner.Remove(this, false);
+            owner.Remove(this);
 
             return result;
         }

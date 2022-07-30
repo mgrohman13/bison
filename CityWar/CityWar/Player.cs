@@ -32,7 +32,7 @@ namespace CityWar
         private List<Piece> pieces;
         private List<string> trades;
         private int death, air, earth, nature, water, population, production, relicOffset, magic, work;
-        private double upkeep, healRound;
+        private double upkeep, healRound, score;
 
         private int _relic;
 
@@ -62,6 +62,7 @@ namespace CityWar
             this.work = 0;
             this.upkeep = 0;
             this.healRound = Game.Random.NextDouble();
+            this.score = 0;
 
             this._relic = Game.Random.Round(RelicCost / 2.0);
 
@@ -237,6 +238,18 @@ namespace CityWar
                 const double inverseColorMidVal = 255 * 3 / 2.0;
                 int total = Color.R + Color.G + Color.B;
                 return total < inverseColorMidVal ? Color.White : Color.Black;
+            }
+        }
+
+        public double Score
+        {
+            get
+            {
+                return score;
+            }
+            internal set
+            {
+                score = value;
             }
         }
 
@@ -417,11 +430,10 @@ namespace CityWar
             if (p is Capturable)
                 GetRelic();
         }
-        internal void Remove(Piece p, bool turnIncrement)
+        internal void Remove(Piece p)
         {
             pieces.Remove(p);
-            //actually losing the game is handled separately inside IncrementTurn
-            if (!turnIncrement && Dead)
+            if (Dead)
                 KillPlayer();
         }
 
@@ -433,7 +445,7 @@ namespace CityWar
             this.AddUpkeep(-transferAmt);
             p.AddUpkeep(transferAmt);
 
-            Remove(c, false);
+            Remove(c);
         }
 
         internal void Spend(int amt, CostType type, int population)
@@ -463,6 +475,7 @@ namespace CityWar
 
         internal void AddRelic(double amt)
         {
+            score += amt;
             relic += Game.Random.GaussianInt(amt, .26);
         }
         internal void AddDeath(double amt)
@@ -1336,7 +1349,7 @@ namespace CityWar
             }
 
             remove.Tile.Remove(remove);
-            Remove(remove, true);
+            Remove(remove);
         }
 
         internal void RemoveUnit()
@@ -1355,7 +1368,7 @@ namespace CityWar
                     Spend(-costReimbursement, unit.CostType, -pplReimbursement);
 
                     unit.Tile.Remove(unit);
-                    this.Remove(unit, true);
+                    this.Remove(unit);
                 }
         }
         private const double noCapLoseAmt = 1000 / 3.0;

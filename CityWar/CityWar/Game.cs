@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using MattUtil;
 using System.Runtime.Serialization;
+using System.Collections.ObjectModel;
 
 namespace CityWar
 {
@@ -30,7 +31,7 @@ namespace CityWar
         public readonly int Diameter;
 
         private readonly Tile[,] map;
-        private readonly Dictionary<int, Player> winningPlayers, defeatedPlayers;
+        private readonly Dictionary<Player, double> winningPlayers, defeatedPlayers;
         private readonly Dictionary<string, int> freeUnits;
 
         private Player[] players;
@@ -65,8 +66,8 @@ namespace CityWar
             this.Diameter = radius * 2 - 1;
 
             this.map = new Tile[Diameter, Diameter];
-            this.winningPlayers = new Dictionary<int, Player>();
-            this.defeatedPlayers = new Dictionary<int, Player>();
+            this.winningPlayers = new();
+            this.defeatedPlayers = new();
 
             int numPlayers = newPlayers.Length;
             this.players = new Player[numPlayers];
@@ -878,13 +879,13 @@ namespace CityWar
             Player.ResetPics(this.players, zoom);
         }
 
-        public SortedList<int, Player> GetWon()
+        public ReadOnlyDictionary<Player, double> GetWon()
         {
-            return GetSortedList(winningPlayers);
+            return new(winningPlayers);
         }
-        public SortedList<int, Player> GetLost()
+        public ReadOnlyDictionary<Player, double> GetLost()
         {
-            return GetSortedList(defeatedPlayers);
+            return new(defeatedPlayers);
         }
         private static SortedList<int, Player> GetSortedList(Dictionary<int, Player> dictionary)
         {
@@ -948,10 +949,8 @@ namespace CityWar
             {
                 if (players.Length < 1)
                 {
-                    int max = winningPlayers.Concat(defeatedPlayers).Max(pair => pair.Key);
-                    if (winningPlayers.ContainsKey(max))
-                        return winningPlayers[max];
-                    return defeatedPlayers[max];
+                    double score = winningPlayers.Values.Min();
+                    return winningPlayers.Single(p => p.Value == score).Key;
                 }
                 if (currentPlayer == -1)
                     return null;
@@ -994,40 +993,25 @@ namespace CityWar
 
         internal void DefeatPlayer(Player player)
         {
-            AddPlayer(defeatedPlayers, turn, player);
+            AddPlayer(defeatedPlayers, player, false);
+        }
+
+        private void AddPlayer(Dictionary<Player, double> dict, Player player, bool win)
+        {
             RemovePlayer(player);
-        }
 
-        private static void AddPlayer(Dictionary<int, Player> dict, int turn, Player p)
-        {
-            AddPlayer(dict, turn, p, false);
-        }
-        private static void AddPlayer(Dictionary<int, Player> dict, int turn, Player p, bool lower)
-        {
-            if (dict.TryGetValue(turn, out Player low))
+            double score = player.Score;
+            if (win)
             {
-                if (lower)
-                {
-                    Player temp = p;
-                    p = low;
-                    low = temp;
-                }
+                var otherPlayers = winningPlayers.Keys.Concat(defeatedPlayers.Keys).Concat(players);
+                //future winning players will use this player's score, so make sure it is higher than any one active player's score included in this player's value
+                //this player's score does matter, but gets divided by more than the total number of other players it could affect so there is no incentive to run up the score
+                player.Score = players.Max(p => p.Score) + player.Score / otherPlayers.Count();
+                //for winning players, store the cumulative score of all players but the player themself (lower values will be considered better)
+                score = otherPlayers.Sum(p => p.Score);
+            }
 
-                if (Random.Bool())
-                {
-                    dict[turn] = low;
-                    AddPlayer(dict, turn + 1, p, true);
-                }
-                else
-                {
-                    dict[turn] = p;
-                    AddPlayer(dict, turn - 1, low, false);
-                }
-            }
-            else
-            {
-                dict.Add(turn, p);
-            }
+            dict.Add(player, score + 1);
         }
 
         private void RemovePlayer(Player player)
@@ -1060,7 +1044,6 @@ namespace CityWar
 
         private void IncrementTurn()
         {
-            var dead = new List<Player>();
             //priority by which capturables are removed
             var capts = new[] { typeof(Relic), typeof(City), typeof(Portal), typeof(Wizard) };
 
@@ -1070,11 +1053,10 @@ namespace CityWar
 
             //these must happen in this order
             if (win == null)
-                removed = RemoveUnits(dead, counts);
+                removed = RemoveUnits(counts);
             FreeUnit();
             if (win == null && !removed)
-                RemoveCapturables(dead, capts, counts);
-            KillPlayers(dead);
+                RemoveCapturables(capts, counts);
             WinGame(win);
 
             if (players.Length > 0)
@@ -1117,7 +1099,7 @@ namespace CityWar
             return null;
         }
 
-        private bool RemoveUnits(List<Player> dead, Dictionary<Type, Dictionary<Player, int>> counts)
+        private bool RemoveUnits(Dictionary<Type, Dictionary<Player, int>> counts)
         {
             //remove resources/units for players with no capturables
             bool removed = false;
@@ -1126,8 +1108,6 @@ namespace CityWar
                 {
                     removed = true;
                     player.RemoveUnit();
-                    if (player.Dead)
-                        dead.Add(player);
                 }
             return removed;
         }
@@ -1215,17 +1195,16 @@ namespace CityWar
             });
         }
 
-        private void RemoveCapturables(List<Player> dead, IEnumerable<Type> capts,
-                Dictionary<Type, Dictionary<Player, int>> counts)
+        private void RemoveCapturables(IEnumerable<Type> capts, Dictionary<Type, Dictionary<Player, int>> counts)
         {
             foreach (Type type in capts)
                 if (counts[type].All(pair => pair.Value > 0))
                 {
-                    RemoveCapturables(dead, type);
+                    RemoveCapturables(type);
                     break;
                 }
         }
-        private void RemoveCapturables(List<Player> dead, Type type)
+        private void RemoveCapturables(Type type)
         {
             //const double portalAvg = Player.WizardCost;
             double portalAvg = double.NaN;
@@ -1240,33 +1219,7 @@ namespace CityWar
             }
 
             foreach (Player player in players)
-            {
                 player.RemoveCapturable(type, portalAvg);
-                if (player.Dead)
-                    dead.Add(player);
-            }
-        }
-
-        private void KillPlayers(List<Player> dead)
-        {
-            while (dead.Count > 0)
-            {
-                //if there are multiple dead players, kill them off in order based on the amount of resources they died with
-                Player loser = null;
-                double min = double.MaxValue;
-                foreach (Player player in Random.Iterate(dead))
-                {
-                    double value = player.CountTotalResources();
-                    if (value < min)
-                    {
-                        loser = player;
-                        min = value;
-                    }
-                }
-
-                dead.Remove(loser);
-                loser.KillPlayer();
-            }
         }
 
         private void WinGame(Player win)
@@ -1277,18 +1230,17 @@ namespace CityWar
 
             if (win != null)
             {
-                AddPlayer(winningPlayers, turn, win);
-                RemovePlayer(win);
+                AddPlayer(winningPlayers, win, true);
 
                 if (players.Length == 1)
-                    //if a single player if left, they lose
+                    //if a single player is left, they lose
                     players[0].KillPlayer();
                 else if (players.Length > 1)
                     //otherwise, remove all winning pieces from the game
                     foreach (Piece piece in win.GetPieces().ToList())
                     {
                         piece.Tile.Remove(piece);
-                        win.Remove(piece, true);
+                        win.Remove(piece);
                         if (piece is City && Game.Random.Bool())
                             MakeCitySpot(piece.Tile);
                     }

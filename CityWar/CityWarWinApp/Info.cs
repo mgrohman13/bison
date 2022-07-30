@@ -30,8 +30,9 @@ namespace CityWarWinApp
         private void RefreshStuff(bool players)
         {
             int playersHeight = 4 + this.lbxOrder.ItemHeight * Map.Game.GetPlayers().Length;
-            AdjustPlayerLbx(this.lbxUnits, this.label4, playersHeight);
             AdjustPlayerLbx(this.lbxOrder, this.label10, playersHeight);
+            AdjustPlayerLbx(this.lbxScore, this.label4, playersHeight);
+            AdjustPlayerLbx(this.lbxUnits, this.label4, playersHeight);
             AdjustPlayerLbx(this.lbxRelics, this.label9, playersHeight);
             AdjustPlayerLbx(this.lbxCities, this.label7, playersHeight);
             AdjustPlayerLbx(this.lbxWizards, this.label8, playersHeight);
@@ -56,6 +57,7 @@ namespace CityWarWinApp
             InitializeComponent();
 
             this.lbxOrder.DrawMode = DrawMode.OwnerDrawFixed;
+            this.lbxScore.DrawMode = DrawMode.OwnerDrawFixed;
             this.lbxUnits.DrawMode = DrawMode.OwnerDrawFixed;
             this.lbxRelics.DrawMode = DrawMode.OwnerDrawFixed;
             this.lbxCities.DrawMode = DrawMode.OwnerDrawFixed;
@@ -186,6 +188,7 @@ namespace CityWarWinApp
         private void GetPlayers()
         {
             this.lbxOrder.Items.Clear();
+            this.lbxScore.Items.Clear();
             this.lbxUnits.Items.Clear();
             this.lbxRelics.Items.Clear();
             this.lbxCities.Items.Clear();
@@ -197,6 +200,7 @@ namespace CityWarWinApp
             foreach (Player p in Map.Game.GetPlayers())
             {
                 this.lbxOrder.Items.Add(p);
+                this.lbxScore.Items.Add(p.Score.ToString("0"));
                 int wizards, portals, cities, relics, units;
                 p.GetCounts(out wizards, out portals, out cities, out relics, out units);
                 this.lbxUnits.Items.Add("(" + units + ") " + p.GetArmyStrength().ToString("0"));
