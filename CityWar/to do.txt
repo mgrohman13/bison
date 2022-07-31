@@ -27,28 +27,21 @@ gameplay
 balance
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
-	no 8 pop percent
-	rename wind sprite?
-	now that we have fuel mechanic and dont need to balance around bombers/fighters, can drop the lengths of some len 3 attacks
-	hummer->humvee
-	elemental cost similiarities
-	human costs
 	unit abilities 
-		weaken
-		wraith/spirit (shield?)
-		slow heal ("degenerate"? wraith/spirit+?)
-		attack/unit types
-		other
-			trample
-			poison
-			decay
+		submerged - reduce dmg from G/A 
+		degenerate - slow heal (only with full move?)
+		wraith/spirit (replace high armor? shield before armor?)
+			rebalance all armor after? (increase?)
+		weapons			
+			trample - more dmg vs <hp
 			splash
-			psi
-			drain
-			zombify
-	consider differentiating underwater/surface
-		adds enough value for the complication?
-		just add submerged ability?
+			reduce
+				hit - poison
+				arm - decay? acid?
+				rgn - decay?
+				move - drain?
+				damage - weaken? ink?
+			psi? 
 	transport units?
 	better terrains
 		add new (e.g. hills, impassible)?
