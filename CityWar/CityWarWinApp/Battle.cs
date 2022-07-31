@@ -19,6 +19,7 @@ namespace CityWarWinApp
         private Unit _selected = null, mouseOver = null;
 
         private HashSet<Unit> hideUnits = new HashSet<Unit>();
+        private HashSet<Attack> hideAttacks = new HashSet<Attack>();
         private Dictionary<Unit, HashSet<Attack>> validAttacks = null;
         private Dictionary<Unit, int> totalCounts = null;
 
@@ -77,6 +78,24 @@ namespace CityWarWinApp
             lbDef.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
         }
 
+        public static void StartBattle(Map map, CityWar.Battle battle)
+        {
+            Battle f1 = new(map, battle);
+            f1.ShowDialog();
+            f1.Dispose();
+
+            while (Map.Game.EndBattle(battle))
+            {
+                Battle f2 = new(map, battle);
+                f2.StartRetaliation();
+                if (!f2.IsDisposed)
+                    f2.ShowDialog();
+                f2.Dispose();
+            }
+
+            Log.Flush();
+        }
+
         private void listBox_MouseWheel(object sender, MouseEventArgs e)
         {
             ListBox box = (ListBox)sender;
@@ -107,14 +126,14 @@ namespace CityWarWinApp
             Unit unit = (Unit)piece;
             MattUtil.EnumFlags<PiecesPanel.DrawFlags> result = new MattUtil.EnumFlags<PiecesPanel.DrawFlags>(PiecesPanel.DrawFlags.Text);
 
-            Attack retalliation = GetSelectedRetalliation();
+            Attack retaliation = GetSelectedRetaliation();
 
             if (attacker)
             {
                 if (selected == unit)
                     result.Add(PiecesPanel.DrawFlags.Frame);
 
-                if (retalliation != null && retalliation.CanAttack(unit))
+                if (retaliation != null && retaliation.CanAttack(unit))
                     result.Add(PiecesPanel.DrawFlags.Background);
 
                 bool unused = false;
@@ -128,7 +147,7 @@ namespace CityWarWinApp
             }
             else
             {
-                if (retalliation != null && retalliation.Owner == unit)
+                if (retaliation != null && retaliation.Owner == unit)
                     result.Add(PiecesPanel.DrawFlags.Frame);
 
                 Attack selectedAttack = GetSelectedAttack();
@@ -196,8 +215,10 @@ namespace CityWarWinApp
                 {
                     double killPct, avgRelic;
                     double avgDamage = attack.GetAverageDamage(newMoused, out killPct, out avgRelic);
+                    newMoused.GetCost(out double gc);
                     txtTarget.Text = newMoused.ToString();
                     txtArmor.Text = newMoused.Armor.ToString();
+                    txtGC.Text = gc.ToString("0.0");
                     txtTargDmg.Text = string.Format("{0}({1})", avgDamage.ToString("0.00"), attack.GetMinDamage(newMoused));
                     txtChance.Text = killPct.ToString("0") + "%";
                     txtRelic.Text = avgRelic.ToString("0.00");
@@ -213,6 +234,7 @@ namespace CityWarWinApp
             mouseOver = null;
             txtTarget.Clear();
             txtArmor.Clear();
+            txtGC.Clear();
             txtTargDmg.Clear();
             txtChance.Clear();
             txtRelic.Clear();
@@ -226,6 +248,9 @@ namespace CityWarWinApp
                 Attack attack = GetSelectedAttack();
                 if (clicked != null && attack != null && Map.CheckAircraft(attack.Owner, 1, 1))
                 {
+                    Unit prev = ((Attack)lbAttacks.SelectedItem).Owner;
+                    int idx = lbAtt.SelectedIndex;
+
                     int oldHits = clicked.Hits;
                     int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic);
                     if (damage > -1)
@@ -236,12 +261,7 @@ namespace CityWarWinApp
                     if (CheckUnits())
                         return;
 
-                    RefreshLBAtt();
-                    RefreshLBDef();
-                    RefreshSelected();
-                    panelAttackers.Invalidate();
-                    panelDefenders.Invalidate();
-                    main.RefreshResources();
+                    RefreshAll(prev, idx);
                 }
             }
             else if (e.Button == MouseButtons.Right && unitInfo != null)
@@ -256,17 +276,35 @@ namespace CityWarWinApp
             }
         }
 
-        private bool CheckUnits()
+        private void RefreshAll(Unit prev, int idx)
+        {
+            RefreshLBAtt();
+            RefreshLBDef();
+            RefreshSelected();
+            panelAttackers.Invalidate();
+            panelDefenders.Invalidate();
+            main.RefreshResources();
+
+            if (prev != ((Attack)lbAttacks.SelectedItem).Owner)
+            {
+                while (idx >= lbAtt.Items.Count)
+                    idx--;
+                if (idx > -1)
+                    lbAtt.SelectedIndex = idx;
+            }
+        }
+
+        private bool CheckUnits(bool doAttacks = false)
         {
             ClearTarget();
 
             Unit[] attackers = battle.GetAttackers();
             Unit[] defenders = battle.GetDefenders();
 
-            bool doAttacks = (validAttacks == null);
+            doAttacks |= (validAttacks == null);
             if (doAttacks)
                 validAttacks = new Dictionary<Unit, HashSet<Attack>>();
-            bool doCounts = (totalCounts == null);
+            bool doCounts = (doAttacks || totalCounts == null);
             if (doCounts)
                 totalCounts = new Dictionary<Unit, int>();
 
@@ -278,32 +316,33 @@ namespace CityWarWinApp
 
             foreach (Unit attacker in attackers)
                 foreach (Attack attAtt in attacker.Attacks)
-                {
-                    bool validAttack = false;
-                    foreach (Unit defender in defenders)
-                        if (attAtt.CanAttack(defender))
-                        {
-                            validAttack = true;
-                            if (!attAtt.Used)
+                    if (cbHidden.Checked || !hideAttacks.Contains(attAtt))
+                    {
+                        bool validAttack = false;
+                        foreach (Unit defender in defenders)
+                            if (attAtt.CanAttack(defender))
                             {
-                                anyHave = true;
-                                if (attacker == selected)
-                                    selectedHas = true;
-                                hideUnits.Remove(attacker);
-                                hideUnits.Remove(defender);
+                                validAttack = true;
+                                if (!attAtt.Used)
+                                {
+                                    anyHave = true;
+                                    if (attacker == selected)
+                                        selectedHas = true;
+                                    hideUnits.Remove(attacker);
+                                    hideUnits.Remove(defender);
+                                }
+                            }
+                        if (validAttack)
+                        {
+                            AddValidAttack(doAttacks, attacker, attAtt);
+                            if (doCounts)
+                            {
+                                int count;
+                                totalCounts.TryGetValue(attacker, out count);
+                                totalCounts[attacker] = count + 1;
                             }
                         }
-                    if (validAttack)
-                    {
-                        AddValidAttack(doAttacks, attacker, attAtt);
-                        if (doCounts)
-                        {
-                            int count;
-                            totalCounts.TryGetValue(attacker, out count);
-                            totalCounts[attacker] = count + 1;
-                        }
                     }
-                }
 
             if (!anyHave)
             {
@@ -322,7 +361,7 @@ namespace CityWarWinApp
                     foreach (Attack defAtt in defender.Attacks)
                         if (defAtt.CanAttack(attacker, minLength))
                         {
-                            if (battle.CanRetalliate)
+                            if (battle.CanRetaliate)
                             {
                                 hideUnits.Remove(attacker);
                                 hideUnits.Remove(defender);
@@ -378,32 +417,35 @@ namespace CityWarWinApp
                         return;
         }
 
+        private void StartRetaliation()
+        {
+            validAttacks = null;
+            totalCounts = null;
+            if (CheckUnits())
+                return;
+
+            cbAttAll.Checked = true;
+            RefreshLBAtt();
+            lbDef.ClearSelected();
+
+            lblCost.Visible = true;
+            txtCost.Visible = true;
+
+            cbAttAll.Visible = false;
+            cbDefAll.Visible = false;
+            lbDef.Visible = false;
+
+            btnHide.Visible = false;
+            cbHidden.Visible = false;
+
+            RefreshSelected();
+            panelAttackers.Invalidate();
+            panelDefenders.Invalidate();
+        }
+
         private void btnEnd_Click(object sender, EventArgs e)
         {
-            if (Map.Game.EndBattle(battle))
-            {
-                validAttacks = null;
-                totalCounts = null;
-                if (CheckUnits())
-                    return;
-
-                cbAttAll.Checked = true;
-                RefreshLBAtt();
-                lbDef.ClearSelected();
-
-                cbAttAll.Visible = false;
-                cbDefAll.Visible = false;
-                lbDef.Visible = false;
-
-                RefreshSelected();
-                panelAttackers.Invalidate();
-                panelDefenders.Invalidate();
-            }
-            else
-            {
-                Close();
-                Log.Flush();
-            }
+            Close();
         }
 
         private void lbAttacks_SelectedIndexChanged(object sender, EventArgs e)
@@ -411,10 +453,13 @@ namespace CityWarWinApp
             Attack attack = GetSelectedAttack();
             if (attack != null)
             {
+                lbAtt.SelectedItem = attack;
+
                 txtAP.Text = attack.Pierce.ToString();
                 txtDam.Text = attack.Damage.ToString();
                 txtTargets.Text = attack.GetTargetString();
                 txtLength.Text = attack.Length.ToString();
+                txtCost.Text = attack.RetaliateCost.ToString("0.0");
 
                 if (!cbDefAll.Checked)
                     RefreshLBDef();
@@ -446,6 +491,8 @@ namespace CityWarWinApp
             {
                 selected = attack.Owner;
                 lbAttacks.SelectedItem = attack;
+
+                btnHide.Text = hideAttacks.Contains(attack) ? "Show" : "Hide";
             }
         }
 
@@ -457,10 +504,10 @@ namespace CityWarWinApp
             Attack attack = GetSelectedAttack();
             if (attacker != null && attack != null)
                 foreach (Unit defender in battle.GetDefenders())
-                    ValidAttacks(defender, retalliation =>
+                    ValidAttacks(defender, retaliation =>
                     {
-                        if (cbDefAll.Checked || ShowAttack(retalliation, attacker, attack))
-                            showAttacks.Add(retalliation);
+                        if (cbDefAll.Checked || ShowAttack(retaliation, attacker, attack))
+                            showAttacks.Add(retaliation);
                     });
 
             SetItems(lbDef, showAttacks);
@@ -469,20 +516,20 @@ namespace CityWarWinApp
         {
             SortedSet<Attack> showAttacks = new SortedSet<Attack>(this);
 
-            Attack retalliation = GetSelectedRetalliation();
-            if (retalliation != null || cbAttAll.Checked)
+            Attack retaliation = GetSelectedRetaliation();
+            if (retaliation != null || cbAttAll.Checked)
                 foreach (Unit attacker in battle.GetAttackers())
                     ValidAttacks(attacker, attack =>
                     {
-                        if (!attack.Used && (cbAttAll.Checked || ShowAttack(retalliation, attacker, attack)))
+                        if (!attack.Used && (cbAttAll.Checked || ShowAttack(retaliation, attacker, attack)))
                             showAttacks.Add(attack);
                     });
 
             SetItems(lbAtt, showAttacks);
         }
-        private static bool ShowAttack(Attack retalliation, Unit attacker, Attack attack)
+        private static bool ShowAttack(Attack retaliation, Unit attacker, Attack attack)
         {
-            return (!retalliation.CanAttack(attacker) && retalliation.CanAttack(attacker, attack.Length));
+            return (!retaliation.CanAttack(attacker) && retaliation.CanAttack(attacker, attack.Length));
         }
         private static void SetItems(ListBox listBox, SortedSet<Attack> showAttacks)
         {
@@ -502,7 +549,7 @@ namespace CityWarWinApp
         {
             return lbAttacks.SelectedItem as Attack;
         }
-        private Attack GetSelectedRetalliation()
+        private Attack GetSelectedRetaliation()
         {
             return lbDef.SelectedItem as Attack;
         }
@@ -526,7 +573,7 @@ namespace CityWarWinApp
                             break;
                         }
                     unitInfo = new UnitInfo(clicked, panelAttackers.PointToScreen(e.Location),
-                            battle.CanRetalliate ? clicked.Movement - (used ? 1 : 0) : -1);
+                            battle.CanRetaliate ? clicked.Movement - (used ? 1 : 0) : -1);
                     unitInfo.Show();
                 }
             }
@@ -540,7 +587,7 @@ namespace CityWarWinApp
                 if (clicked != null)
                 {
                     unitInfo = new UnitInfo(clicked, panelDefenders.PointToScreen(e.Location),
-                            battle.CanRetalliate ? -1 : clicked.Movement - 1);
+                            battle.CanRetaliate ? -1 : clicked.Movement - 1);
                     unitInfo.Show();
                 }
             }
@@ -559,6 +606,8 @@ namespace CityWarWinApp
         private void Battle_Load(object sender, EventArgs e)
         {
             CheckUnits();
+            RefreshLBAtt();
+            lbAtt.SelectedIndex = 0;
         }
 
         private void btnLog_Click(object sender, EventArgs e)
@@ -568,7 +617,49 @@ namespace CityWarWinApp
 
         private void btnCalc_Click(object sender, EventArgs e)
         {
-            Calculator.ShowForm(this.battle);
+            Calculator.ShowForm(battle);
+        }
+
+        private void lb_MouseMove(object sender, MouseEventArgs e)
+        {
+            ListBox lb = (ListBox)sender;
+            Point point = lb.PointToClient(Cursor.Position);
+            int index = lb.IndexFromPoint(point);
+            if (index < 0) return;
+
+            //
+        }
+
+        private void lb_MouseLeave(object sender, EventArgs e)
+        {
+            // 
+        }
+
+        private void btnHide_Click(object sender, EventArgs e)
+        {
+            if (lbAttacks.SelectedItem is Attack attack)
+            {
+                Unit prev = ((Attack)lbAttacks.SelectedItem).Owner;
+                int idx = lbAtt.SelectedIndex;
+
+                if (!hideAttacks.Remove(attack))
+                    hideAttacks.Add(attack);
+                if (CheckUnits(true))
+                    return;
+
+                RefreshAll(prev, idx);
+            }
+        }
+
+        private void cbHidden_CheckedChanged(object sender, EventArgs e)
+        {
+            Unit prev = ((Attack)lbAttacks.SelectedItem).Owner;
+            int idx = lbAtt.SelectedIndex;
+
+            if (CheckUnits(true))
+                return;
+
+            RefreshAll(prev, idx);
         }
 
         #region IComparer<Attack> Members

@@ -9,7 +9,7 @@ namespace CityWarWinApp
 {
     class ChangeTracker
     {
-        Dictionary<Tile, int> relics = new();
+        private Dictionary<Tile, int> relics = new();
         internal void StartBattle()
         {
             relics = GetRelics();
@@ -31,12 +31,12 @@ namespace CityWarWinApp
             return Map.Game.GetPlayers().SelectMany(p => p.GetPieces()).OfType<Relic>().GroupBy(r => r.Tile).ToDictionary(g => g.Key, g => g.Count());
         }
 
-        Dictionary<Tile, Tileinfo> tileInfo = new();
+        private Dictionary<Tile, Tileinfo> tileInfo = new();
         private class Tileinfo
         {
-            Terrain terrain;
-            bool wizPts, cityTime;
-            HashSet<Piece> pieces;
+            private readonly Terrain terrain;
+            private readonly bool wizPts, cityTime;
+            private readonly HashSet<Piece> pieces;
             public Tileinfo(Tile tile)
             {
                 this.terrain = tile.Terrain;
@@ -75,7 +75,7 @@ namespace CityWarWinApp
             return r;
         }
 
-        HashSet<Tile> wizPts = new();
+        private HashSet<Tile> wizPts = new();
         internal void StartMove()
         {
             wizPts = GetWizPts();

@@ -528,23 +528,28 @@ namespace CityWar
         {
             get
             {
-                Attack[] attacks;
-                if (IsThree && this.attacks.Length < 3)
-                {
-                    attacks = new Attack[3];
-                    for (int a = 0; a < this.attacks.Length; ++a)
-                        attacks[a] = this.attacks[a];
-                    for (int b = this.attacks.Length; b < 3; ++b)
-                        attacks[b] = GetAttack(b);
-                }
-                else
-                {
-                    attacks = this.attacks;
-                }
-
-                return Balance.GetCost(Game.UnitTypes, Race, Type, IsThree, Abilities, shield, maxFuel,
-                        MaxHits, BaseArmor, MaxRegen, MaxMove, attacks, out _) / (double)(BaseTotalCost);
+                return GetCost(out _);
             }
+        }
+
+        public double GetCost(out double gc)
+        {
+            Attack[] attacks;
+            if (IsThree && this.attacks.Length < 3)
+            {
+                attacks = new Attack[3];
+                for (int a = 0; a < this.attacks.Length; ++a)
+                    attacks[a] = this.attacks[a];
+                for (int b = this.attacks.Length; b < 3; ++b)
+                    attacks[b] = GetAttack(b);
+            }
+            else
+            {
+                attacks = this.attacks;
+            }
+
+            return Balance.GetCost(Game.UnitTypes, Race, Type, IsThree, Abilities, shield, maxFuel,
+                    MaxHits, BaseArmor, MaxRegen, MaxMove, attacks, out gc) / (double)(BaseTotalCost);
         }
 
         public double regenPct
@@ -710,7 +715,7 @@ namespace CityWar
                     shield = 100 - shield;
             }
             if (IsAir())
-                maxFuel = RandStat(maxFuel, true);
+                maxFuel = RandStat(maxFuel, true, movement);
 
             this.armor = RandStat(this.armor, false);
             this.regen = RandStat(this.regen, true);
@@ -735,9 +740,10 @@ namespace CityWar
 
             this.randed = true;
         }
-        internal static int RandStat(double stat, bool keepPositive)
+        internal static int RandStat(double stat, bool keepPositive, int lowerCap = int.MinValue)
         {
-            int lowerCap = Game.Random.Round(stat * .65);
+            if (lowerCap == int.MinValue)
+                lowerCap = Game.Random.Round(stat * .65);
             if (keepPositive)
             {
                 if (lowerCap < 1)

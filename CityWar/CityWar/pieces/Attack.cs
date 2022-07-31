@@ -205,7 +205,7 @@ namespace CityWar
                 damage = hits;
             }
 
-            //attacking player gets work back for overkill, defender pays upkeep to retalliate
+            //attacking player gets work back for overkill, defender pays upkeep to retaliate
             if (owner.Owner == owner.Owner.Game.CurrentPlayer)
             {
                 double work = owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length;
@@ -213,7 +213,7 @@ namespace CityWar
             }
             else
             {
-                double upkeep = .39 * Player.GetUpkeep(owner) * (1 - overkill) / owner.Attacks.Length;
+                double upkeep = RetaliateCost * (1 - overkill);
                 owner.Owner.AddUpkeep(upkeep, .21);
             }
 
@@ -232,6 +232,14 @@ namespace CityWar
             unit.Wound(damage);
 
             return retVal;
+        }
+
+        public double RetaliateCost
+        {
+            get
+            {
+                return .39 * Player.GetUpkeep(owner) / owner.Attacks.Length;
+            }
         }
 
         internal void SetOwner(Unit unit)

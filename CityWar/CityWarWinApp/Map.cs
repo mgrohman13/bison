@@ -526,9 +526,14 @@ namespace CityWarWinApp
         {
             changedTiles = new();
         }
-        private void ShowChanges(IEnumerable<Tile> tiles)
+        private bool ShowChanges(IEnumerable<Tile> tiles)
         {
             changedTiles = tiles.ToHashSet();
+            // center on something that changed if anything
+            bool any = changedTiles.Any();
+            if (any)
+                CenterOn(Game.Random.SelectValue(changedTiles));
+            return any;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -834,7 +839,7 @@ namespace CityWarWinApp
                                 if (b != null)
                                 {
                                     changeTracker.StartBattle();
-                                    new Battle(this, b).ShowDialog();
+                                    Battle.StartBattle(this, b);
                                     ShowChanges(changeTracker.EndBattle());
                                 }
                                 else
@@ -1354,11 +1359,8 @@ namespace CityWarWinApp
             //clear OKed aircraft
             okToMove.Clear();
 
-            //center on something that changed if anything, otherwise the next player's center
-            ShowChanges(changeTracker.EndNextTurn());
-            if (changedTiles.Any())
-                CenterOn(Game.Random.SelectValue(changedTiles));
-            else
+            if (!ShowChanges(changeTracker.EndNextTurn()))
+                //if nothing changes, center on the next player
                 CenterOn(Game.CurrentPlayer.GetCenter());
         }
 

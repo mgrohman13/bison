@@ -22,14 +22,14 @@ namespace CityWar
             return retVal;
         }
 
-        internal bool canRetalliate = true;
+        internal bool canRetaliate = true;
         //private Dictionary<Unit, int>.KeyCollection keyCollection;
         //private HashSet<Unit> defenders_2;
-        public bool CanRetalliate
+        public bool CanRetaliate
         {
             get
             {
-                return canRetalliate;
+                return canRetaliate;
             }
         }
 
@@ -39,11 +39,11 @@ namespace CityWar
             this.defenders = new SortedSet<Unit>(defenders, this);
         }
 
-        internal void StartRetalliation()
+        internal void StartRetaliation()
         {
-            if (canRetalliate)
+            if (canRetaliate)
             {
-                canRetalliate = false;
+                canRetaliate = false;
                 SortedSet<Unit> temp = attackers;
                 attackers = defenders;
                 defenders = temp;

@@ -1,9 +1,10 @@
-in between games
-	"security" of public fields
-
-
+before next:
+	treasure
+	balance
+	abilities
+ 
 gameplay
-	collectable treasure
+	*collectable treasure
 		unit collect:
 			cityspots
 			magic/relic (+21/turn, few)
@@ -21,25 +22,17 @@ gameplay
 	teleporters
 		come up with way to be different from galwar wormholes
 	exp?
+	"security" of public fields
 
 balance
-	re-address unit comparison algorithms
-		left in strange half-aggregate state?
+	bonus to element units on terrain?
+	attack bonuses, not just armor?
 	no 8 pop percent
 	rename wind sprite?
 	now that we have fuel mechanic and dont need to balance around bombers/fighters, can drop the lengths of some len 3 attacks
 	hummer->humvee
 	elemental cost similiarities
 	human costs
-	aircraft
-		refuel mid turn?
-		regen undervalued?
-		engagers fuel min >= 4
-		better balance in GetAirMoveDiv?
-	leviathan regen
-	behemoth range
-	fort not too useful vs e.g. engagers
-		cheaper?
 	unit abilities 
 		weaken
 		wraith/spirit (shield?)
@@ -53,40 +46,33 @@ balance
 			psi
 			drain
 			zombify
-	bonus to element units on terrain?
-	attack bonuses, not just armor?
-	allow 1/3 heal to calc isthree
-		???
-	transport units?
 	consider differentiating underwater/surface
 		adds enough value for the complication?
 		just add submerged ability?
+	transport units?
 	better terrains
 		add new (e.g. hills, impassible)?
 		make forest more of an overlay
 		multiple on same tile?
 		what about elements?
 	separate out no attacks, no move, and 'all' to be used individualy
-		really will use? (carrier defend air??)
+		really will use? 
+		carrier defend air only??
 
 interface	
 	main map
-		better treasure (wiz/city spots) graphics 
-		show more map info - e.g. unit value?  capts?
+		*better treasure (wiz/city spots) graphics 
+		*show more map info - e.g. unit value?  capts?
 		graphic artifacts?	
 	info
-		show visible score gain avg since last gained relic  
+		*show visible score gain avg since last gained relic  
 	damage calculator
 		multiple attacks
-	battles
-		*show GC (maybe relative to selected/avail attacks)
-		*show retaliation upkeep cost
-		*can hide attacks you dont want to use
-		*always show selected attack in attackers lbx
-		*select next attack algorithm
-		*resize window
+	battles 
+		mouseover lbx functionality?
 		better visibility for avail attacks/retaliation
 		better visibility of diff hexes
+		graph?
 	ability to look around main map during a battle, see info screen, etc?
 		highlight participating tiles
 		any attempted action re-opens battle window
@@ -105,4 +91,3 @@ interface
 		aircraft "range" calc, 2-way and 1-way (also just with remianing?)	
 		form can close without exiting app
 		clean up balance build summon form
-	

@@ -300,7 +300,7 @@ namespace CityWar
                     foreach (Unit attacker in selected)
                         AddDefenders(defenders, enemy, attacker);
 
-                    //then collect defenders that can retalliate
+                    //then collect defenders that can retaliate
                     foreach (Unit attacker in selected)
                     {
                         //find the minimum length attack the attacker might use
@@ -308,7 +308,7 @@ namespace CityWar
                         foreach (Unit defender in defenders)
                             if (CanTarget(attacker, defender, out int minLength))
                                 length = Math.Min(length, minLength);
-                        //add defenders that can retalliate at that length
+                        //add defenders that can retaliate at that length
                         if (length != int.MaxValue)
                             AddDefenders(defenders, enemy, attacker, length);
                     }
@@ -347,7 +347,7 @@ namespace CityWar
         }
         private void AddDefenders(HashSet<Unit> defenders, Player enemy, Unit attacker, int length = int.MaxValue, Dictionary<Unit, int> attackers = null)
         {
-            //find all adjacent defenders that can either retalliate against or be targeted by this attacker
+            //find all adjacent defenders that can either retaliate against or be targeted by this attacker
             foreach (Unit defender in FindNeighborUnits(attacker.Tile, defender =>
                     defender.Owner == enemy && (CanTarget(defender, attacker, length) || CanTarget(attacker, defender)) && !defenders.Contains(defender)))
             {
@@ -383,11 +383,11 @@ namespace CityWar
 
         public bool EndBattle(Battle b)
         {
-            if (b.canRetalliate)
+            if (b.canRetaliate)
             {
-                b.StartRetalliation();
+                b.StartRetaliation();
 
-                //consider the battle over if no one can retalliate
+                //consider the battle over if no one can retaliate
                 if (b.attackers.Count > 0)
                     return true;
             }
