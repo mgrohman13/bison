@@ -152,9 +152,7 @@ namespace CityWar
 
         private static double GetAirMoveDiv(double move, int fuel)
         {
-            move += .91;
-            double val = move / (move + fuel);
-            return 1 + 5.2 * val;
+            return 1 + 10.4 * (move + 1) / (move + 1 + Math.Pow(fuel, 1.69) / 2);
         }
 
         private static double CaulculateCost(UnitTypes unitTypes, string race, UnitType type, double costMult, double weaponDiv, double unitType, double health, double armor, double regeneration, double movement, int baseRegen, int maxMove,
@@ -233,7 +231,7 @@ namespace CityWar
                 result = unitTypes.GetAverageDamage(race, targets, damage, divide);
                 //length
                 double pct = unitTypes.GetLengthPct(race, type, length);
-                result *= Math.Pow(move * (air ? GetAirMoveDiv(move, fuel) : 1) + unitTypes.GetAverageMove(), pct)
+                result *= Math.Pow(move * (air ? Math.Sqrt(GetAirMoveDiv(move, fuel)) : 1) + unitTypes.GetAverageMove(), pct)
                     / Math.Pow(unitTypes.GetAverageMove(), pct);
                 //target
                 double count = targets == null ? unitTypes.GetAverageTargets() : targets.Count;
