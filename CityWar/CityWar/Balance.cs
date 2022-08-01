@@ -20,6 +20,8 @@ namespace CityWar
                 throw new Exception();
             if (abilities.Contains(Ability.Shield) ? shield <= 0 || shield >= 100 : shield != 0)
                 throw new Exception();
+            if (abilities.Contains(Ability.Shield) && abilities.Contains(Ability.Submerged))
+                throw new Exception();
             if (type == UnitType.Immobile ? maxMove > 0 || air || attacks.Length > 0 || isThree
                     : maxMove < 1 || attacks.Length < 1)
                 throw new Exception();
@@ -115,8 +117,8 @@ namespace CityWar
                 case UnitType.Amphibious:
                     //extra typeVal for ability to switch between ground and water targeted
                     typeVal = 1.1;
-                    //compared to ground, +1 armor in water (for no move cost) vs. -1; considered a wash when average is +1.3
-                    terrArm = 1.3;
+                    //compared to ground, +1 armor in water (for no move cost) vs. -1 
+                    terrArm = 1.2;
                     cityArm = 1.0;
                     movMult = 0.8;
                     break;
@@ -165,15 +167,15 @@ namespace CityWar
             bool air = abilities.Contains(Ability.Aircraft);
 
             //hits
-            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield);
+            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield, abilities);
             double hitWorth = HitWorth(health, avgDmg);
 
             //damage
             double weapon1, weapon2, weapon3;
             if (immobile)
             {
-                // 9.0 =immobile cost
-                weapon1 = 9.0;
+                // 7.8 =immobile cost
+                weapon1 = 7.8;
                 weapon2 = 0;
                 weapon3 = 0;
             }
@@ -218,7 +220,7 @@ namespace CityWar
             return health / avgDmg;
         }
 
-        public static double Weapon(UnitTypes unitTypes, string race, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, int fuel, bool isThree, int num)
+        public static double Weapon(UnitTypes unitTypes, string race, UnitType type, EnumFlags<TargetType> targets, double damage, double divide, double length, double move, bool air, int fuel, bool isThree, int num)
         {
             return Weapon(unitTypes, race, type, targets, damage, divide, length, move, GetWeaponDiv(unitTypes), air, fuel, isThree, num);
         }
@@ -228,7 +230,7 @@ namespace CityWar
             if (damage > 0)
             {
                 //damage
-                result = unitTypes.GetAverageDamage(race, targets, damage, divide);
+                result = unitTypes.GetAverageDamage(race, type, targets, damage, divide);
                 //length
                 double pct = unitTypes.GetLengthPct(race, type, length);
                 result *= Math.Pow(move * (air ? Math.Sqrt(GetAirMoveDiv(move, fuel)) : 1) + unitTypes.GetAverageMove(), pct)

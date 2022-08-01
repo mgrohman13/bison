@@ -229,5 +229,6 @@ namespace CityWar
         Aircraft = 0x2,
         Shield = 0x4,
         Regen = 0x8,
+        Submerged = 0x10,
     }
 }

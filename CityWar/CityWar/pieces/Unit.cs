@@ -234,6 +234,16 @@ namespace CityWar
             }
         }
 
+        public static int GetTotalDamageShield(Unit attacker, Unit defender)
+        {
+            bool submerge = IsSubmerged(attacker.Type, defender.abilities) && defender.Tile.Terrain == Terrain.Water;
+            return submerge ? 50 : defender.Shield;
+        }
+        public static bool IsSubmerged(UnitType attackerType, EnumFlags<Ability> defenderAbilities)
+        {
+            return defenderAbilities.Contains(Ability.Submerged) && (attackerType == UnitType.Air || attackerType == UnitType.Ground);
+        }
+
         public double GetDisbandAmount()
         {
             double healthPct = GetHealthPct();

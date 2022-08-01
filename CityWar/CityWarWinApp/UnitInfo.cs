@@ -110,6 +110,9 @@ namespace CityWarWinApp
                         case Ability.Regen:
                             this.txtSpecial.Text += "Regenerates";
                             break;
+                        case Ability.Submerged:
+                            this.txtSpecial.Text += "Submerge";
+                            break;
                         default:
                             throw new Exception();
                     }

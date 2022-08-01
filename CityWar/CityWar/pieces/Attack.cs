@@ -131,7 +131,7 @@ namespace CityWar
 
         public int GetMinDamage(Unit target)
         {
-            return GetMinDamage(damage, Pierce, target.Armor, target.Shield);
+            return GetMinDamage(damage, Pierce, target.Armor, Unit.GetTotalDamageShield(Owner, target));
         }
         public static int GetMinDamage(double damage, double divide, double armor, int shield)
         {
@@ -141,7 +141,7 @@ namespace CityWar
 
         public double GetAverageDamage(Unit enemy, out double killPct, out double avgRelic)
         {
-            double averageDamage = DamageThrows(damage, Pierce, enemy.Armor, enemy.Shield, enemy.hits, out killPct, out avgRelic, true);
+            double averageDamage = DamageThrows(damage, Pierce, enemy.Armor, Unit.GetTotalDamageShield(Owner, enemy), enemy.hits, out killPct, out avgRelic, true);
             killPct *= 100;
             avgRelic *= enemy.RandedCost / RelicDivide / enemy.MaxHits;
             return averageDamage;
@@ -193,7 +193,7 @@ namespace CityWar
             owner.Attacked(unit.Type == UnitType.Immobile ? int.MaxValue : Length);
 
             int hits = unit.Hits, armor = unit.Armor;
-            int damage = DoDamage(armor, unit.Shield), retVal = damage;
+            int damage = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit)), retVal = damage;
             double overkill = 0;
             if (damage < 0)
             {
@@ -217,7 +217,7 @@ namespace CityWar
                 owner.Owner.AddUpkeep(upkeep, .21);
             }
 
-            relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, unit.Shield, hits) - damage) / RelicDivide / unit.MaxHits;
+            relicValue = (GetAverageDamage(this.damage, this.Pierce, armor, Unit.GetTotalDamageShield(Owner, unit), hits) - damage) / RelicDivide / unit.MaxHits;
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;

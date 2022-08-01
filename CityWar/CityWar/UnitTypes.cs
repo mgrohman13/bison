@@ -109,28 +109,37 @@ namespace CityWar
             });
             return damage / count;
         }
-        public double GetAverageDamage(string race, UnitType? type, double armor, int shield)
+
+        public double GetAverageDamage(string race, UnitType type, double armor, int shield, EnumFlags<Ability> abilities)
         {
             double damage = 0, count = 0;
             CheckAttacks(race, type, (weight, attack) =>
             {
+                if (!abilities.Contains(Ability.Shield))
+                    shield = GetSubmergedShield(GetType(attack.UnitRow.Type), type, abilities);
                 damage += weight * Attack.GetAverageDamage(attack.Damage, attack.Divide_By, armor, shield, int.MaxValue);
                 count += weight;
             });
             return damage / count;
         }
-
-        public double GetAverageDamage(string race, EnumFlags<TargetType> targets, double damage, double divide)
+        public double GetAverageDamage(string race, UnitType? type, EnumFlags<TargetType> targets, double damage, double divide)
         {
             double tot = 0, count = 0;
             CheckUnits(race, targets, (weight, unit) =>
             {
+                int submerge = type.HasValue ? GetSubmergedShield(type.Value, GetType(unit.Type), Unit.GetAbilities(unit, out _, out _)) : 0;
                 double addArmor;
                 Balance.GetValues(GetType(unit.Type), out _, out addArmor, out _);
-                tot += weight * Attack.GetAverageDamage(damage, divide, unit.Armor + addArmor, 0, int.MaxValue);
+                tot += weight * Attack.GetAverageDamage(damage, divide, unit.Armor + addArmor, submerge, int.MaxValue);
                 count += weight;
             });
             return tot / count;
+        }
+        private int GetSubmergedShield(UnitType attackerType, UnitType defenderType, EnumFlags<Ability> defenderAbilities)
+        {
+            if (Unit.IsSubmerged(attackerType, defenderAbilities))
+                return (defenderType == UnitType.Amphibious ? 15 : 45);
+            return 0;
         }
 
         internal double GetAverageRegen()

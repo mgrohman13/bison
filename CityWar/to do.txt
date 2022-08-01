@@ -1,14 +1,17 @@
 before next:
 	treasure
-	balance
-	abilities
+	weapon abilities
  
 gameplay
 	*collectable treasure
+		limit to one treasure per tile
 		unit collect:
 			cityspots
 			magic/relic (+21/turn, few)
-			units (takes turns?  gives prod? like cityspot/)
+				magic count down to elem unit?
+			units
+				if magic count down to elem, only to prod unit?
+				takes turns? gives prod (if not separate for elem, give random resource)
 		wiz collect:
 			wizpts 
 		winning player leave behind:
@@ -28,19 +31,17 @@ balance
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	unit abilities 
-		submerged - reduce dmg from G/A 
 		degenerate - slow heal (only with full move?)
 		wraith/spirit (replace high armor? shield before armor?)
 			rebalance all armor after? (increase?)
-		weapons			
+		*weapons			
 			trample - more dmg vs <hp
 			splash
 			reduce
 				hit - poison
-				arm - decay? acid?
-				rgn - decay?
-				move - drain?
-				damage - weaken? ink?
+				arm - acid
+				rgn - decay 
+				damage - weaken
 			psi? 
 	transport units?
 	better terrains

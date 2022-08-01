@@ -85,6 +85,8 @@ namespace UnitBalance
                 fuel = int.MaxValue;
             if (input[++i].Length > 0)
                 abilities.Add(Ability.AircraftCarrier);
+            if (input[++i].Length > 0)
+                abilities.Add(Ability.Submerged);
             int.TryParse(input[++i].Replace("%", ""), out shield);
             if (shield > 0)
                 abilities.Add(Ability.Shield);
@@ -104,112 +106,112 @@ namespace UnitBalance
 
         private void doCalc()
         {
-            try
+            //try
+            //{
+            UnitType type = UnitTypes.GetType(this.txtType.Text);
+
+            int hits = int.Parse(this.txtHits.Text);
+            int armor = int.Parse(this.txtArmor.Text);
+            int regen = int.Parse(this.txtRegen.Text);
+            int move = int.Parse(this.txtMove.Text);
+
+            int attacks = 0;
+
+            int length1 = 0;
+            int damage1 = 0;
+            int divide1 = 1;
+            if (!(this.txtType1.Text == "-" || this.txtType1.Text == ""))
             {
-                UnitType type = UnitTypes.GetType(this.txtType.Text);
-
-                int hits = int.Parse(this.txtHits.Text);
-                int armor = int.Parse(this.txtArmor.Text);
-                int regen = int.Parse(this.txtRegen.Text);
-                int move = int.Parse(this.txtMove.Text);
-
-                int attacks = 0;
-
-                int length1 = 0;
-                int damage1 = 0;
-                int divide1 = 1;
-                if (!(this.txtType1.Text == "-" || this.txtType1.Text == ""))
-                {
-                    length1 = int.Parse(this.txtLength1.Text);
-                    damage1 = int.Parse(this.txtNumber1.Text);
-                    divide1 = int.Parse(this.txtDivide1.Text);
-                    ++attacks;
-                }
-
-                int length2 = 0;
-                int damage2 = 0;
-                int divide2 = 1;
-                if (!(this.txtType2.Text == "-" || this.txtType2.Text == ""))
-                {
-                    length2 = int.Parse(this.txtLength2.Text);
-                    damage2 = int.Parse(this.txtNumber2.Text);
-                    divide2 = int.Parse(this.txtDivide2.Text);
-                    ++attacks;
-                }
-
-                int length3 = 0;
-                int damage3 = 0;
-                int divide3 = 1;
-                if (!(this.txtType3.Text == "-" || this.txtType3.Text == ""))
-                {
-                    length3 = int.Parse(this.txtLength3.Text);
-                    damage3 = int.Parse(this.txtNumber3.Text);
-                    divide3 = int.Parse(this.txtDivide3.Text);
-                    ++attacks;
-                }
-
-                bool air = abilities.Contains(Ability.Aircraft);
-
-                Attack[] Attacks = new Attack[attacks];
-                if (damage1 > 0)
-                    Attacks[0] = CreateAttack(this.txtType1.Text, length1, damage1, divide1);
-                if (damage2 > 0)
-                    Attacks[1] = CreateAttack(this.txtType2.Text, length2, damage2, divide2);
-                if (damage3 > 0)
-                    Attacks[2] = CreateAttack(this.txtType3.Text, length3, damage3, divide3);
-
-                //calculated values
-                this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
-                UnitType unitType = UnitTypes.GetType(this.txtType.Text);
-                this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor, shield, regen, abilities, air, move);
-                this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
-                double weaponMove = Balance.GetMove(unitType, move, air, fuel);
-                bool isThree = this.txtName.Text.Contains("*");
-                ShowWeaponValue(this.txtDamage1, this.txtType1, unitType, Attacks, damage1, divide1, length1, move, air, isThree, 1);
-                ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks, damage2, divide2, length2, weaponMove, air, isThree, 2);
-                ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks, damage3, divide3, length3, weaponMove, air, isThree, 3);
-
-                double cost = Balance.GetCost(unitTypes, race, type, this.txtName.Text.Contains("*"), abilities, shield, fuel, hits, armor, regen, move, Attacks, out gc);
-
-                double ActCost = Math.Round(cost);
-
-                this.txtPpl.Clear();
-                //check that the rounding is within an acceptable percent error
-                double invPctErr = ActCost / Math.Abs(cost - ActCost);
-                this.txtPctError.Text = invPctErr.ToString("0");
-                //if (invPctErr > Units.minError || units.rebalanceAll)
-                //{
-                double pplPercent = double.Parse(this.txtPplPercent.Text);
-                int ppl = (int)Math.Round(pplPercent / 10 * ActCost);
-                int other = (int)Math.Round((10 - pplPercent) / 10 * ActCost);
-
-                while (ppl + other > ActCost)
-                    --other;
-                while (ppl + other < ActCost)
-                    ++other;
-
-                this.txtOutput.Text = getOutput(ppl, other);
-                this.txtCost.Text = other.ToString();
-                this.txtPpl.Text = ppl.ToString();
-
-                this.btnSave.Visible = true;
-                //}
-                //else
-                //{
-                //    this.txtCost.Text = cost.ToString("0.0");
-                //    this.txtCost.Text = cost.ToString();
-                //    this.btnSave.Visible = false;
-
-                //    this.txtOutput.Clear();
-                //}
-
-                //if (units.rebalanceAll)
-                //    this.btnSave_Click(null, null);
+                length1 = int.Parse(this.txtLength1.Text);
+                damage1 = int.Parse(this.txtNumber1.Text);
+                divide1 = int.Parse(this.txtDivide1.Text);
+                ++attacks;
             }
-            catch (Exception exception)
+
+            int length2 = 0;
+            int damage2 = 0;
+            int divide2 = 1;
+            if (!(this.txtType2.Text == "-" || this.txtType2.Text == ""))
             {
-                this.txtOutput.Text = exception.StackTrace;
+                length2 = int.Parse(this.txtLength2.Text);
+                damage2 = int.Parse(this.txtNumber2.Text);
+                divide2 = int.Parse(this.txtDivide2.Text);
+                ++attacks;
             }
+
+            int length3 = 0;
+            int damage3 = 0;
+            int divide3 = 1;
+            if (!(this.txtType3.Text == "-" || this.txtType3.Text == ""))
+            {
+                length3 = int.Parse(this.txtLength3.Text);
+                damage3 = int.Parse(this.txtNumber3.Text);
+                divide3 = int.Parse(this.txtDivide3.Text);
+                ++attacks;
+            }
+
+            bool air = abilities.Contains(Ability.Aircraft);
+
+            Attack[] Attacks = new Attack[attacks];
+            if (damage1 > 0)
+                Attacks[0] = CreateAttack(this.txtType1.Text, length1, damage1, divide1);
+            if (damage2 > 0)
+                Attacks[1] = CreateAttack(this.txtType2.Text, length2, damage2, divide2);
+            if (damage3 > 0)
+                Attacks[2] = CreateAttack(this.txtType3.Text, length3, damage3, divide3);
+
+            //calculated values
+            this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
+            UnitType unitType = UnitTypes.GetType(this.txtType.Text);
+            this.txtHitWorth.Tag = HitWorth(race, unitType, hits, armor, shield, regen, abilities, air, move);
+            this.txtHitWorth.Text = ((double)this.txtHitWorth.Tag).ToString("0.0");
+            double weaponMove = Balance.GetMove(unitType, move, air, fuel);
+            bool isThree = this.txtName.Text.Contains("*");
+            ShowWeaponValue(this.txtDamage1, this.txtType1, unitType, Attacks, damage1, divide1, length1, move, air, isThree, 1);
+            ShowWeaponValue(this.txtDamage2, this.txtType2, unitType, Attacks, damage2, divide2, length2, weaponMove, air, isThree, 2);
+            ShowWeaponValue(this.txtDamage3, this.txtType3, unitType, Attacks, damage3, divide3, length3, weaponMove, air, isThree, 3);
+
+            double cost = Balance.GetCost(unitTypes, race, type, this.txtName.Text.Contains("*"), abilities, shield, fuel, hits, armor, regen, move, Attacks, out gc);
+
+            double ActCost = Math.Round(cost);
+
+            this.txtPpl.Clear();
+            //check that the rounding is within an acceptable percent error
+            double invPctErr = ActCost / Math.Abs(cost - ActCost);
+            this.txtPctError.Text = invPctErr.ToString("0");
+            //if (invPctErr > Units.minError || units.rebalanceAll)
+            //{
+            double pplPercent = double.Parse(this.txtPplPercent.Text);
+            int ppl = (int)Math.Round(pplPercent / 10 * ActCost);
+            int other = (int)Math.Round((10 - pplPercent) / 10 * ActCost);
+
+            while (ppl + other > ActCost)
+                --other;
+            while (ppl + other < ActCost)
+                ++other;
+
+            this.txtOutput.Text = getOutput(ppl, other);
+            this.txtCost.Text = other.ToString();
+            this.txtPpl.Text = ppl.ToString();
+
+            this.btnSave.Visible = true;
+            //}
+            //else
+            //{
+            //    this.txtCost.Text = cost.ToString("0.0");
+            //    this.txtCost.Text = cost.ToString();
+            //    this.btnSave.Visible = false;
+
+            //    this.txtOutput.Clear();
+            //}
+
+            //if (units.rebalanceAll)
+            //    this.btnSave_Click(null, null);
+            //}
+            //catch (Exception exception)
+            //{
+            //    this.txtOutput.Text = exception.StackTrace;
+            //}
         }
 
         private static double HitWorth(string race, UnitType type, int health, double armor, int shield, double regeneration, EnumFlags<Ability> abilities, bool air, double move)
@@ -218,7 +220,7 @@ namespace UnitBalance
             armor = Balance.GetArmor(type, armor);
             //double hitDiv = Balance.HitWorth(1, Attack.GetAverageDamage(unitTypes.GetAverageDamage(), unitTypes.GetAverageAP(), unitTypes.GetAverageArmor(), 0, int.MaxValue));
             //double  Balance.HitWorth(unitTypes, race, unitType, hits, hitArmor, shield) / hitDiv;
-            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield);
+            double avgDmg = unitTypes.GetAverageDamage(race, type, armor, shield, abilities);
             return Balance.HitWorth(unitTypes, Balance.HitWorth(health, avgDmg), regeneration, avgDmg);
         }
 
@@ -362,6 +364,7 @@ namespace UnitBalance
 
                 output.Append((abilities.Contains(Ability.Aircraft) ? fuel.ToString() : "' ") + "\t");
                 output.Append((abilities.Contains(Ability.AircraftCarrier) ? "X" : "' ") + "\t");
+                output.Append((abilities.Contains(Ability.Submerged) ? "X" : "' ") + "\t");
                 output.Append((abilities.Contains(Ability.Shield) ? (shield / 100.0).ToString() : "' ") + "\t");
                 output.Append((abilities.Contains(Ability.Regen) ? "X" : "' ") + "\t");
                 output.Append(attacknames[0] + "\t");
