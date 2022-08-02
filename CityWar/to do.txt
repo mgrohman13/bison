@@ -1,6 +1,3 @@
-before next:
-	weapon abilities
- 
 gameplay
 	allow gamble move to use in between 1-full move
 	group move from different hexes
@@ -16,9 +13,8 @@ balance
 		degenerate - slow heal (only with full move?)
 		wraith/spirit (replace high armor? shield before armor?)
 			rebalance all armor after? (increase?)
-		*weapons			
+		weapons
 			trample - more dmg vs <hp
-			splash
 			reduce
 				hit - poison
 				arm - acid
@@ -42,6 +38,7 @@ interface
 	damage calculator
 		multiple attacks
 	battles 
+		splash damage feedback
 		mouseover lbx functionality?
 		better visibility for avail attacks/retaliation
 		better visibility of diff hexes
@@ -49,7 +46,6 @@ interface
 	ability to look around main map during a battle, see info screen, etc?
 		highlight participating tiles
 		any attempted action re-opens battle window
-		instantly show earned relics?
 		save during battle?			
 	pathfinding
 		clear path

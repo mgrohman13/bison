@@ -62,6 +62,8 @@ namespace CityWarWinApp
             this.txtCost = new System.Windows.Forms.TextBox();
             this.panelDefenders = new CityWarWinApp.PiecesPanel();
             this.panelAttackers = new CityWarWinApp.PiecesPanel();
+            this.txtSpecial = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lbAttacks
@@ -73,7 +75,7 @@ namespace CityWarWinApp
             this.lbAttacks.ItemHeight = 16;
             this.lbAttacks.Location = new System.Drawing.Point(261, 12);
             this.lbAttacks.Name = "lbAttacks";
-            this.lbAttacks.Size = new System.Drawing.Size(178, 52);
+            this.lbAttacks.Size = new System.Drawing.Size(178, 36);
             this.lbAttacks.TabIndex = 1;
             this.lbAttacks.SelectedIndexChanged += new System.EventHandler(this.lbAttacks_SelectedIndexChanged);
             // 
@@ -98,7 +100,7 @@ namespace CityWarWinApp
             this.label1.BackColor = System.Drawing.Color.Black;
             this.label1.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.Silver;
-            this.label1.Location = new System.Drawing.Point(400, 67);
+            this.label1.Location = new System.Drawing.Point(392, 67);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(54, 18);
             this.label1.TabIndex = 3;
@@ -111,7 +113,7 @@ namespace CityWarWinApp
             this.label2.BackColor = System.Drawing.Color.Black;
             this.label2.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.Silver;
-            this.label2.Location = new System.Drawing.Point(329, 67);
+            this.label2.Location = new System.Drawing.Point(323, 67);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(65, 18);
             this.label2.TabIndex = 4;
@@ -123,7 +125,7 @@ namespace CityWarWinApp
             this.txtDam.BackColor = System.Drawing.Color.Silver;
             this.txtDam.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtDam.ForeColor = System.Drawing.Color.Black;
-            this.txtDam.Location = new System.Drawing.Point(329, 88);
+            this.txtDam.Location = new System.Drawing.Point(326, 88);
             this.txtDam.Name = "txtDam";
             this.txtDam.ReadOnly = true;
             this.txtDam.Size = new System.Drawing.Size(65, 22);
@@ -135,7 +137,7 @@ namespace CityWarWinApp
             this.txtAP.BackColor = System.Drawing.Color.Silver;
             this.txtAP.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtAP.ForeColor = System.Drawing.Color.Black;
-            this.txtAP.Location = new System.Drawing.Point(400, 88);
+            this.txtAP.Location = new System.Drawing.Point(395, 88);
             this.txtAP.Name = "txtAP";
             this.txtAP.ReadOnly = true;
             this.txtAP.Size = new System.Drawing.Size(54, 22);
@@ -148,7 +150,7 @@ namespace CityWarWinApp
             this.label3.BackColor = System.Drawing.Color.Black;
             this.label3.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.Silver;
-            this.label3.Location = new System.Drawing.Point(261, 113);
+            this.label3.Location = new System.Drawing.Point(258, 113);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(87, 18);
             this.label3.TabIndex = 7;
@@ -161,7 +163,7 @@ namespace CityWarWinApp
             this.label4.BackColor = System.Drawing.Color.Black;
             this.label4.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.Silver;
-            this.label4.Location = new System.Drawing.Point(354, 113);
+            this.label4.Location = new System.Drawing.Point(347, 113);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(50, 18);
             this.label4.TabIndex = 8;
@@ -174,7 +176,7 @@ namespace CityWarWinApp
             this.label5.BackColor = System.Drawing.Color.Black;
             this.label5.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.ForeColor = System.Drawing.Color.Silver;
-            this.label5.Location = new System.Drawing.Point(450, 113);
+            this.label5.Location = new System.Drawing.Point(439, 113);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(65, 18);
             this.label5.TabIndex = 9;
@@ -186,7 +188,7 @@ namespace CityWarWinApp
             this.txtTargDmg.BackColor = System.Drawing.Color.Silver;
             this.txtTargDmg.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTargDmg.ForeColor = System.Drawing.Color.Black;
-            this.txtTargDmg.Location = new System.Drawing.Point(450, 134);
+            this.txtTargDmg.Location = new System.Drawing.Point(443, 134);
             this.txtTargDmg.Name = "txtTargDmg";
             this.txtTargDmg.ReadOnly = true;
             this.txtTargDmg.Size = new System.Drawing.Size(65, 22);
@@ -198,7 +200,7 @@ namespace CityWarWinApp
             this.txtArmor.BackColor = System.Drawing.Color.Silver;
             this.txtArmor.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtArmor.ForeColor = System.Drawing.Color.Black;
-            this.txtArmor.Location = new System.Drawing.Point(354, 134);
+            this.txtArmor.Location = new System.Drawing.Point(351, 134);
             this.txtArmor.Name = "txtArmor";
             this.txtArmor.ReadOnly = true;
             this.txtArmor.Size = new System.Drawing.Size(50, 22);
@@ -210,7 +212,7 @@ namespace CityWarWinApp
             this.txtTarget.BackColor = System.Drawing.Color.Silver;
             this.txtTarget.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTarget.ForeColor = System.Drawing.Color.Black;
-            this.txtTarget.Location = new System.Drawing.Point(261, 134);
+            this.txtTarget.Location = new System.Drawing.Point(260, 134);
             this.txtTarget.Name = "txtTarget";
             this.txtTarget.ReadOnly = true;
             this.txtTarget.Size = new System.Drawing.Size(87, 22);
@@ -223,7 +225,7 @@ namespace CityWarWinApp
             this.label6.BackColor = System.Drawing.Color.Black;
             this.label6.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.Silver;
-            this.label6.Location = new System.Drawing.Point(261, 67);
+            this.label6.Location = new System.Drawing.Point(257, 67);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(62, 18);
             this.label6.TabIndex = 13;
@@ -235,7 +237,7 @@ namespace CityWarWinApp
             this.txtTargets.BackColor = System.Drawing.Color.Silver;
             this.txtTargets.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtTargets.ForeColor = System.Drawing.Color.Black;
-            this.txtTargets.Location = new System.Drawing.Point(261, 88);
+            this.txtTargets.Location = new System.Drawing.Point(260, 88);
             this.txtTargets.Name = "txtTargets";
             this.txtTargets.ReadOnly = true;
             this.txtTargets.Size = new System.Drawing.Size(62, 22);
@@ -247,7 +249,7 @@ namespace CityWarWinApp
             this.txtLength.BackColor = System.Drawing.Color.Silver;
             this.txtLength.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtLength.ForeColor = System.Drawing.Color.Black;
-            this.txtLength.Location = new System.Drawing.Point(460, 88);
+            this.txtLength.Location = new System.Drawing.Point(453, 88);
             this.txtLength.Name = "txtLength";
             this.txtLength.ReadOnly = true;
             this.txtLength.Size = new System.Drawing.Size(58, 22);
@@ -260,7 +262,7 @@ namespace CityWarWinApp
             this.label7.BackColor = System.Drawing.Color.Black;
             this.label7.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.ForeColor = System.Drawing.Color.Silver;
-            this.label7.Location = new System.Drawing.Point(460, 67);
+            this.label7.Location = new System.Drawing.Point(450, 67);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(58, 18);
             this.label7.TabIndex = 16;
@@ -272,7 +274,7 @@ namespace CityWarWinApp
             this.txtChance.BackColor = System.Drawing.Color.Silver;
             this.txtChance.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtChance.ForeColor = System.Drawing.Color.Black;
-            this.txtChance.Location = new System.Drawing.Point(521, 134);
+            this.txtChance.Location = new System.Drawing.Point(512, 134);
             this.txtChance.Name = "txtChance";
             this.txtChance.ReadOnly = true;
             this.txtChance.Size = new System.Drawing.Size(31, 22);
@@ -285,7 +287,7 @@ namespace CityWarWinApp
             this.label8.BackColor = System.Drawing.Color.Black;
             this.label8.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label8.ForeColor = System.Drawing.Color.Silver;
-            this.label8.Location = new System.Drawing.Point(521, 113);
+            this.label8.Location = new System.Drawing.Point(509, 113);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(31, 18);
             this.label8.TabIndex = 18;
@@ -297,7 +299,7 @@ namespace CityWarWinApp
             this.txtRelic.BackColor = System.Drawing.Color.Silver;
             this.txtRelic.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtRelic.ForeColor = System.Drawing.Color.Black;
-            this.txtRelic.Location = new System.Drawing.Point(558, 134);
+            this.txtRelic.Location = new System.Drawing.Point(546, 134);
             this.txtRelic.Name = "txtRelic";
             this.txtRelic.ReadOnly = true;
             this.txtRelic.Size = new System.Drawing.Size(50, 22);
@@ -310,7 +312,7 @@ namespace CityWarWinApp
             this.label9.BackColor = System.Drawing.Color.Black;
             this.label9.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.ForeColor = System.Drawing.Color.Silver;
-            this.label9.Location = new System.Drawing.Point(558, 113);
+            this.label9.Location = new System.Drawing.Point(543, 113);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(50, 18);
             this.label9.TabIndex = 20;
@@ -358,7 +360,7 @@ namespace CityWarWinApp
             this.lbAtt.ItemHeight = 16;
             this.lbAtt.Location = new System.Drawing.Point(261, 162);
             this.lbAtt.Name = "lbAtt";
-            this.lbAtt.Size = new System.Drawing.Size(178, 308);
+            this.lbAtt.Size = new System.Drawing.Size(178, 292);
             this.lbAtt.TabIndex = 33;
             this.lbAtt.SelectedIndexChanged += new System.EventHandler(this.lbAtt_SelectedIndexChanged);
             this.lbAtt.MouseLeave += new System.EventHandler(this.lb_MouseLeave);
@@ -375,7 +377,7 @@ namespace CityWarWinApp
             this.lbDef.ItemHeight = 16;
             this.lbDef.Location = new System.Drawing.Point(445, 162);
             this.lbDef.Name = "lbDef";
-            this.lbDef.Size = new System.Drawing.Size(178, 308);
+            this.lbDef.Size = new System.Drawing.Size(178, 292);
             this.lbDef.TabIndex = 34;
             this.lbDef.SelectedIndexChanged += new System.EventHandler(this.lbDef_SelectedIndexChanged);
             this.lbDef.MouseLeave += new System.EventHandler(this.lb_MouseLeave);
@@ -403,7 +405,7 @@ namespace CityWarWinApp
             this.cbDefAll.AutoSize = true;
             this.cbDefAll.Font = new System.Drawing.Font("Arial", 9.75F);
             this.cbDefAll.ForeColor = System.Drawing.Color.Silver;
-            this.cbDefAll.Location = new System.Drawing.Point(445, 476);
+            this.cbDefAll.Location = new System.Drawing.Point(446, 476);
             this.cbDefAll.Name = "cbDefAll";
             this.cbDefAll.Size = new System.Drawing.Size(77, 20);
             this.cbDefAll.TabIndex = 36;
@@ -444,7 +446,7 @@ namespace CityWarWinApp
             this.txtGC.BackColor = System.Drawing.Color.Silver;
             this.txtGC.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtGC.ForeColor = System.Drawing.Color.Black;
-            this.txtGC.Location = new System.Drawing.Point(410, 134);
+            this.txtGC.Location = new System.Drawing.Point(405, 134);
             this.txtGC.Name = "txtGC";
             this.txtGC.ReadOnly = true;
             this.txtGC.Size = new System.Drawing.Size(34, 22);
@@ -457,7 +459,7 @@ namespace CityWarWinApp
             this.label10.BackColor = System.Drawing.Color.Black;
             this.label10.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label10.ForeColor = System.Drawing.Color.Silver;
-            this.label10.Location = new System.Drawing.Point(410, 113);
+            this.label10.Location = new System.Drawing.Point(401, 113);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(34, 18);
             this.label10.TabIndex = 41;
@@ -470,7 +472,7 @@ namespace CityWarWinApp
             this.lblCost.BackColor = System.Drawing.Color.Black;
             this.lblCost.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblCost.ForeColor = System.Drawing.Color.Silver;
-            this.lblCost.Location = new System.Drawing.Point(524, 67);
+            this.lblCost.Location = new System.Drawing.Point(574, 67);
             this.lblCost.Name = "lblCost";
             this.lblCost.Size = new System.Drawing.Size(41, 18);
             this.lblCost.TabIndex = 43;
@@ -483,7 +485,7 @@ namespace CityWarWinApp
             this.txtCost.BackColor = System.Drawing.Color.Silver;
             this.txtCost.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtCost.ForeColor = System.Drawing.Color.Black;
-            this.txtCost.Location = new System.Drawing.Point(524, 88);
+            this.txtCost.Location = new System.Drawing.Point(577, 88);
             this.txtCost.Name = "txtCost";
             this.txtCost.ReadOnly = true;
             this.txtCost.Size = new System.Drawing.Size(41, 22);
@@ -519,6 +521,33 @@ namespace CityWarWinApp
             this.panelAttackers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseDown);
             this.panelAttackers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseUp);
             // 
+            // txtSpecial
+            // 
+            this.txtSpecial.BackColor = System.Drawing.Color.Silver;
+            this.txtSpecial.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtSpecial.ForeColor = System.Drawing.Color.Black;
+            this.txtSpecial.Location = new System.Drawing.Point(515, 88);
+            this.txtSpecial.Name = "txtSpecial";
+            this.txtSpecial.ReadOnly = true;
+            this.txtSpecial.Size = new System.Drawing.Size(58, 22);
+            this.txtSpecial.TabIndex = 46;
+            this.txtSpecial.TabStop = false;
+            this.txtSpecial.Visible = false;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.BackColor = System.Drawing.Color.Black;
+            this.label11.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label11.ForeColor = System.Drawing.Color.Silver;
+            this.label11.Location = new System.Drawing.Point(512, 67);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(60, 18);
+            this.label11.TabIndex = 45;
+            this.label11.Text = "Special";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.label11.Visible = false;
+            // 
             // Battle
             // 
             this.AcceptButton = this.btnEnd;
@@ -526,7 +555,9 @@ namespace CityWarWinApp
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.CancelButton = this.btnEnd;
-            this.ClientSize = new System.Drawing.Size(884, 561);
+            this.ClientSize = new System.Drawing.Size(882, 561);
+            this.Controls.Add(this.txtSpecial);
+            this.Controls.Add(this.label11);
             this.Controls.Add(this.txtCost);
             this.Controls.Add(this.lblCost);
             this.Controls.Add(this.txtGC);
@@ -562,8 +593,8 @@ namespace CityWarWinApp
             this.Controls.Add(this.panelDefenders);
             this.Controls.Add(this.panelAttackers);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MaximumSize = new System.Drawing.Size(900, 99999);
-            this.MinimumSize = new System.Drawing.Size(900, 400);
+            this.MaximumSize = new System.Drawing.Size(898, 99993);
+            this.MinimumSize = new System.Drawing.Size(898, 394);
             this.Name = "Battle";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -609,5 +640,7 @@ namespace CityWarWinApp
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label lblCost;
         private System.Windows.Forms.TextBox txtCost;
+        private System.Windows.Forms.TextBox txtSpecial;
+        private System.Windows.Forms.Label label11;
     }
 }

@@ -30,7 +30,7 @@ namespace CityWar
             return ((UnitSchema.BalanceRow)schema.Balance.Rows[0]).CostMult;
         }
 
-        public static CityWar.UnitType GetType(String typeStr)
+        public static CityWar.UnitType GetType(string typeStr)
         {
             return typeStr switch
             {
@@ -42,7 +42,7 @@ namespace CityWar
                 _ => throw new Exception(),
             };
         }
-        public static EnumFlags<TargetType> GetAttackTargets(String targetType)
+        public static EnumFlags<TargetType> GetAttackTargets(string targetType)
         {
             EnumFlags<TargetType> targets = new();
             if (targetType.Contains("G"))
@@ -52,6 +52,15 @@ namespace CityWar
             if (targetType.Contains("A"))
                 targets.Add(TargetType.Air);
             return targets;
+        }
+
+        public static Attack.SpecialType GetAttackSpecial(string special)
+        {
+            return special switch
+            {
+                "S" => Attack.SpecialType.Splash,
+                _ => Attack.SpecialType.None,
+            };
         }
 
         public double GetAverageArmor()

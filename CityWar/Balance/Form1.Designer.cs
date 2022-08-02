@@ -82,6 +82,9 @@ namespace UnitBalance
             this.txtPplPercent = new System.Windows.Forms.TextBox();
             this.txtPctError = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.txtSpecial1 = new System.Windows.Forms.TextBox();
+            this.txtSpecial2 = new System.Windows.Forms.TextBox();
+            this.txtSpecial3 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnCalculate
@@ -537,12 +540,36 @@ namespace UnitBalance
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // txtSpecial1
+            // 
+            this.txtSpecial1.Location = new System.Drawing.Point(279, 97);
+            this.txtSpecial1.Name = "txtSpecial1";
+            this.txtSpecial1.Size = new System.Drawing.Size(77, 20);
+            this.txtSpecial1.TabIndex = 80;
+            // 
+            // txtSpecial2
+            // 
+            this.txtSpecial2.Location = new System.Drawing.Point(433, 97);
+            this.txtSpecial2.Name = "txtSpecial2";
+            this.txtSpecial2.Size = new System.Drawing.Size(77, 20);
+            this.txtSpecial2.TabIndex = 81;
+            // 
+            // txtSpecial3
+            // 
+            this.txtSpecial3.Location = new System.Drawing.Point(589, 97);
+            this.txtSpecial3.Name = "txtSpecial3";
+            this.txtSpecial3.Size = new System.Drawing.Size(77, 20);
+            this.txtSpecial3.TabIndex = 82;
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnCalculate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(749, 162);
+            this.Controls.Add(this.txtSpecial3);
+            this.Controls.Add(this.txtSpecial2);
+            this.Controls.Add(this.txtSpecial1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.txtPctError);
             this.Controls.Add(this.txtPplPercent);
@@ -661,6 +688,9 @@ namespace UnitBalance
         private System.Windows.Forms.TextBox txtPplPercent;
 		private System.Windows.Forms.TextBox txtPctError;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.TextBox txtSpecial1;
+        private System.Windows.Forms.TextBox txtSpecial2;
+        private System.Windows.Forms.TextBox txtSpecial3;
     }
 }
 

@@ -80,7 +80,7 @@ namespace UnitBalance
                 int x = 8;
                 foreach (UnitSchema.AttackRow ar in r.GetAttackRows())
                 {
-                    newBox(Xs[x], y, Ws[x], Attack.GetString(ar.Name, ar.Damage, ar.Divide_By, ar.Target_Type, ar.Length));
+                    newBox(Xs[x], y, Ws[x], Attack.GetString(ar.Name, ar.Damage, ar.Divide_By, ar.Target_Type, ar.Length, UnitTypes.GetAttackSpecial(ar.Special)));
                     ++x;
                 }
 
@@ -165,7 +165,7 @@ namespace UnitBalance
                             if (attackRow.Target_Type.Contains("A"))
                                 targets.Add(TargetType.Air);
 
-                            attacks[i] = new Attack(targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+                            attacks[i] = new Attack(targets, attackRow.Length, attackRow.Damage, attackRow.Divide_By, UnitTypes.GetAttackSpecial(attackRow.Special));
                         }
                         units[--count] = new BalUnit(row.Race, row.Move, row.Regen, abilities, shield, fuel, row.Armor, type, attacks, row.IsThree, row.Hits, row.Name, row.People / (double)(row.People + row.Cost));
                     }

@@ -824,6 +824,8 @@ namespace CityWar {
             
             private global::System.Data.DataColumn columnName;
             
+            private global::System.Data.DataColumn columnSpecial;
+            
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
             public AttackDataTable() {
@@ -907,6 +909,14 @@ namespace CityWar {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
+            public global::System.Data.DataColumn SpecialColumn {
+                get {
+                    return this.columnSpecial;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -942,7 +952,7 @@ namespace CityWar {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
-            public AttackRow AddAttackRow(string Target_Type, int Length, int Damage, int Divide_By, UnitRow parentUnitRowByFK_Unit_Attack, string Name) {
+            public AttackRow AddAttackRow(string Target_Type, int Length, int Damage, int Divide_By, UnitRow parentUnitRowByFK_Unit_Attack, string Name, string Special) {
                 AttackRow rowAttackRow = ((AttackRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         Target_Type,
@@ -950,7 +960,8 @@ namespace CityWar {
                         Damage,
                         Divide_By,
                         null,
-                        Name};
+                        Name,
+                        Special};
                 if ((parentUnitRowByFK_Unit_Attack != null)) {
                     columnValuesArray[4] = parentUnitRowByFK_Unit_Attack[0];
                 }
@@ -982,6 +993,7 @@ namespace CityWar {
                 this.columnDivide_By = base.Columns["Divide By"];
                 this.columnUnit = base.Columns["Unit"];
                 this.columnName = base.Columns["Name"];
+                this.columnSpecial = base.Columns["Special"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -999,6 +1011,8 @@ namespace CityWar {
                 base.Columns.Add(this.columnUnit);
                 this.columnName = new global::System.Data.DataColumn("Name", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnName);
+                this.columnSpecial = new global::System.Data.DataColumn("Special", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnSpecial);
                 this.columnUnit.AllowDBNull = false;
                 this.columnName.AllowDBNull = false;
             }
@@ -2082,6 +2096,22 @@ namespace CityWar {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
+            public string Special {
+                get {
+                    if (this.IsSpecialNull()) {
+                        return null;
+                    }
+                    else {
+                        return ((string)(this[this.tableAttack.SpecialColumn]));
+                    }
+                }
+                set {
+                    this[this.tableAttack.SpecialColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
             public UnitRow UnitRow {
                 get {
                     return ((UnitRow)(this.GetParentRow(this.Table.ParentRelations["FK_Unit_Attack"])));
@@ -2137,6 +2167,18 @@ namespace CityWar {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
             public void SetDivide_ByNull() {
                 this[this.tableAttack.Divide_ByColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
+            public bool IsSpecialNull() {
+                return this.IsNull(this.tableAttack.SpecialColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "16.0.0.0")]
+            public void SetSpecialNull() {
+                this[this.tableAttack.SpecialColumn] = global::System.Convert.DBNull;
             }
         }
         

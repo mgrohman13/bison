@@ -30,24 +30,26 @@ namespace CityWar
         public readonly string Name;
         public readonly EnumFlags<TargetType> Target;
         public readonly int Length, Pierce;
+        public readonly SpecialType Special;
 
         private Unit owner;
         private int damage;
         private bool randed;
 
         //balance constructor
-        public Attack(EnumFlags<TargetType> target, int length, int damage, int divide)
-            : this(null, target, length, damage, divide)
+        public Attack(EnumFlags<TargetType> target, int length, int damage, int divide, SpecialType special)
+            : this(null, target, length, damage, divide, special)
         {
         }
 
         //in-game constructor
-        internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int pierce)
+        internal Attack(string name, EnumFlags<TargetType> target, int length, int damage, int pierce, SpecialType special)
         {
             this.Name = name;
             this.Target = target;
             this.Length = length;
             this.Pierce = pierce;
+            this.Special = special;
 
             this.owner = null;
             this.damage = damage;
@@ -166,17 +168,18 @@ namespace CityWar
 
         public string GetLogString()
         {
-            return string.Format(Name + " ({0}, {1})", damage, Pierce);
+            return string.Format(Name + " ({0}, {1}{2})", damage, Pierce, Special == SpecialType.None ? "" : ", " + Special.ToString()[0]);
         }
 
-        public static string GetString(string name, int damage, int divide, string targets, int length)
+        public static string GetString(string name, int damage, int divide, string targets, int length, SpecialType special)
         {
-            return string.Format(name + "({0}, {2}, {3}) - {1}", damage, targets, divide, length);
+            return string.Format(name + "({0}, {2}, {3}{4}) - {1}", damage, targets, divide, length,
+                special == SpecialType.None ? "" : ", " + special.ToString());
         }
 
         public override string ToString()
         {
-            return GetString(Name, damage, Pierce, GetTargetString(), Length);
+            return GetString(Name, damage, Pierce, GetTargetString(), Length, Special);
         }
 
         #endregion //public methods and properties
@@ -193,7 +196,7 @@ namespace CityWar
             owner.Attacked(unit.Type == UnitType.Immobile ? int.MaxValue : Length);
 
             int hits = unit.Hits, armor = unit.Armor;
-            int damage = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit)), retVal = damage;
+            int damage = DoDamage(armor, Unit.GetTotalDamageShield(Owner, unit), out _), retVal = damage;
             double overkill = 0;
             if (damage < 0)
             {
@@ -260,14 +263,15 @@ namespace CityWar
 
         #region damage 
 
-        private int DoDamage(int armor, int shield)
+        private int DoDamage(int armor, int shield, out int oe)
         {
-            return DoDamage(this.damage, this.Pierce, armor, shield);
+            return DoDamage(this.damage, this.Pierce, armor, shield, out oe);
         }
-        public static int DoDamage(int damage, int pierce, int armor, int shield)
+        public static int DoDamage(int damage, int pierce, int armor, int shield, out int oe)
         {
             double damMult = damage * DamMultPercent;
-            int d = Game.Random.Round(damage - damMult - armor / (double)pierce) + Game.Random.OEInt(damMult);
+            oe = Game.Random.OEInt(damMult);
+            int d = Game.Random.Round(damage - damMult - armor / (double)pierce) + oe;
             if (shield > 0)
                 d = Game.Random.Round(d * GetShieldMult(shield));
             return d;
@@ -347,6 +351,13 @@ namespace CityWar
         }
 
         #endregion //damage
+
+        [Serializable]
+        public enum SpecialType
+        {
+            None,
+            Splash,
+        }
     }
 
     [Flags]

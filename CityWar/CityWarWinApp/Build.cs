@@ -299,7 +299,7 @@ namespace CityWarWinApp
             int x = 9;
             foreach (UnitSchema.AttackRow ar in r.GetAttackRows())
             {
-                newBox(Xs[x], y, Ws[x - 1], Attack.GetString(ar.Name, ar.Damage, ar.Divide_By, ar.Target_Type, ar.Length));
+                newBox(Xs[x], y, Ws[x - 1], Attack.GetString(ar.Name, ar.Damage, ar.Divide_By, ar.Target_Type, ar.Length, UnitTypes.GetAttackSpecial(ar.Special)));
                 ++x;
             }
 

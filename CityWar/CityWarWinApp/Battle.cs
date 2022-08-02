@@ -252,9 +252,11 @@ namespace CityWarWinApp
                     int idx = lbAtt.SelectedIndex;
 
                     int oldHits = clicked.Hits;
-                    int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic);
+                    int damage = Map.Game.AttackUnit(battle, attack, clicked, out double relic, out Tuple<Unit, int, int, double> splash);
                     if (damage > -1)
                         Log.LogAttack(attack.Owner, attack, clicked, damage, oldHits, relic);
+                    if (splash != null)
+                        Log.LogAttack(attack.Owner, attack, splash.Item1, splash.Item2, splash.Item3, splash.Item4);
 
                     if (clicked.Dead)
                         validAttacks = null;
@@ -459,6 +461,7 @@ namespace CityWarWinApp
                 txtDam.Text = attack.Damage.ToString();
                 txtTargets.Text = attack.GetTargetString();
                 txtLength.Text = attack.Length.ToString();
+                txtSpecial.Text = attack.Special == Attack.SpecialType.None ? "" : attack.Special.ToString();
                 txtCost.Text = attack.RetaliateCost.ToString("0.0");
 
                 if (!cbDefAll.Checked)

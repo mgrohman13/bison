@@ -704,7 +704,8 @@ namespace CityWar
             if (isThreeAttacks != null)
                 return isThreeAttacks[a - 1];
             else
-                return new Attack(attackRow.Name, UnitTypes.GetAttackTargets(attackRow.Target_Type), attackRow.Length, attackRow.Damage, attackRow.Divide_By);
+                return new Attack(attackRow.Name, UnitTypes.GetAttackTargets(attackRow.Target_Type),
+                    attackRow.Length, attackRow.Damage, attackRow.Divide_By, UnitTypes.GetAttackSpecial(attackRow.Special));
         }
 
         #endregion //new units

@@ -2,7 +2,7 @@
 <UnitSchema xmlns="http://tempuri.org/UnitSchema.xsd">
   <Unit>
     <Name>Airship</Name>
-    <Cost>125</Cost>
+    <Cost>110</Cost>
     <Type>A</Type>
     <Hits>31</Hits>
     <Armor>9</Armor>
@@ -10,25 +10,12 @@
     <Move>1</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>292</People>
-    <Race>Dwarf</Race>
-  </Unit>
-  <Unit>
-    <Name>Armor</Name>
-    <Cost>227</Cost>
-    <Type>G</Type>
-    <Hits>26</Hits>
-    <Armor>9</Armor>
-    <Regen>4</Regen>
-    <Move>1</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>58</People>
+    <People>256</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
     <Name>Bats</Name>
-    <Cost>181</Cost>
+    <Cost>160</Cost>
     <Type>A</Type>
     <Hits>30</Hits>
     <Armor>1</Armor>
@@ -36,25 +23,12 @@
     <Move>3</Move>
     <CostType>E</CostType>
     <IsThree>true</IsThree>
-    <People>21</People>
-    <Race>Dwarf</Race>
-  </Unit>
-  <Unit>
-    <Name>Battleship</Name>
-    <Cost>126</Cost>
-    <Type>W</Type>
-    <Hits>37</Hits>
-    <Armor>9</Armor>
-    <Regen>5</Regen>
-    <Move>1</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>190</People>
+    <People>18</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
     <Name>Behemoth</Name>
-    <Cost>344</Cost>
+    <Cost>307</Cost>
     <Type>G</Type>
     <Hits>90</Hits>
     <Armor>0</Armor>
@@ -66,21 +40,8 @@
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
-    <Name>Dragon</Name>
-    <Cost>435</Cost>
-    <Type>A</Type>
-    <Hits>38</Hits>
-    <Armor>7</Armor>
-    <Regen>3</Regen>
-    <Move>2</Move>
-    <CostType>N</CostType>
-    <IsThree>false</IsThree>
-    <People>48</People>
-    <Race>Dwarf</Race>
-  </Unit>
-  <Unit>
     <Name>Gryphon</Name>
-    <Cost>114</Cost>
+    <Cost>101</Cost>
     <Type>A</Type>
     <Hits>18</Hits>
     <Armor>3</Armor>
@@ -88,12 +49,12 @@
     <Move>3</Move>
     <CostType>A</CostType>
     <IsThree>false</IsThree>
-    <People>75</People>
+    <People>66</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
     <Name>Mech</Name>
-    <Cost>383</Cost>
+    <Cost>336</Cost>
     <Type>GW</Type>
     <Hits>32</Hits>
     <Armor>5</Armor>
@@ -114,12 +75,12 @@
     <Move>1</Move>
     <CostType />
     <IsThree>true</IsThree>
-    <People>91</People>
+    <People>81</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
     <Name>Wyverns</Name>
-    <Cost>346</Cost>
+    <Cost>305</Cost>
     <Type>A</Type>
     <Hits>75</Hits>
     <Armor>3</Armor>
@@ -127,25 +88,12 @@
     <Move>2</Move>
     <CostType>A</CostType>
     <IsThree>true</IsThree>
-    <People>38</People>
+    <People>34</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
-    <Name>Cruiser</Name>
-    <Cost>183</Cost>
-    <Type>W</Type>
-    <Hits>35</Hits>
-    <Armor>7</Armor>
-    <Regen>3</Regen>
-    <Move>2</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>183</People>
-    <Race>Fae</Race>
-  </Unit>
-  <Unit>
     <Name>Elemental</Name>
-    <Cost>473</Cost>
+    <Cost>415</Cost>
     <Type>GW</Type>
     <Hits>40</Hits>
     <Armor>8</Armor>
@@ -158,7 +106,7 @@
   </Unit>
   <Unit>
     <Name>Pyroraptor</Name>
-    <Cost>131</Cost>
+    <Cost>116</Cost>
     <Type>G</Type>
     <Hits>24</Hits>
     <Armor>2</Armor>
@@ -166,12 +114,12 @@
     <Move>2</Move>
     <CostType>E</CostType>
     <IsThree>false</IsThree>
-    <People>14</People>
+    <People>13</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Salamander</Name>
-    <Cost>224</Cost>
+    <Cost>197</Cost>
     <Type>GW</Type>
     <Hits>26</Hits>
     <Armor>2</Armor>
@@ -184,7 +132,7 @@
   </Unit>
   <Unit>
     <Name>Spirit</Name>
-    <Cost>315</Cost>
+    <Cost>275</Cost>
     <Type>A</Type>
     <Hits>17</Hits>
     <Armor>9</Armor>
@@ -192,25 +140,12 @@
     <Move>4</Move>
     <CostType>D</CostType>
     <IsThree>false</IsThree>
-    <People>135</People>
-    <Race>Fae</Race>
-  </Unit>
-  <Unit>
-    <Name>Tracker</Name>
-    <Cost>225</Cost>
-    <Type>G</Type>
-    <Hits>22</Hits>
-    <Armor>8</Armor>
-    <Regen>2</Regen>
-    <Move>2</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>56</People>
+    <People>119</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Walker</Name>
-    <Cost>258</Cost>
+    <Cost>228</Cost>
     <Type>G</Type>
     <Hits>34</Hits>
     <Armor>4</Armor>
@@ -218,38 +153,12 @@
     <Move>2</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>28</People>
+    <People>25</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
-    <Name>Bomber</Name>
-    <Cost>177</Cost>
-    <Type>A</Type>
-    <Hits>29</Hits>
-    <Armor>5</Armor>
-    <Regen>3</Regen>
-    <Move>2</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>45</People>
-    <Race>Human</Race>
-  </Unit>
-  <Unit>
-    <Name>Carrier</Name>
-    <Cost>93</Cost>
-    <Type>W</Type>
-    <Hits>39</Hits>
-    <Armor>7</Armor>
-    <Regen>3</Regen>
-    <Move>1</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>216</People>
-    <Race>Human</Race>
-  </Unit>
-  <Unit>
     <Name>Commandos</Name>
-    <Cost>12</Cost>
+    <Cost>10</Cost>
     <Type>G</Type>
     <Hits>21</Hits>
     <Armor>1</Armor>
@@ -257,12 +166,12 @@
     <Move>1</Move>
     <CostType />
     <IsThree>true</IsThree>
-    <People>96</People>
+    <People>85</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Destroyer</Name>
-    <Cost>98</Cost>
+    <Cost>87</Cost>
     <Type>W</Type>
     <Hits>30</Hits>
     <Armor>3</Armor>
@@ -270,25 +179,12 @@
     <Move>2</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>97</People>
-    <Race>Human</Race>
-  </Unit>
-  <Unit>
-    <Name>Fighter</Name>
-    <Cost>139</Cost>
-    <Type>A</Type>
-    <Hits>28</Hits>
-    <Armor>4</Armor>
-    <Regen>2</Regen>
-    <Move>3</Move>
-    <CostType />
-    <IsThree>false</IsThree>
-    <People>34</People>
+    <People>87</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Humvee</Name>
-    <Cost>95</Cost>
+    <Cost>84</Cost>
     <Type>G</Type>
     <Hits>19</Hits>
     <Armor>2</Armor>
@@ -296,7 +192,7 @@
     <Move>3</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>64</People>
+    <People>57</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
@@ -309,12 +205,12 @@
     <Move>1</Move>
     <CostType />
     <IsThree>true</IsThree>
-    <People>71</People>
+    <People>63</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Tank</Name>
-    <Cost>226</Cost>
+    <Cost>199</Cost>
     <Type>G</Type>
     <Hits>25</Hits>
     <Armor>8</Armor>
@@ -322,12 +218,12 @@
     <Move>2</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>56</People>
+    <People>49</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Leviathan</Name>
-    <Cost>334</Cost>
+    <Cost>300</Cost>
     <Type>W</Type>
     <Hits>60</Hits>
     <Armor>4</Armor>
@@ -335,12 +231,12 @@
     <Move>2</Move>
     <CostType>W</CostType>
     <IsThree>false</IsThree>
-    <People>37</People>
+    <People>33</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Treant</Name>
-    <Cost>162</Cost>
+    <Cost>144</Cost>
     <Type>G</Type>
     <Hits>33</Hits>
     <Armor>5</Armor>
@@ -348,12 +244,12 @@
     <Move>1</Move>
     <CostType>N</CostType>
     <IsThree>false</IsThree>
-    <People>70</People>
+    <People>62</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Pegasi</Name>
-    <Cost>196</Cost>
+    <Cost>173</Cost>
     <Type>A</Type>
     <Hits>54</Hits>
     <Armor>2</Armor>
@@ -361,12 +257,12 @@
     <Move>2</Move>
     <CostType>A</CostType>
     <IsThree>true</IsThree>
-    <People>131</People>
+    <People>115</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Roc</Name>
-    <Cost>222</Cost>
+    <Cost>196</Cost>
     <Type>A</Type>
     <Hits>31</Hits>
     <Armor>2</Armor>
@@ -374,51 +270,12 @@
     <Move>3</Move>
     <CostType>A</CostType>
     <IsThree>false</IsThree>
-    <People>24</People>
+    <People>22</People>
     <Race>Human</Race>
-  </Unit>
-  <Unit>
-    <Name>Scorpion</Name>
-    <Cost>265</Cost>
-    <Type>G</Type>
-    <Hits>32</Hits>
-    <Armor>6</Armor>
-    <Regen>3</Regen>
-    <Move>2</Move>
-    <CostType>N</CostType>
-    <IsThree>false</IsThree>
-    <People>30</People>
-    <Race>Human</Race>
-  </Unit>
-  <Unit>
-    <Name>Daemon</Name>
-    <Cost>398</Cost>
-    <Type>G</Type>
-    <Hits>80</Hits>
-    <Armor>4</Armor>
-    <Regen>9</Regen>
-    <Move>1</Move>
-    <CostType>D</CostType>
-    <IsThree>false</IsThree>
-    <People>0</People>
-    <Race>Fae</Race>
-  </Unit>
-  <Unit>
-    <Name>Sylph</Name>
-    <Cost>234</Cost>
-    <Type>A</Type>
-    <Hits>9</Hits>
-    <Armor>0</Armor>
-    <Regen>1</Regen>
-    <Move>2</Move>
-    <CostType>A</CostType>
-    <IsThree>false</IsThree>
-    <People>100</People>
-    <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Golem</Name>
-    <Cost>89</Cost>
+    <Cost>78</Cost>
     <Type>G</Type>
     <Hits>8</Hits>
     <Armor>8</Armor>
@@ -427,19 +284,6 @@
     <CostType>E</CostType>
     <IsThree>false</IsThree>
     <People>0</People>
-    <Race>Dwarf</Race>
-  </Unit>
-  <Unit>
-    <Name>Troll</Name>
-    <Cost>269</Cost>
-    <Type>GW</Type>
-    <Hits>28</Hits>
-    <Armor>6</Armor>
-    <Regen>3</Regen>
-    <Move>2</Move>
-    <CostType>E</CostType>
-    <IsThree>false</IsThree>
-    <People>115</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
@@ -452,12 +296,12 @@
     <Move>1</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>83</People>
+    <People>73</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Wyrm</Name>
-    <Cost>307</Cost>
+    <Cost>273</Cost>
     <Type>G</Type>
     <Hits>50</Hits>
     <Armor>3</Armor>
@@ -465,12 +309,12 @@
     <Move>2</Move>
     <CostType>E</CostType>
     <IsThree>false</IsThree>
-    <People>34</People>
+    <People>30</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Dryads</Name>
-    <Cost>57</Cost>
+    <Cost>50</Cost>
     <Type>G</Type>
     <Hits>27</Hits>
     <Armor>3</Armor>
@@ -478,12 +322,12 @@
     <Move>2</Move>
     <CostType>N</CostType>
     <IsThree>true</IsThree>
-    <People>227</People>
+    <People>200</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Helicopter</Name>
-    <Cost>120</Cost>
+    <Cost>106</Cost>
     <Type>A</Type>
     <Hits>20</Hits>
     <Armor>3</Armor>
@@ -491,12 +335,12 @@
     <Move>2</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>52</People>
+    <People>46</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Scout</Name>
-    <Cost>220</Cost>
+    <Cost>193</Cost>
     <Type>A</Type>
     <Hits>27</Hits>
     <Armor>6</Armor>
@@ -504,12 +348,12 @@
     <Move>3</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>54</People>
+    <People>49</People>
     <Race>Fae</Race>
   </Unit>
   <Unit>
     <Name>Kraken</Name>
-    <Cost>474</Cost>
+    <Cost>418</Cost>
     <Type>W</Type>
     <Hits>45</Hits>
     <Armor>5</Armor>
@@ -522,7 +366,7 @@
   </Unit>
   <Unit>
     <Name>Hydra</Name>
-    <Cost>399</Cost>
+    <Cost>363</Cost>
     <Type>GW</Type>
     <Hits>70</Hits>
     <Armor>0</Armor>
@@ -530,12 +374,12 @@
     <Move>1</Move>
     <CostType>W</CostType>
     <IsThree>false</IsThree>
-    <People>44</People>
+    <People>40</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
     <Name>Giant</Name>
-    <Cost>139</Cost>
+    <Cost>124</Cost>
     <Type>G</Type>
     <Hits>36</Hits>
     <Armor>1</Armor>
@@ -543,25 +387,12 @@
     <Move>2</Move>
     <CostType>N</CostType>
     <IsThree>false</IsThree>
-    <People>60</People>
+    <People>53</People>
     <Race>Human</Race>
   </Unit>
   <Unit>
-    <Name>Fanglers</Name>
-    <Cost>115</Cost>
-    <Type>W</Type>
-    <Hits>33</Hits>
-    <Armor>0</Armor>
-    <Regen>1</Regen>
-    <Move>3</Move>
-    <CostType>W</CostType>
-    <IsThree>true</IsThree>
-    <People>29</People>
-    <Race>Fae</Race>
-  </Unit>
-  <Unit>
     <Name>Engagers</Name>
-    <Cost>167</Cost>
+    <Cost>148</Cost>
     <Type>A</Type>
     <Hits>42</Hits>
     <Armor>4</Armor>
@@ -569,25 +400,12 @@
     <Move>2</Move>
     <CostType />
     <IsThree>true</IsThree>
-    <People>19</People>
-    <Race>Dwarf</Race>
-  </Unit>
-  <Unit>
-    <Name>Zombies</Name>
-    <Cost>36</Cost>
-    <Type>G</Type>
-    <Hits>36</Hits>
-    <Armor>0</Armor>
-    <Regen>2</Regen>
-    <Move>1</Move>
-    <CostType>D</CostType>
-    <IsThree>true</IsThree>
-    <People>35</People>
+    <People>16</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
     <Name>Wraith</Name>
-    <Cost>357</Cost>
+    <Cost>313</Cost>
     <Type>A</Type>
     <Hits>13</Hits>
     <Armor>10</Armor>
@@ -600,7 +418,7 @@
   </Unit>
   <Unit>
     <Name>Unicorn</Name>
-    <Cost>313</Cost>
+    <Cost>274</Cost>
     <Type>G</Type>
     <Hits>15</Hits>
     <Armor>2</Armor>
@@ -613,7 +431,7 @@
   </Unit>
   <Unit>
     <Name>Balloon</Name>
-    <Cost>94</Cost>
+    <Cost>83</Cost>
     <Type>A</Type>
     <Hits>16</Hits>
     <Armor>2</Armor>
@@ -621,12 +439,12 @@
     <Move>2</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>41</People>
+    <People>36</People>
     <Race>Dwarf</Race>
   </Unit>
   <Unit>
     <Name>Shield</Name>
-    <Cost>176</Cost>
+    <Cost>154</Cost>
     <Type>GWA</Type>
     <Hits>11</Hits>
     <Armor>11</Armor>
@@ -639,7 +457,7 @@
   </Unit>
   <Unit>
     <Name>Fort</Name>
-    <Cost>101</Cost>
+    <Cost>88</Cost>
     <Type>GWA</Type>
     <Hits>23</Hits>
     <Armor>5</Armor>
@@ -652,7 +470,7 @@
   </Unit>
   <Unit>
     <Name>Glider</Name>
-    <Cost>134</Cost>
+    <Cost>118</Cost>
     <Type>GW</Type>
     <Hits>21</Hits>
     <Armor>1</Armor>
@@ -660,8 +478,190 @@
     <Move>4</Move>
     <CostType />
     <IsThree>false</IsThree>
-    <People>88</People>
+    <People>78</People>
     <Race>Fae</Race>
+  </Unit>
+  <Unit>
+    <Name>Armor</Name>
+    <Cost>210</Cost>
+    <Type>G</Type>
+    <Hits>26</Hits>
+    <Armor>9</Armor>
+    <Regen>4</Regen>
+    <Move>1</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>53</People>
+    <Race>Dwarf</Race>
+  </Unit>
+  <Unit>
+    <Name>Tracker</Name>
+    <Cost>208</Cost>
+    <Type>G</Type>
+    <Hits>22</Hits>
+    <Armor>8</Armor>
+    <Regen>2</Regen>
+    <Move>2</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>53</People>
+    <Race>Fae</Race>
+  </Unit>
+  <Unit>
+    <Name>Sylph</Name>
+    <Cost>213</Cost>
+    <Type>A</Type>
+    <Hits>9</Hits>
+    <Armor>0</Armor>
+    <Regen>1</Regen>
+    <Move>2</Move>
+    <CostType>A</CostType>
+    <IsThree>false</IsThree>
+    <People>91</People>
+    <Race>Fae</Race>
+  </Unit>
+  <Unit>
+    <Name>Cruiser</Name>
+    <Cost>167</Cost>
+    <Type>W</Type>
+    <Hits>35</Hits>
+    <Armor>7</Armor>
+    <Regen>3</Regen>
+    <Move>2</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>167</People>
+    <Race>Fae</Race>
+  </Unit>
+  <Unit>
+    <Name>Daemon</Name>
+    <Cost>361</Cost>
+    <Type>G</Type>
+    <Hits>80</Hits>
+    <Armor>4</Armor>
+    <Regen>9</Regen>
+    <Move>1</Move>
+    <CostType>D</CostType>
+    <IsThree>false</IsThree>
+    <People>0</People>
+    <Race>Fae</Race>
+  </Unit>
+  <Unit>
+    <Name>Fighter</Name>
+    <Cost>130</Cost>
+    <Type>A</Type>
+    <Hits>28</Hits>
+    <Armor>4</Armor>
+    <Regen>2</Regen>
+    <Move>3</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>32</People>
+    <Race>Human</Race>
+  </Unit>
+  <Unit>
+    <Name>Bomber</Name>
+    <Cost>169</Cost>
+    <Type>A</Type>
+    <Hits>29</Hits>
+    <Armor>5</Armor>
+    <Regen>3</Regen>
+    <Move>2</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>43</People>
+    <Race>Human</Race>
+  </Unit>
+  <Unit>
+    <Name>Carrier</Name>
+    <Cost>86</Cost>
+    <Type>W</Type>
+    <Hits>39</Hits>
+    <Armor>7</Armor>
+    <Regen>3</Regen>
+    <Move>1</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>197</People>
+    <Race>Human</Race>
+  </Unit>
+  <Unit>
+    <Name>Troll</Name>
+    <Cost>242</Cost>
+    <Type>GW</Type>
+    <Hits>29</Hits>
+    <Armor>6</Armor>
+    <Regen>3</Regen>
+    <Move>2</Move>
+    <CostType>E</CostType>
+    <IsThree>false</IsThree>
+    <People>103</People>
+    <Race>Dwarf</Race>
+  </Unit>
+  <Unit>
+    <Name>Fanglers</Name>
+    <Cost>107</Cost>
+    <Type>W</Type>
+    <Hits>36</Hits>
+    <Armor>0</Armor>
+    <Regen>1</Regen>
+    <Move>3</Move>
+    <CostType>W</CostType>
+    <IsThree>true</IsThree>
+    <People>26</People>
+    <Race>Fae</Race>
+  </Unit>
+  <Unit>
+    <Name>Scorpion</Name>
+    <Cost>237</Cost>
+    <Type>G</Type>
+    <Hits>33</Hits>
+    <Armor>6</Armor>
+    <Regen>3</Regen>
+    <Move>2</Move>
+    <CostType>N</CostType>
+    <IsThree>false</IsThree>
+    <People>27</People>
+    <Race>Human</Race>
+  </Unit>
+  <Unit>
+    <Name>Zombies</Name>
+    <Cost>31</Cost>
+    <Type>G</Type>
+    <Hits>33</Hits>
+    <Armor>0</Armor>
+    <Regen>2</Regen>
+    <Move>1</Move>
+    <CostType>D</CostType>
+    <IsThree>true</IsThree>
+    <People>30</People>
+    <Race>Dwarf</Race>
+  </Unit>
+  <Unit>
+    <Name>Battleship</Name>
+    <Cost>116</Cost>
+    <Type>W</Type>
+    <Hits>38</Hits>
+    <Armor>9</Armor>
+    <Regen>5</Regen>
+    <Move>1</Move>
+    <CostType />
+    <IsThree>false</IsThree>
+    <People>175</People>
+    <Race>Dwarf</Race>
+  </Unit>
+  <Unit>
+    <Name>Dragon</Name>
+    <Cost>394</Cost>
+    <Type>A</Type>
+    <Hits>37</Hits>
+    <Armor>7</Armor>
+    <Regen>3</Regen>
+    <Move>2</Move>
+    <CostType>N</CostType>
+    <IsThree>false</IsThree>
+    <People>44</People>
+    <Race>Dwarf</Race>
   </Unit>
   <Attack>
     <Target_x0020_Type>A</Target_x0020_Type>
@@ -672,22 +672,6 @@
     <Name>Missile</Name>
   </Attack>
   <Attack>
-    <Target_x0020_Type>GW</Target_x0020_Type>
-    <Length>4</Length>
-    <Damage>7</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Armor</Unit>
-    <Name>Turret</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>1</Length>
-    <Damage>5</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Armor</Unit>
-    <Name>Flamethrower</Name>
-  </Attack>
-  <Attack>
     <Target_x0020_Type>GWA</Target_x0020_Type>
     <Length>0</Length>
     <Damage>5</Damage>
@@ -710,22 +694,6 @@
     <Divide_x0020_By>1</Divide_x0020_By>
     <Unit>Bats</Unit>
     <Name>Bite</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>5</Length>
-    <Damage>9</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Battleship</Unit>
-    <Name>Turret</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GWA</Target_x0020_Type>
-    <Length>2</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>4</Divide_x0020_By>
-    <Unit>Battleship</Unit>
-    <Name>Laser</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GW</Target_x0020_Type>
@@ -742,22 +710,6 @@
     <Divide_x0020_By>1</Divide_x0020_By>
     <Unit>Behemoth</Unit>
     <Name>Trample</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GA</Target_x0020_Type>
-    <Length>2</Length>
-    <Damage>8</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Dragon</Unit>
-    <Name>Fire Breath</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GWA</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>5</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Dragon</Unit>
-    <Name>Bite</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GWA</Target_x0020_Type>
@@ -838,22 +790,6 @@
     <Divide_x0020_By>1</Divide_x0020_By>
     <Unit>Wyverns</Unit>
     <Name>Crush</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GW</Target_x0020_Type>
-    <Length>2</Length>
-    <Damage>6</Damage>
-    <Divide_x0020_By>3</Divide_x0020_By>
-    <Unit>Cruiser</Unit>
-    <Name>Beam</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>WA</Target_x0020_Type>
-    <Length>3</Length>
-    <Damage>8</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Cruiser</Unit>
-    <Name>Particle Gun</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GWA</Target_x0020_Type>
@@ -904,14 +840,6 @@
     <Name>Drain</Name>
   </Attack>
   <Attack>
-    <Target_x0020_Type>GA</Target_x0020_Type>
-    <Length>3</Length>
-    <Damage>8</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Tracker</Unit>
-    <Name>Particle Gun</Name>
-  </Attack>
-  <Attack>
     <Target_x0020_Type>GW</Target_x0020_Type>
     <Length>2</Length>
     <Damage>6</Damage>
@@ -926,22 +854,6 @@
     <Divide_x0020_By>2</Divide_x0020_By>
     <Unit>Walker</Unit>
     <Name>Pulse</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GW</Target_x0020_Type>
-    <Length>3</Length>
-    <Damage>8</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Bomber</Unit>
-    <Name>Bombs</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>WA</Target_x0020_Type>
-    <Length>3</Length>
-    <Damage>5</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Carrier</Unit>
-    <Name>Rockets</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GA</Target_x0020_Type>
@@ -974,14 +886,6 @@
     <Divide_x0020_By>3</Divide_x0020_By>
     <Unit>Destroyer</Unit>
     <Name>Shells</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>A</Target_x0020_Type>
-    <Length>3</Length>
-    <Damage>5</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Fighter</Unit>
-    <Name>Rockets</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GA</Target_x0020_Type>
@@ -1104,76 +1008,12 @@
     <Name>Beak</Name>
   </Attack>
   <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>1</Length>
-    <Damage>6</Damage>
-    <Divide_x0020_By>3</Divide_x0020_By>
-    <Unit>Scorpion</Unit>
-    <Name>Stinger</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>6</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Scorpion</Unit>
-    <Name>Pincer</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GA</Target_x0020_Type>
-    <Length>1</Length>
-    <Damage>8</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Daemon</Unit>
-    <Name>Fire Blade</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GA</Target_x0020_Type>
-    <Length>2</Length>
-    <Damage>6</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Daemon</Unit>
-    <Name>Flame</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GWA</Target_x0020_Type>
-    <Length>5</Length>
-    <Damage>3</Damage>
-    <Divide_x0020_By>4</Divide_x0020_By>
-    <Unit>Sylph</Unit>
-    <Name>Psi</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GW</Target_x0020_Type>
-    <Length>2</Length>
-    <Damage>7</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Sylph</Unit>
-    <Name>Tornado</Name>
-  </Attack>
-  <Attack>
     <Target_x0020_Type>GWA</Target_x0020_Type>
     <Length>2</Length>
     <Damage>5</Damage>
     <Divide_x0020_By>2</Divide_x0020_By>
     <Unit>Golem</Unit>
     <Name>Sling</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GW</Target_x0020_Type>
-    <Length>1</Length>
-    <Damage>7</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Troll</Unit>
-    <Name>Club</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>GW</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Troll</Unit>
-    <Name>Fist</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GWA</Target_x0020_Type>
@@ -1304,30 +1144,6 @@
     <Name>Cannon</Name>
   </Attack>
   <Attack>
-    <Target_x0020_Type>W</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Fanglers</Unit>
-    <Name>Bite</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>W</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Fanglers</Unit>
-    <Name>Bite</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>W</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>2</Divide_x0020_By>
-    <Unit>Fanglers</Unit>
-    <Name>Bite</Name>
-  </Attack>
-  <Attack>
     <Target_x0020_Type>GA</Target_x0020_Type>
     <Length>1</Length>
     <Damage>5</Damage>
@@ -1350,30 +1166,6 @@
     <Divide_x0020_By>2</Divide_x0020_By>
     <Unit>Engagers</Unit>
     <Name>Flamethrower</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Zombies</Unit>
-    <Name>Strike</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Zombies</Unit>
-    <Name>Strike</Name>
-  </Attack>
-  <Attack>
-    <Target_x0020_Type>G</Target_x0020_Type>
-    <Length>0</Length>
-    <Damage>4</Damage>
-    <Divide_x0020_By>1</Divide_x0020_By>
-    <Unit>Zombies</Unit>
-    <Name>Strike</Name>
   </Attack>
   <Attack>
     <Target_x0020_Type>GA</Target_x0020_Type>
@@ -1407,8 +1199,229 @@
     <Unit>Glider</Unit>
     <Name>Pulse</Name>
   </Attack>
+  <Attack>
+    <Target_x0020_Type>GW</Target_x0020_Type>
+    <Length>4</Length>
+    <Damage>7</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Armor</Unit>
+    <Name>Turret</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>1</Length>
+    <Damage>5</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Armor</Unit>
+    <Name>Flamethrower</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GA</Target_x0020_Type>
+    <Length>3</Length>
+    <Damage>8</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Tracker</Unit>
+    <Name>Particle Gun</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GWA</Target_x0020_Type>
+    <Length>5</Length>
+    <Damage>3</Damage>
+    <Divide_x0020_By>4</Divide_x0020_By>
+    <Unit>Sylph</Unit>
+    <Name>Psi</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GW</Target_x0020_Type>
+    <Length>2</Length>
+    <Damage>7</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Sylph</Unit>
+    <Name>Tornado</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GW</Target_x0020_Type>
+    <Length>2</Length>
+    <Damage>6</Damage>
+    <Divide_x0020_By>3</Divide_x0020_By>
+    <Unit>Cruiser</Unit>
+    <Name>Beam</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>WA</Target_x0020_Type>
+    <Length>3</Length>
+    <Damage>8</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Cruiser</Unit>
+    <Name>Particle Gun</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GA</Target_x0020_Type>
+    <Length>1</Length>
+    <Damage>8</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Daemon</Unit>
+    <Name>Fire Blade</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GA</Target_x0020_Type>
+    <Length>2</Length>
+    <Damage>6</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Daemon</Unit>
+    <Name>Flame</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>A</Target_x0020_Type>
+    <Length>3</Length>
+    <Damage>5</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Fighter</Unit>
+    <Name>Rockets</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GW</Target_x0020_Type>
+    <Length>3</Length>
+    <Damage>8</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Bomber</Unit>
+    <Name>Bombs</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>WA</Target_x0020_Type>
+    <Length>3</Length>
+    <Damage>5</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Carrier</Unit>
+    <Name>Rockets</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GW</Target_x0020_Type>
+    <Length>1</Length>
+    <Damage>7</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Troll</Unit>
+    <Name>Club</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GW</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Troll</Unit>
+    <Name>Fist</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>W</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Fanglers</Unit>
+    <Name>Bite</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>W</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Fanglers</Unit>
+    <Name>Bite</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>W</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Fanglers</Unit>
+    <Name>Bite</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>1</Length>
+    <Damage>6</Damage>
+    <Divide_x0020_By>3</Divide_x0020_By>
+    <Unit>Scorpion</Unit>
+    <Name>Stinger</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>6</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Scorpion</Unit>
+    <Name>Pincer</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Zombies</Unit>
+    <Name>Strike</Name>
+    <Special>-0</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Zombies</Unit>
+    <Name>Strike</Name>
+    <Special>-0</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>1</Divide_x0020_By>
+    <Unit>Zombies</Unit>
+    <Name>Strike</Name>
+    <Special>-0</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>G</Target_x0020_Type>
+    <Length>5</Length>
+    <Damage>9</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Battleship</Unit>
+    <Name>Turret</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GWA</Target_x0020_Type>
+    <Length>2</Length>
+    <Damage>4</Damage>
+    <Divide_x0020_By>4</Divide_x0020_By>
+    <Unit>Battleship</Unit>
+    <Name>Laser</Name>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GA</Target_x0020_Type>
+    <Length>2</Length>
+    <Damage>8</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Dragon</Unit>
+    <Name>Fire Breath</Name>
+    <Special>S</Special>
+  </Attack>
+  <Attack>
+    <Target_x0020_Type>GWA</Target_x0020_Type>
+    <Length>0</Length>
+    <Damage>5</Damage>
+    <Divide_x0020_By>2</Divide_x0020_By>
+    <Unit>Dragon</Unit>
+    <Name>Bite</Name>
+  </Attack>
   <Balance>
-    <CostMult>5.7912564134597613</CostMult>
+    <CostMult>5.0429813490687874</CostMult>
   </Balance>
   <Special>
     <Name>Airship</Name>
@@ -1416,42 +1429,7 @@
     <Value>-1</Value>
   </Special>
   <Special>
-    <Name>Bomber</Name>
-    <Special>Aircraft</Special>
-    <Value>10</Value>
-  </Special>
-  <Special>
-    <Name>Carrier</Name>
-    <Special>AircraftCarrier</Special>
-    <Value>-1</Value>
-  </Special>
-  <Special>
-    <Name>Carrier</Name>
-    <Special>Regen</Special>
-    <Value>-1</Value>
-  </Special>
-  <Special>
-    <Name>Fighter</Name>
-    <Special>Aircraft</Special>
-    <Value>11</Value>
-  </Special>
-  <Special>
     <Name>Treant</Name>
-    <Special>Regen</Special>
-    <Value>-1</Value>
-  </Special>
-  <Special>
-    <Name>Sylph</Name>
-    <Special>Shield</Special>
-    <Value>85</Value>
-  </Special>
-  <Special>
-    <Name>Sylph</Name>
-    <Special>Regen</Special>
-    <Value>-1</Value>
-  </Special>
-  <Special>
-    <Name>Troll</Name>
     <Special>Regen</Special>
     <Value>-1</Value>
   </Special>
@@ -1491,11 +1469,6 @@
     <Value>-1</Value>
   </Special>
   <Special>
-    <Name>Fanglers</Name>
-    <Special>Submerged</Special>
-    <Value>-1</Value>
-  </Special>
-  <Special>
     <Name>Engagers</Name>
     <Special>Aircraft</Special>
     <Value>5</Value>
@@ -1513,6 +1486,46 @@
   <Special>
     <Name>Shield</Name>
     <Special>AircraftCarrier</Special>
+    <Value>-1</Value>
+  </Special>
+  <Special>
+    <Name>Sylph</Name>
+    <Special>Shield</Special>
+    <Value>85</Value>
+  </Special>
+  <Special>
+    <Name>Sylph</Name>
+    <Special>Regen</Special>
+    <Value>-1</Value>
+  </Special>
+  <Special>
+    <Name>Fighter</Name>
+    <Special>Aircraft</Special>
+    <Value>11</Value>
+  </Special>
+  <Special>
+    <Name>Bomber</Name>
+    <Special>Aircraft</Special>
+    <Value>10</Value>
+  </Special>
+  <Special>
+    <Name>Carrier</Name>
+    <Special>AircraftCarrier</Special>
+    <Value>-1</Value>
+  </Special>
+  <Special>
+    <Name>Carrier</Name>
+    <Special>Regen</Special>
+    <Value>-1</Value>
+  </Special>
+  <Special>
+    <Name>Troll</Name>
+    <Special>Regen</Special>
+    <Value>-1</Value>
+  </Special>
+  <Special>
+    <Name>Fanglers</Name>
+    <Special>Submerged</Special>
     <Value>-1</Value>
   </Special>
 </UnitSchema>

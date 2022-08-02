@@ -19,7 +19,7 @@ namespace UnitBalance
             //const double damMult = damage * DamMultPercent, damStatic = damage - damMult;
             double sum = 0, tot = 1000000;
             for (int a = 0; a < tot; ++a)
-                sum += Math.Max(0, Attack.DoDamage(damage, divide, armor, shield));
+                sum += Math.Max(0, Attack.DoDamage(damage, divide, armor, shield, out _));
 
             Console.WriteLine(damage);
             Console.WriteLine(divide);

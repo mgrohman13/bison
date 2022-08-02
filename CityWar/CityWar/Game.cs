@@ -244,14 +244,37 @@ namespace CityWar
             }
         }
 
-        public int AttackUnit(Battle b, Attack attack, Unit target, out double relic)
+        public int AttackUnit(Battle b, Attack attack, Unit target, out double relic, out Tuple<Unit, int, int, double> splash)
         {
+            splash = null;
             int retVal = attack.AttackUnit(target, out relic);
+            if (target.Dead)
+                b.defenders.Remove(target);
 
             if (retVal > -1)
             {
-                if (target.Dead)
-                    b.defenders.Remove(target);
+                if (attack.Special == Attack.SpecialType.Splash)
+                {
+                    attack.Used = false;
+                    var targets = b.defenders.Where(u => attack.CanAttack(u));
+                    if (targets.Any())
+                    {
+                        double count = targets.Sum(u => u.IsThree ? Math.Sqrt(u.Attacks.Length) : 1);
+                        double hp = targets.Sum(u => Math.Sqrt(u.Hits * u.MaxHits));
+                        double chance = count / (3.9 + count) * hp / (130 * hp);
+                        targets = targets.Where(u => u != target);
+                        if (targets.Any() && Random.Bool(chance))
+                        {
+                            Unit splashTarget = Random.SelectValue(targets);
+                            int oldHits = splashTarget.hits;
+                            int splashDmg = attack.AttackUnit(splashTarget, out double splashRelic);
+                            splash = new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic);
+                            if (splashTarget.Dead)
+                                b.defenders.Remove(splashTarget);
+                        }
+                    }
+                    attack.Used = true;
+                }
 
                 if (attack.Owner.Owner == CurrentPlayer)
                 {

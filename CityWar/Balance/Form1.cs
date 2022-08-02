@@ -63,19 +63,19 @@ namespace UnitBalance
             this.txtNumber1.Text = input[++i];
             this.txtDivide1.Text = input[++i];
             this.txtLength1.Text = input[++i];
-            ++i; //attack special
+            this.txtSpecial1.Text = input[++i];
 
             this.txtType2.Text = input[++i];
             this.txtNumber2.Text = input[++i];
             this.txtDivide2.Text = input[++i];
             this.txtLength2.Text = input[++i];
-            ++i; //attack special
+            this.txtSpecial2.Text = input[++i];
 
             this.txtType3.Text = input[++i];
             this.txtNumber3.Text = input[++i];
             this.txtDivide3.Text = input[++i];
             this.txtLength3.Text = input[++i];
-            ++i; //attack special
+            this.txtSpecial3.Text = input[++i];
 
             abilities = new EnumFlags<Ability>();
             int.TryParse(input[++i], out fuel);
@@ -154,11 +154,11 @@ namespace UnitBalance
 
             Attack[] Attacks = new Attack[attacks];
             if (damage1 > 0)
-                Attacks[0] = CreateAttack(this.txtType1.Text, length1, damage1, divide1);
+                Attacks[0] = CreateAttack(this.txtType1.Text, length1, damage1, divide1, this.txtSpecial1.Text);
             if (damage2 > 0)
-                Attacks[1] = CreateAttack(this.txtType2.Text, length2, damage2, divide2);
+                Attacks[1] = CreateAttack(this.txtType2.Text, length2, damage2, divide2, this.txtSpecial2.Text);
             if (damage3 > 0)
-                Attacks[2] = CreateAttack(this.txtType3.Text, length3, damage3, divide3);
+                Attacks[2] = CreateAttack(this.txtType3.Text, length3, damage3, divide3, this.txtSpecial3.Text);
 
             //calculated values
             this.txtRegRate.Text = ((hits / ((double)regen * (move == 0 ? 1 : move)))).ToString("0.0");
@@ -230,7 +230,7 @@ namespace UnitBalance
             if (txtType.Text == "-" || txtType.Text == "")
                 value = double.NaN;
             else
-                value = Balance.Weapon(unitTypes, race, type, Attacks[num - 1].Target, damage, divide, length, move, air, fuel, isThree, num);
+                value = Balance.Weapon(unitTypes, race, type, Attacks[num - 1].Target, Attacks[num - 1].Special, damage, divide, length, move, air, fuel, isThree, num);
             ShowWeaponValue(txtValue, value);
         }
         private static void ShowWeaponValue(TextBox txtValue, double value)
@@ -247,7 +247,7 @@ namespace UnitBalance
             }
         }
 
-        private static Attack CreateAttack(string type, int length, int damage, int divide)
+        private static Attack CreateAttack(string type, int length, int damage, int divide, string special)
         {
             EnumFlags<TargetType> target = new EnumFlags<TargetType>();
             if (type.Contains("A"))
@@ -256,7 +256,7 @@ namespace UnitBalance
                 target.Add(TargetType.Ground);
             if (type.Contains("W"))
                 target.Add(TargetType.Water);
-            return new Attack(target, length, damage, divide);
+            return new Attack(target, length, damage, divide, UnitTypes.GetAttackSpecial(special));
         }
 
         //output to be pasted into excel
@@ -353,10 +353,11 @@ namespace UnitBalance
                     output.Append(attackRow.Damage + "\t");
                     output.Append(attackRow.Divide_By + "\t");
                     output.Append(attackRow.Length + "\t");
-                    output.Append("'-\t"); //attack special
+                    output.Append((attackRow.Special == null ? "'-" : attackRow.Special) + "\t");
                     attacknames[idx] = attackRow.Name;
-                    Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By);
-                    attackValues[idx] = Balance.Weapon(unitTypes, row.Race, type, Attacks[idx].Target, attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, abilities.Contains(Ability.Aircraft), fuel, row.IsThree, idx + 1);
+                    Attacks[idx] = CreateAttack(attackRow.Target_Type, attackRow.Length, attackRow.Damage, attackRow.Divide_By, attackRow.Special);
+                    attackValues[idx] = Balance.Weapon(unitTypes, row.Race, type, Attacks[idx].Target, UnitTypes.GetAttackSpecial(attackRow.Special),
+                        attackRow.Damage, attackRow.Divide_By, attackRow.Length, weaponMove, abilities.Contains(Ability.Aircraft), fuel, row.IsThree, idx + 1);
                     ++idx;
                 }
                 while (idx++ < 3)
@@ -420,17 +421,20 @@ namespace UnitBalance
             if (this.txtType1.Text != "-" && this.txtType1.Text != "")
             {
                 units.us.Attack.AddAttackRow(this.txtType1.Text, int.Parse(this.txtLength1.Text),
-                    int.Parse(this.txtNumber1.Text), int.Parse(this.txtDivide1.Text), unit, a1Name);
+                    int.Parse(this.txtNumber1.Text), int.Parse(this.txtDivide1.Text), unit, a1Name,
+                    this.txtSpecial1.Text == "-" ? null : this.txtSpecial1.Text);
 
                 if (this.txtType2.Text != "-" && this.txtType2.Text != "")
                 {
                     units.us.Attack.AddAttackRow(this.txtType2.Text, int.Parse(this.txtLength2.Text),
-                        int.Parse(this.txtNumber2.Text), int.Parse(this.txtDivide2.Text), unit, a2Name);
+                        int.Parse(this.txtNumber2.Text), int.Parse(this.txtDivide2.Text), unit, a2Name,
+                        this.txtSpecial2.Text == "-" ? null : this.txtSpecial2.Text);
 
                     if (this.txtType3.Text != "-" && this.txtType3.Text != "")
                     {
                         units.us.Attack.AddAttackRow(this.txtType3.Text, int.Parse(this.txtLength3.Text),
-                            int.Parse(this.txtNumber3.Text), int.Parse(this.txtDivide3.Text), unit, a3Name);
+                            int.Parse(this.txtNumber3.Text), int.Parse(this.txtDivide3.Text), unit, a3Name,
+                            this.txtSpecial3.Text == "-" ? null : this.txtSpecial3.Text);
                     }
                 }
             }
