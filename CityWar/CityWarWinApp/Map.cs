@@ -586,6 +586,10 @@ namespace CityWarWinApp
                     Tile thisTile = Game.GetTile(X, Y);
                     if (thisTile != null)
                     {
+                        //Brush textBrush = Brushes.Black;
+                        //if (thisTile.Terrain == Terrain.Forest || thisTile.Terrain == Terrain.Water)
+                        //    textBrush = Brushes.White;
+
                         //get the proper color
                         Brush theBrush;
                         switch (thisTile.Terrain)
@@ -594,7 +598,7 @@ namespace CityWarWinApp
                                 theBrush = Brushes.Green;
                                 break;
                             case Terrain.Mountain:
-                                theBrush = Brushes.Gold;
+                                theBrush = Brushes.DarkOrange;
                                 break;
                             case Terrain.Plains:
                                 theBrush = Brushes.Gray;
@@ -626,10 +630,7 @@ namespace CityWarWinApp
                         {
                             e.Graphics.DrawImage(thisTile.Treasure.GetPic(),
                                 xVal + _zoom / 9f + middle / 2f, yVal + _zoom / 3f + side / 3f);
-                            Brush b = Brushes.Black;
-                            if (thisTile.Terrain == Terrain.Forest || thisTile.Terrain == Terrain.Water)
-                                b = Brushes.White;
-                            e.Graphics.DrawString(thisTile.Treasure.Value.ToString(), tileInfoFont, b,
+                            e.Graphics.DrawString(thisTile.Treasure.Value.ToString(), tileInfoFont, Brushes.White,
                                 xVal + _zoom / 3.3f + middle, yVal - _zoom / 9f + side * 2.2f);
                         }
                     }
@@ -659,12 +660,25 @@ namespace CityWarWinApp
                             Tile thisTile = Game.GetTile(X, Y);
                             if (thisTile != null)
                             {
+                                ////Brush textBrush = Brushes.Black;
+                                ////if (thisTile.Terrain == Terrain.Forest || thisTile.Terrain == Terrain.Water)
+                                //Brush textBrush = Brushes.White;
+
                                 Image pic = thisTile.GetPieceImage();
                                 if (pic != null)
                                 {
                                     float xVal = (float)X * mid4 - OffX + (Y % 2 == 0 ? mid2 : 0f);
                                     float yVal = (float)Y * side3 - OffY;
                                     e.Graphics.DrawImage(pic, xVal + zoom_9, yVal - zoom_9zoom_6_m);
+
+                                    double str = thisTile.GetAllUnits().Sum(u => u.RandedCost);
+                                    if (str > 0)
+                                    {
+                                        string strDisp = str.ToString("0");
+                                        float strWidth = e.Graphics.MeasureString(strDisp, tileInfoFont).Width;
+                                        e.Graphics.DrawString(strDisp, tileInfoFont, Brushes.White,
+                                            xVal + Zoom - strWidth, yVal);
+                                    }
                                 }
                             }
                         }

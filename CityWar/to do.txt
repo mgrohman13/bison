@@ -37,7 +37,6 @@ balance
 
 interface	
 	main map
-		*show more map info - e.g. unit value?  capts?
 		chests look completely terrible past certain zoom 
 		graphic artifacts?
 	damage calculator
