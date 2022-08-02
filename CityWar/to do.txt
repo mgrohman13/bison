@@ -39,9 +39,7 @@ interface
 	main map
 		*show more map info - e.g. unit value?  capts?
 		chests look completely terrible past certain zoom 
-		graphic artifacts?	
-	info
-		*show visible score gain avg since last gained relic  
+		graphic artifacts?
 	damage calculator
 		multiple attacks
 	battles 

@@ -200,7 +200,7 @@ namespace CityWarWinApp
             foreach (Player p in Map.Game.GetPlayers())
             {
                 this.lbxOrder.Items.Add(p);
-                this.lbxScore.Items.Add(p.Score.ToString("0"));
+                this.lbxScore.Items.Add(string.Format("({1:0}) {0:0}", p.Score, p.Score - p.LastRelicScore));
                 int wizards, portals, cities, relics, units;
                 p.GetCounts(out wizards, out portals, out cities, out relics, out units);
                 this.lbxUnits.Items.Add("(" + units + ") " + p.GetArmyStrength().ToString("0"));

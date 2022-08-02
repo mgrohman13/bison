@@ -221,12 +221,12 @@ namespace CityWar
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;
-                owner.Owner.AddRelic(relicValue, true);
+                owner.Owner.AddScore(relicValue);
             }
             else
             {
                 relicValue *= unit.InverseCost;
-                unit.Owner.AddRelic(-relicValue, true);
+                unit.Owner.AddScore(-relicValue);
             }
 
             unit.Wound(damage);

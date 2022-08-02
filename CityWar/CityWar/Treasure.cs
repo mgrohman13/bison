@@ -11,6 +11,7 @@ namespace CityWar
     public class Treasure
     {
         private const int CityCountdown = 210, UnitCountdown = 260;
+        private const double CollectMin = 6.5, CollectMax = 13, CollectAvg = (CollectMin + CollectMax) / 2.0;
 
         public readonly TreasureType Type;
 
@@ -123,7 +124,7 @@ namespace CityWar
         private bool CollectCity(Tile tile, Player player)
         {
             //get population based on the number of turns remaining
-            player.Spend(0, CostType.Production, GetCountdownValue(CityCountdown));
+            player.Spend(0, CostType.Production, -GetCountdownValue(CityCountdown));
             if (Value == 0)
             {
                 //get the city
@@ -137,35 +138,35 @@ namespace CityWar
         {
             if (Value < 1)
                 throw new Exception();
-            player.Spend(0, CostType.Production, -GetCountdownValue(CityCountdown));
+            player.Spend(0, CostType.Production, GetCountdownValue(CityCountdown));
             return player.Population < 0;
         }
         private bool CollectMagic(Player player)
         {
-            player.SpendMagic(GetCollectValue());
+            player.SpendMagic(-GetCollectValue());
             return true;
         }
         private bool UndoCollectMagic(Player player)
         {
-            player.SpendMagic(-GetCollectValue());
+            player.SpendMagic(GetCollectValue());
             return player.Magic < 0;
         }
         private bool CollectRelic(Player player)
         {
             int CountRelics() => player.GetPieces().OfType<Relic>().Count();
             int relics = CountRelics();
-            player.AddRelic(-GetCollectValue());
+            player.AddRelic(GetCollectValue(), 0, CollectAvg);
             return relics == CountRelics();
         }
         private bool UndoCollectRelic(Player player)
         {
-            player.AddRelic(GetCollectValue());
+            player.AddRelic(-GetCollectValue(), 0, -CollectAvg);
             return player.Relic < 0;
         }
         private bool CollectUnit(Tile tile, Player player)
         {
             //get production based on the number of turns remaining
-            player.Spend(GetCountdownValue(UnitCountdown), CostType.Production, 0);
+            player.Spend(-GetCountdownValue(UnitCountdown), CostType.Production, 0);
             if (Value == 0)
             {
                 //get a random unit 
@@ -179,16 +180,16 @@ namespace CityWar
         {
             if (Value < 1)
                 throw new Exception();
-            player.Spend(-GetCountdownValue(UnitCountdown), CostType.Production, 0);
+            player.Spend(GetCountdownValue(UnitCountdown), CostType.Production, 0);
             return player.Production < 0;
         }
         private static int GetCollectValue()
         {
-            return -Game.Random.GaussianCappedInt(Game.Random.Range(6.5, 13), .052);
+            return Game.Random.GaussianCappedInt(Game.Random.Range(CollectMin, CollectMax), .052);
         }
         private int GetCountdownValue(double mult)
         {
-            return -Game.Random.GaussianCappedInt(Math.Sqrt(Value * mult), .065);
+            return Game.Random.GaussianCappedInt(Math.Sqrt(Value * mult), .065);
         }
 
         internal void Reset()

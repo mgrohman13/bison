@@ -12,7 +12,7 @@ namespace CityWar
     {
         #region fields and constructors
 
-        public const int WizardCost = 1300, RelicCost = 300, NoCaptRelicPenalty = 33;
+        public const int WizardCost = 1300, RelicCost = 300, NoCaptRelicPenalty = 30;
         public const int TradeDown = 9, TradeUp = 30;
         public const double WorkMult = (TradeDown + (TradeUp - TradeDown) / 3.0) / 10.0;
         public const double UpkeepMult = (TradeUp - (TradeUp - TradeDown) / 3.0) / 10.0;
@@ -27,6 +27,8 @@ namespace CityWar
 
         public int StartOrder { get; private set; }
         public bool StartCity { get; private set; }
+
+        public double LastRelicScore { get; private set; }
 
         private Game game;
         private List<Piece> pieces;
@@ -48,6 +50,7 @@ namespace CityWar
         internal void NewPlayer(Game game, bool city, string[] startUnits, double totalStartCost)
         {
             StartCity = city;
+            LastRelicScore = 0;
 
             this.game = game;
             this.pieces = new List<Piece>();
@@ -479,11 +482,19 @@ namespace CityWar
             magic -= amt;
         }
 
-        internal void AddRelic(double amt, bool scoring = false)
+        internal void AddScore(double amt)
         {
-            if (scoring)
-                score += amt;
-            Relic += Game.Random.GaussianInt(amt, .26);
+            score += amt;
+            AddRelic(amt, .26);
+        }
+        internal void AddRelic(double amt, double dev, double avg)
+        {
+            LastRelicScore -= avg;
+            AddRelic(amt, dev);
+        }
+        private void AddRelic(double amt, double dev)
+        {
+            Relic += Game.Random.GaussianInt(amt, dev);
         }
         internal void AddDeath(double amt)
         {
@@ -756,6 +767,7 @@ namespace CityWar
 
                 if (cur != null)
                 {
+                    LastRelicScore = this.score;
                     relicOffset = int.MinValue;
                     _relic -= RelicCost + (noCapts ? NoCaptRelicPenalty : 0);
                     new Relic(this, cur.Tile);
