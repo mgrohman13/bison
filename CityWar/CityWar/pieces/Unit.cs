@@ -259,18 +259,18 @@ namespace CityWar
 
         #region internal methods
 
-        internal bool CaptureCity()
+        internal bool CollectTreasure()
         {
-            if (IsAir() || movement < 1 || tile.CityTime < 0 || movement < MaxMove || tile.MadeCity)
+            if (IsAir() || movement < 1 || movement < MaxMove || tile.Treasure == null || tile.Treasure.Collected || !tile.Treasure.UnitCollect)
                 return false;
 
             movement = 0;
-            return tile.CaptureCity(this);
+            return tile.CollectTreasure(this);
         }
-        internal void UndoCaptureCity()
+        internal bool UndoCollectTreasure(Treasure treasure)
         {
             movement = MaxMove;
-            tile.UndoCaptureCity(this);
+            return tile.UndoCollectTreasure(this, treasure);
         }
 
         internal void Attacked(int length)

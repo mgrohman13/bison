@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Runtime.Serialization;
 
 namespace CityWar
@@ -18,8 +17,6 @@ namespace CityWar
         public const double WorkMult = (TradeDown + (TradeUp - TradeDown) / 3.0) / 10.0;
         public const double UpkeepMult = (TradeUp - (TradeUp - TradeDown) / 3.0) / 10.0;
         public const double TurnUpkPct = .13;
-
-        private static float zoom = -1;
 
         [NonSerialized]
         private Dictionary<string, Bitmap> pics = new(), picsConst = new();
@@ -91,7 +88,7 @@ namespace CityWar
             }
             else
             {
-                int maxRelic = Math.Min(260, RelicCost + relicOffset - relic - 1);
+                int maxRelic = Math.Min(260, RelicCost + relicOffset - Relic - 1);
                 int numTypes = Game.Random.GaussianCappedInt(3.5, .21, 2);
                 int[] elementals = AddStartResources(390, ref _relic, Game.Random.RangeInt(78, 130), maxRelic, numTypes);
 
@@ -318,11 +315,11 @@ namespace CityWar
                 return magic;
             }
         }
-        public int Relic
+        public int RelicProgress
         {
             get
             {
-                return relic + RelicCost - relicOffset;
+                return Relic + RelicCost - relicOffset;
             }
         }
         public int Work
@@ -392,7 +389,7 @@ namespace CityWar
             if (inclWiz)
                 result += magic;
             if (inclRel)
-                result += relic;
+                result += Relic;
 
             return result;
         }
@@ -482,10 +479,11 @@ namespace CityWar
             magic -= amt;
         }
 
-        internal void AddRelic(double amt)
+        internal void AddRelic(double amt, bool scoring = false)
         {
-            score += amt;
-            relic += Game.Random.GaussianInt(amt, .26);
+            if (scoring)
+                score += amt;
+            Relic += Game.Random.GaussianInt(amt, .26);
         }
         internal void AddDeath(double amt)
         {
@@ -529,7 +527,7 @@ namespace CityWar
             Action<int> population = (amt => this.population += amt);
             Action<int> production = (amt => this.production += amt);
             Action<int> magic = (amt => this.magic += amt);
-            Action<int> relic = (amt => this.relic += amt);
+            Action<int> relic = (amt => this.Relic += amt);
             Action<int> death = (amt => this.death += amt);
             Action<int> air = (amt => this.air += amt);
             Action<int> earth = (amt => this.earth += amt);
@@ -741,7 +739,7 @@ namespace CityWar
 
         #region relic
 
-        internal int relic
+        internal int Relic
         {
             get
             {
@@ -758,11 +756,11 @@ namespace CityWar
             if (relicOffset < 0)
                 relicOffset = Game.Random.RangeInt(0, RelicCost);
 
-            if (relic - relicOffset >= RelicCost)
+            if (Relic - relicOffset >= RelicCost)
             {
                 Piece cur = RandomCapturable();
                 bool noCapts = (cur == null);
-                if (noCapts && relic - relicOffset >= RelicCost + NoCaptRelicPenalty)
+                if (noCapts && Relic - relicOffset >= RelicCost + NoCaptRelicPenalty)
                     cur = Game.Random.SelectValue(pieces);
 
                 if (cur != null)
@@ -794,115 +792,19 @@ namespace CityWar
 
         public Bitmap GetPic(string name)
         {
-            return GetPic(name, false);
+            return ImageUtil.GetPic(this, name, pics, picsConst, false);
         }
         public Bitmap GetConstPic(string name)
         {
-            return GetPic(name, true);
+            return ImageUtil.GetPic(this, name, pics, picsConst, true);
         }
-        private Bitmap GetPic(string name, bool constPic)
+        public static void ResetPics(Player[] players)
         {
-            Dictionary<string, Bitmap> pics = constPic ? this.picsConst : this.pics;
-            if (!pics.ContainsKey(name))
-                CreatePic(name, constPic);
-            return pics[name];
-        }
-        private void CreatePic(string name, bool constPic)
-        {
-            string loadName = name.Replace(" (1)", "1").Replace(" (2)", "2").Replace(" (3)", "3");
-
-            Color portalColor = Color.FromArgb(200, 0, 0);
-            if (name.EndsWith(" Portal") || name.EndsWith(" PortalUnit"))
+            foreach (Player p in players)
             {
-                string[] split = name.Split(' ');
-                switch (split[0])
-                {
-                    case "Air":
-                        portalColor = Color.Gray;
-                        break;
-                    case "Death":
-                        portalColor = Color.Black;
-                        break;
-                    case "Earth":
-                        portalColor = Color.Gold;
-                        break;
-                    case "Nature":
-                        portalColor = Color.Green;
-                        break;
-                    case "Water":
-                        portalColor = Color.Blue;
-                        break;
-                }
-                loadName = split[1];
-            }
-
-            Bitmap pic;
-            //dont bother saving a const pic if the name ends with unit; it will never be drawn in a panel
-            bool file = (constPic || name.EndsWith("Unit"));
-            if (file)
-                pic = LoadPicFromFile(loadName, portalColor);
-            else
-                pic = GetConstPic(name);
-
-            if (constPic)
-                picsConst.Add(name, pic);
-            else
-                pics.Add(name, ResizePic(pic, file));
-        }
-        private Bitmap LoadPicFromFile(string name, Color portalColor)
-        {
-            Bitmap basePic;
-            try
-            {
-                basePic = new Bitmap(Game.ResourcePath + "pics\\" + name + ".bmp");
-            }
-            catch
-            {
-                basePic = new Bitmap(Game.ResourcePath + "pics\\notFound.bmp");
-            }
-            //white is transparent
-            basePic.MakeTransparent(Color.FromArgb(255, 255, 255));
-
-            //change the gray to the player color and the red to the poral color
-            ImageAttributes colorRemapping = new();
-            ColorMap playerMap = new();
-            playerMap.OldColor = Color.FromArgb(100, 100, 100);
-            playerMap.NewColor = Color;
-            ColorMap portalMap = new();
-            portalMap.OldColor = Color.FromArgb(200, 0, 0);
-            portalMap.NewColor = portalColor;
-            colorRemapping.SetRemapTable(new ColorMap[] { playerMap, portalMap });
-
-            Bitmap pic = new(100, 100);
-            Graphics g = Graphics.FromImage(pic);
-            //draw it to a new image to remap the colors
-            g.DrawImage(basePic, new Rectangle(0, 0, 100, 100), 0, 0, 100, 100, GraphicsUnit.Pixel, colorRemapping);
-
-            g.Dispose();
-            basePic.Dispose();
-            colorRemapping.Dispose();
-
-            //return the new image
-            return pic;
-        }
-        private Bitmap ResizePic(Bitmap pic, bool dispose)
-        {
-            Bitmap newPic = new(pic, Game.Random.Round(zoom * 5f / 6f), Game.Random.Round(zoom * 5f / 6f));
-            if (dispose)
-                pic.Dispose();
-            return newPic;
-        }
-        internal static void ResetPics(Player[] players, float zoom)
-        {
-            if (Math.Abs(Player.zoom - zoom) > 1)
-            {
-                Player.zoom = zoom;
-                foreach (Player p in players)
-                {
-                    foreach (Bitmap image in p.pics.Values)
-                        image.Dispose();
-                    p.pics.Clear();
-                }
+                foreach (Bitmap image in p.pics.Values)
+                    image.Dispose();
+                p.pics.Clear();
             }
         }
 
@@ -956,7 +858,7 @@ namespace CityWar
         }
         private void TradeRelic()
         {
-            relic = Trade(false, relic, "re");
+            Relic = Trade(false, Relic, "re");
         }
         public void TradeDeath(bool up)
         {
@@ -1135,7 +1037,7 @@ namespace CityWar
                 }
                 //if you did not have enough of the chosen standard resource, you may lose some magic or relic
                 while (Game.Random.Bool(1 - GetRandVal(amt)))
-                    if (magic > 0 || relic > 0)
+                    if (magic > 0 || Relic > 0)
                     {
                         switch (Game.Random.Next(8))
                         {
@@ -1150,7 +1052,7 @@ namespace CityWar
                             case 5:
                             case 6:
                             case 7:
-                                amt = relic;
+                                amt = Relic;
                                 TradeRelic();
                                 break;
                             default:
@@ -1413,8 +1315,8 @@ namespace CityWar
                 return Game.Random.Bool(c1 * c1 * c2);
             };
             bool inclWiz = include(magic, WizardCost);
-            // use public 0-600 Relic value (indicates how close you really are to a relic)
-            bool inclRel = include(Relic, 2 * RelicCost);
+            // use public 0-600 RelicProgress value (indicates how close you really are to a relic)
+            bool inclRel = include(RelicProgress, 2 * RelicCost);
 
             if (inclWiz || inclRel)
             {

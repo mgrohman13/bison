@@ -229,7 +229,7 @@ namespace CityWarWinApp
             this.lblWork.Text = currentPlayer.Work.ToString();
             this.lblProd.Text = currentPlayer.Production.ToString();
             this.lblWater.Text = currentPlayer.Water.ToString();
-            this.lblRelic.Text = currentPlayer.Relic.ToString();
+            this.lblRelic.Text = currentPlayer.RelicProgress.ToString();
             this.lblPpl.Text = currentPlayer.Population.ToString();
 
             //bold work when you are broke and may lose some resources
@@ -269,7 +269,8 @@ namespace CityWarWinApp
                         this.btnBuildPiece.Visible = true;
 
                     //if the tile has a neutral city and any pieces have full move, show the capture city button
-                    if (selectedTile.CityTime != -1 && !selectedTile.MadeCity && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && !p.IsAir())
+                    if (selectedTile.Treasure != null && selectedTile.Treasure.UnitCollect && !selectedTile.Treasure.Collected
+                            && p is Unit && p.MaxMove != 0 && p.Movement == p.MaxMove && !p.IsAir())
                         this.btnCaptureCity.Visible = true;
 
                     //if any selected pieces are units, show the disband units button
@@ -621,21 +622,15 @@ namespace CityWarWinApp
                         e.Graphics.DrawPolygon(Pens.White, points);
 
                         //draw tile information
-                        int wp = thisTile.WizardPoints;
-                        if (wp > -1)
+                        if (thisTile.Treasure != null)
                         {
-                            e.Graphics.FillEllipse(Brushes.DeepPink, xVal + zoom_9mid_2,
-                                    yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
-                            e.Graphics.DrawString(wp.ToString(), tileInfoFont, Brushes.Black,
-                                    xVal + zoom_4_5mid_2, yVal + _zoom_9side2_3);
-                        }
-                        int cp = thisTile.CityTime;
-                        if (cp > -1)
-                        {
-                            e.Graphics.FillEllipse(Brushes.DarkRed, xVal + zoom_9mid_2zoom_3,
-                                    yVal + _zoom_9side2_3_p, zoom_9, zoom_9);
-                            e.Graphics.DrawString(cp.ToString(), tileInfoFont, Brushes.Black,
-                                    xVal + zoom_4_5mid_2zoom_3, yVal + _zoom_9side2_3);
+                            e.Graphics.DrawImage(thisTile.Treasure.GetPic(),
+                                xVal + _zoom / 9f + middle / 2f, yVal + _zoom / 3f + side / 3f);
+                            Brush b = Brushes.Black;
+                            if (thisTile.Terrain == Terrain.Forest || thisTile.Terrain == Terrain.Water)
+                                b = Brushes.White;
+                            e.Graphics.DrawString(thisTile.Treasure.Value.ToString(), tileInfoFont, b,
+                                xVal + _zoom / 3.3f + middle, yVal - _zoom / 9f + side * 2.2f);
                         }
                     }
                 }
@@ -1293,7 +1288,7 @@ namespace CityWarWinApp
                 capture = bestUnits.First();
             }
 
-            Game.CaptureCity(capture);
+            Game.CollectTreasure(capture);
 
             //if no selected pieces have movement left, go to the next unit
             if (tile.GetSelectedPieces().Any(unit => unit.Movement > 0))

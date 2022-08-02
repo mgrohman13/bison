@@ -19,9 +19,7 @@ namespace CityWar
         private readonly List<Piece> pieces;
 
         private Terrain terrain;
-        private int wizardPoints;
-        private int cityTime;
-        private bool madeCity;
+        private Treasure treasure;
 
         internal Tile(Game game, int x, int y)
             : this(game, x, y, (Terrain)Game.Random.Next(4))
@@ -38,9 +36,7 @@ namespace CityWar
             this.pieces = new List<Piece>();
 
             this.terrain = terrain;
-            this.wizardPoints = -1;
-            this.cityTime = -1;
-            this.madeCity = false;
+            this.treasure = null;
         }
 
         #endregion //fields and constructors
@@ -58,25 +54,11 @@ namespace CityWar
                 group = value;
             }
         }
-        public bool MadeCity
+        public Treasure Treasure
         {
             get
             {
-                return madeCity;
-            }
-        }
-        public int WizardPoints
-        {
-            get
-            {
-                return wizardPoints;
-            }
-        }
-        public int CityTime
-        {
-            get
-            {
-                return cityTime;
+                return treasure;
             }
         }
         public Terrain Terrain
@@ -161,11 +143,15 @@ namespace CityWar
 
         public bool HasWizard()
         {
-            return pieces.OfType<Wizard>().Any();
+            return Has<Wizard>(Treasure.TreasureType.Wizard);
         }
         public bool HasCity()
         {
-            return (cityTime > 0 || pieces.OfType<City>().Any());
+            return Has<City>(Treasure.TreasureType.City);
+        }
+        private bool Has<T>(Treasure.TreasureType type) where T : Piece
+        {
+            return (treasure != null && treasure.Type == type) || pieces.OfType<T>().Any();
         }
 
         public Image GetPieceImage()
@@ -427,63 +413,33 @@ namespace CityWar
 
         internal bool Add(Piece p)
         {
-            bool canUndo = true;
             SortedInsert(pieces, p, ComparePieces);
             hasCenterPiece = false;
 
-            if (p is Wizard && wizardPoints > 0)
+            if (treasure != null && treasure.MoveTo(this, p))
             {
-                p.Owner.CollectWizardPts(wizardPoints, this.Terrain);
-                wizardPoints = -1;
-                Game.CreateWizardPts();
-                canUndo = false;
-            }
-
-            return canUndo;
-        }
-
-        internal bool CaptureCity(Unit unit)
-        {
-            --cityTime;
-            madeCity = true;
-
-            Player player = unit.Owner;
-            //get population based on the number of turns remaining
-            player.Spend(0, CostType.Production, -GetCaptureCityPop());
-            //get a little bit of work as if the unit partially rested
-            player.AddWork(GetCaptureCityWork(unit));
-
-            if (cityTime == 0)
-            {
-                //get the city
-                player.AddUpkeep(390, .039);
-                new City(player, this);
-
-                cityTime = -1;
+                treasure = null;
                 return false;
             }
             return true;
         }
-        internal void UndoCaptureCity(Unit unit)
+
+        internal bool CollectTreasure(Unit unit)
         {
-            Player player = unit.Owner;
-
-            if (cityTime < 1)
-                throw new Exception();
-
-            player.Spend(0, CostType.Production, GetCaptureCityPop());
-            player.AddWork(-GetCaptureCityWork(unit));
-
-            ++cityTime;
-            madeCity = false;
+            if (treasure.Collect(this, unit, out bool canUndo))
+                treasure = null;
+            return canUndo;
         }
-        private int GetCaptureCityPop()
+        internal bool UndoCollectTreasure(Unit unit, Treasure treasure)
         {
-            return Game.Random.GaussianCappedInt(Math.Sqrt(cityTime * 210), .065);
-        }
-        private static double GetCaptureCityWork(Unit u)
-        {
-            return u.WorkRegen * u.MaxMove * .52;
+            if (this.treasure == null)
+                if (Treasure.CanCreate(this, treasure.Type))
+                    this.treasure = treasure;
+                else
+                    return false;
+            else if (this.treasure != treasure)
+                return false;
+            return treasure.UndoCollect(unit);
         }
 
         internal bool CheckCapture(Player owner)
@@ -496,29 +452,14 @@ namespace CityWar
                     canUndo = false;
                 }
             return canUndo;
-        }
+        } 
 
-        internal void MakeWizPts()
+        internal void CreateTreasure(Treasure.TreasureType type)
         {
-            TryMakeWizPts();
-            //should not have tried to place too close to existing wizard points
-            if (this.wizardPoints < 1)
-                throw new Exception();
-        }
-        internal void TryMakeWizPts()
-        {
-            //the amount is one less than the distance to the nearest wizard or wizardpoints
-            this.wizardPoints = FindDistance(tile => tile.HasWizard() || tile.wizardPoints > 0) - 1;
-            //if adjacent, cannot place
-            if (this.wizardPoints < 1)
-                this.wizardPoints = -1;
-        }
-
-        internal void MakeCitySpot(int time)
-        {
-            if (HasCity())
-                throw new Exception();
-            cityTime = time;
+            if (treasure != null && (treasure.Type == type || Game.Random.Bool()))
+                treasure.AddTo();
+            if (treasure == null && Treasure.CanCreate(this, type))
+                treasure = new Treasure(this, type);
         }
 
         public bool HasCarrier()
@@ -566,7 +507,8 @@ namespace CityWar
 
         internal void Reset()
         {
-            madeCity = false;
+            if (treasure != null)
+                treasure.Reset();
             foreach (Capturable c in this.pieces.OfType<Capturable>())
                 c.EarnedIncome = false;
         }
@@ -886,7 +828,7 @@ namespace CityWar
 
         #region find distance
 
-        private int FindDistance(Predicate<Tile> match)
+        internal int FindDistance(Predicate<Tile> match)
         {
             return FindDistance(match, int.MaxValue);
         }

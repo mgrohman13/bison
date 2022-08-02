@@ -303,7 +303,7 @@ namespace CityWarWinApp
             this.btnCaptureCity.Name = "btnCaptureCity";
             this.btnCaptureCity.Size = new System.Drawing.Size(86, 25);
             this.btnCaptureCity.TabIndex = 0;
-            this.btnCaptureCity.Text = "City";
+            this.btnCaptureCity.Text = "Collect";
             this.btnCaptureCity.UseVisualStyleBackColor = false;
             this.btnCaptureCity.Visible = false;
             this.btnCaptureCity.Click += new System.EventHandler(this.btnBuildCity_Click);

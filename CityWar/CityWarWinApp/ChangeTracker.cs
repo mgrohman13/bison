@@ -35,18 +35,19 @@ namespace CityWarWinApp
         private class Tileinfo
         {
             private readonly Terrain terrain;
-            private readonly bool wizPts, cityTime;
+            private readonly Treasure.TreasureType? treasure;
+            private readonly int? treasureValue;
             private readonly HashSet<Piece> pieces;
             public Tileinfo(Tile tile)
             {
                 this.terrain = tile.Terrain;
-                this.wizPts = tile.WizardPoints > -1;
-                this.cityTime = tile.CityTime > -1;
+                this.treasure = tile.Treasure?.Type;
+                this.treasureValue = tile.Treasure?.Value;
                 this.pieces = tile.GetAllPieces().ToHashSet();
             }
             public bool Equals(Tileinfo other)
             {
-                return terrain == other.terrain && wizPts == other.wizPts && cityTime == other.cityTime && pieces.SetEquals(other.pieces);
+                return terrain == other.terrain && treasure == other.treasure && treasureValue == other.treasureValue && pieces.SetEquals(other.pieces);
             }
         }
         internal void StartNextTurn()
@@ -94,7 +95,7 @@ namespace CityWarWinApp
                 for (int y = 0; y < Map.Game.Diameter; y++)
                 {
                     Tile t = Map.Game.GetTile(x, y);
-                    if (t != null && t.WizardPoints > -1)
+                    if (t != null && t.Treasure != null)
                         r.Add(t);
                 }
             return r;

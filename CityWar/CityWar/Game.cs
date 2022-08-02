@@ -137,7 +137,7 @@ namespace CityWar
             for (int a = 0; a < wizspots; ++a)
                 CreateWizardPts(true);
             for (int a = 0; a < numPlayers; ++a)
-                CreateCitySpot();
+                CreateTreasure();
 
             //	Start the game!
             Player.SubtractCommonUpkeep(players);
@@ -202,7 +202,7 @@ namespace CityWar
                 return null;
 
             if (piece.Owner.Air < 0 || piece.Owner.Death < 0 || piece.Owner.Earth < 0 || piece.Owner.Nature < 0 || piece.Owner.Production < 0 || piece.Owner.Water < 0
-                    || piece.Owner.Magic < 0 || piece.Owner.relic < 0 || piece.Owner.Population < 0 || piece.Owner.GetTurnUpkeep() < 0 || piece.Owner.Work < 0)
+                    || piece.Owner.Magic < 0 || piece.Owner.Relic < 0 || piece.Owner.Population < 0 || piece.Owner.GetTurnUpkeep() < 0 || piece.Owner.Work < 0)
             {
             }
             piece.Owner.CheckNegativeResources();
@@ -676,27 +676,27 @@ namespace CityWar
             return piece;
         }
 
-        public void CaptureCity(Unit unit)
+        public void CollectTreasure(Unit unit)
         {
             if (players[currentPlayer] != unit.Owner)
                 return;
 
-            if (unit.CaptureCity())
+            Treasure treasure = unit.Tile.Treasure;
+            if (unit.CollectTreasure())
             {
-                UndoCommands.Push(UndoCaptureCity);
-                UndoArgs.Push(new object[] { unit });
+                UndoCommands.Push(UndoCollectTreasure);
+                UndoArgs.Push(new object[] { unit, treasure });
             }
         }
-        private Piece UndoCaptureCity(object[] args)
+        private Piece UndoCollectTreasure(object[] args)
         {
             Unit unit = (Unit)args[0];
+            Treasure treasure = (Treasure)args[1];
 
-            unit.UndoCaptureCity();
-
-            if (unit.Owner.Population < 0 || unit.Owner.Work < 0)
+            if (unit.UndoCollectTreasure(treasure))
             {
                 int stack = UndoCommands.Count;
-                CaptureCity(unit);
+                CollectTreasure(unit);
                 RemoveUndos(stack);
             }
             return unit;
@@ -884,7 +884,12 @@ namespace CityWar
 
         public void ResetPics(float zoom)
         {
-            Player.ResetPics(this.players, zoom);
+            if (Math.Abs(ImageUtil.Zoom - zoom) > 1)
+            {
+                ImageUtil.Zoom = zoom;
+                Player.ResetPics(this.players);
+                Treasure.ResetPics();
+            }
         }
 
         public ReadOnlyDictionary<Player, int> GetWon()
@@ -968,7 +973,7 @@ namespace CityWar
             int create = 1;
             if (!alwaysOne)
             {
-                int count = map.OfType<Tile>().Count(t => t.WizardPoints > 0);
+                int count = map.OfType<Tile>().Count(t => t.Treasure != null && t.Treasure.Type == Treasure.TreasureType.Wizard);
                 double target = NumWizSpots();
                 //if (count < target)
                 //    target += Math.Pow(1 / (count + 1.0), 2.6); 
@@ -977,8 +982,13 @@ namespace CityWar
             }
             for (int a = 0; a < create; a++)
             {
-                Tile tile = RandomTile(neighbor => neighbor == null || (neighbor.WizardPoints < 1 && !neighbor.HasWizard()));
-                tile.MakeWizPts();
+                Tile tile;
+                do
+                    tile = RandomTile(neighbor => neighbor == null || !neighbor.HasWizard());
+                while (tile.Treasure != null);
+                tile.CreateTreasure(Treasure.TreasureType.Wizard);
+                if (tile.Treasure == null)
+                    throw new Exception();
             }
         }
 
@@ -1055,7 +1065,7 @@ namespace CityWar
                 //the order of these should be irrelevant
                 ResetTiles();
                 ChangeMap();
-                CreateCitySpot();
+                CreateTreasure();
                 ChangeMoveOrder();
                 Player.SubtractCommonUpkeep(this.players);
             }
@@ -1232,10 +1242,18 @@ namespace CityWar
                     {
                         piece.Tile.Remove(piece);
                         win.Remove(piece);
-                        if (piece is City && Game.Random.Bool())
-                            MakeCitySpot(piece.Tile);
-                        if (piece is Wizard && Game.Random.Bool())
-                            piece.Tile.TryMakeWizPts();
+                        if (Game.Random.Bool())
+                            if (piece is City)
+                                piece.Tile.CreateTreasure(Treasure.TreasureType.City);
+                            else if (piece is Wizard)
+                                piece.Tile.CreateTreasure(Game.Random.Bool(.78) ? Treasure.TreasureType.Magic : Treasure.TreasureType.Wizard);
+                            else if (piece is Portal && Game.Random.Bool(.91))
+                                piece.Tile.CreateTreasure(Game.Random.Bool(.39) ? Treasure.TreasureType.Magic : Treasure.TreasureType.Wizard);
+                            else if (piece is Relic && Game.Random.Bool(.65))
+                                piece.Tile.CreateTreasure(Treasure.TreasureType.Relic);
+                            else if (piece is Unit unit && Game.Random.Bool(unit.RandedCost / (unit.RandedCost + 1690)))
+                                piece.Tile.CreateTreasure(Treasure.TreasureType.Unit);
+                            else throw new Exception();
                     }
             }
         }
@@ -1272,23 +1290,29 @@ namespace CityWar
             }
         }
 
-        private void CreateCitySpot()
+        private void CreateTreasure()
         {
-            //cities cannot be on the edge, so subtract 2 from diameter, and scale only with sqrt
-            int amt = Random.OEInt(Math.Sqrt(GetMapSize(Diameter - 2) / 910.0));
-            for (int a = 0; a < amt; ++a)
+            //cities cannot be on the edge so subtract 2 from diameter, also scale only with sqrt
+            int cities = Random.OEInt(Math.Sqrt(GetMapSize(Diameter - 2) / 910.0));
+            for (int a = 0; a < cities; ++a)
             {
                 //select a tile not on the map edge
                 Tile tile = RandomTile(neighbor => neighbor != null);
-                //don't try again if it is on or next to an existing city
-                if (tile.GetNeighbors(true).All(neighbor => !neighbor.HasCity()))
-                    MakeCitySpot(tile);
+                //don't try again if it is on or next to an existing city 
+                tile.CreateTreasure(Treasure.TreasureType.City);
             }
-        }
 
-        private static void MakeCitySpot(Tile tile)
-        {
-            tile.MakeCitySpot(Random.GaussianOEInt(7.8, .39, .169, 1));
+            int other = Random.OEInt(Math.Sqrt(GetMapSize(Diameter) / 910.0));
+            for (int b = 0; b < other; ++b)
+            {
+                Tile tile = RandomTile();
+                if (!tile.Occupied())
+                {
+                    Treasure.TreasureType type = Random.SelectValue(new Treasure.TreasureType[] {
+                        Treasure.TreasureType.Magic, Treasure.TreasureType.Relic, Treasure.TreasureType.Unit });
+                    tile.CreateTreasure(type);
+                }
+            }
         }
 
         private void ChangeMoveOrder()

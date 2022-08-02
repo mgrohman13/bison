@@ -16,8 +16,8 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <TargetFrameworkProfile />	
-	<LangVersion>latest</LangVersion>
+    <TargetFrameworkProfile />
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Balance.cs" />
     <Compile Include="Battle.cs" />
+    <Compile Include="ImageUtil.cs" />
     <Compile Include="pieces\Attack.cs" />
     <Compile Include="pieces\Capturable.cs" />
     <Compile Include="pieces\City.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Tile.cs" />
     <Compile Include="pieces\Unit.cs" />
     <Compile Include="pieces\Wizard.cs" />
+    <Compile Include="Treasure.cs" />
     <Compile Include="UnitSchema.cs">
       <DependentUpon>UnitSchema.xsd</DependentUpon>
     </Compile>

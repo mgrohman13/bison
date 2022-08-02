@@ -508,7 +508,7 @@ namespace CityWarWinApp
             this.lblWork.Text = current.Work.ToString();
             this.lblProd.Text = current.Production.ToString();
             this.lblWater.Text = current.Water.ToString();
-            this.lblRelic.Text = current.Relic.ToString();
+            this.lblRelic.Text = current.RelicProgress.ToString();
             this.lblPpl.Text = current.Population.ToString();
         }
 

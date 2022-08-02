@@ -1,25 +1,8 @@
 before next:
-	treasure
 	weapon abilities
  
 gameplay
-	*collectable treasure
-		limit to one treasure per tile
-		unit collect:
-			cityspots
-			magic/relic (+21/turn, few)
-				magic count down to elem unit?
-			units
-				if magic count down to elem, only to prod unit?
-				takes turns? gives prod (if not separate for elem, give random resource)
-		wiz collect:
-			wizpts 
-		winning player leave behind:
-			city 
-			wizard 
-			relic 
-			portal 
-			unit (lower chance)
+	*redo wizpts distribution, turn order balancing
 	allow gamble move to use in between 1-full move
 	group move from different hexes
 	teleporters
@@ -55,8 +38,8 @@ balance
 
 interface	
 	main map
-		*better treasure (wiz/city spots) graphics 
 		*show more map info - e.g. unit value?  capts?
+		chests look completely terrible past certain zoom 
 		graphic artifacts?	
 	info
 		*show visible score gain avg since last gained relic  

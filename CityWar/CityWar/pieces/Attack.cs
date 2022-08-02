@@ -135,7 +135,7 @@ namespace CityWar
         }
         public static int GetMinDamage(double damage, double divide, double armor, int shield)
         {
-            int minDamage = (int)((damage * (1 - DamMultPercent) - armor / divide) * getShieldMult(shield));
+            int minDamage = (int)((damage * (1 - DamMultPercent) - armor / divide) * GetShieldMult(shield));
             return (minDamage > 0 ? minDamage : 0);
         }
 
@@ -221,12 +221,12 @@ namespace CityWar
             if (relicValue > 0)
             {
                 relicValue *= unit.RandedCost;
-                owner.Owner.AddRelic(relicValue);
+                owner.Owner.AddRelic(relicValue, true);
             }
             else
             {
                 relicValue *= unit.InverseCost;
-                unit.Owner.AddRelic(-relicValue);
+                unit.Owner.AddRelic(-relicValue, true);
             }
 
             unit.Wound(damage);
@@ -269,10 +269,10 @@ namespace CityWar
             double damMult = damage * DamMultPercent;
             int d = Game.Random.Round(damage - damMult - armor / (double)pierce) + Game.Random.OEInt(damMult);
             if (shield > 0)
-                d = Game.Random.Round(d * getShieldMult(shield));
+                d = Game.Random.Round(d * GetShieldMult(shield));
             return d;
         }
-        private static double getShieldMult(int shield)
+        private static double GetShieldMult(int shield)
         {
             return (100 - shield) / 100.0;
         }
@@ -281,7 +281,7 @@ namespace CityWar
             killPct = 0;
             avgRelic = 0;
             double avgDamage = 0, total = 0;
-            double shieldMult = getShieldMult(shield);
+            double shieldMult = GetShieldMult(shield);
 
             double damMult = damage * DamMultPercent;
             double damStatic = damage - damMult - targetArmor / divide;
