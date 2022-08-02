@@ -64,14 +64,14 @@ namespace CityWar
         {
             if (!Collected && !UnitCollect)
             {
-                if (Type == TreasureType.Wizard && piece is Wizard)
+                if (Type != TreasureType.Wizard) throw new Exception();
+                if (piece is Wizard)
                 {
                     Collected = true;
                     piece.Owner.CollectResources(true, Value, tile.Terrain);
                     tile.Game.CreateWizardPts();
                     return true;
                 }
-                else throw new Exception();
             }
             return false;
         }
