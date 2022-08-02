@@ -44,11 +44,8 @@ namespace CityWar
         public bool CanMove(Tile t)
         {
             if (tile.IsNeighbor(t))
-            {
-                Player occupying;
-                if (!t.OccupiedByUnit(out occupying) || (owner == occupying))
+                if (!t.OccupiedByUnit(out Player occupying) || (owner == occupying))
                     return CanMoveChild(t);
-            }
             return false;
         }
 
@@ -93,7 +90,7 @@ namespace CityWar
         {
             get
             {
-                return (this.path == null ? null : this.path.ToList());
+                return this.path?.ToList();
             }
             internal set
             {
@@ -142,13 +139,12 @@ namespace CityWar
 
         internal static Dictionary<Piece, bool> GroupMove(List<Piece> pieces, Tile t, bool gamble)
         {
-            Dictionary<Piece, bool> undoPieces = new Dictionary<Piece, bool>(pieces.Count);
+            Dictionary<Piece, bool> undoPieces = new(pieces.Count);
 
             if (pieces.Count < 2)
             {
                 Piece move = pieces[0];
-                bool canUndo;
-                move.Move(t, gamble, out canUndo);
+                move.Move(t, gamble, out bool canUndo);
                 undoPieces.Add(move, canUndo);
                 return undoPieces;
             }
@@ -161,26 +157,21 @@ namespace CityWar
                 //collect units that may not make it
                 units = new List<Unit>();
                 foreach (Piece p in pieces)
-                {
-                    Unit u = p as Unit;
-                    if (u != null && (u.Type == UnitType.Amphibious || u.Type == UnitType.Ground))
+                    if (p is Unit u && (u.Type == UnitType.Amphibious || u.Type == UnitType.Ground))
                         units.Add(u);
-                }
 
                 //move them, if any
                 anyUnits = units.Count > 0;
                 unitsMoved = (anyUnits && Unit.UnitGroupMove(units, t, undoPieces, gamble));
             }
 
-            bool any = unitsMoved;
             //only move everyone else if the units made it, or there were none
             if (!anyUnits || unitsMoved)
                 foreach (Piece p in Game.Random.Iterate<Piece>(pieces))
                     //move anyone that was not moved previously
                     if (units == null || !units.Contains(p as Unit))
                     {
-                        bool canUndo;
-                        p.Move(t, gamble, out canUndo);
+                        p.Move(t, gamble, out bool canUndo);
                         undoPieces.Add(p, canUndo);
                     }
 

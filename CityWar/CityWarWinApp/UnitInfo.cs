@@ -12,8 +12,8 @@ namespace CityWarWinApp
 {
     partial class UnitInfo : Form
     {
-        Font f1 = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-        Font f2 = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+        private readonly Font f1 = new("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+        private readonly Font f2 = new("Arial", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 
         public UnitInfo(Piece piece, Point location, int currentMove)
         {
@@ -29,10 +29,6 @@ namespace CityWarWinApp
             this.txtUnit.Text = piece.ToString();
 
             Unit unit = piece as Unit;
-            City city = piece as City;
-            Portal portal = piece as Portal;
-            Relic relic = piece as Relic;
-            Wizard wizard = piece as Wizard;
             if (unit != null)
             {
                 this.txtArmor.Text = GetModString(unit.Armor.ToString(), unit.BaseArmor.ToString());
@@ -51,7 +47,7 @@ namespace CityWarWinApp
             else
             {
                 this.txtType.Text = "Passive";
-                if (wizard != null)
+                if (piece is Wizard wizard)
                 {
                     this.txtCost.Text = Player.WizardCost.ToString();
                     this.txtMove.Text = GetMoveString(currentMove, wizard);
@@ -59,7 +55,7 @@ namespace CityWarWinApp
                 else
                 {
                     this.txtMove.Text = "0";
-                    if (portal != null)
+                    if (piece is Portal portal)
                     {
                         this.txtCost.Text = portal.Cost.ToString();
 
@@ -79,7 +75,7 @@ namespace CityWarWinApp
                         this.lblMove.Visible = false;
                         this.txtMove.Visible = false;
                     }
-                    else if (relic != null)
+                    else if (piece is Relic relic)
                     {
                         this.txtCost.Text = Player.RelicCost.ToString();
                     }

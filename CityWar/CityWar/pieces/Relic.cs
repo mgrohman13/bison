@@ -8,7 +8,7 @@ namespace CityWar
     {
         #region fields and constructors
 
-        private readonly List<string> units = new List<string>();
+        private readonly List<string> units = new();
 
         internal Relic(Player owner, Tile tile)
             : base(0, owner, tile, "Relic", CityWar.Ability.AircraftCarrier)
@@ -19,7 +19,7 @@ namespace CityWar
         private const double matchChance = .5, unmatchChance = .2;
         private static List<string> InitUnits(Game game, Terrain terrain)
         {
-            List<string> units = new List<string>();
+            List<string> units = new();
             foreach (string[] race in Game.Races.Values)
             {
                 bool any = false;
@@ -54,7 +54,7 @@ namespace CityWar
             foreach (string u in this.units.ToArray())
             {
                 Unit unit = Unit.CreateTempUnit(owner.Game, u);
-                if (tile.MatchesTerrain(unit.CostType) && Game.Random.Bool(1 - ( unmatchChance / matchChance )))
+                if (tile.MatchesTerrain(unit.CostType) && Game.Random.Bool(1 - (unmatchChance / matchChance)))
                     this.units.Remove(u);
             }
             //chance to add units matching the new terrain
@@ -63,7 +63,7 @@ namespace CityWar
                 {
                     Unit unit = Unit.CreateTempUnit(owner.Game, u);
                     if (!this.units.Contains(u) && Tile.MatchesTerrain(unit.CostType, newTerrain)
-                            && Game.Random.Bool(( matchChance - unmatchChance ) / ( 1 - unmatchChance )))
+                            && Game.Random.Bool((matchChance - unmatchChance) / (1 - unmatchChance)))
                         this.units.Add(u);
                 }
         }
@@ -79,7 +79,7 @@ namespace CityWar
 
             if (!raceCheck(name))
                 return false;
-            return ( units.Contains(name) );
+            return (units.Contains(name));
         }
 
         protected override bool CanMoveChild(Tile t)

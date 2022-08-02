@@ -13,10 +13,10 @@ namespace CityWarWinApp
 {
     public partial class Log : Form
     {
-        private static string LogPath = "cw.log";
+        private static readonly string LogPath = "cw.log";
 
         private static string log = "";
-        private static List<string> lines;
+        private static readonly List<string> lines;
 
         static Log()
         {
@@ -26,7 +26,7 @@ namespace CityWarWinApp
             try
             {
                 if (File.Exists(LogPath))
-                    using (StreamReader streamReader = new StreamReader(LogPath))
+                    using (StreamReader streamReader = new(LogPath))
                         while (!streamReader.EndOfStream)
                         {
                             string line = streamReader.ReadLine();
@@ -73,7 +73,7 @@ namespace CityWarWinApp
             textBox1.ScrollToCaret();
         }
 
-        private void btnEnd_Click(object sender, EventArgs e)
+        private void BtnEnd_Click(object sender, EventArgs e)
         {
             Close();
         }
@@ -82,7 +82,7 @@ namespace CityWarWinApp
         {
             try
             {
-                using (StreamWriter streamWriter = new StreamWriter(LogPath, true))
+                using (StreamWriter streamWriter = new(LogPath, true))
                     foreach (string line in lines)
                     {
                         streamWriter.Write(line);

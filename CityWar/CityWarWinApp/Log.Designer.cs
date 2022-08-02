@@ -59,7 +59,7 @@
             this.btnEnd.TabIndex = 2;
             this.btnEnd.Text = "Close";
             this.btnEnd.UseVisualStyleBackColor = false;
-            this.btnEnd.Click += new System.EventHandler(this.btnEnd_Click);
+            this.btnEnd.Click += new System.EventHandler(this.BtnEnd_Click);
             // 
             // Log
             // 

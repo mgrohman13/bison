@@ -7,7 +7,7 @@ namespace CityWar
 {
     public class UnitTypes
     {
-        private UnitSchema schema;
+        private readonly UnitSchema schema;
 
         public UnitTypes()
         {
@@ -32,25 +32,19 @@ namespace CityWar
 
         public static CityWar.UnitType GetType(String typeStr)
         {
-            switch (typeStr)
+            return typeStr switch
             {
-                case "W":
-                    return CityWar.UnitType.Water;
-                case "G":
-                    return CityWar.UnitType.Ground;
-                case "A":
-                    return CityWar.UnitType.Air;
-                case "GW":
-                    return CityWar.UnitType.Amphibious;
-                case "GWA":
-                    return CityWar.UnitType.Immobile;
-                default:
-                    throw new Exception();
-            }
+                "W" => CityWar.UnitType.Water,
+                "G" => CityWar.UnitType.Ground,
+                "A" => CityWar.UnitType.Air,
+                "GW" => CityWar.UnitType.Amphibious,
+                "GWA" => CityWar.UnitType.Immobile,
+                _ => throw new Exception(),
+            };
         }
         public static EnumFlags<TargetType> GetAttackTargets(String targetType)
         {
-            EnumFlags<TargetType> targets = new EnumFlags<TargetType>();
+            EnumFlags<TargetType> targets = new();
             if (targetType.Contains("G"))
                 targets.Add(TargetType.Ground);
             if (targetType.Contains("W"))
@@ -69,8 +63,7 @@ namespace CityWar
             double armor = 0, count = 0;
             CheckUnits(race, targets, (weight, unit) =>
             {
-                double addArmor;
-                Balance.GetValues(GetType(unit.Type), out _, out addArmor, out _);
+                Balance.GetValues(GetType(unit.Type), out _, out double addArmor, out _);
                 armor += (unit.Armor + addArmor) * weight;
                 count += weight;
             });
@@ -128,8 +121,7 @@ namespace CityWar
             CheckUnits(race, targets, (weight, unit) =>
             {
                 int submerge = type.HasValue ? GetSubmergedShield(type.Value, GetType(unit.Type), Unit.GetAbilities(unit, out _, out _)) : 0;
-                double addArmor;
-                Balance.GetValues(GetType(unit.Type), out _, out addArmor, out _);
+                Balance.GetValues(GetType(unit.Type), out _, out double addArmor, out _);
                 tot += weight * Attack.GetAverageDamage(damage, divide, unit.Armor + addArmor, submerge, int.MaxValue);
                 count += weight;
             });

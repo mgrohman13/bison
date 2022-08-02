@@ -32,8 +32,7 @@ namespace CityWar
 
             regen = ModRegen(abilities, move, regen);
 
-            double typeVal, addArmor, movMult;
-            GetValues(type, out typeVal, out addArmor, out movMult);
+            GetValues(type, out double typeVal, out double addArmor, out double movMult);
 
             armor = ModArmor(armor, addArmor);
             move = ModMove(move, air, fuel, movMult);
@@ -80,15 +79,13 @@ namespace CityWar
 
         public static double GetArmor(UnitType type, double armor)
         {
-            double addArmor;
-            GetValues(type, out _, out addArmor, out _);
+            GetValues(type, out _, out double addArmor, out _);
             return ModArmor(armor, addArmor);
         }
 
         public static double GetMove(UnitType type, double move, bool air, int fuel)
         {
-            double movMult;
-            GetValues(type, out _, out _, out movMult);
+            GetValues(type, out _, out _, out double movMult);
             return ModMove(move, air, fuel, movMult);
         }
 
@@ -266,9 +263,7 @@ namespace CityWar
 
         private static double Final(UnitTypes unitTypes, double unit, double move, double type)
         {
-            double result = 0;
-            result = (unit) * (move + unitTypes.GetAverageMove()) * type;
-            return result;
+            return (unit) * (move + unitTypes.GetAverageMove()) * type;
         }
 
         private static double ForCarry(UnitTypes unitTypes, double cost, bool carry, double typeWorth, double move, double hitWorth)
