@@ -66,7 +66,7 @@ namespace CityWar
                 if (Type == TreasureType.Wizard && piece is Wizard)
                 {
                     Collected = true;
-                    piece.Owner.CollectWizardPts(Value, tile.Terrain);
+                    piece.Owner.CollectResources(true, Value, tile.Terrain);
                     tile.Game.CreateWizardPts();
                     return true;
                 }

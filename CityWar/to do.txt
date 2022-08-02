@@ -2,7 +2,6 @@ before next:
 	weapon abilities
  
 gameplay
-	*redo wizpts distribution, turn order balancing
 	allow gamble move to use in between 1-full move
 	group move from different hexes
 	teleporters

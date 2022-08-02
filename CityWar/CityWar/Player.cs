@@ -522,7 +522,7 @@ namespace CityWar
             return Unit.NewUnit(unit, cur.Tile, this);
         }
 
-        internal void CollectWizardPts(double points, Terrain? terrain = null)
+        internal void CollectResources(bool wizardTreasure, int points, Terrain? terrain = null)
         {
             Action<int> population = (amt => this.population += amt);
             Action<int> production = (amt => this.production += amt);
@@ -535,9 +535,9 @@ namespace CityWar
             Action<int> water = (amt => this.water += amt);
 
             Dictionary<Action<int>, int> typeFuncs;
-            if (terrain == null)
+            if (!wizardTreasure)
             {
-                //not really wizard points, but for turn order balancing
+                // for turn order balancing
                 //total: 131
                 typeFuncs = new Dictionary<Action<int>, int>() {
                     { relic, 3 },
@@ -553,21 +553,17 @@ namespace CityWar
             }
             else
             {
-                //for actual wizard points
-                //total: 137
+                //for wizard points (collectible treasure)
+                //total: 117
                 typeFuncs = new Dictionary<Action<int>, int>() {
-                    { production, 1 },
-                    { population, 2 },
-                    { magic, 4 },
-                    { relic, 9 },
-                    { death, 17 },
-                    //these will really be 22 or 38, based on terrain
+                    { death, 13 },
+                    //these will really be 21 or 41, based on terrain
                     { air, 26 },
                     { earth, 26 },
                     { nature, 26 },
                     { water, 26 },
                 };
-                const int mod = 4;
+                const int mod = 5;
                 Action<int> terrainFunc = terrain.Value switch
                 {
                     Terrain.Forest => nature,
@@ -583,13 +579,8 @@ namespace CityWar
                 typeFuncs[water] -= mod;
             }
 
-            int whole = (int)points;
-            double fraction = (whole == points ? 1 : points - whole++);
-            while (--whole > -1)
-            {
-                double avg = 50 * (whole == 0 ? fraction : 1);
-                Game.Random.SelectValue(typeFuncs)(Game.Random.GaussianCappedInt(avg, .21, avg > 2 ? Game.Random.Round(avg * .52) : 0));
-            }
+            for (int a = 0; a < points; a++)
+                Game.Random.SelectValue(typeFuncs)(Game.Random.GaussianCappedInt(50, .21, 26));
         }
 
         internal void EndTurn()

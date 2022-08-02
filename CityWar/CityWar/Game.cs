@@ -1329,9 +1329,9 @@ namespace CityWar
             double amount = diff * 260.0 / (players.Length - 1.0);
             if (amount > 0)
             {
-                double pts = Random.DoubleHalf(amount);
-                player.CollectWizardPts(pts / 50.0);
-                amount -= pts;
+                int pts = Random.RangeInt(0, Random.Round(amount / 50.0));
+                player.CollectResources(false, pts);
+                amount -= pts * 50;
             }
             player.BalanceForUnit(amount, 0);
         }
