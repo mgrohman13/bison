@@ -160,14 +160,19 @@ namespace CityWarWinApp
         private Tuple<string, string> GetAttackerText(Piece piece)
         {
             Unit unit = (Unit)piece;
-
-            int unused = 0, total = totalCounts[unit];
-            ValidAttacks(unit, attack =>
+            int unused = 0;
+            if (totalCounts.TryGetValue(unit, out int total))
             {
-                if (!attack.Used)
-                    ++unused;
-            });
-
+                ValidAttacks(unit, attack =>
+                {
+                    if (!attack.Used)
+                        ++unused;
+                });
+            }
+            else
+            {
+                total = unit.Attacks.Length;
+            }
             string left = string.Format("{0} / {1}", unused, total);
             string right = (unit.Length != int.MinValue && unit.Length != int.MaxValue ? unit.Length.ToString() : null);
             return new Tuple<string, string>(left, right);
@@ -322,7 +327,7 @@ namespace CityWarWinApp
                     {
                         bool validAttack = false;
                         foreach (Unit defender in defenders)
-                            if (attAtt.CanAttack(defender))
+                            if (attAtt.Used || attAtt.CanAttack(defender))
                             {
                                 validAttack = true;
                                 if (!attAtt.Used)

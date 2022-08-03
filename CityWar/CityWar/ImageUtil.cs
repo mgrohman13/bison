@@ -54,7 +54,7 @@ namespace CityWar
             if (file)
                 pic = LoadPicFromFile(player, loadName, portalColor);
             else
-                pic = picsConst[name];
+                pic = GetPic(player, name, pics, picsConst, true);
 
             if (constPic)
                 picsConst.Add(name, pic);

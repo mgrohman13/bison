@@ -139,6 +139,8 @@ namespace CityWar
             for (int a = 0; a < numPlayers; ++a)
                 CreateTreasure();
 
+            ResetTiles();
+
             //	Start the game!
             Player.SubtractCommonUpkeep(players);
             currentPlayer = 0;
@@ -268,7 +270,8 @@ namespace CityWar
                             Unit splashTarget = Random.SelectValue(targets);
                             int oldHits = splashTarget.hits;
                             int splashDmg = attack.AttackUnit(splashTarget, out double splashRelic);
-                            splash = new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic);
+                            if (splashDmg > 0)
+                                splash = new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic);
                             if (splashTarget.Dead)
                                 b.defenders.Remove(splashTarget);
                         }

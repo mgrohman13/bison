@@ -168,7 +168,7 @@ namespace CityWar
         {
             int count = pieces.Count;
 
-            pieces.Sort((p1, p2) => p1.Group - p2.Group);
+            pieces.Sort((p1, p2) => Math.Sign((long)p1.Group - (long)p2.Group));
 
             //find the last index of a piece that is selected and start there
             int index;

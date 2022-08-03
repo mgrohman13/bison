@@ -17,6 +17,7 @@ namespace CityWar
 
         public bool Collected { get; private set; }
         public int Value { get; private set; }
+        private int collectValue;
 
         public bool UnitCollect => Type != TreasureType.Wizard;
 
@@ -30,6 +31,7 @@ namespace CityWar
             this.Type = type;
             this.Collected = false;
             this.Value = GetValue(tile, type);
+            this.collectValue = GenCollectValue();
         }
         internal static bool CanCreate(Tile tile, TreasureType type)
         {
@@ -143,24 +145,24 @@ namespace CityWar
         }
         private bool CollectMagic(Player player)
         {
-            player.SpendMagic(-GetCollectValue());
+            player.SpendMagic(-collectValue);
             return true;
         }
         private bool UndoCollectMagic(Player player)
         {
-            player.SpendMagic(GetCollectValue());
+            player.SpendMagic(collectValue);
             return player.Magic < 0;
         }
         private bool CollectRelic(Player player)
         {
             int CountRelics() => player.GetPieces().OfType<Relic>().Count();
             int relics = CountRelics();
-            player.AddRelic(GetCollectValue(), 0, CollectAvg);
+            player.AddRelic(collectValue, 0, CollectAvg);
             return relics == CountRelics();
         }
         private bool UndoCollectRelic(Player player)
         {
-            player.AddRelic(-GetCollectValue(), 0, -CollectAvg);
+            player.AddRelic(-collectValue, 0, -CollectAvg);
             return player.Relic < 0;
         }
         private bool CollectUnit(Tile tile, Player player)
@@ -183,10 +185,6 @@ namespace CityWar
             player.Spend(GetCountdownValue(UnitCountdown), CostType.Production, 0);
             return player.Production < 0;
         }
-        private static int GetCollectValue()
-        {
-            return Game.Random.GaussianCappedInt(Game.Random.Range(CollectMin, CollectMax), .052);
-        }
         private int GetCountdownValue(double mult)
         {
             return Game.Random.GaussianCappedInt(Math.Sqrt(Value * mult), .065);
@@ -194,7 +192,12 @@ namespace CityWar
 
         internal void Reset()
         {
-            Collected = false;
+            this.Collected = false;
+            this.collectValue = GenCollectValue();
+        }
+        private static int GenCollectValue()
+        {
+            return Game.Random.GaussianCappedInt(Game.Random.Range(CollectMin, CollectMax), .052, 1);
         }
 
         public Bitmap GetPic()

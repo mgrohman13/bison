@@ -671,7 +671,7 @@ namespace CityWarWinApp
                                     float yVal = (float)Y * side3 - OffY;
                                     e.Graphics.DrawImage(pic, xVal + zoom_9, yVal - zoom_9zoom_6_m);
 
-                                    double str = thisTile.GetAllUnits().Sum(u => u.RandedCost);
+                                    double str = thisTile.GetAllUnits().Sum(u => u.RandedCost * u.GetHealthPct());
                                     if (str > 0)
                                     {
                                         string strDisp = str.ToString("0");

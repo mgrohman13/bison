@@ -1,4 +1,5 @@
 gameplay
+	new chests allow gambling with relic/wiz...
 	allow gamble move to use in between 1-full move
 	group move from different hexes
 	teleporters
@@ -7,6 +8,8 @@ gameplay
 	"security" of public fields
 
 balance
+	splash damage only look at target unit tile?
+		show splash chance on UI?
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	unit abilities 
@@ -33,11 +36,14 @@ balance
 
 interface	
 	main map
+		new wiz ptc on collect not highlighting?
+		new city graphic
 		chests look completely terrible past certain zoom 
 		graphic artifacts?
 	damage calculator
 		multiple attacks
 	battles 
+		add white padding at bottom?
 		splash damage feedback
 		mouseover lbx functionality?
 		better visibility for avail attacks/retaliation
@@ -54,6 +60,7 @@ interface
 		drag to reposition route 
 		waypoints		
 	other
+		log file rollover for different games
 		score graphs 
 		resize windows, better zooming, controls, etc
 		fuel check triggers when cannot save aircraft

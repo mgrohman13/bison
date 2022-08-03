@@ -111,7 +111,7 @@ namespace CityWar
         {
             get
             {
-                return BaseTotalCost * randedCostMult;
+                return BaseTotalCost * RandedCostMult;
             }
         }
 
@@ -119,7 +119,7 @@ namespace CityWar
         {
             get
             {
-                return BaseTotalCost / randedCostMult;
+                return BaseTotalCost / RandedCostMult;
             }
         }
 
@@ -408,8 +408,8 @@ namespace CityWar
                             newHits = MaxHits;
 
                         double needed = (newHits - hits) / (double)MaxHits / 3.9;
-                        double pplNeeded = needed * BasePplCost * randedCostMult;
-                        needed *= BaseOtherCost * randedCostMult;
+                        double pplNeeded = needed * BasePplCost * RandedCostMult;
+                        needed *= BaseOtherCost * RandedCostMult;
 
                         owner.Spend(Game.Random.Round(needed), CostType, Game.Random.Round(pplNeeded));
 
@@ -534,11 +534,15 @@ namespace CityWar
             }
         }
 
-        private double randedCostMult
+        [NonSerialized]
+        private double _randedCostMult = double.NaN;
+        private double RandedCostMult
         {
             get
             {
-                return GetCost(out _);
+                if (double.IsNaN(_randedCostMult))
+                    _randedCostMult = GetCost(out _);
+                return _randedCostMult;
             }
         }
 
@@ -726,7 +730,7 @@ namespace CityWar
                     shield = 100 - shield;
             }
             if (IsAir())
-                maxFuel = RandStat(maxFuel, true, movement);
+                maxFuel = RandStat(maxFuel, true, MaxMove);
 
             this.armor = RandStat(this.armor, false);
             this.regen = RandStat(this.regen, true);
@@ -738,8 +742,8 @@ namespace CityWar
             {
                 this.maxHits = newHits;
                 newHits -= hitInc;
-            } while (newHits > 0 && randedCostMult > maxMult);
-            while (randedCostMult < (1 / maxMult))
+            } while (newHits > 0 && RandedCostMult > maxMult);
+            while (RandedCostMult < (1 / maxMult))
             {
                 newHits += hitInc;
                 this.maxHits = newHits;
@@ -750,11 +754,11 @@ namespace CityWar
                 Die();
 
             this.randed = true;
+            this._randedCostMult = double.NaN;
         }
         internal static int RandStat(double stat, bool keepPositive, int lowerCap = int.MinValue)
         {
-            if (lowerCap == int.MinValue)
-                lowerCap = Game.Random.Round(stat * .65);
+            lowerCap = Math.Max(lowerCap, Game.Random.Round(stat * .65));
             if (keepPositive)
             {
                 if (lowerCap < 1)
@@ -1056,6 +1060,7 @@ namespace CityWar
         {
             this.length = int.MaxValue;
             this._healthBrush = null;
+            this._randedCostMult = double.NaN;
         }
 
         #endregion
