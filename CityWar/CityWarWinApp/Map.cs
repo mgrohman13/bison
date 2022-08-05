@@ -884,7 +884,7 @@ namespace CityWarWinApp
                                                     selected = new Point(x, y);
                                                     selectedTile = Game.GetTile(selected.X, selected.Y);
                                                 }
-                                                changeTracker.EndMove();
+                                                ShowChanges(changeTracker.EndMove());
 
                                                 //check if any selected units have move remaining
                                                 bool nomves = true;

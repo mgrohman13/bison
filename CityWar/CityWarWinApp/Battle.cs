@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Linq;
 using CityWar;
 
 namespace CityWarWinApp
@@ -76,6 +77,10 @@ namespace CityWarWinApp
             lbAttacks.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
             lbAtt.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
             lbDef.MouseWheel += new MouseEventHandler(listBox_MouseWheel);
+
+            this.MinimumSize = Size;
+            this.MaximumSize = new Size(Width, Screen.AllScreens.Sum(s => s.Bounds.Height));
+            this.Height = (Width * 2) / 3;
         }
 
         public static void StartBattle(Map map, CityWar.Battle battle)
@@ -162,17 +167,13 @@ namespace CityWarWinApp
             Unit unit = (Unit)piece;
             int unused = 0;
             if (totalCounts.TryGetValue(unit, out int total))
-            {
                 ValidAttacks(unit, attack =>
                 {
                     if (!attack.Used)
                         ++unused;
                 });
-            }
-            else
-            {
+            if (unused == 0)
                 total = unit.Attacks.Length;
-            }
             string left = string.Format("{0} / {1}", unused, total);
             string right = (unit.Length != int.MinValue && unit.Length != int.MaxValue ? unit.Length.ToString() : null);
             return new Tuple<string, string>(left, right);
@@ -353,7 +354,10 @@ namespace CityWarWinApp
 
             if (!anyHave)
             {
-                btnEnd_Click(null, null);
+                if (this.cbHidden.Checked)
+                    btnEnd_Click(null, null);
+                else
+                    this.cbHidden.Checked = true;
                 return true;
             }
 

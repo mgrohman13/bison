@@ -186,7 +186,7 @@ namespace CityWar
 
         #region internal methods
 
-        internal int AttackUnit(Unit unit, out double relicValue)
+        internal int AttackUnit(Unit unit, bool usingMove, out double relicValue)
         {
             relicValue = 0;
             if (!CanAttack(unit))
@@ -209,7 +209,7 @@ namespace CityWar
             }
 
             //attacking player gets work back for overkill, defender pays upkeep to retaliate
-            if (owner.Owner == owner.Owner.Game.CurrentPlayer)
+            if (usingMove)
             {
                 double work = owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length;
                 owner.Owner.AddWork(work);

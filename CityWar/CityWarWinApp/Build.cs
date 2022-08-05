@@ -157,8 +157,8 @@ namespace CityWarWinApp
                     enabled = (capts[0].Owner.Magic >= wizAmt) && ((int)capts[0].Owner.GetResource(costType.ToString()) >= otherAmt);
 
                     newBox(Xs[0], y, Ws[0], costType.ToString() + " Portal");
-                    newBox(Xs[1], y, Ws[1], wizAmt.ToString(), this.lblWizard.BackColor, HorizontalAlignment.Right);
-                    newBox(Xs[2], y, Ws[1], otherAmt.ToString(), backColor, HorizontalAlignment.Right);
+                    newBox(Xs[1], y, Ws[1], otherAmt.ToString(), backColor, HorizontalAlignment.Right);
+                    newBox(Xs[2], y, Ws[1], wizAmt.ToString(), this.lblWizard.BackColor, HorizontalAlignment.Right);
                     newButton(Xs[3], y, "Summon", costType.ToString() + " Portal", new EventHandler(build_Click));
 
                     y += 29;

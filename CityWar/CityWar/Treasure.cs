@@ -158,7 +158,8 @@ namespace CityWar
             int CountRelics() => player.GetPieces().OfType<Relic>().Count();
             int relics = CountRelics();
             player.AddRelic(collectValue, 0, CollectAvg);
-            return relics == CountRelics();
+            bool canUndo = relics == CountRelics();
+            return canUndo;
         }
         private bool UndoCollectRelic(Player player)
         {

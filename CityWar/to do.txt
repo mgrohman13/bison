@@ -36,15 +36,16 @@ balance
 
 interface	
 	main map
-		new wiz ptc on collect not highlighting?
+		bold other resources?
+			relic when close?
 		new city graphic
 		chests look completely terrible past certain zoom 
 		graphic artifacts?
 	damage calculator
 		multiple attacks
 	battles 
-		add white padding at bottom?
 		splash damage feedback
+		padding color at bottom?
 		mouseover lbx functionality?
 		better visibility for avail attacks/retaliation
 		better visibility of diff hexes
