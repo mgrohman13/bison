@@ -90,6 +90,8 @@ namespace CityWar
         {
             get
             {
+                if (path != null && path[path.Count - 1] == tile)
+                    path = null;
                 return this.path?.ToList();
             }
             internal set

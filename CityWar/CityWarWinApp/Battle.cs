@@ -354,7 +354,7 @@ namespace CityWarWinApp
 
             if (!anyHave)
             {
-                if (this.cbHidden.Checked)
+                if (this.cbHidden.Checked || !this.hideAttacks.Any())
                     btnEnd_Click(null, null);
                 else
                     this.cbHidden.Checked = true;

@@ -598,7 +598,7 @@ namespace CityWarWinApp
                                 theBrush = Brushes.Green;
                                 break;
                             case Terrain.Mountain:
-                                theBrush = Brushes.DarkOrange;
+                                theBrush = Brushes.Gold;
                                 break;
                             case Terrain.Plains:
                                 theBrush = Brushes.Gray;
@@ -675,9 +675,11 @@ namespace CityWarWinApp
                                     if (str > 0)
                                     {
                                         string strDisp = str.ToString("0");
-                                        float strWidth = e.Graphics.MeasureString(strDisp, tileInfoFont).Width;
-                                        e.Graphics.DrawString(strDisp, tileInfoFont, Brushes.White,
-                                            xVal + Zoom - strWidth, yVal);
+                                        SizeF strRect = e.Graphics.MeasureString(strDisp, tileInfoFont);
+                                        float strX = xVal + Zoom - strRect.Width;
+                                        const float fudge = .9f;
+                                        e.Graphics.FillRectangle(Brushes.Black, strX, yVal, strRect.Width, strRect.Height * fudge);
+                                        e.Graphics.DrawString(strDisp, tileInfoFont, Brushes.White, strX, yVal);
                                     }
                                 }
                             }

@@ -193,8 +193,11 @@ namespace CityWar
 
         internal void Reset()
         {
-            this.Collected = false;
-            this.collectValue = GenCollectValue();
+            if (Collected)
+            {
+                this.Collected = false;
+                this.collectValue = GenCollectValue();
+            }
         }
         private static int GenCollectValue()
         {

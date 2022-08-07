@@ -1,4 +1,5 @@
 gameplay
+	wiz pts 52?  or other numbers mults of 5?
 	new chests allow gambling with relic/wiz...
 	allow gamble move to use in between 1-full move
 	group move from different hexes
@@ -7,7 +8,10 @@ gameplay
 	exp?
 	"security" of public fields
 
-balance
+balance	
+	engager 6 fuel?
+	pay for recover regen?
+	aircraft pay for fuel when built?
 	splash damage only look at target unit tile?
 		show splash chance on UI?
 	bonus to element units on terrain?
@@ -36,6 +40,7 @@ balance
 
 interface	
 	main map
+		better indication of air units cant heal
 		bold other resources?
 			relic when close?
 		new city graphic
@@ -61,6 +66,7 @@ interface
 		drag to reposition route 
 		waypoints		
 	other
+		relic loss with no capts not reflected in info 
 		log file rollover for different games
 		score graphs 
 		resize windows, better zooming, controls, etc
