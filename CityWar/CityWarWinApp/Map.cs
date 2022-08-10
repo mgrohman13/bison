@@ -1250,6 +1250,7 @@ namespace CityWarWinApp
 
                 RefreshButtons();
                 RefreshResources();
+                this.Invalidate();
 
                 //if no pieces have move left, go to the next unit
                 if (nomoves)

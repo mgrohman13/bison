@@ -1143,13 +1143,15 @@ namespace CityWar
                         //cost 1300
                         //roi 43.33
                         elemental += 30;
-                        //rest: +10 (roi 32.50)
-                        //find: +50 (roi 16.25)
-
-                        //88% collection needed for average portal roi (53% for relic)
+                        //+30
+                        //rest: +40 (roi 32.50)
+                        //collect: +80 (roi 16.25)
+                        //89% collection needed for average portal roi (53% for relic)
                     }
                     else if (capturable is City)
                     {
+                        //cost 169.6  
+                        //roi 5.65  
                         prod += 13;
                         magic += 7;
                         elemental += 6;
@@ -1169,12 +1171,10 @@ namespace CityWar
                     else if (capturable is Portal portal)
                     {
                         //avg cost 1000 
-                        //avg roi 17.5
-                        int amt = portal.Income;
-
-                        int type = 0, position = 0;
-                        for (; amt > 0; --amt)
-                            switch (++position % 6)
+                        //avg roi 17.5 
+                        int type = 0;
+                        for (int a = 0; a < portal.Income; a++)
+                            switch (a % 6)
                             {
                                 case 1:
                                     ++type;
@@ -1194,8 +1194,8 @@ namespace CityWar
                                 case 0:
                                     ++elemental;
                                     break;
+                                default: throw new Exception();
                             }
-
                         switch (portal.Type)
                         {
                             case CostType.Air:
@@ -1213,12 +1213,10 @@ namespace CityWar
                             case CostType.Water:
                                 water += type;
                                 break;
-                            default:
-                                throw new Exception();
+                            default: throw new Exception();
                         }
                     }
-                    else
-                        throw new Exception();
+                    else throw new Exception();
 
                     //the actual resource for the element is based off of the terrain type
                     switch (capturable.Tile.Terrain)
