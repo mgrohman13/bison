@@ -452,12 +452,14 @@ namespace CityWar
                     canUndo = false;
                 }
             return canUndo;
-        } 
+        }
 
         internal void CreateTreasure(Treasure.TreasureType type)
         {
             if (treasure != null && (treasure.Type == type || Game.Random.Bool()))
                 treasure.AddTo();
+            else if (treasure != null)
+                ;
             if (treasure == null && Treasure.CanCreate(this, type))
                 treasure = new Treasure(this, type);
         }

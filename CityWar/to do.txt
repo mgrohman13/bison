@@ -42,6 +42,7 @@ balance
 
 interface	
 	main map
+		full refresh after game load
 		better indication of air units cant heal
 		bold other resources?
 			relic when close?
@@ -67,7 +68,7 @@ interface
 		option to avoid occupied tiles
 		drag to reposition route 
 		waypoints		
-	other
+	other 
 		show unit kills?
 		relic loss with no capts not reflected in info 
 		log file rollover for different games
