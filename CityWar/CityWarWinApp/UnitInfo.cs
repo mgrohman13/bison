@@ -15,7 +15,7 @@ namespace CityWarWinApp
         private readonly Font f1 = new("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
         private readonly Font f2 = new("Arial", 9.75F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 
-        public UnitInfo(Piece piece, Point location, int currentMove)
+        public UnitInfo(Piece piece, Point location)
         {
             InitializeComponent();
 
@@ -34,7 +34,7 @@ namespace CityWarWinApp
                 this.txtArmor.Text = GetModString(unit.Armor.ToString(), unit.BaseArmor.ToString());
                 this.txtCost.Text = unit.RandedCost.ToString("0");
                 this.txtHits.Text = string.Format("{0} / {1}", unit.Hits, unit.MaxHits);
-                this.txtMove.Text = GetMoveString(currentMove, unit);
+                this.txtMove.Text = GetMoveString(unit);
                 int regen = unit.Regen;
                 this.txtRegen.Font = (unit.IsAir() && !unit.Tile.HasCarrier()) ? f2 : f1;
                 this.txtRegen.Text = GetModString(regen.ToString(), unit.MaxRegen.ToString());
@@ -50,7 +50,7 @@ namespace CityWarWinApp
                 if (piece is Wizard wizard)
                 {
                     this.txtCost.Text = Player.WizardCost.ToString();
-                    this.txtMove.Text = GetMoveString(currentMove, wizard);
+                    this.txtMove.Text = GetMoveString(wizard);
                 }
                 else
                 {
@@ -123,10 +123,9 @@ namespace CityWarWinApp
             return retVal;
         }
 
-        private static string GetMoveString(int currentMove, Piece piece)
+        private static string GetMoveString(Piece piece)
         {
-            if (currentMove == -1)
-                currentMove = piece.Movement;
+            int currentMove = piece.Movement;
             return (currentMove != piece.MaxMove || piece.Owner == piece.Owner.Game.CurrentPlayer)
                     ? string.Format("{0} / {1}", currentMove, piece.MaxMove) : piece.MaxMove.ToString();
         }

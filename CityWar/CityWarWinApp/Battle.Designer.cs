@@ -352,7 +352,7 @@ namespace CityWarWinApp
             // 
             // lbAtt
             // 
-            this.lbAtt.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.lbAtt.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbAtt.BackColor = System.Drawing.Color.White;
             this.lbAtt.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -369,7 +369,7 @@ namespace CityWarWinApp
             // 
             // lbDef
             // 
-            this.lbDef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.lbDef.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lbDef.BackColor = System.Drawing.Color.White;
             this.lbDef.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -523,7 +523,7 @@ namespace CityWarWinApp
             // 
             // panelDefenders
             // 
-            this.panelDefenders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.panelDefenders.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelDefenders.BackColor = System.Drawing.Color.White;
             this.panelDefenders.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -531,14 +531,14 @@ namespace CityWarWinApp
             this.panelDefenders.Name = "panelDefenders";
             this.panelDefenders.Size = new System.Drawing.Size(255, 337);
             this.panelDefenders.TabIndex = 0;
-            this.panelDefenders.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseDown);
+            this.panelDefenders.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PiecesPanel_MouseDown);
             this.panelDefenders.MouseLeave += new System.EventHandler(this.panelDefenders_MouseLeave);
             this.panelDefenders.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseMove);
             this.panelDefenders.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelDefenders_MouseUp);
             // 
             // panelAttackers
             // 
-            this.panelAttackers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.panelAttackers.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.panelAttackers.BackColor = System.Drawing.Color.White;
             this.panelAttackers.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -546,7 +546,7 @@ namespace CityWarWinApp
             this.panelAttackers.Name = "panelAttackers";
             this.panelAttackers.Size = new System.Drawing.Size(255, 337);
             this.panelAttackers.TabIndex = 0;
-            this.panelAttackers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseDown);
+            this.panelAttackers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PiecesPanel_MouseDown);
             this.panelAttackers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelAttackers_MouseUp);
             // 
             // Battle

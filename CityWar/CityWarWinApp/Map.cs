@@ -480,7 +480,7 @@ namespace CityWarWinApp
                     catch
                     {
                     }
-                    InfoForm = new UnitInfo(piece, panelPieces.PointToScreen(e.Location), -1);
+                    InfoForm = new UnitInfo(piece, panelPieces.PointToScreen(e.Location));
                     InfoForm.Show();
                 }
             }
