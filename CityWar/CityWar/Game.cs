@@ -42,6 +42,7 @@ namespace CityWar
         private Stack<object[]> UndoArgs = new();
         private readonly Dictionary<Unit, List<Tile>> UnitTiles = new();
         private readonly Dictionary<Tile, List<Unit>> TileUnits = new();
+        private readonly Dictionary<Piece, List<Piece>> AirHeal = new();
 
         #endregion //fields
 
@@ -188,6 +189,7 @@ namespace CityWar
             UndoArgs.Clear();
             UnitTiles.Clear();
             TileUnits.Clear();
+            AirHeal.Clear();
         }
 
         public bool CanUndoCommand()
@@ -632,9 +634,32 @@ namespace CityWar
                 //weed out futile calls
                 if (info > -1)
                 {
-                    if (!any)
-                        any = true;
+                    any = true;
                     undoInfo.Add(curPiece, info);
+
+                    //if this unit is an aircraft relying on a movable carrier to heal, block undoing the carrier if this unit ever can't undo
+                    if (info < 1 && curPiece.IsAir())
+                    {
+                        IEnumerable<Piece> carriers = curPiece.Tile.FindAllPieces(p => p.IsAbility(Ability.AircraftCarrier));
+                        if (carriers.Any())
+                        {
+                            AirHeal.TryGetValue(curPiece, out List<Piece> existing);
+                            if (existing == null)
+                                existing = new List<Piece>();
+                            if (!carriers.Any(c =>
+                                    c.MaxMove == 0 || existing.Contains(c)))
+                            {
+                                var priority = carriers.Where(c => AirHeal.Values.SelectMany(v => v).Contains(c));
+                                if (priority.Any())
+                                    carriers = priority;
+                                if (carriers.Count() > 1)
+                                    ;
+                                AddAirHeal(curPiece, Random.SelectValue(carriers));
+                            }
+                        }
+                        else
+                            ;
+                    }
                 }
             }
 
@@ -773,15 +798,21 @@ namespace CityWar
 
         private void AddUnitTile(Unit u, Tile t)
         {
-            if (!UnitTiles.ContainsKey(u))
-                UnitTiles.Add(u, new List<Tile>());
-            UnitTiles[u].Add(t);
+            AddDict(UnitTiles, u, t);
         }
         private void AddTileUnit(Tile t, Unit u)
         {
-            if (!TileUnits.ContainsKey(t))
-                TileUnits.Add(t, new List<Unit>());
-            TileUnits[t].Add(u);
+            AddDict(TileUnits, t, u);
+        }
+        private void AddAirHeal(Piece air, Piece carrier)
+        {
+            AddDict(AirHeal, air, carrier);
+        }
+        private static void AddDict<K, V>(Dictionary<K, List<V>> dict, K key, V value)
+        {
+            if (!dict.ContainsKey(key))
+                dict.Add(key, new List<V>());
+            dict[key].Add(value);
         }
         private void RemoveUndosForTile(Tile tile)
         {
@@ -852,6 +883,10 @@ namespace CityWar
 
             if (removeArgs.Count > 0)
                 RemoveUndosForPiecesInArgs(removeArgs);
+
+            var carriers = pieces.OfType<Piece>().Where(AirHeal.ContainsKey).SelectMany(p => AirHeal[p]).Distinct();
+            if (carriers.Any())
+                RemoveUndosForPiecesInArgs(carriers);
         }
         private bool IsUndoTerrain(UndoDelegate undo, object[] args, IEnumerable<object> pieces)
         {
