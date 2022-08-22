@@ -38,7 +38,7 @@ namespace CityWar
             {
                 CostType poralType = (CostType)Enum.Parse(typeof(CostType), name.Split(' ')[0]);
                 int magic, element;
-                Player.SplitPortalCost(Owner.Game, Owner.Race, poralType, out magic, out element);
+                Portal.SplitPortalCost(Owner.Game, Owner.Race, poralType, out magic, out element);
 
                 return (owner.Magic >= magic) && (owner.GetResource(poralType.ToString()) >= element);
             }
@@ -73,7 +73,7 @@ namespace CityWar
                 {
                     CostType poralType = (CostType)Enum.Parse(typeof(CostType), name.Split(' ')[0]);
                     int magic, element;
-                    Player.SplitPortalCost(owner.Game, Owner.Race, poralType, out magic, out element);
+                    Portal.SplitPortalCost(owner.Game, Owner.Race, poralType, out magic, out element);
 
                     owner.SpendMagic(magic);
                     owner.Spend(element, poralType, 0);
@@ -100,7 +100,7 @@ namespace CityWar
             {
                 CostType poralType = portal.Type;
                 int magic, element;
-                Player.SplitPortalCost(owner.Game, Owner.Race, poralType, out magic, out element);
+                Portal.SplitPortalCost(owner.Game, Owner.Race, poralType, out magic, out element);
 
                 owner.SpendMagic(-magic);
                 owner.Spend(-element, poralType, 0);

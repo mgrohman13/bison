@@ -633,112 +633,6 @@ namespace CityWar
 
         #endregion //internal methods
 
-        #region portal cost
-
-        public static int TotalPortalCost(Game game, string race, CostType costType)
-        {
-            int[] cost = Player.SplitPortalCost(game, race)[costType];
-            return cost[0] + cost[1];
-        }
-        public static void SplitPortalCost(Game game, string race, CostType costType, out int magic, out int element)
-        {
-            int[] retVal = SplitPortalCost(game, race)[costType];
-            magic = retVal[0];
-            element = retVal[1];
-        }
-        public static Dictionary<CostType, int[]> SplitPortalCost(Game game, string race)
-        {
-            Dictionary<CostType, int[]> portalCosts = new();
-
-            double[] elmDbl = new double[5];
-            int[] elmInt = new int[5];
-            double[] other = new double[5];
-            double[] ppl = new double[5];
-
-            foreach (string name in Game.Races[race])
-            {
-                Unit unit = Unit.CreateTempUnit(game, name);
-                int idx = GetCTIdx(unit.CostType);
-                if (idx > -1)
-                {
-                    elmDbl[idx] += unit.BaseTotalCost + unit.BaseOtherCost / 2.1;
-                    ++elmInt[idx];
-
-                    double div = Math.Sqrt(unit.BaseTotalCost);
-                    other[idx] += unit.BaseOtherCost / div;
-                    ppl[idx] += unit.BasePplCost / div;
-                }
-            }
-
-            double total = 0;
-            for (int idx = 0; idx < 5; ++idx)
-            {
-                elmDbl[idx] = GetTotalPortalCost(elmDbl[idx], elmInt[idx]);
-                total += elmDbl[idx];
-            }
-
-            int totInt = 0;
-            for (int idx = 0; idx < 4; ++idx)
-            {
-                elmInt[idx] = (int)Math.Round(elmDbl[idx] * Portal.AvgPortalCost * 5.0 / total);
-                totInt += elmInt[idx];
-            }
-            elmInt[4] = Portal.AvgPortalCost * 5 - totInt;
-
-            for (int idx = 0; idx < 5; ++idx)
-            {
-                int totalCost = elmInt[idx];
-                int element = GetPortalElementCost(other[idx] / (other[idx] + ppl[idx]), totalCost);
-                int magic = totalCost - element;
-                portalCosts.Add(GetIdxCT(idx), new int[] { magic, element });
-            }
-
-            return portalCosts;
-        }
-        private static double GetTotalPortalCost(double totCost, int numUnits)
-        {
-            //the greater the number of units and their cost, the greater the total cost of the portal
-            return Math.Pow(totCost * (numUnits + 1), .39);
-        }
-        public static int GetPortalElementCost(double elemPct, double totalCost)
-        {
-            ////the more population the units cost, the less magic the portal costs
-            return (int)Math.Ceiling((1 - (elemPct * elemPct * .666 + .21)) * totalCost);
-
-            ////the more population the units cost, the more magic the portal costs
-            //elemPct *= elemPct;
-            //if (elemPct <= .26)
-            //    return 1;
-            //elemPct = (0.65 * (elemPct - 0.26));
-            //return (int)Math.Ceiling(elemPct * totalCost);
-        }
-        private static int GetCTIdx(CostType costType)
-        {
-            return costType switch
-            {
-                CostType.Air => 0,
-                CostType.Earth => 1,
-                CostType.Nature => 2,
-                CostType.Water => 3,
-                CostType.Death => 4,
-                _ => -1,
-            };
-        }
-        private static CostType GetIdxCT(int idx)
-        {
-            return idx switch
-            {
-                0 => CostType.Air,
-                1 => CostType.Earth,
-                2 => CostType.Nature,
-                3 => CostType.Water,
-                4 => CostType.Death,
-                _ => throw new Exception(),
-            };
-        }
-
-        #endregion //portal cost
-
         #region relic
 
         internal int Relic
@@ -1252,7 +1146,7 @@ namespace CityWar
             {
                 //if its a portal, receive or lose some compensation for the cost difference
                 Portal portal = (Portal)remove;
-                Player.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out int m, out int e);
+                Portal.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out int m, out int e);
                 double magicPct = m / (double)(m + e), elementPct = e / (double)(m + e);
                 double diff = portal.GetPortalValue() - portalAvg;
                 const double mult = 1;

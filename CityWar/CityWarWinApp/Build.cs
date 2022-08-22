@@ -123,7 +123,7 @@ namespace CityWarWinApp
                 //}
 
 
-                Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
+                Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
                 List<CostType> keys = new List<CostType>(portalCost.Keys);
                 keys.Sort((c1, c2) => portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1]);
                 foreach (CostType costType in keys)
@@ -387,7 +387,7 @@ namespace CityWarWinApp
 
         private void RefreshButtons()
         {
-            Dictionary<CostType, int[]> portalCost = Player.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
+            Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
             foreach (Control control in Controls)
             {
                 if (control is Button && (control.Tag is string) && ((string)control.Tag != ""))
