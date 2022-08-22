@@ -1,7 +1,15 @@
 gameplay
-	heal aircraft on carrier prevent undo carrier move
+	fuel
+		pay at start
+		?
+	nocapts lose wiz/rel if neg work
+	upgrade units
+		factory
+			add-on to town, not separate capturable, refunded when disappears
+			captured by player behavior?
+		portal?
+	relic chests worth more per turn?
 	wiz pts 52?  or other numbers mults of 5?
-	new chests allow gambling with relic/wiz...
 	allow gamble move to use in between 1-full move
 	group move from different hexes
 	teleporters
@@ -10,6 +18,12 @@ gameplay
 	"security" of public fields
 
 balance	
+	rebalance portals to enforce same min/max magic cost per race
+		use deterministic rand
+	ensure each unit type has a unit that can only attack each other type?
+		G->A
+		W->A
+		G->W
 	no cheap W/GW unit for dwarf
 	engager 6 fuel?
 	pay for recover regen?
@@ -41,7 +55,9 @@ balance
 		carrier defend air only??
 
 interface	
-	main map
+	main map	
+		collect alg use weakes unit as last tiebreaker
+		treasure text color
 		full refresh after game load
 		better indication of air units cant heal
 		bold other resources?
@@ -69,6 +85,7 @@ interface
 		drag to reposition route 
 		waypoints		
 	other 
+		show n-1 relic?  some kind of avg?
 		show unit kills?
 		relic loss with no capts not reflected in info 
 		log file rollover for different games
