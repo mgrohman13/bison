@@ -786,6 +786,21 @@ namespace CityWar
             return new Battle(attackers, defenders);
         }
 
+        internal void StartRetaliation()
+        {
+            int usedAttacks = attacks.Where(a => a.Used).Count();
+            if (usedAttacks > 0 && Owner == this.Owner.Game.CurrentPlayer)
+            {
+                //only reduce movement if any attacks were used
+                --movement;
+                if (IsAir())
+                    --Fuel;
+                //double work = owner.WorkRegen * overkill * OverkillPercent * 1 / (double)owner.Attacks.Length;
+                double work = WorkRegen * 1 * Attack.OverkillPercent * (attacks.Length - usedAttacks) / (double)attacks.Length;
+                Owner.AddWork(work);
+            }
+        }
+
         internal static void EndBattle(Battle b)
         {
             foreach (Unit u in b.attackers)
@@ -797,22 +812,9 @@ namespace CityWar
         {
             //reset length
             length = int.MaxValue;
-            int usedAttacks = 0;
             //reset attacks
             foreach (Attack a in attacks)
-                if (a.Used)
-                {
-                    a.Used = false;
-                    ++usedAttacks;
-                }
-            if (usedAttacks > 0 && Owner == this.Owner.Game.CurrentPlayer)
-            {
-                //only reduce movement if any attacks were used
-                --movement;
-                if (IsAir())
-                    --Fuel;
-                Owner.AddWork(Attack.OverkillPercent * WorkRegen * (attacks.Length - usedAttacks) / (double)attacks.Length);
-            }
+                a.Used = false;
         }
 
         #endregion //start and end battle

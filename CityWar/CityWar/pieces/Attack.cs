@@ -211,7 +211,8 @@ namespace CityWar
             //attacking player gets work back for overkill, defender pays upkeep to retaliate
             if (usingMove)
             {
-                double work = owner.WorkRegen * overkill * OverkillPercent / owner.Attacks.Length;
+                //double work = WorkRegen * 1 * Attack.OverkillPercent * (attacks.Length - usedAttacks) / (double)attacks.Length;
+                double work = owner.WorkRegen * overkill * OverkillPercent * 1 / (double)owner.Attacks.Length;
                 owner.Owner.AddWork(work);
             }
             else
