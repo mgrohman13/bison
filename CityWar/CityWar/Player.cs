@@ -1176,22 +1176,22 @@ namespace CityWar
                         for (int a = 0; a < portal.Income; a++)
                             switch (a % 6)
                             {
-                                case 1:
+                                case 0:
                                     ++type;
                                     break;
-                                case 2:
+                                case 1:
                                     ++elemental;
                                     break;
-                                case 3:
+                                case 2:
                                     ++type;
                                     break;
-                                case 4:
+                                case 3:
                                     ++magic;
                                     break;
-                                case 5:
+                                case 4:
                                     ++type;
                                     break;
-                                case 0:
+                                case 5:
                                     ++elemental;
                                     break;
                                 default: throw new Exception();
