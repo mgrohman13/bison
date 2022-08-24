@@ -114,10 +114,7 @@ namespace CityWarWinApp
             storeOld = true;
 
             //refresh information
-            RefreshCurrentPlayer();
-            RefreshResources();
-            RefreshButtons();
-            RefreshZoom();
+            RefreshAll();
 
             CenterOn(Game.CurrentPlayer.GetCenter());
         }
@@ -209,6 +206,18 @@ namespace CityWarWinApp
 
         #region Refreshing and Centering
 
+        private void RefreshAll()
+        {
+            RefreshMap(true);
+            RefreshCurrentPlayer();
+            RefreshResources();
+            RefreshButtons();
+            RefreshZoom();
+        }
+        private void RefreshMap(bool invalidateChildren = false)
+        {
+            this.Invalidate(invalidateRectangle, invalidateChildren);
+        }
         private void RefreshCurrentPlayer()
         {
             Player currentPlayer = Game.CurrentPlayer;
@@ -377,7 +386,7 @@ namespace CityWarWinApp
                 offY = 0;
 
             //repaint the map
-            this.Invalidate(invalidateRectangle, false);
+            RefreshMap();
 
             //center the selected unit in the units panel
             CenterUnit();
@@ -630,7 +639,7 @@ namespace CityWarWinApp
                         {
                             e.Graphics.DrawImage(thisTile.Treasure.GetPic(),
                                 xVal + _zoom / 9f + middle / 2f, yVal + _zoom / 3f + side / 3f);
-                            e.Graphics.DrawString(thisTile.Treasure.Value.ToString(), tileInfoFont, Brushes.White,
+                            DrawText(e.Graphics, thisTile.Treasure.Value.ToString(), false,
                                 xVal + _zoom / 3.3f + middle, yVal - _zoom / 9f + side * 2.2f);
                         }
                     }
@@ -673,14 +682,7 @@ namespace CityWarWinApp
 
                                     double str = thisTile.GetAllUnits().Sum(u => u.RandedCost * u.GetHealthPct());
                                     if (str > 0)
-                                    {
-                                        string strDisp = str.ToString("0");
-                                        SizeF strRect = e.Graphics.MeasureString(strDisp, tileInfoFont);
-                                        float strX = xVal + Zoom - strRect.Width;
-                                        const float fudge = .9f;
-                                        e.Graphics.FillRectangle(Brushes.Black, strX, yVal, strRect.Width, strRect.Height * fudge);
-                                        e.Graphics.DrawString(strDisp, tileInfoFont, Brushes.White, strX, yVal);
-                                    }
+                                        DrawText(e.Graphics, str.ToString("0"), true, xVal + Zoom, yVal, true);
                                 }
                             }
                         }
@@ -747,6 +749,19 @@ namespace CityWarWinApp
             {
                 Console.WriteLine(ex);
             }
+        }
+
+        private void DrawText(Graphics g, string text, bool color, float x, float y, bool rightAlign = false)
+        {
+            const float widthFudge = 1f, heightFudge = .9f;
+            SizeF strRect = g.MeasureString(text, tileInfoFont);
+            float width = strRect.Width - widthFudge;
+            if (rightAlign)
+                x -= width;
+            Brush backColor = color ? Brushes.Black : Brushes.White;
+            Brush foreColor = color ? Brushes.White : Brushes.Black;
+            g.FillRectangle(backColor, x, y, width, strRect.Height * heightFudge);
+            g.DrawString(text, tileInfoFont, foreColor, x, y);
         }
 
         #endregion
@@ -929,18 +944,15 @@ namespace CityWarWinApp
                         return;
 
                     //if anything happened, refresh stuff
-                    RefreshResources();
-                    RefreshButtons();
-                    RefreshCurrentPlayer();
+                    RefreshAll();
                     CenterUnit();
-                    this.Invalidate(invalidateRectangle, false);
                 }
             }
         }
 
         private void CheckPath()
         {
-            this.Invalidate();
+            RefreshMap();
             if (selected.X != -1 && selected.Y != -1)
             {
                 Tile selectedTile = Game.GetTile(selected.X, selected.Y);
@@ -1088,7 +1100,7 @@ namespace CityWarWinApp
             this.timerGraphics.Enabled = (left || right || up || down);
 
             //repaint the map
-            this.Invalidate(invalidateRectangle, false);
+            RefreshMap();
         }
 
         #endregion
@@ -1159,8 +1171,7 @@ namespace CityWarWinApp
 
             RefreshButtons();
             RefreshResources();
-            Invalidate(invalidateRectangle);
-            panelPieces.Invalidate();
+            RefreshMap(true);
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -1219,10 +1230,7 @@ namespace CityWarWinApp
                 if (selPieces[0].Movement == 0)
                     btnNext_Click(null, null);
                 else
-                {
-                    this.Invalidate(invalidateRectangle, false);
-                    this.panelPieces.Invalidate();
-                }
+                    RefreshMap(true);
 
                 return;
             }
@@ -1248,15 +1256,13 @@ namespace CityWarWinApp
                         break;
                     }
 
-                RefreshButtons();
-                RefreshResources();
-                this.Invalidate();
-
                 //if no pieces have move left, go to the next unit
                 if (nomoves)
                     btnNext_Click(this, e);
-                else
-                    this.panelPieces.Invalidate();
+
+                RefreshButtons();
+                RefreshResources();
+                RefreshMap(true);
             }
         }
 
@@ -1298,6 +1304,7 @@ namespace CityWarWinApp
                             }
                             return turns;
                         },
+                        unit => unit.RandedCost,
                     };
                     var rankings = funcs.Select(func => OrderByRegen(availUnits, func).ToList());
                     bestUnits = OrderByRegen(availUnits, unit => rankings.Sum(list => -Math.Pow(.5, list.IndexOf(unit))));
@@ -1309,14 +1316,9 @@ namespace CityWarWinApp
 
             //if no selected pieces have movement left, go to the next unit
             if (tile.GetSelectedPieces().Any(unit => unit.Movement > 0))
-            {
-                this.panelPieces.Invalidate();
-                this.Invalidate(invalidateRectangle, false);
-            }
+                RefreshMap(true);
             else
-            {
                 btnNext_Click(this, e);
-            }
 
             RefreshResources();
             RefreshButtons();
@@ -1364,9 +1366,8 @@ namespace CityWarWinApp
                 return;
             }
 
-            //refresh stuff
-            RefreshCurrentPlayer();
-            RefreshResources();
+            //refresh stuff 
+            RefreshAll();
 
             //clear OKed aircraft
             okToMove.Clear();
@@ -1427,11 +1428,7 @@ namespace CityWarWinApp
 
                 Game.DisbandUnits(units);
 
-                RefreshResources();
-                RefreshButtons();
-                RefreshCurrentPlayer();
-                panelPieces.Invalidate();
-                Invalidate(invalidateRectangle);
+                RefreshAll();
             }
         }
 
@@ -1456,14 +1453,9 @@ namespace CityWarWinApp
             RefreshResources();
 
             if (newCenter == null)
-            {
-                Invalidate(invalidateRectangle);
-                panelPieces.Invalidate();
-            }
+                RefreshMap(true);
             else
-            {
                 CenterOn(newCenter);
-            }
         }
 
         private void btnLog_Click(object sender, EventArgs e)
@@ -1493,7 +1485,7 @@ namespace CityWarWinApp
             {
                 //load the game
                 LoadGame(loadGame.FileName);
-
+                RefreshAll();
                 MessageBox.Show("Game Loaded.", "Load", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
