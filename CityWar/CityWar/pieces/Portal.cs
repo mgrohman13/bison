@@ -32,7 +32,7 @@ namespace CityWar
 
             this.Type = type;
 
-            SplitPortalCost(Owner.Game, owner.Race, type, out int mag, out int elm);
+            SplitPortalCost(owner.Race, type, out int mag, out int elm);
             this.Cost = mag + elm;
 
             double income = mag / IncomeDiv;
@@ -53,7 +53,7 @@ namespace CityWar
         internal override void Capture(Player newOwner)
         {
             //reimburse the old owner for partially finished units
-            SplitPortalCost(owner.Game, owner.Race, Type, out int m, out int e);
+            SplitPortalCost(owner.Race, Type, out int m, out int e);
             double resourceValue = GetResourceValue();
             int magic = Game.Random.Round(resourceValue * m / (double)(m + e));
             int element = Game.Random.Round(resourceValue * e / (double)(m + e));
@@ -73,7 +73,7 @@ namespace CityWar
 
         private Dictionary<string, int> GetStartValues()
         {
-            return Game.Races[this.owner.Race].Select(unitName => Unit.CreateTempUnit(owner.Game, unitName))
+            return Game.Races[this.owner.Race].Select(unitName => Unit.CreateTempUnit(unitName))
                     .Where(unit => unit.CostType == this.Type).ToDictionary(unit => unit.Name,
                     unit => Game.Random.WeightedInt(unit.BaseTotalCost - UnitInc, StartAmt) + Game.Random.Round(UnitInc * StartAmt));
         }
@@ -82,7 +82,7 @@ namespace CityWar
         {
             if (name == "Wizard")
                 return true;
-            Unit unit = Unit.CreateTempUnit(owner.Game, name);
+            Unit unit = Unit.CreateTempUnit(name);
             if (!RaceCheck(unit))
                 return false;
             return (this.Type == unit.CostType);
@@ -164,9 +164,9 @@ namespace CityWar
 
         #region portal cost
 
-        public static void SplitPortalCost(Game game, string race, CostType costType, out int magic, out int element)
+        public static void SplitPortalCost(string race, CostType costType, out int magic, out int element)
         {
-            int[] retVal = SplitPortalCost(game, race)[costType];
+            int[] retVal = SplitPortalCost(race)[costType];
             magic = retVal[0];
             element = retVal[1];
         }
@@ -295,7 +295,7 @@ namespace CityWar
         //    return (1 - (elemPct * elemPct * .666 + .21)) * totalCost;
         //}
 
-        public static Dictionary<CostType, int[]> SplitPortalCost(Game game, string race)
+        public static Dictionary<CostType, int[]> SplitPortalCost(string race)
         {
             Dictionary<CostType, int[]> portalCosts = new();
 
@@ -306,7 +306,7 @@ namespace CityWar
 
             foreach (string name in Game.Races[race])
             {
-                Unit unit = Unit.CreateTempUnit(game, name);
+                Unit unit = Unit.CreateTempUnit(name);
                 int idx = GetCTIdx(unit.CostType);
                 if (idx > -1)
                 {
@@ -339,7 +339,7 @@ namespace CityWar
                 int totalCost = elmInt[idx];
                 int element = GetPortalElementCost(other[idx] / (other[idx] + ppl[idx]), totalCost);
                 int magic = totalCost - element;
-                portalCosts.Add(GetIdxCT(idx), new int[] { magic, element });
+                portalCosts.Add(GetIdxCT(idx), new[] { magic, element });
             }
 
             return portalCosts;

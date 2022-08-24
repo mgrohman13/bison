@@ -143,7 +143,7 @@ namespace CityWar
 
         public double GetAverageDamage(Unit enemy, out double killPct, out double avgRelic)
         {
-            double averageDamage = DamageThrows(damage, Pierce, enemy.Armor, Unit.GetTotalDamageShield(Owner, enemy), enemy.hits, out killPct, out avgRelic, true);
+            double averageDamage = DamageThrows(damage, Pierce, enemy.Armor, Unit.GetTotalDamageShield(Owner, enemy), enemy.Hits, out killPct, out avgRelic, true);
             killPct *= 100;
             avgRelic *= enemy.RandedCost / RelicDivide / enemy.MaxHits;
             return averageDamage;

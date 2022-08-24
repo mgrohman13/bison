@@ -123,7 +123,7 @@ namespace CityWarWinApp
                 //}
 
 
-                Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
+                Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game.CurrentPlayer.Race);
                 List<CostType> keys = new List<CostType>(portalCost.Keys);
                 keys.Sort((c1, c2) => portalCost[c1][0] + portalCost[c1][1] - portalCost[c2][0] - portalCost[c2][1]);
                 foreach (CostType costType in keys)
@@ -199,7 +199,7 @@ namespace CityWarWinApp
 
         private int ShowBuildList<T>(ref int y, string label, IEnumerable<string> filter) where T : Capturable
         {
-            IEnumerable<string> build = capts.OfType<T>().SelectMany(c => c.GetBuildList()).Where(n => !filter.Contains(n)).Distinct().OrderBy(s => Unit.CreateTempUnit(Map.Game, s).BaseTotalCost);
+            IEnumerable<string> build = capts.OfType<T>().SelectMany(c => c.GetBuildList()).Where(n => !filter.Contains(n)).Distinct().OrderBy(s => Unit.CreateTempUnit(s).BaseTotalCost);
             if (build.Any())
             {
                 y += 45;
@@ -387,7 +387,7 @@ namespace CityWarWinApp
 
         private void RefreshButtons()
         {
-            Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game, Map.Game.CurrentPlayer.Race);
+            Dictionary<CostType, int[]> portalCost = Portal.SplitPortalCost(Map.Game.CurrentPlayer.Race);
             foreach (Control control in Controls)
             {
                 if (control is Button && (control.Tag is string) && ((string)control.Tag != ""))
@@ -521,7 +521,7 @@ namespace CityWarWinApp
             int maxH = int.MinValue;
 
             foreach (Control c in this.Controls)
-                if (!(c is ScrollBar))
+                if (c is not ScrollBar)
                 {
                     maxW = Math.Max(maxW, c.Location.X + c.Width);
                     maxH = Math.Max(maxH, c.Location.Y + c.Height);

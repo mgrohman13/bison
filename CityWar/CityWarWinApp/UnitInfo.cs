@@ -67,8 +67,8 @@ namespace CityWarWinApp
 
                         this.lblAttacks.Text = "Progress";
                         this.lbAttacks.Items.AddRange(portal.GetUnitValues().OrderBy(
-                                pair => Unit.CreateTempUnit(Map.Game, pair.Key).BaseTotalCost).Select(
-                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, Unit.CreateTempUnit(Map.Game, pair.Key).BaseTotalCost, pair.Key)).ToArray());
+                                pair => Unit.CreateTempUnit(pair.Key).BaseTotalCost).Select(
+                                pair => string.Format("{0:000} / {1:000}   {2}", pair.Value, Unit.CreateTempUnit(pair.Key).BaseTotalCost, pair.Key)).ToArray());
 
                         this.lblArmor.Visible = false;
                         this.txtArmor.Visible = false;

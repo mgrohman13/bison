@@ -41,7 +41,7 @@ namespace CityWar
             double[] length = new double[] { 0, 0, 0 };
             double[] damage = new double[] { 0, 0, 0 };
             double[] divide = new double[] { 1, 1, 1 };
-            Attack.SpecialType[] special = new Attack.SpecialType[] { Attack.SpecialType.None, Attack.SpecialType.None, Attack.SpecialType.None, };
+            Attack.SpecialType[] special = new[] { Attack.SpecialType.None, Attack.SpecialType.None, Attack.SpecialType.None, };
 
             if (type == UnitType.Immobile)
             {

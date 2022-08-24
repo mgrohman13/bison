@@ -164,7 +164,7 @@ namespace CityWar
             UnitSchema us = UnitTypes.GetSchema();
             int numUnits = us.Unit.Rows.Count;
             Dictionary<string, List<string>> tempRaces = new();
-            var unitsHave = new Dictionary<string, int>(numUnits);
+            Dictionary<string, int> unitsHave = new(numUnits);
             for (int a = -1; ++a < numUnits;)
             {
                 UnitSchema.UnitRow row = ((UnitSchema.UnitRow)us.Unit.Rows[a]);
@@ -270,7 +270,7 @@ namespace CityWar
                         if (targets.Any() && Random.Bool(chance))
                         {
                             Unit splashTarget = Random.SelectValue(targets);
-                            int oldHits = splashTarget.hits;
+                            int oldHits = splashTarget.Hits;
                             int splashDmg = attack.AttackUnit(splashTarget, false, out double splashRelic);
                             if (splashDmg > 0)
                                 splash = new Tuple<Unit, int, int, double>(splashTarget, splashDmg, oldHits, splashRelic);
@@ -436,7 +436,7 @@ namespace CityWar
                 if (oldTerrain == terrain)
                 {
                     //trying to change to the same terrain counts as a heal
-                    HealPieces(new Piece[] { wizard });
+                    HealPieces(new[] { wizard });
                 }
                 else
                 {
@@ -484,7 +484,7 @@ namespace CityWar
                         AddTileUnit(u.Tile, u);
 
                     UndoCommands.Push(UndoBuildPiece);
-                    UndoArgs.Push(new object[] { capt, piece });
+                    UndoArgs.Push(new[] { capt, piece });
                 }
                 else
                 {
@@ -666,7 +666,7 @@ namespace CityWar
             if (any)
             {
                 UndoCommands.Push(UndoHealPieces);
-                UndoArgs.Push(new object[] { undoInfo });
+                UndoArgs.Push(new[] { undoInfo });
             }
         }
         private Piece UndoHealPieces(object[] args)
@@ -767,7 +767,7 @@ namespace CityWar
                 undoInfo.Add(unit, unit.Disband());
 
             UndoCommands.Push(UndoDisbandUnits);
-            UndoArgs.Push(new object[] { undoInfo });
+            UndoArgs.Push(new[] { undoInfo });
         }
         private Piece UndoDisbandUnits(object[] args)
         {
@@ -969,7 +969,7 @@ namespace CityWar
 
         public int GetUnitNeeds(string name)
         {
-            return Unit.CreateTempUnit(this, name).BaseTotalCost;
+            return Unit.CreateTempUnit(name).BaseTotalCost;
         }
 
         public static int NewGroup()
@@ -1136,7 +1136,7 @@ namespace CityWar
 
         private Dictionary<Type, Dictionary<Player, int>> GetPlayerCounts(IEnumerable<Type> capts)
         {
-            var counts = new Dictionary<Type, Dictionary<Player, int>>();
+            Dictionary<Type, Dictionary<Player, int>> counts = new();
             foreach (Type type in capts)
                 counts.Add(type, new Dictionary<Player, int>());
 
@@ -1207,7 +1207,7 @@ namespace CityWar
         }
         private Dictionary<string, string> GetForRaces(string targetName)
         {
-            Unit targetUnit = Unit.CreateTempUnit(this, targetName);
+            Unit targetUnit = Unit.CreateTempUnit(targetName);
             double avgRaceTotal = freeUnits.Values.Sum() / (double)Races.Count;
 
             return Races.ToDictionary(race => race.Key, race =>
@@ -1273,7 +1273,7 @@ namespace CityWar
             if (type == typeof(Portal))
             {
                 //account for partially finished units
-                portalAvg = Races.Values.SelectMany(units => units).Select(unit => Unit.CreateTempUnit(this, unit))
+                portalAvg = Races.Values.SelectMany(units => units).Select(unit => Unit.CreateTempUnit(unit))
                         .Where(unit => unit.CostType != CostType.Production).Sum(unit => unit.BaseTotalCost);
                 portalAvg *= .39 * Portal.ValuePct / (double)Races.Count / 5.0;
 
@@ -1369,7 +1369,7 @@ namespace CityWar
                 Tile tile = RandomTile();
                 if (!tile.Occupied())
                 {
-                    Treasure.TreasureType type = Random.SelectValue(new Treasure.TreasureType[] {
+                    Treasure.TreasureType type = Random.SelectValue(new[] {
                         Treasure.TreasureType.Magic, Treasure.TreasureType.Relic, Treasure.TreasureType.Unit });
                     tile.CreateTreasure(type);
                 }

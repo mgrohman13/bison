@@ -344,7 +344,7 @@ namespace UnitBalance
                 Attack[] Attacks = new Attack[row.GetAttackRows().Length];
                 UnitType type = UnitTypes.GetType(row.Type);
                 double weaponMove = Balance.GetMove(type, row.Move, abilities.Contains(Ability.Aircraft), fuel);
-                string[] attacknames = new string[] { "'-", "'-", "'-" };
+                string[] attacknames = new[] { "'-", "'-", "'-" };
                 double[] attackValues = new double[3];
                 int idx = 0;
                 foreach (UnitSchema.AttackRow attackRow in row.GetAttackRows())

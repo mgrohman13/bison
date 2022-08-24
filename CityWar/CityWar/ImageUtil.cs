@@ -73,7 +73,7 @@ namespace CityWar
             ColorMap portalMap = new();
             portalMap.OldColor = Color.FromArgb(200, 0, 0);
             portalMap.NewColor = portalColor;
-            colorRemapping.SetRemapTable(new ColorMap[] { playerMap, portalMap });
+            colorRemapping.SetRemapTable(new[] { playerMap, portalMap });
 
             Bitmap pic = new(100, 100);
             Graphics g = Graphics.FromImage(pic);

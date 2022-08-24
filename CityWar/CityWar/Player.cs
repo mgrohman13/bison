@@ -1150,7 +1150,7 @@ namespace CityWar
             {
                 //if its a portal, receive or lose some compensation for the cost difference
                 Portal portal = (Portal)remove;
-                Portal.SplitPortalCost(portal.Owner.game, portal.Owner.Race, portal.Type, out int m, out int e);
+                Portal.SplitPortalCost(portal.Owner.Race, portal.Type, out int m, out int e);
                 double magicPct = m / (double)(m + e), elementPct = e / (double)(m + e);
                 double diff = portal.GetPortalValue() - portalAvg;
                 const double mult = 1;
