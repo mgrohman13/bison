@@ -60,6 +60,10 @@ namespace CityWar
 
             this.shield = shield;
             this.Fuel = fuel;
+            if (owner != null)
+                owner.AddUpkeep(fuel * FuelWorkCost * Player.UpkeepMult / Player.WorkMult);
+            else
+                ;
 
             this._hits = hits;
             this._regenPct = 1;
@@ -730,7 +734,7 @@ namespace CityWar
                     shield = 100 - shield;
             }
             if (IsAir())
-                maxFuel = RandStat(maxFuel, true, MaxMove);
+                maxFuel = RandStat(maxFuel, true, MaxMove * 2);
 
             this.armor = RandStat(this.armor, false);
             this.regen = RandStat(this.regen, true);
