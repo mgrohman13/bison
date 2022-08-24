@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MattUtil;
 
 namespace CityWar
 {
@@ -9,7 +10,10 @@ namespace CityWar
     {
         #region fields and constructors
 
-        public const int AvgPortalCost = 1000;
+        public const int CostTotalAvg = 1000;
+        private const int CostMagicMin = 520;
+        private const int CostMagicMax = 910;
+
         public const double UnitCostPct = .21;
         public const double ValuePct = (1 - UnitCostPct);
         public const double StartAmt = .26;
@@ -135,7 +139,7 @@ namespace CityWar
         private double GetUnitInc()
         {
             const double Power = 1.3, Divisor = 16.9;
-            return Math.Pow(Cost, Power) / Divisor / Math.Pow(AvgPortalCost, Power - 1);
+            return Math.Pow(Cost, Power) / Divisor / Math.Pow(CostTotalAvg, Power - 1);
         }
 
         public IEnumerable<KeyValuePair<string, int>> GetUnitValues()
@@ -160,17 +164,137 @@ namespace CityWar
 
         #region portal cost
 
-        public static int TotalPortalCost(Game game, string race, CostType costType)
-        {
-            int[] cost = SplitPortalCost(game, race)[costType];
-            return cost[0] + cost[1];
-        }
         public static void SplitPortalCost(Game game, string race, CostType costType, out int magic, out int element)
         {
             int[] retVal = SplitPortalCost(game, race)[costType];
             magic = retVal[0];
             element = retVal[1];
         }
+
+        //public static Dictionary<CostType, int[]> SplitPortalCost(Game game, string race)
+        //{
+        //    MTRandom rand = PortalRand(game);
+
+        //    //initialize cost types
+        //    double[] tempTot = new double[5];
+        //    double[] totCost = new double[5];
+        //    double[] elemCost = new double[5];
+        //    double[] popCost = new double[5];
+
+        //    //need to order by name before random ordering, so changing the order of units in the Races dictionary has no effect 
+        //    foreach (string name in rand.Iterate(Game.Races[race].OrderBy(x => x)))
+        //    {
+        //        Unit unit = Unit.CreateTempUnit(game, name);
+        //        int idx = GetCTIdx(unit.CostType);
+        //        if (idx > -1)
+        //        {
+        //            tempTot[idx] += rand.Gaussian(unit.BaseTotalCost + unit.BaseOtherCost / 2.1, .021);
+        //            ++totCost[idx];
+        //            double div = Math.Sqrt(unit.BaseTotalCost);
+        //            elemCost[idx] += rand.Gaussian(unit.BaseOtherCost / div, .013);
+        //            popCost[idx] += rand.Gaussian(unit.BasePplCost / div, .0169);
+        //        }
+        //    }
+
+        //    //set totals
+        //    double avgTot = 0;
+        //    foreach (int idx in rand.Iterate(5))
+        //    {
+        //        tempTot[idx] = GetTotalPortalCost(tempTot[idx], totCost[idx]);
+        //        avgTot += tempTot[idx];
+        //    }
+        //    foreach (int idx in rand.Iterate(5))
+        //        totCost[idx] = tempTot[idx] * CostTotalAvg * 5.0 / avgTot;
+
+        //    //set magic costs
+        //    double[] magicAvg = new double[5];
+        //    double[] elemMult = new double[5];
+
+        //    foreach (int idx in rand.Iterate(5))
+        //    {
+        //        double totalCost = totCost[idx];
+        //        double element = GetPortalElementCost(elemCost[idx] / (elemCost[idx] + popCost[idx]), totalCost);
+        //        double mag = totalCost - element;
+        //        while (magicAvg.Any(avg => Math.Abs(avg - mag) < rand.Gaussian(52, .13)))
+        //            mag += rand.Gaussian(13);
+        //        magicAvg[idx] = mag;
+        //        elemMult[idx] = element / mag;
+        //    }
+
+        //    //scale to min/max  
+        //    int[] magic = new int[5];
+
+        //    double min = magicAvg.Min();
+        //    double max = magicAvg.Max();
+        //    double mult = (CostMagicMax - CostMagicMin) / (max - min);
+        //    foreach (int idx in rand.Iterate(5))
+        //        magic[idx] = rand.GaussianInt((magicAvg[idx] - min) * mult + CostMagicMin, .026);
+
+        //    // distribute elemental, keeping ratios 
+        //    double[] elemAvg = new double[5];
+
+        //    double elemTot = 0;
+        //    foreach (int idx in rand.Iterate(5))
+        //    {
+        //        elemAvg[idx] = magic[idx] * elemMult[idx];
+        //        elemTot += elemAvg[idx];
+        //    }
+
+        //    // scale elemental to keep average correct
+        //    int[] elem = new int[5];
+        //    //  TODO: rescale non min/max magic vals too to keep mag/elem ratios better?
+        //    int costTot = 5 * CostTotalAvg;
+        //    double elemTrg = costTot - magic.Sum();
+        //    double elemAct = elemAvg.Sum();
+        //    mult = elemTrg / elemAct;
+        //    foreach (int idx in rand.Iterate(5))
+        //        elem[idx] = rand.Round(elemAvg[idx] * mult);
+
+        //    //reconcile total
+        //    int total; do
+        //    {
+        //        total = magic.Sum() + elem.Sum();
+        //        elem[rand.Next(5)] += Math.Sign(costTot - total);
+        //    } while (costTot != total);
+
+        //    Dictionary<CostType, int[]> portalCosts = new();
+        //    foreach (int idx in rand.Iterate(5))
+        //        portalCosts.Add(GetIdxCT(idx), new int[] { magic[idx], elem[idx] });
+        //    return portalCosts;
+        //}
+        //private static MTRandom PortalRand(Game game)
+        //{
+        //    //We want to be able to use some "randomness" in portal cost calculations,
+        //    // but it needs to be deterministic for the same set of units
+        //    //So, create a deterministic seed based on all of the elemental units' costs
+        //    //If something is changed about any unit, the seed will be different and "random" results will differ
+        //    uint[] seed = Game.Races
+        //        .SelectMany(pair => pair.Value)
+        //        .Select(name => Unit.CreateTempUnit(game, name))
+        //        .Where(unit => unit.CostType != CostType.Production)
+        //        .OrderBy(unit => unit.Race)
+        //        .ThenBy(unit => unit.Name)
+        //        .SelectMany(unit => new object[] {
+        //            unit.Race,
+        //            unit.Name,
+        //            unit.CostType,
+        //            unit.BaseOtherCost,
+        //            unit.BasePplCost, })
+        //        .Select(obj => (uint)obj.GetHashCode())
+        //        .ToArray();
+        //    return new MTRandom(seed);
+        //}
+        //private static double GetTotalPortalCost(double totCost, double numUnits)
+        //{
+        //    //the greater the number of units and their cost, the greater the total cost of the portal
+        //    return Math.Pow(totCost * (numUnits + 1), .39);
+        //}
+        //private static double GetPortalElementCost(double elemPct, double totalCost)
+        //{
+        //    //the more population the units cost, the less magic the portal costs
+        //    return (1 - (elemPct * elemPct * .666 + .21)) * totalCost;
+        //}
+
         public static Dictionary<CostType, int[]> SplitPortalCost(Game game, string race)
         {
             Dictionary<CostType, int[]> portalCosts = new();
@@ -205,10 +329,10 @@ namespace CityWar
             int totInt = 0;
             for (int idx = 0; idx < 4; ++idx)
             {
-                elmInt[idx] = (int)Math.Round(elmDbl[idx] * AvgPortalCost * 5.0 / total);
+                elmInt[idx] = (int)Math.Round(elmDbl[idx] * CostTotalAvg * 5.0 / total);
                 totInt += elmInt[idx];
             }
-            elmInt[4] = AvgPortalCost * 5 - totInt;
+            elmInt[4] = CostTotalAvg * 5 - totInt;
 
             for (int idx = 0; idx < 5; ++idx)
             {
@@ -227,39 +351,24 @@ namespace CityWar
         }
         public static int GetPortalElementCost(double elemPct, double totalCost)
         {
-            ////the more population the units cost, the less magic the portal costs
+            //the more population the units cost, the less magic the portal costs
             return (int)Math.Ceiling((1 - (elemPct * elemPct * .666 + .21)) * totalCost);
-
-            ////the more population the units cost, the more magic the portal costs
-            //elemPct *= elemPct;
-            //if (elemPct <= .26)
-            //    return 1;
-            //elemPct = (0.65 * (elemPct - 0.26));
-            //return (int)Math.Ceiling(elemPct * totalCost);
         }
+
         private static int GetCTIdx(CostType costType)
         {
-            return costType switch
-            {
-                CostType.Air => 0,
-                CostType.Earth => 1,
-                CostType.Nature => 2,
-                CostType.Water => 3,
-                CostType.Death => 4,
-                _ => -1,
-            };
+            if (costType == CostType.Production)
+                return -1;
+            int idx = (int)costType;
+            if (idx > (int)CostType.Production)
+                idx--;
+            return idx;
         }
         private static CostType GetIdxCT(int idx)
         {
-            return idx switch
-            {
-                0 => CostType.Air,
-                1 => CostType.Earth,
-                2 => CostType.Nature,
-                3 => CostType.Water,
-                4 => CostType.Death,
-                _ => throw new Exception(),
-            };
+            if (idx >= (int)CostType.Production)
+                idx++;
+            return (CostType)idx;
         }
 
         #endregion //portal cost

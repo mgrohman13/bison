@@ -1,7 +1,7 @@
 gameplay
 	fuel
 		pay at start
-		?
+		set min for randomness at 2x move?  2+ move?
 	nocapts lose wiz/rel if neg work
 	upgrade units
 		factory
@@ -20,6 +20,9 @@ gameplay
 balance	
 	rebalance portals to enforce same min/max magic cost per race
 		use deterministic rand
+		rescale non min/max magic vals too to keep mag/elem ratios better?
+		split all races at once with same MTRandom
+		make forced magicAvg differences less random
 	ensure each unit type has a unit that can only attack each other type?
 		G->A
 		W->A

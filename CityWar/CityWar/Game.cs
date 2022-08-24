@@ -1277,7 +1277,7 @@ namespace CityWar
                         .Where(unit => unit.CostType != CostType.Production).Sum(unit => unit.BaseTotalCost);
                 portalAvg *= .39 * Portal.ValuePct / (double)Races.Count / 5.0;
 
-                portalAvg += Portal.AvgPortalCost;
+                portalAvg += Portal.CostTotalAvg;
             }
 
             foreach (Player player in players)
