@@ -668,7 +668,7 @@ namespace CityWar
 
                     bool another = GetRelic();
                     if (another)
-                    { }
+                        ;
                     return true;
                 }
             }
@@ -886,8 +886,9 @@ namespace CityWar
 
         private void CheckNegativeWork()
         {
+            bool inclWizRel = pieces.OfType<Capturable>().Any();
             //when your work is negative, you will lose some actual resources
-            while (Game.Random.Round(work / 10.0) < 0 && CountResources(false, true, true) > 0)
+            while (Game.Random.Round(work / 10.0) < 0 && CountResources(false, inclWizRel, inclWizRel) > 0)
             {
                 int amt;
                 switch (Game.Random.Next(16))
@@ -933,33 +934,36 @@ namespace CityWar
                         throw new Exception();
                 }
                 //if you did not have enough of the chosen standard resource, you may lose some magic or relic
-                while (Game.Random.Bool(1 - GetRandVal(amt)))
-                    if (magic > 0 || Relic > 0)
-                    {
-                        switch (Game.Random.Next(8))
+                if (inclWizRel)
+                    while (Game.Random.Bool(1 - GetRandVal(amt)))
+                        if (magic > 0 || Relic > 0)
                         {
-                            case 0:
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                                amt = magic;
-                                TradeMagic();
-                                break;
-                            case 5:
-                            case 6:
-                            case 7:
-                                amt = Relic;
-                                TradeRelic();
-                                break;
-                            default:
-                                throw new Exception();
+                            switch (Game.Random.Next(8))
+                            {
+                                case 0:
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                    amt = magic;
+                                    TradeMagic();
+                                    break;
+                                case 5:
+                                case 6:
+                                case 7:
+                                    amt = Relic;
+                                    TradeRelic();
+                                    break;
+                                default:
+                                    throw new Exception();
+                            }
                         }
-                    }
-                    else
-                    {
-                        break;
-                    }
+                        else
+                        {
+                            break;
+                        }
+                else
+                    ;
             }
         }
         private static double GetRandVal(int amt)
