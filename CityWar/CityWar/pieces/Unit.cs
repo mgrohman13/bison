@@ -62,8 +62,6 @@ namespace CityWar
             this.Fuel = fuel;
             if (owner != null)
                 owner.AddUpkeep(fuel * FuelWorkCost * Player.UpkeepMult / Player.WorkMult);
-            else
-                ;
 
             this._hits = hits;
             this._regenPct = 1;

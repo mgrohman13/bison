@@ -1,38 +1,35 @@
 gameplay
-	fuel
-		pay at start
-		set min for randomness at 2x move?  2+ move?
-	nocapts lose wiz/rel if neg work
+	relic chests worth more per turn?
+	wiz pts 52?  or other numbers mults of 5?
 	upgrade units
 		factory
 			add-on to town, not separate capturable, refunded when disappears
 			captured by player behavior?
 		portal?
-	relic chests worth more per turn?
-	wiz pts 52?  or other numbers mults of 5?
-	allow gamble move to use in between 1-full move
-	group move from different hexes
+	movement features?
+		allow gamble move to use in between 1-full move
+		group move from different hexes
 	teleporters
 		come up with way to be different from galwar wormholes
 	exp?
 	"security" of public fields
 
 balance	
-	rebalance portals to enforce same min/max magic cost per race
-		use deterministic rand
-		rescale non min/max magic vals too to keep mag/elem ratios better?
+	rebalance portals to enforce same min/max magic cost per race 
 		split all races at once with same MTRandom
+		rescale non min/max magic vals too to keep mag/elem ratios better?
 		make forced magicAvg differences less random
 	ensure each unit type has a unit that can only attack each other type?
 		G->A
 		W->A
 		G->W
 	no cheap W/GW unit for dwarf
-	engager 6 fuel?
-	pay for recover regen?
-	aircraft pay for fuel when built?
-	splash damage only look at target unit tile?
-		show splash chance on UI?
+	engager 6 fuel??
+	pay for recover regen
+	splash
+		rework to spread damage to multiple??
+		only look at target unit tile?
+		show splash damage/chance on UI?
 	bonus to element units on terrain?
 	attack bonuses, not just armor?
 	unit abilities 
@@ -59,9 +56,6 @@ balance
 
 interface	
 	main map	
-		collect alg use weakes unit as last tiebreaker
-		treasure text color
-		full refresh after game load
 		better indication of air units cant heal
 		bold other resources?
 			relic when close?
@@ -77,17 +71,19 @@ interface
 		better visibility for avail attacks/retaliation
 		better visibility of diff hexes
 		graph?
-	ability to look around main map during a battle, see info screen, etc?
-		highlight participating tiles
-		any attempted action re-opens battle window
-		save during battle?			
+		ability to look around main map during a battle, see info screen, etc?
+			highlight participating tiles
+			any attempted action re-opens battle window
+			save during battle?			
 	pathfinding
 		clear path
 		easy move along path
 		option to avoid occupied tiles
 		drag to reposition route 
 		waypoints		
+		look at galwar functionality...
 	other 
+		can disband last unit?
 		show n-1 relic?  some kind of avg?
 		show unit kills?
 		relic loss with no capts not reflected in info 
@@ -95,6 +91,8 @@ interface
 		score graphs 
 		resize windows, better zooming, controls, etc
 		fuel check triggers when cannot save aircraft
+			maybe a good thing - instead just show different message
+			but dont show when moving a carrier, only that aricraft 
 		aircraft "range" calc, 2-way and 1-way (also just with remianing?)	
 		form can close without exiting app
 		clean up balance build summon form
