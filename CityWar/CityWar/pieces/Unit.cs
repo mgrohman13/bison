@@ -15,7 +15,7 @@ namespace CityWar
         //power to which regeneration percent is raised every turn that it recovers
         public const double RegenRecoverPower = .39;
 
-        private const double FuelWorkCost = .39;
+        public const double FuelWorkCost = .39;
 
         //only used during a battle
         [NonSerialized]
@@ -60,8 +60,6 @@ namespace CityWar
 
             this.shield = shield;
             this.Fuel = fuel;
-            if (owner != null)
-                owner.AddUpkeep(fuel * FuelWorkCost * Player.UpkeepMult / Player.WorkMult);
 
             this._hits = hits;
             this._regenPct = 1;
@@ -669,6 +667,9 @@ namespace CityWar
             {
                 owner.Add(unit);
                 tile.Add(unit);
+
+                if (unit.IsAir())
+                    owner.AddUpkeep(fuel * FuelWorkCost * Player.UpkeepMult / Player.WorkMult);
             }
 
             return unit;

@@ -107,6 +107,9 @@ namespace CityWar
                 owner.Spend(-unit.BaseOtherCost, unit.CostType, -unit.BasePplCost);
                 owner.Remove(unit);
                 tile.Remove(unit);
+
+                if (unit.IsAir())
+                    owner.AddUpkeep(-unit.Fuel * Unit.FuelWorkCost * Player.UpkeepMult / Player.WorkMult);
             }
 
             piece.Tile.Remove(piece);
