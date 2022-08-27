@@ -650,6 +650,8 @@ namespace CityWar
                                     c.MaxMove == 0 || existing.Contains(c)))
                             {
                                 var priority = carriers.Where(c => AirHeal.Values.SelectMany(v => v).Contains(c));
+                                if (carriers.Count() > 1)
+                                    ;
                                 if (priority.Any())
                                     carriers = priority;
                                 if (carriers.Count() > 1)

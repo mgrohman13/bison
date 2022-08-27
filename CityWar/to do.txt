@@ -83,6 +83,7 @@ interface
 		waypoints		
 		look at galwar functionality...
 	other 
+		escape/enter close forms (e.g. build)
 		can disband last unit?
 		show n-1 relic?  some kind of avg?
 		show unit kills?
