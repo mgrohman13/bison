@@ -208,15 +208,20 @@ namespace CityWarWinApp
 
         private void RefreshAll()
         {
-            RefreshMap(true);
+            RefreshMap();
+            RefreshUnits();
             RefreshCurrentPlayer();
             RefreshResources();
             RefreshButtons();
             RefreshZoom();
         }
-        private void RefreshMap(bool invalidateChildren = false)
+        private void RefreshMap()
         {
-            this.Invalidate(invalidateRectangle, invalidateChildren);
+            this.Invalidate(invalidateRectangle, false);
+        }
+        private void RefreshUnits()
+        {
+            panelPieces.Invalidate();
         }
         private void RefreshCurrentPlayer()
         {
@@ -333,9 +338,6 @@ namespace CityWarWinApp
 
             //reset the pics so they can be the proper size
             Game.ResetPics(this._zoom);
-
-            //center on the selected tile
-            CenterOnSelected();
         }
 
         private void CenterOnSelected()
@@ -1171,7 +1173,8 @@ namespace CityWarWinApp
 
             RefreshButtons();
             RefreshResources();
-            RefreshMap(true);
+            RefreshMap();
+            RefreshUnits();
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -1228,9 +1231,14 @@ namespace CityWarWinApp
                 RefreshButtons();
 
                 if (selPieces[0].Movement == 0)
+                {
                     btnNext_Click(null, null);
+                }
                 else
-                    RefreshMap(true);
+                {
+                    RefreshMap();
+                    RefreshUnits();
+                }
 
                 return;
             }
@@ -1262,7 +1270,8 @@ namespace CityWarWinApp
 
                 RefreshButtons();
                 RefreshResources();
-                RefreshMap(true);
+                RefreshMap();
+                RefreshUnits();
             }
         }
 
@@ -1316,9 +1325,14 @@ namespace CityWarWinApp
 
             //if no selected pieces have movement left, go to the next unit
             if (tile.GetSelectedPieces().Any(unit => unit.Movement > 0))
-                RefreshMap(true);
+            {
+                RefreshMap();
+                RefreshUnits();
+            }
             else
+            {
                 btnNext_Click(this, e);
+            }
 
             RefreshResources();
             RefreshButtons();
@@ -1453,9 +1467,14 @@ namespace CityWarWinApp
             RefreshResources();
 
             if (newCenter == null)
-                RefreshMap(true);
+            {
+                RefreshMap();
+                RefreshUnits();
+            }
             else
+            {
                 CenterOn(newCenter);
+            }
         }
 
         private void btnLog_Click(object sender, EventArgs e)
