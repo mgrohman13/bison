@@ -689,9 +689,9 @@ namespace CityWar
                     switch (a)
                     {
                         case Ability.Aircraft:
-                            return 6;
-                        case Ability.AircraftCarrier:
                             return 5;
+                        case Ability.AircraftCarrier:
+                            return 6;
                     }
                 switch (u.Type)
                 {

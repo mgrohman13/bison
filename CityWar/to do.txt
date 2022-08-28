@@ -25,6 +25,7 @@ balance
 		G->W
 	no cheap W/GW unit for dwarf
 	engager 6 fuel??
+	slyph regen
 	pay for recover regen
 	splash
 		rework to spread damage to multiple??
