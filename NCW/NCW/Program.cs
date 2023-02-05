@@ -249,6 +249,7 @@ namespace NCWMap
                         {
                             t2 = tile;
                             n2 = tile.GetNeighbors().Where(n => n.Water != tile.Water).ToList();
+                            break;
                         }
                     }
                     if (t2 == null || !n2.Any())
