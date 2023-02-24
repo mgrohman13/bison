@@ -18,7 +18,7 @@ namespace WarpipsReplayability
         {
             try
             {
-                Plugin.Log.LogInfo("MissionManagerAsset_InitializeWorldMap Prefix");
+                Plugin.Log.LogDebug("MissionManagerAsset_InitializeWorldMap Prefix");
 
                 Map.MissionManagerAsset = __instance;
             }

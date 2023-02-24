@@ -17,9 +17,9 @@ namespace WarpipsReplayability
         {
             try
             {
-                Plugin.Log.LogInfo("WorldMapSession_InitailizeNewMapInstance Postfix");
+                Plugin.Log.LogDebug("WorldMapSession_InitailizeNewMapInstance Postfix");
 
-                Map.Shuffle(___worldMapAsset, ___territories);
+                Map.Randomize(___worldMapAsset, ___territories);
             }
             catch (Exception e)
             {

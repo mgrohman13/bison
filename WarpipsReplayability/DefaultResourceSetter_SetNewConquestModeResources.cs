@@ -22,7 +22,7 @@ namespace WarpipsReplayability
         {
             try
             {
-                Plugin.Log.LogInfo("DefaultResourceSetter_SetNewConquestModeResources Postfix");
+                Plugin.Log.LogDebug("DefaultResourceSetter_SetNewConquestModeResources Postfix");
 
                 ___resourceController.HardSetPlayerLives(2, 3);
                 Plugin.Log.LogInfo("HardSetPlayerLives(2, 3)");
