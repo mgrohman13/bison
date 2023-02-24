@@ -1,0 +1,4 @@
+additional reward when gaining life at max
+hide non-adjacent territory info
+break some connections?
+test what blocking territories means
