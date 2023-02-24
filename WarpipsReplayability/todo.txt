@@ -1,4 +1,9 @@
-additional reward when gaining life at max
 hide non-adjacent territory info
-break some connections?
+
+additional reward when gaining life at max
+
 test what blocking territories means
+rebalance island completion somehow?
+	seems too strong (certainly for islands 1-2)
+
+mess with spawning, true mission randomness
