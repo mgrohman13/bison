@@ -9,19 +9,28 @@ using System.Runtime.CompilerServices;
 namespace WarpipsReplayability
 {
     [HarmonyPatch(typeof(DefaultResourceSetter))]
-    [HarmonyPatch("SetNewConquestModeResources")] // if possible use nameof() here
-    class DefaultResourceSetter_SetNewConquestModeResources
+    [HarmonyPatch(nameof(DefaultResourceSetter.SetNewConquestModeResources))]
+    internal class DefaultResourceSetter_SetNewConquestModeResources
     {
         //static bool Prefix(DefaultResourceSetter __instance, ref ResourceController ___resourceController)
         //{
-        //    Plugin.Log.LogInfo("Prefix"); 
+        //    Plugin.Log.LogInfo("DefaultResourceSetter_SetNewConquestModeResources Prefix"); 
         //    return true;
         //}
 
-        static void Postfix(ref ResourceController ___resourceController)
+        public static void Postfix(ref ResourceController ___resourceController)
         {
-            ___resourceController.HardSetPlayerLives(2, 3);
-            Plugin.Log.LogInfo("HardSetPlayerLives(2, 3)");
+            try
+            {
+                Plugin.Log.LogInfo("DefaultResourceSetter_SetNewConquestModeResources Postfix");
+
+                ___resourceController.HardSetPlayerLives(2, 3);
+                Plugin.Log.LogInfo("HardSetPlayerLives(2, 3)");
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
         }
     }
 }
