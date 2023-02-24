@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Transactions;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using MattUtil;
 
 namespace WarpipsReplayability
 {
@@ -14,8 +14,15 @@ namespace WarpipsReplayability
 
     public class Plugin : BaseUnityPlugin
     {
+        public static MTRandom Rand
+        { get; private set; }
+        public static ManualLogSource Log
+        { get; private set; }
+
         public void Awake()
         {
+            Rand = new MTRandom();
+            Rand.StartTick();
             Log = base.Logger;
 
             Harmony harmony = new Harmony("WarpipsReplayability.mod");
@@ -23,7 +30,5 @@ namespace WarpipsReplayability
 
             Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         }
-
-        public static ManualLogSource Log { get; private set; }
     }
 }
