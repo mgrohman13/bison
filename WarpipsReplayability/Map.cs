@@ -21,36 +21,49 @@ namespace WarpipsReplayability
         private static TerritoryInstance Start { get; set; }
         private static TerritoryInstance End { get; set; }
         private static HashSet<TerritoryInstance> Rewards { get; set; }
+        private static Dictionary<int, int> Shuffle { get; set; }
 
         public static void Randomize()
         {
             if (DoShuffle)
             {
+                //Shuffle = null;
                 ShuffleTerritories();
-                ModifyConnections();
-                //must happen after due to recursive retries
-                DoShuffle = false;
+                var edges = ModifyConnections();
+                if (ValidateAndFinalize(edges))
+                {
+                    //must happen after due to recursive retries
+                    DoShuffle = false;
+
+                    TBSUtil.SaveGame(Shuffle, "BepInEx/plugins/shuffle.dat");
+                    Shuffle = null;
+                }
             }
         }
 
         private static void ShuffleTerritories()
         {
             Operation[] operations = Territories.Select(t => t.operation).ToArray();
-            //Plugin.Log.LogInfo(operations.Select(o => o.operationName).Aggregate((a, b) => a + "," + b));
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.name).Aggregate((a, b) => a + "," + b));
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
 
+            if (Shuffle == null)
+                Shuffle = Enumerable.Range(0, Territories.Length).ToDictionary(a => a);
             Plugin.Rand.Shuffle(Territories);
-            Dictionary<int, int> shuffle = new();
             for (int c = 0; c < Territories.Length; c++)
             {
-                shuffle[c] = Territories[c].index;
+                Shuffle[c] = Shuffle[Territories[c].index];
                 Territories[c].operation = operations[Territories[c].index];
                 Territories[c].index = c;
+
+                if (Territories[c].operation.techReward > 1)
+                    Territories[c].operation.techReward = Plugin.Rand.GaussianCappedInt(Territories[c].operation.techReward - 1, .13, 1);
             }
 
-            //operations = Territories.Select(t => t.operation).ToArray();
-            //Plugin.Log.LogInfo(operations.Select(o => o.operationName).Aggregate((a, b) => a + "," + b));
+            operations = Territories.Select(t => t.operation).ToArray();
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.name).Aggregate((a, b) => a + "," + b));
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
 
-            TBSUtil.SaveGame(shuffle, "BepInEx/plugins/shuffle.dat");
 
             Plugin.Log.LogInfo("Shuffled territories");
         }
@@ -59,7 +72,8 @@ namespace WarpipsReplayability
             Dictionary<int, int> shuffle = TBSUtil.LoadGame<Dictionary<int, int>>("BepInEx/plugins/shuffle.dat");
             Operation[] operations = Territories.Select(t => t.operation).ToArray();
             TerritoryData[] data = operations.Select(o => NewTerritoryData(o)).ToArray();
-            //Plugin.Log.LogInfo(operations.Select(o => o.operationName).Aggregate((a, b) => a + "," + b));
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.name).Aggregate((a, b) => a + "," + b));
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
             for (int c = 0; c < Territories.Length; c++)
             {
                 TerritoryData from = data[shuffle[c]];
@@ -81,6 +95,9 @@ namespace WarpipsReplayability
                 }
             }
 
+            operations = Territories.Select(t => t.operation).ToArray();
+            Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.enemySpawnProfiles.Length.ToString()).Aggregate((a, b) => a + "," + b));
+
             Plugin.Log.LogInfo("Restored shuffle for save");
         }
 
@@ -97,11 +114,11 @@ namespace WarpipsReplayability
             return data;
         }
 
-        private static void ModifyConnections()
+        private static HashSet<int>[] ModifyConnections()
         {
             HashSet<int>[] edges = GetEdges();
             SeverEdges(edges, WorldMapAsset.TerritoryConnections.Count);
-            ValidateAndFinalize(edges);
+            return edges;
         }
 
         private static HashSet<int>[] GetEdges()
@@ -206,7 +223,7 @@ namespace WarpipsReplayability
             return minLevel;
         }
 
-        private static void ValidateAndFinalize(HashSet<int>[] edges)
+        private static bool ValidateAndFinalize(HashSet<int>[] edges)
         {
             IEnumerable<Tuple<TerritoryInstance, int>> GetNeighbors(TerritoryInstance t) =>
                 edges[t.index].Select(e => new Tuple<TerritoryInstance, int>(Territories[e], 1));
@@ -218,7 +235,7 @@ namespace WarpipsReplayability
             {
                 Plugin.Log.LogInfo($"pathLength {pathLength}, retrying");
                 Randomize();
-                return;
+                return false;
             }
 
             //speical rewards should not be blocked by the end goal   
@@ -226,11 +243,12 @@ namespace WarpipsReplayability
             {
                 Plugin.Log.LogInfo("end is blocking reward path, retrying");
                 Randomize();
-                return;
+                return false;
             }
 
             //accept setup and finalize map
             GenerateConnections(edges);
+            return true;
         }
 
         private static void GenerateConnections(HashSet<int>[] edges)

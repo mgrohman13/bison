@@ -1,11 +1,8 @@
-randomize tech reward
-additional reward when gaining life at max
+elimate crappy retry logic, need to implement more intelligently 
+shuffle reload not working?
 
 test what blocking territories means
 rebalance island completion somehow?
 	seems too strong (certainly for islands 1-2)
-
-persist hidden rewards
-hide some enemy icons
 
 mess with spawning, true mission randomness
