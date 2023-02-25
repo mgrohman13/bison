@@ -6,24 +6,24 @@ using HarmonyLib;
 using GameUI;
 using System.Runtime.CompilerServices;
 using LevelGeneration.WorldMap;
+using GameIO;
 
 namespace WarpipsReplayability
 {
     [HarmonyPatch(typeof(WorldMapSession))]
-    [HarmonyPatch(nameof(WorldMapSession.InitailizeNewMapInstance))]
-    internal class WorldMapSession_InitailizeNewMapInstance
+    [HarmonyPatch(nameof(WorldMapSession.RestoreMapState))]
+    internal class WorldMapSession_RestoreMapState
     {
         public static void Postfix(ref WorldMapAsset ___worldMapAsset, ref TerritoryInstance[] ___territories)
         {
             try
             {
-                Plugin.Log.LogInfo("WorldMapSession_InitailizeNewMapInstance Postfix");
+                Plugin.Log.LogInfo("WorldMapSession_RestoreMapState Postfix");
 
                 Map.WorldMapAsset = ___worldMapAsset;
                 Map.Territories = ___territories;
 
-                Map.Randomize();
-                Operations.Reset();
+                Map.LoadShuffle();
             }
             catch (Exception e)
             {

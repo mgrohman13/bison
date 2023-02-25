@@ -11,7 +11,6 @@ namespace WarpipsReplayability
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     [BepInProcess("Warpips.exe")]
-
     public class Plugin : BaseUnityPlugin
     {
         public static MTRandom Rand { get; private set; }

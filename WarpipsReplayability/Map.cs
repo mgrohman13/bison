@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MattUtil;
+using GameIO;
+using MonoMod.Utils;
+using HarmonyLib;
 
 namespace WarpipsReplayability
 {
@@ -11,49 +14,105 @@ namespace WarpipsReplayability
     {
         //no reference from WorldMapAsset to MissionManagerAsset so this gets set externally
         public static MissionManagerAsset MissionManagerAsset { get; set; }
+        public static WorldMapAsset WorldMapAsset { get; set; }
+        public static TerritoryInstance[] Territories { get; set; }
+        public static bool DoShuffle { get; internal set; }
 
         private static TerritoryInstance Start { get; set; }
         private static TerritoryInstance End { get; set; }
         private static HashSet<TerritoryInstance> Rewards { get; set; }
 
-        public static void Randomize(WorldMapAsset worldMapAsset, TerritoryInstance[] territories)
+        public static void Randomize()
         {
-            ShuffleTerritories(territories);
-            ModifyConnections(worldMapAsset, territories);
+            if (DoShuffle)
+            {
+                ShuffleTerritories();
+                ModifyConnections();
+                //must happen after due to recursive retries
+                DoShuffle = false;
+            }
         }
 
-        private static void ShuffleTerritories(TerritoryInstance[] territories)
+        private static void ShuffleTerritories()
         {
-            Operation[] operations = new Operation[territories.Length];
-            for (int a = 0; a < territories.Length; a++)
-                operations[a] = territories[a].operation;
+            Operation[] operations = Territories.Select(t => t.operation).ToArray();
+            //Plugin.Log.LogInfo(operations.Select(o => o.operationName).Aggregate((a, b) => a + "," + b));
 
-            Plugin.Rand.Shuffle(territories);
-            for (int c = 0; c < territories.Length; c++)
+            Plugin.Rand.Shuffle(Territories);
+            Dictionary<int, int> shuffle = new();
+            for (int c = 0; c < Territories.Length; c++)
             {
-                territories[c].operation = operations[territories[c].index];
-                territories[c].index = c;
+                shuffle[c] = Territories[c].index;
+                Territories[c].operation = operations[Territories[c].index];
+                Territories[c].index = c;
             }
+
+            //operations = Territories.Select(t => t.operation).ToArray();
+            //Plugin.Log.LogInfo(operations.Select(o => o.operationName).Aggregate((a, b) => a + "," + b));
+
+            TBSUtil.SaveGame(shuffle, "BepInEx/plugins/shuffle.dat");
 
             Plugin.Log.LogInfo("Shuffled territories");
         }
-
-        private static void ModifyConnections(WorldMapAsset worldMapAsset, TerritoryInstance[] territories)
+        public static void LoadShuffle()
         {
-            HashSet<int>[] edges = GetEdges(worldMapAsset, territories);
-            SeverEdges(edges, worldMapAsset.TerritoryConnections.Count);
-            ValidateAndFinalize(worldMapAsset, territories, edges);
+            Dictionary<int, int> shuffle = TBSUtil.LoadGame<Dictionary<int, int>>("BepInEx/plugins/shuffle.dat");
+            Operation[] operations = Territories.Select(t => t.operation).ToArray();
+            TerritoryData[] data = operations.Select(o => NewTerritoryData(o)).ToArray();
+            //Plugin.Log.LogInfo(operations.Select(o => o.operationName).Aggregate((a, b) => a + "," + b));
+            for (int c = 0; c < Territories.Length; c++)
+            {
+                TerritoryData from = data[shuffle[c]];
+                Operation to = Territories[c].operation;
+
+                //AssignBaselineData sets the following fields based on the underlying territory assets
+                //we must restore it instead from the shuffled values
+                to.operationTargetHealth = from.operationTargetHealth;
+                to.revealEnemyIcons = from.revealEnemyLineup;
+                to.showBattleIntro = from.showBattleIntro;
+                if (from.operationRewardProfile)
+                {
+                    to.techReward = from.operationRewardProfile.TechReward;
+                    to.tokenReward = from.operationRewardProfile.TokenReward;
+                }
+                if (from.spawnWaveProfile)
+                {
+                    to.spawnWaveProfile = from.spawnWaveProfile;
+                }
+            }
+
+            Plugin.Log.LogInfo("Restored shuffle for save");
         }
 
-        private static HashSet<int>[] GetEdges(WorldMapAsset worldMapAsset, TerritoryInstance[] territories)
+        private static TerritoryData NewTerritoryData(Operation operation)
         {
-            int count = worldMapAsset.TerritoryConnections.Count;
+            TerritoryData data = new();
+            data.operationTargetHealth = operation.operationTargetHealth;
+            data.revealEnemyLineup = operation.revealEnemyIcons;
+            data.showBattleIntro = operation.showBattleIntro;
+            data.operationRewardProfile = new();
+            AccessTools.Field(typeof(OperationRewardProfile), "techReward").SetValue(data.operationRewardProfile, operation.techReward);
+            AccessTools.Field(typeof(OperationRewardProfile), "tokenReward").SetValue(data.operationRewardProfile, operation.tokenReward);
+            data.spawnWaveProfile = operation.spawnWaveProfile;
+            return data;
+        }
+
+        private static void ModifyConnections()
+        {
+            HashSet<int>[] edges = GetEdges();
+            SeverEdges(edges, WorldMapAsset.TerritoryConnections.Count);
+            ValidateAndFinalize(edges);
+        }
+
+        private static HashSet<int>[] GetEdges()
+        {
+            int count = WorldMapAsset.TerritoryConnections.Count;
             HashSet<int>[] edges = InitEdgeArray(count);
             Rewards = new();
 
             for (int a = 0; a < count; a++)
             {
-                TerritoryInstance territory = territories[a];
+                TerritoryInstance territory = Territories[a];
                 if (territory.specialTag == TerritoryInstance.SpecialTag.PlayerBase)
                     Start = territory;
                 else if (territory.specialTag == TerritoryInstance.SpecialTag.EnemyObjective)
@@ -61,7 +120,7 @@ namespace WarpipsReplayability
                 else if (territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward)
                     Rewards.Add(territory);
 
-                foreach (int connection in worldMapAsset.TerritoryConnections[a].connection)
+                foreach (int connection in WorldMapAsset.TerritoryConnections[a].connection)
                 {
                     //TerritoryConnections are inexplicably 1-based
                     int b = connection - 1;
@@ -91,7 +150,7 @@ namespace WarpipsReplayability
             //sever roughly half the edges, still ensuring a fully connected graph 
             double avg = (count - 1 + numEdges) / 2.0;
             int min = (int)Math.Ceiling(2 * avg - numEdges);
-            Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
+            //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
             int target = Plugin.Rand.GaussianCappedInt(avg, .065, min);
             Plugin.Log.LogInfo($"target {target} edges");
             while (numEdges > target)
@@ -104,7 +163,7 @@ namespace WarpipsReplayability
                 int a, b;
                 do
                 {
-                    a = Plugin.Rand.SelectValue(Enumerable.Range(0, count), a => edges[a].Count);
+                    a = Plugin.Rand.SelectValue(Enumerable.Range(0, count), c => edges[c].Count * edges[c].Count);
                     b = Plugin.Rand.SelectValue(edges[a]);
                 } while (critical[a].Contains(b));
 
@@ -147,10 +206,10 @@ namespace WarpipsReplayability
             return minLevel;
         }
 
-        private static void ValidateAndFinalize(WorldMapAsset worldMapAsset, TerritoryInstance[] territories, HashSet<int>[] edges)
+        private static void ValidateAndFinalize(HashSet<int>[] edges)
         {
             IEnumerable<Tuple<TerritoryInstance, int>> GetNeighbors(TerritoryInstance t) =>
-                edges[t.index].Select(e => new Tuple<TerritoryInstance, int>(territories[e], 1));
+                edges[t.index].Select(e => new Tuple<TerritoryInstance, int>(Territories[e], 1));
             int GetDistance(TerritoryInstance a, TerritoryInstance b) => 1;
 
             //path to end must be no longer than 10 to allow completion without seeing super soldiers
@@ -158,7 +217,7 @@ namespace WarpipsReplayability
             if (pathLength > 10)
             {
                 Plugin.Log.LogInfo($"pathLength {pathLength}, retrying");
-                Randomize(worldMapAsset, territories);
+                Randomize();
                 return;
             }
 
@@ -166,18 +225,18 @@ namespace WarpipsReplayability
             if (Rewards.Any(reward => TBSUtil.PathFind(Plugin.Rand, Start, reward, GetNeighbors, GetDistance).Contains(End)))
             {
                 Plugin.Log.LogInfo("end is blocking reward path, retrying");
-                Randomize(worldMapAsset, territories);
+                Randomize();
                 return;
             }
 
             //accept setup and finalize map
-            GenerateConnections(worldMapAsset, edges);
+            GenerateConnections(edges);
         }
 
-        private static void GenerateConnections(WorldMapAsset worldMapAsset, HashSet<int>[] edges)
+        private static void GenerateConnections(HashSet<int>[] edges)
         {
-            int count = worldMapAsset.TerritoryConnections.Count;
-            worldMapAsset.TerritoryConnections.Clear();
+            int count = WorldMapAsset.TerritoryConnections.Count;
+            WorldMapAsset.TerritoryConnections.Clear();
             for (int c = 0; c < count; c++)
             {
                 WorldMapAsset.TerritoryConnection connection = new()
@@ -185,7 +244,7 @@ namespace WarpipsReplayability
                     //maintain 1-based indexing 
                     connection = edges[c].Select(d => d + 1).ToList()
                 };
-                worldMapAsset.TerritoryConnections.Add(connection);
+                WorldMapAsset.TerritoryConnections.Add(connection);
 
                 //Plugin.Log.LogInfo($"{c} -> ({connection.connection.Aggregate("", (x, y) => x + ", " + y)})");
             }

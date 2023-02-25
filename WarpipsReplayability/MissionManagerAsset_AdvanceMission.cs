@@ -11,16 +11,16 @@ using LevelGeneration;
 namespace WarpipsReplayability
 {
     [HarmonyPatch(typeof(MissionManagerAsset))]
-    [HarmonyPatch(nameof(MissionManagerAsset.InitializeWorldMap))]
-    internal class MissionManagerAsset_InitializeWorldMap
+    [HarmonyPatch(nameof(MissionManagerAsset.AdvanceMission))]
+    internal class MissionManagerAsset_AdvanceMission
     {
-        public static void Prefix(ref MissionManagerAsset __instance)
+        public static void Prefix()
         {
             try
             {
-                Plugin.Log.LogInfo("MissionManagerAsset_InitializeWorldMap Prefix");
+                Plugin.Log.LogInfo("MissionManagerAsset_AdvanceMission Prefix");
 
-                Map.MissionManagerAsset = __instance;
+                Map.DoShuffle = true;
             }
             catch (Exception e)
             {

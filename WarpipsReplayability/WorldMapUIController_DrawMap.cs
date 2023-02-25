@@ -10,17 +10,17 @@ using LevelGeneration;
 
 namespace WarpipsReplayability
 {
-    [HarmonyPatch(typeof(MissionManagerAsset))]
-    [HarmonyPatch(nameof(MissionManagerAsset.InitializeWorldMap))]
-    internal class MissionManagerAsset_InitializeWorldMap
+    [HarmonyPatch(typeof(WorldMapUIController))]
+    [HarmonyPatch("DrawMap")]
+    internal class WorldMapUIController_DrawMap
     {
-        public static void Prefix(ref MissionManagerAsset __instance)
+        public static void Postfix(ref WorldMapUIController __instance, ref MissionManagerAsset ___missionManagerAsset)
         {
             try
             {
-                Plugin.Log.LogInfo("MissionManagerAsset_InitializeWorldMap Prefix");
+                Plugin.Log.LogDebug("WorldMapUIController_DrawMap Postfix");
 
-                Map.MissionManagerAsset = __instance;
+                Operations.UpdateShroud(__instance, ___missionManagerAsset);
             }
             catch (Exception e)
             {
