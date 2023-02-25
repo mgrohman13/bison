@@ -17,7 +17,7 @@ namespace WarpipsReplayability
         {
             try
             {
-                Plugin.Log.LogInfo("WorldMapSession_InitailizeNewMapInstance Postfix");
+                Plugin.Log.LogDebug("WorldMapSession_InitailizeNewMapInstance Postfix");
 
                 Map.WorldMapAsset = ___worldMapAsset;
                 Map.Territories = ___territories;
