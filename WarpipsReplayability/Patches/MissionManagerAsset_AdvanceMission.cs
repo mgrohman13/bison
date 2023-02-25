@@ -7,8 +7,9 @@ using GameUI;
 using System.Runtime.CompilerServices;
 using LevelGeneration.WorldMap;
 using LevelGeneration;
+using WarpipsReplayability.Mod;
 
-namespace WarpipsReplayability
+namespace WarpipsReplayability.Patches
 {
     [HarmonyPatch(typeof(MissionManagerAsset))]
     [HarmonyPatch(nameof(MissionManagerAsset.AdvanceMission))]

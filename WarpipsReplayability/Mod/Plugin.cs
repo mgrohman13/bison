@@ -7,7 +7,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using MattUtil;
 
-namespace WarpipsReplayability
+namespace WarpipsReplayability.Mod
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     [BepInProcess("Warpips.exe")]
@@ -20,7 +20,7 @@ namespace WarpipsReplayability
         {
             Rand = new MTRandom();
             Rand.StartTick();
-            Log = base.Logger;
+            Log = Logger;
 
             Harmony harmony = new Harmony("WarpipsReplayability.mod");
             harmony.PatchAll();

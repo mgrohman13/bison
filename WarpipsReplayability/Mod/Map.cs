@@ -8,7 +8,7 @@ using GameIO;
 using MonoMod.Utils;
 using HarmonyLib;
 
-namespace WarpipsReplayability
+namespace WarpipsReplayability.Mod
 {
     internal class Map
     {

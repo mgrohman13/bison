@@ -7,8 +7,9 @@ using GameUI;
 using System.Runtime.CompilerServices;
 using LevelGeneration.WorldMap;
 using GameIO;
+using WarpipsReplayability.Mod;
 
-namespace WarpipsReplayability
+namespace WarpipsReplayability.Patches
 {
     [HarmonyPatch(typeof(WorldMapSession))]
     [HarmonyPatch(nameof(WorldMapSession.RestoreMapState))]

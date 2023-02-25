@@ -5,8 +5,9 @@ using BepInEx;
 using HarmonyLib;
 using GameUI;
 using System.Runtime.CompilerServices;
+using WarpipsReplayability.Mod;
 
-namespace WarpipsReplayability
+namespace WarpipsReplayability.Patches
 {
     [HarmonyPatch(typeof(DefaultResourceSetter))]
     [HarmonyPatch(nameof(DefaultResourceSetter.SetNewConquestModeResources))]
