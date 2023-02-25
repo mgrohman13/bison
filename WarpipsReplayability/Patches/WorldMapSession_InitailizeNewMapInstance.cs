@@ -21,10 +21,9 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("WorldMapSession_InitailizeNewMapInstance Postfix");
 
                 Map.WorldMapAsset = ___worldMapAsset;
-                Map.Territories = ___territories;
+                GameRandom.Territories = ___territories;
 
                 Map.Randomize();
-                Operations.Reset();
             }
             catch (Exception e)
             {

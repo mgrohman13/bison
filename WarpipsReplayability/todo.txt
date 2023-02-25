@@ -1,5 +1,7 @@
-elimate crappy retry logic, need to implement more intelligently 
-shuffle reload not working?
+connections reset on game exit
+need to restore tech rewards correctly 
+
+limit territories blocked by end so that you can still get >= 10
 
 test what blocking territories means
 rebalance island completion somehow?
