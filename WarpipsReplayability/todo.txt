@@ -1,7 +1,5 @@
-connections reset on game exit
-need to restore tech rewards correctly 
-
-limit territories blocked by end so that you can still get >= 10
+remove deterministic PRNG attempt - just persist
+validation reachable collection incorrect?
 
 test what blocking territories means
 rebalance island completion somehow?

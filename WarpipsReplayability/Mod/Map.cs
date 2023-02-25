@@ -7,6 +7,7 @@ using MattUtil;
 using GameIO;
 using MonoMod.Utils;
 using HarmonyLib;
+using System.Xml.Linq;
 
 namespace WarpipsReplayability.Mod
 {
@@ -27,14 +28,23 @@ namespace WarpipsReplayability.Mod
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
+                Persist.SaveData();
+
                 GameRandom.Shuffled = true;
             }
         }
+
         public static bool ValidateShuffle(MTRandom rand, bool applyShuffle)
         {
             return Validate(rand, applyShuffle, null);
         }
-        public static void LoadShuffle()
+        public static void Load()
+        {
+            LoadShuffle();
+            Persist.LoadData();
+        }
+
+        private static void LoadShuffle()
         {
             LogShuffle();
 
@@ -84,7 +94,6 @@ namespace WarpipsReplayability.Mod
                 return data;
             };
         }
-
         private static void RandomizeTerritories()
         {
             LogShuffle();
@@ -99,6 +108,7 @@ namespace WarpipsReplayability.Mod
                 //territory.operation = operations[a];
                 territory.index = b;
 
+                //randomize tech rewards, with an average of one less per territory
                 if (territory.operation.techReward > 1)
                     territory.operation.techReward = Plugin.Rand.GaussianCappedInt(territory.operation.techReward - 1, .13, 1);
             }
@@ -127,14 +137,14 @@ namespace WarpipsReplayability.Mod
             int count = WorldMapAsset.TerritoryConnections.Count;
 
             int numEdges = CountEdges(graph.Edges);
-            //sever roughly half the extra edges, still ensuring a fully connected graph 
-            double avg = (numEdges + count - 2.6) / 2.0;
+            //sever roughly half the extra edges (-1), still ensuring a fully connected graph 
+            double avg = (numEdges + count - 3) / 2.0;
             int min = (int)Math.Ceiling(2 * avg - numEdges);
             //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
             int target = Plugin.Rand.GaussianCappedInt(avg, .065, min);
             Plugin.Log.LogInfo($"{numEdges} edges, target {target}");
 
-            int attempts = 0, maxAttempts = numEdges * numEdges * (numEdges - target);
+            int attempts = 0, maxAttempts = 6 * numEdges * (numEdges - target);
             while (numEdges > target && attempts < maxAttempts)
             {
                 HashSet<int>[] critical = FindCritical(graph.Edges, count);
@@ -171,15 +181,12 @@ namespace WarpipsReplayability.Mod
             {
                 int[] levels = new int[count];
                 HashSet<int>[] critical = InitEdgeArray(count);
-
                 DFS(edges, levels, critical, -1, 0, 1);
-
                 return critical;
             }
             static int DFS(HashSet<int>[] edges, int[] levels, HashSet<int>[] critical, int parent, int node, int level)
             {
                 levels[node] = level;
-
                 int minLevel = level;
                 if (edges[node] != null)
                     foreach (int edge in edges[node])
@@ -220,6 +227,7 @@ namespace WarpipsReplayability.Mod
             List<TerritoryInstance> path = TBSUtil.PathFind(random, graph.Start, graph.End, GetNeighbors, GetDistance);
             //Plugin.Log.LogInfo($"path {path}");
             int pathLength = path.Count - 1;
+            Plugin.Log.LogInfo($"pathLength {pathLength}");
             if (pathLength > 10)
             {
                 Plugin.Log.LogInfo($"pathLength {pathLength}, invalid");
@@ -228,8 +236,22 @@ namespace WarpipsReplayability.Mod
 
             //Plugin.Log.LogInfo($"here");
 
-            //speical rewards should not be blocked by the end goal   
-            if (graph.Rewards.Any(reward => TBSUtil.PathFind(random, graph.Start, reward, GetNeighbors, GetDistance).Contains(graph.End)))
+            //reachable territories counting end but not start
+            HashSet<TerritoryInstance> reachable = new();
+            DFS(graph.Start);
+            Plugin.Log.LogInfo($"reachable.Count {reachable.Count}");
+
+            //must be able to reach at least 10 territories 
+            if (reachable.Count < Math.Min(territories.Length - 1, 10))
+            {
+                Plugin.Log.LogInfo($"reachable.Count {reachable.Count}, invalid");
+                return false;
+            }
+
+            //Plugin.Log.LogInfo($"here2");
+
+            //all speical rewards should be reachable 
+            if (graph.Rewards.Any(r => !reachable.Contains(r)))
             {
                 Plugin.Log.LogInfo("end is blocking reward path, invalid");
                 return false;
@@ -237,10 +259,22 @@ namespace WarpipsReplayability.Mod
 
             return true;
 
+            void DFS(TerritoryInstance node)
+            {
+                foreach (var child in GetNeighbors(node).Select(t => t.Item1))
+                    if (!reachable.Contains(child))
+                    {
+                        reachable.Add(child);
+                        if (node != graph.End)
+                            DFS(child);
+                    }
+            }
             IEnumerable<Tuple<TerritoryInstance, int>> GetNeighbors(TerritoryInstance t) =>
-                graph.Edges[Array.IndexOf(territories, t)].Select(e => new Tuple<TerritoryInstance, int>(territories[e], 1));
+                graph.Edges[Idx(t)].Select(e => new Tuple<TerritoryInstance, int>(territories[e], 1));
             static int GetDistance(TerritoryInstance a, TerritoryInstance b) => 1;
+            int Idx(TerritoryInstance t) => Array.IndexOf(territories, t);
         }
+
         private static void GenerateConnections(GraphInfo graph)
         {
             int count = WorldMapAsset.TerritoryConnections.Count;

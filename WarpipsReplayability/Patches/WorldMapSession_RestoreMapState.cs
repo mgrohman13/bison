@@ -24,7 +24,7 @@ namespace WarpipsReplayability.Patches
                 Map.WorldMapAsset = ___worldMapAsset;
                 GameRandom.Territories = ___territories;
 
-                Map.LoadShuffle();
+                Map.Load();
             }
             catch (Exception e)
             {

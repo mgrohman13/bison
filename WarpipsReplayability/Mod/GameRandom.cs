@@ -59,6 +59,8 @@ namespace WarpipsReplayability.Mod
             }
         }
 
+        //TODO: this approach is not worth the effort, especially when it comes to map validation
+        //let's just persist a save file...
         private static void CalcRand()
         {
             int mapIndex = Map.MissionManagerAsset.WorldMapIndex;
