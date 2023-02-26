@@ -32,11 +32,13 @@ namespace WarpipsReplayability.Mod
                 TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray(),
             };
             TBSUtil.SaveGame(Instance, saveFile);
+            Plugin.Log.LogInfo($"saved mod data");
         }
         public static void LoadData()
         {
             Instance = TBSUtil.LoadGame<Persist>(saveFile);
             AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, Instance.Connections);
+            Plugin.Log.LogInfo($"loaded mod data");
         }
     }
 }

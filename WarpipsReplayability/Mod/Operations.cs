@@ -13,15 +13,17 @@ namespace WarpipsReplayability.Mod
     {
         public static bool[] RollHiddenRewards()
         {
-            return Map.Territories.SelectMany(t =>
+            var hiddenRewards = Map.Territories.SelectMany(t =>
             {
-                //each territory has a variable chance for each reward to be hidden
-                int chance = Plugin.Rand.RangeInt(2, 11);
+                //each territory has a variable chance for each reward to remain hidden
+                int chance = Plugin.Rand.GaussianOEInt(5.2, .21, .26, 1);
                 //each reward has an individual chance to remain hidden
                 return t.operation.itemRewards.Select(r => Plugin.Rand.Next(chance) == 0);
             }).ToArray();
+            Plugin.Log.LogInfo($"generated HiddenRewards");
+            return hiddenRewards;
         }
-        public static void UpdateShroud(WorldMapUIController worldMapUIController, MissionManagerAsset missionManagerAsset)
+        public static void UpdateShroud(WorldMapUIController worldMapUIController)
         {
             int rewardIndex = 0;
             foreach (var territory in Map.Territories)

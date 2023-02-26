@@ -145,7 +145,7 @@ namespace WarpipsReplayability.Mod
             int count = WorldMapAsset.TerritoryConnections.Count;
 
             int numEdges = CountEdges(graph.Edges);
-            //sever roughly half the extra edges (-1), still ensuring a fully connected graph 
+            //sever roughly half the extra edges (+1), still ensuring a fully connected graph 
             double avg = (numEdges + count - 3) / 2.0;
             //int min = Math.Max((int)Math.Ceiling(2 * avg - numEdges), count - 1);
             //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
@@ -218,6 +218,7 @@ namespace WarpipsReplayability.Mod
 
         private static bool Validate(int[] shuffle, GraphInfo graph)
         {
+            const int numMissions = 9;
             //Plugin.Log.LogInfo($"GameRandom.Territories {GameRandom.Territories}");
             //Plugin.Log.LogInfo($"graph {graph}");
 
@@ -233,14 +234,14 @@ namespace WarpipsReplayability.Mod
             //Plugin.Log.LogInfo($"graph.End {graph.End}");
             //Plugin.Log.LogInfo($"graph.Rewards {graph.Rewards}");
 
-            //path to end must be no longer than 10 to allow completion without seeing super soldiers
+            //path to end must allow completion without seeing super soldiers
             List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, GetDistance);
             //Plugin.Log.LogInfo($"path {path}");
             int pathLength = path.Count - 1;
             //Plugin.Log.LogInfo($"pathLength {pathLength}");
-            if (pathLength > 10)
+            if (pathLength > numMissions)
             {
-                Plugin.Log.LogInfo($"pathLength {pathLength}, invalid");
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) pathLength {pathLength}, invalid");
                 return false;
             }
 
@@ -251,10 +252,10 @@ namespace WarpipsReplayability.Mod
             DFS(graph.Start);
             //Plugin.Log.LogInfo($"reachable.Count {reachable.Count}");
 
-            //must be able to reach at least 10 territories 
-            if (reachable.Count < Math.Min(territories.Length - 1, 10))
+            //must be able to reach enough territories to max out difficulty bar
+            if (reachable.Count < Math.Min(territories.Length - 1, numMissions))
             {
-                Plugin.Log.LogInfo($"reachable.Count {reachable.Count}, invalid");
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count}, invalid");
                 return false;
             }
 
@@ -263,7 +264,7 @@ namespace WarpipsReplayability.Mod
             //all speical rewards should be reachable 
             if (graph.Rewards.Any(r => !reachable.Contains(r)))
             {
-                Plugin.Log.LogInfo("end is blocking reward path, invalid");
+                Plugin.Log.LogInfo("({CountEdges(graph.Edges)}) end is blocking reward path, invalid");
                 return false;
             }
 

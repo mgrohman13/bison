@@ -15,13 +15,13 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("DrawMap")]
     internal class WorldMapUIController_DrawMap
     {
-        public static void Postfix(ref WorldMapUIController __instance, ref MissionManagerAsset ___missionManagerAsset)
+        public static void Postfix(ref WorldMapUIController __instance)
         {
             try
             {
                 Plugin.Log.LogDebug("WorldMapUIController_DrawMap Postfix");
 
-                Operations.UpdateShroud(__instance, ___missionManagerAsset);
+                Operations.UpdateShroud(__instance);
             }
             catch (Exception e)
             {

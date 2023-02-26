@@ -15,13 +15,19 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(MissionManagerAsset.AdvanceMission))]
     internal class MissionManagerAsset_AdvanceMission
     {
-        public static void Prefix()
+        public static void Prefix(MissionManagerAsset __instance)
         {
             try
             {
-                Plugin.Log.LogInfo("MissionManagerAsset_AdvanceMission Prefix");
+                Plugin.Log.LogDebug("MissionManagerAsset_AdvanceMission Prefix");
 
-                Map.DoShuffle = true;
+                WorldMapSession currentWorldMap = __instance.CurrentWorldMap;
+                TerritoryInstance lastAttackedTerritory = currentWorldMap.territories[currentWorldMap.lastAttackedTerritory];
+                if (lastAttackedTerritory.specialTag == TerritoryInstance.SpecialTag.EnemyObjective)
+                {
+                    Map.DoShuffle = true;
+                    Plugin.Log.LogInfo("DoShuffle set for new WorldMapIndex");
+                }
             }
             catch (Exception e)
             {

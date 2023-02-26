@@ -1,6 +1,9 @@
 test what blocking territories means
+
 rebalance island completion somehow?
 	seems too strong (certainly for islands 1-2)
-do something with worldMapDifficultyMultipler?
+	do something with worldMapDifficultyMultipler?
+make first island harder
+buy warpip give x2?
 
 mess with spawning, true mission randomness
