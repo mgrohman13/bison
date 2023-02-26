@@ -14,29 +14,29 @@ namespace WarpipsReplayability.Mod
     [Serializable]
     internal class Persist
     {
-        private const string saveFile = "BepInEx/plugins/WarpipsReplayability.save";
+        public static Persist Instance;
+        private const string saveFile = "BepInEx/plugins/WarpipsReplayability.dat";
 
-        private int[] techRewards;
-        private List<TerritoryConnection> territoryConnections;
+        public int[] Shuffle { get; private set; }
+        public List<TerritoryConnection> Connections { get; private set; }
+        public bool[] HiddenRewards { get; private set; }
+        public int[] TechRewards { get; private set; }
 
-        public static void SaveData()
+        public static void SaveData(int[] shuffle)
         {
-            Persist save = new()
+            Instance = new()
             {
-                techRewards = GameRandom.Territories.Select(t => t.operation.techReward).ToArray(),
-                territoryConnections = Map.WorldMapAsset.TerritoryConnections,
+                Shuffle = shuffle,
+                Connections = Map.WorldMapAsset.TerritoryConnections,
+                HiddenRewards = Operations.RollHiddenRewards(),
+                TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray(),
             };
-            TBSUtil.SaveGame(save, saveFile);
+            TBSUtil.SaveGame(Instance, saveFile);
         }
         public static void LoadData()
         {
-            Persist save = TBSUtil.LoadGame<Persist>(saveFile);
-
-            int a = 0;
-            foreach (var territory in GameRandom.Territories)
-                territory.operation.techReward = save.techRewards[a++];
-
-            AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, save.territoryConnections);
+            Instance = TBSUtil.LoadGame<Persist>(saveFile);
+            AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, Instance.Connections);
         }
     }
 }

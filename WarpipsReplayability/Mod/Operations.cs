@@ -11,13 +11,20 @@ namespace WarpipsReplayability.Mod
 {
     internal class Operations
     {
-
+        public static bool[] RollHiddenRewards()
+        {
+            return Map.Territories.SelectMany(t =>
+            {
+                //each territory has a variable chance for each reward to be hidden
+                int chance = Plugin.Rand.RangeInt(2, 11);
+                //each reward has an individual chance to remain hidden
+                return t.operation.itemRewards.Select(r => Plugin.Rand.Next(chance) == 0);
+            }).ToArray();
+        }
         public static void UpdateShroud(WorldMapUIController worldMapUIController, MissionManagerAsset missionManagerAsset)
         {
-            TerritoryInstance[] territories = missionManagerAsset.CurrentWorldMap.territories;
             int rewardIndex = 0;
-
-            foreach (var territory in territories)
+            foreach (var territory in Map.Territories)
             {
                 bool shrouded = !worldMapUIController.IsTerritoryAttackable(territory.index);
                 bool hideEnemies = shrouded && territory.specialTag == TerritoryInstance.SpecialTag.None;
@@ -29,11 +36,9 @@ namespace WarpipsReplayability.Mod
                 int revealEnemyIcons = hideEnemies ? 0 : 99;
                 operation.revealEnemyIcons = revealEnemyIcons;
 
-                int seed = operation.operationName.GetHashCode();
-
                 foreach (var reward in operation.itemRewards)
                 {
-                    reward.isMysteryItem = (GameRandom.HiddenRewards[rewardIndex] || hideRewards) && !reward.item.extraLife;
+                    reward.isMysteryItem = (Persist.Instance.HiddenRewards[rewardIndex] || hideRewards) && !reward.item.extraLife;
                     rewardIndex++;
                 }
             }

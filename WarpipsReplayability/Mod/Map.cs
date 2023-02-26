@@ -13,10 +13,13 @@ namespace WarpipsReplayability.Mod
 {
     internal class Map
     {
-        //no reference from WorldMapAsset to MissionManagerAsset so this gets set externally
+        //properties set externally through patches
         public static MissionManagerAsset MissionManagerAsset { get; set; }
         public static WorldMapAsset WorldMapAsset { get; set; }
-        public static bool DoShuffle { get; internal set; }
+        public static TerritoryInstance[] Territories { get; set; }
+        public static bool DoShuffle { get; set; }
+
+        public static List<WorldMapAsset.TerritoryConnection> OriginalConnections { get; private set; }
 
         public static void Randomize()
         {
@@ -24,35 +27,31 @@ namespace WarpipsReplayability.Mod
             {
                 DoShuffle = false;
 
-                RandomizeTerritories();
+                int[] shuffle = RandomizeTerritories();
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
-                Persist.SaveData();
-
-                GameRandom.Shuffled = true;
+                Persist.SaveData(shuffle);
             }
-        }
-
-        public static bool ValidateShuffle(MTRandom rand, bool applyShuffle)
-        {
-            return Validate(rand, applyShuffle, null);
         }
         public static void Load()
         {
-            LoadShuffle();
             Persist.LoadData();
+            LoadShuffle();
+            if (!Validate(null, null))
+                Plugin.Log.LogError($"loaded invalid state");
         }
 
         private static void LoadShuffle()
         {
-            LogShuffle();
+            //LogShuffle();
 
-            var territories = GameRandom.Territories;
+            var territories = Territories;
             TerritoryData[] data = territories.Select(t => t.operation).Select(o => NewTerritoryData(o)).ToArray();
+
             for (int a = 0; a < territories.Length; a++)
             {
-                int b = GameRandom.Shuffle[a];
+                int b = Persist.Instance.Shuffle[a];
                 TerritoryData from = data[a];
                 Operation to = territories[b].operation;
 
@@ -68,15 +67,14 @@ namespace WarpipsReplayability.Mod
                     to.tokenReward = reward.TokenReward;
                 }
                 if (from.spawnWaveProfile)
-                {
                     to.spawnWaveProfile = from.spawnWaveProfile;
-                }
             }
+
+            for (int c = 0; c < territories.Length; c++)
+                territories[c].operation.techReward = Persist.Instance.TechRewards[c];
 
             Plugin.Log.LogInfo("Restored shuffle for save");
             LogShuffle();
-
-            GameRandom.Shuffled = true;
 
             static TerritoryData NewTerritoryData(Operation operation)
             {
@@ -94,54 +92,64 @@ namespace WarpipsReplayability.Mod
                 return data;
             };
         }
-        private static void RandomizeTerritories()
+        private static int[] RandomizeTerritories()
         {
-            LogShuffle();
+            //LogShuffle();
 
-            var territories = GameRandom.Territories.ToArray();
+            int[] shuffle;
+            do
+                shuffle = Plugin.Rand.Iterate(Territories.Length).ToArray();
+            while (!Validate(shuffle, null));
+
+            var territories = Territories.ToArray();
             //var operations = territories.Select(t => t.operation).ToArray();
             for (int a = 0; a < territories.Length; a++)
             {
-                int b = GameRandom.Shuffle[a];
+                int b = shuffle[a];
                 TerritoryInstance territory = territories[a];
-                GameRandom.Territories[b] = territory;
+                Territories[b] = territory;
                 //territory.operation = operations[a];
                 territory.index = b;
 
                 //randomize tech rewards, with an average of one less per territory
-                if (territory.operation.techReward > 1)
-                    territory.operation.techReward = Plugin.Rand.GaussianCappedInt(territory.operation.techReward - 1, .13, 1);
+                int techReward = territory.operation.techReward;
+                if (techReward % 5 != 0)
+                    Plugin.Log.LogError($"techReward already randomized {techReward}");
+                if (techReward > 1)
+                    territory.operation.techReward = Plugin.Rand.GaussianCappedInt(techReward - 1, .169, 1);
             }
 
             Plugin.Log.LogInfo("Shuffled territories");
             LogShuffle();
+
+            return shuffle;
         }
-        private static void ApplyShuffle(TerritoryInstance[] territories)
+        private static void ApplyShuffle(TerritoryInstance[] territories, int[] shuffle)
         {
             for (int a = 0; a < territories.Length; a++)
             {
-                int b = GameRandom.Shuffle[a];
-                territories[b] = GameRandom.Territories[a];
+                int b = shuffle[a];
+                territories[b] = Territories[a];
             }
         }
         private static void LogShuffle()
         {
-            Operation[] operations = GameRandom.Territories.Select(t => t.operation).ToArray();
+            Operation[] operations = Territories.Select(t => t.operation).ToArray();
             //Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.name).Aggregate((a, b) => a + "," + b));
             Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
         }
 
         private static GraphInfo ModifyConnections()
         {
-            GraphInfo graph = GetEdges(GameRandom.Territories);
+            GraphInfo graph = GetEdges(Territories);
             int count = WorldMapAsset.TerritoryConnections.Count;
 
             int numEdges = CountEdges(graph.Edges);
             //sever roughly half the extra edges (-1), still ensuring a fully connected graph 
             double avg = (numEdges + count - 3) / 2.0;
-            int min = (int)Math.Ceiling(2 * avg - numEdges);
+            //int min = Math.Max((int)Math.Ceiling(2 * avg - numEdges), count - 1);
             //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
-            int target = Plugin.Rand.GaussianCappedInt(avg, .065, min);
+            int target = Plugin.Rand.GaussianCappedInt(avg, .065, count - 1);
             Plugin.Log.LogInfo($"{numEdges} edges, target {target}");
 
             int attempts = 0, maxAttempts = 6 * numEdges * (numEdges - target);
@@ -161,7 +169,7 @@ namespace WarpipsReplayability.Mod
 
                 graph.Edges[a].Remove(b);
                 graph.Edges[b].Remove(a);
-                if (Validate(Plugin.Rand, false, graph))
+                if (Validate(null, graph))
                 {
                     //Plugin.Log.LogInfo($"Remove {a} - {b}");
                     numEdges--;
@@ -208,26 +216,28 @@ namespace WarpipsReplayability.Mod
             }
         }
 
-        private static bool Validate(MTRandom random, bool applyShuffle, GraphInfo graph)
+        private static bool Validate(int[] shuffle, GraphInfo graph)
         {
             //Plugin.Log.LogInfo($"GameRandom.Territories {GameRandom.Territories}");
             //Plugin.Log.LogInfo($"graph {graph}");
 
-            var territories = GameRandom.Territories.ToArray();
-            if (applyShuffle)
-                ApplyShuffle(territories);
-            if (applyShuffle || graph == null)
-                graph = GetEdges(territories);
+            var territories = Territories.ToArray();
+            if (shuffle != null)
+            {
+                ApplyShuffle(territories, shuffle);
+                graph = null;
+            }
+            graph ??= GetEdges(territories);
 
             //Plugin.Log.LogInfo($"graph.Start {graph.Start}");
             //Plugin.Log.LogInfo($"graph.End {graph.End}");
             //Plugin.Log.LogInfo($"graph.Rewards {graph.Rewards}");
 
             //path to end must be no longer than 10 to allow completion without seeing super soldiers
-            List<TerritoryInstance> path = TBSUtil.PathFind(random, graph.Start, graph.End, GetNeighbors, GetDistance);
+            List<TerritoryInstance> path = TBSUtil.PathFind(Plugin.Rand, graph.Start, graph.End, GetNeighbors, GetDistance);
             //Plugin.Log.LogInfo($"path {path}");
             int pathLength = path.Count - 1;
-            Plugin.Log.LogInfo($"pathLength {pathLength}");
+            //Plugin.Log.LogInfo($"pathLength {pathLength}");
             if (pathLength > 10)
             {
                 Plugin.Log.LogInfo($"pathLength {pathLength}, invalid");
@@ -239,7 +249,7 @@ namespace WarpipsReplayability.Mod
             //reachable territories counting end but not start
             HashSet<TerritoryInstance> reachable = new();
             DFS(graph.Start);
-            Plugin.Log.LogInfo($"reachable.Count {reachable.Count}");
+            //Plugin.Log.LogInfo($"reachable.Count {reachable.Count}");
 
             //must be able to reach at least 10 territories 
             if (reachable.Count < Math.Min(territories.Length - 1, 10))
@@ -259,13 +269,13 @@ namespace WarpipsReplayability.Mod
 
             return true;
 
-            void DFS(TerritoryInstance node)
+            void DFS(TerritoryInstance parent)
             {
-                foreach (var child in GetNeighbors(node).Select(t => t.Item1))
-                    if (!reachable.Contains(child))
+                foreach (var child in GetNeighbors(parent).Select(t => t.Item1))
+                    if (child != graph.Start && !reachable.Contains(child))
                     {
                         reachable.Add(child);
-                        if (node != graph.End)
+                        if (child != graph.End)
                             DFS(child);
                     }
             }
@@ -277,6 +287,9 @@ namespace WarpipsReplayability.Mod
 
         private static void GenerateConnections(GraphInfo graph)
         {
+            OriginalConnections = WorldMapAsset.TerritoryConnections
+                .Select(c => new WorldMapAsset.TerritoryConnection() { connection = c.connection.ToList() }).ToList();
+
             int count = WorldMapAsset.TerritoryConnections.Count;
             WorldMapAsset.TerritoryConnections.Clear();
             for (int c = 0; c < count; c++)
@@ -340,7 +353,7 @@ namespace WarpipsReplayability.Mod
 
         private class GraphInfo
         {
-            public HashSet<int>[] Edges = new HashSet<int>[GameRandom.Territories.Length];
+            public HashSet<int>[] Edges = new HashSet<int>[Territories.Length];
             public TerritoryInstance Start, End;
             public HashSet<TerritoryInstance> Rewards = new();
         }

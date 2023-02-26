@@ -22,7 +22,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogDebug("WorldMapSession_RestoreMapState Postfix");
 
                 Map.WorldMapAsset = ___worldMapAsset;
-                GameRandom.Territories = ___territories;
+                Map.Territories = ___territories;
 
                 Map.Load();
             }

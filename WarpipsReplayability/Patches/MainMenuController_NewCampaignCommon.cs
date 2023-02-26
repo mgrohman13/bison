@@ -18,7 +18,13 @@ namespace WarpipsReplayability.Patches
         {
             try
             {
-                Plugin.Log.LogInfo("MainMenuController_NewCampaignCommon Prefix");
+                Plugin.Log.LogDebug("MainMenuController_NewCampaignCommon Prefix");
+
+                if (Map.WorldMapAsset != null && Map.OriginalConnections != null)
+                {
+                    AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, Map.OriginalConnections);
+                    Plugin.Log.LogInfo("restored connections");
+                }
 
                 Map.DoShuffle = true;
             }

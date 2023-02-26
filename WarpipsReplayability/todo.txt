@@ -1,8 +1,6 @@
-remove deterministic PRNG attempt - just persist
-validation reachable collection incorrect?
-
 test what blocking territories means
 rebalance island completion somehow?
 	seems too strong (certainly for islands 1-2)
+do something with worldMapDifficultyMultipler?
 
 mess with spawning, true mission randomness
