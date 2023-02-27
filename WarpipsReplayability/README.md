@@ -1,5 +1,5 @@
 --- Warpips Replayability Mod ---  
-This mod aims to increase replayability of the Conquest Mode largely by randomizing world maps. The initial release is a minimum viable product, and may be substantially added to in the future. I fell in love with Warpips instantly, and found myself wishing it had the replayability of a game like FTL, so decided to take steps in that direction.
+This mod aims to increase replayability of Conquest Mode largely by randomizing world maps. The initial release is a minimum viable product, and may be substantially added to in the future. I fell in love with Warpips instantly, and found myself wishing it had the replayability of a game like FTL, so decided to take steps in that direction.
 
 --- HOW DO YOU RUN IT ---  
 Warpips does not natively support modding, so this was written as a BepInEx plugin. To enable, simply copy the 4 contents of the zip file into your Warpips install directory (at the same level as Warpips.exe). To disable, move the "BepInEx" folder back out or rename it to anything else (e.g. "BepInEx - Copy"). Other game modes such as Endless Mode are not supported.
