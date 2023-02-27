@@ -25,6 +25,8 @@ namespace WarpipsReplayability.Mod
         {
             if (DoShuffle)
             {
+                Plugin.Log.LogInfo($"{Territories.Length} territories");
+
                 DoShuffle = false;
 
                 int[] shuffle = RandomizeTerritories();
@@ -264,7 +266,7 @@ namespace WarpipsReplayability.Mod
             //all speical rewards should be reachable 
             if (graph.Rewards.Any(r => !reachable.Contains(r)))
             {
-                Plugin.Log.LogInfo("({CountEdges(graph.Edges)}) end is blocking reward path, invalid");
+                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) end is blocking reward path, invalid");
                 return false;
             }
 
@@ -288,8 +290,12 @@ namespace WarpipsReplayability.Mod
 
         private static void GenerateConnections(GraphInfo graph)
         {
-            OriginalConnections = WorldMapAsset.TerritoryConnections
-                .Select(c => new WorldMapAsset.TerritoryConnection() { connection = c.connection.ToList() }).ToList();
+            if (MissionManagerAsset.WorldMapIndex == 0)
+                OriginalConnections = WorldMapAsset.TerritoryConnections
+                    .Select(c => new WorldMapAsset.TerritoryConnection()
+                    {
+                        connection = c.connection.ToList()
+                    }).ToList();
 
             int count = WorldMapAsset.TerritoryConnections.Count;
             WorldMapAsset.TerritoryConnections.Clear();
