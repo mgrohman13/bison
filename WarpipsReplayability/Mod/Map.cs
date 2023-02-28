@@ -118,7 +118,7 @@ namespace WarpipsReplayability.Mod
                 if (techReward % 5 != 0)
                     Plugin.Log.LogError($"techReward already randomized {techReward}");
                 if (techReward > 1)
-                    territory.operation.techReward = Plugin.Rand.GaussianCappedInt(techReward - 1, .169, 1);
+                    territory.operation.techReward = Plugin.Rand.GaussianCappedInt(techReward, 3.9 / techReward + .052, 1);
             }
 
             Plugin.Log.LogInfo("Shuffled territories");
@@ -147,8 +147,8 @@ namespace WarpipsReplayability.Mod
             int count = WorldMapAsset.TerritoryConnections.Count;
 
             int numEdges = CountEdges(graph.Edges);
-            //sever roughly half the extra edges (+1), still ensuring a fully connected graph 
-            double avg = (numEdges + count - 3) / 2.0;
+            //sever roughly half the extra edges, still ensuring a fully connected graph 
+            double avg = (numEdges + count - Math.PI) / 2.0;
             //int min = Math.Max((int)Math.Ceiling(2 * avg - numEdges), count - 1);
             //Plugin.Log.LogInfo($"GaussianCappedInt {avg}, .065, {min}");
             int target = Plugin.Rand.GaussianCappedInt(avg, .065, count - 1);
@@ -254,21 +254,27 @@ namespace WarpipsReplayability.Mod
             DFS(graph.Start);
             //Plugin.Log.LogInfo($"reachable.Count {reachable.Count}");
 
-            //must be able to reach enough territories to max out difficulty bar
-            if (reachable.Count < Math.Min(territories.Length - 1, numMissions))
+            if (reachable.Count != territories.Length - 1)
             {
                 Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count}, invalid");
                 return false;
             }
 
-            //Plugin.Log.LogInfo($"here2");
+            ////must be able to reach enough territories to max out difficulty bar
+            //if (reachable.Count < Math.Min(territories.Length - 1, numMissions))
+            //{
+            //    Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) reachable.Count {reachable.Count}, invalid");
+            //    return false;
+            //}
 
-            //all speical rewards should be reachable 
-            if (graph.Rewards.Any(r => !reachable.Contains(r)))
-            {
-                Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) end is blocking reward path, invalid");
-                return false;
-            }
+            ////Plugin.Log.LogInfo($"here2");
+
+            ////all speical rewards should be reachable 
+            //if (graph.Rewards.Any(r => !reachable.Contains(r)))
+            //{
+            //    Plugin.Log.LogInfo($"({CountEdges(graph.Edges)}) end is blocking reward path, invalid");
+            //    return false;
+            //}
 
             return true;
 
