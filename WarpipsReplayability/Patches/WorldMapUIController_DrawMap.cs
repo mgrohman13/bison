@@ -15,7 +15,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("DrawMap")]
     internal class WorldMapUIController_DrawMap
     {
-        public static void Postfix(ref WorldMapUIController __instance)
+        public static void Postfix(WorldMapUIController __instance)
         {
             try
             {

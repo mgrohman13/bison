@@ -13,7 +13,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(DefaultResourceSetter.SetNewConquestModeResources))]
     internal class DefaultResourceSetter_SetNewConquestModeResources
     {
-        public static void Postfix(ref ResourceController ___resourceController)
+        public static void Postfix(ResourceController ___resourceController)
         {
             try
             {

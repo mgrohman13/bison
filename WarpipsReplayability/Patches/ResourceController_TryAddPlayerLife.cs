@@ -15,32 +15,29 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(ResourceController.TryAddPlayerLife))]
     internal class ResourceController_TryAddPlayerLife
     {
-        private static int lives = -1;
-
-        public static void Prefix(ref ResourceController __instance)
+        public static void Prefix(ResourceController __instance, ref int __state)
         {
             try
             {
                 Plugin.Log.LogDebug("ResourceController_TryAddPlayerLife Prefix");
 
-                lives = __instance.PlayerLives.value;
+                __state = __instance.PlayerLives.value;
             }
             catch (Exception e)
             {
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(ref ResourceController __instance)
+        public static void Postfix(ResourceController __instance, int __state)
         {
             try
             {
                 Plugin.Log.LogDebug("ResourceController_TryAddPlayerLife Postfix");
 
-                if (lives == __instance.PlayerLives.value)
+                if (__state == __instance.PlayerLives.value)
                 {
                     int points = Plugin.Rand.RangeInt(6, 9);
                     __instance.AddTechPoints(points);
-                    lives = -1;
 
                     Plugin.Log.LogInfo($"Bonus max life tech points {points}");
                 }

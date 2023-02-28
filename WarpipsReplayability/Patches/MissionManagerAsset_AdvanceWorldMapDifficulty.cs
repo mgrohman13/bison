@@ -16,29 +16,26 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch("AdvanceWorldMapDifficulty")]
     internal class MissionManagerAsset_AdvanceWorldMapDifficulty
     {
-        private static float value = float.NaN;
-
-        public static void Prefix(ref FloatDynamicStat ___worldMapDifficultyMultipler)
+        public static void Prefix(FloatDynamicStat ___worldMapDifficultyMultipler, ref float __state)
         {
             try
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Prefix");
 
-                value = ___worldMapDifficultyMultipler.Value;
+                __state = ___worldMapDifficultyMultipler.Value;
             }
             catch (Exception e)
             {
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(ref FloatDynamicStat ___worldMapDifficultyMultipler, ref FloatDynamicStat ___worldMapDifficultyMultiplerTick)
+        public static void Postfix(FloatDynamicStat ___worldMapDifficultyMultipler, FloatDynamicStat ___worldMapDifficultyMultiplerTick, float __state)
         {
             try
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Postfix");
 
-                Plugin.Log.LogInfo($"after {___worldMapDifficultyMultipler.Value}, diff {___worldMapDifficultyMultipler.Value - value}, inc {___worldMapDifficultyMultiplerTick.Value}");
-                value = float.NaN;
+                Plugin.Log.LogInfo($"after {___worldMapDifficultyMultipler.Value}, diff {___worldMapDifficultyMultipler.Value - __state}, inc {___worldMapDifficultyMultiplerTick.Value}");
             }
             catch (Exception e)
             {

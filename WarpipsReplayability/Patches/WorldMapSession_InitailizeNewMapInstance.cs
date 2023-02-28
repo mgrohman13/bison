@@ -14,7 +14,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(WorldMapSession.InitailizeNewMapInstance))]
     internal class WorldMapSession_InitailizeNewMapInstance
     {
-        public static void Postfix(ref WorldMapAsset ___worldMapAsset, ref TerritoryInstance[] ___territories)
+        public static void Postfix(WorldMapAsset ___worldMapAsset, TerritoryInstance[] ___territories)
         {
             try
             {

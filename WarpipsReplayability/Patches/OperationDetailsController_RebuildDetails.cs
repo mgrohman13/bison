@@ -30,7 +30,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogError(e);
             }
         }
-        public static void Postfix(TerritoryInspectorController ___territoryInspector)
+        public static void Postfix()
         {
             try
             {
