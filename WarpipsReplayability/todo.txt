@@ -1,9 +1,19 @@
-test what blocking territories means
+utilize TerritoryInstance.blocked?
+	test what it does
 
 rebalance island completion somehow?
 	seems too strong (certainly for islands 1-2)
 	do something with worldMapDifficultyMultipler?
+	use tech rewards?
+		add ~2.1 per territory
+		cut in half after full bar (not end, but what about special?)
 make first island harder
 buy warpip give x2?
+
+vary validation based on difficulty (num territories w/o super soldiers changes)
+0 = 0.080
+1
+2
+3 = 0.115
 
 mess with spawning, true mission randomness
