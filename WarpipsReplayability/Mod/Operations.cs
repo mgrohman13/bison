@@ -11,6 +11,9 @@ namespace WarpipsReplayability.Mod
 {
     internal class Operations
     {
+        public static WorldMapUIController WorldMapUIController { get; private set; }
+        public static TerritoryInstance SelectedTerritory { get; set; }
+
         public static bool[] RollHiddenRewards()
         {
             var hiddenRewards = Map.Territories.SelectMany(t =>
@@ -25,12 +28,13 @@ namespace WarpipsReplayability.Mod
         }
         public static void UpdateShroud(WorldMapUIController worldMapUIController)
         {
+            WorldMapUIController = worldMapUIController;
+
             int rewardIndex = 0;
-            foreach (var territory in Map.Territories)
+            foreach (TerritoryInstance territory in Map.Territories)
             {
-                bool shrouded = !worldMapUIController.IsTerritoryAttackable(territory.index);
-                bool hideEnemies = shrouded && territory.specialTag == TerritoryInstance.SpecialTag.None;
-                bool hideRewards = shrouded || territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward;
+                bool hideEnemies = HideEnemies(territory);
+                bool hideRewards = HideRewards(territory);
 
                 Operation operation = territory.operation;
                 //revealEnemyIcons needs to be high enough to reveal all icons
@@ -38,12 +42,23 @@ namespace WarpipsReplayability.Mod
                 int revealEnemyIcons = hideEnemies ? 0 : 99;
                 operation.revealEnemyIcons = revealEnemyIcons;
 
-                foreach (var reward in operation.itemRewards)
+                foreach (Reward reward in operation.itemRewards)
                 {
                     reward.isMysteryItem = (Persist.Instance.HiddenRewards[rewardIndex] || hideRewards) && !reward.item.extraLife;
                     rewardIndex++;
                 }
             }
         }
+        public static bool ShowDifficultyBar()
+        {
+            return WorldMapUIController == null || SelectedTerritory == null || !HideEnemies(SelectedTerritory);
+        }
+
+        private static bool IsShrouded(TerritoryInstance territory) =>
+           !WorldMapUIController.IsTerritoryAttackable(territory.index);
+        private static bool HideEnemies(TerritoryInstance territory) =>
+            IsShrouded(territory) && territory.specialTag == TerritoryInstance.SpecialTag.None;
+        private static bool HideRewards(TerritoryInstance territory) =>
+            IsShrouded(territory) || territory.specialTag == TerritoryInstance.SpecialTag.HighValueReward;
     }
 }
