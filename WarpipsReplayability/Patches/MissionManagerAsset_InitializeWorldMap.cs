@@ -15,7 +15,7 @@ namespace WarpipsReplayability.Patches
     [HarmonyPatch(nameof(MissionManagerAsset.InitializeWorldMap))]
     internal class MissionManagerAsset_InitializeWorldMap
     {
-        public static void Prefix(MissionManagerAsset __instance, ref int worldMapIndex)
+        public static void Prefix(MissionManagerAsset __instance)//, ref int worldMapIndex)
         {
             try
             {
