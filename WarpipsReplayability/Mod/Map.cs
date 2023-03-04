@@ -34,12 +34,12 @@ namespace WarpipsReplayability.Mod
                 var graph = ModifyConnections();
                 GenerateConnections(graph);
 
-                Persist.SaveData(shuffle);
+                Persist.SaveNew(shuffle);
             }
         }
         public static void Load()
         {
-            Persist.LoadData();
+            Persist.Load();
             LoadShuffle();
             if (!Validate(null, null))
                 Plugin.Log.LogError($"loaded invalid state");
@@ -119,12 +119,7 @@ namespace WarpipsReplayability.Mod
                 //territory.operation = operations[a];
                 territory.index = b;
 
-                //randomize tech rewards, with an average of one less per territory
-                int techReward = territory.operation.techReward;
-                if (techReward % 5 != 0)
-                    Plugin.Log.LogError($"techReward already randomized {techReward}");
-                if (techReward > 1)
-                    territory.operation.techReward = Plugin.Rand.GaussianOEInt(techReward + 2.6, 3.9 / techReward + .052, 1.69 / techReward + .039, 1);
+                InitTechRewards(territory.operation);
             }
 
             Plugin.Log.LogInfo("Shuffled territories");
@@ -145,6 +140,35 @@ namespace WarpipsReplayability.Mod
             Operation[] operations = Territories.Select(t => t.operation).ToArray();
             //Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.name).Aggregate((a, b) => a + "," + b));
             Plugin.Log.LogInfo(operations.Select(o => o.spawnWaveProfile.GetInstanceID().ToString()).Aggregate((a, b) => a + "," + b));
+        }
+
+        //const double techIncrease = 3;
+        //const double techMaxDifficultyDiv = 3;
+        private static void InitTechRewards(Operation operation)
+        {
+            //randomize tech rewards, with an average of slightly more per territory   
+            int techReward = operation.techReward;
+            if (techReward % 5 != 0)
+                Plugin.Log.LogError($"techReward already randomized {techReward}");
+            if (techReward >= 5)
+                operation.techReward = Plugin.Rand.GaussianOEInt(techReward + Math.E, 3.9 / techReward + .052, 1.69 / techReward + .039, 3);
+            Plugin.Log.LogInfo($"techReward {techReward} -> {operation.techReward}");
+            //note - if you don't fully complete islands, you should capture 32 territories before the final mission (9*3+5)
+            //with Math.E increase, on average this means an additional ~87.0 tech points
+        }
+        public static void ReduceTechRewards()
+        {
+            //when difficulty bar hits max, reduce non-special territory tech rewards
+            for (int a = 0; a < Territories.Length; a++)
+                if (Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
+                    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] / 3);//techMaxDifficultyDiv);
+            //else
+            //    Persist.Instance.TechRewards[a] = Plugin.Rand.Round(Persist.Instance.TechRewards[a] - techIncrease);
+
+            LoadTechRewards();
+            Persist.SaveCurrent();
+
+            Plugin.Log.LogInfo($"reduced tech rewards for standard territories");
         }
 
         private static GraphInfo ModifyConnections()

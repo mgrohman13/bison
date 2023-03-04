@@ -1,8 +1,6 @@
 hide operation map in shroud
 
 rebalance island completion somehow
-	change to +3 per territory, div to /3?
-		small reduction to special territories?
 	do something with worldMapDifficultyMultipler
 		add marathon mode option
 	utilize TerritoryInstance.blocked?

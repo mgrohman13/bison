@@ -39,7 +39,7 @@ namespace WarpipsReplayability.Patches
                 Plugin.Log.LogInfo($"after {value}, diff {value - __state}, inc {___worldMapDifficultyMultiplerTick}");
 
                 if (__state < 1 && value >= 1)
-                    Persist.ReduceTechRewards();
+                    Map.ReduceTechRewards();
             }
             catch (Exception e)
             {
