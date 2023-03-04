@@ -31,14 +31,30 @@ namespace WarpipsReplayability.Mod
                 HiddenRewards = Operations.RollHiddenRewards(),
                 TechRewards = Map.Territories.Select(t => t.operation.techReward).ToArray(),
             };
-            TBSUtil.SaveGame(Instance, saveFile);
+            Save();
             Plugin.Log.LogInfo($"saved mod data");
+        }
+        private static void Save()
+        {
+            TBSUtil.SaveGame(Instance, saveFile);
         }
         public static void LoadData()
         {
             Instance = TBSUtil.LoadGame<Persist>(saveFile);
             AccessTools.Field(typeof(WorldMapAsset), "territoryConnections").SetValue(Map.WorldMapAsset, Instance.Connections);
             Plugin.Log.LogInfo($"loaded mod data");
+        }
+
+        public static void ReduceTechRewards()
+        {
+            for (int a = 0; a < Map.Territories.Length; a++)
+                if (Map.Territories[a].specialTag == TerritoryInstance.SpecialTag.None)
+                    Instance.TechRewards[a] = Plugin.Rand.Round(Instance.TechRewards[a] / 2.0);
+
+            Map.LoadTechRewards();
+            Save();
+
+            Plugin.Log.LogInfo($"reduced tech rewards for standard territories");
         }
     }
 }

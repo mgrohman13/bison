@@ -35,7 +35,11 @@ namespace WarpipsReplayability.Patches
             {
                 Plugin.Log.LogDebug("MissionManagerAsset_AdvanceWorldMapDifficulty Postfix");
 
-                Plugin.Log.LogInfo($"after {___worldMapDifficultyMultipler.Value}, diff {___worldMapDifficultyMultipler.Value - __state}, inc {___worldMapDifficultyMultiplerTick.Value}");
+                float value = ___worldMapDifficultyMultipler.Value;
+                Plugin.Log.LogInfo($"after {value}, diff {value - __state}, inc {___worldMapDifficultyMultiplerTick}");
+
+                if (__state < 1 && value >= 1)
+                    Persist.ReduceTechRewards();
             }
             catch (Exception e)
             {

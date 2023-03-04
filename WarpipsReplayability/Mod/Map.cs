@@ -72,8 +72,7 @@ namespace WarpipsReplayability.Mod
                     to.spawnWaveProfile = from.spawnWaveProfile;
             }
 
-            for (int c = 0; c < territories.Length; c++)
-                territories[c].operation.techReward = Persist.Instance.TechRewards[c];
+            LoadTechRewards();
 
             Plugin.Log.LogInfo("Restored shuffle for save");
             LogShuffle();
@@ -94,6 +93,12 @@ namespace WarpipsReplayability.Mod
                 return data;
             };
         }
+        public static void LoadTechRewards()
+        {
+            for (int c = 0; c < Territories.Length; c++)
+                Territories[c].operation.techReward = Persist.Instance.TechRewards[c];
+        }
+
         private static int[] RandomizeTerritories()
         {
             //LogShuffle();
@@ -118,7 +123,7 @@ namespace WarpipsReplayability.Mod
                 if (techReward % 5 != 0)
                     Plugin.Log.LogError($"techReward already randomized {techReward}");
                 if (techReward > 1)
-                    territory.operation.techReward = Plugin.Rand.GaussianCappedInt(techReward, 3.9 / techReward + .052, 1);
+                    territory.operation.techReward = Plugin.Rand.GaussianOEInt(techReward + 2.6, 3.9 / techReward + .052, 1.69 / techReward + .039, 1);
             }
 
             Plugin.Log.LogInfo("Shuffled territories");
